@@ -9,13 +9,13 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Organization & Access
 
-- [ ] **ORG-01**: User can create a new organization with name, country, default currency, and timezone
+- [x] **ORG-01**: User can create a new organization with name, country, default currency, and timezone
 - [ ] **ORG-02**: Admin can configure organization settings (branding, fiscal year, notification defaults)
 - [ ] **ORG-03**: Admin can invite users by email with a specific role assignment
 - [ ] **ORG-04**: Invited user can accept invitation and create their account
 - [ ] **ORG-05**: Admin can deactivate a user, immediately revoking their access
 - [ ] **ORG-06**: System enforces RBAC with 8 roles: admin, finance admin, ops manager, team manager, legal/compliance viewer, IT admin, external accountant, readonly
-- [ ] **ORG-07**: All data access is scoped to the user's organization with no cross-tenant leakage
+- [x] **ORG-07**: All data access is scoped to the user's organization with no cross-tenant leakage
 - [ ] **ORG-08**: Admin can configure approval chain templates (default chains, amount thresholds)
 - [ ] **ORG-09**: Admin can manage workflow templates (create, edit, activate/deactivate)
 - [ ] **ORG-10**: Admin can view searchable, filterable, exportable audit log of all critical actions
@@ -172,13 +172,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ORG-01 | Phase 1 | Pending |
+| ORG-01 | Phase 1 | Complete |
 | ORG-02 | Phase 1 | Pending |
 | ORG-03 | Phase 1 | Pending |
 | ORG-04 | Phase 1 | Pending |
 | ORG-05 | Phase 1 | Pending |
 | ORG-06 | Phase 1 | Pending |
-| ORG-07 | Phase 1 | Pending |
+| ORG-07 | Phase 1 | Complete |
 | ORG-08 | Phase 6 | Pending |
 | ORG-09 | Phase 4 | Pending |
 | ORG-10 | Phase 9 | Pending |
