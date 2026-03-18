@@ -1,3 +1,17 @@
-// @contractor-ops/validators — Shared Zod schemas
-// Will be implemented in Plan 01-02
-export {};
+export {
+  createOrganizationSchema,
+  updateOrganizationSettingsSchema,
+} from "./organization.js";
+export type {
+  CreateOrganizationInput,
+  UpdateOrganizationSettingsInput,
+} from "./organization.js";
+
+export {
+  inviteUserSchema,
+  updateUserRoleSchema,
+} from "./user.js";
+export type {
+  InviteUserInput,
+  UpdateUserRoleInput,
+} from "./user.js";
