@@ -35,13 +35,13 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Admin can deactivate a user and that user is immediately locked out
   4. Each role sees only the navigation and actions permitted by their RBAC assignment
   5. All UI text, dates, numbers, and currency render correctly in both Polish and English
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 01-01: Monorepo scaffolding, database schema, and CI/CD
-- [ ] 01-02: Authentication and multi-tenant RBAC
-- [ ] 01-03: Organization settings, user management UI, and app shell
-- [ ] 01-04: i18n framework and locale-aware formatting
+- [ ] 01-01-PLAN.md — Turborepo monorepo scaffold, complete Prisma 7 database schema, tenant isolation and soft-delete extensions
+- [ ] 01-02-PLAN.md — Better Auth with organization plugin, 8-role RBAC, tRPC v11 with auth/tenant/RBAC middleware chain
+- [ ] 01-03-PLAN.md — Auth screens, app shell with collapsible sidebar and top bar, org settings, user management UI
+- [ ] 01-04-PLAN.md — next-intl i18n framework with Polish and English translations, locale-aware formatting
 
 ### Phase 2: Contractor Registry
 **Goal**: Users can manage their full contractor roster with search, filtering, bulk operations, and detailed profiles showing lifecycle status and compliance health
