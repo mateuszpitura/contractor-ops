@@ -3,19 +3,30 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": ["dist", "prisma/schema", "generated"],
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
   },
   "scripts": {
     "build": "tsc",
-    "db:generate": "prisma generate --schema=prisma/schema",
-    "db:push": "prisma db push --schema=prisma/schema"
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:migrate:dev": "prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:migrate:status": "prisma migrate status"
   },
   "dependencies": {
     "prisma": "^7.5.0",
     "@prisma/client": "^7.5.0",
     "@prisma/adapter-neon": "^7.5.0",
-    "@neondatabase/serverless": "^1.0.0"
+    "@neondatabase/serverless": "^1.0.0",
+    "dotenv": "^17.3.1"
   },
   "devDependencies": {
     "typescript": "^5.7.0"

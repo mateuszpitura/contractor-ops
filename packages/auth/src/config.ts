@@ -5,8 +5,8 @@ import { admin } from "better-auth/plugins/admin";
 import { magicLink } from "better-auth/plugins/magic-link";
 import { organization } from "better-auth/plugins/organization";
 import { prisma } from "@contractor-ops/db";
-import { ac } from "./permissions";
-import { roles } from "./roles";
+import { ac } from "./permissions.js";
+import { roles } from "./roles.js";
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -15,7 +15,7 @@ export const auth = betterAuth({
 
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: true,
+    requireEmailVerification: false, // TODO: Enable after email service (Resend) is configured in Phase 7
   },
 
   socialProviders: {

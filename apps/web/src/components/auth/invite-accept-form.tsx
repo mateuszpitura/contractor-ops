@@ -116,6 +116,7 @@ export function InviteAcceptForm({
             <Input
               id="password"
               type="password"
+              autoComplete="new-password"
               placeholder="Min. 8 characters"
               disabled={isLoading}
               {...register("password")}
