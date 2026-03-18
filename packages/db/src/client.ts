@@ -1,5 +1,16 @@
 import { PrismaNeon } from "@prisma/adapter-neon";
-import { PrismaClient } from "../generated/prisma/client/index";
+import { PrismaClient } from "../generated/prisma/client/index.js";
+
+function createMissingDatabaseUrlProxy(): PrismaClient {
+  return new Proxy(
+    {},
+    {
+      get() {
+        throw new Error("DATABASE_URL environment variable is not set");
+      },
+    },
+  ) as PrismaClient;
+}
 
 function createPrismaClient() {
   const connectionString = process.env.DATABASE_URL;
@@ -16,7 +27,9 @@ const globalForPrisma = globalThis as unknown as {
   prisma: ReturnType<typeof createPrismaClient> | undefined;
 };
 
-export const prisma = globalForPrisma.prisma ?? createPrismaClient();
+export const prisma =
+  globalForPrisma.prisma ??
+  (process.env.DATABASE_URL ? createPrismaClient() : createMissingDatabaseUrlProxy());
 
 if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;

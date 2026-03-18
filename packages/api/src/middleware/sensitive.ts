@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
-import { t } from "../init";
-import { tenantProcedure } from "./tenant";
+import { t } from "../init.js";
+import { tenantProcedure } from "./tenant.js";
 
 const SENSITIVE_ACTION_MAX_AGE_MS = 5 * 60 * 1000; // 5 minutes
 
@@ -16,9 +16,11 @@ const SENSITIVE_ACTION_MAX_AGE_MS = 5 * 60 * 1000; // 5 minutes
  * payment runs — any operation where a stale session poses a security risk.
  */
 export const sensitiveActionMiddleware = t.middleware(async ({ ctx, next }) => {
-  // ctx is typed by the procedure chain — session comes from auth middleware
-  const session = (ctx as unknown as { session: { session: { createdAt: Date | string } } }).session;
-  const sessionCreatedAt = new Date(session.session.createdAt).getTime();
+  if (!ctx.session) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+
+  const sessionCreatedAt = new Date(ctx.session.session.createdAt).getTime();
   const now = Date.now();
 
   if (now - sessionCreatedAt > SENSITIVE_ACTION_MAX_AGE_MS) {

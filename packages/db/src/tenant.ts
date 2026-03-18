@@ -1,11 +1,22 @@
 import { AsyncLocalStorage } from "node:async_hooks";
-import type { PrismaClient } from "../generated/prisma/client/index";
+import type { Prisma } from "../generated/prisma/client/index.js";
 
 interface TenantContext {
   organizationId: string;
 }
 
 export const tenantStore = new AsyncLocalStorage<TenantContext>();
+
+export type PrismaExtensible = {
+  $extends: Prisma.DefaultPrismaClient["$extends"];
+};
+
+type QueryHookParams = {
+  operation: string;
+  model?: string;
+  args: unknown;
+  query: (args: unknown) => Promise<unknown>;
+};
 
 /**
  * Global models that are NOT tenant-scoped.
@@ -25,10 +36,10 @@ const globalModels = new Set([
  *
  * Throws an error if a tenant-scoped query is executed without context.
  */
-export function withTenantScope<T extends PrismaClient>(prisma: T) {
+export function withTenantScope<T extends PrismaExtensible>(prisma: T) {
   return prisma.$extends({
     query: {
-      $allOperations({ operation, model, args, query }) {
+      async $allOperations({ operation, model, args, query }: QueryHookParams) {
         const ctx = tenantStore.getStore();
 
         if (!ctx) {
@@ -39,8 +50,14 @@ export function withTenantScope<T extends PrismaClient>(prisma: T) {
 
         // Skip global models
         if (model && globalModels.has(model)) {
-          return query(args);
+          return await query(args);
         }
+
+        if (args == null || typeof args !== "object") {
+          return await query(args);
+        }
+
+        const argsObj = args as Record<string, unknown>;
 
         // Read operations — inject organizationId into where clause
         if (
@@ -55,22 +72,26 @@ export function withTenantScope<T extends PrismaClient>(prisma: T) {
             "groupBy",
           ].includes(operation)
         ) {
-          args.where = { ...args.where, organizationId: ctx.organizationId };
+          const where = (argsObj.where ?? {}) as Record<string, unknown>;
+          argsObj.where = { ...where, organizationId: ctx.organizationId };
         }
 
         // Create operations — inject organizationId into data
         if (operation === "create") {
-          args.data = { ...args.data, organizationId: ctx.organizationId };
+          const data = (argsObj.data ?? {}) as Record<string, unknown>;
+          argsObj.data = { ...data, organizationId: ctx.organizationId };
         }
 
         if (operation === "createMany") {
-          if (Array.isArray(args.data)) {
-            args.data = args.data.map((item: Record<string, unknown>) => ({
-              ...item,
+          const data = argsObj.data;
+          if (Array.isArray(data)) {
+            argsObj.data = data.map((item) => ({
+              ...(item as Record<string, unknown>),
               organizationId: ctx.organizationId,
             }));
           } else {
-            args.data = { ...args.data, organizationId: ctx.organizationId };
+            const dataObj = (data ?? {}) as Record<string, unknown>;
+            argsObj.data = { ...dataObj, organizationId: ctx.organizationId };
           }
         }
 
@@ -80,10 +101,11 @@ export function withTenantScope<T extends PrismaClient>(prisma: T) {
             operation
           )
         ) {
-          args.where = { ...args.where, organizationId: ctx.organizationId };
+          const where = (argsObj.where ?? {}) as Record<string, unknown>;
+          argsObj.where = { ...where, organizationId: ctx.organizationId };
         }
 
-        return query(args);
+        return await query(argsObj);
       },
     },
   });

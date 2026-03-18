@@ -1,31 +1,23 @@
 import { TRPCError } from "@trpc/server";
-import { auth } from "@contractor-ops/auth";
-import type { Session } from "@contractor-ops/auth";
-import { t, publicProcedure } from "../init";
+import { t, publicProcedure } from "../init.js";
 
 /**
- * Auth middleware: validates the session via Better Auth.
- * Adds session and user to the tRPC context.
+ * Auth middleware: requires an authenticated session.
  * Throws UNAUTHORIZED if no valid session exists.
  */
 export const authMiddleware = t.middleware(async ({ ctx, next }) => {
-  const session = await auth.api.getSession({ headers: ctx.headers });
-
-  if (!session) {
+  if (!ctx.session || !ctx.user) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
 
   return next({
-    ctx: { ...ctx, session, user: session.user },
+    ctx: {
+      ...ctx,
+      session: ctx.session,
+      user: ctx.user,
+    },
   });
 });
-
-/** Context type after auth middleware has run */
-export type AuthedContext = {
-  headers: Headers;
-  session: Session;
-  user: Session["user"];
-};
 
 /**
  * Procedure that requires an authenticated user.

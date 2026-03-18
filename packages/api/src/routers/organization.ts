@@ -3,9 +3,9 @@ import {
   createOrganizationSchema,
   updateOrganizationSettingsSchema,
 } from "@contractor-ops/validators";
-import { router, publicProcedure } from "../init";
-import { tenantProcedure } from "../middleware/tenant";
-import { adminProcedure } from "../middleware/rbac";
+import { router, publicProcedure } from "../init.js";
+import { tenantProcedure } from "../middleware/tenant.js";
+import { adminProcedure } from "../middleware/rbac.js";
 
 export const organizationRouter = router({
   /**

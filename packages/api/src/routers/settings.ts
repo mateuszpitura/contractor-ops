@@ -1,9 +1,9 @@
 import { auth } from "@contractor-ops/auth";
 import { updateOrganizationSettingsSchema } from "@contractor-ops/validators";
-import { router } from "../init";
-import { tenantProcedure } from "../middleware/tenant";
-import { requirePermission } from "../middleware/rbac";
-import { sensitiveActionProcedure } from "../middleware/sensitive";
+import { router } from "../init.js";
+import { tenantProcedure } from "../middleware/tenant.js";
+import { requirePermission } from "../middleware/rbac.js";
+import { sensitiveActionProcedure } from "../middleware/sensitive.js";
 
 export const settingsRouter = router({
   /**

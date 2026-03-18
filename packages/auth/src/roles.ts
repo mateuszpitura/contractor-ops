@@ -1,4 +1,4 @@
-import { ac } from "./permissions";
+import { ac } from "./permissions.js";
 
 /**
  * 8 predefined roles for the Contractor Ops platform.

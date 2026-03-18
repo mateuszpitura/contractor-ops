@@ -13,9 +13,11 @@ import { headers } from "next/headers";
  *   const api = await getServerApi();
  *   const data = await api.settings.get();
  */
-const createCaller = createCallerFactory(appRouter);
+const createCaller: ReturnType<typeof createCallerFactory> = createCallerFactory(appRouter);
 
-export const getServerApi = cache(async () => {
+type ServerApi = ReturnType<typeof createCaller>;
+
+export const getServerApi: () => Promise<ServerApi> = cache(async () => {
   const h = await headers();
   return createCaller(await createContext({ headers: h }));
 });

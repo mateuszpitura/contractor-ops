@@ -1,4 +1,19 @@
-import type { PrismaClient } from "../generated/prisma/client/index";
+import type { Prisma } from "../generated/prisma/client/index.js";
+
+type PrismaExtensible = {
+  $extends: Prisma.DefaultPrismaClient["$extends"];
+};
+
+type ModelQueryHookParams = {
+  model: string;
+  args: unknown;
+  query: (args: unknown) => Promise<unknown>;
+};
+
+type DelegateWithSoftDelete = {
+  update: (args: unknown) => Promise<unknown>;
+  updateMany: (args: unknown) => Promise<unknown>;
+};
 
 /**
  * Models that support soft delete (have a deletedAt field).
@@ -19,68 +34,104 @@ const softDeleteModels = new Set([
  * - delete/deleteMany are converted to update deletedAt
  * - findMany/findFirst/count automatically filter where deletedAt is null
  */
-export function withSoftDelete<T extends PrismaClient>(prisma: T) {
+export function withSoftDelete<T extends PrismaExtensible>(prisma: T) {
   return prisma.$extends({
     query: {
       $allModels: {
-        async delete({ model, args, query }) {
+        async delete({ model, args, query }: ModelQueryHookParams) {
           if (!softDeleteModels.has(model)) {
-            return query(args);
+            return await query(args);
           }
 
           // Convert delete to soft-delete
-          return (prisma as any)[lowerFirst(model)].update({
-            ...args,
+          const delegate = (prisma as unknown as Record<string, unknown>)[
+            lowerFirst(model)
+          ] as DelegateWithSoftDelete | undefined;
+
+          if (!delegate) return await query(args);
+
+          return await delegate.update({
+            ...(args as Record<string, unknown>),
             data: { deletedAt: new Date() },
           });
         },
 
-        async deleteMany({ model, args, query }) {
+        async deleteMany({ model, args, query }: ModelQueryHookParams) {
           if (!softDeleteModels.has(model)) {
-            return query(args);
+            return await query(args);
           }
 
           // Convert deleteMany to updateMany with deletedAt
-          return (prisma as any)[lowerFirst(model)].updateMany({
-            ...args,
+          const delegate = (prisma as unknown as Record<string, unknown>)[
+            lowerFirst(model)
+          ] as DelegateWithSoftDelete | undefined;
+
+          if (!delegate) return await query(args);
+
+          return await delegate.updateMany({
+            ...(args as Record<string, unknown>),
             data: { deletedAt: new Date() },
           });
         },
 
-        async findMany({ model, args, query }) {
+        async findMany({ model, args, query }: ModelQueryHookParams) {
           if (!softDeleteModels.has(model)) {
-            return query(args);
+            return await query(args);
           }
 
-          args.where = { ...args.where, deletedAt: null };
-          return query(args);
+          if (args == null || typeof args !== "object") {
+            return await query(args);
+          }
+
+          const argsObj = args as Record<string, unknown>;
+          const where = (argsObj.where ?? {}) as Record<string, unknown>;
+          argsObj.where = { ...where, deletedAt: null };
+          return await query(argsObj);
         },
 
-        async findFirst({ model, args, query }) {
+        async findFirst({ model, args, query }: ModelQueryHookParams) {
           if (!softDeleteModels.has(model)) {
-            return query(args);
+            return await query(args);
           }
 
-          args.where = { ...args.where, deletedAt: null };
-          return query(args);
+          if (args == null || typeof args !== "object") {
+            return await query(args);
+          }
+
+          const argsObj = args as Record<string, unknown>;
+          const where = (argsObj.where ?? {}) as Record<string, unknown>;
+          argsObj.where = { ...where, deletedAt: null };
+          return await query(argsObj);
         },
 
-        async findFirstOrThrow({ model, args, query }) {
+        async findFirstOrThrow({ model, args, query }: ModelQueryHookParams) {
           if (!softDeleteModels.has(model)) {
-            return query(args);
+            return await query(args);
           }
 
-          args.where = { ...args.where, deletedAt: null };
-          return query(args);
+          if (args == null || typeof args !== "object") {
+            return await query(args);
+          }
+
+          const argsObj = args as Record<string, unknown>;
+          const where = (argsObj.where ?? {}) as Record<string, unknown>;
+          argsObj.where = { ...where, deletedAt: null };
+          return await query(argsObj);
         },
 
-        async count({ model, args, query }) {
+        async count({ model, args, query }: ModelQueryHookParams) {
           if (!softDeleteModels.has(model)) {
-            return query(args);
+            return await query(args);
           }
 
-          args.where = { ...args.where, deletedAt: null };
-          return query(args);
+          if (args == null || typeof args !== "object") {
+            return await query(args);
+          }
+
+          const argsObj = args as Record<string, unknown>;
+          const where = (argsObj.where ?? {}) as Record<string, unknown>;
+          argsObj.where = { ...where, deletedAt: null };
+          return await query(argsObj);
         },
       },
     },

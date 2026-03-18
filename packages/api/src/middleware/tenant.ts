@@ -1,7 +1,6 @@
 import { TRPCError } from "@trpc/server";
-import { tenantStore } from "@contractor-ops/db";
-import { t } from "../init";
-import { authedProcedure } from "./auth";
+import { t } from "../init.js";
+import { authedProcedure } from "./auth.js";
 
 /**
  * Tenant middleware: enforces an active organization and sets up
@@ -11,9 +10,11 @@ import { authedProcedure } from "./auth";
  * Throws FORBIDDEN if no active organization is set in the session.
  */
 const tenantMiddleware = t.middleware(async ({ ctx, next }) => {
-  // ctx is typed by the procedure chain — session comes from auth middleware
-  const session = (ctx as unknown as { session: { session: { activeOrganizationId?: string | null } } }).session;
-  const orgId = session.session.activeOrganizationId;
+  if (!ctx.session || !ctx.user) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+
+  const orgId = ctx.session.session.activeOrganizationId;
 
   if (!orgId) {
     throw new TRPCError({
@@ -22,9 +23,9 @@ const tenantMiddleware = t.middleware(async ({ ctx, next }) => {
     });
   }
 
-  return tenantStore.run({ organizationId: orgId }, () =>
-    next({ ctx: { ...ctx, organizationId: orgId } }),
-  );
+  return next({
+    ctx: { ...ctx, organizationId: orgId },
+  });
 });
 
 /**

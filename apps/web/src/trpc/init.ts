@@ -8,7 +8,8 @@ import { makeQueryClient } from "./query-client";
  * tRPC client initialized with httpBatchLink and superjson transformer.
  * Uses createTRPCOptionsProxy (tRPC v11 pattern) for TanStack Query integration.
  */
-export const trpc = createTRPCOptionsProxy<AppRouter>({
+export const trpc: ReturnType<typeof createTRPCOptionsProxy<AppRouter>> =
+  createTRPCOptionsProxy<AppRouter>({
   client: createTRPCClient<AppRouter>({
     links: [
       httpBatchLink({
