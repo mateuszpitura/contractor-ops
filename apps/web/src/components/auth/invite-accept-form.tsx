@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,12 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { SocialButtons } from "@/components/auth/social-buttons";
 import { authClient } from "@/lib/auth-client";
-
-const inviteSchema = z.object({
-  password: z.string().min(8, "Password must be at least 8 characters"),
-});
-
-type InviteValues = z.infer<typeof inviteSchema>;
+import { useRouter } from "@/i18n/navigation";
 
 interface InviteAcceptFormProps {
   token: string;
@@ -37,8 +32,17 @@ export function InviteAcceptForm({
   email = "",
   orgName = "the organization",
 }: InviteAcceptFormProps) {
+  const t = useTranslations("Auth.invite");
+  const tv = useTranslations("Validation");
+  const tc = useTranslations("Common");
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+
+  const inviteSchema = z.object({
+    password: z.string().min(8, tv("passwordTooShort")),
+  });
+
+  type InviteValues = z.infer<typeof inviteSchema>;
 
   const {
     register,
@@ -77,9 +81,9 @@ export function InviteAcceptForm({
         return;
       }
 
-      router.push("/en/dashboard");
+      router.push("/");
     } catch {
-      toast.error("Connection error. Check your internet and try again.");
+      toast.error(tc("networkError"));
       setIsLoading(false);
     }
   };
@@ -88,17 +92,17 @@ export function InviteAcceptForm({
     <Card>
       <CardHeader className="space-y-1 text-center">
         <h1 className="text-[28px] font-semibold leading-[1.2] tracking-tight">
-          Join {orgName}
+          {t("title", { orgName })}
         </h1>
         <p className="text-sm text-muted-foreground">
-          Create your account to join the team
+          {t("subtitle")}
         </p>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email" className="text-[13px]">
-              Work email
+              {t("emailLabel")}
             </Label>
             <Input
               id="email"
@@ -111,13 +115,13 @@ export function InviteAcceptForm({
 
           <div className="space-y-2">
             <Label htmlFor="password" className="text-[13px]">
-              Password
+              {t("passwordLabel")}
             </Label>
             <Input
               id="password"
               type="password"
               autoComplete="new-password"
-              placeholder="Min. 8 characters"
+              placeholder={t("passwordPlaceholder")}
               disabled={isLoading}
               {...register("password")}
             />
@@ -132,10 +136,10 @@ export function InviteAcceptForm({
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Joining...
+                {t("joining")}
               </>
             ) : (
-              "Accept and join"
+              t("cta")
             )}
           </Button>
         </form>

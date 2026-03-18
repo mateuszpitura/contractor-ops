@@ -7,6 +7,7 @@ import { z } from "zod";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,14 +24,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/trpc/init";
 
 const updateSettingsSchema = z.object({
-  name: z.string().min(2, "Organization name must be at least 2 characters").max(255),
+  name: z.string().min(2).max(255),
   legalName: z.string().max(255).optional(),
-  country: z.string().length(2, "Select a country"),
-  currency: z.string().length(3, "Select a currency"),
-  timezone: z.string().min(1, "Select a timezone"),
+  country: z.string().length(2),
+  currency: z.string().length(3),
+  timezone: z.string().min(1),
   language: z.enum(["pl", "en"]),
   fiscalYearStartMonth: z.number().int().min(1).max(12),
-  billingEmail: z.string().email("Enter a valid email address").optional().or(z.literal("")),
+  billingEmail: z.string().email().optional().or(z.literal("")),
 });
 
 type SettingsValues = z.infer<typeof updateSettingsSchema>;
@@ -79,6 +80,7 @@ const months = [
  * Fetches current settings via tRPC, allows editing, saves via tRPC mutation.
  */
 export function OrgSettingsForm() {
+  const t = useTranslations("Settings");
   const queryClient = useQueryClient();
 
   const settingsQuery = useQuery(trpc.settings.get.queryOptions());
@@ -86,7 +88,7 @@ export function OrgSettingsForm() {
   const updateMutation = useMutation(
     trpc.settings.update.mutationOptions({
       onSuccess: () => {
-        toast.success("Settings saved");
+        toast.success(t("savedToast"));
         queryClient.invalidateQueries({ queryKey: trpc.settings.get.queryKey() });
       },
       onError: (error: unknown) => {
@@ -169,13 +171,13 @@ export function OrgSettingsForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>General</CardTitle>
+        <CardTitle>{t("tabs.general")}</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-w-lg">
           <div className="space-y-2">
             <Label htmlFor="name" className="text-[13px]">
-              Organization name
+              {t("fields.orgName")}
             </Label>
             <Input
               id="name"
@@ -189,7 +191,8 @@ export function OrgSettingsForm() {
 
           <div className="space-y-2">
             <Label htmlFor="legalName" className="text-[13px]">
-              Legal name <span className="text-muted-foreground">(optional)</span>
+              {t("fields.legalName")}{" "}
+              <span className="text-muted-foreground">{t("fields.legalNameOptional")}</span>
             </Label>
             <Input
               id="legalName"
@@ -200,7 +203,7 @@ export function OrgSettingsForm() {
 
           <div className="space-y-2">
             <Label htmlFor="country" className="text-[13px]">
-              Country
+              {t("fields.country")}
             </Label>
             <Select
               value={watch("country")}
@@ -210,7 +213,7 @@ export function OrgSettingsForm() {
               disabled={updateMutation.isPending}
             >
               <SelectTrigger id="country">
-                <SelectValue placeholder="Select country" />
+                <SelectValue placeholder={t("fields.countryPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
                 {countries.map((c) => (
@@ -224,7 +227,7 @@ export function OrgSettingsForm() {
 
           <div className="space-y-2">
             <Label htmlFor="currency" className="text-[13px]">
-              Default currency
+              {t("fields.currency")}
             </Label>
             <Select
               value={watch("currency")}
@@ -234,7 +237,7 @@ export function OrgSettingsForm() {
               disabled={updateMutation.isPending}
             >
               <SelectTrigger id="currency">
-                <SelectValue placeholder="Select currency" />
+                <SelectValue placeholder={t("fields.currencyPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
                 {currencies.map((c) => (
@@ -248,7 +251,7 @@ export function OrgSettingsForm() {
 
           <div className="space-y-2">
             <Label htmlFor="timezone" className="text-[13px]">
-              Timezone
+              {t("fields.timezone")}
             </Label>
             <Select
               value={watch("timezone")}
@@ -258,7 +261,7 @@ export function OrgSettingsForm() {
               disabled={updateMutation.isPending}
             >
               <SelectTrigger id="timezone">
-                <SelectValue placeholder="Select timezone" />
+                <SelectValue placeholder={t("fields.timezonePlaceholder")} />
               </SelectTrigger>
               <SelectContent>
                 {timezones.map((tz) => (
@@ -272,7 +275,7 @@ export function OrgSettingsForm() {
 
           <div className="space-y-2">
             <Label htmlFor="language" className="text-[13px]">
-              Language
+              {t("fields.language")}
             </Label>
             <Select
               value={watch("language")}
@@ -282,18 +285,18 @@ export function OrgSettingsForm() {
               disabled={updateMutation.isPending}
             >
               <SelectTrigger id="language">
-                <SelectValue placeholder="Select language" />
+                <SelectValue placeholder={t("fields.languagePlaceholder")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="pl">Polish</SelectItem>
-                <SelectItem value="en">English</SelectItem>
+                <SelectItem value="pl">{t("fields.languagePolish")}</SelectItem>
+                <SelectItem value="en">{t("fields.languageEnglish")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="fiscalYearStartMonth" className="text-[13px]">
-              Fiscal year start month
+              {t("fields.fiscalYear")}
             </Label>
             <Select
               value={String(watch("fiscalYearStartMonth"))}
@@ -304,7 +307,7 @@ export function OrgSettingsForm() {
               disabled={updateMutation.isPending}
             >
               <SelectTrigger id="fiscalYearStartMonth">
-                <SelectValue placeholder="Select month" />
+                <SelectValue placeholder={t("fields.fiscalYearPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
                 {months.map((m) => (
@@ -318,7 +321,8 @@ export function OrgSettingsForm() {
 
           <div className="space-y-2">
             <Label htmlFor="billingEmail" className="text-[13px]">
-              Billing email <span className="text-muted-foreground">(optional)</span>
+              {t("fields.billingEmail")}{" "}
+              <span className="text-muted-foreground">{t("fields.billingEmailOptional")}</span>
             </Label>
             <Input
               id="billingEmail"
@@ -337,10 +341,10 @@ export function OrgSettingsForm() {
             {updateMutation.isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
+                {t("saving")}
               </>
             ) : (
-              "Save changes"
+              t("saveCta")
             )}
           </Button>
         </form>

@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
+import { useTranslations } from "next-intl";
 import {
   LogOut,
   Moon,
@@ -9,6 +9,7 @@ import {
   ChevronsUpDown,
   Minimize2,
   Maximize2,
+  Globe,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -26,6 +27,9 @@ import {
 } from "@/components/ui/sidebar";
 import { authClient } from "@/lib/auth-client";
 import { useDensity } from "@/hooks/use-density";
+import { useRouter, usePathname } from "@/i18n/navigation";
+import { useLocale } from "next-intl";
+import type { Locale } from "@/i18n/routing";
 
 /**
  * User menu in the sidebar footer.
@@ -33,10 +37,14 @@ import { useDensity } from "@/hooks/use-density";
  * - Settings link
  * - Dark mode toggle
  * - Density toggle (comfortable/compact)
+ * - Language switcher
  * - Sign out
  */
 export function UserMenu() {
+  const t = useTranslations("Common");
   const router = useRouter();
+  const pathname = usePathname();
+  const locale = useLocale();
   const { isMobile } = useSidebar();
   const { theme, setTheme } = useTheme();
   const { density, toggleDensity } = useDensity();
@@ -54,7 +62,12 @@ export function UserMenu() {
 
   const handleSignOut = async () => {
     await authClient.signOut();
-    router.push("/en/login");
+    router.push("/login");
+  };
+
+  const handleLocaleSwitch = () => {
+    const nextLocale: Locale = locale === "pl" ? "en" : "pl";
+    router.replace(pathname, { locale: nextLocale });
   };
 
   return (
@@ -113,9 +126,9 @@ export function UserMenu() {
 
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem onClick={() => router.push("/en/settings")}>
+        <DropdownMenuItem onClick={() => router.push("/settings")}>
           <Settings className="mr-2 h-4 w-4" />
-          Settings
+          {t("settings")}
         </DropdownMenuItem>
 
         <DropdownMenuSeparator />
@@ -123,12 +136,12 @@ export function UserMenu() {
         <div className="flex items-center justify-between px-2 py-1.5">
           <div className="flex items-center gap-2">
             <Moon className="h-4 w-4" />
-            <span className="text-sm">Dark mode</span>
+            <span className="text-sm">{t("darkMode")}</span>
           </div>
           <Switch
             checked={theme === "dark"}
             onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
-            aria-label="Toggle dark mode"
+            aria-label={t("darkMode")}
           />
         </div>
 
@@ -139,20 +152,34 @@ export function UserMenu() {
             ) : (
               <Minimize2 className="h-4 w-4" />
             )}
-            <span className="text-sm">Compact</span>
+            <span className="text-sm">{t("density")}</span>
           </div>
           <Switch
             checked={density === "compact"}
             onCheckedChange={toggleDensity}
-            aria-label="Toggle compact mode"
+            aria-label={t("density")}
           />
+        </div>
+
+        <div className="flex items-center justify-between px-2 py-1.5">
+          <div className="flex items-center gap-2">
+            <Globe className="h-4 w-4" />
+            <span className="text-sm">{t("language")}</span>
+          </div>
+          <button
+            type="button"
+            onClick={handleLocaleSwitch}
+            className="text-sm font-medium text-primary hover:underline"
+          >
+            {locale === "pl" ? "EN" : "PL"}
+          </button>
         </div>
 
         <DropdownMenuSeparator />
 
         <DropdownMenuItem onClick={handleSignOut}>
           <LogOut className="mr-2 h-4 w-4" />
-          Sign out
+          {t("signOut")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

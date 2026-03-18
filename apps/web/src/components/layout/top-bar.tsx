@@ -1,6 +1,7 @@
 "use client";
 
 import { UserPlus, Upload, Search, Bell } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Breadcrumb,
@@ -16,7 +17,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { usePathname } from "next/navigation";
+import { usePathname } from "@/i18n/navigation";
 
 /**
  * Top bar above main content area.
@@ -25,12 +26,10 @@ import { usePathname } from "next/navigation";
  */
 export function TopBar() {
   const pathname = usePathname();
+  const t = useTranslations("TopBar");
 
-  // Build breadcrumb segments from pathname
-  const segments = pathname
-    .split("/")
-    .filter(Boolean)
-    .filter((s) => s !== "en" && s !== "pl"); // Remove locale prefix
+  // Build breadcrumb segments from pathname (locale already stripped by next-intl)
+  const segments = pathname.split("/").filter(Boolean);
 
   const breadcrumbLabel = (segment: string): string => {
     return segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, " ");
@@ -69,35 +68,35 @@ export function TopBar() {
         <Tooltip>
           <TooltipTrigger render={<Button variant="ghost" size="icon" className="h-8 w-8" />}>
             <UserPlus className="h-4 w-4" />
-            <span className="sr-only">Add contractor</span>
+            <span className="sr-only">{t("addContractor")}</span>
           </TooltipTrigger>
-          <TooltipContent>Add contractor</TooltipContent>
+          <TooltipContent>{t("addContractor")}</TooltipContent>
         </Tooltip>
 
         <Tooltip>
           <TooltipTrigger render={<Button variant="ghost" size="icon" className="h-8 w-8" />}>
             <Upload className="h-4 w-4" />
-            <span className="sr-only">Upload invoice</span>
+            <span className="sr-only">{t("uploadInvoice")}</span>
           </TooltipTrigger>
-          <TooltipContent>Upload invoice</TooltipContent>
+          <TooltipContent>{t("uploadInvoice")}</TooltipContent>
         </Tooltip>
 
         <Tooltip>
           <TooltipTrigger render={<Button variant="ghost" size="icon" className="h-8 w-8" />}>
             <Search className="h-4 w-4" />
-            <span className="sr-only">Search</span>
+            <span className="sr-only">{t("search")}</span>
           </TooltipTrigger>
           <TooltipContent>
-            Search <kbd className="ml-1 text-xs">Cmd+K</kbd>
+            {t("search")} <kbd className="ml-1 text-xs">{t("searchShortcut")}</kbd>
           </TooltipContent>
         </Tooltip>
 
         <Tooltip>
           <TooltipTrigger render={<Button variant="ghost" size="icon" className="h-8 w-8 relative" />}>
             <Bell className="h-4 w-4" />
-            <span className="sr-only">Notifications</span>
+            <span className="sr-only">{t("notifications")}</span>
           </TooltipTrigger>
-          <TooltipContent>Notifications</TooltipContent>
+          <TooltipContent>{t("notifications")}</TooltipContent>
         </Tooltip>
       </div>
     </header>

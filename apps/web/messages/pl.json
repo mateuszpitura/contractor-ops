@@ -1,2 +1,200 @@
 {
+  "Auth": {
+    "register": {
+      "title": "Utworz organizacje",
+      "subtitle": "Skonfiguruj przestrzen do zarzadzania kontrahentami",
+      "cta": "Utworz organizacje",
+      "creating": "Tworzenie...",
+      "orgNameLabel": "Nazwa organizacji",
+      "orgNamePlaceholder": "Acme Corp",
+      "emailLabel": "Email sluzbowy",
+      "emailPlaceholder": "imie@firma.pl",
+      "passwordLabel": "Haslo",
+      "passwordPlaceholder": "Min. 8 znakow",
+      "socialDivider": "lub kontynuuj przez",
+      "googleButton": "Google",
+      "microsoftButton": "Microsoft",
+      "hasAccount": "Masz juz konto?",
+      "signInLink": "Zaloguj sie"
+    },
+    "login": {
+      "title": "Zaloguj sie do Contractor Ops",
+      "subtitle": "Podaj dane logowania, aby uzyskac dostep do przestrzeni",
+      "cta": "Zaloguj sie",
+      "signingIn": "Logowanie...",
+      "magicLinkCta": "Zaloguj sie linkiem",
+      "magicLinkSending": "Wysylanie linku...",
+      "magicLinkSent": "Sprawdz email",
+      "magicLinkSentBody": "Wyslalismy link do logowania na",
+      "magicLinkBack": "Powrot do logowania",
+      "socialDivider": "lub kontynuuj przez",
+      "emailLabel": "Email sluzbowy",
+      "emailPlaceholder": "imie@firma.pl",
+      "passwordLabel": "Haslo",
+      "noAccount": "Nie masz konta?",
+      "createOrgLink": "Utworz organizacje"
+    },
+    "invite": {
+      "title": "Dolacz do {orgName}",
+      "subtitle": "Utworz konto, aby dolaczyc do zespolu",
+      "cta": "Zaakceptuj i dolacz",
+      "joining": "Dolaczanie...",
+      "emailLabel": "Email sluzbowy",
+      "passwordLabel": "Haslo",
+      "passwordPlaceholder": "Min. 8 znakow"
+    },
+    "verifyEmail": {
+      "title": "Sprawdz email",
+      "message": "Sprawdz email, aby zweryfikowac konto.",
+      "redirect": "Po weryfikacji zostaniesz przekierowany do pulpitu.",
+      "backToSignIn": "Powrot do logowania"
+    }
+  },
+  "Navigation": {
+    "dashboard": "Pulpit",
+    "contractors": "Kontrahenci",
+    "contracts": "Umowy",
+    "workflows": "Procesy",
+    "invoices": "Faktury",
+    "approvals": "Zatwierdzenia",
+    "payments": "Platnosci",
+    "reports": "Raporty",
+    "integrations": "Integracje",
+    "settings": "Ustawienia"
+  },
+  "TopBar": {
+    "addContractor": "Dodaj kontrahenta",
+    "uploadInvoice": "Przeslij fakture",
+    "search": "Szukaj",
+    "searchShortcut": "Cmd+K",
+    "notifications": "Powiadomienia"
+  },
+  "Dashboard": {
+    "emptyState": {
+      "heading": "Witaj w Contractor Ops",
+      "body": "Twoja organizacja jest gotowa. Zacznij od dodania pierwszego kontrahenta.",
+      "cta": "Dodaj kontrahenta"
+    }
+  },
+  "Settings": {
+    "title": "Ustawienia organizacji",
+    "subtitle": "Zarzadzaj preferencjami organizacji i zespolem",
+    "tabs": {
+      "general": "Ogolne",
+      "members": "Czlonkowie"
+    },
+    "saveCta": "Zapisz zmiany",
+    "saving": "Zapisywanie...",
+    "savedToast": "Ustawienia zapisane",
+    "fields": {
+      "orgName": "Nazwa organizacji",
+      "legalName": "Nazwa prawna",
+      "legalNameOptional": "(opcjonalne)",
+      "country": "Kraj",
+      "countryPlaceholder": "Wybierz kraj",
+      "currency": "Domyslna waluta",
+      "currencyPlaceholder": "Wybierz walute",
+      "timezone": "Strefa czasowa",
+      "timezonePlaceholder": "Wybierz strefe czasowa",
+      "language": "Jezyk",
+      "languagePlaceholder": "Wybierz jezyk",
+      "languagePolish": "Polski",
+      "languageEnglish": "Angielski",
+      "fiscalYear": "Miesiac poczatku roku obrachunkowego",
+      "fiscalYearPlaceholder": "Wybierz miesiac",
+      "billingEmail": "Email rozliczeniowy",
+      "billingEmailOptional": "(opcjonalne)"
+    }
+  },
+  "Users": {
+    "title": "Czlonkowie zespolu",
+    "subtitle": "Zarzadzaj zespolem i ich rolami",
+    "inviteCta": "Zapros czlonka",
+    "columns": {
+      "name": "Imie",
+      "email": "Email",
+      "role": "Rola",
+      "status": "Status",
+      "actions": "Akcje"
+    },
+    "status": {
+      "active": "Aktywny",
+      "invited": "Zaproszony",
+      "disabled": "Dezaktywowany"
+    },
+    "actions": {
+      "reactivate": "Reaktywuj",
+      "deactivate": "Dezaktywuj"
+    },
+    "roleUpdated": "Rola zaktualizowana",
+    "memberReactivated": "Czlonek reaktywowany",
+    "inviteDialog": {
+      "title": "Zapros nowego czlonka",
+      "body": "Otrzyma email z linkiem do dolaczenia do {orgName}.",
+      "cta": "Wyslij zaproszenie",
+      "sending": "Wysylanie...",
+      "emailLabel": "Email",
+      "roleLabel": "Rola",
+      "rolePlaceholder": "Wybierz role",
+      "successToast": "Zaproszenie wyslane"
+    },
+    "deactivateDialog": {
+      "title": "Dezaktywowac {userName}?",
+      "body": "Natychmiast odbierze dostep. Uzytkownik zostanie wylogowany ze wszystkich sesji. Te akcje mozna cofnac.",
+      "cta": "Dezaktywuj czlonka",
+      "deactivating": "Dezaktywowanie...",
+      "cancel": "Anuluj",
+      "successToast": "{userName} zostal dezaktywowany"
+    },
+    "emptyState": {
+      "heading": "Brak czlonkow zespolu",
+      "body": "Zapros zespol, aby rozpoczac wspolprace."
+    },
+    "roles": {
+      "admin": "Admin",
+      "finance_admin": "Admin finansowy",
+      "ops_manager": "Kierownik operacyjny",
+      "team_manager": "Kierownik zespolu",
+      "legal_compliance_viewer": "Prawny/Compliance",
+      "it_admin": "Admin IT",
+      "external_accountant": "Ksiegowy",
+      "readonly": "Tylko odczyt",
+      "owner": "Wlasciciel",
+      "member": "Czlonek"
+    }
+  },
+  "Errors": {
+    "notFound": {
+      "code": "404",
+      "heading": "Strona nie znaleziona",
+      "body": "Strona, ktorej szukasz, nie istnieje lub zostala przeniesiona.",
+      "cta": "Przejdz do pulpitu"
+    },
+    "serverError": {
+      "code": "500",
+      "heading": "Cos poszlo nie tak",
+      "body": "Pracujemy nad naprawieniem tego. Sprobuj ponownie za chwile.",
+      "cta": "Sprobuj ponownie"
+    },
+    "unauthorized": {
+      "code": "403",
+      "heading": "Brak dostepu",
+      "body": "Nie masz uprawnien do wyswietlenia tej strony. Skontaktuj sie z administratorem, jesli uwazasz, ze to blad.",
+      "cta": "Przejdz do pulpitu"
+    }
+  },
+  "Validation": {
+    "required": "To pole jest wymagane",
+    "invalidEmail": "Podaj prawidlowy adres email",
+    "passwordTooShort": "Haslo musi miec co najmniej 8 znakow",
+    "orgNameTooShort": "Nazwa organizacji musi miec co najmniej 2 znaki"
+  },
+  "Common": {
+    "networkError": "Blad polaczenia. Sprawdz internet i sprobuj ponownie.",
+    "signOut": "Wyloguj sie",
+    "settings": "Ustawienia",
+    "darkMode": "Tryb ciemny",
+    "density": "Tryb kompaktowy",
+    "language": "Jezyk"
+  }
 }

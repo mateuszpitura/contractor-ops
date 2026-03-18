@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   SidebarMenu,
   SidebarMenuButton,
@@ -9,15 +8,18 @@ import {
 } from "@/components/ui/sidebar";
 import { navigationItems } from "@/lib/navigation";
 import { usePermissions } from "@/hooks/use-permissions";
+import { Link, usePathname } from "@/i18n/navigation";
 
 /**
  * Sidebar navigation items filtered by the user's role permissions.
  * Unauthorized items are completely hidden (not disabled/grayed).
  * Active item shows Indigo highlight.
+ * Labels are resolved from translation keys.
  */
 export function NavItems() {
   const pathname = usePathname();
   const { can } = usePermissions();
+  const t = useTranslations("Navigation");
 
   // Filter items by permission. Null permission = always visible.
   const visibleItems = navigationItems.filter((item) => {
@@ -32,15 +34,17 @@ export function NavItems() {
         const isActive =
           pathname === item.href || pathname.startsWith(`${item.href}/`);
 
+        const label = t(item.key as Parameters<typeof t>[0]);
+
         return (
           <SidebarMenuItem key={item.key}>
             <SidebarMenuButton
               render={<Link href={item.href} />}
               isActive={isActive}
-              tooltip={item.label}
+              tooltip={label}
             >
               <item.icon className="h-4 w-4" />
-              <span>{item.label}</span>
+              <span>{label}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         );

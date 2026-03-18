@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 import { trpc } from "@/trpc/init";
 import { usePermissions } from "@/hooks/use-permissions";
@@ -33,19 +34,6 @@ type Member = {
   role?: string | null;
   status?: string | null;
   createdAt?: string | null;
-};
-
-const roleLabels: Record<string, string> = {
-  admin: "Admin",
-  finance_admin: "Finance admin",
-  ops_manager: "Ops manager",
-  team_manager: "Team manager",
-  legal_compliance_viewer: "Legal / compliance",
-  it_admin: "IT admin",
-  external_accountant: "External accountant",
-  readonly: "Read-only",
-  owner: "Owner",
-  member: "Member",
 };
 
 const roleBadgeColors: Record<string, string> = {
@@ -90,6 +78,7 @@ function displayStatus(member: Member): string {
 }
 
 export function UsersTable() {
+  const t = useTranslations("Users");
   const queryClient = useQueryClient();
   const { can } = usePermissions();
   const canManageMembers = can("member", ["update"]);
@@ -111,7 +100,7 @@ export function UsersTable() {
   const updateRoleMutation = useMutation(
     trpc.user.updateRole.mutationOptions({
       onSuccess: () => {
-        toast.success("Role updated");
+        toast.success(t("roleUpdated"));
         queryClient.invalidateQueries({ queryKey: trpc.user.list.queryKey() });
       },
       onError: (error: unknown) => {
@@ -127,7 +116,7 @@ export function UsersTable() {
   const reactivateMutation = useMutation(
     trpc.user.reactivate.mutationOptions({
       onSuccess: () => {
-        toast.success("Member reactivated");
+        toast.success(t("memberReactivated"));
         queryClient.invalidateQueries({ queryKey: trpc.user.list.queryKey() });
       },
       onError: (error: unknown) => {
@@ -146,12 +135,12 @@ export function UsersTable() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>{t("columns.name")}</TableHead>
+              <TableHead>{t("columns.email")}</TableHead>
+              <TableHead>{t("columns.role")}</TableHead>
+              <TableHead>{t("columns.status")}</TableHead>
               {(canManageMembers || canDeleteMembers) && (
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="text-right">{t("columns.actions")}</TableHead>
               )}
             </TableRow>
           </TableHeader>
@@ -176,13 +165,19 @@ export function UsersTable() {
   if (members.length === 0) {
     return (
       <div className="rounded-xl border bg-background py-16 text-center">
-        <h3 className="text-[16px] font-medium">No team members yet</h3>
+        <h3 className="text-[16px] font-medium">{t("emptyState.heading")}</h3>
         <p className="mt-1 text-sm text-muted-foreground">
-          Invite your team to start collaborating.
+          {t("emptyState.body")}
         </p>
       </div>
     );
   }
+
+  const roleLabel = (role: string) =>
+    t(`roles.${role}` as Parameters<typeof t>[0]) ?? role;
+
+  const statusLabel = (status: string) =>
+    t(`status.${status}` as Parameters<typeof t>[0]) ?? status;
 
   return (
     <>
@@ -190,12 +185,12 @@ export function UsersTable() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>{t("columns.name")}</TableHead>
+              <TableHead>{t("columns.email")}</TableHead>
+              <TableHead>{t("columns.role")}</TableHead>
+              <TableHead>{t("columns.status")}</TableHead>
               {(canManageMembers || canDeleteMembers) && (
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="text-right">{t("columns.actions")}</TableHead>
               )}
             </TableRow>
           </TableHeader>
@@ -224,7 +219,7 @@ export function UsersTable() {
                             variant="secondary"
                             className={`${roleBadgeColors[m.role ?? ""] ?? ""} cursor-pointer hover:opacity-80 transition-opacity`}
                           >
-                            {roleLabels[m.role ?? ""] ?? m.role ?? "\u2014"}
+                            {roleLabel(m.role ?? "")}
                           </Badge>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="start">
@@ -241,7 +236,7 @@ export function UsersTable() {
                               }}
                               className={role === m.role ? "font-semibold" : ""}
                             >
-                              {roleLabels[role]}
+                              {roleLabel(role)}
                             </DropdownMenuItem>
                           ))}
                         </DropdownMenuContent>
@@ -251,7 +246,7 @@ export function UsersTable() {
                         variant="secondary"
                         className={roleBadgeColors[m.role ?? ""] ?? ""}
                       >
-                        {roleLabels[m.role ?? ""] ?? m.role ?? "\u2014"}
+                        {roleLabel(m.role ?? "")}
                       </Badge>
                     )}
                   </TableCell>
@@ -260,7 +255,7 @@ export function UsersTable() {
                       variant="secondary"
                       className={statusColors[status] ?? ""}
                     >
-                      {status.charAt(0).toUpperCase() + status.slice(1)}
+                      {statusLabel(status)}
                     </Badge>
                   </TableCell>
                   {(canManageMembers || canDeleteMembers) && (
@@ -274,7 +269,7 @@ export function UsersTable() {
                           }
                           disabled={reactivateMutation.isPending}
                         >
-                          Reactivate
+                          {t("actions.reactivate")}
                         </Button>
                       ) : !isDisabled && canDeleteMembers ? (
                         <Button
@@ -287,7 +282,7 @@ export function UsersTable() {
                             })
                           }
                         >
-                          Deactivate
+                          {t("actions.deactivate")}
                         </Button>
                       ) : null}
                     </TableCell>

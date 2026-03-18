@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,14 +14,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { SocialButtons } from "@/components/auth/social-buttons";
 import { authClient } from "@/lib/auth-client";
-
-const registerSchema = z.object({
-  orgName: z.string().min(2, "Organization name must be at least 2 characters"),
-  email: z.string().email("Enter a valid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-});
-
-type RegisterValues = z.infer<typeof registerSchema>;
+import { useRouter } from "@/i18n/navigation";
+import { Link } from "@/i18n/navigation";
 
 /**
  * Registration form with org name, email, password.
@@ -29,8 +23,19 @@ type RegisterValues = z.infer<typeof registerSchema>;
  * and redirects to email verification.
  */
 export function RegisterForm() {
+  const t = useTranslations("Auth.register");
+  const tv = useTranslations("Validation");
+  const tc = useTranslations("Common");
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+
+  const registerSchema = z.object({
+    orgName: z.string().min(2, tv("orgNameTooShort")),
+    email: z.string().email(tv("invalidEmail")),
+    password: z.string().min(8, tv("passwordTooShort")),
+  });
+
+  type RegisterValues = z.infer<typeof registerSchema>;
 
   const {
     register,
@@ -73,9 +78,9 @@ export function RegisterForm() {
         return;
       }
 
-      router.push("/en/verify-email");
+      router.push("/verify-email");
     } catch {
-      toast.error("Connection error. Check your internet and try again.");
+      toast.error(tc("networkError"));
       setIsLoading(false);
     }
   };
@@ -84,21 +89,21 @@ export function RegisterForm() {
     <Card>
       <CardHeader className="space-y-1 text-center">
         <h1 className="text-[28px] font-semibold leading-[1.2] tracking-tight">
-          Create your organization
+          {t("title")}
         </h1>
         <p className="text-sm text-muted-foreground">
-          Set up your workspace to manage contractors
+          {t("subtitle")}
         </p>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="orgName" className="text-[13px]">
-              Organization name
+              {t("orgNameLabel")}
             </Label>
             <Input
               id="orgName"
-              placeholder="Acme Corp"
+              placeholder={t("orgNamePlaceholder")}
               disabled={isLoading}
               {...register("orgName")}
             />
@@ -111,12 +116,12 @@ export function RegisterForm() {
 
           <div className="space-y-2">
             <Label htmlFor="email" className="text-[13px]">
-              Work email
+              {t("emailLabel")}
             </Label>
             <Input
               id="email"
               type="email"
-              placeholder="name@company.com"
+              placeholder={t("emailPlaceholder")}
               disabled={isLoading}
               {...register("email")}
             />
@@ -129,13 +134,13 @@ export function RegisterForm() {
 
           <div className="space-y-2">
             <Label htmlFor="password" className="text-[13px]">
-              Password
+              {t("passwordLabel")}
             </Label>
             <Input
               id="password"
               type="password"
               autoComplete="new-password"
-              placeholder="Min. 8 characters"
+              placeholder={t("passwordPlaceholder")}
               disabled={isLoading}
               {...register("password")}
             />
@@ -150,10 +155,10 @@ export function RegisterForm() {
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating...
+                {t("creating")}
               </>
             ) : (
-              "Create organization"
+              t("cta")
             )}
           </Button>
         </form>
@@ -163,10 +168,10 @@ export function RegisterForm() {
         </div>
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
-          Already have an account?{" "}
-          <a href="/en/login" className="text-primary hover:underline">
-            Sign in
-          </a>
+          {t("hasAccount")}{" "}
+          <Link href="/login" className="text-primary hover:underline">
+            {t("signInLink")}
+          </Link>
         </p>
       </CardContent>
     </Card>

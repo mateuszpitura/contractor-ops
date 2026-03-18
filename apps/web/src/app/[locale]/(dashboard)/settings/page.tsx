@@ -2,7 +2,8 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { OrgSettingsForm } from "@/components/settings/org-settings-form";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/navigation";
 
 /**
  * Organization settings page.
@@ -10,25 +11,26 @@ import { useRouter } from "next/navigation";
  * Only accessible to users with settings.read permission.
  */
 export default function SettingsPage() {
+  const t = useTranslations("Settings");
   const router = useRouter();
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[20px] font-semibold">Organization settings</h1>
+        <h1 className="text-[20px] font-semibold">{t("title")}</h1>
         <p className="text-sm text-muted-foreground">
-          Manage your organization preferences and team
+          {t("subtitle")}
         </p>
       </div>
 
       <Tabs defaultValue="general" className="w-full">
         <TabsList>
-          <TabsTrigger value="general">General</TabsTrigger>
+          <TabsTrigger value="general">{t("tabs.general")}</TabsTrigger>
           <TabsTrigger
             value="members"
-            onClick={() => router.push("/en/settings/members")}
+            onClick={() => router.push("/settings/members")}
           >
-            Members
+            {t("tabs.members")}
           </TabsTrigger>
         </TabsList>
 

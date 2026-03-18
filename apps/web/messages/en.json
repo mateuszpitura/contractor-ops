@@ -1,2 +1,200 @@
 {
+  "Auth": {
+    "register": {
+      "title": "Create your organization",
+      "subtitle": "Set up your workspace to manage contractors",
+      "cta": "Create organization",
+      "creating": "Creating...",
+      "orgNameLabel": "Organization name",
+      "orgNamePlaceholder": "Acme Corp",
+      "emailLabel": "Work email",
+      "emailPlaceholder": "name@company.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Min. 8 characters",
+      "socialDivider": "or continue with",
+      "googleButton": "Google",
+      "microsoftButton": "Microsoft",
+      "hasAccount": "Already have an account?",
+      "signInLink": "Sign in"
+    },
+    "login": {
+      "title": "Sign in to Contractor Ops",
+      "subtitle": "Enter your credentials to access your workspace",
+      "cta": "Sign in",
+      "signingIn": "Signing in...",
+      "magicLinkCta": "Sign in with email link",
+      "magicLinkSending": "Sending link...",
+      "magicLinkSent": "Check your email",
+      "magicLinkSentBody": "We sent a sign-in link to",
+      "magicLinkBack": "Back to sign in",
+      "socialDivider": "or continue with",
+      "emailLabel": "Work email",
+      "emailPlaceholder": "name@company.com",
+      "passwordLabel": "Password",
+      "noAccount": "Don't have an account?",
+      "createOrgLink": "Create organization"
+    },
+    "invite": {
+      "title": "Join {orgName}",
+      "subtitle": "Create your account to join the team",
+      "cta": "Accept and join",
+      "joining": "Joining...",
+      "emailLabel": "Work email",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Min. 8 characters"
+    },
+    "verifyEmail": {
+      "title": "Check your email",
+      "message": "Check your email to verify your account.",
+      "redirect": "You will be redirected to the dashboard after verification.",
+      "backToSignIn": "Back to sign in"
+    }
+  },
+  "Navigation": {
+    "dashboard": "Dashboard",
+    "contractors": "Contractors",
+    "contracts": "Contracts",
+    "workflows": "Workflows",
+    "invoices": "Invoices",
+    "approvals": "Approvals",
+    "payments": "Payments",
+    "reports": "Reports",
+    "integrations": "Integrations",
+    "settings": "Settings"
+  },
+  "TopBar": {
+    "addContractor": "Add contractor",
+    "uploadInvoice": "Upload invoice",
+    "search": "Search",
+    "searchShortcut": "Cmd+K",
+    "notifications": "Notifications"
+  },
+  "Dashboard": {
+    "emptyState": {
+      "heading": "Welcome to Contractor Ops",
+      "body": "Your organization is set up. Start by adding your first contractor.",
+      "cta": "Add contractor"
+    }
+  },
+  "Settings": {
+    "title": "Organization settings",
+    "subtitle": "Manage your organization preferences and team",
+    "tabs": {
+      "general": "General",
+      "members": "Members"
+    },
+    "saveCta": "Save changes",
+    "saving": "Saving...",
+    "savedToast": "Settings saved",
+    "fields": {
+      "orgName": "Organization name",
+      "legalName": "Legal name",
+      "legalNameOptional": "(optional)",
+      "country": "Country",
+      "countryPlaceholder": "Select country",
+      "currency": "Default currency",
+      "currencyPlaceholder": "Select currency",
+      "timezone": "Timezone",
+      "timezonePlaceholder": "Select timezone",
+      "language": "Language",
+      "languagePlaceholder": "Select language",
+      "languagePolish": "Polish",
+      "languageEnglish": "English",
+      "fiscalYear": "Fiscal year start month",
+      "fiscalYearPlaceholder": "Select month",
+      "billingEmail": "Billing email",
+      "billingEmailOptional": "(optional)"
+    }
+  },
+  "Users": {
+    "title": "Team members",
+    "subtitle": "Manage your team and their roles",
+    "inviteCta": "Invite member",
+    "columns": {
+      "name": "Name",
+      "email": "Email",
+      "role": "Role",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "status": {
+      "active": "Active",
+      "invited": "Invited",
+      "disabled": "Disabled"
+    },
+    "actions": {
+      "reactivate": "Reactivate",
+      "deactivate": "Deactivate"
+    },
+    "roleUpdated": "Role updated",
+    "memberReactivated": "Member reactivated",
+    "inviteDialog": {
+      "title": "Invite a new member",
+      "body": "They will receive an email with a link to join {orgName}.",
+      "cta": "Send invite",
+      "sending": "Sending...",
+      "emailLabel": "Email",
+      "roleLabel": "Role",
+      "rolePlaceholder": "Select role",
+      "successToast": "Invitation sent"
+    },
+    "deactivateDialog": {
+      "title": "Deactivate {userName}?",
+      "body": "This will immediately revoke their access. They will be logged out of all sessions. This action can be reversed.",
+      "cta": "Deactivate member",
+      "deactivating": "Deactivating...",
+      "cancel": "Cancel",
+      "successToast": "{userName} has been deactivated"
+    },
+    "emptyState": {
+      "heading": "No team members yet",
+      "body": "Invite your team to start collaborating."
+    },
+    "roles": {
+      "admin": "Admin",
+      "finance_admin": "Finance Admin",
+      "ops_manager": "Ops Manager",
+      "team_manager": "Team Manager",
+      "legal_compliance_viewer": "Legal/Compliance",
+      "it_admin": "IT Admin",
+      "external_accountant": "Accountant",
+      "readonly": "Read Only",
+      "owner": "Owner",
+      "member": "Member"
+    }
+  },
+  "Errors": {
+    "notFound": {
+      "code": "404",
+      "heading": "Page not found",
+      "body": "The page you are looking for does not exist or has been moved.",
+      "cta": "Go to dashboard"
+    },
+    "serverError": {
+      "code": "500",
+      "heading": "Something went wrong",
+      "body": "We are working on fixing this. Please try again in a moment.",
+      "cta": "Try again"
+    },
+    "unauthorized": {
+      "code": "403",
+      "heading": "Access denied",
+      "body": "You do not have permission to view this page. Contact your admin if you think this is an error.",
+      "cta": "Go to dashboard"
+    }
+  },
+  "Validation": {
+    "required": "This field is required",
+    "invalidEmail": "Enter a valid email address",
+    "passwordTooShort": "Password must be at least 8 characters",
+    "orgNameTooShort": "Organization name must be at least 2 characters"
+  },
+  "Common": {
+    "networkError": "Connection error. Check your internet and try again.",
+    "signOut": "Sign out",
+    "settings": "Settings",
+    "darkMode": "Dark mode",
+    "density": "Compact",
+    "language": "Language"
+  }
 }

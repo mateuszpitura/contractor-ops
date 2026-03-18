@@ -3,6 +3,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 import { trpc } from "@/trpc/init";
 import { Button } from "@/components/ui/button";
@@ -34,12 +35,13 @@ export function DeactivateDialog({
   userId,
   userName,
 }: DeactivateDialogProps) {
+  const t = useTranslations("Users.deactivateDialog");
   const queryClient = useQueryClient();
 
   const deactivateMutation = useMutation(
     trpc.user.deactivate.mutationOptions({
       onSuccess: () => {
-        toast.success(`${userName} has been deactivated`);
+        toast.success(t("successToast", { userName }));
         queryClient.invalidateQueries({ queryKey: trpc.user.list.queryKey() });
         onOpenChange(false);
       },
@@ -61,15 +63,14 @@ export function DeactivateDialog({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Deactivate {userName}?</AlertDialogTitle>
+          <AlertDialogTitle>{t("title", { userName })}</AlertDialogTitle>
           <AlertDialogDescription>
-            This will immediately revoke their access. They will be logged out
-            of all sessions. This action can be reversed.
+            {t("body")}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={deactivateMutation.isPending}>
-            Cancel
+            {t("cancel")}
           </AlertDialogCancel>
           <Button
             variant="destructive"
@@ -79,10 +80,10 @@ export function DeactivateDialog({
             {deactivateMutation.isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Deactivating...
+                {t("deactivating")}
               </>
             ) : (
-              "Deactivate member"
+              t("cta")
             )}
           </Button>
         </AlertDialogFooter>

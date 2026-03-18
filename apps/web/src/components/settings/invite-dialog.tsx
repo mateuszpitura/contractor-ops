@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 import { trpc } from "@/trpc/init";
 import { Button } from "@/components/ui/button";
@@ -29,7 +30,7 @@ import {
 } from "@/components/ui/dialog";
 
 const inviteSchema = z.object({
-  email: z.string().email("Enter a valid email address"),
+  email: z.string().email(),
   role: z.enum([
     "admin",
     "finance_admin",
@@ -44,16 +45,16 @@ const inviteSchema = z.object({
 
 type InviteValues = z.infer<typeof inviteSchema>;
 
-const roleOptions: Array<{ value: InviteValues["role"]; label: string }> = [
-  { value: "admin", label: "Admin" },
-  { value: "finance_admin", label: "Finance admin" },
-  { value: "ops_manager", label: "Ops manager" },
-  { value: "team_manager", label: "Team manager" },
-  { value: "legal_compliance_viewer", label: "Legal / compliance (viewer)" },
-  { value: "it_admin", label: "IT admin" },
-  { value: "external_accountant", label: "External accountant" },
-  { value: "readonly", label: "Read-only" },
-];
+const roleKeys = [
+  "admin",
+  "finance_admin",
+  "ops_manager",
+  "team_manager",
+  "legal_compliance_viewer",
+  "it_admin",
+  "external_accountant",
+  "readonly",
+] as const;
 
 export function InviteDialog({
   open,
@@ -62,12 +63,14 @@ export function InviteDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const t = useTranslations("Users.inviteDialog");
+  const tr = useTranslations("Users.roles");
   const queryClient = useQueryClient();
 
   const inviteMutation = useMutation(
     trpc.user.invite.mutationOptions({
       onSuccess: () => {
-        toast.success("Invitation sent");
+        toast.success(t("successToast"));
         queryClient.invalidateQueries({ queryKey: trpc.user.list.queryKey() });
         onOpenChange(false);
       },
@@ -105,16 +108,16 @@ export function InviteDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Invite member</DialogTitle>
+          <DialogTitle>{t("title")}</DialogTitle>
           <DialogDescription>
-            Send an email invitation to join your organization.
+            {t("body", { orgName: "" })}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="invite-email" className="text-[13px]">
-              Email
+              {t("emailLabel")}
             </Label>
             <Input
               id="invite-email"
@@ -130,7 +133,7 @@ export function InviteDialog({
 
           <div className="space-y-2">
             <Label htmlFor="invite-role" className="text-[13px]">
-              Role
+              {t("roleLabel")}
             </Label>
             <Select
               value={watch("role")}
@@ -138,12 +141,12 @@ export function InviteDialog({
               disabled={inviteMutation.isPending}
             >
               <SelectTrigger id="invite-role">
-                <SelectValue placeholder="Select role" />
+                <SelectValue placeholder={t("rolePlaceholder")} />
               </SelectTrigger>
               <SelectContent>
-                {roleOptions.map((r) => (
-                  <SelectItem key={r.value} value={r.value}>
-                    {r.label}
+                {roleKeys.map((role) => (
+                  <SelectItem key={role} value={role}>
+                    {tr(role)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -155,10 +158,10 @@ export function InviteDialog({
               {inviteMutation.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Sending...
+                  {t("sending")}
                 </>
               ) : (
-                "Send invite"
+                t("cta")
               )}
             </Button>
           </DialogFooter>
@@ -167,4 +170,3 @@ export function InviteDialog({
     </Dialog>
   );
 }
-

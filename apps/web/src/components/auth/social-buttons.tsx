@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 import { Loader2 } from "lucide-react";
@@ -10,6 +11,7 @@ import { Loader2 } from "lucide-react";
  * Shared between login, register, and invite accept forms.
  */
 export function SocialButtons() {
+  const t = useTranslations("Auth.register");
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
 
   const handleSocialLogin = async (provider: "google" | "microsoft") => {
@@ -17,7 +19,7 @@ export function SocialButtons() {
     try {
       await authClient.signIn.social({
         provider,
-        callbackURL: "/en/dashboard",
+        callbackURL: "/",
       });
     } catch {
       setLoadingProvider(null);
@@ -32,7 +34,7 @@ export function SocialButtons() {
         </div>
         <div className="relative flex justify-center text-xs uppercase">
           <span className="bg-background px-2 text-muted-foreground">
-            or continue with
+            {t("socialDivider")}
           </span>
         </div>
       </div>
@@ -67,7 +69,7 @@ export function SocialButtons() {
               />
             </svg>
           )}
-          Google
+          {t("googleButton")}
         </Button>
 
         <Button
@@ -87,7 +89,7 @@ export function SocialButtons() {
               <rect x="11" y="11" width="9" height="9" fill="#FFB900" />
             </svg>
           )}
-          Microsoft
+          {t("microsoftButton")}
         </Button>
       </div>
     </div>

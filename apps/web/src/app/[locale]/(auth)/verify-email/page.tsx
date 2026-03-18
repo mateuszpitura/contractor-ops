@@ -1,5 +1,7 @@
+import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Link } from "@/i18n/navigation";
 
 /**
  * Email verification page shown after registration.
@@ -7,6 +9,8 @@ import { Button } from "@/components/ui/button";
  * via Better Auth verification callback.
  */
 export default function VerifyEmailPage() {
+  const t = useTranslations("Auth.verifyEmail");
+
   return (
     <Card>
       <CardContent className="pt-6 text-center">
@@ -26,17 +30,17 @@ export default function VerifyEmailPage() {
               />
             </svg>
           </div>
-          <h2 className="text-[20px] font-semibold">Check your email</h2>
+          <h2 className="text-[20px] font-semibold">{t("title")}</h2>
           <p className="text-sm text-muted-foreground">
-            Check your email to verify your account.
+            {t("message")}
           </p>
           <p className="text-xs text-muted-foreground">
-            You will be redirected to the dashboard after verification.
+            {t("redirect")}
           </p>
         </div>
         <div className="mt-6">
-          <Button variant="ghost" render={<a href="/en/login" />}>
-            Back to sign in
+          <Button variant="ghost" render={<Link href="/login" />}>
+            {t("backToSignIn")}
           </Button>
         </div>
       </CardContent>
