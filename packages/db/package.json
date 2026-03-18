@@ -1,0 +1,23 @@
+{
+  "name": "@contractor-ops/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "tsc",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push"
+  },
+  "dependencies": {
+    "prisma": "^7.5.0",
+    "@prisma/client": "^7.5.0",
+    "@prisma/adapter-neon": "^7.5.0",
+    "@neondatabase/serverless": "^1.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  }
+}

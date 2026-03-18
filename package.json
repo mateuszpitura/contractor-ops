@@ -1,0 +1,19 @@
+{
+  "name": "contractor-ops",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "test": "turbo test",
+    "db:generate": "turbo db:generate",
+    "db:push": "turbo db:push"
+  },
+  "devDependencies": {
+    "turbo": "^2.4.0",
+    "@biomejs/biome": "^2.4.0",
+    "typescript": "^5.7.0"
+  }
+}
