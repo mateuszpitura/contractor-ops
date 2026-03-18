@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01-01-PLAN.md
-last_updated: "2026-03-18T11:51:42Z"
-last_activity: 2026-03-18 — Completed 01-01 monorepo scaffold + Prisma schema
+stopped_at: Completed 01-02-PLAN.md
+last_updated: "2026-03-18T12:07:09Z"
+last_activity: 2026-03-18 — Completed 01-02 Better Auth + RBAC + tRPC v11
 progress:
   total_phases: 10
   completed_phases: 0
   total_plans: 39
-  completed_plans: 1
-  percent: 3
+  completed_plans: 2
+  percent: 5
 ---
 
 # Project State
@@ -26,28 +26,28 @@ See: .planning/PROJECT.md (updated 2026-03-18)
 ## Current Position
 
 Phase: 1 of 10 (Foundation & Auth)
-Plan: 1 of 4 in current phase
+Plan: 2 of 4 in current phase
 Status: Executing
-Last activity: 2026-03-18 — Completed 01-01 monorepo scaffold + Prisma schema
+Last activity: 2026-03-18 — Completed 01-02 Better Auth + RBAC + tRPC v11
 
-Progress: [██░░░░░░░░] 3%
+Progress: [██░░░░░░░░] 5%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 12min
-- Total execution time: 0.2 hours
+- Total plans completed: 2
+- Average duration: 10min
+- Total execution time: 0.4 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-foundation-auth | 1/4 | 12min | 12min |
+| 01-foundation-auth | 2/4 | 21min | 10min |
 
 **Recent Trend:**
-- Last 5 plans: 12min
-- Trend: baseline
+- Last 5 plans: 12min, 9min
+- Trend: improving
 
 *Updated after each plan completion*
 
@@ -64,6 +64,9 @@ Recent decisions affecting current work:
 - [01-01]: Integer grosze for all monetary fields (Int type) — eliminates floating-point precision risk
 - [01-01]: Prisma 7 multi-file schema with --schema flag (prisma.config.ts deferred due to Node 24 parse issue)
 - [01-01]: Soft-delete scoped to 5 core models: Organization, Contractor, Contract, Invoice, Document
+- [01-02]: Prisma adapter for Better Auth database layer — consistent with Prisma 7 schema
+- [01-02]: Organization metadata for extended settings (legalName, fiscalYear, billing, language) in Better Auth org metadata field
+- [01-02]: Sensitive action re-auth guard: 5-minute session age threshold for role changes, deactivation, settings
 
 ### Pending Todos
 
@@ -77,6 +80,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-18T11:51:42Z
-Stopped at: Completed 01-01-PLAN.md
-Resume file: .planning/phases/01-foundation-auth/01-02-PLAN.md
+Last session: 2026-03-18T12:07:09Z
+Stopped at: Completed 01-02-PLAN.md
+Resume file: .planning/phases/01-foundation-auth/01-03-PLAN.md
