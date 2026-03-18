@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01-03-PLAN.md (pending human-verify)
-last_updated: "2026-03-18T13:27:55Z"
-last_activity: 2026-03-18 — Completed 01-03 Auth screens, app shell, user management
+stopped_at: Completed 01-04-PLAN.md — Phase 1 complete
+last_updated: "2026-03-18T22:01:00Z"
+last_activity: 2026-03-18 — Completed 01-04 i18n integration, Phase 1 complete
 progress:
   total_phases: 10
   completed_phases: 0
   total_plans: 4
-  completed_plans: 3
-  percent: 5
+  completed_plans: 4
+  percent: 10
 ---
 
 # Project State
@@ -26,28 +26,28 @@ See: .planning/PROJECT.md (updated 2026-03-18)
 ## Current Position
 
 Phase: 1 of 10 (Foundation & Auth)
-Plan: 3 of 4 in current phase
-Status: Executing
-Last activity: 2026-03-18 — Completed 01-03 Auth screens, app shell, user management
+Plan: 4 of 4 in current phase (COMPLETE)
+Status: Phase Complete
+Last activity: 2026-03-18 — Completed 01-04 i18n integration (Polish/English)
 
-Progress: [████████░░] 75%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
-- Average duration: 8min
-- Total execution time: 0.4 hours
+- Total plans completed: 4
+- Average duration: 9min
+- Total execution time: 0.6 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-foundation-auth | 3/4 | 25min | 8min |
+| 01-foundation-auth | 4/4 | 35min | 9min |
 
 **Recent Trend:**
-- Last 5 plans: 12min, 9min, 4min
-- Trend: improving
+- Last 5 plans: 12min, 9min, 4min, 10min
+- Trend: stable
 
 *Updated after each plan completion*
 
@@ -69,6 +69,8 @@ Recent decisions affecting current work:
 - [01-02]: Sensitive action re-auth guard: 5-minute session age threshold for role changes, deactivation, settings
 - [01-03]: Simple shadcn Table for user management (not TanStack DataTable) — sufficient for v1 team sizes
 - [01-03]: Role badge colors via Tailwind utility classes with dark mode variants for all 8 roles
+- [01-04]: Polish (pl) as default locale with next-intl 4.8.3, middleware for locale routing
+- [01-04]: Translation structure: 9 namespaces (Auth, Navigation, TopBar, Dashboard, Settings, Users, Errors, Validation, Common)
 
 ### Pending Todos
 
@@ -82,6 +84,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-18T13:27:55Z
-Stopped at: Completed 01-03-PLAN.md (pending human-verify checkpoint)
-Resume file: .planning/phases/01-foundation-auth/01-04-PLAN.md
+Last session: 2026-03-18T22:01:00Z
+Stopped at: Completed 01-04-PLAN.md — Phase 1 (Foundation & Auth) complete
+Resume file: Next phase (02-*)
