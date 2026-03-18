@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { tenantStore } from "@contractor-ops/db";
-import { t } from "../init.js";
-import { authedProcedure } from "./auth.js";
+import { t } from "../init";
+import { authedProcedure } from "./auth";
 
 /**
  * Tenant middleware: enforces an active organization and sets up

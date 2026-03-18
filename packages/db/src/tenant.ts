@@ -1,5 +1,5 @@
 import { AsyncLocalStorage } from "node:async_hooks";
-import type { PrismaClient } from "../generated/prisma/client/index.js";
+import type { PrismaClient } from "../generated/prisma/client/index";
 
 interface TenantContext {
   organizationId: string;

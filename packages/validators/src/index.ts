@@ -1,17 +1,17 @@
 export {
   createOrganizationSchema,
   updateOrganizationSettingsSchema,
-} from "./organization.js";
+} from "./organization";
 export type {
   CreateOrganizationInput,
   UpdateOrganizationSettingsInput,
-} from "./organization.js";
+} from "./organization";
 
 export {
   inviteUserSchema,
   updateUserRoleSchema,
-} from "./user.js";
+} from "./user";
 export type {
   InviteUserInput,
   UpdateUserRoleInput,
-} from "./user.js";
+} from "./user";

@@ -1,7 +1,7 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { makeQueryClient } from "./query-client.js";
+import { makeQueryClient } from "./query-client";
 
 let browserQueryClient: QueryClient | undefined;
 

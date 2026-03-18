@@ -1,1 +1,1 @@
-export { authClient } from "@contractor-ops/auth";
+export { authClient } from "@contractor-ops/auth/client";

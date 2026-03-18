@@ -1,7 +1,7 @@
-import { router } from "./init.js";
-import { organizationRouter } from "./routers/organization.js";
-import { userRouter } from "./routers/user.js";
-import { settingsRouter } from "./routers/settings.js";
+import { router } from "./init";
+import { organizationRouter } from "./routers/organization";
+import { userRouter } from "./routers/user";
+import { settingsRouter } from "./routers/settings";
 
 /**
  * Root tRPC router merging all sub-routers.

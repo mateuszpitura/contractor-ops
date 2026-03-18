@@ -1,5 +1,5 @@
-export { appRouter } from "./root.js";
-export type { AppRouter } from "./root.js";
-export { createContext } from "./context.js";
-export type { Context } from "./context.js";
-export { createCallerFactory } from "./init.js";
+export { appRouter } from "./root";
+export type { AppRouter } from "./root";
+export { createContext } from "./context";
+export type { Context } from "./context";
+export { createCallerFactory } from "./init";

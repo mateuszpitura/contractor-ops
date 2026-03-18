@@ -1,8 +1,8 @@
 import { TRPCError } from "@trpc/server";
 import { auth } from "@contractor-ops/auth";
 import type { Permission } from "@contractor-ops/auth";
-import { t } from "../init.js";
-import { tenantProcedure } from "./tenant.js";
+import { t } from "../init";
+import { tenantProcedure } from "./tenant";
 
 /**
  * RBAC middleware factory: creates a middleware that checks if the current

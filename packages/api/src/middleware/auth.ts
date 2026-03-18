@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { auth } from "@contractor-ops/auth";
 import type { Session } from "@contractor-ops/auth";
-import { t, publicProcedure } from "../init.js";
+import { t, publicProcedure } from "../init";
 
 /**
  * Auth middleware: validates the session via Better Auth.

@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
-import { t } from "../init.js";
-import { tenantProcedure } from "./tenant.js";
+import { t } from "../init";
+import { tenantProcedure } from "./tenant";
 
 const SENSITIVE_ACTION_MAX_AGE_MS = 5 * 60 * 1000; // 5 minutes
 

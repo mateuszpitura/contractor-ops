@@ -2,7 +2,7 @@ import { createTRPCClient, httpBatchLink } from "@trpc/client";
 import { createTRPCOptionsProxy } from "@trpc/tanstack-react-query";
 import type { AppRouter } from "@contractor-ops/api";
 import superjson from "superjson";
-import { makeQueryClient } from "./query-client.js";
+import { makeQueryClient } from "./query-client";
 
 /**
  * tRPC client initialized with httpBatchLink and superjson transformer.

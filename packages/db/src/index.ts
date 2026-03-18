@@ -1,8 +1,8 @@
-export { prisma, PrismaClient } from "./client.js";
-export { withTenantScope, tenantStore } from "./tenant.js";
-export { withSoftDelete } from "./soft-delete.js";
+export { prisma, PrismaClient } from "./client";
+export { withTenantScope, tenantStore } from "./tenant";
+export { withSoftDelete } from "./soft-delete";
 
-export type { Prisma } from "../generated/prisma/client/index.js";
+export type { Prisma } from "../generated/prisma/client";
 
 /**
  * Creates a tenant-scoped Prisma client with soft-delete support.
@@ -10,10 +10,11 @@ export type { Prisma } from "../generated/prisma/client/index.js";
  * before executing queries.
  */
 export function createTenantClient() {
-  // Lazy import to avoid circular dependencies
-  const { prisma: basePrisma } = require("./client.js");
-  const { withTenantScope: applyTenantScope } = require("./tenant.js");
-  const { withSoftDelete: applySoftDelete } = require("./soft-delete.js");
+  // Uses synchronous imports to avoid type gymnastics
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { prisma: basePrisma } = require("./client");
+  const { withTenantScope: applyTenantScope } = require("./tenant");
+  const { withSoftDelete: applySoftDelete } = require("./soft-delete");
 
   return applySoftDelete(applyTenantScope(basePrisma));
 }

@@ -1,0 +1,221 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Contractor Ops — Indigo accent theme
+ * Based on shadcn default with Zinc neutral + Indigo primary override.
+ * Aesthetic reference: Stripe Dashboard.
+ *
+ * --primary: Indigo-600 (light) / Indigo-400 (dark)
+ * --destructive: Red-500 (light) / Red-400 (dark)
+ * Semantic: --success (Green-600), --warning (Amber-500), --info (Blue-500)
+ */
+
+:root {
+    /* Backgrounds */
+    --background: oklch(1 0 0);
+    --foreground: oklch(0.145 0 0);
+
+    /* Card */
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.145 0 0);
+
+    /* Popover */
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.145 0 0);
+
+    /* Primary — Indigo-600: hsl(238, 73%, 56%) */
+    --primary: oklch(0.507 0.215 264.05);
+    --primary-foreground: oklch(0.985 0 0);
+
+    /* Secondary */
+    --secondary: oklch(0.97 0 0);
+    --secondary-foreground: oklch(0.205 0 0);
+
+    /* Muted — cool gray for sidebar, cards, table headers */
+    --muted: oklch(0.967 0.001 286.375);
+    --muted-foreground: oklch(0.556 0 0);
+
+    /* Accent — subtle hover background */
+    --accent: oklch(0.97 0 0);
+    --accent-foreground: oklch(0.205 0 0);
+
+    /* Destructive — Red-500 */
+    --destructive: oklch(0.577 0.245 27.325);
+
+    /* Border / Input / Ring */
+    --border: oklch(0.922 0 0);
+    --input: oklch(0.922 0 0);
+    --ring: oklch(0.507 0.215 264.05);
+
+    /* Chart colors (Indigo palette) */
+    --chart-1: oklch(0.809 0.105 251.813);
+    --chart-2: oklch(0.623 0.214 259.815);
+    --chart-3: oklch(0.546 0.245 262.881);
+    --chart-4: oklch(0.488 0.243 264.376);
+    --chart-5: oklch(0.424 0.199 265.638);
+
+    --radius: 0.625rem;
+
+    /* Sidebar */
+    --sidebar: oklch(0.985 0 0);
+    --sidebar-foreground: oklch(0.145 0 0);
+    --sidebar-primary: oklch(0.507 0.215 264.05);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.97 0 0);
+    --sidebar-accent-foreground: oklch(0.205 0 0);
+    --sidebar-border: oklch(0.922 0 0);
+    --sidebar-ring: oklch(0.507 0.215 264.05);
+
+    /* Semantic colors */
+    --success: oklch(0.586 0.194 142.5);
+    --warning: oklch(0.797 0.176 70.08);
+    --info: oklch(0.584 0.197 254.128);
+}
+
+.dark {
+    /* Backgrounds */
+    --background: oklch(0.145 0.005 286.375);
+    --foreground: oklch(0.985 0 0);
+
+    /* Card */
+    --card: oklch(0.205 0.005 286.375);
+    --card-foreground: oklch(0.985 0 0);
+
+    /* Popover */
+    --popover: oklch(0.205 0.005 286.375);
+    --popover-foreground: oklch(0.985 0 0);
+
+    /* Primary — Indigo-400: hsl(238, 73%, 67%) */
+    --primary: oklch(0.637 0.196 264.05);
+    --primary-foreground: oklch(0.985 0 0);
+
+    /* Secondary */
+    --secondary: oklch(0.269 0 0);
+    --secondary-foreground: oklch(0.985 0 0);
+
+    /* Muted */
+    --muted: oklch(0.269 0.005 286.375);
+    --muted-foreground: oklch(0.708 0 0);
+
+    /* Accent */
+    --accent: oklch(0.269 0 0);
+    --accent-foreground: oklch(0.985 0 0);
+
+    /* Destructive — Red-400 */
+    --destructive: oklch(0.704 0.191 22.216);
+
+    /* Border / Input / Ring */
+    --border: oklch(1 0 0 / 10%);
+    --input: oklch(1 0 0 / 15%);
+    --ring: oklch(0.637 0.196 264.05);
+
+    /* Chart colors */
+    --chart-1: oklch(0.809 0.105 251.813);
+    --chart-2: oklch(0.623 0.214 259.815);
+    --chart-3: oklch(0.546 0.245 262.881);
+    --chart-4: oklch(0.488 0.243 264.376);
+    --chart-5: oklch(0.424 0.199 265.638);
+
+    /* Sidebar */
+    --sidebar: oklch(0.205 0.005 286.375);
+    --sidebar-foreground: oklch(0.985 0 0);
+    --sidebar-primary: oklch(0.637 0.196 264.05);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.269 0 0);
+    --sidebar-accent-foreground: oklch(0.985 0 0);
+    --sidebar-border: oklch(1 0 0 / 10%);
+    --sidebar-ring: oklch(0.637 0.196 264.05);
+
+    /* Semantic colors (dark) */
+    --success: oklch(0.586 0.194 142.5);
+    --warning: oklch(0.797 0.176 70.08);
+    --info: oklch(0.584 0.197 254.128);
+}
+
+@theme inline {
+    --font-sans: var(--font-sans);
+    --font-mono: var(--font-mono);
+
+    --color-sidebar-ring: var(--sidebar-ring);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar: var(--sidebar);
+
+    --color-chart-5: var(--chart-5);
+    --color-chart-4: var(--chart-4);
+    --color-chart-3: var(--chart-3);
+    --color-chart-2: var(--chart-2);
+    --color-chart-1: var(--chart-1);
+
+    --color-ring: var(--ring);
+    --color-input: var(--input);
+    --color-border: var(--border);
+    --color-destructive: var(--destructive);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-accent: var(--accent);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-muted: var(--muted);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-secondary: var(--secondary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-primary: var(--primary);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-popover: var(--popover);
+    --color-card-foreground: var(--card-foreground);
+    --color-card: var(--card);
+    --color-foreground: var(--foreground);
+    --color-background: var(--background);
+
+    /* Semantic color mappings */
+    --color-success: var(--success);
+    --color-warning: var(--warning);
+    --color-info: var(--info);
+
+    --radius-sm: calc(var(--radius) * 0.6);
+    --radius-md: calc(var(--radius) * 0.8);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) * 1.4);
+    --radius-2xl: calc(var(--radius) * 1.8);
+    --radius-3xl: calc(var(--radius) * 2.2);
+    --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+@layer base {
+    * {
+        @apply border-border outline-ring/50;
+    }
+    body {
+        @apply bg-background text-foreground;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+    html {
+        @apply font-sans;
+    }
+}
+
+/* Information density: compact mode */
+.density-compact {
+    font-size: 13px;
+}
+
+.density-compact table td,
+.density-compact table th {
+    padding: 8px;
+    height: 32px;
+}
+
+/* Default (comfortable) table density */
+table td,
+table th {
+    padding: 16px;
+    height: 40px;
+}

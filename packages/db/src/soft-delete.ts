@@ -1,4 +1,4 @@
-import type { PrismaClient } from "../generated/prisma/client/index.js";
+import type { PrismaClient } from "../generated/prisma/client/index";
 
 /**
  * Models that support soft delete (have a deletedAt field).

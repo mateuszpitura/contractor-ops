@@ -5,8 +5,8 @@ import { admin } from "better-auth/plugins/admin";
 import { magicLink } from "better-auth/plugins/magic-link";
 import { organization } from "better-auth/plugins/organization";
 import { prisma } from "@contractor-ops/db";
-import { ac } from "./permissions.js";
-import { roles } from "./roles.js";
+import { ac } from "./permissions";
+import { roles } from "./roles";
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {

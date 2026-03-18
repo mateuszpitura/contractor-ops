@@ -1,10 +1,10 @@
 import { z } from "zod";
 import { auth } from "@contractor-ops/auth";
 import { inviteUserSchema, updateUserRoleSchema } from "@contractor-ops/validators";
-import { router } from "../init.js";
-import { tenantProcedure } from "../middleware/tenant.js";
-import { requirePermission } from "../middleware/rbac.js";
-import { sensitiveActionProcedure } from "../middleware/sensitive.js";
+import { router } from "../init";
+import { tenantProcedure } from "../middleware/tenant";
+import { requirePermission } from "../middleware/rbac";
+import { sensitiveActionProcedure } from "../middleware/sensitive";
 
 export const userRouter = router({
   /**
