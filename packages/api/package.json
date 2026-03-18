@@ -10,7 +10,12 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@trpc/server": "^11.0.0"
+    "@contractor-ops/auth": "workspace:*",
+    "@contractor-ops/db": "workspace:*",
+    "@contractor-ops/validators": "workspace:*",
+    "@trpc/server": "^11.0.0",
+    "superjson": "^2.2.0",
+    "zod": "^3.23.0"
   },
   "devDependencies": {
     "typescript": "^5.7.0"

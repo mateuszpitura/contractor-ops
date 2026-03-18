@@ -10,11 +10,16 @@
     "lint": "biome check ."
   },
   "dependencies": {
+    "@contractor-ops/api": "workspace:*",
     "@contractor-ops/auth": "workspace:*",
+    "@tanstack/react-query": "^5.60.0",
+    "@trpc/client": "^11.0.0",
+    "@trpc/tanstack-react-query": "^11.0.0",
     "better-auth": "^1.5.0",
     "next": "^15.3.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "superjson": "^2.2.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
