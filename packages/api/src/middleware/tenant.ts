@@ -1,4 +1,5 @@
 import { TRPCError } from "@trpc/server";
+import { tenantStore } from "@contractor-ops/db";
 import { t } from "../init.js";
 import { authedProcedure } from "./auth.js";
 
@@ -8,6 +9,8 @@ import { authedProcedure } from "./auth.js";
  *
  * Must be chained after auth middleware (session must exist in ctx).
  * Throws FORBIDDEN if no active organization is set in the session.
+ * Wraps the handler in tenantStore.run() so Prisma Client Extension
+ * can automatically scope all queries to the active organization.
  */
 const tenantMiddleware = t.middleware(async ({ ctx, next }) => {
   if (!ctx.session || !ctx.user) {
@@ -23,9 +26,11 @@ const tenantMiddleware = t.middleware(async ({ ctx, next }) => {
     });
   }
 
-  return next({
-    ctx: { ...ctx, organizationId: orgId },
-  });
+  return tenantStore.run({ organizationId: orgId }, () =>
+    next({
+      ctx: { ...ctx, organizationId: orgId },
+    }),
+  );
 });
 
 /**
