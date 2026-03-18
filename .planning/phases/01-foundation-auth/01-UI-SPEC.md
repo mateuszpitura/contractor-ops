@@ -72,7 +72,7 @@ Exceptions: Sidebar width expanded = 240px, sidebar width collapsed = 48px. Mini
 | Role | Size | Weight | Line Height | Usage |
 |------|------|--------|-------------|-------|
 | Body | 14px | 400 (regular) | 1.5 | Default text, table cells, form inputs, descriptions |
-| Label | 13px | 500 (medium) | 1.4 | Form labels, table headers, sidebar nav items, metadata |
+| Label | 13px | 400 (regular) | 1.4 | Form labels, table headers, sidebar nav items, metadata |
 | Heading | 20px | 600 (semibold) | 1.2 | Page titles, card headings, settings section titles |
 | Display | 28px | 600 (semibold) | 1.2 | Auth page titles ("Create your organization", "Sign in") |
 
@@ -114,6 +114,17 @@ All other interactive elements use `--foreground` or `--muted-foreground` with h
 
 ---
 
+## Visual Focal Points
+
+| Screen | Primary Visual Anchor |
+|--------|-----------------------|
+| Auth (register) | The Display-size heading "Create your organization" paired with the Indigo primary CTA button centered in a Card on a white/dark background -- the card with its 3xl vertical spacing creates a single focal column. |
+| Auth (login) | The Display-size heading "Sign in to Contractor Ops" paired with the Indigo "Sign in" CTA button, same centered Card layout as register. |
+| Dashboard (empty state) | The centered empty state illustration area with "Welcome to Contractor Ops" Heading and the Indigo "Add contractor" CTA button, drawing the eye to the single next action. |
+| Dashboard (populated, future) | The main content area table/cards occupying the 60% dominant surface, with the sidebar providing persistent navigation context at 30% secondary. |
+
+---
+
 ## Copywriting Contract
 
 ### Auth Screens
@@ -132,6 +143,8 @@ All other interactive elements use `--foreground` or `--muted-foreground` with h
 | Email verification banner | Check your email to verify your account. | Sprawdz email, aby zweryfikowac konto. |
 | Invite accept page title | Join {orgName} | Dolacz do {orgName} |
 | Invite accept CTA | Accept and join | Zaakceptuj i dolacz |
+
+**Note on "Sign in" CTA:** The login CTA uses the verb-only label "Sign in" intentionally. The page title "Sign in to Contractor Ops" provides full context, and "Sign in" is a universally understood auth action that does not require a noun to be unambiguous. Adding a noun (e.g., "Sign in to account") would add unnecessary length without improving clarity.
 
 ### App Shell
 
