@@ -172,13 +172,101 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (Populated during roadmap creation) | | |
+| ORG-01 | Phase 1 | Pending |
+| ORG-02 | Phase 1 | Pending |
+| ORG-03 | Phase 1 | Pending |
+| ORG-04 | Phase 1 | Pending |
+| ORG-05 | Phase 1 | Pending |
+| ORG-06 | Phase 1 | Pending |
+| ORG-07 | Phase 1 | Pending |
+| ORG-08 | Phase 6 | Pending |
+| ORG-09 | Phase 4 | Pending |
+| ORG-10 | Phase 9 | Pending |
+| CONT-01 | Phase 2 | Pending |
+| CONT-02 | Phase 2 | Pending |
+| CONT-03 | Phase 2 | Pending |
+| CONT-04 | Phase 2 | Pending |
+| CONT-05 | Phase 2 | Pending |
+| CONT-06 | Phase 2 | Pending |
+| CONT-07 | Phase 2 | Pending |
+| CONT-08 | Phase 2 | Pending |
+| CONT-09 | Phase 2 | Pending |
+| CNTR-01 | Phase 3 | Pending |
+| CNTR-02 | Phase 3 | Pending |
+| CNTR-03 | Phase 3 | Pending |
+| CNTR-04 | Phase 3 | Pending |
+| CNTR-05 | Phase 3 | Pending |
+| DOCS-01 | Phase 3 | Pending |
+| DOCS-02 | Phase 3 | Pending |
+| DOCS-03 | Phase 3 | Pending |
+| DOCS-04 | Phase 3 | Pending |
+| WKFL-01 | Phase 4 | Pending |
+| WKFL-02 | Phase 4 | Pending |
+| WKFL-03 | Phase 4 | Pending |
+| WKFL-04 | Phase 4 | Pending |
+| WKFL-05 | Phase 4 | Pending |
+| WKFL-06 | Phase 4 | Pending |
+| WKFL-07 | Phase 4 | Pending |
+| WKFL-08 | Phase 4 | Pending |
+| WKFL-09 | Phase 4 | Pending |
+| WKFL-10 | Phase 4 | Pending |
+| INV-01 | Phase 5 | Pending |
+| INV-02 | Phase 5 | Pending |
+| INV-03 | Phase 5 | Pending |
+| INV-04 | Phase 5 | Pending |
+| INV-05 | Phase 5 | Pending |
+| INV-06 | Phase 5 | Pending |
+| INV-07 | Phase 5 | Pending |
+| INV-08 | Phase 5 | Pending |
+| INV-09 | Phase 5 | Pending |
+| INV-10 | Phase 5 | Pending |
+| APPR-01 | Phase 6 | Pending |
+| APPR-02 | Phase 6 | Pending |
+| APPR-03 | Phase 6 | Pending |
+| APPR-04 | Phase 6 | Pending |
+| APPR-05 | Phase 6 | Pending |
+| APPR-06 | Phase 6 | Pending |
+| APPR-07 | Phase 6 | Pending |
+| APPR-08 | Phase 6 | Pending |
+| APPR-09 | Phase 6 | Pending |
+| PAY-01 | Phase 8 | Pending |
+| PAY-02 | Phase 8 | Pending |
+| PAY-03 | Phase 8 | Pending |
+| PAY-04 | Phase 8 | Pending |
+| PAY-05 | Phase 8 | Pending |
+| PAY-06 | Phase 8 | Pending |
+| NOTF-01 | Phase 7 | Pending |
+| NOTF-02 | Phase 7 | Pending |
+| NOTF-03 | Phase 7 | Pending |
+| SLCK-01 | Phase 7 | Pending |
+| SLCK-02 | Phase 7 | Pending |
+| SLCK-03 | Phase 7 | Pending |
+| DASH-01 | Phase 9 | Pending |
+| DASH-02 | Phase 9 | Pending |
+| DASH-03 | Phase 9 | Pending |
+| DASH-04 | Phase 9 | Pending |
+| DASH-05 | Phase 9 | Pending |
+| RPT-01 | Phase 9 | Pending |
+| RPT-02 | Phase 9 | Pending |
+| RPT-03 | Phase 9 | Pending |
+| RPT-04 | Phase 9 | Pending |
+| RPT-05 | Phase 9 | Pending |
+| RPT-06 | Phase 9 | Pending |
+| IMP-01 | Phase 10 | Pending |
+| IMP-02 | Phase 10 | Pending |
+| IMP-03 | Phase 10 | Pending |
+| I18N-01 | Phase 1 | Pending |
+| I18N-02 | Phase 1 | Pending |
+| ONBD-01 | Phase 10 | Pending |
+| ONBD-02 | Phase 10 | Pending |
+| SRCH-01 | Phase 10 | Pending |
+| SRCH-02 | Phase 10 | Pending |
 
 **Coverage:**
-- v1 requirements: 68 total
-- Mapped to phases: 0
-- Unmapped: 68 ⚠️
+- v1 requirements: 89 total
+- Mapped to phases: 89
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-18*
-*Last updated: 2026-03-18 after initial definition*
+*Last updated: 2026-03-18 after roadmap creation*
