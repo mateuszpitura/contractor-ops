@@ -10,7 +10,7 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Organization & Access
 
 - [x] **ORG-01**: User can create a new organization with name, country, default currency, and timezone
-- [ ] **ORG-02**: Admin can configure organization settings (branding, fiscal year, notification defaults)
+- [x] **ORG-02**: Admin can configure organization settings (branding, fiscal year, notification defaults)
 - [x] **ORG-03**: Admin can invite users by email with a specific role assignment
 - [x] **ORG-04**: Invited user can accept invitation and create their account
 - [x] **ORG-05**: Admin can deactivate a user, immediately revoking their access
@@ -173,7 +173,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | ORG-01 | Phase 1 | Complete |
-| ORG-02 | Phase 1 | Pending |
+| ORG-02 | Phase 1 | Complete |
 | ORG-03 | Phase 1 | Complete |
 | ORG-04 | Phase 1 | Complete |
 | ORG-05 | Phase 1 | Complete |
