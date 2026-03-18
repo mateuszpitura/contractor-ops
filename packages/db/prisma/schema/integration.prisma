@@ -1,0 +1,130 @@
+// IntegrationConnection, IntegrationSyncLog, ExternalLink, WebhookDelivery
+
+model IntegrationConnection {
+  id                String            @id @default(cuid())
+  organizationId    String
+  provider          IntegrationProvider
+  status            IntegrationStatus @default(DISCONNECTED)
+  displayName       String?
+  configJson        Json?
+  credentialsRef    String
+  connectedByUserId String
+  connectedAt       DateTime          @default(now())
+  lastSyncAt        DateTime?
+  lastSuccessAt     DateTime?
+  lastErrorAt       DateTime?
+  lastErrorMessage  String?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  organization      Organization @relation(fields: [organizationId], references: [id])
+  connectedBy       User         @relation(fields: [connectedByUserId], references: [id])
+
+  externalLinks     ExternalLink[]
+  syncLogs          IntegrationSyncLog[]
+
+  @@index([organizationId])
+  @@index([organizationId, provider, status])
+}
+
+model ExternalLink {
+  id                      String     @id @default(cuid())
+  organizationId          String
+  integrationConnectionId String
+  entityType              EntityType
+  entityId                String
+  externalType            String
+  externalId              String
+  externalUrl             String?
+  metadataJson            Json?
+  createdAt               DateTime   @default(now())
+  updatedAt               DateTime   @updatedAt
+
+  organization            Organization          @relation(fields: [organizationId], references: [id])
+  integrationConnection   IntegrationConnection @relation(fields: [integrationConnectionId], references: [id])
+
+  @@index([organizationId])
+  @@index([organizationId, entityType, entityId])
+  @@index([organizationId, integrationConnectionId])
+}
+
+model IntegrationSyncLog {
+  id                      String      @id @default(cuid())
+  organizationId          String
+  integrationConnectionId String
+  direction               SyncDirection
+  syncType                String
+  entityType              EntityType?
+  entityId                String?
+  status                  SyncStatus
+  requestPayloadJson      Json?
+  responsePayloadJson     Json?
+  errorMessage            String?
+  startedAt               DateTime    @default(now())
+  completedAt             DateTime?
+
+  organization            Organization          @relation(fields: [organizationId], references: [id])
+  integrationConnection   IntegrationConnection @relation(fields: [integrationConnectionId], references: [id])
+
+  @@index([organizationId])
+  @@index([organizationId, integrationConnectionId, startedAt])
+  @@index([organizationId, status])
+}
+
+model WebhookDelivery {
+  id                      String                @id @default(cuid())
+  organizationId          String
+  integrationConnectionId String?
+  provider                IntegrationProvider
+  eventType               String
+  deliveryStatus          WebhookDeliveryStatus @default(RECEIVED)
+  signatureValid          Boolean?
+  payloadJson             Json
+  receivedAt              DateTime              @default(now())
+  processedAt             DateTime?
+  errorMessage            String?
+
+  organization            Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+  @@index([organizationId, provider, receivedAt])
+}
+
+// --- Enums ---
+
+enum IntegrationProvider {
+  SLACK
+  GOOGLE_WORKSPACE
+  MICROSOFT_365
+  JIRA
+  ESIGN
+  KSEF
+  ACCOUNTING
+  OPEN_BANKING
+  GITHUB
+  GITLAB
+}
+
+enum IntegrationStatus {
+  CONNECTED
+  DISCONNECTED
+  ERROR
+  REAUTH_REQUIRED
+}
+
+enum SyncDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum SyncStatus {
+  STARTED
+  SUCCESS
+  FAILED
+}
+
+enum WebhookDeliveryStatus {
+  RECEIVED
+  PROCESSED
+  FAILED
+}

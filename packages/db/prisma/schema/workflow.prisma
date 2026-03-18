@@ -1,0 +1,222 @@
+// WorkflowTemplate, WorkflowTaskTemplate, WorkflowRun,
+// WorkflowTaskRun, WorkflowComment, WorkflowAttachment
+
+model WorkflowTemplate {
+  id                  String                 @id @default(cuid())
+  organizationId      String
+  name                String
+  type                WorkflowTemplateType
+  description         String?
+  version             Int
+  status              WorkflowTemplateStatus @default(DRAFT)
+  appliesToEntityType EntityType
+  createdByUserId     String
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
+
+  organization        Organization @relation(fields: [organizationId], references: [id])
+
+  tasks               WorkflowTaskTemplate[]
+  runs                WorkflowRun[]
+
+  @@index([organizationId])
+  @@index([organizationId, type, status])
+}
+
+model WorkflowTaskTemplate {
+  id                        String           @id @default(cuid())
+  organizationId            String
+  workflowTemplateId        String
+  title                     String
+  description               String?
+  taskType                  WorkflowTaskType
+  sortOrder                 Int
+  required                  Boolean
+  assigneeMode              AssigneeMode
+  assigneeRole              UserRole?
+  assigneeUserId            String?
+  dueOffsetDays             Int?
+  dueOffsetHours            Int?
+  dependsOnTaskTemplateId   String?
+  externalUrl               String?
+  configJson                Json?
+  createdAt                 DateTime         @default(now())
+  updatedAt                 DateTime         @updatedAt
+
+  organization              Organization     @relation(fields: [organizationId], references: [id])
+  workflowTemplate          WorkflowTemplate @relation(fields: [workflowTemplateId], references: [id])
+
+  @@index([organizationId])
+  @@index([organizationId, workflowTemplateId, sortOrder])
+}
+
+model WorkflowRun {
+  id                  String            @id @default(cuid())
+  organizationId      String
+  workflowTemplateId  String
+  entityType          EntityType
+  entityId            String
+  contractorId        String?
+  contractId          String?
+  status              WorkflowRunStatus @default(NOT_STARTED)
+  startedByUserId     String
+  startedAt           DateTime          @default(now())
+  dueAt               DateTime?
+  completedAt         DateTime?
+  cancelledAt         DateTime?
+  cancelReason        String?
+  progressPercent     Int?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  organization        Organization     @relation(fields: [organizationId], references: [id])
+  workflowTemplate    WorkflowTemplate @relation(fields: [workflowTemplateId], references: [id])
+  contractor          Contractor?      @relation(fields: [contractorId], references: [id])
+  contract            Contract?        @relation(fields: [contractId], references: [id])
+  startedBy           User             @relation("WorkflowRunStarter", fields: [startedByUserId], references: [id])
+
+  tasks               WorkflowTaskRun[]
+  comments            WorkflowComment[]
+  attachments         WorkflowAttachment[]
+
+  @@index([organizationId])
+  @@index([organizationId, status])
+  @@index([organizationId, contractorId])
+  @@index([organizationId, entityType, entityId])
+  @@index([organizationId, dueAt])
+}
+
+model WorkflowTaskRun {
+  id                     String             @id @default(cuid())
+  organizationId         String
+  workflowRunId          String
+  workflowTaskTemplateId String?
+  title                  String
+  description            String?
+  taskType               WorkflowTaskType
+  status                 WorkflowTaskStatus @default(TODO)
+  required               Boolean
+  assigneeUserId         String?
+  assigneeRole           UserRole?
+  dueAt                  DateTime?
+  startedAt              DateTime?
+  completedAt            DateTime?
+  completedByUserId      String?
+  dependsOnTaskRunId     String?
+  resultJson             Json?
+  externalRefType        String?
+  externalRefId          String?
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+
+  organization           Organization @relation(fields: [organizationId], references: [id])
+  workflowRun            WorkflowRun  @relation(fields: [workflowRunId], references: [id])
+  assignee               User?        @relation("WorkflowTaskAssignee", fields: [assigneeUserId], references: [id])
+  completedBy            User?        @relation("WorkflowTaskCompleter", fields: [completedByUserId], references: [id])
+
+  @@index([organizationId])
+  @@index([organizationId, workflowRunId, status])
+  @@index([organizationId, assigneeUserId, status])
+  @@index([organizationId, dueAt, status])
+}
+
+model WorkflowComment {
+  id                String   @id @default(cuid())
+  organizationId    String
+  workflowRunId     String
+  workflowTaskRunId String?
+  authorUserId      String
+  body              String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  organization      Organization @relation(fields: [organizationId], references: [id])
+  workflowRun       WorkflowRun  @relation(fields: [workflowRunId], references: [id])
+  author            User         @relation(fields: [authorUserId], references: [id])
+
+  @@index([organizationId])
+  @@index([organizationId, workflowRunId])
+}
+
+model WorkflowAttachment {
+  id                String   @id @default(cuid())
+  organizationId    String
+  workflowRunId     String
+  workflowTaskRunId String?
+  documentId        String
+  createdAt         DateTime @default(now())
+
+  organization      Organization @relation(fields: [organizationId], references: [id])
+  workflowRun       WorkflowRun  @relation(fields: [workflowRunId], references: [id])
+  document          Document     @relation(fields: [documentId], references: [id])
+
+  @@index([organizationId])
+  @@index([organizationId, workflowRunId])
+}
+
+// --- Enums ---
+
+enum WorkflowTemplateType {
+  ONBOARDING
+  OFFBOARDING
+  DOCUMENT_COLLECTION
+  COMPLIANCE_REVIEW
+  CUSTOM
+}
+
+enum WorkflowTemplateStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum WorkflowTaskType {
+  DOCUMENT_COLLECTION
+  APPROVAL
+  ACCESS_GRANT
+  ACCESS_REVOKE
+  FINANCE_SETUP
+  EQUIPMENT
+  KNOWLEDGE_TRANSFER
+  MEETING
+  MANUAL
+  NOTIFICATION
+}
+
+enum AssigneeMode {
+  FIXED_USER
+  ROLE_BASED
+  CONTRACTOR_OWNER
+  CONTRACT_OWNER
+  PROJECT_MANAGER
+}
+
+enum UserRole {
+  ORG_ADMIN
+  FINANCE_ADMIN
+  OPS_MANAGER
+  TEAM_MANAGER
+  LEGAL_VIEWER
+  IT_ADMIN
+  ACCOUNTANT
+  READ_ONLY
+}
+
+enum WorkflowRunStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  BLOCKED
+  OVERDUE
+}
+
+enum WorkflowTaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+  BLOCKED
+  SKIPPED
+  CANCELLED
+  OVERDUE
+}

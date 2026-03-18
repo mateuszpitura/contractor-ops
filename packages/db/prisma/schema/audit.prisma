@@ -1,0 +1,60 @@
+// AuditLog, OutboxEvent
+
+model AuditLog {
+  id             String    @id @default(cuid())
+  organizationId String
+  actorType      ActorType
+  actorId        String?
+  actorName      String?
+  action         String
+  resourceType   EntityType
+  resourceId     String
+  resourceName   String?
+  oldValuesJson  Json?
+  newValuesJson  Json?
+  metadataJson   Json?
+  ipAddress      String?
+  userAgent      String?
+  createdAt      DateTime  @default(now())
+
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  // No updatedAt — audit logs are immutable
+  @@index([organizationId])
+  @@index([organizationId, resourceType, resourceId, createdAt])
+  @@index([organizationId, actorId, createdAt])
+  @@index([organizationId, createdAt])
+}
+
+model OutboxEvent {
+  id             String       @id @default(cuid())
+  organizationId String
+  eventType      String
+  aggregateType  String
+  aggregateId    String
+  payloadJson    Json
+  status         OutboxStatus @default(PENDING)
+  availableAt    DateTime
+  publishedAt    DateTime?
+  createdAt      DateTime     @default(now())
+
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+  @@index([organizationId, status, availableAt])
+}
+
+// --- Enums ---
+
+enum ActorType {
+  USER
+  SYSTEM
+  INTEGRATION
+  API_KEY
+}
+
+enum OutboxStatus {
+  PENDING
+  PUBLISHED
+  FAILED
+}
