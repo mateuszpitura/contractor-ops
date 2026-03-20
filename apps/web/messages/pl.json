@@ -835,5 +835,127 @@
     "darkMode": "Tryb ciemny",
     "density": "Tryb kompaktowy",
     "language": "Jezyk"
+  },
+  "Workflows": {
+    "pageTitle": "Procesy",
+    "tabRuns": "Aktywne procesy",
+    "tabMyTasks": "Moje zadania",
+    "tabTemplates": "Szablony",
+    "startWorkflow": "Rozpocznij proces",
+    "searchPlaceholder": "Szukaj procesow...",
+    "filters": "Filtry",
+    "clearAll": "Wyczysc wszystkie",
+    "filterTemplate": "Szablon",
+    "filterOverdueOnly": "Tylko przeterminowane",
+    "columns": {
+      "selectAll": "Zaznacz wszystkie",
+      "selectRow": "Zaznacz wiersz",
+      "workflowName": "Proces",
+      "contractor": "Kontrahent",
+      "templateType": "Typ",
+      "status": "Status",
+      "progress": "Postep",
+      "startedAt": "Rozpoczeto",
+      "dueAt": "Termin"
+    },
+    "runStatus": {
+      "NOT_STARTED": "Nierozpoczety",
+      "IN_PROGRESS": "W toku",
+      "COMPLETED": "Zakonczony",
+      "CANCELLED": "Anulowany",
+      "BLOCKED": "Zablokowany",
+      "OVERDUE": "Przeterminowany"
+    },
+    "templateType": {
+      "ONBOARDING": "Onboarding",
+      "OFFBOARDING": "Offboarding",
+      "DOCUMENT_COLLECTION": "Zbieranie dokumentow",
+      "COMPLIANCE_REVIEW": "Przeglad zgodnosci",
+      "CUSTOM": "Niestandardowy"
+    },
+    "templateStatus": {
+      "DRAFT": "Wersja robocza",
+      "ACTIVE": "Aktywny",
+      "ARCHIVED": "Zarchiwizowany"
+    },
+    "empty": {
+      "heading": "Brak aktywnych procesow",
+      "body": "Rozpocznij proces, aby zautomatyzowac onboarding, offboarding lub niestandardowe procesy.",
+      "cta": "Rozpocznij proces"
+    },
+    "noResults": {
+      "heading": "Nie znaleziono procesow",
+      "body": "Sprobuj dostosowac wyszukiwanie lub filtry.",
+      "cta": "Wyczysc filtry"
+    },
+    "pagination": {
+      "rowsPerPage": "Wierszy na strone",
+      "of": "z {total}",
+      "page": "Strona {page} z {totalPages}",
+      "selected": "{count} zaznaczonych"
+    },
+    "myTasks": {
+      "empty": {
+        "heading": "Brak przypisanych zadan",
+        "body": "Nie masz oczekujacych zadan. Zadania pojawia sie tutaj, gdy zostaniesz przypisany do procesu."
+      },
+      "noOverdue": "Brak przeterminowanych zadan."
+    },
+    "templates": {
+      "newTemplate": "Nowy szablon",
+      "columns": {
+        "name": "Nazwa",
+        "type": "Typ",
+        "status": "Status",
+        "taskCount": "Zadania",
+        "lastUpdated": "Ostatnia aktualizacja"
+      },
+      "empty": {
+        "heading": "Brak szablonow procesow",
+        "body": "Utworz szablon, aby zdefiniowac powtarzalne kroki procesu dla zespolu.",
+        "cta": "Nowy szablon"
+      },
+      "actions": "Akcje",
+      "actionEdit": "Edytuj",
+      "actionDuplicate": "Duplikuj",
+      "actionActivate": "Aktywuj",
+      "actionArchive": "Archiwizuj",
+      "actionDelete": "Usun",
+      "deleteTitle": "Usunac {name}?",
+      "deleteBody": "Wersja robocza szablonu zostanie trwale usunieta. Tej akcji nie mozna cofnac.",
+      "deleteCancel": "Anuluj",
+      "deleteConfirm": "Usun szablon"
+    },
+    "sidePanel": {
+      "progress": "Postep",
+      "tasksSummary": "{done} ukonczone, {inProgress} w toku, {overdue} przeterminowane",
+      "contractor": "Kontrahent",
+      "template": "Szablon",
+      "startedBy": "Rozpoczete przez",
+      "startedOn": "Data rozpoczecia",
+      "openWorkflow": "Otworz proces"
+    },
+    "templatePicker": {
+      "title": "Rozpocznij proces",
+      "searchPlaceholder": "Szukaj szablonow...",
+      "taskCount": "{count} zadan",
+      "start": "Rozpocznij",
+      "close": "Zamknij",
+      "noTemplates": "Brak dostepnych szablonow",
+      "noTemplatesBody": "Popros administratora o utworzenie szablonu procesu.",
+      "startForCount": "Rozpocznij proces dla {count} kontrahentow"
+    },
+    "toast": {
+      "workflowStarted": "Proces rozpoczety",
+      "templateActivated": "Szablon aktywowany",
+      "templateArchived": "Szablon zarchiwizowany",
+      "templateDuplicated": "Szablon zduplikowany",
+      "templateDeleted": "Szablon usuniety"
+    },
+    "errors": {
+      "failedToLoadWorkflows": "Nie udalo sie zaladowac procesow. Sprawdz polaczenie i sprobuj ponownie.",
+      "failedToStartWorkflow": "Nie udalo sie rozpoczac procesu. Sprobuj ponownie.",
+      "failedToSaveTemplate": "Nie udalo sie zapisac szablonu. Sprobuj ponownie."
+    }
   }
 }

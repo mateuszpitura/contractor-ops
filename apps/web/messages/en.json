@@ -835,5 +835,127 @@
     "darkMode": "Dark mode",
     "density": "Compact",
     "language": "Language"
+  },
+  "Workflows": {
+    "pageTitle": "Workflows",
+    "tabRuns": "Active runs",
+    "tabMyTasks": "My tasks",
+    "tabTemplates": "Templates",
+    "startWorkflow": "Start workflow",
+    "searchPlaceholder": "Search workflows...",
+    "filters": "Filters",
+    "clearAll": "Clear all",
+    "filterTemplate": "Template",
+    "filterOverdueOnly": "Overdue only",
+    "columns": {
+      "selectAll": "Select all",
+      "selectRow": "Select row",
+      "workflowName": "Workflow",
+      "contractor": "Contractor",
+      "templateType": "Type",
+      "status": "Status",
+      "progress": "Progress",
+      "startedAt": "Started",
+      "dueAt": "Due date"
+    },
+    "runStatus": {
+      "NOT_STARTED": "Not started",
+      "IN_PROGRESS": "In progress",
+      "COMPLETED": "Completed",
+      "CANCELLED": "Cancelled",
+      "BLOCKED": "Blocked",
+      "OVERDUE": "Overdue"
+    },
+    "templateType": {
+      "ONBOARDING": "Onboarding",
+      "OFFBOARDING": "Offboarding",
+      "DOCUMENT_COLLECTION": "Document collection",
+      "COMPLIANCE_REVIEW": "Compliance review",
+      "CUSTOM": "Custom"
+    },
+    "templateStatus": {
+      "DRAFT": "Draft",
+      "ACTIVE": "Active",
+      "ARCHIVED": "Archived"
+    },
+    "empty": {
+      "heading": "No active workflows",
+      "body": "Start a workflow to automate contractor onboarding, offboarding, or custom processes.",
+      "cta": "Start workflow"
+    },
+    "noResults": {
+      "heading": "No workflows found",
+      "body": "Try adjusting your search or filters.",
+      "cta": "Clear filters"
+    },
+    "pagination": {
+      "rowsPerPage": "Rows per page",
+      "of": "of {total}",
+      "page": "Page {page} of {totalPages}",
+      "selected": "{count} selected"
+    },
+    "myTasks": {
+      "empty": {
+        "heading": "No tasks assigned",
+        "body": "You have no pending workflow tasks. Tasks will appear here when you are assigned to a workflow."
+      },
+      "noOverdue": "No overdue tasks."
+    },
+    "templates": {
+      "newTemplate": "New template",
+      "columns": {
+        "name": "Name",
+        "type": "Type",
+        "status": "Status",
+        "taskCount": "Tasks",
+        "lastUpdated": "Last updated"
+      },
+      "empty": {
+        "heading": "No workflow templates",
+        "body": "Create a template to define reusable workflow steps for your team.",
+        "cta": "New template"
+      },
+      "actions": "Actions",
+      "actionEdit": "Edit",
+      "actionDuplicate": "Duplicate",
+      "actionActivate": "Activate",
+      "actionArchive": "Archive",
+      "actionDelete": "Delete",
+      "deleteTitle": "Delete {name}?",
+      "deleteBody": "This draft template will be permanently deleted. This cannot be undone.",
+      "deleteCancel": "Cancel",
+      "deleteConfirm": "Delete template"
+    },
+    "sidePanel": {
+      "progress": "Progress",
+      "tasksSummary": "{done} complete, {inProgress} in progress, {overdue} overdue",
+      "contractor": "Contractor",
+      "template": "Template",
+      "startedBy": "Started by",
+      "startedOn": "Started on",
+      "openWorkflow": "Open workflow"
+    },
+    "templatePicker": {
+      "title": "Start workflow",
+      "searchPlaceholder": "Search templates...",
+      "taskCount": "{count} tasks",
+      "start": "Start",
+      "close": "Close",
+      "noTemplates": "No templates available",
+      "noTemplatesBody": "Ask your admin to create a workflow template.",
+      "startForCount": "Start workflow for {count} contractors"
+    },
+    "toast": {
+      "workflowStarted": "Workflow started",
+      "templateActivated": "Template activated",
+      "templateArchived": "Template archived",
+      "templateDuplicated": "Template duplicated",
+      "templateDeleted": "Template deleted"
+    },
+    "errors": {
+      "failedToLoadWorkflows": "Could not load workflows. Check your connection and try again.",
+      "failedToStartWorkflow": "Could not start workflow. Try again.",
+      "failedToSaveTemplate": "Could not save template. Try again."
+    }
   }
 }
