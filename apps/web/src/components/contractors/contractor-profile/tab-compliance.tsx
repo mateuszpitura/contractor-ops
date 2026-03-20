@@ -5,12 +5,8 @@ import { Upload } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-  TooltipProvider,
-} from "@/components/ui/tooltip";
+import { DropZone } from "@/components/documents/drop-zone";
+import { DocumentList } from "@/components/documents/document-list";
 
 type ComplianceItem = {
   id: string;
@@ -25,6 +21,7 @@ type ComplianceItem = {
 
 type TabComplianceProps = {
   contractor: {
+    id: string;
     complianceItems: ComplianceItem[];
   };
 };
@@ -122,25 +119,40 @@ export function TabCompliance({ contractor }: TabComplianceProps) {
                 </Badge>
 
                 {isMissing && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger
-                        render={(props) => (
-                          <Button {...props} variant="outline" size="sm" disabled>
-                            <Upload className="mr-1.5 size-3.5" />
-                            {t("upload")}
-                          </Button>
-                        )}
-                      />
-                      <TooltipContent>Coming in Phase 3</TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      // Scroll to the upload section at bottom
+                      document.getElementById("compliance-upload-zone")?.scrollIntoView({ behavior: "smooth" });
+                    }}
+                  >
+                    <Upload className="mr-1.5 size-3.5" />
+                    {t("upload")}
+                  </Button>
                 )}
               </div>
             </div>
           );
         })}
       </div>
+
+      {/* Required documents section — upload zone */}
+      <div id="compliance-upload-zone" className="space-y-4">
+        <h3 className="text-base font-medium">
+          {t("uploadCompliance" as Parameters<typeof t>[0])}
+        </h3>
+        <DropZone
+          entityType="CONTRACTOR"
+          entityId={contractor.id}
+        />
+      </div>
+
+      {/* Uploaded compliance documents */}
+      <DocumentList
+        entityType="CONTRACTOR"
+        entityId={contractor.id}
+      />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
@@ -10,18 +11,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-  TooltipProvider,
-} from "@/components/ui/tooltip";
-import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { ContractWizardDialog } from "@/components/contracts/contract-wizard/wizard-dialog";
 
 type LifecycleStage =
   | "DRAFT"
@@ -71,6 +67,7 @@ function getOwnerInitials(name: string | null): string {
 export function ProfileHeader({ contractor }: ProfileHeaderProps) {
   const t = useTranslations("ContractorProfile");
   const queryClient = useQueryClient();
+  const [wizardOpen, setWizardOpen] = useState(false);
 
   const lifecycleMutation = useMutation(
     trpc.contractor.updateLifecycleStage.mutationOptions({
@@ -163,19 +160,10 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
           {t("actions.edit")}
         </Button>
 
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger
-              render={(props) => (
-                <Button {...props} variant="outline" size="sm" disabled>
-                  <FilePlus className="mr-1.5 size-3.5" />
-                  {t("actions.addContract")}
-                </Button>
-              )}
-            />
-            <TooltipContent>Coming in Phase 3</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <Button variant="outline" size="sm" onClick={() => setWizardOpen(true)}>
+          <FilePlus className="mr-1.5 size-3.5" />
+          {t("actions.addContract")}
+        </Button>
 
         <DropdownMenu>
           <DropdownMenuTrigger
@@ -248,6 +236,13 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      {/* Contract wizard dialog */}
+      <ContractWizardDialog
+        open={wizardOpen}
+        onOpenChange={setWizardOpen}
+        contractorId={contractor.id}
+      />
     </div>
   );
 }
