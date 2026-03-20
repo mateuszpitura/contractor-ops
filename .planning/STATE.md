@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Completed 04-04-PLAN.md
-last_updated: "2026-03-20T16:48:50.810Z"
-last_activity: 2026-03-20 — Completed 04-04 workflow run detail page (progress bar, task checklist, inline actions, comments, attachments)
+status: completed
+stopped_at: Completed 04-05-PLAN.md
+last_updated: "2026-03-20T16:51:16.858Z"
+last_activity: 2026-03-20 — Completed 04-05 integration points (workflows tab, header buttons, bulk action, sidebar badge, starter templates)
 progress:
   total_phases: 10
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 18
-  completed_plans: 17
+  completed_plans: 18
   percent: 83
 ---
 
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-03-18)
 ## Current Position
 
 Phase: 4 of 10 (Workflow Engine)
-Plan: 5 of 5 in current phase
-Status: In Progress
-Last activity: 2026-03-20 — Completed 04-04 workflow run detail page (progress bar, task checklist, inline actions, comments, attachments)
+Plan: 5 of 5 in current phase (COMPLETE)
+Status: Phase Complete
+Last activity: 2026-03-20 — Completed 04-05 integration points (workflows tab, header buttons, bulk action, sidebar badge, starter templates)
 
 Progress: [████████░░] 83%
 
@@ -61,6 +61,7 @@ Progress: [████████░░] 83%
 | Phase 04 P03 | 8min | 2 tasks | 13 files |
 | Phase 04 P02 | 12min | 2 tasks | 10 files |
 | Phase 04 P04 | 6min | 2 tasks | 6 files |
+| Phase 04 P05 | 8min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -117,6 +118,9 @@ Recent decisions affecting current work:
 - [Phase 04-02]: Flat i18n key namespace in Workflows for template builder dynamic key interpolation
 - [Phase 04-02]: dnd-kit/sortable v10 with pointer sensor 8px activation constraint for drag handle separation
 - [Phase 04-04]: Popover pattern for Skip/Reassign actions to keep task list compact while providing inline editing
+- [Phase 04-05]: Start onboarding/offboarding as explicit header buttons (not just dropdown lifecycle actions) for workflow entry point visibility
+- [Phase 04-05]: Starter templates use ROLE_BASED assignees with domain-appropriate roles (OPS_MANAGER, LEGAL_VIEWER, IT_ADMIN, FINANCE_ADMIN, TEAM_MANAGER)
+- [Phase 04-05]: Seed-if-empty pattern: seedStarterTemplates is no-op when templates exist, called on Templates tab mount
 
 ### Pending Todos
 
@@ -130,6 +134,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T16:48:50.808Z
-Stopped at: Completed 04-04-PLAN.md
+Last session: 2026-03-20T16:51:16.856Z
+Stopped at: Completed 04-05-PLAN.md
 Resume file: None
