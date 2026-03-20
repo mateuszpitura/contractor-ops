@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 03-04-PLAN.md
-last_updated: "2026-03-20T14:22:09.947Z"
-last_activity: 2026-03-20 — Completed 03-04 contract wizard (3-step creation, billing pre-fill, document upload, top bar quick action)
+stopped_at: Completed 03-05-PLAN.md
+last_updated: "2026-03-20T14:32:28.474Z"
+last_activity: 2026-03-20 — Completed 03-05 contract detail page with 4 tabs and 6 reusable document components
 progress:
   total_phases: 10
   completed_phases: 2
   total_plans: 13
-  completed_plans: 11
+  completed_plans: 12
   percent: 62
 ---
 
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-03-18)
 ## Current Position
 
 Phase: 3 of 10 (Contracts & Documents)
-Plan: 4 of 6 in current phase
+Plan: 5 of 6 in current phase
 Status: In Progress
-Last activity: 2026-03-20 — Completed 03-04 contract wizard (3-step creation, billing pre-fill, document upload, top bar quick action)
+Last activity: 2026-03-20 — Completed 03-05 contract detail page with 4 tabs and 6 reusable document components
 
 Progress: [██████░░░░] 62%
 
@@ -55,6 +55,7 @@ Progress: [██████░░░░] 62%
 | Phase 03-02 P02 | 6min | 2 tasks | 10 files |
 | Phase 03-03 PP03 | 6min | 2 tasks | 10 files |
 | Phase 03-04 P04 | 10min | 2 tasks | 8 files |
+| Phase 03-05 PP05 | 7min | 2 tasks | 13 files |
 
 ## Accumulated Context
 
@@ -95,6 +96,8 @@ Recent decisions affecting current work:
 - [Phase 03-04]: Local wizard Zod schema mirroring contractCreateSchema to avoid web->validators cross-package dependency
 - [Phase 03-04]: Contractor billing pre-fill reads billingModel/rateValueGrosze from customFieldsJson, currency from Contractor model
 - [Phase 03-04]: Document upload fires immediately on file selection via presigned URL XHR flow (not deferred to form submit)
+- [Phase 03-05]: Browser-native <object> tag for PDF preview instead of react-pdf to avoid bundle size
+- [Phase 03-05]: Document download via direct fetch to tRPC query endpoint (getDownloadUrl is query, not mutation)
 
 ### Pending Todos
 
@@ -108,6 +111,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T14:22:09.945Z
-Stopped at: Completed 03-04-PLAN.md
+Last session: 2026-03-20T14:32:28.472Z
+Stopped at: Completed 03-05-PLAN.md
 Resume file: None

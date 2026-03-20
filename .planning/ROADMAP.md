@@ -216,7 +216,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 |-------|----------------|--------|-----------|
 | 1. Foundation & Auth | 3/4 | In Progress|  |
 | 2. Contractor Registry | 0/3 | Not started | - |
-| 3. Contracts & Documents | 4/6 | In Progress|  |
+| 3. Contracts & Documents | 5/6 | In Progress|  |
 | 4. Workflow Engine | 0/5 | Not started | - |
 | 5. Invoice Intake & Matching | 0/5 | Not started | - |
 | 6. Approval Workflow | 0/5 | Not started | - |
