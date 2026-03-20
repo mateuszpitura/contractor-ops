@@ -2,6 +2,10 @@
 // ContractorAssignment, ContractorTag, ContractorTagLink,
 // ContractorComplianceItem, ComplianceRequirementTemplate
 
+// Note: "search_vector" tsvector column exists in PostgreSQL (managed by migration)
+// but is excluded from Prisma schema as it is GENERATED ALWAYS AS and Prisma
+// does not support generated columns. Query via $queryRaw.
+
 model Contractor {
   id                   String                   @id @default(cuid())
   organizationId       String

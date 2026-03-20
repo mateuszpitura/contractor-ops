@@ -11,6 +11,14 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./generated/prisma/client": {
+      "types": "./generated/prisma/client/index.d.ts",
+      "default": "./generated/prisma/client/index.js"
+    },
+    "./generated/prisma/client/runtime/client": {
+      "types": "./generated/prisma/client/runtime/client.d.ts",
+      "default": "./generated/prisma/client/runtime/client.js"
     }
   },
   "scripts": {
