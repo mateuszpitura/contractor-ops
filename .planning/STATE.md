@@ -5,13 +5,13 @@ milestone_name: milestone
 status: in-progress
 stopped_at: Completed 02-03-PLAN.md
 last_updated: "2026-03-20T12:36:49.000Z"
-last_activity: 2026-03-20 — Completed 02-03 contractor profile page with tabs, health card, right rail
+last_activity: 2026-03-20 — Completed 02-02 contractor list UI with TanStack Table, wizard, full i18n
 progress:
   total_phases: 10
-  completed_phases: 2
+  completed_phases: 1
   total_plans: 7
-  completed_plans: 7
-  percent: 80
+  completed_plans: 6
+  percent: 86
 ---
 
 # Project State
@@ -26,25 +26,25 @@ See: .planning/PROJECT.md (updated 2026-03-18)
 ## Current Position
 
 Phase: 2 of 10 (Contractor Registry)
-Plan: 3 of 3 in current phase
-Status: Phase Complete
-Last activity: 2026-03-20 — Completed 02-03 contractor profile page with tabs, health card, right rail
+Plan: 2 of 3 in current phase
+Status: In Progress
+Last activity: 2026-03-20 — Completed 02-02 contractor list UI with TanStack Table, wizard, full i18n
 
 Progress: [████████░░] 80%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7
-- Average duration: 10min
-- Total execution time: 1.0 hours
+- Total plans completed: 6
+- Average duration: 11min
+- Total execution time: 1.1 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-foundation-auth | 4/4 | 35min | 9min |
-| 02-contractor-registry | 3/3 | 26min | 9min |
+| 02-contractor-registry | 2/3 | 37min | 18min |
 
 **Recent Trend:**
 - Last 5 plans: 4min, 10min, 12min, 14min
@@ -75,6 +75,10 @@ Recent decisions affecting current work:
 - [02-01]: billingModel/rateValueGrosze stored in Contractor.customFieldsJson (billing profile schema lacks billingModel column)
 - [02-01]: plain() JSON serialize/deserialize pattern to strip Prisma types from tRPC router returns (TS2742 fix)
 - [02-01]: PostgreSQL 'simple' text search config for tsvector (supports Polish names, NIP numbers, mixed-language data)
+- [02-02]: NuqsAdapter added to root providers for URL state management (nuqs used for table filter/sort/pagination state)
+- [02-02]: Suspense boundary for nuqs pages — useSearchParams requires Suspense during SSG prerendering
+- [02-02]: Local wizard Zod schema mirroring validators package to avoid web->validators cross-package dependency
+- [02-02]: GUS autofill via direct fetch to tRPC endpoint (gusLookup is query procedure, not mutation)
 - [02-03]: Added notes field to contractorUpdateSchema for right-rail quick notes editing
 - [02-03]: URL query param (?tab=overview) for profile tab state to support deep-linking
 - [02-03]: base-ui render prop pattern (not Radix asChild) for all trigger components
@@ -92,5 +96,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-20T12:36:49.000Z
-Stopped at: Completed 02-03-PLAN.md
-Resume file: Phase 2 complete. Next: Phase 3 planning.
+Stopped at: Completed 02-02-PLAN.md
+Resume file: .planning/phases/02-contractor-registry/02-03-PLAN.md

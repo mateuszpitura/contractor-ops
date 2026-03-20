@@ -27,7 +27,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **CONT-03**: User can assign a contractor to an internal owner, team, project, and cost center
 - [x] **CONT-04**: User can search contractors with full-text search across name, company, NIP, email
 - [x] **CONT-05**: User can filter contractors by status, owner, team, billing model, contract end date, compliance health
-- [ ] **CONT-06**: User can perform bulk actions on contractors (assign owner, export, archive, launch workflow)
+- [x] **CONT-06**: User can perform bulk actions on contractors (assign owner, export, archive, launch workflow)
 - [x] **CONT-07**: User can view contractor profile with tabs: overview, contracts, documents, workflows, invoices, payments, activity, compliance
 - [x] **CONT-08**: System calculates and displays compliance health score (green/yellow/red) based on required documents, contract status, and overdue tasks
 - [x] **CONT-09**: Contractor status follows lifecycle: draft → onboarding → active → offboarding → inactive → archived
@@ -187,7 +187,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CONT-03 | Phase 2 | Complete |
 | CONT-04 | Phase 2 | Complete |
 | CONT-05 | Phase 2 | Complete |
-| CONT-06 | Phase 2 | Pending |
+| CONT-06 | Phase 2 | Complete |
 | CONT-07 | Phase 2 | Complete |
 | CONT-08 | Phase 2 | Complete |
 | CONT-09 | Phase 2 | Complete |
