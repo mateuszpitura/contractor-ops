@@ -24,6 +24,7 @@ import { TabOverview } from "@/components/contractors/contractor-profile/tab-ove
 import { TabCompliance } from "@/components/contractors/contractor-profile/tab-compliance";
 import { TabContracts } from "@/components/contractors/contractor-profile/tab-contracts";
 import { TabDocuments } from "@/components/contractors/contractor-profile/tab-documents";
+import { WorkflowsTab } from "@/components/contractors/contractor-profile/workflows-tab";
 import { RightRail } from "@/components/contractors/contractor-profile/right-rail";
 import { ActivityTimeline } from "@/components/contractors/contractor-profile/right-rail";
 
@@ -157,6 +158,7 @@ export default function ContractorProfilePage() {
                 complianceContent={<TabCompliance contractor={contractor} />}
                 contractsContent={<TabContracts contractorId={params.id} />}
                 documentsContent={<TabDocuments contractorId={params.id} />}
+                workflowsContent={<WorkflowsTab contractorId={params.id} />}
                 activityContent={
                   <ActivityTimeline
                     createdAt={String(contractor.createdAt)}

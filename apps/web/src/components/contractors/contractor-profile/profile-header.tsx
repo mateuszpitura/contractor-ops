@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { MoreHorizontal, Pencil, FilePlus, Upload } from "lucide-react";
+import { MoreHorizontal, Pencil, FilePlus, Upload, Play } from "lucide-react";
 
 import { trpc } from "@/trpc/init";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +18,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { ContractWizardDialog } from "@/components/contracts/contract-wizard/wizard-dialog";
+import { TemplatePicker } from "@/components/workflows/template-picker-dialog";
 
 type LifecycleStage =
   | "DRAFT"
@@ -68,6 +69,8 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
   const t = useTranslations("ContractorProfile");
   const queryClient = useQueryClient();
   const [wizardOpen, setWizardOpen] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pickerType, setPickerType] = useState<string | undefined>(undefined);
 
   const lifecycleMutation = useMutation(
     trpc.contractor.updateLifecycleStage.mutationOptions({
@@ -165,6 +168,34 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
           {t("actions.addContract")}
         </Button>
 
+        {(stage === "DRAFT" || stage === "ONBOARDING") && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setPickerType("ONBOARDING");
+              setPickerOpen(true);
+            }}
+          >
+            <Play className="mr-1.5 size-3.5" />
+            {t("actions.startOnboarding")}
+          </Button>
+        )}
+
+        {(stage === "ACTIVE" || stage === "OFFBOARDING") && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setPickerType("OFFBOARDING");
+              setPickerOpen(true);
+            }}
+          >
+            <Play className="mr-1.5 size-3.5" />
+            {t("actions.startOffboarding")}
+          </Button>
+        )}
+
         <DropdownMenu>
           <DropdownMenuTrigger
             render={(props) => (
@@ -242,6 +273,14 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
         open={wizardOpen}
         onOpenChange={setWizardOpen}
         contractorId={contractor.id}
+      />
+
+      {/* Workflow template picker */}
+      <TemplatePicker
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        contractorId={contractor.id}
+        preFilterType={pickerType}
       />
     </div>
   );

@@ -4,7 +4,6 @@ import { useCallback } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
-  GitBranch,
   Receipt,
   Banknote,
 } from "lucide-react";
@@ -12,7 +11,7 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { TabPlaceholder } from "./tab-placeholder";
 
-// Note: TabPlaceholder still used for future-phase tabs (workflows, invoices, payments)
+// Note: TabPlaceholder still used for future-phase tabs (invoices, payments)
 
 // Forward-declared tab content components (imported lazily by parent)
 import type { ReactNode } from "react";
@@ -36,6 +35,7 @@ type ProfileTabsProps = {
   activityContent: ReactNode;
   contractsContent: ReactNode;
   documentsContent: ReactNode;
+  workflowsContent: ReactNode;
 };
 
 export function ProfileTabs({
@@ -44,6 +44,7 @@ export function ProfileTabs({
   activityContent,
   contractsContent,
   documentsContent,
+  workflowsContent,
 }: ProfileTabsProps) {
   const t = useTranslations("ContractorProfile");
   const searchParams = useSearchParams();
@@ -88,11 +89,7 @@ export function ProfileTabs({
       </TabsContent>
 
       <TabsContent value="workflows" className="mt-4 min-h-[400px]">
-        <TabPlaceholder
-          phase={4}
-          featureDescription={t("placeholder.workflows")}
-          icon={GitBranch}
-        />
+        {workflowsContent}
       </TabsContent>
 
       <TabsContent value="invoices" className="mt-4 min-h-[400px]">
