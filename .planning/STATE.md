@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 03-03-PLAN.md
-last_updated: "2026-03-20T14:18:16.779Z"
-last_activity: 2026-03-20 — Completed 03-03 contract list page (TanStack Table, filters, side panel)
+stopped_at: Completed 03-04-PLAN.md
+last_updated: "2026-03-20T14:22:09.947Z"
+last_activity: 2026-03-20 — Completed 03-04 contract wizard (3-step creation, billing pre-fill, document upload, top bar quick action)
 progress:
   total_phases: 10
   completed_phases: 2
   total_plans: 13
-  completed_plans: 10
+  completed_plans: 11
   percent: 62
 ---
 
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-03-18)
 ## Current Position
 
 Phase: 3 of 10 (Contracts & Documents)
-Plan: 3 of 6 in current phase
+Plan: 4 of 6 in current phase
 Status: In Progress
-Last activity: 2026-03-20 — Completed 03-03 contract list page (TanStack Table, filters, side panel)
+Last activity: 2026-03-20 — Completed 03-04 contract wizard (3-step creation, billing pre-fill, document upload, top bar quick action)
 
 Progress: [██████░░░░] 62%
 
@@ -54,6 +54,7 @@ Progress: [██████░░░░] 62%
 *Updated after each plan completion*
 | Phase 03-02 P02 | 6min | 2 tasks | 10 files |
 | Phase 03-03 PP03 | 6min | 2 tasks | 10 files |
+| Phase 03-04 P04 | 10min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -91,6 +92,9 @@ Recent decisions affecting current work:
 - [Phase 03-02]: Document permission as separate resource in auth AC (not nested under contract)
 - [Phase 03-02]: Virus scanning is fire-and-forget async; ClamAV unavailability marks FAILED (never skips)
 - [Phase 03-03]: Mirrored contractor table pattern exactly for contract list page consistency
+- [Phase 03-04]: Local wizard Zod schema mirroring contractCreateSchema to avoid web->validators cross-package dependency
+- [Phase 03-04]: Contractor billing pre-fill reads billingModel/rateValueGrosze from customFieldsJson, currency from Contractor model
+- [Phase 03-04]: Document upload fires immediately on file selection via presigned URL XHR flow (not deferred to form submit)
 
 ### Pending Todos
 
@@ -104,6 +108,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T14:18:16.778Z
-Stopped at: Completed 03-03-PLAN.md
+Last session: 2026-03-20T14:22:09.945Z
+Stopped at: Completed 03-04-PLAN.md
 Resume file: None
