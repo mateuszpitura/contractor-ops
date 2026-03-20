@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [ ] **Phase 1: Foundation & Auth** - Multi-tenant monorepo with auth, RBAC, tenant scoping, i18n framework, and app shell
 - [ ] **Phase 2: Contractor Registry** - Full contractor CRUD with search, filters, bulk actions, profiles, and lifecycle management
-- [ ] **Phase 3: Contracts & Documents** - Contract repository with versioning, expiry tracking, and secure document management
+- [x] **Phase 3: Contracts & Documents** - Contract repository with versioning, expiry tracking, and secure document management
 - [ ] **Phase 4: Workflow Engine** - Template builder with dependencies and conditional logic, execution engine with task management
 - [ ] **Phase 5: Invoice Intake & Matching** - Invoice upload, email intake, auto-matching to contractors and contracts, duplicate detection
 - [ ] **Phase 6: Approval Workflow** - Configurable approval chains with SLA timers, delegation, and full audit trail
@@ -73,12 +73,12 @@ Plans:
 **Plans**: 6 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — Contract Zod validators, tRPC router (CRUD, list with FTS, status state machine, amendments, expiry config), org-level reminder defaults in settings, tsvector migration
-- [ ] 03-02-PLAN.md — R2 storage service, MIME validator, virus scanner, document validators, document tRPC router (presigned upload/download, versioning, entity linking)
-- [ ] 03-03-PLAN.md — Contract list page with TanStack Table (11 columns, search, filters, bulk actions), side panel
-- [ ] 03-04-PLAN.md — 3-step contract creation wizard with contractor billing pre-fill, top bar quick action
-- [ ] 03-05-PLAN.md — Contract detail page (Overview, Documents, Amendments, Activity tabs), reusable document components
-- [ ] 03-06-PLAN.md — Contractor profile tab integration, compliance upload, org-level Settings reminder defaults, full i18n
+- [x] 03-01-PLAN.md — Contract Zod validators, tRPC router (CRUD, list with FTS, status state machine, amendments, expiry config), org-level reminder defaults in settings, tsvector migration
+- [x] 03-02-PLAN.md — R2 storage service, MIME validator, virus scanner, document validators, document tRPC router (presigned upload/download, versioning, entity linking)
+- [x] 03-03-PLAN.md — Contract list page with TanStack Table (11 columns, search, filters, bulk actions), side panel
+- [x] 03-04-PLAN.md — 3-step contract creation wizard with contractor billing pre-fill, top bar quick action
+- [x] 03-05-PLAN.md — Contract detail page (Overview, Documents, Amendments, Activity tabs), reusable document components
+- [x] 03-06-PLAN.md — Contractor profile tab integration, compliance upload, org-level Settings reminder defaults, full i18n
 
 ### Phase 4: Workflow Engine
 **Goal**: Admins can build workflow templates with task dependencies and conditional logic, and users can run workflows that auto-assign tasks, track progress, and flag overdue items
