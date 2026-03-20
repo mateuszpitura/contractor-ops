@@ -1,0 +1,148 @@
+"use client";
+
+import { Suspense } from "react";
+import { useParams } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
+
+import { trpc } from "@/trpc/init";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbSeparator,
+  BreadcrumbPage,
+} from "@/components/ui/breadcrumb";
+import { Link } from "@/i18n/navigation";
+
+import { DetailHeader } from "@/components/contracts/contract-detail/detail-header";
+import { ContractDetailTabs } from "@/components/contracts/contract-detail/contract-detail-tabs";
+
+function HeaderSkeleton() {
+  return (
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex items-center gap-3">
+        <div>
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-6 w-[240px]" />
+            <Skeleton className="h-5 w-20 rounded-full" />
+          </div>
+          <div className="mt-1 flex items-center gap-1.5">
+            <Skeleton className="h-4 w-32" />
+          </div>
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <Skeleton className="h-7 w-28" />
+        <Skeleton className="size-7" />
+      </div>
+    </div>
+  );
+}
+
+function TabContentSkeleton() {
+  return (
+    <div className="grid gap-4 lg:grid-cols-2">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div key={i} className="rounded-xl border bg-card p-4">
+          <Skeleton className="mb-3 h-5 w-32" />
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-4 w-1/2" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default function ContractDetailPage() {
+  const params = useParams<{ id: string }>();
+  const t = useTranslations("ContractDetail");
+
+  const contractQuery = useQuery(
+    trpc.contract.getById.queryOptions({ id: params.id })
+  );
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const contract = contractQuery.data as any;
+
+  if (contractQuery.isError) {
+    const isNotFound =
+      contractQuery.error?.message?.includes("not found") ||
+      (contractQuery.error as { data?: { code?: string } })?.data?.code ===
+        "NOT_FOUND";
+
+    if (isNotFound) {
+      return (
+        <div className="flex min-h-[400px] flex-col items-center justify-center gap-3 text-center">
+          <h2 className="text-lg font-medium">{t("error.notFound")}</h2>
+          <Button variant="outline" render={<Link href="/contracts" />}>
+            {t("error.backToList")}
+          </Button>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex min-h-[400px] flex-col items-center justify-center gap-3 text-center">
+        <h2 className="text-lg font-medium">{t("error.loadFailed")}</h2>
+        <Button variant="outline" onClick={() => contractQuery.refetch()}>
+          {t("error.retry")}
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Breadcrumb */}
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink
+              render={(props) => <Link {...props} href="/contracts" />}
+            >
+              {t("breadcrumb")}
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>
+              {contract?.title ?? (
+                <Skeleton className="inline-block h-4 w-32" />
+              )}
+            </BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+
+      {/* Header */}
+      {contractQuery.isLoading || !contract ? (
+        <HeaderSkeleton />
+      ) : (
+        <DetailHeader contract={contract} />
+      )}
+
+      {/* Tabs */}
+      {contractQuery.isLoading || !contract ? (
+        <>
+          <div className="mb-4 flex gap-2 border-b pb-2">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-7 w-24" />
+            ))}
+          </div>
+          <TabContentSkeleton />
+        </>
+      ) : (
+        <Suspense fallback={<TabContentSkeleton />}>
+          <ContractDetailTabs contract={contract} />
+        </Suspense>
+      )}
+    </div>
+  );
+}
