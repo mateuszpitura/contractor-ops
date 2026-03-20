@@ -3,6 +3,8 @@ import { organizationRouter } from "./routers/organization.js";
 import { userRouter } from "./routers/user.js";
 import { settingsRouter } from "./routers/settings.js";
 import { contractorRouter } from "./routers/contractor.js";
+import { contractRouter } from "./routers/contract.js";
+import { documentRouter } from "./routers/document.js";
 
 /**
  * Root tRPC router merging all sub-routers.
@@ -11,12 +13,16 @@ import { contractorRouter } from "./routers/contractor.js";
  * - user: list, invite, updateRole, deactivate, reactivate
  * - settings: get, update
  * - contractor: CRUD, list, lifecycle, compliance health, GUS lookup, bulk ops, export
+ * - contract: CRUD, list with FTS, status transitions, amendments, expiry config
+ * - document: upload/download with presigned URLs, versioning, entity linking, virus scanning
  */
 export const appRouter = router({
   organization: organizationRouter,
   user: userRouter,
   settings: settingsRouter,
   contractor: contractorRouter,
+  contract: contractRouter,
+  document: documentRouter,
 });
 
 /** Type-safe router type for client consumption */

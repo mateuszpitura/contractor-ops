@@ -102,42 +102,30 @@ export type ContractCreateInput = z.infer<typeof contractCreateSchema>;
  * Schema for partial updates (PATCH semantics — all fields optional).
  * contractorId is excluded as it cannot be changed after creation.
  */
-export const contractUpdateSchema = z
-  .object({
-    title: z.string().min(1, "Contract title is required").max(255),
-    type: contractTypeEnum,
-    startDate: z.string().datetime(),
-    endDate: z.string().datetime().optional(),
-    noticePeriodDays: z.number().int().positive().optional(),
-    autoRenewal: z.boolean(),
-    renewalTerms: z.string().optional(),
-    currency: z.string().length(3),
-    billingModel: billingModelEnum,
-    rateType: rateTypeEnum,
-    rateValueGrosze: z.number().int().nonnegative().optional(),
-    retainerAmountGrosze: z.number().int().nonnegative().optional(),
-    expectedHoursPerPeriod: z.number().positive().optional(),
-    paymentTermsDays: z.number().int().positive().optional(),
-    invoiceCycle: invoiceCycleEnum.optional(),
-    internalOwnerUserId: z.string().optional(),
-    teamId: z.string().optional(),
-    projectId: z.string().optional(),
-    costCenterId: z.string().optional(),
-    notes: z.string().optional(),
-  })
-  .partial()
-  .refine(
-    (data) => {
-      if (data.endDate && data.startDate) {
-        return new Date(data.endDate) > new Date(data.startDate);
-      }
-      return true;
-    },
-    {
-      message: "End date must be after start date",
-      path: ["endDate"],
-    },
-  );
+const contractUpdateBaseSchema = z.object({
+  title: z.string().min(1, "Contract title is required").max(255),
+  type: contractTypeEnum,
+  startDate: z.string().datetime(),
+  endDate: z.string().datetime().nullable().optional(),
+  noticePeriodDays: z.number().int().positive().nullable().optional(),
+  autoRenewal: z.boolean(),
+  renewalTerms: z.string().nullable().optional(),
+  currency: z.string().length(3),
+  billingModel: billingModelEnum,
+  rateType: rateTypeEnum,
+  rateValueGrosze: z.number().int().nonnegative().nullable().optional(),
+  retainerAmountGrosze: z.number().int().nonnegative().nullable().optional(),
+  expectedHoursPerPeriod: z.number().positive().nullable().optional(),
+  paymentTermsDays: z.number().int().positive().nullable().optional(),
+  invoiceCycle: invoiceCycleEnum.nullable().optional(),
+  internalOwnerUserId: z.string().nullable().optional(),
+  teamId: z.string().nullable().optional(),
+  projectId: z.string().nullable().optional(),
+  costCenterId: z.string().nullable().optional(),
+  notes: z.string().nullable().optional(),
+});
+
+export const contractUpdateSchema = contractUpdateBaseSchema.partial();
 
 export type ContractUpdateInput = z.infer<typeof contractUpdateSchema>;
 

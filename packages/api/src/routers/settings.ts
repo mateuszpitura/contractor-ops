@@ -1,5 +1,9 @@
 import { auth } from "@contractor-ops/auth";
-import { updateOrganizationSettingsSchema } from "@contractor-ops/validators";
+import { prisma } from "@contractor-ops/db";
+import {
+  updateOrganizationSettingsSchema,
+  orgExpiryReminderDefaultsSchema,
+} from "@contractor-ops/validators";
 import { router } from "../init.js";
 import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
@@ -68,5 +72,55 @@ export const settingsRouter = router({
       });
 
       return updated;
+    }),
+
+  /**
+   * Get org-level default expiry reminder intervals for contracts.
+   * Falls back to [30, 60, 90] if not configured.
+   */
+  getExpiryReminderDefaults: tenantProcedure
+    .use(requirePermission({ settings: ["read"] }))
+    .query(async ({ ctx }) => {
+      const org = await prisma.organization.findUnique({
+        where: { id: ctx.organizationId },
+        select: { settingsJson: true },
+      });
+
+      const settings = (org?.settingsJson as Record<string, unknown>) ?? {};
+      const reminderDaysBefore =
+        (settings.contractExpiryReminderDaysBefore as number[]) ?? [30, 60, 90];
+
+      return { reminderDaysBefore };
+    }),
+
+  /**
+   * Update org-level default expiry reminder intervals for contracts.
+   */
+  updateExpiryReminderDefaults: tenantProcedure
+    .use(requirePermission({ settings: ["update"] }))
+    .input(orgExpiryReminderDefaultsSchema)
+    .mutation(async ({ ctx, input }) => {
+      const org = await prisma.organization.findUnique({
+        where: { id: ctx.organizationId },
+        select: { settingsJson: true },
+      });
+
+      const currentSettings =
+        (org?.settingsJson as Record<string, unknown>) ?? {};
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const newSettings: any = {
+        ...currentSettings,
+        contractExpiryReminderDaysBefore: input.reminderDaysBefore,
+      };
+
+      await prisma.organization.update({
+        where: { id: ctx.organizationId },
+        data: {
+          settingsJson: newSettings,
+        },
+      });
+
+      return { reminderDaysBefore: input.reminderDaysBefore };
     }),
 });
