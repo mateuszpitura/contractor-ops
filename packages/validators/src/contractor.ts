@@ -107,8 +107,12 @@ export type ContractorCreateInput = z.infer<typeof contractorCreateSchema>;
 
 /**
  * Schema for partial updates (PATCH semantics — all fields optional).
+ * Extends the create schema with additional fields that are editable
+ * but not part of initial creation (e.g., notes).
  */
-export const contractorUpdateSchema = contractorCreateSchema.partial();
+export const contractorUpdateSchema = contractorCreateSchema.partial().extend({
+  notes: z.string().optional(),
+});
 
 export type ContractorUpdateInput = z.infer<typeof contractorUpdateSchema>;
 

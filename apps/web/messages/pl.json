@@ -189,6 +189,202 @@
     "passwordTooShort": "Haslo musi miec co najmniej 8 znakow",
     "orgNameTooShort": "Nazwa organizacji musi miec co najmniej 2 znaki"
   },
+  "Contractors": {
+    "pageTitle": "Kontrahenci",
+    "addContractor": "Dodaj kontrahenta",
+    "searchPlaceholder": "Szukaj po nazwie, firmie, NIP lub email...",
+    "filters": "Filtry",
+    "clearAll": "Wyczysc wszystko",
+    "columns": {
+      "name": "Nazwa / Firma",
+      "displayName": "Nazwa / Firma",
+      "type": "Typ",
+      "status": "Status",
+      "lifecycleStage": "Status",
+      "owner": "Opiekun",
+      "billingModel": "Model rozliczen",
+      "rate": "Stawka",
+      "currency": "Waluta",
+      "nextInvoice": "Oczekiwana faktura",
+      "teamProject": "Zespol / Projekt",
+      "contractEnd": "Data konca umowy",
+      "lastActivity": "Ostatnia aktywnosc",
+      "health": "Zgodnosc",
+      "complianceHealth": "Zgodnosc",
+      "selectAll": "Zaznacz wszystkie",
+      "selectRow": "Zaznacz wiersz"
+    },
+    "health": {
+      "green": "OK",
+      "yellow": "Ostrzezenie",
+      "red": "Krytyczne"
+    },
+    "lifecycle": {
+      "DRAFT": "Szkic",
+      "ONBOARDING": "Onboarding",
+      "ACTIVE": "Aktywny",
+      "OFFBOARDING": "Offboarding",
+      "ENDED": "Nieaktywny"
+    },
+    "type": {
+      "SOLE_TRADER": "Jednoosobowa dzialalnosc (JDG)",
+      "COMPANY": "Spolka",
+      "INDIVIDUAL_FREELANCER": "Freelancer",
+      "OTHER": "Inne"
+    },
+    "bulkActions": {
+      "selected": "{count} zaznaczonych",
+      "assignOwner": "Przypisz opiekuna",
+      "export": "Eksportuj kontrahentow",
+      "exportCsv": "Eksportuj jako CSV",
+      "exportXlsx": "Eksportuj jako XLSX",
+      "archive": "Archiwizuj",
+      "launchWorkflow": "Uruchom proces",
+      "comingInPhase4": "Dostepne w fazie 4"
+    },
+    "archive": {
+      "title": "Archiwizowac {name}?",
+      "titleBulk": "Archiwizowac {count} kontrahentow?",
+      "body": "Kontrahent zostanie przeniesiony do statusu archiwalnego. Nie bedzie widoczny w domyslnych widokach. Te akcje mozna cofnac.",
+      "bodyBulk": "Kontrahenci zostana przeniesieni do statusu archiwalnego. Nie beda widoczni w domyslnych widokach. Te akcje mozna cofnac.",
+      "cta": "Archiwizuj kontrahenta",
+      "ctaBulk": "Archiwizuj {count} kontrahentow"
+    },
+    "empty": {
+      "heading": "Brak kontrahentow",
+      "body": "Dodaj pierwszego kontrahenta, aby rozpoczac zarzadzanie rejestrem.",
+      "cta": "Dodaj kontrahenta"
+    },
+    "noResults": {
+      "heading": "Nie znaleziono kontrahentow",
+      "body": "Sprobuj zmienic wyszukiwanie lub filtry.",
+      "cta": "Wyczysc filtry"
+    },
+    "pagination": {
+      "rowsPerPage": "Wierszy na stronie",
+      "of": "z {total}",
+      "page": "Strona {page} z {totalPages}"
+    },
+    "sidePanel": {
+      "openFullProfile": "Otworz pelny profil",
+      "details": "Szczegoly",
+      "recentActivity": "Ostatnia aktywnosc"
+    },
+    "exported": "Wyeksportowano {count} kontrahentow",
+    "ownerAssigned": "Opiekun przypisany do {count} kontrahentow",
+    "archived": "Zarchiwizowano {count} kontrahentow",
+    "error": {
+      "loadFailed": "Nie udalo sie zaladowac kontrahentow. Sprawdz polaczenie i sprobuj ponownie.",
+      "retry": "Sprobuj ponownie"
+    }
+  },
+  "ContractorProfile": {
+    "breadcrumb": "Kontrahenci",
+    "actions": {
+      "edit": "Edytuj kontrahenta",
+      "addContract": "Dodaj umowe",
+      "uploadInvoice": "Dodaj fakture",
+      "startOnboarding": "Rozpocznij onboarding",
+      "startOffboarding": "Rozpocznij offboarding",
+      "markInactive": "Oznacz jako nieaktywny",
+      "activate": "Aktywuj",
+      "completeOffboarding": "Zakoncz offboarding",
+      "archive": "Archiwizuj"
+    },
+    "tabs": {
+      "overview": "Przeglad",
+      "contracts": "Umowy",
+      "documents": "Dokumenty",
+      "workflows": "Procesy",
+      "invoices": "Faktury",
+      "payments": "Platnosci",
+      "activity": "Aktywnosc",
+      "compliance": "Zgodnosc"
+    },
+    "placeholder": {
+      "heading": "Dostepne w fazie {phase}",
+      "contracts": "Zarzadzanie umowami z wersjonowaniem i sledzeniem terminow bedzie dostepne tutaj.",
+      "documents": "Przechowywanie dokumentow z podpisanymi URL i historia wersji bedzie dostepne tutaj.",
+      "workflows": "Automatyzacja procesow z zarzadzaniem zadaniami bedzie dostepna tutaj.",
+      "invoices": "Przyjmowanie, dopasowywanie i przetwarzanie faktur bedzie dostepne tutaj.",
+      "payments": "Przelewy zbiorcze i eksport plikow bankowych bedzie dostepny tutaj."
+    },
+    "overview": {
+      "companyDetails": "Dane firmy",
+      "billingInfo": "Informacje rozliczeniowe",
+      "activeContract": "Aktywna umowa",
+      "noActiveContract": "Brak aktywnej umowy",
+      "healthCard": "Stan zgodnosci",
+      "healthChecks": {
+        "documents": "Dokumenty kompletne?",
+        "contract": "Umowa aktywna?",
+        "tasks": "Brak zalegylch zadan?",
+        "invoices": "Brak niezaplaconych faktur?"
+      },
+      "keyDates": "Wazne daty",
+      "createdAt": "Utworzono",
+      "updatedAt": "Ostatnia aktualizacja",
+      "contractEndDate": "Data konca umowy",
+      "nextInvoice": "Oczekiwana faktura",
+      "fields": {
+        "legalName": "Nazwa prawna",
+        "displayName": "Nazwa wyswietlana",
+        "type": "Typ kontrahenta",
+        "nip": "NIP",
+        "vatEu": "VAT-EU",
+        "regon": "REGON",
+        "email": "Email",
+        "phone": "Telefon",
+        "address": "Adres",
+        "country": "Kraj",
+        "billingModel": "Model rozliczen",
+        "rate": "Stawka",
+        "currency": "Waluta",
+        "bankAccount": "Numer konta",
+        "paymentTerms": "Warunki platnosci",
+        "paymentTermsDays": "{days} dni"
+      }
+    },
+    "compliance": {
+      "requiredDocuments": "Wymagane dokumenty",
+      "upload": "Przeslij dokument",
+      "noRequirements": "Brak wymagan zgodnosci skonfigurowanych dla tego typu kontrahenta.",
+      "status": {
+        "SATISFIED": "Przeslano",
+        "MISSING": "Brak",
+        "EXPIRED": "Wygaslo",
+        "PENDING": "Oczekujace",
+        "WAIVED": "Zwolnione"
+      },
+      "expires": "Wygasa",
+      "expiringSoon": "Wkrotce wygasa"
+    },
+    "rightRail": {
+      "activity": "Aktywnosc",
+      "notes": "Szybkie notatki",
+      "reminders": "Przypomnienia",
+      "noActivity": "Brak aktywnosci",
+      "noReminders": "Brak nadchodzacych przypomnien",
+      "notesPlaceholder": "Dodaj notatke...",
+      "save": "Zapisz",
+      "saving": "Zapisywanie...",
+      "saved": "Notatka zapisana",
+      "created": "Kontrahent utworzony",
+      "profileUpdated": "Profil zaktualizowany",
+      "lifecycleStage": "Status: {stage}"
+    },
+    "lifecycle": {
+      "transitioned": "Status zmieniony na {stage}",
+      "archived": "Kontrahent zarchiwizowany"
+    },
+    "error": {
+      "loadFailed": "Nie udalo sie zaladowac profilu kontrahenta. Sprobuj ponownie.",
+      "notFound": "Kontrahent nie znaleziony",
+      "backToList": "Powrot do kontrahentow",
+      "retry": "Sprobuj ponownie"
+    },
+    "comingIn": "Dostepne w fazie {phase}"
+  },
   "Common": {
     "networkError": "Blad polaczenia. Sprawdz internet i sprobuj ponownie.",
     "signOut": "Wyloguj sie",

@@ -189,6 +189,202 @@
     "passwordTooShort": "Password must be at least 8 characters",
     "orgNameTooShort": "Organization name must be at least 2 characters"
   },
+  "Contractors": {
+    "pageTitle": "Contractors",
+    "addContractor": "Add contractor",
+    "searchPlaceholder": "Search by name, company, NIP, or email...",
+    "filters": "Filters",
+    "clearAll": "Clear all",
+    "columns": {
+      "name": "Name / Company",
+      "displayName": "Name / Company",
+      "type": "Type",
+      "status": "Status",
+      "lifecycleStage": "Status",
+      "owner": "Owner",
+      "billingModel": "Billing model",
+      "rate": "Rate",
+      "currency": "Currency",
+      "nextInvoice": "Next invoice expected",
+      "teamProject": "Team / Project",
+      "contractEnd": "Contract end date",
+      "lastActivity": "Last activity",
+      "health": "Compliance",
+      "complianceHealth": "Compliance",
+      "selectAll": "Select all",
+      "selectRow": "Select row"
+    },
+    "health": {
+      "green": "Healthy",
+      "yellow": "Warning",
+      "red": "Critical"
+    },
+    "lifecycle": {
+      "DRAFT": "Draft",
+      "ONBOARDING": "Onboarding",
+      "ACTIVE": "Active",
+      "OFFBOARDING": "Offboarding",
+      "ENDED": "Inactive"
+    },
+    "type": {
+      "SOLE_TRADER": "Sole proprietorship (JDG)",
+      "COMPANY": "Company",
+      "INDIVIDUAL_FREELANCER": "Freelancer",
+      "OTHER": "Other"
+    },
+    "bulkActions": {
+      "selected": "{count} selected",
+      "assignOwner": "Assign owner",
+      "export": "Export contractors",
+      "exportCsv": "Export as CSV",
+      "exportXlsx": "Export as XLSX",
+      "archive": "Archive",
+      "launchWorkflow": "Launch workflow",
+      "comingInPhase4": "Coming in Phase 4"
+    },
+    "archive": {
+      "title": "Archive {name}?",
+      "titleBulk": "Archive {count} contractors?",
+      "body": "This contractor will be moved to archived status. They will no longer appear in default views. This action can be reversed.",
+      "bodyBulk": "These contractors will be moved to archived status. They will no longer appear in default views. This action can be reversed.",
+      "cta": "Archive contractor",
+      "ctaBulk": "Archive {count} contractors"
+    },
+    "empty": {
+      "heading": "No contractors yet",
+      "body": "Add your first contractor to start managing your registry.",
+      "cta": "Add contractor"
+    },
+    "noResults": {
+      "heading": "No contractors found",
+      "body": "Try adjusting your search or filters.",
+      "cta": "Clear filters"
+    },
+    "pagination": {
+      "rowsPerPage": "Rows per page",
+      "of": "of {total}",
+      "page": "Page {page} of {totalPages}"
+    },
+    "sidePanel": {
+      "openFullProfile": "Open full profile",
+      "details": "Details",
+      "recentActivity": "Recent activity"
+    },
+    "exported": "Exported {count} contractors",
+    "ownerAssigned": "Owner assigned to {count} contractors",
+    "archived": "Archived {count} contractors",
+    "error": {
+      "loadFailed": "Could not load contractors. Check your connection and try again.",
+      "retry": "Try again"
+    }
+  },
+  "ContractorProfile": {
+    "breadcrumb": "Contractors",
+    "actions": {
+      "edit": "Edit contractor",
+      "addContract": "Add contract",
+      "uploadInvoice": "Upload invoice",
+      "startOnboarding": "Start onboarding",
+      "startOffboarding": "Start offboarding",
+      "markInactive": "Mark as inactive",
+      "activate": "Activate",
+      "completeOffboarding": "Complete offboarding",
+      "archive": "Archive"
+    },
+    "tabs": {
+      "overview": "Overview",
+      "contracts": "Contracts",
+      "documents": "Documents",
+      "workflows": "Workflows",
+      "invoices": "Invoices",
+      "payments": "Payments",
+      "activity": "Activity",
+      "compliance": "Compliance"
+    },
+    "placeholder": {
+      "heading": "Coming in Phase {phase}",
+      "contracts": "Contract management with versioning and expiry tracking will be available here.",
+      "documents": "Document storage with signed URLs and version history will be available here.",
+      "workflows": "Workflow automation with task management will be available here.",
+      "invoices": "Invoice intake, matching, and processing will be available here.",
+      "payments": "Payment runs and bank file export will be available here."
+    },
+    "overview": {
+      "companyDetails": "Company details",
+      "billingInfo": "Billing information",
+      "activeContract": "Active contract",
+      "noActiveContract": "No active contract",
+      "healthCard": "Compliance health",
+      "healthChecks": {
+        "documents": "Documents complete?",
+        "contract": "Contract active?",
+        "tasks": "No overdue tasks?",
+        "invoices": "No unpaid invoices?"
+      },
+      "keyDates": "Key dates",
+      "createdAt": "Created",
+      "updatedAt": "Last updated",
+      "contractEndDate": "Contract end date",
+      "nextInvoice": "Next invoice expected",
+      "fields": {
+        "legalName": "Legal name",
+        "displayName": "Display name",
+        "type": "Contractor type",
+        "nip": "NIP",
+        "vatEu": "VAT-EU",
+        "regon": "REGON",
+        "email": "Email",
+        "phone": "Phone",
+        "address": "Address",
+        "country": "Country",
+        "billingModel": "Billing model",
+        "rate": "Rate",
+        "currency": "Currency",
+        "bankAccount": "Bank account",
+        "paymentTerms": "Payment terms",
+        "paymentTermsDays": "{days} days"
+      }
+    },
+    "compliance": {
+      "requiredDocuments": "Required documents",
+      "upload": "Upload document",
+      "noRequirements": "No compliance requirements configured for this contractor type.",
+      "status": {
+        "SATISFIED": "Uploaded",
+        "MISSING": "Missing",
+        "EXPIRED": "Expired",
+        "PENDING": "Pending",
+        "WAIVED": "Waived"
+      },
+      "expires": "Expires",
+      "expiringSoon": "Expiring soon"
+    },
+    "rightRail": {
+      "activity": "Activity",
+      "notes": "Quick notes",
+      "reminders": "Reminders",
+      "noActivity": "No activity yet",
+      "noReminders": "No upcoming reminders",
+      "notesPlaceholder": "Add a note...",
+      "save": "Save",
+      "saving": "Saving...",
+      "saved": "Note saved",
+      "created": "Contractor created",
+      "profileUpdated": "Profile updated",
+      "lifecycleStage": "Status: {stage}"
+    },
+    "lifecycle": {
+      "transitioned": "Status updated to {stage}",
+      "archived": "Contractor archived"
+    },
+    "error": {
+      "loadFailed": "Could not load contractor profile. Try again.",
+      "notFound": "Contractor not found",
+      "backToList": "Back to contractors",
+      "retry": "Try again"
+    },
+    "comingIn": "Coming in Phase {phase}"
+  },
   "Common": {
     "networkError": "Connection error. Check your internet and try again.",
     "signOut": "Sign out",
