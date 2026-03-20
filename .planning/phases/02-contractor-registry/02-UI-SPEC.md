@@ -143,7 +143,7 @@ All type badges use `--secondary` background with `--secondary-foreground` text.
 | Search placeholder | Search by name, company, NIP, or email... | Szukaj po nazwie, firmie, NIP lub email... |
 | Filter button label | Filters | Filtry |
 | Bulk action: assign owner | Assign owner | Przypisz opiekuna |
-| Bulk action: export | Export | Eksportuj |
+| Bulk action: export | Export contractors | Eksportuj kontrahentow |
 | Bulk action: archive | Archive | Archiwizuj |
 | Bulk action: launch workflow | Launch workflow | Uruchom proces |
 | Empty state heading | No contractors yet | Brak kontrahentow |
@@ -168,7 +168,8 @@ All type badges use `--secondary` background with `--secondary-foreground` text.
 | Step 2 next CTA | Next: Assignment | Dalej: Przypisanie |
 | Step 3 submit CTA | Add contractor | Dodaj kontrahenta |
 | Back button | Back | Wstecz |
-| Cancel button | Cancel | Anuluj |
+| Close button (pristine form) | Close | Zamknij |
+| Discard button (modified form) | Discard changes | Odrzuc zmiany |
 | NIP field label | NIP (Tax ID) | NIP |
 | NIP autofill button | Fetch from GUS | Pobierz z GUS |
 | NIP autofill loading | Fetching company data... | Pobieranie danych firmy... |
@@ -197,7 +198,7 @@ All type badges use `--secondary` background with `--secondary-foreground` text.
 | Element | Copy (EN) | Copy (PL) |
 |---------|-----------|-----------|
 | Breadcrumb | Contractors / {contractor name} | Kontrahenci / {contractor name} |
-| Action: Edit | Edit | Edytuj |
+| Action: Edit | Edit contractor | Edytuj kontrahenta |
 | Action: Add contract | Add contract | Dodaj umowe |
 | Action: Upload invoice | Upload invoice | Dodaj fakture |
 | Action: Start onboarding | Start onboarding | Rozpocznij onboarding |
@@ -238,7 +239,7 @@ All type badges use `--secondary` background with `--secondary-foreground` text.
 | Element | Copy (EN) | Copy (PL) |
 |---------|-----------|-----------|
 | Required documents heading | Required documents | Wymagane dokumenty |
-| Upload CTA | Upload | Przeslij |
+| Upload CTA | Upload document | Przeslij dokument |
 | Status: uploaded | Uploaded | Przeslano |
 | Status: missing | Missing | Brak |
 | Status: expired | Expired | Wygaslo |
@@ -303,7 +304,7 @@ All type badges use `--secondary` background with `--secondary-foreground` text.
 - **Search:** Debounce 300ms, minimum 2 characters. Search triggers server-side PostgreSQL full-text search. Loading indicator in search input during query.
 - **Filters:** Popover panels for each filter. Multi-select for status, owner, team, billing model. Date range picker for contract end date. Single-select for compliance health. Active filters shown as badges below the filter bar with "x" to remove individual filters. "Clear all" link when any filter active.
 - **Pagination:** Bottom of table. Page size selector (10, 25, 50). Previous/Next buttons. "Page X of Y" indicator.
-- **Bulk actions:** Toolbar appears above table when 1+ rows selected. Contains: assign owner (opens select popover), export (dropdown: CSV/XLSX), archive (confirmation dialog), launch workflow (opens workflow picker).
+- **Bulk actions:** Toolbar appears above table when 1+ rows selected. Contains: assign owner (opens select popover), export contractors (dropdown: CSV/XLSX), archive (confirmation dialog), launch workflow (opens workflow picker).
 - **Export:** Downloads file immediately via browser. Toast confirms "Exported {count} contractors".
 
 ### Side Panel
@@ -318,7 +319,7 @@ All type badges use `--secondary` background with `--secondary-foreground` text.
 - **Step navigation:** Progress indicator at top showing 3 steps. Completed steps show checkmark. Current step highlighted with `--primary`. Future steps grayed out.
 - **Step validation:** Each step validates on "Next" click. Invalid fields show inline error below the field. Step does not advance until valid.
 - **GUS autofill:** User enters NIP, clicks "Fetch from GUS". Button shows spinner during fetch. On success: auto-fills legal name, address, REGON. Fields are editable after autofill. On failure: toast with error, fields remain empty for manual entry.
-- **Cancel:** Confirmation if any field has been modified ("Discard changes?"). No confirmation if form is pristine.
+- **Dismiss:** If no fields have been modified, the dismiss button reads "Close". If any field has been modified, the button reads "Discard changes" and triggers a confirmation dialog ("Discard changes? All entered data will be lost." with "Discard changes" as the destructive CTA and "Keep editing" as the secondary action).
 - **Success:** Dialog closes, toast "Contractor added", list refreshes, new contractor appears at top (if sorted by created date).
 
 ### Contractor Profile Page
