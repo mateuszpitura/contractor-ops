@@ -285,7 +285,7 @@ All task type badges use `--muted` background with `--muted-foreground` text and
 | Search placeholder | Search templates... | Szukaj szablonow... |
 | Task count label | {count} tasks | {count} zadan |
 | Select CTA | Start | Rozpocznij |
-| Cancel CTA | Cancel | Anuluj |
+| Close CTA | Close | Zamknij |
 | No templates heading | No templates available | Brak dostepnych szablonow |
 | No templates body | Ask your admin to create a workflow template. | Popros administratora o utworzenie szablonu procesu. |
 
