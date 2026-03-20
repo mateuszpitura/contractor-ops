@@ -51,3 +51,18 @@ export type {
   ContractExpiryReminderInput,
   OrgExpiryReminderDefaultsInput,
 } from "./contract.js";
+
+export {
+  documentRequestUploadSchema,
+  documentConfirmUploadSchema,
+  documentLinkSchema,
+  documentListSchema,
+  documentVersionUploadSchema,
+} from "./document.js";
+export type {
+  DocumentRequestUploadInput,
+  DocumentConfirmUploadInput,
+  DocumentLinkInput,
+  DocumentListInput,
+  DocumentVersionUploadInput,
+} from "./document.js";
