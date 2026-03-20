@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ContractorDataTable } from "@/components/contractors/contractor-table/data-table";
 import { ContractorSidePanel } from "@/components/contractors/contractor-side-panel";
+import { WizardDialog } from "@/components/contractors/contractor-wizard/wizard-dialog";
 import type { ContractorRow } from "@/components/contractors/contractor-table/columns";
 
 /**
@@ -18,7 +19,7 @@ function ContractorsContent() {
   const [selectedContractor, setSelectedContractor] =
     useState<ContractorRow | null>(null);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
-  const [, setWizardOpen] = useState(false);
+  const [wizardOpen, setWizardOpen] = useState(false);
 
   const handleRowClick = (contractor: ContractorRow) => {
     setSelectedContractor(contractor);
@@ -48,6 +49,9 @@ function ContractorsContent() {
         open={sidePanelOpen}
         onOpenChange={setSidePanelOpen}
       />
+
+      {/* Add contractor wizard */}
+      <WizardDialog open={wizardOpen} onOpenChange={setWizardOpen} />
     </div>
   );
 }

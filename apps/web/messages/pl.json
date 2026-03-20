@@ -187,7 +187,21 @@
     "required": "To pole jest wymagane",
     "invalidEmail": "Podaj prawidlowy adres email",
     "passwordTooShort": "Haslo musi miec co najmniej 8 znakow",
-    "orgNameTooShort": "Nazwa organizacji musi miec co najmniej 2 znaki"
+    "orgNameTooShort": "Nazwa organizacji musi miec co najmniej 2 znaki",
+    "contractor": {
+      "legalNameRequired": "Nazwa prawna jest wymagana",
+      "nipRequired": "NIP jest wymagany",
+      "nipFormat": "NIP musi skladac sie z 10 cyfr",
+      "nipChecksum": "Nieprawidlowy numer NIP",
+      "emailRequired": "Email kontaktowy jest wymagany",
+      "emailFormat": "Podaj prawidlowy adres email",
+      "billingModelRequired": "Wybierz model rozliczen",
+      "currencyRequired": "Wybierz walute",
+      "rateRequired": "Stawka domyslna jest wymagana",
+      "ratePositive": "Stawka musi byc liczba dodatnia",
+      "ownerRequired": "Wybierz opiekuna",
+      "ibanFormat": "Podaj prawidlowy numer IBAN"
+    }
   },
   "Contractors": {
     "pageTitle": "Kontrahenci",
@@ -384,6 +398,63 @@
       "retry": "Sprobuj ponownie"
     },
     "comingIn": "Dostepne w fazie {phase}"
+  },
+  "ContractorWizard": {
+    "title": "Dodaj kontrahenta",
+    "step1": "Dane firmy",
+    "step2": "Rozliczenia",
+    "step3": "Przypisanie",
+    "next1": "Dalej: Rozliczenia",
+    "next2": "Dalej: Przypisanie",
+    "submit": "Dodaj kontrahenta",
+    "back": "Wstecz",
+    "close": "Zamknij",
+    "discardChanges": "Odrzuc zmiany",
+    "discardConfirm": {
+      "title": "Odrzucic zmiany?",
+      "body": "Wszystkie wprowadzone dane zostana utracone.",
+      "discard": "Odrzuc zmiany",
+      "keep": "Kontynuuj edycje"
+    },
+    "fields": {
+      "nip": "NIP",
+      "nipFetch": "Pobierz z GUS",
+      "nipFetching": "Pobieranie danych firmy...",
+      "nipSuccess": "Dane firmy pobrane z GUS",
+      "nipError": "Nie udalo sie pobrac danych z GUS. Wprowadz dane recznie.",
+      "legalName": "Nazwa prawna",
+      "type": "Typ kontrahenta",
+      "typeOptions": {
+        "SOLE_TRADER": "Jednoosobowa dzialalnosc (JDG)",
+        "COMPANY": "Spolka (sp. z o.o. / S.A.)",
+        "INDIVIDUAL_FREELANCER": "Freelancer",
+        "OTHER": "Inne"
+      },
+      "email": "Email kontaktowy",
+      "vatId": "VAT-EU",
+      "address": "Adres siedziby",
+      "addressLine1": "Ulica i numer",
+      "addressLine2": "Linia 2",
+      "city": "Miasto",
+      "postalCode": "Kod pocztowy",
+      "billingModel": "Model rozliczen",
+      "currency": "Waluta",
+      "rate": "Stawka domyslna",
+      "bankAccount": "Numer konta (IBAN)",
+      "paymentTerms": "Termin platnosci (dni)",
+      "owner": "Opiekun",
+      "team": "Zespol",
+      "project": "Projekt",
+      "costCenter": "Centrum kosztow"
+    },
+    "billingModelOptions": {
+      "FIXED": "Stala",
+      "HOURLY": "Godzinowa",
+      "PROJECT": "Projektowa",
+      "MILESTONE": "Kamieniowa"
+    },
+    "success": "Kontrahent dodany",
+    "error": "Nie udalo sie dodac kontrahenta. Sprobuj ponownie."
   },
   "Common": {
     "networkError": "Blad polaczenia. Sprawdz internet i sprobuj ponownie.",

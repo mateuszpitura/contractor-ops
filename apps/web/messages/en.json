@@ -187,7 +187,21 @@
     "required": "This field is required",
     "invalidEmail": "Enter a valid email address",
     "passwordTooShort": "Password must be at least 8 characters",
-    "orgNameTooShort": "Organization name must be at least 2 characters"
+    "orgNameTooShort": "Organization name must be at least 2 characters",
+    "contractor": {
+      "legalNameRequired": "Legal name is required",
+      "nipRequired": "NIP is required",
+      "nipFormat": "NIP must be 10 digits",
+      "nipChecksum": "Invalid NIP number",
+      "emailRequired": "Contact email is required",
+      "emailFormat": "Enter a valid email address",
+      "billingModelRequired": "Select a billing model",
+      "currencyRequired": "Select a currency",
+      "rateRequired": "Default rate is required",
+      "ratePositive": "Rate must be a positive number",
+      "ownerRequired": "Select an owner",
+      "ibanFormat": "Enter a valid IBAN"
+    }
   },
   "Contractors": {
     "pageTitle": "Contractors",
@@ -384,6 +398,63 @@
       "retry": "Try again"
     },
     "comingIn": "Coming in Phase {phase}"
+  },
+  "ContractorWizard": {
+    "title": "Add contractor",
+    "step1": "Company details",
+    "step2": "Billing",
+    "step3": "Assignment",
+    "next1": "Next: Billing",
+    "next2": "Next: Assignment",
+    "submit": "Add contractor",
+    "back": "Back",
+    "close": "Close",
+    "discardChanges": "Discard changes",
+    "discardConfirm": {
+      "title": "Discard changes?",
+      "body": "All entered data will be lost.",
+      "discard": "Discard changes",
+      "keep": "Keep editing"
+    },
+    "fields": {
+      "nip": "NIP (Tax ID)",
+      "nipFetch": "Fetch from GUS",
+      "nipFetching": "Fetching company data...",
+      "nipSuccess": "Company data loaded from GUS",
+      "nipError": "Could not fetch data from GUS. Enter details manually.",
+      "legalName": "Legal name",
+      "type": "Contractor type",
+      "typeOptions": {
+        "SOLE_TRADER": "Sole proprietorship (JDG)",
+        "COMPANY": "Company (sp. z o.o. / S.A.)",
+        "INDIVIDUAL_FREELANCER": "Freelancer",
+        "OTHER": "Other"
+      },
+      "email": "Contact email",
+      "vatId": "VAT-EU",
+      "address": "Registered address",
+      "addressLine1": "Street address",
+      "addressLine2": "Line 2",
+      "city": "City",
+      "postalCode": "Postal code",
+      "billingModel": "Billing model",
+      "currency": "Currency",
+      "rate": "Default rate",
+      "bankAccount": "Bank account (IBAN)",
+      "paymentTerms": "Payment terms (days)",
+      "owner": "Owner",
+      "team": "Team",
+      "project": "Project",
+      "costCenter": "Cost center"
+    },
+    "billingModelOptions": {
+      "FIXED": "Fixed",
+      "HOURLY": "Hourly",
+      "PROJECT": "Project",
+      "MILESTONE": "Milestone"
+    },
+    "success": "Contractor added",
+    "error": "Failed to add contractor. Try again."
   },
   "Common": {
     "networkError": "Connection error. Check your internet and try again.",
