@@ -90,14 +90,14 @@ Plans:
   3. Assigned user can complete, skip, or reassign tasks and add comments and attachments
   4. System detects overdue tasks and sends notifications to assignees
   5. User can view workflow progress showing completed vs total tasks and timeline
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- [ ] 04-01: Workflow template builder (tasks, ordering, role assignment)
-- [ ] 04-02: Task dependencies and conditional logic engine
-- [ ] 04-03: Workflow execution engine and runtime task resolution
-- [ ] 04-04: Task management UI (complete, skip, reassign, comment, attach)
-- [ ] 04-05: Overdue detection and workflow progress tracking
+- [ ] 04-01-PLAN.md — Workflow Zod validators and complete tRPC router (template CRUD, run lifecycle, task actions, comments, overdue count)
+- [ ] 04-02-PLAN.md — Template builder UI with dnd-kit sortable task list, inline expandable cards, AND/OR condition builder, i18n
+- [ ] 04-03-PLAN.md — Workflows page with Active runs table, My Tasks list, Templates tab, side panel, template picker dialog
+- [ ] 04-04-PLAN.md — Workflow run detail page with progress bar, task checklist, inline actions, comments, attachments
+- [ ] 04-05-PLAN.md — Contractor profile Workflows tab, header buttons, bulk action, sidebar overdue badge, starter templates
 
 ### Phase 5: Invoice Intake & Matching
 **Goal**: Invoices arrive via upload or email, get automatically matched to contractors and contracts, flagged for deviations and duplicates, and are ready for the approval pipeline
