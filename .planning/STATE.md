@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: in-progress
-stopped_at: Completed 04-01 workflow backend
-last_updated: "2026-03-20T16:23:27Z"
-last_activity: 2026-03-20 — Completed 04-01 workflow backend (validators + tRPC router)
+status: executing
+stopped_at: Completed 04-03-PLAN.md
+last_updated: "2026-03-20T16:36:45.666Z"
+last_activity: 2026-03-20 — Completed 04-03 workflows page (runs table, my tasks, templates, side panel, template picker)
 progress:
   total_phases: 10
   completed_phases: 3
   total_plans: 18
-  completed_plans: 14
-  percent: 78
+  completed_plans: 15
+  percent: 83
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-18)
 ## Current Position
 
 Phase: 4 of 10 (Workflow Engine)
-Plan: 2 of 5 in current phase
+Plan: 4 of 5 in current phase
 Status: In Progress
-Last activity: 2026-03-20 — Completed 04-01 workflow backend (validators + tRPC router)
+Last activity: 2026-03-20 — Completed 04-03 workflows page (runs table, my tasks, templates, side panel, template picker)
 
-Progress: [████████░░] 78%
+Progress: [████████░░] 83%
 
 ## Performance Metrics
 
@@ -58,6 +58,7 @@ Progress: [████████░░] 78%
 | Phase 03-05 PP05 | 7min | 2 tasks | 13 files |
 | Phase 03-06 P06 | 9min | 2 tasks | 11 files |
 | Phase 04-01 P01 | 7min | 2 tasks | 4 files |
+| Phase 04 P03 | 8min | 2 tasks | 13 files |
 
 ## Accumulated Context
 
@@ -107,6 +108,10 @@ Recent decisions affecting current work:
 - [04-01]: Inline addDays/addHours helpers in api package instead of adding date-fns dependency
 - [04-01]: configJson uses undefined fallback for Prisma nullable JSON (Prisma type-only export prevents Prisma.JsonNull usage)
 - [04-01]: Condition-skipped tasks excluded from both progress numerator and denominator
+- [Phase 04]: Mirrored contract-table pattern exactly for workflow-runs-table consistency
+- [Phase 04]: Tab state synced to URL via nuqs parseAsString for deep-linking
+- [Phase 04]: Templates tab conditionally rendered using usePermissions().can('workflow', ['create'])
+- [Phase 04]: Template picker accepts both single contractorId and bulk contractorIds with Promise.all
 
 ### Pending Todos
 
@@ -120,6 +125,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T16:23:27Z
-Stopped at: Completed 04-01-PLAN.md
-Resume file: .planning/phases/04-workflow-engine/04-02-PLAN.md
+Last session: 2026-03-20T16:36:45.664Z
+Stopped at: Completed 04-03-PLAN.md
+Resume file: None
