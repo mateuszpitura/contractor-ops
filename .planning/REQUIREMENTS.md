@@ -17,7 +17,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **ORG-06**: System enforces RBAC with 8 roles: admin, finance admin, ops manager, team manager, legal/compliance viewer, IT admin, external accountant, readonly
 - [x] **ORG-07**: All data access is scoped to the user's organization with no cross-tenant leakage
 - [ ] **ORG-08**: Admin can configure approval chain templates (default chains, amount thresholds)
-- [ ] **ORG-09**: Admin can manage workflow templates (create, edit, activate/deactivate)
+- [x] **ORG-09**: Admin can manage workflow templates (create, edit, activate/deactivate)
 - [ ] **ORG-10**: Admin can view searchable, filterable, exportable audit log of all critical actions
 
 ### Contractors
@@ -46,16 +46,16 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Workflow Engine
 
-- [ ] **WKFL-01**: Admin can create workflow templates (onboarding, offboarding, document collection, custom)
-- [ ] **WKFL-02**: Admin can define tasks within templates with: title, type, description, due date offset, assignee role, required flag
-- [ ] **WKFL-03**: Admin can define task dependencies (task B blocked until task A completes)
-- [ ] **WKFL-04**: Admin can add conditional logic (e.g., include task only if contractor type = JDG)
-- [ ] **WKFL-05**: User can start a workflow run from a template for a specific contractor
-- [ ] **WKFL-06**: System resolves role-based task assignments to specific users at runtime
-- [ ] **WKFL-07**: Assigned user can complete, skip, or reassign tasks
-- [ ] **WKFL-08**: User can add comments and attachments to workflow tasks
-- [ ] **WKFL-09**: System detects and flags overdue tasks with notifications
-- [ ] **WKFL-10**: User can view workflow progress (X/Y tasks complete, timeline)
+- [x] **WKFL-01**: Admin can create workflow templates (onboarding, offboarding, document collection, custom)
+- [x] **WKFL-02**: Admin can define tasks within templates with: title, type, description, due date offset, assignee role, required flag
+- [x] **WKFL-03**: Admin can define task dependencies (task B blocked until task A completes)
+- [x] **WKFL-04**: Admin can add conditional logic (e.g., include task only if contractor type = JDG)
+- [x] **WKFL-05**: User can start a workflow run from a template for a specific contractor
+- [x] **WKFL-06**: System resolves role-based task assignments to specific users at runtime
+- [x] **WKFL-07**: Assigned user can complete, skip, or reassign tasks
+- [x] **WKFL-08**: User can add comments and attachments to workflow tasks
+- [x] **WKFL-09**: System detects and flags overdue tasks with notifications
+- [x] **WKFL-10**: User can view workflow progress (X/Y tasks complete, timeline)
 
 ### Invoice Pipeline
 
@@ -180,7 +180,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ORG-06 | Phase 1 | Complete |
 | ORG-07 | Phase 1 | Complete |
 | ORG-08 | Phase 6 | Pending |
-| ORG-09 | Phase 4 | Pending |
+| ORG-09 | Phase 4 | Complete |
 | ORG-10 | Phase 9 | Pending |
 | CONT-01 | Phase 2 | Complete |
 | CONT-02 | Phase 2 | Complete |
@@ -200,16 +200,16 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DOCS-02 | Phase 3 | Complete |
 | DOCS-03 | Phase 3 | Complete |
 | DOCS-04 | Phase 3 | Complete |
-| WKFL-01 | Phase 4 | Pending |
-| WKFL-02 | Phase 4 | Pending |
-| WKFL-03 | Phase 4 | Pending |
-| WKFL-04 | Phase 4 | Pending |
-| WKFL-05 | Phase 4 | Pending |
-| WKFL-06 | Phase 4 | Pending |
-| WKFL-07 | Phase 4 | Pending |
-| WKFL-08 | Phase 4 | Pending |
-| WKFL-09 | Phase 4 | Pending |
-| WKFL-10 | Phase 4 | Pending |
+| WKFL-01 | Phase 4 | Complete |
+| WKFL-02 | Phase 4 | Complete |
+| WKFL-03 | Phase 4 | Complete |
+| WKFL-04 | Phase 4 | Complete |
+| WKFL-05 | Phase 4 | Complete |
+| WKFL-06 | Phase 4 | Complete |
+| WKFL-07 | Phase 4 | Complete |
+| WKFL-08 | Phase 4 | Complete |
+| WKFL-09 | Phase 4 | Complete |
+| WKFL-10 | Phase 4 | Complete |
 | INV-01 | Phase 5 | Pending |
 | INV-02 | Phase 5 | Pending |
 | INV-03 | Phase 5 | Pending |

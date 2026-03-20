@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: completed
-stopped_at: Phase 4 planned (5 plans, 3 waves)
-last_updated: "2026-03-20T15:55:03.187Z"
-last_activity: 2026-03-20 — Completed 03-06 contractor profile tab integration, i18n, and settings expiry reminders
+status: in-progress
+stopped_at: Completed 04-01 workflow backend
+last_updated: "2026-03-20T16:23:27Z"
+last_activity: 2026-03-20 — Completed 04-01 workflow backend (validators + tRPC router)
 progress:
   total_phases: 10
   completed_phases: 3
   total_plans: 18
-  completed_plans: 13
-  percent: 69
+  completed_plans: 14
+  percent: 78
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-18)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 3: Contracts & Documents
+**Current focus:** Phase 4: Workflow Engine
 
 ## Current Position
 
-Phase: 3 of 10 (Contracts & Documents)
-Plan: 6 of 6 in current phase
-Status: Phase Complete
-Last activity: 2026-03-20 — Completed 03-06 contractor profile tab integration, i18n, and settings expiry reminders
+Phase: 4 of 10 (Workflow Engine)
+Plan: 2 of 5 in current phase
+Status: In Progress
+Last activity: 2026-03-20 — Completed 04-01 workflow backend (validators + tRPC router)
 
-Progress: [███████░░░] 69%
+Progress: [████████░░] 78%
 
 ## Performance Metrics
 
@@ -57,6 +57,7 @@ Progress: [███████░░░] 69%
 | Phase 03-04 P04 | 10min | 2 tasks | 8 files |
 | Phase 03-05 PP05 | 7min | 2 tasks | 13 files |
 | Phase 03-06 P06 | 9min | 2 tasks | 11 files |
+| Phase 04-01 P01 | 7min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -103,6 +104,9 @@ Recent decisions affecting current work:
 - [Phase 03-06]: DropZone always visible in Documents tab empty state for immediate upload convenience
 - [Phase 03-06]: Compliance tab upload button scrolls to DropZone section rather than opening separate dialog
 - [Phase 03-06]: ExpiryReminderDefaults as standalone Card component in Settings general tab
+- [04-01]: Inline addDays/addHours helpers in api package instead of adding date-fns dependency
+- [04-01]: configJson uses undefined fallback for Prisma nullable JSON (Prisma type-only export prevents Prisma.JsonNull usage)
+- [04-01]: Condition-skipped tasks excluded from both progress numerator and denominator
 
 ### Pending Todos
 
@@ -116,6 +120,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T15:55:03.185Z
-Stopped at: Phase 4 planned (5 plans, 3 waves)
-Resume file: .planning/phases/04-workflow-engine/04-01-PLAN.md
+Last session: 2026-03-20T16:23:27Z
+Stopped at: Completed 04-01-PLAN.md
+Resume file: .planning/phases/04-workflow-engine/04-02-PLAN.md
