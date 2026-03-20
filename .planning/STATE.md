@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 3 planned (6 plans, 4 waves)
-last_updated: "2026-03-20T14:07:25.347Z"
-last_activity: 2026-03-20 — Completed 02-02 contractor list UI with TanStack Table, wizard, full i18n
+stopped_at: Completed 03-02-PLAN.md
+last_updated: "2026-03-20T14:08:43.476Z"
+last_activity: 2026-03-20 — Completed 03-02 document backend (R2 service, MIME validator, virus scanner, document router)
 progress:
   total_phases: 10
   completed_phases: 2
   total_plans: 13
-  completed_plans: 8
-  percent: 80
+  completed_plans: 9
+  percent: 62
 ---
 
 # Project State
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-03-18)
 ## Current Position
 
 Phase: 3 of 10 (Contracts & Documents)
-Plan: 1 of 6 in current phase
+Plan: 2 of 6 in current phase
 Status: In Progress
-Last activity: 2026-03-20 — Completed 03-01 contract backend (validators, tRPC router, FTS, settings)
+Last activity: 2026-03-20 — Completed 03-02 document backend (R2 service, MIME validator, virus scanner, document router)
 
 Progress: [██████░░░░] 62%
 
@@ -52,6 +52,7 @@ Progress: [██████░░░░] 62%
 - Trend: stable
 
 *Updated after each plan completion*
+| Phase 03-02 P02 | 6min | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -86,6 +87,8 @@ Recent decisions affecting current work:
 - [03-01]: contractUpdateSchema uses plain .partial() without .refine() to preserve tRPC type inference -- date validation in procedure
 - [03-01]: Org-level expiry reminder defaults stored in Organization.settingsJson under contractExpiryReminderDaysBefore key
 - [03-01]: Per-contract reminder overrides stored in Contract.metadataJson under reminderDaysBefore key
+- [Phase 03-02]: Document permission as separate resource in auth AC (not nested under contract)
+- [Phase 03-02]: Virus scanning is fire-and-forget async; ClamAV unavailability marks FAILED (never skips)
 
 ### Pending Todos
 
@@ -99,6 +102,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T14:06:17Z
-Stopped at: Completed 03-01-PLAN.md
-Resume file: .planning/phases/03-contracts-documents/03-02-PLAN.md
+Last session: 2026-03-20T14:08:43.474Z
+Stopped at: Completed 03-02-PLAN.md
+Resume file: None

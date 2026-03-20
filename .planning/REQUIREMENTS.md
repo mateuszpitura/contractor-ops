@@ -35,14 +35,14 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Contracts & Documents
 
 - [x] **CNTR-01**: User can create a contract with metadata (type, dates, notice period, rate, currency, billing cycle, payment terms)
-- [ ] **CNTR-02**: User can upload contract documents (PDF, DOCX) with versioning
+- [x] **CNTR-02**: User can upload contract documents (PDF, DOCX) with versioning
 - [x] **CNTR-03**: System tracks contract statuses: draft → active → expiring → expired → terminated → superseded
 - [x] **CNTR-04**: System sends configurable reminders before contract expiration (30/60/90 days)
 - [x] **CNTR-05**: User can add amendments to existing contracts
-- [ ] **DOCS-01**: User can upload documents and link them to contractors and/or contracts
-- [ ] **DOCS-02**: User can download documents via short-lived signed URLs
-- [ ] **DOCS-03**: System validates file type (MIME content) and scans uploads for malware
-- [ ] **DOCS-04**: System tracks document versions and maintains upload history
+- [x] **DOCS-01**: User can upload documents and link them to contractors and/or contracts
+- [x] **DOCS-02**: User can download documents via short-lived signed URLs
+- [x] **DOCS-03**: System validates file type (MIME content) and scans uploads for malware
+- [x] **DOCS-04**: System tracks document versions and maintains upload history
 
 ### Workflow Engine
 
@@ -192,14 +192,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CONT-08 | Phase 2 | Complete |
 | CONT-09 | Phase 2 | Complete |
 | CNTR-01 | Phase 3 | Complete |
-| CNTR-02 | Phase 3 | Pending |
+| CNTR-02 | Phase 3 | Complete |
 | CNTR-03 | Phase 3 | Complete |
 | CNTR-04 | Phase 3 | Complete |
 | CNTR-05 | Phase 3 | Complete |
-| DOCS-01 | Phase 3 | Pending |
-| DOCS-02 | Phase 3 | Pending |
-| DOCS-03 | Phase 3 | Pending |
-| DOCS-04 | Phase 3 | Pending |
+| DOCS-01 | Phase 3 | Complete |
+| DOCS-02 | Phase 3 | Complete |
+| DOCS-03 | Phase 3 | Complete |
+| DOCS-04 | Phase 3 | Complete |
 | WKFL-01 | Phase 4 | Pending |
 | WKFL-02 | Phase 4 | Pending |
 | WKFL-03 | Phase 4 | Pending |
