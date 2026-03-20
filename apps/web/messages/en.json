@@ -105,6 +105,14 @@
       "fiscalYearPlaceholder": "Select month",
       "billingEmail": "Billing email",
       "billingEmailOptional": "(optional)"
+    },
+    "expiryReminders": {
+      "heading": "Contract Expiry Reminders",
+      "description": "Default reminder intervals for all contracts. Individual contracts can override these.",
+      "label": "Days before expiry",
+      "placeholder": "e.g., 30, 60, 90",
+      "save": "Save defaults",
+      "successToast": "Reminder defaults updated"
     }
   },
   "Users": {
@@ -363,6 +371,7 @@
     "compliance": {
       "requiredDocuments": "Required documents",
       "upload": "Upload document",
+      "uploadCompliance": "Upload compliance document",
       "noRequirements": "No compliance requirements configured for this contractor type.",
       "status": {
         "SATISFIED": "Uploaded",
@@ -458,14 +467,113 @@
     "error": "Failed to add contractor. Try again."
   },
   "Contracts": {
+    "pageTitle": "Contracts",
+    "newContract": "New contract",
+    "searchPlaceholder": "Search by title, contractor, or type...",
+    "filters": "Filters",
+    "clearAll": "Clear all",
+    "columnToggle": "Toggle columns",
+    "export": "Export contracts",
+    "exportCsv": "Export as CSV",
+    "exportXlsx": "Export as XLSX",
+    "terminate": "Terminate",
+    "dateFrom": "From",
+    "dateTo": "To",
+    "columns": {
+      "selectAll": "Select all",
+      "selectRow": "Select row",
+      "title": "Title",
+      "contractor": "Contractor",
+      "type": "Type",
+      "status": "Status",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "rate": "Rate",
+      "currency": "Currency",
+      "billingCycle": "Billing cycle",
+      "owner": "Owner",
+      "complianceRisk": "Compliance risk"
+    },
+    "empty": {
+      "heading": "No contracts yet",
+      "body": "Create your first contract to start managing agreements.",
+      "cta": "New contract"
+    },
+    "noResults": {
+      "heading": "No contracts found",
+      "body": "Try adjusting your search or filters.",
+      "cta": "Clear filters"
+    },
+    "selected": "{count} selected",
+    "pagination": {
+      "rowsPerPage": "Rows per page",
+      "of": "of {total}",
+      "page": "Page {page} of {totalPages}"
+    },
+    "rowsPerPage": "Rows per page",
+    "of": "of {total}",
+    "page": "Page {page} of {totalPages}",
+    "daysRemaining": "{count} days remaining",
+    "daysExpired": "Expired {count} days ago",
+    "type": {
+      "B2B_MASTER_SERVICE": "B2B Service Agreement",
+      "STATEMENT_OF_WORK": "Statement of Work",
+      "NDA": "Non-Disclosure Agreement",
+      "IP_ASSIGNMENT": "IP Assignment",
+      "DPA": "Data Processing Agreement",
+      "OTHER": "Other"
+    },
+    "status": {
+      "DRAFT": "Draft",
+      "PENDING_SIGNATURE": "Pending signature",
+      "ACTIVE": "Active",
+      "EXPIRING": "Expiring",
+      "EXPIRED": "Expired",
+      "TERMINATED": "Terminated",
+      "SUPERSEDED": "Superseded",
+      "ARCHIVED": "Archived"
+    },
+    "billingModel": {
+      "MONTHLY_RETAINER": "Monthly retainer",
+      "HOURLY": "Hourly",
+      "DAILY": "Daily",
+      "MILESTONE": "Milestone",
+      "DELIVERABLE_BASED": "Deliverable-based",
+      "MIXED": "Mixed"
+    },
+    "rateType": {
+      "MONTHLY_FIXED": "Monthly fixed",
+      "PER_HOUR": "Per hour",
+      "PER_DAY": "Per day",
+      "PER_MILESTONE": "Per milestone",
+      "PER_DELIVERABLE": "Per deliverable"
+    },
+    "invoiceCycle": {
+      "WEEKLY": "Weekly",
+      "BIWEEKLY": "Biweekly",
+      "MONTHLY": "Monthly",
+      "ON_DELIVERABLE": "On deliverable",
+      "AD_HOC": "Ad hoc"
+    },
+    "risk": {
+      "LOW": "Low",
+      "MEDIUM": "Medium",
+      "HIGH": "High"
+    },
     "wizard": {
       "title": "New contract",
       "step1": "Contract details",
+      "step1Label": "Contract details",
       "step2": "Financial terms",
+      "step2Label": "Financial terms",
       "step3": "Documents",
+      "step3Label": "Documents",
       "next1": "Next: Financial terms",
+      "step1Next": "Next: Financial terms",
       "next2": "Next: Documents",
+      "step2Next": "Next: Documents",
       "submit": "Create contract",
+      "step3Submit": "Create contract",
       "back": "Back",
       "close": "Close",
       "discardChanges": "Discard changes",
@@ -497,6 +605,26 @@
         "invoiceCycle": "Invoice cycle",
         "invoiceCyclePlaceholder": "Select invoice cycle..."
       },
+      "contractorLabel": "Contractor",
+      "contractorPlaceholder": "Select contractor...",
+      "titleLabel": "Contract title",
+      "typeLabel": "Contract type",
+      "typeB2B": "B2B Service Agreement",
+      "typeNDA": "Non-Disclosure Agreement",
+      "typeSOW": "Statement of Work",
+      "typeIPAssignment": "IP Assignment",
+      "typeDPA": "Data Processing Agreement",
+      "typeOther": "Other",
+      "startDateLabel": "Start date",
+      "endDateLabel": "End date",
+      "noticePeriodLabel": "Notice period (days)",
+      "autoRenewalLabel": "Auto-renewal",
+      "rateLabel": "Rate",
+      "currencyLabel": "Currency",
+      "billingCycleLabel": "Billing cycle",
+      "rateTypeLabel": "Rate type",
+      "paymentTermsLabel": "Payment terms (days)",
+      "invoiceCycleLabel": "Invoice cycle",
       "typeOptions": {
         "B2B_MASTER_SERVICE": "B2B Service Agreement",
         "STATEMENT_OF_WORK": "Statement of Work",
@@ -534,6 +662,7 @@
         "browse": "Browse files",
         "accepted": "PDF, DOCX, XLSX, PNG, JPG up to 25 MB"
       },
+      "dropZoneHeading": "Upload contract documents",
       "skipDocuments": "Skip, add documents later",
       "scan": {
         "scanning": "Scanning...",
@@ -542,7 +671,161 @@
         "failed": "Scan failed"
       },
       "success": "Contract created",
-      "error": "Failed to create contract. Try again."
+      "successToast": "Contract created",
+      "error": "Failed to create contract. Try again.",
+      "errorToast": "Failed to create contract. Try again."
+    },
+    "detail": {
+      "breadcrumb": "Contracts",
+      "editAction": "Edit contract",
+      "addAmendmentAction": "Add amendment",
+      "uploadDocumentAction": "Upload document",
+      "terminateAction": "Terminate contract",
+      "supersedeAction": "Mark as superseded",
+      "tabOverview": "Overview",
+      "tabDocuments": "Documents",
+      "tabAmendments": "Amendments",
+      "tabActivity": "Activity",
+      "contractDetails": "Contract details",
+      "financialTerms": "Financial terms",
+      "keyDates": "Key dates",
+      "linkedContractor": "Contractor",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "noticeDeadline": "Notice deadline",
+      "daysRemaining": "{count} days remaining",
+      "expired": "Expired {count} days ago",
+      "expiringSoon": "Expires in {count} days",
+      "reminders": "Reminders"
+    },
+    "amendments": {
+      "addCTA": "Add amendment",
+      "originalContract": "Original contract",
+      "amendmentLabel": "Amendment #{n}",
+      "effectiveDate": "Effective {date}",
+      "changeSummaryLabel": "Changes",
+      "emptyHeading": "No amendments",
+      "emptyBody": "Amendments to this contract will appear here.",
+      "successToast": "Amendment added"
+    },
+    "contractorTab": {
+      "heading": "Contracts",
+      "addCTA": "Add contract",
+      "emptyHeading": "No contracts",
+      "emptyBody": "Create a contract for this contractor.",
+      "emptyCTA": "Add contract",
+      "columns": {
+        "title": "Title",
+        "status": "Status",
+        "startDate": "Start date",
+        "endDate": "End date",
+        "rate": "Rate"
+      }
+    },
+    "sidePanel": {
+      "openContract": "Open contract",
+      "details": "Details",
+      "documents": "Documents ({count})",
+      "keyDates": "Key dates"
+    },
+    "terminateDialog": {
+      "confirmTitle": "Terminate {contractTitle}?",
+      "confirmBody": "This contract will be marked as terminated. Linked invoices and documents will remain accessible. This action can be reversed by creating a new contract.",
+      "confirmCTA": "Terminate contract"
+    },
+    "deleteDraft": {
+      "confirmTitle": "Delete {contractTitle}?",
+      "confirmBody": "This draft contract will be permanently deleted. Uploaded documents will also be removed. This cannot be undone.",
+      "confirmCTA": "Delete draft"
+    },
+    "bulkTerminate": {
+      "confirmTitle": "Terminate {count} contracts?",
+      "confirmBody": "These contracts will be marked as terminated. Linked invoices and documents will remain accessible.",
+      "confirmCTA": "Terminate {count} contracts"
+    },
+    "validation": {
+      "titleRequired": "Contract title is required",
+      "contractorRequired": "Select a contractor",
+      "typeRequired": "Select a contract type",
+      "startDateRequired": "Start date is required",
+      "endDateAfterStart": "End date must be after start date",
+      "noticePeriodPositive": "Notice period must be a positive number",
+      "rateRequired": "Rate is required",
+      "ratePositive": "Rate must be a positive number",
+      "currencyRequired": "Select a currency",
+      "billingCycleRequired": "Select a billing cycle",
+      "paymentTermsRequired": "Payment terms are required",
+      "paymentTermsPositive": "Payment terms must be a positive number"
+    },
+    "errors": {
+      "loadFailed": "Could not load contracts. Check your connection and try again.",
+      "detailLoadFailed": "Could not load contract details. Try again.",
+      "retry": "Try again"
+    }
+  },
+  "Documents": {
+    "dropZone": {
+      "heading": "Upload documents",
+      "body": "Drag files here or",
+      "browse": "Browse files",
+      "accepted": "PDF, DOCX, XLSX, PNG, JPG up to 25 MB"
+    },
+    "upload": {
+      "uploading": "Uploading {filename}...",
+      "success": "{filename} uploaded",
+      "error": "Failed to upload {filename}. Try again.",
+      "invalidType": "{filename} is not a supported file type.",
+      "tooLarge": "{filename} exceeds the 25 MB limit."
+    },
+    "uploadCTA": "Upload document",
+    "uploadNewVersion": "Upload new version",
+    "download": "Download",
+    "preview": "Preview",
+    "version": "Version {n}",
+    "versionLabel": "Version {n}",
+    "currentVersion": "Current",
+    "versionHistory": "View version history",
+    "empty": {
+      "title": "No documents yet",
+      "description": "Upload contract documents to keep them organized."
+    },
+    "emptyHeading": "No documents yet",
+    "emptyBody": "Upload contract documents to keep them organized.",
+    "emptyCTA": "Upload document",
+    "threatDetected": "Threat detected - file quarantined",
+    "scan": {
+      "scanning": "Scanning for threats...",
+      "clean": "Scan passed",
+      "infected": "Threat detected - file quarantined",
+      "failed": "Scan could not complete"
+    },
+    "scanStatus": {
+      "scanning": "Scanning for threats...",
+      "clean": "Scan passed",
+      "infected": "Threat detected - file quarantined",
+      "failed": "Scan could not complete"
+    },
+    "metadata": {
+      "uploadedBy": "Uploaded by {name}",
+      "uploadedOn": "on {date}",
+      "size": "{size}"
+    },
+    "contractorTab": {
+      "heading": "Documents",
+      "uploadCTA": "Upload document",
+      "emptyHeading": "No documents",
+      "emptyBody": "Upload documents for this contractor.",
+      "emptyCTA": "Upload document"
+    },
+    "compliance": {
+      "requiredDocuments": "Required documents",
+      "uploadCompliance": "Upload compliance document",
+      "complianceTypes": "Tax certificate, business registration, insurance"
+    },
+    "errors": {
+      "uploadFailed": "Could not upload document. Check the file and try again.",
+      "downloadFailed": "Could not generate download link. Try again.",
+      "retry": "Try again"
     }
   },
   "Common": {

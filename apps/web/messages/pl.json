@@ -105,6 +105,14 @@
       "fiscalYearPlaceholder": "Wybierz miesiac",
       "billingEmail": "Email rozliczeniowy",
       "billingEmailOptional": "(opcjonalne)"
+    },
+    "expiryReminders": {
+      "heading": "Przypomnienia o wygasaniu umow",
+      "description": "Domyslne interwaly przypomnien dla wszystkich umow. Poszczegolne umowy moga je nadpisac.",
+      "label": "Dni przed wygasnieciem",
+      "placeholder": "np. 30, 60, 90",
+      "save": "Zapisz domyslne",
+      "successToast": "Domyslne przypomnienia zaktualizowane"
     }
   },
   "Users": {
@@ -363,6 +371,7 @@
     "compliance": {
       "requiredDocuments": "Wymagane dokumenty",
       "upload": "Przeslij dokument",
+      "uploadCompliance": "Przeslij dokument zgodnosci",
       "noRequirements": "Brak wymagan zgodnosci skonfigurowanych dla tego typu kontrahenta.",
       "status": {
         "SATISFIED": "Przeslano",
@@ -458,14 +467,113 @@
     "error": "Nie udalo sie dodac kontrahenta. Sprobuj ponownie."
   },
   "Contracts": {
+    "pageTitle": "Umowy",
+    "newContract": "Nowa umowa",
+    "searchPlaceholder": "Szukaj po tytule, kontrahencie lub typie...",
+    "filters": "Filtry",
+    "clearAll": "Wyczysc wszystko",
+    "columnToggle": "Przelacz kolumny",
+    "export": "Eksportuj umowy",
+    "exportCsv": "Eksportuj jako CSV",
+    "exportXlsx": "Eksportuj jako XLSX",
+    "terminate": "Rozwiaz",
+    "dateFrom": "Od",
+    "dateTo": "Do",
+    "columns": {
+      "selectAll": "Zaznacz wszystkie",
+      "selectRow": "Zaznacz wiersz",
+      "title": "Tytul",
+      "contractor": "Kontrahent",
+      "type": "Typ",
+      "status": "Status",
+      "startDate": "Data rozpoczecia",
+      "endDate": "Data zakonczenia",
+      "rate": "Stawka",
+      "currency": "Waluta",
+      "billingCycle": "Cykl rozliczen",
+      "owner": "Opiekun",
+      "complianceRisk": "Ryzyko zgodnosci"
+    },
+    "empty": {
+      "heading": "Brak umow",
+      "body": "Utworz pierwsza umowe, aby rozpoczac zarzadzanie.",
+      "cta": "Nowa umowa"
+    },
+    "noResults": {
+      "heading": "Nie znaleziono umow",
+      "body": "Sprobuj zmienic wyszukiwanie lub filtry.",
+      "cta": "Wyczysc filtry"
+    },
+    "selected": "{count} zaznaczonych",
+    "pagination": {
+      "rowsPerPage": "Wierszy na stronie",
+      "of": "z {total}",
+      "page": "Strona {page} z {totalPages}"
+    },
+    "rowsPerPage": "Wierszy na stronie",
+    "of": "z {total}",
+    "page": "Strona {page} z {totalPages}",
+    "daysRemaining": "{count} dni do konca",
+    "daysExpired": "Wygasla {count} dni temu",
+    "type": {
+      "B2B_MASTER_SERVICE": "Umowa B2B",
+      "STATEMENT_OF_WORK": "Zlecenie",
+      "NDA": "Umowa o poufnosci",
+      "IP_ASSIGNMENT": "Cesja IP",
+      "DPA": "Umowa powierzenia danych",
+      "OTHER": "Inna"
+    },
+    "status": {
+      "DRAFT": "Szkic",
+      "PENDING_SIGNATURE": "Oczekuje na podpis",
+      "ACTIVE": "Aktywna",
+      "EXPIRING": "Wygasajaca",
+      "EXPIRED": "Wygasla",
+      "TERMINATED": "Rozwiazana",
+      "SUPERSEDED": "Zastapiona",
+      "ARCHIVED": "Zarchiwizowana"
+    },
+    "billingModel": {
+      "MONTHLY_RETAINER": "Ryczalt miesieczny",
+      "HOURLY": "Godzinowa",
+      "DAILY": "Dzienna",
+      "MILESTONE": "Kamieniowa",
+      "DELIVERABLE_BASED": "Za dostarczenie",
+      "MIXED": "Mieszana"
+    },
+    "rateType": {
+      "MONTHLY_FIXED": "Stala miesieczna",
+      "PER_HOUR": "Za godzine",
+      "PER_DAY": "Za dzien",
+      "PER_MILESTONE": "Za kamien milowy",
+      "PER_DELIVERABLE": "Za dostarczenie"
+    },
+    "invoiceCycle": {
+      "WEEKLY": "Tygodniowo",
+      "BIWEEKLY": "Co dwa tygodnie",
+      "MONTHLY": "Miesieczne",
+      "ON_DELIVERABLE": "Po dostarczeniu",
+      "AD_HOC": "Ad hoc"
+    },
+    "risk": {
+      "LOW": "Niskie",
+      "MEDIUM": "Srednie",
+      "HIGH": "Wysokie"
+    },
     "wizard": {
       "title": "Nowa umowa",
       "step1": "Szczegoly umowy",
+      "step1Label": "Szczegoly umowy",
       "step2": "Warunki finansowe",
+      "step2Label": "Warunki finansowe",
       "step3": "Dokumenty",
+      "step3Label": "Dokumenty",
       "next1": "Dalej: Warunki finansowe",
+      "step1Next": "Dalej: Warunki finansowe",
       "next2": "Dalej: Dokumenty",
+      "step2Next": "Dalej: Dokumenty",
       "submit": "Utworz umowe",
+      "step3Submit": "Utworz umowe",
       "back": "Wstecz",
       "close": "Zamknij",
       "discardChanges": "Odrzuc zmiany",
@@ -497,6 +605,26 @@
         "invoiceCycle": "Cykl fakturowania",
         "invoiceCyclePlaceholder": "Wybierz cykl fakturowania..."
       },
+      "contractorLabel": "Kontrahent",
+      "contractorPlaceholder": "Wybierz kontrahenta...",
+      "titleLabel": "Tytul umowy",
+      "typeLabel": "Typ umowy",
+      "typeB2B": "Umowa B2B",
+      "typeNDA": "Umowa o poufnosci",
+      "typeSOW": "Zlecenie",
+      "typeIPAssignment": "Cesja IP",
+      "typeDPA": "Umowa powierzenia danych",
+      "typeOther": "Inna",
+      "startDateLabel": "Data rozpoczecia",
+      "endDateLabel": "Data zakonczenia",
+      "noticePeriodLabel": "Okres wypowiedzenia (dni)",
+      "autoRenewalLabel": "Automatyczne odnowienie",
+      "rateLabel": "Stawka",
+      "currencyLabel": "Waluta",
+      "billingCycleLabel": "Cykl rozliczen",
+      "rateTypeLabel": "Typ stawki",
+      "paymentTermsLabel": "Termin platnosci (dni)",
+      "invoiceCycleLabel": "Cykl fakturowania",
       "typeOptions": {
         "B2B_MASTER_SERVICE": "Umowa B2B",
         "STATEMENT_OF_WORK": "Zlecenie",
@@ -506,7 +634,7 @@
         "OTHER": "Inna"
       },
       "billingModelOptions": {
-        "MONTHLY_RETAINER": "Ryczalt miesiczny",
+        "MONTHLY_RETAINER": "Ryczalt miesieczny",
         "HOURLY": "Godzinowa",
         "DAILY": "Dzienna",
         "MILESTONE": "Kamieniowa",
@@ -534,6 +662,7 @@
         "browse": "Wybierz pliki",
         "accepted": "PDF, DOCX, XLSX, PNG, JPG do 25 MB"
       },
+      "dropZoneHeading": "Przeslij dokumenty umowy",
       "skipDocuments": "Pomin, dodaj dokumenty pozniej",
       "scan": {
         "scanning": "Skanowanie...",
@@ -542,7 +671,161 @@
         "failed": "Skanowanie nie powiodlo sie"
       },
       "success": "Umowa utworzona",
-      "error": "Nie udalo sie utworzyc umowy. Sprobuj ponownie."
+      "successToast": "Umowa utworzona",
+      "error": "Nie udalo sie utworzyc umowy. Sprobuj ponownie.",
+      "errorToast": "Nie udalo sie utworzyc umowy. Sprobuj ponownie."
+    },
+    "detail": {
+      "breadcrumb": "Umowy",
+      "editAction": "Edytuj umowe",
+      "addAmendmentAction": "Dodaj aneks",
+      "uploadDocumentAction": "Przeslij dokument",
+      "terminateAction": "Rozwiaz umowe",
+      "supersedeAction": "Oznacz jako zastapiona",
+      "tabOverview": "Przeglad",
+      "tabDocuments": "Dokumenty",
+      "tabAmendments": "Aneksy",
+      "tabActivity": "Aktywnosc",
+      "contractDetails": "Szczegoly umowy",
+      "financialTerms": "Warunki finansowe",
+      "keyDates": "Wazne daty",
+      "linkedContractor": "Kontrahent",
+      "startDate": "Data rozpoczecia",
+      "endDate": "Data zakonczenia",
+      "noticeDeadline": "Termin wypowiedzenia",
+      "daysRemaining": "{count} dni do konca",
+      "expired": "Wygasla {count} dni temu",
+      "expiringSoon": "Wygasa za {count} dni",
+      "reminders": "Przypomnienia"
+    },
+    "amendments": {
+      "addCTA": "Dodaj aneks",
+      "originalContract": "Umowa pierwotna",
+      "amendmentLabel": "Aneks #{n}",
+      "effectiveDate": "Obowiazuje od {date}",
+      "changeSummaryLabel": "Zmiany",
+      "emptyHeading": "Brak aneksow",
+      "emptyBody": "Aneksy do tej umowy pojawia sie tutaj.",
+      "successToast": "Aneks dodany"
+    },
+    "contractorTab": {
+      "heading": "Umowy",
+      "addCTA": "Dodaj umowe",
+      "emptyHeading": "Brak umow",
+      "emptyBody": "Utworz umowe dla tego kontrahenta.",
+      "emptyCTA": "Dodaj umowe",
+      "columns": {
+        "title": "Tytul",
+        "status": "Status",
+        "startDate": "Data rozpoczecia",
+        "endDate": "Data zakonczenia",
+        "rate": "Stawka"
+      }
+    },
+    "sidePanel": {
+      "openContract": "Otworz umowe",
+      "details": "Szczegoly",
+      "documents": "Dokumenty ({count})",
+      "keyDates": "Wazne daty"
+    },
+    "terminateDialog": {
+      "confirmTitle": "Rozwiazac {contractTitle}?",
+      "confirmBody": "Umowa zostanie oznaczona jako rozwiazana. Powiazane faktury i dokumenty pozostana dostepne. Ta akcja moze byc odwrocona poprzez utworzenie nowej umowy.",
+      "confirmCTA": "Rozwiaz umowe"
+    },
+    "deleteDraft": {
+      "confirmTitle": "Usunac {contractTitle}?",
+      "confirmBody": "Szkic umowy zostanie trwale usuniety. Przeslane dokumenty rowniez zostana usuniete. Tej akcji nie mozna cofnac.",
+      "confirmCTA": "Usun szkic"
+    },
+    "bulkTerminate": {
+      "confirmTitle": "Rozwiazac {count} umow?",
+      "confirmBody": "Umowy zostana oznaczone jako rozwiazane. Powiazane faktury i dokumenty pozostana dostepne.",
+      "confirmCTA": "Rozwiaz {count} umow"
+    },
+    "validation": {
+      "titleRequired": "Tytul umowy jest wymagany",
+      "contractorRequired": "Wybierz kontrahenta",
+      "typeRequired": "Wybierz typ umowy",
+      "startDateRequired": "Data rozpoczecia jest wymagana",
+      "endDateAfterStart": "Data zakonczenia musi byc po dacie rozpoczecia",
+      "noticePeriodPositive": "Okres wypowiedzenia musi byc liczba dodatnia",
+      "rateRequired": "Stawka jest wymagana",
+      "ratePositive": "Stawka musi byc liczba dodatnia",
+      "currencyRequired": "Wybierz walute",
+      "billingCycleRequired": "Wybierz cykl rozliczen",
+      "paymentTermsRequired": "Termin platnosci jest wymagany",
+      "paymentTermsPositive": "Termin platnosci musi byc liczba dodatnia"
+    },
+    "errors": {
+      "loadFailed": "Nie udalo sie zaladowac umow. Sprawdz polaczenie i sprobuj ponownie.",
+      "detailLoadFailed": "Nie udalo sie zaladowac szczegolow umowy. Sprobuj ponownie.",
+      "retry": "Sprobuj ponownie"
+    }
+  },
+  "Documents": {
+    "dropZone": {
+      "heading": "Przeslij dokumenty",
+      "body": "Przeciagnij pliki tutaj lub",
+      "browse": "Wybierz pliki",
+      "accepted": "PDF, DOCX, XLSX, PNG, JPG do 25 MB"
+    },
+    "upload": {
+      "uploading": "Przesylanie {filename}...",
+      "success": "{filename} przeslano",
+      "error": "Nie udalo sie przeslac {filename}. Sprobuj ponownie.",
+      "invalidType": "{filename} nie jest obslugiwanym typem pliku.",
+      "tooLarge": "{filename} przekracza limit 25 MB."
+    },
+    "uploadCTA": "Przeslij dokument",
+    "uploadNewVersion": "Przeslij nowa wersje",
+    "download": "Pobierz",
+    "preview": "Podglad",
+    "version": "Wersja {n}",
+    "versionLabel": "Wersja {n}",
+    "currentVersion": "Aktualna",
+    "versionHistory": "Historia wersji",
+    "empty": {
+      "title": "Brak dokumentow",
+      "description": "Przeslij dokumenty umowy, aby je uporządkowac."
+    },
+    "emptyHeading": "Brak dokumentow",
+    "emptyBody": "Przeslij dokumenty umowy, aby je uporządkowac.",
+    "emptyCTA": "Przeslij dokument",
+    "threatDetected": "Wykryto zagrozenie - plik poddany kwarantannie",
+    "scan": {
+      "scanning": "Skanowanie w poszukiwaniu zagrozen...",
+      "clean": "Skanowanie przeszlo",
+      "infected": "Wykryto zagrozenie - plik poddany kwarantannie",
+      "failed": "Nie udalo sie zakonczyc skanowania"
+    },
+    "scanStatus": {
+      "scanning": "Skanowanie w poszukiwaniu zagrozen...",
+      "clean": "Skanowanie przeszlo",
+      "infected": "Wykryto zagrozenie - plik poddany kwarantannie",
+      "failed": "Nie udalo sie zakonczyc skanowania"
+    },
+    "metadata": {
+      "uploadedBy": "Przeslane przez {name}",
+      "uploadedOn": "{date}",
+      "size": "{size}"
+    },
+    "contractorTab": {
+      "heading": "Dokumenty",
+      "uploadCTA": "Przeslij dokument",
+      "emptyHeading": "Brak dokumentow",
+      "emptyBody": "Przeslij dokumenty dla tego kontrahenta.",
+      "emptyCTA": "Przeslij dokument"
+    },
+    "compliance": {
+      "requiredDocuments": "Wymagane dokumenty",
+      "uploadCompliance": "Przeslij dokument zgodnosci",
+      "complianceTypes": "Zaswiadczenie podatkowe, rejestracja firmy, ubezpieczenie"
+    },
+    "errors": {
+      "uploadFailed": "Nie udalo sie przeslac dokumentu. Sprawdz plik i sprobuj ponownie.",
+      "downloadFailed": "Nie udalo sie wygenerowac linku pobierania. Sprobuj ponownie.",
+      "retry": "Sprobuj ponownie"
     }
   },
   "Common": {
