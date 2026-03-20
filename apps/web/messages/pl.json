@@ -64,6 +64,7 @@
   },
   "TopBar": {
     "addContractor": "Dodaj kontrahenta",
+    "newContract": "Nowa umowa",
     "uploadInvoice": "Przeslij fakture",
     "search": "Szukaj",
     "searchShortcut": "Cmd+K",
@@ -455,6 +456,94 @@
     },
     "success": "Kontrahent dodany",
     "error": "Nie udalo sie dodac kontrahenta. Sprobuj ponownie."
+  },
+  "Contracts": {
+    "wizard": {
+      "title": "Nowa umowa",
+      "step1": "Szczegoly umowy",
+      "step2": "Warunki finansowe",
+      "step3": "Dokumenty",
+      "next1": "Dalej: Warunki finansowe",
+      "next2": "Dalej: Dokumenty",
+      "submit": "Utworz umowe",
+      "back": "Wstecz",
+      "close": "Zamknij",
+      "discardChanges": "Odrzuc zmiany",
+      "discardConfirm": {
+        "title": "Odrzucic zmiany?",
+        "body": "Wszystkie wprowadzone dane zostana utracone.",
+        "discard": "Odrzuc zmiany",
+        "keep": "Kontynuuj edycje"
+      },
+      "fields": {
+        "contractor": "Kontrahent",
+        "contractorPlaceholder": "Wybierz kontrahenta...",
+        "noContractors": "Nie znaleziono kontrahentow",
+        "title": "Tytul umowy",
+        "type": "Typ umowy",
+        "typePlaceholder": "Wybierz typ umowy...",
+        "startDate": "Data rozpoczecia",
+        "endDate": "Data zakonczenia",
+        "selectDate": "Wybierz date...",
+        "noticePeriod": "Okres wypowiedzenia (dni)",
+        "autoRenewal": "Automatyczne odnowienie",
+        "rate": "Stawka",
+        "currency": "Waluta",
+        "billingModel": "Cykl rozliczen",
+        "billingModelPlaceholder": "Wybierz model rozliczen...",
+        "rateType": "Typ stawki",
+        "rateTypePlaceholder": "Wybierz typ stawki...",
+        "paymentTerms": "Termin platnosci (dni)",
+        "invoiceCycle": "Cykl fakturowania",
+        "invoiceCyclePlaceholder": "Wybierz cykl fakturowania..."
+      },
+      "typeOptions": {
+        "B2B_MASTER_SERVICE": "Umowa B2B",
+        "STATEMENT_OF_WORK": "Zlecenie",
+        "NDA": "Umowa o poufnosci",
+        "IP_ASSIGNMENT": "Cesja IP",
+        "DPA": "Umowa powierzenia danych",
+        "OTHER": "Inna"
+      },
+      "billingModelOptions": {
+        "MONTHLY_RETAINER": "Ryczalt miesiczny",
+        "HOURLY": "Godzinowa",
+        "DAILY": "Dzienna",
+        "MILESTONE": "Kamieniowa",
+        "DELIVERABLE_BASED": "Za dostarczenie",
+        "MIXED": "Mieszana"
+      },
+      "rateTypeOptions": {
+        "MONTHLY_FIXED": "Stala miesieczna",
+        "PER_HOUR": "Za godzine",
+        "PER_DAY": "Za dzien",
+        "PER_MILESTONE": "Za kamien milowy",
+        "PER_DELIVERABLE": "Za dostarczenie"
+      },
+      "invoiceCycleOptions": {
+        "WEEKLY": "Tygodniowo",
+        "BIWEEKLY": "Co dwa tygodnie",
+        "MONTHLY": "Miesieczne",
+        "ON_DELIVERABLE": "Po dostarczeniu",
+        "AD_HOC": "Ad hoc"
+      },
+      "preFilled": "Wypelniono z profilu rozliczen kontrahenta",
+      "dropZone": {
+        "heading": "Przeslij dokumenty umowy",
+        "body": "Przeciagnij pliki tutaj lub",
+        "browse": "Wybierz pliki",
+        "accepted": "PDF, DOCX, XLSX, PNG, JPG do 25 MB"
+      },
+      "skipDocuments": "Pomin, dodaj dokumenty pozniej",
+      "scan": {
+        "scanning": "Skanowanie...",
+        "clean": "Skanowanie przeszlo",
+        "infected": "Wykryto zagrozenie",
+        "failed": "Skanowanie nie powiodlo sie"
+      },
+      "success": "Umowa utworzona",
+      "error": "Nie udalo sie utworzyc umowy. Sprobuj ponownie."
+    }
   },
   "Common": {
     "networkError": "Blad polaczenia. Sprawdz internet i sprobuj ponownie.",

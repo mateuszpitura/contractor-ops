@@ -64,6 +64,7 @@
   },
   "TopBar": {
     "addContractor": "Add contractor",
+    "newContract": "New contract",
     "uploadInvoice": "Upload invoice",
     "search": "Search",
     "searchShortcut": "Cmd+K",
@@ -455,6 +456,94 @@
     },
     "success": "Contractor added",
     "error": "Failed to add contractor. Try again."
+  },
+  "Contracts": {
+    "wizard": {
+      "title": "New contract",
+      "step1": "Contract details",
+      "step2": "Financial terms",
+      "step3": "Documents",
+      "next1": "Next: Financial terms",
+      "next2": "Next: Documents",
+      "submit": "Create contract",
+      "back": "Back",
+      "close": "Close",
+      "discardChanges": "Discard changes",
+      "discardConfirm": {
+        "title": "Discard changes?",
+        "body": "All entered data will be lost.",
+        "discard": "Discard changes",
+        "keep": "Keep editing"
+      },
+      "fields": {
+        "contractor": "Contractor",
+        "contractorPlaceholder": "Select contractor...",
+        "noContractors": "No contractors found",
+        "title": "Contract title",
+        "type": "Contract type",
+        "typePlaceholder": "Select contract type...",
+        "startDate": "Start date",
+        "endDate": "End date",
+        "selectDate": "Select date...",
+        "noticePeriod": "Notice period (days)",
+        "autoRenewal": "Auto-renewal",
+        "rate": "Rate",
+        "currency": "Currency",
+        "billingModel": "Billing cycle",
+        "billingModelPlaceholder": "Select billing model...",
+        "rateType": "Rate type",
+        "rateTypePlaceholder": "Select rate type...",
+        "paymentTerms": "Payment terms (days)",
+        "invoiceCycle": "Invoice cycle",
+        "invoiceCyclePlaceholder": "Select invoice cycle..."
+      },
+      "typeOptions": {
+        "B2B_MASTER_SERVICE": "B2B Service Agreement",
+        "STATEMENT_OF_WORK": "Statement of Work",
+        "NDA": "Non-Disclosure Agreement",
+        "IP_ASSIGNMENT": "IP Assignment",
+        "DPA": "Data Processing Agreement",
+        "OTHER": "Other"
+      },
+      "billingModelOptions": {
+        "MONTHLY_RETAINER": "Monthly retainer",
+        "HOURLY": "Hourly",
+        "DAILY": "Daily",
+        "MILESTONE": "Milestone",
+        "DELIVERABLE_BASED": "Deliverable-based",
+        "MIXED": "Mixed"
+      },
+      "rateTypeOptions": {
+        "MONTHLY_FIXED": "Monthly fixed",
+        "PER_HOUR": "Per hour",
+        "PER_DAY": "Per day",
+        "PER_MILESTONE": "Per milestone",
+        "PER_DELIVERABLE": "Per deliverable"
+      },
+      "invoiceCycleOptions": {
+        "WEEKLY": "Weekly",
+        "BIWEEKLY": "Biweekly",
+        "MONTHLY": "Monthly",
+        "ON_DELIVERABLE": "On deliverable",
+        "AD_HOC": "Ad hoc"
+      },
+      "preFilled": "Pre-filled from contractor billing profile",
+      "dropZone": {
+        "heading": "Upload contract documents",
+        "body": "Drag files here or",
+        "browse": "Browse files",
+        "accepted": "PDF, DOCX, XLSX, PNG, JPG up to 25 MB"
+      },
+      "skipDocuments": "Skip, add documents later",
+      "scan": {
+        "scanning": "Scanning...",
+        "clean": "Scan passed",
+        "infected": "Threat detected",
+        "failed": "Scan failed"
+      },
+      "success": "Contract created",
+      "error": "Failed to create contract. Try again."
+    }
   },
   "Common": {
     "networkError": "Connection error. Check your internet and try again.",
