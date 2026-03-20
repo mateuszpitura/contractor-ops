@@ -32,3 +32,22 @@ export type {
   ContractorLifecycleTransitionInput,
   GusLookupInput,
 } from "./contractor.js";
+
+export {
+  contractCreateSchema,
+  contractUpdateSchema,
+  contractListSchema,
+  contractStatusTransitionSchema,
+  amendmentCreateSchema,
+  contractExpiryReminderSchema,
+  orgExpiryReminderDefaultsSchema,
+} from "./contract.js";
+export type {
+  ContractCreateInput,
+  ContractUpdateInput,
+  ContractListInput,
+  ContractStatusTransitionInput,
+  AmendmentCreateInput,
+  ContractExpiryReminderInput,
+  OrgExpiryReminderDefaultsInput,
+} from "./contract.js";
