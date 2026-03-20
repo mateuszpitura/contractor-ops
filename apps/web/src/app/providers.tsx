@@ -1,12 +1,17 @@
 "use client";
 
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { TRPCProvider } from "@/trpc/client";
 
 /**
  * Root providers component.
- * Wraps the application with TRPCProvider (which includes QueryClientProvider).
- * Add additional providers here as needed (theme, i18n, etc.).
+ * Wraps the application with TRPCProvider (which includes QueryClientProvider)
+ * and NuqsAdapter for URL state management.
  */
 export function Providers({ children }: { children: React.ReactNode }) {
-  return <TRPCProvider>{children}</TRPCProvider>;
+  return (
+    <NuqsAdapter>
+      <TRPCProvider>{children}</TRPCProvider>
+    </NuqsAdapter>
+  );
 }
