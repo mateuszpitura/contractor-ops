@@ -34,11 +34,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Contracts & Documents
 
-- [ ] **CNTR-01**: User can create a contract with metadata (type, dates, notice period, rate, currency, billing cycle, payment terms)
+- [x] **CNTR-01**: User can create a contract with metadata (type, dates, notice period, rate, currency, billing cycle, payment terms)
 - [ ] **CNTR-02**: User can upload contract documents (PDF, DOCX) with versioning
-- [ ] **CNTR-03**: System tracks contract statuses: draft → active → expiring → expired → terminated → superseded
-- [ ] **CNTR-04**: System sends configurable reminders before contract expiration (30/60/90 days)
-- [ ] **CNTR-05**: User can add amendments to existing contracts
+- [x] **CNTR-03**: System tracks contract statuses: draft → active → expiring → expired → terminated → superseded
+- [x] **CNTR-04**: System sends configurable reminders before contract expiration (30/60/90 days)
+- [x] **CNTR-05**: User can add amendments to existing contracts
 - [ ] **DOCS-01**: User can upload documents and link them to contractors and/or contracts
 - [ ] **DOCS-02**: User can download documents via short-lived signed URLs
 - [ ] **DOCS-03**: System validates file type (MIME content) and scans uploads for malware
@@ -191,11 +191,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CONT-07 | Phase 2 | Complete |
 | CONT-08 | Phase 2 | Complete |
 | CONT-09 | Phase 2 | Complete |
-| CNTR-01 | Phase 3 | Pending |
+| CNTR-01 | Phase 3 | Complete |
 | CNTR-02 | Phase 3 | Pending |
-| CNTR-03 | Phase 3 | Pending |
-| CNTR-04 | Phase 3 | Pending |
-| CNTR-05 | Phase 3 | Pending |
+| CNTR-03 | Phase 3 | Complete |
+| CNTR-04 | Phase 3 | Complete |
+| CNTR-05 | Phase 3 | Complete |
 | DOCS-01 | Phase 3 | Pending |
 | DOCS-02 | Phase 3 | Pending |
 | DOCS-03 | Phase 3 | Pending |
