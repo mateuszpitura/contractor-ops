@@ -5,7 +5,9 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -17,6 +19,8 @@
     "build": "tsc"
   },
   "dependencies": {
+    "ibantools": "^4.5.1",
+    "validate-polish": "^2.1.40",
     "zod": "^3.23.0"
   },
   "devDependencies": {
