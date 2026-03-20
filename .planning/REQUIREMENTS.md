@@ -22,15 +22,15 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Contractors
 
-- [ ] **CONT-01**: User can add a contractor with company details (legal name, NIP, VAT-EU, address, type)
-- [ ] **CONT-02**: User can set contractor billing details (bank account, currency, billing model, default rate)
-- [ ] **CONT-03**: User can assign a contractor to an internal owner, team, project, and cost center
-- [ ] **CONT-04**: User can search contractors with full-text search across name, company, NIP, email
-- [ ] **CONT-05**: User can filter contractors by status, owner, team, billing model, contract end date, compliance health
+- [x] **CONT-01**: User can add a contractor with company details (legal name, NIP, VAT-EU, address, type)
+- [x] **CONT-02**: User can set contractor billing details (bank account, currency, billing model, default rate)
+- [x] **CONT-03**: User can assign a contractor to an internal owner, team, project, and cost center
+- [x] **CONT-04**: User can search contractors with full-text search across name, company, NIP, email
+- [x] **CONT-05**: User can filter contractors by status, owner, team, billing model, contract end date, compliance health
 - [ ] **CONT-06**: User can perform bulk actions on contractors (assign owner, export, archive, launch workflow)
 - [ ] **CONT-07**: User can view contractor profile with tabs: overview, contracts, documents, workflows, invoices, payments, activity, compliance
-- [ ] **CONT-08**: System calculates and displays compliance health score (green/yellow/red) based on required documents, contract status, and overdue tasks
-- [ ] **CONT-09**: Contractor status follows lifecycle: draft → onboarding → active → offboarding → inactive → archived
+- [x] **CONT-08**: System calculates and displays compliance health score (green/yellow/red) based on required documents, contract status, and overdue tasks
+- [x] **CONT-09**: Contractor status follows lifecycle: draft → onboarding → active → offboarding → inactive → archived
 
 ### Contracts & Documents
 
@@ -182,15 +182,15 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ORG-08 | Phase 6 | Pending |
 | ORG-09 | Phase 4 | Pending |
 | ORG-10 | Phase 9 | Pending |
-| CONT-01 | Phase 2 | Pending |
-| CONT-02 | Phase 2 | Pending |
-| CONT-03 | Phase 2 | Pending |
-| CONT-04 | Phase 2 | Pending |
-| CONT-05 | Phase 2 | Pending |
+| CONT-01 | Phase 2 | Complete |
+| CONT-02 | Phase 2 | Complete |
+| CONT-03 | Phase 2 | Complete |
+| CONT-04 | Phase 2 | Complete |
+| CONT-05 | Phase 2 | Complete |
 | CONT-06 | Phase 2 | Pending |
 | CONT-07 | Phase 2 | Pending |
-| CONT-08 | Phase 2 | Pending |
-| CONT-09 | Phase 2 | Pending |
+| CONT-08 | Phase 2 | Complete |
+| CONT-09 | Phase 2 | Complete |
 | CNTR-01 | Phase 3 | Pending |
 | CNTR-02 | Phase 3 | Pending |
 | CNTR-03 | Phase 3 | Pending |

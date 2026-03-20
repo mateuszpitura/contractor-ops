@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: completed
-stopped_at: Phase 2 UI-SPEC approved
-last_updated: "2026-03-20T11:46:13.844Z"
-last_activity: 2026-03-18 — Completed 01-04 i18n integration (Polish/English)
+status: in-progress
+stopped_at: Completed 02-01-PLAN.md
+last_updated: "2026-03-20T12:19:32.000Z"
+last_activity: 2026-03-20 — Completed 02-01 contractor backend (tRPC router + validators + FTS)
 progress:
   total_phases: 10
   completed_phases: 1
-  total_plans: 4
-  completed_plans: 4
-  percent: 100
+  total_plans: 7
+  completed_plans: 5
+  percent: 71
 ---
 
 # Project State
@@ -21,32 +21,33 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-18)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 1: Foundation & Auth
+**Current focus:** Phase 2: Contractor Registry
 
 ## Current Position
 
-Phase: 1 of 10 (Foundation & Auth)
-Plan: 4 of 4 in current phase (COMPLETE)
-Status: Phase Complete
-Last activity: 2026-03-18 — Completed 01-04 i18n integration (Polish/English)
+Phase: 2 of 10 (Contractor Registry)
+Plan: 1 of 3 in current phase
+Status: In Progress
+Last activity: 2026-03-20 — Completed 02-01 contractor backend (tRPC router + validators + FTS)
 
-Progress: [██████████] 100%
+Progress: [███████░░░] 71%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4
+- Total plans completed: 5
 - Average duration: 9min
-- Total execution time: 0.6 hours
+- Total execution time: 0.8 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-foundation-auth | 4/4 | 35min | 9min |
+| 02-contractor-registry | 1/3 | 12min | 12min |
 
 **Recent Trend:**
-- Last 5 plans: 12min, 9min, 4min, 10min
+- Last 5 plans: 9min, 4min, 10min, 12min
 - Trend: stable
 
 *Updated after each plan completion*
@@ -71,6 +72,9 @@ Recent decisions affecting current work:
 - [01-03]: Role badge colors via Tailwind utility classes with dark mode variants for all 8 roles
 - [01-04]: Polish (pl) as default locale with next-intl 4.8.3, middleware for locale routing
 - [01-04]: Translation structure: 9 namespaces (Auth, Navigation, TopBar, Dashboard, Settings, Users, Errors, Validation, Common)
+- [02-01]: billingModel/rateValueGrosze stored in Contractor.customFieldsJson (billing profile schema lacks billingModel column)
+- [02-01]: plain() JSON serialize/deserialize pattern to strip Prisma types from tRPC router returns (TS2742 fix)
+- [02-01]: PostgreSQL 'simple' text search config for tsvector (supports Polish names, NIP numbers, mixed-language data)
 
 ### Pending Todos
 
@@ -84,6 +88,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T11:46:13.842Z
-Stopped at: Phase 2 UI-SPEC approved
-Resume file: .planning/phases/02-contractor-registry/02-UI-SPEC.md
+Last session: 2026-03-20T12:19:32.000Z
+Stopped at: Completed 02-01-PLAN.md
+Resume file: .planning/phases/02-contractor-registry/02-02-PLAN.md
