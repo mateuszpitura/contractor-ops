@@ -1254,4 +1254,186 @@ export const workflowRouter = router({
 
       return { count };
     }),
+
+  // =========================================================================
+  // Starter template seeding
+  // =========================================================================
+
+  /**
+   * Seed starter templates (Onboarding + Offboarding) for the org.
+   * No-op if any templates already exist. Called from Templates tab on first visit.
+   */
+  seedStarterTemplates: tenantProcedure
+    .use(requirePermission({ workflow: ["create"] }))
+    .mutation(async ({ ctx }) => {
+      const existingCount = await prisma.workflowTemplate.count({
+        where: { organizationId: ctx.organizationId },
+      });
+
+      if (existingCount > 0) {
+        return { seeded: false };
+      }
+
+      await prisma.$transaction(async (tx) => {
+        // ----- Template 1: Contractor Onboarding -----
+        const onboarding = await tx.workflowTemplate.create({
+          data: {
+            organizationId: ctx.organizationId,
+            name: "Contractor Onboarding",
+            type: "ONBOARDING",
+            description:
+              "Standard onboarding workflow for new contractors. Review and customize tasks before activating.",
+            version: 1,
+            status: "DRAFT",
+            appliesToEntityType: "CONTRACTOR",
+            createdByUserId: ctx.user!.id,
+          },
+        });
+
+        const onboardingTasks = [
+          {
+            title: "Collect NDA",
+            taskType: "DOCUMENT_COLLECTION" as const,
+            assigneeRole: "OPS_MANAGER" as const,
+            dueOffsetDays: 2,
+            sortOrder: 0,
+          },
+          {
+            title: "Sign contract",
+            taskType: "APPROVAL" as const,
+            assigneeRole: "LEGAL_VIEWER" as const,
+            dueOffsetDays: 5,
+            sortOrder: 1,
+          },
+          {
+            title: "Set up IT access",
+            taskType: "ACCESS_GRANT" as const,
+            assigneeRole: "IT_ADMIN" as const,
+            dueOffsetDays: 3,
+            sortOrder: 2,
+          },
+          {
+            title: "Set up finance",
+            taskType: "FINANCE_SETUP" as const,
+            assigneeRole: "FINANCE_ADMIN" as const,
+            dueOffsetDays: 3,
+            sortOrder: 3,
+          },
+          {
+            title: "Provision equipment",
+            taskType: "EQUIPMENT" as const,
+            assigneeRole: "OPS_MANAGER" as const,
+            dueOffsetDays: 5,
+            sortOrder: 4,
+          },
+          {
+            title: "Team introduction meeting",
+            taskType: "MEETING" as const,
+            assigneeRole: "TEAM_MANAGER" as const,
+            dueOffsetDays: 7,
+            sortOrder: 5,
+          },
+          {
+            title: "Knowledge transfer",
+            taskType: "KNOWLEDGE_TRANSFER" as const,
+            assigneeRole: "TEAM_MANAGER" as const,
+            dueOffsetDays: 14,
+            sortOrder: 6,
+          },
+        ];
+
+        await tx.workflowTaskTemplate.createMany({
+          data: onboardingTasks.map((task) => ({
+            organizationId: ctx.organizationId,
+            workflowTemplateId: onboarding.id,
+            title: task.title,
+            taskType: task.taskType,
+            assigneeMode: "ROLE_BASED" as const,
+            assigneeRole: task.assigneeRole,
+            dueOffsetDays: task.dueOffsetDays,
+            sortOrder: task.sortOrder,
+            required: true,
+            description: null,
+            assigneeUserId: null,
+            dueOffsetHours: null,
+            dependsOnTaskTemplateId: null,
+            externalUrl: null,
+          })),
+        });
+
+        // ----- Template 2: Contractor Offboarding -----
+        const offboarding = await tx.workflowTemplate.create({
+          data: {
+            organizationId: ctx.organizationId,
+            name: "Contractor Offboarding",
+            type: "OFFBOARDING",
+            description:
+              "Standard offboarding workflow for departing contractors. Review and customize tasks before activating.",
+            version: 1,
+            status: "DRAFT",
+            appliesToEntityType: "CONTRACTOR",
+            createdByUserId: ctx.user!.id,
+          },
+        });
+
+        const offboardingTasks = [
+          {
+            title: "Knowledge transfer",
+            taskType: "KNOWLEDGE_TRANSFER" as const,
+            assigneeRole: "TEAM_MANAGER" as const,
+            dueOffsetDays: 7,
+            sortOrder: 0,
+          },
+          {
+            title: "Revoke IT access",
+            taskType: "ACCESS_REVOKE" as const,
+            assigneeRole: "IT_ADMIN" as const,
+            dueOffsetDays: 1,
+            sortOrder: 1,
+          },
+          {
+            title: "Return equipment",
+            taskType: "EQUIPMENT" as const,
+            assigneeRole: "OPS_MANAGER" as const,
+            dueOffsetDays: 5,
+            sortOrder: 2,
+          },
+          {
+            title: "Finance wrap-up",
+            taskType: "FINANCE_SETUP" as const,
+            assigneeRole: "FINANCE_ADMIN" as const,
+            dueOffsetDays: 3,
+            sortOrder: 3,
+          },
+          {
+            title: "Final documentation",
+            taskType: "DOCUMENT_COLLECTION" as const,
+            assigneeRole: "OPS_MANAGER" as const,
+            dueOffsetDays: 5,
+            sortOrder: 4,
+          },
+        ];
+
+        await tx.workflowTaskTemplate.createMany({
+          data: offboardingTasks.map((task) => ({
+            organizationId: ctx.organizationId,
+            workflowTemplateId: offboarding.id,
+            title: task.title,
+            taskType: task.taskType,
+            assigneeMode: "ROLE_BASED" as const,
+            assigneeRole: task.assigneeRole,
+            dueOffsetDays: task.dueOffsetDays,
+            sortOrder: task.sortOrder,
+            required: true,
+            description: null,
+            assigneeUserId: null,
+            dueOffsetHours: null,
+            dependsOnTaskTemplateId: null,
+            externalUrl: null,
+          })),
+        });
+      });
+
+      return { seeded: true };
+    }),
 });

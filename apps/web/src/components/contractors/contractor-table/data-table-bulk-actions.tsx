@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 
 import { trpc } from "@/trpc/init";
+import { TemplatePicker } from "@/components/workflows/template-picker-dialog";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -30,11 +31,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+// Tooltip imports removed - Launch workflow is no longer disabled
 import type { ContractorRow } from "./columns";
 
 interface DataTableBulkActionsProps {
@@ -53,6 +50,7 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
 
   const [showArchiveDialog, setShowArchiveDialog] = useState(false);
   const [ownerPopoverOpen, setOwnerPopoverOpen] = useState(false);
+  const [workflowPickerOpen, setWorkflowPickerOpen] = useState(false);
 
   const selectedRows = table.getFilteredSelectedRowModel().rows;
   const selectedIds = selectedRows.map((row) => row.original.id);
@@ -216,19 +214,25 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
           {t("archive")}
         </Button>
 
-        {/* Launch workflow (disabled) */}
-        <Tooltip>
-          <TooltipTrigger
-            render={(props) => (
-              <Button {...props} variant="outline" size="sm" className="h-8 gap-1.5" disabled>
-                <Zap className="h-3.5 w-3.5" />
-                {t("launchWorkflow")}
-              </Button>
-            )}
-          />
-          <TooltipContent>{t("comingInPhase4")}</TooltipContent>
-        </Tooltip>
+        {/* Launch workflow */}
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8 gap-1.5"
+          onClick={() => setWorkflowPickerOpen(true)}
+        >
+          <Zap className="h-3.5 w-3.5" />
+          {t("launchWorkflow")}
+        </Button>
       </div>
+
+      {/* Workflow template picker */}
+      <TemplatePicker
+        open={workflowPickerOpen}
+        onOpenChange={setWorkflowPickerOpen}
+        contractorId={count === 1 ? selectedIds[0] : undefined}
+        contractorIds={count > 1 ? selectedIds : undefined}
+      />
 
       {/* Archive confirmation dialog */}
       <AlertDialog open={showArchiveDialog} onOpenChange={setShowArchiveDialog}>

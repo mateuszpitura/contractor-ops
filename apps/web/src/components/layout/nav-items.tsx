@@ -9,6 +9,7 @@ import {
 import { navigationItems } from "@/lib/navigation";
 import { usePermissions } from "@/hooks/use-permissions";
 import { Link, usePathname } from "@/i18n/navigation";
+import { WorkflowNavBadge } from "@/components/workflows/workflow-nav-badge";
 
 /**
  * Sidebar navigation items filtered by the user's role permissions.
@@ -37,7 +38,7 @@ export function NavItems() {
         const label = t(item.key as Parameters<typeof t>[0]);
 
         return (
-          <SidebarMenuItem key={item.key}>
+          <SidebarMenuItem key={item.key} className="relative">
             <SidebarMenuButton
               render={<Link href={item.href} />}
               isActive={isActive}
@@ -46,6 +47,7 @@ export function NavItems() {
               <item.icon className="h-4 w-4" />
               <span>{label}</span>
             </SidebarMenuButton>
+            {item.key === "workflows" && <WorkflowNavBadge />}
           </SidebarMenuItem>
         );
       })}

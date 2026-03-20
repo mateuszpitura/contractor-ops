@@ -1,0 +1,30 @@
+"use client";
+
+import { useQuery } from "@tanstack/react-query";
+
+import { trpc } from "@/trpc/init";
+
+/**
+ * Overdue count badge for the sidebar Workflows nav item.
+ * Polls every 60 seconds. Shows red circle with count (max "9+").
+ * Renders nothing if count is 0.
+ */
+export function WorkflowNavBadge() {
+  const overdueQuery = useQuery({
+    ...trpc.workflow.overdueCount.queryOptions(),
+    refetchInterval: 60_000,
+  });
+
+  const count = (overdueQuery.data as { count: number } | undefined)?.count ?? 0;
+
+  if (count === 0) return null;
+
+  return (
+    <span
+      className="absolute -right-1 -top-1 flex size-[18px] items-center justify-center rounded-full bg-destructive text-[10px] font-medium leading-none text-destructive-foreground"
+      aria-label={`${count} overdue tasks`}
+    >
+      {count > 9 ? "9+" : count}
+    </span>
+  );
+}

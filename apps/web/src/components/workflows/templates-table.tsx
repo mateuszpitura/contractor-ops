@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMutation } from "@tanstack/react-query";
 import {
@@ -135,6 +135,32 @@ export function TemplatesTable() {
   const duplicateTemplateMutation = useMutation(
     trpc.workflow.duplicateTemplate.mutationOptions(),
   );
+
+  // Seed starter templates on first visit (if org has no templates)
+  const seedMutation = useMutation(
+    trpc.workflow.seedStarterTemplates.mutationOptions(),
+  );
+  const seedAttempted = useRef(false);
+
+  useEffect(() => {
+    if (
+      !templatesQuery.isLoading &&
+      templates.length === 0 &&
+      total === 0 &&
+      !seedAttempted.current
+    ) {
+      seedAttempted.current = true;
+      seedMutation.mutate(undefined, {
+        onSuccess: (data) => {
+          if ((data as { seeded: boolean }).seeded) {
+            void queryClient.invalidateQueries({
+              queryKey: [["workflow", "listTemplates"]],
+            });
+          }
+        },
+      });
+    }
+  }, [templatesQuery.isLoading, templates.length, total, seedMutation, queryClient]);
 
   const handleActivate = useCallback(
     async (template: TemplateRow) => {
