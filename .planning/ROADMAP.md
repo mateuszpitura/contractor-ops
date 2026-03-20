@@ -70,13 +70,15 @@ Plans:
   3. System sends reminders at configurable intervals before contract expiration
   4. User can upload documents linked to contractors or contracts and download them via signed URLs
   5. System validates uploaded file types by content and scans for malware
-**Plans**: 4 plans
+**Plans**: 6 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — Contract Zod validators, tRPC router (CRUD, list with FTS, status state machine, amendments, expiry config), tsvector migration
+- [ ] 03-01-PLAN.md — Contract Zod validators, tRPC router (CRUD, list with FTS, status state machine, amendments, expiry config), org-level reminder defaults in settings, tsvector migration
 - [ ] 03-02-PLAN.md — R2 storage service, MIME validator, virus scanner, document validators, document tRPC router (presigned upload/download, versioning, entity linking)
-- [ ] 03-03-PLAN.md — Contract list page with TanStack Table (11 columns, search, filters, bulk actions), side panel, 3-step creation wizard with contractor billing pre-fill
-- [ ] 03-04-PLAN.md — Contract detail page (Overview, Documents, Amendments, Activity tabs), reusable document components, contractor profile tab integration, full i18n
+- [ ] 03-03-PLAN.md — Contract list page with TanStack Table (11 columns, search, filters, bulk actions), side panel
+- [ ] 03-04-PLAN.md — 3-step contract creation wizard with contractor billing pre-fill, top bar quick action
+- [ ] 03-05-PLAN.md — Contract detail page (Overview, Documents, Amendments, Activity tabs), reusable document components
+- [ ] 03-06-PLAN.md — Contractor profile tab integration, compliance upload, org-level Settings reminder defaults, full i18n
 
 ### Phase 4: Workflow Engine
 **Goal**: Admins can build workflow templates with task dependencies and conditional logic, and users can run workflows that auto-assign tasks, track progress, and flag overdue items
@@ -214,7 +216,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 |-------|----------------|--------|-----------|
 | 1. Foundation & Auth | 3/4 | In Progress|  |
 | 2. Contractor Registry | 0/3 | Not started | - |
-| 3. Contracts & Documents | 0/4 | Not started | - |
+| 3. Contracts & Documents | 0/6 | Not started | - |
 | 4. Workflow Engine | 0/5 | Not started | - |
 | 5. Invoice Intake & Matching | 0/5 | Not started | - |
 | 6. Approval Workflow | 0/5 | Not started | - |
