@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 04-03-PLAN.md
-last_updated: "2026-03-20T16:36:45.666Z"
+stopped_at: Completed 04-02-PLAN.md
+last_updated: "2026-03-20T16:40:13.745Z"
 last_activity: 2026-03-20 — Completed 04-03 workflows page (runs table, my tasks, templates, side panel, template picker)
 progress:
   total_phases: 10
   completed_phases: 3
   total_plans: 18
-  completed_plans: 15
+  completed_plans: 16
   percent: 83
 ---
 
@@ -59,6 +59,7 @@ Progress: [████████░░] 83%
 | Phase 03-06 P06 | 9min | 2 tasks | 11 files |
 | Phase 04-01 P01 | 7min | 2 tasks | 4 files |
 | Phase 04 P03 | 8min | 2 tasks | 13 files |
+| Phase 04 P02 | 12min | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -112,6 +113,8 @@ Recent decisions affecting current work:
 - [Phase 04]: Tab state synced to URL via nuqs parseAsString for deep-linking
 - [Phase 04]: Templates tab conditionally rendered using usePermissions().can('workflow', ['create'])
 - [Phase 04]: Template picker accepts both single contractorId and bulk contractorIds with Promise.all
+- [Phase 04-02]: Flat i18n key namespace in Workflows for template builder dynamic key interpolation
+- [Phase 04-02]: dnd-kit/sortable v10 with pointer sensor 8px activation constraint for drag handle separation
 
 ### Pending Todos
 
@@ -125,6 +128,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T16:36:45.664Z
-Stopped at: Completed 04-03-PLAN.md
+Last session: 2026-03-20T16:40:13.743Z
+Stopped at: Completed 04-02-PLAN.md
 Resume file: None
