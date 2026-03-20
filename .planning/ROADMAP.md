@@ -53,12 +53,12 @@ Plans:
   3. User can filter contractors by status, owner, team, billing model, and compliance health
   4. User can perform bulk actions (assign owner, export, archive) on selected contractors
   5. User can view a contractor profile with tabs and see the compliance health score (green/yellow/red)
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 02-01: Contractor CRUD and data model
-- [ ] 02-02: Search, filters, and bulk actions
-- [ ] 02-03: Contractor profiles and compliance health scoring
+- [ ] 02-01-PLAN.md — Contractor Zod validators (NIP/IBAN), tRPC router (CRUD, list, FTS, compliance health, GUS lookup, bulk ops, lifecycle), PostgreSQL tsvector migration
+- [ ] 02-02-PLAN.md — Contractor list page with TanStack Table (12 columns, server-side pagination/sorting/filtering/FTS), side panel, bulk actions, 3-step add contractor wizard with GUS autofill
+- [ ] 02-03-PLAN.md — Contractor profile page with header, 8-tab navigation (Overview + Compliance implemented, 6 placeholders), compliance health card, sticky right rail
 
 ### Phase 3: Contracts & Documents
 **Goal**: Users can manage contracts with full lifecycle tracking, version history, and expiry reminders, and securely upload and download documents linked to contractors and contracts
