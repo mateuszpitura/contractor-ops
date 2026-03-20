@@ -13,6 +13,7 @@ const statement = {
   invitation: ["create", "cancel"],
   contractor: ["create", "read", "update", "delete", "bulk"],
   contract: ["create", "read", "update", "delete"],
+  document: ["create", "read", "update", "delete"],
   invoice: ["create", "read", "update", "delete", "approve"],
   workflow: ["create", "read", "update", "delete", "execute"],
   payment: ["create", "read", "export"],
