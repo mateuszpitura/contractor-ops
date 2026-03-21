@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Phase 5 UI-SPEC approved
-last_updated: "2026-03-21T19:56:36.295Z"
+stopped_at: Phase 5 planned (5 plans, 4 waves)
+last_updated: "2026-03-21T20:21:48.168Z"
 last_activity: 2026-03-20 — Completed 04-05 integration points (workflows tab, header buttons, bulk action, sidebar badge, starter templates)
 progress:
   total_phases: 10
   completed_phases: 4
-  total_plans: 18
+  total_plans: 23
   completed_plans: 18
   percent: 83
 ---
@@ -136,6 +136,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T19:56:36.293Z
-Stopped at: Phase 5 UI-SPEC approved
-Resume file: .planning/phases/05-invoice-intake-matching/05-UI-SPEC.md
+Last session: 2026-03-21T20:21:48.166Z
+Stopped at: Phase 5 planned (5 plans, 4 waves)
+Resume file: .planning/phases/05-invoice-intake-matching/05-01-PLAN.md
