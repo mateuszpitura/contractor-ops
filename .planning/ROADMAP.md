@@ -112,7 +112,7 @@ Plans:
 **Plans**: 5 plans
 
 Plans:
-- [ ] 05-01-PLAN.md — Invoice Zod validators, matching engine service, tRPC router (CRUD, list, matching, status transitions, manual match, duplicate handling)
+- [x] 05-01-PLAN.md — Invoice Zod validators, matching engine service, tRPC router (CRUD, list, matching, status transitions, manual match, duplicate handling)
 - [ ] 05-02-PLAN.md — Resend Inbound webhook handler for email intake (PDF extraction, R2 upload, draft creation)
 - [ ] 05-03-PLAN.md — Invoice list page with TanStack Table, status chip bar, side panel, multi-file upload area
 - [ ] 05-04-PLAN.md — Invoice detail page with side-by-side PDF viewer, metadata form, match card, duplicate warning banner

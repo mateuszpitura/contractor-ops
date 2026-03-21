@@ -2,16 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: completed
-stopped_at: Phase 5 planned (5 plans, 4 waves)
-last_updated: "2026-03-21T20:21:48.168Z"
-last_activity: 2026-03-20 — Completed 04-05 integration points (workflows tab, header buttons, bulk action, sidebar badge, starter templates)
+status: unknown
+stopped_at: Completed 05-01-PLAN.md
+last_updated: "2026-03-21T20:36:00.426Z"
 progress:
   total_phases: 10
   completed_phases: 4
   total_plans: 23
-  completed_plans: 18
-  percent: 83
+  completed_plans: 19
 ---
 
 # Project State
@@ -21,16 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-18)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 4: Workflow Engine
+**Current focus:** Phase 05 — invoice-intake-matching
 
 ## Current Position
 
-Phase: 4 of 10 (Workflow Engine)
-Plan: 5 of 5 in current phase (COMPLETE)
-Status: Phase Complete
-Last activity: 2026-03-20 — Completed 04-05 integration points (workflows tab, header buttons, bulk action, sidebar badge, starter templates)
-
-Progress: [████████░░] 83%
+Phase: 05 (invoice-intake-matching) — EXECUTING
+Plan: 2 of 5
 
 ## Performance Metrics
 
@@ -64,6 +58,7 @@ Progress: [████████░░] 83%
 | Phase 04 P02 | 12min | 2 tasks | 10 files |
 | Phase 04 P04 | 6min | 2 tasks | 6 files |
 | Phase 04 P05 | 8min | 2 tasks | 9 files |
+| Phase 05 P01 | 4min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -123,6 +118,9 @@ Recent decisions affecting current work:
 - [Phase 04-05]: Start onboarding/offboarding as explicit header buttons (not just dropdown lifecycle actions) for workflow entry point visibility
 - [Phase 04-05]: Starter templates use ROLE_BASED assignees with domain-appropriate roles (OPS_MANAGER, LEGAL_VIEWER, IT_ADMIN, FINANCE_ADMIN, TEAM_MANAGER)
 - [Phase 04-05]: Seed-if-empty pattern: seedStarterTemplates is no-op when templates exist, called on Templates tab mount
+- [Phase 05]: Used Organization.settingsJson for invoiceDeviationThresholdPercent
+- [Phase 05]: Contractor lookup uses taxId field matching Prisma model (plan referenced nip)
+- [Phase 05]: Invoice match score: 50pts NIP + 30pts contract + 20pts amount; 80+ MATCHED, 50-79 PARTIAL, <50 UNMATCHED
 
 ### Pending Todos
 
@@ -136,6 +134,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T20:21:48.166Z
-Stopped at: Phase 5 planned (5 plans, 4 waves)
-Resume file: .planning/phases/05-invoice-intake-matching/05-01-PLAN.md
+Last session: 2026-03-21T20:36:00.424Z
+Stopped at: Completed 05-01-PLAN.md
+Resume file: None
