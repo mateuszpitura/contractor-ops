@@ -120,3 +120,25 @@ export type {
   AddCommentInput,
   MyTasksListInput,
 } from "./workflow.js";
+
+export {
+  approvalStatusEnum,
+  approvalDecisionTypeEnum,
+  approvalResourceTypeEnum,
+  conditionSchema,
+  stepConfigSchema,
+  approvalChainCreateSchema,
+  approvalChainUpdateSchema,
+  approvalQueueSchema,
+  approveStepSchema,
+  rejectStepSchema,
+  delegateStepSchema,
+  requestClarificationSchema,
+  bulkApproveSchema,
+  bulkRejectSchema,
+} from "./approval.js";
+export type {
+  ApprovalChainCreate,
+  ApprovalChainUpdate,
+  ApprovalQueue,
+} from "./approval.js";
