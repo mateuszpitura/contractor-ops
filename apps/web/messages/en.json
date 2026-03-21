@@ -1125,5 +1125,94 @@
     "validationConditionField": "Select a field",
     "validationConditionOperator": "Select an operator",
     "validationConditionValue": "Enter a value"
+  },
+  "Invoices": {
+    "pageTitle": "Invoices",
+    "uploadInvoices": "Upload invoices",
+    "searchPlaceholder": "Search invoices...",
+    "filters": "Filters",
+    "clearAll": "Clear all",
+    "columns": {
+      "selectAll": "Select all",
+      "selectRow": "Select row",
+      "invoiceNumber": "Invoice #",
+      "contractor": "Contractor",
+      "issueDate": "Issue date",
+      "dueDate": "Due date",
+      "netAmount": "Net amount",
+      "grossAmount": "Gross amount",
+      "currency": "Currency",
+      "status": "Status",
+      "matchStatus": "Match status",
+      "source": "Source"
+    },
+    "status": {
+      "RECEIVED": "Received",
+      "UNDER_REVIEW": "Under review",
+      "APPROVAL_PENDING": "Pending approval",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected",
+      "READY_FOR_PAYMENT": "Ready for payment",
+      "PARTIALLY_PAID": "Partially paid",
+      "PAID": "Paid",
+      "VOID": "Void"
+    },
+    "matchStatus": {
+      "strongMatch": "Strong match",
+      "partialMatch": "Partial match",
+      "discrepancy": "Discrepancy",
+      "unmatched": "No match",
+      "manualMatch": "Manually matched"
+    },
+    "source": {
+      "MANUAL_UPLOAD": "Upload",
+      "EMAIL_INTAKE": "Email"
+    },
+    "chips": {
+      "all": "All",
+      "received": "Received",
+      "matched": "Matched",
+      "unmatched": "Unmatched",
+      "discrepancy": "Discrepancy",
+      "pendingApproval": "Pending approval",
+      "approved": "Approved",
+      "readyForPayment": "Ready for payment"
+    },
+    "empty": {
+      "heading": "No invoices yet",
+      "body": "Upload invoice PDFs or email them to your dedicated inbox to get started.",
+      "cta": "Upload invoices",
+      "emailLabel": "Your invoice inbox:"
+    },
+    "noResults": {
+      "heading": "No invoices found",
+      "body": "Try adjusting your search or filters.",
+      "cta": "Clear filters"
+    },
+    "pagination": {
+      "rowsPerPage": "Rows per page",
+      "of": "of {total}",
+      "page": "Page {page} of {totalPages}",
+      "selected": "{count} selected"
+    },
+    "sidePanel": {
+      "amounts": "Amounts",
+      "net": "Net",
+      "vat": "VAT",
+      "gross": "Gross",
+      "dates": "Dates",
+      "matching": "Matching",
+      "openInvoice": "Open invoice"
+    },
+    "upload": {
+      "heading": "Upload invoices",
+      "body": "Drag and drop PDF files here, or click to browse",
+      "accepted": "PDF files only",
+      "complete": "{count} invoices uploaded. Review your drafts.",
+      "reviewDrafts": "Review drafts",
+      "emailTip": "Or email invoices to {email}",
+      "error": "Upload failed",
+      "retry": "Retry"
+    }
   }
 }

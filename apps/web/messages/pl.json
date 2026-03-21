@@ -1125,5 +1125,94 @@
     "validationConditionField": "Wybierz pole",
     "validationConditionOperator": "Wybierz operator",
     "validationConditionValue": "Podaj wartosc"
+  },
+  "Invoices": {
+    "pageTitle": "Faktury",
+    "uploadInvoices": "Wgraj faktury",
+    "searchPlaceholder": "Szukaj faktur...",
+    "filters": "Filtry",
+    "clearAll": "Wyczysc wszystko",
+    "columns": {
+      "selectAll": "Zaznacz wszystko",
+      "selectRow": "Zaznacz wiersz",
+      "invoiceNumber": "Nr faktury",
+      "contractor": "Kontrahent",
+      "issueDate": "Data wystawienia",
+      "dueDate": "Termin platnosci",
+      "netAmount": "Kwota netto",
+      "grossAmount": "Kwota brutto",
+      "currency": "Waluta",
+      "status": "Status",
+      "matchStatus": "Status dopasowania",
+      "source": "Zrodlo"
+    },
+    "status": {
+      "RECEIVED": "Otrzymana",
+      "UNDER_REVIEW": "W przeglądzie",
+      "APPROVAL_PENDING": "Oczekuje na akceptacje",
+      "APPROVED": "Zaakceptowana",
+      "REJECTED": "Odrzucona",
+      "READY_FOR_PAYMENT": "Gotowa do zaplaty",
+      "PARTIALLY_PAID": "Czesciowo oplacona",
+      "PAID": "Oplacona",
+      "VOID": "Anulowana"
+    },
+    "matchStatus": {
+      "strongMatch": "Silne dopasowanie",
+      "partialMatch": "Czesciowe dopasowanie",
+      "discrepancy": "Rozbieznosc",
+      "unmatched": "Nie znaleziono dopasowania",
+      "manualMatch": "Dopasowane recznie"
+    },
+    "source": {
+      "MANUAL_UPLOAD": "Wgranie",
+      "EMAIL_INTAKE": "Email"
+    },
+    "chips": {
+      "all": "Wszystkie",
+      "received": "Otrzymane",
+      "matched": "Dopasowane",
+      "unmatched": "Niedopasowane",
+      "discrepancy": "Rozbieznosc",
+      "pendingApproval": "Oczekuje na akceptacje",
+      "approved": "Zaakceptowane",
+      "readyForPayment": "Gotowe do zaplaty"
+    },
+    "empty": {
+      "heading": "Brak faktur",
+      "body": "Wgraj faktury PDF lub wyslij je na dedykowany adres email, aby rozpoczac.",
+      "cta": "Wgraj faktury",
+      "emailLabel": "Twoja skrzynka faktur:"
+    },
+    "noResults": {
+      "heading": "Nie znaleziono faktur",
+      "body": "Sprobuj zmienic wyszukiwanie lub filtry.",
+      "cta": "Wyczysc filtry"
+    },
+    "pagination": {
+      "rowsPerPage": "Wierszy na strone",
+      "of": "z {total}",
+      "page": "Strona {page} z {totalPages}",
+      "selected": "{count} zaznaczonych"
+    },
+    "sidePanel": {
+      "amounts": "Kwoty",
+      "net": "Netto",
+      "vat": "VAT",
+      "gross": "Brutto",
+      "dates": "Daty",
+      "matching": "Dopasowanie",
+      "openInvoice": "Otworz fakture"
+    },
+    "upload": {
+      "heading": "Wgraj faktury",
+      "body": "Przeciagnij i upusc pliki PDF tutaj, lub kliknij aby wybrac",
+      "accepted": "Tylko pliki PDF",
+      "complete": "Wgrano {count} faktur. Przejrzyj wersje robocze.",
+      "reviewDrafts": "Przejrzyj wersje robocze",
+      "emailTip": "Lub wyslij faktury na {email}",
+      "error": "Przesylanie nieudane",
+      "retry": "Ponow"
+    }
   }
 }
