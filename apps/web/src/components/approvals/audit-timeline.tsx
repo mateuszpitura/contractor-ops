@@ -8,6 +8,7 @@ import {
   HelpCircle,
   ArrowRightLeft,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { trpc } from "@/trpc/init";
 import { cn } from "@/lib/utils";
@@ -51,28 +52,28 @@ const DECISION_CONFIG: Record<
   {
     className: string;
     icon: React.ComponentType<{ className?: string }>;
-    label: string;
+    labelKey: string;
   }
 > = {
   approve: {
     className: "bg-green-500/10 text-green-600 dark:text-green-400",
     icon: CheckCircle2,
-    label: "Approved",
+    labelKey: "auditTrail.decisionApproved",
   },
   reject: {
     className: "bg-destructive/10 text-destructive",
     icon: XCircle,
-    label: "Rejected",
+    labelKey: "auditTrail.decisionRejected",
   },
   request_changes: {
     className: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
     icon: HelpCircle,
-    label: "Clarification requested",
+    labelKey: "auditTrail.decisionClarification",
   },
   delegate: {
     className: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
     icon: ArrowRightLeft,
-    label: "Delegated",
+    labelKey: "auditTrail.decisionDelegated",
   },
 };
 
@@ -80,18 +81,20 @@ const DECISION_CONFIG: Record<
 // System event label mapping
 // ---------------------------------------------------------------------------
 
-function getSystemEventLabel(event: AuditEvent): string {
+type TranslateFn = (key: string, params?: Record<string, string>) => string;
+
+function getSystemEventLabel(event: AuditEvent, t: TranslateFn): string {
   switch (event.label) {
     case "submitted":
-      return "Submitted for approval";
+      return t("auditTrail.submitted");
     case "routed":
-      return `Routed to chain: ${event.chainName ?? "Unknown"}`;
+      return t("auditTrail.routed", { chainName: event.chainName ?? "Unknown" });
     case "sla_breached":
-      return `SLA breached at ${event.levelName ?? "unknown level"}`;
+      return t("auditTrail.slaBreached", { levelName: event.levelName ?? "unknown" });
     case "approved":
-      return "Approval flow completed";
+      return t("auditTrail.flowApproved");
     case "rejected":
-      return "Approval flow rejected";
+      return t("auditTrail.flowRejected");
     default:
       return event.label;
   }
@@ -150,7 +153,7 @@ function AuditTimelineSkeleton() {
 // Comment with "Show more"
 // ---------------------------------------------------------------------------
 
-function CommentText({ text }: { text: string }) {
+function CommentText({ text, t }: { text: string; t: TranslateFn }) {
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -170,7 +173,7 @@ function CommentText({ text }: { text: string }) {
           onClick={() => setExpanded((prev) => !prev)}
           className="mt-0.5 text-[12px] font-medium text-primary hover:underline"
         >
-          {expanded ? "Show less" : "Show more"}
+          {expanded ? t("auditTrail.showLess") : t("auditTrail.showMore")}
         </button>
       )}
     </div>
@@ -197,7 +200,7 @@ function getInitials(name: string | null, email: string): string {
 // Human event entry
 // ---------------------------------------------------------------------------
 
-function HumanEntry({ event }: { event: AuditEvent }) {
+function HumanEntry({ event, t }: { event: AuditEvent; t: TranslateFn }) {
   const config = DECISION_CONFIG[event.label];
 
   if (!config || !event.actor) return null;
@@ -225,11 +228,11 @@ function HumanEntry({ event }: { event: AuditEvent }) {
             className={cn("gap-1", config.className)}
           >
             <Icon className="h-3 w-3" />
-            {config.label}
+            {t(config.labelKey)}
           </Badge>
         </div>
 
-        {event.comment && <CommentText text={event.comment} />}
+        {event.comment && <CommentText text={event.comment} t={t} />}
 
         <p className="text-[12px] text-muted-foreground">
           {getRelativeTime(event.timestamp)}
@@ -243,7 +246,7 @@ function HumanEntry({ event }: { event: AuditEvent }) {
 // System event entry
 // ---------------------------------------------------------------------------
 
-function SystemEntry({ event }: { event: AuditEvent }) {
+function SystemEntry({ event, t }: { event: AuditEvent; t: TranslateFn }) {
   return (
     <div className="relative flex items-start gap-3 pl-0">
       {/* Small circle marker */}
@@ -254,7 +257,7 @@ function SystemEntry({ event }: { event: AuditEvent }) {
       {/* Content */}
       <div className="flex flex-col gap-0.5">
         <p className="text-[12px] text-muted-foreground">
-          {getSystemEventLabel(event)}
+          {getSystemEventLabel(event, t)}
         </p>
         <p className="text-[12px] text-muted-foreground/70">
           {getRelativeTime(event.timestamp)}
@@ -273,6 +276,7 @@ interface AuditTimelineProps {
 }
 
 export function AuditTimeline({ invoiceId }: AuditTimelineProps) {
+  const t = useTranslations("Approvals");
   const { data, isLoading } = useQuery(
     trpc.approval.getAuditTrail.queryOptions({ invoiceId }),
   );
@@ -282,15 +286,19 @@ export function AuditTimeline({ invoiceId }: AuditTimelineProps) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const events: AuditEvent[] = (data as any)?.events ?? [];
 
+  // Cast t for sub-components that accept a simpler signature
+  const tFn = (key: string, params?: Record<string, string>) =>
+    t(key as Parameters<typeof t>[0], params);
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-sm font-semibold">Audit trail</CardTitle>
+        <CardTitle className="text-sm font-semibold">{t("auditTrail.heading")}</CardTitle>
       </CardHeader>
       <CardContent>
         {events.length === 0 ? (
           <p className="py-4 text-center text-sm text-muted-foreground">
-            No activity yet
+            {t("auditTrail.empty")}
           </p>
         ) : (
           <div className="relative space-y-4">
@@ -300,9 +308,9 @@ export function AuditTimeline({ invoiceId }: AuditTimelineProps) {
             {events.map((event, idx) => (
               <div key={`${event.label}-${event.timestamp}-${idx}`} className="relative">
                 {event.type === "decision" ? (
-                  <HumanEntry event={event} />
+                  <HumanEntry event={event} t={tFn} />
                 ) : (
-                  <SystemEntry event={event} />
+                  <SystemEntry event={event} t={tFn} />
                 )}
               </div>
             ))}

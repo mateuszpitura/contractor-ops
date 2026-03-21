@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { CheckCircle2, XCircle } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { trpc } from "@/trpc/init";
 import { cn } from "@/lib/utils";
@@ -239,6 +240,7 @@ interface ChainTrackerProps {
 }
 
 export function ChainTracker({ invoiceId }: ChainTrackerProps) {
+  const t = useTranslations("Approvals");
   const { data, isLoading } = useQuery(
     trpc.approval.getAuditTrail.queryOptions({ invoiceId }),
   );
@@ -264,7 +266,7 @@ export function ChainTracker({ invoiceId }: ChainTrackerProps) {
     <Card>
       <CardHeader>
         <CardTitle className="text-sm font-semibold">
-          Approval chain
+          {t("chainTracker.heading")}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -325,7 +327,7 @@ export function ChainTracker({ invoiceId }: ChainTrackerProps) {
         {/* Chain name */}
         {flow.chainName && (
           <p className="text-[12px] text-muted-foreground">
-            Chain: {flow.chainName}
+            {t("chainTracker.chain", { chainName: flow.chainName })}
           </p>
         )}
       </CardContent>
