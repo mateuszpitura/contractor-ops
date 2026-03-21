@@ -163,7 +163,7 @@ Inherited from Phase 1. All color tokens from `globals.css` apply. Phase 6 adds 
 |--------|-----------------------|
 | Approvals queue page (populated) | Full-width TanStack Table of pending approvals. Two tabs above: "My Approvals" (default, filtered to current user) and "All" (admin only). Status chip bar for filtering: All / Pending / Overdue / Approved / Rejected. Columns: Invoice # (monospace link), Contractor, Amount (right-aligned), Submitted, SLA remaining (countdown badge), Priority. Inline actions on row hover: "Approve" (primary ghost button) and "Reject" (destructive ghost button) on right side of row. Checkbox column for bulk select. Floating toolbar appears at bottom when items selected. |
 | Approvals queue page (empty) | Centered empty state with `ClipboardCheck` icon (Lucide, 48px, `--muted-foreground`). Heading "No pending approvals". Body "All caught up! New invoices will appear here when they need your review." No CTA (approvals arrive from invoice submission). |
-| Approvals queue side panel (row click) | Sheet from right (480px). Invoice number as Heading (monospace). Status badge. SLA countdown badge. Chain tracker mini (compact horizontal stepper -- step circles only, no labels, active step highlighted, tooltip on hover for level name). Contractor name as link. Amounts: Net, Gross, Currency. "Approve invoice" primary CTA + "Reject invoice" destructive outline CTA at bottom. "More" dropdown: Request clarification, Delegate. |
+| Approvals queue side panel (row click) | Sheet from right (480px). Invoice number as Heading (monospace). Status badge. SLA countdown badge. Chain tracker mini (compact horizontal stepper -- step circles only, no labels, active step highlighted, tooltip on hover for level name). Contractor name as link. Amounts: Net, Gross, Currency. "Approve invoice" primary CTA + "Reject invoice" destructive outline CTA at bottom. "More" dropdown: Request clarification, Delegate approval. |
 | Invoice detail page (with approval) | Existing 60/40 layout. Right panel gains two new sections inserted between match card and metadata form: (1) Chain tracker stepper -- horizontal bar showing each approval level with step circle, approver name/avatar, status, SLA countdown. Active step is visually prominent. (2) Audit timeline -- vertical chronological list (most recent at top) of all approval events. Both sections wrapped in shadcn Card. |
 | Settings > Approvals tab | New tab in Settings page alongside General and Members. List of approval chain configurations as Cards. Each card: chain name, level count badge, condition summary (e.g., "Amount > 10,000 PLN"), active/inactive toggle, edit/delete actions. "Create approval chain" Indigo CTA top-right. |
 | Chain editor dialog | Dialog (640px width). Chain name input. Vertical stack of 1-3 level cards. Each level card: drag handle (disabled in v1), level number badge, level name input, approver picker (user search Command or role Select), SLA hours number input, required toggle (Switch). "Add level" button below stack (disabled when 3 levels reached). Condition builder section below levels: rows of field (Select) + operator (Select) + value (Input) with add/remove row buttons. Footer: "Discard changes" (ghost) + "Save chain" (primary). |
@@ -219,7 +219,7 @@ Inherited from Phase 1. All color tokens from `globals.css` apply. Phase 6 adds 
 | Reject button | Reject | Odrzuc |
 | More menu | More | Wiecej |
 | Request clarification | Request clarification | Popros o wyjasnienie |
-| Delegate | Delegate | Deleguj |
+| Delegate approval | Delegate approval | Deleguj akceptacje |
 
 ### Side Panel Actions
 
@@ -275,7 +275,7 @@ Inherited from Phase 1. All color tokens from `globals.css` apply. Phase 6 adds 
 | User picker label | Delegate to | Deleguj do |
 | User picker placeholder | Search users... | Szukaj uzytkownikow... |
 | Comment label | Note (optional) | Uwaga (opcjonalna) |
-| Confirm CTA | Delegate | Deleguj |
+| Confirm CTA | Delegate approval | Deleguj akceptacje |
 | Dismiss CTA | Keep assigned | Pozostaw przypisana |
 
 ### Chain Tracker (Invoice Detail Page)
@@ -468,9 +468,9 @@ Inherited from Phase 1. All color tokens from `globals.css` apply. Phase 6 adds 
 
 - **Open:** Slide from right, 200ms ease-out. Backdrop overlay at 20% opacity.
 - **Close:** Click backdrop, press Escape, or click X button.
-- **Content:** Invoice number as Heading (monospace). Status badge. SLA countdown badge. Mini chain tracker (compact horizontal stepper -- step circles only, no labels, active step highlighted, tooltip on hover for level name). Contractor name as link. Amounts section: Net, Gross (formatted). Dates: Issue date, Due date. "Approve invoice" primary CTA + "Reject invoice" destructive outline CTA at bottom. "More" dropdown menu: "Request clarification" and "Delegate".
+- **Content:** Invoice number as Heading (monospace). Status badge. SLA countdown badge. Mini chain tracker (compact horizontal stepper -- step circles only, no labels, active step highlighted, tooltip on hover for level name). Contractor name as link. Amounts section: Net, Gross (formatted). Dates: Issue date, Due date. "Approve invoice" primary CTA + "Reject invoice" destructive outline CTA at bottom. "More" dropdown menu: "Request clarification" and "Delegate approval".
 - **Request clarification (More dropdown):** Opens Popover. Textarea for question. "Send request" CTA. "Don't send" to dismiss. Changes step status to indicate clarification requested.
-- **Delegate (More dropdown):** Opens Popover. User search picker (Command). Optional note textarea. "Delegate" CTA. "Keep assigned" to dismiss. Updates approver and records delegation in audit trail.
+- **Delegate (More dropdown):** Opens Popover. User search picker (Command). Optional note textarea. "Delegate approval" CTA. "Keep assigned" to dismiss. Updates approver and records delegation in audit trail.
 
 ### Chain Tracker Stepper (Invoice Detail Page)
 
@@ -497,7 +497,7 @@ Inherited from Phase 1. All color tokens from `globals.css` apply. Phase 6 adds 
 
 - **Location:** New tab in Settings page Tabs component. Positioned after "General" and before "Members".
 - **List layout:** Vertical stack of Cards, one per chain. Each card:
-  - Header row: Chain name (Heading-sized but at 16px semibold), "Default" badge (if default), Active toggle (Switch) on right.
+  - Header row: Chain name (Body text at 14px, weight 600 (semibold) -- the semibold weight provides visual distinction from regular body copy within the card), "Default" badge (if default), Active toggle (Switch) on right.
   - Body: Level count badge ("{n} levels"), condition summary text (e.g., "Amount > 10,000 PLN" or "No conditions (default fallback)").
   - Footer: "Edit" ghost button, "Delete" ghost destructive button.
 - **Create CTA:** "Create approval chain" primary button top-right of section, above the cards list.
