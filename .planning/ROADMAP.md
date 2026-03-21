@@ -109,14 +109,14 @@ Plans:
   3. System auto-matches invoices to contractors by NIP and to active contracts with deviation detection
   4. System detects duplicate invoices by invoice number, contractor, and amount
   5. User can view invoice detail with linked contractor, contract, and embedded PDF viewer, and manually match unmatched invoices
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- [ ] 05-01: Invoice upload, metadata entry, and status flow
-- [ ] 05-02: Email intake integration (Resend Inbound)
-- [ ] 05-03: Auto-matching engine (NIP to contractor, contract matching, deviation flags)
-- [ ] 05-04: Duplicate detection and manual matching UI
-- [ ] 05-05: Invoice detail view with PDF viewer
+- [ ] 05-01-PLAN.md — Invoice Zod validators, matching engine service, tRPC router (CRUD, list, matching, status transitions, manual match, duplicate handling)
+- [ ] 05-02-PLAN.md — Resend Inbound webhook handler for email intake (PDF extraction, R2 upload, draft creation)
+- [ ] 05-03-PLAN.md — Invoice list page with TanStack Table, status chip bar, side panel, multi-file upload area
+- [ ] 05-04-PLAN.md — Invoice detail page with side-by-side PDF viewer, metadata form, match card, duplicate warning banner
+- [ ] 05-05-PLAN.md — Contractor profile Invoices tab, Settings invoice matching section, full i18n (EN + PL)
 
 ### Phase 6: Approval Workflow
 **Goal**: Invoices route through configurable multi-level approval chains with SLA enforcement, delegation, and a complete audit trail for every decision
