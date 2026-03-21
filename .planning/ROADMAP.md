@@ -135,7 +135,7 @@ Plans:
 - [x] 06-02-PLAN.md — Settings > Approvals tab with chain list, chain editor dialog (1-3 level cards, condition builder)
 - [x] 06-03-PLAN.md — Approvals queue page with TanStack Table, SLA badges, inline actions, side panel, bulk approve/reject toolbar
 - [x] 06-04-PLAN.md — Invoice detail chain tracker stepper, audit timeline, submit-for-approval integration
-- [ ] 06-05-PLAN.md — Full i18n (EN + PL) for all approval surfaces, SLA breach event emission
+- [x] 06-05-PLAN.md — Full i18n (EN + PL) for all approval surfaces, SLA breach event emission
 
 ### Phase 7: Notifications & Slack
 **Goal**: Users receive timely in-app and email notifications for all critical events, and approvers can act on invoices directly from Slack
