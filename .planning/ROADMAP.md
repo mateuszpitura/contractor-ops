@@ -128,14 +128,14 @@ Plans:
   3. User can view their approval queue sorted by priority and bulk approve or reject items
   4. System tracks SLA timers per approval level with visual indicators and sends escalation notifications on breach
   5. Full audit trail records every approval decision with actor, timestamp, and comment
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- [ ] 06-01: Approval chain configuration and template management
-- [ ] 06-02: Invoice routing and approval state machine (with chain snapshot)
-- [ ] 06-03: Approver actions (approve, reject, clarify, delegate) and approval queue
-- [ ] 06-04: SLA timers, escalation notifications, and bulk actions
-- [ ] 06-05: Approval audit trail
+- [ ] 06-01-PLAN.md — Approval Zod validators, engine service (chain routing, state machine, SLA computation), tRPC router (chain CRUD, actions, queue, bulk, audit trail)
+- [ ] 06-02-PLAN.md — Settings > Approvals tab with chain list, chain editor dialog (1-3 level cards, condition builder)
+- [ ] 06-03-PLAN.md — Approvals queue page with TanStack Table, SLA badges, inline actions, side panel, bulk approve/reject toolbar
+- [ ] 06-04-PLAN.md — Invoice detail chain tracker stepper, audit timeline, submit-for-approval integration
+- [ ] 06-05-PLAN.md — Full i18n (EN + PL) for all approval surfaces, SLA breach event emission
 
 ### Phase 7: Notifications & Slack
 **Goal**: Users receive timely in-app and email notifications for all critical events, and approvers can act on invoices directly from Slack
