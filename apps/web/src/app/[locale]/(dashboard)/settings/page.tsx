@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { OrgSettingsForm } from "@/components/settings/org-settings-form";
 import { ExpiryReminderDefaults } from "@/components/settings/expiry-reminder-defaults";
 import { InvoiceMatchingSettings } from "@/components/settings/invoice-matching-settings";
+import { ApprovalChainsTab } from "@/components/settings/approval-chains-tab";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 
@@ -28,6 +29,7 @@ export default function SettingsPage() {
       <Tabs defaultValue="general" className="w-full">
         <TabsList>
           <TabsTrigger value="general">{t("tabs.general")}</TabsTrigger>
+          <TabsTrigger value="approvals">{t("tabs.approvals")}</TabsTrigger>
           <TabsTrigger
             value="members"
             onClick={() => router.push("/settings/members")}
@@ -40,6 +42,10 @@ export default function SettingsPage() {
           <OrgSettingsForm />
           <ExpiryReminderDefaults />
           <InvoiceMatchingSettings />
+        </TabsContent>
+
+        <TabsContent value="approvals" className="mt-6">
+          <ApprovalChainsTab />
         </TabsContent>
       </Tabs>
     </div>
