@@ -7,6 +7,7 @@ import { contractRouter } from "./routers/contract.js";
 import { documentRouter } from "./routers/document.js";
 import { workflowRouter } from "./routers/workflow.js";
 import { invoiceRouter } from "./routers/invoice.js";
+import { approvalRouter } from "./routers/approval.js";
 
 /**
  * Root tRPC router merging all sub-routers.
@@ -19,6 +20,7 @@ import { invoiceRouter } from "./routers/invoice.js";
  * - document: upload/download with presigned URLs, versioning, entity linking, virus scanning
  * - workflow: template CRUD, run lifecycle, task actions, comments, overdue detection
  * - invoice: CRUD, list, auto/manual matching, status transitions, duplicate handling
+ * - approval: chain config CRUD, approval queue, approve/reject/delegate/clarify, bulk ops, submit-for-approval, audit trail
  */
 export const appRouter = router({
   organization: organizationRouter,
@@ -29,6 +31,7 @@ export const appRouter = router({
   document: documentRouter,
   workflow: workflowRouter,
   invoice: invoiceRouter,
+  approval: approvalRouter,
 });
 
 /** Type-safe router type for client consumption */
