@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 05-01-PLAN.md
-last_updated: "2026-03-21T20:36:00.426Z"
+stopped_at: Completed 05-02-PLAN.md
+last_updated: "2026-03-21T20:45:24.901Z"
 progress:
   total_phases: 10
   completed_phases: 4
   total_plans: 23
-  completed_plans: 19
+  completed_plans: 21
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-18)
 ## Current Position
 
 Phase: 05 (invoice-intake-matching) — EXECUTING
-Plan: 2 of 5
+Plan: 4 of 5
 
 ## Performance Metrics
 
@@ -59,6 +59,8 @@ Plan: 2 of 5
 | Phase 04 P04 | 6min | 2 tasks | 6 files |
 | Phase 04 P05 | 8min | 2 tasks | 9 files |
 | Phase 05 P01 | 4min | 2 tasks | 5 files |
+| Phase 05 P03 | 7min | 2 tasks | 12 files |
+| Phase 05 P02 | 7min | 1 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -121,6 +123,12 @@ Recent decisions affecting current work:
 - [Phase 05]: Used Organization.settingsJson for invoiceDeviationThresholdPercent
 - [Phase 05]: Contractor lookup uses taxId field matching Prisma model (plan referenced nip)
 - [Phase 05]: Invoice match score: 50pts NIP + 30pts contract + 20pts amount; 80+ MATCHED, 50-79 PARTIAL, <50 UNMATCHED
+- [Phase 05]: Mirrored contract-table pattern exactly for invoice-table consistency
+- [Phase 05]: Status chip bar filters by matchStatus URL param, not invoice status
+- [Phase 05]: Upload area uses inline useDropzone for custom per-file progress and invoice.create integration
+- [Phase 05]: Resend webhooks.verify with svix headers object (not two-arg form) for signature verification
+- [Phase 05]: Server-side PutObjectCommand for R2 upload in webhook (not presigned URL) since server context
+- [Phase 05]: @contractor-ops/db added as web dependency for direct Prisma access in webhook routes
 
 ### Pending Todos
 
@@ -134,6 +142,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T20:36:00.424Z
-Stopped at: Completed 05-01-PLAN.md
+Last session: 2026-03-21T20:45:24.899Z
+Stopped at: Completed 05-02-PLAN.md
 Resume file: None

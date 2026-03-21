@@ -60,7 +60,7 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Invoice Pipeline
 
 - [x] **INV-01**: User can upload invoices via drag & drop (single or multi-file)
-- [ ] **INV-02**: System receives invoices via dedicated email inbox per organization
+- [x] **INV-02**: System receives invoices via dedicated email inbox per organization
 - [x] **INV-03**: User can enter/edit invoice metadata (number, dates, amounts, NIP, bank account, billing period)
 - [x] **INV-04**: System auto-matches invoices to contractors by NIP
 - [x] **INV-05**: System auto-matches invoices to active contracts and calculates expected vs actual amount
@@ -68,7 +68,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **INV-07**: System detects duplicate invoices by invoice number + contractor + amount
 - [x] **INV-08**: Invoice follows status flow: received → matched/unmatched/discrepancy → pending approval → approved/rejected → ready for payment → paid
 - [x] **INV-09**: User can manually match unmatched invoices to a contractor and contract
-- [ ] **INV-10**: User can view invoice detail with linked contractor, contract, approval chain, comments, and embedded PDF viewer
+- [x] **INV-10**: User can view invoice detail with linked contractor, contract, approval chain, comments, and embedded PDF viewer
 
 ### Approvals
 
@@ -211,7 +211,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | WKFL-09 | Phase 4 | Complete |
 | WKFL-10 | Phase 4 | Complete |
 | INV-01 | Phase 5 | Complete |
-| INV-02 | Phase 5 | Pending |
+| INV-02 | Phase 5 | Complete |
 | INV-03 | Phase 5 | Complete |
 | INV-04 | Phase 5 | Complete |
 | INV-05 | Phase 5 | Complete |
@@ -219,7 +219,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INV-07 | Phase 5 | Complete |
 | INV-08 | Phase 5 | Complete |
 | INV-09 | Phase 5 | Complete |
-| INV-10 | Phase 5 | Pending |
+| INV-10 | Phase 5 | Complete |
 | APPR-01 | Phase 6 | Pending |
 | APPR-02 | Phase 6 | Pending |
 | APPR-03 | Phase 6 | Pending |
