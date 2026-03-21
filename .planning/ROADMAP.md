@@ -134,7 +134,7 @@ Plans:
 - [x] 06-01-PLAN.md — Approval Zod validators, engine service (chain routing, state machine, SLA computation), tRPC router (chain CRUD, actions, queue, bulk, audit trail)
 - [ ] 06-02-PLAN.md — Settings > Approvals tab with chain list, chain editor dialog (1-3 level cards, condition builder)
 - [ ] 06-03-PLAN.md — Approvals queue page with TanStack Table, SLA badges, inline actions, side panel, bulk approve/reject toolbar
-- [ ] 06-04-PLAN.md — Invoice detail chain tracker stepper, audit timeline, submit-for-approval integration
+- [x] 06-04-PLAN.md — Invoice detail chain tracker stepper, audit timeline, submit-for-approval integration
 - [ ] 06-05-PLAN.md — Full i18n (EN + PL) for all approval surfaces, SLA breach event emission
 
 ### Phase 7: Notifications & Slack

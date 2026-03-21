@@ -77,7 +77,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **APPR-03**: User can view their personal approval queue sorted by priority (overdue first, then by due date)
 - [ ] **APPR-04**: User can bulk approve/reject selected items from the queue
 - [x] **APPR-05**: System tracks SLA timers per approval level with visual indicators (green/yellow/red)
-- [ ] **APPR-06**: System sends escalation notifications when SLA is breached
+- [x] **APPR-06**: System sends escalation notifications when SLA is breached
 - [x] **APPR-07**: Approver can delegate to another user when absent
 - [x] **APPR-08**: System snapshots the approval chain at submission time (chain changes don't affect in-flight approvals)
 - [x] **APPR-09**: Full audit trail for every approval decision with actor, timestamp, and comment
@@ -225,7 +225,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | APPR-03 | Phase 6 | Pending |
 | APPR-04 | Phase 6 | Pending |
 | APPR-05 | Phase 6 | Complete |
-| APPR-06 | Phase 6 | Pending |
+| APPR-06 | Phase 6 | Complete |
 | APPR-07 | Phase 6 | Complete |
 | APPR-08 | Phase 6 | Complete |
 | APPR-09 | Phase 6 | Complete |
