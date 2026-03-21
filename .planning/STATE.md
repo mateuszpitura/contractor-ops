@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 05-04-PLAN.md
-last_updated: "2026-03-21T20:55:44.902Z"
+stopped_at: Completed 05-05-PLAN.md
+last_updated: "2026-03-21T21:04:49.341Z"
 progress:
   total_phases: 10
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 23
-  completed_plans: 22
+  completed_plans: 23
 ---
 
 # Project State
@@ -62,6 +62,7 @@ Plan: 5 of 5
 | Phase 05 P03 | 7min | 2 tasks | 12 files |
 | Phase 05 P02 | 7min | 1 tasks | 4 files |
 | Phase 05 P04 | 7min | 2 tasks | 7 files |
+| Phase 05 P05 | 6min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -132,6 +133,9 @@ Recent decisions affecting current work:
 - [Phase 05]: @contractor-ops/db added as web dependency for direct Prisma access in webhook routes
 - [Phase 05-04]: base-ui render prop pattern for PopoverTrigger and DropdownMenuTrigger (not Radix asChild)
 - [Phase 05-04]: CurrencyInput sub-component for grosze/PLN display conversion with controlled input state
+- [Phase 05]: Contractor invoices tab follows prop-injection pattern (invoicesContent) consistent with other tabs
+- [Phase 05]: Settings router extended with getInvoiceSettings/updateInvoiceSettings for settingsJson deviation threshold
+- [Phase 05]: Org slug exposed in settings.get for invoice email address generation
 
 ### Pending Todos
 
@@ -145,6 +149,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T20:55:44.900Z
-Stopped at: Completed 05-04-PLAN.md
+Last session: 2026-03-21T21:04:49.339Z
+Stopped at: Completed 05-05-PLAN.md
 Resume file: None

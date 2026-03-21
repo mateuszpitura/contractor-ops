@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 2: Contractor Registry** - Full contractor CRUD with search, filters, bulk actions, profiles, and lifecycle management
 - [x] **Phase 3: Contracts & Documents** - Contract repository with versioning, expiry tracking, and secure document management
 - [ ] **Phase 4: Workflow Engine** - Template builder with dependencies and conditional logic, execution engine with task management
-- [ ] **Phase 5: Invoice Intake & Matching** - Invoice upload, email intake, auto-matching to contractors and contracts, duplicate detection
+- [x] **Phase 5: Invoice Intake & Matching** - Invoice upload, email intake, auto-matching to contractors and contracts, duplicate detection (completed 2026-03-21)
 - [ ] **Phase 6: Approval Workflow** - Configurable approval chains with SLA timers, delegation, and full audit trail
 - [ ] **Phase 7: Notifications & Slack** - In-app and email notifications for all critical events, Slack integration with inline actions
 - [ ] **Phase 8: Payments** - Payment run creation, batch export, status tracking with idempotency controls
@@ -116,7 +116,7 @@ Plans:
 - [x] 05-02-PLAN.md — Resend Inbound webhook handler for email intake (PDF extraction, R2 upload, draft creation)
 - [x] 05-03-PLAN.md — Invoice list page with TanStack Table, status chip bar, side panel, multi-file upload area
 - [x] 05-04-PLAN.md — Invoice detail page with side-by-side PDF viewer, metadata form, match card, duplicate warning banner
-- [ ] 05-05-PLAN.md — Contractor profile Invoices tab, Settings invoice matching section, full i18n (EN + PL)
+- [x] 05-05-PLAN.md — Contractor profile Invoices tab, Settings invoice matching section, full i18n (EN + PL)
 
 ### Phase 6: Approval Workflow
 **Goal**: Invoices route through configurable multi-level approval chains with SLA enforcement, delegation, and a complete audit trail for every decision
@@ -218,7 +218,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 2. Contractor Registry | 0/3 | Not started | - |
 | 3. Contracts & Documents | 5/6 | In Progress|  |
 | 4. Workflow Engine | 0/5 | Not started | - |
-| 5. Invoice Intake & Matching | 0/5 | Not started | - |
+| 5. Invoice Intake & Matching | 5/5 | Complete   | 2026-03-21 |
 | 6. Approval Workflow | 0/5 | Not started | - |
 | 7. Notifications & Slack | 0/3 | Not started | - |
 | 8. Payments | 0/3 | Not started | - |
