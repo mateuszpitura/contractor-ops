@@ -180,7 +180,8 @@
         "addCondition": "Add condition",
         "removeCondition": "Remove",
         "save": "Save chain",
-        "discard": "Discard changes"
+        "discard": "Discard changes",
+        "noUsersFound": "No users found."
       },
       "toasts": {
         "created": "Approval chain created",

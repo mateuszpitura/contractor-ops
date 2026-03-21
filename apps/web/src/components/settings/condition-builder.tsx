@@ -1,6 +1,7 @@
 "use client";
 
 import { Plus, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,15 +32,15 @@ type ConditionBuilderProps = {
 // Field / operator label maps
 // ---------------------------------------------------------------------------
 
-const FIELD_OPTIONS: { value: Condition["field"]; label: string }[] = [
-  { value: "amount", label: "Amount" },
-  { value: "contractorType", label: "Contractor type" },
+const FIELD_OPTIONS: { value: Condition["field"]; labelKey: string }[] = [
+  { value: "amount", labelKey: "approvals.editor.fieldAmount" },
+  { value: "contractorType", labelKey: "approvals.editor.fieldContractorType" },
 ];
 
-const OPERATOR_OPTIONS: { value: Condition["operator"]; label: string }[] = [
-  { value: "gt", label: "Greater than" },
-  { value: "lt", label: "Less than" },
-  { value: "eq", label: "Equals" },
+const OPERATOR_OPTIONS: { value: Condition["operator"]; labelKey: string }[] = [
+  { value: "gt", labelKey: "approvals.editor.operatorGt" },
+  { value: "lt", labelKey: "approvals.editor.operatorLt" },
+  { value: "eq", labelKey: "approvals.editor.operatorEq" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -47,6 +48,7 @@ const OPERATOR_OPTIONS: { value: Condition["operator"]; label: string }[] = [
 // ---------------------------------------------------------------------------
 
 export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
+  const t = useTranslations("Settings");
   function handleAdd() {
     onChange([...value, { field: "amount", operator: "gt", value: "" }]);
   }
@@ -81,12 +83,12 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
             }
           >
             <SelectTrigger className="w-[160px]">
-              <SelectValue placeholder="Select field..." />
+              <SelectValue placeholder={t("approvals.editor.conditionField")} />
             </SelectTrigger>
             <SelectContent>
               {FIELD_OPTIONS.map((opt) => (
                 <SelectItem key={opt.value} value={opt.value}>
-                  {opt.label}
+                  {t(opt.labelKey as Parameters<typeof t>[0])}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -100,12 +102,12 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
             }
           >
             <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="Select operator..." />
+              <SelectValue placeholder={t("approvals.editor.conditionOperator")} />
             </SelectTrigger>
             <SelectContent>
               {OPERATOR_OPTIONS.map((opt) => (
                 <SelectItem key={opt.value} value={opt.value}>
-                  {opt.label}
+                  {t(opt.labelKey as Parameters<typeof t>[0])}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -125,7 +127,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
                     : e.target.value,
               })
             }
-            placeholder="Enter value..."
+            placeholder={t("approvals.editor.conditionValue")}
             className="flex-1"
             min={condition.field === "amount" ? 0 : undefined}
           />
@@ -137,7 +139,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
             size="icon-sm"
             className="shrink-0 text-destructive hover:text-destructive"
             onClick={() => handleRemove(index)}
-            aria-label="Remove condition"
+            aria-label={t("approvals.editor.removeCondition")}
           >
             <X className="size-4" />
           </Button>
@@ -147,12 +149,11 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
       {/* Add condition */}
       <Button type="button" variant="outline" size="sm" onClick={handleAdd}>
         <Plus className="mr-1.5 size-3.5" />
-        Add condition
+        {t("approvals.editor.addCondition")}
       </Button>
 
       <p className="text-xs text-muted-foreground">
-        When an invoice matches these conditions, this chain is used. Leave empty
-        for the default chain.
+        {t("approvals.editor.conditionsHelp")}
       </p>
     </div>
   );

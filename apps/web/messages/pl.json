@@ -180,7 +180,8 @@
         "addCondition": "Dodaj warunek",
         "removeCondition": "Usun",
         "save": "Zapisz lancuch",
-        "discard": "Odrzuc zmiany"
+        "discard": "Odrzuc zmiany",
+        "noUsersFound": "Nie znaleziono uzytkownikow."
       },
       "toasts": {
         "created": "Lancuch akceptacji utworzony",

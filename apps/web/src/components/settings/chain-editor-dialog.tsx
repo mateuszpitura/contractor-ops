@@ -5,6 +5,7 @@ import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Plus, X, Loader2 } from "lucide-react";
 
@@ -154,6 +155,7 @@ function UserPicker({
   value: string | null | undefined;
   onChange: (userId: string | null) => void;
 }) {
+  const t = useTranslations("Settings");
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
 
@@ -195,18 +197,18 @@ function UserPicker({
             {selectedUser.name} ({selectedUser.email})
           </span>
         ) : (
-          <span className="text-muted-foreground">Search users...</span>
+          <span className="text-muted-foreground">{t("approvals.editor.userPlaceholder")}</span>
         )}
       </PopoverTrigger>
       <PopoverContent className="w-[320px] p-0" align="start">
         <Command shouldFilter={false}>
           <CommandInput
-            placeholder="Search users..."
+            placeholder={t("approvals.editor.userPlaceholder")}
             value={search}
             onValueChange={setSearch}
           />
           <CommandList>
-            <CommandEmpty>No users found.</CommandEmpty>
+            <CommandEmpty>{t("approvals.editor.noUsersFound" as Parameters<typeof t>[0])}</CommandEmpty>
             <CommandGroup>
               {filteredUsers.map((user) => (
                 <CommandItem
@@ -247,6 +249,7 @@ export function ChainEditorDialog({
   onOpenChange,
   chainData,
 }: ChainEditorDialogProps) {
+  const t = useTranslations("Settings");
   const queryClient = useQueryClient();
   const isEditMode = chainData !== null;
 
@@ -304,14 +307,14 @@ export function ChainEditorDialog({
   const createMutation = useMutation(
     trpc.approval.createChain.mutationOptions({
       onSuccess: () => {
-        toast.success("Approval chain created");
+        toast.success(t("approvals.toasts.created"));
         queryClient.invalidateQueries({
           queryKey: trpc.approval.listChains.queryKey(),
         });
         onOpenChange(false);
       },
       onError: () => {
-        toast.error("Could not save approval chain. Try again.");
+        toast.error(t("approvals.toasts.saveFailed"));
       },
     }),
   );
@@ -319,14 +322,14 @@ export function ChainEditorDialog({
   const updateMutation = useMutation(
     trpc.approval.updateChain.mutationOptions({
       onSuccess: () => {
-        toast.success("Approval chain updated");
+        toast.success(t("approvals.toasts.updated"));
         queryClient.invalidateQueries({
           queryKey: trpc.approval.listChains.queryKey(),
         });
         onOpenChange(false);
       },
       onError: () => {
-        toast.error("Could not save approval chain. Try again.");
+        toast.error(t("approvals.toasts.saveFailed"));
       },
     }),
   );
@@ -379,12 +382,12 @@ export function ChainEditorDialog({
       <DialogContent className="max-w-[640px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {isEditMode ? "Edit approval chain" : "Create approval chain"}
+            {isEditMode ? t("approvals.editor.editTitle") : t("approvals.editor.createTitle")}
           </DialogTitle>
           <DialogDescription>
             {isEditMode
-              ? "Update chain settings, approval levels, and routing conditions."
-              : "Set up a new approval chain with levels and routing conditions."}
+              ? t("approvals.editor.editDescription")
+              : t("approvals.editor.createDescription")}
           </DialogDescription>
         </DialogHeader>
 
@@ -395,10 +398,10 @@ export function ChainEditorDialog({
           {/* Section 1: Chain name + default toggle */}
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="chain-name">Chain name</Label>
+              <Label htmlFor="chain-name">{t("approvals.editor.chainName")}</Label>
               <Input
                 id="chain-name"
-                placeholder="e.g. Standard Invoice Approval"
+                placeholder={t("approvals.editor.chainNamePlaceholder")}
                 {...form.register("name")}
               />
               {form.formState.errors.name && (
@@ -410,9 +413,9 @@ export function ChainEditorDialog({
 
             <div className="flex items-center justify-between">
               <div>
-                <Label htmlFor="chain-default">Set as default chain</Label>
+                <Label htmlFor="chain-default">{t("approvals.editor.defaultToggle")}</Label>
                 <p className="text-xs text-muted-foreground">
-                  The default chain is used when no conditions match.
+                  {t("approvals.editor.defaultHelp")}
                 </p>
               </div>
               <Controller
@@ -431,7 +434,7 @@ export function ChainEditorDialog({
 
           {/* Section 2: Approval levels */}
           <div className="space-y-3">
-            <h4 className="text-sm font-semibold">Approval levels</h4>
+            <h4 className="text-sm font-semibold">{t("approvals.editor.levelsHeading")}</h4>
 
             {form.formState.errors.steps?.root && (
               <p className="text-xs text-destructive">
@@ -454,7 +457,7 @@ export function ChainEditorDialog({
                         size="icon-sm"
                         className="text-destructive hover:text-destructive"
                         onClick={() => remove(index)}
-                        aria-label="Remove level"
+                        aria-label={t("approvals.editor.removeLevel")}
                       >
                         <X className="size-4" />
                       </Button>
@@ -463,10 +466,10 @@ export function ChainEditorDialog({
 
                   {/* Level name */}
                   <div className="space-y-2">
-                    <Label htmlFor={`step-name-${index}`}>Level name</Label>
+                    <Label htmlFor={`step-name-${index}`}>{t("approvals.editor.levelName")}</Label>
                     <Input
                       id={`step-name-${index}`}
-                      placeholder="e.g. Manager Review"
+                      placeholder={t("approvals.editor.levelNamePlaceholder")}
                       {...form.register(`steps.${index}.name`)}
                     />
                     {form.formState.errors.steps?.[index]?.name && (
@@ -478,7 +481,7 @@ export function ChainEditorDialog({
 
                   {/* Approver type */}
                   <div className="space-y-2">
-                    <Label>Approver</Label>
+                    <Label>{t("approvals.editor.approver")}</Label>
                     <Controller
                       control={form.control}
                       name={`steps.${index}.approverType`}
@@ -491,13 +494,13 @@ export function ChainEditorDialog({
                           <div className="flex items-center gap-2">
                             <RadioGroupItem value="user" />
                             <Label className="cursor-pointer font-normal">
-                              Specific user
+                              {t("approvals.editor.approverUser")}
                             </Label>
                           </div>
                           <div className="flex items-center gap-2">
                             <RadioGroupItem value="role" />
                             <Label className="cursor-pointer font-normal">
-                              Role-based
+                              {t("approvals.editor.approverRole")}
                             </Label>
                           </div>
                         </RadioGroup>
@@ -527,7 +530,7 @@ export function ChainEditorDialog({
                           onValueChange={roleField.onChange}
                         >
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select role..." />
+                            <SelectValue placeholder={t("approvals.editor.rolePlaceholder")} />
                           </SelectTrigger>
                           <SelectContent>
                             {APPROVER_ROLES.map((role) => (
@@ -543,11 +546,11 @@ export function ChainEditorDialog({
 
                   {/* SLA hours */}
                   <div className="space-y-2">
-                    <Label htmlFor={`step-sla-${index}`}>SLA (hours)</Label>
+                    <Label htmlFor={`step-sla-${index}`}>{t("approvals.editor.slaHours")}</Label>
                     <Input
                       id={`step-sla-${index}`}
                       type="number"
-                      placeholder="e.g. 24"
+                      placeholder={t("approvals.editor.slaPlaceholder")}
                       min={1}
                       max={720}
                       {...form.register(`steps.${index}.slaHours`, {
@@ -564,7 +567,7 @@ export function ChainEditorDialog({
 
                   {/* Required toggle */}
                   <div className="flex items-center justify-between">
-                    <Label htmlFor={`step-required-${index}`}>Required</Label>
+                    <Label htmlFor={`step-required-${index}`}>{t("approvals.editor.required")}</Label>
                     <Controller
                       control={form.control}
                       name={`steps.${index}.required`}
@@ -595,9 +598,9 @@ export function ChainEditorDialog({
                   }
                 >
                   <Plus className="mr-1.5 size-3.5" />
-                  Add level
+                  {t("approvals.editor.addLevel")}
                 </TooltipTrigger>
-                <TooltipContent>Maximum 3 levels reached</TooltipContent>
+                <TooltipContent>{t("approvals.editor.maxLevels")}</TooltipContent>
               </Tooltip>
             ) : (
               <Button
@@ -607,14 +610,14 @@ export function ChainEditorDialog({
                 onClick={() => append({ ...DEFAULT_STEP })}
               >
                 <Plus className="mr-1.5 size-3.5" />
-                Add level
+                {t("approvals.editor.addLevel")}
               </Button>
             )}
           </div>
 
           {/* Section 3: Routing conditions */}
           <div className="space-y-3">
-            <h4 className="text-sm font-semibold">Routing conditions</h4>
+            <h4 className="text-sm font-semibold">{t("approvals.editor.conditionsHeading")}</h4>
             <Controller
               control={form.control}
               name="conditions"
@@ -635,13 +638,13 @@ export function ChainEditorDialog({
               onClick={() => onOpenChange(false)}
               disabled={isPending}
             >
-              Discard changes
+              {t("approvals.editor.discard")}
             </Button>
             <Button type="submit" disabled={isPending}>
               {isPending && (
                 <Loader2 className="mr-1.5 size-3.5 animate-spin" />
               )}
-              Save chain
+              {t("approvals.editor.save")}
             </Button>
           </DialogFooter>
         </form>

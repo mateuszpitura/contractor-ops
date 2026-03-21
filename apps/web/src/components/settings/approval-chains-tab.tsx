@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 
@@ -33,22 +34,24 @@ import type { ChainData } from "@/components/settings/chain-editor-dialog";
 // Helpers
 // ---------------------------------------------------------------------------
 
+type SettingsTranslateFn = (key: string, params?: Record<string, string | number>) => string;
+
 function formatConditionSummary(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   conditions: any,
+  t: SettingsTranslateFn,
 ): string {
   if (!conditions || !Array.isArray(conditions) || conditions.length === 0) {
-    return "No conditions (default fallback)";
+    return t("approvals.noConditions");
   }
 
   return conditions
     .map((c: { field: string; operator: string; value: string | number }) => {
-      const fieldLabel = c.field === "amount" ? "Amount" : "Contractor type";
       const opLabel =
         c.operator === "gt" ? ">" : c.operator === "lt" ? "<" : "=";
       const valueLabel =
         c.field === "amount" ? `${c.value} PLN` : String(c.value);
-      return `${fieldLabel} ${opLabel} ${valueLabel}`;
+      return `${c.field === "amount" ? t("approvals.editor.fieldAmount") : t("approvals.editor.fieldContractorType")} ${opLabel} ${valueLabel}`;
     })
     .join(", ");
 }
@@ -58,6 +61,7 @@ function formatConditionSummary(
 // ---------------------------------------------------------------------------
 
 export function ApprovalChainsTab() {
+  const t = useTranslations("Settings");
   const queryClient = useQueryClient();
 
   const [editorOpen, setEditorOpen] = useState(false);
@@ -77,7 +81,7 @@ export function ApprovalChainsTab() {
         });
       },
       onError: () => {
-        toast.error("Could not save approval chain. Try again.");
+        toast.error(t("approvals.toasts.saveFailed"));
         queryClient.invalidateQueries({
           queryKey: trpc.approval.listChains.queryKey(),
         });
@@ -89,14 +93,14 @@ export function ApprovalChainsTab() {
   const deleteMutation = useMutation(
     trpc.approval.deleteChain.mutationOptions({
       onSuccess: () => {
-        toast.success("Approval chain deleted");
+        toast.success(t("approvals.toasts.deleted"));
         queryClient.invalidateQueries({
           queryKey: trpc.approval.listChains.queryKey(),
         });
         setDeletingChainId(null);
       },
       onError: () => {
-        toast.error("Could not delete approval chain. Try again.");
+        toast.error(t("approvals.toasts.deleteFailed"));
       },
     }),
   );
@@ -167,15 +171,14 @@ export function ApprovalChainsTab() {
       <>
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <h3 className="text-base font-semibold">
-            No approval chains configured
+            {t("approvals.empty.heading")}
           </h3>
           <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-            Create an approval chain to route invoices through multi-level
-            approvals before payment.
+            {t("approvals.empty.body")}
           </p>
           <Button className="mt-4" onClick={handleCreate}>
             <Plus className="mr-1.5 size-4" />
-            Create approval chain
+            {t("approvals.empty.cta")}
           </Button>
         </div>
         <ChainEditorDialog
@@ -194,15 +197,14 @@ export function ApprovalChainsTab() {
         {/* Header */}
         <div className="flex items-start justify-between">
           <div>
-            <h3 className="text-base font-semibold">Approval chains</h3>
+            <h3 className="text-base font-semibold">{t("approvals.heading")}</h3>
             <p className="text-sm text-muted-foreground">
-              Configure approval chains for invoices. Chains are matched based on
-              conditions like amount thresholds.
+              {t("approvals.description")}
             </p>
           </div>
           <Button onClick={handleCreate}>
             <Plus className="mr-1.5 size-4" />
-            Create approval chain
+            {t("approvals.createChain")}
           </Button>
         </div>
 
@@ -214,7 +216,7 @@ export function ApprovalChainsTab() {
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-semibold">{chain.name}</span>
                   {chain.isDefault && (
-                    <Badge variant="secondary">Default</Badge>
+                    <Badge variant="secondary">{t("approvals.defaultBadge")}</Badge>
                   )}
                 </div>
                 <Switch
@@ -227,13 +229,10 @@ export function ApprovalChainsTab() {
             <CardContent>
               <div className="flex items-center gap-3">
                 <Badge variant="secondary">
-                  {Array.isArray(chain.stepsJson)
-                    ? chain.stepsJson.length
-                    : 0}{" "}
-                  levels
+                  {t("approvals.levelsCount", { n: Array.isArray(chain.stepsJson) ? chain.stepsJson.length : 0 })}
                 </Badge>
                 <span className="text-sm text-muted-foreground">
-                  {formatConditionSummary(chain.conditionsJson)}
+                  {formatConditionSummary(chain.conditionsJson, (key: string, params?: Record<string, string | number>) => t(key as Parameters<typeof t>[0], params))}
                 </span>
               </div>
             </CardContent>
@@ -244,7 +243,7 @@ export function ApprovalChainsTab() {
                 onClick={() => handleEdit(chain)}
               >
                 <Pencil className="mr-1.5 size-3.5" />
-                Edit
+                {t("approvals.edit")}
               </Button>
               <Button
                 variant="ghost"
@@ -253,7 +252,7 @@ export function ApprovalChainsTab() {
                 onClick={() => setDeletingChainId(chain.id)}
               >
                 <Trash2 className="mr-1.5 size-3.5" />
-                Delete
+                {t("approvals.delete")}
               </Button>
             </CardFooter>
           </Card>
@@ -277,15 +276,14 @@ export function ApprovalChainsTab() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Delete this approval chain?
+              {t("approvals.deleteConfirm.title")}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              This chain will be permanently deleted. In-flight approvals using
-              this chain will not be affected.
+              {t("approvals.deleteConfirm.body")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("approvals.deleteConfirm.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
               disabled={deleteMutation.isPending}
@@ -293,7 +291,7 @@ export function ApprovalChainsTab() {
                 if (deletingChainId) handleDelete(deletingChainId);
               }}
             >
-              Delete chain
+              {t("approvals.deleteConfirm.confirm")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
