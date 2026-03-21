@@ -68,6 +68,23 @@ export type {
 } from "./document.js";
 
 export {
+  invoiceStatusEnum,
+  invoiceMatchStatusEnum,
+  invoiceSourceEnum,
+  invoiceFileRoleEnum,
+  invoiceCreateSchema,
+  invoiceUpdateSchema,
+  invoiceListSchema,
+  invoiceManualMatchSchema,
+} from "./invoice.js";
+export type {
+  InvoiceCreate,
+  InvoiceUpdate,
+  InvoiceList,
+  InvoiceManualMatch,
+} from "./invoice.js";
+
+export {
   workflowTemplateTypeEnum,
   workflowTemplateStatusEnum,
   workflowTaskTypeEnum,
