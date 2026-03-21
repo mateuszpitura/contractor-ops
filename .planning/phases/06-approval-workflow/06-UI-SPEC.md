@@ -73,16 +73,16 @@ Exceptions:
 
 ## Typography
 
-Inherited from Phase 1. No changes.
+Inherited from Phase 1. Label size adjusted from 13px to 12px to widen contrast with Body (14px).
 
 | Role | Size | Weight | Line Height | Usage in Phase 6 |
 |------|------|--------|-------------|-------------------|
 | Body | 14px | 400 (regular) | 1.5 | Chain editor form inputs, approval queue table cells, audit timeline entry text, condition builder values, side panel content |
-| Label | 13px | 400 (regular) | 1.4 | Table headers, form labels in chain editor, SLA countdown text, chain tracker level labels, timeline timestamps, condition builder field labels, "Level 1 of 3" indicators |
+| Label | 12px | 400 (regular) | 1.4 | Table headers, form labels in chain editor, SLA countdown text, chain tracker level labels, timeline timestamps, condition builder field labels, "Level 1 of 3" indicators |
 | Heading | 20px | 600 (semibold) | 1.2 | Page title "Approvals", chain editor dialog title, "Audit trail" section heading on invoice detail |
 | Display | 28px | 600 (semibold) | 1.2 | Not used in Phase 6 |
 
-Monospace: `"JetBrains Mono", ui-monospace, monospace` at 13px weight 400 for invoice numbers in the approval queue table and amounts.
+Monospace: `"JetBrains Mono", ui-monospace, monospace` at 12px weight 400 for invoice numbers in the approval queue table and amounts.
 
 ---
 
@@ -100,7 +100,8 @@ Inherited from Phase 1. All color tokens from `globals.css` apply. Phase 6 adds 
 **Accent (`--primary`) reserved for in Phase 6:**
 - "Create chain" primary CTA button on Settings > Approvals tab
 - "Save chain" primary CTA button in chain editor dialog
-- "Approve" primary action button (inline on row hover and in detail page)
+- "Approve invoice" primary action button in side panel and detail page
+- "Approve" primary action button (inline on row hover)
 - Active tab indicator on approval queue tabs ("My Approvals" / "All")
 - Active status chip (selected filter on approval queue)
 - Chain tracker active step indicator (current step circle gets primary background)
@@ -109,7 +110,8 @@ Inherited from Phase 1. All color tokens from `globals.css` apply. Phase 6 adds 
 - Bulk approve toolbar button background
 
 **Destructive (`--destructive`) usage in Phase 6:**
-- "Reject" action button (inline on row hover and in detail page)
+- "Reject invoice" action button in side panel and detail page
+- "Reject" action button (inline on row hover)
 - Bulk reject toolbar button
 - SLA "OVERDUE" badge background at 10% opacity with destructive text
 - Chain tracker rejected step circle background at 10% opacity
@@ -149,7 +151,7 @@ Inherited from Phase 1. All color tokens from `globals.css` apply. Phase 6 adds 
 |----------|-------|
 | Background | none (transparent) |
 | Text color | `--muted-foreground` |
-| Font size | 13px (Label) |
+| Font size | 12px (Label) |
 | Icon | 16px Lucide icon in `--muted-foreground` (no avatar) |
 | Left marker | 8px circle in `--border` color (instead of avatar) |
 
@@ -161,10 +163,10 @@ Inherited from Phase 1. All color tokens from `globals.css` apply. Phase 6 adds 
 |--------|-----------------------|
 | Approvals queue page (populated) | Full-width TanStack Table of pending approvals. Two tabs above: "My Approvals" (default, filtered to current user) and "All" (admin only). Status chip bar for filtering: All / Pending / Overdue / Approved / Rejected. Columns: Invoice # (monospace link), Contractor, Amount (right-aligned), Submitted, SLA remaining (countdown badge), Priority. Inline actions on row hover: "Approve" (primary ghost button) and "Reject" (destructive ghost button) on right side of row. Checkbox column for bulk select. Floating toolbar appears at bottom when items selected. |
 | Approvals queue page (empty) | Centered empty state with `ClipboardCheck` icon (Lucide, 48px, `--muted-foreground`). Heading "No pending approvals". Body "All caught up! New invoices will appear here when they need your review." No CTA (approvals arrive from invoice submission). |
-| Approvals queue side panel (row click) | Sheet from right (480px). Invoice number as Heading (monospace). Status badge. SLA countdown badge. Chain tracker mini (compact horizontal stepper showing current position). Contractor name as link. Amounts: Net, Gross, Currency. "Approve" primary CTA + "Reject" destructive outline CTA at bottom. "More" dropdown: Request clarification, Delegate. |
+| Approvals queue side panel (row click) | Sheet from right (480px). Invoice number as Heading (monospace). Status badge. SLA countdown badge. Chain tracker mini (compact horizontal stepper -- step circles only, no labels, active step highlighted, tooltip on hover for level name). Contractor name as link. Amounts: Net, Gross, Currency. "Approve invoice" primary CTA + "Reject invoice" destructive outline CTA at bottom. "More" dropdown: Request clarification, Delegate. |
 | Invoice detail page (with approval) | Existing 60/40 layout. Right panel gains two new sections inserted between match card and metadata form: (1) Chain tracker stepper -- horizontal bar showing each approval level with step circle, approver name/avatar, status, SLA countdown. Active step is visually prominent. (2) Audit timeline -- vertical chronological list (most recent at top) of all approval events. Both sections wrapped in shadcn Card. |
 | Settings > Approvals tab | New tab in Settings page alongside General and Members. List of approval chain configurations as Cards. Each card: chain name, level count badge, condition summary (e.g., "Amount > 10,000 PLN"), active/inactive toggle, edit/delete actions. "Create approval chain" Indigo CTA top-right. |
-| Chain editor dialog | Dialog (640px width). Chain name input. Vertical stack of 1-3 level cards. Each level card: drag handle (disabled in v1), level number badge, level name input, approver picker (user search Command or role Select), SLA hours number input, required toggle (Switch). "Add level" button below stack (disabled when 3 levels reached). Condition builder section below levels: rows of field (Select) + operator (Select) + value (Input) with add/remove row buttons. Footer: Cancel + "Save chain" primary CTA. |
+| Chain editor dialog | Dialog (640px width). Chain name input. Vertical stack of 1-3 level cards. Each level card: drag handle (disabled in v1), level number badge, level name input, approver picker (user search Command or role Select), SLA hours number input, required toggle (Switch). "Add level" button below stack (disabled when 3 levels reached). Condition builder section below levels: rows of field (Select) + operator (Select) + value (Input) with add/remove row buttons. Footer: "Discard changes" (ghost) + "Save chain" (primary). |
 
 ---
 
@@ -219,6 +221,13 @@ Inherited from Phase 1. All color tokens from `globals.css` apply. Phase 6 adds 
 | Request clarification | Request clarification | Popros o wyjasnienie |
 | Delegate | Delegate | Deleguj |
 
+### Side Panel Actions
+
+| Element | Copy (EN) | Copy (PL) |
+|---------|-----------|-----------|
+| Approve CTA | Approve invoice | Zaakceptuj fakture |
+| Reject CTA | Reject invoice | Odrzuc fakture |
+
 ### Bulk Actions (Floating Toolbar)
 
 | Element | Copy (EN) | Copy (PL) |
@@ -236,7 +245,7 @@ Inherited from Phase 1. All color tokens from `globals.css` apply. Phase 6 adds 
 | Comment label | Reason (required) | Powod (wymagany) |
 | Comment placeholder | Describe why this invoice is being rejected... | Opisz dlaczego ta faktura jest odrzucana... |
 | Confirm reject CTA | Reject invoice | Odrzuc fakture |
-| Cancel CTA | Cancel | Anuluj |
+| Dismiss CTA | Keep pending | Pozostaw oczekujaca |
 
 ### Bulk Reject Dialog
 
@@ -246,7 +255,7 @@ Inherited from Phase 1. All color tokens from `globals.css` apply. Phase 6 adds 
 | Comment label | Shared reason (required) | Wspolny powod (wymagany) |
 | Comment placeholder | This reason will be applied to all selected invoices... | Ten powod zostanie zastosowany do wszystkich zaznaczonych faktur... |
 | Confirm CTA | Reject {count} invoices | Odrzuc {count} faktur |
-| Cancel CTA | Cancel | Anuluj |
+| Dismiss CTA | Keep selected | Zachowaj zaznaczone |
 
 ### Request Clarification Popover
 
@@ -256,7 +265,7 @@ Inherited from Phase 1. All color tokens from `globals.css` apply. Phase 6 adds 
 | Comment label | Question | Pytanie |
 | Comment placeholder | What needs to be clarified? | Co wymaga wyjasnienia? |
 | Confirm CTA | Send request | Wyslij zapytanie |
-| Cancel CTA | Cancel | Anuluj |
+| Dismiss CTA | Don't send | Nie wysylaj |
 
 ### Delegate Popover
 
@@ -267,7 +276,7 @@ Inherited from Phase 1. All color tokens from `globals.css` apply. Phase 6 adds 
 | User picker placeholder | Search users... | Szukaj uzytkownikow... |
 | Comment label | Note (optional) | Uwaga (opcjonalna) |
 | Confirm CTA | Delegate | Deleguj |
-| Cancel CTA | Cancel | Anuluj |
+| Dismiss CTA | Keep assigned | Pozostaw przypisana |
 
 ### Chain Tracker (Invoice Detail Page)
 
@@ -344,7 +353,7 @@ Inherited from Phase 1. All color tokens from `globals.css` apply. Phase 6 adds 
 | SLA hours placeholder | e.g. 24 | np. 24 |
 | Required toggle | Required | Wymagany |
 | Add level CTA | Add level | Dodaj poziom |
-| Remove level CTA | Remove | Usun |
+| Remove level button (aria-label) | Remove level | Usun poziom |
 | Max levels reached | Maximum 3 levels reached | Osiagnieto maksymalnie 3 poziomy |
 | Conditions section heading | Routing conditions | Warunki kierowania |
 | Conditions help | When an invoice matches these conditions, this chain is used. Leave empty for the default chain. | Gdy faktura spelnia te warunki, ten lancuch jest uzywany. Zostaw puste dla domyslnego lancucha. |
@@ -359,7 +368,7 @@ Inherited from Phase 1. All color tokens from `globals.css` apply. Phase 6 adds 
 | Add condition CTA | Add condition | Dodaj warunek |
 | Remove condition CTA | Remove | Usun |
 | Save CTA | Save chain | Zapisz lancuch |
-| Cancel CTA | Cancel | Anuluj |
+| Dismiss CTA | Discard changes | Odrzuc zmiany |
 
 ### Destructive Actions
 
@@ -443,7 +452,7 @@ Inherited from Phase 1. All color tokens from `globals.css` apply. Phase 6 adds 
 - **Row click:** Opens side panel (Sheet from right, 480px). Does NOT navigate.
 - **Row hover actions:** Right side of row reveals "Approve" (ghost button with `CheckCircle2` icon, primary text) and "Reject" (ghost button with `XCircle` icon, destructive text). Actions appear on hover only, hidden by default.
 - **Approve action:** Single click approves immediately. Sonner toast confirms. Row animates out of list (200ms fade).
-- **Reject action:** Opens Popover anchored to button. Textarea for mandatory comment (min 10 chars). "Reject invoice" destructive CTA. Cancel to dismiss.
+- **Reject action:** Opens Popover anchored to button. Textarea for mandatory comment (min 10 chars). "Reject invoice" destructive CTA. "Keep pending" to dismiss.
 - **Search:** Debounce 300ms, minimum 2 characters. Server-side search across invoice number, contractor name, NIP.
 - **Pagination:** Bottom of table. Page size (10, 25, 50). Previous/Next. "Page X of Y".
 - **Overdue highlighting:** Rows where SLA is breached have `--destructive` at 5% opacity background. SLA badge shows "OVERDUE {n}h" in destructive.
@@ -453,15 +462,15 @@ Inherited from Phase 1. All color tokens from `globals.css` apply. Phase 6 adds 
 - **Selection:** Checkbox column. "Select all on page" checkbox in header. No cross-page selection.
 - **Floating toolbar:** Appears at bottom of viewport when 1+ items selected. Contains: "{count} selected" label, "Approve ({count})" primary button, "Reject ({count})" destructive outline button, "Clear" ghost button.
 - **Bulk approve:** Single click approves all selected. Sonner toast: "{count} invoices approved". Selected rows animate out.
-- **Bulk reject:** Opens Dialog (not popover, because it's a batch operation). Single shared comment textarea (min 10 chars). "Reject {count} invoices" destructive CTA. Cancel to dismiss. On confirm: Sonner toast: "{count} invoices rejected".
+- **Bulk reject:** Opens Dialog (not popover, because it's a batch operation). Single shared comment textarea (min 10 chars). "Reject {count} invoices" destructive CTA. "Keep selected" to dismiss. On confirm: Sonner toast: "{count} invoices rejected".
 
 ### Approvals Queue -- Side Panel (Row Click)
 
 - **Open:** Slide from right, 200ms ease-out. Backdrop overlay at 20% opacity.
 - **Close:** Click backdrop, press Escape, or click X button.
-- **Content:** Invoice number as Heading (monospace). Status badge. SLA countdown badge. Mini chain tracker (compact horizontal stepper -- step circles only, no labels, active step highlighted, tooltip on hover for level name). Contractor name as link. Amounts section: Net, Gross (formatted). Dates: Issue date, Due date. "Approve" primary CTA + "Reject" destructive outline CTA at bottom. "More" dropdown menu: "Request clarification" and "Delegate".
-- **Request clarification (More dropdown):** Opens Popover. Textarea for question. "Send request" CTA. Changes step status to indicate clarification requested.
-- **Delegate (More dropdown):** Opens Popover. User search picker (Command). Optional note textarea. "Delegate" CTA. Updates approver and records delegation in audit trail.
+- **Content:** Invoice number as Heading (monospace). Status badge. SLA countdown badge. Mini chain tracker (compact horizontal stepper -- step circles only, no labels, active step highlighted, tooltip on hover for level name). Contractor name as link. Amounts section: Net, Gross (formatted). Dates: Issue date, Due date. "Approve invoice" primary CTA + "Reject invoice" destructive outline CTA at bottom. "More" dropdown menu: "Request clarification" and "Delegate".
+- **Request clarification (More dropdown):** Opens Popover. Textarea for question. "Send request" CTA. "Don't send" to dismiss. Changes step status to indicate clarification requested.
+- **Delegate (More dropdown):** Opens Popover. User search picker (Command). Optional note textarea. "Delegate" CTA. "Keep assigned" to dismiss. Updates approver and records delegation in audit trail.
 
 ### Chain Tracker Stepper (Invoice Detail Page)
 
@@ -479,7 +488,7 @@ Inherited from Phase 1. All color tokens from `globals.css` apply. Phase 6 adds 
 - **Position:** Card section below chain tracker on invoice detail right panel.
 - **Layout:** Vertical timeline, most recent entry at top. Each entry: avatar (32px) on left, content on right. Vertical connector line (2px `--border`) between entries on left side.
 - **Human events:** Actor avatar + actor name (bold) + action badge (Approved/Rejected/etc. with color) + comment text (if any) + relative timestamp.
-- **System events:** Small circle marker (8px, `--border`) instead of avatar + event description in `--muted-foreground` at 13px + relative timestamp.
+- **System events:** Small circle marker (8px, `--border`) instead of avatar + event description in `--muted-foreground` at 12px + relative timestamp.
 - **Comment display:** Below the action line, indented. Body text at 14px. Max 3 lines visible, "Show more" link for longer comments.
 - **Empty state:** "No activity yet" in `--muted-foreground`, centered.
 - **Loading:** 3 skeleton entries with avatar placeholder + text bar placeholders.
@@ -500,10 +509,10 @@ Inherited from Phase 1. All color tokens from `globals.css` apply. Phase 6 adds 
 - **Size:** 640px width, max 80vh height with internal scroll.
 - **Layout:** Form with sections:
   1. Chain name input + Default toggle (Switch with help text).
-  2. Approval levels section. Vertical stack of level cards. Each card: level number badge (circle, `--muted` bg), level name input, approver type radio (User / Role), conditional picker (user Command search or role Select), SLA hours number input, Required toggle (Switch). Remove button (X icon, destructive ghost) on top-right of card.
+  2. Approval levels section. Vertical stack of level cards. Each card: level number badge (circle, `--muted` bg), level name input, approver type radio (User / Role), conditional picker (user Command search or role Select), SLA hours number input, Required toggle (Switch). Remove button (X icon, destructive ghost, `aria-label="Remove level"`) on top-right of card.
   3. "Add level" button (outline variant, `Plus` icon). Disabled with tooltip "Maximum 3 levels reached" when at 3.
   4. Conditions section. Rows of: field Select (Amount / Contractor type) + operator Select (> / < / =) + value Input. Add/remove row buttons. Help text below.
-  5. Footer: Cancel (ghost) + "Save chain" (primary).
+  5. Footer: "Discard changes" (ghost) + "Save chain" (primary).
 - **Approver picker (User mode):** Command component with debounced search (300ms). Shows user name, email, role badge. Filters to users who have approval permission.
 - **Approver picker (Role mode):** Select dropdown with roles that have approval permission (ADMIN, FINANCE_ADMIN, OPS_MANAGER, TEAM_MANAGER).
 - **Validation:** React Hook Form + Zod resolver. Errors shown inline below each field. Save button disabled until form is valid.
