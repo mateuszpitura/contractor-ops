@@ -113,7 +113,14 @@
       "placeholder": "e.g., 30, 60, 90",
       "save": "Save defaults",
       "successToast": "Reminder defaults updated"
-    }
+    },
+    "invoiceEmailInbox": "Invoice email inbox",
+    "invoiceEmailBody": "Invoices emailed to this address will be automatically imported as drafts.",
+    "copyEmail": "Copy email address",
+    "emailCopied": "Email address copied",
+    "deviationThreshold": "Deviation threshold (%)",
+    "deviationThresholdHelp": "Flag invoices when the amount deviates more than this percentage from the contract rate.",
+    "invoiceSettingsSaved": "Invoice settings saved"
   },
   "Users": {
     "title": "Team members",
@@ -1278,6 +1285,13 @@
       "viewOriginal": "View original",
       "notDuplicate": "Not a duplicate",
       "dismissedToast": "Duplicate dismissed"
+    },
+    "tab": {
+      "heading": "Invoices",
+      "uploadInvoice": "Upload invoice",
+      "noInvoicesHeading": "No invoices",
+      "noInvoicesBody": "Upload an invoice for this contractor or email it to your invoice inbox.",
+      "noInvoicesCta": "Upload invoice"
     }
   }
 }

@@ -113,7 +113,14 @@
       "placeholder": "np. 30, 60, 90",
       "save": "Zapisz domyslne",
       "successToast": "Domyslne przypomnienia zaktualizowane"
-    }
+    },
+    "invoiceEmailInbox": "Skrzynka email faktur",
+    "invoiceEmailBody": "Faktury wyslane na ten adres zostana automatycznie zaimportowane jako wersje robocze.",
+    "copyEmail": "Skopiuj adres email",
+    "emailCopied": "Adres email skopiowany",
+    "deviationThreshold": "Prog odchylenia (%)",
+    "deviationThresholdHelp": "Oznacz faktury, gdy kwota odbiega o wiecej niz ten procent od stawki umownej.",
+    "invoiceSettingsSaved": "Ustawienia faktur zapisane"
   },
   "Users": {
     "title": "Czlonkowie zespolu",
@@ -1278,6 +1285,13 @@
       "viewOriginal": "Zobacz oryginal",
       "notDuplicate": "To nie duplikat",
       "dismissedToast": "Duplikat odrzucony"
+    },
+    "tab": {
+      "heading": "Faktury",
+      "uploadInvoice": "Wgraj fakture",
+      "noInvoicesHeading": "Brak faktur",
+      "noInvoicesBody": "Wgraj fakture dla tego kontrahenta lub wyslij ja na skrzynke faktur.",
+      "noInvoicesCta": "Wgraj fakture"
     }
   }
 }
