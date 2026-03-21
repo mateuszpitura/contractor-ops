@@ -1254,7 +1254,11 @@
       "submitError": "Could not submit for matching. Try again.",
       "voidError": "Could not void invoice. Try again.",
       "loadError": "Could not load invoice details. Try again.",
-      "retry": "Try again"
+      "retry": "Try again",
+      "submitForApproval": "Submit for approval",
+      "submittingForApproval": "Submitting...",
+      "submittedForApprovalToast": "Invoice submitted for approval",
+      "submitForApprovalError": "Could not submit invoice for approval. Try again."
     },
     "match": {
       "heading": "Matching",
@@ -1292,6 +1296,108 @@
       "noInvoicesHeading": "No invoices",
       "noInvoicesBody": "Upload an invoice for this contractor or email it to your invoice inbox.",
       "noInvoicesCta": "Upload invoice"
+    }
+  },
+  "Approvals": {
+    "pageTitle": "Approvals",
+    "tabMy": "My Approvals",
+    "tabAll": "All",
+    "searchPlaceholder": "Search approvals...",
+    "chips": {
+      "all": "All",
+      "pending": "Pending",
+      "overdue": "Overdue",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    },
+    "columns": {
+      "selectAll": "Select all",
+      "selectRow": "Select row",
+      "invoice": "Invoice",
+      "contractor": "Contractor",
+      "amount": "Amount",
+      "submitted": "Submitted",
+      "sla": "SLA remaining"
+    },
+    "actions": {
+      "approve": "Approve",
+      "reject": "Reject"
+    },
+    "rejectPopover": {
+      "heading": "Reject invoice",
+      "commentLabel": "Reason (required)",
+      "commentPlaceholder": "Describe why this invoice is being rejected...",
+      "minChars": "Please provide a reason (at least 10 characters)",
+      "confirm": "Reject invoice",
+      "dismiss": "Keep pending"
+    },
+    "bulk": {
+      "selectedCount": "{count} selected",
+      "approve": "Approve ({count})",
+      "reject": "Reject ({count})",
+      "clear": "Clear"
+    },
+    "bulkRejectDialog": {
+      "heading": "Reject {count} invoices",
+      "description": "This reason will be applied to all selected invoices.",
+      "commentLabel": "Shared reason (required)",
+      "commentPlaceholder": "This reason will be applied to all selected invoices...",
+      "confirm": "Reject {count} invoices",
+      "dismiss": "Keep selected"
+    },
+    "sidePanel": {
+      "unknownInvoice": "Invoice",
+      "description": "Approval details and actions",
+      "approvalChain": "Approval chain",
+      "contractor": "Contractor",
+      "amount": "Amount",
+      "submitted": "Submitted",
+      "approver": "Approver",
+      "approve": "Approve invoice",
+      "reject": "Reject invoice",
+      "more": "More",
+      "requestClarification": "Request clarification",
+      "delegateApproval": "Delegate approval"
+    },
+    "clarifyPopover": {
+      "heading": "Request clarification",
+      "commentLabel": "Question",
+      "commentPlaceholder": "What needs to be clarified?",
+      "confirm": "Send request",
+      "dismiss": "Don't send"
+    },
+    "delegatePopover": {
+      "heading": "Delegate approval",
+      "userLabel": "Delegate to",
+      "userPlaceholder": "Search users...",
+      "noteLabel": "Note (optional)",
+      "notePlaceholder": "Add a note...",
+      "confirm": "Delegate approval",
+      "dismiss": "Keep assigned"
+    },
+    "toast": {
+      "approved": "Invoice approved",
+      "rejected": "Invoice rejected",
+      "clarificationRequested": "Clarification requested",
+      "delegated": "Approval delegated",
+      "bulkApproved": "{count} invoices approved",
+      "bulkRejected": "{count} invoices rejected"
+    },
+    "errors": {
+      "failedToLoad": "Could not load approvals. Check your connection and try again.",
+      "failedToApprove": "Could not approve invoice. Try again.",
+      "failedToReject": "Could not reject invoice. Try again.",
+      "failedToDelegate": "Could not delegate approval. Try again."
+    },
+    "empty": {
+      "heading": "No pending approvals",
+      "body": "All caught up! New invoices will appear here when they need your review."
+    },
+    "pagination": {
+      "rowsPerPage": "Rows per page",
+      "pageOf": "Page {current} of {total}",
+      "previous": "Previous",
+      "next": "Next"
     }
   }
 }

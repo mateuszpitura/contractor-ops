@@ -1254,7 +1254,11 @@
       "submitError": "Nie udalo sie wyslac do dopasowania. Sprobuj ponownie.",
       "voidError": "Nie udalo sie anulowac faktury. Sprobuj ponownie.",
       "loadError": "Nie udalo sie zaladowac szczegolow faktury. Sprobuj ponownie.",
-      "retry": "Sprobuj ponownie"
+      "retry": "Sprobuj ponownie",
+      "submitForApproval": "Wyslij do akceptacji",
+      "submittingForApproval": "Wysylanie...",
+      "submittedForApprovalToast": "Faktura wyslana do akceptacji",
+      "submitForApprovalError": "Nie udalo sie wyslac faktury do akceptacji. Sprobuj ponownie."
     },
     "match": {
       "heading": "Dopasowanie",
@@ -1292,6 +1296,108 @@
       "noInvoicesHeading": "Brak faktur",
       "noInvoicesBody": "Wgraj fakture dla tego kontrahenta lub wyslij ja na skrzynke faktur.",
       "noInvoicesCta": "Wgraj fakture"
+    }
+  },
+  "Approvals": {
+    "pageTitle": "Akceptacje",
+    "tabMy": "Moje akceptacje",
+    "tabAll": "Wszystkie",
+    "searchPlaceholder": "Szukaj akceptacji...",
+    "chips": {
+      "all": "Wszystkie",
+      "pending": "Oczekujace",
+      "overdue": "Przeterminowane",
+      "approved": "Zaakceptowane",
+      "rejected": "Odrzucone"
+    },
+    "columns": {
+      "selectAll": "Zaznacz wszystkie",
+      "selectRow": "Zaznacz wiersz",
+      "invoice": "Faktura",
+      "contractor": "Kontrahent",
+      "amount": "Kwota",
+      "submitted": "Zgloszona",
+      "sla": "Pozostaly SLA"
+    },
+    "actions": {
+      "approve": "Zaakceptuj",
+      "reject": "Odrzuc"
+    },
+    "rejectPopover": {
+      "heading": "Odrzuc fakture",
+      "commentLabel": "Powod (wymagany)",
+      "commentPlaceholder": "Opisz dlaczego ta faktura jest odrzucana...",
+      "minChars": "Podaj powod (minimum 10 znakow)",
+      "confirm": "Odrzuc fakture",
+      "dismiss": "Pozostaw oczekujaca"
+    },
+    "bulk": {
+      "selectedCount": "{count} zaznaczonych",
+      "approve": "Zaakceptuj ({count})",
+      "reject": "Odrzuc ({count})",
+      "clear": "Wyczysc"
+    },
+    "bulkRejectDialog": {
+      "heading": "Odrzuc {count} faktur",
+      "description": "Ten powod zostanie zastosowany do wszystkich zaznaczonych faktur.",
+      "commentLabel": "Wspolny powod (wymagany)",
+      "commentPlaceholder": "Ten powod zostanie zastosowany do wszystkich zaznaczonych faktur...",
+      "confirm": "Odrzuc {count} faktur",
+      "dismiss": "Zachowaj zaznaczone"
+    },
+    "sidePanel": {
+      "unknownInvoice": "Faktura",
+      "description": "Szczegoly i akcje akceptacji",
+      "approvalChain": "Lancuch akceptacji",
+      "contractor": "Kontrahent",
+      "amount": "Kwota",
+      "submitted": "Zgloszona",
+      "approver": "Akceptujacy",
+      "approve": "Zaakceptuj fakture",
+      "reject": "Odrzuc fakture",
+      "more": "Wiecej",
+      "requestClarification": "Popros o wyjasnienie",
+      "delegateApproval": "Deleguj akceptacje"
+    },
+    "clarifyPopover": {
+      "heading": "Popros o wyjasnienie",
+      "commentLabel": "Pytanie",
+      "commentPlaceholder": "Co wymaga wyjasnienia?",
+      "confirm": "Wyslij zapytanie",
+      "dismiss": "Nie wysylaj"
+    },
+    "delegatePopover": {
+      "heading": "Deleguj akceptacje",
+      "userLabel": "Deleguj do",
+      "userPlaceholder": "Szukaj uzytkownikow...",
+      "noteLabel": "Uwaga (opcjonalna)",
+      "notePlaceholder": "Dodaj uwage...",
+      "confirm": "Deleguj akceptacje",
+      "dismiss": "Pozostaw przypisana"
+    },
+    "toast": {
+      "approved": "Faktura zaakceptowana",
+      "rejected": "Faktura odrzucona",
+      "clarificationRequested": "Wyslano prosbe o wyjasnienie",
+      "delegated": "Akceptacja delegowana",
+      "bulkApproved": "{count} faktur zaakceptowanych",
+      "bulkRejected": "{count} faktur odrzuconych"
+    },
+    "errors": {
+      "failedToLoad": "Nie udalo sie zaladowac akceptacji. Sprawdz polaczenie i sprobuj ponownie.",
+      "failedToApprove": "Nie udalo sie zaakceptowac faktury. Sprobuj ponownie.",
+      "failedToReject": "Nie udalo sie odrzucic faktury. Sprobuj ponownie.",
+      "failedToDelegate": "Nie udalo sie delegowac akceptacji. Sprobuj ponownie."
+    },
+    "empty": {
+      "heading": "Brak oczekujacych akceptacji",
+      "body": "Wszystko zalatwione! Nowe faktury pojawia sie tutaj, gdy beda wymagaly Twojej akceptacji."
+    },
+    "pagination": {
+      "rowsPerPage": "Wierszy na stronie",
+      "pageOf": "Strona {current} z {total}",
+      "previous": "Poprzednia",
+      "next": "Nastepna"
     }
   }
 }

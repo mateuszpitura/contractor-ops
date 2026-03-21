@@ -1,9 +1,10 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { Inbox, Upload, Mail } from "lucide-react";
+import { toast } from "sonner";
 
 import { trpc } from "@/trpc/init";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,8 @@ import { InvoiceDetailLayout } from "@/components/invoices/invoice-detail/invoic
 import { InvoiceMetadataForm } from "@/components/invoices/invoice-detail/invoice-metadata-form";
 import { MatchCard } from "@/components/invoices/invoice-detail/match-card";
 import { DuplicateWarning } from "@/components/invoices/invoice-detail/duplicate-warning";
+import { ChainTracker } from "@/components/approvals/chain-tracker";
+import { AuditTimeline } from "@/components/approvals/audit-timeline";
 
 // ---------------------------------------------------------------------------
 // Status badge config (reuse from columns.tsx pattern)
@@ -143,6 +146,21 @@ export default function InvoiceDetailPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const pdfUrl = (pdfUrlQuery.data as any)?.url ?? null;
 
+  // Submit for approval mutation
+  const submitForApproval = useMutation(
+    trpc.approval.submitForApproval.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: trpc.invoice.getById.queryKey({ id: params.id }),
+        });
+        toast.success(t("detail.submittedForApprovalToast"));
+      },
+      onError: () => {
+        toast.error(t("detail.submitForApprovalError"));
+      },
+    }),
+  );
+
   // Loading state
   if (invoiceQuery.isLoading) {
     return (
@@ -195,6 +213,21 @@ export default function InvoiceDetailPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const explanationJson = latestMatchResult?.explanationJson as any;
   const duplicateInvoiceId = explanationJson?.duplicateInvoiceId ?? null;
+
+  // Approval visibility conditions
+  const hasApprovalFlow =
+    invoice.status === "APPROVAL_PENDING" ||
+    invoice.status === "APPROVED" ||
+    invoice.status === "REJECTED";
+
+  const canSubmitForApproval =
+    (invoice.matchStatus === "MATCHED" ||
+      invoice.matchStatus === "MANUALLY_CONFIRMED") &&
+    invoice.status !== "APPROVAL_PENDING" &&
+    invoice.status !== "APPROVED" &&
+    invoice.status !== "REJECTED" &&
+    invoice.status !== "READY_FOR_PAYMENT" &&
+    invoice.status !== "PAID";
 
   return (
     <div className="space-y-6">
@@ -256,6 +289,28 @@ export default function InvoiceDetailPage() {
             });
           }}
         />
+
+        {/* Submit for approval button */}
+        {canSubmitForApproval && (
+          <div className="flex justify-end">
+            <Button
+              onClick={() =>
+                submitForApproval.mutate({ invoiceId: invoice.id })
+              }
+              disabled={submitForApproval.isPending}
+            >
+              {submitForApproval.isPending
+                ? t("detail.submittingForApproval")
+                : t("detail.submitForApproval")}
+            </Button>
+          </div>
+        )}
+
+        {/* Chain tracker (per D-04) */}
+        {hasApprovalFlow && <ChainTracker invoiceId={invoice.id} />}
+
+        {/* Audit timeline (per D-11, D-12, D-13) */}
+        {hasApprovalFlow && <AuditTimeline invoiceId={invoice.id} />}
 
         {/* Metadata form */}
         <InvoiceMetadataForm
