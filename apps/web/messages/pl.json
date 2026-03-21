@@ -82,7 +82,8 @@
     "subtitle": "Zarzadzaj preferencjami organizacji i zespolem",
     "tabs": {
       "general": "Ogolne",
-      "members": "Czlonkowie"
+      "members": "Czlonkowie",
+      "approvals": "Akceptacje"
     },
     "saveCta": "Zapisz zmiany",
     "saving": "Zapisywanie...",
@@ -120,7 +121,84 @@
     "emailCopied": "Adres email skopiowany",
     "deviationThreshold": "Prog odchylenia (%)",
     "deviationThresholdHelp": "Oznacz faktury, gdy kwota odbiega o wiecej niz ten procent od stawki umownej.",
-    "invoiceSettingsSaved": "Ustawienia faktur zapisane"
+    "invoiceSettingsSaved": "Ustawienia faktur zapisane",
+    "approvals": {
+      "heading": "Lancuchy akceptacji",
+      "description": "Konfiguruj lancuchy akceptacji dla faktur. Lancuchy sa dopasowywane na podstawie warunkow, takich jak progi kwotowe.",
+      "createChain": "Utworz lancuch akceptacji",
+      "defaultBadge": "Domyslny",
+      "activeToggle": "Aktywny",
+      "levelsCount": "{n} poziomow",
+      "conditionSummary": "Kwota {operator} {value} {currency}",
+      "noConditions": "Brak warunkow (domyslny lancuch)",
+      "edit": "Edytuj",
+      "delete": "Usun",
+      "empty": {
+        "heading": "Brak skonfigurowanych lancuchow akceptacji",
+        "body": "Utworz lancuch akceptacji, aby kierowac faktury przez wielopoziomowe akceptacje przed platnoscia.",
+        "cta": "Utworz lancuch akceptacji"
+      },
+      "deleteConfirm": {
+        "title": "Usunac ten lancuch akceptacji?",
+        "body": "Ten lancuch zostanie trwale usuniety. Aktywne akceptacje korzystajace z tego lancucha nie zostana zmienione.",
+        "confirm": "Usun lancuch",
+        "cancel": "Anuluj"
+      },
+      "editor": {
+        "createTitle": "Utworz lancuch akceptacji",
+        "editTitle": "Edytuj lancuch akceptacji",
+        "createDescription": "Skonfiguruj nowy lancuch akceptacji z poziomami i warunkami routingu.",
+        "editDescription": "Zaktualizuj ustawienia lancucha, poziomy akceptacji i warunki routingu.",
+        "chainName": "Nazwa lancucha",
+        "chainNamePlaceholder": "np. Standardowa akceptacja faktury",
+        "defaultToggle": "Ustaw jako domyslny lancuch",
+        "defaultHelp": "Domyslny lancuch jest uzywany, gdy zaden warunek nie pasuje.",
+        "levelsHeading": "Poziomy akceptacji",
+        "levelName": "Nazwa poziomu",
+        "levelNamePlaceholder": "np. Przeglad menadzera",
+        "approver": "Akceptujacy",
+        "approverUser": "Konkretny uzytkownik",
+        "approverRole": "Na podstawie roli",
+        "userPlaceholder": "Szukaj uzytkownikow...",
+        "rolePlaceholder": "Wybierz role...",
+        "slaHours": "SLA (godziny)",
+        "slaPlaceholder": "np. 24",
+        "required": "Wymagany",
+        "addLevel": "Dodaj poziom",
+        "removeLevel": "Usun poziom",
+        "maxLevels": "Osiagnieto maksimum 3 poziomow",
+        "conditionsHeading": "Warunki routingu",
+        "conditionsHelp": "Gdy faktura spelnia te warunki, uzywany jest ten lancuch. Pozostaw puste dla lancucha domyslnego.",
+        "conditionField": "Wybierz pole...",
+        "conditionOperator": "Wybierz operator...",
+        "conditionValue": "Podaj wartosc...",
+        "fieldAmount": "Kwota",
+        "fieldContractorType": "Typ kontrahenta",
+        "operatorGt": "Wieksze niz",
+        "operatorLt": "Mniejsze niz",
+        "operatorEq": "Rowne",
+        "addCondition": "Dodaj warunek",
+        "removeCondition": "Usun",
+        "save": "Zapisz lancuch",
+        "discard": "Odrzuc zmiany"
+      },
+      "toasts": {
+        "created": "Lancuch akceptacji utworzony",
+        "updated": "Lancuch akceptacji zaktualizowany",
+        "deleted": "Lancuch akceptacji usuniety",
+        "saveFailed": "Nie udalo sie zapisac lancucha akceptacji. Sprobuj ponownie.",
+        "deleteFailed": "Nie udalo sie usunac lancucha akceptacji. Sprobuj ponownie."
+      },
+      "validation": {
+        "chainNameRequired": "Nazwa lancucha jest wymagana",
+        "chainNameMax": "Nazwa lancucha musi miec mniej niz 100 znakow",
+        "levelNameRequired": "Nazwa poziomu jest wymagana",
+        "approverRequired": "Wybierz akceptujacego",
+        "slaRequired": "SLA musi byc liczba dodatnia",
+        "slaRange": "SLA musi byc miedzy 1 a 720 godzin",
+        "minOneLevel": "Dodaj co najmniej jeden poziom akceptacji"
+      }
+    }
   },
   "Users": {
     "title": "Czlonkowie zespolu",
@@ -1398,6 +1476,25 @@
       "pageOf": "Strona {current} z {total}",
       "previous": "Poprzednia",
       "next": "Nastepna"
+    },
+    "chainTracker": {
+      "heading": "Lancuch akceptacji",
+      "chain": "Lancuch: {chainName}"
+    },
+    "auditTrail": {
+      "heading": "Sciezka audytu",
+      "empty": "Brak aktywnosci",
+      "showMore": "Pokaz wiecej",
+      "showLess": "Pokaz mniej",
+      "submitted": "Zgloszona do akceptacji",
+      "routed": "Skierowana do lancucha: {chainName}",
+      "slaBreached": "SLA przekroczone na {levelName}",
+      "flowApproved": "Proces akceptacji zakonczony",
+      "flowRejected": "Proces akceptacji odrzucony",
+      "decisionApproved": "Zaakceptowano",
+      "decisionRejected": "Odrzucono",
+      "decisionClarification": "Wyslano prosbe o wyjasnienie",
+      "decisionDelegated": "Delegowano"
     }
   }
 }

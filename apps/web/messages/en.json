@@ -82,7 +82,8 @@
     "subtitle": "Manage your organization preferences and team",
     "tabs": {
       "general": "General",
-      "members": "Members"
+      "members": "Members",
+      "approvals": "Approvals"
     },
     "saveCta": "Save changes",
     "saving": "Saving...",
@@ -120,7 +121,84 @@
     "emailCopied": "Email address copied",
     "deviationThreshold": "Deviation threshold (%)",
     "deviationThresholdHelp": "Flag invoices when the amount deviates more than this percentage from the contract rate.",
-    "invoiceSettingsSaved": "Invoice settings saved"
+    "invoiceSettingsSaved": "Invoice settings saved",
+    "approvals": {
+      "heading": "Approval chains",
+      "description": "Configure approval chains for invoices. Chains are matched based on conditions like amount thresholds.",
+      "createChain": "Create approval chain",
+      "defaultBadge": "Default",
+      "activeToggle": "Active",
+      "levelsCount": "{n} levels",
+      "conditionSummary": "Amount {operator} {value} {currency}",
+      "noConditions": "No conditions (default fallback)",
+      "edit": "Edit",
+      "delete": "Delete",
+      "empty": {
+        "heading": "No approval chains configured",
+        "body": "Create an approval chain to route invoices through multi-level approvals before payment.",
+        "cta": "Create approval chain"
+      },
+      "deleteConfirm": {
+        "title": "Delete this approval chain?",
+        "body": "This chain will be permanently deleted. In-flight approvals using this chain will not be affected.",
+        "confirm": "Delete chain",
+        "cancel": "Cancel"
+      },
+      "editor": {
+        "createTitle": "Create approval chain",
+        "editTitle": "Edit approval chain",
+        "createDescription": "Set up a new approval chain with levels and routing conditions.",
+        "editDescription": "Update chain settings, approval levels, and routing conditions.",
+        "chainName": "Chain name",
+        "chainNamePlaceholder": "e.g. Standard Invoice Approval",
+        "defaultToggle": "Set as default chain",
+        "defaultHelp": "The default chain is used when no conditions match.",
+        "levelsHeading": "Approval levels",
+        "levelName": "Level name",
+        "levelNamePlaceholder": "e.g. Manager Review",
+        "approver": "Approver",
+        "approverUser": "Specific user",
+        "approverRole": "Role-based",
+        "userPlaceholder": "Search users...",
+        "rolePlaceholder": "Select role...",
+        "slaHours": "SLA (hours)",
+        "slaPlaceholder": "e.g. 24",
+        "required": "Required",
+        "addLevel": "Add level",
+        "removeLevel": "Remove level",
+        "maxLevels": "Maximum 3 levels reached",
+        "conditionsHeading": "Routing conditions",
+        "conditionsHelp": "When an invoice matches these conditions, this chain is used. Leave empty for the default chain.",
+        "conditionField": "Select field...",
+        "conditionOperator": "Select operator...",
+        "conditionValue": "Enter value...",
+        "fieldAmount": "Amount",
+        "fieldContractorType": "Contractor type",
+        "operatorGt": "Greater than",
+        "operatorLt": "Less than",
+        "operatorEq": "Equals",
+        "addCondition": "Add condition",
+        "removeCondition": "Remove",
+        "save": "Save chain",
+        "discard": "Discard changes"
+      },
+      "toasts": {
+        "created": "Approval chain created",
+        "updated": "Approval chain updated",
+        "deleted": "Approval chain deleted",
+        "saveFailed": "Could not save approval chain. Try again.",
+        "deleteFailed": "Could not delete approval chain. Try again."
+      },
+      "validation": {
+        "chainNameRequired": "Chain name is required",
+        "chainNameMax": "Chain name must be under 100 characters",
+        "levelNameRequired": "Level name is required",
+        "approverRequired": "Select an approver",
+        "slaRequired": "SLA must be a positive number",
+        "slaRange": "SLA must be between 1 and 720 hours",
+        "minOneLevel": "Add at least one approval level"
+      }
+    }
   },
   "Users": {
     "title": "Team members",
@@ -1398,6 +1476,25 @@
       "pageOf": "Page {current} of {total}",
       "previous": "Previous",
       "next": "Next"
+    },
+    "chainTracker": {
+      "heading": "Approval chain",
+      "chain": "Chain: {chainName}"
+    },
+    "auditTrail": {
+      "heading": "Audit trail",
+      "empty": "No activity yet",
+      "showMore": "Show more",
+      "showLess": "Show less",
+      "submitted": "Submitted for approval",
+      "routed": "Routed to chain: {chainName}",
+      "slaBreached": "SLA breached at {levelName}",
+      "flowApproved": "Approval flow completed",
+      "flowRejected": "Approval flow rejected",
+      "decisionApproved": "Approved",
+      "decisionRejected": "Rejected",
+      "decisionClarification": "Clarification requested",
+      "decisionDelegated": "Delegated"
     }
   }
 }
