@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ClipboardCheck } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -181,11 +181,10 @@ function ApprovalsContent() {
   // Selection state for bulk actions
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-  // Sync table row selection with selectedIds
-  const handleSelectionFromTable = useCallback(() => {
-    // The table manages its own selection state internally
-    // We track it here for the bulk toolbar
-  }, []);
+  // Clear selection when tab, status, search, or page changes
+  useEffect(() => {
+    setSelectedIds([]);
+  }, [tab, status, search, page]);
 
   const isLoading = queueQuery.isLoading;
   const isEmpty = !isLoading && data.length === 0;
@@ -227,6 +226,7 @@ function ApprovalsContent() {
           onPageChange={handlePageChange}
           onPageSizeChange={handlePageSizeChange}
           onRowClick={handleRowClick}
+          onSelectionChange={setSelectedIds}
           isLoading={isLoading}
         />
       </div>

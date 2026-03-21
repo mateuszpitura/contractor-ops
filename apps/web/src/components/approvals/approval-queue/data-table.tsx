@@ -1,11 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   flexRender,
   getCoreRowModel,
   useReactTable,
   type ColumnDef,
+  type RowSelectionState,
 } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
 
@@ -35,6 +36,7 @@ interface ApprovalQueueTableProps {
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
   onRowClick: (row: ApprovalQueueRow) => void;
+  onSelectionChange?: (ids: string[]) => void;
   isLoading?: boolean;
 }
 
@@ -66,9 +68,24 @@ export function ApprovalQueueTable({
   onPageChange,
   onPageSizeChange,
   onRowClick,
+  onSelectionChange,
   isLoading,
 }: ApprovalQueueTableProps) {
   const t = useTranslations("Approvals");
+
+  // Row selection state managed locally, forwarded to parent via callback
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+
+  // Reset selection when data changes (page/filter change)
+  useEffect(() => {
+    setRowSelection({});
+  }, [data]);
+
+  // Forward selection changes to parent
+  useEffect(() => {
+    const ids = Object.keys(rowSelection).filter((k) => rowSelection[k]);
+    onSelectionChange?.(ids);
+  }, [rowSelection, onSelectionChange]);
 
   const table = useReactTable({
     data,
@@ -76,7 +93,9 @@ export function ApprovalQueueTable({
     pageCount,
     state: {
       pagination: { pageIndex: page - 1, pageSize },
+      rowSelection,
     },
+    onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
     enableRowSelection: true,
