@@ -74,8 +74,8 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **APPR-01**: System routes invoices through configurable approval chains (1-3 levels)
 - [x] **APPR-02**: Approver can approve, reject (with mandatory comment), request clarification, or delegate
-- [ ] **APPR-03**: User can view their personal approval queue sorted by priority (overdue first, then by due date)
-- [ ] **APPR-04**: User can bulk approve/reject selected items from the queue
+- [x] **APPR-03**: User can view their personal approval queue sorted by priority (overdue first, then by due date)
+- [x] **APPR-04**: User can bulk approve/reject selected items from the queue
 - [x] **APPR-05**: System tracks SLA timers per approval level with visual indicators (green/yellow/red)
 - [x] **APPR-06**: System sends escalation notifications when SLA is breached
 - [x] **APPR-07**: Approver can delegate to another user when absent
@@ -222,8 +222,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INV-10 | Phase 5 | Complete |
 | APPR-01 | Phase 6 | Complete |
 | APPR-02 | Phase 6 | Complete |
-| APPR-03 | Phase 6 | Pending |
-| APPR-04 | Phase 6 | Pending |
+| APPR-03 | Phase 6 | Complete |
+| APPR-04 | Phase 6 | Complete |
 | APPR-05 | Phase 6 | Complete |
 | APPR-06 | Phase 6 | Complete |
 | APPR-07 | Phase 6 | Complete |
