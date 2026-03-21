@@ -1,0 +1,651 @@
+"use client";
+
+import { useEffect, useState, useCallback } from "react";
+import { useForm, useFieldArray, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { Plus, X, Loader2 } from "lucide-react";
+
+import { trpc } from "@/trpc/init";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Command,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+} from "@/components/ui/command";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  ConditionBuilder,
+  type Condition,
+} from "@/components/settings/condition-builder";
+
+// ---------------------------------------------------------------------------
+// Form schema (local wizard schema -- mirrors validators/approval.ts)
+// ---------------------------------------------------------------------------
+
+const APPROVER_ROLES = [
+  "ORG_ADMIN",
+  "FINANCE_ADMIN",
+  "OPS_MANAGER",
+  "TEAM_MANAGER",
+  "LEGAL_VIEWER",
+  "IT_ADMIN",
+  "ACCOUNTANT",
+  "READ_ONLY",
+] as const;
+
+const ROLE_LABELS: Record<string, string> = {
+  ORG_ADMIN: "Admin",
+  FINANCE_ADMIN: "Finance Admin",
+  OPS_MANAGER: "Ops Manager",
+  TEAM_MANAGER: "Team Manager",
+  LEGAL_VIEWER: "Legal Viewer",
+  IT_ADMIN: "IT Admin",
+  ACCOUNTANT: "Accountant",
+  READ_ONLY: "Read Only",
+};
+
+const stepSchema = z.object({
+  name: z.string().min(1, "Level name is required").max(100),
+  approverType: z.enum(["user", "role"]),
+  approverUserId: z.string().nullish(),
+  approverRole: z.enum(APPROVER_ROLES).nullish(),
+  slaHours: z.coerce.number().int().min(1, "SLA must be between 1 and 720 hours").max(720, "SLA must be between 1 and 720 hours"),
+  required: z.boolean(),
+});
+
+const chainFormSchema = z.object({
+  name: z.string().min(1, "Chain name is required").max(100),
+  isDefault: z.boolean(),
+  steps: z
+    .array(stepSchema)
+    .min(1, "Add at least one approval level")
+    .max(3),
+  conditions: z
+    .array(
+      z.object({
+        field: z.enum(["amount", "contractorType"]),
+        operator: z.enum(["gt", "lt", "eq"]),
+        value: z.union([z.number(), z.string()]),
+      }),
+    )
+    .optional(),
+});
+
+type ChainFormValues = z.infer<typeof chainFormSchema>;
+
+// ---------------------------------------------------------------------------
+// Props
+// ---------------------------------------------------------------------------
+
+export type ChainData = {
+  id: string;
+  name: string;
+  isDefault: boolean;
+  isActive: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  conditionsJson: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  stepsJson: any;
+};
+
+type ChainEditorDialogProps = {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  chainData: ChainData | null;
+};
+
+// ---------------------------------------------------------------------------
+// Default step
+// ---------------------------------------------------------------------------
+
+const DEFAULT_STEP: ChainFormValues["steps"][number] = {
+  name: "",
+  approverType: "user",
+  approverUserId: null,
+  approverRole: null,
+  slaHours: 24,
+  required: true,
+};
+
+// ---------------------------------------------------------------------------
+// User Picker Component
+// ---------------------------------------------------------------------------
+
+function UserPicker({
+  value,
+  onChange,
+}: {
+  value: string | null | undefined;
+  onChange: (userId: string | null) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+
+  const usersQuery = useQuery(trpc.user.list.queryOptions());
+  // user.list returns members with nested user objects
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const rawMembers = (usersQuery.data ?? []) as any[];
+  const users = rawMembers.map((m) => ({
+    id: (m.userId ?? m.id) as string,
+    name: (m.user?.name ?? m.name ?? "Unknown") as string,
+    email: (m.user?.email ?? m.email ?? "") as string,
+    role: (m.role ?? "") as string,
+  }));
+
+  const selectedUser = users.find((u) => u.id === value);
+
+  const filteredUsers = search
+    ? users.filter(
+        (u) =>
+          u.name.toLowerCase().includes(search.toLowerCase()) ||
+          u.email.toLowerCase().includes(search.toLowerCase()),
+      )
+    : users;
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger
+        render={
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full justify-start font-normal"
+            type="button"
+          />
+        }
+      >
+        {selectedUser ? (
+          <span className="truncate">
+            {selectedUser.name} ({selectedUser.email})
+          </span>
+        ) : (
+          <span className="text-muted-foreground">Search users...</span>
+        )}
+      </PopoverTrigger>
+      <PopoverContent className="w-[320px] p-0" align="start">
+        <Command shouldFilter={false}>
+          <CommandInput
+            placeholder="Search users..."
+            value={search}
+            onValueChange={setSearch}
+          />
+          <CommandList>
+            <CommandEmpty>No users found.</CommandEmpty>
+            <CommandGroup>
+              {filteredUsers.map((user) => (
+                <CommandItem
+                  key={user.id}
+                  value={user.id}
+                  onSelect={() => {
+                    onChange(user.id);
+                    setOpen(false);
+                    setSearch("");
+                  }}
+                  data-checked={user.id === value || undefined}
+                >
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium">{user.name}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {user.email}
+                    </span>
+                  </div>
+                  <Badge variant="secondary" className="ml-auto">
+                    {ROLE_LABELS[user.role] ?? user.role}
+                  </Badge>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
+
+export function ChainEditorDialog({
+  open,
+  onOpenChange,
+  chainData,
+}: ChainEditorDialogProps) {
+  const queryClient = useQueryClient();
+  const isEditMode = chainData !== null;
+
+  // ---- Form setup ----
+  const form = useForm<ChainFormValues>({
+    resolver: zodResolver(chainFormSchema),
+    defaultValues: {
+      name: "",
+      isDefault: false,
+      steps: [{ ...DEFAULT_STEP }],
+      conditions: [],
+    },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "steps",
+  });
+
+  // ---- Reset form when chainData changes ----
+  useEffect(() => {
+    if (!open) return;
+
+    if (chainData) {
+      const steps = Array.isArray(chainData.stepsJson)
+        ? chainData.stepsJson
+        : [];
+
+      form.reset({
+        name: chainData.name,
+        isDefault: chainData.isDefault,
+        steps: steps.map((s: Record<string, unknown>) => ({
+          name: (s.name as string) ?? "",
+          approverType: s.approverUserId ? ("user" as const) : ("role" as const),
+          approverUserId: (s.approverUserId as string | null) ?? null,
+          approverRole: (s.approverRole as ChainFormValues["steps"][number]["approverRole"]) ?? null,
+          slaHours: (s.slaHours as number) ?? 24,
+          required: (s.required as boolean) ?? true,
+        })),
+        conditions: Array.isArray(chainData.conditionsJson)
+          ? (chainData.conditionsJson as Condition[])
+          : [],
+      });
+    } else {
+      form.reset({
+        name: "",
+        isDefault: false,
+        steps: [{ ...DEFAULT_STEP }],
+        conditions: [],
+      });
+    }
+  }, [open, chainData, form]);
+
+  // ---- Mutations ----
+  const createMutation = useMutation(
+    trpc.approval.createChain.mutationOptions({
+      onSuccess: () => {
+        toast.success("Approval chain created");
+        queryClient.invalidateQueries({
+          queryKey: trpc.approval.listChains.queryKey(),
+        });
+        onOpenChange(false);
+      },
+      onError: () => {
+        toast.error("Could not save approval chain. Try again.");
+      },
+    }),
+  );
+
+  const updateMutation = useMutation(
+    trpc.approval.updateChain.mutationOptions({
+      onSuccess: () => {
+        toast.success("Approval chain updated");
+        queryClient.invalidateQueries({
+          queryKey: trpc.approval.listChains.queryKey(),
+        });
+        onOpenChange(false);
+      },
+      onError: () => {
+        toast.error("Could not save approval chain. Try again.");
+      },
+    }),
+  );
+
+  const isPending = createMutation.isPending || updateMutation.isPending;
+
+  // ---- Submit handler ----
+  const onSubmit = useCallback(
+    (data: ChainFormValues) => {
+      const stepsJson = data.steps.map((step) => ({
+        name: step.name,
+        approverUserId:
+          step.approverType === "user" ? (step.approverUserId ?? null) : null,
+        approverRole:
+          step.approverType === "role" ? (step.approverRole ?? null) : null,
+        slaHours: step.slaHours,
+        required: step.required,
+      }));
+
+      const conditionsJson =
+        data.conditions && data.conditions.length > 0
+          ? data.conditions.filter(
+              (c) => c.value !== "" && c.value !== undefined,
+            )
+          : null;
+
+      if (isEditMode && chainData) {
+        updateMutation.mutate({
+          id: chainData.id,
+          name: data.name,
+          isDefault: data.isDefault,
+          isActive: chainData.isActive,
+          stepsJson,
+          conditionsJson,
+        });
+      } else {
+        createMutation.mutate({
+          name: data.name,
+          isDefault: data.isDefault,
+          stepsJson,
+          conditionsJson,
+        });
+      }
+    },
+    [isEditMode, chainData, createMutation, updateMutation],
+  );
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-[640px] max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>
+            {isEditMode ? "Edit approval chain" : "Create approval chain"}
+          </DialogTitle>
+          <DialogDescription>
+            {isEditMode
+              ? "Update chain settings, approval levels, and routing conditions."
+              : "Set up a new approval chain with levels and routing conditions."}
+          </DialogDescription>
+        </DialogHeader>
+
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="space-y-6"
+        >
+          {/* Section 1: Chain name + default toggle */}
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="chain-name">Chain name</Label>
+              <Input
+                id="chain-name"
+                placeholder="e.g. Standard Invoice Approval"
+                {...form.register("name")}
+              />
+              {form.formState.errors.name && (
+                <p className="text-xs text-destructive">
+                  {form.formState.errors.name.message}
+                </p>
+              )}
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="chain-default">Set as default chain</Label>
+                <p className="text-xs text-muted-foreground">
+                  The default chain is used when no conditions match.
+                </p>
+              </div>
+              <Controller
+                control={form.control}
+                name="isDefault"
+                render={({ field }) => (
+                  <Switch
+                    id="chain-default"
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                )}
+              />
+            </div>
+          </div>
+
+          {/* Section 2: Approval levels */}
+          <div className="space-y-3">
+            <h4 className="text-sm font-semibold">Approval levels</h4>
+
+            {form.formState.errors.steps?.root && (
+              <p className="text-xs text-destructive">
+                {form.formState.errors.steps.root.message}
+              </p>
+            )}
+
+            {fields.map((field, index) => (
+              <Card key={field.id}>
+                <CardContent className="relative space-y-4 pt-4">
+                  {/* Level badge + remove button */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex size-7 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">
+                      {index + 1}
+                    </div>
+                    {fields.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        className="text-destructive hover:text-destructive"
+                        onClick={() => remove(index)}
+                        aria-label="Remove level"
+                      >
+                        <X className="size-4" />
+                      </Button>
+                    )}
+                  </div>
+
+                  {/* Level name */}
+                  <div className="space-y-2">
+                    <Label htmlFor={`step-name-${index}`}>Level name</Label>
+                    <Input
+                      id={`step-name-${index}`}
+                      placeholder="e.g. Manager Review"
+                      {...form.register(`steps.${index}.name`)}
+                    />
+                    {form.formState.errors.steps?.[index]?.name && (
+                      <p className="text-xs text-destructive">
+                        {form.formState.errors.steps[index].name?.message}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Approver type */}
+                  <div className="space-y-2">
+                    <Label>Approver</Label>
+                    <Controller
+                      control={form.control}
+                      name={`steps.${index}.approverType`}
+                      render={({ field: radioField }) => (
+                        <RadioGroup
+                          value={radioField.value}
+                          onValueChange={radioField.onChange}
+                          className="flex gap-4"
+                        >
+                          <div className="flex items-center gap-2">
+                            <RadioGroupItem value="user" />
+                            <Label className="cursor-pointer font-normal">
+                              Specific user
+                            </Label>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <RadioGroupItem value="role" />
+                            <Label className="cursor-pointer font-normal">
+                              Role-based
+                            </Label>
+                          </div>
+                        </RadioGroup>
+                      )}
+                    />
+                  </div>
+
+                  {/* Conditional approver picker */}
+                  {form.watch(`steps.${index}.approverType`) === "user" ? (
+                    <Controller
+                      control={form.control}
+                      name={`steps.${index}.approverUserId`}
+                      render={({ field: userField }) => (
+                        <UserPicker
+                          value={userField.value}
+                          onChange={userField.onChange}
+                        />
+                      )}
+                    />
+                  ) : (
+                    <Controller
+                      control={form.control}
+                      name={`steps.${index}.approverRole`}
+                      render={({ field: roleField }) => (
+                        <Select
+                          value={roleField.value ?? undefined}
+                          onValueChange={roleField.onChange}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select role..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {APPROVER_ROLES.map((role) => (
+                              <SelectItem key={role} value={role}>
+                                {ROLE_LABELS[role] ?? role}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                  )}
+
+                  {/* SLA hours */}
+                  <div className="space-y-2">
+                    <Label htmlFor={`step-sla-${index}`}>SLA (hours)</Label>
+                    <Input
+                      id={`step-sla-${index}`}
+                      type="number"
+                      placeholder="e.g. 24"
+                      min={1}
+                      max={720}
+                      {...form.register(`steps.${index}.slaHours`, {
+                        valueAsNumber: true,
+                      })}
+                      className="max-w-[120px]"
+                    />
+                    {form.formState.errors.steps?.[index]?.slaHours && (
+                      <p className="text-xs text-destructive">
+                        {form.formState.errors.steps[index].slaHours?.message}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Required toggle */}
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor={`step-required-${index}`}>Required</Label>
+                    <Controller
+                      control={form.control}
+                      name={`steps.${index}.required`}
+                      render={({ field: reqField }) => (
+                        <Switch
+                          id={`step-required-${index}`}
+                          checked={reqField.value}
+                          onCheckedChange={reqField.onChange}
+                        />
+                      )}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+
+            {/* Add level button */}
+            {fields.length >= 3 ? (
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled
+                    />
+                  }
+                >
+                  <Plus className="mr-1.5 size-3.5" />
+                  Add level
+                </TooltipTrigger>
+                <TooltipContent>Maximum 3 levels reached</TooltipContent>
+              </Tooltip>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => append({ ...DEFAULT_STEP })}
+              >
+                <Plus className="mr-1.5 size-3.5" />
+                Add level
+              </Button>
+            )}
+          </div>
+
+          {/* Section 3: Routing conditions */}
+          <div className="space-y-3">
+            <h4 className="text-sm font-semibold">Routing conditions</h4>
+            <Controller
+              control={form.control}
+              name="conditions"
+              render={({ field: condField }) => (
+                <ConditionBuilder
+                  value={(condField.value ?? []) as Condition[]}
+                  onChange={condField.onChange}
+                />
+              )}
+            />
+          </div>
+
+          {/* Footer */}
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => onOpenChange(false)}
+              disabled={isPending}
+            >
+              Discard changes
+            </Button>
+            <Button type="submit" disabled={isPending}>
+              {isPending && (
+                <Loader2 className="mr-1.5 size-3.5 animate-spin" />
+              )}
+              Save chain
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
