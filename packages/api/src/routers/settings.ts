@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { auth } from "@contractor-ops/auth";
 import { prisma } from "@contractor-ops/db";
 import {
@@ -25,6 +26,7 @@ export const settingsRouter = router({
       return {
         id: org?.id,
         name: org?.name,
+        slug: org?.slug,
         metadata: org?.metadata,
       };
     }),
@@ -122,5 +124,63 @@ export const settingsRouter = router({
       });
 
       return { reminderDaysBefore: input.reminderDaysBefore };
+    }),
+
+  /**
+   * Get invoice matching settings (deviation threshold).
+   * Falls back to 10% if not configured.
+   */
+  getInvoiceSettings: tenantProcedure
+    .use(requirePermission({ settings: ["read"] }))
+    .query(async ({ ctx }) => {
+      const org = await prisma.organization.findUnique({
+        where: { id: ctx.organizationId },
+        select: { settingsJson: true },
+      });
+
+      const settings = (org?.settingsJson as Record<string, unknown>) ?? {};
+      const invoiceDeviationThresholdPercent =
+        (settings.invoiceDeviationThresholdPercent as number) ?? 10;
+
+      return { invoiceDeviationThresholdPercent };
+    }),
+
+  /**
+   * Update invoice matching settings (deviation threshold).
+   */
+  updateInvoiceSettings: tenantProcedure
+    .use(requirePermission({ settings: ["update"] }))
+    .input(
+      z.object({
+        invoiceDeviationThresholdPercent: z.number().int().min(1).max(100),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const org = await prisma.organization.findUnique({
+        where: { id: ctx.organizationId },
+        select: { settingsJson: true },
+      });
+
+      const currentSettings =
+        (org?.settingsJson as Record<string, unknown>) ?? {};
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const newSettings: any = {
+        ...currentSettings,
+        invoiceDeviationThresholdPercent:
+          input.invoiceDeviationThresholdPercent,
+      };
+
+      await prisma.organization.update({
+        where: { id: ctx.organizationId },
+        data: {
+          settingsJson: newSettings,
+        },
+      });
+
+      return {
+        invoiceDeviationThresholdPercent:
+          input.invoiceDeviationThresholdPercent,
+      };
     }),
 });

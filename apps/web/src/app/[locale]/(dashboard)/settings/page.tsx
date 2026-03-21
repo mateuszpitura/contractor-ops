@@ -3,6 +3,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { OrgSettingsForm } from "@/components/settings/org-settings-form";
 import { ExpiryReminderDefaults } from "@/components/settings/expiry-reminder-defaults";
+import { InvoiceMatchingSettings } from "@/components/settings/invoice-matching-settings";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 
@@ -38,6 +39,7 @@ export default function SettingsPage() {
         <TabsContent value="general" className="mt-6 space-y-6">
           <OrgSettingsForm />
           <ExpiryReminderDefaults />
+          <InvoiceMatchingSettings />
         </TabsContent>
       </Tabs>
     </div>
