@@ -131,7 +131,7 @@ Plans:
 **Plans**: 5 plans
 
 Plans:
-- [ ] 06-01-PLAN.md — Approval Zod validators, engine service (chain routing, state machine, SLA computation), tRPC router (chain CRUD, actions, queue, bulk, audit trail)
+- [x] 06-01-PLAN.md — Approval Zod validators, engine service (chain routing, state machine, SLA computation), tRPC router (chain CRUD, actions, queue, bulk, audit trail)
 - [ ] 06-02-PLAN.md — Settings > Approvals tab with chain list, chain editor dialog (1-3 level cards, condition builder)
 - [ ] 06-03-PLAN.md — Approvals queue page with TanStack Table, SLA badges, inline actions, side panel, bulk approve/reject toolbar
 - [ ] 06-04-PLAN.md — Invoice detail chain tracker stepper, audit timeline, submit-for-approval integration
@@ -219,7 +219,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 3. Contracts & Documents | 5/6 | In Progress|  |
 | 4. Workflow Engine | 0/5 | Not started | - |
 | 5. Invoice Intake & Matching | 5/5 | Complete   | 2026-03-21 |
-| 6. Approval Workflow | 0/5 | Not started | - |
+| 6. Approval Workflow | 1/5 | In Progress|  |
 | 7. Notifications & Slack | 0/3 | Not started | - |
 | 8. Payments | 0/3 | Not started | - |
 | 9. Dashboard & Reports | 0/5 | Not started | - |

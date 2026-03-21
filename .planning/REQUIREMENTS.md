@@ -16,7 +16,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **ORG-05**: Admin can deactivate a user, immediately revoking their access
 - [x] **ORG-06**: System enforces RBAC with 8 roles: admin, finance admin, ops manager, team manager, legal/compliance viewer, IT admin, external accountant, readonly
 - [x] **ORG-07**: All data access is scoped to the user's organization with no cross-tenant leakage
-- [ ] **ORG-08**: Admin can configure approval chain templates (default chains, amount thresholds)
+- [x] **ORG-08**: Admin can configure approval chain templates (default chains, amount thresholds)
 - [x] **ORG-09**: Admin can manage workflow templates (create, edit, activate/deactivate)
 - [ ] **ORG-10**: Admin can view searchable, filterable, exportable audit log of all critical actions
 
@@ -72,15 +72,15 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Approvals
 
-- [ ] **APPR-01**: System routes invoices through configurable approval chains (1-3 levels)
-- [ ] **APPR-02**: Approver can approve, reject (with mandatory comment), request clarification, or delegate
+- [x] **APPR-01**: System routes invoices through configurable approval chains (1-3 levels)
+- [x] **APPR-02**: Approver can approve, reject (with mandatory comment), request clarification, or delegate
 - [ ] **APPR-03**: User can view their personal approval queue sorted by priority (overdue first, then by due date)
 - [ ] **APPR-04**: User can bulk approve/reject selected items from the queue
-- [ ] **APPR-05**: System tracks SLA timers per approval level with visual indicators (green/yellow/red)
+- [x] **APPR-05**: System tracks SLA timers per approval level with visual indicators (green/yellow/red)
 - [ ] **APPR-06**: System sends escalation notifications when SLA is breached
-- [ ] **APPR-07**: Approver can delegate to another user when absent
-- [ ] **APPR-08**: System snapshots the approval chain at submission time (chain changes don't affect in-flight approvals)
-- [ ] **APPR-09**: Full audit trail for every approval decision with actor, timestamp, and comment
+- [x] **APPR-07**: Approver can delegate to another user when absent
+- [x] **APPR-08**: System snapshots the approval chain at submission time (chain changes don't affect in-flight approvals)
+- [x] **APPR-09**: Full audit trail for every approval decision with actor, timestamp, and comment
 
 ### Payments
 
@@ -179,7 +179,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ORG-05 | Phase 1 | Complete |
 | ORG-06 | Phase 1 | Complete |
 | ORG-07 | Phase 1 | Complete |
-| ORG-08 | Phase 6 | Pending |
+| ORG-08 | Phase 6 | Complete |
 | ORG-09 | Phase 4 | Complete |
 | ORG-10 | Phase 9 | Pending |
 | CONT-01 | Phase 2 | Complete |
@@ -220,15 +220,15 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INV-08 | Phase 5 | Complete |
 | INV-09 | Phase 5 | Complete |
 | INV-10 | Phase 5 | Complete |
-| APPR-01 | Phase 6 | Pending |
-| APPR-02 | Phase 6 | Pending |
+| APPR-01 | Phase 6 | Complete |
+| APPR-02 | Phase 6 | Complete |
 | APPR-03 | Phase 6 | Pending |
 | APPR-04 | Phase 6 | Pending |
-| APPR-05 | Phase 6 | Pending |
+| APPR-05 | Phase 6 | Complete |
 | APPR-06 | Phase 6 | Pending |
-| APPR-07 | Phase 6 | Pending |
-| APPR-08 | Phase 6 | Pending |
-| APPR-09 | Phase 6 | Pending |
+| APPR-07 | Phase 6 | Complete |
+| APPR-08 | Phase 6 | Complete |
+| APPR-09 | Phase 6 | Complete |
 | PAY-01 | Phase 8 | Pending |
 | PAY-02 | Phase 8 | Pending |
 | PAY-03 | Phase 8 | Pending |
