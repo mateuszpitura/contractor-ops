@@ -900,8 +900,47 @@ export const approvalRouter = router({
       });
 
       if (!flow) {
-        return { events: [] as Array<Record<string, unknown>> };
+        return { events: [] as Array<Record<string, unknown>>, flow: null };
       }
+
+      // Resolve chain name for the flow
+      let chainName: string | null = null;
+      if (flow.chainConfigId) {
+        const cfg = await prisma.approvalChainConfig.findUnique({
+          where: { id: flow.chainConfigId },
+          select: { name: true },
+        });
+        chainName = cfg?.name ?? null;
+      }
+
+      // Build flow summary with step data for chain tracker
+      const resolvedSteps = await Promise.all(
+        flow.steps.map(async (step) => ({
+          id: step.id,
+          stepOrder: step.stepOrder,
+          name: step.name,
+          status: step.status,
+          approverUserId: step.approverUserId,
+          approverRole: step.approverRole,
+          slaDeadline: step.slaDeadline?.toISOString() ?? null,
+          actedAt: step.actedAt?.toISOString() ?? null,
+          decision: step.decision ?? null,
+          approver: step.approverUserId
+            ? await prisma.user.findUnique({
+                where: { id: step.approverUserId },
+                select: { id: true, name: true, email: true, image: true },
+              })
+            : null,
+        })),
+      );
+
+      const flowSummary = {
+        id: flow.id,
+        status: flow.status,
+        chainName,
+        currentStepOrder: flow.currentStepOrder,
+        steps: resolvedSteps,
+      };
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const events: Array<Record<string, any>> = [];
@@ -915,15 +954,10 @@ export const approvalRouter = router({
 
       // System event: routed to chain
       if (flow.chainConfigId) {
-        const chainConfig = await prisma.approvalChainConfig.findUnique({
-          where: { id: flow.chainConfigId },
-          select: { name: true },
-        });
-
         events.push({
           type: "system",
           label: "routed",
-          chainName: chainConfig?.name ?? "Unknown chain",
+          chainName: chainName ?? "Unknown chain",
           timestamp: flow.startedAt.toISOString(),
         });
       }
@@ -976,6 +1010,6 @@ export const approvalRouter = router({
           new Date(a.timestamp as string).getTime(),
       );
 
-      return plain({ events });
+      return plain({ events, flow: flowSummary });
     }),
 });
