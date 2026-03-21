@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 05-02-PLAN.md
-last_updated: "2026-03-21T20:45:24.901Z"
+stopped_at: Completed 05-04-PLAN.md
+last_updated: "2026-03-21T20:55:44.902Z"
 progress:
   total_phases: 10
   completed_phases: 4
   total_plans: 23
-  completed_plans: 21
+  completed_plans: 22
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-18)
 ## Current Position
 
 Phase: 05 (invoice-intake-matching) — EXECUTING
-Plan: 4 of 5
+Plan: 5 of 5
 
 ## Performance Metrics
 
@@ -61,6 +61,7 @@ Plan: 4 of 5
 | Phase 05 P01 | 4min | 2 tasks | 5 files |
 | Phase 05 P03 | 7min | 2 tasks | 12 files |
 | Phase 05 P02 | 7min | 1 tasks | 4 files |
+| Phase 05 P04 | 7min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -129,6 +130,8 @@ Recent decisions affecting current work:
 - [Phase 05]: Resend webhooks.verify with svix headers object (not two-arg form) for signature verification
 - [Phase 05]: Server-side PutObjectCommand for R2 upload in webhook (not presigned URL) since server context
 - [Phase 05]: @contractor-ops/db added as web dependency for direct Prisma access in webhook routes
+- [Phase 05-04]: base-ui render prop pattern for PopoverTrigger and DropdownMenuTrigger (not Radix asChild)
+- [Phase 05-04]: CurrencyInput sub-component for grosze/PLN display conversion with controlled input state
 
 ### Pending Todos
 
@@ -142,6 +145,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T20:45:24.899Z
-Stopped at: Completed 05-02-PLAN.md
+Last session: 2026-03-21T20:55:44.900Z
+Stopped at: Completed 05-04-PLAN.md
 Resume file: None
