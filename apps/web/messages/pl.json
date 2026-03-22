@@ -83,7 +83,9 @@
     "tabs": {
       "general": "Ogolne",
       "members": "Czlonkowie",
-      "approvals": "Akceptacje"
+      "approvals": "Akceptacje",
+      "notifications": "Powiadomienia",
+      "integrations": "Integracje"
     },
     "saveCta": "Zapisz zmiany",
     "saving": "Zapisywanie...",
@@ -1496,6 +1498,34 @@
       "decisionRejected": "Odrzucono",
       "decisionClarification": "Wyslano prosbe o wyjasnienie",
       "decisionDelegated": "Delegowano"
+    }
+  },
+  "Notifications": {
+    "title": "Powiadomienia",
+    "markAllRead": "Oznacz wszystkie jako przeczytane",
+    "viewAll": "Zobacz wszystkie powiadomienia",
+    "empty": "Brak powiadomien",
+    "markedAllRead": "Wszystkie powiadomienia oznaczone jako przeczytane",
+    "emptyPage": {
+      "heading": "Brak powiadomien",
+      "body": "Powiadomienia pojawia sie tutaj, gdy beda prosby o akceptacje, przypisania zadan lub wazne aktualizacje."
+    },
+    "filters": {
+      "all": "Wszystkie",
+      "approvals": "Akceptacje",
+      "tasks": "Zadania",
+      "contracts": "Umowy",
+      "invoices": "Faktury"
+    },
+    "unreadOnly": "Tylko nieprzeczytane",
+    "pagination": {
+      "previous": "Poprzednia",
+      "next": "Nastepna",
+      "pageOf": "Strona {page} z {totalPages}"
+    },
+    "errors": {
+      "failedToMarkRead": "Nie udalo sie oznaczyc powiadomien jako przeczytane. Sprobuj ponownie.",
+      "failedToLoad": "Nie udalo sie zaladowac powiadomien. Sprawdz polaczenie i sprobuj ponownie."
     }
   }
 }

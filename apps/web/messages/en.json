@@ -83,7 +83,9 @@
     "tabs": {
       "general": "General",
       "members": "Members",
-      "approvals": "Approvals"
+      "approvals": "Approvals",
+      "notifications": "Notifications",
+      "integrations": "Integrations"
     },
     "saveCta": "Save changes",
     "saving": "Saving...",
@@ -198,6 +200,147 @@
         "slaRequired": "SLA must be a positive number",
         "slaRange": "SLA must be between 1 and 720 hours",
         "minOneLevel": "Add at least one approval level"
+      }
+    },
+    "notifications": {
+      "heading": "Notification preferences",
+      "description": "Choose how you want to be notified for each event type. In-app notifications are always enabled.",
+      "columnEvent": "Event",
+      "columnInApp": "In-app",
+      "columnEmail": "Email",
+      "columnSlack": "Slack",
+      "inAppTooltip": "In-app notifications are always enabled",
+      "slackDisabledTooltip": "Connect Slack in Integrations to enable",
+      "eventApprovalRequest": "Approval requested",
+      "eventApprovalDecision": "Approval decision",
+      "eventTaskAssigned": "Task assigned",
+      "eventTaskOverdue": "Task overdue",
+      "eventContractExpiring": "Contract expiring",
+      "eventInvoiceReceived": "Invoice received",
+      "savePreferences": "Save preferences",
+      "preferencesSaved": "Notification preferences saved",
+      "preferencesSaveFailed": "Could not save notification preferences. Try again."
+    },
+    "reminderRules": {
+      "heading": "Custom reminder rules",
+      "description": "Automate reminders for contract expiry, task deadlines, and other recurring events.",
+      "createRule": "Create rule",
+      "emptyHeading": "No reminder rules",
+      "emptyBody": "Create custom rules to send automatic reminders for contract expiry, task deadlines, and other events.",
+      "emptyCta": "Create rule",
+      "active": "Active",
+      "edit": "Edit",
+      "delete": "Delete",
+      "ruleDescription": "{offsetDays} days before {triggerType}, notify {recipientMode} via {channel}",
+      "deleteConfirm": {
+        "title": "Delete this reminder rule?",
+        "body": "This rule will be permanently deleted. Pending reminders from this rule will be cancelled.",
+        "confirm": "Delete rule",
+        "cancel": "Cancel"
+      },
+      "toasts": {
+        "created": "Reminder rule created",
+        "updated": "Reminder rule updated",
+        "deleted": "Reminder rule deleted",
+        "toggled": "Reminder rule updated",
+        "saveFailed": "Could not save reminder rule. Try again.",
+        "deleteFailed": "Could not delete reminder rule. Try again."
+      },
+      "editor": {
+        "createTitle": "Create reminder rule",
+        "editTitle": "Edit reminder rule",
+        "ruleName": "Rule name",
+        "ruleNamePlaceholder": "e.g. Contract expiry reminder",
+        "triggerType": "Trigger",
+        "triggerBeforeContractEnd": "Before contract end",
+        "triggerBeforeDueDate": "Before due date",
+        "triggerAfterDueDate": "After due date",
+        "triggerBeforeDocumentExpiry": "Before document expiry",
+        "triggerOnLifecycleChange": "On lifecycle change",
+        "triggerOnDueDate": "On due date",
+        "offset": "Offset",
+        "offsetDaysPlaceholder": "days before",
+        "entityType": "Applies to",
+        "entityContract": "Contracts",
+        "entityInvoice": "Invoices",
+        "entityTask": "Tasks",
+        "entityDocument": "Documents",
+        "channel": "Send via",
+        "channelInApp": "In-app",
+        "channelEmail": "Email",
+        "channelSlack": "Slack",
+        "recipientMode": "Notify",
+        "recipientEntityOwner": "Entity owner",
+        "recipientFinanceTeam": "Finance team",
+        "recipientAssignee": "Assignee",
+        "recipientSpecificUser": "Specific user",
+        "recipientRole": "Role",
+        "userPlaceholder": "Search users...",
+        "rolePlaceholder": "Select role...",
+        "activeToggle": "Active",
+        "save": "Save rule",
+        "discard": "Discard changes",
+        "noUsersFound": "No users found."
+      },
+      "validation": {
+        "ruleNameRequired": "Rule name is required",
+        "ruleNameMax": "Rule name must be under 100 characters",
+        "triggerRequired": "Select a trigger type",
+        "offsetRequired": "Offset must be a positive number",
+        "offsetRange": "Offset must be between 1 and 365 days",
+        "channelRequired": "Select a notification channel",
+        "recipientRequired": "Select who to notify",
+        "userRequired": "Select a user",
+        "roleRequired": "Select a role"
+      }
+    },
+    "integrations": {
+      "heading": "Integrations",
+      "description": "Connect external services to extend notifications and workflows.",
+      "slack": {
+        "heading": "Slack",
+        "descriptionDisconnected": "Connect your Slack workspace to receive approval requests as DMs and approve invoices directly from Slack.",
+        "connectCta": "Connect Slack",
+        "connectedTo": "Connected to",
+        "connectedBy": "Connected by",
+        "connectedOn": "Connected on",
+        "disconnectCta": "Disconnect Slack",
+        "reconnectCta": "Reconnect Slack",
+        "statusConnected": "Connected",
+        "statusDisconnected": "Not connected",
+        "statusError": "Connection error",
+        "statusReauth": "Re-authentication required"
+      },
+      "userMapping": {
+        "heading": "User mapping",
+        "description": "Slack users are automatically matched by email. Manually link any unmatched users below.",
+        "columnUser": "User",
+        "columnEmail": "Email",
+        "columnSlackUser": "Slack user",
+        "columnStatus": "Status",
+        "columnAction": "Action",
+        "statusAutoMatched": "Auto-matched",
+        "statusManuallyLinked": "Manually linked",
+        "statusUnmatched": "Unmatched",
+        "linkUser": "Link user",
+        "unlinkUser": "Unlink user",
+        "searchPlaceholder": "Search Slack users...",
+        "mappingStats": "{matched} of {total} users matched"
+      },
+      "disconnectConfirm": {
+        "title": "Disconnect Slack?",
+        "body": "This will disable Slack notifications and approval actions for all users. You can reconnect later.",
+        "confirm": "Disconnect Slack",
+        "cancel": "Cancel"
+      },
+      "toasts": {
+        "connected": "Slack workspace connected",
+        "disconnected": "Slack disconnected",
+        "connectFailed": "Could not connect to Slack. Try again.",
+        "disconnectFailed": "Could not disconnect Slack. Try again.",
+        "userLinked": "Slack user linked",
+        "userUnlinked": "Slack user unlinked",
+        "linkFailed": "Could not link Slack user. Try again."
       }
     }
   },
@@ -1496,6 +1639,34 @@
       "decisionRejected": "Rejected",
       "decisionClarification": "Clarification requested",
       "decisionDelegated": "Delegated"
+    }
+  },
+  "Notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark all read",
+    "viewAll": "View all notifications",
+    "empty": "No notifications",
+    "markedAllRead": "All notifications marked as read",
+    "emptyPage": {
+      "heading": "No notifications yet",
+      "body": "You'll see notifications here when there are approval requests, task assignments, or important updates."
+    },
+    "filters": {
+      "all": "All",
+      "approvals": "Approvals",
+      "tasks": "Tasks",
+      "contracts": "Contracts",
+      "invoices": "Invoices"
+    },
+    "unreadOnly": "Unread only",
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next",
+      "pageOf": "Page {page} of {totalPages}"
+    },
+    "errors": {
+      "failedToMarkRead": "Could not mark notifications as read. Try again.",
+      "failedToLoad": "Could not load notifications. Check your connection and try again."
     }
   }
 }

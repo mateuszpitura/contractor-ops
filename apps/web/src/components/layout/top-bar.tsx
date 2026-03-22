@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { UserPlus, FilePlus, Upload, Search, Bell } from "lucide-react";
+import { UserPlus, FilePlus, Upload, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/tooltip";
 import { usePathname } from "@/i18n/navigation";
 import { ContractWizardDialog } from "@/components/contracts/contract-wizard/wizard-dialog";
+import { NotificationPopover } from "@/components/notifications/notification-popover";
 
 /**
  * Top bar above main content area.
@@ -113,13 +114,7 @@ export function TopBar() {
             </TooltipContent>
           </Tooltip>
 
-          <Tooltip>
-            <TooltipTrigger render={<Button variant="ghost" size="icon" className="h-8 w-8 relative" />}>
-              <Bell className="h-4 w-4" />
-              <span className="sr-only">{t("notifications")}</span>
-            </TooltipTrigger>
-            <TooltipContent>{t("notifications")}</TooltipContent>
-          </Tooltip>
+          <NotificationPopover />
         </div>
       </header>
 
