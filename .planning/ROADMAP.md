@@ -166,12 +166,12 @@ Plans:
   3. Finance user can export a payment run as CSV or bank file and mark items as paid or failed
   4. System prevents duplicate payment runs with idempotency controls and tracks payment reference IDs
   5. User can view payment run history with summary totals by currency
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 08-01: Payment run creation and invoice selection
-- [ ] 08-02: Bank file export (CSV/MT940) and payment status tracking
-- [ ] 08-03: Idempotency controls and payment run history
+- [ ] 08-01-PLAN.md — Payment validators, tRPC router (full lifecycle, export generators, bank statement parser), approval paymentStatus fix
+- [ ] 08-02-PLAN.md — /payments page with run history table, new payment run dialog (3-step), side panel, bank statement import dialog
+- [ ] 08-03-PLAN.md — Contractor profile Payments tab, Settings transfer title template, full i18n (EN + PL)
 
 ### Phase 9: Dashboard & Reports
 **Goal**: Users land on a dashboard with real-time KPIs, spend trends, and actionable widgets, and can generate filterable reports on spend, compliance, and contract status
