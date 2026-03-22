@@ -76,6 +76,46 @@
       "heading": "Welcome to Contractor Ops",
       "body": "Your organization is set up. Start by adding your first contractor.",
       "cta": "Add contractor"
+    },
+    "title": "Dashboard",
+    "kpi": {
+      "activeContractors": "Active contractors",
+      "pendingApprovals": "Pending approvals",
+      "readyToPay": "Ready to pay",
+      "expiringContracts": "Expiring contracts",
+      "openTasks": "Open tasks",
+      "vsLastMonth": "vs last month",
+      "noChange": "No change"
+    },
+    "spend": {
+      "title": "Monthly spend",
+      "range6m": "6 months",
+      "range12m": "12 months",
+      "rangeYtd": "Year to date",
+      "empty": "No spend data for this period"
+    },
+    "deadlines": {
+      "title": "Upcoming deadlines",
+      "seeAll": "See all deadlines",
+      "empty": "No upcoming deadlines",
+      "overdue": "Overdue by {days} days",
+      "upcoming": "In {days} days"
+    },
+    "approvals": {
+      "title": "Approval queue",
+      "seeAll": "See all approvals",
+      "empty": "No pending approvals"
+    },
+    "activity": {
+      "title": "Recent activity",
+      "seeAll": "See all activity",
+      "empty": "No recent activity"
+    },
+    "errors": {
+      "failedToLoad": "Could not load dashboard data. Check your connection and try again.",
+      "failedKpis": "Could not load metrics. Try refreshing the page.",
+      "failedChart": "Could not load chart data. Try again.",
+      "retry": "Try again"
     }
   },
   "Settings": {

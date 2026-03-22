@@ -76,6 +76,46 @@
       "heading": "Witaj w Contractor Ops",
       "body": "Twoja organizacja jest gotowa. Zacznij od dodania pierwszego kontrahenta.",
       "cta": "Dodaj kontrahenta"
+    },
+    "title": "Panel",
+    "kpi": {
+      "activeContractors": "Aktywni kontrahenci",
+      "pendingApprovals": "Oczekujace akceptacje",
+      "readyToPay": "Gotowe do zaplaty",
+      "expiringContracts": "Wygasajace umowy",
+      "openTasks": "Otwarte zadania",
+      "vsLastMonth": "vs poprzedni miesiac",
+      "noChange": "Bez zmian"
+    },
+    "spend": {
+      "title": "Wydatki miesiecznie",
+      "range6m": "6 miesiecy",
+      "range12m": "12 miesiecy",
+      "rangeYtd": "Od poczatku roku",
+      "empty": "Brak danych o wydatkach za ten okres"
+    },
+    "deadlines": {
+      "title": "Nadchodzace terminy",
+      "seeAll": "Zobacz wszystkie terminy",
+      "empty": "Brak nadchodzacych terminow",
+      "overdue": "Przeterminowane o {days} dni",
+      "upcoming": "Za {days} dni"
+    },
+    "approvals": {
+      "title": "Kolejka akceptacji",
+      "seeAll": "Zobacz wszystkie akceptacje",
+      "empty": "Brak oczekujacych akceptacji"
+    },
+    "activity": {
+      "title": "Ostatnia aktywnosc",
+      "seeAll": "Zobacz cala aktywnosc",
+      "empty": "Brak ostatniej aktywnosci"
+    },
+    "errors": {
+      "failedToLoad": "Nie udalo sie zaladowac danych panelu. Sprawdz polaczenie i sprobuj ponownie.",
+      "failedKpis": "Nie udalo sie zaladowac metryk. Sprobuj odswiezyc strone.",
+      "failedChart": "Nie udalo sie zaladowac danych wykresu. Sprobuj ponownie.",
+      "retry": "Sprobuj ponownie"
     }
   },
   "Settings": {
