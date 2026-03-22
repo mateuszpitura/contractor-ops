@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 08-03-PLAN.md
-last_updated: "2026-03-22T11:43:49.248Z"
+stopped_at: Completed 08-02-PLAN.md
+last_updated: "2026-03-22T11:52:06.110Z"
 progress:
   total_phases: 10
-  completed_phases: 7
+  completed_phases: 8
   total_plans: 38
-  completed_plans: 37
+  completed_plans: 38
 ---
 
 # Project State
@@ -77,6 +77,7 @@ Plan: 4 of 4
 | Phase 08-payments P00 | 2min | 1 tasks | 5 files |
 | Phase 08-payments P01 | 8min | 2 tasks | 8 files |
 | Phase 08-payments P03 | 6min | 2 tasks | 7 files |
+| Phase 08-payments PP02 | 14min | 2 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -177,6 +178,8 @@ Recent decisions affecting current work:
 - [Phase 08-payments]: Pure function export generators (CSV/Elixir/SEPA) in payment-export.ts service, bank statement matching in bank-statement.ts
 - [Phase 08-03]: Adapted i18n to project single-file locale structure (en.json/pl.json) instead of separate file approach
 - [Phase 08-03]: Transfer title settings uses settingsJson merge via settings.update mutation
+- [Phase 08-02]: Inline form state approach for per-item actions (paid/failed/remove) instead of Popover-in-Dropdown composition
+- [Phase 08-02]: base64 Blob download via URL.createObjectURL for export file delivery in confirmation step
 
 ### Pending Todos
 
@@ -190,6 +193,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22T11:43:49.246Z
-Stopped at: Completed 08-03-PLAN.md
+Last session: 2026-03-22T11:52:06.108Z
+Stopped at: Completed 08-02-PLAN.md
 Resume file: None
