@@ -8,6 +8,7 @@ import {
 import { router } from "../init.js";
 import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
+import { syncWorkspaceUsers } from "../services/slack-client.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -274,15 +275,21 @@ export const integrationRouter = router({
       return { success: true };
     }),
 
-  /**
-   * Placeholder for Slack user sync (auto-match by email).
-   * Will be called after OAuth callback to auto-match org members.
-   * Per D-10: auto-match by email, manual override for mismatches.
-   */
   syncUsers: tenantProcedure
     .use(requirePermission({ organization: ["update"] }))
-    .mutation(async () => {
-      // TODO: Plan 02 implements actual Slack API call to list users + match by email
-      return { matched: 0, total: 0 };
+    .mutation(async ({ ctx }) => {
+      const connection = await prisma.integrationConnection.findFirst({
+        where: { organizationId: ctx.organizationId, provider: "slack" },
+        select: { id: true },
+      });
+
+      if (!connection) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "No Slack connection found",
+        });
+      }
+
+      return syncWorkspaceUsers(ctx.organizationId, connection.id);
     }),
 });
