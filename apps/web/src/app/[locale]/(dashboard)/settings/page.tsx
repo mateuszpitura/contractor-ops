@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { OrgSettingsForm } from "@/components/settings/org-settings-form";
 import { ExpiryReminderDefaults } from "@/components/settings/expiry-reminder-defaults";
 import { InvoiceMatchingSettings } from "@/components/settings/invoice-matching-settings";
+import { TransferTitleSettings } from "@/components/settings/transfer-title-settings";
 import { ApprovalChainsTab } from "@/components/settings/approval-chains-tab";
 import { NotificationPreferences } from "@/components/settings/notification-preferences";
 import { ReminderRulesSection } from "@/components/settings/reminder-rules-section";
@@ -71,6 +72,7 @@ function SettingsContent() {
           <OrgSettingsForm />
           <ExpiryReminderDefaults />
           <InvoiceMatchingSettings />
+          <TransferTitleSettings />
         </TabsContent>
 
         <TabsContent value="approvals" className="mt-6">
