@@ -189,7 +189,7 @@ Plans:
 - [x] 09-01-PLAN.md — Dashboard + report + audit tRPC routers, CSV export service
 - [ ] 09-02-PLAN.md — Dashboard page with KPI cards, spend chart, deadlines, approval queue, activity feed
 - [ ] 09-03-PLAN.md — Reports page with sidebar, date range filter, 5 report types with charts, tables, drill-down, CSV export
-- [ ] 09-04-PLAN.md — Settings Audit Log tab with searchable, filterable table, expandable diff rows, CSV export
+- [x] 09-04-PLAN.md — Settings Audit Log tab with searchable, filterable table, expandable diff rows, CSV export
 - [ ] 09-05-PLAN.md — Full i18n (EN + PL) for all Phase 9 surfaces
 
 ### Phase 10: Onboarding & Polish
