@@ -80,7 +80,7 @@ Inherited from Phase 1. No changes from Phase 6 adjustments.
 | Heading | 20px | 600 (semibold) | 1.2 | "Notifications" page title, "Notification preferences" section heading, "Integrations" settings tab heading, reminder rule editor dialog title |
 | Display | 28px | 600 (semibold) | 1.2 | Not used in Phase 7 |
 
-Notification item title: 14px weight 500 (medium) -- slight emphasis over body without being semibold. Uses `font-medium` Tailwind class.
+Notification item title: 14px weight 600 (semibold) -- emphasis over body text. Uses `font-semibold` Tailwind class.
 
 ---
 
@@ -148,15 +148,15 @@ Inherited from Phase 1. All color tokens from `globals.css` apply. Phase 7 adds 
 
 | Screen | Primary Visual Anchor |
 |--------|-----------------------|
-| Notification popover (bell click) | 384px wide Popover anchored to bell icon in top bar. Header row: "Notifications" label (14px semibold) + "Mark all read" link (primary text, 12px). ScrollArea body: max 10 notification items, reverse chronological. Each item: 32px icon circle on left, title (14px medium) + body (14px regular, single line truncated) + relative timestamp (12px muted) on right. Unread items have `--muted` background. Read items have transparent background. Hover state: `--accent` background. Footer row: "View all notifications" link centered, 12px, primary text. |
+| Notification popover (bell click) | 384px wide Popover anchored to bell icon in top bar. Header row: "Notifications" label (14px semibold) + "Mark all read" link (primary text, 12px). ScrollArea body: max 10 notification items, reverse chronological. Each item: 32px icon circle on left, title (14px semibold) + body (14px regular, single line truncated) + relative timestamp (12px muted) on right. Unread items have `--muted` background. Read items have transparent background. Hover state: `--accent` background. Footer row: "View all notifications" link centered, 12px, primary text. |
 | Notification popover (empty) | Same popover frame. Centered content: `BellOff` icon (32px, `--muted-foreground`), "No notifications" text (14px, `--muted-foreground`). No footer link. |
 | Notification center page (/notifications) | Max-width 768px centered. Page title "Notifications" as Heading. Filter row: type chips (All, Approvals, Tasks, Contracts, Invoices) + read/unread toggle. Below: chronological list of notification items (same styling as popover but full-width). "Mark all read" button top-right of list. Pagination at bottom (10 per page). |
 | Notification center page (empty) | Centered empty state: `BellOff` icon (48px, `--muted-foreground`). Heading "No notifications yet". Body "You'll see notifications here when there are approval requests, task assignments, or important updates." |
 | Settings > Notifications tab (preferences) | Section heading "Notification preferences" with description. Matrix table: rows = 6 event types with icon + label, columns = In-app / Email / Slack. Each cell contains a Switch toggle. In-app column switches are disabled (always on, with tooltip "In-app notifications are always enabled"). "Save preferences" primary CTA below matrix. |
 | Settings > Notifications tab (reminder rules) | Below preferences matrix. Section heading "Custom reminder rules" with description. List of ReminderRule cards, each showing: rule name (14px semibold), trigger description (e.g., "7 days before contract end"), channel badge (Email/Slack/In-app), recipient mode badge, active toggle (Switch). Actions: Edit (ghost), Delete (ghost destructive). "Create rule" primary CTA top-right. |
 | Settings > Notifications tab (reminder rules empty) | Centered: `Timer` icon (48px, `--muted-foreground`). Heading "No reminder rules". Body "Create custom rules to send automatic reminders for contract expiry, task deadlines, and other events." CTA: "Create rule" primary button. |
-| Reminder rule editor dialog | Dialog (560px width). Form fields: Rule name (Input), Trigger type (Select: before contract end, before due date, after due date, before document expiry, on lifecycle change), Offset days/hours (Input number, shown when trigger supports offset), Entity type (Select: Contract, Invoice, Task, Document), Channel (Select: In-app, Email, Slack), Recipient mode (Select: Entity owner, Finance team, Assignee, Specific user, Role), conditional: User picker (Command) when "Specific user", Role picker (Select) when "Role". Active toggle (Switch). Footer: "Cancel" ghost + "Save rule" primary. |
-| Settings > Integrations tab | Section heading "Integrations" with description. Slack integration card: Slack logo (SVG, 32px) + "Slack" heading + connection status badge. Connected state: workspace name, connected by user, connected date, "Disconnect" destructive outline button. Disconnected state: description text + "Connect Slack" primary CTA. Below card when connected: User mapping section with table (columns: User, Email, Slack User, Status, Action) and mapping stats summary. |
+| Reminder rule editor dialog | Dialog (560px width). Form fields: Rule name (Input), Trigger type (Select with 6 options), Offset days/hours (Input number, shown when trigger supports offset), Entity type (Select: Contract, Invoice, Task, Document), Channel (Select: In-app, Email, Slack), Recipient mode (Select: Entity owner, Finance team, Assignee, Specific user, Role), conditional: User picker (Command) when "Specific user", Role picker (Select) when "Role". Active toggle (Switch). Footer: "Discard changes" ghost + "Save rule" primary. |
+| Settings > Integrations tab | Section heading "Integrations" with description. Slack integration card: Slack logo (SVG, 32px) + "Slack" heading + connection status badge. Connected state: workspace name, connected by user, connected date, "Disconnect Slack" destructive outline button. Disconnected state: description text + "Connect Slack" primary CTA. Below card when connected: User mapping section with table (columns: User, Email, Slack User, Status, Action) and mapping stats summary. |
 | Settings > Integrations tab (Slack disconnected) | Single Slack card. Left: Slack logo + "Slack" heading. Body: "Connect your Slack workspace to receive approval requests as DMs and approve invoices directly from Slack." CTA: "Connect Slack" primary button. |
 
 ---
@@ -282,7 +282,7 @@ Inherited from Phase 1. All color tokens from `globals.css` apply. Phase 7 adds 
 | Role picker placeholder | Select role... | Wybierz role... |
 | Active toggle | Active | Aktywna |
 | Save CTA | Save rule | Zapisz regule |
-| Cancel CTA | Cancel | Anuluj |
+| Discard CTA | Discard changes | Odrzuc zmiany |
 
 ### Settings > Integrations Tab
 
@@ -297,12 +297,12 @@ Inherited from Phase 1. All color tokens from `globals.css` apply. Phase 7 adds 
 | Connected label | Connected to | Polaczono z |
 | Connected by label | Connected by | Polaczyl |
 | Connected date label | Connected on | Data polaczenia |
-| Disconnect CTA | Disconnect | Rozlacz |
+| Disconnect CTA | Disconnect Slack | Rozlacz Slack |
 | Status: Connected | Connected | Polaczony |
 | Status: Disconnected | Not connected | Niepodlaczony |
 | Status: Error | Connection error | Blad polaczenia |
 | Status: Reauth | Re-authentication required | Wymagana ponowna autoryzacja |
-| Reauth CTA | Reconnect | Polacz ponownie |
+| Reauth CTA | Reconnect Slack | Polacz ponownie Slack |
 
 ### Settings > Integrations -- User Mapping
 
@@ -318,8 +318,8 @@ Inherited from Phase 1. All color tokens from `globals.css` apply. Phase 7 adds 
 | Status: Auto-matched | Auto-matched | Automatycznie dopasowany |
 | Status: Manually linked | Manually linked | Recznie polaczony |
 | Status: Unmatched | Unmatched | Niedopasowany |
-| Link action | Link | Polacz |
-| Unlink action | Unlink | Rozlacz |
+| Link action | Link user | Polacz uzytkownika |
+| Unlink action | Unlink user | Rozlacz uzytkownika |
 | Slack user picker placeholder | Search Slack users... | Szukaj uzytkownikow Slack... |
 | Mapping stats | {matched} of {total} users matched | {matched} z {total} uzytkownikow dopasowanych |
 
@@ -351,7 +351,7 @@ Inherited from Phase 1. All color tokens from `globals.css` apply. Phase 7 adds 
 | Reject modal title | Reject invoice |
 | Reject modal comment label | Reason (required) |
 | Reject modal comment placeholder | Describe why this invoice is being rejected... |
-| Reject modal submit | Submit |
+| Reject modal submit | Reject invoice |
 | Post-action: approved | Approved by {userName} |
 | Post-action: rejected | Rejected by {userName}: {reason} |
 | Reminder: overdue approval | Reminder: Invoice {invoiceNumber} is overdue for approval ({hoursOverdue}h past SLA) |
@@ -362,12 +362,12 @@ Inherited from Phase 1. All color tokens from `globals.css` apply. Phase 7 adds 
 | Action | Confirmation Title (EN) | Confirmation Body (EN) | Confirmation CTA (EN) |
 |--------|------------------------|------------------------|----------------------|
 | Delete reminder rule | Delete this reminder rule? | This rule will be permanently deleted. Pending reminders from this rule will be cancelled. | Delete rule |
-| Disconnect Slack | Disconnect Slack? | This will disable Slack notifications and approval actions for all users. You can reconnect later. | Disconnect |
+| Disconnect Slack | Disconnect Slack? | This will disable Slack notifications and approval actions for all users. You can reconnect later. | Disconnect Slack |
 
 | Action | Confirmation Title (PL) | Confirmation Body (PL) | Confirmation CTA (PL) |
 |--------|------------------------|------------------------|----------------------|
 | Delete reminder rule | Usunac te regule przypomnienia? | Ta regula zostanie trwale usunieta. Oczekujace przypomnienia z tej reguly zostana anulowane. | Usun regule |
-| Disconnect Slack | Rozlaczyc Slack? | Spowoduje to wylaczenie powiadomien Slack i akcji akceptacji dla wszystkich uzytkownikow. Mozesz polaczyc ponownie pozniej. | Rozlacz |
+| Disconnect Slack | Rozlaczyc Slack? | Spowoduje to wylaczenie powiadomien Slack i akcji akceptacji dla wszystkich uzytkownikow. Mozesz polaczyc ponownie pozniej. | Rozlacz Slack |
 
 ### Error States
 
@@ -424,7 +424,7 @@ Inherited from Phase 1. All color tokens from `globals.css` apply. Phase 7 adds 
 - **Open:** Popover anchored to bell icon, opens downward-left (align end). 384px width, max 480px height. Animation: 150ms fade-in + scale-up from 95%.
 - **Header:** "Notifications" label (14px semibold) left-aligned + "Mark all read" link (12px, primary text) right-aligned. "Mark all read" only visible when unread count > 0. Marks all as read via single API call. Updates unread badge to 0.
 - **List:** ScrollArea containing up to 10 most recent notifications. Each item is a clickable row (full-width). Unread items have `--muted` background. Read items have transparent background. Hover: `--accent` background.
-- **Item layout:** Left: 32px icon circle (event type colored, see color table). Center: title (14px medium, single line truncated) + body (14px regular, `--muted-foreground`, single line truncated) stacked. Right: relative timestamp (12px, `--muted-foreground`). Unread dot: 6px circle, `--primary`, positioned left of icon.
+- **Item layout:** Left: 32px icon circle (event type colored, see color table). Center: title (14px semibold, single line truncated) + body (14px regular, `--muted-foreground`, single line truncated) stacked. Right: relative timestamp (12px, `--muted-foreground`). Unread dot: 6px circle, `--primary`, positioned left of icon.
 - **Click notification:** Navigates to entity page (uses entityType + entityId to construct URL). Marks as read. Closes popover.
 - **Footer:** "View all notifications" link centered, 12px, primary text. Navigates to /notifications page.
 - **Empty:** `BellOff` icon (32px, `--muted-foreground`) centered + "No notifications" text below.
@@ -474,7 +474,7 @@ Inherited from Phase 1. All color tokens from `globals.css` apply. Phase 7 adds 
   6. Recipient mode (Select: Entity owner, Finance team, Assignee, Specific user, Role).
   7. Conditional: User picker (Command, 300ms debounce) when "Specific user". Role picker (Select) when "Role".
   8. Active toggle (Switch, default true for new rules).
-- **Footer:** "Cancel" ghost + "Save rule" primary. Save disabled until form is valid.
+- **Footer:** "Discard changes" ghost + "Save rule" primary. Save disabled until form is valid.
 - **Validation:** Inline errors below each field. See form validation table.
 
 ### Settings > Integrations Tab
@@ -490,13 +490,13 @@ Inherited from Phase 1. All color tokens from `globals.css` apply. Phase 7 adds 
 - **Slack card (connected):**
   - Card header: Slack logo + "Slack" heading + "Connected" success badge.
   - Body: Workspace name (from IntegrationConnection.displayName), connected by user name, connected date.
-  - "Disconnect" destructive outline button. Triggers AlertDialog confirmation.
-  - "Reconnect" warning outline button (shown only when status = REAUTH_REQUIRED).
+  - "Disconnect Slack" destructive outline button. Triggers AlertDialog confirmation.
+  - "Reconnect Slack" warning outline button (shown only when status = REAUTH_REQUIRED).
 - **User mapping section (shown when connected):**
   - Table below Slack card. Columns: User (avatar + name), Email, Slack User (Slack display name or "---"), Status (badge), Action.
-  - Auto-matched rows: Green "Auto-matched" badge. "Unlink" ghost action.
-  - Manually linked rows: Blue "Manually linked" badge. "Unlink" ghost action.
-  - Unmatched rows: Amber "Unmatched" badge. "Link" primary ghost action. Clicking "Link" opens inline Command popover to search Slack workspace users.
+  - Auto-matched rows: Green "Auto-matched" badge. "Unlink user" ghost action.
+  - Manually linked rows: Blue "Manually linked" badge. "Unlink user" ghost action.
+  - Unmatched rows: Amber "Unmatched" badge. "Link user" primary ghost action. Clicking "Link user" opens inline Command popover to search Slack workspace users.
   - Summary line above table: "{matched} of {total} users matched" in `--muted-foreground`.
   - Loading: 5 skeleton table rows.
 
