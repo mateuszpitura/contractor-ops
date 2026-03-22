@@ -34,12 +34,12 @@ The invoice-to-payment flow must work end-to-end: a contractor's invoice arrives
 - [ ] Duplicate invoice detection (invoice number + contractor + amount)
 - [ ] Approval workflow — configurable 1-3 level chains, approve/reject/clarify/delegate, mandatory comments on reject, SLA timers
 - [x] Payment runs — batch selection of approved invoices, CSV/bank file export, mark paid/failed, idempotency controls
-- [ ] Dashboard — KPI cards, spend chart, upcoming deadlines, approval queue widget, activity feed, alerts
-- [ ] Reports — spend by contractor, spend by team/project, expiring contracts, overdue invoices, compliance gaps
+- [x] Dashboard — KPI cards, spend chart, upcoming deadlines, approval queue widget, activity feed — *Validated in Phase 9: Dashboard & Reports*
+- [x] Reports — spend by contractor, spend by team/project, expiring contracts, overdue invoices, compliance gaps — *Validated in Phase 9: Dashboard & Reports*
 - [ ] Notifications — in-app + email for approvals, tasks, reminders, contract expiry
 - [ ] Slack integration — approval notifications with inline approve/reject, task reminders, activity alerts
 - [ ] Email intake integration — dedicated inbox per org, attachment parsing, sender matching, deduplication
-- [ ] Immutable audit log for all critical actions
+- [x] Immutable audit log for all critical actions — *Validated in Phase 9: Dashboard & Reports*
 - [ ] Global search + command palette (Cmd+K)
 - [ ] Data import — CSV/XLSX import for contractors and contracts with wizard, validation, preview
 - [ ] Product onboarding — guided setup wizard, empty states with CTAs, in-app checklist
@@ -109,4 +109,4 @@ The invoice-to-payment flow must work end-to-end: a contractor's invoice arrives
 | No contractor portal in v1 | Internal-facing only — contractor self-service deferred to v1.5 | -- Pending |
 
 ---
-*Last updated: 2026-03-22 after Phase 8 (Payments) completion*
+*Last updated: 2026-03-22 after Phase 9 (Dashboard & Reports) completion*
