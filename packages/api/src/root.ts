@@ -8,6 +8,9 @@ import { documentRouter } from "./routers/document.js";
 import { workflowRouter } from "./routers/workflow.js";
 import { invoiceRouter } from "./routers/invoice.js";
 import { approvalRouter } from "./routers/approval.js";
+import { notificationRouter } from "./routers/notification.js";
+import { reminderRouter } from "./routers/reminder.js";
+import { integrationRouter } from "./routers/integration.js";
 
 /**
  * Root tRPC router merging all sub-routers.
@@ -21,6 +24,9 @@ import { approvalRouter } from "./routers/approval.js";
  * - workflow: template CRUD, run lifecycle, task actions, comments, overdue detection
  * - invoice: CRUD, list, auto/manual matching, status transitions, duplicate handling
  * - approval: chain config CRUD, approval queue, approve/reject/delegate/clarify, bulk ops, submit-for-approval, audit trail
+ * - notification: list, unread count, mark read, preferences CRUD
+ * - reminder: reminder rule CRUD, toggle active, cascade delete instances
+ * - integration: Slack OAuth, connection status, user mappings, link/unlink, sync
  */
 export const appRouter = router({
   organization: organizationRouter,
@@ -32,6 +38,9 @@ export const appRouter = router({
   workflow: workflowRouter,
   invoice: invoiceRouter,
   approval: approvalRouter,
+  notification: notificationRouter,
+  reminder: reminderRouter,
+  integration: integrationRouter,
 });
 
 /** Type-safe router type for client consumption */
