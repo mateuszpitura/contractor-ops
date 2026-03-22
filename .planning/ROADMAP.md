@@ -190,7 +190,7 @@ Plans:
 - [x] 09-02-PLAN.md — Dashboard page with KPI cards, spend chart, deadlines, approval queue, activity feed
 - [x] 09-03-PLAN.md — Reports page with sidebar, date range filter, 5 report types with charts, tables, drill-down, CSV export
 - [x] 09-04-PLAN.md — Settings Audit Log tab with searchable, filterable table, expandable diff rows, CSV export
-- [ ] 09-05-PLAN.md — Full i18n (EN + PL) for all Phase 9 surfaces
+- [x] 09-05-PLAN.md — Full i18n (EN + PL) for all Phase 9 surfaces
 
 ### Phase 10: Onboarding & Polish
 **Goal**: New organizations get a guided setup experience, existing spreadsheet users can import their data, and power users can navigate the entire app via search and command palette
