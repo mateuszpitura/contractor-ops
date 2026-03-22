@@ -142,3 +142,44 @@ export type {
   ApprovalChainUpdate,
   ApprovalQueue,
 } from "./approval.js";
+
+export {
+  NOTIFICATION_TYPES,
+  notificationTypeEnum,
+  notificationStatusEnum,
+  notificationListSchema,
+  notificationMarkReadSchema,
+  notificationPreferenceUpdateSchema,
+} from "./notification.js";
+export type {
+  NotificationType,
+  NotificationListInput,
+  NotificationMarkReadInput,
+  NotificationPreferenceUpdateInput,
+} from "./notification.js";
+
+export {
+  entityTypeEnum,
+  reminderTriggerTypeEnum,
+  notificationChannelEnum,
+  recipientModeEnum,
+  reminderRuleCreateSchema,
+  reminderRuleUpdateSchema,
+  reminderRuleToggleSchema,
+} from "./reminder.js";
+export type {
+  ReminderRuleCreateInput,
+  ReminderRuleUpdateInput,
+  ReminderRuleToggleInput,
+} from "./reminder.js";
+
+export {
+  slackOAuthInitSchema,
+  slackUserLinkSchema,
+  slackUserUnlinkSchema,
+} from "./integration.js";
+export type {
+  SlackOAuthInitInput,
+  SlackUserLinkInput,
+  SlackUserUnlinkInput,
+} from "./integration.js";
