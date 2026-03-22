@@ -18,7 +18,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 4: Workflow Engine** - Template builder with dependencies and conditional logic, execution engine with task management
 - [x] **Phase 5: Invoice Intake & Matching** - Invoice upload, email intake, auto-matching to contractors and contracts, duplicate detection (completed 2026-03-21)
 - [ ] **Phase 6: Approval Workflow** - Configurable approval chains with SLA timers, delegation, and full audit trail
-- [ ] **Phase 7: Notifications & Slack** - In-app and email notifications for all critical events, Slack integration with inline actions
+- [x] **Phase 7: Notifications & Slack** - In-app and email notifications for all critical events, Slack integration with inline actions (completed 2026-03-22)
 - [ ] **Phase 8: Payments** - Payment run creation, batch export, status tracking with idempotency controls
 - [ ] **Phase 9: Dashboard & Reports** - KPI dashboard, spend and compliance reports, audit log viewer
 - [ ] **Phase 10: Onboarding & Polish** - Data import wizard, product onboarding wizard, global search, and command palette
@@ -154,7 +154,7 @@ Plans:
 - [x] 07-02-PLAN.md — Slack client service, React Email templates (6 types), Slack OAuth/interactivity API routes, cron reminder evaluator
 - [x] 07-03-PLAN.md — Notification popover (bell icon wiring), /notifications page with filters and pagination
 - [x] 07-04-PLAN.md — Settings Notifications tab (preference matrix, reminder rules), Settings Integrations tab (Slack connection, user mapping)
-- [ ] 07-05-PLAN.md — Event dispatch wiring into approval/workflow/invoice routers, real email/Slack delivery, full i18n (EN + PL)
+- [x] 07-05-PLAN.md — Event dispatch wiring into approval/workflow/invoice routers, real email/Slack delivery, full i18n (EN + PL)
 
 ### Phase 8: Payments
 **Goal**: Finance users can batch approved invoices into payment runs, export bank-compatible files, and track payment status with idempotency safeguards
@@ -222,7 +222,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 4. Workflow Engine | 0/5 | Not started | - |
 | 5. Invoice Intake & Matching | 5/5 | Complete   | 2026-03-21 |
 | 6. Approval Workflow | 4/5 | In Progress|  |
-| 7. Notifications & Slack | 3/5 | In Progress|  |
+| 7. Notifications & Slack | 5/5 | Complete   | 2026-03-22 |
 | 8. Payments | 0/3 | Not started | - |
 | 9. Dashboard & Reports | 0/5 | Not started | - |
 | 10. Onboarding & Polish | 0/3 | Not started | - |
