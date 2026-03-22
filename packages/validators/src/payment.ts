@@ -1,0 +1,154 @@
+import { z } from "zod";
+
+// ---------------------------------------------------------------------------
+// Prisma enum mirrors (string unions -- validators package has no Prisma dep)
+// ---------------------------------------------------------------------------
+
+export const paymentRunStatusEnum = z.enum([
+  "DRAFT",
+  "LOCKED",
+  "EXPORTED",
+  "COMPLETED",
+  "FAILED",
+  "CANCELLED",
+]);
+
+export const paymentRunItemStatusEnum = z.enum([
+  "PENDING",
+  "EXPORTED",
+  "PAID",
+  "FAILED",
+  "SKIPPED",
+]);
+
+export const paymentExportFormatEnum = z.enum([
+  "CSV",
+  "BANK_FILE",
+  "SEPA_XML",
+]);
+
+// ---------------------------------------------------------------------------
+// Payment Run schemas
+// ---------------------------------------------------------------------------
+
+/**
+ * Create a new payment run from selected invoices.
+ * groupByCurrency: when true, auto-creates separate runs per currency.
+ */
+export const paymentRunCreateSchema = z.object({
+  invoiceIds: z.array(z.string().cuid()).min(1),
+  currency: z.string().length(3).optional(),
+  name: z.string().max(100).optional(),
+  notes: z.string().max(500).optional(),
+  groupByCurrency: z.boolean().default(false),
+});
+
+export type PaymentRunCreate = z.infer<typeof paymentRunCreateSchema>;
+
+/**
+ * Lock a payment run and generate export file.
+ */
+export const paymentRunLockSchema = z.object({
+  runId: z.string().cuid(),
+  exportFormat: paymentExportFormatEnum,
+});
+
+export type PaymentRunLock = z.infer<typeof paymentRunLockSchema>;
+
+/**
+ * Update a single payment run item status (paid/failed).
+ * Failure reason is required when marking as failed.
+ */
+export const paymentRunItemStatusSchema = z
+  .object({
+    itemId: z.string().cuid(),
+    status: z.enum(["PAID", "FAILED"]),
+    paymentReference: z.string().max(100).optional(),
+    failureReason: z.string().max(500).optional(),
+  })
+  .refine(
+    (d) =>
+      d.status !== "FAILED" ||
+      (d.failureReason && d.failureReason.length > 0),
+    {
+      message: "Failure reason required when marking failed",
+      path: ["failureReason"],
+    },
+  );
+
+export type PaymentRunItemStatus = z.infer<typeof paymentRunItemStatusSchema>;
+
+/**
+ * List payment runs with pagination, sorting, and filtering.
+ */
+export const paymentRunListSchema = z.object({
+  status: paymentRunStatusEnum.optional(),
+  cursor: z.string().optional(),
+  limit: z.number().int().min(1).max(100).default(20),
+  sortBy: z
+    .enum(["createdAt", "runNumber", "totalGrosze"])
+    .default("createdAt"),
+  sortOrder: z.enum(["asc", "desc"]).default("desc"),
+  dateFrom: z.coerce.date().optional(),
+  dateTo: z.coerce.date().optional(),
+});
+
+export type PaymentRunList = z.infer<typeof paymentRunListSchema>;
+
+/**
+ * Cancel a payment run.
+ */
+export const paymentRunCancelSchema = z.object({
+  runId: z.string().cuid(),
+});
+
+export type PaymentRunCancel = z.infer<typeof paymentRunCancelSchema>;
+
+/**
+ * Mark all items in a run as paid (happy path bulk action).
+ */
+export const markAllPaidSchema = z.object({
+  runId: z.string().cuid(),
+  batchReference: z.string().max(100).optional(),
+});
+
+export type MarkAllPaid = z.infer<typeof markAllPaidSchema>;
+
+/**
+ * Confirm matched bank statement transactions against run items.
+ */
+export const bankStatementConfirmSchema = z.object({
+  runId: z.string().cuid(),
+  matches: z.array(
+    z.object({
+      itemId: z.string().cuid(),
+      transactionIndex: z.number().int(),
+    }),
+  ),
+});
+
+export type BankStatementConfirm = z.infer<typeof bankStatementConfirmSchema>;
+
+/**
+ * List invoices ready for payment with optional filters.
+ */
+export const readyForPaymentListSchema = z.object({
+  currency: z.string().length(3).optional(),
+  dueDateFrom: z.coerce.date().optional(),
+  dueDateTo: z.coerce.date().optional(),
+  contractorId: z.string().cuid().optional(),
+  cursor: z.string().optional(),
+  limit: z.number().int().min(1).max(100).default(50),
+});
+
+export type ReadyForPaymentList = z.infer<typeof readyForPaymentListSchema>;
+
+/**
+ * Remove an invoice from a DRAFT payment run (per D-04).
+ */
+export const removeFromRunSchema = z.object({
+  runId: z.string().cuid(),
+  invoiceId: z.string().cuid(),
+});
+
+export type RemoveFromRun = z.infer<typeof removeFromRunSchema>;
