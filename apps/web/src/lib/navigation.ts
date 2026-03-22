@@ -7,6 +7,7 @@ import {
   CheckCircle,
   Banknote,
   BarChart3,
+  Bell,
   Plug,
   Settings,
   type LucideIcon,
@@ -92,6 +93,13 @@ export const navigationItems: NavItem[] = [
     href: "/integrations",
     icon: Plug,
     permission: { resource: "integration", actions: ["read"] },
+  },
+  {
+    key: "notifications",
+    label: "Notifications",
+    href: "/notifications",
+    icon: Bell,
+    permission: null, // Always visible to authenticated users
   },
   {
     key: "settings",
