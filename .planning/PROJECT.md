@@ -108,4 +108,4 @@ The invoice-to-payment flow must work end-to-end: a contractor's invoice arrives
 | No contractor portal in v1 | Internal-facing only — contractor self-service deferred to v1.5 | -- Pending |
 
 ---
-*Last updated: 2026-03-22 after Phase 6 (Approval Workflow) completion*
+*Last updated: 2026-03-22 after Phase 7 (Notifications & Slack) completion*
