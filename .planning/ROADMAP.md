@@ -202,12 +202,14 @@ Plans:
   3. Every empty-state view shows a contextual call-to-action guiding the user to the next step
   4. User can search across contractors, contracts, and invoices from a global search bar
   5. User can open a command palette (Cmd+K) for search, quick actions, and navigation
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- [ ] 10-01: Data import wizard (CSV/XLSX) for contractors and contracts
-- [ ] 10-02: Product onboarding wizard and empty states
-- [ ] 10-03: Global search and command palette (Cmd+K)
+- [ ] 10-01-PLAN.md — Import processor service, import tRPC router, search tRPC router, invoice search vector migration
+- [ ] 10-02-PLAN.md — Reusable EmptyState component, onboarding checklist widget, dashboard integration
+- [ ] 10-03-PLAN.md — Import wizard UI (5-step: upload, column mapping, validation preview, duplicate resolution, confirmation)
+- [ ] 10-04-PLAN.md — Command palette (Cmd+K), global search bar, empty state integration across all list views
+- [ ] 10-05-PLAN.md — Full i18n (EN + PL) for all Phase 10 surfaces
 
 ## Progress
 
@@ -225,4 +227,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 7. Notifications & Slack | 5/5 | Complete   | 2026-03-22 |
 | 8. Payments | 0/3 | Not started | - |
 | 9. Dashboard & Reports | 0/5 | Not started | - |
-| 10. Onboarding & Polish | 0/3 | Not started | - |
+| 10. Onboarding & Polish | 0/5 | Not started | - |
