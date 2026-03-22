@@ -99,23 +99,62 @@
       "seeAll": "See all deadlines",
       "empty": "No upcoming deadlines",
       "overdue": "Overdue by {days} days",
-      "upcoming": "In {days} days"
+      "upcoming": "In {days} days",
+      "badgeContract": "Contract",
+      "badgeTask": "Task",
+      "badgeInvoice": "Invoice"
     },
     "approvals": {
       "title": "Approval queue",
       "seeAll": "See all approvals",
-      "empty": "No pending approvals"
+      "empty": "No pending approvals",
+      "slaOnTrack": "On track",
+      "slaApproaching": "Approaching",
+      "slaBreached": "Breached"
     },
     "activity": {
       "title": "Recent activity",
       "seeAll": "See all activity",
-      "empty": "No recent activity"
+      "empty": "No recent activity",
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "earlier": "Earlier",
+      "systemActor": "System",
+      "actions": {
+        "CREATE": "Created",
+        "UPDATE": "Updated",
+        "DELETE": "Deleted",
+        "APPROVE": "Approved",
+        "REJECT": "Rejected",
+        "UPLOAD": "Uploaded",
+        "DOWNLOAD": "Downloaded",
+        "SUBMIT": "Submitted",
+        "ASSIGN": "Assigned",
+        "COMPLETE": "Completed",
+        "EXPORT": "Exported",
+        "IMPORT": "Imported",
+        "INVITE": "Invited",
+        "LOCK": "Locked",
+        "CANCEL": "Cancelled"
+      },
+      "resources": {
+        "CONTRACTOR": "Contractor",
+        "CONTRACT": "Contract",
+        "INVOICE": "Invoice",
+        "WORKFLOW_TEMPLATE": "Workflow Template",
+        "WORKFLOW_RUN": "Workflow",
+        "DOCUMENT": "Document",
+        "PAYMENT_RUN": "Payment",
+        "APPROVAL_FLOW": "Approval",
+        "APPROVAL_STEP": "Approval Step"
+      }
     },
     "errors": {
       "failedToLoad": "Could not load dashboard data. Check your connection and try again.",
       "failedKpis": "Could not load metrics. Try refreshing the page.",
       "failedChart": "Could not load chart data. Try again.",
-      "retry": "Try again"
+      "retry": "Try again",
+      "widgetFailed": "Failed to load {name}"
     }
   },
   "Settings": {

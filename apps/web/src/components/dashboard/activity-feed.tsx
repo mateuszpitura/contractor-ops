@@ -42,28 +42,6 @@ interface GroupedActivities {
 // Helpers
 // ---------------------------------------------------------------------------
 
-const ACTION_LABELS: Record<string, string> = {
-  CREATE: "Created",
-  UPDATE: "Updated",
-  DELETE: "Deleted",
-  APPROVE: "Approved",
-  REJECT: "Rejected",
-  UPLOAD: "Uploaded",
-  DOWNLOAD: "Downloaded",
-  SUBMIT: "Submitted",
-  ASSIGN: "Assigned",
-  COMPLETE: "Completed",
-  EXPORT: "Exported",
-  IMPORT: "Imported",
-  INVITE: "Invited",
-  LOCK: "Locked",
-  CANCEL: "Cancelled",
-};
-
-function getActionLabel(action: string): string {
-  return ACTION_LABELS[action] ?? action.charAt(0) + action.slice(1).toLowerCase();
-}
-
 function getEntityHref(resourceType: string, resourceId: string): string {
   switch (resourceType) {
     case "CONTRACTOR":
@@ -87,12 +65,7 @@ function getEntityHref(resourceType: string, resourceId: string): string {
   }
 }
 
-function getResourceTypeLabel(type: string): string {
-  return type
-    .replace(/_/g, " ")
-    .toLowerCase()
-    .replace(/\b\w/g, (c) => c.toUpperCase());
-}
+// Resource type labels are now externalized via t("activity.resources.{TYPE}")
 
 function groupByDay(items: ActivityItem[]): GroupedActivities[] {
   const today = new Date();
@@ -120,11 +93,11 @@ function groupByDay(items: ActivityItem[]): GroupedActivities[] {
   }
 
   const result: GroupedActivities[] = [];
-  if (groups.today.length > 0) result.push({ label: "TODAY", items: groups.today });
+  if (groups.today.length > 0) result.push({ label: "today", items: groups.today });
   if (groups.yesterday.length > 0)
-    result.push({ label: "YESTERDAY", items: groups.yesterday });
+    result.push({ label: "yesterday", items: groups.yesterday });
   if (groups.earlier.length > 0)
-    result.push({ label: "EARLIER", items: groups.earlier });
+    result.push({ label: "earlier", items: groups.earlier });
 
   return result;
 }
@@ -180,7 +153,7 @@ export function ActivityFeed() {
               {grouped.map((group) => (
                 <div key={group.label}>
                   <p className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                    {group.label}
+                    {t(`activity.${group.label}` as Parameters<typeof t>[0])}
                   </p>
                   <div className="flex flex-col gap-1">
                     {group.items.map((item) => (
@@ -190,15 +163,15 @@ export function ActivityFeed() {
                       >
                         <p className="text-sm">
                           <span className="text-foreground">
-                            {item.actorName ?? "System"}
+                            {item.actorName ?? t("activity.systemActor")}
                           </span>{" "}
                           <span className="font-semibold">
-                            {getActionLabel(item.action)}
+                            {t(`activity.actions.${item.action}` as Parameters<typeof t>[0])}
                           </span>
                         </p>
                         <div className="mt-0.5 flex items-center gap-2">
                           <Badge variant="secondary" className="text-[10px]">
-                            {getResourceTypeLabel(item.resourceType)}
+                            {t(`activity.resources.${item.resourceType}` as Parameters<typeof t>[0])}
                           </Badge>
                           <Link
                             href={getEntityHref(

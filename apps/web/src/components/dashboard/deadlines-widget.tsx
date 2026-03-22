@@ -37,28 +37,26 @@ function getEntityHref(type: DeadlineType, entityId: string): string {
   }
 }
 
-function getBadgeVariant(type: DeadlineType) {
-  switch (type) {
-    case "CONTRACT_EXPIRING":
-      return {
-        className:
-          "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
-        label: "Contract",
-      };
-    case "TASK_OVERDUE":
-      return {
-        className:
-          "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
-        label: "Task",
-      };
-    case "INVOICE_DUE":
-      return {
-        className:
-          "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
-        label: "Invoice",
-      };
-  }
-}
+const DEADLINE_BADGE_CONFIG: Record<
+  DeadlineType,
+  { className: string; labelKey: string }
+> = {
+  CONTRACT_EXPIRING: {
+    className:
+      "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
+    labelKey: "deadlines.badgeContract",
+  },
+  TASK_OVERDUE: {
+    className:
+      "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
+    labelKey: "deadlines.badgeTask",
+  },
+  INVOICE_DUE: {
+    className:
+      "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+    labelKey: "deadlines.badgeInvoice",
+  },
+};
 
 // ---------------------------------------------------------------------------
 // Component
@@ -104,7 +102,7 @@ export function DeadlinesWidget() {
           <ScrollArea className="max-h-[320px]">
             <div className="flex flex-col gap-2">
               {data.map((item) => {
-                const badge = getBadgeVariant(item.type as DeadlineType);
+                const badge = DEADLINE_BADGE_CONFIG[item.type as DeadlineType];
                 const isOverdue = "daysOverdue" in item && item.daysOverdue != null;
                 const days = (isOverdue ? item.daysOverdue : item.daysRemaining) ?? 0;
 
@@ -117,7 +115,7 @@ export function DeadlinesWidget() {
                       variant="secondary"
                       className={badge.className}
                     >
-                      {badge.label}
+                      {t(badge.labelKey as Parameters<typeof t>[0])}
                     </Badge>
                     <Link
                       href={getEntityHref(item.type as DeadlineType, item.entityId)}

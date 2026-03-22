@@ -99,23 +99,62 @@
       "seeAll": "Zobacz wszystkie terminy",
       "empty": "Brak nadchodzacych terminow",
       "overdue": "Przeterminowane o {days} dni",
-      "upcoming": "Za {days} dni"
+      "upcoming": "Za {days} dni",
+      "badgeContract": "Umowa",
+      "badgeTask": "Zadanie",
+      "badgeInvoice": "Faktura"
     },
     "approvals": {
       "title": "Kolejka akceptacji",
       "seeAll": "Zobacz wszystkie akceptacje",
-      "empty": "Brak oczekujacych akceptacji"
+      "empty": "Brak oczekujacych akceptacji",
+      "slaOnTrack": "W terminie",
+      "slaApproaching": "Zbliża się",
+      "slaBreached": "Przekroczony"
     },
     "activity": {
       "title": "Ostatnia aktywnosc",
       "seeAll": "Zobacz cala aktywnosc",
-      "empty": "Brak ostatniej aktywnosci"
+      "empty": "Brak ostatniej aktywnosci",
+      "today": "Dzisiaj",
+      "yesterday": "Wczoraj",
+      "earlier": "Wczesniej",
+      "systemActor": "System",
+      "actions": {
+        "CREATE": "Utworzono",
+        "UPDATE": "Zaktualizowano",
+        "DELETE": "Usunieto",
+        "APPROVE": "Zatwierdzono",
+        "REJECT": "Odrzucono",
+        "UPLOAD": "Przeslano",
+        "DOWNLOAD": "Pobrano",
+        "SUBMIT": "Wyslano",
+        "ASSIGN": "Przypisano",
+        "COMPLETE": "Ukonczono",
+        "EXPORT": "Wyeksportowano",
+        "IMPORT": "Zaimportowano",
+        "INVITE": "Zaproszono",
+        "LOCK": "Zablokowano",
+        "CANCEL": "Anulowano"
+      },
+      "resources": {
+        "CONTRACTOR": "Kontrahent",
+        "CONTRACT": "Umowa",
+        "INVOICE": "Faktura",
+        "WORKFLOW_TEMPLATE": "Szablon workflow",
+        "WORKFLOW_RUN": "Workflow",
+        "DOCUMENT": "Dokument",
+        "PAYMENT_RUN": "Platnosc",
+        "APPROVAL_FLOW": "Akceptacja",
+        "APPROVAL_STEP": "Krok akceptacji"
+      }
     },
     "errors": {
       "failedToLoad": "Nie udalo sie zaladowac danych panelu. Sprawdz polaczenie i sprobuj ponownie.",
       "failedKpis": "Nie udalo sie zaladowac metryk. Sprobuj odswiezyc strone.",
       "failedChart": "Nie udalo sie zaladowac danych wykresu. Sprobuj ponownie.",
-      "retry": "Sprobuj ponownie"
+      "retry": "Sprobuj ponownie",
+      "widgetFailed": "Nie udalo sie zaladowac {name}"
     }
   },
   "Settings": {

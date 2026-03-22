@@ -52,18 +52,11 @@ function getSlaClassName(status: string): string {
   }
 }
 
-function getSlaLabel(status: string): string {
-  switch (status) {
-    case "ON_TRACK":
-      return "On track";
-    case "APPROACHING":
-      return "Approaching";
-    case "BREACHED":
-      return "Breached";
-    default:
-      return status;
-  }
-}
+const SLA_LABEL_KEYS: Record<string, string> = {
+  ON_TRACK: "approvals.slaOnTrack",
+  APPROACHING: "approvals.slaApproaching",
+  BREACHED: "approvals.slaBreached",
+};
 
 // ---------------------------------------------------------------------------
 // Component
@@ -135,7 +128,7 @@ export function ApprovalQueueWidget() {
                         variant="secondary"
                         className={getSlaClassName(item.slaStatus.status)}
                       >
-                        {getSlaLabel(item.slaStatus.status)}
+                        {t((SLA_LABEL_KEYS[item.slaStatus.status] ?? item.slaStatus.status) as Parameters<typeof t>[0])}
                       </Badge>
                     )}
                   </Link>

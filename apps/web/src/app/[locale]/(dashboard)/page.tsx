@@ -21,10 +21,11 @@ import { ActivityFeed } from "@/components/dashboard/activity-feed";
 // ---------------------------------------------------------------------------
 
 function WidgetErrorFallback({ name }: { name: string }) {
+  const t = useTranslations("Dashboard");
   return (
     <div className="flex h-[200px] flex-col items-center justify-center rounded-xl border bg-card p-6 text-center">
       <p className="text-sm text-destructive">
-        Failed to load {name}
+        {t("errors.widgetFailed", { name })}
       </p>
     </div>
   );
