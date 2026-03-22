@@ -171,7 +171,7 @@ Plans:
 Plans:
 - [x] 08-01-PLAN.md — Payment validators, tRPC router (full lifecycle, export generators, bank statement parser), approval paymentStatus fix
 - [ ] 08-02-PLAN.md — /payments page with run history table, new payment run dialog (3-step), side panel, bank statement import dialog
-- [ ] 08-03-PLAN.md — Contractor profile Payments tab, Settings transfer title template, full i18n (EN + PL)
+- [x] 08-03-PLAN.md — Contractor profile Payments tab, Settings transfer title template, full i18n (EN + PL)
 
 ### Phase 9: Dashboard & Reports
 **Goal**: Users land on a dashboard with real-time KPIs, spend trends, and actionable widgets, and can generate filterable reports on spend, compliance, and contract status
