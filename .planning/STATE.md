@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 07-05-PLAN.md
-last_updated: "2026-03-22T02:04:59.890Z"
+stopped_at: Completed 08-00-PLAN.md
+last_updated: "2026-03-22T11:25:39.988Z"
 progress:
   total_phases: 10
   completed_phases: 7
-  total_plans: 34
-  completed_plans: 34
+  total_plans: 38
+  completed_plans: 35
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-18)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 07 — notifications-slack
+**Current focus:** Phase 08 — payments
 
 ## Current Position
 
-Phase: 8
-Plan: Not started
+Phase: 08 (payments) — EXECUTING
+Plan: 2 of 4
 
 ## Performance Metrics
 
@@ -74,6 +74,7 @@ Plan: Not started
 | Phase 07 P03 | 4min | 2 tasks | 8 files |
 | Phase 07 P04 | 8min | 2 tasks | 8 files |
 | Phase 07 P05 | 7min | 2 tasks | 7 files |
+| Phase 08-payments P00 | 2min | 1 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -167,6 +168,8 @@ Recent decisions affecting current work:
 - [Phase 07]: Resend added to api package for email delivery; lazily initialized
 - [Phase 07]: All notification dispatch calls fire-and-forget (.catch) to never block mutations
 - [Phase 07]: Structured Notifications i18n namespace with backward-compatible flat keys for Plan 03-04
+- [Phase 08-00]: Vitest globals enabled for describe/it/expect without imports in test files
+- [Phase 08-00]: Test include pattern src/**/__tests__/**/*.test.ts for colocated test directories
 
 ### Pending Todos
 
@@ -180,6 +183,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22T01:58:31.122Z
-Stopped at: Completed 07-05-PLAN.md
+Last session: 2026-03-22T11:25:39.986Z
+Stopped at: Completed 08-00-PLAN.md
 Resume file: None

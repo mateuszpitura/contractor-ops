@@ -84,11 +84,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Payments
 
-- [ ] **PAY-01**: Finance user can view all approved invoices ready for payment
-- [ ] **PAY-02**: Finance user can select invoices for a payment run (all, by currency, by due date, manual pick)
-- [ ] **PAY-03**: Finance user can export payment run as CSV or bank file format
-- [ ] **PAY-04**: Finance user can mark individual items or entire run as paid/failed
-- [ ] **PAY-05**: System tracks payment reference IDs and prevents duplicate payment runs (idempotency)
+- [x] **PAY-01**: Finance user can view all approved invoices ready for payment
+- [x] **PAY-02**: Finance user can select invoices for a payment run (all, by currency, by due date, manual pick)
+- [x] **PAY-03**: Finance user can export payment run as CSV or bank file format
+- [x] **PAY-04**: Finance user can mark individual items or entire run as paid/failed
+- [x] **PAY-05**: System tracks payment reference IDs and prevents duplicate payment runs (idempotency)
 - [ ] **PAY-06**: User can view payment run history with summary (total, count, by currency)
 
 ### Notifications & Integrations
@@ -229,11 +229,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | APPR-07 | Phase 6 | Complete |
 | APPR-08 | Phase 6 | Complete |
 | APPR-09 | Phase 6 | Complete |
-| PAY-01 | Phase 8 | Pending |
-| PAY-02 | Phase 8 | Pending |
-| PAY-03 | Phase 8 | Pending |
-| PAY-04 | Phase 8 | Pending |
-| PAY-05 | Phase 8 | Pending |
+| PAY-01 | Phase 8 | Complete |
+| PAY-02 | Phase 8 | Complete |
+| PAY-03 | Phase 8 | Complete |
+| PAY-04 | Phase 8 | Complete |
+| PAY-05 | Phase 8 | Complete |
 | PAY-06 | Phase 8 | Pending |
 | NOTF-01 | Phase 7 | Complete |
 | NOTF-02 | Phase 7 | Complete |
