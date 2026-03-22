@@ -94,10 +94,10 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Notifications & Integrations
 
 - [x] **NOTF-01**: System sends in-app notifications for: approval requests, approval decisions, task assignments, task overdue, contract expiring, invoice received
-- [ ] **NOTF-02**: System sends email notifications for the same events (configurable per user)
+- [x] **NOTF-02**: System sends email notifications for the same events (configurable per user)
 - [x] **NOTF-03**: User can view and manage their notifications (mark read, mark all read)
-- [ ] **SLCK-01**: System sends Slack DMs to approvers with approve/reject action buttons
-- [ ] **SLCK-02**: Approver can approve/reject invoices directly from Slack
+- [x] **SLCK-01**: System sends Slack DMs to approvers with approve/reject action buttons
+- [x] **SLCK-02**: Approver can approve/reject invoices directly from Slack
 - [x] **SLCK-03**: System sends Slack reminders for overdue approvals and expiring contracts
 
 ### Dashboard & Reports
@@ -236,10 +236,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PAY-05 | Phase 8 | Pending |
 | PAY-06 | Phase 8 | Pending |
 | NOTF-01 | Phase 7 | Complete |
-| NOTF-02 | Phase 7 | Pending |
+| NOTF-02 | Phase 7 | Complete |
 | NOTF-03 | Phase 7 | Complete |
-| SLCK-01 | Phase 7 | Pending |
-| SLCK-02 | Phase 7 | Pending |
+| SLCK-01 | Phase 7 | Complete |
+| SLCK-02 | Phase 7 | Complete |
 | SLCK-03 | Phase 7 | Complete |
 | DASH-01 | Phase 9 | Pending |
 | DASH-02 | Phase 9 | Pending |
