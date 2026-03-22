@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Phase 7 planning complete
-last_updated: "2026-03-22T01:20:15.053Z"
+stopped_at: Completed 07-01-PLAN.md
+last_updated: "2026-03-22T01:26:24.244Z"
 progress:
   total_phases: 10
   completed_phases: 6
   total_plans: 34
-  completed_plans: 29
+  completed_plans: 30
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-18)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 06 — approval-workflow
+**Current focus:** Phase 07 — notifications-slack
 
 ## Current Position
 
-Phase: 7
-Plan: Not started
+Phase: 07 (notifications-slack) — EXECUTING
+Plan: 2 of 5
 
 ## Performance Metrics
 
@@ -69,6 +69,7 @@ Plan: Not started
 | Phase 06 P03 | 6min | 2 tasks | 8 files |
 | Phase 06 P05 | 10min | 3 tasks | 7 files |
 | Phase 06 P06 | 1min | 1 tasks | 2 files |
+| Phase 07 P01 | 4min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -150,6 +151,9 @@ Recent decisions affecting current work:
 - [Phase 06]: labelKey pattern for static config objects with i18n keys resolved at render time
 - [Phase 06]: TranslateFn prop pattern for passing t() to deeply nested sub-components
 - [Phase 06]: useEffect-based selection forwarding for TanStack Table row selection to parent callback
+- [Phase 07-01]: getOrCreatePreferences defaults all channels enabled for new users; channelInApp always true
+- [Phase 07-01]: 60s deduplication window for notification dispatch (same user+type+entityId)
+- [Phase 07-01]: HMAC-signed OAuth state parameter for Slack CSRF protection
 
 ### Pending Todos
 
@@ -163,6 +167,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22T01:20:15.050Z
-Stopped at: Phase 7 planning complete
-Resume file: .planning/phases/07-notifications-slack/07-01-PLAN.md
+Last session: 2026-03-22T01:26:24.242Z
+Stopped at: Completed 07-01-PLAN.md
+Resume file: None

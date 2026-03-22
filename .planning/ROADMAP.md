@@ -150,7 +150,7 @@ Plans:
 **Plans**: 5 plans
 
 Plans:
-- [ ] 07-01-PLAN.md — Notification/reminder/integration Zod validators, dispatch service, tRPC routers (notification CRUD, reminder rules, integration connection)
+- [x] 07-01-PLAN.md — Notification/reminder/integration Zod validators, dispatch service, tRPC routers (notification CRUD, reminder rules, integration connection)
 - [ ] 07-02-PLAN.md — Slack client service, React Email templates (6 types), Slack OAuth/interactivity API routes, cron reminder evaluator
 - [ ] 07-03-PLAN.md — Notification popover (bell icon wiring), /notifications page with filters and pagination
 - [ ] 07-04-PLAN.md — Settings Notifications tab (preference matrix, reminder rules), Settings Integrations tab (Slack connection, user mapping)
