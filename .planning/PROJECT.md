@@ -16,6 +16,7 @@ The invoice-to-payment flow must work end-to-end: a contractor's invoice arrives
 - [x] Invoice matching — auto-match to contractor (NIP) and contract, expected vs actual amount, deviation flags — *Validated in Phase 5: Invoice Intake & Matching*
 - [x] Duplicate invoice detection (invoice number + contractor + amount) — *Validated in Phase 5: Invoice Intake & Matching*
 - [x] Email intake integration — dedicated inbox per org, attachment parsing, sender matching, deduplication — *Validated in Phase 5: Invoice Intake & Matching*
+- [x] Approval workflow — configurable 1-3 level chains, approve/reject/clarify/delegate, mandatory comments on reject, SLA timers — *Validated in Phase 6: Approval Workflow (UAT pending)*
 
 ### Active
 
@@ -107,4 +108,4 @@ The invoice-to-payment flow must work end-to-end: a contractor's invoice arrives
 | No contractor portal in v1 | Internal-facing only — contractor self-service deferred to v1.5 | -- Pending |
 
 ---
-*Last updated: 2026-03-21 after Phase 5 (Invoice Intake & Matching) completion*
+*Last updated: 2026-03-22 after Phase 6 (Approval Workflow) completion*
