@@ -11,6 +11,7 @@ import { NotificationPreferences } from "@/components/settings/notification-pref
 import { ReminderRulesSection } from "@/components/settings/reminder-rules-section";
 import { SlackConnectionCard } from "@/components/settings/slack-connection-card";
 import { SlackUserMapping } from "@/components/settings/slack-user-mapping";
+import { AuditLogTab } from "@/components/settings/audit-log-tab";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { usePermissions } from "@/hooks/use-permissions";
@@ -34,6 +35,7 @@ function SettingsContent() {
   );
 
   const canManageIntegrations = can("organization", ["update"]);
+  const canViewAuditLog = can("settings", ["read"]);
 
   // Check Slack connection status for user mapping visibility
   const slackStatusQuery = useQuery(
@@ -58,6 +60,11 @@ function SettingsContent() {
           {canManageIntegrations && (
             <TabsTrigger value="integrations">
               {t("tabs.integrations")}
+            </TabsTrigger>
+          )}
+          {canViewAuditLog && (
+            <TabsTrigger value="audit-log">
+              {t("tabs.auditLog")}
             </TabsTrigger>
           )}
           <TabsTrigger
@@ -88,6 +95,12 @@ function SettingsContent() {
           <TabsContent value="integrations" className="mt-6 space-y-8">
             <SlackConnectionCard />
             {isSlackConnected && <SlackUserMapping />}
+          </TabsContent>
+        )}
+
+        {canViewAuditLog && (
+          <TabsContent value="audit-log" className="mt-6">
+            <AuditLogTab />
           </TabsContent>
         )}
       </Tabs>
