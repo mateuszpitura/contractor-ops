@@ -86,7 +86,8 @@
       "members": "Czlonkowie",
       "approvals": "Akceptacje",
       "notifications": "Powiadomienia",
-      "integrations": "Integracje"
+      "integrations": "Integracje",
+      "auditLog": "Dziennik audytu"
     },
     "saveCta": "Zapisz zmiany",
     "saving": "Zapisywanie...",
@@ -342,6 +343,60 @@
         "userLinked": "Uzytkownik Slack polaczony",
         "userUnlinked": "Uzytkownik Slack rozlaczony",
         "linkFailed": "Nie udalo sie polaczac uzytkownika Slack. Sprobuj ponownie."
+      }
+    },
+    "auditLog": {
+      "before": "Przed",
+      "after": "Po",
+      "noChanges": "Brak zmian w polach",
+      "unknownActor": "System",
+      "searchPlaceholder": "Szukaj w dzienniku audytu...",
+      "exportCta": "Eksportuj dziennik audytu",
+      "exportToast": "Dziennik audytu wyeksportowany ({count} wpisow)",
+      "filterActorAll": "Wszyscy aktorzy",
+      "filterActionAll": "Wszystkie akcje",
+      "filterResourceAll": "Wszystkie zasoby",
+      "expand": "Rozwin szczegoly",
+      "collapse": "Zwin szczegoly",
+      "columns": {
+        "timestamp": "Czas",
+        "actor": "Aktor",
+        "action": "Akcja",
+        "resource": "Zasob"
+      },
+      "actions": {
+        "CREATE": "Utworzono",
+        "UPDATE": "Zaktualizowano",
+        "DELETE": "Usunieto",
+        "APPROVE": "Zatwierdzono",
+        "REJECT": "Odrzucono",
+        "SUBMIT": "Przeslano",
+        "EXPORT": "Wyeksportowano",
+        "INVITE": "Zaproszono",
+        "DEACTIVATE": "Dezaktywowano",
+        "LOGIN": "Zalogowano"
+      },
+      "resources": {
+        "ORGANIZATION": "Organizacja",
+        "CONTRACTOR": "Wykonawca",
+        "CONTRACT": "Umowa",
+        "DOCUMENT": "Dokument",
+        "INVOICE": "Faktura",
+        "WORKFLOW_RUN": "Workflow",
+        "WORKFLOW_TASK_RUN": "Zadanie",
+        "PAYMENT_RUN": "Platnosc",
+        "PROJECT": "Projekt",
+        "TEAM": "Zespol",
+        "APPROVAL_FLOW": "Zatwierdzenie"
+      },
+      "pagination": {
+        "summary": "Strona {page} z {totalPages}",
+        "previous": "Poprzednia",
+        "next": "Nastepna"
+      },
+      "empty": {
+        "heading": "Brak wpisow w dzienniku audytu",
+        "body": "Zdarzenia audytu pojawia sie tutaj w miare wykonywania akcji w systemie."
       }
     }
   },
@@ -1192,7 +1247,6 @@
       "failedToPostComment": "Nie udalo sie wyslac komentarza. Sprobuj ponownie.",
       "retry": "Sprobuj ponownie"
     },
-
     "newTemplateTitle": "Nowy szablon procesu",
     "editTemplateTitle": "Edytuj szablon",
     "templateName": "Nazwa szablonu",
@@ -1213,14 +1267,12 @@
     "deleteTemplate": "Usun",
     "noTasksYet": "Dodaj pierwsze zadanie, aby zbudowac ten proces.",
     "cancel": "Anuluj",
-
     "archiveConfirmTitle": "Zarchiwizowac {name}?",
     "archiveConfirmBody": "Szablon nie bedzie juz dostepny dla nowych procesow. Istniejace procesy nie zostana naruszone.",
     "archiveConfirmCta": "Archiwizuj szablon",
     "deleteConfirmTitle": "Usunac {name}?",
     "deleteConfirmBody": "Wersja robocza szablonu zostanie trwale usunieta. Tej akcji nie mozna cofnac.",
     "deleteConfirmCta": "Usun szablon",
-
     "untitledTask": "Zadanie bez tytulu",
     "taskTitle": "Tytul zadania",
     "taskTitlePlaceholder": "np. Zbierz NDA",
@@ -1263,7 +1315,6 @@
     "removeTask": "Usun zadanie",
     "doneEditing": "Zakoncz edycje",
     "removeCondition": "Usun",
-
     "conditionFieldPlaceholder": "Wybierz pole...",
     "conditionValuePlaceholder": "Podaj wartosc...",
     "conditionField_contractor_type": "Typ kontrahenta",
@@ -1278,7 +1329,6 @@
     "operator_notEquals": "nie rowna sie",
     "operator_contains": "zawiera",
     "operator_startsWith": "zaczyna sie od",
-
     "toastTemplateSaved": "Szablon zapisany",
     "toastTemplateActivated": "Szablon aktywowany",
     "toastTemplateArchived": "Szablon zarchiwizowany",
@@ -1292,7 +1342,6 @@
     "toastCommentPosted": "Komentarz wyslany",
     "toastTaskRemoved": "Zadanie usuniete. Cofnij",
     "errorSaveTemplate": "Nie udalo sie zapisac szablonu. Sprobuj ponownie.",
-
     "filterStatus": "Status",
     "filterContractor": "Kontrahent",
     "searchTemplates": "Szukaj szablonow...",
@@ -1304,7 +1353,6 @@
     "emptyTemplatesHeading": "Brak szablonow procesow",
     "emptyTemplatesBody": "Utworz szablon, aby zdefiniowac powtarzalne kroki procesu dla zespolu.",
     "emptyTemplatesCta": "Nowy szablon",
-
     "progressLabel": "{completed} z {total} zadan ukonczonych",
     "startedByLabel": "Rozpoczete przez {name} dnia {date}",
     "dueDateLabel": "Termin {date}",
@@ -1314,7 +1362,6 @@
     "cancelWorkflowTitle": "Anulowac ten proces?",
     "cancelWorkflowBody": "Wszystkie nieukonczone zadania zostana anulowane. Ukonczone zadania pozostana w historii. Tej akcji nie mozna cofnac.",
     "cancelWorkflowCta": "Anuluj proces",
-
     "taskActionComplete": "Zakoncz",
     "taskActionSkip": "Pomin",
     "taskActionReassign": "Przypisz ponownie",
@@ -1327,7 +1374,6 @@
     "overdue": "Przeterminowane",
     "assignedToLabel": "Przypisane do {name}",
     "dueLabel": "Termin {date}",
-
     "commentsHeading": "Komentarze",
     "commentPlaceholder": "Dodaj komentarz...",
     "postComment": "Wyslij",
@@ -1335,13 +1381,11 @@
     "attachmentsHeading": "Zalaczniki",
     "addAttachment": "Dodaj zalacznik",
     "noAttachments": "Brak zalacznikow.",
-
     "contractorWorkflowsTab": "Procesy",
     "contractorStartWorkflow": "Rozpocznij proces",
     "contractorNoWorkflows": "Brak procesow",
     "contractorNoWorkflowsBody": "Rozpocznij proces dla tego kontrahenta, aby sledzic onboarding, offboarding lub inne procesy.",
     "contractorNoWorkflowsCta": "Rozpocznij proces",
-
     "validationTemplateNameRequired": "Nazwa szablonu jest wymagana",
     "validationTemplateType": "Wybierz typ szablonu",
     "validationTaskTitleRequired": "Tytul zadania jest wymagany",
@@ -1859,7 +1903,7 @@
     "dueDateFilterLabel": "Termin platnosci",
     "contractorFilterPlaceholder": "Szukaj kontrahentow...",
     "selectAllMatching": "Zaznacz wszystkie pasujace",
-    "selectionSummary": "{count} faktur zaznaczonych \u2014 {amount} {currency}",
+    "selectionSummary": "{count} faktur zaznaczonych — {amount} {currency}",
     "groupByCurrency": "Grupuj wg waluty (tworzy osobne serie)",
     "groupByCurrencyCount": "Utworzy {count} serii",
     "cancel": "Anuluj",
@@ -1871,7 +1915,7 @@
     "nameLabel": "Nazwa (opcjonalnie)",
     "namePlaceholder": "np. Kontrahenci marzec",
     "descriptionLabel": "Opis (opcjonalnie)",
-    "currencyGroupHeading": "{currency} \u2014 {count} faktur",
+    "currencyGroupHeading": "{currency} — {count} faktur",
     "grandTotalLabel": "Suma calkowita",
     "exportFormatLabel": "Format eksportu",
     "exportCsv": "CSV (uniwersalny)",
@@ -1960,7 +2004,7 @@
     "toastItemPaid": "Faktura {invoiceNumber} oznaczona jako zaplacona",
     "toastItemFailed": "Faktura {invoiceNumber} oznaczona jako nieudana",
     "toastRunCancelled": "Seria platnosci {runNumber} anulowana",
-    "toastStatementImported": "Wyciag bankowy zaimportowany \u2014 {count} platnosci dopasowanych",
+    "toastStatementImported": "Wyciag bankowy zaimportowany — {count} platnosci dopasowanych",
     "toastTransferTitleSaved": "Szablon tytulu przelewu zapisany",
     "toastInvoiceRemoved": "Faktura usunieta z serii platnosci",
     "validationSelectInvoice": "Zaznacz przynajmniej jedna fakture",

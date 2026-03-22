@@ -86,7 +86,8 @@
       "members": "Members",
       "approvals": "Approvals",
       "notifications": "Notifications",
-      "integrations": "Integrations"
+      "integrations": "Integrations",
+      "auditLog": "Audit log"
     },
     "saveCta": "Save changes",
     "saving": "Saving...",
@@ -342,6 +343,60 @@
         "userLinked": "Slack user linked",
         "userUnlinked": "Slack user unlinked",
         "linkFailed": "Could not link Slack user. Try again."
+      }
+    },
+    "auditLog": {
+      "before": "Before",
+      "after": "After",
+      "noChanges": "No field changes recorded",
+      "unknownActor": "System",
+      "searchPlaceholder": "Search audit log...",
+      "exportCta": "Export audit log",
+      "exportToast": "Audit log exported ({count} entries)",
+      "filterActorAll": "All actors",
+      "filterActionAll": "All actions",
+      "filterResourceAll": "All resources",
+      "expand": "Expand details",
+      "collapse": "Collapse details",
+      "columns": {
+        "timestamp": "Time",
+        "actor": "Actor",
+        "action": "Action",
+        "resource": "Resource"
+      },
+      "actions": {
+        "CREATE": "Created",
+        "UPDATE": "Updated",
+        "DELETE": "Deleted",
+        "APPROVE": "Approved",
+        "REJECT": "Rejected",
+        "SUBMIT": "Submitted",
+        "EXPORT": "Exported",
+        "INVITE": "Invited",
+        "DEACTIVATE": "Deactivated",
+        "LOGIN": "Logged in"
+      },
+      "resources": {
+        "ORGANIZATION": "Organization",
+        "CONTRACTOR": "Contractor",
+        "CONTRACT": "Contract",
+        "DOCUMENT": "Document",
+        "INVOICE": "Invoice",
+        "WORKFLOW_RUN": "Workflow",
+        "WORKFLOW_TASK_RUN": "Task",
+        "PAYMENT_RUN": "Payment",
+        "PROJECT": "Project",
+        "TEAM": "Team",
+        "APPROVAL_FLOW": "Approval"
+      },
+      "pagination": {
+        "summary": "Page {page} of {totalPages}",
+        "previous": "Previous",
+        "next": "Next"
+      },
+      "empty": {
+        "heading": "No audit log entries",
+        "body": "Audit events will appear here as actions are performed in the system."
       }
     }
   },
@@ -1192,7 +1247,6 @@
       "failedToPostComment": "Could not post comment. Try again.",
       "retry": "Try again"
     },
-
     "newTemplateTitle": "New workflow template",
     "editTemplateTitle": "Edit template",
     "templateName": "Template name",
@@ -1213,14 +1267,12 @@
     "deleteTemplate": "Delete",
     "noTasksYet": "Add your first task to build this workflow.",
     "cancel": "Cancel",
-
     "archiveConfirmTitle": "Archive {name}?",
     "archiveConfirmBody": "This template will no longer be available for new workflow runs. Existing runs will not be affected.",
     "archiveConfirmCta": "Archive template",
     "deleteConfirmTitle": "Delete {name}?",
     "deleteConfirmBody": "This draft template will be permanently deleted. This cannot be undone.",
     "deleteConfirmCta": "Delete template",
-
     "untitledTask": "Untitled task",
     "taskTitle": "Task title",
     "taskTitlePlaceholder": "e.g. Collect NDA",
@@ -1263,7 +1315,6 @@
     "removeTask": "Remove task",
     "doneEditing": "Done editing",
     "removeCondition": "Remove",
-
     "conditionFieldPlaceholder": "Select field...",
     "conditionValuePlaceholder": "Enter value...",
     "conditionField_contractor_type": "Contractor type",
@@ -1278,7 +1329,6 @@
     "operator_notEquals": "does not equal",
     "operator_contains": "contains",
     "operator_startsWith": "starts with",
-
     "toastTemplateSaved": "Template saved",
     "toastTemplateActivated": "Template activated",
     "toastTemplateArchived": "Template archived",
@@ -1292,7 +1342,6 @@
     "toastCommentPosted": "Comment posted",
     "toastTaskRemoved": "Task removed. Undo",
     "errorSaveTemplate": "Could not save template. Try again.",
-
     "filterStatus": "Status",
     "filterContractor": "Contractor",
     "searchTemplates": "Search templates...",
@@ -1304,7 +1353,6 @@
     "emptyTemplatesHeading": "No workflow templates",
     "emptyTemplatesBody": "Create a template to define reusable workflow steps for your team.",
     "emptyTemplatesCta": "New template",
-
     "progressLabel": "{completed} of {total} tasks complete",
     "startedByLabel": "Started by {name} on {date}",
     "dueDateLabel": "Due {date}",
@@ -1314,7 +1362,6 @@
     "cancelWorkflowTitle": "Cancel this workflow?",
     "cancelWorkflowBody": "All incomplete tasks will be cancelled. Completed tasks will remain in the history. This cannot be undone.",
     "cancelWorkflowCta": "Cancel workflow",
-
     "taskActionComplete": "Complete",
     "taskActionSkip": "Skip",
     "taskActionReassign": "Reassign",
@@ -1327,7 +1374,6 @@
     "overdue": "Overdue",
     "assignedToLabel": "Assigned to {name}",
     "dueLabel": "Due {date}",
-
     "commentsHeading": "Comments",
     "commentPlaceholder": "Add a comment...",
     "postComment": "Post",
@@ -1335,13 +1381,11 @@
     "attachmentsHeading": "Attachments",
     "addAttachment": "Add attachment",
     "noAttachments": "No attachments.",
-
     "contractorWorkflowsTab": "Workflows",
     "contractorStartWorkflow": "Start workflow",
     "contractorNoWorkflows": "No workflows",
     "contractorNoWorkflowsBody": "Start a workflow for this contractor to track onboarding, offboarding, or other processes.",
     "contractorNoWorkflowsCta": "Start workflow",
-
     "validationTemplateNameRequired": "Template name is required",
     "validationTemplateType": "Select a template type",
     "validationTaskTitleRequired": "Task title is required",
@@ -1859,7 +1903,7 @@
     "dueDateFilterLabel": "Due date",
     "contractorFilterPlaceholder": "Search contractors...",
     "selectAllMatching": "Select all matching",
-    "selectionSummary": "{count} invoices selected \u2014 {amount} {currency}",
+    "selectionSummary": "{count} invoices selected — {amount} {currency}",
     "groupByCurrency": "Group by currency (creates separate runs)",
     "groupByCurrencyCount": "Will create {count} runs",
     "cancel": "Cancel",
@@ -1871,7 +1915,7 @@
     "nameLabel": "Name (optional)",
     "namePlaceholder": "e.g. March contractors",
     "descriptionLabel": "Description (optional)",
-    "currencyGroupHeading": "{currency} \u2014 {count} invoices",
+    "currencyGroupHeading": "{currency} — {count} invoices",
     "grandTotalLabel": "Grand total",
     "exportFormatLabel": "Export format",
     "exportCsv": "CSV (universal)",
@@ -1960,7 +2004,7 @@
     "toastItemPaid": "Invoice {invoiceNumber} marked as paid",
     "toastItemFailed": "Invoice {invoiceNumber} marked as failed",
     "toastRunCancelled": "Payment run {runNumber} cancelled",
-    "toastStatementImported": "Bank statement imported \u2014 {count} payments matched",
+    "toastStatementImported": "Bank statement imported — {count} payments matched",
     "toastTransferTitleSaved": "Payment transfer title template saved",
     "toastInvoiceRemoved": "Invoice removed from payment run",
     "validationSelectInvoice": "Select at least one invoice",
