@@ -279,7 +279,7 @@ export const integrationRouter = router({
     .use(requirePermission({ organization: ["update"] }))
     .mutation(async ({ ctx }) => {
       const connection = await prisma.integrationConnection.findFirst({
-        where: { organizationId: ctx.organizationId, provider: "slack" },
+        where: { organizationId: ctx.organizationId, provider: "SLACK" },
         select: { id: true },
       });
 
