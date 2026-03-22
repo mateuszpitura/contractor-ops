@@ -21,6 +21,7 @@ import {
   advanceFlow,
   computeSlaStatus,
 } from "../services/approval-engine.js";
+import { dispatch } from "../services/notification-service.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -423,10 +424,87 @@ export const approvalRouter = router({
           });
         }
 
-        return updatedStep;
+        // Fetch data needed for notifications
+        const invoice = await tx.invoice.findUnique({
+          where: { id: step.approvalFlow.resourceId },
+          select: {
+            id: true,
+            invoiceNumber: true,
+            totalGrosze: true,
+            currency: true,
+            contractorId: true,
+          },
+        });
+
+        const flow = await tx.approvalFlow.findUnique({
+          where: { id: step.approvalFlowId },
+          select: { id: true, createdByUserId: true, steps: { orderBy: { stepOrder: "asc" } } },
+        });
+
+        return { updatedStep, advanceResult, invoice, flow };
       });
 
-      return plain(result);
+      // Fire-and-forget: dispatch APPROVAL_DECISION to the user who submitted
+      if (result.flow?.createdByUserId && result.invoice) {
+        dispatch({
+          organizationId: ctx.organizationId,
+          type: "APPROVAL_DECISION",
+          recipientUserIds: [result.flow.createdByUserId],
+          title: `Invoice ${result.invoice.invoiceNumber} approved`,
+          body: `Approved by ${ctx.user!.name ?? "approver"}`,
+          entityType: "INVOICE",
+          entityId: result.invoice.id,
+          metadata: {
+            invoiceNumber: result.invoice.invoiceNumber,
+            decision: "approved",
+            approverName: ctx.user!.name ?? "approver",
+          },
+        }).catch((err) =>
+          console.error("[approval] dispatch APPROVAL_DECISION failed:", err),
+        );
+      }
+
+      // If flow advanced to next step, dispatch APPROVAL_REQUEST to next approver
+      if (!result.advanceResult.completed && result.advanceResult.nextStepOrder && result.flow && result.invoice) {
+        const nextStep = result.flow.steps.find(
+          (s) => s.stepOrder === result.advanceResult.nextStepOrder,
+        );
+        if (nextStep?.approverUserId) {
+          const contractor = result.invoice.contractorId
+            ? await prisma.contractor.findUnique({
+                where: { id: result.invoice.contractorId },
+                select: { legalName: true },
+              })
+            : null;
+
+          const slaDeadline = nextStep.slaDeadline
+            ? new Date(nextStep.slaDeadline).toISOString()
+            : "";
+
+          dispatch({
+            organizationId: ctx.organizationId,
+            type: "APPROVAL_REQUEST",
+            recipientUserIds: [nextStep.approverUserId],
+            title: `Approval requested for ${result.invoice.invoiceNumber}`,
+            body: `${contractor?.legalName ?? "Unknown"} - ${(result.invoice.totalGrosze / 100).toFixed(2)} ${result.invoice.currency}`,
+            entityType: "INVOICE",
+            entityId: result.invoice.id,
+            metadata: {
+              invoiceNumber: result.invoice.invoiceNumber,
+              contractorName: contractor?.legalName ?? "Unknown",
+              amount: (result.invoice.totalGrosze / 100).toFixed(2),
+              currency: result.invoice.currency,
+              slaDeadline,
+              invoiceId: result.invoice.id,
+              flowId: result.flow.id,
+            },
+          }).catch((err) =>
+            console.error("[approval] dispatch APPROVAL_REQUEST (next level) failed:", err),
+          );
+        }
+      }
+
+      return plain(result.updatedStep);
     }),
 
   /**
@@ -507,10 +585,42 @@ export const approvalRouter = router({
           data: { status: "REJECTED" },
         });
 
-        return updatedStep;
+        // Fetch data for notification
+        const invoice = await tx.invoice.findUnique({
+          where: { id: step.approvalFlow.resourceId },
+          select: { id: true, invoiceNumber: true },
+        });
+
+        const flow = await tx.approvalFlow.findUnique({
+          where: { id: step.approvalFlowId },
+          select: { createdByUserId: true },
+        });
+
+        return { updatedStep, invoice, flow };
       });
 
-      return plain(result);
+      // Fire-and-forget: dispatch APPROVAL_DECISION (rejected) to submitter
+      if (result.flow?.createdByUserId && result.invoice) {
+        dispatch({
+          organizationId: ctx.organizationId,
+          type: "APPROVAL_DECISION",
+          recipientUserIds: [result.flow.createdByUserId],
+          title: `Invoice ${result.invoice.invoiceNumber} rejected`,
+          body: `Rejected by ${ctx.user!.name ?? "approver"}: ${input.comment}`,
+          entityType: "INVOICE",
+          entityId: result.invoice.id,
+          metadata: {
+            invoiceNumber: result.invoice.invoiceNumber,
+            decision: "rejected",
+            approverName: ctx.user!.name ?? "approver",
+            comment: input.comment,
+          },
+        }).catch((err) =>
+          console.error("[approval] dispatch APPROVAL_DECISION (reject) failed:", err),
+        );
+      }
+
+      return plain(result.updatedStep);
     }),
 
   /**
@@ -858,10 +968,48 @@ export const approvalRouter = router({
           data: { status: "APPROVAL_PENDING" },
         });
 
-        return approvalFlow;
+        return { approvalFlow, invoice };
       });
 
-      return plain(flow);
+      // Fire-and-forget: dispatch APPROVAL_REQUEST to first approver
+      const firstStep = flow.approvalFlow.steps?.[0];
+      if (firstStep?.approverUserId) {
+        const inv = flow.invoice;
+        // Fetch contractor name for notification metadata
+        const contractor = inv.contractorId
+          ? await prisma.contractor.findUnique({
+              where: { id: inv.contractorId },
+              select: { legalName: true },
+            })
+          : null;
+
+        const slaDeadline = firstStep.slaDeadline
+          ? new Date(firstStep.slaDeadline).toISOString()
+          : "";
+
+        dispatch({
+          organizationId: ctx.organizationId,
+          type: "APPROVAL_REQUEST",
+          recipientUserIds: [firstStep.approverUserId],
+          title: `Approval requested for ${inv.invoiceNumber}`,
+          body: `${contractor?.legalName ?? "Unknown"} - ${(inv.totalGrosze / 100).toFixed(2)} ${inv.currency}. SLA: ${slaDeadline}`,
+          entityType: "INVOICE",
+          entityId: inv.id,
+          metadata: {
+            invoiceNumber: inv.invoiceNumber,
+            contractorName: contractor?.legalName ?? "Unknown",
+            amount: (inv.totalGrosze / 100).toFixed(2),
+            currency: inv.currency,
+            slaDeadline,
+            invoiceId: inv.id,
+            flowId: flow.approvalFlow.id,
+          },
+        }).catch((err) =>
+          console.error("[approval] dispatch APPROVAL_REQUEST failed:", err),
+        );
+      }
+
+      return plain(flow.approvalFlow);
     }),
 
   // =========================================================================

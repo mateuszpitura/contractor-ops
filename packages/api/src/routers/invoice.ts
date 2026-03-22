@@ -14,6 +14,25 @@ import {
   computeDuplicateCheckHash,
   runAutoMatch,
 } from "../services/invoice-matching.js";
+import { dispatch } from "../services/notification-service.js";
+
+// ---------------------------------------------------------------------------
+// Finance team helper
+// ---------------------------------------------------------------------------
+
+/**
+ * Queries organization members with FINANCE_ADMIN role and returns their user IDs.
+ */
+async function getFinanceTeamUserIds(orgId: string): Promise<string[]> {
+  const members = await prisma.member.findMany({
+    where: {
+      organizationId: orgId,
+      role: "FINANCE_ADMIN",
+    },
+    select: { userId: true },
+  });
+  return members.map((m) => m.userId);
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -112,6 +131,28 @@ export const invoiceRouter = router({
 
         return inv;
       });
+
+      // Fire-and-forget: dispatch INVOICE_RECEIVED to finance team
+      const financeUserIds = await getFinanceTeamUserIds(ctx.organizationId);
+      if (financeUserIds.length > 0) {
+        dispatch({
+          organizationId: ctx.organizationId,
+          type: "INVOICE_RECEIVED",
+          recipientUserIds: financeUserIds,
+          title: `New invoice received: ${invoice.invoiceNumber}`,
+          body: `From ${invoiceData.sellerName ?? "Unknown"} - ${(invoiceData.totalGrosze / 100).toFixed(2)} ${invoiceData.currency}`,
+          entityType: "INVOICE",
+          entityId: invoice.id,
+          metadata: {
+            invoiceNumber: invoice.invoiceNumber,
+            contractorName: invoiceData.sellerName ?? "Unknown",
+            amount: (invoiceData.totalGrosze / 100).toFixed(2),
+            currency: invoiceData.currency,
+          },
+        }).catch((err) =>
+          console.error("[invoice] dispatch INVOICE_RECEIVED failed:", err),
+        );
+      }
 
       return plain(invoice);
     }),

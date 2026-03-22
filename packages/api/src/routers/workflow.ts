@@ -17,6 +17,7 @@ import {
 import { router } from "../init.js";
 import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
+import { dispatch } from "../services/notification-service.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -707,16 +708,41 @@ export const workflowRouter = router({
           data: { progressPercent: progress.percent },
         });
 
-        return tx.workflowRun.findUniqueOrThrow({
+        const fullRun = await tx.workflowRun.findUniqueOrThrow({
           where: { id: workflowRun.id },
           include: {
             tasks: { orderBy: { createdAt: "asc" } },
             workflowTemplate: { select: { name: true, type: true } },
           },
         });
+
+        return { run: fullRun, contractorName: contractor.legalName ?? contractor.displayName ?? "Unknown" };
       });
 
-      return plain(run);
+      // Fire-and-forget: dispatch TASK_ASSIGNED to each task assignee
+      const activeTasks = run.run.tasks.filter(
+        (t) => t.status !== "SKIPPED" && t.assigneeUserId,
+      );
+      for (const task of activeTasks) {
+        dispatch({
+          organizationId: ctx.organizationId,
+          type: "TASK_ASSIGNED",
+          recipientUserIds: [task.assigneeUserId!],
+          title: `Task assigned: ${task.title}`,
+          body: `Workflow: ${run.run.workflowTemplate.name} for ${run.contractorName}`,
+          entityType: "WORKFLOW_RUN",
+          entityId: run.run.id,
+          metadata: {
+            taskTitle: task.title,
+            workflowName: run.run.workflowTemplate.name,
+            contractorName: run.contractorName,
+          },
+        }).catch((err) =>
+          console.error("[workflow] dispatch TASK_ASSIGNED failed:", err),
+        );
+      }
+
+      return plain(run.run);
     }),
 
   /**
@@ -1152,7 +1178,34 @@ export const workflowRouter = router({
       const updated = await prisma.workflowTaskRun.update({
         where: { id: input.taskRunId },
         data: { assigneeUserId: input.newAssigneeUserId },
+        include: {
+          workflowRun: {
+            select: {
+              id: true,
+              workflowTemplate: { select: { name: true } },
+              contractor: { select: { legalName: true, displayName: true } },
+            },
+          },
+        },
       });
+
+      // Fire-and-forget: dispatch TASK_ASSIGNED to new assignee
+      dispatch({
+        organizationId: ctx.organizationId,
+        type: "TASK_ASSIGNED",
+        recipientUserIds: [input.newAssigneeUserId],
+        title: `Task assigned: ${updated.title}`,
+        body: `Workflow: ${updated.workflowRun.workflowTemplate.name} for ${updated.workflowRun.contractor?.legalName ?? updated.workflowRun.contractor?.displayName ?? "Unknown"}`,
+        entityType: "WORKFLOW_RUN",
+        entityId: updated.workflowRun.id,
+        metadata: {
+          taskTitle: updated.title,
+          workflowName: updated.workflowRun.workflowTemplate.name,
+          contractorName: updated.workflowRun.contractor?.legalName ?? updated.workflowRun.contractor?.displayName ?? "Unknown",
+        },
+      }).catch((err) =>
+        console.error("[workflow] dispatch TASK_ASSIGNED (reassign) failed:", err),
+      );
 
       return plain(updated);
     }),
