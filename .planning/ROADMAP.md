@@ -152,7 +152,7 @@ Plans:
 Plans:
 - [x] 07-01-PLAN.md — Notification/reminder/integration Zod validators, dispatch service, tRPC routers (notification CRUD, reminder rules, integration connection)
 - [x] 07-02-PLAN.md — Slack client service, React Email templates (6 types), Slack OAuth/interactivity API routes, cron reminder evaluator
-- [ ] 07-03-PLAN.md — Notification popover (bell icon wiring), /notifications page with filters and pagination
+- [x] 07-03-PLAN.md — Notification popover (bell icon wiring), /notifications page with filters and pagination
 - [ ] 07-04-PLAN.md — Settings Notifications tab (preference matrix, reminder rules), Settings Integrations tab (Slack connection, user mapping)
 - [ ] 07-05-PLAN.md — Event dispatch wiring into approval/workflow/invoice routers, real email/Slack delivery, full i18n (EN + PL)
 
@@ -222,7 +222,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 4. Workflow Engine | 0/5 | Not started | - |
 | 5. Invoice Intake & Matching | 5/5 | Complete   | 2026-03-21 |
 | 6. Approval Workflow | 4/5 | In Progress|  |
-| 7. Notifications & Slack | 0/5 | Not started | - |
+| 7. Notifications & Slack | 3/5 | In Progress|  |
 | 8. Payments | 0/3 | Not started | - |
 | 9. Dashboard & Reports | 0/5 | Not started | - |
 | 10. Onboarding & Polish | 0/3 | Not started | - |
