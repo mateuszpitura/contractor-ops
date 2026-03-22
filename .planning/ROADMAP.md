@@ -153,7 +153,7 @@ Plans:
 - [x] 07-01-PLAN.md — Notification/reminder/integration Zod validators, dispatch service, tRPC routers (notification CRUD, reminder rules, integration connection)
 - [x] 07-02-PLAN.md — Slack client service, React Email templates (6 types), Slack OAuth/interactivity API routes, cron reminder evaluator
 - [x] 07-03-PLAN.md — Notification popover (bell icon wiring), /notifications page with filters and pagination
-- [ ] 07-04-PLAN.md — Settings Notifications tab (preference matrix, reminder rules), Settings Integrations tab (Slack connection, user mapping)
+- [x] 07-04-PLAN.md — Settings Notifications tab (preference matrix, reminder rules), Settings Integrations tab (Slack connection, user mapping)
 - [ ] 07-05-PLAN.md — Event dispatch wiring into approval/workflow/invoice routers, real email/Slack delivery, full i18n (EN + PL)
 
 ### Phase 8: Payments
