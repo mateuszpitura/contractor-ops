@@ -4,6 +4,12 @@ import { Prisma } from "@contractor-ops/db/generated/prisma/client";
 import { router } from "../init.js";
 import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
+import {
+  generateSpendCsv,
+  generateContractsCsv,
+  generateInvoicesCsv,
+  generateComplianceCsv,
+} from "../services/report-export.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -623,5 +629,289 @@ export const reportRouter = router({
       }
 
       return { critical, warning, ok };
+    }),
+
+  // =========================================================================
+  // Export mutations
+  // =========================================================================
+
+  /**
+   * Export spend by contractor as CSV.
+   */
+  exportSpendByContractor: tenantProcedure
+    .use(reportRead)
+    .input(z.object({ ...dateRangeInput, contractorId: z.string().optional() }))
+    .mutation(async ({ ctx, input }) => {
+      const dateFrom = new Date(input.dateFrom);
+      const dateTo = new Date(input.dateTo);
+
+      const contractorFilter = input.contractorId
+        ? Prisma.sql`AND i."contractorId" = ${input.contractorId}`
+        : Prisma.empty;
+
+      const items = await prisma.$queryRaw<
+        Array<{
+          contractorName: string;
+          invoiceCount: number;
+          totalGrosze: number;
+          avgGrosze: number;
+          lastPaidAt: Date | null;
+        }>
+      >`
+        SELECT
+          c."legalName" AS "contractorName",
+          COUNT(i.id)::int AS "invoiceCount",
+          COALESCE(SUM(i."amountToPayGrosze")::int, 0) AS "totalGrosze",
+          COALESCE(AVG(i."amountToPayGrosze")::int, 0) AS "avgGrosze",
+          MAX(i."paidAt") AS "lastPaidAt"
+        FROM "Invoice" i
+        JOIN "Contractor" c ON c.id = i."contractorId"
+        WHERE i."organizationId" = ${ctx.organizationId}
+          AND i."paymentStatus" = 'PAID'
+          AND i."paidAt" >= ${dateFrom}
+          AND i."paidAt" <= ${dateTo}
+          AND i."deletedAt" IS NULL
+          ${contractorFilter}
+        GROUP BY c.id, c."legalName"
+        ORDER BY "totalGrosze" DESC
+      `;
+
+      const csv = await generateSpendCsv(
+        items.map((r) => ({
+          ...r,
+          invoiceCount: Number(r.invoiceCount),
+          totalGrosze: Number(r.totalGrosze),
+          avgGrosze: Number(r.avgGrosze),
+          lastPaidAt: r.lastPaidAt
+            ? new Date(r.lastPaidAt).toISOString()
+            : null,
+        })),
+      );
+
+      const timestamp = new Date().toISOString().slice(0, 10);
+      return {
+        data: csv.data,
+        filename: `spend-by-contractor-${timestamp}.csv`,
+        mimeType: csv.mimeType,
+      };
+    }),
+
+  /**
+   * Export spend by team as CSV.
+   */
+  exportSpendByTeam: tenantProcedure
+    .use(reportRead)
+    .input(z.object({ ...dateRangeInput }))
+    .mutation(async ({ ctx, input }) => {
+      const dateFrom = new Date(input.dateFrom);
+      const dateTo = new Date(input.dateTo);
+
+      const items = await prisma.$queryRaw<
+        Array<{
+          teamName: string | null;
+          contractorCount: number;
+          invoiceCount: number;
+          totalGrosze: number;
+        }>
+      >`
+        SELECT
+          COALESCE(t.name, 'Unassigned') AS "teamName",
+          COUNT(DISTINCT c.id)::int AS "contractorCount",
+          COUNT(i.id)::int AS "invoiceCount",
+          COALESCE(SUM(i."amountToPayGrosze")::int, 0) AS "totalGrosze"
+        FROM "Invoice" i
+        JOIN "Contractor" c ON c.id = i."contractorId"
+        LEFT JOIN "Team" t ON t.id = c."primaryTeamId"
+        WHERE i."organizationId" = ${ctx.organizationId}
+          AND i."paymentStatus" = 'PAID'
+          AND i."paidAt" >= ${dateFrom}
+          AND i."paidAt" <= ${dateTo}
+          AND i."deletedAt" IS NULL
+        GROUP BY t.id, t.name
+        ORDER BY "totalGrosze" DESC
+      `;
+
+      // Reuse generateSpendCsv with adapted data
+      const csv = await generateSpendCsv(
+        items.map((r) => ({
+          contractorName: r.teamName ?? "Unassigned",
+          invoiceCount: Number(r.invoiceCount),
+          totalGrosze: Number(r.totalGrosze),
+          avgGrosze: 0,
+          lastPaidAt: null,
+        })),
+      );
+
+      const timestamp = new Date().toISOString().slice(0, 10);
+      return {
+        data: csv.data,
+        filename: `spend-by-team-${timestamp}.csv`,
+        mimeType: csv.mimeType,
+      };
+    }),
+
+  /**
+   * Export expiring contracts as CSV.
+   */
+  exportExpiringContracts: tenantProcedure
+    .use(reportRead)
+    .input(z.object({ days: z.enum(["30", "60", "90"]).default("30") }))
+    .mutation(async ({ ctx, input }) => {
+      const now = new Date();
+      const daysNum = parseInt(input.days, 10);
+      const futureDate = new Date(
+        now.getTime() + daysNum * 24 * 60 * 60 * 1000,
+      );
+      const msPerDay = 24 * 60 * 60 * 1000;
+
+      const contracts = await prisma.contract.findMany({
+        where: {
+          organizationId: ctx.organizationId,
+          status: { in: ["ACTIVE", "EXPIRING"] as ("ACTIVE" | "EXPIRING")[] },
+          endDate: { gte: now, lte: futureDate },
+          deletedAt: null,
+        },
+        include: {
+          contractor: { select: { legalName: true } },
+        },
+        orderBy: { endDate: "asc" },
+      });
+
+      const csv = await generateContractsCsv(
+        contracts.map((c) => ({
+          contractTitle: c.title,
+          contractorName: c.contractor.legalName,
+          endDate: c.endDate!.toISOString().slice(0, 10),
+          daysRemaining: Math.ceil(
+            (c.endDate!.getTime() - now.getTime()) / msPerDay,
+          ),
+          status: c.status,
+        })),
+      );
+
+      const timestamp = new Date().toISOString().slice(0, 10);
+      return {
+        data: csv.data,
+        filename: `expiring-contracts-${timestamp}.csv`,
+        mimeType: csv.mimeType,
+      };
+    }),
+
+  /**
+   * Export overdue invoices as CSV.
+   */
+  exportOverdueInvoices: tenantProcedure
+    .use(reportRead)
+    .mutation(async ({ ctx }) => {
+      const now = new Date();
+      const msPerDay = 24 * 60 * 60 * 1000;
+
+      const invoices = await prisma.invoice.findMany({
+        where: {
+          organizationId: ctx.organizationId,
+          dueDate: { lt: now },
+          paymentStatus: { notIn: ["PAID"] as ("PAID")[] },
+          deletedAt: null,
+        },
+        include: {
+          contractor: { select: { legalName: true } },
+        },
+        orderBy: { dueDate: "asc" },
+      });
+
+      const csv = await generateInvoicesCsv(
+        invoices.map((inv) => ({
+          invoiceNumber: inv.invoiceNumber,
+          contractorName: inv.contractor?.legalName ?? "Unknown",
+          amountGrosze: inv.amountToPayGrosze,
+          currency: inv.currency,
+          dueDate: inv.dueDate.toISOString().slice(0, 10),
+          daysOverdue: Math.ceil(
+            (now.getTime() - inv.dueDate.getTime()) / msPerDay,
+          ),
+          status: inv.paymentStatus,
+        })),
+      );
+
+      const timestamp = new Date().toISOString().slice(0, 10);
+      return {
+        data: csv.data,
+        filename: `overdue-invoices-${timestamp}.csv`,
+        mimeType: csv.mimeType,
+      };
+    }),
+
+  /**
+   * Export compliance gaps as CSV.
+   */
+  exportComplianceGaps: tenantProcedure
+    .use(reportRead)
+    .mutation(async ({ ctx }) => {
+      const contractors = await prisma.contractor.findMany({
+        where: {
+          organizationId: ctx.organizationId,
+          status: "ACTIVE",
+          deletedAt: null,
+        },
+        include: {
+          complianceItems: { select: { status: true } },
+          contracts: {
+            where: { deletedAt: null },
+            select: { status: true },
+          },
+          _count: {
+            select: {
+              complianceItems: {
+                where: { status: { in: ["MISSING", "EXPIRED"] } },
+              },
+            },
+          },
+        },
+      });
+
+      type GapItem = {
+        contractorName: string;
+        missingDocuments: number;
+        contractStatus: string;
+        overdueTasks: number;
+        health: string;
+      };
+
+      const items: GapItem[] = [];
+
+      for (const c of contractors) {
+        const missingOrExpired = c._count.complianceItems;
+        const hasPending = c.complianceItems.some(
+          (ci) => ci.status === "PENDING",
+        );
+        const hasActiveContract = c.contracts.some(
+          (con) => con.status === "ACTIVE",
+        );
+
+        let health = "green";
+        if (missingOrExpired > 0 || !hasActiveContract) {
+          health = "red";
+        } else if (hasPending) {
+          health = "yellow";
+        }
+
+        if (health !== "green") {
+          items.push({
+            contractorName: c.legalName,
+            missingDocuments: missingOrExpired,
+            contractStatus: hasActiveContract ? "ACTIVE" : "NONE",
+            overdueTasks: 0,
+            health,
+          });
+        }
+      }
+
+      const csv = await generateComplianceCsv(items);
+      const timestamp = new Date().toISOString().slice(0, 10);
+      return {
+        data: csv.data,
+        filename: `compliance-gaps-${timestamp}.csv`,
+        mimeType: csv.mimeType,
+      };
     }),
 });

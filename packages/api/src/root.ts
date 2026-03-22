@@ -14,6 +14,7 @@ import { integrationRouter } from "./routers/integration.js";
 import { paymentRouter } from "./routers/payment.js";
 import { dashboardRouter } from "./routers/dashboard.js";
 import { reportRouter } from "./routers/report.js";
+import { auditRouter } from "./routers/audit.js";
 
 /**
  * Root tRPC router merging all sub-routers.
@@ -32,7 +33,8 @@ import { reportRouter } from "./routers/report.js";
  * - integration: Slack OAuth, connection status, user mappings, link/unlink, sync
  * - payment: run CRUD, lock+export (CSV/Elixir/SEPA), status tracking, bank statement import, contractor payment history
  * - dashboard: KPIs, spend trend, deadlines, activity feed
- * - report: spend by contractor/team, expiring contracts, overdue invoices, compliance gaps + chart variants
+ * - report: spend by contractor/team, expiring contracts, overdue invoices, compliance gaps + chart variants + export mutations
+ * - audit: audit log list with search/filter/pagination, actors dropdown, CSV export
  */
 export const appRouter = router({
   organization: organizationRouter,
@@ -50,6 +52,7 @@ export const appRouter = router({
   payment: paymentRouter,
   dashboard: dashboardRouter,
   report: reportRouter,
+  audit: auditRouter,
 });
 
 /** Type-safe router type for client consumption */
