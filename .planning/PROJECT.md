@@ -17,6 +17,7 @@ The invoice-to-payment flow must work end-to-end: a contractor's invoice arrives
 - [x] Duplicate invoice detection (invoice number + contractor + amount) — *Validated in Phase 5: Invoice Intake & Matching*
 - [x] Email intake integration — dedicated inbox per org, attachment parsing, sender matching, deduplication — *Validated in Phase 5: Invoice Intake & Matching*
 - [x] Approval workflow — configurable 1-3 level chains, approve/reject/clarify/delegate, mandatory comments on reject, SLA timers — *Validated in Phase 6: Approval Workflow (UAT pending)*
+- [x] Payment runs — batch selection of approved invoices, CSV/bank file export, mark paid/failed, idempotency controls — *Validated in Phase 8: Payments*
 
 ### Active
 
@@ -32,7 +33,7 @@ The invoice-to-payment flow must work end-to-end: a contractor's invoice arrives
 - [ ] Invoice matching — auto-match to contractor (NIP) and contract, expected vs actual amount, deviation flags
 - [ ] Duplicate invoice detection (invoice number + contractor + amount)
 - [ ] Approval workflow — configurable 1-3 level chains, approve/reject/clarify/delegate, mandatory comments on reject, SLA timers
-- [ ] Payment runs — batch selection of approved invoices, CSV/bank file export, mark paid/failed, idempotency controls
+- [x] Payment runs — batch selection of approved invoices, CSV/bank file export, mark paid/failed, idempotency controls
 - [ ] Dashboard — KPI cards, spend chart, upcoming deadlines, approval queue widget, activity feed, alerts
 - [ ] Reports — spend by contractor, spend by team/project, expiring contracts, overdue invoices, compliance gaps
 - [ ] Notifications — in-app + email for approvals, tasks, reminders, contract expiry
@@ -108,4 +109,4 @@ The invoice-to-payment flow must work end-to-end: a contractor's invoice arrives
 | No contractor portal in v1 | Internal-facing only — contractor self-service deferred to v1.5 | -- Pending |
 
 ---
-*Last updated: 2026-03-22 after Phase 7 (Notifications & Slack) completion*
+*Last updated: 2026-03-22 after Phase 8 (Payments) completion*
