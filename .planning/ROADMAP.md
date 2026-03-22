@@ -183,14 +183,14 @@ Plans:
   3. User can view spend reports by contractor, team, or project with date range filters and CSV export
   4. User can view reports for expiring contracts, overdue invoices, and compliance gaps
   5. Admin can view a searchable, filterable, exportable audit log of all critical actions
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- [ ] 09-01: Dashboard KPI cards and spend chart
-- [ ] 09-02: Dashboard widgets (deadlines, approval queue, activity feed)
-- [ ] 09-03: Spend reports (by contractor, team, project) with filters and export
-- [ ] 09-04: Operational reports (expiring contracts, overdue invoices, compliance gaps)
-- [ ] 09-05: Audit log viewer
+- [ ] 09-01-PLAN.md — Dashboard + report + audit tRPC routers, CSV export service
+- [ ] 09-02-PLAN.md — Dashboard page with KPI cards, spend chart, deadlines, approval queue, activity feed
+- [ ] 09-03-PLAN.md — Reports page with sidebar, date range filter, 5 report types with charts, tables, drill-down, CSV export
+- [ ] 09-04-PLAN.md — Settings Audit Log tab with searchable, filterable table, expandable diff rows, CSV export
+- [ ] 09-05-PLAN.md — Full i18n (EN + PL) for all Phase 9 surfaces
 
 ### Phase 10: Onboarding & Polish
 **Goal**: New organizations get a guided setup experience, existing spreadsheet users can import their data, and power users can navigate the entire app via search and command palette
