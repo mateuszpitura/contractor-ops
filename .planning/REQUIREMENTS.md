@@ -18,7 +18,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **ORG-07**: All data access is scoped to the user's organization with no cross-tenant leakage
 - [x] **ORG-08**: Admin can configure approval chain templates (default chains, amount thresholds)
 - [x] **ORG-09**: Admin can manage workflow templates (create, edit, activate/deactivate)
-- [ ] **ORG-10**: Admin can view searchable, filterable, exportable audit log of all critical actions
+- [x] **ORG-10**: Admin can view searchable, filterable, exportable audit log of all critical actions
 
 ### Contractors
 
@@ -102,17 +102,17 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Dashboard & Reports
 
-- [ ] **DASH-01**: User sees KPI cards: active contractors, invoices awaiting approval, ready-to-pay total, contracts expiring in 30 days, open tasks
-- [ ] **DASH-02**: User sees month-over-month spend chart
-- [ ] **DASH-03**: User sees upcoming deadlines (contract expirations, overdue tasks, due invoices)
-- [ ] **DASH-04**: User sees approval queue widget (top pending approvals)
-- [ ] **DASH-05**: User sees recent activity feed
-- [ ] **RPT-01**: User can view spend report by contractor (trend + totals)
-- [ ] **RPT-02**: User can view spend report by team/project/cost center
-- [ ] **RPT-03**: User can view contracts expiring in 30/60/90 days
-- [ ] **RPT-04**: User can view overdue invoices report
-- [ ] **RPT-05**: User can view compliance gaps report (missing documents)
-- [ ] **RPT-06**: User can filter reports by date range and export to CSV
+- [x] **DASH-01**: User sees KPI cards: active contractors, invoices awaiting approval, ready-to-pay total, contracts expiring in 30 days, open tasks
+- [x] **DASH-02**: User sees month-over-month spend chart
+- [x] **DASH-03**: User sees upcoming deadlines (contract expirations, overdue tasks, due invoices)
+- [x] **DASH-04**: User sees approval queue widget (top pending approvals)
+- [x] **DASH-05**: User sees recent activity feed
+- [x] **RPT-01**: User can view spend report by contractor (trend + totals)
+- [x] **RPT-02**: User can view spend report by team/project/cost center
+- [x] **RPT-03**: User can view contracts expiring in 30/60/90 days
+- [x] **RPT-04**: User can view overdue invoices report
+- [x] **RPT-05**: User can view compliance gaps report (missing documents)
+- [x] **RPT-06**: User can filter reports by date range and export to CSV
 
 ### Onboarding & Polish
 
@@ -181,7 +181,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ORG-07 | Phase 1 | Complete |
 | ORG-08 | Phase 6 | Complete |
 | ORG-09 | Phase 4 | Complete |
-| ORG-10 | Phase 9 | Pending |
+| ORG-10 | Phase 9 | Complete |
 | CONT-01 | Phase 2 | Complete |
 | CONT-02 | Phase 2 | Complete |
 | CONT-03 | Phase 2 | Complete |
@@ -241,17 +241,17 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SLCK-01 | Phase 7 | Complete |
 | SLCK-02 | Phase 7 | Complete |
 | SLCK-03 | Phase 7 | Complete |
-| DASH-01 | Phase 9 | Pending |
-| DASH-02 | Phase 9 | Pending |
-| DASH-03 | Phase 9 | Pending |
-| DASH-04 | Phase 9 | Pending |
-| DASH-05 | Phase 9 | Pending |
-| RPT-01 | Phase 9 | Pending |
-| RPT-02 | Phase 9 | Pending |
-| RPT-03 | Phase 9 | Pending |
-| RPT-04 | Phase 9 | Pending |
-| RPT-05 | Phase 9 | Pending |
-| RPT-06 | Phase 9 | Pending |
+| DASH-01 | Phase 9 | Complete |
+| DASH-02 | Phase 9 | Complete |
+| DASH-03 | Phase 9 | Complete |
+| DASH-04 | Phase 9 | Complete |
+| DASH-05 | Phase 9 | Complete |
+| RPT-01 | Phase 9 | Complete |
+| RPT-02 | Phase 9 | Complete |
+| RPT-03 | Phase 9 | Complete |
+| RPT-04 | Phase 9 | Complete |
+| RPT-05 | Phase 9 | Complete |
+| RPT-06 | Phase 9 | Complete |
 | IMP-01 | Phase 10 | Pending |
 | IMP-02 | Phase 10 | Pending |
 | IMP-03 | Phase 10 | Pending |
