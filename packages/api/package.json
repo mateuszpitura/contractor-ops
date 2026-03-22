@@ -31,7 +31,8 @@
     }
   },
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "test": "vitest run"
   },
   "dependencies": {
     "@contractor-ops/auth": "workspace:*",
@@ -43,6 +44,7 @@
     "bir1": "^4.1.1",
     "clamscan": "^2.4.0",
     "file-type": "^21.3.3",
+    "mt940js": "^1.3.5",
     "react": "^19.0.0",
     "resend": "^4.8.0",
     "superjson": "^2.2.0",
@@ -52,6 +54,7 @@
   "devDependencies": {
     "@prisma/client": "^7.5.0",
     "@types/react": "^19.0.0",
-    "typescript": "^5.7.0"
+    "typescript": "^5.7.0",
+    "vitest": "^4.1.0"
   }
 }
