@@ -169,7 +169,7 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 08-01-PLAN.md — Payment validators, tRPC router (full lifecycle, export generators, bank statement parser), approval paymentStatus fix
+- [x] 08-01-PLAN.md — Payment validators, tRPC router (full lifecycle, export generators, bank statement parser), approval paymentStatus fix
 - [ ] 08-02-PLAN.md — /payments page with run history table, new payment run dialog (3-step), side panel, bank statement import dialog
 - [ ] 08-03-PLAN.md — Contractor profile Payments tab, Settings transfer title template, full i18n (EN + PL)
 

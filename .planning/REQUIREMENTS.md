@@ -89,7 +89,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **PAY-03**: Finance user can export payment run as CSV or bank file format
 - [x] **PAY-04**: Finance user can mark individual items or entire run as paid/failed
 - [x] **PAY-05**: System tracks payment reference IDs and prevents duplicate payment runs (idempotency)
-- [ ] **PAY-06**: User can view payment run history with summary (total, count, by currency)
+- [x] **PAY-06**: User can view payment run history with summary (total, count, by currency)
 
 ### Notifications & Integrations
 
@@ -234,7 +234,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PAY-03 | Phase 8 | Complete |
 | PAY-04 | Phase 8 | Complete |
 | PAY-05 | Phase 8 | Complete |
-| PAY-06 | Phase 8 | Pending |
+| PAY-06 | Phase 8 | Complete |
 | NOTF-01 | Phase 7 | Complete |
 | NOTF-02 | Phase 7 | Complete |
 | NOTF-03 | Phase 7 | Complete |

@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 08-00-PLAN.md
-last_updated: "2026-03-22T11:25:39.988Z"
+stopped_at: Completed 08-01-PLAN.md
+last_updated: "2026-03-22T11:33:32.310Z"
 progress:
   total_phases: 10
   completed_phases: 7
   total_plans: 38
-  completed_plans: 35
+  completed_plans: 36
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-18)
 ## Current Position
 
 Phase: 08 (payments) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 
 ## Performance Metrics
 
@@ -75,6 +75,7 @@ Plan: 2 of 4
 | Phase 07 P04 | 8min | 2 tasks | 8 files |
 | Phase 07 P05 | 7min | 2 tasks | 7 files |
 | Phase 08-payments P00 | 2min | 1 tasks | 5 files |
+| Phase 08-payments P01 | 8min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -170,6 +171,9 @@ Recent decisions affecting current work:
 - [Phase 07]: Structured Notifications i18n namespace with backward-compatible flat keys for Plan 03-04
 - [Phase 08-00]: Vitest globals enabled for describe/it/expect without imports in test files
 - [Phase 08-00]: Test include pattern src/**/__tests__/**/*.test.ts for colocated test directories
+- [Phase 08-payments]: bankAccountMasked field used for IBAN in exports (ContractorBillingProfile stores masked, not raw IBAN)
+- [Phase 08-payments]: VALID_TRANSITIONS state machine for payment run lifecycle (DRAFT->LOCKED->EXPORTED->COMPLETED/FAILED/CANCELLED)
+- [Phase 08-payments]: Pure function export generators (CSV/Elixir/SEPA) in payment-export.ts service, bank statement matching in bank-statement.ts
 
 ### Pending Todos
 
@@ -183,6 +187,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22T11:25:39.986Z
-Stopped at: Completed 08-00-PLAN.md
+Last session: 2026-03-22T11:33:32.308Z
+Stopped at: Completed 08-01-PLAN.md
 Resume file: None
