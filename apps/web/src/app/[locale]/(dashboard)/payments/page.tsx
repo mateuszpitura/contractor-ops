@@ -17,6 +17,8 @@ import {
 import { PaymentRunDataTable } from "@/components/payments/payment-run-table/data-table";
 import { DataTableToolbar } from "@/components/payments/payment-run-table/data-table-toolbar";
 import { PaymentRunSidePanel } from "@/components/payments/payment-run-side-panel";
+import { NewPaymentRunDialog } from "@/components/payments/new-payment-run-dialog";
+import { BankStatementDialog } from "@/components/payments/bank-statement-dialog";
 
 // ---------------------------------------------------------------------------
 // Inner content (uses nuqs, needs Suspense boundary)
@@ -216,9 +218,25 @@ function PaymentsContent() {
         onImportStatement={(runId) => setBankStatementRunId(runId)}
       />
 
-      {/* Dialog placeholder: NewPaymentRunDialog will be wired in Task 2 */}
-      {/* <NewPaymentRunDialog open={dialogOpen} onOpenChange={setDialogOpen} /> */}
-      {/* <BankStatementDialog runId={bankStatementRunId} open={!!bankStatementRunId} onOpenChange={(open) => { if (!open) setBankStatementRunId(null); }} /> */}
+      {/* New payment run dialog */}
+      <NewPaymentRunDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        onViewRun={() => {
+          // After dialog creates a run, refresh the list
+        }}
+      />
+
+      {/* Bank statement import dialog */}
+      {bankStatementRunId && (
+        <BankStatementDialog
+          runId={bankStatementRunId}
+          open={!!bankStatementRunId}
+          onOpenChange={(open) => {
+            if (!open) setBankStatementRunId(null);
+          }}
+        />
+      )}
     </div>
   );
 }
