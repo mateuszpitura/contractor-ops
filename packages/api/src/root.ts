@@ -11,6 +11,7 @@ import { approvalRouter } from "./routers/approval.js";
 import { notificationRouter } from "./routers/notification.js";
 import { reminderRouter } from "./routers/reminder.js";
 import { integrationRouter } from "./routers/integration.js";
+import { paymentRouter } from "./routers/payment.js";
 
 /**
  * Root tRPC router merging all sub-routers.
@@ -27,6 +28,7 @@ import { integrationRouter } from "./routers/integration.js";
  * - notification: list, unread count, mark read, preferences CRUD
  * - reminder: reminder rule CRUD, toggle active, cascade delete instances
  * - integration: Slack OAuth, connection status, user mappings, link/unlink, sync
+ * - payment: run CRUD, lock+export (CSV/Elixir/SEPA), status tracking, bank statement import, contractor payment history
  */
 export const appRouter = router({
   organization: organizationRouter,
@@ -41,6 +43,7 @@ export const appRouter = router({
   notification: notificationRouter,
   reminder: reminderRouter,
   integration: integrationRouter,
+  payment: paymentRouter,
 });
 
 /** Type-safe router type for client consumption */

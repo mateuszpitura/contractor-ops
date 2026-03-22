@@ -416,11 +416,15 @@ export const approvalRouter = router({
         // Advance flow
         const advanceResult = await advanceFlow(tx, step.approvalFlowId);
 
-        // If flow completed, update invoice status
+        // If flow completed, update invoice status and payment status
         if (advanceResult.completed) {
           await tx.invoice.update({
             where: { id: step.approvalFlow.resourceId },
-            data: { status: "APPROVED" },
+            data: {
+              status: "APPROVED",
+              paymentStatus: "READY",
+              readyForPaymentAt: new Date(),
+            },
           });
         }
 
@@ -808,7 +812,11 @@ export const approvalRouter = router({
             if (advanceResult.completed) {
               await tx.invoice.update({
                 where: { id: step.approvalFlow.resourceId },
-                data: { status: "APPROVED" },
+                data: {
+                  status: "APPROVED",
+                  paymentStatus: "READY",
+                  readyForPaymentAt: new Date(),
+                },
               });
             }
           });
