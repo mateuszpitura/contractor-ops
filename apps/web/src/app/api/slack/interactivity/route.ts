@@ -1,3 +1,8 @@
+/**
+ * @deprecated Phase 12: Use /api/webhooks/slack instead.
+ * This route remains for backward compatibility during Slack app URL migration.
+ * Remove after Slack app webhook URL is updated to /api/webhooks/slack.
+ */
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { createHmac, timingSafeEqual } from "node:crypto";

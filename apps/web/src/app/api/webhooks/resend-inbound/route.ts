@@ -1,3 +1,8 @@
+/**
+ * @deprecated Phase 12: Use /api/webhooks/resend instead.
+ * This route remains for backward compatibility during Resend webhook URL migration.
+ * Remove after Resend webhook URL is updated to /api/webhooks/resend.
+ */
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { Resend } from "resend";

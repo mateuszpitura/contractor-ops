@@ -42,6 +42,9 @@ importers:
       '@contractor-ops/db':
         specifier: workspace:^
         version: link:../../packages/db
+      '@contractor-ops/integrations':
+        specifier: workspace:*
+        version: link:../../packages/integrations
       '@dnd-kit/core':
         specifier: 6.3.1
         version: 6.3.1(react-dom@19.2.4(react@19.2.4))(react@19.2.4)

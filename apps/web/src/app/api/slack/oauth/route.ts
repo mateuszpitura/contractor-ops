@@ -1,3 +1,8 @@
+/**
+ * @deprecated Phase 12: Use /api/oauth/[provider]/callback instead.
+ * This route remains for backward compatibility during Slack app URL migration.
+ * Remove after Slack app configuration is updated to use the new OAuth callback URL.
+ */
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { createHmac, timingSafeEqual } from "node:crypto";
