@@ -205,7 +205,7 @@ Plans:
 **Plans**: 5 plans
 
 Plans:
-- [ ] 10-01-PLAN.md — Import processor service, import tRPC router, search tRPC router, invoice search vector migration
+- [x] 10-01-PLAN.md — Import processor service, import tRPC router, search tRPC router, invoice search vector migration
 - [x] 10-02-PLAN.md — Reusable EmptyState component, onboarding checklist widget, dashboard integration
 - [ ] 10-03-PLAN.md — Import wizard UI (5-step: upload, column mapping, validation preview, duplicate resolution, confirmation)
 - [ ] 10-04-PLAN.md — Command palette (Cmd+K), global search bar, empty state integration across all list views
@@ -227,4 +227,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 7. Notifications & Slack | 5/5 | Complete   | 2026-03-22 |
 | 8. Payments | 0/3 | Not started | - |
 | 9. Dashboard & Reports | 0/5 | Not started | - |
-| 10. Onboarding & Polish | 1/5 | In Progress|  |
+| 10. Onboarding & Polish | 2/5 | In Progress|  |

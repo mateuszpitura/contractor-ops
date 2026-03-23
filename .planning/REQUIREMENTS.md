@@ -116,14 +116,14 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Onboarding & Polish
 
-- [ ] **IMP-01**: User can import contractors from CSV/XLSX with column mapping wizard
-- [ ] **IMP-02**: System validates imported data and shows preview before committing
-- [ ] **IMP-03**: User can import contracts from CSV/XLSX with basic metadata
+- [x] **IMP-01**: User can import contractors from CSV/XLSX with column mapping wizard
+- [x] **IMP-02**: System validates imported data and shows preview before committing
+- [x] **IMP-03**: User can import contracts from CSV/XLSX with basic metadata
 - [x] **I18N-01**: All UI strings are externalized and available in Polish and English
 - [x] **I18N-02**: Dates, numbers, and currency are formatted according to user locale
 - [x] **ONBD-01**: New org sees guided setup wizard (org details → invite team → add/import contractor → configure approvals → connect Slack)
 - [x] **ONBD-02**: Empty states show contextual call-to-action on every view
-- [ ] **SRCH-01**: User can search across contractors, contracts, invoices from global search bar
+- [x] **SRCH-01**: User can search across contractors, contracts, invoices from global search bar
 - [ ] **SRCH-02**: User can use command palette (Cmd+K) for search + quick actions + navigation
 
 ## v2 Requirements
@@ -252,14 +252,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 | RPT-04 | Phase 9 | Complete |
 | RPT-05 | Phase 9 | Complete |
 | RPT-06 | Phase 9 | Complete |
-| IMP-01 | Phase 10 | Pending |
-| IMP-02 | Phase 10 | Pending |
-| IMP-03 | Phase 10 | Pending |
+| IMP-01 | Phase 10 | Complete |
+| IMP-02 | Phase 10 | Complete |
+| IMP-03 | Phase 10 | Complete |
 | I18N-01 | Phase 1 | Complete |
 | I18N-02 | Phase 1 | Complete |
 | ONBD-01 | Phase 10 | Complete |
 | ONBD-02 | Phase 10 | Complete |
-| SRCH-01 | Phase 10 | Pending |
+| SRCH-01 | Phase 10 | Complete |
 | SRCH-02 | Phase 10 | Pending |
 
 **Coverage:**
