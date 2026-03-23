@@ -90,7 +90,7 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 14-01-PLAN.md — DB models (ContractorChangeRequest, ContractorNotificationPreference), change request service, portal + admin API endpoints
+- [x] 14-01-PLAN.md — DB models (ContractorChangeRequest, ContractorNotificationPreference), change request service, portal + admin API endpoints
 - [ ] 14-02-PLAN.md — Portal settings page with profile sections (inline edit, approval flow), notification preference toggles
 - [ ] 14-03-PLAN.md — Portal layout brand color injection, admin branding section (color picker + logo), change request diff cards in approvals
 
@@ -207,7 +207,7 @@ Phases execute in numeric order: 12 → 13 → 14 → 15 → 16 → 17 → 18 �
 | 11. Route Fixes & Tenant Isolation | v1.0 | 2/2 | Complete | 2026-03-23 |
 | 12. Integration Foundation | v2.0 | 5/5 | Complete    | 2026-03-23 |
 | 13. Contractor Portal Auth & Core Views | v2.0 | 5/5 | Complete    | 2026-03-23 |
-| 14. Portal Self-Service & Branding | v2.0 | 0/3 | Not started | - |
+| 14. Portal Self-Service & Branding | v2.0 | 1/3 | In Progress|  |
 | 15. E-Sign Integration | v2.0 | 0/0 | Not started | - |
 | 16. OCR Invoice Parsing | v2.0 | 0/0 | Not started | - |
 | 17. KSeF Integration | v2.0 | 0/0 | Not started | - |

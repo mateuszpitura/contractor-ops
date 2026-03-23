@@ -20,9 +20,9 @@ Requirements for v2.0 Platform Expansion. Each maps to roadmap phases.
 - [x] **PORT-03**: Contractor can submit invoices via portal that enter org's intake pipeline
 - [x] **PORT-04**: Contractor can track invoice and payment status through approval and payment
 - [x] **PORT-05**: Contractor can view and download own documents (contracts, NDAs, tax forms)
-- [ ] **PORT-06**: Contractor can edit own profile (bank details, tax info, contact) with org approval
-- [ ] **PORT-07**: Contractor can configure notification email preferences
-- [ ] **PORT-08**: Portal displays org branding (logo, colors, custom subdomain/path)
+- [x] **PORT-06**: Contractor can edit own profile (bank details, tax info, contact) with org approval
+- [x] **PORT-07**: Contractor can configure notification email preferences
+- [x] **PORT-08**: Portal displays org branding (logo, colors, custom subdomain/path)
 
 ### Time Tracking
 
@@ -121,9 +121,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PORT-03 | Phase 13 | Complete |
 | PORT-04 | Phase 13 | Complete |
 | PORT-05 | Phase 13 | Complete |
-| PORT-06 | Phase 14 | Pending |
-| PORT-07 | Phase 14 | Pending |
-| PORT-08 | Phase 14 | Pending |
+| PORT-06 | Phase 14 | Complete |
+| PORT-07 | Phase 14 | Complete |
+| PORT-08 | Phase 14 | Complete |
 | TIME-01 | Phase 18 | Pending |
 | TIME-02 | Phase 18 | Pending |
 | TIME-03 | Phase 18 | Pending |
