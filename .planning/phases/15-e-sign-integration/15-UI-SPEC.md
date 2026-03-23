@@ -142,7 +142,7 @@ Accent reserved for: "Send for Signature" primary CTA button on contract detail 
 - Section 3 -- Message: Label "Message to Signers" + Textarea (3 rows, placeholder: "Optional message included in the signing email"). 16px bottom margin.
 - Section 4 -- Document: Label "Document" + DocumentPreview showing the contract PDF. File name + page count. 16px bottom margin.
 - Section 5 -- Options: Two fields side by side (8px gap). "Expires After" -- Select with options: 7 days, 14 days, 30 days, 60 days (default: 14 days). "Send Reminders" -- Select with options: None, Every 3 days, Every 7 days (default: Every 7 days). 24px bottom margin.
-- Footer: "Send for Signature" primary button (right-aligned) + "Cancel" outline button. Send button shows loading spinner when submitting.
+- Footer: "Send for Signature" primary button (right-aligned) + "Discard" outline button. Send button shows loading spinner when submitting.
 
 ### Documents Tab Per-Document Action (D-06)
 - Each document row in DocumentsTab gets a "Send for Signature" action in its dropdown menu
@@ -177,7 +177,7 @@ Accent reserved for: "Send for Signature" primary CTA button on contract detail 
 - Full-viewport overlay (z-50). Background: white.
 - Top bar: 56px height, border-bottom, flex between.
   - Left: Document title at `text-sm font-semibold`
-  - Right: Close button (X icon, ghost variant, 32x32px)
+  - Right: Close button (X icon, ghost variant, 32x32px, `aria-label="Close signing modal"`)
 - Body: iframe element, width 100%, height calc(100dvh - 56px)
 - Fallback (when embedded not supported): centered Card (max-width 480px) with provider logo, "You will be redirected to {provider} to complete signing", "Continue to {provider}" primary button, "Cancel" outline button
 - On signing complete (postMessage/callback from provider): close modal, show success toast, refresh contract detail
@@ -239,7 +239,7 @@ Accent reserved for: "Send for Signature" primary CTA button on contract detail 
 | Reminders label | "Send Reminders" |
 | Send button | "Send for Signature" |
 | Send button loading | "Sending..." |
-| Cancel button | "Cancel" |
+| Discard button | "Discard" |
 | Success toast: sent | "Document sent for signature" |
 | Success toast: signed | "Document signed successfully" |
 | Success toast: completed | "All parties have signed. Document saved." |
