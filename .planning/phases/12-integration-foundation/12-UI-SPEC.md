@@ -25,6 +25,12 @@ created: 2026-03-23
 
 ---
 
+## Focal Point
+
+Primary visual anchor: the provider card grid — status badges draw first attention.
+
+---
+
 ## Spacing Scale
 
 Declared values (must be multiples of 4):
@@ -48,11 +54,11 @@ Exceptions: none
 | Role | Size | Weight | Line Height |
 |------|------|--------|-------------|
 | Body | 14px | 400 (regular) | 1.5 |
-| Label | 12px | 500 (medium) | 1.5 |
+| Label | 12px | 400 (regular) | 1.5 |
 | Heading | 20px | 600 (semibold) | 1.2 |
 | Card title | 16px | 600 (semibold) | 1.3 |
 
-Source: `globals.css` base font-size 14px at line-height 1.5. Settings page heading uses `text-[20px] font-semibold`. Existing `slack-connection-card.tsx` uses `text-base font-semibold` (16px) for card titles.
+Source: `globals.css` base font-size 14px at line-height 1.5. Settings page heading uses `text-[20px] font-semibold`. Existing `slack-connection-card.tsx` uses `text-base font-semibold` (16px) for card titles. Label differentiates from Body through size alone (12px vs 14px).
 
 ---
 
@@ -65,7 +71,7 @@ Source: `globals.css` base font-size 14px at line-height 1.5. Settings page head
 | Accent (10%) | `--primary` oklch(0.507 0.215 264.05) — Indigo-600 | Connect CTA button, OAuth initiation button, active status ring |
 | Destructive | `--destructive` oklch(0.577 0.245 27.325) — Red-500 | Disconnect button text, error status badge, failed webhook rows |
 
-Accent reserved for: "Connect" CTA button (primary variant), "Re-authorize" CTA button, active focus rings on interactive elements, connection status dot for CONNECTED state.
+Accent reserved for: "Connect {Provider}" CTA button (primary variant), "Re-authorize Access" CTA button, active focus rings on interactive elements, connection status dot for CONNECTED state.
 
 ### Semantic Status Colors (established pattern from `slack-connection-card.tsx`)
 
@@ -88,25 +94,25 @@ Accent reserved for: "Connect" CTA button (primary variant), "Re-authorize" CTA 
 - Provider logo/icon: 32x32px (`size-8`), provider-specific SVG or Lucide fallback icon
 - Provider name: 16px semibold (`text-base font-semibold`)
 - Status badge: shadcn `Badge variant="secondary"` with semantic color class per status
-- Flex row with `gap-3` (12px) alignment
+- Flex row with `gap-2` (8px) alignment
 
 **Card Content — Disconnected state:**
 - Description text: 14px regular, `text-muted-foreground`
 - CTA: `Button` primary variant, label "Connect {Provider}"
 
 **Card Content — Connected state:**
-- Metadata rows: label (`text-muted-foreground`) + value (`font-medium`), stacked with `space-y-1`
+- Metadata rows: label (`text-muted-foreground`) + value, stacked with `space-y-1`
   - "Connected to: {display name}"
   - "Connected by: {user name}"
   - "Connected on: {date}"
   - "Token expires: {relative time}" (new field)
-- Actions row with `gap-2`: "Manage" outline button, "Disconnect" destructive-text outline button
+- Actions row with `gap-2`: "Manage Connection" outline button, "Disconnect {Provider}" destructive-text outline button
 
 **Card Content — Error / Re-auth state:**
 - Error description in `text-sm text-muted-foreground`
-- CTA: "Re-authorize" outline button
+- CTA: "Re-authorize Access" outline button
 
-**Interaction — Click "Manage":**
+**Interaction — Click "Manage Connection":**
 - Opens a Sheet (slide-over) from the right, 480px wide (`sm:max-w-[480px]`)
 - Sheet contains connection details + sync log + webhook log (see below)
 
@@ -116,7 +122,7 @@ Accent reserved for: "Connect" CTA button (primary variant), "Re-authorize" CTA 
 
 **Sheet Header:**
 - Provider logo (32px) + name (16px semibold) + status badge
-- "Re-authorize" and "Disconnect" action buttons in header
+- "Re-authorize Access" and "Disconnect {Provider}" action buttons in header
 
 **Section: Connection Details**
 - Key-value list using `dl` with `grid grid-cols-[140px_1fr] gap-y-2`
@@ -129,7 +135,7 @@ Accent reserved for: "Connect" CTA button (primary variant), "Re-authorize" CTA 
 - Show last 10 entries, newest first
 - Status cell: green dot for success, red dot for failure
 - Failed rows: `bg-destructive/5` subtle highlight
-- Empty state: inline message (no separate page)
+- Empty state: inline message "No sync activity yet. Activity will appear here once the connection starts syncing."
 - Pagination: "Load more" button at bottom (not page numbers)
 
 **Section: Recent Webhook Deliveries**
@@ -137,6 +143,7 @@ Accent reserved for: "Connect" CTA button (primary variant), "Re-authorize" CTA 
 - Table with columns: Received, Event Type, Status, Processing Time
 - Show last 10 entries, newest first
 - Status cell: green dot for delivered, amber for retrying, red for failed
+- Empty state: inline message "No webhook deliveries yet. Deliveries will appear here once the provider sends events."
 - Pagination: "Load more" button at bottom
 
 ### 3. Disconnect Confirmation Dialog
@@ -146,8 +153,8 @@ Accent reserved for: "Connect" CTA button (primary variant), "Re-authorize" CTA 
 **Content:**
 - Title: "Disconnect {Provider}?"
 - Description: specific to provider (see Copywriting Contract)
-- Cancel button: secondary
-- Confirm button: destructive variant, shows `Loader2` spinner while pending
+- Cancel button: secondary, label "Keep Connection"
+- Confirm button: destructive variant, label "Disconnect {Provider}", shows `Loader2` spinner while pending
 
 ### 4. Empty State (no providers configured)
 
@@ -167,9 +174,9 @@ Accent reserved for: "Connect" CTA button (primary variant), "Re-authorize" CTA 
 | Page heading | "Settings" (existing) |
 | Tab label | "Integrations" (existing) |
 | Primary CTA (disconnected) | "Connect {Provider}" (e.g., "Connect Slack") |
-| Primary CTA (re-auth) | "Re-authorize" |
-| Manage button | "Manage" |
-| Disconnect button | "Disconnect" |
+| Primary CTA (re-auth) | "Re-authorize Access" |
+| Manage button | "Manage Connection" |
+| Disconnect button | "Disconnect {Provider}" |
 | Empty state heading | "No integrations connected" |
 | Empty state body | "Connect a service below to enable automated syncing, webhook processing, and health monitoring." |
 | Error state (connection failed) | "Connection failed. Check your credentials and try again." |
@@ -177,10 +184,10 @@ Accent reserved for: "Connect" CTA button (primary variant), "Re-authorize" CTA 
 | Error state (webhook processing) | "Webhook processing failed. The delivery will be retried automatically." |
 | Disconnect confirmation title | "Disconnect {Provider}?" |
 | Disconnect confirmation body | "This will revoke stored credentials and stop all syncing. Existing data will not be deleted. You can reconnect at any time." |
-| Disconnect confirmation cancel | "Cancel" |
-| Disconnect confirmation confirm | "Disconnect" |
-| Sync log empty | "No sync activity yet" |
-| Webhook log empty | "No webhook deliveries yet" |
+| Disconnect confirmation cancel | "Keep Connection" |
+| Disconnect confirmation confirm | "Disconnect {Provider}" |
+| Sync log empty | "No sync activity yet. Activity will appear here once the connection starts syncing." |
+| Webhook log empty | "No webhook deliveries yet. Deliveries will appear here once the provider sends events." |
 | Token expiry healthy | "Expires in {time}" (green) |
 | Token expiry warning | "Expires in {time}" (amber, <1 hour) |
 | Token expiry critical | "Expired" (red) |
@@ -207,7 +214,7 @@ Source: Existing pattern from `slack-connection-card.tsx` lines 88-104.
 - No WebSocket infrastructure
 
 ### Disconnect Flow
-1. User clicks "Disconnect" on card or in sheet
+1. User clicks "Disconnect {Provider}" on card or in sheet
 2. AlertDialog opens with confirmation copy
 3. User confirms — mutation fires with loading spinner on confirm button
 4. On success: toast, invalidate queries, close dialog
