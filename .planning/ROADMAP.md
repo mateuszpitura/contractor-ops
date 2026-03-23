@@ -22,7 +22,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 8: Payments** - Payment run creation, batch export, status tracking with idempotency controls
 - [ ] **Phase 9: Dashboard & Reports** - KPI dashboard, spend and compliance reports, audit log viewer
 - [x] **Phase 10: Onboarding & Polish** - Data import wizard, product onboarding wizard, global search, and command palette (completed 2026-03-23)
-- [ ] **Phase 11: Route Fixes & Tenant Isolation** - Fix navigation hrefs, onboarding CTAs, Cmd+K action wiring, and tenant middleware isolation gap (Gap Closure)
+- [x] **Phase 11: Route Fixes & Tenant Isolation** - Fix navigation hrefs, onboarding CTAs, Cmd+K action wiring, and tenant middleware isolation gap (Gap Closure) (completed 2026-03-23)
 
 ## Phase Details
 
@@ -226,7 +226,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 11-01-PLAN.md — Fix sidebar navigation hrefs, onboarding CTAs, and Cmd+K quick action searchParam wiring
+- [x] 11-01-PLAN.md — Fix sidebar navigation hrefs, onboarding CTAs, and Cmd+K quick action searchParam wiring
 - [x] 11-02-PLAN.md — Verify tenantStore.run() already wired in tenant middleware (ORG-07 confirmed)
 
 ## Progress
@@ -246,4 +246,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 8. Payments | 0/3 | Not started | - |
 | 9. Dashboard & Reports | 0/5 | Not started | - |
 | 10. Onboarding & Polish | 5/5 | Complete    | 2026-03-23 |
-| 11. Route Fixes & Tenant Isolation | 1/2 | In Progress|  |
+| 11. Route Fixes & Tenant Isolation | 2/2 | Complete   | 2026-03-23 |
