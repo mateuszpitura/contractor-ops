@@ -21,6 +21,8 @@ import {
 import { usePathname } from "@/i18n/navigation";
 import { ContractWizardDialog } from "@/components/contracts/contract-wizard/wizard-dialog";
 import { NotificationPopover } from "@/components/notifications/notification-popover";
+import { useSearch } from "@/components/search/search-provider";
+import { CommandPalette } from "@/components/search/command-palette";
 
 /**
  * Top bar above main content area.
@@ -30,6 +32,7 @@ import { NotificationPopover } from "@/components/notifications/notification-pop
 export function TopBar() {
   const pathname = usePathname();
   const t = useTranslations("TopBar");
+  const { setOpen: setSearchOpen } = useSearch();
 
   const [contractWizardOpen, setContractWizardOpen] = useState(false);
 
@@ -104,14 +107,35 @@ export function TopBar() {
             <TooltipContent>{t("uploadInvoice")}</TooltipContent>
           </Tooltip>
 
+          {/* Search bar trigger */}
+          <button
+            type="button"
+            onClick={() => setSearchOpen(true)}
+            className="hidden md:flex h-9 w-[240px] items-center gap-2 rounded-md border bg-background px-3 text-sm text-muted-foreground hover:bg-accent"
+          >
+            <Search className="h-4 w-4" />
+            <span>{t("search")}...</span>
+            <kbd className="ml-auto rounded bg-muted px-1.5 py-0.5 text-[12px] font-mono text-muted-foreground">
+              Cmd+K
+            </kbd>
+          </button>
+
+          {/* Mobile search icon */}
           <Tooltip>
-            <TooltipTrigger render={<Button variant="ghost" size="icon" className="h-8 w-8" />}>
+            <TooltipTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 md:hidden"
+                  onClick={() => setSearchOpen(true)}
+                />
+              }
+            >
               <Search className="h-4 w-4" />
               <span className="sr-only">{t("search")}</span>
             </TooltipTrigger>
-            <TooltipContent>
-              {t("search")} <kbd className="ml-1 text-xs">{t("searchShortcut")}</kbd>
-            </TooltipContent>
+            <TooltipContent>{t("search")}</TooltipContent>
           </Tooltip>
 
           <NotificationPopover />
@@ -123,6 +147,9 @@ export function TopBar() {
         open={contractWizardOpen}
         onOpenChange={setContractWizardOpen}
       />
+
+      {/* Command palette (global search) */}
+      <CommandPalette />
     </>
   );
 }
