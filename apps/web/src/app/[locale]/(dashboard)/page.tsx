@@ -15,6 +15,7 @@ import { SpendChart } from "@/components/dashboard/spend-chart";
 import { DeadlinesWidget } from "@/components/dashboard/deadlines-widget";
 import { ApprovalQueueWidget } from "@/components/dashboard/approval-queue-widget";
 import { ActivityFeed } from "@/components/dashboard/activity-feed";
+import { OnboardingChecklist } from "@/components/onboarding/onboarding-checklist";
 
 // ---------------------------------------------------------------------------
 // Error boundary wrapper for individual widgets
@@ -94,6 +95,7 @@ function DashboardContent() {
 
         {/* Right column */}
         <div className="flex flex-col gap-6">
+          <OnboardingChecklist />
           <ApprovalQueueWidget />
           <ActivityFeed />
         </div>

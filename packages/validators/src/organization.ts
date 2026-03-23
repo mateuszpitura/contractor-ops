@@ -23,6 +23,11 @@ export const updateOrganizationSettingsSchema = z.object({
   fiscalYearStartMonth: z.number().int().min(1).max(12).optional(),
   billingEmail: z.string().email("Invalid billing email").optional(),
   language: z.enum(["pl", "en"]).optional(),
+  onboardingCompletedSteps: z
+    .array(z.string().min(1).max(50))
+    .max(10)
+    .optional(),
+  onboardingDismissed: z.boolean().optional(),
 });
 
 export type UpdateOrganizationSettingsInput = z.infer<typeof updateOrganizationSettingsSchema>;

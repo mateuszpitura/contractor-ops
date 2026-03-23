@@ -49,6 +49,11 @@ export const settingsRouter = router({
         metadataUpdates.billingEmail = input.billingEmail;
       if (input.language !== undefined)
         metadataUpdates.language = input.language;
+      if (input.onboardingCompletedSteps !== undefined)
+        metadataUpdates.onboardingCompletedSteps =
+          input.onboardingCompletedSteps;
+      if (input.onboardingDismissed !== undefined)
+        metadataUpdates.onboardingDismissed = input.onboardingDismissed;
 
       const data: {
         name?: string;
