@@ -28,6 +28,21 @@
       "types": "./src/types/index.ts",
       "import": "./src/types/index.ts",
       "default": "./src/types/index.ts"
+    },
+    "./services/qstash-client": {
+      "types": "./src/services/qstash-client.ts",
+      "import": "./src/services/qstash-client.ts",
+      "default": "./src/services/qstash-client.ts"
+    },
+    "./services/webhook-dispatcher": {
+      "types": "./src/services/webhook-dispatcher.ts",
+      "import": "./src/services/webhook-dispatcher.ts",
+      "default": "./src/services/webhook-dispatcher.ts"
+    },
+    "./adapters/register-all": {
+      "types": "./src/adapters/register-all.ts",
+      "import": "./src/adapters/register-all.ts",
+      "default": "./src/adapters/register-all.ts"
     }
   },
   "scripts": {
@@ -38,6 +53,7 @@
     "@contractor-ops/db": "workspace:*",
     "@upstash/qstash": "^2.10.1",
     "@upstash/redis": "^1.34.0",
+    "resend": "^4.8.0",
     "zod": "^3.23.0"
   },
   "devDependencies": {
