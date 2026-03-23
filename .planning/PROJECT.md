@@ -14,7 +14,7 @@ The invoice-to-payment flow must work end-to-end: a contractor's invoice arrives
 
 All 14 product modules delivered: org setup, RBAC, contractors, contracts, documents, workflows, invoices (upload + email intake), approvals, notifications (in-app + email + Slack), payments, dashboard, reports, data import, onboarding wizard, global search + Cmd+K. Full Polish + English i18n.
 
-**Phase 12 complete** — Generic integration infrastructure: provider adapter pattern, AES-256-GCM credential encryption, unified webhook ingestion via QStash, OAuth + token refresh with distributed locking, health monitoring with 30s polling, and provider settings UI. Foundation for all v2.0 third-party integrations.
+**Phase 13 complete** — Contractor portal with magic-link auth (SHA-256 sessions, 15-min tokens), portalProcedure middleware, 15-endpoint tRPC router, portal shell with top bar/mobile menu, org picker for multi-org contractors, read-only views (dashboard, contracts, documents, payments), and invoice submission with PDF upload. All queries scoped to authenticated contractor — no internal admin surface exposure.
 
 ## Requirements
 
@@ -46,7 +46,7 @@ All 14 product modules delivered: org setup, RBAC, contractors, contracts, docum
 
 ### Active
 
-- [ ] Contractor self-service portal with contract viewing, invoice submission, payment tracking, document upload, profile management
+- [x] Contractor portal — magic-link auth, contract viewing, invoice submission, payment tracking, document access — Phase 13
 - [ ] Time tracking integration (Clockify, Jira, manual reporting) in contractor portal
 - [ ] E-sign integration (DocuSign + Autenti) for contracts and NDAs
 - [ ] OCR invoice parsing — auto-extract fields from uploaded PDFs
@@ -144,4 +144,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-23 after Phase 12 (integration-foundation) completion*
+*Last updated: 2026-03-23 after Phase 13 (contractor-portal-auth-core-views) completion*
