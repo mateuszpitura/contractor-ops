@@ -5,6 +5,7 @@ status: draft
 shadcn_initialized: true
 preset: base-nova
 created: 2026-03-23
+revised: 2026-03-23
 ---
 
 # Phase 14 — UI Design Contract
@@ -41,7 +42,7 @@ Declared values (must be multiples of 4):
 | 2xl | 48px | Page-level vertical rhythm |
 | 3xl | 64px | Hero/centered layout vertical padding |
 
-Exceptions: Mobile touch targets minimum 44px height for all tappable elements (buttons, toggle switches, collapsible triggers). Portal top bar height: 56px (inherited). Collapsible section trigger row height: 48px minimum for touch friendliness.
+Exceptions: Mobile touch targets minimum 48px height for all tappable elements (buttons, toggle switches, collapsible triggers). Portal top bar height: 56px (inherited). Collapsible section trigger row height: 48px minimum for touch friendliness.
 
 ---
 
@@ -49,12 +50,13 @@ Exceptions: Mobile touch targets minimum 44px height for all tappable elements (
 
 | Role | Size | Tailwind Class | Weight | Line Height | Usage |
 |------|------|----------------|--------|-------------|-------|
-| Body | 14px | `text-sm` | 400 (regular) | 1.5 | Default text, field values in view mode, notification descriptions |
-| Label | 13px | `text-[13px]` | 400 (regular) | 1.4 | Form labels, section meta text, toggle labels, field captions |
+| Body | 14px | `text-sm` | 400 (regular) | 1.5 | Default text, field values in view mode, notification descriptions, form labels, section meta text, toggle labels, field captions |
 | Heading | 20px | `text-xl` | 600 (semibold) | 1.2 | Page title ("Settings"), collapsible section headings, admin branding card title |
 | Display | 28px | `text-[28px]` | 600 (semibold) | 1.2 | Not used in Phase 14 (no hero-level text on settings page) |
 
-Two weights only: 400 (`font-normal`) for body and label roles, 600 (`font-semibold`) for heading and display roles. Inherited from Phase 13.
+Two weights only: 400 (`font-normal`) for body role, 600 (`font-semibold`) for heading and display roles. Inherited from Phase 13.
+
+Note: Previous draft had a separate 13px Label role. Consolidated into 14px Body role because the 1px difference is visually indistinguishable. Muted text uses `text-muted-foreground` color token for visual differentiation instead of a smaller size.
 
 ---
 
@@ -82,7 +84,7 @@ Dynamic branding accent: Portal layout injects org-specific `--brand-accent` via
 | Component | Source | Phase 14 Usage |
 |-----------|--------|----------------|
 | Card, CardHeader, CardContent | `ui/card` | Section containers for profile info, financial details, notification prefs |
-| Button | `ui/button` | Edit/Save/Cancel actions, admin branding save |
+| Button | `ui/button` | Edit Section/Save Changes/Discard Changes actions, admin branding save |
 | Input, Label | `ui/input`, `ui/label` | Profile edit form fields |
 | Switch | `ui/switch` | Notification preference toggles (5 categories) |
 | Collapsible, CollapsibleTrigger, CollapsibleContent | `ui/collapsible` | Expandable sections on /portal/settings |
@@ -108,10 +110,10 @@ Dynamic branding accent: Portal layout injects org-specific `--brand-accent` via
 | Component | Description |
 |-----------|-------------|
 | PortalSettingsPage | Single page at /portal/settings. Three collapsible sections: Personal Information, Financial Details, Notification Preferences. Default: all expanded |
-| ProfileSection | Collapsible card section with view/edit toggle. Props: title, description, fields config, requiresApproval boolean. View mode: label + value pairs. Edit mode: inline form fields with Save/Cancel |
+| ProfileSection | Collapsible card section with view/edit toggle. Props: title, description, fields config, requiresApproval boolean. View mode: label + value pairs. Edit mode: inline form fields with Save Changes/Discard Changes |
 | PendingChangeBanner | Alert banner displayed at top of Financial Details section when a change request is pending. Shows: "Changes pending approval" heading, submitted values, submission date. Warning variant background |
 | NotificationPreferencesSection | 5 rows, each with category icon, label, description, and Switch toggle. Saves on toggle (optimistic update with error rollback) |
-| ChangeRequestDiffCard | Admin-side component in approval queue. Shows contractor name, field-by-field old-to-new diff, submission date. Approve/Reject buttons with optional comment Dialog |
+| ChangeRequestDiffCard | Admin-side component in approval queue. Shows contractor name, field-by-field old-to-new diff, submission date. Approve Changes/Reject Changes buttons with optional comment Dialog |
 | AdminBrandingSection | Card in admin org settings "General" tab. Logo upload area (drag + click), color picker (hex input + swatch grid), live preview strip showing button + link in selected color |
 | BrandColorPicker | Popover with 8 preset color swatches (grid) + hex input field. Swatches: slate-600, red-600, orange-600, amber-600, green-600, blue-600, indigo-600, violet-600. Selected swatch shows check icon + ring |
 | BrandPreviewStrip | Inline preview showing: sample button, sample link, sample active nav indicator -- all rendered in the currently selected brand color. Sits below color picker |
@@ -133,11 +135,11 @@ Dynamic branding accent: Portal layout injects org-specific `--brand-accent` via
 ### Personal Information Section (D-14, D-01)
 - View mode fields (label + value, 8px gap between pairs, 16px vertical spacing between fields):
   - Display name
-  - Email address (read-only, shown with lock icon and "Contact your organization to change" caption)
+  - Email address (read-only, shown with lock icon and "Contact your organization to change your email" caption)
   - Phone number
   - Address (street, city, postal code, country)
-- Edit button: ghost variant, top-right of section header, shows "Edit" label with Pencil icon
-- Edit mode: fields become Input components in-place. Save + Cancel buttons appear at section bottom (8px gap between buttons, Save is primary, Cancel is outline)
+- Edit button: ghost variant, top-right of section header, shows "Edit Section" label with Pencil icon
+- Edit mode: fields become Input components in-place. Save Changes + Discard Changes buttons appear at section bottom (8px gap between buttons, Save Changes is primary, Discard Changes is outline)
 - Changes take effect immediately (no approval required per D-01)
 - Success: sonner toast "Profile updated"
 
@@ -148,14 +150,14 @@ Dynamic branding accent: Portal layout injects org-specific `--brand-accent` via
   - SWIFT/BIC code
   - Tax ID (NIP)
 - Badge in section trigger: "Requires Approval" (`badge` variant with `--info` background)
-- Edit mode: same inline pattern as Personal Information
+- Edit mode: same inline pattern as Personal Information (Edit Section / Save Changes / Discard Changes)
 - Pre-save notice: Info banner below form fields. Text: "Changes to financial details require organization approval before taking effect." Blue info variant.
 - On save: Creates `ContractorChangeRequest`, shows PendingChangeBanner, fields revert to current approved values
 - PendingChangeBanner: Warning variant alert. Icon: Clock. Heading: "Changes Pending Approval". Body: "You submitted changes on {date}. Your current details remain active until approved." Expandable section showing submitted values as label + value pairs
 
 ### Notification Preferences Section (D-06, D-07)
 - 5 rows, each row: 48px min-height, horizontal layout
-  - Left: Lucide icon (20px, muted-foreground) + column of label (`text-sm font-normal`) and description (`text-[13px] text-muted-foreground`)
+  - Left: Lucide icon (20px, muted-foreground) + column of label (`text-sm font-normal`) and description (`text-sm text-muted-foreground`)
   - Right: Switch toggle (aligned right)
 - Categories with icons:
   1. Invoice Updates (Receipt icon): "Get notified when your invoice status changes"
@@ -169,15 +171,15 @@ Dynamic branding accent: Portal layout injects org-specific `--brand-accent` via
 ### Admin: Portal Branding Section (D-09, D-11)
 - Location: New card in admin settings General tab, below existing OrgSettingsForm
 - Card heading: "Portal Branding" at `text-sm font-semibold`
-- Card description: "Customize how the contractor portal looks for your organization" at `text-[13px] text-muted-foreground`
+- Card description: "Customize how the contractor portal looks for your organization" at `text-sm text-muted-foreground`
 - Logo upload area:
   - 80x80px dashed border square with Upload icon (24px, muted) centered
-  - Text below: "Upload logo" at `text-[13px]`
+  - Text below: "Upload logo" at `text-sm`
   - Accepts: PNG, JPG, SVG, max 2MB
   - After upload: shows logo preview with "Remove" text button
   - Uses existing R2 storage service
 - Brand color picker:
-  - Label: "Accent Color" at `text-[13px] font-normal`
+  - Label: "Accent Color" at `text-sm font-normal`
   - Color swatch button (24x24px rounded-md) showing current color + Popover trigger
   - Popover: 8 preset swatches in 4x2 grid (each 32x32px, rounded-md, 8px gap) + hex input below
   - Default: Indigo-600 (matches system default)
@@ -191,12 +193,12 @@ Dynamic branding accent: Portal layout injects org-specific `--brand-accent` via
 - Location: Appears in existing approval queue (alongside invoice approvals)
 - ChangeRequestDiffCard:
   - Card with "Profile Change Request" heading at `text-sm font-semibold`
-  - Contractor name + email at `text-[13px] text-muted-foreground`
+  - Contractor name + email at `text-sm text-muted-foreground`
   - Submitted: relative timestamp
   - Diff table: 3 columns -- Field, Current Value, Requested Value
   - Current Value: normal text. Requested Value: `font-semibold` to draw attention
   - Changed fields highlighted with `--muted` background row
-  - Action row: "Approve" primary button + "Reject" outline destructive button
+  - Action row: "Approve Changes" primary button + "Reject Changes" outline destructive button
   - Reject flow: Dialog opens with Textarea for reason (optional) + "Confirm Rejection" destructive button
   - Approve flow: Immediate action, no confirmation dialog needed (non-destructive)
 
@@ -212,9 +214,9 @@ Dynamic branding accent: Portal layout injects org-specific `--brand-accent` via
 | Section: Financial | "Financial Details" |
 | Section: Notifications | "Notification Preferences" |
 | Requires approval badge | "Requires Approval" |
-| Edit button | "Edit" |
+| Edit button | "Edit Section" |
 | Save button | "Save Changes" |
-| Cancel button | "Cancel" |
+| Cancel button | "Discard Changes" |
 | Financial pre-save notice | "Changes to financial details require organization approval before taking effect." |
 | Pending banner heading | "Changes Pending Approval" |
 | Pending banner body | "You submitted changes on {date}. Your current details remain active until approved." |
@@ -234,8 +236,8 @@ Dynamic branding accent: Portal layout injects org-specific `--brand-accent` via
 | Admin branding color label | "Accent Color" |
 | Admin branding save | "Save Branding" |
 | Admin change request heading | "Profile Change Request" |
-| Admin approve button | "Approve" |
-| Admin reject button | "Reject" |
+| Admin approve button | "Approve Changes" |
+| Admin reject button | "Reject Changes" |
 | Admin reject dialog title | "Reject Change Request" |
 | Admin reject dialog body | "Optionally provide a reason for rejection. The contractor will be notified." |
 | Admin reject dialog confirm | "Confirm Rejection" |
@@ -264,7 +266,7 @@ Dynamic branding accent: Portal layout injects org-specific `--brand-accent` via
 
 | Breakpoint | Width | Layout Changes |
 |------------|-------|----------------|
-| Mobile | <768px | Collapsible sections full-width. Form fields stack vertically. Save/Cancel buttons full-width stacked. Notification toggle rows stack (icon+text above, switch below). Admin branding color swatches 4x2 grid maintained. Logo upload centered. |
+| Mobile | <768px | Collapsible sections full-width. Form fields stack vertically. Save Changes/Discard Changes buttons full-width stacked. Notification toggle rows stack (icon+text above, switch below). Admin branding color swatches 4x2 grid maintained. Logo upload centered. |
 | Tablet | 768-1024px | Same as desktop. Settings section max-width 640px. |
 | Desktop | >1024px | Settings section max-width 640px left-aligned. Notification rows horizontal. Admin branding side-by-side where space allows. |
 
