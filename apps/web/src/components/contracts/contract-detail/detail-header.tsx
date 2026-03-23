@@ -43,6 +43,7 @@ import {
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
 import { Link } from "@/i18n/navigation";
+import { SendForSignatureButton } from "./send-for-signature-button";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -59,6 +60,18 @@ type DetailHeaderProps = {
       displayName: string;
       status: string;
     } | null;
+    /** Whether the contract has at least one document */
+    _documentCount?: number;
+    /** Whether at least one e-sign provider is connected */
+    _hasConnectedProvider?: boolean;
+    /** Parties for signer auto-population */
+    _contractParties?: Array<{
+      name: string;
+      email: string;
+      role: "signer" | "countersigner";
+    }>;
+    /** First document ID for pre-selection */
+    _firstDocumentId?: string;
   };
 };
 
@@ -68,13 +81,15 @@ type DetailHeaderProps = {
 
 const statusBadgeStyles: Record<string, string> = {
   DRAFT: "bg-muted text-muted-foreground border-border",
-  PENDING_SIGNATURE: "bg-muted text-muted-foreground border-border",
+  PENDING_SIGNATURE: "bg-amber-500/10 text-amber-600",
   ACTIVE: "bg-green-600/10 text-green-600",
   EXPIRING: "bg-amber-500/10 text-amber-600",
   EXPIRED: "bg-red-500/10 text-red-500",
   TERMINATED: "bg-muted text-muted-foreground border-border",
   SUPERSEDED: "bg-muted/50 text-muted-foreground/60 border-border/50",
   ARCHIVED: "bg-muted text-muted-foreground border-border",
+  SIGNATURE_DECLINED: "bg-red-500/10 text-red-500",
+  SIGNATURE_EXPIRED: "bg-red-500/10 text-red-500",
 };
 
 const statusLabels: Record<string, string> = {
@@ -86,6 +101,8 @@ const statusLabels: Record<string, string> = {
   TERMINATED: "Terminated",
   SUPERSEDED: "Superseded",
   ARCHIVED: "Archived",
+  SIGNATURE_DECLINED: "Signature Declined",
+  SIGNATURE_EXPIRED: "Signature Expired",
 };
 
 // ---------------------------------------------------------------------------
@@ -168,6 +185,14 @@ export function DetailHeader({ contract }: DetailHeaderProps) {
       </div>
 
       <div className="flex items-center gap-2">
+        <SendForSignatureButton
+          contractId={contract.id}
+          contractStatus={contract.status}
+          hasDocument={(contract._documentCount ?? 0) > 0}
+          hasConnectedProvider={contract._hasConnectedProvider ?? false}
+          documentId={contract._firstDocumentId}
+          contractParties={contract._contractParties}
+        />
         <DropdownMenu>
           <DropdownMenuTrigger
             render={(props) => (

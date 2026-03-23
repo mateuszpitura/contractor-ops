@@ -54,7 +54,20 @@ export function ContractDetailTabs({ contract }: ContractDetailTabsProps) {
       </TabsContent>
 
       <TabsContent value="documents" className="mt-4 min-h-[400px]">
-        <DocumentsTab contractId={contract.id} />
+        <DocumentsTab
+          contractId={contract.id}
+          contractParties={
+            contract.contractor
+              ? [
+                  {
+                    name: contract.contractor.displayName,
+                    email: contract.contractor.email ?? "",
+                    role: "signer" as const,
+                  },
+                ]
+              : []
+          }
+        />
       </TabsContent>
 
       <TabsContent value="amendments" className="mt-4 min-h-[400px]">

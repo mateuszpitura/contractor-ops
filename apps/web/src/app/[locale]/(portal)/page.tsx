@@ -16,6 +16,7 @@ import {
   SummaryCard,
   SummaryCardSkeleton,
 } from "@/components/portal/summary-card";
+import { PortalPendingSignatures } from "@/components/portal/portal-pending-signatures";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -93,8 +94,11 @@ export default function PortalOverviewPage() {
 
   return (
     <div>
+      {/* Pending Signatures (above greeting per UI-SPEC D-04) */}
+      <PortalPendingSignatures />
+
       {/* Greeting */}
-      <h1 className="text-[28px] font-semibold leading-[1.2]">
+      <h1 className="mt-6 text-[28px] font-semibold leading-[1.2]">
         {isLoading ? (
           <Skeleton className="h-9 w-64" />
         ) : (

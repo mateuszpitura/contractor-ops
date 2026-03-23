@@ -20,6 +20,7 @@ import { Link } from "@/i18n/navigation";
 
 import { DetailHeader } from "@/components/contracts/contract-detail/detail-header";
 import { ContractDetailTabs } from "@/components/contracts/contract-detail/contract-detail-tabs";
+import { SigningProgressBar } from "@/components/contracts/contract-detail/signing-progress-bar";
 
 function HeaderSkeleton() {
   return (
@@ -70,6 +71,26 @@ export default function ContractDetailPage() {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const contract = contractQuery.data as any;
+
+  // E-sign: check for connected providers
+  const connectionsQuery = useQuery(
+    trpc.esign.listConnections.queryOptions()
+  );
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const esignConnections = (connectionsQuery.data ?? []) as any[];
+
+  // E-sign: fetch signing envelopes for this contract
+  const envelopesQuery = useQuery(
+    trpc.esign.listEnvelopes.queryOptions(
+      { contractId: params.id },
+      { enabled: !!params.id }
+    )
+  );
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const envelopes = (envelopesQuery.data ?? []) as any[];
+  const activeEnvelope = envelopes.find((e: { status: string }) =>
+    ["SENT", "DELIVERED", "CREATED"].includes(e.status)
+  );
 
   if (contractQuery.isError) {
     const isNotFound =
@@ -125,7 +146,28 @@ export default function ContractDetailPage() {
       {contractQuery.isLoading || !contract ? (
         <HeaderSkeleton />
       ) : (
-        <DetailHeader contract={contract} />
+        <DetailHeader
+          contract={{
+            ...contract,
+            _documentCount: contract.documents?.length ?? contract._meta?.documentCount ?? 0,
+            _hasConnectedProvider: esignConnections.length > 0,
+            _contractParties: contract.contractor
+              ? [
+                  {
+                    name: contract.contractor.displayName,
+                    email: contract.contractor.email ?? "",
+                    role: "signer" as const,
+                  },
+                ]
+              : [],
+            _firstDocumentId: contract.documents?.[0]?.id,
+          }}
+        />
+      )}
+
+      {/* Signing progress (between header and tabs) */}
+      {activeEnvelope && (
+        <SigningProgressBar envelope={activeEnvelope} />
       )}
 
       {/* Tabs */}
