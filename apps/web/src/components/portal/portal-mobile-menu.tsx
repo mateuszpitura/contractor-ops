@@ -1,0 +1,145 @@
+"use client";
+
+import {
+  LayoutDashboard,
+  FileText,
+  Receipt,
+  FolderOpen,
+  Banknote,
+  LogOut,
+} from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
+
+// ---------------------------------------------------------------------------
+// Navigation items (same as top bar)
+// ---------------------------------------------------------------------------
+
+const NAV_ITEMS = [
+  { label: "Overview", href: "/portal", icon: LayoutDashboard },
+  { label: "Contracts", href: "/portal/contracts", icon: FileText },
+  { label: "Invoices", href: "/portal/invoices", icon: Receipt },
+  { label: "Documents", href: "/portal/documents", icon: FolderOpen },
+  { label: "Payments", href: "/portal/payments", icon: Banknote },
+] as const;
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function isNavActive(href: string, pathname: string): boolean {
+  const path = pathname.replace(/^\/[a-z]{2}(?=\/)/, "");
+  if (href === "/portal") {
+    return path === "/portal" || path === "/portal/";
+  }
+  return path.startsWith(href);
+}
+
+// ---------------------------------------------------------------------------
+// Props
+// ---------------------------------------------------------------------------
+
+interface PortalMobileMenuProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  orgName: string;
+  contractorName: string;
+  contractorEmail: string;
+}
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
+
+/**
+ * Mobile navigation menu for the portal.
+ * Uses Sheet (slide from right) per UI-SPEC D-03.
+ * Full-width nav links with active highlighting,
+ * contractor info, and sign out at the bottom.
+ */
+export function PortalMobileMenu({
+  open,
+  onOpenChange,
+  orgName,
+  contractorName,
+  contractorEmail,
+}: PortalMobileMenuProps) {
+  const pathname = usePathname();
+  const router = useRouter();
+
+  const handleNavClick = (href: string) => {
+    onOpenChange(false);
+    router.push(href);
+  };
+
+  const handleLogout = async () => {
+    onOpenChange(false);
+    try {
+      await fetch("/api/portal/clear-session", { method: "POST" });
+    } finally {
+      router.push("/portal/login");
+    }
+  };
+
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="right" className="flex flex-col">
+        <SheetHeader>
+          <SheetTitle>{orgName}</SheetTitle>
+          <SheetDescription className="sr-only">
+            Portal navigation menu
+          </SheetDescription>
+        </SheetHeader>
+
+        {/* Navigation links */}
+        <nav className="flex flex-col flex-1" aria-label="Mobile portal navigation">
+          {NAV_ITEMS.map((item) => {
+            const active = isNavActive(item.href, pathname);
+            return (
+              <button
+                key={item.href}
+                type="button"
+                onClick={() => handleNavClick(item.href)}
+                className={cn(
+                  "flex items-center gap-3 border-b px-4 py-3 text-base transition-colors text-left",
+                  active
+                    ? "bg-accent/50 text-foreground font-medium"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent/30"
+                )}
+              >
+                <item.icon className="h-5 w-5 shrink-0" />
+                {item.label}
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Bottom: Contractor info + sign out */}
+        <div className="mt-auto p-4">
+          <Separator className="mb-4" />
+          <div className="mb-3">
+            <p className="text-sm font-medium">{contractorName}</p>
+            <p className="text-xs text-muted-foreground">{contractorEmail}</p>
+          </div>
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={handleLogout}
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Sign out
+          </Button>
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}

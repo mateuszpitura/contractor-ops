@@ -28,6 +28,11 @@
       "types": "./src/services/notification-service.ts",
       "import": "./src/services/notification-service.ts",
       "default": "./src/services/notification-service.ts"
+    },
+    "./services/portal-session": {
+      "types": "./src/services/portal-session.ts",
+      "import": "./src/services/portal-session.ts",
+      "default": "./src/services/portal-session.ts"
     }
   },
   "scripts": {
