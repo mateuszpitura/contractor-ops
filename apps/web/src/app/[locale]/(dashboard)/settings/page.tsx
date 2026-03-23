@@ -9,15 +9,12 @@ import { TransferTitleSettings } from "@/components/settings/transfer-title-sett
 import { ApprovalChainsTab } from "@/components/settings/approval-chains-tab";
 import { NotificationPreferences } from "@/components/settings/notification-preferences";
 import { ReminderRulesSection } from "@/components/settings/reminder-rules-section";
-import { SlackConnectionCard } from "@/components/settings/slack-connection-card";
-import { SlackUserMapping } from "@/components/settings/slack-user-mapping";
+import { IntegrationsTab } from "@/components/settings/integrations-tab";
 import { AuditLogTab } from "@/components/settings/audit-log-tab";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { usePermissions } from "@/hooks/use-permissions";
 import { parseAsString, useQueryState } from "nuqs";
-import { useQuery } from "@tanstack/react-query";
-import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Inner content (uses nuqs, needs Suspense boundary)
@@ -36,12 +33,6 @@ function SettingsContent() {
 
   const canManageIntegrations = can("organization", ["update"]);
   const canViewAuditLog = can("settings", ["read"]);
-
-  // Check Slack connection status for user mapping visibility
-  const slackStatusQuery = useQuery(
-    trpc.integration.getSlackStatus.queryOptions(),
-  );
-  const isSlackConnected = slackStatusQuery.data?.connected === true;
 
   return (
     <div className="space-y-6">
@@ -93,8 +84,7 @@ function SettingsContent() {
 
         {canManageIntegrations && (
           <TabsContent value="integrations" className="mt-6 space-y-8">
-            <SlackConnectionCard />
-            {isSlackConnected && <SlackUserMapping />}
+            <IntegrationsTab />
           </TabsContent>
         )}
 

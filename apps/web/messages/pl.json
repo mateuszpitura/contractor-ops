@@ -424,6 +424,56 @@
         "linkFailed": "Nie udalo sie polaczac uzytkownika Slack. Sprobuj ponownie."
       }
     },
+    "provider": {
+      "connectCta": "Polacz {provider}",
+      "disconnectCta": "Rozlacz {provider}",
+      "reconnectCta": "Ponowna autoryzacja",
+      "manageCta": "Zarzadzaj polaczeniem",
+      "connectedTo": "Polaczono z",
+      "connectedBy": "Polaczono przez",
+      "connectedOn": "Polaczono",
+      "tokenExpires": "Token wygasa",
+      "scopes": "Zakresy",
+      "lastRefresh": "Ostatnie odswiezenie",
+      "status": "Status",
+      "statusConnected": "Polaczony",
+      "statusDisconnected": "Niepolaczony",
+      "statusError": "Blad",
+      "statusReauth": "Wymagana ponowna autoryzacja",
+      "errorConnectionFailed": "Polaczenie nie powiodlo sie. Sprawdz dane uwierzytelniajace i sprobuj ponownie.",
+      "errorTokenExpired": "Autoryzacja wygasla. Ponownie autoryzuj, aby przywrocic polaczenie.",
+      "tokenExpiryExpired": "Wygasl",
+      "syncLogHeading": "Dziennik synchronizacji",
+      "syncLogEmpty": "Brak aktywnosci synchronizacji. Aktywnosc pojawi sie tutaj po rozpoczeciu synchronizacji.",
+      "syncLogTimestamp": "Czas",
+      "syncLogAction": "Akcja",
+      "syncLogStatus": "Status",
+      "syncLogDuration": "Czas trwania",
+      "webhookLogHeading": "Dostarczenia webhook",
+      "webhookLogEmpty": "Brak dostarczenia webhook. Dostarczenia pojawia sie tutaj, gdy dostawca zacznie wysylac zdarzenia.",
+      "webhookLogReceived": "Odebrano",
+      "webhookLogEventType": "Typ zdarzenia",
+      "webhookLogStatus": "Status",
+      "webhookLogProcessingTime": "Czas przetwarzania",
+      "loadMore": "Wiecej",
+      "connectionDetails": "Szczegoly polaczenia"
+    },
+    "disconnectConfirmGeneric": {
+      "title": "Rozlaczyc {provider}?",
+      "body": "To spowoduje cofniecie zapisanych danych uwierzytelniajacych i zatrzymanie synchronizacji. Istniejace dane nie zostana usuniete. Mozesz polaczyc ponownie w dowolnym momencie.",
+      "confirm": "Rozlacz {provider}",
+      "cancel": "Zachowaj polaczenie"
+    },
+    "providerToasts": {
+      "connected": "{provider} polaczony pomyslnie",
+      "disconnected": "{provider} rozlaczony",
+      "connectFailed": "Nie udalo sie polaczyc z {provider}",
+      "disconnectFailed": "Nie udalo sie rozlaczyc {provider}. Sprobuj ponownie."
+    },
+    "emptyState": {
+      "heading": "Brak polaczonych integracji",
+      "body": "Polacz usluge ponizej, aby wlaczyc automatyczna synchronizacje, przetwarzanie webhook i monitorowanie stanu."
+    },
     "auditLog": {
       "before": "Przed",
       "after": "Po",

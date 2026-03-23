@@ -1,5 +1,4 @@
 import { prisma } from "@contractor-ops/db";
-import type { IntegrationProvider } from "@contractor-ops/db";
 import { getAdapter } from "../registry.js";
 import { getQStashClient } from "./qstash-client.js";
 import type { WebhookVerificationResult } from "../types/webhook.js";
@@ -54,7 +53,7 @@ export async function logWebhookDelivery(params: {
   return prisma.webhookDelivery.create({
     data: {
       organizationId: params.organizationId,
-      provider: params.provider.toUpperCase() as IntegrationProvider,
+      provider: params.provider.toUpperCase() as "SLACK",
       eventType: params.eventType,
       signatureValid: params.signatureValid,
       payloadJson: params.payloadJson as never,

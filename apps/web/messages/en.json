@@ -424,6 +424,56 @@
         "linkFailed": "Could not link Slack user. Try again."
       }
     },
+    "provider": {
+      "connectCta": "Connect {provider}",
+      "disconnectCta": "Disconnect {provider}",
+      "reconnectCta": "Re-authorize Access",
+      "manageCta": "Manage Connection",
+      "connectedTo": "Connected to",
+      "connectedBy": "Connected by",
+      "connectedOn": "Connected on",
+      "tokenExpires": "Token expires",
+      "scopes": "Scopes",
+      "lastRefresh": "Last refresh",
+      "status": "Status",
+      "statusConnected": "Connected",
+      "statusDisconnected": "Not connected",
+      "statusError": "Error",
+      "statusReauth": "Re-auth Required",
+      "errorConnectionFailed": "Connection failed. Check your credentials and try again.",
+      "errorTokenExpired": "Authorization expired. Re-authorize to restore the connection.",
+      "tokenExpiryExpired": "Expired",
+      "syncLogHeading": "Sync Log",
+      "syncLogEmpty": "No sync activity yet. Activity will appear here once the connection starts syncing.",
+      "syncLogTimestamp": "Timestamp",
+      "syncLogAction": "Action",
+      "syncLogStatus": "Status",
+      "syncLogDuration": "Duration",
+      "webhookLogHeading": "Webhook Deliveries",
+      "webhookLogEmpty": "No webhook deliveries yet. Deliveries will appear here once the provider sends events.",
+      "webhookLogReceived": "Received",
+      "webhookLogEventType": "Event Type",
+      "webhookLogStatus": "Status",
+      "webhookLogProcessingTime": "Processing Time",
+      "loadMore": "Load more",
+      "connectionDetails": "Connection Details"
+    },
+    "disconnectConfirmGeneric": {
+      "title": "Disconnect {provider}?",
+      "body": "This will revoke stored credentials and stop all syncing. Existing data will not be deleted. You can reconnect at any time.",
+      "confirm": "Disconnect {provider}",
+      "cancel": "Keep Connection"
+    },
+    "providerToasts": {
+      "connected": "{provider} connected successfully",
+      "disconnected": "{provider} disconnected",
+      "connectFailed": "Failed to connect {provider}",
+      "disconnectFailed": "Could not disconnect {provider}. Try again."
+    },
+    "emptyState": {
+      "heading": "No integrations connected",
+      "body": "Connect a service below to enable automated syncing, webhook processing, and health monitoring."
+    },
     "auditLog": {
       "before": "Before",
       "after": "After",
