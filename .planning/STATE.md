@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Platform Expansion
 status: Ready to execute
-stopped_at: Completed 12-01-PLAN.md
-last_updated: "2026-03-23T13:07:41.097Z"
+stopped_at: Completed 12-03-PLAN.md
+last_updated: "2026-03-23T13:14:27.574Z"
 progress:
   total_phases: 9
   completed_phases: 0
   total_plans: 5
-  completed_plans: 1
+  completed_plans: 2
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-23)
 ## Current Position
 
 Phase: 12 (integration-foundation) — EXECUTING
-Plan: 2 of 5
+Plan: 3 of 5
 
 ## Performance Metrics
 
@@ -41,6 +41,7 @@ Plan: 2 of 5
 
 *Updated after each plan completion*
 | Phase 12 P01 | 4min | 2 tasks | 14 files |
+| Phase 12 P03 | 4min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -55,6 +56,8 @@ Recent decisions affecting current work:
 - [v2.0]: Shared credential store + webhook layer before any specific integration
 - [v2.0]: OCR before KSeF to establish async invoice pipeline pattern
 - [Phase 12]: Per-provider encryption keys via ${SLUG_UPPER}_ENCRYPTION_KEY env var pattern
+- [Phase 12]: Use adapter clientSecretEnvVar for OAuth state signing (not separate secret)
+- [Phase 12]: Proactive+lazy dual token refresh: 30min lookahead cron + lazy fallback before API calls
 
 ### Pending Todos
 
@@ -69,6 +72,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-23T13:07:41.095Z
-Stopped at: Completed 12-01-PLAN.md
+Last session: 2026-03-23T13:14:27.571Z
+Stopped at: Completed 12-03-PLAN.md
 Resume file: None
