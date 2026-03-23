@@ -46,7 +46,7 @@ function DashboardEmptyState() {
       <p className="mt-2 max-w-md text-sm text-muted-foreground">
         {t("body")}
       </p>
-      <Button render={<Link href="/contractors/new" />} className="mt-6">
+      <Button render={<Link href="/contractors?action=new" />} className="mt-6">
         {t("cta")}
       </Button>
     </div>
