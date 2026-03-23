@@ -1,10 +1,13 @@
 "use client";
 
 import { Suspense, useCallback, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-import { FileText, Copy, Check } from "lucide-react";
+import { Receipt, Copy, Check } from "lucide-react";
 
+import { trpc } from "@/trpc/init";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/shared/empty-state";
 import { Button } from "@/components/ui/button";
 import { InvoiceDataTable } from "@/components/invoices/invoice-table/data-table";
 import { StatusChipBar } from "@/components/invoices/status-chip-bar";
@@ -41,6 +44,17 @@ function InvoicesContent() {
   // URL-synced filter state for chip bar integration
   const [filters, setFilters] = useInvoiceFilters();
 
+  // Count queries for empty state detection
+  const invoiceCountQuery = useQuery(
+    trpc.invoice.list.queryOptions({ page: 1, pageSize: 1 }),
+  );
+  const contractorCountQuery = useQuery(
+    trpc.contractor.list.queryOptions({ page: 1, pageSize: 1 }),
+  );
+  const invoiceTotal = (invoiceCountQuery.data as { total: number } | undefined)?.total ?? 0;
+  const contractorCount = (contractorCountQuery.data as { total: number } | undefined)?.total ?? 0;
+  const isCountLoading = invoiceCountQuery.isLoading;
+
   const handleRowClick = useCallback((invoice: InvoiceRow) => {
     setSelectedInvoice(invoice);
     setSidePanelOpen(true);
@@ -64,9 +78,25 @@ function InvoicesContent() {
     });
   }, [invoiceEmail]);
 
-  // Determine if we should show empty state
-  // This is handled inside InvoiceDataTable via the table empty state,
-  // but we check filters to only show the full empty state when truly empty
+  // Show empty state when no invoices exist
+  if (!isCountLoading && invoiceTotal === 0) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-[20px] font-semibold">{t("pageTitle")}</h1>
+        </div>
+        <EmptyState
+          icon={Receipt}
+          heading="No invoices yet"
+          body="Upload your first invoice or set up email intake to start processing."
+          primaryAction={{ label: "Upload invoice", onClick: handleUpload }}
+          secondaryAction={{ label: "Set up email", href: "/settings" }}
+          prerequisiteMissing={contractorCount === 0}
+          prerequisiteAction={{ label: "Add contractor", href: "/contractors" }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

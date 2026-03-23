@@ -4,10 +4,11 @@ import { Suspense, useCallback, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { parseAsString, useQueryState } from "nuqs";
-import { Banknote, Plus } from "lucide-react";
+import { Banknote, CreditCard, Plus } from "lucide-react";
 
 import { trpc } from "@/trpc/init";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/shared/empty-state";
 import { Button } from "@/components/ui/button";
 
 import {
@@ -153,6 +154,12 @@ function PaymentsContent() {
     [t],
   );
 
+  // Contractor count for smart sequencing
+  const contractorCountQuery = useQuery(
+    trpc.contractor.list.queryOptions({ page: 1, pageSize: 1 }),
+  );
+  const contractorCount = (contractorCountQuery.data as { total: number } | undefined)?.total ?? 0;
+
   const isLoading = runsQuery.isLoading;
   const isEmpty = !isLoading && data.length === 0 && status === "all" && !dateFrom && !dateTo && cursors.length === 0;
 
@@ -168,19 +175,15 @@ function PaymentsContent() {
       </div>
 
       {isEmpty ? (
-        /* Empty state */
-        <div className="flex flex-col items-center justify-center py-16">
-          <Banknote className="h-12 w-12 text-muted-foreground/50" />
-          <h3 className="mt-4 text-[16px] font-medium">
-            {t("empty.heading")}
-          </h3>
-          <p className="mt-1 max-w-sm text-center text-sm text-muted-foreground">
-            {t("empty.body")}
-          </p>
-          <Button className="mt-4" onClick={() => setDialogOpen(true)}>
-            {t("empty.cta")}
-          </Button>
-        </div>
+        /* Empty state with smart sequencing */
+        <EmptyState
+          icon={CreditCard}
+          heading="No payment runs yet"
+          body="Payment runs will appear here once invoices are approved."
+          primaryAction={{ label: "View approved invoices", href: "/invoices" }}
+          prerequisiteMissing={contractorCount === 0}
+          prerequisiteAction={{ label: "Add contractor", href: "/contractors" }}
+        />
       ) : (
         <>
           {/* Toolbar */}

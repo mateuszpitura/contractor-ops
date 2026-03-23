@@ -2,7 +2,7 @@
 
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ClipboardCheck } from "lucide-react";
+import { CheckSquare, ClipboardCheck } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { parseAsString, parseAsInteger, useQueryState } from "nuqs";
 import { toast } from "sonner";
@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { trpc } from "@/trpc/init";
 import { usePermissions } from "@/hooks/use-permissions";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/shared/empty-state";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import {
@@ -192,17 +193,13 @@ function ApprovalsContent() {
   // Render queue content (shared between tabs)
   const renderQueue = () => {
     if (isEmpty && status === "all" && !search) {
-      // True empty state
+      // True empty state - informational only, no CTA
       return (
-        <div className="flex flex-col items-center justify-center py-16">
-          <ClipboardCheck className="h-12 w-12 text-muted-foreground/50" />
-          <h3 className="mt-4 text-[16px] font-medium">
-            {t("empty.heading")}
-          </h3>
-          <p className="mt-1 max-w-sm text-center text-sm text-muted-foreground">
-            {t("empty.body")}
-          </p>
-        </div>
+        <EmptyState
+          icon={CheckSquare}
+          heading="No pending approvals"
+          body="Your approval queue is clear. Approvals will appear here when invoices are submitted."
+        />
       );
     }
 

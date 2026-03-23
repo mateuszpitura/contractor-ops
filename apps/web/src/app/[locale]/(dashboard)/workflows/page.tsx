@@ -1,10 +1,14 @@
 "use client";
 
 import { Suspense, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { GitBranch } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { parseAsString, useQueryState } from "nuqs";
 
+import { trpc } from "@/trpc/init";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/shared/empty-state";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { usePermissions } from "@/hooks/use-permissions";
@@ -47,7 +51,44 @@ function WorkflowsContent() {
     setTemplatePickerOpen(true);
   };
 
+  // Count queries for empty state detection
+  const runsCountQuery = useQuery(
+    trpc.workflow.listRuns.queryOptions({ page: 1, pageSize: 1 }),
+  );
+  const contractorCountQuery = useQuery(
+    trpc.contractor.list.queryOptions({ page: 1, pageSize: 1 }),
+  );
+  const runsTotal = (runsCountQuery.data as { total: number } | undefined)?.total ?? 0;
+  const contractorCount = (contractorCountQuery.data as { total: number } | undefined)?.total ?? 0;
+  const isCountLoading = runsCountQuery.isLoading;
+
   const canManageTemplates = can("workflow", ["create"]);
+
+  // Show empty state when no workflow runs exist
+  if (!isCountLoading && runsTotal === 0) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-[20px] font-semibold">{t("pageTitle")}</h1>
+          <Button size="sm" onClick={handleStartWorkflow}>
+            {t("startWorkflow")}
+          </Button>
+        </div>
+        <EmptyState
+          icon={GitBranch}
+          heading="No workflows yet"
+          body="Create a workflow template to automate onboarding and offboarding tasks."
+          primaryAction={{ label: "Create template", onClick: handleStartWorkflow }}
+          prerequisiteMissing={contractorCount === 0}
+          prerequisiteAction={{ label: "Add contractor", href: "/contractors" }}
+        />
+        <TemplatePicker
+          open={templatePickerOpen}
+          onOpenChange={setTemplatePickerOpen}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

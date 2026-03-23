@@ -2,7 +2,7 @@
 
 import { useMemo, useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BellOff } from "lucide-react";
+import { Bell, BellOff } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { parseAsString, parseAsInteger, useQueryState } from "nuqs";
 import { toast } from "sonner";
@@ -14,6 +14,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { EmptyState } from "@/components/shared/empty-state";
 import {
   NotificationItem,
   getEntityUrl,
@@ -225,20 +226,12 @@ export function NotificationCenter() {
           ))}
         </div>
       ) : isEmpty ? (
-        /* Empty state */
-        <div className="flex flex-col items-center justify-center py-16">
-          <BellOff className="h-12 w-12 text-muted-foreground/50" />
-          <h3 className="mt-4 text-[16px] font-medium">
-            {typeFilter !== "all"
-              ? t("emptyPage.heading")
-              : t("emptyPage.heading")}
-          </h3>
-          {typeFilter === "all" && !unreadOnly && (
-            <p className="mt-1 max-w-sm text-center text-sm text-muted-foreground">
-              {t("emptyPage.body")}
-            </p>
-          )}
-        </div>
+        /* Empty state - informational only */
+        <EmptyState
+          icon={Bell}
+          heading="No notifications"
+          body="You're all caught up. Notifications will appear here for approvals, tasks, and deadlines."
+        />
       ) : (
         <>
           <div className="flex flex-col rounded-lg border">
