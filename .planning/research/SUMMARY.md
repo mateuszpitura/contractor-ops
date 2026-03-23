@@ -1,237 +1,239 @@
 # Project Research Summary
 
-**Project:** Contractor Ops — B2B Contractor Operations SaaS
-**Domain:** Multi-tenant B2B SaaS / Contractor Lifecycle Management (Poland-first)
-**Researched:** 2026-03-18
-**Confidence:** HIGH
+**Project:** Contractor Ops v2.0 Platform Expansion
+**Domain:** B2B contractor operations platform — self-service portal, e-sign, OCR, KSeF, third-party integrations
+**Researched:** 2026-03-23
+**Confidence:** MEDIUM-HIGH
 
 ## Executive Summary
 
-This is a B2B operations SaaS targeting Polish companies that manage 5–200 B2B contractors. The product fills a genuine gap: Deel and Remote are priced per-contractor and optimized for cross-border EOR, SaldeoSMART is accounting-first with no lifecycle management, and Faktura.pl is invoice creation only. Nobody owns the full local B2B contractor lifecycle — onboard → contract → invoice → approve → pay → offboard — at a flat platform fee. Research confirms that building this as a multi-tenant Next.js monolith on Vercel, with tRPC for type-safe API access, Prisma + Neon PostgreSQL for data, and Inngest for durable background workflows, is the right stack for a solo developer with high delivery velocity requirements. The monorepo structure (Turborepo + pnpm) enables clean package boundaries without premature microservice complexity.
+Contractor Ops v2.0 is a significant capability expansion that transforms the platform from an internal contractor management tool into a full-stack B2B contractor operations platform. The expansion adds seven interconnected capability domains: a contractor self-service portal, e-signature integration (DocuSign + Autenti), OCR invoice parsing, KSeF national e-invoicing integration, Jira project management sync, Notion/Confluence documentation linking, and calendar (Google + Outlook) deadline sync. The v1.0 stack (Next.js, tRPC, Prisma, Better Auth, Tailwind, shadcn/ui) is proven and unchanged — all new capabilities layer on top via new packages (`packages/esign`, `packages/ksef`, `packages/integrations`), new tRPC routers, and new Prisma schema files in the existing monorepo.
 
-The recommended approach is to ship a comprehensive v1 that replaces the Excel + email + Slack chaos with a coherent platform, rather than building a minimal tool and iterating. The invoice-to-payment pipeline (intake → match → approve → export) is the core value proposition and must be complete at launch. The workflow engine for onboarding/offboarding is the primary differentiator — no Polish competitor has it — and should ship in v1 despite its complexity. Anti-features to defer include OCR/AI invoice parsing (KSeF XML will supersede it), contractor self-service portal (doubles surface area), and open banking (regulatory complexity). The product should be PLN-only and Poland-focused at launch.
+The recommended approach is infrastructure-first: build a unified integration credential store and webhook ingestion layer before any specific integration, then build the contractor portal as the foundational user-facing feature, then layer in capabilities in dependency order (OCR → e-sign → KSeF → time tracking → Jira → Notion/Confluence → calendar). KSeF carries the highest regulatory urgency — the April 1, 2026 mandatory deadline for all Polish businesses means this feature cannot slip. OCR and e-sign deliver immediate business value with moderate complexity. The contractor portal requires the most architectural care because it introduces an entirely new trust boundary (external users accessing internal data). All other integrations are largely independent once the credential and webhook infrastructure exists.
 
-The primary risks are architectural, not feature-level. Tenant data leakage in a financial SaaS is business-ending; the Prisma Client Extension tenant-scoping pattern must be baked into the foundation before any feature work. Currency precision errors (float vs. integer-grosze vs. Decimal) must be resolved at schema design time — retrofitting is extremely expensive. Approval workflow state machine corruption is the most complex domain problem and requires explicit state modeling with snapshotted chain configurations before any UI is built. These three pitfalls have HIGH recovery cost and must be treated as hard constraints from day 1, not afterthoughts.
+The key risks are: (1) contractor portal data isolation — contractors must be double-scoped by `org_id + contractor_id` at every query, never modeled as internal users with a restricted role; (2) KSeF complexity — the government API is session-based, still in RC, has mandatory UPO confirmation cycles, and will migrate from token auth to certificates in Jan 2027; (3) integration credential sprawl — six OAuth providers added in v2.0 must share one encrypted credential store with proactive token refresh, built before any specific integration; (4) webhook chaos — seven webhook sources need a central ingestion layer (receive → verify → store → process async) or idempotency and security collapse. Addressing these four structural risks early prevents compounding technical debt across every subsequent phase.
 
 ## Key Findings
 
 ### Recommended Stack
 
-The stack is designed for a Vercel-native, serverless-first deployment with a strong TypeScript-first, end-to-end type safety posture. Next.js 15 with the App Router is the framework; tRPC v11 provides the API layer with full type inference from server to client via TanStack Query v5 integration. Better Auth with its Organization plugin handles multi-tenant auth and RBAC, replacing both Auth.js (now in maintenance mode) and Clerk (expensive at scale). Inngest replaces BullMQ/Trigger.dev for all durable background workflows — it is the only viable worker solution on Vercel serverless. Resend Inbound (released Nov 2025) handles email intake without a separate mail server. Cloudflare R2 handles file storage at zero egress cost. The toolchain uses Biome (not ESLint + Prettier) for 10-100x faster linting.
+v2.0 adds purpose-selected libraries for each new domain, with the existing v1.0 stack (Next.js 15, tRPC v11, Prisma 6.x, Better Auth, Tailwind, shadcn/ui, Inngest, Upstash Redis, Vercel) unchanged. The guiding principle across all new dependencies is to use official or best-maintained TypeScript SDKs where they exist, build thin typed wrappers (using `openapi-typescript` + `openapi-fetch`) where they do not (Autenti, Clockify, KSeF), and abstract multi-provider features (e-sign, calendar, docs) behind clean provider interfaces. Three new monorepo packages encapsulate domain logic: `packages/esign` (DocuSign + Autenti), `packages/ksef` (KSeF session lifecycle + XML mapping), `packages/integrations` (Jira, Notion, Confluence, Clockify, Calendar providers). The contractor portal lives in `apps/web` as a route group (`/portal/*`), not a separate Next.js app — sharing auth, database, tRPC, and UI components avoids infrastructure duplication.
 
-**Core technologies:**
-- **Next.js 15 + React 19:** Full-stack framework with Server Components — reduces client bundle for data-heavy SaaS pages. App Router is required for next-intl (i18n) compatibility.
-- **tRPC v11:** End-to-end type safety, no code generation. First-class App Router + TanStack Query v5 integration. The API layer for all client-server communication.
-- **Prisma 6 + Neon PostgreSQL 17:** ORM with mature migrations, Client Extensions for tenant scoping and audit logging. Neon provides serverless Postgres with connection pooling built in.
-- **Better Auth 1.x + Organization plugin:** Multi-tenant RBAC out of the box. Supports custom roles for the 8-role model (admin, finance, ops, manager, legal viewer, IT admin, accountant, readonly). Auth.js successor.
-- **Inngest 3.x:** Durable step functions for approval SLA timers, onboarding/offboarding workflows, invoice matching pipeline, scheduled jobs. The only viable worker solution on Vercel.
-- **TanStack Query v5 + Zustand 5 + nuqs 2:** Server state cache (TanStack Query), ephemeral UI state (Zustand), shareable filter/sort state in URL (nuqs). Clear separation of state concerns.
-- **shadcn/ui + Tailwind CSS 4 + TanStack Table 8:** Component library (copy-owned, not a dependency), utility styling, headless table with sorting/filtering/pagination.
-- **Cloudflare R2 + @aws-sdk/client-s3:** Zero-egress document storage with presigned URL upload/download pattern. Server never handles file bytes (critical with Vercel's 4.5MB body limit).
-- **Resend 4 + Resend Inbound + React Email 5:** Single vendor for transactional email send and inbound email intake. Webhook-based inbound eliminates IMAP polling (impossible on serverless).
-- **Upstash Redis + QStash:** Rate limiting, idempotency keys, and async HTTP job dispatch. QStash is the canonical Vercel pattern for background work (with Inngest handling durable workflows).
-- **next-intl 4:** Server Component-native i18n. Polish + English from day 1 with ICU message format.
-- **Turborepo 2 + pnpm 9 + Biome 1:** Monorepo orchestration, package management, and unified linting/formatting.
+**Core new technologies:**
+- `docusign-esign` ^8.5.0 — official DocuSign SDK, TypeScript-first, full envelope/signing/webhook support
+- Custom REST client (Autenti) — no official Node.js SDK exists; generate types from OpenAPI spec via `openapi-typescript`
+- `mindee` ^4.27.1 — best-in-class invoice OCR with dedicated pre-trained model; MIT license; 95%+ accuracy on structured invoices
+- `@ksef/client` ^1.7.1 — only maintained TypeScript KSeF 2.0 client; single-maintainer risk; fallback is custom client from government OpenAPI spec
+- `fast-xml-parser` ^5.x + `xml-crypto` ^6.x — parse/generate FA(3) XML and XAdES signatures for KSeF; zero native dependencies
+- `jira.js` ^5.3.1 — TypeScript-first, near-100% Jira API coverage, actively maintained (March 2026)
+- `confluence.js` ^2.1.0 — same author as jira.js, same patterns, full Confluence API coverage
+- `@notionhq/client` ^2.x — official Notion SDK; use API version `2026-03-11`
+- `@microsoft/microsoft-graph-client` ^3.0.7 + `@azure/identity` ^4.x — official Microsoft Graph SDK for Outlook Calendar
+- `googleapis` ^146.x — official Google SDK for Calendar API v3
 
-Full details: `.planning/research/STACK.md`
+**What NOT to use:** `node-jira-client` (stale, no TypeScript), `@microsoft/msgraph-sdk` (still preview), Tesseract.js for invoice OCR (poor accuracy on Polish documents), a separate Next.js app for the contractor portal (infrastructure duplication), or a custom e-sign engine (legal/compliance risk, no legal standing under eIDAS).
 
 ### Expected Features
 
-The product is feature-complete at v1 — research confirms that a minimal invoice-only tool would not replace the existing Excel/email workflow. Every table-stakes feature must ship at launch. The differentiators (workflow engine, Slack inline approval, compliance health scoring) are what justify the platform pricing vs. per-contractor tools.
+The feature landscape divides cleanly into four priority levels. P1 features are mandatory for v2.0 to have a coherent story; without them, v2.0 is not meaningfully different from v1.0. KSeF is uniquely urgent due to the April 2026 regulatory deadline — it carries the same P1 priority as the core portal despite being the most technically complex feature.
 
-**Must have at launch (table stakes — gaps here make the product feel incomplete):**
-- Multi-tenant org setup + RBAC + user invite flow — everything scopes to organization_id
-- Contractor registry + profiles with full activity history
-- Contract repository with status tracking, document management, and expiry reminders
-- Invoice intake (manual upload + email) with per-org email inbox
-- Invoice-to-contractor-to-contract matching with deviation detection
-- Duplicate invoice detection with normalized invoice number comparison
-- Configurable approval workflow (1–3 levels) with role-based routing, comments on rejection, delegation
-- Payment batch export (CSV/bank-compatible file) with idempotency
-- Dashboard with KPIs, approval queue, upcoming deadlines, spend overview
-- Notifications (in-app + email) for all critical events
-- Audit log (immutable, filterable, exportable) — compliance requirement for financial operations
-- Basic reports (spend by contractor/period, expiring contracts, overdue invoices)
-- Data import wizard (CSV/XLSX) — primary migration path from spreadsheets
-- i18n (Polish + English) with locale-aware date/number/currency formatting
-- Product onboarding wizard — reduces time-to-value dramatically
+**Must have (P1 — table stakes):**
+- Contractor portal: magic-link auth, contract viewing, invoice submission, payment status tracking, document access — the foundational external-user layer
+- E-sign (DocuSign + Autenti): send for signature, embedded/redirect signing, webhook-driven status tracking, signed PDF auto-storage, multi-party signing — contracts go from print/sign/scan/email to one-click
+- KSeF invoice pull: auto-fetch invoices from Poland's national e-invoicing system, FA(3) XML parsing, UPO tracking, KSeF compliance badge — mandatory from April 1, 2026 for all businesses
+- OCR invoice parsing: Mindee-powered field extraction with confidence scores, mandatory human review UI with side-by-side PDF view — reduces manual invoice data entry
 
-**Should have at launch (differentiators — competitive advantage vs. Deel/SaldeoSMART):**
-- Workflow engine with configurable onboarding/offboarding templates + task dependencies — no Polish competitor has this
-- Slack integration with inline approve/reject buttons — Polish tech companies live in Slack
-- Global search + command palette (Cmd+K) — power-user navigation, Linear/Vercel style
-- SLA timers on approval levels with escalation notifications
-- Compliance health scoring per contractor (valid contract, required docs, NIP verified)
-- Approval delegation and backup approvers
+**Should have (P2 — competitive differentiators):**
+- OCR + KSeF unified intake pipeline: normalize both sources into identical matching/approval flow
+- Time tracking (manual entry + approval + Clockify/Jira import): contractor-facing, kept minimal (weekly grid UI)
+- Jira integration: create issues from workflows, bidirectional status sync, time log import
+- Profile self-management with approval review gate
+- Time-to-invoice matching: flag when approved hours x rate diverges from invoice amount
 
-**Defer to v1.x (post-validation):**
-- Contractor self-service portal — doubles surface area, build after internal flow is validated
-- KSeF native integration — grace period until Dec 2026, email/upload intake first
-- E-sign integration (Autenti/DocuSign) — most Polish contracts signed by email/wet signature
-- OCR invoice parsing — KSeF XML will make OCR largely unnecessary
+**Nice to have (P3 — polish and depth):**
+- Notion/Confluence doc linking and search within workflows
+- Calendar deadline sync to Google/Outlook (push only, no bidirectional sync)
+- Meeting scheduling from workflow steps
+- Contractor portal org branding (white-label)
+- Cross-system workflow templates combining all integrations
 
-**Defer to v2+ (future consideration):**
-- Open banking / payment initiation — regulatory complexity, bank file export is sufficient
-- Public API + webhooks — after integration requests come from customers
-- SSO/SCIM — enterprise feature, target market doesn't require it
-- Custom fields — fixed schemas cover 90% of cases; validate first
-
-Full details: `.planning/research/FEATURES.md`
+**Defer to v3+:**
+- KSeF invoice sending (issuing invoices is accounting system territory)
+- Full time tracker with timers/screenshots (Clockify does this better — import, do not build)
+- Bidirectional calendar sync (one-way push is sufficient; reading back creates conflict resolution complexity)
+- Notion content rendering/mirroring (link + preview snippet, not full replication)
+- Automated invoice generation from time entries (tax/legal implications, accounting system territory)
 
 ### Architecture Approach
 
-The architecture is a Turborepo monolith: a single Next.js app with supporting packages (`api`, `db`, `services`, `auth`, `shared`, `ui`). Business logic lives in `packages/services/`, not in tRPC routers (which are intentionally thin). All database access goes through a Prisma Client Extension that auto-injects `organization_id` from AsyncLocalStorage — this is the primary tenant isolation mechanism, with PostgreSQL RLS as defense-in-depth. Background work (notifications, SLA timers, email intake, scheduled jobs) flows through QStash for HTTP-based async dispatch and Inngest for durable multi-step workflows. Files go directly from browser to Cloudflare R2 via presigned PUT URLs, then server validates type/content; the API never handles file bytes.
+The v2.0 architecture extends the existing clean monorepo without breaking any existing boundaries. The contractor portal becomes a new route group in `apps/web` with its own layout, middleware chain, and auth context that is fully independent from Better Auth. New tRPC routers (`portal.*`, `esign.*`, `ksef.*`, `ocr.*`, `calendar.*`, `time-tracking.*`) call new service classes that abstract all external API calls behind provider interfaces. Four new Prisma schema files (`portal.prisma`, `esign.prisma`, `ocr.prisma`, `ksef.prisma`) follow the existing convention of per-domain schema files. Three external-facing concerns — OAuth callbacks (`/api/oauth/[provider]`), webhook ingestion (`/api/webhooks/[provider]`), and portal auth (`/api/portal/auth`) — are exposed as Next.js API routes (not tRPC) because they require raw body access for HMAC signature verification.
 
 **Major components:**
-1. **tRPC middleware chain** (auth guard → tenant scope → RBAC check → audit logger) — every API request passes through all four layers in order
-2. **Prisma Client Extension (tenant)** — auto-injects `organizationId` into all queries; impossible to forget at the query level
-3. **Domain services package** (`packages/services/`) — business logic for invoice matching, workflow engine, approval chain, payment batching, notifications, audit; called by tRPC routers, cron jobs, and webhooks
-4. **Database-driven workflow engine** — templates, instances, and tasks stored in PostgreSQL; engine logic in `packages/services/src/workflow/`; no external orchestration needed for human-task workflows
-5. **Configurable approval chain** — `ApprovalChain` config snapshot at submission time (never updated in-flight), `ApprovalRequest` + `ApprovalStep` instances, sequential level routing with SLA deadlines
-6. **Event-driven audit + notifications** — domain events written to append-only `audit_log` (same transaction as state change) and dispatched to notification handlers via QStash (async, does not block the request)
-7. **File storage (presigned URLs)** — three-step pattern: request upload URL → browser PUT to R2 → confirm upload; download URLs generated on demand with 15-minute expiry
-8. **Inngest functions** — approval SLA timers, onboarding/offboarding workflow execution, email intake processing pipeline, invoice matching, overdue detection, contract expiry reminders
-
-Build order (what must exist before what): Foundation (monorepo + DB + auth + tRPC middleware) → Core entities (contractors + contracts + documents) → Workflow engine → Invoice pipeline (intake + matching + approval) → Payments + reporting → Polish (Slack, search, import, onboarding wizard).
-
-Full details: `.planning/research/ARCHITECTURE.md`
+1. **Integration Credential Store** — unified `integration_connections` table with AES-encrypted credentials, `expires_at`, proactive Inngest refresh cron; shared `getCredential(orgId, provider)` function used by all integration adapters
+2. **Webhook Ingestion Layer** — per-provider API routes: verify HMAC → store in `webhook_events` → return 200 → process async via Inngest/QStash; Google Calendar renewal cron (every 20h); Microsoft Graph subscription renewal (every 3 days)
+3. **Portal Route Group** (`/portal/*`) — contractor-facing self-service UI with dedicated layout and magic-link auth; separate from admin routes via middleware; shares all existing packages
+4. **Portal Auth Middleware** — independent `portalAuth` tRPC middleware chain using `PortalSession` model; contractors never added to the internal user table; all portal queries double-scoped by `organizationId + contractorId`
+5. **OCR-Then-Review Pipeline** — invoice created immediately on upload, OCR triggered async via Redis/Inngest, human review UI shows per-field confidence scores and original PDF side-by-side before any fields are committed to the system
+6. **E-Sign Provider Abstraction** — thin `EsignProvider` TypeScript interface with independent DocuSign and Autenti implementations; each provider gets its own webhook endpoint; status normalized to internal enum (`PENDING_SIGNATURE → SIGNED → REJECTED → EXPIRED`) at adapter boundary
+7. **KSeF Sync Pipeline** — Vercel Cron triggers per-org polling, Inngest manages session lifecycle (open → submit → poll UPO → store KSeF-ID → close), full FA(3) XML stored in R2 for audit, exponential backoff retry for KSeF outages
+8. **Calendar/Docs Provider Abstractions** — same interface pattern for Google/Outlook Calendar and Notion/Confluence; push-only to calendar; link + preview for docs; page ID (not URL) stored for resilience to page moves
 
 ### Critical Pitfalls
 
-1. **Tenant data leakage via missing or bypassed tenant scoping** — Use Prisma Client Extension (not deprecated middleware) from day 1; write cross-tenant isolation integration tests for every model; never derive `organization_id` from request params (always from session). Recovery cost: CATASTROPHIC. Must be treated as a hard constraint, not a best-effort.
+1. **Contractor portal blows open the tenant boundary** — Adding `CONTRACTOR` role to existing RBAC is wrong. Contractors are fundamentally different (cross-org identity, restricted to own records only). Prevention: dedicated `PortalSession` model, separate `portalAuth` middleware chain, Prisma extension that enforces double-scoping (`organizationId + contractorId`) on all portal queries. Integration test: verify Contractor A cannot see Contractor B's invoices/contracts within the same org.
 
-2. **Currency precision errors (float vs. Decimal vs. integer-grosze)** — Store monetary amounts as integers in grosze (1234 = 12.34 PLN) or use Prisma `Decimal` type with `decimal.js`/`dinero.js` for all arithmetic. Never use `Float` in Prisma schema, never call `parseFloat()` on money. Decision must be made at schema design time — retrofitting is extremely expensive.
+2. **KSeF treated as simple REST (ignores session model and UPO flow)** — KSeF is session-based, not fire-and-forget. Invoices are not legally compliant without a stored UPO and KSeF-ID. Prevention: async Inngest pipeline with `PENDING → SUBMITTED → CONFIRMED → FAILED` state tracking, exponential backoff retries, raw FA(3) XML stored in R2, offline queue for KSeF outages. Also plan for: token auth ends Jan 2027, certificates required from then.
 
-3. **Approval workflow state machine corruption** — Model approval as an explicit state machine with defined states and valid transitions. Snapshot the approval chain configuration at invoice submission time (in-flight invoices use their snapshot, never the current org config). Use optimistic locking (version field) to prevent concurrent state changes. Any amount change after approval starts must reset the chain.
+3. **Integration credential sprawl** — Building each integration's credential storage independently creates 6+ divergent schemas, duplicated token refresh logic, and a security audit nightmare. Prevention: build the shared `integration_connections` table (encrypted credentials, `expires_at`, `status`, proactive refresh cron) before any specific integration is built.
 
-4. **Vercel serverless cannot run background jobs natively** — Design all async operations as idempotent HTTP endpoints from the start. Use QStash for async dispatch, Inngest for durable workflows, Vercel Cron for schedules, and Resend Inbound (not IMAP polling) for email intake. Wire up QStash + Vercel Cron in the foundation phase before building any feature that needs them.
+4. **Webhook chaos (no central router, no idempotency, no signature verification)** — v2.0 introduces 7+ webhook sources (DocuSign, Autenti, Jira, Google Calendar, Microsoft Graph, Clockify, KSeF notifications). Without a central pattern: duplicate processing, forged events, lost events during deployments. Prevention: receive → verify HMAC → store in `webhook_events` → return 200 → process async. Separate endpoints per provider, idempotency keys per event, webhook event log with retention policy.
 
-5. **Better Auth Organization misconfiguration (session/role leakage)** — Define all 8 roles with permissions using Better Auth's custom role system from the start. Always use server-side `hasPermission` API for authorization — never client-side checks for security-critical decisions. Always run `npx @better-auth/cli migrate` after plugin configuration changes.
-
-6. **File upload security holes** — Validate file content via magic bytes (not extension or Content-Type header) after upload completes. Serve files from a separate domain with `Content-Disposition: attachment`. Scope R2 keys by `/{org_id}/{entity_type}/{entity_id}/`. Keep signed URL expiry to 5–15 minutes.
-
-7. **Invoice duplicate detection false positives/negatives** — Normalize invoice numbers before comparison (strip whitespace, normalize separators, uppercase). Use composite detection: exact match on (normalized_number + contractor_id) as primary, amount as secondary confirmation. Add date-range window for recurring invoice handling. Flag suspected duplicates for human review rather than auto-rejecting.
-
-Full details: `.planning/research/PITFALLS.md`
+5. **OCR accuracy treated as solved** — Real-world Polish invoices fail OCR at a much higher rate than demos suggest (varied layouts, handwriting, poor scans, ambiguous date formats). Prevention: mandatory human review for ALL financial fields (amounts, NIP, dates), confidence score display with visual indicators, side-by-side PDF viewer, NIP checksum validation, cross-reference against contractor registry. Never auto-accept OCR results.
 
 ## Implications for Roadmap
 
-Based on combined research, the architecture's explicit build order maps directly to a 6-phase roadmap. Each phase has hard dependencies on the previous one except where noted as parallel.
+Based on combined research, the recommended phase structure is dependency-driven with infrastructure concerns addressed first, then user-facing features in order of business impact and architectural dependency.
 
-### Phase 1: Foundation
-**Rationale:** Everything in the system depends on this. Tenant scoping, auth, RBAC, and the tRPC middleware chain must exist before any feature can be built safely. Currency precision (integer-grosze vs. Decimal) must be decided here — it cannot be retrofitted. The background job infrastructure (QStash + Vercel Cron + Inngest) must be wired up now because notifications, SLA timers, and email intake all depend on it.
-**Delivers:** Working monorepo structure, database schema with tenant extension, Better Auth with all 8 custom roles, tRPC middleware chain (auth → tenant → RBAC → audit), Inngest + QStash integration, i18n framework (next-intl), CI/CD pipeline, and an authenticated app shell with navigation.
-**Addresses (features):** Multi-tenant org setup, RBAC, user invite flow, i18n scaffolding.
-**Avoids (pitfalls):** Tenant data leakage (Prisma extension from day 1), currency errors (integer schema from day 1), Better Auth misconfiguration (all 8 roles defined upfront), no background job support (QStash + Inngest wired up before needed).
-**Research flag:** STANDARD — well-documented patterns for all components.
+### Phase 1: Integration Foundation
 
-### Phase 2: Core Entities
-**Rationale:** Contractors and contracts are the root entities that invoices, workflows, and payments all reference. Cannot build the invoice pipeline or workflow engine without them. Document management (R2 presigned URLs) is needed for contract attachments, so file storage is established here.
-**Delivers:** Contractor registry with search/filter/bulk actions, NIP-based GUS/REGON lookup, contractor profiles with activity history, contract CRUD with status tracking and expiry metadata, document upload/download (R2 presigned URL pattern), compliance health scoring foundation.
-**Addresses (features):** Contractor registry + profiles, contract repository, document management, data import wizard (CSV/XLSX for contractors + contracts).
-**Avoids (pitfalls):** File upload security (magic byte validation, org-scoped R2 keys, short-expiry signed URLs established here), tenant isolation tests for contractor and contract models.
-**Research flag:** STANDARD — well-documented CRUD + R2 presigned URL pattern.
+**Rationale:** The credential store and webhook ingestion layer are shared infrastructure that every subsequent integration phase depends on. Building them first means each later phase is 30-40% smaller because the boilerplate is already handled. Without this phase, the alternative is 6+ divergent credential implementations and webhook handlers — Pitfalls 5 and 6 actualized across every integration.
+**Delivers:** Unified `integration_connections` table with encrypted credential storage per org; proactive token refresh via Inngest cron; `webhook_events` ingestion table with per-provider HMAC verification and async processing; generalized OAuth 2.0 authorization flow (extending existing Slack pattern) reusable for all 6+ providers; generic approval engine extracted from invoice-specific code (prerequisite for time tracking and e-sign approvals)
+**Addresses:** Integration credential management, webhook reliability, approval chain flexibility
+**Avoids:** Credential sprawl (Pitfall 5), webhook chaos (Pitfall 6), approval chain inflexibility (Pitfall 8)
+**Research flag:** Standard patterns — extends existing Slack OAuth and Inngest patterns. No deep research needed.
 
-### Phase 3: Workflow Engine
-**Rationale:** The workflow engine is the primary differentiator. It is architecturally independent from the invoice pipeline and can be built in parallel, but it shares the notification/QStash infrastructure established in Phase 1. Building it before the invoice pipeline allows the notification service to be validated with a simpler domain (task completion) before being stressed by approval chains.
-**Delivers:** Workflow template builder (create/edit templates with ordered steps, dependencies, role assignment, conditional logic, SLA per step), workflow execution engine (advance on task completion, evaluate dependencies, schedule SLA deadlines via QStash), task management UI (list, complete, comment, attach), onboarding/offboarding workflow execution for contractors, overdue task detection (Vercel Cron), notifications for task assignment and deadlines.
-**Addresses (features):** Workflow engine + onboarding/offboarding templates, notifications (established here, reused in Phase 4).
-**Avoids (pitfalls):** Anti-pattern of building a general-purpose BPM (build simple task-dependency engine, expand only when real requirements demand it); Vercel serverless timeout (SLA checks via QStash delayed messages, not in-process timers).
-**Research flag:** NEEDS RESEARCH PHASE — workflow template builder conditional logic and task dependency evaluation need detailed technical design before implementation.
+### Phase 2: Contractor Portal
 
-### Phase 4: Invoice Pipeline
-**Rationale:** This is the core business value. Depends on contractors and contracts (Phase 2) for matching, and on the notification/QStash infrastructure (Phase 3). The invoice lifecycle is the most complex state machine in the system; the approval chain design must be completed before any UI is built. The approval chain snapshot pattern must be implemented from the first version.
-**Delivers:** Invoice intake (drag-and-drop upload + per-org email inbox via Resend Inbound + Inngest processing), invoice-to-contractor matching (by NIP/sender email), invoice-to-contract matching with deviation detection, duplicate detection (normalized invoice numbers + date-range window for recurring), approval chain configuration UI (1–3 levels, role-based or user-specific), invoice approval workflow (approve/reject/clarify/delegate), SLA timers on approval levels with escalation, Slack integration (inline approve/reject in Block Kit messages), approval delegation and backup approvers.
-**Addresses (features):** Invoice intake, matching + dedup, configurable approval workflow, SLA timers, Slack integration, approval delegation.
-**Avoids (pitfalls):** Approval state machine corruption (explicit state machine with snapshots, optimistic locking, amount-change reset rule), duplicate detection failures (normalization + composite detection + human review for suspected duplicates), Slack webhook without signature verification.
-**Research flag:** NEEDS RESEARCH PHASE — approval chain state machine design and Slack Block Kit interactive message patterns need detailed technical design.
+**Rationale:** The contractor portal is the foundational external-user layer. Time tracking, portal invoice submission, and portal-based contract signing all depend on portal auth existing. Without the new `PortalSession` model and double-scoped middleware, any portal feature built before it will need rearchitecting. This is the highest architectural risk phase because it introduces a new trust boundary — external users accessing scoped internal data.
+**Delivers:** Portal route group (`/portal/*`) with dedicated layout; magic-link auth flow (`/portal/login`, `/portal/verify`); `PortalSession` model; `portalAuth` tRPC middleware with double-scoped queries; contractor views for contracts (read-only), invoices (submit + list), payment status, documents, profile self-management with approval gate, notification preferences; portal-specific email notifications via Resend
+**Addresses:** Contractor login, contract viewing, invoice submission via portal, payment tracking, document access (all P1 must-haves)
+**Avoids:** Tenant boundary violation (Pitfall 1), contractor role RBAC confusion
+**Research flag:** Needs phase research for magic-link auth implementation details against existing Better Auth setup, and multi-org contractor context-switching UX design.
 
-### Phase 5: Payments + Reporting
-**Rationale:** Only approved invoices enter payment runs (hard dependency on Phase 4). Dashboard KPIs and reports require real data to exist. This phase closes the end-to-end loop: from invoice intake to payment confirmation.
-**Delivers:** Payment batch creation (select approved invoices, generate bank-compatible CSV/MT940), idempotent batch operations with partial failure handling, payment status tracking (paid/partial/failed per invoice), dashboard with KPI cards (pending approvals, upcoming deadlines, spend overview, overdue invoices), spend reports (by contractor, by period, by status), expiring contract report, audit log viewer (filterable, exportable), pre-computed KPI caching (Vercel Cron → Redis) to prevent dashboard contention.
-**Addresses (features):** Payment batch export, dashboard + KPIs, basic reports, audit log viewer.
-**Avoids (pitfalls):** Dashboard performance trap (pre-compute KPIs via scheduled cron, cache in Redis), payment batch without idempotency (idempotency keys from day 1), audit log not truly immutable (database role cannot UPDATE/DELETE).
-**Research flag:** STANDARD — bank CSV/MT940 format is documented; Recharts + shadcn/ui chart patterns are established.
+### Phase 3: OCR Invoice Parsing
 
-### Phase 6: Polish and Launch Readiness
-**Rationale:** These features depend on data and flows established in all prior phases. Global search requires indexed data. The data import wizard benefits from knowing the final schema. The product onboarding wizard wraps the full setup flow. Compliance health scoring is now fully computable with contracts, documents, and NIP verification in place.
-**Delivers:** Global search + command palette (Cmd+K) with PostgreSQL full-text search (`tsvector`) across contractors/contracts/invoices, data import wizard (CSV/XLSX for contractors + contracts with preview + validation), product onboarding wizard (org setup → import → configure approvals → invite team), compliance health scoring per contractor (dashboard widget), contract expiry warnings (90/60/30/7 days, Vercel Cron), notification preference management (per event type, email vs. in-app), i18n completeness (PLN formatting with Polish locale: `1 234,56 zł`), E2E test coverage for critical flows.
-**Addresses (features):** Global search + Cmd+K, data import, product onboarding wizard, compliance health scoring, all remaining i18n gaps.
-**Avoids (pitfalls):** Full-text search via SQL LIKE (use `tsvector` indexes for > 5K records), i18n incomplete (PLN/date formatting not just string translation), email without deduplication (notification preferences + rate limiting).
-**Research flag:** STANDARD — PostgreSQL full-text search and shadcn/ui Command (cmdk) are well-documented. Import wizard pattern is established.
+**Rationale:** OCR enhances the core invoice intake flow that both internal admins and portal contractors use immediately. It is one of the highest-value, medium-complexity features. Building it before KSeF establishes the async invoice pipeline pattern that the unified OCR + KSeF intake design requires. Both OCR and KSeF feed into the same matching/approval flow — OCR first means KSeF can be plugged into an already-working normalized pipeline.
+**Delivers:** Mindee API integration (`packages/api/src/services/ocr-service.ts`); async OCR queue (Redis-triggered Inngest function); `OcrResult` model with per-field confidence scores; `Invoice.ocrResultId` link; human review UI (side-by-side PDF preview + extracted fields, confidence score indicators, edit-in-place correction); NIP checksum validation; accuracy tracking per contractor/source; OCR skipped for KSeF-sourced invoices (already structured)
+**Addresses:** OCR invoice parsing, confidence scores, human review UI (all P1/P2)
+**Avoids:** OCR accuracy overconfidence (Pitfall 4), synchronous OCR in request path (architecture anti-pattern)
+**Research flag:** Standard patterns — Mindee SDK is well-documented. Review UI is custom React work.
+
+### Phase 4: E-Sign Integration
+
+**Rationale:** E-sign builds on the existing contract model and the integration credential store from Phase 1. It does not depend on the contractor portal but integrates naturally with it (contractors signing contracts via the portal session). The dual-provider requirement (DocuSign + Autenti) makes the provider abstraction pattern essential — this phase validates the pattern that calendar integration later reuses.
+**Delivers:** `EsignProvider` TypeScript interface with independent DocuSign and Autenti implementations; `EsignEnvelope`/`EsignRecipient`/`EsignEvent` Prisma models; `Contract.esignEnvelopeId/esignStatus/esignCompletedAt` fields; "Send for Signature" flow in contract management UI; on-demand embedded signing URL generation (DocuSign, never pre-generated); Autenti redirect-based signing flow with clear UX and "return to Contractor Ops" messaging; per-provider webhook endpoints with HMAC verification; signed PDF auto-download from provider and storage to R2; Document record creation from completed signing; signing audit trail storage
+**Addresses:** E-sign send, embedded signing, status tracking, multi-party signing, signed document storage, audit trail (all P1 must-haves)
+**Avoids:** E-sign abstraction leakage (Pitfall 3), DocuSign signing URL pre-generation mistake, shared webhook handler anti-pattern
+**Research flag:** Standard patterns — both APIs are well-documented with Postman collections. Autenti redirect flow UX needs careful design to handle the sign-and-return pattern.
+
+### Phase 5: KSeF Native Integration
+
+**Rationale:** KSeF is the most technically complex feature and the most regulatorily urgent (April 1, 2026 deadline for all Polish businesses). It is placed after OCR because it benefits from the established async invoice pipeline. The OCR + KSeF unified intake design (normalizing both sources) is implemented as part of this phase. The credential store (Phase 1) already handles KSeF token storage. Building KSeF after Phases 3-4 means all async patterns are established.
+**Delivers:** KSeF session lifecycle management (open → submit → poll UPO → store KSeF-ID → close) via Inngest with exponential backoff; `KsefSyncState`, `KsefInvoice` Prisma models; per-org KSeF auth token configuration in integration settings; FA(3) XML → Invoice model mapper; `Invoice.ksefReferenceNumber/ksefSessionId/ksefStatus` fields; raw FA(3) XML stored in R2 as audit Document (source: KSEF); KSeF duplicate detection against uploaded invoices (NIP + invoice number + KSeF reference); KSeF compliance badge in invoice list UI; offline queue + retry for KSeF outages; unified OCR + KSeF intake pipeline (both sources normalized to same matching/approval flow)
+**Addresses:** KSeF invoice pull, XML parsing, status display, duplicate detection, compliance badge, unified intake pipeline (all P1 must-haves)
+**Avoids:** KSeF session model mishandling (Pitfall 2), treating KSeF as synchronous REST, storing raw XML in database (architecture anti-pattern)
+**Research flag:** Needs phase research for FA(3) schema field mapping to existing Invoice model, KSeF test environment authentication setup (api-test.ksef.mf.gov.pl), and certificate auth migration planning for Jan 2027.
+
+### Phase 6: Time Tracking
+
+**Rationale:** Time tracking is a portal-first feature — the primary UI is contractor-facing — and depends on the portal auth model from Phase 2. Manual entry and Clockify import can ship independently of Jira. Time tracking provides the "time-to-invoice matching" differentiator that no direct competitor automates. Keeping the contractor-facing UX minimal (simple weekly grid) is essential for adoption.
+**Delivers:** `TimeEntry` Prisma model (MANUAL/CLOCKIFY/JIRA sources, `TimeEntryStatus` states); simple weekly hours grid UI in contractor portal (date + hours + description, project optional); time entry approval flow reusing generic approval engine from Phase 1; Clockify REST API wrapper for import (contractor connects their own Clockify account); time-to-invoice matching logic (approved hours × contract rate vs submitted invoice amount); deviation flagging in invoice review; admin time tracking review view
+**Addresses:** Manual time entry, approval, Clockify import, time-to-invoice matching (P2)
+**Avoids:** Complex time tracking UI with low adoption (Pitfall 7), mandatory tracking for fixed-price contracts
+**Research flag:** Standard patterns — CRUD + approval engine reuse. Clockify API is simple REST. No dedicated research needed.
+
+### Phase 7: Jira Integration
+
+**Rationale:** Jira depends on the OAuth credential store (Phase 1) and optionally enhances time tracking (Phase 6) with worklog import. It is a P2 feature targeted at engineering-heavy organizations. Bidirectional sync with the workflow engine makes it the most complex integration — webhooks must be processed async, Jira's burst rate limits (enforced March 2026) require careful request throttling.
+**Delivers:** Jira Cloud OAuth 2.0 (3LO) connection via `jira.js`; issue creation from workflow engine actions; `jira:issue_updated` webhook → workflow task status update; bidirectional linked issue display (issue key + URL chip in contractor/workflow views); Jira worklog import into `TimeEntry` records; points-based rate limit handling; guided setup wizard (no JQL required for basic config)
+**Addresses:** Connect Jira workspace, create issues from workflows, bidirectional status sync, Jira time import (P2)
+**Avoids:** Jira burst rate limit exhaustion, JQL-heavy webhook filters that degrade Jira performance, shared webhook handler
+**Research flag:** Standard patterns — jira.js is well-documented. Bidirectional sync state machine needs explicit design during planning.
+
+### Phase 8: Notion/Confluence and Calendar Integrations
+
+**Rationale:** These are the two lightest integrations, both P3 priority, and can be built in any order once the OAuth credential store and webhook infrastructure are in place. Notion has no webhooks (polling only with `last_edited_time` filter), so it is link-and-reference only. Calendar is push-only (no bidirectional sync). Grouping them into one phase makes sense given their low individual complexity and similar infrastructure needs.
+**Delivers:** Notion OAuth + page search + link-to-workflow + page ID storage (not URL); Confluence OAuth + page search + link-to-workflow; current page title fetched on display (resilient to page moves); "page not found" with re-link option when ID lookup fails; Google Calendar OAuth + event creation for contract deadlines and onboarding meetings; Microsoft Graph OAuth + Outlook calendar event creation; Google webhook subscription renewal cron (every 20h); Microsoft Graph subscription renewal cron (every 3 days); incremental sync tokens (Google syncToken, Graph deltaLink); contractor portal org branding; cross-system workflow templates
+**Addresses:** Notion/Confluence doc linking and search, calendar deadline sync, meeting scheduling, portal branding (all P3)
+**Avoids:** Notion content mirroring scope creep (anti-feature), bidirectional calendar sync (anti-feature), Google Calendar webhook expiry, Microsoft Graph validation handshake failures
+**Research flag:** Calendar webhook subscription renewal lifecycle needs verification. All other patterns are well-documented.
 
 ### Phase Ordering Rationale
 
-- **Foundation must be first** because tenant scoping, auth, RBAC, and currency decisions cannot be retrofitted without catastrophic risk. The architectural decisions made in Phase 1 (tenant extension, integer-grosze schema, async job patterns) determine the safety of every feature built afterward.
-- **Core entities before workflows and invoices** because contractors and contracts are foreign keys referenced by every other domain entity. Building workflows or invoice matching without contractors doesn't compile.
-- **Workflow engine before invoice pipeline** because it validates the notification/QStash infrastructure in a lower-stakes domain (task completion) before that infrastructure is stressed by approval chain SLA timers. The workflow engine is also the primary differentiator and benefits from early real-world validation.
-- **Invoice pipeline as its own phase** because it is the most complex and highest-risk domain (state machine, financial amounts, concurrent access). It should not be mixed with other features.
-- **Payments + reporting after invoice pipeline** because the dependency is hard: only approved invoices can enter payment batches. Reports are meaningless without data.
-- **Polish phase last** because search, import, onboarding wizard, and compliance scoring all benefit from real schema and data to work with.
+- **Infrastructure before integration:** Phase 1 (Integration Foundation) must precede all other phases. Every specific integration depends on the credential store, webhook router, and generic OAuth flow. This is the single highest-leverage decision in the v2.0 architecture.
+- **Portal before time tracking:** The contractor portal (Phase 2) is the prerequisite for time tracking (Phase 6) because time entry is a portal UI feature and uses portal auth for data scoping.
+- **OCR before KSeF:** OCR (Phase 3) establishes the async invoice pipeline that KSeF (Phase 5) plugs into. The unified OCR + KSeF intake pipeline can only be designed well when OCR is already working.
+- **E-sign is independent but benefits from portal:** E-sign (Phase 4) works standalone (org sends signing links via email) without the portal, but delivering it after the portal means contractors can sign from within their portal session seamlessly.
+- **KSeF despite urgency comes after OCR and e-sign:** KSeF is the highest regulatory priority but benefits significantly from patterns established in Phases 3 and 4. Teams should plan KSeF implementation to complete before April 1, 2026 regardless of exact phase boundaries — if schedule pressure is high, consider parallelizing Phase 4 and Phase 5.
+- **Jira after time tracking foundation:** Jira (Phase 7) benefits from the time tracking data model being in place (Phase 6) so worklog import has a destination. The Jira connection itself can be built in isolation, but worklog sync requires the `TimeEntry` model.
+- **Leaf features grouped last:** Notion/Confluence and calendar (Phase 8) have no downstream dependencies and can be deferred or cut without affecting any other v2.0 capability if schedule pressure requires.
 
 ### Research Flags
 
-Phases likely needing deeper research during planning:
-- **Phase 3 (Workflow Engine):** The conditional logic system for workflow steps (JSON rules evaluation) and dependency graph traversal need detailed technical design. The database schema for templates vs. instances vs. tasks should be fully mapped before implementation begins.
-- **Phase 4 (Invoice Pipeline):** The approval state machine — every state, every valid transition, every guard, every effect — should be diagrammed and reviewed before any code is written. Slack Block Kit interactive message patterns with Inngest step function integration need a spike.
+Phases needing deeper research during planning:
+- **Phase 2 (Contractor Portal):** Magic-link auth implementation details against existing Better Auth setup; multi-org contractor context-switching UX (a contractor working for multiple orgs needs clean context switching); invite edge cases (expired invite, re-invite, contractor already exists via different org)
+- **Phase 5 (KSeF):** FA(3) XML schema field mapping to existing Invoice model (300+ XML fields need mapping decisions); KSeF test environment authentication setup (api-test.ksef.mf.gov.pl); certificate auth migration architecture for Jan 2027 deadline
 
-Phases with standard patterns (research-phase can be skipped):
-- **Phase 1 (Foundation):** Turborepo + Next.js + Better Auth + tRPC + Prisma + Inngest + QStash are all well-documented with official guides and community patterns.
-- **Phase 2 (Core Entities):** Standard CRUD + R2 presigned URL upload pattern is established and documented.
-- **Phase 5 (Payments + Reporting):** Bank CSV format is a fixed specification. Recharts + shadcn/ui Chart component patterns are well-documented.
-- **Phase 6 (Polish):** PostgreSQL `tsvector` full-text search, cmdk command palette, and CSV import wizard are all established patterns.
+Phases with standard patterns (skip dedicated research-phase):
+- **Phase 1 (Integration Foundation):** Extends existing Slack OAuth and Inngest patterns; encryption and credential storage are well-understood
+- **Phase 3 (OCR):** Mindee SDK is well-documented with Node.js guide; review UI is standard React work; no novel patterns
+- **Phase 4 (E-Sign):** Both DocuSign and Autenti have complete documentation and Postman collections; provider abstraction pattern is established
+- **Phase 6 (Time Tracking):** Standard CRUD + reusing existing generic approval engine; Clockify API is simple REST
+- **Phase 7 (Jira):** jira.js covers the full API; OAuth 2.0 (3LO) is well-documented by Atlassian
+- **Phase 8 (Notion/Confluence/Calendar):** Well-documented official SDKs; main risk (webhook subscription renewal) is explicitly documented
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | All core technologies verified via official docs and multiple sources. Version compatibility matrix confirmed. Inngest/QStash split for durable vs. simple async is the recommended Vercel-native pattern. |
-| Features | HIGH | Competitor analysis is thorough (Deel, Remote, SaldeoSMART, Faktura.pl). Feature dependencies are clearly mapped. Anti-features are well-reasoned with specific alternatives. |
-| Architecture | HIGH | Well-established patterns for this exact stack (multi-tenant Prisma extension, tRPC middleware chain, presigned URL file storage, QStash + Vercel Cron). Multiple authoritative sources confirm the approaches. |
-| Pitfalls | HIGH (stack), MEDIUM (domain workflows) | Stack-specific pitfalls (Prisma, Vercel, Better Auth, R2) are verified against known issues and official docs. Domain workflow pitfalls (approval state machines, duplicate detection edge cases) are based on industry knowledge and AP workflow best practices — may surface additional edge cases during implementation. |
+| Stack | MEDIUM-HIGH | Official SDKs verified on npm for all major dependencies. Autenti has no Node.js SDK (custom client required — MEDIUM). KSeF client is single-maintainer (LOW-MEDIUM risk, fallback exists). All others HIGH. |
+| Features | MEDIUM-HIGH | Verified against official APIs, competitor analysis (Deel, Faktura.pl), and regulatory documentation. Polish market specifics (KSeF mandatory dates, Autenti QES legal requirements) are MEDIUM — less community-validated. |
+| Architecture | HIGH | Existing architecture well-understood. All integration patterns (provider abstraction, generalized OAuth, async pipelines) are established in the ecosystem. Portal auth model based on well-documented magic-link patterns. |
+| Pitfalls | HIGH | Well-documented failure modes across all integration domains. KSeF pitfalls verified against government docs and third-party implementation guides. Integration security pitfalls cross-referenced with multiple sources. |
 
-**Overall confidence:** HIGH
+**Overall confidence:** MEDIUM-HIGH
 
 ### Gaps to Address
 
-- **Resend Inbound reliability at volume:** Resend Inbound was released Nov 2025 and is relatively new. Email attachment handling and reliability for high-volume orgs should be tested early in Phase 4. Fallback: SendGrid Inbound Parse (same webhook pattern, proven at scale).
-- **KSeF timeline certainty:** KSeF mandatory deadline and API stability remain in flux. The v1 decision to use email/upload intake with a v1.5 KSeF path is correct, but the KSeF milestone should be re-evaluated when the API stabilizes (expected H1 2026).
-- **Approval state machine edge cases:** The pitfalls research identifies known edge cases (deleted approver, concurrent approval, amount change, delegation loops), but a formal state transition diagram should be produced as the first deliverable of Phase 4 planning to surface any missed transitions.
-- **Biome rule coverage:** Biome covers ~95% of ESLint rules. Any accessibility linting requirements (axe-core rules) or import sorting specifics should be evaluated early in Phase 1 to determine if a fallback ESLint config is needed.
-- **Integer-grosze vs. Decimal decision:** Both approaches (store amounts as integers in grosze, or use Prisma `Decimal` with `decimal.js`) are valid. This decision must be made and documented before Phase 1 database schema is written. The integer approach is safer for arithmetic but requires explicit formatting on display; Decimal is more intuitive but requires discipline with the library.
+- **KSeF `@ksef/client` single-maintainer risk:** If the library becomes unmaintained, the fallback is generating a typed client from the government's OpenAPI 3.0.4 spec using `openapi-typescript` + `openapi-fetch`. Validate the library's health at Phase 5 planning time. Obtain the government OpenAPI spec regardless as a contingency artifact.
+- **Autenti QES vs standard signature routing:** The business logic for when QES (qualified electronic signature) is required vs standard signature depends on Polish legal requirements for specific document types (employment contracts, IP transfer agreements, etc.). This needs legal/business input, not just API documentation. Resolve before Phase 4 begins.
+- **KSeF certificate auth migration (Jan 2027):** Token-based auth works through end of 2026. Certificate-based auth is required from January 2027. Architecture for certificate management (storage, rotation, potential HSM consideration) must be designed during Phase 5 planning even if implementation is deferred.
+- **Contractor multi-org access UX:** A contractor who works for multiple organizations needs to switch between org contexts in the portal. The `PortalSession` model handles a single org at a time — the UX for context-switching (choose org on login? switch org in-portal?) needs explicit design during Phase 2 planning. This is a functional gap in the current architecture design.
+- **Mindee cost at scale:** At 500 orgs × 50 invoices/month × 2 pages average = 50K pages/month. Mindee's per-page pricing becomes material. Mitigations: skip OCR for KSeF-sourced invoices (already structured), cache `OcrResult` for re-submissions of identical PDFs, monitor per-org OCR page consumption.
+- **Google Calendar API quota per project:** Google Calendar API quotas are per Google Cloud project. At scale (500+ active calendar integrations), a single project quota may be insufficient. Plan for quota monitoring and potential quota increase requests before Phase 8 launch.
 
 ## Sources
 
 ### Primary (HIGH confidence)
-
-- [tRPC v11 announcement](https://trpc.io/blog/announcing-trpc-v11) — SSE subscriptions, FormData, TanStack Query v5 integration
-- [Better Auth Organization plugin docs](https://better-auth.com/docs/plugins/organization) — multi-tenant RBAC, custom roles, invitation workflow
-- [Inngest pricing + Vercel marketplace](https://www.inngest.com/pricing) / [https://vercel.com/marketplace/inngest](https://vercel.com/marketplace/inngest) — execution model, free tier, step functions
-- [Resend Inbound Emails](https://resend.com/blog/inbound-emails) — Nov 2025 launch, webhook parsing, attachment handling
-- [Cloudflare R2 presigned URLs](https://developers.cloudflare.com/r2/api/s3/presigned-urls/) — S3 compatibility, zero egress
-- [next-intl docs](https://next-intl.dev/) — App Router + Server Components native i18n
-- [nuqs](https://nuqs.dev/) — type-safe URL state, React Advanced 2025 talk
-- [Neon connection pooling docs](https://neon.com/docs/connect/connection-pooling) — serverless connection patterns
-- [Prisma Neon driver adapter](https://www.prisma.io/docs/orm/overview/databases/neon) — GA since Prisma v6.16
-- [QStash + Vercel Next.js](https://upstash.com/docs/qstash/quickstarts/vercel-nextjs) — canonical Vercel async job pattern
-- [Vercel Cron Jobs](https://vercel.com/docs/cron-jobs) — scheduling, best-effort timing
-- [Securing presigned URLs (AWS)](https://aws.amazon.com/blogs/compute/securing-amazon-s3-presigned-urls-for-serverless-applications/) — file security patterns
+- [DocuSign Node.js SDK](https://developers.docusign.com/docs/esign-rest-api/sdks/node/) — e-sign SDK setup, embedded signing, webhook configuration
+- [DocuSign Embedded Signing](https://developers.docusign.com/docs/esign-rest-api/esign101/concepts/embedding/) — embedded signing concepts, signing URL expiry (5 minutes)
+- [Mindee Invoice OCR](https://developers.mindee.com/docs/nodejs-invoice-ocr) — OCR integration guide, confidence scores, line items
+- [KSeF Official Portal](https://ksef.podatki.gov.pl/) — government documentation, test environment, authentication
+- [jira.js GitHub](https://github.com/MrRefactoring/jira.js) — v5.3.1, TypeScript-first, near-100% API coverage
+- [Jira Cloud OAuth 2.0 (3LO)](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/) — OAuth flow documentation
+- [Atlassian Rate Limiting](https://developer.atlassian.com/cloud/jira/platform/rate-limiting/) — burst limits and points-based quotas (March 2026)
+- [Notion JavaScript SDK](https://github.com/makenotion/notion-sdk-js) — official SDK, API version 2026-03-11
+- [Notion API Rate Limits](https://developers.notion.com/reference/request-limits) — 3 req/sec average, 2700 per 15-min window
+- [Microsoft Graph Calendar API](https://learn.microsoft.com/en-us/graph/outlook-calendar-concept-overview) — Outlook Calendar API overview, subscription management
+- [Google Calendar API Quickstart](https://developers.google.com/workspace/calendar/api/quickstart/nodejs) — official Node.js integration guide
 
 ### Secondary (MEDIUM confidence)
+- [KSeF 2.0 API and FA(3) Schema Analysis](https://rtcsuite.com/understanding-polands-ksef-2-0-api-documentation-and-fa3-structure-key-changes-and-released-api-documentation/) — OpenAPI 3.0.4, FA(3) structure changes, mandatory timeline
+- [KSeF E-Invoicing Poland Guide](https://marosavat.com/vat-news/e-invoicing-poland-guide-ksef) — Feb/April 2026 mandatory dates per company size
+- [Autenti API v2](https://developers.autenti.com/docs/autenti-public-api-v2/overview) — REST API overview, OAuth2, QES support
+- [Autenti API Postman Collection](https://www.postman.com/autenti-api/autenti-api/documentation/uzn9w70/autenti-api-v2) — endpoint reference
+- [ksef-client-ts GitHub](https://github.com/lkow/ksef-client-ts) — v1.7.1, single maintainer, ESM-only, API 2.0 RC5.7
+- [confluence.js docs](https://mrrefactoring.github.io/confluence.js/) — v2.1.0, same author as jira.js
+- [Clockify API](https://docs.clockify.me/) — REST API reference, time entry endpoints
+- [Deel Contractor Portal Analysis](https://www.deel.com/blog/features-any-deel-contractor-can-use/) — competitor feature comparison
+- [OCR Invoice Accuracy Issues](https://planergy.com/blog/ocr-accuracy/) — real-world accuracy caveats for Polish documents
+- [WorkOS Multi-Tenant RBAC](https://workos.com/blog/how-to-design-multi-tenant-rbac-saas) — trust boundary design patterns
 
-- [Multi-tenant data isolation with PostgreSQL RLS (AWS)](https://aws.amazon.com/blogs/database/multi-tenant-data-isolation-with-postgresql-row-level-security/) — RLS as defense-in-depth rationale
-- [ZenStack Multi-Tenancy Implementation Approaches](https://zenstack.dev/blog/multi-tenant) — Prisma extension pattern for tenant scoping
-- [Inngest vs Trigger.dev comparison](https://nextbuild.co/blog/background-jobs-vercel-inngest-trigger) — architecture trade-offs
-- [Rillion — Invoice Approval Workflow Best Practices](https://www.rillion.com/blog/invoice-approval-workflow-best-practices/) — approval chain patterns, SLA timers
-- [KSeF Poland E-Invoicing](https://www.dudkowiak.com/tax-law-in-poland/e-invoicing-in-poland-ksef/) — timeline, grace period to Dec 2026
-- [ApprovalMax](https://approvalmax.com/) — AP workflow feature benchmarking
-- [Deel](https://www.deel.com/) / [Remote](https://remote.com/) / [SaldeoSMART](https://www.supremis.pl/en/produkt/saldeosmart-en/) — competitor feature matrix
-
-### Tertiary (LOW confidence — needs validation)
-
-- [Resend Inbound attachment volume reliability](https://resend.com/blog/inbound-emails) — new service (Nov 2025), untested at production volume; validate early in Phase 4
-- [Currency handling pitfalls in fintech](https://bitcat.dev/avoid-common-pitfalls-fintech-currency-handling/) — general guidance, not Polish-market specific; validate integer-grosze approach against PL accounting requirements
+### Tertiary (LOW confidence — validate during implementation)
+- [Autenti Pricing](https://autenti.com/en/pricing/api) — per-signature pricing model; confirm directly with Autenti for volume pricing
+- [Mindee Pricing](https://www.mindee.com/pricing) — per-page model; monitor costs during Phase 3 rollout
+- [KSeF Certificate Auth Timeline](https://www.dudkowiak.com/tax-law-in-poland/e-invoicing-in-poland-ksef/) — Jan 2027 deadline; confirm against official Ministry of Finance communications before Phase 5
 
 ---
-*Research completed: 2026-03-18*
+*Research completed: 2026-03-23*
 *Ready for roadmap: yes*
