@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Platform Expansion
 status: Ready to execute
-stopped_at: Completed 13-01-PLAN.md
-last_updated: "2026-03-23T14:50:42.436Z"
+stopped_at: Completed 13-02-PLAN.md
+last_updated: "2026-03-23T14:58:58.575Z"
 progress:
   total_phases: 9
   completed_phases: 1
   total_plans: 10
-  completed_plans: 6
+  completed_plans: 7
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-23)
 ## Current Position
 
 Phase: 13 (contractor-portal-auth-core-views) — EXECUTING
-Plan: 2 of 5
+Plan: 3 of 5
 
 ## Performance Metrics
 
@@ -46,6 +46,7 @@ Plan: 2 of 5
 | Phase 12 P04 | 11min | 2 tasks | 17 files |
 | Phase 12 P05 | 8min | 2 tasks | 6 files |
 | Phase 13 P01 | 3min | 2 tasks | 7 files |
+| Phase 13 P02 | 6min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -66,6 +67,8 @@ Recent decisions affecting current work:
 - [Phase 12]: Generic provider card replaces inline SlackConnectionCard; static provider config; 30s polling via refetchInterval
 - [Phase 12]: Old Slack/Resend routes kept functional with @deprecated JSDoc for backward compat during URL migration
 - [Phase 13]: Raw prisma client for portal services — PortalSession/PortalMagicToken in globalModels, cross-org contractor lookup needs unscoped access
+- [Phase 13]: Raw prisma client used in portal router with explicit organizationId in creates (matches existing router pattern)
+- [Phase 13]: Organization fetched separately in getSession since validatePortalSession only includes contractor relation
 
 ### Pending Todos
 
@@ -80,6 +83,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-23T14:50:42.433Z
-Stopped at: Completed 13-01-PLAN.md
+Last session: 2026-03-23T14:58:58.572Z
+Stopped at: Completed 13-02-PLAN.md
 Resume file: None

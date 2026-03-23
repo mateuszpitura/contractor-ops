@@ -16,10 +16,10 @@ Requirements for v2.0 Platform Expansion. Each maps to roadmap phases.
 ### Contractor Portal
 
 - [x] **PORT-01**: Contractor can log in via magic link with org-scoped access
-- [ ] **PORT-02**: Contractor can view own active contracts and terms (read-only)
-- [ ] **PORT-03**: Contractor can submit invoices via portal that enter org's intake pipeline
-- [ ] **PORT-04**: Contractor can track invoice and payment status through approval and payment
-- [ ] **PORT-05**: Contractor can view and download own documents (contracts, NDAs, tax forms)
+- [x] **PORT-02**: Contractor can view own active contracts and terms (read-only)
+- [x] **PORT-03**: Contractor can submit invoices via portal that enter org's intake pipeline
+- [x] **PORT-04**: Contractor can track invoice and payment status through approval and payment
+- [x] **PORT-05**: Contractor can view and download own documents (contracts, NDAs, tax forms)
 - [ ] **PORT-06**: Contractor can edit own profile (bank details, tax info, contact) with org approval
 - [ ] **PORT-07**: Contractor can configure notification email preferences
 - [ ] **PORT-08**: Portal displays org branding (logo, colors, custom subdomain/path)
@@ -117,10 +117,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INTG-02 | Phase 12 | Complete |
 | INTG-03 | Phase 12 | Complete |
 | PORT-01 | Phase 13 | Complete |
-| PORT-02 | Phase 13 | Pending |
-| PORT-03 | Phase 13 | Pending |
-| PORT-04 | Phase 13 | Pending |
-| PORT-05 | Phase 13 | Pending |
+| PORT-02 | Phase 13 | Complete |
+| PORT-03 | Phase 13 | Complete |
+| PORT-04 | Phase 13 | Complete |
+| PORT-05 | Phase 13 | Complete |
 | PORT-06 | Phase 14 | Pending |
 | PORT-07 | Phase 14 | Pending |
 | PORT-08 | Phase 14 | Pending |
