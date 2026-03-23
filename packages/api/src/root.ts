@@ -18,6 +18,7 @@ import { auditRouter } from "./routers/audit.js";
 import { importRouter } from "./routers/import.js";
 import { searchRouter } from "./routers/search.js";
 import { portalRouter } from "./routers/portal.js";
+import { esignRouter } from "./routers/esign.js";
 
 /**
  * Root tRPC router merging all sub-routers.
@@ -61,6 +62,7 @@ export const appRouter = router({
   import: importRouter,
   search: searchRouter,
   portal: portalRouter,
+  esign: esignRouter,
 });
 
 /** Type-safe router type for client consumption */
