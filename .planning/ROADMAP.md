@@ -70,12 +70,14 @@ Plans:
   3. Contractor can upload an invoice through the portal and it enters the org's existing intake and approval pipeline
   4. Contractor can see the current status of each invoice (submitted, in review, approved, paid) and payment dates
   5. Contractor can view and download their own documents (contracts, NDAs, tax forms) from the portal
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- [ ] 13-01: TBD
-- [ ] 13-02: TBD
-- [ ] 13-03: TBD
+- [ ] 13-01-PLAN.md — DB schema (PortalSession, PortalMagicToken, PORTAL enum) + session and magic link services
+- [ ] 13-02-PLAN.md — Portal tRPC middleware (portalProcedure) + complete portal router with all endpoints
+- [ ] 13-03-PLAN.md — Portal layout, top bar navigation, login page, magic link verification, org picker
+- [ ] 13-04-PLAN.md — Overview dashboard, contracts list/detail, documents list, payments list
+- [ ] 13-05-PLAN.md — Invoice list/detail with 3-layer status tracking, submission form with PDF upload, success page
 
 ### Phase 14: Portal Self-Service & Branding
 **Goal**: Contractors can manage their own profile and preferences, and the portal reflects the hiring org's brand
@@ -203,7 +205,7 @@ Phases execute in numeric order: 12 → 13 → 14 → 15 → 16 → 17 → 18 �
 | 10. Onboarding & Polish | v1.0 | 5/5 | Complete | 2026-03-23 |
 | 11. Route Fixes & Tenant Isolation | v1.0 | 2/2 | Complete | 2026-03-23 |
 | 12. Integration Foundation | v2.0 | 5/5 | Complete    | 2026-03-23 |
-| 13. Contractor Portal Auth & Core Views | v2.0 | 0/0 | Not started | - |
+| 13. Contractor Portal Auth & Core Views | v2.0 | 0/5 | Planned | - |
 | 14. Portal Self-Service & Branding | v2.0 | 0/0 | Not started | - |
 | 15. E-Sign Integration | v2.0 | 0/0 | Not started | - |
 | 16. OCR Invoice Parsing | v2.0 | 0/0 | Not started | - |
