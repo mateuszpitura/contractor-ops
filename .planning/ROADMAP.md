@@ -21,7 +21,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 7: Notifications & Slack** - In-app and email notifications for all critical events, Slack integration with inline actions (completed 2026-03-22)
 - [ ] **Phase 8: Payments** - Payment run creation, batch export, status tracking with idempotency controls
 - [ ] **Phase 9: Dashboard & Reports** - KPI dashboard, spend and compliance reports, audit log viewer
-- [ ] **Phase 10: Onboarding & Polish** - Data import wizard, product onboarding wizard, global search, and command palette
+- [x] **Phase 10: Onboarding & Polish** - Data import wizard, product onboarding wizard, global search, and command palette (completed 2026-03-23)
 
 ## Phase Details
 
@@ -209,7 +209,7 @@ Plans:
 - [x] 10-02-PLAN.md — Reusable EmptyState component, onboarding checklist widget, dashboard integration
 - [x] 10-03-PLAN.md — Import wizard UI (5-step: upload, column mapping, validation preview, duplicate resolution, confirmation)
 - [x] 10-04-PLAN.md — Command palette (Cmd+K), global search bar, empty state integration across all list views
-- [ ] 10-05-PLAN.md — Full i18n (EN + PL) for all Phase 10 surfaces
+- [x] 10-05-PLAN.md — Full i18n (EN + PL) for all Phase 10 surfaces
 
 ## Progress
 
@@ -227,4 +227,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 7. Notifications & Slack | 5/5 | Complete   | 2026-03-22 |
 | 8. Payments | 0/3 | Not started | - |
 | 9. Dashboard & Reports | 0/5 | Not started | - |
-| 10. Onboarding & Polish | 4/5 | In Progress|  |
+| 10. Onboarding & Polish | 5/5 | Complete   | 2026-03-23 |
