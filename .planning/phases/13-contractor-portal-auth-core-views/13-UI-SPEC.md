@@ -45,12 +45,14 @@ Exceptions: Mobile touch targets minimum 44px height for all tappable elements (
 
 ## Typography
 
-| Role | Size | Weight | Line Height | Usage |
-|------|------|--------|-------------|-------|
-| Body | 14px | 400 (regular) | 1.5 | Default text, paragraphs, table cells, activity log entries |
-| Label | 13px | 500 (medium) | 1.4 | Form labels, meta text, nav links, badge text |
-| Heading | 20px | 600 (semibold) | 1.2 | Page titles, card titles, section headings, empty state headings |
-| Display | 28px | 600 (semibold) | 1.2 | Portal login page title, overview dashboard greeting |
+| Role | Size | Tailwind Class | Weight | Line Height | Usage |
+|------|------|----------------|--------|-------------|-------|
+| Body | 14px | `text-sm` | 400 (regular) | 1.5 | Default text, paragraphs, table cells, activity log entries |
+| Label | 13px | `text-[13px]` | 400 (regular) | 1.4 | Form labels, meta text, nav links, badge text |
+| Heading | 20px | `text-xl` | 600 (semibold) | 1.2 | Page titles, card titles, section headings, empty state headings |
+| Display | 28px | `text-[28px]` | 600 (semibold) | 1.2 | Portal login page title, overview dashboard greeting |
+
+Two weights only: 400 (`font-normal`) for body and label roles, 600 (`font-semibold`) for heading and display roles.
 
 Source: Matches existing admin patterns -- globals.css body 14px/1.5, login-form.tsx uses text-[28px], text-[20px], text-[13px] for labels.
 
@@ -123,16 +125,16 @@ Components needed for this phase, mapped to existing shadcn primitives or new po
 
 ### Portal Top Bar (D-01)
 - Height: 56px
-- Left: Org logo (32px square, rounded-md) + org name (14px semibold)
-- Center: Nav links -- Overview, Contracts, Invoices, Documents, Payments (14px medium, 24px horizontal gap)
+- Left: Org logo (32px square, rounded-md) + org name (`text-sm font-semibold`)
+- Center: Nav links -- Overview, Contracts, Invoices, Documents, Payments (`text-[13px] font-normal`, 24px horizontal gap)
 - Right: Contractor name + avatar (32px) + dropdown (logout)
 - Active nav: Indigo underline (2px) below active link
 - Mobile (<768px): Logo + hamburger icon. Sheet slides from right with full nav + profile section
 - Background: `--card` with bottom border `--border`
 
 ### Overview Dashboard (D-02)
-- Greeting: "Welcome back, {firstName}" at 28px semibold
-- Summary cards: 2x2 grid on desktop, single column on mobile. Each card: Lucide icon (20px, muted-foreground) + label (13px, muted-foreground) + value (28px, semibold)
+- Greeting: "Welcome back, {firstName}" at `text-[28px] font-semibold`
+- Summary cards: 2x2 grid on desktop, single column on mobile. Each card: Lucide icon (20px, muted-foreground) + label (`text-[13px] font-normal`, muted-foreground) + value (`text-[28px] font-semibold`)
 - Cards: Active Contracts (FileText icon), Pending Invoices (Clock icon), Recent Payments (Banknote icon), Upcoming Deadlines (CalendarDays icon)
 - Quick actions below cards: "Submit Invoice" (primary button) + "View Contracts" (outline button)
 - Below quick actions: Recent activity log (last 5 entries) with "View all" link
@@ -144,7 +146,7 @@ Components needed for this phase, mapped to existing shadcn primitives or new po
 - Sort by date submitted (newest first), no filtering in Phase 13 (Phase 14 scope)
 
 ### Invoice Detail (D-10, D-11, D-12)
-- Top section: Invoice number (20px heading) + status badge + submission date
+- Top section: Invoice number (`text-xl font-semibold`) + status badge + submission date
 - StatusTimeline: horizontal 5-step progress indicator below heading
 - Details card: contract name, amounts (net/gross), dates (issue/due), PDF attachment (downloadable)
 - Activity log card below: scrollable list of contractor-visible events with timestamps
@@ -161,7 +163,7 @@ Components needed for this phase, mapped to existing shadcn primitives or new po
 
 ### Contracts List (D-02, PORT-02)
 - Card grid (2 columns desktop, 1 column mobile)
-- Each card: Contract title (16px medium), contractor role, date range, monthly rate, status badge (Active/Expired/Pending)
+- Each card: Contract title (`text-sm font-semibold`), contractor role, date range, monthly rate, status badge (Active/Expired/Pending)
 - Click card to view contract detail (read-only)
 
 ### Contract Detail (PORT-02)
@@ -181,16 +183,16 @@ Components needed for this phase, mapped to existing shadcn primitives or new po
 
 ### Portal Login (D-16)
 - Centered card (max-width 400px) on muted background
-- Heading: "Contractor Portal" at 28px semibold
-- Subheading: "Enter your email to receive a sign-in link" at 14px muted
+- Heading: "Contractor Portal" at `text-[28px] font-semibold`
+- Subheading: "Enter your email to receive a sign-in link" at `text-sm` muted
 - Email input + "Send Magic Link" primary button (full-width)
 - Below form: "Are you an admin?" link to admin login
 
 ### Org Picker (D-15)
 - Shown after magic link verification when contractor has 2+ orgs
 - Centered layout (max-width 480px)
-- Heading: "Select Organization" at 20px semibold
-- Card per org: org logo (40px) + org name (16px medium) + contractor role (14px muted). Hover state with accent border
+- Heading: "Select Organization" at `text-xl font-semibold`
+- Card per org: org logo (40px) + org name (`text-sm font-semibold`) + contractor role (`text-sm font-normal` muted). Hover state with accent border
 - Click card to enter portal for that org
 
 ---
