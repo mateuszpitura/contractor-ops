@@ -73,6 +73,8 @@ model Organization {
   comments             Comment[]
   reminderRules        ReminderRule[]
   reminderInstances    ReminderInstance[]
+  signingEnvelopes     SigningEnvelope[]
+  signingEvents        SigningEvent[]
 }
 
 model Member {
