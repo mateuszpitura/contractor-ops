@@ -55,28 +55,28 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
     icon: UserPlus,
     optional: false,
     stepKey: "inviteTeam",
-    ctaHref: "/settings/users",
+    ctaHref: "/settings?tab=members",
   },
   {
     id: "add-contractor",
     icon: Users,
     optional: false,
     stepKey: "addContractor",
-    ctaHref: "/contractors/new",
+    ctaHref: "/contractors?action=new",
   },
   {
     id: "configure-approvals",
     icon: CheckCircle,
     optional: true,
     stepKey: "configureApprovals",
-    ctaHref: "/settings/approvals",
+    ctaHref: "/settings?tab=approvals",
   },
   {
     id: "connect-slack",
     icon: MessageSquare,
     optional: true,
     stepKey: "connectSlack",
-    ctaHref: "/settings/integrations",
+    ctaHref: "/settings?tab=integrations",
   },
 ] as const;
 

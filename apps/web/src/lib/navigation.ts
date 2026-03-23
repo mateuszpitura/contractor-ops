@@ -34,7 +34,7 @@ export const navigationItems: NavItem[] = [
   {
     key: "dashboard",
     label: "Dashboard",
-    href: "/dashboard",
+    href: "/",
     icon: LayoutDashboard,
     permission: null, // Always visible to authenticated users
   },
@@ -90,7 +90,7 @@ export const navigationItems: NavItem[] = [
   {
     key: "integrations",
     label: "Integrations",
-    href: "/integrations",
+    href: "/settings?tab=integrations",
     icon: Plug,
     permission: { resource: "integration", actions: ["read"] },
   },
