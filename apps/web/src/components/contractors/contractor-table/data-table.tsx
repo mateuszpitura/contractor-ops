@@ -36,6 +36,7 @@ const STORAGE_KEY = "contractor-table-columns";
 interface ContractorDataTableProps {
   onRowClick: (contractor: ContractorRow) => void;
   onAddContractor: () => void;
+  onImport?: () => void;
 }
 
 /**
@@ -46,6 +47,7 @@ interface ContractorDataTableProps {
 export function ContractorDataTable({
   onRowClick,
   onAddContractor,
+  onImport,
 }: ContractorDataTableProps) {
   const t = useTranslations("Contractors");
 
@@ -243,6 +245,7 @@ export function ContractorDataTable({
         onFiltersChange={handleFiltersChange}
         isSearching={isSearching}
         onAddContractor={onAddContractor}
+        onImport={onImport}
       />
 
       {/* Bulk actions bar */}

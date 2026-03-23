@@ -36,6 +36,7 @@ const STORAGE_KEY = "contract-table-columns";
 interface ContractDataTableProps {
   onRowClick: (contract: ContractRow) => void;
   onNewContract: () => void;
+  onImport?: () => void;
 }
 
 /**
@@ -46,6 +47,7 @@ interface ContractDataTableProps {
 export function ContractDataTable({
   onRowClick,
   onNewContract,
+  onImport,
 }: ContractDataTableProps) {
   const t = useTranslations("Contracts");
 
@@ -259,6 +261,7 @@ export function ContractDataTable({
         onFiltersChange={handleFiltersChange}
         isSearching={isSearching}
         onNewContract={onNewContract}
+        onImport={onImport}
       />
 
       {/* Bulk actions bar */}

@@ -29,6 +29,7 @@ interface DataTableToolbarProps {
   onFiltersChange: (filters: Partial<FilterState>) => void;
   isSearching?: boolean;
   onNewContract: () => void;
+  onImport?: () => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -46,6 +47,7 @@ export function DataTableToolbar({
   onFiltersChange,
   isSearching,
   onNewContract,
+  onImport,
 }: DataTableToolbarProps) {
   const t = useTranslations("Contracts");
 
@@ -94,6 +96,13 @@ export function DataTableToolbar({
 
         {/* Spacer */}
         <div className="flex-1" />
+
+        {/* Import CTA */}
+        {onImport && (
+          <Button size="sm" variant="outline" className="h-9" onClick={onImport}>
+            {t("import")}
+          </Button>
+        )}
 
         {/* New contract CTA */}
         <Button size="sm" className="h-9" onClick={onNewContract}>

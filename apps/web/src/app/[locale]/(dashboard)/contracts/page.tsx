@@ -1,11 +1,16 @@
 "use client";
 
 import { Suspense, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { FileText } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { trpc } from "@/trpc/init";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/shared/empty-state";
 import { ContractDataTable } from "@/components/contracts/contract-table/data-table";
 import { ContractSidePanel } from "@/components/contracts/contract-side-panel";
+import { ImportWizardDialog } from "@/components/import/import-wizard-dialog";
 import type { ContractRow } from "@/components/contracts/contract-table/columns";
 
 /**
@@ -19,6 +24,18 @@ function ContractsContent() {
     useState<ContractRow | null>(null);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
   const [_wizardOpen, setWizardOpen] = useState(false);
+  const [importWizardOpen, setImportWizardOpen] = useState(false);
+
+  // Check contract and contractor counts for empty state
+  const contractCountQuery = useQuery(
+    trpc.contract.list.queryOptions({ page: 1, pageSize: 1 }),
+  );
+  const contractorCountQuery = useQuery(
+    trpc.contractor.list.queryOptions({ page: 1, pageSize: 1 }),
+  );
+  const contractTotal = (contractCountQuery.data as { total: number } | undefined)?.total ?? 0;
+  const contractorCount = (contractorCountQuery.data as { total: number } | undefined)?.total ?? 0;
+  const isCountLoading = contractCountQuery.isLoading;
 
   const handleRowClick = (contract: ContractRow) => {
     setSelectedContract(contract);
@@ -28,6 +45,25 @@ function ContractsContent() {
   const handleNewContract = () => {
     setWizardOpen(true);
   };
+
+  // Show empty state when no contracts exist
+  if (!isCountLoading && contractTotal === 0) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-[20px] font-semibold">{t("pageTitle")}</h1>
+        </div>
+        <EmptyState
+          icon={FileText}
+          heading="No contracts yet"
+          body="Create your first contract to start tracking agreements and deadlines."
+          primaryAction={{ label: "Create contract", onClick: handleNewContract }}
+          prerequisiteMissing={contractorCount === 0}
+          prerequisiteAction={{ label: "Add contractor", href: "/contractors" }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -40,6 +76,7 @@ function ContractsContent() {
       <ContractDataTable
         onRowClick={handleRowClick}
         onNewContract={handleNewContract}
+        onImport={() => setImportWizardOpen(true)}
       />
 
       {/* Side panel */}
@@ -47,6 +84,13 @@ function ContractsContent() {
         contract={selectedContract}
         open={sidePanelOpen}
         onOpenChange={setSidePanelOpen}
+      />
+
+      {/* Import wizard */}
+      <ImportWizardDialog
+        open={importWizardOpen}
+        onOpenChange={setImportWizardOpen}
+        defaultEntityType="contract"
       />
     </div>
   );

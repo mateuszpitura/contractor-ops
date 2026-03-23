@@ -1,12 +1,17 @@
 "use client";
 
 import { Suspense, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { trpc } from "@/trpc/init";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/shared/empty-state";
 import { ContractorDataTable } from "@/components/contractors/contractor-table/data-table";
 import { ContractorSidePanel } from "@/components/contractors/contractor-side-panel";
 import { WizardDialog } from "@/components/contractors/contractor-wizard/wizard-dialog";
+import { ImportWizardDialog } from "@/components/import/import-wizard-dialog";
 import type { ContractorRow } from "@/components/contractors/contractor-table/columns";
 
 /**
@@ -20,6 +25,14 @@ function ContractorsContent() {
     useState<ContractorRow | null>(null);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
+  const [importWizardOpen, setImportWizardOpen] = useState(false);
+
+  // Lightweight count query for empty state detection
+  const countQuery = useQuery(
+    trpc.contractor.list.queryOptions({ page: 1, pageSize: 1 }),
+  );
+  const totalCount = (countQuery.data as { total: number } | undefined)?.total ?? 0;
+  const isCountLoading = countQuery.isLoading;
 
   const handleRowClick = (contractor: ContractorRow) => {
     setSelectedContractor(contractor);
@@ -29,6 +42,30 @@ function ContractorsContent() {
   const handleAddContractor = () => {
     setWizardOpen(true);
   };
+
+  // Show empty state only when count query resolved and total is 0
+  if (!isCountLoading && totalCount === 0) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-[20px] font-semibold">{t("pageTitle")}</h1>
+        </div>
+        <EmptyState
+          icon={Users}
+          heading="Your contractor list is empty"
+          body="Add your first contractor or import from a spreadsheet to get started."
+          primaryAction={{ label: "Add contractor", onClick: handleAddContractor }}
+          secondaryAction={{ label: "Import from file", onClick: () => setImportWizardOpen(true) }}
+        />
+        <WizardDialog open={wizardOpen} onOpenChange={setWizardOpen} />
+        <ImportWizardDialog
+          open={importWizardOpen}
+          onOpenChange={setImportWizardOpen}
+          defaultEntityType="contractor"
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -41,6 +78,7 @@ function ContractorsContent() {
       <ContractorDataTable
         onRowClick={handleRowClick}
         onAddContractor={handleAddContractor}
+        onImport={() => setImportWizardOpen(true)}
       />
 
       {/* Side panel */}
@@ -52,6 +90,13 @@ function ContractorsContent() {
 
       {/* Add contractor wizard */}
       <WizardDialog open={wizardOpen} onOpenChange={setWizardOpen} />
+
+      {/* Import wizard */}
+      <ImportWizardDialog
+        open={importWizardOpen}
+        onOpenChange={setImportWizardOpen}
+        defaultEntityType="contractor"
+      />
     </div>
   );
 }
