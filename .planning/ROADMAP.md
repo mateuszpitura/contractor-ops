@@ -227,7 +227,7 @@ Plans:
 
 Plans:
 - [ ] 11-01-PLAN.md — Fix sidebar navigation hrefs, onboarding CTAs, and Cmd+K quick action searchParam wiring
-- [ ] 11-02-PLAN.md — Verify tenantStore.run() already wired in tenant middleware (ORG-07 confirmed)
+- [x] 11-02-PLAN.md — Verify tenantStore.run() already wired in tenant middleware (ORG-07 confirmed)
 
 ## Progress
 
@@ -246,4 +246,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 8. Payments | 0/3 | Not started | - |
 | 9. Dashboard & Reports | 0/5 | Not started | - |
 | 10. Onboarding & Polish | 5/5 | Complete    | 2026-03-23 |
-| 11. Route Fixes & Tenant Isolation | 0/2 | Not started | - |
+| 11. Route Fixes & Tenant Isolation | 1/2 | In Progress|  |
