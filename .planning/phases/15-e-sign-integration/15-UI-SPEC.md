@@ -114,7 +114,7 @@ Accent reserved for: "Send for Signature" primary CTA button on contract detail 
 | SendForSignatureButton | Primary CTA button in DetailHeader. Icon: PenLine. Label: "Send for Signature". Visible when contract status is DRAFT or ACTIVE. Opens SendForSignatureDialog. |
 | SendForSignatureDialog | Full setup dialog (D-07). Sections: provider picker, signer list, message, document preview, expiry/reminders. Max-width 640px. Scrollable body. |
 | ProviderPicker | Select component with provider icon + name. Options: DocuSign (if connected), Autenti (if connected). Disabled option with "Not connected" sublabel if provider not in IntegrationConnection. |
-| SignerList | Ordered list of signers (D-09). Each row: drag handle (GripVertical icon), avatar/initials, name, email, role label ("Contractor" / "Countersigner"). Reorderable via drag-and-drop. Auto-populated from contract parties. |
+| SignerList | Ordered list of signers (D-09). Each row: drag handle (GripVertical icon, `aria-label="Drag to reorder"`), avatar/initials, name, email, role label ("Contractor" / "Countersigner"). Reorderable via drag-and-drop. Auto-populated from contract parties. |
 | CountersignerPicker | Select dropdown of org members (D-10). Appears as the second signer row. Label: "Select countersigner". Shows member name + email. |
 | DocumentPreview | ScrollArea showing document thumbnail/first page. 16:9 aspect ratio container with muted background. Shows file name + page count below. |
 | SigningProgressBar | Horizontal progress indicator on contract detail. Shows "1 of 2 signed" with Progress component. Each signer shown as a step: icon (circle-check for signed, clock for waiting, x-circle for declined). |
@@ -179,7 +179,7 @@ Accent reserved for: "Send for Signature" primary CTA button on contract detail 
   - Left: Document title at `text-sm font-semibold`
   - Right: Close button (X icon, ghost variant, 32x32px, `aria-label="Close signing modal"`)
 - Body: iframe element, width 100%, height calc(100dvh - 56px)
-- Fallback (when embedded not supported): centered Card (max-width 480px) with provider logo, "You will be redirected to {provider} to complete signing", "Continue to {provider}" primary button, "Cancel" outline button
+- Fallback (when embedded not supported): centered Card (max-width 480px) with provider logo, "You will be redirected to {provider} to complete signing", "Continue to {provider}" primary button, "Return to Contract" outline button
 - On signing complete (postMessage/callback from provider): close modal, show success toast, refresh contract detail
 
 ### Portal Pending Signatures (D-04)
@@ -255,6 +255,7 @@ Accent reserved for: "Send for Signature" primary CTA button on contract detail 
 | Embedded fallback heading | "Complete Signing" |
 | Embedded fallback body | "You will be redirected to {provider} to complete signing." |
 | Embedded fallback CTA | "Continue to {provider}" |
+| Embedded fallback dismiss | "Return to Contract" |
 | Audit trail title | "Signing History" |
 | Audit: envelope created | "Signing envelope created" |
 | Audit: sent | "Sent to {name} for signature" |
