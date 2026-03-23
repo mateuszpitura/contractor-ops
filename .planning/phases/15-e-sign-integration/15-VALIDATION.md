@@ -40,9 +40,11 @@ created: 2026-03-23
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
 | 15-01-01 | 01 | 1 | SIGN-01 | unit | `pnpm --filter @contractor-ops/integrations test --run` | ❌ W0 | ⬜ pending |
 | 15-01-02 | 01 | 1 | SIGN-01 | unit | `pnpm --filter @contractor-ops/api test --run` | ❌ W0 | ⬜ pending |
-| 15-02-01 | 02 | 2 | SIGN-02 | type-check | `npx tsc --noEmit --project apps/web/tsconfig.json` | N/A | ⬜ pending |
-| 15-02-02 | 02 | 2 | SIGN-03 | type-check | `npx tsc --noEmit --project apps/web/tsconfig.json` | N/A | ⬜ pending |
+| 15-02-01 | 02 | 1 | SIGN-02 | type-check | `npx tsc --noEmit --project packages/integrations/tsconfig.json` | N/A | ⬜ pending |
+| 15-02-02 | 02 | 1 | SIGN-03 | type-check | `npx tsc --noEmit --project packages/integrations/tsconfig.json` | N/A | ⬜ pending |
 | 15-03-01 | 03 | 2 | SIGN-04 | unit | `pnpm --filter @contractor-ops/integrations test --run` | ❌ W0 | ⬜ pending |
+| 15-04-01 | 04 | 3 | SIGN-01, SIGN-02, SIGN-03 | type-check | `npx tsc --noEmit --project apps/web/tsconfig.json` | N/A | ⬜ pending |
+| 15-04-02 | 04 | 3 | SIGN-02, SIGN-04 | type-check | `npx tsc --noEmit --project apps/web/tsconfig.json` | N/A | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
