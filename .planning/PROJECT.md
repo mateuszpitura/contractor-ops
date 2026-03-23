@@ -14,6 +14,8 @@ The invoice-to-payment flow must work end-to-end: a contractor's invoice arrives
 
 All 14 product modules delivered: org setup, RBAC, contractors, contracts, documents, workflows, invoices (upload + email intake), approvals, notifications (in-app + email + Slack), payments, dashboard, reports, data import, onboarding wizard, global search + Cmd+K. Full Polish + English i18n.
 
+**Phase 12 complete** — Generic integration infrastructure: provider adapter pattern, AES-256-GCM credential encryption, unified webhook ingestion via QStash, OAuth + token refresh with distributed locking, health monitoring with 30s polling, and provider settings UI. Foundation for all v2.0 third-party integrations.
+
 ## Requirements
 
 ### Validated — v1.0
@@ -142,4 +144,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-23 after v2.0 milestone start*
+*Last updated: 2026-03-23 after Phase 12 (integration-foundation) completion*
