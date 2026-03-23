@@ -54,6 +54,8 @@ model Contractor {
   paymentRunItems      PaymentRunItem[]
   tags                 ContractorTagLink[]
   portalSessions       PortalSession[]
+  changeRequests           ContractorChangeRequest[]
+  notificationPreferences  ContractorNotificationPreference[]
 
   @@index([organizationId])
   @@index([organizationId, status])

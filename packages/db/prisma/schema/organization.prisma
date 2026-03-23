@@ -64,6 +64,8 @@ model Organization {
   integrationSyncLogs  IntegrationSyncLog[]
   webhookDeliveries    WebhookDelivery[]
   portalSessions       PortalSession[]
+  contractorChangeRequests       ContractorChangeRequest[]
+  contractorNotificationPrefs    ContractorNotificationPreference[]
   notifications        Notification[]
   notificationPrefs    UserNotificationPreference[]
   comments             Comment[]

@@ -57,6 +57,9 @@ model User {
 
   // Workflow comments
   workflowComments     WorkflowComment[]
+
+  // Portal change request reviews
+  reviewedChangeRequests ContractorChangeRequest[]
 }
 
 model Session {
