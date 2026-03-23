@@ -124,7 +124,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **ONBD-01**: New org sees guided setup wizard (org details → invite team → add/import contractor → configure approvals → connect Slack)
 - [x] **ONBD-02**: Empty states show contextual call-to-action on every view
 - [x] **SRCH-01**: User can search across contractors, contracts, invoices from global search bar
-- [ ] **SRCH-02**: User can use command palette (Cmd+K) for search + quick actions + navigation
+- [x] **SRCH-02**: User can use command palette (Cmd+K) for search + quick actions + navigation
 
 ## v2 Requirements
 
@@ -260,7 +260,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ONBD-01 | Phase 10 | Complete |
 | ONBD-02 | Phase 10 | Complete |
 | SRCH-01 | Phase 10 | Complete |
-| SRCH-02 | Phase 10 | Pending |
+| SRCH-02 | Phase 10 | Complete |
 
 **Coverage:**
 - v1 requirements: 89 total
