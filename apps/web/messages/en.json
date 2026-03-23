@@ -2165,5 +2165,183 @@
     "days30": "30 days",
     "days60": "60 days",
     "days90": "90 days"
+  },
+  "Import": {
+    "dialogTitle": "Import data",
+    "steps": {
+      "upload": "Upload file",
+      "mapping": "Map columns",
+      "preview": "Review data",
+      "duplicates": "Resolve duplicates",
+      "confirm": "Confirm import"
+    },
+    "upload": {
+      "heading": "Drop your file here",
+      "body": "CSV or Excel file with contractor or contract data",
+      "browse": "Browse files",
+      "entityContractors": "Contractors",
+      "entityContracts": "Contracts",
+      "removeFile": "Remove"
+    },
+    "mapping": {
+      "yourColumns": "Your file columns",
+      "mapsTo": "Maps to",
+      "autoMatched": "Auto-matched",
+      "notMapped": "Not mapped",
+      "unmappedNote": "Unmapped columns will be ignored",
+      "skip": "Skip (do not import)",
+      "required": "Required"
+    },
+    "preview": {
+      "validRows": "{count} valid rows",
+      "invalidRows": "{count} invalid rows",
+      "totalRows": "{count} total rows",
+      "showAll": "Show all",
+      "showErrors": "Show errors only",
+      "allValid": "All {count} rows are valid"
+    },
+    "duplicates": {
+      "banner": "We found {count} potential duplicates based on NIP/tax ID",
+      "skip": "Skip",
+      "update": "Update existing",
+      "create": "Create new",
+      "skipAll": "Skip all duplicates",
+      "updateAll": "Update all"
+    },
+    "confirm": {
+      "heading": "Ready to import {count} {entity}",
+      "newRecords": "{count} new records",
+      "updates": "{count} updates to existing",
+      "skippedDuplicates": "{count} skipped duplicates",
+      "skippedErrors": "{count} skipped errors",
+      "importCta": "Import",
+      "processing": "Importing... {current}/{total}",
+      "completeHeading": "Import complete",
+      "viewCta": "View {entity}"
+    },
+    "errors": {
+      "invalidFile": "Unsupported file format. Please upload a CSV or XLSX file.",
+      "emptyFile": "The file contains no data rows.",
+      "tooManyRows": "File exceeds 5000 rows. Please split into smaller files.",
+      "importFailed": "Import failed. Some rows could not be processed. Try again or contact support."
+    },
+    "toast": {
+      "importComplete": "Successfully imported {count} {entity}"
+    }
+  },
+  "Onboarding": {
+    "widgetTitle": "Setup guide",
+    "progress": "{completed} of {total} complete",
+    "collapsed": "Continue setup",
+    "dismiss": "Dismiss",
+    "completed": "Completed",
+    "optional": "Optional",
+    "steps": {
+      "orgDetails": {
+        "title": "Organization details",
+        "description": "Set your company name, country, and fiscal year",
+        "cta": "Complete details"
+      },
+      "inviteTeam": {
+        "title": "Invite your team",
+        "description": "Add team members who will manage contractors and invoices",
+        "cta": "Invite members"
+      },
+      "addContractor": {
+        "title": "Add contractors",
+        "description": "Add your first contractor or import from a spreadsheet",
+        "cta": "Add contractor",
+        "secondary": "Import from file"
+      },
+      "configureApprovals": {
+        "title": "Configure approvals",
+        "description": "Set up approval chains for invoice processing",
+        "cta": "Configure"
+      },
+      "connectSlack": {
+        "title": "Connect Slack",
+        "description": "Enable Slack notifications and inline approvals",
+        "cta": "Connect"
+      }
+    },
+    "toast": {
+      "stepComplete": "Step completed: {stepTitle}"
+    }
+  },
+  "EmptyStates": {
+    "contractors": {
+      "heading": "Your contractor list is empty",
+      "body": "Add your first contractor or import from a spreadsheet to get started.",
+      "cta": "Add contractor",
+      "secondary": "Import from file"
+    },
+    "contracts": {
+      "heading": "No contracts yet",
+      "body": "Create your first contract to start tracking agreements and deadlines.",
+      "cta": "Create contract"
+    },
+    "invoices": {
+      "heading": "No invoices yet",
+      "body": "Upload your first invoice or set up email intake to start processing.",
+      "cta": "Upload invoice",
+      "secondary": "Set up email"
+    },
+    "workflows": {
+      "heading": "No workflows yet",
+      "body": "Create a workflow template to automate onboarding and offboarding tasks.",
+      "cta": "Create template"
+    },
+    "payments": {
+      "heading": "No payment runs yet",
+      "body": "Payment runs will appear here once invoices are approved.",
+      "cta": "View approved invoices"
+    },
+    "approvals": {
+      "heading": "No pending approvals",
+      "body": "Your approval queue is clear. Approvals will appear here when invoices are submitted."
+    },
+    "notifications": {
+      "heading": "No notifications",
+      "body": "You're all caught up. Notifications will appear here for approvals, tasks, and deadlines."
+    },
+    "prerequisite": {
+      "body": "Start by adding a contractor.",
+      "cta": "Add contractor"
+    }
+  },
+  "Search": {
+    "placeholder": "Search or type a command...",
+    "globalPlaceholder": "Search...",
+    "keyboardBadge": "Cmd+K",
+    "sections": {
+      "recent": "Recent",
+      "pinned": "Pinned",
+      "results": "Results",
+      "actions": "Actions",
+      "pages": "Pages"
+    },
+    "actions": {
+      "newContractor": "New contractor",
+      "newContract": "New contract",
+      "uploadInvoice": "Upload invoice",
+      "startWorkflow": "Start workflow"
+    },
+    "noResults": "No results found",
+    "footer": {
+      "select": "Enter to select",
+      "navigate": "Arrow keys to navigate",
+      "close": "Esc to close"
+    },
+    "pin": "Pin to favorites",
+    "unpin": "Unpin",
+    "errors": {
+      "searchFailed": "Could not load search results. Try again.",
+      "recentFailed": "Could not load recent items."
+    },
+    "toast": {
+      "pinned": "Pinned to favorites",
+      "unpinned": "Removed from favorites"
+    },
+    "retry": "Try again"
   }
 }

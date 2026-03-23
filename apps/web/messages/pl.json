@@ -2165,5 +2165,183 @@
     "days30": "30 dni",
     "days60": "60 dni",
     "days90": "90 dni"
+  },
+  "Import": {
+    "dialogTitle": "Importuj dane",
+    "steps": {
+      "upload": "Wgraj plik",
+      "mapping": "Dopasuj kolumny",
+      "preview": "Przegladaj dane",
+      "duplicates": "Rozwiaz duplikaty",
+      "confirm": "Potwierdz import"
+    },
+    "upload": {
+      "heading": "Upusc plik tutaj",
+      "body": "Plik CSV lub Excel z danymi kontrahentow lub umow",
+      "browse": "Przegladaj pliki",
+      "entityContractors": "Kontrahenci",
+      "entityContracts": "Umowy",
+      "removeFile": "Usun"
+    },
+    "mapping": {
+      "yourColumns": "Kolumny z pliku",
+      "mapsTo": "Dopasowane do",
+      "autoMatched": "Dopasowane automatycznie",
+      "notMapped": "Niedopasowane",
+      "unmappedNote": "Niedopasowane kolumny zostana pominiete",
+      "skip": "Pomin (nie importuj)",
+      "required": "Wymagane"
+    },
+    "preview": {
+      "validRows": "{count} poprawnych wierszy",
+      "invalidRows": "{count} blednych wierszy",
+      "totalRows": "{count} wszystkich wierszy",
+      "showAll": "Pokaz wszystkie",
+      "showErrors": "Pokaz tylko bledy",
+      "allValid": "Wszystkie {count} wierszy sa poprawne"
+    },
+    "duplicates": {
+      "banner": "Znalezlismy {count} potencjalnych duplikatow na podstawie NIP",
+      "skip": "Pomin",
+      "update": "Aktualizuj istniejacy",
+      "create": "Utworz nowy",
+      "skipAll": "Pomin wszystkie duplikaty",
+      "updateAll": "Aktualizuj wszystkie"
+    },
+    "confirm": {
+      "heading": "Gotowe do importu {count} {entity}",
+      "newRecords": "{count} nowych rekordow",
+      "updates": "{count} aktualizacji istniejacych",
+      "skippedDuplicates": "{count} pominietych duplikatow",
+      "skippedErrors": "{count} pominietych bledow",
+      "importCta": "Importuj",
+      "processing": "Importowanie... {current}/{total}",
+      "completeHeading": "Import zakonczony",
+      "viewCta": "Zobacz {entity}"
+    },
+    "errors": {
+      "invalidFile": "Nieobslugiwany format pliku. Wgraj plik CSV lub XLSX.",
+      "emptyFile": "Plik nie zawiera wierszy z danymi.",
+      "tooManyRows": "Plik przekracza 5000 wierszy. Podziel na mniejsze pliki.",
+      "importFailed": "Import nie powiodl sie. Niektore wiersze nie mogly byc przetworzone. Sprobuj ponownie lub skontaktuj sie z pomoca."
+    },
+    "toast": {
+      "importComplete": "Pomyslnie zaimportowano {count} {entity}"
+    }
+  },
+  "Onboarding": {
+    "widgetTitle": "Przewodnik konfiguracji",
+    "progress": "{completed} z {total} ukonczone",
+    "collapsed": "Kontynuuj konfiguracje",
+    "dismiss": "Ukryj",
+    "completed": "Ukonczone",
+    "optional": "Opcjonalne",
+    "steps": {
+      "orgDetails": {
+        "title": "Dane organizacji",
+        "description": "Ustaw nazwe firmy, kraj i rok obrotowy",
+        "cta": "Uzupelnij dane"
+      },
+      "inviteTeam": {
+        "title": "Zapros zespol",
+        "description": "Dodaj czlonkow zespolu, ktorzy beda zarzadzac kontrahentami i fakturami",
+        "cta": "Zapros czlonkow"
+      },
+      "addContractor": {
+        "title": "Dodaj kontrahentow",
+        "description": "Dodaj pierwszego kontrahenta lub importuj z arkusza",
+        "cta": "Dodaj kontrahenta",
+        "secondary": "Importuj z pliku"
+      },
+      "configureApprovals": {
+        "title": "Skonfiguruj akceptacje",
+        "description": "Skonfiguruj lancuchy akceptacji do przetwarzania faktur",
+        "cta": "Skonfiguruj"
+      },
+      "connectSlack": {
+        "title": "Polacz ze Slackiem",
+        "description": "Wlacz powiadomienia Slack i akceptacje inline",
+        "cta": "Polacz"
+      }
+    },
+    "toast": {
+      "stepComplete": "Krok ukonczony: {stepTitle}"
+    }
+  },
+  "EmptyStates": {
+    "contractors": {
+      "heading": "Lista kontrahentow jest pusta",
+      "body": "Dodaj pierwszego kontrahenta lub importuj z arkusza, aby rozpoczac.",
+      "cta": "Dodaj kontrahenta",
+      "secondary": "Importuj z pliku"
+    },
+    "contracts": {
+      "heading": "Brak umow",
+      "body": "Utworz pierwsza umowe, aby zaczac sledzic porozumienia i terminy.",
+      "cta": "Utworz umowe"
+    },
+    "invoices": {
+      "heading": "Brak faktur",
+      "body": "Wgraj pierwsza fakture lub skonfiguruj odbiorcze email, aby rozpoczac.",
+      "cta": "Wgraj fakture",
+      "secondary": "Skonfiguruj email"
+    },
+    "workflows": {
+      "heading": "Brak procesow",
+      "body": "Utworz szablon procesu, aby zautomatyzowac zadania onboardingowe i offboardingowe.",
+      "cta": "Utworz szablon"
+    },
+    "payments": {
+      "heading": "Brak serii platnosci",
+      "body": "Serie platnosci pojawia sie tutaj, gdy faktury zostana zatwierdzone.",
+      "cta": "Zobacz zatwierdzone faktury"
+    },
+    "approvals": {
+      "heading": "Brak oczekujacych akceptacji",
+      "body": "Kolejka akceptacji jest pusta. Akceptacje pojawia sie, gdy faktury zostana przeslane."
+    },
+    "notifications": {
+      "heading": "Brak powiadomien",
+      "body": "Jestes na biezaco. Powiadomienia pojawia sie tutaj dla akceptacji, zadan i terminow."
+    },
+    "prerequisite": {
+      "body": "Zacznij od dodania kontrahenta.",
+      "cta": "Dodaj kontrahenta"
+    }
+  },
+  "Search": {
+    "placeholder": "Szukaj lub wpisz polecenie...",
+    "globalPlaceholder": "Szukaj...",
+    "keyboardBadge": "Cmd+K",
+    "sections": {
+      "recent": "Ostatnie",
+      "pinned": "Przypiety",
+      "results": "Wyniki",
+      "actions": "Akcje",
+      "pages": "Strony"
+    },
+    "actions": {
+      "newContractor": "Nowy kontrahent",
+      "newContract": "Nowa umowa",
+      "uploadInvoice": "Wgraj fakture",
+      "startWorkflow": "Rozpocznij proces"
+    },
+    "noResults": "Nie znaleziono wynikow",
+    "footer": {
+      "select": "Enter aby wybrac",
+      "navigate": "Strzalki do nawigacji",
+      "close": "Esc aby zamknac"
+    },
+    "pin": "Przypnij do ulubionych",
+    "unpin": "Odepnij",
+    "errors": {
+      "searchFailed": "Nie udalo sie zaladowac wynikow wyszukiwania. Sprobuj ponownie.",
+      "recentFailed": "Nie udalo sie zaladowac ostatnich elementow."
+    },
+    "toast": {
+      "pinned": "Przypieto do ulubionych",
+      "unpinned": "Usunieto z ulubionych"
+    },
+    "retry": "Sprobuj ponownie"
   }
 }
