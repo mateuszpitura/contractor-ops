@@ -56,6 +56,12 @@ const portalAuthMiddleware = t.middleware(async ({ ctx, next }) => {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
 
+  // Read subdomain header set by Next.js middleware (supplementary context)
+  // Session.organizationId remains authoritative for tenantStore scoping.
+  // The subdomain is passed as context metadata for logging/audit/rate-limiting.
+  const portalSubdomain =
+    ctx.headers.get("x-portal-org-subdomain") ?? null;
+
   return tenantStore.run({ organizationId: session.organizationId }, () =>
     next({
       ctx: {
@@ -64,6 +70,7 @@ const portalAuthMiddleware = t.middleware(async ({ ctx, next }) => {
         contractorId: session.contractorId,
         organizationId: session.organizationId,
         contractor: session.contractor,
+        portalSubdomain,
       },
     }),
   );

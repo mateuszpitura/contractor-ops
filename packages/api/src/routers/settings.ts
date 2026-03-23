@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import { auth } from "@contractor-ops/auth";
 import { prisma } from "@contractor-ops/db";
 import {
@@ -306,6 +307,74 @@ export const settingsRouter = router({
           (newSettings.brandColor as string) ?? null,
         logo: input.logoUrl !== undefined ? input.logoUrl : (org?.logo ?? null),
       };
+    }),
+
+  // =========================================================================
+  // PORTAL DOMAIN (admin)
+  // =========================================================================
+
+  /**
+   * Get the current portal subdomain and custom domain for the organization.
+   */
+  getPortalDomain: tenantProcedure
+    .use(requirePermission({ settings: ["read"] }))
+    .query(async ({ ctx }) => {
+      const org = await prisma.organization.findUnique({
+        where: { id: ctx.organizationId },
+        select: { slug: true, portalSubdomain: true, portalCustomDomain: true },
+      });
+      return {
+        slug: org?.slug ?? null,
+        portalSubdomain: org?.portalSubdomain ?? null,
+        portalCustomDomain: org?.portalCustomDomain ?? null,
+      };
+    }),
+
+  /**
+   * Update the portal subdomain for the organization.
+   * Validates subdomain format (3-63 chars, lowercase alphanumeric + hyphens)
+   * and checks uniqueness across all organizations.
+   * Per D-10, PORT-08.
+   */
+  updatePortalDomain: tenantProcedure
+    .use(requirePermission({ settings: ["update"] }))
+    .input(
+      z.object({
+        portalSubdomain: z
+          .string()
+          .min(3, "Subdomain must be at least 3 characters")
+          .max(63, "Subdomain must be at most 63 characters")
+          .regex(
+            /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/,
+            "Subdomain must contain only lowercase letters, numbers, and hyphens, and must start/end with alphanumeric",
+          )
+          .optional()
+          .nullable(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      if (input.portalSubdomain) {
+        // Check uniqueness across all orgs
+        const existing = await prisma.organization.findFirst({
+          where: {
+            portalSubdomain: input.portalSubdomain,
+            id: { not: ctx.organizationId },
+          },
+        });
+        if (existing) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "This subdomain is already in use",
+          });
+        }
+      }
+
+      await prisma.organization.update({
+        where: { id: ctx.organizationId },
+        data: { portalSubdomain: input.portalSubdomain ?? null },
+      });
+
+      return { success: true as const };
     }),
 
   // =========================================================================

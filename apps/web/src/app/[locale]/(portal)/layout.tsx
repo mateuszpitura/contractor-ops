@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { prisma } from "@contractor-ops/db";
 import { validatePortalSession } from "@contractor-ops/api/services/portal-session";
 import { PortalTopBar } from "@/components/portal/portal-top-bar";
@@ -8,7 +8,11 @@ import { PortalTopBar } from "@/components/portal/portal-top-bar";
  * Portal route group layout.
  *
  * - Checks for portal_session cookie via validatePortalSession.
- * - If no valid session, renders children without top bar (login pages).
+ * - Reads x-portal-org-subdomain header set by Next.js middleware for
+ *   subdomain-based portal routing (PORT-08, D-10).
+ * - If no valid session but subdomain header exists, renders branded shell
+ *   (org logo/color) around children (e.g., login page at acme.portal.app.com
+ *   shows Acme branding before contractor logs in).
  * - If authenticated, renders PortalTopBar + main content area.
  *
  * Does NOT use SidebarProvider or AppSidebar (D-01 -- no sidebar).
@@ -21,24 +25,45 @@ export default async function PortalLayout({
 }) {
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get("portal_session")?.value;
+  const headerStore = await headers();
+  const subdomainSlug = headerStore.get("x-portal-org-subdomain");
 
-  // No session cookie: render without top bar (login/verify pages)
+  // No session cookie: try to resolve org from subdomain for branding
   if (!sessionToken) {
-    return (
-      <div className="min-h-screen bg-background">{children}</div>
-    );
+    if (subdomainSlug) {
+      const org = await prisma.organization.findFirst({
+        where: { portalSubdomain: subdomainSlug },
+        select: { name: true, logo: true, settingsJson: true },
+      });
+      if (org) {
+        const settings =
+          (org.settingsJson as Record<string, unknown>) ?? {};
+        const brandColor = (settings.brandColor as string) ?? null;
+        return (
+          <div
+            className="min-h-screen bg-background"
+            style={
+              brandColor
+                ? ({ "--brand-accent": brandColor } as React.CSSProperties)
+                : undefined
+            }
+          >
+            {children}
+          </div>
+        );
+      }
+    }
+    return <div className="min-h-screen bg-background">{children}</div>;
   }
 
   // Validate session
   const session = await validatePortalSession(sessionToken);
 
   if (!session) {
-    return (
-      <div className="min-h-screen bg-background">{children}</div>
-    );
+    return <div className="min-h-screen bg-background">{children}</div>;
   }
 
-  // Fetch organization info for the top bar + branding (session only includes contractor)
+  // Fetch organization info for the top bar + branding (session.organizationId is authoritative)
   const organization = await prisma.organization.findUnique({
     where: { id: session.organizationId },
     select: { name: true, logo: true, settingsJson: true },

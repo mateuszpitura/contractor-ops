@@ -19,6 +19,8 @@ model Organization {
   status               OrganizationStatus @default(ACTIVE)
   billingEmail         String?
   settingsJson         Json?
+  portalSubdomain      String?            @unique
+  portalCustomDomain   String?            @unique
   updatedAt            DateTime           @updatedAt
   deletedAt            DateTime?
 
