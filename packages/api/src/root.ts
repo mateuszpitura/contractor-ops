@@ -15,6 +15,8 @@ import { paymentRouter } from "./routers/payment.js";
 import { dashboardRouter } from "./routers/dashboard.js";
 import { reportRouter } from "./routers/report.js";
 import { auditRouter } from "./routers/audit.js";
+import { importRouter } from "./routers/import.js";
+import { searchRouter } from "./routers/search.js";
 
 /**
  * Root tRPC router merging all sub-routers.
@@ -35,6 +37,8 @@ import { auditRouter } from "./routers/audit.js";
  * - dashboard: KPIs, spend trend, deadlines, activity feed
  * - report: spend by contractor/team, expiring contracts, overdue invoices, compliance gaps + chart variants + export mutations
  * - audit: audit log list with search/filter/pagination, actors dropdown, CSV export
+ * - import: CSV/XLSX import with parse, validate, commit endpoints for contractors and contracts
+ * - search: unified cross-entity global search via tsvector (contractors, contracts, invoices)
  */
 export const appRouter = router({
   organization: organizationRouter,
@@ -53,6 +57,8 @@ export const appRouter = router({
   dashboard: dashboardRouter,
   report: reportRouter,
   audit: auditRouter,
+  import: importRouter,
+  search: searchRouter,
 });
 
 /** Type-safe router type for client consumption */
