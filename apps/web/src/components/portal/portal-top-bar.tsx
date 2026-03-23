@@ -7,6 +7,7 @@ import {
   Receipt,
   FolderOpen,
   Banknote,
+  Settings,
   Menu,
   LogOut,
 } from "lucide-react";
@@ -35,6 +36,7 @@ const NAV_ITEMS = [
   { label: "Invoices", href: "/portal/invoices", icon: Receipt },
   { label: "Documents", href: "/portal/documents", icon: FolderOpen },
   { label: "Payments", href: "/portal/payments", icon: Banknote },
+  { label: "Settings", href: "/portal/settings", icon: Settings },
 ] as const;
 
 // ---------------------------------------------------------------------------
