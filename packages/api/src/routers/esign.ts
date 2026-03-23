@@ -71,6 +71,29 @@ const listEnvelopesInput = z.object({
 
 export const esignRouter = router({
   /**
+   * List connected e-sign provider connections (DocuSign, Autenti).
+   * Returns connection ID, provider, and status for the provider picker UI.
+   */
+  listConnections: tenantProcedure.query(async ({ ctx }) => {
+    const connections = await prisma.integrationConnection.findMany({
+      where: {
+        organizationId: ctx.organizationId,
+        provider: { in: ["DOCUSIGN", "AUTENTI"] },
+        status: "CONNECTED",
+      },
+      select: {
+        id: true,
+        provider: true,
+        status: true,
+        displayName: true,
+      },
+      orderBy: { provider: "asc" },
+    });
+
+    return plain(connections);
+  }),
+
+  /**
    * Send a document for electronic signature.
    * Creates SigningEnvelope + recipients, updates contract status,
    * and creates audit events.

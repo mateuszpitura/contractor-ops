@@ -1,0 +1,246 @@
+"use client";
+
+import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { Check, X, MoreVertical, Ban, RefreshCw } from "lucide-react";
+
+import { trpc } from "@/trpc/init";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
+import { SigningAuditTrail } from "./signing-audit-trail";
+import { VoidEnvelopeDialog } from "./void-envelope-dialog";
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+type Recipient = {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  status: string;
+  routingOrder: number;
+};
+
+type SigningProgressBarProps = {
+  envelope: {
+    id: string;
+    status: string;
+    recipients: Recipient[];
+  };
+};
+
+// ---------------------------------------------------------------------------
+// Step Indicator
+// ---------------------------------------------------------------------------
+
+function StepIndicator({
+  recipient,
+  isCurrent,
+}: {
+  recipient: Recipient;
+  isCurrent: boolean;
+}) {
+  const initial = recipient.name.charAt(0).toUpperCase();
+  const status = recipient.status;
+
+  if (status === "SIGNED") {
+    return (
+      <div className="flex size-8 items-center justify-center rounded-full bg-green-600 text-white">
+        <Check className="size-4" />
+      </div>
+    );
+  }
+
+  if (status === "DECLINED") {
+    return (
+      <div className="flex size-8 items-center justify-center rounded-full bg-red-500 text-white">
+        <X className="size-4" />
+      </div>
+    );
+  }
+
+  if (isCurrent) {
+    return (
+      <div className="relative flex size-8 items-center justify-center rounded-full border-2 border-primary text-primary">
+        <span className="absolute inset-0 animate-pulse rounded-full border-2 border-primary/40" />
+        <span className="text-xs font-semibold">{initial}</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex size-8 items-center justify-center rounded-full border-2 border-muted text-muted-foreground">
+      <span className="text-xs font-semibold">{initial}</span>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Connector Line
+// ---------------------------------------------------------------------------
+
+function ConnectorLine({ completed }: { completed: boolean }) {
+  return (
+    <div
+      className={cn("h-0.5 w-6 flex-shrink-0", completed ? "bg-green-600" : "bg-muted")}
+    />
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
+
+/**
+ * Horizontal progress indicator for signing envelopes.
+ * Shows per-signer step indicators with status-based styling.
+ * Per UI-SPEC D-08.
+ */
+export function SigningProgressBar({ envelope }: SigningProgressBarProps) {
+  const queryClient = useQueryClient();
+  const [auditOpen, setAuditOpen] = useState(false);
+  const [voidOpen, setVoidOpen] = useState(false);
+
+  const sortedRecipients = [...envelope.recipients].sort(
+    (a, b) => a.routingOrder - b.routingOrder
+  );
+
+  const signedCount = sortedRecipients.filter(
+    (r) => r.status === "SIGNED"
+  ).length;
+  const totalCount = sortedRecipients.length;
+  const allSigned = signedCount === totalCount && totalCount > 0;
+
+  // Find the current signer (first non-signed, non-declined)
+  const currentIndex = sortedRecipients.findIndex(
+    (r) => !["SIGNED", "DECLINED"].includes(r.status)
+  );
+
+  // Resend mutation
+  const resendMutation = useMutation(
+    trpc.esign.resendToRecipient.mutationOptions({
+      onSuccess: (_data, variables) => {
+        toast.success(`Signing reminder sent to ${variables.recipientEmail}`);
+      },
+      onError: () => {
+        toast.error("Failed to resend. Please try again.");
+      },
+    })
+  );
+
+  // Status text
+  let statusText = `${signedCount} of ${totalCount} signed`;
+  if (allSigned) {
+    statusText = "All parties have signed";
+  } else if (currentIndex >= 0) {
+    statusText = `Waiting for ${sortedRecipients[currentIndex]!.name} to sign`;
+  }
+
+  // Pending recipients for resend
+  const pendingRecipients = sortedRecipients.filter(
+    (r) => !["SIGNED", "DECLINED"].includes(r.status)
+  );
+
+  return (
+    <>
+      <Card className="p-4">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          {/* Left: Step indicators */}
+          <div className="flex items-center gap-1">
+            {sortedRecipients.map((recipient, idx) => (
+              <div key={recipient.id} className="flex items-center gap-1">
+                {idx > 0 && (
+                  <ConnectorLine
+                    completed={sortedRecipients[idx - 1]?.status === "SIGNED"}
+                  />
+                )}
+                <StepIndicator
+                  recipient={recipient}
+                  isCurrent={idx === currentIndex}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Right: Status + actions */}
+          <div className="flex items-center gap-3">
+            <p className="text-sm text-muted-foreground">{statusText}</p>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setAuditOpen(true)}
+            >
+              View Signing History
+            </Button>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={(props) => (
+                  <Button {...props} variant="ghost" size="icon-sm">
+                    <MoreVertical className="size-4" />
+                    <span className="sr-only">Signing actions</span>
+                  </Button>
+                )}
+              />
+              <DropdownMenuContent align="end">
+                {pendingRecipients.map((r) => (
+                  <DropdownMenuItem
+                    key={r.id}
+                    onClick={() =>
+                      resendMutation.mutate({
+                        envelopeId: envelope.id,
+                        recipientEmail: r.email,
+                      })
+                    }
+                    disabled={resendMutation.isPending}
+                  >
+                    <RefreshCw className="mr-2 size-3.5" />
+                    Resend to {r.name}
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuItem
+                  variant="destructive"
+                  onClick={() => setVoidOpen(true)}
+                >
+                  <Ban className="mr-2 size-3.5" />
+                  Void Envelope
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+      </Card>
+
+      <SigningAuditTrail
+        envelopeId={envelope.id}
+        open={auditOpen}
+        onOpenChange={setAuditOpen}
+      />
+
+      <VoidEnvelopeDialog
+        envelopeId={envelope.id}
+        open={voidOpen}
+        onOpenChange={setVoidOpen}
+        onVoided={() => {
+          queryClient.invalidateQueries({
+            queryKey: trpc.esign.listEnvelopes.queryKey(),
+          });
+          queryClient.invalidateQueries({
+            queryKey: trpc.contract.getById.queryKey(),
+          });
+        }}
+      />
+    </>
+  );
+}
