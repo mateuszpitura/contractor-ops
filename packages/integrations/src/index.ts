@@ -55,8 +55,31 @@ export {
   getAllProviderHealth,
 } from "./services/health-service.js";
 
+// E-Sign Service
+export {
+  getESignAdapter,
+  createSigningEnvelope,
+  getEmbeddedSigningUrl,
+  downloadSignedDocument,
+  voidSigningEnvelope,
+  resendSigningNotification,
+  normalizeSigningEvent,
+} from "./services/esign-service.js";
+
+export type {
+  ESignAdapter,
+  SigningEnvelopeRequest,
+  SignerInfo,
+  SigningEnvelopeResult,
+  EmbeddedSigningUrlResult,
+  SignedDocumentResult,
+  NormalizedSigningEvent,
+} from "./types/esign.js";
+
 // Adapters
 export { BaseAdapter } from "./adapters/base-adapter.js";
 export { SlackAdapter } from "./adapters/slack-adapter.js";
 export { ResendAdapter } from "./adapters/resend-adapter.js";
+export { DocuSignAdapter } from "./adapters/docusign-adapter.js";
+export { AutentiAdapter } from "./adapters/autenti-adapter.js";
 export { registerAllAdapters } from "./adapters/register-all.js";

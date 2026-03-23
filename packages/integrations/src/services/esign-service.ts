@@ -1,0 +1,150 @@
+import { getAdapter } from "../registry.js";
+import type {
+  ESignAdapter,
+  SigningEnvelopeRequest,
+  SigningEnvelopeResult,
+  EmbeddedSigningUrlResult,
+  SignedDocumentResult,
+  NormalizedSigningEvent,
+} from "../types/esign.js";
+
+// ---------------------------------------------------------------------------
+// Provider-Agnostic E-Sign Orchestration Service
+// ---------------------------------------------------------------------------
+
+type ESignProvider = "DOCUSIGN" | "AUTENTI";
+
+/**
+ * Resolves the ESignAdapter for a given provider from the adapter registry.
+ *
+ * @param provider - The e-sign provider to look up
+ * @returns The resolved ESignAdapter
+ * @throws Error if the adapter is not found or does not implement ESignAdapter
+ */
+export function getESignAdapter(provider: ESignProvider): ESignAdapter {
+  const slug = provider.toLowerCase();
+  const adapter = getAdapter(slug);
+
+  if (!adapter) {
+    throw new Error(
+      `No adapter registered for provider: ${provider}. ` +
+        `Ensure registerAllAdapters() has been called.`,
+    );
+  }
+
+  // Verify the adapter implements ESignAdapter methods
+  const esignAdapter = adapter as unknown as ESignAdapter;
+  if (typeof esignAdapter.createEnvelope !== "function") {
+    throw new Error(
+      `Adapter for ${provider} does not implement the ESignAdapter interface.`,
+    );
+  }
+
+  return esignAdapter;
+}
+
+/**
+ * Creates a signing envelope using the specified provider.
+ */
+export async function createSigningEnvelope(params: {
+  provider: ESignProvider;
+  connectionId: string;
+  request: SigningEnvelopeRequest;
+}): Promise<SigningEnvelopeResult> {
+  const adapter = getESignAdapter(params.provider);
+  return adapter.createEnvelope(params.connectionId, params.request);
+}
+
+/**
+ * Gets an embedded signing URL for the specified provider.
+ * Returns null if the provider does not support embedded signing
+ * (caller should fall back to redirect flow per D-03).
+ */
+export async function getEmbeddedSigningUrl(params: {
+  provider: ESignProvider;
+  connectionId: string;
+  envelopeId: string;
+  recipientEmail: string;
+  returnUrl: string;
+}): Promise<EmbeddedSigningUrlResult | null> {
+  const adapter = getESignAdapter(params.provider);
+
+  if (!adapter.supportsEmbeddedSigning) {
+    return null;
+  }
+
+  return adapter.getEmbeddedSigningUrl(
+    params.connectionId,
+    params.envelopeId,
+    params.recipientEmail,
+    params.returnUrl,
+  );
+}
+
+/**
+ * Downloads the signed document from the provider.
+ */
+export async function downloadSignedDocument(params: {
+  provider: ESignProvider;
+  connectionId: string;
+  envelopeId: string;
+}): Promise<SignedDocumentResult> {
+  const adapter = getESignAdapter(params.provider);
+  return adapter.getSignedDocument(params.connectionId, params.envelopeId);
+}
+
+/**
+ * Voids (cancels) a signing envelope.
+ */
+export async function voidSigningEnvelope(params: {
+  provider: ESignProvider;
+  connectionId: string;
+  envelopeId: string;
+  reason: string;
+}): Promise<void> {
+  const adapter = getESignAdapter(params.provider);
+  return adapter.voidEnvelope(
+    params.connectionId,
+    params.envelopeId,
+    params.reason,
+  );
+}
+
+/**
+ * Resends a signing notification to a specific recipient.
+ */
+export async function resendSigningNotification(params: {
+  provider: ESignProvider;
+  connectionId: string;
+  envelopeId: string;
+  recipientEmail: string;
+}): Promise<void> {
+  const adapter = getESignAdapter(params.provider);
+  return adapter.resendToRecipient(
+    params.connectionId,
+    params.envelopeId,
+    params.recipientEmail,
+  );
+}
+
+/**
+ * Normalizes a provider-specific webhook payload into a standard event.
+ */
+export function normalizeSigningEvent(
+  provider: ESignProvider,
+  payload: unknown,
+): NormalizedSigningEvent {
+  const adapter = getESignAdapter(provider);
+  return adapter.normalizeWebhookEvent(payload);
+}
+
+// Re-export e-sign types for consumer convenience
+export type {
+  ESignAdapter,
+  SigningEnvelopeRequest,
+  SignerInfo,
+  SigningEnvelopeResult,
+  EmbeddedSigningUrlResult,
+  SignedDocumentResult,
+  NormalizedSigningEvent,
+} from "../types/esign.js";

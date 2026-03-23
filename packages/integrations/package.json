@@ -43,6 +43,11 @@
       "types": "./src/adapters/register-all.ts",
       "import": "./src/adapters/register-all.ts",
       "default": "./src/adapters/register-all.ts"
+    },
+    "./services/esign-service": {
+      "types": "./src/services/esign-service.ts",
+      "import": "./src/services/esign-service.ts",
+      "default": "./src/services/esign-service.ts"
     }
   },
   "scripts": {
