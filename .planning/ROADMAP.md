@@ -105,12 +105,13 @@ Plans:
   2. Signer can sign the document through an embedded or redirect flow without leaving the Contractor Ops context
   3. Multi-party signing works in defined order (e.g., contractor signs first, then org representative countersigns)
   4. Signed PDF is automatically saved to document management with a complete signature audit trail
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 15-01: TBD
-- [ ] 15-02: TBD
-- [ ] 15-03: TBD
+- [ ] 15-01-PLAN.md — DB schema (SigningEnvelope, SigningRecipient, SigningEvent), ESignAdapter interface, ContractStatus extensions, Wave 0 test stubs
+- [ ] 15-02-PLAN.md — DocuSign + Autenti adapter implementations, adapter registration, provider-agnostic e-sign service
+- [ ] 15-03-PLAN.md — tRPC e-sign router, business orchestrator, webhook handler, signed PDF storage, CSP config
+- [ ] 15-04-PLAN.md — Send for Signature UI (dialog, progress bar, embedded modal, audit trail), portal pending signatures
 
 ### Phase 16: OCR Invoice Parsing
 **Goal**: Uploaded invoice PDFs are automatically parsed so users spend less time on manual data entry
@@ -210,7 +211,7 @@ Phases execute in numeric order: 12 → 13 → 14 → 15 → 16 → 17 → 18 �
 | 12. Integration Foundation | v2.0 | 5/5 | Complete    | 2026-03-23 |
 | 13. Contractor Portal Auth & Core Views | v2.0 | 5/5 | Complete    | 2026-03-23 |
 | 14. Portal Self-Service & Branding | v2.0 | 5/5 | Complete    | 2026-03-23 |
-| 15. E-Sign Integration | v2.0 | 0/0 | Not started | - |
+| 15. E-Sign Integration | v2.0 | 0/4 | Not started | - |
 | 16. OCR Invoice Parsing | v2.0 | 0/0 | Not started | - |
 | 17. KSeF Integration | v2.0 | 0/0 | Not started | - |
 | 18. Time Tracking | v2.0 | 0/0 | Not started | - |
