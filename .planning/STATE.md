@@ -2,16 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Platform Expansion
-status: planning
-stopped_at: Phase 12 UI-SPEC approved
-last_updated: "2026-03-23T12:19:26.426Z"
-last_activity: 2026-03-23 — v2.0 roadmap created
+status: Ready to execute
+stopped_at: Completed 12-01-PLAN.md
+last_updated: "2026-03-23T13:07:41.097Z"
 progress:
   total_phases: 9
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  total_plans: 5
+  completed_plans: 1
 ---
 
 # Project State
@@ -21,16 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-23)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 12 — Integration Foundation
+**Current focus:** Phase 12 — integration-foundation
 
 ## Current Position
 
-Phase: 12 of 20 (Integration Foundation)
-Plan: 0 of 0 in current phase (not yet planned)
-Status: Ready to plan
-Last activity: 2026-03-23 — v2.0 roadmap created
-
-Progress: [░░░░░░░░░░] 0% (v2.0)
+Phase: 12 (integration-foundation) — EXECUTING
+Plan: 2 of 5
 
 ## Performance Metrics
 
@@ -46,6 +40,7 @@ Progress: [░░░░░░░░░░] 0% (v2.0)
 | 12. Integration Foundation | TBD | - | - |
 
 *Updated after each plan completion*
+| Phase 12 P01 | 4min | 2 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -59,6 +54,7 @@ Recent decisions affecting current work:
 - [v2.0]: Contractors use PortalSession model, never added to internal user table
 - [v2.0]: Shared credential store + webhook layer before any specific integration
 - [v2.0]: OCR before KSeF to establish async invoice pipeline pattern
+- [Phase 12]: Per-provider encryption keys via ${SLUG_UPPER}_ENCRYPTION_KEY env var pattern
 
 ### Pending Todos
 
@@ -73,6 +69,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-23T12:19:26.423Z
-Stopped at: Phase 12 UI-SPEC approved
-Resume file: .planning/phases/12-integration-foundation/12-UI-SPEC.md
+Last session: 2026-03-23T13:07:41.095Z
+Stopped at: Completed 12-01-PLAN.md
+Resume file: None
