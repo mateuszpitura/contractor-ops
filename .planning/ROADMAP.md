@@ -51,11 +51,14 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
   2. External webhook payloads are received, HMAC-verified, stored in a webhook event log, and processed asynchronously
   3. Admin can view a dashboard showing connection health status and last sync time for each connected provider
   4. Token refresh runs proactively before expiry without admin intervention
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- [ ] 12-01: TBD
-- [ ] 12-02: TBD
+- [ ] 12-01-PLAN.md — Package scaffolding, type contracts, credential service, DB migration
+- [ ] 12-02-PLAN.md — Webhook ingestion pipeline with Slack + Resend adapters
+- [ ] 12-03-PLAN.md — Generic OAuth callback + token refresh cron with distributed lock
+- [ ] 12-04-PLAN.md — Health monitoring service, tRPC procedures, provider cards UI
+- [ ] 12-05-PLAN.md — Settings page wiring, env vars, deprecation markers, e2e verification
 
 ### Phase 13: Contractor Portal Auth & Core Views
 **Goal**: Contractors can securely access their own data through a dedicated portal without touching internal admin surfaces
@@ -199,7 +202,7 @@ Phases execute in numeric order: 12 → 13 → 14 → 15 → 16 → 17 → 18 �
 | 9. Dashboard & Reports | v1.0 | 6/6 | Complete | 2026-03-22 |
 | 10. Onboarding & Polish | v1.0 | 5/5 | Complete | 2026-03-23 |
 | 11. Route Fixes & Tenant Isolation | v1.0 | 2/2 | Complete | 2026-03-23 |
-| 12. Integration Foundation | v2.0 | 0/0 | Not started | - |
+| 12. Integration Foundation | v2.0 | 0/5 | Planned | - |
 | 13. Contractor Portal Auth & Core Views | v2.0 | 0/0 | Not started | - |
 | 14. Portal Self-Service & Branding | v2.0 | 0/0 | Not started | - |
 | 15. E-Sign Integration | v2.0 | 0/0 | Not started | - |
