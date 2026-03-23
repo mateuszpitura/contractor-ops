@@ -44,24 +44,37 @@ All 14 product modules delivered: org setup, RBAC, contractors, contracts, docum
 
 ### Active
 
-(No active requirements — define in next milestone)
+- [ ] Contractor self-service portal with contract viewing, invoice submission, payment tracking, document upload, profile management
+- [ ] Time tracking integration (Clockify, Jira, manual reporting) in contractor portal
+- [ ] E-sign integration (DocuSign + Autenti) for contracts and NDAs
+- [ ] OCR invoice parsing — auto-extract fields from uploaded PDFs
+- [ ] KSeF native integration — pull invoices from national system + validate format compliance
+- [ ] Jira integration — create tickets, update statuses, configurable automation on status changes
+- [ ] Notion/Confluence integration — link onboarding docs, reference external documentation in workflows
+- [ ] Outlook/Google Calendar integration — reminders, meeting scheduling, deadline sync, onboarding meetings (configurable)
 
 ### Out of Scope
 
 - Payroll for employees — not an HR tool, contractor ops only
 - EOR/AOR — local contractors only, not employer of record
 - Performance reviews / recruiting / ATS — not HR
-- Contractor portal (self-service) — deferred to v1.5
-- E-sign integration (DocuSign, Autenti) — v1.5
-- KSeF native integration — v1.5/v2 (email/upload + manual validation first)
-- Open banking / payment initiation — v2+
-- OCR / intelligent invoice parsing — v1.5+
-- Deep Google/Microsoft/Jira integration — v1 is light references only
+- Open banking / payment initiation — v3+
 - SSO/SCIM — v3
-- Public API + webhooks — v2
+- KSeF invoice validation against structured data — v3
 - Contractor marketplace / directory — never
 - Full accounting suite — coordination layer, not replacement
 - Mobile native app — desktop-first, responsive to tablet, approval flow works on mobile browser
+
+## Current Milestone: v2.0 Platform Expansion
+
+**Goal:** Transform Contractor Ops from an internal-only tool into a full platform with contractor self-service, intelligent document processing, KSeF compliance, and deep third-party integrations.
+
+**Target features:**
+- Contractor portal (self-service with time tracking)
+- E-sign (DocuSign + Autenti)
+- OCR invoice parsing
+- KSeF native integration
+- Jira, Notion/Confluence, Outlook/Google Calendar integrations
 
 ## Context
 
@@ -111,5 +124,22 @@ All 14 product modules delivered: org setup, RBAC, contractors, contracts, docum
 | xlsx for import/export | Single library for both directions | ✓ Good — BOM handling for Polish characters |
 | Recharts for dashboard | Simple API, responsive, works with SSR | ✓ Good — area/bar/pie charts all working |
 
+## Evolution
+
+This document evolves at phase transitions and milestone boundaries.
+
+**After each phase transition** (via `/gsd:transition`):
+1. Requirements invalidated? → Move to Out of Scope with reason
+2. Requirements validated? → Move to Validated with phase reference
+3. New requirements emerged? → Add to Active
+4. Decisions to log? → Add to Key Decisions
+5. "What This Is" still accurate? → Update if drifted
+
+**After each milestone** (via `/gsd:complete-milestone`):
+1. Full review of all sections
+2. Core Value check — still the right priority?
+3. Audit Out of Scope — reasons still valid?
+4. Update Context with current state
+
 ---
-*Last updated: 2026-03-23 after v1.0 MVP milestone completion*
+*Last updated: 2026-03-23 after v2.0 milestone start*
