@@ -30,7 +30,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 
 **Milestone Goal:** Transform Contractor Ops from an internal-only tool into a full platform with contractor self-service, intelligent document processing, KSeF compliance, and deep third-party integrations.
 
-- [ ] **Phase 12: Integration Foundation** — Shared OAuth credential store, webhook ingestion layer, and health monitoring
+- [x] **Phase 12: Integration Foundation** — Shared OAuth credential store, webhook ingestion layer, and health monitoring (completed 2026-03-23)
 - [ ] **Phase 13: Contractor Portal Auth & Core Views** — Magic-link auth, contract viewing, invoice submission, payment tracking, document access
 - [ ] **Phase 14: Portal Self-Service & Branding** — Profile self-management with approval, notification preferences, org branding
 - [ ] **Phase 15: E-Sign Integration** — DocuSign + Autenti contract signing with multi-party support and auto-storage
@@ -58,7 +58,7 @@ Plans:
 - [x] 12-02-PLAN.md — Webhook ingestion pipeline with Slack + Resend adapters
 - [x] 12-03-PLAN.md — Generic OAuth callback + token refresh cron with distributed lock
 - [x] 12-04-PLAN.md — Health monitoring service, tRPC procedures, provider cards UI
-- [ ] 12-05-PLAN.md — Settings page wiring, env vars, deprecation markers, e2e verification
+- [x] 12-05-PLAN.md — Settings page wiring, env vars, deprecation markers, e2e verification
 
 ### Phase 13: Contractor Portal Auth & Core Views
 **Goal**: Contractors can securely access their own data through a dedicated portal without touching internal admin surfaces
@@ -202,7 +202,7 @@ Phases execute in numeric order: 12 → 13 → 14 → 15 → 16 → 17 → 18 �
 | 9. Dashboard & Reports | v1.0 | 6/6 | Complete | 2026-03-22 |
 | 10. Onboarding & Polish | v1.0 | 5/5 | Complete | 2026-03-23 |
 | 11. Route Fixes & Tenant Isolation | v1.0 | 2/2 | Complete | 2026-03-23 |
-| 12. Integration Foundation | v2.0 | 4/5 | In Progress|  |
+| 12. Integration Foundation | v2.0 | 5/5 | Complete   | 2026-03-23 |
 | 13. Contractor Portal Auth & Core Views | v2.0 | 0/0 | Not started | - |
 | 14. Portal Self-Service & Branding | v2.0 | 0/0 | Not started | - |
 | 15. E-Sign Integration | v2.0 | 0/0 | Not started | - |
