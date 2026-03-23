@@ -33,6 +33,11 @@
       "types": "./src/services/portal-session.ts",
       "import": "./src/services/portal-session.ts",
       "default": "./src/services/portal-session.ts"
+    },
+    "./services/esign-orchestrator": {
+      "types": "./src/services/esign-orchestrator.ts",
+      "import": "./src/services/esign-orchestrator.ts",
+      "default": "./src/services/esign-orchestrator.ts"
     }
   },
   "scripts": {

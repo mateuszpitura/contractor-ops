@@ -13,6 +13,7 @@ import type {
 } from "../types/esign.js";
 import { BaseAdapter } from "./base-adapter.js";
 import { decryptCredentials } from "../services/credential-service.js";
+import { handleSigningWebhook } from "../services/esign-webhook-handler.js";
 
 // ---------------------------------------------------------------------------
 // Autenti API Base URL
@@ -532,6 +533,35 @@ export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
     };
     return mapping[status] ?? "SENT";
   }
+
+  // -------------------------------------------------------------------------
+  // Webhook processing
+  // -------------------------------------------------------------------------
+
+  /**
+   * Process an Autenti webhook event.
+   * Delegates to the shared esign-webhook-handler for status updates
+   * and idempotency. Returns void per BaseAdapter interface — the
+   * completion signal is handled at the _process route level.
+   */
+  async handleWebhook(
+    payload: unknown,
+    organizationId: string,
+    connectionId: string,
+  ): Promise<void> {
+    const result = await handleSigningWebhook({
+      provider: "AUTENTI",
+      payload,
+      organizationId,
+      connectionId,
+    });
+
+    // Store completion result for the _process route to pick up
+    this._lastWebhookResult = result;
+  }
+
+  /** @internal Last webhook processing result (used by _process route) */
+  _lastWebhookResult: { envelopeId: string; completed: boolean } | null = null;
 }
 
 // ---------------------------------------------------------------------------

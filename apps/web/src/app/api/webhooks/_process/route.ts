@@ -4,6 +4,7 @@ import { verifySignatureAppRouter } from "@upstash/qstash/nextjs";
 import { prisma } from "@contractor-ops/db";
 import { getAdapter } from "@contractor-ops/integrations/registry";
 import { registerAllAdapters } from "@contractor-ops/integrations/adapters/register-all";
+import { handleSigningCompletion } from "@contractor-ops/api/services/esign-orchestrator";
 
 // ---------------------------------------------------------------------------
 // Ensure adapters are registered
@@ -66,6 +67,33 @@ async function handler(request: NextRequest) {
       delivery.organizationId,
       delivery.integrationConnectionId ?? "",
     );
+
+    // For e-sign providers, check if signing was completed and trigger
+    // signed PDF download + R2 storage via the orchestrator
+    const isESignProvider = provider === "docusign" || provider === "autenti";
+    if (isESignProvider) {
+      const adapterWithResult = adapter as {
+        _lastWebhookResult?: { envelopeId: string; completed: boolean } | null;
+      };
+      const webhookResult = adapterWithResult._lastWebhookResult;
+
+      if (webhookResult?.completed && delivery.integrationConnectionId) {
+        try {
+          await handleSigningCompletion(
+            webhookResult.envelopeId,
+            delivery.integrationConnectionId,
+            provider.toUpperCase() as "DOCUSIGN" | "AUTENTI",
+          );
+        } catch (completionError) {
+          console.error(
+            `[webhook/_process] Failed to handle signing completion for envelope ${webhookResult.envelopeId}:`,
+            completionError,
+          );
+          // Don't fail the overall webhook — the envelope status is already updated
+          // The signed PDF can be retrieved manually or via retry
+        }
+      }
+    }
 
     await prisma.webhookDelivery.update({
       where: { id: deliveryId },
