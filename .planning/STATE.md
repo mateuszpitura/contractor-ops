@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Platform Expansion
-status: Ready to plan
-stopped_at: Phase 13 UI-SPEC approved
-last_updated: "2026-03-23T14:19:46.776Z"
+status: Ready to execute
+stopped_at: Completed 13-01-PLAN.md
+last_updated: "2026-03-23T14:50:42.436Z"
 progress:
   total_phases: 9
   completed_phases: 1
-  total_plans: 5
-  completed_plans: 5
+  total_plans: 10
+  completed_plans: 6
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-23)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 12 — integration-foundation
+**Current focus:** Phase 13 — contractor-portal-auth-core-views
 
 ## Current Position
 
-Phase: 13
-Plan: Not started
+Phase: 13 (contractor-portal-auth-core-views) — EXECUTING
+Plan: 2 of 5
 
 ## Performance Metrics
 
@@ -45,6 +45,7 @@ Plan: Not started
 | Phase 12 P02 | 6min | 2 tasks | 12 files |
 | Phase 12 P04 | 11min | 2 tasks | 17 files |
 | Phase 12 P05 | 8min | 2 tasks | 6 files |
+| Phase 13 P01 | 3min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -64,6 +65,7 @@ Recent decisions affecting current work:
 - [Phase 12]: Resend dependency ^6.9.4 (not ^4.8.0) for webhooks.verify API compatibility
 - [Phase 12]: Generic provider card replaces inline SlackConnectionCard; static provider config; 30s polling via refetchInterval
 - [Phase 12]: Old Slack/Resend routes kept functional with @deprecated JSDoc for backward compat during URL migration
+- [Phase 13]: Raw prisma client for portal services — PortalSession/PortalMagicToken in globalModels, cross-org contractor lookup needs unscoped access
 
 ### Pending Todos
 
@@ -78,6 +80,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-23T14:19:46.769Z
-Stopped at: Phase 13 UI-SPEC approved
-Resume file: .planning/phases/13-contractor-portal-auth-core-views/13-UI-SPEC.md
+Last session: 2026-03-23T14:50:42.433Z
+Stopped at: Completed 13-01-PLAN.md
+Resume file: None

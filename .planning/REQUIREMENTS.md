@@ -15,7 +15,7 @@ Requirements for v2.0 Platform Expansion. Each maps to roadmap phases.
 
 ### Contractor Portal
 
-- [ ] **PORT-01**: Contractor can log in via magic link with org-scoped access
+- [x] **PORT-01**: Contractor can log in via magic link with org-scoped access
 - [ ] **PORT-02**: Contractor can view own active contracts and terms (read-only)
 - [ ] **PORT-03**: Contractor can submit invoices via portal that enter org's intake pipeline
 - [ ] **PORT-04**: Contractor can track invoice and payment status through approval and payment
@@ -116,7 +116,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INTG-01 | Phase 12 | Complete |
 | INTG-02 | Phase 12 | Complete |
 | INTG-03 | Phase 12 | Complete |
-| PORT-01 | Phase 13 | Pending |
+| PORT-01 | Phase 13 | Complete |
 | PORT-02 | Phase 13 | Pending |
 | PORT-03 | Phase 13 | Pending |
 | PORT-04 | Phase 13 | Pending |
