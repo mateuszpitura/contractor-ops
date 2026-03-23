@@ -20,6 +20,7 @@ import {
 import { ApprovalQueueTable } from "@/components/approvals/approval-queue/data-table";
 import { ApprovalQueueToolbar } from "@/components/approvals/approval-queue/data-table-toolbar";
 import { ApprovalSidePanel } from "@/components/approvals/approval-queue/side-panel";
+import { ChangeRequestDiffCard } from "@/components/settings/change-request-diff-card";
 
 // ---------------------------------------------------------------------------
 // Inner content (uses nuqs, needs Suspense boundary)
@@ -61,6 +62,30 @@ function ApprovalsContent() {
 
   // Admin-only "All" tab visibility
   const isAdmin = can("settings", ["read"]);
+
+  // -------------------------------------------------------------------------
+  // Change request query (admin only)
+  // -------------------------------------------------------------------------
+
+  const changeRequestsQuery = useQuery({
+    ...trpc.settings.listChangeRequests.queryOptions({ status: "PENDING" }),
+    enabled: isAdmin,
+    refetchInterval: 30000,
+  });
+
+  const changeRequests = (
+    (changeRequestsQuery.data ?? []) as unknown as Array<{
+      id: string;
+      contractorName: string;
+      contractorEmail: string;
+      requestedChanges: Record<string, unknown>;
+      previousValues: Record<string, unknown>;
+      createdAt: string;
+      status: "PENDING" | "APPROVED" | "REJECTED";
+    }>
+  );
+
+  const pendingCount = changeRequests.length;
 
   // Build query input
   const queryInput = useMemo(
@@ -249,6 +274,16 @@ function ApprovalsContent() {
           {isAdmin && (
             <TabsTrigger value="all">{t("tabAll")}</TabsTrigger>
           )}
+          {isAdmin && (
+            <TabsTrigger value="profile-changes">
+              Profile Changes
+              {pendingCount > 0 && (
+                <span className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-medium text-primary-foreground">
+                  {pendingCount}
+                </span>
+              )}
+            </TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="my" className="mt-4">
@@ -258,6 +293,43 @@ function ApprovalsContent() {
         {isAdmin && (
           <TabsContent value="all" className="mt-4">
             {renderQueue()}
+          </TabsContent>
+        )}
+
+        {isAdmin && (
+          <TabsContent value="profile-changes" className="mt-4">
+            {changeRequestsQuery.isLoading ? (
+              <div className="space-y-4">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <Skeleton key={i} className="h-48 w-full rounded-xl" />
+                ))}
+              </div>
+            ) : changeRequests.length === 0 ? (
+              <EmptyState
+                icon={ClipboardCheck}
+                heading="No Pending Change Requests"
+                body="Profile change requests from contractors will appear here when submitted."
+              />
+            ) : (
+              <div className="space-y-4">
+                {changeRequests.map((req) => (
+                  <ChangeRequestDiffCard
+                    key={req.id}
+                    request={req}
+                    onApproved={() => {
+                      void queryClient.invalidateQueries({
+                        queryKey: trpc.settings.listChangeRequests.queryKey(),
+                      });
+                    }}
+                    onRejected={() => {
+                      void queryClient.invalidateQueries({
+                        queryKey: trpc.settings.listChangeRequests.queryKey(),
+                      });
+                    }}
+                  />
+                ))}
+              </div>
+            )}
           </TabsContent>
         )}
       </Tabs>
