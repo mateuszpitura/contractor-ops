@@ -40,9 +40,9 @@ The invoice-to-payment flow must work end-to-end: a contractor's invoice arrives
 - [ ] Slack integration — approval notifications with inline approve/reject, task reminders, activity alerts
 - [ ] Email intake integration — dedicated inbox per org, attachment parsing, sender matching, deduplication
 - [x] Immutable audit log for all critical actions — *Validated in Phase 9: Dashboard & Reports*
-- [ ] Global search + command palette (Cmd+K)
-- [ ] Data import — CSV/XLSX import for contractors and contracts with wizard, validation, preview
-- [ ] Product onboarding — guided setup wizard, empty states with CTAs, in-app checklist
+- [x] Global search + command palette (Cmd+K) — *Validated in Phase 10: Onboarding & Polish*
+- [x] Data import — CSV/XLSX import for contractors and contracts with wizard, validation, preview — *Validated in Phase 10: Onboarding & Polish*
+- [x] Product onboarding — guided setup wizard, empty states with CTAs, in-app checklist — *Validated in Phase 10: Onboarding & Polish*
 - [ ] i18n framework from day 1 (Polish + English)
 - [ ] Settings — org profile, users & roles, approval chains, workflow templates, notification defaults, email intake config, audit log viewer
 
@@ -109,4 +109,4 @@ The invoice-to-payment flow must work end-to-end: a contractor's invoice arrives
 | No contractor portal in v1 | Internal-facing only — contractor self-service deferred to v1.5 | -- Pending |
 
 ---
-*Last updated: 2026-03-22 after Phase 9 (Dashboard & Reports) completion*
+*Last updated: 2026-03-23 after Phase 10 (Onboarding & Polish) completion — all v1.0 phases complete*
