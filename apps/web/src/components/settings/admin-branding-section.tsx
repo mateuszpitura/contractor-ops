@@ -1,13 +1,15 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Upload, X, Loader2 } from "lucide-react";
+import { Upload, X, Loader2, Globe } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/trpc/init";
 import { BrandColorPicker } from "./brand-color-picker";
@@ -48,6 +50,11 @@ export function AdminBrandingSection() {
   const [uploading, setUploading] = useState(false);
   const [initialized, setInitialized] = useState(false);
 
+  // Portal subdomain state
+  const [portalSubdomain, setPortalSubdomain] = useState("");
+  const [subdomainInitialized, setSubdomainInitialized] = useState(false);
+  const [subdomainError, setSubdomainError] = useState<string | null>(null);
+
   // -------------------------------------------------------------------------
   // Queries & Mutations
   // -------------------------------------------------------------------------
@@ -80,6 +87,36 @@ export function AdminBrandingSection() {
       },
       onError: () => {
         toast.error("Failed to save branding. Please try again.");
+      },
+    }),
+  );
+
+  const portalDomainQuery = useQuery({
+    ...trpc.settings.getPortalDomain.queryOptions(),
+    select: (data) => {
+      if (!subdomainInitialized && data) {
+        setPortalSubdomain(data.portalSubdomain ?? "");
+        setSubdomainInitialized(true);
+      }
+      return data;
+    },
+  });
+
+  const updatePortalDomainMutation = useMutation(
+    trpc.settings.updatePortalDomain.mutationOptions({
+      onSuccess: () => {
+        toast.success("Portal subdomain updated");
+        queryClient.invalidateQueries({
+          queryKey: trpc.settings.getPortalDomain.queryKey(),
+        });
+      },
+      onError: (error) => {
+        if (error.message === "This subdomain is already in use") {
+          toast.error("This subdomain is already in use");
+          setSubdomainError("This subdomain is already in use");
+        } else {
+          toast.error("Failed to save portal subdomain. Please try again.");
+        }
       },
     }),
   );
@@ -141,6 +178,34 @@ export function AdminBrandingSection() {
     updateBrandingMutation.mutate({
       brandColor,
       logoUrl,
+    });
+  };
+
+  const validateSubdomain = (value: string): string | null => {
+    if (!value) return null; // Empty is valid (clears subdomain)
+    if (value.length < 3) return "Subdomain must be at least 3 characters";
+    if (value.length > 63) return "Subdomain must be at most 63 characters";
+    if (!/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/.test(value)) {
+      return "Only lowercase letters, numbers, and hyphens allowed. Must start and end with a letter or number.";
+    }
+    return null;
+  };
+
+  const handleSubdomainChange = (value: string) => {
+    // Auto-lowercase and strip invalid chars for better UX
+    const sanitized = value.toLowerCase().replace(/[^a-z0-9-]/g, "");
+    setPortalSubdomain(sanitized);
+    setSubdomainError(null);
+  };
+
+  const handleSaveSubdomain = () => {
+    const error = validateSubdomain(portalSubdomain);
+    if (error) {
+      setSubdomainError(error);
+      return;
+    }
+    updatePortalDomainMutation.mutate({
+      portalSubdomain: portalSubdomain || null,
     });
   };
 
@@ -250,6 +315,66 @@ export function AdminBrandingSection() {
             "Save Branding"
           )}
         </Button>
+
+        <Separator />
+
+        {/* Portal subdomain configuration */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Globe className="h-4 w-4 text-muted-foreground" />
+            <Label className="text-sm font-normal">Portal Subdomain</Label>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Contractors will access the portal at{" "}
+            <span className="font-medium text-foreground">
+              {portalSubdomain || "your-subdomain"}
+            </span>
+            .portal.yourdomain.com
+          </p>
+
+          <div className="flex items-center gap-2">
+            <Input
+              value={portalSubdomain}
+              onChange={(e) => handleSubdomainChange(e.target.value)}
+              placeholder="e.g., acme"
+              className="max-w-[200px]"
+              aria-label="Portal subdomain"
+              aria-describedby="subdomain-suffix subdomain-error"
+            />
+            <span
+              id="subdomain-suffix"
+              className="text-sm text-muted-foreground whitespace-nowrap"
+            >
+              .portal.yourdomain.com
+            </span>
+          </div>
+
+          {subdomainError && (
+            <p
+              id="subdomain-error"
+              className="text-sm text-destructive"
+              role="alert"
+            >
+              {subdomainError}
+            </p>
+          )}
+
+          <Button
+            variant="outline"
+            onClick={handleSaveSubdomain}
+            disabled={updatePortalDomainMutation.isPending}
+            className="w-full sm:w-auto"
+          >
+            {updatePortalDomainMutation.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              "Save Domain"
+            )}
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );
