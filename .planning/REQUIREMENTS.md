@@ -34,9 +34,9 @@ Requirements for v2.0 Platform Expansion. Each maps to roadmap phases.
 
 ### E-Sign
 
-- [ ] **SIGN-01**: User can send a contract or NDA for signature via DocuSign or Autenti
-- [ ] **SIGN-02**: Signer can sign documents within Contractor Ops (embedded/redirect flow)
-- [ ] **SIGN-03**: Contracts support multi-party signing (contractor + org rep) in defined order
+- [x] **SIGN-01**: User can send a contract or NDA for signature via DocuSign or Autenti
+- [x] **SIGN-02**: Signer can sign documents within Contractor Ops (embedded/redirect flow)
+- [x] **SIGN-03**: Contracts support multi-party signing (contractor + org rep) in defined order
 - [ ] **SIGN-04**: Signed PDF is auto-saved to document management with signature audit trail
 
 ### OCR Invoice Parsing
@@ -129,9 +129,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TIME-03 | Phase 18 | Pending |
 | TIME-04 | Phase 18 | Pending |
 | TIME-05 | Phase 18 | Pending |
-| SIGN-01 | Phase 15 | Pending |
-| SIGN-02 | Phase 15 | Pending |
-| SIGN-03 | Phase 15 | Pending |
+| SIGN-01 | Phase 15 | Complete |
+| SIGN-02 | Phase 15 | Complete |
+| SIGN-03 | Phase 15 | Complete |
 | SIGN-04 | Phase 15 | Pending |
 | OCR-01 | Phase 16 | Pending |
 | OCR-02 | Phase 16 | Pending |
