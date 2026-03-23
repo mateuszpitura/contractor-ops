@@ -14,6 +14,8 @@ model IntegrationConnection {
   lastSuccessAt     DateTime?
   lastErrorAt       DateTime?
   lastErrorMessage  String?
+  tokenExpiresAt    DateTime?         // When access token expires (for proactive refresh)
+  refreshLockedAt   DateTime?         // Distributed lock timestamp for refresh race condition prevention
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 
@@ -25,6 +27,7 @@ model IntegrationConnection {
 
   @@index([organizationId])
   @@index([organizationId, provider, status])
+  @@index([status, tokenExpiresAt])
 }
 
 model ExternalLink {
@@ -94,10 +97,13 @@ model WebhookDelivery {
 
 enum IntegrationProvider {
   SLACK
+  RESEND
   GOOGLE_WORKSPACE
   MICROSOFT_365
   JIRA
-  ESIGN
+  ESIGN    // @deprecated Use DOCUSIGN or AUTENTI — kept for migration compatibility
+  DOCUSIGN
+  AUTENTI
   KSEF
   ACCOUNTING
   OPEN_BANKING
