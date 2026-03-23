@@ -31,7 +31,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 **Milestone Goal:** Transform Contractor Ops from an internal-only tool into a full platform with contractor self-service, intelligent document processing, KSeF compliance, and deep third-party integrations.
 
 - [x] **Phase 12: Integration Foundation** — Shared OAuth credential store, webhook ingestion layer, and health monitoring (completed 2026-03-23)
-- [ ] **Phase 13: Contractor Portal Auth & Core Views** — Magic-link auth, contract viewing, invoice submission, payment tracking, document access
+- [x] **Phase 13: Contractor Portal Auth & Core Views** — Magic-link auth, contract viewing, invoice submission, payment tracking, document access (completed 2026-03-23)
 - [ ] **Phase 14: Portal Self-Service & Branding** — Profile self-management with approval, notification preferences, org branding
 - [ ] **Phase 15: E-Sign Integration** — DocuSign + Autenti contract signing with multi-party support and auto-storage
 - [ ] **Phase 16: OCR Invoice Parsing** — Auto-extract invoice fields from PDFs with confidence scores and human review
@@ -77,7 +77,7 @@ Plans:
 - [x] 13-02-PLAN.md — Portal tRPC middleware (portalProcedure) + complete portal router with all endpoints
 - [x] 13-03-PLAN.md — Portal layout, top bar navigation, login page, magic link verification, org picker
 - [x] 13-04-PLAN.md — Overview dashboard, contracts list/detail, documents list, payments list
-- [ ] 13-05-PLAN.md — Invoice list/detail with 3-layer status tracking, submission form with PDF upload, success page
+- [x] 13-05-PLAN.md — Invoice list/detail with 3-layer status tracking, submission form with PDF upload, success page
 
 ### Phase 14: Portal Self-Service & Branding
 **Goal**: Contractors can manage their own profile and preferences, and the portal reflects the hiring org's brand
@@ -205,7 +205,7 @@ Phases execute in numeric order: 12 → 13 → 14 → 15 → 16 → 17 → 18 �
 | 10. Onboarding & Polish | v1.0 | 5/5 | Complete | 2026-03-23 |
 | 11. Route Fixes & Tenant Isolation | v1.0 | 2/2 | Complete | 2026-03-23 |
 | 12. Integration Foundation | v2.0 | 5/5 | Complete    | 2026-03-23 |
-| 13. Contractor Portal Auth & Core Views | v2.0 | 4/5 | In Progress|  |
+| 13. Contractor Portal Auth & Core Views | v2.0 | 5/5 | Complete   | 2026-03-23 |
 | 14. Portal Self-Service & Branding | v2.0 | 0/0 | Not started | - |
 | 15. E-Sign Integration | v2.0 | 0/0 | Not started | - |
 | 16. OCR Invoice Parsing | v2.0 | 0/0 | Not started | - |
