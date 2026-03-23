@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Platform Expansion
 status: Ready to execute
-stopped_at: Completed 15-01-PLAN.md
-last_updated: "2026-03-23T22:36:45.209Z"
+stopped_at: Completed 15-03-PLAN.md
+last_updated: "2026-03-23T22:46:38.442Z"
 progress:
   total_phases: 9
   completed_phases: 3
   total_plans: 19
-  completed_plans: 17
+  completed_plans: 18
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-23)
 ## Current Position
 
 Phase: 15 (e-sign-integration) — EXECUTING
-Plan: 3 of 4
+Plan: 4 of 4
 
 ## Performance Metrics
 
@@ -57,6 +57,7 @@ Plan: 3 of 4
 | Phase 14 P04 | 4min | 2 tasks | 7 files |
 | Phase 15 P02 | 5min | 2 tasks | 9 files |
 | Phase 15 P01 | 4min | 2 tasks | 10 files |
+| Phase 15 P03 | 7min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -91,6 +92,8 @@ Recent decisions affecting current work:
 - [Phase 14]: Session.organizationId remains authoritative for tenantStore scoping; subdomain is supplementary context metadata only
 - [Phase 15]: Dynamic import for docusign-esign SDK (pure JS) with minimal .d.ts declarations
 - [Phase 15]: ESignAdapter types file created by parallel agent; DRAFT->PENDING_SIGNATURE transition added per D-08; SIGNATURE_DECLINED/EXPIRED allow re-send
+- [Phase 15]: Webhook completion signal via _lastWebhookResult on adapters; _process route checks flag and calls handleSigningCompletion
+- [Phase 15]: CSP frame-src for DocuSign iframe via Next.js headers() config function
 
 ### Pending Todos
 
@@ -105,6 +108,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-23T22:36:45.207Z
-Stopped at: Completed 15-01-PLAN.md
+Last session: 2026-03-23T22:46:38.440Z
+Stopped at: Completed 15-03-PLAN.md
 Resume file: None
