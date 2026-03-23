@@ -13,6 +13,7 @@ import {
   approveChangeRequest,
   rejectChangeRequest,
 } from "../services/portal-change-request.js";
+import { createPresignedUploadUrl } from "../services/r2.js";
 
 export const settingsRouter = router({
   /**
@@ -196,6 +197,57 @@ export const settingsRouter = router({
   // =========================================================================
   // BRANDING (admin)
   // =========================================================================
+
+  /**
+   * Get current organization branding (brand color + logo URL).
+   * Used by admin branding section to populate form.
+   */
+  getBranding: tenantProcedure
+    .use(requirePermission({ settings: ["read"] }))
+    .query(async ({ ctx }) => {
+      const org = await prisma.organization.findUnique({
+        where: { id: ctx.organizationId },
+        select: { logo: true, settingsJson: true },
+      });
+
+      const settings =
+        (org?.settingsJson as Record<string, unknown>) ?? {};
+
+      return {
+        brandColor: (settings.brandColor as string) ?? null,
+        logo: org?.logo ?? null,
+      };
+    }),
+
+  /**
+   * Get a presigned upload URL for organization logo.
+   * Accepts image/png, image/jpeg, image/svg+xml. Max 2MB enforced client-side.
+   */
+  getLogoUploadUrl: tenantProcedure
+    .use(requirePermission({ settings: ["update"] }))
+    .input(
+      z.object({
+        filename: z.string(),
+        contentType: z
+          .string()
+          .refine(
+            (ct) =>
+              ["image/png", "image/jpeg", "image/svg+xml"].includes(ct),
+            "Must be PNG, JPEG, or SVG",
+          ),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const ext = input.filename.split(".").pop() ?? "png";
+      const key = `orgs/${ctx.organizationId}/branding/logo.${ext}`;
+      const uploadUrl = await createPresignedUploadUrl(
+        key,
+        input.contentType,
+      );
+      // Public URL for R2 (bucket public access)
+      const publicUrl = `${process.env.R2_PUBLIC_URL ?? ""}/${key}`;
+      return { uploadUrl, publicUrl, storageKey: key };
+    }),
 
   /**
    * Update organization brand color and logo URL.

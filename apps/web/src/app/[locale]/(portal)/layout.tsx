@@ -38,14 +38,26 @@ export default async function PortalLayout({
     );
   }
 
-  // Fetch organization info for the top bar (session only includes contractor)
+  // Fetch organization info for the top bar + branding (session only includes contractor)
   const organization = await prisma.organization.findUnique({
     where: { id: session.organizationId },
-    select: { name: true, logo: true },
+    select: { name: true, logo: true, settingsJson: true },
   });
 
+  // Extract brand color from org settings for CSS custom property injection (D-12)
+  const settings =
+    (organization?.settingsJson as Record<string, unknown>) ?? {};
+  const brandColor = (settings.brandColor as string) ?? null;
+
   return (
-    <div className="min-h-screen bg-background">
+    <div
+      className="min-h-screen bg-background"
+      style={
+        brandColor
+          ? ({ "--brand-accent": brandColor } as React.CSSProperties)
+          : undefined
+      }
+    >
       <PortalTopBar
         orgName={organization?.name ?? "Organization"}
         orgLogo={organization?.logo ?? null}

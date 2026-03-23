@@ -6,6 +6,7 @@ import { OrgSettingsForm } from "@/components/settings/org-settings-form";
 import { ExpiryReminderDefaults } from "@/components/settings/expiry-reminder-defaults";
 import { InvoiceMatchingSettings } from "@/components/settings/invoice-matching-settings";
 import { TransferTitleSettings } from "@/components/settings/transfer-title-settings";
+import { AdminBrandingSection } from "@/components/settings/admin-branding-section";
 import { ApprovalChainsTab } from "@/components/settings/approval-chains-tab";
 import { NotificationPreferences } from "@/components/settings/notification-preferences";
 import { ReminderRulesSection } from "@/components/settings/reminder-rules-section";
@@ -71,6 +72,7 @@ function SettingsContent() {
           <ExpiryReminderDefaults />
           <InvoiceMatchingSettings />
           <TransferTitleSettings />
+          <AdminBrandingSection />
         </TabsContent>
 
         <TabsContent value="approvals" className="mt-6">
