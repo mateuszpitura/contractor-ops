@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Platform Expansion
-status: Ready to execute
-stopped_at: Completed 15-03-PLAN.md
-last_updated: "2026-03-23T22:46:38.442Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 15-04-PLAN.md (checkpoint pending)
+last_updated: "2026-03-23T23:00:32.273Z"
 progress:
   total_phases: 9
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 19
-  completed_plans: 18
+  completed_plans: 19
 ---
 
 # Project State
@@ -58,6 +58,7 @@ Plan: 4 of 4
 | Phase 15 P02 | 5min | 2 tasks | 9 files |
 | Phase 15 P01 | 4min | 2 tasks | 10 files |
 | Phase 15 P03 | 7min | 2 tasks | 9 files |
+| Phase 15 P04 | 10min | 2 tasks | 15 files |
 
 ## Accumulated Context
 
@@ -94,6 +95,8 @@ Recent decisions affecting current work:
 - [Phase 15]: ESignAdapter types file created by parallel agent; DRAFT->PENDING_SIGNATURE transition added per D-08; SIGNATURE_DECLINED/EXPIRED allow re-send
 - [Phase 15]: Webhook completion signal via _lastWebhookResult on adapters; _process route checks flag and calls handleSigningCompletion
 - [Phase 15]: CSP frame-src for DocuSign iframe via Next.js headers() config function
+- [Phase 15]: Added listConnections query to esign router for provider picker UI
+- [Phase 15]: Added docusign-esign.d.ts to API package for composite TypeScript builds
 
 ### Pending Todos
 
@@ -108,6 +111,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-23T22:46:38.440Z
-Stopped at: Completed 15-03-PLAN.md
+Last session: 2026-03-23T23:00:32.271Z
+Stopped at: Completed 15-04-PLAN.md (checkpoint pending)
 Resume file: None
