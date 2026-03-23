@@ -22,6 +22,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 8: Payments** - Payment run creation, batch export, status tracking with idempotency controls
 - [ ] **Phase 9: Dashboard & Reports** - KPI dashboard, spend and compliance reports, audit log viewer
 - [x] **Phase 10: Onboarding & Polish** - Data import wizard, product onboarding wizard, global search, and command palette (completed 2026-03-23)
+- [ ] **Phase 11: Route Fixes & Tenant Isolation** - Fix navigation hrefs, onboarding CTAs, Cmd+K action wiring, and tenant middleware isolation gap (Gap Closure)
 
 ## Phase Details
 
@@ -211,10 +212,27 @@ Plans:
 - [x] 10-04-PLAN.md — Command palette (Cmd+K), global search bar, empty state integration across all list views
 - [x] 10-05-PLAN.md — Full i18n (EN + PL) for all Phase 10 surfaces
 
+### Phase 11: Route Fixes & Tenant Isolation
+**Goal**: Fix all broken navigation hrefs, onboarding CTA links, Cmd+K action wiring, and tenant middleware AsyncLocalStorage gap identified in milestone audit
+**Depends on**: Phase 10
+**Requirements**: ORG-07, DASH-01, SLCK-03, ONBD-01, SRCH-02
+**Gap Closure:** Closes integration and flow gaps from v1.0 audit
+**Success Criteria** (what must be TRUE):
+  1. Sidebar Dashboard link navigates to the dashboard (not 404)
+  2. Sidebar Integrations link navigates to settings integrations tab (not 404)
+  3. All 5 onboarding checklist CTA buttons navigate to the correct page/tab
+  4. Cmd+K quick actions (New contractor, New contract, etc.) open the corresponding wizard on the target page
+  5. Tenant middleware calls tenantStore.run() so AsyncLocalStorage is populated for Prisma extension
+**Plans**: TBD
+
+Plans:
+- [ ] 11-01: Fix sidebar navigation hrefs, onboarding CTAs, and Cmd+K action wiring
+- [ ] 11-02: Wire tenantStore.run() in tenant middleware
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -228,3 +246,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 8. Payments | 0/3 | Not started | - |
 | 9. Dashboard & Reports | 0/5 | Not started | - |
 | 10. Onboarding & Polish | 5/5 | Complete    | 2026-03-23 |
+| 11. Route Fixes & Tenant Isolation | 0/2 | Not started | - |
