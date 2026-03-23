@@ -223,11 +223,11 @@ Plans:
   3. All 5 onboarding checklist CTA buttons navigate to the correct page/tab
   4. Cmd+K quick actions (New contractor, New contract, etc.) open the corresponding wizard on the target page
   5. Tenant middleware calls tenantStore.run() so AsyncLocalStorage is populated for Prisma extension
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 11-01: Fix sidebar navigation hrefs, onboarding CTAs, and Cmd+K action wiring
-- [ ] 11-02: Wire tenantStore.run() in tenant middleware
+- [ ] 11-01-PLAN.md — Fix sidebar navigation hrefs, onboarding CTAs, and Cmd+K quick action searchParam wiring
+- [ ] 11-02-PLAN.md — Verify tenantStore.run() already wired in tenant middleware (ORG-07 confirmed)
 
 ## Progress
 
