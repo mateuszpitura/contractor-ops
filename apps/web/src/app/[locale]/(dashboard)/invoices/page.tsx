@@ -1,9 +1,11 @@
 "use client";
 
-import { Suspense, useCallback, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { Receipt, Copy, Check } from "lucide-react";
+
+import { parseAsString, useQueryState } from "nuqs";
 
 import { trpc } from "@/trpc/init";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -41,6 +43,14 @@ function InvoicesContent() {
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [emailCopied, setEmailCopied] = useState(false);
+  const [action, setAction] = useQueryState("action", parseAsString);
+
+  useEffect(() => {
+    if (action === "upload") {
+      setUploadOpen(true);
+      void setAction(null);
+    }
+  }, [action, setAction]);
 
   // URL-synced filter state for chip bar integration
   const [filters, setFilters] = useInvoiceFilters();

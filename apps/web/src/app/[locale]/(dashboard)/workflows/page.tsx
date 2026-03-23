@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { GitBranch } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -42,6 +42,16 @@ function WorkflowsContent() {
 
   // Template picker state
   const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
+
+  // Action param for Cmd+K quick action
+  const [action, setAction] = useQueryState("action", parseAsString);
+
+  useEffect(() => {
+    if (action === "start") {
+      setTemplatePickerOpen(true);
+      void setAction(null);
+    }
+  }, [action, setAction]);
 
   const handleRowClick = (run: WorkflowRunRow) => {
     setSelectedRun(run);

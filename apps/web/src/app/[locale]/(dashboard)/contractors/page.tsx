@@ -1,9 +1,11 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Users } from "lucide-react";
 import { useTranslations } from "next-intl";
+
+import { parseAsString, useQueryState } from "nuqs";
 
 import { trpc } from "@/trpc/init";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -27,6 +29,14 @@ function ContractorsContent() {
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [importWizardOpen, setImportWizardOpen] = useState(false);
+  const [action, setAction] = useQueryState("action", parseAsString);
+
+  useEffect(() => {
+    if (action === "new") {
+      setWizardOpen(true);
+      void setAction(null);
+    }
+  }, [action, setAction]);
 
   // Lightweight count query for empty state detection
   const countQuery = useQuery(
