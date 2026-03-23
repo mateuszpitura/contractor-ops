@@ -53,6 +53,7 @@
     "@contractor-ops/db": "workspace:*",
     "@upstash/qstash": "^2.10.1",
     "@upstash/redis": "^1.34.0",
+    "docusign-esign": "8.6.0",
     "resend": "^6.9.4",
     "zod": "^3.23.0"
   },

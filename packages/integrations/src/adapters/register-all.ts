@@ -1,6 +1,8 @@
 import { registerAdapter } from "../registry.js";
 import { SlackAdapter } from "./slack-adapter.js";
 import { ResendAdapter } from "./resend-adapter.js";
+import { DocuSignAdapter } from "./docusign-adapter.js";
+import { AutentiAdapter } from "./autenti-adapter.js";
 
 // ---------------------------------------------------------------------------
 // Adapter Registration
@@ -17,6 +19,8 @@ export function registerAllAdapters(): void {
 
   registerAdapter(new SlackAdapter());
   registerAdapter(new ResendAdapter());
+  registerAdapter(new DocuSignAdapter());
+  registerAdapter(new AutentiAdapter());
 
   registered = true;
 }
