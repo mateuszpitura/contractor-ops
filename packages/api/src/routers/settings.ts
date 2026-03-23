@@ -9,6 +9,10 @@ import { router } from "../init.js";
 import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
 import { sensitiveActionProcedure } from "../middleware/sensitive.js";
+import {
+  approveChangeRequest,
+  rejectChangeRequest,
+} from "../services/portal-change-request.js";
 
 export const settingsRouter = router({
   /**
@@ -187,5 +191,163 @@ export const settingsRouter = router({
         invoiceDeviationThresholdPercent:
           input.invoiceDeviationThresholdPercent,
       };
+    }),
+
+  // =========================================================================
+  // BRANDING (admin)
+  // =========================================================================
+
+  /**
+   * Update organization brand color and logo URL.
+   * Merges brandColor into settingsJson, updates logo field.
+   * Per D-09, D-11.
+   */
+  updateBranding: tenantProcedure
+    .use(requirePermission({ settings: ["update"] }))
+    .input(
+      z.object({
+        brandColor: z
+          .string()
+          .regex(/^#[0-9a-fA-F]{6}$/, "Must be a valid hex color")
+          .optional()
+          .nullable(),
+        logoUrl: z.string().url().optional().nullable(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const org = await prisma.organization.findUnique({
+        where: { id: ctx.organizationId },
+        select: { settingsJson: true, logo: true },
+      });
+
+      const currentSettings =
+        (org?.settingsJson as Record<string, unknown>) ?? {};
+
+      // Merge brandColor into settingsJson
+      const newSettings: Record<string, unknown> = { ...currentSettings };
+      if (input.brandColor !== undefined) {
+        if (input.brandColor === null) {
+          delete newSettings.brandColor;
+        } else {
+          newSettings.brandColor = input.brandColor;
+        }
+      }
+
+      // Build update data
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const updateData: { settingsJson?: any; logo?: string | null } = {};
+
+      if (input.brandColor !== undefined) {
+        updateData.settingsJson = newSettings;
+      }
+      if (input.logoUrl !== undefined) {
+        updateData.logo = input.logoUrl;
+      }
+
+      await prisma.organization.update({
+        where: { id: ctx.organizationId },
+        data: updateData,
+      });
+
+      return {
+        brandColor:
+          (newSettings.brandColor as string) ?? null,
+        logo: input.logoUrl !== undefined ? input.logoUrl : (org?.logo ?? null),
+      };
+    }),
+
+  // =========================================================================
+  // CHANGE REQUEST REVIEW (admin)
+  // =========================================================================
+
+  /**
+   * List contractor change requests for the organization.
+   * Optionally filter by status. Includes contractor display info.
+   * Per D-03.
+   */
+  listChangeRequests: tenantProcedure
+    .use(requirePermission({ settings: ["read"] }))
+    .input(
+      z
+        .object({
+          status: z
+            .enum(["PENDING", "APPROVED", "REJECTED"])
+            .optional(),
+        })
+        .optional(),
+    )
+    .query(async ({ ctx, input }) => {
+      const where: Record<string, unknown> = {
+        organizationId: ctx.organizationId,
+      };
+      if (input?.status) {
+        where.status = input.status;
+      }
+
+      const requests = await prisma.contractorChangeRequest.findMany({
+        where,
+        include: {
+          contractor: {
+            select: { displayName: true, email: true },
+          },
+          reviewedBy: {
+            select: { name: true, email: true },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
+      return requests.map((r) => ({
+        id: r.id,
+        contractorId: r.contractorId,
+        contractorName: r.contractor.displayName,
+        contractorEmail: r.contractor.email,
+        status: r.status,
+        requestedChanges: r.requestedChanges,
+        previousValues: r.previousValues,
+        reviewedBy: r.reviewedBy
+          ? { name: r.reviewedBy.name, email: r.reviewedBy.email }
+          : null,
+        reviewedAt: r.reviewedAt,
+        reviewComment: r.reviewComment,
+        createdAt: r.createdAt,
+      }));
+    }),
+
+  /**
+   * Approve or reject a contractor change request.
+   * Delegates to the change request service for transactional approval.
+   * Per D-02, D-03.
+   */
+  reviewChangeRequest: tenantProcedure
+    .use(requirePermission({ settings: ["update"] }))
+    .input(
+      z.object({
+        requestId: z.string(),
+        action: z.enum(["approve", "reject"]),
+        comment: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      // tenantProcedure guarantees user is non-null
+      const reviewerId = ctx.user!.id;
+
+      if (input.action === "approve") {
+        await approveChangeRequest(
+          input.requestId,
+          ctx.organizationId,
+          reviewerId,
+          input.comment,
+        );
+      } else {
+        await rejectChangeRequest(
+          input.requestId,
+          ctx.organizationId,
+          reviewerId,
+          input.comment,
+        );
+      }
+
+      return { success: true as const };
     }),
 });

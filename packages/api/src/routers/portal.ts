@@ -22,6 +22,7 @@ import {
   createPresignedUploadUrl,
   generateStorageKey,
 } from "../services/r2.js";
+import { createChangeRequest } from "../services/portal-change-request.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -910,6 +911,303 @@ export const portalRouter = router({
         name: org?.name ?? "",
         logo: org?.logo ?? null,
       },
+    });
+  }),
+
+  // =========================================================================
+  // SELF-SERVICE ENDPOINTS (authenticated)
+  // =========================================================================
+
+  /**
+   * Get contractor profile with contact info, billing profile (masked),
+   * and any pending change request.
+   * SECURITY: Never exposes bankAccountEncrypted.
+   */
+  getProfile: portalProcedure.query(async ({ ctx }) => {
+    const contractor = await prisma.contractor.findUnique({
+      where: { id: ctx.contractorId },
+      select: {
+        id: true,
+        displayName: true,
+        email: true,
+        phone: true,
+        addressLine1: true,
+        addressLine2: true,
+        city: true,
+        postalCode: true,
+        countryCode: true,
+        taxId: true,
+      },
+    });
+
+    if (!contractor) {
+      throw new TRPCError({ code: "NOT_FOUND" });
+    }
+
+    // Get default billing profile — NEVER select bankAccountEncrypted
+    const billingProfile = await prisma.contractorBillingProfile.findFirst({
+      where: {
+        contractorId: ctx.contractorId,
+        organizationId: ctx.organizationId,
+        isDefault: true,
+      },
+      select: {
+        id: true,
+        bankAccountMasked: true,
+        bankName: true,
+        swiftBic: true,
+        taxId: true,
+      },
+    });
+
+    // Check for pending change request
+    const pendingChangeRequest =
+      await prisma.contractorChangeRequest.findFirst({
+        where: {
+          contractorId: ctx.contractorId,
+          organizationId: ctx.organizationId,
+          status: "PENDING",
+        },
+        select: {
+          id: true,
+          requestedChanges: true,
+          createdAt: true,
+        },
+      });
+
+    return plain({
+      ...contractor,
+      billingProfile,
+      pendingChangeRequest,
+    });
+  }),
+
+  /**
+   * Update contractor contact info (takes effect immediately per D-01).
+   * Contact fields only — financial fields require approval workflow.
+   */
+  updateContactInfo: portalProcedure
+    .input(
+      z.object({
+        displayName: z.string().min(1).max(200),
+        phone: z.string().max(50).optional().nullable(),
+        addressLine1: z.string().max(200).optional().nullable(),
+        addressLine2: z.string().max(200).optional().nullable(),
+        city: z.string().max(100).optional().nullable(),
+        postalCode: z.string().max(20).optional().nullable(),
+        countryCode: z.string().length(2).optional().nullable(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const updated = await prisma.contractor.update({
+        where: { id: ctx.contractorId },
+        data: {
+          displayName: input.displayName,
+          phone: input.phone,
+          addressLine1: input.addressLine1,
+          addressLine2: input.addressLine2,
+          city: input.city,
+          postalCode: input.postalCode,
+          countryCode: input.countryCode ?? undefined,
+        },
+        select: {
+          id: true,
+          displayName: true,
+          phone: true,
+          addressLine1: true,
+          addressLine2: true,
+          city: true,
+          postalCode: true,
+          countryCode: true,
+        },
+      });
+
+      return plain(updated);
+    }),
+
+  /**
+   * Submit a financial change request (bank account, SWIFT, tax ID).
+   * Creates a pending ContractorChangeRequest — requires admin approval per D-01.
+   */
+  submitFinancialChangeRequest: portalProcedure
+    .input(
+      z.object({
+        bankAccountNumber: z.string().optional(),
+        bankName: z.string().optional(),
+        swiftBic: z.string().max(11).optional(),
+        taxId: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Read current billing profile values for previousValues snapshot
+      const currentProfile =
+        await prisma.contractorBillingProfile.findFirst({
+          where: {
+            contractorId: ctx.contractorId,
+            organizationId: ctx.organizationId,
+            isDefault: true,
+          },
+          select: {
+            bankAccountMasked: true,
+            bankName: true,
+            swiftBic: true,
+            taxId: true,
+          },
+        });
+
+      const previousValues: Record<string, unknown> = {
+        bankAccountMasked: currentProfile?.bankAccountMasked ?? null,
+        bankName: currentProfile?.bankName ?? null,
+        swiftBic: currentProfile?.swiftBic ?? null,
+        taxId: currentProfile?.taxId ?? null,
+      };
+
+      // Build requested changes — encrypt bank account using existing pattern
+      const requestedChanges: Record<string, unknown> = {};
+
+      if (input.bankAccountNumber !== undefined) {
+        const cleaned = input.bankAccountNumber.replace(/\s/g, "");
+        requestedChanges.bankAccountEncrypted = cleaned;
+        requestedChanges.bankAccountMasked = `****${cleaned.slice(-4)}`;
+      }
+      if (input.bankName !== undefined) {
+        requestedChanges.bankName = input.bankName;
+      }
+      if (input.swiftBic !== undefined) {
+        requestedChanges.swiftBic = input.swiftBic;
+      }
+      if (input.taxId !== undefined) {
+        requestedChanges.taxId = input.taxId;
+      }
+
+      if (Object.keys(requestedChanges).length === 0) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "No changes provided",
+        });
+      }
+
+      const changeRequest = await createChangeRequest(
+        ctx.contractorId,
+        ctx.organizationId,
+        requestedChanges,
+        previousValues,
+      );
+
+      return plain({
+        id: changeRequest.id,
+        status: changeRequest.status,
+        createdAt: changeRequest.createdAt,
+      });
+    }),
+
+  /**
+   * Get notification preferences for all 5 categories.
+   * Returns defaults (emailEnabled: true) for any missing categories per D-06.
+   */
+  getNotificationPreferences: portalProcedure.query(async ({ ctx }) => {
+    const CATEGORIES = [
+      "INVOICE_UPDATES",
+      "PAYMENT_CONFIRMATIONS",
+      "CONTRACT_CHANGES",
+      "DOCUMENT_UPLOADS",
+      "SECURITY_ALERTS",
+    ] as const;
+
+    const existing =
+      await prisma.contractorNotificationPreference.findMany({
+        where: {
+          contractorId: ctx.contractorId,
+          organizationId: ctx.organizationId,
+        },
+        select: {
+          category: true,
+          emailEnabled: true,
+        },
+      });
+
+    const existingMap = new Map(
+      existing.map((p) => [p.category, p.emailEnabled]),
+    );
+
+    // Return all 5 categories, defaulting to true for missing rows
+    const preferences = CATEGORIES.map((category) => ({
+      category,
+      emailEnabled: existingMap.get(category) ?? true,
+    }));
+
+    return plain(preferences);
+  }),
+
+  /**
+   * Update a single notification preference category.
+   * SECURITY_ALERTS cannot be disabled per D-07.
+   */
+  updateNotificationPreference: portalProcedure
+    .input(
+      z.object({
+        category: z.enum([
+          "INVOICE_UPDATES",
+          "PAYMENT_CONFIRMATIONS",
+          "CONTRACT_CHANGES",
+          "DOCUMENT_UPLOADS",
+          "SECURITY_ALERTS",
+        ]),
+        emailEnabled: z.boolean(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Security alerts cannot be disabled
+      if (input.category === "SECURITY_ALERTS" && !input.emailEnabled) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Security alerts cannot be disabled",
+        });
+      }
+
+      const preference =
+        await prisma.contractorNotificationPreference.upsert({
+          where: {
+            contractorId_category: {
+              contractorId: ctx.contractorId,
+              category: input.category,
+            },
+          },
+          create: {
+            contractorId: ctx.contractorId,
+            organizationId: ctx.organizationId,
+            category: input.category,
+            emailEnabled: input.emailEnabled,
+          },
+          update: {
+            emailEnabled: input.emailEnabled,
+          },
+          select: {
+            category: true,
+            emailEnabled: true,
+          },
+        });
+
+      return plain(preference);
+    }),
+
+  /**
+   * Get organization branding (logo + brand color) for portal theming.
+   * Available to all authenticated portal users per D-12.
+   */
+  getOrgBranding: portalProcedure.query(async ({ ctx }) => {
+    const org = await prisma.organization.findUnique({
+      where: { id: ctx.organizationId },
+      select: { logo: true, settingsJson: true },
+    });
+
+    const settings =
+      (org?.settingsJson as Record<string, unknown>) ?? {};
+    const brandColor = (settings.brandColor as string) ?? null;
+
+    return plain({
+      logo: org?.logo ?? null,
+      brandColor,
     });
   }),
 });
