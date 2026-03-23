@@ -113,47 +113,47 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INTG-01 | — | Pending |
-| INTG-02 | — | Pending |
-| INTG-03 | — | Pending |
-| PORT-01 | — | Pending |
-| PORT-02 | — | Pending |
-| PORT-03 | — | Pending |
-| PORT-04 | — | Pending |
-| PORT-05 | — | Pending |
-| PORT-06 | — | Pending |
-| PORT-07 | — | Pending |
-| PORT-08 | — | Pending |
-| TIME-01 | — | Pending |
-| TIME-02 | — | Pending |
-| TIME-03 | — | Pending |
-| TIME-04 | — | Pending |
-| TIME-05 | — | Pending |
-| SIGN-01 | — | Pending |
-| SIGN-02 | — | Pending |
-| SIGN-03 | — | Pending |
-| SIGN-04 | — | Pending |
-| OCR-01 | — | Pending |
-| OCR-02 | — | Pending |
-| OCR-03 | — | Pending |
-| KSEF-01 | — | Pending |
-| KSEF-02 | — | Pending |
-| KSEF-03 | — | Pending |
-| KSEF-04 | — | Pending |
-| JIRA-01 | — | Pending |
-| JIRA-02 | — | Pending |
-| JIRA-03 | — | Pending |
-| JIRA-04 | — | Pending |
-| DOCS-01 | — | Pending |
-| DOCS-02 | — | Pending |
-| CAL-01 | — | Pending |
-| CAL-02 | — | Pending |
+| INTG-01 | Phase 12 | Pending |
+| INTG-02 | Phase 12 | Pending |
+| INTG-03 | Phase 12 | Pending |
+| PORT-01 | Phase 13 | Pending |
+| PORT-02 | Phase 13 | Pending |
+| PORT-03 | Phase 13 | Pending |
+| PORT-04 | Phase 13 | Pending |
+| PORT-05 | Phase 13 | Pending |
+| PORT-06 | Phase 14 | Pending |
+| PORT-07 | Phase 14 | Pending |
+| PORT-08 | Phase 14 | Pending |
+| TIME-01 | Phase 18 | Pending |
+| TIME-02 | Phase 18 | Pending |
+| TIME-03 | Phase 18 | Pending |
+| TIME-04 | Phase 18 | Pending |
+| TIME-05 | Phase 18 | Pending |
+| SIGN-01 | Phase 15 | Pending |
+| SIGN-02 | Phase 15 | Pending |
+| SIGN-03 | Phase 15 | Pending |
+| SIGN-04 | Phase 15 | Pending |
+| OCR-01 | Phase 16 | Pending |
+| OCR-02 | Phase 16 | Pending |
+| OCR-03 | Phase 16 | Pending |
+| KSEF-01 | Phase 17 | Pending |
+| KSEF-02 | Phase 17 | Pending |
+| KSEF-03 | Phase 17 | Pending |
+| KSEF-04 | Phase 17 | Pending |
+| JIRA-01 | Phase 19 | Pending |
+| JIRA-02 | Phase 19 | Pending |
+| JIRA-03 | Phase 19 | Pending |
+| JIRA-04 | Phase 19 | Pending |
+| DOCS-01 | Phase 20 | Pending |
+| DOCS-02 | Phase 20 | Pending |
+| CAL-01 | Phase 20 | Pending |
+| CAL-02 | Phase 20 | Pending |
 
 **Coverage:**
 - v2.0 requirements: 35 total
-- Mapped to phases: 0
-- Unmapped: 35 ⚠️
+- Mapped to phases: 35
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-23*
-*Last updated: 2026-03-23 after initial definition*
+*Last updated: 2026-03-23 after roadmap creation*
