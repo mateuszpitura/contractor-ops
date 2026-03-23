@@ -63,6 +63,7 @@ model Organization {
   externalLinks        ExternalLink[]
   integrationSyncLogs  IntegrationSyncLog[]
   webhookDeliveries    WebhookDelivery[]
+  portalSessions       PortalSession[]
   notifications        Notification[]
   notificationPrefs    UserNotificationPreference[]
   comments             Comment[]

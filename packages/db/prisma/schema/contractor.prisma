@@ -53,6 +53,7 @@ model Contractor {
   invoices             Invoice[]
   paymentRunItems      PaymentRunItem[]
   tags                 ContractorTagLink[]
+  portalSessions       PortalSession[]
 
   @@index([organizationId])
   @@index([organizationId, status])

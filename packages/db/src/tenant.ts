@@ -27,6 +27,8 @@ const globalModels = new Set([
   "Session",
   "Account",
   "Verification",
+  "PortalSession",
+  "PortalMagicToken",
 ]);
 
 /**

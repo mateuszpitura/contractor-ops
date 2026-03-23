@@ -135,6 +135,7 @@ enum InvoiceSource {
   EMAIL_INTAKE
   KSEF
   API
+  PORTAL
 }
 
 enum InvoiceStatus {

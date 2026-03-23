@@ -1,0 +1,35 @@
+// Portal authentication — PortalSession, PortalMagicToken
+// These are global models (not tenant-scoped) — see tenant.ts globalModels
+
+model PortalSession {
+  id             String   @id @default(cuid())
+  token          String   @unique
+  contractorId   String
+  organizationId String
+  email          String
+  expiresAt      DateTime
+  ipAddress      String?
+  userAgent      String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  contractor   Contractor   @relation(fields: [contractorId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([token])
+  @@index([email])
+  @@index([contractorId, organizationId])
+  @@index([expiresAt])
+}
+
+model PortalMagicToken {
+  id        String    @id @default(cuid())
+  email     String
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([token])
+  @@index([email])
+}
