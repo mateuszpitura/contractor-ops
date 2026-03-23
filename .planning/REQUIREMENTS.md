@@ -10,8 +10,8 @@ Requirements for v2.0 Platform Expansion. Each maps to roadmap phases.
 ### Integration Framework
 
 - [x] **INTG-01**: Admin can connect third-party services via OAuth 2.0 with encrypted token storage
-- [ ] **INTG-02**: System receives and routes webhooks from external services (Jira, DocuSign, Autenti, KSeF)
-- [ ] **INTG-03**: Admin can view integration connection health and sync status per provider
+- [x] **INTG-02**: System receives and routes webhooks from external services (Jira, DocuSign, Autenti, KSeF)
+- [x] **INTG-03**: Admin can view integration connection health and sync status per provider
 
 ### Contractor Portal
 
@@ -114,8 +114,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | INTG-01 | Phase 12 | Complete |
-| INTG-02 | Phase 12 | Pending |
-| INTG-03 | Phase 12 | Pending |
+| INTG-02 | Phase 12 | Complete |
+| INTG-03 | Phase 12 | Complete |
 | PORT-01 | Phase 13 | Pending |
 | PORT-02 | Phase 13 | Pending |
 | PORT-03 | Phase 13 | Pending |
