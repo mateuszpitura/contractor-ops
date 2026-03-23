@@ -32,7 +32,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 
 - [x] **Phase 12: Integration Foundation** — Shared OAuth credential store, webhook ingestion layer, and health monitoring (completed 2026-03-23)
 - [x] **Phase 13: Contractor Portal Auth & Core Views** — Magic-link auth, contract viewing, invoice submission, payment tracking, document access (completed 2026-03-23)
-- [ ] **Phase 14: Portal Self-Service & Branding** — Profile self-management with approval, notification preferences, org branding
+- [x] **Phase 14: Portal Self-Service & Branding** — Profile self-management with approval, notification preferences, org branding (completed 2026-03-23)
 - [ ] **Phase 15: E-Sign Integration** — DocuSign + Autenti contract signing with multi-party support and auto-storage
 - [ ] **Phase 16: OCR Invoice Parsing** — Auto-extract invoice fields from PDFs with confidence scores and human review
 - [ ] **Phase 17: KSeF Integration** — Auto-fetch invoices from national e-invoicing system with XML parsing and duplicate detection
@@ -92,7 +92,7 @@ Plans:
 Plans:
 - [x] 14-01-PLAN.md — DB models (ContractorChangeRequest, ContractorNotificationPreference), change request service, portal + admin API endpoints
 - [x] 14-02-PLAN.md — Portal settings page with profile sections (inline edit, approval flow), notification preference toggles
-- [ ] 14-03-PLAN.md — Portal layout brand color injection, admin branding section (color picker + logo), change request diff cards in approvals
+- [x] 14-03-PLAN.md — Portal layout brand color injection, admin branding section (color picker + logo), change request diff cards in approvals
 
 ### Phase 15: E-Sign Integration
 **Goal**: Contracts and NDAs can be sent for signature and signed electronically without leaving the platform
@@ -207,7 +207,7 @@ Phases execute in numeric order: 12 → 13 → 14 → 15 → 16 → 17 → 18 �
 | 11. Route Fixes & Tenant Isolation | v1.0 | 2/2 | Complete | 2026-03-23 |
 | 12. Integration Foundation | v2.0 | 5/5 | Complete    | 2026-03-23 |
 | 13. Contractor Portal Auth & Core Views | v2.0 | 5/5 | Complete    | 2026-03-23 |
-| 14. Portal Self-Service & Branding | v2.0 | 2/3 | In Progress|  |
+| 14. Portal Self-Service & Branding | v2.0 | 3/3 | Complete   | 2026-03-23 |
 | 15. E-Sign Integration | v2.0 | 0/0 | Not started | - |
 | 16. OCR Invoice Parsing | v2.0 | 0/0 | Not started | - |
 | 17. KSeF Integration | v2.0 | 0/0 | Not started | - |
