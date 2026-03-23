@@ -15,6 +15,13 @@ export {
   decryptCredentials,
 } from "./services/credential-service.js";
 
+// OAuth State (CSRF protection)
+export {
+  generateOAuthState,
+  verifyOAuthState,
+} from "./services/oauth-state.js";
+export type { OAuthStatePayload } from "./services/oauth-state.js";
+
 // Provider Registry
 export {
   registerAdapter,
