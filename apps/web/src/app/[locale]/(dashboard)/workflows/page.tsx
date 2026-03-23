@@ -27,6 +27,7 @@ import { TemplatePicker } from "@/components/workflows/template-picker-dialog";
 
 function WorkflowsContent() {
   const t = useTranslations("Workflows");
+  const te = useTranslations("EmptyStates");
   const { can } = usePermissions();
 
   // Tab state synced to URL
@@ -76,11 +77,11 @@ function WorkflowsContent() {
         </div>
         <EmptyState
           icon={GitBranch}
-          heading="No workflows yet"
-          body="Create a workflow template to automate onboarding and offboarding tasks."
-          primaryAction={{ label: "Create template", onClick: handleStartWorkflow }}
+          heading={te("workflows.heading")}
+          body={te("workflows.body")}
+          primaryAction={{ label: te("workflows.cta"), onClick: handleStartWorkflow }}
           prerequisiteMissing={contractorCount === 0}
-          prerequisiteAction={{ label: "Add contractor", href: "/contractors" }}
+          prerequisiteAction={{ label: te("prerequisite.cta"), href: "/contractors" }}
         />
         <TemplatePicker
           open={templatePickerOpen}

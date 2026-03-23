@@ -48,6 +48,7 @@ const FILTER_KEYS = ["all", "approvals", "tasks", "contracts", "invoices"] as co
 
 export function NotificationCenter() {
   const t = useTranslations("Notifications");
+  const te = useTranslations("EmptyStates");
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -229,8 +230,8 @@ export function NotificationCenter() {
         /* Empty state - informational only */
         <EmptyState
           icon={Bell}
-          heading="No notifications"
-          body="You're all caught up. Notifications will appear here for approvals, tasks, and deadlines."
+          heading={te("notifications.heading")}
+          body={te("notifications.body")}
         />
       ) : (
         <>

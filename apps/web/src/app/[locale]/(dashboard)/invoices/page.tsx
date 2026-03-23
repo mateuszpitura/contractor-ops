@@ -32,6 +32,7 @@ function useInvoiceEmail(): string {
 
 function InvoicesContent() {
   const t = useTranslations("Invoices");
+  const te = useTranslations("EmptyStates");
   const invoiceEmail = useInvoiceEmail();
 
   const [selectedInvoice, setSelectedInvoice] = useState<InvoiceRow | null>(
@@ -87,12 +88,12 @@ function InvoicesContent() {
         </div>
         <EmptyState
           icon={Receipt}
-          heading="No invoices yet"
-          body="Upload your first invoice or set up email intake to start processing."
-          primaryAction={{ label: "Upload invoice", onClick: handleUpload }}
-          secondaryAction={{ label: "Set up email", href: "/settings" }}
+          heading={te("invoices.heading")}
+          body={te("invoices.body")}
+          primaryAction={{ label: te("invoices.cta"), onClick: handleUpload }}
+          secondaryAction={{ label: te("invoices.secondary"), href: "/settings" }}
           prerequisiteMissing={contractorCount === 0}
-          prerequisiteAction={{ label: "Add contractor", href: "/contractors" }}
+          prerequisiteAction={{ label: te("prerequisite.cta"), href: "/contractors" }}
         />
       </div>
     );

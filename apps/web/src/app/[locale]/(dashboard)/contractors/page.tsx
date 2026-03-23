@@ -20,6 +20,7 @@ import type { ContractorRow } from "@/components/contractors/contractor-table/co
  */
 function ContractorsContent() {
   const t = useTranslations("Contractors");
+  const te = useTranslations("EmptyStates");
 
   const [selectedContractor, setSelectedContractor] =
     useState<ContractorRow | null>(null);
@@ -52,10 +53,10 @@ function ContractorsContent() {
         </div>
         <EmptyState
           icon={Users}
-          heading="Your contractor list is empty"
-          body="Add your first contractor or import from a spreadsheet to get started."
-          primaryAction={{ label: "Add contractor", onClick: handleAddContractor }}
-          secondaryAction={{ label: "Import from file", onClick: () => setImportWizardOpen(true) }}
+          heading={te("contractors.heading")}
+          body={te("contractors.body")}
+          primaryAction={{ label: te("contractors.cta"), onClick: handleAddContractor }}
+          secondaryAction={{ label: te("contractors.secondary"), onClick: () => setImportWizardOpen(true) }}
         />
         <WizardDialog open={wizardOpen} onOpenChange={setWizardOpen} />
         <ImportWizardDialog

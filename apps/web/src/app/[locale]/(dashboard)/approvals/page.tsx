@@ -27,6 +27,7 @@ import { ApprovalSidePanel } from "@/components/approvals/approval-queue/side-pa
 
 function ApprovalsContent() {
   const t = useTranslations("Approvals");
+  const te = useTranslations("EmptyStates");
   const { can } = usePermissions();
   const queryClient = useQueryClient();
 
@@ -197,8 +198,8 @@ function ApprovalsContent() {
       return (
         <EmptyState
           icon={CheckSquare}
-          heading="No pending approvals"
-          body="Your approval queue is clear. Approvals will appear here when invoices are submitted."
+          heading={te("approvals.heading")}
+          body={te("approvals.body")}
         />
       );
     }

@@ -2181,7 +2181,17 @@
       "browse": "Browse files",
       "entityContractors": "Contractors",
       "entityContracts": "Contracts",
-      "removeFile": "Remove"
+      "removeFile": "Remove",
+      "dropHeading": "Drop your file here",
+      "dropBody": "CSV or Excel file with contractor or contract data",
+      "conversionError": "Failed to read file. Please try again.",
+      "tooLarge": "File is too large. Maximum size is 10MB.",
+      "invalidType": "Unsupported file format. Please upload a CSV or XLSX file.",
+      "genericError": "Failed to upload file. Please try again.",
+      "entityType": "Import type",
+      "contractors": "Contractors",
+      "contracts": "Contracts",
+      "remove": "Remove"
     },
     "mapping": {
       "yourColumns": "Your file columns",
@@ -2190,7 +2200,9 @@
       "notMapped": "Not mapped",
       "unmappedNote": "Unmapped columns will be ignored",
       "skip": "Skip (do not import)",
-      "required": "Required"
+      "required": "Required",
+      "description": "Map your file columns to the corresponding fields. Required fields are marked with an asterisk.",
+      "note": "Unmapped columns will be ignored during import."
     },
     "preview": {
       "validRows": "{count} valid rows",
@@ -2206,7 +2218,11 @@
       "update": "Update existing",
       "create": "Create new",
       "skipAll": "Skip all duplicates",
-      "updateAll": "Update all"
+      "updateAll": "Update all",
+      "taxId": "Tax ID",
+      "nameFromFile": "Name (file)",
+      "nameExisting": "Name (existing)",
+      "action": "Action"
     },
     "confirm": {
       "heading": "Ready to import {count} {entity}",
@@ -2217,7 +2233,25 @@
       "importCta": "Import",
       "processing": "Importing... {current}/{total}",
       "completeHeading": "Import complete",
-      "viewCta": "View {entity}"
+      "viewCta": "View {entity}",
+      "contractors": "contractors",
+      "contracts": "contracts",
+      "complete": "Import complete",
+      "created": "{count} records created",
+      "updated": "{count} records updated",
+      "skipped": "{count} records skipped",
+      "failed": "{count} records failed",
+      "viewEntities": "View {entities}",
+      "importing": "Importing...",
+      "errorTitle": "Import failed",
+      "errorDescription": "Some rows could not be processed. Please try again or contact support.",
+      "tryAgain": "Try again",
+      "ready": "Ready to import {count} {entities}",
+      "newRecordsLabel": "New records",
+      "updatesLabel": "Updates to existing",
+      "skippedDuplicatesLabel": "Skipped duplicates",
+      "skippedErrorsLabel": "Skipped errors",
+      "importButton": "Import {count} records"
     },
     "errors": {
       "invalidFile": "Unsupported file format. Please upload a CSV or XLSX file.",
@@ -2227,6 +2261,24 @@
     },
     "toast": {
       "importComplete": "Successfully imported {count} {entity}"
+    },
+    "title": "Import data",
+    "parseError": "Failed to parse file. Please check the format and try again.",
+    "validateError": "Validation failed. Please check your column mapping.",
+    "importError": "Import failed. Some rows could not be processed. Try again or contact support.",
+    "actions": {
+      "import": "Import",
+      "next": "Next",
+      "back": "Back",
+      "discard": "Discard",
+      "close": "Close",
+      "processing": "Processing..."
+    },
+    "discard": {
+      "title": "Discard import?",
+      "description": "Your import progress will be lost. Are you sure you want to discard?",
+      "keep": "Keep editing",
+      "discard": "Discard"
     }
   },
   "Onboarding": {

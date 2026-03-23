@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import {
   ArrowRight,
   Plus,
@@ -58,10 +59,10 @@ const TYPE_BADGE_CLASSES: Record<string, string> = {
 // ---------------------------------------------------------------------------
 
 const QUICK_ACTIONS = [
-  { key: "new-contractor", label: "New contractor", icon: Plus, href: "/contractors?action=new" },
-  { key: "new-contract", label: "New contract", icon: Plus, href: "/contracts?action=new" },
-  { key: "upload-invoice", label: "Upload invoice", icon: Upload, href: "/invoices?action=upload" },
-  { key: "start-workflow", label: "Start workflow", icon: Play, href: "/workflows?action=start" },
+  { key: "new-contractor", labelKey: "actions.newContractor" as const, icon: Plus, href: "/contractors?action=new" },
+  { key: "new-contract", labelKey: "actions.newContract" as const, icon: Plus, href: "/contracts?action=new" },
+  { key: "upload-invoice", labelKey: "actions.uploadInvoice" as const, icon: Upload, href: "/invoices?action=upload" },
+  { key: "start-workflow", labelKey: "actions.startWorkflow" as const, icon: Play, href: "/workflows?action=start" },
 ] as const;
 
 // ---------------------------------------------------------------------------
@@ -114,6 +115,7 @@ function entityDetailUrl(type: string, id: string): string {
 // ---------------------------------------------------------------------------
 
 export function CommandPalette() {
+  const t = useTranslations("Search");
   const { open, setOpen, recentItems, addRecentItem } = useSearch();
   const router = useRouter();
 
@@ -169,8 +171,10 @@ export function CommandPalette() {
   const matchedActions = useMemo(() => {
     if (!debouncedQuery || debouncedQuery.length < 2) return QUICK_ACTIONS.slice();
     const q = debouncedQuery.toLowerCase();
-    return QUICK_ACTIONS.filter((a) => a.label.toLowerCase().includes(q));
-  }, [debouncedQuery]);
+    return QUICK_ACTIONS.filter((a) =>
+      t(a.labelKey as Parameters<typeof t>[0]).toLowerCase().includes(q),
+    );
+  }, [debouncedQuery, t]);
 
   const isSearching = debouncedQuery.length >= 2;
   const isLoading = searchQuery.isLoading && isSearching;
@@ -238,12 +242,12 @@ export function CommandPalette() {
       className="w-[560px]"
     >
       <CommandInput
-        placeholder="Search or type a command..."
+        placeholder={t("placeholder")}
         value={query}
         onValueChange={setQuery}
       />
       <CommandList>
-        <CommandEmpty>No results found</CommandEmpty>
+        <CommandEmpty>{t("noResults")}</CommandEmpty>
 
         {/* Loading state */}
         {isLoading && (
@@ -259,7 +263,7 @@ export function CommandPalette() {
           <>
             {/* Recent items */}
             {recentItems.length > 0 && (
-              <CommandGroup heading="Recent">
+              <CommandGroup heading={t("sections.recent")}>
                 {recentItems.map((item) => (
                   <CommandItem
                     key={`recent-${item.type}-${item.id}`}
@@ -289,7 +293,7 @@ export function CommandPalette() {
             {pinnedItems.length > 0 && (
               <>
                 <CommandSeparator />
-                <CommandGroup heading="Pinned">
+                <CommandGroup heading={t("sections.pinned")}>
                   {pinnedItems.map((item) => (
                     <CommandItem
                       key={`pinned-${item.type}-${item.id}`}
@@ -315,21 +319,21 @@ export function CommandPalette() {
 
             {/* Quick actions */}
             <CommandSeparator />
-            <CommandGroup heading="Actions">
+            <CommandGroup heading={t("sections.actions")}>
               {QUICK_ACTIONS.map((action) => (
                 <CommandItem
                   key={action.key}
                   onSelect={() => navigate(action.href)}
                 >
                   <action.icon className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{action.label}</span>
+                  <span className="text-sm">{t(action.labelKey as Parameters<typeof t>[0])}</span>
                 </CommandItem>
               ))}
             </CommandGroup>
 
             {/* Page navigation */}
             <CommandSeparator />
-            <CommandGroup heading="Pages">
+            <CommandGroup heading={t("sections.pages")}>
               {navigationItems.map((item) => (
                 <CommandItem
                   key={`page-${item.key}`}
@@ -355,7 +359,7 @@ export function CommandPalette() {
           <>
             {/* Entity results from tRPC */}
             {searchResults.length > 0 && (
-              <CommandGroup heading="Results">
+              <CommandGroup heading={t("sections.results")}>
                 {searchResults.map((item) => (
                   <CommandItem
                     key={`result-${item.type}-${item.id}`}
@@ -388,7 +392,7 @@ export function CommandPalette() {
                         });
                       }}
                       aria-label={
-                        isPinned(item.type, item.id) ? "Unpin" : "Pin"
+                        isPinned(item.type, item.id) ? t("unpin") : t("pin")
                       }
                     >
                       <Star
@@ -408,7 +412,7 @@ export function CommandPalette() {
             {matchedPages.length > 0 && (
               <>
                 <CommandSeparator />
-                <CommandGroup heading="Pages">
+                <CommandGroup heading={t("sections.pages")}>
                   {matchedPages.map((item) => (
                     <CommandItem
                       key={`page-${item.key}`}
@@ -426,14 +430,14 @@ export function CommandPalette() {
             {matchedActions.length > 0 && (
               <>
                 <CommandSeparator />
-                <CommandGroup heading="Actions">
+                <CommandGroup heading={t("sections.actions")}>
                   {matchedActions.map((action) => (
                     <CommandItem
                       key={action.key}
                       onSelect={() => navigate(action.href)}
                     >
                       <action.icon className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">{action.label}</span>
+                      <span className="text-sm">{t(action.labelKey as Parameters<typeof t>[0])}</span>
                     </CommandItem>
                   ))}
                 </CommandGroup>
@@ -446,14 +450,13 @@ export function CommandPalette() {
       {/* Footer keyboard hints */}
       <div className="flex items-center gap-4 border-t px-3 py-2">
         <span className="text-xs font-mono text-muted-foreground">
-          <kbd className="rounded bg-muted px-1 py-0.5">Enter</kbd> to select
+          {t("footer.select")}
         </span>
         <span className="text-xs font-mono text-muted-foreground">
-          <kbd className="rounded bg-muted px-1 py-0.5">Arrow keys</kbd> to
-          navigate
+          {t("footer.navigate")}
         </span>
         <span className="text-xs font-mono text-muted-foreground">
-          <kbd className="rounded bg-muted px-1 py-0.5">Esc</kbd> to close
+          {t("footer.close")}
         </span>
       </div>
     </CommandDialog>

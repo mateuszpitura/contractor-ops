@@ -27,6 +27,7 @@ import { BankStatementDialog } from "@/components/payments/bank-statement-dialog
 
 function PaymentsContent() {
   const t = useTranslations("Payments");
+  const te = useTranslations("EmptyStates");
 
   // URL state via nuqs
   const [status, setStatus] = useQueryState(
@@ -178,11 +179,11 @@ function PaymentsContent() {
         /* Empty state with smart sequencing */
         <EmptyState
           icon={CreditCard}
-          heading="No payment runs yet"
-          body="Payment runs will appear here once invoices are approved."
-          primaryAction={{ label: "View approved invoices", href: "/invoices" }}
+          heading={te("payments.heading")}
+          body={te("payments.body")}
+          primaryAction={{ label: te("payments.cta"), href: "/invoices" }}
           prerequisiteMissing={contractorCount === 0}
-          prerequisiteAction={{ label: "Add contractor", href: "/contractors" }}
+          prerequisiteAction={{ label: te("prerequisite.cta"), href: "/contractors" }}
         />
       ) : (
         <>

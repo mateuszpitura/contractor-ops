@@ -13,6 +13,7 @@ import {
   ChevronUp,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { trpc } from "@/trpc/init";
 import { usePermissions } from "@/hooks/use-permissions";
@@ -36,9 +37,8 @@ type OnboardingStep = {
   id: string;
   icon: LucideIcon;
   optional: boolean;
-  title: string;
-  description: string;
-  ctaLabel: string;
+  /** i18n key prefix under Onboarding.steps, e.g. "orgDetails" */
+  stepKey: string;
   ctaHref: string;
 };
 
@@ -47,48 +47,35 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
     id: "org-details",
     icon: Building2,
     optional: false,
-    title: "Complete organization details",
-    description:
-      "Add your legal name, billing email, and fiscal year settings.",
-    ctaLabel: "Go to settings",
+    stepKey: "orgDetails",
     ctaHref: "/settings",
   },
   {
     id: "invite-team",
     icon: UserPlus,
     optional: false,
-    title: "Invite your team",
-    description: "Add team members and assign roles for collaboration.",
-    ctaLabel: "Invite members",
+    stepKey: "inviteTeam",
     ctaHref: "/settings/users",
   },
   {
     id: "add-contractor",
     icon: Users,
     optional: false,
-    title: "Add your first contractor",
-    description:
-      "Create a contractor profile to start managing their lifecycle.",
-    ctaLabel: "Add contractor",
+    stepKey: "addContractor",
     ctaHref: "/contractors/new",
   },
   {
     id: "configure-approvals",
     icon: CheckCircle,
     optional: true,
-    title: "Configure approval chains",
-    description: "Set up approval workflows for invoices and payments.",
-    ctaLabel: "Configure approvals",
+    stepKey: "configureApprovals",
     ctaHref: "/settings/approvals",
   },
   {
     id: "connect-slack",
     icon: MessageSquare,
     optional: true,
-    title: "Connect Slack",
-    description:
-      "Get approval notifications and task reminders in your Slack workspace.",
-    ctaLabel: "Connect Slack",
+    stepKey: "connectSlack",
     ctaHref: "/settings/integrations",
   },
 ] as const;
@@ -127,11 +114,17 @@ function StepItem({
   step,
   completed,
   current,
+  t,
 }: {
   step: OnboardingStep;
   completed: boolean;
   current: boolean;
+  t: ReturnType<typeof useTranslations<"Onboarding">>;
 }) {
+  const title = t(`steps.${step.stepKey}.title` as Parameters<typeof t>[0]);
+  const description = t(`steps.${step.stepKey}.description` as Parameters<typeof t>[0]);
+  const cta = t(`steps.${step.stepKey}.cta` as Parameters<typeof t>[0]);
+
   return (
     <div className="flex gap-3">
       <div className="mt-0.5">
@@ -146,25 +139,25 @@ function StepItem({
               current && "font-semibold",
             )}
           >
-            {step.title}
+            {title}
           </span>
           {step.optional && (
             <span className="text-xs font-medium text-amber-600 dark:text-amber-400">
-              (Optional)
+              ({t("optional")})
             </span>
           )}
         </div>
         {current && (
           <div className="mt-1.5">
             <p className="text-sm text-muted-foreground">
-              {step.description}
+              {description}
             </p>
             <Button
               size="sm"
               className="mt-2"
               render={<Link href={step.ctaHref} />}
             >
-              {step.ctaLabel}
+              {cta}
             </Button>
           </div>
         )}
@@ -181,21 +174,22 @@ function CollapsedBar({
   completedCount,
   totalCount,
   onExpand,
+  t,
 }: {
   completedCount: number;
   totalCount: number;
   onExpand: () => void;
+  t: ReturnType<typeof useTranslations<"Onboarding">>;
 }) {
   return (
     <Card size="sm">
       <CardContent>
         <div className="flex items-center justify-between">
           <span className="text-sm">
-            Continue setup &mdash;{" "}
+            {t("collapsed")} &mdash;{" "}
             <span className="font-semibold text-primary">
-              {completedCount} of {totalCount}
-            </span>{" "}
-            complete
+              {t("progress", { completed: completedCount, total: totalCount })}
+            </span>
           </span>
           <Button variant="ghost" size="icon-sm" onClick={onExpand}>
             <ChevronDown className="h-4 w-4" />
@@ -211,6 +205,7 @@ function CollapsedBar({
 // ---------------------------------------------------------------------------
 
 export function OnboardingChecklist() {
+  const t = useTranslations("Onboarding");
   const { can, isLoading: permissionsLoading } = usePermissions();
   const queryClient = useQueryClient();
 
@@ -277,6 +272,7 @@ export function OnboardingChecklist() {
         completedCount={completedCount}
         totalCount={totalCount}
         onExpand={handleExpand}
+        t={t}
       />
     );
   }
@@ -291,10 +287,10 @@ export function OnboardingChecklist() {
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-[20px] font-semibold">
-            Setup guide
+            {t("widgetTitle")}
           </CardTitle>
           <span className="text-xs font-semibold text-primary">
-            {completedCount} of {totalCount} complete
+            {t("progress", { completed: completedCount, total: totalCount })}
           </span>
         </div>
         <Progress value={(completedCount / totalCount) * 100} />
@@ -307,6 +303,7 @@ export function OnboardingChecklist() {
               step={step}
               completed={completedSteps.includes(step.id)}
               current={step.id === currentStepId}
+              t={t}
             />
           ))}
         </div>
@@ -314,7 +311,7 @@ export function OnboardingChecklist() {
       <CardFooter>
         <Button variant="ghost" size="sm" onClick={handleDismiss}>
           <ChevronUp className="mr-1 h-3.5 w-3.5" />
-          Dismiss
+          {t("dismiss")}
         </Button>
       </CardFooter>
     </Card>

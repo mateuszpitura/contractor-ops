@@ -2181,7 +2181,17 @@
       "browse": "Przegladaj pliki",
       "entityContractors": "Kontrahenci",
       "entityContracts": "Umowy",
-      "removeFile": "Usun"
+      "removeFile": "Usun",
+      "dropHeading": "Upusc plik tutaj",
+      "dropBody": "Plik CSV lub Excel z danymi kontrahentow lub umow",
+      "conversionError": "Nie udalo sie odczytac pliku. Sprobuj ponownie.",
+      "tooLarge": "Plik jest za duzy. Maksymalny rozmiar to 10MB.",
+      "invalidType": "Nieobslugiwany format pliku. Wgraj plik CSV lub XLSX.",
+      "genericError": "Nie udalo sie wgrac pliku. Sprobuj ponownie.",
+      "entityType": "Typ importu",
+      "contractors": "Kontrahenci",
+      "contracts": "Umowy",
+      "remove": "Usun"
     },
     "mapping": {
       "yourColumns": "Kolumny z pliku",
@@ -2190,7 +2200,9 @@
       "notMapped": "Niedopasowane",
       "unmappedNote": "Niedopasowane kolumny zostana pominiete",
       "skip": "Pomin (nie importuj)",
-      "required": "Wymagane"
+      "required": "Wymagane",
+      "description": "Dopasuj kolumny z pliku do odpowiednich pol. Wymagane pola oznaczone sa gwiazdka.",
+      "note": "Niedopasowane kolumny zostana pominiete podczas importu."
     },
     "preview": {
       "validRows": "{count} poprawnych wierszy",
@@ -2206,7 +2218,11 @@
       "update": "Aktualizuj istniejacy",
       "create": "Utworz nowy",
       "skipAll": "Pomin wszystkie duplikaty",
-      "updateAll": "Aktualizuj wszystkie"
+      "updateAll": "Aktualizuj wszystkie",
+      "taxId": "NIP",
+      "nameFromFile": "Nazwa (plik)",
+      "nameExisting": "Nazwa (istniejaca)",
+      "action": "Akcja"
     },
     "confirm": {
       "heading": "Gotowe do importu {count} {entity}",
@@ -2217,7 +2233,25 @@
       "importCta": "Importuj",
       "processing": "Importowanie... {current}/{total}",
       "completeHeading": "Import zakonczony",
-      "viewCta": "Zobacz {entity}"
+      "viewCta": "Zobacz {entity}",
+      "contractors": "kontrahentow",
+      "contracts": "umow",
+      "complete": "Import zakonczony",
+      "created": "{count} rekordow utworzonych",
+      "updated": "{count} rekordow zaktualizowanych",
+      "skipped": "{count} rekordow pominietych",
+      "failed": "{count} rekordow nieudanych",
+      "viewEntities": "Zobacz {entities}",
+      "importing": "Importowanie...",
+      "errorTitle": "Import nie powiodl sie",
+      "errorDescription": "Niektore wiersze nie mogly byc przetworzone. Sprobuj ponownie lub skontaktuj sie z pomoca.",
+      "tryAgain": "Sprobuj ponownie",
+      "ready": "Gotowe do importu {count} {entities}",
+      "newRecordsLabel": "Nowe rekordy",
+      "updatesLabel": "Aktualizacje istniejacych",
+      "skippedDuplicatesLabel": "Pominiete duplikaty",
+      "skippedErrorsLabel": "Pominiete bledy",
+      "importButton": "Importuj {count} rekordow"
     },
     "errors": {
       "invalidFile": "Nieobslugiwany format pliku. Wgraj plik CSV lub XLSX.",
@@ -2227,6 +2261,24 @@
     },
     "toast": {
       "importComplete": "Pomyslnie zaimportowano {count} {entity}"
+    },
+    "title": "Importuj dane",
+    "parseError": "Nie udalo sie przetworzyc pliku. Sprawdz format i sprobuj ponownie.",
+    "validateError": "Walidacja nie powiodla sie. Sprawdz dopasowanie kolumn.",
+    "importError": "Import nie powiodl sie. Niektore wiersze nie mogly byc przetworzone. Sprobuj ponownie lub skontaktuj sie z pomoca.",
+    "actions": {
+      "import": "Importuj",
+      "next": "Dalej",
+      "back": "Wstecz",
+      "discard": "Odrzuc",
+      "close": "Zamknij",
+      "processing": "Przetwarzanie..."
+    },
+    "discard": {
+      "title": "Odrzucic import?",
+      "description": "Postep importu zostanie utracony. Czy na pewno chcesz odrzucic?",
+      "keep": "Kontynuuj edycje",
+      "discard": "Odrzuc"
     }
   },
   "Onboarding": {

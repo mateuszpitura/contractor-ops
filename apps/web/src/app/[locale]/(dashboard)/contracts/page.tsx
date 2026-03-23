@@ -19,6 +19,7 @@ import type { ContractRow } from "@/components/contracts/contract-table/columns"
  */
 function ContractsContent() {
   const t = useTranslations("Contracts");
+  const te = useTranslations("EmptyStates");
 
   const [selectedContract, setSelectedContract] =
     useState<ContractRow | null>(null);
@@ -55,11 +56,11 @@ function ContractsContent() {
         </div>
         <EmptyState
           icon={FileText}
-          heading="No contracts yet"
-          body="Create your first contract to start tracking agreements and deadlines."
-          primaryAction={{ label: "Create contract", onClick: handleNewContract }}
+          heading={te("contracts.heading")}
+          body={te("contracts.body")}
+          primaryAction={{ label: te("contracts.cta"), onClick: handleNewContract }}
           prerequisiteMissing={contractorCount === 0}
-          prerequisiteAction={{ label: "Add contractor", href: "/contractors" }}
+          prerequisiteAction={{ label: te("prerequisite.cta"), href: "/contractors" }}
         />
       </div>
     );
