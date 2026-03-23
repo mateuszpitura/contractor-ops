@@ -16,6 +16,8 @@ All 14 product modules delivered: org setup, RBAC, contractors, contracts, docum
 
 **Phase 13 complete** — Contractor portal with magic-link auth (SHA-256 sessions, 15-min tokens), portalProcedure middleware, 15-endpoint tRPC router, portal shell with top bar/mobile menu, org picker for multi-org contractors, read-only views (dashboard, contracts, documents, payments), and invoice submission with PDF upload. All queries scoped to authenticated contractor — no internal admin surface exposure.
 
+**Phase 14 complete** — Portal self-service with profile edit (contact info immediate save, financial fields via approval workflow with change request service), notification preferences (5 categories with optimistic toggle, SECURITY_ALERTS immutable), org branding (CSS custom property injection, admin color picker + logo upload, live preview), subdomain routing ({slug}.portal.{domain} via Next.js middleware with portal layout and auth wiring), and admin change request review (diff cards with approve/reject in approvals page). 4 API test stub files created per VALIDATION.md contract.
+
 ## Requirements
 
 ### Validated — v1.0
@@ -144,4 +146,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-23 after Phase 13 (contractor-portal-auth-core-views) completion*
+*Last updated: 2026-03-23 after Phase 14 (portal-self-service-branding) completion*
