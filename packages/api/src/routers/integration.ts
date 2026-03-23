@@ -4,11 +4,25 @@ import { prisma } from "@contractor-ops/db";
 import {
   slackUserLinkSchema,
   slackUserUnlinkSchema,
+  providerSlugSchema,
+  disconnectProviderSchema,
+  getSyncLogSchema,
+  getWebhookLogSchema,
 } from "@contractor-ops/validators";
+import {
+  getProviderHealth,
+  getAllProviderHealth,
+  getAdapter,
+  generateOAuthState,
+  registerAllAdapters,
+} from "@contractor-ops/integrations";
 import { router } from "../init.js";
 import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
 import { syncWorkspaceUsers } from "../services/slack-client.js";
+
+// Ensure all provider adapters are registered before any procedure runs
+registerAllAdapters();
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -19,11 +33,12 @@ function plain<T>(data: T): T {
 }
 
 /**
- * Generate HMAC-signed state parameter for Slack OAuth.
+ * Generate HMAC-signed state parameter for Slack OAuth (legacy).
  * Contains orgId + userId + timestamp for CSRF protection.
  * Per research pitfall 6: HMAC-signed state prevents CSRF attacks.
+ * @deprecated Use generateOAuthState from @contractor-ops/integrations for new providers.
  */
-function generateOAuthState(
+function generateSlackOAuthState(
   orgId: string,
   userId: string,
   secret: string,
@@ -90,7 +105,7 @@ export const integrationRouter = router({
         });
       }
 
-      const state = generateOAuthState(
+      const state = generateSlackOAuthState(
         ctx.organizationId,
         ctx.user!.id,
         signingSecret,
@@ -291,5 +306,190 @@ export const integrationRouter = router({
       }
 
       return syncWorkspaceUsers(ctx.organizationId, connection.id);
+    }),
+
+  // -------------------------------------------------------------------------
+  // Generic provider procedures (multi-provider support)
+  // -------------------------------------------------------------------------
+
+  /**
+   * Get health status for all registered providers.
+   * Returns one entry per adapter, including disconnected providers.
+   */
+  getAllHealth: tenantProcedure.query(async ({ ctx }) => {
+    const results = await getAllProviderHealth(ctx.organizationId);
+    return plain(results);
+  }),
+
+  /**
+   * Get health status for a single provider.
+   * Used for individual card refresh with 30-second polling.
+   */
+  getHealth: tenantProcedure
+    .input(providerSlugSchema)
+    .query(async ({ ctx, input }) => {
+      const result = await getProviderHealth(
+        ctx.organizationId,
+        input.provider,
+      );
+      return plain(result);
+    }),
+
+  /**
+   * Generate an OAuth authorization URL for any registered provider.
+   * Admin only. Uses the adapter's OAuthConfig and HMAC-signed state.
+   */
+  getOAuthUrlGeneric: tenantProcedure
+    .use(requirePermission({ organization: ["update"] }))
+    .input(providerSlugSchema)
+    .query(async ({ ctx, input }) => {
+      const adapter = getAdapter(input.provider);
+      if (!adapter?.supportsOAuth || !adapter.getOAuthConfig) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `Provider "${input.provider}" does not support OAuth.`,
+        });
+      }
+
+      const oauthConfig = adapter.getOAuthConfig();
+      const clientId = process.env[oauthConfig.clientIdEnvVar];
+      const clientSecret = process.env[oauthConfig.clientSecretEnvVar];
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+
+      if (!clientId || !clientSecret || !appUrl) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: `Provider "${input.provider}" is not configured. Missing ${oauthConfig.clientIdEnvVar} or ${oauthConfig.clientSecretEnvVar}.`,
+        });
+      }
+
+      const redirectUri = `${appUrl}${oauthConfig.redirectPath}`;
+      const state = generateOAuthState(
+        input.provider,
+        ctx.organizationId,
+        ctx.user!.id,
+        clientSecret,
+      );
+
+      const params = new URLSearchParams({
+        client_id: clientId,
+        scope: oauthConfig.scopes.join(","),
+        redirect_uri: redirectUri,
+        state,
+      });
+
+      const url = `${oauthConfig.authorizationUrl}?${params.toString()}`;
+      return { url };
+    }),
+
+  /**
+   * Disconnect any provider. Admin only.
+   * Sets status to DISCONNECTED and clears credentials reference.
+   */
+  disconnectGeneric: tenantProcedure
+    .use(requirePermission({ organization: ["update"] }))
+    .input(disconnectProviderSchema)
+    .mutation(async ({ ctx, input }) => {
+      const connection = await prisma.integrationConnection.findFirst({
+        where: {
+          organizationId: ctx.organizationId,
+          provider: input.provider.toUpperCase() as "SLACK",
+        },
+      });
+
+      if (!connection) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: `No ${input.provider} integration found`,
+        });
+      }
+
+      await prisma.integrationConnection.update({
+        where: { id: connection.id },
+        data: {
+          status: "DISCONNECTED",
+          credentialsRef: "",
+        },
+      });
+
+      return { success: true };
+    }),
+
+  /**
+   * Get paginated sync log for a provider connection.
+   * Cursor-based pagination for the detail sheet.
+   */
+  getSyncLog: tenantProcedure
+    .input(getSyncLogSchema)
+    .query(async ({ ctx, input }) => {
+      const connection = await prisma.integrationConnection.findFirst({
+        where: {
+          organizationId: ctx.organizationId,
+          provider: input.provider.toUpperCase() as "SLACK",
+        },
+        select: { id: true },
+      });
+
+      if (!connection) {
+        return { items: [], nextCursor: null };
+      }
+
+      const items = await prisma.integrationSyncLog.findMany({
+        where: { integrationConnectionId: connection.id },
+        orderBy: { startedAt: "desc" },
+        take: input.limit + 1,
+        ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
+        select: {
+          id: true,
+          syncType: true,
+          status: true,
+          direction: true,
+          errorMessage: true,
+          startedAt: true,
+          completedAt: true,
+        },
+      });
+
+      let nextCursor: string | null = null;
+      if (items.length > input.limit) {
+        const lastItem = items.pop()!;
+        nextCursor = lastItem.id;
+      }
+
+      return plain({ items, nextCursor });
+    }),
+
+  /**
+   * Get paginated webhook delivery log for a provider.
+   * Cursor-based pagination for the detail sheet.
+   */
+  getWebhookLog: tenantProcedure
+    .input(getWebhookLogSchema)
+    .query(async ({ ctx, input }) => {
+      const items = await prisma.webhookDelivery.findMany({
+        where: {
+          organizationId: ctx.organizationId,
+          provider: input.provider.toUpperCase() as "SLACK",
+        },
+        orderBy: { receivedAt: "desc" },
+        take: input.limit + 1,
+        ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
+        select: {
+          id: true,
+          eventType: true,
+          deliveryStatus: true,
+          receivedAt: true,
+          processedAt: true,
+          errorMessage: true,
+        },
+      });
+
+      let nextCursor: string | null = null;
+      if (items.length > input.limit) {
+        const lastItem = items.pop()!;
+        nextCursor = lastItem.id;
+      }
+
+      return plain({ items, nextCursor });
     }),
 });

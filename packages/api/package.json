@@ -37,6 +37,7 @@
   "dependencies": {
     "@contractor-ops/auth": "workspace:*",
     "@contractor-ops/db": "workspace:*",
+    "@contractor-ops/integrations": "workspace:*",
     "@contractor-ops/validators": "workspace:*",
     "@react-email/components": "^1.0.10",
     "@slack/web-api": "^7.15.0",

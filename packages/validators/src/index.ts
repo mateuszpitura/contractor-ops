@@ -177,11 +177,21 @@ export {
   slackOAuthInitSchema,
   slackUserLinkSchema,
   slackUserUnlinkSchema,
+  providerSlugSchema,
+  disconnectProviderSchema,
+  getProviderHealthSchema,
+  getSyncLogSchema,
+  getWebhookLogSchema,
 } from "./integration.js";
 export type {
   SlackOAuthInitInput,
   SlackUserLinkInput,
   SlackUserUnlinkInput,
+  ProviderSlugInput,
+  DisconnectProviderInput,
+  GetProviderHealthInput,
+  GetSyncLogInput,
+  GetWebhookLogInput,
 } from "./integration.js";
 
 export {

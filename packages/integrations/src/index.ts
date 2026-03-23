@@ -49,6 +49,12 @@ export {
   queueWebhookProcessing,
 } from "./services/webhook-dispatcher.js";
 
+// Health Service
+export {
+  getProviderHealth,
+  getAllProviderHealth,
+} from "./services/health-service.js";
+
 // Adapters
 export { BaseAdapter } from "./adapters/base-adapter.js";
 export { SlackAdapter } from "./adapters/slack-adapter.js";
