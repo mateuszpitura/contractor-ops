@@ -108,7 +108,7 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 15-01-PLAN.md — DB schema (SigningEnvelope, SigningRecipient, SigningEvent), ESignAdapter interface, ContractStatus extensions, Wave 0 test stubs
+- [x] 15-01-PLAN.md — DB schema (SigningEnvelope, SigningRecipient, SigningEvent), ESignAdapter interface, ContractStatus extensions, Wave 0 test stubs
 - [x] 15-02-PLAN.md — DocuSign + Autenti adapter implementations, adapter registration, provider-agnostic e-sign service
 - [ ] 15-03-PLAN.md — tRPC e-sign router, business orchestrator, webhook handler, signed PDF storage, CSP config
 - [ ] 15-04-PLAN.md — Send for Signature UI (dialog, progress bar, embedded modal, audit trail), portal pending signatures
@@ -211,7 +211,7 @@ Phases execute in numeric order: 12 → 13 → 14 → 15 → 16 → 17 → 18 �
 | 12. Integration Foundation | v2.0 | 5/5 | Complete    | 2026-03-23 |
 | 13. Contractor Portal Auth & Core Views | v2.0 | 5/5 | Complete    | 2026-03-23 |
 | 14. Portal Self-Service & Branding | v2.0 | 5/5 | Complete    | 2026-03-23 |
-| 15. E-Sign Integration | v2.0 | 1/4 | In Progress|  |
+| 15. E-Sign Integration | v2.0 | 2/4 | In Progress|  |
 | 16. OCR Invoice Parsing | v2.0 | 0/0 | Not started | - |
 | 17. KSeF Integration | v2.0 | 0/0 | Not started | - |
 | 18. Time Tracking | v2.0 | 0/0 | Not started | - |
