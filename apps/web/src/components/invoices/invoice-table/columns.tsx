@@ -16,6 +16,7 @@ import {
   Upload,
   Mail,
 } from "lucide-react";
+import { KsefSourceBadge } from "@/components/invoices/ksef-badge";
 
 // ---------------------------------------------------------------------------
 // Row type matching the tRPC invoice.list response shape
@@ -324,12 +325,15 @@ export function getColumns(t: TranslateFunction): ColumnDef<InvoiceRow>[] {
       enableSorting: false,
     },
 
-    // 11. Source (icon only)
+    // 11. Source (icon only, KSeF badge for KSEF source)
     {
       accessorKey: "source",
       header: t("columns.source"),
       cell: ({ row }) => {
         const source = row.original.source;
+        if (source === "KSEF") {
+          return <KsefSourceBadge />;
+        }
         if (source === "MANUAL_UPLOAD") {
           return <Upload className="h-4 w-4 text-muted-foreground" />;
         }

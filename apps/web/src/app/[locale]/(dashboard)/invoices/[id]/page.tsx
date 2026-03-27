@@ -24,6 +24,9 @@ import { InvoiceDetailLayout } from "@/components/invoices/invoice-detail/invoic
 import { InvoiceMetadataForm } from "@/components/invoices/invoice-detail/invoice-metadata-form";
 import { MatchCard } from "@/components/invoices/invoice-detail/match-card";
 import { DuplicateWarning } from "@/components/invoices/invoice-detail/duplicate-warning";
+import { KsefMetadataSection } from "@/components/invoices/ksef-metadata-section";
+import { KsefDuplicateBanner } from "@/components/invoices/ksef-duplicate-banner";
+import { KsefSourceBadge } from "@/components/invoices/ksef-badge";
 import { ChainTracker } from "@/components/approvals/chain-tracker";
 import { AuditTimeline } from "@/components/approvals/audit-timeline";
 
@@ -214,6 +217,21 @@ export default function InvoiceDetailPage() {
   const explanationJson = latestMatchResult?.explanationJson as any;
   const duplicateInvoiceId = explanationJson?.duplicateInvoiceId ?? null;
 
+  // KSeF metadata detection
+  const isKsefSource = invoice.source === "KSEF";
+  const ksefReference = invoice.externalInvoiceId as string | null;
+  const ksefUpoReceipt = invoice.sourceReference as string | null;
+
+  // KSeF duplicate detection (manual invoice with KSeF duplicate)
+  const flagsObj =
+    typeof invoice.flagsJson === "object" &&
+    invoice.flagsJson !== null &&
+    !Array.isArray(invoice.flagsJson)
+      ? (invoice.flagsJson as Record<string, unknown>)
+      : null;
+  const hasKsefDuplicate = flagsObj?.duplicateSource === "KSEF";
+  const ksefDuplicateId = (flagsObj?.duplicateOf as string) ?? null;
+
   // Approval visibility conditions
   const hasApprovalFlow =
     invoice.status === "APPROVAL_PENDING" ||
@@ -261,12 +279,25 @@ export default function InvoiceDetailPage() {
             {t(`status.${statusConfig.label}`)}
           </Badge>
         )}
-        <SourceIcon className="h-4 w-4 text-muted-foreground" />
+        {isKsefSource ? (
+          <KsefSourceBadge fetchedAt={invoice.receivedAt} />
+        ) : (
+          <SourceIcon className="h-4 w-4 text-muted-foreground" />
+        )}
       </div>
 
       {/* Side-by-side layout */}
       <InvoiceDetailLayout pdfUrl={pdfUrl}>
-        {/* Duplicate warning (conditional) */}
+        {/* KSeF duplicate banner (manual invoice with KSeF duplicate) */}
+        {hasKsefDuplicate && ksefDuplicateId && (
+          <KsefDuplicateBanner
+            duplicateInvoiceId={ksefDuplicateId}
+            invoiceNumber={invoice.invoiceNumber}
+            sellerNip={invoice.sellerTaxId ?? ""}
+          />
+        )}
+
+        {/* Standard duplicate warning (conditional) */}
         {hasDuplicateFlag && (
           <DuplicateWarning
             invoiceId={invoice.id}
@@ -277,6 +308,16 @@ export default function InvoiceDetailPage() {
                 queryKey: trpc.invoice.getById.queryKey({ id: invoice.id }),
               });
             }}
+          />
+        )}
+
+        {/* KSeF metadata section (KSeF-sourced invoices) */}
+        {isKsefSource && ksefReference && (
+          <KsefMetadataSection
+            ksefReference={ksefReference}
+            upoReceipt={ksefUpoReceipt}
+            fetchedAt={invoice.receivedAt ?? invoice.createdAt}
+            source={invoice.source}
           />
         )}
 
