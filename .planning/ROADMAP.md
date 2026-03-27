@@ -51,7 +51,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
   2. External webhook payloads are received, HMAC-verified, stored in a webhook event log, and processed asynchronously
   3. Admin can view a dashboard showing connection health status and last sync time for each connected provider
   4. Token refresh runs proactively before expiry without admin intervention
-**Plans**: 5 plans
+**Plans**: 6 plans
 
 Plans:
 - [x] 12-01-PLAN.md — Package scaffolding, type contracts, credential service, DB migration
@@ -157,6 +157,7 @@ Plans:
 **Plans**: 5 plans
 
 Plans:
+- [ ] 18-00-PLAN.md — Wave 0 test stubs for all time tracking requirements (Nyquist compliance)
 - [ ] 18-01-PLAN.md — DB schema (Timesheet, TimeEntry), validators, time entry service with status machine
 - [ ] 18-02-PLAN.md — Clockify + Jira integration adapters, sync services for external time import
 - [ ] 18-03-PLAN.md — Portal time tRPC router, portal time page, weekly timesheet grid, single entry form, sync buttons
