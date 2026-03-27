@@ -121,11 +121,12 @@ Plans:
   1. When a PDF invoice is uploaded, the system auto-extracts NIP, invoice number, date, amount, and line items without user intervention
   2. Each extracted field displays a confidence score so the user knows which fields may need correction
   3. User can review OCR results in a side-by-side view (original PDF on left, extracted fields with edit-in-place on right) before accepting
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 16-01: TBD
-- [ ] 16-02: TBD
+- [ ] 16-01-PLAN.md — OcrExtraction DB schema, OcrAdapter interface, Claude Vision adapter, OCR service, tRPC router, QStash callback
+- [ ] 16-02-PLAN.md — PDF viewer (react-pdf), confidence badges, field wrappers, NIP validation, status bar, processing overlay, line items table
+- [ ] 16-03-PLAN.md — OcrReviewPanel split container, admin upload OCR trigger, portal form OCR pre-fill, human verification
 
 ### Phase 17: KSeF Integration
 **Goal**: Invoices issued to the org's NIP are automatically pulled from the national KSeF system and flow into the existing matching and approval pipeline
@@ -212,7 +213,7 @@ Phases execute in numeric order: 12 → 13 → 14 → 15 → 16 → 17 → 18 �
 | 13. Contractor Portal Auth & Core Views | v2.0 | 5/5 | Complete    | 2026-03-23 |
 | 14. Portal Self-Service & Branding | v2.0 | 5/5 | Complete    | 2026-03-23 |
 | 15. E-Sign Integration | v2.0 | 4/4 | Complete    | 2026-03-27 |
-| 16. OCR Invoice Parsing | v2.0 | 0/0 | Not started | - |
+| 16. OCR Invoice Parsing | v2.0 | 0/3 | Not started | - |
 | 17. KSeF Integration | v2.0 | 0/0 | Not started | - |
 | 18. Time Tracking | v2.0 | 0/0 | Not started | - |
 | 19. Jira Integration | v2.0 | 0/0 | Not started | - |
