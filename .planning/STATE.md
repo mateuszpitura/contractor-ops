@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Platform Expansion
-status: Ready to plan
-stopped_at: Phase 17 planned (3 plans, 3 waves)
-last_updated: "2026-03-27T17:13:05.651Z"
+status: Ready to execute
+stopped_at: Completed 17-01-PLAN.md
+last_updated: "2026-03-27T17:23:58.815Z"
 progress:
   total_phases: 9
   completed_phases: 5
   total_plans: 25
-  completed_plans: 22
+  completed_plans: 23
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-23)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 16 — ocr-invoice-parsing
+**Current focus:** Phase 17 — ksef-integration
 
 ## Current Position
 
-Phase: 17
-Plan: Not started
+Phase: 17 (ksef-integration) — EXECUTING
+Plan: 2 of 3
 
 ## Performance Metrics
 
@@ -62,6 +62,7 @@ Plan: Not started
 | Phase 16 P02 | 3min | 2 tasks | 8 files |
 | Phase 16 P01 | 19min | 2 tasks | 15 files |
 | Phase 16 P03 | 15min | 3 tasks | 4 files |
+| Phase 17 P01 | 6min | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -105,6 +106,8 @@ Recent decisions affecting current work:
 - [Phase 16]: NIP modulo-11 checksum caps confidence to 40, amount cross-validation caps to 60
 - [Phase 16]: OcrReviewPanel uses local useState (not react-hook-form) since parent form handles submission
 - [Phase 16]: Portal form gets inline confidence badges without full split panel per UI-SPEC admin vs portal distinction
+- [Phase 17]: Added @contractor-ops/validators as workspace dependency for integrations package
+- [Phase 17]: Used generateKeyPairSync in tests for real RSA key pair instead of fake PEM
 
 ### Pending Todos
 
@@ -119,6 +122,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-27T17:13:05.646Z
-Stopped at: Phase 17 planned (3 plans, 3 waves)
-Resume file: .planning/phases/17-ksef-integration/17-01-PLAN.md
+Last session: 2026-03-27T17:23:58.813Z
+Stopped at: Completed 17-01-PLAN.md
+Resume file: None
