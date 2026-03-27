@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import type { PrismaClient } from "@contractor-ops/db";
+import { computeTimeReconciliation } from "./time-reconciliation.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -59,6 +60,8 @@ export async function runAutoMatch(
     totalGrosze: number;
     currency: string;
     duplicateCheckHash: string | null;
+    servicePeriodStart?: Date | null;
+    servicePeriodEnd?: Date | null;
   },
   deviationThresholdPercent = 10,
 ): Promise<MatchResult> {
@@ -202,6 +205,35 @@ export async function runAutoMatch(
 
     if (bestContract.currency !== invoice.currency) {
       flags.push("CURRENCY_MISMATCH");
+    }
+
+    // Time-based reconciliation (Phase 18 - D-13)
+    // Warning only: does NOT change matchStatus or block approval (D-15)
+    if (
+      bestContract.rateType === "PER_HOUR" ||
+      bestContract.rateType === "PER_DAY"
+    ) {
+      // Use invoice service period or fall back to issueDate +/- 30 days
+      const now = new Date();
+      const periodStart =
+        invoice.servicePeriodStart ??
+        new Date(now.getFullYear(), now.getMonth(), 1);
+      const periodEnd =
+        invoice.servicePeriodEnd ??
+        new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+      const timeRecon = await computeTimeReconciliation(
+        prisma,
+        organizationId,
+        bestContract.id,
+        periodStart,
+        periodEnd,
+        invoice.totalGrosze,
+      );
+
+      if (timeRecon && !timeRecon.withinThreshold) {
+        flags.push("TIME_DEVIATION");
+      }
     }
   }
 

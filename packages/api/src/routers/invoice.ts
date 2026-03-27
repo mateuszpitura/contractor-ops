@@ -443,6 +443,8 @@ export const invoiceRouter = router({
           totalGrosze: invoice.totalGrosze,
           currency: invoice.currency,
           duplicateCheckHash: invoice.duplicateCheckHash,
+          servicePeriodStart: invoice.servicePeriodStart,
+          servicePeriodEnd: invoice.servicePeriodEnd,
         },
         deviationThreshold,
       );

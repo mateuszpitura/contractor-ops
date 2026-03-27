@@ -7,6 +7,7 @@ import {
   bulkApproveTimesheetsSchema,
   bulkRejectTimesheetsSchema,
   listTimesheetsSchema,
+  timeReconciliationSchema,
 } from "@contractor-ops/validators";
 import { router } from "../init.js";
 import { tenantProcedure } from "../middleware/tenant.js";
@@ -17,6 +18,7 @@ import {
   bulkApproveTimesheets,
   bulkRejectTimesheets,
 } from "../services/time-entry.js";
+import { computeTimeReconciliation } from "../services/time-reconciliation.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -323,5 +325,209 @@ export const timeRouter = router({
         input.reason,
       );
       return { count: result.count };
+    }),
+
+  // =========================================================================
+  // Reconciliation queries (Phase 18, Plan 05)
+  // =========================================================================
+
+  /**
+   * Get reconciliation data for a specific contract and period.
+   * Returns null for non-hourly/daily contracts or when no approved time exists.
+   */
+  getReconciliation: tenantProcedure
+    .use(requirePermission({ time: ["read"] }))
+    .input(timeReconciliationSchema)
+    .query(async ({ ctx, input }) => {
+      const result = await computeTimeReconciliation(
+        prisma,
+        ctx.organizationId,
+        input.contractId,
+        new Date(input.periodStart),
+        new Date(input.periodEnd),
+        input.invoicedAmountGrosze,
+      );
+      return plain(result);
+    }),
+
+  /**
+   * Get reconciliation data for a specific invoice.
+   * Looks up the invoice's matched contract, determines period from
+   * servicePeriodStart/End or issueDate, and computes reconciliation.
+   */
+  getInvoiceReconciliation: tenantProcedure
+    .use(requirePermission({ time: ["read"] }))
+    .input(z.object({ invoiceId: z.string().min(1) }))
+    .query(async ({ ctx, input }) => {
+      const invoice = await prisma.invoice.findFirst({
+        where: {
+          id: input.invoiceId,
+          organizationId: ctx.organizationId,
+          deletedAt: null,
+        },
+        select: {
+          contractId: true,
+          totalGrosze: true,
+          servicePeriodStart: true,
+          servicePeriodEnd: true,
+          issueDate: true,
+        },
+      });
+
+      if (!invoice || !invoice.contractId) return null;
+
+      // Determine period from service period or fall back to month of issue date
+      const issueDate = invoice.issueDate;
+      const periodStart =
+        invoice.servicePeriodStart ??
+        new Date(
+          Date.UTC(issueDate.getUTCFullYear(), issueDate.getUTCMonth(), 1),
+        );
+      const periodEnd =
+        invoice.servicePeriodEnd ??
+        new Date(
+          Date.UTC(
+            issueDate.getUTCFullYear(),
+            issueDate.getUTCMonth() + 1,
+            0,
+          ),
+        );
+
+      const result = await computeTimeReconciliation(
+        prisma,
+        ctx.organizationId,
+        invoice.contractId,
+        periodStart,
+        periodEnd,
+        invoice.totalGrosze,
+      );
+
+      return plain(result);
+    }),
+
+  /**
+   * List invoices with time reconciliation data for admin overview.
+   * Only includes invoices with matched PER_HOUR or PER_DAY contracts.
+   * Sorted by deviation percentage descending (highest first per UI-SPEC).
+   */
+  listReconciliations: tenantProcedure
+    .use(requirePermission({ time: ["read"] }))
+    .input(
+      z.object({
+        from: z.string().date().optional(),
+        to: z.string().date().optional(),
+        cursor: z.string().optional(),
+        limit: z.number().int().min(1).max(100).default(20),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const invoiceWhere: Record<string, any> = {
+        organizationId: ctx.organizationId,
+        deletedAt: null,
+        contractId: { not: null },
+        contract: {
+          rateType: { in: ["PER_HOUR", "PER_DAY"] },
+        },
+      };
+
+      if (input.from || input.to) {
+        invoiceWhere.issueDate = {};
+        if (input.from) invoiceWhere.issueDate.gte = new Date(input.from);
+        if (input.to) invoiceWhere.issueDate.lte = new Date(input.to);
+      }
+
+      const invoices = await prisma.invoice.findMany({
+        where: invoiceWhere,
+        take: input.limit + 1,
+        ...(input.cursor
+          ? { cursor: { id: input.cursor }, skip: 1 }
+          : {}),
+        orderBy: { issueDate: "desc" },
+        include: {
+          contractor: {
+            select: { id: true, legalName: true },
+          },
+          contract: {
+            select: {
+              id: true,
+              title: true,
+              rateType: true,
+              rateValueGrosze: true,
+            },
+          },
+        },
+      });
+
+      let nextCursor: string | undefined;
+      if (invoices.length > input.limit) {
+        const extra = invoices.pop();
+        nextCursor = extra?.id;
+      }
+
+      // Compute reconciliation for each invoice
+      const items = await Promise.all(
+        invoices.map(async (inv) => {
+          if (!inv.contractId) return null;
+
+          const issueDate = inv.issueDate;
+          const periodStart =
+            inv.servicePeriodStart ??
+            new Date(
+              Date.UTC(
+                issueDate.getUTCFullYear(),
+                issueDate.getUTCMonth(),
+                1,
+              ),
+            );
+          const periodEnd =
+            inv.servicePeriodEnd ??
+            new Date(
+              Date.UTC(
+                issueDate.getUTCFullYear(),
+                issueDate.getUTCMonth() + 1,
+                0,
+              ),
+            );
+
+          const reconciliation = await computeTimeReconciliation(
+            prisma,
+            ctx.organizationId,
+            inv.contractId,
+            periodStart,
+            periodEnd,
+            inv.totalGrosze,
+          );
+
+          if (!reconciliation) return null;
+
+          return {
+            invoice: {
+              id: inv.id,
+              invoiceNumber: inv.invoiceNumber,
+              issueDate: inv.issueDate,
+              totalGrosze: inv.totalGrosze,
+              currency: inv.currency,
+              servicePeriodStart: inv.servicePeriodStart,
+              servicePeriodEnd: inv.servicePeriodEnd,
+            },
+            contractor: inv.contractor,
+            reconciliation,
+          };
+        }),
+      );
+
+      // Filter out nulls and sort by deviation percent descending
+      const filtered = items
+        .filter(
+          (item): item is NonNullable<typeof item> => item !== null,
+        )
+        .sort(
+          (a, b) =>
+            b.reconciliation.deviationPercent -
+            a.reconciliation.deviationPercent,
+        );
+
+      return plain({ items: filtered, nextCursor });
     }),
 });
