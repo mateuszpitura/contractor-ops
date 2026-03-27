@@ -109,6 +109,7 @@ enum IntegrationProvider {
   OPEN_BANKING
   GITHUB
   GITLAB
+  CLOCKIFY
 }
 
 enum IntegrationStatus {

@@ -63,6 +63,9 @@ model User {
 
   // E-sign relations
   sentSigningEnvelopes SigningEnvelope[] @relation("SigningEnvelopeSender")
+
+  // Time tracking relations
+  reviewedTimesheets   Timesheet[] @relation("TimesheetReviewer")
 }
 
 model Session {
