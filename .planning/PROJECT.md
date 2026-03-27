@@ -18,6 +18,8 @@ All 14 product modules delivered: org setup, RBAC, contractors, contracts, docum
 
 **Phase 14 complete** — Portal self-service with profile edit (contact info immediate save, financial fields via approval workflow with change request service), notification preferences (5 categories with optimistic toggle, SECURITY_ALERTS immutable), org branding (CSS custom property injection, admin color picker + logo upload, live preview), subdomain routing ({slug}.portal.{domain} via Next.js middleware with portal layout and auth wiring), and admin change request review (diff cards with approve/reject in approvals page). 4 API test stub files created per VALIDATION.md contract.
 
+**Phase 15 complete** — E-sign integration with DocuSign + Autenti dual provider support via provider-agnostic adapter layer. Send-for-signature from contract header and per-document in Documents tab with full setup dialog (provider picker, drag-to-reorder signers, document preview, expiry/reminders). Embedded signing modal (DocuSign iframe + Autenti redirect fallback), sequential multi-party signing with routingOrder, webhook-driven status updates with completion signal pattern (no circular imports), automatic signed PDF download and Document record creation. Portal pending signatures with Sign Now. Signing progress bar, status badges, and audit trail sheet.
+
 ## Requirements
 
 ### Validated — v1.0
@@ -146,4 +148,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-23 after Phase 14 (portal-self-service-branding) completion*
+*Last updated: 2026-03-27 after Phase 15 (e-sign-integration) completion*
