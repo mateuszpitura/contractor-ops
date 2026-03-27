@@ -214,7 +214,7 @@ Phases execute in numeric order: 12 → 13 → 14 → 15 → 16 → 17 → 18 �
 | 14. Portal Self-Service & Branding | v2.0 | 5/5 | Complete    | 2026-03-23 |
 | 15. E-Sign Integration | v2.0 | 4/4 | Complete    | 2026-03-27 |
 | 16. OCR Invoice Parsing | v2.0 | 3/3 | Complete    | 2026-03-27 |
-| 17. KSeF Integration | v2.0 | 3/3 | Complete   | 2026-03-27 |
+| 17. KSeF Integration | v2.0 | 3/3 | Complete    | 2026-03-27 |
 | 18. Time Tracking | v2.0 | 0/0 | Not started | - |
 | 19. Jira Integration | v2.0 | 0/0 | Not started | - |
 | 20. Documentation & Calendar | v2.0 | 0/0 | Not started | - |
