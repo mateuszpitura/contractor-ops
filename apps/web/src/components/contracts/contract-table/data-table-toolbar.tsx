@@ -99,13 +99,13 @@ export function DataTableToolbar({
 
         {/* Import CTA */}
         {onImport && (
-          <Button size="sm" variant="outline" className="h-9" onClick={onImport}>
+          <Button size="lg" variant="outline" onClick={onImport}>
             {t("import")}
           </Button>
         )}
 
         {/* New contract CTA */}
-        <Button size="sm" className="h-9" onClick={onNewContract}>
+        <Button size="lg" onClick={onNewContract}>
           {t("newContract")}
         </Button>
       </div>

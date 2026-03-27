@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { X, Loader2, ExternalLink } from "lucide-react";
 
+import { useTranslations } from "next-intl";
 import { trpc } from "@/trpc/init";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -41,6 +42,9 @@ export function EmbeddedSigningModal({
   onOpenChange,
   onComplete,
 }: EmbeddedSigningModalProps) {
+  const tAria = useTranslations("Common.aria");
+  const t = useTranslations("ContractDetail.signing.modal");
+  const tToast = useTranslations("ContractDetail.signing.toast");
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const returnUrl =
@@ -73,20 +77,20 @@ export function EmbeddedSigningModal({
           event.data === "signing_complete" ||
           event.data.includes("signing_complete")
         ) {
-          toast.success("Document signed successfully");
+          toast.success(tToast("signedSuccess"));
           onComplete();
           onOpenChange(false);
         } else if (
           event.data === "decline" ||
           event.data.includes("decline")
         ) {
-          toast.error("Signing declined.");
+          toast.error(tToast("signingDeclined"));
           onOpenChange(false);
         } else if (
           event.data === "exception" ||
           event.data.includes("exception")
         ) {
-          toast.error("Signing could not be completed. Please try again.");
+          toast.error(tToast("signingFailed"));
           onOpenChange(false);
         }
       }
@@ -96,13 +100,13 @@ export function EmbeddedSigningModal({
         const data = event.data as { type?: string; event?: string };
         const eventType = data.type ?? data.event;
         if (eventType === "signing_complete") {
-          toast.success("Document signed successfully");
+          toast.success(tToast("signedSuccess"));
           onComplete();
           onOpenChange(false);
         }
       }
     },
-    [onComplete, onOpenChange]
+    [onComplete, onOpenChange, tToast]
   );
 
   useEffect(() => {
@@ -135,7 +139,7 @@ export function EmbeddedSigningModal({
           size="icon"
           className="size-8"
           onClick={() => onOpenChange(false)}
-          aria-label="Close signing modal"
+          aria-label={tAria("closeSigningModal")}
         >
           <X className="size-4" />
         </Button>
@@ -149,7 +153,7 @@ export function EmbeddedSigningModal({
             <div className="flex flex-col items-center gap-3">
               <Loader2 className="size-8 animate-spin text-muted-foreground" />
               <p className="text-sm text-muted-foreground">
-                Preparing signing session...
+                {t("preparing")}
               </p>
             </div>
           </div>
@@ -159,7 +163,7 @@ export function EmbeddedSigningModal({
             ref={iframeRef}
             src={signingData.url}
             className="h-full w-full border-0"
-            title={`Sign ${documentTitle}`}
+            title={t("signTitle", { title: documentTitle })}
             allow="camera; microphone"
           />
         ) : signingData?.url ? (
@@ -168,25 +172,23 @@ export function EmbeddedSigningModal({
             <Card className="max-w-[480px]">
               <CardContent className="flex flex-col items-center gap-4 p-6 text-center">
                 <p className="text-lg font-semibold">
-                  {provider === "AUTENTI" ? "Autenti" : "Complete Signing"}
+                  {provider === "AUTENTI" ? "Autenti" : t("completeSigning")}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  You will be redirected to{" "}
-                  {provider === "AUTENTI" ? "Autenti" : provider} to complete
-                  signing.
+                  {t("redirectMessage", { provider: provider === "AUTENTI" ? "Autenti" : provider })}
                 </p>
                 <div className="flex gap-3">
                   <Button
                     onClick={() => window.open(signingData.url, "_blank")}
                   >
                     <ExternalLink className="mr-1.5 size-4" />
-                    Continue to {provider === "AUTENTI" ? "Autenti" : provider}
+                    {t("continueToProvider", { provider: provider === "AUTENTI" ? "Autenti" : provider })}
                   </Button>
                   <Button
                     variant="outline"
                     onClick={() => onOpenChange(false)}
                   >
-                    Return to Contract
+                    {t("returnToContract")}
                   </Button>
                 </div>
               </CardContent>
@@ -197,10 +199,10 @@ export function EmbeddedSigningModal({
           <div className="flex h-full items-center justify-center">
             <div className="flex flex-col items-center gap-3 text-center">
               <p className="text-sm text-muted-foreground">
-                Unable to load signing session. Please try again.
+                {t("loadError")}
               </p>
               <Button variant="outline" onClick={() => onOpenChange(false)}>
-                Return to Contract
+                {t("returnToContract")}
               </Button>
             </div>
           </div>

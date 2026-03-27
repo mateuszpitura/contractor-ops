@@ -72,7 +72,6 @@ export function InvoiceSelectionDataTable({
               {headerGroup.headers.map((header) => (
                 <TableHead
                   key={header.id}
-                  className="whitespace-nowrap text-[13px]"
                   style={
                     header.column.getSize() !== 150
                       ? { width: header.column.getSize() }

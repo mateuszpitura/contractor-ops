@@ -19,8 +19,8 @@ export default function ErrorPage({
   return (
     <div className="flex min-h-screen flex-col items-center justify-center text-center px-4">
       <div className="space-y-4">
-        <p className="text-6xl font-bold text-muted-foreground/30">{t("code")}</p>
-        <h1 className="text-[20px] font-semibold">{t("heading")}</h1>
+        <p className="font-display text-6xl font-bold text-muted-foreground/20">{t("code")}</p>
+        <h1 className="font-display text-[22px] font-semibold">{t("heading")}</h1>
         <p className="max-w-md text-sm text-muted-foreground">
           {t("body")}
         </p>

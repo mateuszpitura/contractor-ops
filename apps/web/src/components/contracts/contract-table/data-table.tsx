@@ -8,8 +8,8 @@ import {
   type ColumnDef,
   type VisibilityState,
 } from "@tanstack/react-table";
-import { useQuery } from "@tanstack/react-query";
-import { FileText } from "lucide-react";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { ArrowDown, ArrowUp, ArrowUpDown, FileText, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { trpc } from "@/trpc/init";
@@ -50,6 +50,7 @@ export function ContractDataTable({
   onImport,
 }: ContractDataTableProps) {
   const t = useTranslations("Contracts");
+  const tAria = useTranslations("Common.aria");
 
   // URL-synced filter state
   const [filters, setFilters] = useContractFilters();
@@ -115,9 +116,10 @@ export function ContractDataTable({
   );
 
   // Fetch data via tRPC
-  const contractsQuery = useQuery(
-    trpc.contract.list.queryOptions(queryInput),
-  );
+  const contractsQuery = useQuery({
+    ...trpc.contract.list.queryOptions(queryInput),
+    placeholderData: keepPreviousData,
+  });
 
   const data = useMemo(() => {
     const result = contractsQuery.data as
@@ -135,7 +137,7 @@ export function ContractDataTable({
 
   // Column definitions
   const columns: ColumnDef<ContractRow>[] = useMemo(
-    () => getColumns((key: string) => t(key as Parameters<typeof t>[0])),
+    () => getColumns((key: string, params?: Record<string, string | number>) => t(key as Parameters<typeof t>[0], params)),
     [t],
   );
 
@@ -169,8 +171,12 @@ export function ContractDataTable({
           sortOrder: next[0]!.desc ? "desc" : "asc",
           page: 1,
         });
+      } else {
+        // Sort removed — reset to default
+        void setFilters({ sortBy: "endDate", sortOrder: "asc", page: 1 });
       }
     },
+    enableSortingRemoval: true,
     getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
     manualSorting: true,
@@ -231,8 +237,8 @@ export function ContractDataTable({
     });
   }, [setFilters]);
 
-  const isLoading = contractsQuery.isLoading;
-  const isSearching = contractsQuery.isFetching && !isLoading;
+  const isLoading = contractsQuery.isPending && !contractsQuery.data;
+  const isRefetching = contractsQuery.isFetching && !isLoading;
   const hasFiltersOrSearch =
     filters.search.length > 0 ||
     filters.status.length > 0 ||
@@ -259,7 +265,7 @@ export function ContractDataTable({
           complianceRiskLevel: filters.complianceRiskLevel,
         }}
         onFiltersChange={handleFiltersChange}
-        isSearching={isSearching}
+        isSearching={isRefetching}
         onNewContract={onNewContract}
         onImport={onImport}
       />
@@ -268,7 +274,13 @@ export function ContractDataTable({
       <DataTableBulkActions table={table} />
 
       {/* Table */}
-      <div className="rounded-xl border bg-background">
+      <div className="relative rounded-xl border bg-background">
+        {/* Refetch overlay */}
+        {isRefetching && (
+          <div className="absolute inset-0 z-10 flex items-start justify-center rounded-xl bg-background/60 pt-20">
+            <Loader2 className="h-5 w-5 animate-spin text-primary" />
+          </div>
+        )}
         <div className="flex items-center justify-end border-b px-4 py-2">
           <DataTableColumnToggle table={table} />
         </div>
@@ -280,22 +292,36 @@ export function ContractDataTable({
                 {headerGroup.headers.map((header) => (
                   <TableHead
                     key={header.id}
-                    className="whitespace-nowrap text-[13px]"
                     style={
                       header.column.getSize() !== 150
                         ? { width: header.column.getSize() }
                         : undefined
                     }
+                    aria-sort={
+                      header.column.getIsSorted() === "asc"
+                        ? "ascending"
+                        : header.column.getIsSorted() === "desc"
+                          ? "descending"
+                          : undefined
+                    }
                   >
                     {header.isPlaceholder ? null : header.column.getCanSort() ? (
                       <button
                         type="button"
-                        className="flex items-center gap-1 hover:text-foreground"
+                        className="flex items-center gap-1 uppercase hover:text-foreground"
                         onClick={header.column.getToggleSortingHandler()}
+                        aria-label={tAria("sortBy", { column: typeof header.column.columnDef.header === "string" ? header.column.columnDef.header : header.id })}
                       >
                         {flexRender(
                           header.column.columnDef.header,
                           header.getContext(),
+                        )}
+                        {header.column.getIsSorted() === "asc" ? (
+                          <ArrowUp className="h-3 w-3" />
+                        ) : header.column.getIsSorted() === "desc" ? (
+                          <ArrowDown className="h-3 w-3" />
+                        ) : (
+                          <ArrowUpDown className="h-3 w-3 opacity-40" />
                         )}
                       </button>
                     ) : (

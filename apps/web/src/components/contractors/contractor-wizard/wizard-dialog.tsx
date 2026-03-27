@@ -37,41 +37,57 @@ import { StepAssignment } from "./step-assignment";
 // Defined locally to avoid cross-package dependency from web -> validators
 // ---------------------------------------------------------------------------
 
+/** Validates a Polish NIP number using the mod-11 checksum algorithm. */
+const NIP_WEIGHTS = [6, 5, 7, 2, 3, 4, 5, 6, 7] as const;
+function isValidNip(raw: string): boolean {
+  const nip = raw.replace(/[\s-]/g, "");
+  if (!/^\d{10}$/.test(nip)) return false;
+  const digits = nip.split("").map(Number);
+  const checksum =
+    NIP_WEIGHTS.reduce((sum, w, i) => sum + w * digits[i]!, 0) % 11;
+  return checksum === digits[9];
+}
+
 const wizardSchema = z.object({
   legalName: z.string().min(1, "Legal name is required").max(255),
-  displayName: z.string().min(1).max(255),
+  displayName: z.string().max(255),
   type: z.enum(["SOLE_TRADER", "COMPANY", "INDIVIDUAL_FREELANCER", "OTHER"]),
-  taxId: z.string().min(1, "NIP is required"),
-  vatId: z.string().optional(),
-  registrationNumber: z.string().optional(),
+  taxId: z
+    .string()
+    .min(1, "NIP is required")
+    .refine((v) => isValidNip(v), { message: "Invalid NIP number" }),
+  vatId: z.string().transform((v) => v === "" ? undefined : v).pipe(z.string().optional()),
+  registrationNumber: z.string().transform((v) => v === "" ? undefined : v).pipe(z.string().optional()),
   email: z.string().email("Invalid email address"),
-  phone: z.string().optional(),
+  phone: z.string().transform((v) => v === "" ? undefined : v).pipe(z.string().optional()),
   countryCode: z.string().length(2),
   currency: z.string().length(3),
-  addressLine1: z.string().optional(),
-  addressLine2: z.string().optional(),
-  city: z.string().optional(),
-  postalCode: z.string().optional(),
+  addressLine1: z.string().transform((v) => v === "" ? undefined : v).pipe(z.string().optional()),
+  addressLine2: z.string().transform((v) => v === "" ? undefined : v).pipe(z.string().optional()),
+  city: z.string().transform((v) => v === "" ? undefined : v).pipe(z.string().optional()),
+  postalCode: z.string().transform((v) => v === "" ? undefined : v).pipe(z.string().optional()),
   billingModel: z.string().min(1, "Billing model is required"),
   rateValueGrosze: z.number().int().positive("Rate must be positive"),
-  bankAccount: z.string().optional(),
-  paymentTermsDays: z.number().int().positive().optional(),
+  bankAccount: z.string().transform((v) => v === "" ? undefined : v).pipe(z.string().optional()),
+  paymentTermsDays: z.preprocess(
+    (v) => (v === "" || v === undefined || (typeof v === "number" && isNaN(v)) ? undefined : v),
+    z.number().int().positive().optional(),
+  ),
   ownerUserId: z.string().min(1, "Owner is required"),
-  primaryTeamId: z.string().optional(),
-  primaryProjectId: z.string().optional(),
-  defaultCostCenterId: z.string().optional(),
+  primaryTeamId: z.string().transform((v) => v === "" ? undefined : v).pipe(z.string().min(1).optional()),
+  primaryProjectId: z.string().transform((v) => v === "" ? undefined : v).pipe(z.string().min(1).optional()),
+  defaultCostCenterId: z.string().transform((v) => v === "" ? undefined : v).pipe(z.string().min(1).optional()),
 });
 
 export type WizardFormValues = z.infer<typeof wizardSchema>;
 
 // Per-step validation schemas
 const stepSchemas = [
-  // Step 1: Company details
+  // Step 1: Company details (displayName auto-syncs from legalName)
   z.object({
     legalName: z.string().min(1),
-    displayName: z.string().min(1),
     type: z.enum(["SOLE_TRADER", "COMPANY", "INDIVIDUAL_FREELANCER", "OTHER"]),
-    taxId: z.string().min(1),
+    taxId: z.string().min(1).refine((v) => isValidNip(v), { message: "Invalid NIP number" }),
     email: z.string().email(),
   }),
   // Step 2: Billing
@@ -173,24 +189,24 @@ export function WizardDialog({ open, onOpenChange }: WizardDialogProps) {
       displayName: "",
       type: undefined,
       taxId: "",
-      vatId: "",
-      registrationNumber: "",
+      vatId: undefined,
+      registrationNumber: undefined,
       email: "",
-      phone: "",
+      phone: undefined,
       countryCode: "PL",
       currency: "PLN",
-      addressLine1: "",
-      addressLine2: "",
-      city: "",
-      postalCode: "",
+      addressLine1: undefined,
+      addressLine2: undefined,
+      city: undefined,
+      postalCode: undefined,
       billingModel: "",
       rateValueGrosze: 0,
-      bankAccount: "",
+      bankAccount: undefined,
       paymentTermsDays: undefined,
       ownerUserId: "",
-      primaryTeamId: "",
-      primaryProjectId: "",
-      defaultCostCenterId: "",
+      primaryTeamId: undefined,
+      primaryProjectId: undefined,
+      defaultCostCenterId: undefined,
     },
   });
 
@@ -201,8 +217,12 @@ export function WizardDialog({ open, onOpenChange }: WizardDialogProps) {
         queryClient.invalidateQueries({ queryKey: ["contractor"] });
         handleClose(true);
       },
-      onError: () => {
-        toast.error(t("error"));
+      onError: (error: unknown) => {
+        const message =
+          typeof error === "object" && error && "message" in error
+            ? String((error as { message?: unknown }).message ?? "")
+            : "";
+        toast.error(message || t("error"));
       },
     }),
   );
@@ -242,17 +262,18 @@ export function WizardDialog({ open, onOpenChange }: WizardDialogProps) {
     if (!isValid) return;
 
     if (currentStep < 2) {
+      // Auto-sync displayName from legalName if not set (no dedicated UI field)
+      if (currentStep === 0 && !form.getValues("displayName")) {
+        form.setValue("displayName", form.getValues("legalName"));
+      }
       setCurrentStep((s) => s + 1);
     } else {
-      // Final step — submit
-      form.handleSubmit((data) => {
-        // Ensure displayName defaults to legalName if empty
-        const submitData = {
-          ...data,
-          displayName: data.displayName || data.legalName,
-        };
-        createMutation.mutate(submitData);
-      })();
+      // Final step — all steps validated, submit directly
+      const data = form.getValues();
+      createMutation.mutate({
+        ...data,
+        displayName: data.displayName || data.legalName,
+      });
     }
   };
 
@@ -276,8 +297,15 @@ export function WizardDialog({ open, onOpenChange }: WizardDialogProps) {
           {/* Step indicator */}
           <StepIndicator steps={stepLabels} currentStep={currentStep} />
 
-          {/* Step content */}
-          <div className="min-h-[320px] px-1">
+          {/* Step content — prevent Enter from advancing steps */}
+          <div
+            className="min-h-[320px] px-1"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && e.target instanceof HTMLInputElement) {
+                e.preventDefault();
+              }
+            }}
+          >
             {currentStep === 0 && <StepCompany form={form} />}
             {currentStep === 1 && <StepBilling form={form} />}
             {currentStep === 2 && <StepAssignment form={form} />}
@@ -340,7 +368,7 @@ export function WizardDialog({ open, onOpenChange }: WizardDialogProps) {
             <AlertDialogCancel>{t("discardConfirm.keep")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDiscard}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              variant="destructive"
             >
               {t("discardConfirm.discard")}
             </AlertDialogAction>

@@ -7,6 +7,7 @@ import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 
 import { trpc } from "@/trpc/init";
+import { getAvatarInitials } from "@/lib/avatar-initials";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -96,7 +97,7 @@ export function TaskComments({ runId, taskRunId }: TaskCommentsProps) {
                   <AvatarImage src={comment.author.image} alt={comment.author?.name ?? ""} />
                 )}
                 <AvatarFallback className="text-xs">
-                  {(comment.author?.name ?? "U").charAt(0).toUpperCase()}
+                  {getAvatarInitials(comment.author?.name, comment.author?.email)}
                 </AvatarFallback>
               </Avatar>
               <div className="min-w-0 flex-1">

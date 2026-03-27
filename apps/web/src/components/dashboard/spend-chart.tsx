@@ -154,7 +154,7 @@ export function SpendChart() {
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle className="text-[20px] font-semibold">
+        <CardTitle className="font-display text-lg font-semibold">
           {t("spend.title")}
         </CardTitle>
         <RangeToggle value={spendRange} onChange={setSpendRange} t={t} />
@@ -171,7 +171,7 @@ export function SpendChart() {
             <AreaChart data={chartData}>
               <CartesianGrid
                 strokeDasharray="3 3"
-                stroke="hsl(var(--muted-foreground) / 0.15)"
+                stroke="color-mix(in oklch, var(--color-muted-foreground) 15%, transparent)"
               />
               <XAxis dataKey="month" fontSize={12} tickLine={false} axisLine={false} />
               <YAxis
@@ -187,8 +187,8 @@ export function SpendChart() {
                 type="monotone"
                 dataKey="PLN"
                 stackId="1"
-                stroke="hsl(var(--primary))"
-                fill="hsl(var(--primary) / 0.2)"
+                stroke="var(--color-chart-1)"
+                fill="color-mix(in oklch, var(--color-chart-1) 20%, transparent)"
                 strokeWidth={2}
               />
               {hasEur && (
@@ -196,8 +196,8 @@ export function SpendChart() {
                   type="monotone"
                   dataKey="EUR"
                   stackId="1"
-                  stroke="hsl(220 70% 55%)"
-                  fill="hsl(220 70% 55% / 0.2)"
+                  stroke="var(--color-chart-2)"
+                  fill="color-mix(in oklch, var(--color-chart-2) 20%, transparent)"
                   strokeWidth={2}
                 />
               )}

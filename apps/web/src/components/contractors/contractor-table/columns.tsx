@@ -4,6 +4,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getAvatarInitials } from "@/lib/avatar-initials";
 import { ComplianceHealthBadge } from "../compliance-health-badge";
 import { formatDistanceToNow } from "date-fns";
 
@@ -147,7 +148,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractorRow>[] {
             <Avatar className="h-6 w-6">
               {owner.image && <AvatarImage src={owner.image} alt="" />}
               <AvatarFallback className="text-[10px]">
-                {(owner.name ?? "?").slice(0, 2).toUpperCase()}
+                {getAvatarInitials(owner.name)}
               </AvatarFallback>
             </Avatar>
             <span className="text-sm">{owner.name ?? owner.id}</span>
@@ -168,7 +169,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractorRow>[] {
             ? (custom as Record<string, unknown>).billingModel
             : null;
         return model ? (
-          <span className="text-sm">{String(model)}</span>
+          <span className="text-sm">{t(`billingModel.${String(model)}`)}</span>
         ) : (
           <span className="text-muted-foreground">&mdash;</span>
         );

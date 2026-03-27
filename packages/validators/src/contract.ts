@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { optionalString, optionalFk, optionalPositiveInt } from "./helpers.js";
 
 // ---------------------------------------------------------------------------
 // Prisma enum mirrors (string unions — validators package has no Prisma dep)
@@ -75,13 +76,13 @@ export const contractCreateSchema = z
     rateValueGrosze: z.number().int().nonnegative().optional(),
     retainerAmountGrosze: z.number().int().nonnegative().optional(),
     expectedHoursPerPeriod: z.number().positive().optional(),
-    paymentTermsDays: z.number().int().positive().optional(),
+    paymentTermsDays: optionalPositiveInt,
     invoiceCycle: invoiceCycleEnum.optional(),
-    internalOwnerUserId: z.string().optional(),
-    teamId: z.string().optional(),
-    projectId: z.string().optional(),
-    costCenterId: z.string().optional(),
-    notes: z.string().optional(),
+    internalOwnerUserId: optionalFk,
+    teamId: optionalFk,
+    projectId: optionalFk,
+    costCenterId: optionalFk,
+    notes: optionalString,
   })
   .refine(
     (data) => {
@@ -118,10 +119,10 @@ const contractUpdateBaseSchema = z.object({
   expectedHoursPerPeriod: z.number().positive().nullable().optional(),
   paymentTermsDays: z.number().int().positive().nullable().optional(),
   invoiceCycle: invoiceCycleEnum.nullable().optional(),
-  internalOwnerUserId: z.string().nullable().optional(),
-  teamId: z.string().nullable().optional(),
-  projectId: z.string().nullable().optional(),
-  costCenterId: z.string().nullable().optional(),
+  internalOwnerUserId: z.preprocess((v) => v === "" ? null : v, z.string().min(1).nullable().optional()),
+  teamId: z.preprocess((v) => v === "" ? null : v, z.string().min(1).nullable().optional()),
+  projectId: z.preprocess((v) => v === "" ? null : v, z.string().min(1).nullable().optional()),
+  costCenterId: z.preprocess((v) => v === "" ? null : v, z.string().min(1).nullable().optional()),
   notes: z.string().nullable().optional(),
 });
 

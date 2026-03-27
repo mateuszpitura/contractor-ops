@@ -155,7 +155,7 @@ export function DataTableToolbar({
         <Popover>
           <PopoverTrigger
             render={(props) => (
-              <Button {...props} variant="outline" size="sm" className="h-9 gap-1.5">
+              <Button {...props} variant="outline" size="lg">
                 <Filter className="h-3.5 w-3.5" />
                 {t("filters")}
                 {hasActiveFilters && (
@@ -202,7 +202,7 @@ export function DataTableToolbar({
                 title={t("columns.billingModel")}
                 options={BILLING_MODELS.map((model) => ({
                   value: model,
-                  label: model,
+                  label: t(`billingModel.${model}`),
                 }))}
                 selected={filters.billingModel}
                 onToggle={(value) =>
@@ -229,13 +229,13 @@ export function DataTableToolbar({
 
         {/* Import CTA */}
         {onImport && (
-          <Button size="sm" variant="outline" className="h-9" onClick={onImport}>
+          <Button size="lg" variant="outline" onClick={onImport}>
             {t("import")}
           </Button>
         )}
 
         {/* Add contractor CTA */}
-        <Button size="sm" className="h-9" onClick={onAddContractor}>
+        <Button size="lg" onClick={onAddContractor}>
           {t("addContractor")}
         </Button>
       </div>
@@ -265,7 +265,7 @@ export function DataTableToolbar({
           {filters.billingModel.map((model) => (
             <FilterBadge
               key={`billing-${model}`}
-              label={model}
+              label={t(`billingModel.${model}`)}
               onRemove={() => removeFilter("billingModel", model)}
             />
           ))}
@@ -334,6 +334,8 @@ function FilterBadge({
   label: string;
   onRemove: () => void;
 }) {
+  const tAria = useTranslations("Common.aria");
+
   return (
     <Badge variant="secondary" className="gap-1 pl-2 pr-1 py-0.5">
       <span className="text-xs">{label}</span>
@@ -341,7 +343,7 @@ function FilterBadge({
         type="button"
         className="ml-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20"
         onClick={onRemove}
-        aria-label={`Remove filter: ${label}`}
+        aria-label={tAria("removeFilter", { label })}
       >
         <X className="h-3 w-3" />
       </button>

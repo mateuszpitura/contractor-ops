@@ -85,7 +85,7 @@ export const approvalQueueSchema = z.object({
     .default("all"),
   search: z.string().optional(),
   page: z.number().int().min(1).default(1),
-  pageSize: z.number().int().min(10).max(50).default(10),
+  pageSize: z.number().int().min(1).max(50).default(10),
   sortBy: z
     .enum(["slaDeadline", "submitted", "amount"])
     .default("slaDeadline"),

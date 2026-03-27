@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { useTranslations } from "next-intl";
 
@@ -63,6 +64,21 @@ interface StepFinancialProps {
 export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
   const t = useTranslations("Contracts.wizard");
 
+  const billingModelItems = BILLING_MODELS.map((m) => ({
+    value: m,
+    label: t(`billingModelOptions.${m}`),
+  }));
+
+  const rateTypeItems = RATE_TYPES.map((rt) => ({
+    value: rt,
+    label: t(`rateTypeOptions.${rt}`),
+  }));
+
+  const invoiceCycleItems = INVOICE_CYCLES.map((c) => ({
+    value: c,
+    label: t(`invoiceCycleOptions.${c}`),
+  }));
+
   const {
     register,
     setValue,
@@ -73,24 +89,43 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
   const rateValueGrosze = watch("rateValueGrosze");
   const currency = watch("currency") ?? "PLN";
 
-  // Rate display: store as grosze, display as zloty/euro/dollar
-  const rateDisplay =
+  // Local state for rate input — prevents cursor jumping during typing.
+  // Syncs to form (grosze) on blur only.
+  const [rateLocal, setRateLocal] = React.useState(() =>
     typeof rateValueGrosze === "number" && rateValueGrosze > 0
-      ? (rateValueGrosze / 100).toFixed(2)
-      : "";
+      ? (rateValueGrosze / 100).toString()
+      : "",
+  );
 
-  const handleRateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseFloat(e.target.value);
+  // Sync from form → local when form value changes externally (e.g. pre-fill)
+  React.useEffect(() => {
+    const fromForm =
+      typeof rateValueGrosze === "number" && rateValueGrosze > 0
+        ? (rateValueGrosze / 100).toString()
+        : "";
+    setRateLocal((prev) => {
+      // Only overwrite if the form value is substantially different
+      // (avoids clobbering user mid-typing)
+      const prevGrosze = Math.round(parseFloat(prev || "0") * 100);
+      if (prevGrosze !== rateValueGrosze) return fromForm;
+      return prev;
+    });
+  }, [rateValueGrosze]);
+
+  const handleRateBlur = () => {
+    const value = parseFloat(rateLocal);
     if (!isNaN(value) && value >= 0) {
       setValue("rateValueGrosze", Math.round(value * 100), {
         shouldDirty: true,
         shouldValidate: true,
       });
-    } else if (e.target.value === "") {
+      setRateLocal(value.toFixed(2));
+    } else {
       setValue("rateValueGrosze", 0, {
         shouldDirty: true,
         shouldValidate: true,
       });
+      setRateLocal("");
     }
   };
 
@@ -110,8 +145,9 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
             step="0.01"
             min="0"
             className="font-mono pr-16"
-            value={rateDisplay}
-            onChange={handleRateChange}
+            value={rateLocal}
+            onChange={(e) => setRateLocal(e.target.value)}
+            onBlur={handleRateBlur}
           />
           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
             {currency}
@@ -174,14 +210,15 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
               { shouldDirty: true, shouldValidate: true },
             )
           }
+          items={billingModelItems}
         >
           <SelectTrigger className="w-full">
             <SelectValue placeholder={t("fields.billingModelPlaceholder")} />
           </SelectTrigger>
           <SelectContent>
-            {BILLING_MODELS.map((model) => (
-              <SelectItem key={model} value={model}>
-                {t(`billingModelOptions.${model}`)}
+            {billingModelItems.map((model) => (
+              <SelectItem key={model.value} value={model.value}>
+                {model.label}
               </SelectItem>
             ))}
           </SelectContent>
@@ -210,14 +247,15 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
               { shouldDirty: true, shouldValidate: true },
             )
           }
+          items={rateTypeItems}
         >
           <SelectTrigger className="w-full">
             <SelectValue placeholder={t("fields.rateTypePlaceholder")} />
           </SelectTrigger>
           <SelectContent>
-            {RATE_TYPES.map((rt) => (
-              <SelectItem key={rt} value={rt}>
-                {t(`rateTypeOptions.${rt}`)}
+            {rateTypeItems.map((rt) => (
+              <SelectItem key={rt.value} value={rt.value}>
+                {rt.label}
               </SelectItem>
             ))}
           </SelectContent>
@@ -260,14 +298,15 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
               { shouldDirty: true, shouldValidate: true },
             )
           }
+          items={invoiceCycleItems}
         >
           <SelectTrigger className="w-full">
             <SelectValue placeholder={t("fields.invoiceCyclePlaceholder")} />
           </SelectTrigger>
           <SelectContent>
-            {INVOICE_CYCLES.map((cycle) => (
-              <SelectItem key={cycle} value={cycle}>
-                {t(`invoiceCycleOptions.${cycle}`)}
+            {invoiceCycleItems.map((cycle) => (
+              <SelectItem key={cycle.value} value={cycle.value}>
+                {cycle.label}
               </SelectItem>
             ))}
           </SelectContent>

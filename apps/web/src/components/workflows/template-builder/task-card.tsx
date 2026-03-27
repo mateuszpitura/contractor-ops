@@ -138,6 +138,24 @@ export function TaskCard({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const users = (usersQuery.data as any)?.items ?? [];
 
+  const taskTypeItems = TASK_TYPES.map((type) => ({
+    value: type,
+    label: t(`taskType_${type}`),
+  }));
+
+  const assigneeModeItems = ASSIGNEE_MODES.map((mode) => ({
+    value: mode,
+    label: t(`assigneeMode_${mode}`),
+  }));
+
+  const userRoleItems = USER_ROLES.map((role) => ({
+    value: role,
+    label: role
+      .split("_")
+      .map((w) => w.charAt(0) + w.slice(1).toLowerCase())
+      .join(" "),
+  }));
+
   const conditionSummary = getConditionSummary(
     conditions as Parameters<typeof getConditionSummary>[0],
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -238,7 +256,7 @@ export function TaskCard({
 
             {/* Task type */}
             <div className="space-y-1.5">
-              <Label>{t("taskType")}</Label>
+              <Label htmlFor={`task-type-${index}`}>{t("taskType")}</Label>
               <Select
                 value={taskType}
                 onValueChange={(val) =>
@@ -246,17 +264,18 @@ export function TaskCard({
                     shouldDirty: true,
                   })
                 }
+                items={taskTypeItems}
               >
-                <SelectTrigger className="w-full">
+                <SelectTrigger id={`task-type-${index}`} className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {TASK_TYPES.map((type) => {
-                    const Icon = TASK_TYPE_ICONS[type] ?? ClipboardList;
+                  {taskTypeItems.map((item) => {
+                    const Icon = TASK_TYPE_ICONS[item.value] ?? ClipboardList;
                     return (
-                      <SelectItem key={type} value={type}>
+                      <SelectItem key={item.value} value={item.value}>
                         <Icon className="mr-1.5 inline-block size-3.5" />
-                        {t(`taskType_${type}`)}
+                        {item.label}
                       </SelectItem>
                     );
                   })}
@@ -277,7 +296,7 @@ export function TaskCard({
 
             {/* Assignee mode */}
             <div className="space-y-1.5">
-              <Label>{t("assignedTo")}</Label>
+              <Label htmlFor={`task-assignee-${index}`}>{t("assignedTo")}</Label>
               <Select
                 value={assigneeMode}
                 onValueChange={(val) =>
@@ -287,14 +306,15 @@ export function TaskCard({
                     { shouldDirty: true },
                   )
                 }
+                items={assigneeModeItems}
               >
-                <SelectTrigger className="w-full">
+                <SelectTrigger id={`task-assignee-${index}`} className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {ASSIGNEE_MODES.map((mode) => (
-                    <SelectItem key={mode} value={mode}>
-                      {t(`assigneeMode_${mode}`)}
+                  {assigneeModeItems.map((item) => (
+                    <SelectItem key={item.value} value={item.value}>
+                      {item.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -304,7 +324,7 @@ export function TaskCard({
             {/* Conditional: Role select (when ROLE_BASED) */}
             {assigneeMode === "ROLE_BASED" && (
               <div className="space-y-1.5">
-                <Label>{t("roleField")}</Label>
+                <Label htmlFor={`task-role-${index}`}>{t("roleField")}</Label>
                 <Select
                   value={task?.assigneeRole ?? ""}
                   onValueChange={(val) =>
@@ -314,14 +334,15 @@ export function TaskCard({
                       { shouldDirty: true },
                     )
                   }
+                  items={userRoleItems}
                 >
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger id={`task-role-${index}`} className="w-full">
                     <SelectValue placeholder={t("rolePlaceholder")} />
                   </SelectTrigger>
                   <SelectContent>
-                    {USER_ROLES.map((role) => (
-                      <SelectItem key={role} value={role}>
-                        {role}
+                    {userRoleItems.map((item) => (
+                      <SelectItem key={item.value} value={item.value}>
+                        {item.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -332,35 +353,49 @@ export function TaskCard({
             {/* Conditional: User select (when FIXED_USER) */}
             {assigneeMode === "FIXED_USER" && (
               <div className="space-y-1.5">
-                <Label>{t("userField")}</Label>
-                <Select
-                  value={task?.assigneeUserId ?? ""}
-                  onValueChange={(val) =>
-                    form.setValue(`tasks.${index}.assigneeUserId`, val as string, {
-                      shouldDirty: true,
-                    })
-                  }
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder={t("userPlaceholder")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                    {users.map((user: any) => (
-                      <SelectItem key={user.id} value={user.id}>
-                        {user.name ?? user.email}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label htmlFor={`task-user-${index}`}>{t("userField")}</Label>
+                {(() => {
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  const userItems = users.map((user: any) => ({
+                    value: user.id as string,
+                    label: (user.name ?? user.email) as string,
+                  }));
+                  return (
+                    <Select
+                      value={task?.assigneeUserId ?? ""}
+                      onValueChange={(val) =>
+                        form.setValue(`tasks.${index}.assigneeUserId`, val as string, {
+                          shouldDirty: true,
+                        })
+                      }
+                      items={userItems}
+                    >
+                      <SelectTrigger id={`task-user-${index}`} className="w-full">
+                        <SelectValue placeholder={t("userPlaceholder")} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {userItems.map((item: { value: string; label: string }) => (
+                          <SelectItem key={item.value} value={item.value}>
+                            {item.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  );
+                })()}
               </div>
             )}
 
             {/* Due offset */}
             <div className="space-y-1.5">
-              <Label>{t("dueOffset")}</Label>
-              <div className="flex items-center gap-2">
+              <Label id={`task-due-label-${index}`}>{t("dueOffset")}</Label>
+              <div
+                className="flex items-center gap-2"
+                role="group"
+                aria-labelledby={`task-due-label-${index}`}
+              >
                 <Input
+                  id={`task-due-days-${index}`}
                   type="number"
                   min={0}
                   className="w-24"
@@ -368,11 +403,13 @@ export function TaskCard({
                   {...form.register(`tasks.${index}.dueOffsetDays`, {
                     valueAsNumber: true,
                   })}
+                  aria-label={t("dueOffsetDays")}
                 />
                 <span className="text-sm text-muted-foreground">
                   {t("dueOffsetDays")}
                 </span>
                 <Input
+                  id={`task-due-hours-${index}`}
                   type="number"
                   min={0}
                   className="w-24"
@@ -380,6 +417,7 @@ export function TaskCard({
                   {...form.register(`tasks.${index}.dueOffsetHours`, {
                     valueAsNumber: true,
                   })}
+                  aria-label={t("dueOffsetHours")}
                 />
                 <span className="text-sm text-muted-foreground">
                   {t("dueOffsetHours")}
@@ -390,6 +428,7 @@ export function TaskCard({
             {/* Required toggle */}
             <div className="flex items-center gap-3">
               <Switch
+                id={`task-required-${index}`}
                 checked={task?.required ?? false}
                 onCheckedChange={(checked) =>
                   form.setValue(`tasks.${index}.required`, !!checked, {
@@ -397,34 +436,42 @@ export function TaskCard({
                   })
                 }
               />
-              <Label>{t("requiredTask")}</Label>
+              <Label htmlFor={`task-required-${index}`}>{t("requiredTask")}</Label>
             </div>
 
             {/* Dependency */}
             <div className="space-y-1.5">
-              <Label>{t("dependsOn")}</Label>
-              <Select
-                value={task?.dependsOnTaskTemplateId ?? ""}
-                onValueChange={(val) =>
-                  form.setValue(
-                    `tasks.${index}.dependsOnTaskTemplateId`,
-                    val === "__none__" ? undefined : (val as string),
-                    { shouldDirty: true },
-                  )
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder={t("dependsOnPlaceholder")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__none__">{t("noDependency")}</SelectItem>
-                  {dependencyOptions.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label htmlFor={`task-depends-${index}`}>{t("dependsOn")}</Label>
+              {(() => {
+                const depItems = [
+                  { value: "__none__", label: t("noDependency") },
+                  ...dependencyOptions,
+                ];
+                return (
+                  <Select
+                    value={task?.dependsOnTaskTemplateId ?? ""}
+                    onValueChange={(val) =>
+                      form.setValue(
+                        `tasks.${index}.dependsOnTaskTemplateId`,
+                        val === "__none__" ? undefined : (val as string),
+                        { shouldDirty: true },
+                      )
+                    }
+                    items={depItems}
+                  >
+                    <SelectTrigger id={`task-depends-${index}`} className="w-full">
+                      <SelectValue placeholder={t("dependsOnPlaceholder")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {depItems.map((item) => (
+                        <SelectItem key={item.value} value={item.value}>
+                          {item.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                );
+              })()}
             </div>
 
             {/* Conditions */}

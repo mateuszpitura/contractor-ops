@@ -121,6 +121,7 @@ export function ActivityTimeline({
 
 export function RightRail({ contractor }: RightRailProps) {
   const t = useTranslations("ContractorProfile.rightRail");
+  const tToast = useTranslations("ContractorProfile.toast");
   const queryClient = useQueryClient();
   const [notes, setNotes] = useState(contractor.notes ?? "");
   const [isDirty, setIsDirty] = useState(false);
@@ -140,7 +141,7 @@ export function RightRail({ contractor }: RightRailProps) {
           typeof error === "object" && error && "message" in error
             ? String((error as { message?: unknown }).message ?? "")
             : "";
-        toast.error(message || "Failed to save note");
+        toast.error(message || tToast("noteFailed"));
       },
     })
   );

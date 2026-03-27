@@ -85,6 +85,7 @@ const CHANNEL_BADGE_VARIANT: Record<string, string> = {
 
 export function ReminderRulesSection() {
   const t = useTranslations("Settings");
+  const tAria = useTranslations("Common.aria");
   const queryClient = useQueryClient();
 
   const [editorOpen, setEditorOpen] = useState(false);
@@ -258,7 +259,7 @@ export function ReminderRulesSection() {
                   <Switch
                     checked={rule.active}
                     onCheckedChange={() => handleToggleActive(rule)}
-                    aria-label={`Toggle ${rule.name} active state`}
+                    aria-label={tAria("toggleActive", { name: rule.name })}
                   />
                 </div>
               </CardHeader>

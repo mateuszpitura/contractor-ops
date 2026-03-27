@@ -15,6 +15,7 @@ import {
   autoMapColumns,
   processImportFile,
 } from "../services/import-processor.js";
+import * as E from "../errors.js";
 
 // ---------------------------------------------------------------------------
 // Shared input schemas
@@ -22,8 +23,13 @@ import {
 
 const entityTypeSchema = z.enum(["contractor", "contract"]);
 
+const MAX_BASE64_SIZE = 13_333_334; // 10MB binary (base64 overhead ~33%)
+
 const fileInputSchema = z.object({
-  fileBase64: z.string().min(1, "File data is required"),
+  fileBase64: z
+    .string()
+    .min(1, "File data is required")
+    .max(MAX_BASE64_SIZE, "File too large (max ~10MB)"),
   entityType: entityTypeSchema,
 });
 
@@ -58,7 +64,7 @@ export const importRouter = router({
       if (rows.length === 0) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "File contains no data rows",
+          message: E.IMPORT_NO_DATA_ROWS,
         });
       }
 

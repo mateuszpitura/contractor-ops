@@ -39,21 +39,18 @@ function getEntityHref(type: DeadlineType, entityId: string): string {
 
 const DEADLINE_BADGE_CONFIG: Record<
   DeadlineType,
-  { className: string; labelKey: string }
+  { variant: "warning" | "destructive" | "info"; labelKey: string }
 > = {
   CONTRACT_EXPIRING: {
-    className:
-      "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
+    variant: "warning",
     labelKey: "deadlines.badgeContract",
   },
   TASK_OVERDUE: {
-    className:
-      "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
+    variant: "destructive",
     labelKey: "deadlines.badgeTask",
   },
   INVOICE_DUE: {
-    className:
-      "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+    variant: "info",
     labelKey: "deadlines.badgeInvoice",
   },
 };
@@ -75,7 +72,7 @@ export function DeadlinesWidget() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-[20px] font-semibold">
+        <CardTitle className="font-display text-lg font-semibold">
           {t("deadlines.title")}
         </CardTitle>
         <CardAction>
@@ -112,8 +109,7 @@ export function DeadlinesWidget() {
                     className="flex items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-muted/50"
                   >
                     <Badge
-                      variant="secondary"
-                      className={badge.className}
+                      variant={badge.variant}
                     >
                       {t(badge.labelKey as Parameters<typeof t>[0])}
                     </Badge>

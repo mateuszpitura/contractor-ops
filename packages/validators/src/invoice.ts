@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { optionalFk } from "./helpers.js";
 
 // ---------------------------------------------------------------------------
 // Prisma enum mirrors (string unions — validators package has no Prisma dep)
@@ -110,7 +111,7 @@ export type InvoiceList = z.infer<typeof invoiceListSchema>;
 export const invoiceManualMatchSchema = z.object({
   invoiceId: z.string().min(1),
   contractorId: z.string().min(1),
-  contractId: z.string().optional(),
+  contractId: optionalFk,
 });
 
 export type InvoiceManualMatch = z.infer<typeof invoiceManualMatchSchema>;

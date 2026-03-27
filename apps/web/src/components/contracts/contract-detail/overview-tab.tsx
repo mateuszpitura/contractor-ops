@@ -168,7 +168,7 @@ function ExpiryRemindersEditor({
         value={reminders}
         onChange={(e) => setReminders(e.target.value)}
         className="h-7 w-40 rounded-md border bg-background px-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-        placeholder="30, 60, 90"
+        placeholder={t("remindersPlaceholder")}
       />
       <Button
         variant="ghost"
@@ -198,6 +198,8 @@ function ExpiryRemindersEditor({
 
 export function OverviewTab({ contract }: OverviewTabProps) {
   const t = useTranslations("ContractDetail.overview");
+  const tEnum = useTranslations("Contracts");
+  const tContractor = useTranslations("Contractors");
 
   const metadata =
     (contract.metadataJson as Record<string, unknown>) ?? {};
@@ -236,7 +238,7 @@ export function OverviewTab({ contract }: OverviewTabProps) {
           <CardTitle>{t("contractDetails")}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-3">
-          <FieldRow label={t("fields.type")} value={contract.type} />
+          <FieldRow label={t("fields.type")} value={contract.type ? tEnum(`type.${contract.type}` as Parameters<typeof tEnum>[0]) : null} />
           <FieldRow
             label={t("fields.autoRenewal")}
             value={contract.autoRenewal ? t("fields.yes") : t("fields.no")}
@@ -278,9 +280,9 @@ export function OverviewTab({ contract }: OverviewTabProps) {
           <FieldRow label={t("fields.currency")} value={contract.currency} />
           <FieldRow
             label={t("fields.billingModel")}
-            value={contract.billingModel}
+            value={contract.billingModel ? tEnum(`billingModel.${contract.billingModel}` as Parameters<typeof tEnum>[0]) : null}
           />
-          <FieldRow label={t("fields.rateType")} value={contract.rateType} />
+          <FieldRow label={t("fields.rateType")} value={contract.rateType ? tEnum(`rateType.${contract.rateType}` as Parameters<typeof tEnum>[0]) : null} />
           {contract.paymentTermsDays != null && (
             <FieldRow
               label={t("fields.paymentTerms")}
@@ -291,7 +293,7 @@ export function OverviewTab({ contract }: OverviewTabProps) {
           )}
           <FieldRow
             label={t("fields.invoiceCycle")}
-            value={contract.invoiceCycle}
+            value={contract.invoiceCycle ? tEnum(`invoiceCycle.${contract.invoiceCycle}` as Parameters<typeof tEnum>[0]) : null}
           />
           {contract.retainerAmountGrosze != null && (
             <FieldRow
@@ -337,8 +339,8 @@ export function OverviewTab({ contract }: OverviewTabProps) {
               </span>
               <span className={`text-sm font-medium ${daysColor}`}>
                 {daysRemaining > 0
-                  ? t("expiresIn", { count: daysRemaining })
-                  : t("expiredAgo", { count: Math.abs(daysRemaining) })}
+                  ? t("expiresIn", { days: daysRemaining })
+                  : t("expiredAgo", { days: Math.abs(daysRemaining) })}
               </span>
             </div>
           )}
@@ -383,7 +385,7 @@ export function OverviewTab({ contract }: OverviewTabProps) {
                   {t("fields.contractorStatus")}
                 </span>
                 <Badge variant="secondary" className="w-fit">
-                  {contract.contractor.status}
+                  {tContractor(`lifecycle.${contract.contractor.status}` as Parameters<typeof tContractor>[0])}
                 </Badge>
               </div>
             </>

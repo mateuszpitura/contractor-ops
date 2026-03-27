@@ -124,7 +124,7 @@ export function ActivityFeed() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-[20px] font-semibold">
+        <CardTitle className="font-display text-lg font-semibold">
           {t("activity.title")}
         </CardTitle>
         <CardAction>

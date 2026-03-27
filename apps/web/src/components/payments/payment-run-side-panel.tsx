@@ -427,7 +427,7 @@ function CancelRunButton({
           <AlertDialogAction
             onClick={onConfirm}
             disabled={isLoading}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            variant="destructive"
           >
             {t("cancelDialog.confirm")}
           </AlertDialogAction>

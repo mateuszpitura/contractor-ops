@@ -8,15 +8,8 @@ import { useTranslations } from "next-intl";
 import { trpc } from "@/trpc/init";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbSeparator,
-  BreadcrumbPage,
-} from "@/components/ui/breadcrumb";
 import { Link } from "@/i18n/navigation";
+import { useBreadcrumbOverride } from "@/components/layout/breadcrumb-context";
 
 import { ProfileHeader } from "@/components/contractors/contractor-profile/profile-header";
 import { ProfileTabs } from "@/components/contractors/contractor-profile/profile-tabs";
@@ -83,6 +76,9 @@ export default function ContractorProfilePage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const contractor = contractorQuery.data as any;
 
+  // Set breadcrumb label for this detail page
+  useBreadcrumbOverride(params.id, contractor?.displayName);
+
   // Error state
   if (contractorQuery.isError) {
     const isNotFound =
@@ -116,23 +112,6 @@ export default function ContractorProfilePage() {
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumb */}
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink render={(props) => <Link {...props} href="/contractors" />}>
-              {t("breadcrumb")}
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>
-              {contractor?.displayName ?? <Skeleton className="inline-block h-4 w-32" />}
-            </BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-
       {/* Header */}
       {contractorQuery.isLoading || !contractor ? (
         <ProfileHeaderSkeleton />

@@ -83,13 +83,19 @@ export default async function PortalLayout({
           : undefined
       }
     >
+      <a
+        href="#portal-content"
+        className="fixed left-4 top-4 z-[100] -translate-y-16 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-lg transition-transform focus:translate-y-0"
+      >
+        Skip to content
+      </a>
       <PortalTopBar
         orgName={organization?.name ?? "Organization"}
         orgLogo={organization?.logo ?? null}
         contractorName={session.contractor?.displayName ?? "Contractor"}
         contractorEmail={session.email}
       />
-      <main className="flex-1">
+      <main id="portal-content" className="flex-1">
         <div className="mx-auto max-w-[1200px] p-6">{children}</div>
       </main>
     </div>

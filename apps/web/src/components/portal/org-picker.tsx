@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -37,6 +38,8 @@ interface OrgPickerProps {
  * - Hover accent border, loading spinner on selected card
  */
 export function OrgPicker({ orgs, email, onSelect, loading }: OrgPickerProps) {
+  const tAria = useTranslations("Common.aria");
+  const t = useTranslations("Portal.orgPicker");
   const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
 
   const handleSelect = (org: OrgInfo) => {
@@ -48,9 +51,9 @@ export function OrgPicker({ orgs, email, onSelect, loading }: OrgPickerProps) {
   return (
     <div className="mx-auto w-full max-w-[480px]">
       <div className="mb-6 text-center">
-        <h1 className="text-xl font-semibold">Select Organization</h1>
+        <h1 className="text-xl font-semibold">{t("title")}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          You work with multiple organizations. Choose one to continue.
+          {t("description")}
         </p>
       </div>
 
@@ -72,7 +75,7 @@ export function OrgPicker({ orgs, email, onSelect, loading }: OrgPickerProps) {
               onClick={() => !isDisabled && handleSelect(org)}
               role="button"
               tabIndex={0}
-              aria-label={`Select ${org.orgName}`}
+              aria-label={tAria("selectOrg", { name: org.orgName })}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
@@ -103,7 +106,7 @@ export function OrgPicker({ orgs, email, onSelect, loading }: OrgPickerProps) {
       </div>
 
       <p className="mt-4 text-center text-xs text-muted-foreground">
-        Signed in as {email}
+        {t("signedInAs", { email })}
       </p>
     </div>
   );

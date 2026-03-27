@@ -5,6 +5,7 @@
  */
 
 import { z } from "zod";
+import { Prisma } from "@contractor-ops/db/generated/prisma/client";
 import { prisma } from "@contractor-ops/db";
 import { router } from "../init.js";
 import { tenantProcedure } from "../middleware/tenant.js";
@@ -37,18 +38,25 @@ export const searchRouter = router({
       }),
     )
     .query(async ({ input, ctx }) => {
-      // Build tsquery terms with prefix matching
-      const terms = input.query
+      // Build tsquery terms with prefix matching.
+      // Strict sanitization: only allow alphanumeric + Unicode letters.
+      const sanitizedTerms = input.query
         .trim()
         .split(/\s+/)
         .map((t) => t.replace(/[^a-zA-Z0-9\u00C0-\u024F]/g, ""))
-        .filter(Boolean)
+        .filter((t) => t.length > 0 && t.length <= 100)
+        .slice(0, 10) // Max 10 terms to prevent abuse
         .map((t) => `${t}:*`)
         .join(" & ");
 
-      if (!terms) {
+      if (!sanitizedTerms) {
         return [] as SearchResult[];
       }
+
+      // Use Prisma.sql for safe parameterization of the tsquery string.
+      // The tsquery is built from sanitized alphanumeric tokens, then passed
+      // as a parameter to to_tsquery() — never interpolated into SQL.
+      const tsquery = Prisma.sql`to_tsquery('simple', ${sanitizedTerms})`;
 
       // Run 3 parallel raw queries across entity types
       const [contractors, contracts, invoices] = await Promise.all([
@@ -57,7 +65,7 @@ export const searchRouter = router({
           FROM "Contractor"
           WHERE "organizationId" = ${ctx.organizationId}
             AND "deletedAt" IS NULL
-            AND "search_vector" @@ to_tsquery('simple', ${terms})
+            AND "search_vector" @@ ${tsquery}
           LIMIT 5
         `,
         prisma.$queryRaw<SearchResult[]>`
@@ -65,7 +73,7 @@ export const searchRouter = router({
           FROM "Contract"
           WHERE "organizationId" = ${ctx.organizationId}
             AND "deletedAt" IS NULL
-            AND "searchVector" @@ to_tsquery('simple', ${terms})
+            AND "searchVector" @@ ${tsquery}
           LIMIT 5
         `,
         prisma.$queryRaw<SearchResult[]>`
@@ -73,7 +81,7 @@ export const searchRouter = router({
           FROM "Invoice"
           WHERE "organizationId" = ${ctx.organizationId}
             AND "deletedAt" IS NULL
-            AND "search_vector" @@ to_tsquery('simple', ${terms})
+            AND "search_vector" @@ ${tsquery}
           LIMIT 5
         `,
       ]);

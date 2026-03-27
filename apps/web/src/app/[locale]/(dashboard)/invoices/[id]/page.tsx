@@ -10,15 +10,7 @@ import { trpc } from "@/trpc/init";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbSeparator,
-  BreadcrumbPage,
-} from "@/components/ui/breadcrumb";
-import { Link } from "@/i18n/navigation";
+import { useBreadcrumbOverride } from "@/components/layout/breadcrumb-context";
 
 import { InvoiceDetailLayout } from "@/components/invoices/invoice-detail/invoice-detail-layout";
 import { InvoiceMetadataForm } from "@/components/invoices/invoice-detail/invoice-metadata-form";
@@ -132,6 +124,8 @@ export default function InvoiceDetailPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const invoice = invoiceQuery.data as any;
 
+  useBreadcrumbOverride(params.id, invoice?.invoiceNumber);
+
   // Fetch PDF download URL for the first SOURCE_ORIGINAL file
   const sourceFile = invoice?.files?.find(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -168,23 +162,6 @@ export default function InvoiceDetailPage() {
   if (invoiceQuery.isLoading) {
     return (
       <div className="space-y-6">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink
-                render={(props) => <Link {...props} href="/invoices" />}
-              >
-                {t("pageTitle")}
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>
-                <Skeleton className="inline-block h-4 w-32" />
-              </BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
         <DetailSkeleton />
       </div>
     );
@@ -249,23 +226,6 @@ export default function InvoiceDetailPage() {
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumb */}
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink
-              render={(props) => <Link {...props} href="/invoices" />}
-            >
-              {t("pageTitle")}
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>{invoice.invoiceNumber}</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-
       {/* Header */}
       <div className="flex items-center gap-3">
         <h1 className="text-xl font-semibold font-mono">

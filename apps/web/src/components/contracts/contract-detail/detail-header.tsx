@@ -111,6 +111,7 @@ const statusLabels: Record<string, string> = {
 
 export function DetailHeader({ contract }: DetailHeaderProps) {
   const t = useTranslations("ContractDetail");
+  const tEnum = useTranslations("Contracts");
   const queryClient = useQueryClient();
   const [terminateOpen, setTerminateOpen] = useState(false);
 
@@ -169,7 +170,7 @@ export function DetailHeader({ contract }: DetailHeaderProps) {
             variant="secondary"
             className={statusBadgeStyles[contract.status] ?? ""}
           >
-            {statusLabels[contract.status] ?? contract.status}
+            {tEnum(`status.${contract.status}` as Parameters<typeof tEnum>[0])}
           </Badge>
         </div>
         {contract.contractor && (
@@ -215,6 +216,7 @@ export function DetailHeader({ contract }: DetailHeaderProps) {
               <Upload className="mr-2 size-3.5" />
               {t("actions.uploadDocument")}
             </DropdownMenuItem>
+
 
             {(canTerminate || canSupersede) && <DropdownMenuSeparator />}
 

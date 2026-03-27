@@ -10,6 +10,8 @@ import { parseAsString, useQueryState } from "nuqs";
 import { trpc } from "@/trpc/init";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/shared/empty-state";
+import { PageHeader } from "@/components/shared/page-header";
+import { AnimateIn } from "@/components/shared/animate-in";
 import { ContractorDataTable } from "@/components/contractors/contractor-table/data-table";
 import { ContractorSidePanel } from "@/components/contractors/contractor-side-panel";
 import { WizardDialog } from "@/components/contractors/contractor-wizard/wizard-dialog";
@@ -40,7 +42,7 @@ function ContractorsContent() {
 
   // Lightweight count query for empty state detection
   const countQuery = useQuery(
-    trpc.contractor.list.queryOptions({ page: 1, pageSize: 1 }),
+    trpc.contractor.list.queryOptions({ page: 1, pageSize: 10 }),
   );
   const totalCount = (countQuery.data as { total: number } | undefined)?.total ?? 0;
   const isCountLoading = countQuery.isLoading;
@@ -58,9 +60,7 @@ function ContractorsContent() {
   if (!isCountLoading && totalCount === 0) {
     return (
       <div className="space-y-6">
-        <div>
-          <h1 className="text-[20px] font-semibold">{t("pageTitle")}</h1>
-        </div>
+        <PageHeader title={t("pageTitle")} description={t("pageDescription")} />
         <EmptyState
           icon={Users}
           heading={te("contractors.heading")}
@@ -81,16 +81,18 @@ function ContractorsContent() {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <div>
-        <h1 className="text-[20px] font-semibold">{t("pageTitle")}</h1>
-      </div>
+      <AnimateIn delay={0}>
+        <PageHeader title={t("pageTitle")} description={t("pageDescription")} />
+      </AnimateIn>
 
       {/* Data table */}
-      <ContractorDataTable
-        onRowClick={handleRowClick}
-        onAddContractor={handleAddContractor}
-        onImport={() => setImportWizardOpen(true)}
-      />
+      <AnimateIn delay={1}>
+        <ContractorDataTable
+          onRowClick={handleRowClick}
+          onAddContractor={handleAddContractor}
+          onImport={() => setImportWizardOpen(true)}
+        />
+      </AnimateIn>
 
       {/* Side panel */}
       <ContractorSidePanel

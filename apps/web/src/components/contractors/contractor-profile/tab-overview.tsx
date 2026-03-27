@@ -121,6 +121,7 @@ function formatDate(date: string | Date, locale?: string): string {
 
 export function TabOverview({ contractor }: TabOverviewProps) {
   const t = useTranslations("ContractorProfile.overview");
+  const tc = useTranslations("Contractors");
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -170,7 +171,7 @@ export function TabOverview({ contractor }: TabOverviewProps) {
             label={t("fields.displayName")}
             value={contractor.displayName}
           />
-          <FieldRow label={t("fields.type")} value={contractor.type} />
+          <FieldRow label={t("fields.type")} value={tc(`type.${contractor.type}` as Parameters<typeof tc>[0])} />
           <FieldRow label={t("fields.nip")} value={contractor.taxId} mono />
           <FieldRow label={t("fields.vatEu")} value={contractor.vatId} mono />
           <FieldRow

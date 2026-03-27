@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { prisma } from "@contractor-ops/db";
 import type { Prisma } from "@contractor-ops/db/generated/prisma/client";
+import * as E from "../errors.js";
 
 type InputJsonValue = Prisma.InputJsonValue;
 
@@ -39,7 +40,7 @@ export async function createChangeRequest(
   if (existing) {
     throw new TRPCError({
       code: "CONFLICT",
-      message: "You already have a pending change request",
+      message: E.PORTAL_PENDING_CHANGE_EXISTS,
     });
   }
 
@@ -79,7 +80,7 @@ export async function approveChangeRequest(
   if (!request) {
     throw new TRPCError({
       code: "NOT_FOUND",
-      message: "Pending change request not found",
+      message: E.PORTAL_CHANGE_REQUEST_NOT_FOUND,
     });
   }
 
@@ -98,7 +99,7 @@ export async function approveChangeRequest(
     if (!billingProfile) {
       throw new TRPCError({
         code: "NOT_FOUND",
-        message: "Default billing profile not found for contractor",
+        message: E.PORTAL_BILLING_PROFILE_NOT_FOUND,
       });
     }
 
@@ -153,7 +154,7 @@ export async function rejectChangeRequest(
   if (!request) {
     throw new TRPCError({
       code: "NOT_FOUND",
-      message: "Pending change request not found",
+      message: E.PORTAL_CHANGE_REQUEST_NOT_FOUND,
     });
   }
 

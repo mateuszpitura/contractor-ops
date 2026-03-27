@@ -32,7 +32,7 @@ function ActionButton({
 }) {
   if (action.href) {
     return (
-      <Button variant={variant} render={<Link href={action.href} />}>
+      <Button variant={variant} nativeButton={false} render={<Link href={action.href} />}>
         {action.label}
       </Button>
     );
@@ -63,7 +63,7 @@ export function EmptyState({
   return (
     <div className="flex min-h-[40vh] flex-col items-center justify-center text-center">
       <Icon className="h-12 w-12 text-muted-foreground" />
-      <h2 className="mt-4 text-[20px] font-semibold">{heading}</h2>
+      <h2 className="mt-4 font-display text-[20px] font-semibold">{heading}</h2>
       <p className="mt-2 max-w-[420px] text-sm text-muted-foreground">
         {body}
       </p>

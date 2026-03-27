@@ -14,6 +14,7 @@ import {
   addCommentSchema,
   myTasksListSchema,
 } from "@contractor-ops/validators";
+import * as E from "../errors.js";
 import { router } from "../init.js";
 import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
@@ -289,7 +290,7 @@ export const workflowRouter = router({
         if (!existing) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Workflow template not found",
+            message: E.WORKFLOW_TEMPLATE_NOT_FOUND,
           });
         }
 
@@ -364,7 +365,7 @@ export const workflowRouter = router({
       if (!template) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Workflow template not found",
+          message: E.WORKFLOW_TEMPLATE_NOT_FOUND,
         });
       }
 
@@ -427,7 +428,7 @@ export const workflowRouter = router({
       if (!template) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Workflow template not found",
+          message: E.WORKFLOW_TEMPLATE_NOT_FOUND,
         });
       }
 
@@ -477,7 +478,7 @@ export const workflowRouter = router({
       if (!source) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Workflow template not found",
+          message: E.WORKFLOW_TEMPLATE_NOT_FOUND,
         });
       }
 
@@ -571,8 +572,7 @@ export const workflowRouter = router({
         if (!template) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message:
-              "Workflow template not found or not active. Only active templates can be started.",
+            message: E.WORKFLOW_TEMPLATE_NOT_FOUND,
           });
         }
 
@@ -587,7 +587,7 @@ export const workflowRouter = router({
         if (!contractor) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Contractor not found",
+            message: E.CONTRACTOR_NOT_FOUND,
           });
         }
 
@@ -763,7 +763,7 @@ export const workflowRouter = router({
         if (!existing) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Workflow run not found",
+            message: E.WORKFLOW_RUN_NOT_FOUND,
           });
         }
 
@@ -773,7 +773,7 @@ export const workflowRouter = router({
         ) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: `Cannot cancel a run that is already ${existing.status}`,
+            message: E.WORKFLOW_RUN_ALREADY_CANCELLED,
           });
         }
 
@@ -840,7 +840,7 @@ export const workflowRouter = router({
       if (!run) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Workflow run not found",
+          message: E.WORKFLOW_RUN_NOT_FOUND,
         });
       }
 
@@ -1023,14 +1023,14 @@ export const workflowRouter = router({
         if (!task) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Task not found",
+            message: E.WORKFLOW_TASK_NOT_FOUND,
           });
         }
 
         if (!validateTransition(task.status, "DONE")) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: `Cannot complete a task with status ${task.status}. Allowed transitions: ${(TASK_TRANSITIONS[task.status] ?? []).join(", ") || "none"}`,
+            message: E.WORKFLOW_TASK_INVALID_STATUS,
           });
         }
 
@@ -1102,14 +1102,14 @@ export const workflowRouter = router({
         if (!task) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Task not found",
+            message: E.WORKFLOW_TASK_NOT_FOUND,
           });
         }
 
         if (!validateTransition(task.status, "SKIPPED")) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: `Cannot skip a task with status ${task.status}`,
+            message: E.WORKFLOW_TASK_CANNOT_SKIP,
           });
         }
 
@@ -1171,7 +1171,7 @@ export const workflowRouter = router({
       if (!task) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Task not found",
+          message: E.WORKFLOW_TASK_NOT_FOUND,
         });
       }
 
@@ -1232,7 +1232,7 @@ export const workflowRouter = router({
       if (!run) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Workflow run not found",
+          message: E.WORKFLOW_RUN_NOT_FOUND,
         });
       }
 

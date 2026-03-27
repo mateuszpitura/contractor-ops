@@ -12,6 +12,7 @@ import {
   bulkApproveSchema,
   bulkRejectSchema,
 } from "@contractor-ops/validators";
+import * as E from "../errors.js";
 import { router } from "../init.js";
 import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
@@ -79,7 +80,7 @@ export const approvalRouter = router({
       if (!chain) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Approval chain not found",
+          message: E.APPROVAL_CHAIN_NOT_FOUND,
         });
       }
 
@@ -141,7 +142,7 @@ export const approvalRouter = router({
         if (!existing) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Approval chain not found",
+            message: E.APPROVAL_CHAIN_NOT_FOUND,
           });
         }
 
@@ -190,7 +191,7 @@ export const approvalRouter = router({
         if (!existing) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Approval chain not found",
+            message: E.APPROVAL_CHAIN_NOT_FOUND,
           });
         }
 
@@ -205,7 +206,7 @@ export const approvalRouter = router({
         if (activeFlow) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Cannot delete chain with active approval flows",
+            message: E.APPROVAL_CHAIN_HAS_ACTIVE_FLOWS,
           });
         }
 
@@ -373,21 +374,21 @@ export const approvalRouter = router({
         if (!step) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Approval step not found",
+            message: E.APPROVAL_STEP_NOT_FOUND,
           });
         }
 
         if (step.status !== "PENDING") {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Step is not pending approval",
+            message: E.APPROVAL_STEP_NOT_PENDING,
           });
         }
 
         if (step.approverUserId !== ctx.user!.id) {
           throw new TRPCError({
             code: "FORBIDDEN",
-            message: "You are not the assigned approver for this step",
+            message: E.APPROVAL_NOT_ASSIGNED,
           });
         }
 
@@ -534,21 +535,21 @@ export const approvalRouter = router({
         if (!step) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Approval step not found",
+            message: E.APPROVAL_STEP_NOT_FOUND,
           });
         }
 
         if (step.status !== "PENDING") {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Step is not pending approval",
+            message: E.APPROVAL_STEP_NOT_PENDING,
           });
         }
 
         if (step.approverUserId !== ctx.user!.id) {
           throw new TRPCError({
             code: "FORBIDDEN",
-            message: "You are not the assigned approver for this step",
+            message: E.APPROVAL_NOT_ASSIGNED,
           });
         }
 
@@ -647,21 +648,21 @@ export const approvalRouter = router({
         if (!step) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Approval step not found",
+            message: E.APPROVAL_STEP_NOT_FOUND,
           });
         }
 
         if (step.status !== "PENDING") {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Step is not pending approval",
+            message: E.APPROVAL_STEP_NOT_PENDING,
           });
         }
 
         if (step.approverUserId !== ctx.user!.id) {
           throw new TRPCError({
             code: "FORBIDDEN",
-            message: "You are not the assigned approver for this step",
+            message: E.APPROVAL_NOT_ASSIGNED,
           });
         }
 
@@ -676,7 +677,7 @@ export const approvalRouter = router({
         if (!delegateMember) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Delegate user is not a member of this organization",
+            message: E.APPROVAL_DELEGATE_NOT_MEMBER,
           });
         }
 
@@ -724,21 +725,21 @@ export const approvalRouter = router({
         if (!step) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Approval step not found",
+            message: E.APPROVAL_STEP_NOT_FOUND,
           });
         }
 
         if (step.status !== "PENDING") {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Step is not pending approval",
+            message: E.APPROVAL_STEP_NOT_PENDING,
           });
         }
 
         if (step.approverUserId !== ctx.user!.id) {
           throw new TRPCError({
             code: "FORBIDDEN",
-            message: "You are not the assigned approver for this step",
+            message: E.APPROVAL_NOT_ASSIGNED,
           });
         }
 
@@ -927,7 +928,7 @@ export const approvalRouter = router({
         if (!invoice) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Invoice not found",
+            message: E.INVOICE_NOT_FOUND,
           });
         }
 
@@ -944,7 +945,7 @@ export const approvalRouter = router({
         if (invoice.status === "APPROVAL_PENDING") {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Invoice is already pending approval",
+            message: E.INVOICE_ALREADY_PENDING,
           });
         }
 

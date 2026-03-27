@@ -23,6 +23,7 @@ import {
   generateStorageKey,
 } from "../services/r2.js";
 import { createChangeRequest } from "../services/portal-change-request.js";
+import * as E from "../errors.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -121,7 +122,7 @@ export const portalRouter = router({
       if (!result) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Invalid or expired link",
+          message: E.PORTAL_INVALID_LINK,
         });
       }
 
@@ -153,7 +154,10 @@ export const portalRouter = router({
         });
       }
 
-      // Multi-org -- return org picker data
+      // Multi-org -- create a short-lived verification nonce so selectOrg
+      // can prove the email was actually verified (prevents IDOR).
+      const { token: verificationNonce } = await createMagicLinkToken(result.email);
+
       return plain({
         session: null,
         orgs: contractors.map((c) => ({
@@ -164,6 +168,7 @@ export const portalRouter = router({
         })),
         needsOrgPicker: true as const,
         email: result.email,
+        verificationNonce,
       });
     }),
 
@@ -173,15 +178,26 @@ export const portalRouter = router({
   selectOrg: portalPublicProcedure
     .input(
       z.object({
-        email: z.string().email(),
+        verificationNonce: z.string().min(1, "Verification token required"),
         contractorId: z.string(),
         organizationId: z.string(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const email = input.email.toLowerCase().trim();
+      // Verify the nonce to prove email was verified via magic link.
+      // This prevents IDOR — the client can't just guess email + IDs.
+      const verification = await verifyMagicLinkToken(input.verificationNonce);
 
-      // Verify contractor exists and matches the email
+      if (!verification) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: E.PORTAL_INVALID_VERIFICATION,
+        });
+      }
+
+      const email = verification.email.toLowerCase().trim();
+
+      // Verify contractor exists and matches the verified email
       const contractor = await prisma.contractor.findFirst({
         where: {
           id: input.contractorId,
@@ -195,7 +211,7 @@ export const portalRouter = router({
       if (!contractor) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Contractor not found",
+          message: E.CONTRACTOR_NOT_FOUND,
         });
       }
 
@@ -813,7 +829,7 @@ export const portalRouter = router({
       if (!contract) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Active contract not found",
+          message: E.PORTAL_CONTRACT_NOT_FOUND,
         });
       }
 
@@ -1083,7 +1099,7 @@ export const portalRouter = router({
       if (Object.keys(requestedChanges).length === 0) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "No changes provided",
+          message: E.PORTAL_NO_CHANGES,
         });
       }
 
@@ -1161,7 +1177,7 @@ export const portalRouter = router({
       if (input.category === "SECURITY_ALERTS" && !input.emailEnabled) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Security alerts cannot be disabled",
+          message: E.PORTAL_SECURITY_ALERTS_LOCKED,
         });
       }
 

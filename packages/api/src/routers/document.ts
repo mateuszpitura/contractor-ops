@@ -20,6 +20,7 @@ import {
 } from "../services/r2.js";
 import { isAllowedMimeType, validateMimeType } from "../services/mime-validator.js";
 import { isClamAvailable, scanBuffer } from "../services/virus-scanner.js";
+import * as E from "../errors.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -133,7 +134,7 @@ export const documentRouter = router({
       if (!isAllowedMimeType(input.mimeType)) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: `File type "${input.mimeType}" is not allowed. Accepted: PDF, DOCX, XLSX, PNG, JPG.`,
+          message: E.DOCUMENT_FILE_TYPE_NOT_ALLOWED,
         });
       }
 
@@ -198,7 +199,7 @@ export const documentRouter = router({
       if (!doc) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Document not found",
+          message: E.DOCUMENT_NOT_FOUND,
         });
       }
 
@@ -209,7 +210,7 @@ export const documentRouter = router({
       } catch {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Uploaded file not found in storage. Please try uploading again.",
+          message: E.DOCUMENT_NOT_IN_STORAGE,
         });
       }
 
@@ -246,14 +247,14 @@ export const documentRouter = router({
       if (!doc) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Document not found",
+          message: E.DOCUMENT_NOT_FOUND,
         });
       }
 
       if (doc.virusScanStatus === "INFECTED") {
         throw new TRPCError({
           code: "FORBIDDEN",
-          message: "This document has been flagged as infected and cannot be downloaded.",
+          message: E.DOCUMENT_INFECTED,
         });
       }
 
@@ -326,7 +327,7 @@ export const documentRouter = router({
       if (!isAllowedMimeType(input.mimeType)) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: `File type "${input.mimeType}" is not allowed. Accepted: PDF, DOCX, XLSX, PNG, JPG.`,
+          message: E.DOCUMENT_FILE_TYPE_NOT_ALLOWED,
         });
       }
 
@@ -344,14 +345,14 @@ export const documentRouter = router({
         if (!existing) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Document not found",
+            message: E.DOCUMENT_NOT_FOUND,
           });
         }
 
         if (existing.status !== "ACTIVE") {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Only active documents can be versioned.",
+            message: E.DOCUMENT_NOT_ACTIVE,
           });
         }
 
@@ -435,7 +436,7 @@ export const documentRouter = router({
       if (!doc) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Document not found",
+          message: E.DOCUMENT_NOT_FOUND,
         });
       }
 
@@ -486,7 +487,7 @@ export const documentRouter = router({
       if (!doc) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Document not found",
+          message: E.DOCUMENT_NOT_FOUND,
         });
       }
 
@@ -533,7 +534,7 @@ export const documentRouter = router({
       if (!doc) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Document not found",
+          message: E.DOCUMENT_NOT_FOUND,
         });
       }
 

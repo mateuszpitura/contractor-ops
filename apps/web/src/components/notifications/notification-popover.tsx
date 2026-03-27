@@ -47,6 +47,7 @@ function PopoverSkeletons() {
 
 export function NotificationPopover() {
   const t = useTranslations("Notifications");
+  const tAria = useTranslations("Common.aria");
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -126,16 +127,24 @@ export function NotificationPopover() {
     <Popover onOpenChange={handleOpenChange}>
       <PopoverTrigger
         render={
-          <Button variant="ghost" size="icon" className="relative h-8 w-8" />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="relative h-8 w-8"
+            aria-label={unreadCount > 0 ? tAria("notificationsWithUnread", { title: t("title"), count: unreadCount }) : t("title")}
+          />
         }
       >
-        <Bell className="h-4 w-4" />
+        <Bell className="h-4 w-4" aria-hidden="true" />
         {unreadCount > 0 && (
-          <span className="absolute -right-1 -top-1 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold leading-none text-white">
+          <span
+            aria-live="polite"
+            aria-atomic="true"
+            className="absolute -right-1 -top-1 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold leading-none text-white"
+          >
             {badgeText}
           </span>
         )}
-        <span className="sr-only">{t("title")}</span>
       </PopoverTrigger>
 
       <PopoverContent

@@ -37,6 +37,7 @@ export function DataTablePagination<TData>({
   onPageSizeChange,
 }: DataTablePaginationProps<TData>) {
   const t = useTranslations("Contracts.pagination");
+  const tAria = useTranslations("Common.aria");
   const tb = useTranslations("Contracts.bulkActions");
 
   const totalPages = Math.max(1, Math.ceil(totalRows / pageSize));
@@ -89,7 +90,7 @@ export function DataTablePagination<TData>({
             className="h-8 w-8"
             disabled={currentPage <= 1}
             onClick={() => onPageChange(currentPage - 1)}
-            aria-label="Previous page"
+            aria-label={tAria("previousPage")}
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -99,7 +100,7 @@ export function DataTablePagination<TData>({
             className="h-8 w-8"
             disabled={currentPage >= totalPages}
             onClick={() => onPageChange(currentPage + 1)}
-            aria-label="Next page"
+            aria-label={tAria("nextPage")}
           >
             <ChevronRight className="h-4 w-4" />
           </Button>

@@ -58,21 +58,27 @@ export async function verifyMagicLinkToken(
 ): Promise<{ email: string } | null> {
   const hashedToken = createHash("sha256").update(rawToken).digest("hex");
 
-  const record = await prisma.portalMagicToken.findUnique({
-    where: { token: hashedToken },
-  });
-
-  if (!record) return null;
-  if (record.usedAt) return null;
-  if (record.expiresAt < new Date()) return null;
-
-  // Mark as used atomically
-  await prisma.portalMagicToken.update({
-    where: { id: record.id },
+  // Atomic find-and-mark-used to prevent race conditions (two concurrent
+  // requests both reading usedAt as null before either marks it).
+  const updated = await prisma.portalMagicToken.updateMany({
+    where: {
+      token: hashedToken,
+      usedAt: null,
+      expiresAt: { gt: new Date() },
+    },
     data: { usedAt: new Date() },
   });
 
-  return { email: record.email };
+  // If no rows updated, token was already used, expired, or doesn't exist
+  if (updated.count === 0) return null;
+
+  // Fetch the record to get the email
+  const record = await prisma.portalMagicToken.findUnique({
+    where: { token: hashedToken },
+    select: { email: true },
+  });
+
+  return record ? { email: record.email } : null;
 }
 
 // ---------------------------------------------------------------------------

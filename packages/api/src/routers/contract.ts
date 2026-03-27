@@ -9,6 +9,7 @@ import {
   amendmentCreateSchema,
   contractExpiryReminderSchema,
 } from "@contractor-ops/validators";
+import * as E from "../errors.js";
 import { router } from "../init.js";
 import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
@@ -121,7 +122,7 @@ export const contractRouter = router({
       if (!contract) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Contract not found",
+          message: E.CONTRACT_NOT_FOUND,
         });
       }
 
@@ -155,7 +156,7 @@ export const contractRouter = router({
       if (!existing) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Contract not found",
+          message: E.CONTRACT_NOT_FOUND,
         });
       }
 
@@ -175,7 +176,7 @@ export const contractRouter = router({
         if (updateData.endDate <= updateData.startDate) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "End date must be after start date",
+            message: E.CONTRACT_END_DATE_BEFORE_START,
           });
         }
       }
@@ -307,7 +308,7 @@ export const contractRouter = router({
       if (!contract) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Contract not found",
+          message: E.CONTRACT_NOT_FOUND,
         });
       }
 
@@ -315,7 +316,7 @@ export const contractRouter = router({
       if (!allowedTargets.includes(input.targetStatus)) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: `Cannot transition from ${contract.status} to ${input.targetStatus}. Allowed: ${allowedTargets.join(", ") || "none"}`,
+          message: E.CONTRACT_INVALID_TRANSITION,
         });
       }
 
@@ -354,7 +355,7 @@ export const contractRouter = router({
       if (!contract) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Contract not found",
+          message: E.CONTRACT_NOT_FOUND,
         });
       }
 
@@ -418,7 +419,7 @@ export const contractRouter = router({
       if (!contract) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Contract not found",
+          message: E.CONTRACT_NOT_FOUND,
         });
       }
 
@@ -459,7 +460,7 @@ export const contractRouter = router({
       if (!contract) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Contract not found",
+          message: E.CONTRACT_NOT_FOUND,
         });
       }
 

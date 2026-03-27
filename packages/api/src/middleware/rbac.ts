@@ -3,6 +3,7 @@ import { auth } from "@contractor-ops/auth";
 import type { Permission } from "@contractor-ops/auth";
 import { t } from "../init.js";
 import { tenantProcedure } from "./tenant.js";
+import * as E from "../errors.js";
 
 /**
  * RBAC middleware factory: creates a middleware that checks if the current
@@ -23,7 +24,7 @@ export function requirePermission(permission: Permission) {
     if (!hasPermission?.success) {
       throw new TRPCError({
         code: "FORBIDDEN",
-        message: "You do not have permission to perform this action.",
+        message: E.PERMISSION_DENIED,
       });
     }
 

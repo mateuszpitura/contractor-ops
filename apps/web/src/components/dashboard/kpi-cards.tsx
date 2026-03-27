@@ -4,6 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
+import { ArrowUpRight } from "lucide-react";
+
 import { trpc } from "@/trpc/init";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -118,21 +120,22 @@ export function KpiCards() {
         const displayValue = card.isCurrency ? formatCurrency(value) : value;
 
         return (
-          <Link key={card.key} href={card.href}>
-            <Card className="min-w-[200px] cursor-pointer transition-colors hover:ring-primary/50">
-              <CardContent className="pt-0">
+          <Link key={card.key} href={card.href} className="group/kpi">
+            <Card className="card-interactive min-w-[200px] cursor-pointer hover:ring-primary/40">
+              <CardContent className="relative pt-0">
+                <ArrowUpRight className="absolute top-0 right-0 h-3.5 w-3.5 text-muted-foreground/0 transition-all group-hover/kpi:text-muted-foreground/60 group-hover/kpi:translate-x-0.5 group-hover/kpi:-translate-y-0.5" />
                 <p className="text-xs text-muted-foreground">
                   {t(card.labelKey as Parameters<typeof t>[0])}
                 </p>
-                <p className="mt-1 text-[28px] font-semibold leading-tight">
+                <p className="mt-1 font-display text-[28px] font-semibold leading-tight">
                   {displayValue}
                 </p>
                 <div className="mt-2 flex items-center gap-1">
                   {direction === "up" && (
-                    <TrendingUp className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+                    <TrendingUp className="h-3.5 w-3.5 text-success" />
                   )}
                   {direction === "down" && (
-                    <TrendingDown className="h-3.5 w-3.5 text-red-600 dark:text-red-400" />
+                    <TrendingDown className="h-3.5 w-3.5 text-destructive" />
                   )}
                   {direction === "neutral" && (
                     <Minus className="h-3.5 w-3.5 text-muted-foreground" />
@@ -140,9 +143,9 @@ export function KpiCards() {
                   <span
                     className={`text-xs font-semibold ${
                       direction === "up"
-                        ? "text-green-600 dark:text-green-400"
+                        ? "text-success"
                         : direction === "down"
-                          ? "text-red-600 dark:text-red-400"
+                          ? "text-destructive"
                           : "text-muted-foreground"
                     }`}
                   >

@@ -31,8 +31,14 @@ export default async function LocaleLayout({
   setRequestLocale(locale);
   const messages = await getMessages();
 
+  // Set lang attribute on the html element for screen readers.
+  // Sanitize locale to alphanumeric+hyphen only (defense in depth).
+  const safeLang = locale.replace(/[^a-zA-Z0-9-]/g, "");
+
   return (
-    <NextIntlClientProvider messages={messages}>
+    <>
+      <script dangerouslySetInnerHTML={{ __html: `document.documentElement.lang="${safeLang}";` }} />
+      <NextIntlClientProvider messages={messages}>
       <ThemeProvider
         attribute="class"
         defaultTheme="system"
@@ -47,5 +53,6 @@ export default async function LocaleLayout({
         </Providers>
       </ThemeProvider>
     </NextIntlClientProvider>
+    </>
   );
 }

@@ -41,38 +41,38 @@ export function StepAssignment({ form }: StepAssignmentProps) {
       {/* Owner (required) */}
       <div className="space-y-2">
         <Label className="text-[13px]">{t("owner")}</Label>
-        <Select
-          value={watch("ownerUserId") ?? ""}
-          onValueChange={(value) =>
-            setValue("ownerUserId", value ?? "", {
-              shouldDirty: true,
-              shouldValidate: true,
-            })
-          }
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder={t("owner")} />
-          </SelectTrigger>
-          <SelectContent>
-            {(users as Array<{ id?: string; userId?: string; name?: string | null; email?: string | null }>).map(
-              (user) => {
-                const userId = user.id ?? user.userId ?? "";
-                return (
-                  <SelectItem key={userId} value={userId}>
-                    <div className="flex flex-col">
-                      <span>{user.name ?? user.email ?? userId}</span>
-                      {user.name && user.email && (
-                        <span className="text-xs text-muted-foreground">
-                          {user.email}
-                        </span>
-                      )}
-                    </div>
+        {(() => {
+          const ownerItems = (users as unknown as Array<{ id?: string; userId?: string; role?: string; user?: { id: string; name: string | null; email: string; image?: string | null } }>).map(
+            (member) => {
+              const userId = member.userId ?? member.user?.id ?? member.id ?? "";
+              const label = member.user?.name ?? member.user?.email ?? userId;
+              return { value: userId, label };
+            },
+          );
+          return (
+            <Select
+              value={watch("ownerUserId") ?? ""}
+              onValueChange={(value) =>
+                setValue("ownerUserId", value ?? "", {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                })
+              }
+              items={ownerItems}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder={t("owner")} />
+              </SelectTrigger>
+              <SelectContent>
+                {ownerItems.map((item) => (
+                  <SelectItem key={item.value} value={item.value}>
+                    {item.label}
                   </SelectItem>
-                );
-              },
-            )}
-          </SelectContent>
-        </Select>
+                ))}
+              </SelectContent>
+            </Select>
+          );
+        })()}
         {errors.ownerUserId && (
           <p className="text-sm text-destructive">
             {errors.ownerUserId.message}

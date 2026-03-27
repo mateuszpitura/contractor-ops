@@ -8,6 +8,7 @@ import {
   contractorLifecycleTransitionSchema,
   gusLookupSchema,
 } from "@contractor-ops/validators";
+import * as E from "../errors.js";
 import { router } from "../init.js";
 import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
@@ -337,7 +338,7 @@ export const contractorRouter = router({
       if (!contractor) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Contractor not found",
+          message: E.CONTRACTOR_NOT_FOUND,
         });
       }
 
@@ -477,7 +478,7 @@ export const contractorRouter = router({
       if (!existing) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Contractor not found",
+          message: E.CONTRACTOR_NOT_FOUND,
         });
       }
 
@@ -564,7 +565,7 @@ export const contractorRouter = router({
       if (!contractor) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Contractor not found",
+          message: E.CONTRACTOR_NOT_FOUND,
         });
       }
 
@@ -573,7 +574,7 @@ export const contractorRouter = router({
       if (!allowedTargets.includes(input.stage)) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: `Cannot transition from ${contractor.lifecycleStage} to ${input.stage}. Allowed: ${allowedTargets.join(", ") || "none"}`,
+          message: E.CONTRACTOR_INVALID_TRANSITION,
         });
       }
 
@@ -618,7 +619,7 @@ export const contractorRouter = router({
       if (!contractor) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Contractor not found",
+          message: E.CONTRACTOR_NOT_FOUND,
         });
       }
 
@@ -795,7 +796,7 @@ export const contractorRouter = router({
           });
         }
       } catch {
-        return { found: false as const, error: "GUS lookup failed" };
+        return { found: false as const, error: E.GUS_LOOKUP_FAILED };
       }
     }),
 });

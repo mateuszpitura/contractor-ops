@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { AnimateIn } from "@/components/shared/animate-in";
 import { Button } from "@/components/ui/button";
 import { UserPlus } from "lucide-react";
 import { UsersTable } from "@/components/settings/users-table";
@@ -21,23 +22,27 @@ export default function MembersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-[20px] font-semibold">{t("title")}</h1>
-          <p className="text-sm text-muted-foreground">
-            {t("subtitle")}
-          </p>
+      <AnimateIn delay={0}>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="font-display text-[22px] font-semibold leading-tight tracking-tight">{t("title")}</h1>
+            <p className="text-sm text-muted-foreground">
+              {t("subtitle")}
+            </p>
+          </div>
+
+          {canInvite && (
+            <Button onClick={() => setInviteOpen(true)}>
+              <UserPlus className="mr-2 h-4 w-4" />
+              {t("inviteCta")}
+            </Button>
+          )}
         </div>
+      </AnimateIn>
 
-        {canInvite && (
-          <Button onClick={() => setInviteOpen(true)}>
-            <UserPlus className="mr-2 h-4 w-4" />
-            {t("inviteCta")}
-          </Button>
-        )}
-      </div>
-
-      <UsersTable />
+      <AnimateIn delay={1}>
+        <UsersTable />
+      </AnimateIn>
 
       <InviteDialog open={inviteOpen} onOpenChange={setInviteOpen} />
     </div>

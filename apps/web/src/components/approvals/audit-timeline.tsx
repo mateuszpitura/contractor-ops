@@ -19,6 +19,7 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { getAvatarInitials } from "@/lib/avatar-initials";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -184,18 +185,6 @@ function CommentText({ text, t }: { text: string; t: TranslateFn }) {
 // Initials helper
 // ---------------------------------------------------------------------------
 
-function getInitials(name: string | null, email: string): string {
-  if (name) {
-    return name
-      .split(" ")
-      .map((part) => part[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase();
-  }
-  return email.slice(0, 2).toUpperCase();
-}
-
 // ---------------------------------------------------------------------------
 // Human event entry
 // ---------------------------------------------------------------------------
@@ -213,7 +202,7 @@ function HumanEntry({ event, t }: { event: AuditEvent; t: TranslateFn }) {
       <Avatar className="shrink-0">
         {event.actor.image && <AvatarImage src={event.actor.image} />}
         <AvatarFallback>
-          {getInitials(event.actor.name, event.actor.email)}
+          {getAvatarInitials(event.actor.name, event.actor.email)}
         </AvatarFallback>
       </Avatar>
 

@@ -65,6 +65,7 @@ export function InviteDialog({
 }) {
   const t = useTranslations("Users.inviteDialog");
   const tr = useTranslations("Users.roles");
+  const tToast = useTranslations("Settings.toast");
   const queryClient = useQueryClient();
 
   const inviteMutation = useMutation(
@@ -79,7 +80,7 @@ export function InviteDialog({
           typeof error === "object" && error && "message" in error
             ? String((error as { message?: unknown }).message ?? "")
             : "";
-        toast.error(message || "Failed to send invite");
+        toast.error(message || tToast("inviteFailed"));
       },
     }),
   );
@@ -99,6 +100,11 @@ export function InviteDialog({
   useEffect(() => {
     if (!open) reset({ email: "", role: "readonly" });
   }, [open, reset]);
+
+  const roleItems = roleKeys.map((role) => ({
+    value: role,
+    label: tr(role),
+  }));
 
   const onSubmit = (values: InviteValues) => {
     inviteMutation.mutate(values);
@@ -139,14 +145,15 @@ export function InviteDialog({
               value={watch("role")}
               onValueChange={(value) => setValue("role", value as InviteValues["role"])}
               disabled={inviteMutation.isPending}
+              items={roleItems}
             >
               <SelectTrigger id="invite-role">
                 <SelectValue placeholder={t("rolePlaceholder")} />
               </SelectTrigger>
               <SelectContent>
-                {roleKeys.map((role) => (
-                  <SelectItem key={role} value={role}>
-                    {tr(role)}
+                {roleItems.map((item) => (
+                  <SelectItem key={item.value} value={item.value}>
+                    {item.label}
                   </SelectItem>
                 ))}
               </SelectContent>

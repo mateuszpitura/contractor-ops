@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -20,35 +21,31 @@ import {
 import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
-// Field label mapping
+// Field label key mapping
 // ---------------------------------------------------------------------------
 
-const FIELD_LABELS: Record<string, string> = {
-  bankAccountNumber: "Bank Account",
-  bankName: "Bank Name",
-  swiftBic: "SWIFT/BIC",
-  taxId: "Tax ID",
-  displayName: "Display Name",
-  phone: "Phone",
-  addressLine1: "Address Line 1",
-  addressLine2: "Address Line 2",
-  city: "City",
-  postalCode: "Postal Code",
-  countryCode: "Country",
+const FIELD_LABEL_KEYS: Record<string, string> = {
+  bankAccountNumber: "bankAccount",
+  bankName: "bankName",
+  swiftBic: "swiftBic",
+  taxId: "taxId",
+  displayName: "displayName",
+  phone: "phone",
+  addressLine1: "addressLine1",
+  addressLine2: "addressLine2",
+  city: "city",
+  postalCode: "postalCode",
+  countryCode: "country",
 };
 
-function getFieldLabel(key: string): string {
-  return FIELD_LABELS[key] ?? key.replace(/([A-Z])/g, " $1").trim();
-}
-
 // ---------------------------------------------------------------------------
-// Status badge mapping (per UI-SPEC)
+// Status badge variant mapping (per UI-SPEC)
 // ---------------------------------------------------------------------------
 
-const STATUS_BADGE_MAP = {
-  PENDING: { variant: "warning" as const, label: "Pending" },
-  APPROVED: { variant: "success" as const, label: "Approved" },
-  REJECTED: { variant: "destructive" as const, label: "Rejected" },
+const STATUS_BADGE_VARIANTS = {
+  PENDING: "warning" as const,
+  APPROVED: "success" as const,
+  REJECTED: "destructive" as const,
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -85,6 +82,7 @@ export function ChangeRequestDiffCard({
   onApproved,
   onRejected,
 }: ChangeRequestDiffCardProps) {
+  const t = useTranslations("Settings.changeRequest");
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [rejectComment, setRejectComment] = useState("");
 
@@ -95,13 +93,11 @@ export function ChangeRequestDiffCard({
   const approveMutation = useMutation(
     trpc.settings.reviewChangeRequest.mutationOptions({
       onSuccess: () => {
-        toast.success(
-          "Change request approved. Contractor profile updated.",
-        );
+        toast.success(t("toast.approved"));
         onApproved?.();
       },
       onError: () => {
-        toast.error("Failed to approve change request. Please try again.");
+        toast.error(t("toast.approveFailed"));
       },
     }),
   );
@@ -109,15 +105,13 @@ export function ChangeRequestDiffCard({
   const rejectMutation = useMutation(
     trpc.settings.reviewChangeRequest.mutationOptions({
       onSuccess: () => {
-        toast.success(
-          "Change request rejected. Contractor has been notified.",
-        );
+        toast.success(t("toast.rejected"));
         setRejectDialogOpen(false);
         setRejectComment("");
         onRejected?.();
       },
       onError: () => {
-        toast.error("Failed to reject change request. Please try again.");
+        toast.error(t("toast.rejectFailed"));
       },
     }),
   );
@@ -150,7 +144,15 @@ export function ChangeRequestDiffCard({
     typeof request.createdAt === "string"
       ? new Date(request.createdAt)
       : request.createdAt;
-  const statusBadge = STATUS_BADGE_MAP[request.status];
+  const statusVariant = STATUS_BADGE_VARIANTS[request.status];
+
+  function getFieldLabel(key: string): string {
+    const labelKey = FIELD_LABEL_KEYS[key];
+    if (labelKey) {
+      return t(`fieldLabels.${labelKey}` as Parameters<typeof t>[0]);
+    }
+    return key.replace(/([A-Z])/g, " $1").trim();
+  }
 
   // -------------------------------------------------------------------------
   // Render
@@ -163,7 +165,7 @@ export function ChangeRequestDiffCard({
           <div className="flex items-start justify-between gap-4">
             <div>
               <h4 className="text-sm font-semibold">
-                Profile Change Request
+                {t("title")}
               </h4>
               <p className="text-sm text-muted-foreground">
                 {request.contractorName} &middot; {request.contractorEmail}
@@ -173,7 +175,7 @@ export function ChangeRequestDiffCard({
               </p>
             </div>
             {request.status !== "PENDING" && (
-              <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
+              <Badge variant={statusVariant}>{t(`status.${request.status}`)}</Badge>
             )}
           </div>
         </CardHeader>
@@ -182,15 +184,15 @@ export function ChangeRequestDiffCard({
           <div className="overflow-x-auto rounded-md border">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b bg-muted/50">
-                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">
-                    Field
+                <tr className="border-b bg-muted/30">
+                  <th scope="col" className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    {t("table.field")}
                   </th>
-                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">
-                    Current Value
+                  <th scope="col" className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    {t("table.currentValue")}
                   </th>
-                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">
-                    Requested Value
+                  <th scope="col" className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    {t("table.requestedValue")}
                   </th>
                 </tr>
               </thead>
@@ -221,7 +223,7 @@ export function ChangeRequestDiffCard({
                   approveMutation.isPending || rejectMutation.isPending
                 }
               >
-                {approveMutation.isPending ? "Approving..." : "Approve Changes"}
+                {approveMutation.isPending ? t("approving") : t("approveChanges")}
               </Button>
               <Button
                 variant="outline"
@@ -231,7 +233,7 @@ export function ChangeRequestDiffCard({
                   approveMutation.isPending || rejectMutation.isPending
                 }
               >
-                Reject Changes
+                {t("rejectChanges")}
               </Button>
             </div>
           )}
@@ -245,14 +247,13 @@ export function ChangeRequestDiffCard({
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Reject Change Request</DialogTitle>
+            <DialogTitle>{t("rejectTitle")}</DialogTitle>
             <DialogDescription>
-              Optionally provide a reason for rejection. The contractor will
-              be notified.
+              {t("rejectDescription")}
             </DialogDescription>
           </DialogHeader>
           <Textarea
-            placeholder="Reason for rejection (optional)"
+            placeholder={t("rejectPlaceholder")}
             value={rejectComment}
             onChange={(e) => setRejectComment(e.target.value)}
             rows={3}
@@ -264,8 +265,8 @@ export function ChangeRequestDiffCard({
               disabled={rejectMutation.isPending}
             >
               {rejectMutation.isPending
-                ? "Rejecting..."
-                : "Confirm Rejection"}
+                ? t("rejecting")
+                : t("confirmRejection")}
             </Button>
           </DialogFooter>
         </DialogContent>

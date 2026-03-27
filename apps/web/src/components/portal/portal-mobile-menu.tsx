@@ -10,6 +10,7 @@ import {
   LogOut,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -25,14 +26,16 @@ import {
 // Navigation items (same as top bar)
 // ---------------------------------------------------------------------------
 
-const NAV_ITEMS = [
-  { label: "Overview", href: "/portal", icon: LayoutDashboard },
-  { label: "Contracts", href: "/portal/contracts", icon: FileText },
-  { label: "Invoices", href: "/portal/invoices", icon: Receipt },
-  { label: "Documents", href: "/portal/documents", icon: FolderOpen },
-  { label: "Payments", href: "/portal/payments", icon: Banknote },
-  { label: "Settings", href: "/portal/settings", icon: Settings },
-] as const;
+function getNavItems(t: (key: string) => string) {
+  return [
+    { label: t("overview"), href: "/portal", icon: LayoutDashboard },
+    { label: t("contracts"), href: "/portal/contracts", icon: FileText },
+    { label: t("invoices"), href: "/portal/invoices", icon: Receipt },
+    { label: t("documents"), href: "/portal/documents", icon: FolderOpen },
+    { label: t("payments"), href: "/portal/payments", icon: Banknote },
+    { label: t("settings"), href: "/portal/settings", icon: Settings },
+  ] as const;
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -75,8 +78,12 @@ export function PortalMobileMenu({
   contractorName,
   contractorEmail,
 }: PortalMobileMenuProps) {
+  const tAria = useTranslations("Common.aria");
+  const t = useTranslations("Portal.nav");
   const pathname = usePathname();
   const router = useRouter();
+
+  const NAV_ITEMS = getNavItems(t);
 
   const handleNavClick = (href: string) => {
     onOpenChange(false);
@@ -98,12 +105,12 @@ export function PortalMobileMenu({
         <SheetHeader>
           <SheetTitle>{orgName}</SheetTitle>
           <SheetDescription className="sr-only">
-            Portal navigation menu
+            {t("menuDescription")}
           </SheetDescription>
         </SheetHeader>
 
         {/* Navigation links */}
-        <nav className="flex flex-col flex-1" aria-label="Mobile portal navigation">
+        <nav className="flex flex-col flex-1" aria-label={tAria("mobilePortalNavigation")}>
           {NAV_ITEMS.map((item) => {
             const active = isNavActive(item.href, pathname);
             return (
@@ -138,7 +145,7 @@ export function PortalMobileMenu({
             onClick={handleLogout}
           >
             <LogOut className="mr-2 h-4 w-4" />
-            Sign out
+            {t("signOut")}
           </Button>
         </div>
       </SheetContent>

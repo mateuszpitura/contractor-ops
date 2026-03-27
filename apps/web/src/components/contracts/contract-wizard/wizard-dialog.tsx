@@ -227,11 +227,12 @@ export function ContractWizardDialog({
   });
 
   // Fetch contractor data for pre-fill when contractorId is provided
-  const { data: contractorData } = useQuery(
-    trpc.contractor.getById.queryOptions(
+  const { data: contractorData } = useQuery({
+    ...trpc.contractor.getById.queryOptions(
       { id: contractorId ?? "" },
     ),
-  );
+    enabled: !!contractorId,
+  });
 
   // Pre-fill financial terms from contractor billing profile
   const hasPreFilled = useRef(false);
@@ -484,7 +485,7 @@ export function ContractWizardDialog({
             <AlertDialogCancel>{t("discardConfirm.keep")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDiscard}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              variant="destructive"
             >
               {t("discardConfirm.discard")}
             </AlertDialogAction>

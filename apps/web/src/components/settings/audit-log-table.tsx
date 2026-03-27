@@ -8,7 +8,7 @@ import {
   type ColumnDef,
 } from "@tanstack/react-table";
 import { formatDistanceToNow, format } from "date-fns";
-import { ChevronRight, ArrowUpDown } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, ChevronRight, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
@@ -63,6 +63,7 @@ interface AuditLogTableProps {
   expandedRows: Record<string, boolean>;
   onToggleRow: (id: string) => void;
   isLoading?: boolean;
+  isFetching?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -98,6 +99,7 @@ export function AuditLogTable({
   expandedRows,
   onToggleRow,
   isLoading,
+  isFetching,
 }: AuditLogTableProps) {
   const t = useTranslations("Settings.auditLog");
 
@@ -110,13 +112,19 @@ export function AuditLogTable({
         header: () => (
           <button
             type="button"
-            className="flex items-center gap-1 hover:text-foreground"
+            className="flex items-center gap-1 uppercase hover:text-foreground"
             onClick={() =>
               onSortOrderChange(sortOrder === "desc" ? "asc" : "desc")
             }
           >
             {t("columns.timestamp")}
-            <ArrowUpDown className="size-3.5" />
+            {sortOrder === "asc" ? (
+              <ArrowUp className="h-3 w-3" />
+            ) : sortOrder === "desc" ? (
+              <ArrowDown className="h-3 w-3" />
+            ) : (
+              <ArrowUpDown className="h-3 w-3 opacity-40" />
+            )}
           </button>
         ),
         size: 140,
@@ -284,7 +292,13 @@ export function AuditLogTable({
   }
 
   return (
-    <div className="rounded-xl border bg-background">
+    <div className="relative rounded-xl border bg-background">
+      {/* Refetch overlay */}
+      {isFetching && !isLoading && (
+        <div className="absolute inset-0 z-10 flex items-start justify-center rounded-xl bg-background/60 pt-20">
+          <Loader2 className="h-5 w-5 animate-spin text-primary" />
+        </div>
+      )}
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
@@ -292,7 +306,6 @@ export function AuditLogTable({
               {headerGroup.headers.map((header) => (
                 <TableHead
                   key={header.id}
-                  className="whitespace-nowrap text-[13px]"
                   style={
                     header.column.getSize() !== 150
                       ? { width: header.column.getSize() }

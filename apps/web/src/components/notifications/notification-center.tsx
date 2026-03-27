@@ -9,6 +9,7 @@ import { toast } from "sonner";
 
 import { trpc } from "@/trpc/init";
 import { useRouter } from "@/i18n/navigation";
+import { AnimateIn } from "@/components/shared/animate-in";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -162,17 +163,19 @@ export function NotificationCenter() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       {/* Page header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-[20px] font-semibold">{t("title")}</h1>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => markAllReadMutation.mutate()}
-          disabled={unreadCount === 0 || markAllReadMutation.isPending}
-        >
-          {t("markAllRead")}
-        </Button>
-      </div>
+      <AnimateIn delay={0}>
+        <div className="flex items-center justify-between">
+          <h1 className="font-display text-[22px] font-semibold leading-tight tracking-tight">{t("title")}</h1>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => markAllReadMutation.mutate()}
+            disabled={unreadCount === 0 || markAllReadMutation.isPending}
+          >
+            {t("markAllRead")}
+          </Button>
+        </div>
+      </AnimateIn>
 
       {/* Filter bar */}
       <div className="flex flex-wrap items-center gap-2">

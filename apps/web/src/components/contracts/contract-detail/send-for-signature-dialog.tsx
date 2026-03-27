@@ -22,7 +22,9 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
+import { useTranslations } from "next-intl";
 import { trpc } from "@/trpc/init";
+import { getAvatarInitials } from "@/lib/avatar-initials";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -79,6 +81,8 @@ function SortableSignerRow({
   signer: Signer;
   index: number;
 }) {
+  const tAria = useTranslations("Common.aria");
+  const t = useTranslations("ContractDetail.signing.sendDialog");
   const {
     attributes,
     listeners,
@@ -94,13 +98,7 @@ function SortableSignerRow({
     opacity: isDragging ? 0.5 : 1,
   };
 
-  const initials = signer.name
-    .split(" ")
-    .map((w) => w[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
+  const initials = getAvatarInitials(signer.name, signer.email);
 
   return (
     <div
@@ -111,7 +109,7 @@ function SortableSignerRow({
       <button
         type="button"
         className="shrink-0 cursor-grab touch-none text-muted-foreground hover:text-foreground"
-        aria-label="Drag to reorder"
+        aria-label={tAria("dragToReorder")}
         {...attributes}
         {...listeners}
       >
@@ -128,7 +126,7 @@ function SortableSignerRow({
       </div>
 
       <Badge variant="secondary" className="shrink-0">
-        {signer.role === "signer" ? "Contractor" : "Countersigner"}
+        {signer.role === "signer" ? t("contractor") : t("countersigner")}
       </Badge>
     </div>
   );
@@ -151,6 +149,8 @@ export function SendForSignatureDialog({
   contractParties,
 }: SendForSignatureDialogProps) {
   const queryClient = useQueryClient();
+  const tSend = useTranslations("ContractDetail.signing.sendDialog");
+  const tToast = useTranslations("ContractDetail.signing.toast");
 
   // ---------------------------------------------------------------------------
   // Provider selection
@@ -218,7 +218,7 @@ export function SendForSignatureDialog({
   const sendMutation = useMutation(
     trpc.esign.sendForSignature.mutationOptions({
       onSuccess: () => {
-        toast.success("Document sent for signature");
+        toast.success(tToast("sentForSignature"));
         queryClient.invalidateQueries({
           queryKey: trpc.esign.listEnvelopes.queryKey(),
         });
@@ -229,7 +229,7 @@ export function SendForSignatureDialog({
         resetForm();
       },
       onError: () => {
-        toast.error("Failed to send for signature. Please try again.");
+        toast.error(tToast("sendFailed"));
       },
     })
   );
@@ -276,13 +276,13 @@ export function SendForSignatureDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[640px] p-0">
+      <DialogContent className="sm:max-w-[640px] p-0">
         <DialogHeader className="px-6 pt-6">
           <DialogTitle className="text-xl font-semibold">
-            Send for Signature
+            {tSend("title")}
           </DialogTitle>
           <DialogDescription>
-            Choose a signing provider and configure signers for this document.
+            {tSend("description")}
           </DialogDescription>
         </DialogHeader>
 
@@ -290,7 +290,7 @@ export function SendForSignatureDialog({
           <div className="space-y-4 px-6 pb-2">
             {/* Section 1: Provider */}
             <div className="space-y-2">
-              <Label>Signing Provider</Label>
+              <Label>{tSend("providerLabel")}</Label>
               {connectionsQuery.isPending ? (
                 <Skeleton className="h-9 w-full" />
               ) : (
@@ -299,7 +299,7 @@ export function SendForSignatureDialog({
                   onValueChange={(val) => setSelectedConnectionId(val ?? "")}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a provider" />
+                    <SelectValue placeholder={tSend("providerPlaceholder")} />
                   </SelectTrigger>
                   <SelectContent>
                     {esignConnections.map((conn) => (
@@ -311,8 +311,7 @@ export function SendForSignatureDialog({
                     ))}
                     {esignConnections.length === 0 && (
                       <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                        No signing providers connected. Connect DocuSign or
-                        Autenti in Settings &gt; Integrations.
+                        {tSend("noProviders")}
                       </div>
                     )}
                   </SelectContent>
@@ -322,7 +321,7 @@ export function SendForSignatureDialog({
 
             {/* Section 2: Signers */}
             <div className="space-y-2">
-              <Label>Signers</Label>
+              <Label>{tSend("signersLabel")}</Label>
               {signers.length > 0 ? (
                 <DndContext
                   sensors={sensors}
@@ -346,7 +345,7 @@ export function SendForSignatureDialog({
                 </DndContext>
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  No signers configured. Add contract parties first.
+                  {tSend("noSigners")}
                 </p>
               )}
 
@@ -367,17 +366,17 @@ export function SendForSignatureDialog({
                   }
                 >
                   <Plus className="size-3.5" />
-                  Add countersigner
+                  {tSend("addCountersigner")}
                 </button>
               )}
             </div>
 
             {/* Section 3: Message */}
             <div className="space-y-2">
-              <Label>Message to Signers</Label>
+              <Label>{tSend("messageLabel")}</Label>
               <Textarea
                 rows={3}
-                placeholder="Optional message included in the signing email"
+                placeholder={tSend("messagePlaceholder")}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
               />
@@ -385,14 +384,14 @@ export function SendForSignatureDialog({
 
             {/* Section 4: Document */}
             <div className="space-y-2">
-              <Label>Document</Label>
+              <Label>{tSend("documentLabel")}</Label>
               <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
                 <div className="flex size-10 items-center justify-center rounded-md bg-background">
                   <FileText className="size-5 text-muted-foreground" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">
-                    {documentId || "No document selected"}
+                    {documentId || tSend("noDocument")}
                   </p>
                 </div>
               </div>
@@ -401,7 +400,7 @@ export function SendForSignatureDialog({
             {/* Section 5: Options */}
             <div className="flex gap-2">
               <div className="flex-1 space-y-2">
-                <Label>Expires After</Label>
+                <Label>{tSend("expiresLabel")}</Label>
                 <Select
                   value={expiresInDays}
                   onValueChange={(val) => setExpiresInDays(val ?? "14")}
@@ -410,16 +409,16 @@ export function SendForSignatureDialog({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="7">7 days</SelectItem>
-                    <SelectItem value="14">14 days</SelectItem>
-                    <SelectItem value="30">30 days</SelectItem>
-                    <SelectItem value="60">60 days</SelectItem>
+                    <SelectItem value="7">{tSend("expires7")}</SelectItem>
+                    <SelectItem value="14">{tSend("expires14")}</SelectItem>
+                    <SelectItem value="30">{tSend("expires30")}</SelectItem>
+                    <SelectItem value="60">{tSend("expires60")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="flex-1 space-y-2">
-                <Label>Send Reminders</Label>
+                <Label>{tSend("remindersLabel")}</Label>
                 <Select
                   value={reminderInterval}
                   onValueChange={(val) => setReminderInterval(val ?? "7")}
@@ -428,9 +427,9 @@ export function SendForSignatureDialog({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    <SelectItem value="3">Every 3 days</SelectItem>
-                    <SelectItem value="7">Every 7 days</SelectItem>
+                    <SelectItem value="none">{tSend("reminderNone")}</SelectItem>
+                    <SelectItem value="3">{tSend("reminderEvery3")}</SelectItem>
+                    <SelectItem value="7">{tSend("reminderEvery7")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -446,7 +445,7 @@ export function SendForSignatureDialog({
               resetForm();
             }}
           >
-            Discard
+            {tSend("discard")}
           </Button>
           <Button
             onClick={handleSubmit}
@@ -460,10 +459,10 @@ export function SendForSignatureDialog({
             {sendMutation.isPending ? (
               <>
                 <Loader2 className="mr-1.5 size-4 animate-spin" />
-                Sending...
+                {tSend("sending")}
               </>
             ) : (
-              "Send for Signature"
+              tSend("send")
             )}
           </Button>
         </DialogFooter>

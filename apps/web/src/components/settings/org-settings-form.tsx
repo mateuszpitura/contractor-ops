@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Loader2 } from "lucide-react";
+import { Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,9 +19,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/trpc/init";
+
+// ---------------------------------------------------------------------------
+// Schema
+// ---------------------------------------------------------------------------
 
 const updateSettingsSchema = z.object({
   name: z.string().min(2).max(255),
@@ -36,44 +40,89 @@ const updateSettingsSchema = z.object({
 
 type SettingsValues = z.infer<typeof updateSettingsSchema>;
 
-const countries = [
-  { value: "PL", label: "Poland" },
-  { value: "DE", label: "Germany" },
-  { value: "GB", label: "United Kingdom" },
-  { value: "US", label: "United States" },
-  { value: "CZ", label: "Czech Republic" },
-  { value: "SK", label: "Slovakia" },
-];
+// ---------------------------------------------------------------------------
+// Reference data — built from Intl APIs for completeness
+// ---------------------------------------------------------------------------
 
-const currencies = [
-  { value: "PLN", label: "PLN - Polish Zloty" },
-  { value: "EUR", label: "EUR - Euro" },
-  { value: "USD", label: "USD - US Dollar" },
-  { value: "GBP", label: "GBP - British Pound" },
-  { value: "CZK", label: "CZK - Czech Koruna" },
-];
+/** All IANA timezones from the browser's Intl API */
+function getAllTimezones(): Array<{ value: string; label: string }> {
+  try {
+    const zones = Intl.supportedValuesOf("timeZone");
+    return zones.map((tz) => {
+      // Format: "Europe/Warsaw" → "Europe/Warsaw (GMT+1)"
+      try {
+        const offset = new Intl.DateTimeFormat("en", {
+          timeZone: tz,
+          timeZoneName: "shortOffset",
+        })
+          .formatToParts(new Date())
+          .find((p) => p.type === "timeZoneName")?.value ?? "";
+        return { value: tz, label: `${tz.replace(/_/g, " ")} (${offset})` };
+      } catch {
+        return { value: tz, label: tz.replace(/_/g, " ") };
+      }
+    });
+  } catch {
+    // Fallback for older browsers
+    return [
+      { value: "Europe/Warsaw", label: "Europe/Warsaw (GMT+1)" },
+      { value: "Europe/Berlin", label: "Europe/Berlin (GMT+1)" },
+      { value: "Europe/London", label: "Europe/London (GMT+0)" },
+      { value: "America/New_York", label: "America/New York (GMT-5)" },
+      { value: "UTC", label: "UTC" },
+    ];
+  }
+}
 
-const timezones = [
-  { value: "Europe/Warsaw", label: "Europe/Warsaw" },
-  { value: "Europe/Berlin", label: "Europe/Berlin" },
-  { value: "Europe/London", label: "Europe/London" },
-  { value: "UTC", label: "UTC" },
-];
+/** All currencies via Intl.DisplayNames */
+function getAllCurrencies(): Array<{ value: string; label: string }> {
+  // Common currencies first, then alphabetical
+  const common = ["PLN", "EUR", "USD", "GBP", "CHF", "CZK", "SEK", "NOK", "DKK", "HUF", "RON", "BGN", "HRK", "UAH", "JPY", "CNY", "AUD", "CAD", "BRL", "INR"];
+  try {
+    const displayNames = new Intl.DisplayNames(["en"], { type: "currency" });
+    return common.map((code) => ({
+      value: code,
+      label: `${code} — ${displayNames.of(code) ?? code}`,
+    }));
+  } catch {
+    return common.map((code) => ({ value: code, label: code }));
+  }
+}
 
-const months = [
-  { value: 1, label: "January" },
-  { value: 2, label: "February" },
-  { value: 3, label: "March" },
-  { value: 4, label: "April" },
-  { value: 5, label: "May" },
-  { value: 6, label: "June" },
-  { value: 7, label: "July" },
-  { value: 8, label: "August" },
-  { value: 9, label: "September" },
-  { value: 10, label: "October" },
-  { value: 11, label: "November" },
-  { value: 12, label: "December" },
-];
+/** All countries via Intl.DisplayNames */
+function getAllCountries(): Array<{ value: string; label: string }> {
+  const codes = [
+    "PL", "DE", "GB", "US", "FR", "IT", "ES", "NL", "BE", "AT", "CH",
+    "CZ", "SK", "HU", "RO", "BG", "HR", "SI", "LT", "LV", "EE",
+    "SE", "NO", "DK", "FI", "IE", "PT", "GR", "UA", "CA", "AU",
+    "JP", "CN", "IN", "BR", "MX", "KR", "SG", "HK", "NZ", "IL",
+    "AE", "SA", "ZA", "TR", "AR", "CL", "CO", "PE",
+  ];
+  try {
+    const displayNames = new Intl.DisplayNames(["en"], { type: "region" });
+    return codes
+      .map((code) => ({
+        value: code,
+        label: displayNames.of(code) ?? code,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  } catch {
+    return codes.map((code) => ({ value: code, label: code })).sort((a, b) => a.label.localeCompare(b.label));
+  }
+}
+
+/** Locale-aware month names via Intl.DateTimeFormat */
+function getMonths(locale: string): Array<{ value: number; label: string }> {
+  const formatter = new Intl.DateTimeFormat(locale, { month: "long" });
+  return Array.from({ length: 12 }, (_, i) => ({
+    value: i + 1,
+    label: formatter.format(new Date(2024, i, 1)),
+  }));
+}
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
 
 /**
  * Organization settings form.
@@ -81,7 +130,15 @@ const months = [
  */
 export function OrgSettingsForm() {
   const t = useTranslations("Settings");
+  const tToast = useTranslations("Settings.toast");
+  const locale = useLocale();
   const queryClient = useQueryClient();
+
+  // Memoize reference data so it's only computed once
+  const timezones = useMemo(() => getAllTimezones(), []);
+  const currencies = useMemo(() => getAllCurrencies(), []);
+  const countries = useMemo(() => getAllCountries(), []);
+  const months = useMemo(() => getMonths(locale), [locale]);
 
   const settingsQuery = useQuery(trpc.settings.get.queryOptions());
 
@@ -96,7 +153,7 @@ export function OrgSettingsForm() {
           typeof error === "object" && error && "message" in error
             ? String((error as { message?: unknown }).message ?? "")
             : "";
-        toast.error(message || "Failed to save settings");
+        toast.error(message || tToast("saveSettingsFailed"));
       },
     }),
   );
@@ -107,7 +164,7 @@ export function OrgSettingsForm() {
     setValue,
     watch,
     reset,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<SettingsValues>({
     resolver: zodResolver(updateSettingsSchema),
     defaultValues: {
@@ -160,7 +217,7 @@ export function OrgSettingsForm() {
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="space-y-2">
               <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-9 w-full" />
+              <Skeleton className="h-8 w-full max-w-lg" />
             </div>
           ))}
         </CardContent>
@@ -169,13 +226,14 @@ export function OrgSettingsForm() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t("tabs.general")}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-w-lg">
-          <div className="space-y-2">
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("tabs.general")}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-5 max-w-lg">
+          {/* Organization name */}
+          <div className="space-y-1.5">
             <Label htmlFor="name" className="text-[13px]">
               {t("fields.orgName")}
             </Label>
@@ -189,7 +247,8 @@ export function OrgSettingsForm() {
             )}
           </div>
 
-          <div className="space-y-2">
+          {/* Legal name */}
+          <div className="space-y-1.5">
             <Label htmlFor="legalName" className="text-[13px]">
               {t("fields.legalName")}{" "}
               <span className="text-muted-foreground">{t("fields.legalNameOptional")}</span>
@@ -201,21 +260,23 @@ export function OrgSettingsForm() {
             />
           </div>
 
-          <div className="space-y-2">
+          {/* Country */}
+          <div className="space-y-1.5">
             <Label htmlFor="country" className="text-[13px]">
               {t("fields.country")}
             </Label>
             <Select
               value={watch("country")}
               onValueChange={(value) => {
-                if (value) setValue("country", value);
+                if (value) setValue("country", value, { shouldDirty: true });
               }}
               disabled={updateMutation.isPending}
+              items={countries}
             >
-              <SelectTrigger id="country">
+              <SelectTrigger id="country" className="w-full">
                 <SelectValue placeholder={t("fields.countryPlaceholder")} />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="max-h-60">
                 {countries.map((c) => (
                   <SelectItem key={c.value} value={c.value}>
                     {c.label}
@@ -225,21 +286,23 @@ export function OrgSettingsForm() {
             </Select>
           </div>
 
-          <div className="space-y-2">
+          {/* Currency */}
+          <div className="space-y-1.5">
             <Label htmlFor="currency" className="text-[13px]">
               {t("fields.currency")}
             </Label>
             <Select
               value={watch("currency")}
               onValueChange={(value) => {
-                if (value) setValue("currency", value);
+                if (value) setValue("currency", value, { shouldDirty: true });
               }}
               disabled={updateMutation.isPending}
+              items={currencies}
             >
-              <SelectTrigger id="currency">
+              <SelectTrigger id="currency" className="w-full">
                 <SelectValue placeholder={t("fields.currencyPlaceholder")} />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="max-h-60">
                 {currencies.map((c) => (
                   <SelectItem key={c.value} value={c.value}>
                     {c.label}
@@ -249,21 +312,23 @@ export function OrgSettingsForm() {
             </Select>
           </div>
 
-          <div className="space-y-2">
+          {/* Timezone */}
+          <div className="space-y-1.5">
             <Label htmlFor="timezone" className="text-[13px]">
               {t("fields.timezone")}
             </Label>
             <Select
               value={watch("timezone")}
               onValueChange={(value) => {
-                if (value) setValue("timezone", value);
+                if (value) setValue("timezone", value, { shouldDirty: true });
               }}
               disabled={updateMutation.isPending}
+              items={timezones}
             >
-              <SelectTrigger id="timezone">
+              <SelectTrigger id="timezone" className="w-full">
                 <SelectValue placeholder={t("fields.timezonePlaceholder")} />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="max-h-60">
                 {timezones.map((tz) => (
                   <SelectItem key={tz.value} value={tz.value}>
                     {tz.label}
@@ -273,18 +338,23 @@ export function OrgSettingsForm() {
             </Select>
           </div>
 
-          <div className="space-y-2">
+          {/* Language */}
+          <div className="space-y-1.5">
             <Label htmlFor="language" className="text-[13px]">
               {t("fields.language")}
             </Label>
             <Select
               value={watch("language")}
               onValueChange={(value) => {
-                if (value) setValue("language", value as "pl" | "en");
+                if (value) setValue("language", value as "pl" | "en", { shouldDirty: true });
               }}
               disabled={updateMutation.isPending}
+              items={[
+                { value: "pl", label: t("fields.languagePolish") },
+                { value: "en", label: t("fields.languageEnglish") },
+              ]}
             >
-              <SelectTrigger id="language">
+              <SelectTrigger id="language" className="w-full">
                 <SelectValue placeholder={t("fields.languagePlaceholder")} />
               </SelectTrigger>
               <SelectContent>
@@ -294,7 +364,8 @@ export function OrgSettingsForm() {
             </Select>
           </div>
 
-          <div className="space-y-2">
+          {/* Fiscal year start */}
+          <div className="space-y-1.5">
             <Label htmlFor="fiscalYearStartMonth" className="text-[13px]">
               {t("fields.fiscalYear")}
             </Label>
@@ -302,11 +373,12 @@ export function OrgSettingsForm() {
               value={String(watch("fiscalYearStartMonth"))}
               onValueChange={(value) => {
                 if (!value) return;
-                setValue("fiscalYearStartMonth", Number.parseInt(value, 10));
+                setValue("fiscalYearStartMonth", Number.parseInt(value, 10), { shouldDirty: true });
               }}
               disabled={updateMutation.isPending}
+              items={months.map((m) => ({ value: String(m.value), label: m.label }))}
             >
-              <SelectTrigger id="fiscalYearStartMonth">
+              <SelectTrigger id="fiscalYearStartMonth" className="w-full">
                 <SelectValue placeholder={t("fields.fiscalYearPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
@@ -319,7 +391,8 @@ export function OrgSettingsForm() {
             </Select>
           </div>
 
-          <div className="space-y-2">
+          {/* Billing email */}
+          <div className="space-y-1.5">
             <Label htmlFor="billingEmail" className="text-[13px]">
               {t("fields.billingEmail")}{" "}
               <span className="text-muted-foreground">{t("fields.billingEmailOptional")}</span>
@@ -336,19 +409,20 @@ export function OrgSettingsForm() {
               </p>
             )}
           </div>
+        </CardContent>
 
-          <Button type="submit" disabled={updateMutation.isPending}>
+        {/* Consistent footer with save button */}
+        <CardFooter>
+          <Button type="submit" disabled={updateMutation.isPending || !isDirty}>
             {updateMutation.isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {t("saving")}
-              </>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
-              t("saveCta")
+              <Save className="mr-2 h-4 w-4" />
             )}
+            {updateMutation.isPending ? t("saving") : t("saveCta")}
           </Button>
-        </form>
-      </CardContent>
-    </Card>
+        </CardFooter>
+      </Card>
+    </form>
   );
 }

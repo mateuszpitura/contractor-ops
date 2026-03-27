@@ -7,7 +7,8 @@ import {
   useReactTable,
   type ColumnDef,
 } from "@tanstack/react-table";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -32,6 +33,7 @@ interface ReportTableProps<TData> {
   sortOrder: string;
   onRowClick?: (row: TData) => void;
   isLoading?: boolean;
+  isFetching?: boolean;
   emptyIcon?: React.ReactNode;
   emptyTitle?: string;
   emptyDescription?: string;
@@ -51,12 +53,14 @@ export function ReportTable<TData>({
   sortOrder,
   onRowClick,
   isLoading,
+  isFetching,
   emptyIcon,
   emptyTitle,
   emptyDescription,
   grandTotalLabel,
   grandTotalValue,
 }: ReportTableProps<TData>) {
+  const tAria = useTranslations("Common.aria");
   const pageCount = Math.ceil(totalCount / pageSize);
 
   const sorting = useMemo(
@@ -82,7 +86,13 @@ export function ReportTable<TData>({
   });
 
   return (
-    <div className="rounded-xl border bg-background">
+    <div className="relative rounded-xl border bg-background">
+      {/* Refetch overlay */}
+      {isFetching && !isLoading && (
+        <div className="absolute inset-0 z-10 flex items-start justify-center rounded-xl bg-background/60 pt-20">
+          <Loader2 className="h-5 w-5 animate-spin text-primary" />
+        </div>
+      )}
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
@@ -90,19 +100,32 @@ export function ReportTable<TData>({
               {headerGroup.headers.map((header) => (
                 <TableHead
                   key={header.id}
-                  className="whitespace-nowrap text-[13px]"
+                  aria-sort={
+                    header.column.getIsSorted() === "asc"
+                      ? "ascending"
+                      : header.column.getIsSorted() === "desc"
+                        ? "descending"
+                        : undefined
+                  }
                 >
                   {header.isPlaceholder ? null : header.column.getCanSort() ? (
                     <button
                       type="button"
-                      className="flex items-center gap-1 hover:text-foreground"
+                      className="flex items-center gap-1 uppercase hover:text-foreground"
                       onClick={header.column.getToggleSortingHandler()}
+                      aria-label={tAria("sortBy", { column: typeof header.column.columnDef.header === "string" ? header.column.columnDef.header : header.id })}
                     >
                       {flexRender(
                         header.column.columnDef.header,
                         header.getContext(),
                       )}
-                      <ArrowUpDown className="h-3 w-3" />
+                      {header.column.getIsSorted() === "asc" ? (
+                        <ArrowUp className="h-3 w-3" />
+                      ) : header.column.getIsSorted() === "desc" ? (
+                        <ArrowDown className="h-3 w-3" />
+                      ) : (
+                        <ArrowUpDown className="h-3 w-3 opacity-40" />
+                      )}
                     </button>
                   ) : (
                     flexRender(

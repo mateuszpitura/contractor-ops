@@ -93,12 +93,7 @@ export function DataTableFilters({
       <Popover>
         <PopoverTrigger
           render={(props) => (
-            <Button
-              {...props}
-              variant="outline"
-              size="sm"
-              className="h-9 gap-1.5"
-            >
+            <Button {...props} variant="outline" size="lg">
               <Filter className="h-3.5 w-3.5" />
               {t("filters")}
               {hasActiveFilters && (
@@ -214,6 +209,8 @@ function FilterBadge({
   label: string;
   onRemove: () => void;
 }) {
+  const tAria = useTranslations("Common.aria");
+
   return (
     <Badge variant="secondary" className="gap-1 pl-2 pr-1 py-0.5">
       <span className="text-xs">{label}</span>
@@ -221,7 +218,7 @@ function FilterBadge({
         type="button"
         className="ml-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20"
         onClick={onRemove}
-        aria-label={`Remove filter: ${label}`}
+        aria-label={tAria("removeFilter", { label })}
       >
         <X className="h-3 w-3" />
       </button>

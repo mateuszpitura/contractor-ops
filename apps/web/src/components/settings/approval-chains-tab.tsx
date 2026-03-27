@@ -62,6 +62,7 @@ function formatConditionSummary(
 
 export function ApprovalChainsTab() {
   const t = useTranslations("Settings");
+  const tAria = useTranslations("Common.aria");
   const queryClient = useQueryClient();
 
   const [editorOpen, setEditorOpen] = useState(false);
@@ -222,7 +223,7 @@ export function ApprovalChainsTab() {
                 <Switch
                   checked={chain.isActive}
                   onCheckedChange={() => handleToggleActive(chain)}
-                  aria-label={`Toggle ${chain.name} active state`}
+                  aria-label={tAria("toggleActive", { name: chain.name })}
                 />
               </div>
             </CardHeader>

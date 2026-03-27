@@ -50,10 +50,10 @@ const roleBadgeColors: Record<string, string> = {
 };
 
 const statusColors: Record<string, string> = {
-  active: "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300",
-  invited: "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300",
-  disabled: "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300",
-  banned: "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300",
+  active: "bg-success/10 text-success",
+  invited: "bg-info/10 text-info",
+  disabled: "bg-destructive/10 text-destructive",
+  banned: "bg-destructive/10 text-destructive",
 };
 
 const assignableRoles = [
@@ -79,6 +79,7 @@ function displayStatus(member: Member): string {
 
 export function UsersTable() {
   const t = useTranslations("Users");
+  const tToast = useTranslations("Settings.toast");
   const queryClient = useQueryClient();
   const { can } = usePermissions();
   const canManageMembers = can("member", ["update"]);
@@ -108,7 +109,7 @@ export function UsersTable() {
           typeof error === "object" && error && "message" in error
             ? String((error as { message?: unknown }).message ?? "")
             : "";
-        toast.error(message || "Failed to update role");
+        toast.error(message || tToast("updateRoleFailed"));
       },
     }),
   );
@@ -124,7 +125,7 @@ export function UsersTable() {
           typeof error === "object" && error && "message" in error
             ? String((error as { message?: unknown }).message ?? "")
             : "";
-        toast.error(message || "Failed to reactivate member");
+        toast.error(message || tToast("reactivateFailed"));
       },
     }),
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useMemo } from "react";
+import { AnimateIn } from "@/components/shared/animate-in";
 import { useTranslations } from "next-intl";
 import { parseAsString, useQueryState } from "nuqs";
 import { subMonths, startOfMonth } from "date-fns";
@@ -102,19 +103,23 @@ function ReportsContent() {
         {/* Main content */}
         <div className="min-w-0 flex-1 space-y-4">
           {/* Header */}
-          <div className="flex items-center justify-between">
-            <h1 className="text-[20px] font-semibold">{t("title")}</h1>
-          </div>
+          <AnimateIn delay={0}>
+            <h1 className="font-display text-[22px] font-semibold leading-tight tracking-tight">{t("title")}</h1>
+          </AnimateIn>
 
           {/* Date range filter */}
+          <AnimateIn delay={1}>
           <DateRangeFilter
             dateFrom={dateFrom}
             dateTo={dateTo}
             onDateChange={handleDateChange}
           />
+          </AnimateIn>
 
           {/* Active report */}
-          {activeReport}
+          <AnimateIn delay={2}>
+            {activeReport}
+          </AnimateIn>
         </div>
       </div>
     </div>

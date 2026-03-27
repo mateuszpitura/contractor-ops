@@ -1,6 +1,7 @@
 "use client";
 
-import { ChevronsUpDown, Building2 } from "lucide-react";
+import { useState } from "react";
+import { ChevronsUpDown, Building2, Plus } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,19 +14,37 @@ import {
   SidebarMenuButton,
   useSidebar,
 } from "@/components/ui/sidebar";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useTranslations } from "next-intl";
 import { authClient } from "@/lib/auth-client";
+import { useDashboardContext } from "@/components/layout/dashboard-context";
+import { toast } from "sonner";
 
 /**
  * Organization switcher dropdown at the top of the sidebar.
- * Shows current org name. If user has multiple orgs, lists them to switch.
- * Calls authClient.organization.setActive() on switch.
+ * Uses server-provided activeOrg from DashboardContext for instant rendering.
+ * Falls back to client-side hooks for the org list (dropdown only).
+ * Includes "Add organization" button that opens a creation dialog.
  */
 export function OrgSwitcher() {
+  const t = useTranslations("Common.orgSwitcher");
   const { isMobile } = useSidebar();
+  const { activeOrg: serverOrg } = useDashboardContext();
   const { data: orgList } = authClient.useListOrganizations();
-  const { data: activeOrg } = authClient.useActiveOrganization();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [newOrgName, setNewOrgName] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
 
-  const currentOrg = activeOrg;
+  const currentOrg = serverOrg;
   const organizations = orgList ?? [];
 
   const handleOrgSwitch = async (orgId: string) => {
@@ -33,55 +52,130 @@ export function OrgSwitcher() {
     window.location.reload();
   };
 
+  const handleCreateOrg = async () => {
+    const name = newOrgName.trim();
+    if (!name) return;
+
+    setIsCreating(true);
+    try {
+      const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+      const { error } = await authClient.organization.create({ name, slug });
+
+      if (error) {
+        toast.error(error.message ?? t("createFailed"));
+        return;
+      }
+
+      setDialogOpen(false);
+      setNewOrgName("");
+      window.location.reload();
+    } catch {
+      toast.error(t("createFailed"));
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        render={
-          <SidebarMenuButton
-            size="lg"
-            className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-          />
-        }
-      >
-        <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-          <Building2 className="size-4" />
-        </div>
-        <div className="grid flex-1 text-left text-sm leading-tight">
-          <span className="truncate font-semibold">
-            {currentOrg?.name ?? "Select organization"}
-          </span>
-        </div>
-        <ChevronsUpDown className="ml-auto size-4" />
-      </DropdownMenuTrigger>
-      <DropdownMenuContent
-        className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
-        align="start"
-        side={isMobile ? "bottom" : "right"}
-        sideOffset={4}
-      >
-        <DropdownMenuLabel className="text-xs text-muted-foreground">
-          Organizations
-        </DropdownMenuLabel>
-        {organizations.map((org) => (
-          <DropdownMenuItem
-            key={org.id}
-            onClick={() => handleOrgSwitch(org.id)}
-            className="gap-2 p-2"
-          >
-            <div className="flex size-6 items-center justify-center rounded-sm border">
-              <Building2 className="size-4 shrink-0" />
-            </div>
-            <span className="truncate">{org.name}</span>
-          </DropdownMenuItem>
-        ))}
-        <DropdownMenuSeparator />
-        <DropdownMenuItem className="gap-2 p-2" disabled>
-          <div className="flex size-6 items-center justify-center rounded-md border bg-background">
-            <span className="text-xs">+</span>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          render={
+            <SidebarMenuButton
+              size="lg"
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+            />
+          }
+        >
+          <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/70 text-primary-foreground font-display text-sm font-bold shadow-sm">
+            {currentOrg?.name?.charAt(0)?.toUpperCase() ?? "O"}
           </div>
-          <span className="text-muted-foreground">Add organization</span>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+          <div className="grid flex-1 text-left text-sm leading-tight">
+            <span className="truncate font-semibold">
+              {currentOrg?.name ?? t("selectOrg")}
+            </span>
+          </div>
+          <ChevronsUpDown className="ml-auto size-4" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+          align="start"
+          side={isMobile ? "bottom" : "right"}
+          sideOffset={4}
+        >
+          <DropdownMenuLabel className="text-xs text-muted-foreground">
+            {t("orgsLabel")}
+          </DropdownMenuLabel>
+          {organizations.map((org) => (
+            <DropdownMenuItem
+              key={org.id}
+              onClick={() => handleOrgSwitch(org.id)}
+              className="gap-2 p-2"
+            >
+              <div className="flex size-6 items-center justify-center rounded-sm border">
+                <Building2 className="size-4 shrink-0" />
+              </div>
+              <span className="truncate">{org.name}</span>
+            </DropdownMenuItem>
+          ))}
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            className="gap-2 p-2"
+            onClick={() => setDialogOpen(true)}
+          >
+            <div className="flex size-6 items-center justify-center rounded-md border bg-background">
+              <Plus className="size-3.5" />
+            </div>
+            <span>{t("addOrg")}</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle>{t("createTitle")}</DialogTitle>
+            <DialogDescription>
+              {t("createDescription")}
+            </DialogDescription>
+          </DialogHeader>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleCreateOrg();
+            }}
+            className="space-y-4"
+          >
+            <div className="space-y-2">
+              <Label htmlFor="org-name">{t("nameLabel")}</Label>
+              <Input
+                id="org-name"
+                value={newOrgName}
+                onChange={(e) => setNewOrgName(e.target.value)}
+                placeholder={t("namePlaceholder")}
+                disabled={isCreating}
+                autoFocus
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setDialogOpen(false)}
+                disabled={isCreating}
+              >
+                {t("cancel")}
+              </Button>
+              <Button
+                type="submit"
+                disabled={isCreating || !newOrgName.trim()}
+              >
+                {isCreating ? t("creating") : t("create")}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

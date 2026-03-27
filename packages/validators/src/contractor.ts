@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { isValidIBAN } from "ibantools";
+import { optionalString, optionalFk, optionalPositiveInt } from "./helpers.js";
 
 // ---------------------------------------------------------------------------
 // Prisma enum mirrors (string unions — validators package has no Prisma dep)
@@ -74,33 +75,34 @@ export const contractorCreateSchema = z.object({
   displayName: z.string().min(1, "Display name is required").max(255),
   type: contractorTypeEnum,
   taxId: nipSchema,
-  vatId: z.string().optional(),
-  registrationNumber: z.string().optional(),
+  vatId: optionalString,
+  registrationNumber: optionalString,
   email: z.string().email("Invalid email address"),
-  phone: z.string().optional(),
+  phone: optionalString,
   countryCode: z.string().length(2).default("PL"),
   currency: z.string().length(3).default("PLN"),
-  addressLine1: z.string().optional(),
-  addressLine2: z.string().optional(),
-  city: z.string().optional(),
-  postalCode: z.string().optional(),
+  addressLine1: optionalString,
+  addressLine2: optionalString,
+  city: optionalString,
+  postalCode: optionalString,
 
   // Billing
   billingModel: z.string().min(1, "Billing model is required"),
   rateValueGrosze: z.number().int().positive("Rate must be a positive integer"),
   bankAccount: z
     .string()
-    .optional()
+    .transform((v) => (v === "" ? undefined : v))
+    .pipe(z.string().optional())
     .refine((val) => !val || ibanRefine(val), {
       message: "Invalid IBAN number",
     }),
-  paymentTermsDays: z.number().int().positive().optional(),
+  paymentTermsDays: optionalPositiveInt,
 
   // Assignment
   ownerUserId: z.string().min(1, "Owner user ID is required"),
-  primaryTeamId: z.string().optional(),
-  primaryProjectId: z.string().optional(),
-  defaultCostCenterId: z.string().optional(),
+  primaryTeamId: optionalFk,
+  primaryProjectId: optionalFk,
+  defaultCostCenterId: optionalFk,
 });
 
 export type ContractorCreateInput = z.infer<typeof contractorCreateSchema>;

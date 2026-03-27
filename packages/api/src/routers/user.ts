@@ -19,7 +19,20 @@ export const userRouter = router({
         query: { organizationId: ctx.organizationId },
       });
 
-      return org?.members ?? [];
+      // Flatten nested user object so frontend gets a consistent shape:
+      // { id, userId, name, email, image, role, createdAt }
+      return (org?.members ?? []).map((member: Record<string, unknown>) => {
+        const user = (member.user ?? {}) as Record<string, unknown>;
+        return {
+          id: member.id,
+          userId: member.userId ?? user.id,
+          name: user.name ?? null,
+          email: user.email ?? null,
+          image: user.image ?? null,
+          role: member.role ?? null,
+          createdAt: member.createdAt ?? null,
+        };
+      });
     }),
 
   /**

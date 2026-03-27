@@ -48,6 +48,13 @@
       "message": "Check your email to verify your account.",
       "redirect": "You will be redirected to the dashboard after verification.",
       "backToSignIn": "Back to sign in"
+    },
+    "toast": {
+      "createAccountFailed": "Failed to create account",
+      "createOrgFailed": "Failed to create organization",
+      "invalidCredentials": "Invalid email or password",
+      "magicLinkFailed": "Failed to send magic link",
+      "acceptInviteFailed": "Failed to accept invitation"
     }
   },
   "Navigation": {
@@ -61,7 +68,16 @@
     "reports": "Reports",
     "notifications": "Notifications",
     "integrations": "Integrations",
-    "settings": "Settings"
+    "settings": "Settings",
+    "groups": {
+      "operations": "Operations",
+      "finance": "Finance",
+      "system": "System"
+    },
+    "members": "Members",
+    "templates": "Templates",
+    "new": "New",
+    "unauthorized": "Unauthorized"
   },
   "TopBar": {
     "addContractor": "Add contractor",
@@ -155,6 +171,12 @@
       "failedChart": "Could not load chart data. Try again.",
       "retry": "Try again",
       "widgetFailed": "Failed to load {name}"
+    },
+    "greeting": {
+      "morning": "Good morning, {name}",
+      "afternoon": "Good afternoon, {name}",
+      "evening": "Good evening, {name}",
+      "subtitle": "Here's what's happening across your organization today."
     }
   },
   "Settings": {
@@ -422,6 +444,54 @@
         "userLinked": "Slack user linked",
         "userUnlinked": "Slack user unlinked",
         "linkFailed": "Could not link Slack user. Try again."
+      },
+      "emptyState": {
+        "heading": "No integrations connected",
+        "body": "Connect external services to extend your workflow."
+      },
+      "disconnectConfirmGeneric": {
+        "title": "Disconnect integration?",
+        "body": "This will remove the connection. You can reconnect at any time.",
+        "cancel": "Cancel",
+        "confirm": "Disconnect"
+      },
+      "provider": {
+        "connectedOn": "Connected on {date}",
+        "connectedTo": "Connected to {name}",
+        "connectionDetails": "Connection details",
+        "errorConnectionFailed": "Connection failed",
+        "errorTokenExpired": "Token expired — reconnection required",
+        "lastRefresh": "Last refreshed {date}",
+        "loadMore": "Load more",
+        "manageCta": "Manage",
+        "reconnectCta": "Reconnect",
+        "status": "Status",
+        "syncLogAction": "Action",
+        "syncLogDuration": "Duration",
+        "syncLogEmpty": "No sync logs yet",
+        "syncLogHeading": "Sync log",
+        "syncLogStatus": "Status",
+        "syncLogTimestamp": "Timestamp",
+        "tokenExpires": "Token expires",
+        "tokenExpiryExpired": "Expired",
+        "webhookLogEmpty": "No webhook events yet",
+        "webhookLogEventType": "Event type",
+        "webhookLogHeading": "Webhook log",
+        "webhookLogProcessingTime": "Processing time",
+        "webhookLogReceived": "Received",
+        "webhookLogStatus": "Status",
+        "statusConnected": "Connected",
+        "statusDisconnected": "Disconnected",
+        "statusError": "Error",
+        "statusReauth": "Reauthorization required",
+        "disconnectCta": "Disconnect {provider}",
+        "connectCta": "Connect {provider}"
+      },
+      "providerToasts": {
+        "connected": "{provider} connected successfully",
+        "connectFailed": "Could not connect {provider}. Try again.",
+        "disconnected": "{provider} disconnected",
+        "disconnectFailed": "Could not disconnect {provider}. Try again."
       }
     },
     "provider": {
@@ -527,6 +597,85 @@
         "heading": "No audit log entries",
         "body": "Audit events will appear here as actions are performed in the system."
       }
+    },
+    "branding": {
+      "heading": "Portal Branding",
+      "description": "Customize how the contractor portal looks for your organization",
+      "logoLabel": "Logo",
+      "uploadLogo": "Upload logo",
+      "removeLogo": "Remove",
+      "logoHint": "PNG, JPG, or SVG. Max 2MB.",
+      "logoAlt": "Organization logo",
+      "accentColor": "Accent Color",
+      "saving": "Saving...",
+      "saveBranding": "Save Branding",
+      "successToast": "Portal branding updated",
+      "errorToast": "Failed to save branding. Please try again.",
+      "uploadError": "Failed to upload logo. Please try again.",
+      "invalidFileType": "Please upload a PNG, JPG, or SVG file.",
+      "fileTooLarge": "Logo must be under 2MB.",
+      "subdomainHeading": "Portal Subdomain",
+      "subdomainDescription": "Contractors will access the portal at",
+      "subdomainPlaceholder": "e.g., acme",
+      "subdomainSuffix": ".portal.yourdomain.com",
+      "saveDomain": "Save Domain",
+      "subdomainUpdated": "Portal subdomain updated",
+      "subdomainTaken": "This subdomain is already in use",
+      "subdomainSaveError": "Failed to save portal subdomain. Please try again.",
+      "subdomainMinLength": "Subdomain must be at least 3 characters",
+      "subdomainMaxLength": "Subdomain must be at most 63 characters",
+      "subdomainFormat": "Only lowercase letters, numbers, and hyphens allowed. Must start and end with a letter or number.",
+      "previewButton": "Sample Button",
+      "previewLink": "Sample Link"
+    },
+    "changeRequest": {
+      "title": "Profile Change Request",
+      "fieldLabels": {
+        "bankAccount": "Bank Account",
+        "bankName": "Bank Name",
+        "swiftBic": "SWIFT/BIC",
+        "taxId": "Tax ID",
+        "displayName": "Display Name",
+        "phone": "Phone",
+        "addressLine1": "Address Line 1",
+        "addressLine2": "Address Line 2",
+        "city": "City",
+        "postalCode": "Postal Code",
+        "country": "Country"
+      },
+      "status": {
+        "PENDING": "Pending",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected"
+      },
+      "table": {
+        "field": "Field",
+        "currentValue": "Current Value",
+        "requestedValue": "Requested Value"
+      },
+      "approving": "Approving...",
+      "approveChanges": "Approve Changes",
+      "rejectChanges": "Reject Changes",
+      "rejectTitle": "Reject Change Request",
+      "rejectDescription": "Optionally provide a reason for rejection. The contractor will be notified.",
+      "rejectPlaceholder": "Reason for rejection (optional)",
+      "rejecting": "Rejecting...",
+      "confirmRejection": "Confirm Rejection",
+      "toast": {
+        "approved": "Change request approved. Contractor profile updated.",
+        "approveFailed": "Failed to approve change request. Please try again.",
+        "rejected": "Change request rejected. Contractor has been notified.",
+        "rejectFailed": "Failed to reject change request. Please try again."
+      }
+    },
+    "toast": {
+      "invoiceSettingsFailed": "Failed to update invoice settings",
+      "saveSettingsFailed": "Failed to save settings",
+      "updateRoleFailed": "Failed to update role",
+      "reactivateFailed": "Failed to reactivate member",
+      "inviteFailed": "Failed to send invite",
+      "deactivateFailed": "Failed to deactivate member",
+      "reminderDefaultsFailed": "Failed to update reminder defaults"
     }
   },
   "Users": {
@@ -590,21 +739,82 @@
     "notFound": {
       "code": "404",
       "heading": "Page not found",
-      "body": "The page you are looking for does not exist or has been moved.",
-      "cta": "Go to dashboard"
+      "body": "The page you're looking for doesn't exist or has been moved.",
+      "cta": "Back to dashboard"
     },
-    "serverError": {
-      "code": "500",
-      "heading": "Something went wrong",
-      "body": "We are working on fixing this. Please try again in a moment.",
-      "cta": "Try again"
-    },
-    "unauthorized": {
-      "code": "403",
-      "heading": "Access denied",
-      "body": "You do not have permission to view this page. Contact your admin if you think this is an error.",
-      "cta": "Go to dashboard"
-    }
+    "UNAUTHORIZED": "You are not authorized to perform this action.",
+    "FORBIDDEN": "Access denied.",
+    "PERMISSION_DENIED": "You do not have permission to perform this action.",
+    "UNKNOWN_ERROR": "An unexpected error occurred. Please try again.",
+    "CONTRACTOR_NOT_FOUND": "Contractor not found.",
+    "CONTRACTOR_INVALID_TRANSITION": "This status transition is not allowed.",
+    "GUS_LOOKUP_FAILED": "GUS lookup failed.",
+    "CONTRACT_NOT_FOUND": "Contract not found.",
+    "CONTRACT_END_DATE_BEFORE_START": "End date must be after start date.",
+    "CONTRACT_INVALID_TRANSITION": "This status transition is not allowed.",
+    "INVOICE_NOT_FOUND": "Invoice not found.",
+    "INVOICE_NOT_RECEIVED_STATUS": "Invoice must be in RECEIVED status to submit for matching.",
+    "INVOICE_CONTRACTOR_NOT_FOUND": "Contractor not found in this organization.",
+    "INVOICE_CONTRACT_NOT_FOUND": "Contract not found in this organization.",
+    "INVOICE_ALREADY_PENDING": "Invoice is already pending approval.",
+    "PAYMENT_RUN_NOT_FOUND": "Payment run not found.",
+    "PAYMENT_INVOICES_NOT_READY": "Some invoices are not ready for payment.",
+    "PAYMENT_INVOICES_NOT_FOUND": "One or more invoices not found in this organization.",
+    "PAYMENT_RUN_INVALID_STATUS": "This action is not allowed for the current payment run status.",
+    "PAYMENT_RUN_ITEM_NOT_FOUND": "Payment run item not found.",
+    "PAYMENT_RUN_NOT_DRAFT": "Can only remove invoices from draft payment runs.",
+    "PAYMENT_INVOICE_NOT_IN_RUN": "Invoice not found in this payment run.",
+    "APPROVAL_CHAIN_NOT_FOUND": "Approval chain not found.",
+    "APPROVAL_CHAIN_HAS_ACTIVE_FLOWS": "Cannot delete chain with active approval flows.",
+    "APPROVAL_STEP_NOT_FOUND": "Approval step not found.",
+    "APPROVAL_STEP_NOT_PENDING": "Step is not pending approval.",
+    "APPROVAL_NOT_ASSIGNED": "You are not the assigned approver for this step.",
+    "APPROVAL_DELEGATE_NOT_MEMBER": "Delegate user is not a member of this organization.",
+    "WORKFLOW_TEMPLATE_NOT_FOUND": "Workflow template not found.",
+    "WORKFLOW_RUN_NOT_FOUND": "Workflow run not found.",
+    "WORKFLOW_RUN_ALREADY_CANCELLED": "Workflow run has already been cancelled.",
+    "WORKFLOW_TASK_NOT_FOUND": "Task not found.",
+    "WORKFLOW_TASK_INVALID_STATUS": "This status transition is not allowed for this task.",
+    "WORKFLOW_TASK_CANNOT_SKIP": "This task cannot be skipped in its current status.",
+    "DOCUMENT_NOT_FOUND": "Document not found.",
+    "DOCUMENT_FILE_TYPE_NOT_ALLOWED": "File type is not allowed. Accepted: PDF, DOCX, XLSX, PNG, JPG.",
+    "DOCUMENT_NOT_IN_STORAGE": "Uploaded file not found in storage. Please try uploading again.",
+    "DOCUMENT_INFECTED": "This document has been flagged as infected and cannot be downloaded.",
+    "DOCUMENT_NOT_ACTIVE": "Only active documents can be versioned.",
+    "IMPORT_NO_DATA_ROWS": "File contains no data rows.",
+    "PORTAL_INVALID_LINK": "Invalid or expired link.",
+    "PORTAL_INVALID_VERIFICATION": "Invalid or expired verification.",
+    "PORTAL_CONTRACT_NOT_FOUND": "Active contract not found.",
+    "PORTAL_NO_CHANGES": "No changes provided.",
+    "PORTAL_SECURITY_ALERTS_LOCKED": "Security alerts cannot be disabled.",
+    "PORTAL_PENDING_CHANGE_EXISTS": "You already have a pending change request.",
+    "PORTAL_CHANGE_REQUEST_NOT_FOUND": "Pending change request not found.",
+    "PORTAL_BILLING_PROFILE_NOT_FOUND": "Default billing profile not found for contractor.",
+    "INTEGRATION_NOT_FOUND": "Integration not found.",
+    "INTEGRATION_NOT_CONNECTED": "Integration is not connected.",
+    "INTEGRATION_LINK_NOT_FOUND": "External link not found.",
+    "INTEGRATION_NO_OAUTH": "This provider does not support OAuth.",
+    "INTEGRATION_NOT_CONFIGURED": "Provider is not configured.",
+    "REMINDER_RULE_NOT_FOUND": "Reminder rule not found.",
+    "SETTINGS_SUBDOMAIN_TAKEN": "This subdomain is already in use.",
+    "ESIGN_DOCUMENT_NOT_FOUND": "Document not found.",
+    "ESIGN_DOWNLOAD_FAILED": "Failed to download document from storage.",
+    "ESIGN_ENVELOPE_NOT_FOUND": "Signing envelope not found.",
+    "ESIGN_NO_EXTERNAL_ID": "Envelope has no external ID.",
+    "VALIDATION_LEGAL_NAME_REQUIRED": "Legal name is required.",
+    "VALIDATION_TAX_ID_REQUIRED": "Tax ID (NIP) is required.",
+    "VALIDATION_EMAIL_REQUIRED": "Email is required.",
+    "VALIDATION_EMAIL_INVALID": "Invalid email format.",
+    "VALIDATION_COUNTRY_CODE_LENGTH": "Country code must be exactly 2 characters.",
+    "VALIDATION_CURRENCY_LENGTH": "Currency must be exactly 3 characters.",
+    "VALIDATION_CONTRACT_TITLE_REQUIRED": "Contract title is required.",
+    "VALIDATION_CONTRACT_TYPE_REQUIRED": "Contract type is required.",
+    "VALIDATION_START_DATE_REQUIRED": "Start date is required.",
+    "VALIDATION_DATE_INVALID": "Invalid date format.",
+    "VALIDATION_TAX_ID_FK_REQUIRED": "Contractor Tax ID is required for linking.",
+    "VALIDATION_NIP_INVALID": "Invalid NIP number.",
+    "VALIDATION_IBAN_INVALID": "Invalid IBAN number.",
+    "VALIDATION_FAILURE_REASON_REQUIRED": "Failure reason required when marking as failed."
   },
   "Validation": {
     "required": "This field is required",
@@ -624,11 +834,19 @@
       "ratePositive": "Rate must be a positive number",
       "ownerRequired": "Select an owner",
       "ibanFormat": "Enter a valid IBAN"
+    },
+    "invoice": {
+      "invoiceNumberRequired": "Invoice number is required",
+      "issueDateRequired": "Issue date is required",
+      "dueDateRequired": "Due date is required",
+      "netAmountPositive": "Net amount must be positive",
+      "grossAmountPositive": "Gross amount must be positive"
     }
   },
   "Contractors": {
     "pageTitle": "Contractors",
     "addContractor": "Add contractor",
+    "import": "Import",
     "searchPlaceholder": "Search by name, company, NIP, or email...",
     "filters": "Filters",
     "clearAll": "Clear all",
@@ -713,6 +931,13 @@
     "error": {
       "loadFailed": "Could not load contractors. Check your connection and try again.",
       "retry": "Try again"
+    },
+    "pageDescription": "Manage your contractor network and compliance",
+    "billingModel": {
+      "FIXED": "Fixed",
+      "HOURLY": "Hourly",
+      "PROJECT": "Project-based",
+      "MILESTONE": "Milestone"
     }
   },
   "ContractorProfile": {
@@ -726,7 +951,8 @@
       "markInactive": "Mark as inactive",
       "activate": "Activate",
       "completeOffboarding": "Complete offboarding",
-      "archive": "Archive"
+      "archive": "Archive",
+      "editComingSoon": "Inline editing is coming soon. Use the overview tab to view details."
     },
     "tabs": {
       "overview": "Overview",
@@ -795,7 +1021,8 @@
         "WAIVED": "Waived"
       },
       "expires": "Expires",
-      "expiringSoon": "Expiring soon"
+      "expiringSoon": "Expiring soon",
+      "noRequirementsHint": "Compliance requirements can be configured in organization settings for each contractor type."
     },
     "rightRail": {
       "activity": "Activity",
@@ -812,7 +1039,12 @@
       "lifecycleStage": "Status: {stage}"
     },
     "lifecycle": {
-      "transitioned": "Status updated to {stage}",
+      "DRAFT": "Draft",
+      "ONBOARDING": "Onboarding",
+      "ACTIVE": "Active",
+      "OFFBOARDING": "Offboarding",
+      "ENDED": "Ended",
+      "transitioned": "Status changed to {stage}",
       "archived": "Contractor archived"
     },
     "error": {
@@ -821,7 +1053,13 @@
       "backToList": "Back to contractors",
       "retry": "Try again"
     },
-    "comingIn": "Coming in Phase {phase}"
+    "comingIn": "Coming in Phase {phase}",
+    "unknown": "Unknown",
+    "toast": {
+      "statusFailed": "Failed to update status",
+      "archiveFailed": "Failed to archive contractor",
+      "noteFailed": "Failed to save note"
+    }
   },
   "ContractorWizard": {
     "title": "Add contractor",
@@ -883,6 +1121,7 @@
   "Contracts": {
     "pageTitle": "Contracts",
     "newContract": "New contract",
+    "import": "Import",
     "searchPlaceholder": "Search by title, contractor, or type...",
     "filters": "Filters",
     "clearAll": "Clear all",
@@ -890,7 +1129,11 @@
     "export": "Export contracts",
     "exportCsv": "Export as CSV",
     "exportXlsx": "Export as XLSX",
-    "terminate": "Terminate",
+    "terminate": {
+      "titleBulk": "Terminate {count} contracts?",
+      "bodyBulk": "These contracts will be marked as terminated. Linked invoices and documents will remain accessible.",
+      "ctaBulk": "Terminate {count} contracts"
+    },
     "dateFrom": "From",
     "dateTo": "To",
     "columns": {
@@ -906,7 +1149,11 @@
       "currency": "Currency",
       "billingCycle": "Billing cycle",
       "owner": "Owner",
-      "complianceRisk": "Compliance risk"
+      "complianceRisk": "Compliance risk",
+      "rateValueGrosze": "Rate",
+      "billingModel": "Billing model",
+      "internalOwner": "Owner",
+      "complianceRiskLevel": "Compliance risk"
     },
     "empty": {
       "heading": "No contracts yet",
@@ -1140,7 +1387,10 @@
       "openContract": "Open contract",
       "details": "Details",
       "documents": "Documents ({count})",
-      "keyDates": "Key dates"
+      "keyDates": "Key dates",
+      "expired": "Expired {count} days ago",
+      "expiringSoon": "Expiring in {count} days",
+      "daysRemaining": "{count} days remaining"
     },
     "terminateDialog": {
       "confirmTitle": "Terminate {contractTitle}?",
@@ -1175,6 +1425,20 @@
       "loadFailed": "Could not load contracts. Check your connection and try again.",
       "detailLoadFailed": "Could not load contract details. Try again.",
       "retry": "Try again"
+    },
+    "pageDescription": "Track agreements, terms, and renewals",
+    "cancel": "Cancel",
+    "exportComingSoon": "Export coming soon",
+    "bulkActions": {
+      "selected": "{count} selected",
+      "export": "Export",
+      "exportCsv": "Export as CSV",
+      "exportXlsx": "Export as XLSX",
+      "terminate": "Terminate"
+    },
+    "terminated": "{count} contracts terminated",
+    "error": {
+      "loadFailed": "Could not complete operation. Try again."
     }
   },
   "Documents": {
@@ -1211,7 +1475,8 @@
       "scanning": "Scanning for threats...",
       "clean": "Scan passed",
       "infected": "Threat detected - file quarantined",
-      "failed": "Scan could not complete"
+      "failed": "Scan could not complete",
+      "uploadError": "Upload failed. Try again."
     },
     "scanStatus": {
       "scanning": "Scanning for threats...",
@@ -1240,7 +1505,16 @@
       "uploadFailed": "Could not upload document. Check the file and try again.",
       "downloadFailed": "Could not generate download link. Try again.",
       "retry": "Try again"
-    }
+    },
+    "loading": "Loading…",
+    "noOtherVersions": "No other versions",
+    "superseded": "Superseded",
+    "pdfFallback": "PDF preview not available",
+    "pdfLoadError": "Could not load PDF preview",
+    "clean": "Clean",
+    "failed": "Scan failed",
+    "infected": "Threat detected",
+    "scanning": "Scanning…"
   },
   "Common": {
     "networkError": "Connection error. Check your internet and try again.",
@@ -1248,7 +1522,76 @@
     "settings": "Settings",
     "darkMode": "Dark mode",
     "density": "Compact",
-    "language": "Language"
+    "language": "Language",
+    "editName": "Edit name",
+    "editNamePrompt": "Enter your name",
+    "nameUpdated": "Name updated",
+    "nameUpdateFailed": "Could not update name. Try again.",
+    "save": "Save",
+    "cancel": "Cancel",
+    "aria": {
+      "previousPage": "Previous page",
+      "nextPage": "Next page",
+      "closeDialog": "Close dialog",
+      "closePanel": "Close panel",
+      "toggleSidebar": "Toggle sidebar",
+      "breadcrumb": "Breadcrumb",
+      "sortBy": "Sort by {column}",
+      "removeFilter": "Remove filter: {label}",
+      "dateFrom": "Date from",
+      "dateTo": "Date to",
+      "portalSubdomain": "Portal subdomain",
+      "inApp": "In-app",
+      "email": "Email",
+      "slack": "Slack",
+      "toggleActive": "Toggle {name} active state",
+      "hexColorCode": "Hex color code",
+      "selectedColor": "Selected color: {value}",
+      "colorSwatch": "{label} ({hex})",
+      "portalNavigation": "Portal navigation",
+      "openNavigationMenu": "Open navigation menu",
+      "mobilePortalNavigation": "Mobile portal navigation",
+      "removeFile": "Remove file",
+      "statusTimeline": "Invoice status timeline",
+      "selectOrg": "Select {name}",
+      "dragToReorder": "Drag to reorder",
+      "closeSigningModal": "Close signing modal",
+      "wizardProgress": "Import wizard progress",
+      "wizardStep": "Step {step}: {label} — {status}",
+      "mapColumnToField": "Map column \"{header}\" to field",
+      "mapTo": "Map \"{header}\" to",
+      "overdueTasks": "{count} overdue tasks",
+      "notificationsWithUnread": "{title} — {count} unread"
+    },
+    "srOnly": {
+      "more": "More",
+      "actions": "Actions",
+      "moreActions": "More actions",
+      "remove": "Remove",
+      "signingActions": "Signing actions"
+    },
+    "sidebar": {
+      "title": "Sidebar",
+      "description": "Displays the mobile sidebar."
+    },
+    "orgSwitcher": {
+      "selectOrg": "Select organization",
+      "orgsLabel": "Organizations",
+      "addOrg": "Add organization",
+      "createTitle": "Create organization",
+      "createDescription": "Add a new organization to manage contractors and contracts.",
+      "nameLabel": "Organization name",
+      "namePlaceholder": "Acme Corp",
+      "cancel": "Cancel",
+      "creating": "Creating...",
+      "create": "Create",
+      "createFailed": "Failed to create organization"
+    },
+    "fileSize": {
+      "bytes": "{size} B",
+      "kilobytes": "{size} KB",
+      "megabytes": "{size} MB"
+    }
   },
   "Workflows": {
     "pageTitle": "Workflows",
@@ -1527,7 +1870,11 @@
     "validationCommentBody": "Comment cannot be empty",
     "validationConditionField": "Select a field",
     "validationConditionOperator": "Select an operator",
-    "validationConditionValue": "Enter a value"
+    "validationConditionValue": "Enter a value",
+    "pageDescription": "Automate contractor onboarding and tasks",
+    "notFound": "Workflow not found",
+    "backToWorkflows": "Back to Workflows",
+    "workflowLabel": "Workflow"
   },
   "Invoices": {
     "pageTitle": "Invoices",
@@ -1692,6 +2039,18 @@
       "noInvoicesHeading": "No invoices",
       "noInvoicesBody": "Upload an invoice for this contractor or email it to your invoice inbox.",
       "noInvoicesCta": "Upload invoice"
+    },
+    "pageDescription": "Process and match incoming invoices",
+    "metadata": {
+      "pickDate": "Pick a date",
+      "vatRates": {
+        "0": "0%",
+        "5": "5%",
+        "8": "8%",
+        "23": "23%",
+        "exempt": "Exempt (ZW)",
+        "notApplicable": "Not applicable (NP)"
+      }
     }
   },
   "Approvals": {
@@ -1813,7 +2172,8 @@
       "decisionRejected": "Rejected",
       "decisionClarification": "Clarification requested",
       "decisionDelegated": "Delegated"
-    }
+    },
+    "pageDescription": "Review and approve pending items"
   },
   "Notifications": {
     "popover": {
@@ -1958,7 +2318,8 @@
       "disconnectSlackFailed": "Could not disconnect Slack. Try again.",
       "slackCancelled": "Slack connection was cancelled.",
       "linkUserFailed": "Could not link Slack user. Try again.",
-      "retryCta": "Try again"
+      "retryCta": "Try again",
+      "failedToMarkRead": "Could not mark as read. Try again."
     },
     "toasts": {
       "markedRead": "All notifications marked as read",
@@ -2108,8 +2469,8 @@
     "settingsHeading": "Payment transfer title",
     "settingsDescription": "Configure the default transfer title used in bank export files.",
     "templateLabel": "Title template",
-    "templatePlaceholder": "{invoice_number}",
-    "templateHelper": "Available: {invoice_number}, {billing_period}, {contractor_name}, {contract_number}",
+    "templatePlaceholder": "'{invoice_number}'",
+    "templateHelper": "Available: '{invoice_number}', '{billing_period}', '{contractor_name}', '{contract_number}'",
     "save": "Save",
     "cancelDraftTitle": "Cancel this payment run?",
     "cancelDraftBody": "All invoices will be released back to the ready-for-payment pool. This cannot be undone.",
@@ -2158,7 +2519,125 @@
     "itemStatusPaid": "Paid",
     "itemStatusFailed": "Failed",
     "missingIban": "Missing IBAN",
-    "inRun": "In run {runNumber}"
+    "inRun": "In run {runNumber}",
+    "pageDescription": "Create and manage payment runs",
+    "bankStatement": {
+      "title": "Import bank statement",
+      "dropzoneText": "Drop a bank statement file here",
+      "dropzoneFormats": "Supported formats: CSV, MT940, CAMT.053",
+      "parsingProgress": "Parsing statement…",
+      "matchedCount": "{matched} of {total} matched",
+      "colAmount": "Amount",
+      "colIban": "IBAN",
+      "colStatus": "Status",
+      "colInvoice": "Invoice",
+      "matched": "Matched",
+      "unmatched": "Unmatched",
+      "cancel": "Cancel",
+      "confirmMatches": "Confirm matches",
+      "tryAgain": "Try again"
+    },
+    "toast": {
+      "statementImported": "Bank statement imported",
+      "allMarkedPaid": "All invoices marked as paid",
+      "runCancelled": "Payment run cancelled",
+      "itemUpdated": "Payment item updated",
+      "removedFromRun": "Invoice removed from payment run",
+      "downloadHint": "Your export file is ready for download"
+    },
+    "errors": {
+      "failedToImportStatement": "Could not import bank statement. Try again.",
+      "failedToConfirmMatches": "Could not confirm matches. Try again.",
+      "invalidFileFormat": "Invalid file format",
+      "fileTooLarge": "File is too large",
+      "failedToReadFile": "Could not read file. Try again.",
+      "failedToMarkPaid": "Could not mark as paid. Try again.",
+      "failedToCancel": "Could not cancel payment run. Try again.",
+      "failedToUpdateItem": "Could not update payment item. Try again.",
+      "failedToRemove": "Could not remove invoice from run. Try again."
+    },
+    "sidePanel": {
+      "created": "Created",
+      "exportFormat": "Export format",
+      "invoices": "Invoices",
+      "total": "Total",
+      "completedDate": "Completed",
+      "downloadExport": "Download export",
+      "confirmMarkAllPaid": "Mark all invoices in this run as paid?",
+      "markAllPaid": "Mark all paid",
+      "importStatement": "Import statement",
+      "cancelRun": "Cancel run",
+      "markPaid": "Mark paid",
+      "markFailed": "Mark failed",
+      "removeFromRun": "Remove from run",
+      "referenceLabel": "Reference ID",
+      "referencePlaceholder": "Enter reference…",
+      "failureReasonLabel": "Failure reason",
+      "failureReasonPlaceholder": "Enter reason…",
+      "removeFromRunConfirm": "Remove this invoice from the payment run?",
+      "removeButton": "Remove",
+      "confirm": "Confirm"
+    },
+    "cancelDialog": {
+      "title": "Cancel payment run?",
+      "body": "This will cancel the draft payment run. No payments will be processed.",
+      "exportedTitle": "Cancel exported run?",
+      "exportedBody": "This run has already been exported. Cancelling it will not recall the export file.",
+      "cancel": "Keep run",
+      "confirm": "Cancel run"
+    },
+    "dialog": {
+      "title": "New payment run"
+    },
+    "step1": {
+      "allCurrencies": "All currencies",
+      "dueDate": "Due date",
+      "searchContractors": "Search contractors…",
+      "selectAllMatching": "Select all matching",
+      "noInvoicesHeading": "No approved invoices",
+      "noInvoicesBody": "There are no approved invoices ready for payment.",
+      "invoicesSelected": "{count} invoices selected",
+      "noSelection": "Select invoices to continue",
+      "groupByCurrency": "Group by currency",
+      "willCreateRuns": "This will create {count} payment runs",
+      "cancel": "Cancel",
+      "reviewSelection": "Review selection"
+    },
+    "step2": {
+      "runNumberLabel": "Run number",
+      "nameLabel": "Name",
+      "namePlaceholder": "e.g. March payments",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Optional description…",
+      "invoices": "{count} invoices",
+      "grandTotal": "Grand total",
+      "exportFormatLabel": "Export format",
+      "formatCsv": "CSV",
+      "formatElixir": "Elixir",
+      "formatSepa": "SEPA XML",
+      "back": "Back",
+      "locking": "Locking…",
+      "lockAndExport": "Lock & export"
+    },
+    "step3": {
+      "successHeading": "Payment run created",
+      "invoices": "{count} invoices",
+      "total": "Total",
+      "format": "Format",
+      "downloadExport": "Download export",
+      "viewPaymentRun": "View payment run",
+      "close": "Close"
+    },
+    "filters": {
+      "dateRange": "Date range",
+      "all": "All",
+      "draft": "Draft",
+      "locked": "Locked",
+      "exported": "Exported",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "newPaymentRun": "New payment run"
   },
   "Reports": {
     "title": "Reports",
@@ -2444,7 +2923,472 @@
       "pinned": "Pinned to favorites",
       "unpinned": "Removed from favorites"
     },
-    "retry": "Try again"
+    "retry": "Try again",
+    "commandPaletteTitle": "Command Palette",
+    "commandPaletteDescription": "Search for contractors, contracts, invoices, or navigate to a page",
+    "resultsFound": "{count} results found",
+    "noResultsFound": "No results found",
+    "time": {
+      "justNow": "just now",
+      "minutesAgo": "{minutes}m ago",
+      "hoursAgo": "{hours}h ago",
+      "daysAgo": "{days}d ago"
+    }
+  },
+  "ContractDetail": {
+    "breadcrumb": "Contracts",
+    "untitled": "Untitled contract",
+    "actions": {
+      "label": "Actions",
+      "edit": "Edit contract",
+      "addAmendment": "Add amendment",
+      "uploadDocument": "Upload document",
+      "terminate": "Terminate",
+      "terminateTitle": "Terminate {title}?",
+      "terminateBody": "This contract will be marked as terminated. Linked invoices and documents will remain accessible.",
+      "cancel": "Cancel",
+      "terminateConfirm": "Terminate contract",
+      "terminateSuccess": "Contract terminated successfully",
+      "terminateError": "Could not terminate contract. Try again.",
+      "supersede": "Mark as superseded",
+      "supersedeSuccess": "Contract marked as superseded",
+      "supersedeError": "Could not mark contract as superseded. Try again."
+    },
+    "error": {
+      "notFound": "Contract not found",
+      "backToList": "Back to contracts",
+      "loadFailed": "Could not load contract details",
+      "retry": "Try again"
+    },
+    "tabs": {
+      "overview": "Overview",
+      "documents": "Documents",
+      "amendments": "Amendments",
+      "activity": "Activity"
+    },
+    "activity": {
+      "contractCreated": "Contract created",
+      "statusChanged": "Status changed to {status}",
+      "amendmentAdded": "Amendment added: {title}",
+      "documentsUploaded": "{count} document(s) uploaded",
+      "noActivity": "No activity yet"
+    },
+    "amendments": {
+      "heading": "Amendments",
+      "addCta": "Add amendment",
+      "addTitle": "New amendment",
+      "addSuccess": "Amendment added successfully",
+      "addError": "Could not add amendment. Try again.",
+      "adding": "Adding…",
+      "add": "Add",
+      "cancel": "Cancel",
+      "fields": {
+        "title": "Title",
+        "titlePlaceholder": "e.g. Rate increase Q2",
+        "effectiveDate": "Effective date",
+        "description": "Description",
+        "descriptionPlaceholder": "Describe the changes…"
+      },
+      "empty": {
+        "title": "No amendments",
+        "description": "Amendments will appear here once added."
+      },
+      "effective": "Effective {date}",
+      "created": "Created {date}",
+      "originalContract": "Original contract"
+    },
+    "overview": {
+      "contractDetails": "Contract details",
+      "financialTerms": "Financial terms",
+      "keyDates": "Key dates",
+      "linkedContractor": "Linked contractor",
+      "noContractor": "No contractor linked",
+      "expiresIn": "Expires in {days} days",
+      "expiredAgo": "Expired {days} days ago",
+      "fields": {
+        "type": "Type",
+        "autoRenewal": "Auto-renewal",
+        "yes": "Yes",
+        "no": "No",
+        "noticePeriod": "Notice period",
+        "noticePeriodDays": "{days} days",
+        "renewalTerms": "Renewal terms",
+        "notes": "Notes",
+        "rate": "Rate",
+        "currency": "Currency",
+        "billingModel": "Billing model",
+        "rateType": "Rate type",
+        "paymentTerms": "Payment terms",
+        "paymentTermsDays": "{days} days",
+        "invoiceCycle": "Invoice cycle",
+        "retainerAmount": "Retainer amount",
+        "startDate": "Start date",
+        "endDate": "End date",
+        "noticeDeadline": "Notice deadline",
+        "daysRemaining": "Days remaining",
+        "contractorName": "Name",
+        "legalName": "Legal name",
+        "contractorStatus": "Status"
+      },
+      "reminders": {
+        "label": "Expiry reminders",
+        "saved": "Reminders saved",
+        "error": "Could not save reminders",
+        "display": "{days} days before",
+        "none": "No reminders set",
+        "edit": "Edit"
+      },
+      "remindersPlaceholder": "30, 60, 90"
+    },
+    "signing": {
+      "voidDialog": {
+        "title": "Void Signing Envelope",
+        "description": "This will cancel the signing process for all parties. Signers will be notified. This action cannot be undone.",
+        "reasonLabel": "Reason (optional)",
+        "reasonPlaceholder": "Why are you voiding this envelope?",
+        "keepActive": "Keep Active",
+        "voiding": "Voiding...",
+        "voidEnvelope": "Void Envelope",
+        "defaultReason": "Voided by admin"
+      },
+      "sendDialog": {
+        "title": "Send for Signature",
+        "description": "Choose a signing provider and configure signers for this document.",
+        "providerLabel": "Signing Provider",
+        "providerPlaceholder": "Select a provider",
+        "noProviders": "No signing providers connected. Connect DocuSign or Autenti in Settings > Integrations.",
+        "signersLabel": "Signers",
+        "noSigners": "No signers configured. Add contract parties first.",
+        "addCountersigner": "Add countersigner",
+        "messageLabel": "Message to Signers",
+        "messagePlaceholder": "Optional message included in the signing email",
+        "documentLabel": "Document",
+        "noDocument": "No document selected",
+        "expiresLabel": "Expires After",
+        "expires7": "7 days",
+        "expires14": "14 days",
+        "expires30": "30 days",
+        "expires60": "60 days",
+        "remindersLabel": "Send Reminders",
+        "reminderNone": "None",
+        "reminderEvery3": "Every 3 days",
+        "reminderEvery7": "Every 7 days",
+        "discard": "Discard",
+        "sending": "Sending...",
+        "send": "Send for Signature",
+        "contractor": "Contractor",
+        "countersigner": "Countersigner"
+      },
+      "progress": {
+        "signedCount": "{signed} of {total} signed",
+        "allSigned": "All parties have signed",
+        "waitingFor": "Waiting for {name} to sign",
+        "viewHistory": "View Signing History",
+        "resendTo": "Resend to {name}",
+        "voidEnvelope": "Void Envelope"
+      },
+      "modal": {
+        "preparing": "Preparing signing session...",
+        "signTitle": "Sign {title}",
+        "completeSigning": "Complete Signing",
+        "redirectMessage": "You will be redirected to {provider} to complete signing.",
+        "continueToProvider": "Continue to {provider}",
+        "returnToContract": "Return to Contract",
+        "loadError": "Unable to load signing session. Please try again."
+      },
+      "toast": {
+        "voidSuccess": "Signing envelope voided",
+        "voidFailed": "Failed to void envelope. Please try again.",
+        "signedSuccess": "Document signed successfully",
+        "signingDeclined": "Signing declined.",
+        "signingFailed": "Signing could not be completed. Please try again.",
+        "reminderSent": "Signing reminder sent to {email}",
+        "resendFailed": "Failed to resend. Please try again.",
+        "sentForSignature": "Document sent for signature",
+        "sendFailed": "Failed to send for signature. Please try again."
+      }
+    }
+  },
+  "Portal": {
+    "nav": {
+      "overview": "Overview",
+      "contracts": "Contracts",
+      "invoices": "Invoices",
+      "documents": "Documents",
+      "payments": "Payments",
+      "settings": "Settings",
+      "signOut": "Sign out",
+      "menuDescription": "Portal navigation menu"
+    },
+    "dashboard": {
+      "welcomeBack": "Welcome back, {name}",
+      "activeContracts": "Active Contracts",
+      "pendingInvoices": "Pending Invoices",
+      "recentPayments": "Recent Payments",
+      "nextDeadline": "Next Deadline",
+      "none": "None",
+      "submitInvoice": "Submit Invoice",
+      "viewContracts": "View Contracts",
+      "recentActivity": "Recent Activity",
+      "noActivity": "No recent activity."
+    },
+    "time": {
+      "justNow": "Just now",
+      "minutesAgo": "{minutes}m ago",
+      "hoursAgo": "{hours}h ago",
+      "daysAgo": "{days}d ago",
+      "na": "N/A"
+    },
+    "payments": {
+      "title": "Payments",
+      "columns": {
+        "invoiceNumber": "Invoice Number",
+        "amount": "Amount",
+        "paymentDate": "Payment Date",
+        "status": "Status"
+      },
+      "paid": "Paid",
+      "emptyTitle": "No Payments Yet",
+      "emptyBody": "Payment records will appear here once your invoices are approved and processed."
+    },
+    "invoices": {
+      "title": "Invoices",
+      "submitInvoice": "Submit Invoice",
+      "emptyTitle": "No Invoices Yet",
+      "emptyBody": "You haven't submitted any invoices. Submit your first invoice to get started.",
+      "columns": {
+        "invoiceNumber": "Invoice Number",
+        "contract": "Contract",
+        "amount": "Amount",
+        "dateSubmitted": "Date Submitted",
+        "status": "Status"
+      },
+      "status": {
+        "paid": "Paid",
+        "paymentScheduled": "Payment Scheduled",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "inReview": "In Review",
+        "submitted": "Submitted"
+      },
+      "fallback": "-"
+    },
+    "invoiceDetail": {
+      "back": "Back",
+      "notFound": "Invoice not found.",
+      "submitted": "Submitted {date}",
+      "details": "Details",
+      "contract": "Contract",
+      "netAmount": "Net Amount",
+      "grossAmount": "Gross Amount",
+      "issueDate": "Issue Date",
+      "dueDate": "Due Date",
+      "attachedFiles": "Attached Files",
+      "download": "Download",
+      "payment": "Payment",
+      "paymentDate": "Payment Date",
+      "amount": "Amount",
+      "activity": "Activity",
+      "fallback": "-"
+    },
+    "submitInvoice": {
+      "title": "Submit Invoice",
+      "back": "Back",
+      "contract": "Contract",
+      "selectContract": "Select contract",
+      "contractPlaceholder": "Choose a contract...",
+      "expectedAmount": "Expected: {amount} {currency}/{model}",
+      "invoicePdf": "Invoice PDF",
+      "dropText": "Drop your invoice PDF here or browse",
+      "dropSubtext": "PDF files only, up to 25 MB",
+      "uploading": "Uploading...",
+      "details": "Invoice Details",
+      "invoiceNumber": "Invoice number",
+      "invoicePlaceholder": "INV-001",
+      "issueDate": "Issue date",
+      "dueDate": "Due date",
+      "netAmount": "Net amount",
+      "grossAmount": "Gross amount",
+      "amountPlaceholder": "0.00",
+      "review": "Review",
+      "uploadedFile": "Uploaded File",
+      "submitting": "Submitting...",
+      "submit": "Submit Invoice",
+      "errors": {
+        "selectContract": "Please select a contract",
+        "invoiceNumberRequired": "Invoice number is required",
+        "issueDateRequired": "Issue date is required",
+        "dueDateRequired": "Due date is required",
+        "netAmountRequired": "Net amount is required",
+        "grossAmountRequired": "Gross amount is required",
+        "mustBePositive": "Must be a positive number",
+        "dueDateAfterIssue": "Due date must be on or after issue date",
+        "uploadFirst": "Please upload an invoice PDF first.",
+        "uploadFailed": "Failed to upload the file. Check your connection and try again.",
+        "submitFailed": "Failed to submit invoice. Your data has been saved. Please try again."
+      }
+    },
+    "submitSuccess": {
+      "title": "Invoice Submitted",
+      "body": "Your invoice has been submitted successfully. It will be reviewed by your organization.",
+      "nextStep": "Expected next: Your organization will review the invoice. You can track its status on the Invoices page.",
+      "trackStatus": "Track Status",
+      "submitAnother": "Submit Another Invoice"
+    },
+    "contracts": {
+      "title": "Contracts",
+      "emptyTitle": "No Active Contracts",
+      "emptyBody": "You don't have any active contracts yet. Contact your organization if you believe this is an error.",
+      "notFound": "Contract not found.",
+      "backToContracts": "Back to Contracts",
+      "contractNumber": "Contract Number",
+      "type": "Type",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "rate": "Rate",
+      "billingModel": "Billing Model",
+      "paymentTerms": "Payment Terms",
+      "paymentTermsDays": "{days} days",
+      "autoRenewal": "Auto-Renewal",
+      "yes": "Yes",
+      "no": "No",
+      "noticePeriod": "Notice Period",
+      "noticePeriodDays": "{days} days",
+      "ratePeriods": "Rate Periods",
+      "documents": "Documents",
+      "noDocuments": "No documents attached to this contract.",
+      "documentFallback": "Document",
+      "columns": {
+        "rate": "Rate",
+        "type": "Type",
+        "validFrom": "Valid From",
+        "validTo": "Valid To"
+      },
+      "rateUnit": {
+        "monthly": "/mo",
+        "hourly": "/hr",
+        "daily": "/day",
+        "fixed": " fixed"
+      }
+    },
+    "documents": {
+      "title": "Documents",
+      "download": "Download",
+      "documentFallback": "Document",
+      "emptyTitle": "No Documents Available",
+      "emptyBody": "Your organization hasn't shared any documents with you yet. Documents will appear here once uploaded.",
+      "columns": {
+        "documentName": "Document Name",
+        "type": "Type",
+        "dateAdded": "Date Added",
+        "actions": "Actions"
+      }
+    },
+    "login": {
+      "title": "Contractor Portal",
+      "subtitle": "Enter your email to receive a sign-in link",
+      "emailLabel": "Email address",
+      "emailPlaceholder": "you@company.com",
+      "sending": "Sending...",
+      "sendMagicLink": "Send Magic Link",
+      "adminPrompt": "Are you an admin? ",
+      "signInHere": "Sign in here",
+      "checkInbox": "Check your inbox",
+      "linkSentTo": "We sent a sign-in link to {email}. Click the link to access the portal.",
+      "didntReceive": "Didn't receive it? Check your spam folder or try another email.",
+      "tryAnother": "Try another email",
+      "errors": {
+        "invalidEmail": "Please enter a valid email address.",
+        "somethingWentWrong": "Something went wrong. Please try again."
+      }
+    },
+    "verify": {
+      "verifying": "Verifying your sign-in link...",
+      "backToLogin": "Back to login",
+      "errors": {
+        "noToken": "No verification token found. Please request a new sign-in link.",
+        "sessionFailed": "Failed to create session. Please try again.",
+        "unexpectedResponse": "Unexpected response. Please request a new sign-in link.",
+        "linkExpired": "This link has expired. Request a new sign-in link.",
+        "orgSelectFailed": "Failed to select organization. Please try again."
+      }
+    },
+    "orgPicker": {
+      "title": "Select Organization",
+      "description": "You work with multiple organizations. Choose one to continue.",
+      "signedInAs": "Signed in as {email}"
+    },
+    "settings": {
+      "title": "Settings",
+      "subtitle": "Manage your profile and preferences",
+      "personalInfo": "Personal Information",
+      "financialDetails": "Financial Details",
+      "profileUpdated": "Profile updated",
+      "changeRequestSubmitted": "Change request submitted for approval",
+      "fields": {
+        "displayName": "Display Name",
+        "emailAddress": "Email Address",
+        "emailReadOnly": "Contact your organization to change your email",
+        "phoneNumber": "Phone Number",
+        "streetAddress": "Street Address",
+        "addressLine2": "Address Line 2",
+        "city": "City",
+        "postalCode": "Postal Code",
+        "countryCode": "Country Code",
+        "bankAccountNumber": "Bank Account Number",
+        "bankName": "Bank Name",
+        "swiftBic": "SWIFT/BIC Code",
+        "taxId": "Tax ID (NIP)"
+      },
+      "requiresApproval": "Requires Approval",
+      "editSection": "Edit Section",
+      "financialApprovalNote": "Changes to financial details require organization approval before taking effect.",
+      "saving": "Saving...",
+      "saveChanges": "Save Changes",
+      "discardChanges": "Discard Changes",
+      "fallbackValue": "—",
+      "errors": {
+        "saveFailed": "Failed to save changes. Please try again."
+      }
+    },
+    "pendingSignatures": {
+      "title": "Pending Signatures",
+      "sent": "Sent {time}",
+      "na": "N/A",
+      "signNow": "Sign Now",
+      "viewAll": "View all pending signatures"
+    },
+    "notificationPreferences": {
+      "title": "Notification Preferences",
+      "categories": {
+        "invoiceUpdates": "Invoice Updates",
+        "invoiceUpdatesDesc": "Get notified when your invoice status changes",
+        "paymentConfirmations": "Payment Confirmations",
+        "paymentConfirmationsDesc": "Get notified when a payment is processed",
+        "contractChanges": "Contract Changes",
+        "contractChangesDesc": "Get notified about contract renewals or amendments",
+        "documentUploads": "Document Uploads",
+        "documentUploadsDesc": "Get notified when new documents are shared",
+        "securityAlerts": "Security Alerts",
+        "securityAlertsDesc": "Get notified about sign-in activity"
+      },
+      "securityLocked": "Security alerts cannot be disabled",
+      "errors": {
+        "updateFailed": "Failed to update preference. Please try again."
+      }
+    },
+    "statusTimeline": {
+      "submitted": "Submitted",
+      "inReview": "In Review",
+      "approved": "Approved",
+      "paymentScheduled": "Payment Scheduled",
+      "paid": "Paid"
+    },
+    "fileSize": {
+      "bytes": "{size} B",
+      "kilobytes": "{size} KB",
+      "megabytes": "{size} MB"
+    }
   },
   "ksef": {
     "descriptionDisconnected": "Auto-fetch invoices from Poland's national e-invoicing system",

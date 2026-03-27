@@ -36,6 +36,7 @@ export function DeactivateDialog({
   userName,
 }: DeactivateDialogProps) {
   const t = useTranslations("Users.deactivateDialog");
+  const tToast = useTranslations("Settings.toast");
   const queryClient = useQueryClient();
 
   const deactivateMutation = useMutation(
@@ -50,7 +51,7 @@ export function DeactivateDialog({
           typeof error === "object" && error && "message" in error
             ? String((error as { message?: unknown }).message ?? "")
             : "";
-        toast.error(message || "Failed to deactivate member");
+        toast.error(message || tToast("deactivateFailed"));
       },
     }),
   );

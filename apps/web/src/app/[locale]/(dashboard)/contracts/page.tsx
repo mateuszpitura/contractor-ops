@@ -10,6 +10,8 @@ import { parseAsString, useQueryState } from "nuqs";
 import { trpc } from "@/trpc/init";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/shared/empty-state";
+import { PageHeader } from "@/components/shared/page-header";
+import { AnimateIn } from "@/components/shared/animate-in";
 import { ContractDataTable } from "@/components/contracts/contract-table/data-table";
 import { ContractSidePanel } from "@/components/contracts/contract-side-panel";
 import { ContractWizardDialog } from "@/components/contracts/contract-wizard/wizard-dialog";
@@ -40,12 +42,12 @@ function ContractsContent() {
 
   // Check contract and contractor counts for empty state
   const contractCountQuery = useQuery(
-    trpc.contract.list.queryOptions({ page: 1, pageSize: 1 }),
+    trpc.contract.list.queryOptions({ page: 1, pageSize: 10 }),
   );
   const contractorCountQuery = useQuery(
-    trpc.contractor.list.queryOptions({ page: 1, pageSize: 1 }),
+    trpc.contractor.list.queryOptions({ page: 1, pageSize: 10 }),
   );
-  const contractTotal = (contractCountQuery.data as { total: number } | undefined)?.total ?? 0;
+  const contractTotal = (contractCountQuery.data as { totalCount: number } | undefined)?.totalCount ?? 0;
   const contractorCount = (contractorCountQuery.data as { total: number } | undefined)?.total ?? 0;
   const isCountLoading = contractCountQuery.isLoading;
 
@@ -62,9 +64,7 @@ function ContractsContent() {
   if (!isCountLoading && contractTotal === 0) {
     return (
       <div className="space-y-6">
-        <div>
-          <h1 className="text-[20px] font-semibold">{t("pageTitle")}</h1>
-        </div>
+        <PageHeader title={t("pageTitle")} description={t("pageDescription")} />
         <EmptyState
           icon={FileText}
           heading={te("contracts.heading")}
@@ -81,16 +81,18 @@ function ContractsContent() {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <div>
-        <h1 className="text-[20px] font-semibold">{t("pageTitle")}</h1>
-      </div>
+      <AnimateIn delay={0}>
+        <PageHeader title={t("pageTitle")} description={t("pageDescription")} />
+      </AnimateIn>
 
       {/* Data table */}
-      <ContractDataTable
-        onRowClick={handleRowClick}
-        onNewContract={handleNewContract}
-        onImport={() => setImportWizardOpen(true)}
-      />
+      <AnimateIn delay={1}>
+        <ContractDataTable
+          onRowClick={handleRowClick}
+          onNewContract={handleNewContract}
+          onImport={() => setImportWizardOpen(true)}
+        />
+      </AnimateIn>
 
       {/* Side panel */}
       <ContractSidePanel

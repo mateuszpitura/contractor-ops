@@ -114,6 +114,11 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
     }
   }, [contractorId, selectedContractorId, setValue]);
 
+  const contractTypeItems = CONTRACT_TYPES.map((type) => ({
+    value: type,
+    label: t(`typeOptions.${type}`),
+  }));
+
   const handleStartDateSelect = (date: Date | undefined) => {
     if (date) {
       setValue("startDate", date.toISOString(), {
@@ -232,14 +237,15 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
               { shouldDirty: true, shouldValidate: true },
             )
           }
+          items={contractTypeItems}
         >
           <SelectTrigger className="w-full">
             <SelectValue placeholder={t("fields.typePlaceholder")} />
           </SelectTrigger>
           <SelectContent>
-            {CONTRACT_TYPES.map((type) => (
-              <SelectItem key={type} value={type}>
-                {t(`typeOptions.${type}`)}
+            {contractTypeItems.map((item) => (
+              <SelectItem key={item.value} value={item.value}>
+                {item.label}
               </SelectItem>
             ))}
           </SelectContent>

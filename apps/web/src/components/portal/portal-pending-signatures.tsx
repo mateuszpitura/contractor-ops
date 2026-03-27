@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
+import { useTranslations } from "next-intl";
 import { trpc } from "@/trpc/init";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,10 @@ import { EmbeddedSigningModal } from "@/components/contracts/contract-detail/emb
 // Helpers
 // ---------------------------------------------------------------------------
 
-function formatRelativeTime(date: Date | string): string {
+function formatRelativeTime(
+  date: Date | string,
+  t: (key: string, values?: Record<string, string | number | Date>) => string,
+): string {
   const d = typeof date === "string" ? new Date(date) : date;
   const now = new Date();
   const diffMs = now.getTime() - d.getTime();
@@ -22,10 +26,10 @@ function formatRelativeTime(date: Date | string): string {
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-  if (diffMinutes < 1) return "Just now";
-  if (diffMinutes < 60) return `${diffMinutes}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 30) return `${diffDays}d ago`;
+  if (diffMinutes < 1) return t("time.justNow");
+  if (diffMinutes < 60) return t("time.minutesAgo", { minutes: diffMinutes });
+  if (diffHours < 24) return t("time.hoursAgo", { hours: diffHours });
+  if (diffDays < 30) return t("time.daysAgo", { days: diffDays });
   return d.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -65,6 +69,7 @@ type SigningTarget = {
  * Hidden when count is 0. Max 5 items shown.
  */
 export function PortalPendingSignatures() {
+  const t = useTranslations("Portal");
   const [signingTarget, setSigningTarget] = useState<SigningTarget | null>(
     null
   );
@@ -88,7 +93,7 @@ export function PortalPendingSignatures() {
       <div className="space-y-3">
         {/* Section heading */}
         <div className="flex items-center gap-2">
-          <h2 className="text-sm font-semibold">Pending Signatures</h2>
+          <h2 className="text-sm font-semibold">{t("pendingSignatures.title")}</h2>
           {!pendingQuery.isPending && items.length > 0 && (
             <Badge variant="secondary">{items.length}</Badge>
           )}
@@ -116,11 +121,11 @@ export function PortalPendingSignatures() {
                 <div className="flex items-center justify-between gap-4">
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-semibold">
-                      Contract #{item.contractId?.slice(-6) ?? "N/A"}
+                      Contract #{item.contractId?.slice(-6) ?? t("pendingSignatures.na")}
                     </p>
                     {item.sentAt && (
                       <p className="text-sm text-muted-foreground">
-                        Sent {formatRelativeTime(item.sentAt)}
+                        {t("pendingSignatures.sent", { time: formatRelativeTime(item.sentAt, t) })}
                       </p>
                     )}
                   </div>
@@ -130,11 +135,11 @@ export function PortalPendingSignatures() {
                       setSigningTarget({
                         envelopeId: item.envelopeId,
                         recipientEmail: item.recipientEmail,
-                        documentTitle: `Contract #${item.contractId?.slice(-6) ?? "document"}`,
+                        documentTitle: `Contract #${item.contractId?.slice(-6) ?? t("pendingSignatures.na")}`,
                       })
                     }
                   >
-                    Sign Now
+                    {t("pendingSignatures.signNow")}
                   </Button>
                 </div>
               </Card>
@@ -145,7 +150,7 @@ export function PortalPendingSignatures() {
                 href="/portal/signatures"
                 className="text-sm text-primary hover:underline"
               >
-                View all pending signatures
+                {t("pendingSignatures.viewAll")}
               </a>
             )}
           </div>

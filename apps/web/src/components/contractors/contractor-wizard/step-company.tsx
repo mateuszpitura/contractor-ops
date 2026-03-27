@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import type { UseFormReturn } from "react-hook-form";
+import { useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 
+import { trpc } from "@/trpc/init";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,6 +35,7 @@ export function StepCompany({ form }: StepCompanyProps) {
   const tv = useTranslations("Validation.contractor");
 
   const [isGusLoading, setIsGusLoading] = useState(false);
+  const queryClient = useQueryClient();
 
   const {
     register,
@@ -52,13 +55,10 @@ export function StepCompany({ form }: StepCompanyProps) {
 
     setIsGusLoading(true);
     try {
-      const input = JSON.stringify({ nip: cleanNip });
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_APP_URL}/api/trpc/contractor.gusLookup?input=${encodeURIComponent(input)}`,
-      );
-      const json = await response.json();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const data = (json as any)?.result?.data ?? json;
+      const data = await queryClient.fetchQuery(
+        trpc.contractor.gusLookup.queryOptions({ nip: cleanNip }),
+      ) as Record<string, any>;
 
       if (data?.found) {
         if (data.legalName) {

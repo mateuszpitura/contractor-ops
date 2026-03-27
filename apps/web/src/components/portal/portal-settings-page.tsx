@@ -2,6 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 import { trpc } from "@/trpc/init";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -46,6 +47,7 @@ function SettingsSkeleton() {
  * Per D-13, D-14, and UI-SPEC.
  */
 export function PortalSettingsPage() {
+  const t = useTranslations("Portal");
   const queryClient = useQueryClient();
 
   // Fetch profile data
@@ -78,7 +80,7 @@ export function PortalSettingsPage() {
     await queryClient.invalidateQueries({
       queryKey: trpc.portal.getProfile.queryOptions().queryKey,
     });
-    toast.success("Profile updated");
+    toast.success(t("settings.profileUpdated"));
   };
 
   // Financial Details save handler
@@ -94,7 +96,7 @@ export function PortalSettingsPage() {
     await queryClient.invalidateQueries({
       queryKey: trpc.portal.getProfile.queryOptions().queryKey,
     });
-    toast.success("Change request submitted for approval");
+    toast.success(t("settings.changeRequestSubmitted"));
   };
 
   // Build field configs
@@ -102,33 +104,32 @@ export function PortalSettingsPage() {
     ? [
         {
           key: "displayName",
-          label: "Display Name",
+          label: t("settings.fields.displayName"),
           value: profile.displayName,
         },
         {
           key: "email",
-          label: "Email Address",
+          label: t("settings.fields.emailAddress"),
           value: profile.email,
           readOnly: true,
-          readOnlyCaption:
-            "Contact your organization to change your email",
+          readOnlyCaption: t("settings.fields.emailReadOnly"),
         },
-        { key: "phone", label: "Phone Number", value: profile.phone },
+        { key: "phone", label: t("settings.fields.phoneNumber"), value: profile.phone },
         {
           key: "addressLine1",
-          label: "Street Address",
+          label: t("settings.fields.streetAddress"),
           value: profile.addressLine1,
         },
         {
           key: "addressLine2",
-          label: "Address Line 2",
+          label: t("settings.fields.addressLine2"),
           value: profile.addressLine2,
         },
-        { key: "city", label: "City", value: profile.city },
-        { key: "postalCode", label: "Postal Code", value: profile.postalCode },
+        { key: "city", label: t("settings.fields.city"), value: profile.city },
+        { key: "postalCode", label: t("settings.fields.postalCode"), value: profile.postalCode },
         {
           key: "countryCode",
-          label: "Country Code",
+          label: t("settings.fields.countryCode"),
           value: profile.countryCode,
         },
       ]
@@ -138,22 +139,22 @@ export function PortalSettingsPage() {
     ? [
         {
           key: "bankAccountNumber",
-          label: "Bank Account Number",
+          label: t("settings.fields.bankAccountNumber"),
           value: profile.billingProfile?.bankAccountMasked ?? null,
         },
         {
           key: "bankName",
-          label: "Bank Name",
+          label: t("settings.fields.bankName"),
           value: profile.billingProfile?.bankName ?? null,
         },
         {
           key: "swiftBic",
-          label: "SWIFT/BIC Code",
+          label: t("settings.fields.swiftBic"),
           value: profile.billingProfile?.swiftBic ?? null,
         },
         {
           key: "taxId",
-          label: "Tax ID (NIP)",
+          label: t("settings.fields.taxId"),
           value: profile.billingProfile?.taxId ?? null,
         },
       ]
@@ -163,9 +164,9 @@ export function PortalSettingsPage() {
     <div className="max-w-[640px]">
       {/* Page heading */}
       <div className="mb-6">
-        <h1 className="text-xl font-semibold">Settings</h1>
+        <h1 className="text-xl font-semibold">{t("settings.title")}</h1>
         <p className="text-sm text-muted-foreground">
-          Manage your profile and preferences
+          {t("settings.subtitle")}
         </p>
       </div>
 
@@ -175,7 +176,7 @@ export function PortalSettingsPage() {
         <div className="space-y-4">
           {/* Personal Information */}
           <ProfileSection
-            title="Personal Information"
+            title={t("settings.personalInfo")}
             fields={personalFields}
             onSave={handleContactSave}
             defaultOpen
@@ -183,7 +184,7 @@ export function PortalSettingsPage() {
 
           {/* Financial Details */}
           <ProfileSection
-            title="Financial Details"
+            title={t("settings.financialDetails")}
             fields={financialFields}
             requiresApproval
             onSave={handleFinancialSave}

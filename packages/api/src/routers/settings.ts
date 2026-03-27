@@ -15,6 +15,7 @@ import {
   rejectChangeRequest,
 } from "../services/portal-change-request.js";
 import { createPresignedUploadUrl } from "../services/r2.js";
+import * as E from "../errors.js";
 
 export const settingsRouter = router({
   /**
@@ -364,7 +365,7 @@ export const settingsRouter = router({
         if (existing) {
           throw new TRPCError({
             code: "CONFLICT",
-            message: "This subdomain is already in use",
+            message: E.SETTINGS_SUBDOMAIN_TAKEN,
           });
         }
       }

@@ -1,6 +1,7 @@
 "use client";
 
 import { Check, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -8,13 +9,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 // Constants
 // ---------------------------------------------------------------------------
 
-const STEPS = [
-  { key: "submitted", label: "Submitted" },
-  { key: "review", label: "In Review" },
-  { key: "approved", label: "Approved" },
-  { key: "scheduled", label: "Payment Scheduled" },
-  { key: "paid", label: "Paid" },
-] as const;
+function getSteps(t: (key: string) => string) {
+  return [
+    { key: "submitted", label: t("submitted") },
+    { key: "review", label: t("inReview") },
+    { key: "approved", label: t("approved") },
+    { key: "scheduled", label: t("paymentScheduled") },
+    { key: "paid", label: t("paid") },
+  ] as const;
+}
 
 // ---------------------------------------------------------------------------
 // Types
@@ -101,13 +104,16 @@ function StepCircle({
 function DesktopTimeline({
   activeIndex,
   rejected,
+  steps,
 }: {
   activeIndex: number;
   rejected: boolean;
+  steps: ReturnType<typeof getSteps>;
 }) {
+  const tAria = useTranslations("Common.aria");
   return (
-    <div className="hidden items-center md:flex" role="list" aria-label="Invoice status timeline">
-      {STEPS.map((step, i) => (
+    <div className="hidden items-center md:flex" role="list" aria-label={tAria("statusTimeline")}>
+      {steps.map((step, i) => (
         <div key={step.key} className="flex items-center" role="listitem">
           <div className="flex flex-col items-center gap-1.5">
             <StepCircle index={i} activeIndex={activeIndex} rejected={rejected} />
@@ -127,7 +133,7 @@ function DesktopTimeline({
             </span>
           </div>
           {/* Connector line between steps */}
-          {i < STEPS.length - 1 && (
+          {i < steps.length - 1 && (
             <div
               className={cn(
                 "mx-2 h-0.5 w-12 flex-1 min-w-8",
@@ -148,18 +154,21 @@ function DesktopTimeline({
 function MobileTimeline({
   activeIndex,
   rejected,
+  steps,
 }: {
   activeIndex: number;
   rejected: boolean;
+  steps: ReturnType<typeof getSteps>;
 }) {
+  const tAria = useTranslations("Common.aria");
   return (
-    <div className="flex flex-col md:hidden" role="list" aria-label="Invoice status timeline">
-      {STEPS.map((step, i) => (
+    <div className="flex flex-col md:hidden" role="list" aria-label={tAria("statusTimeline")}>
+      {steps.map((step, i) => (
         <div key={step.key} className="flex items-start" role="listitem">
           <div className="flex flex-col items-center">
             <StepCircle index={i} activeIndex={activeIndex} rejected={rejected} />
             {/* Vertical connector line */}
-            {i < STEPS.length - 1 && (
+            {i < steps.length - 1 && (
               <div
                 className={cn(
                   "my-1 w-0.5 h-6",
@@ -193,13 +202,15 @@ function MobileTimeline({
 // ---------------------------------------------------------------------------
 
 export function StatusTimeline(props: StatusTimelineProps) {
+  const t = useTranslations("Portal.statusTimeline");
   const activeIndex = getActiveStep(props);
   const rejected = isRejected(props);
+  const steps = getSteps(t);
 
   return (
     <div className="py-4">
-      <DesktopTimeline activeIndex={activeIndex} rejected={rejected} />
-      <MobileTimeline activeIndex={activeIndex} rejected={rejected} />
+      <DesktopTimeline activeIndex={activeIndex} rejected={rejected} steps={steps} />
+      <MobileTimeline activeIndex={activeIndex} rejected={rejected} steps={steps} />
     </div>
   );
 }

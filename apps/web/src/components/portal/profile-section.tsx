@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { ChevronDown, Pencil, Lock, Info } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -65,6 +66,7 @@ export function ProfileSection({
   pendingChangeRequest,
   defaultOpen = true,
 }: ProfileSectionProps) {
+  const t = useTranslations("Portal.settings");
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -104,7 +106,7 @@ export function ProfileSection({
       await onSave(values as Record<string, string | null>);
       setEditing(false);
     } catch {
-      toast.error("Failed to save changes. Please try again.");
+      toast.error(t("errors.saveFailed"));
     } finally {
       setSaving(false);
     }
@@ -142,7 +144,7 @@ export function ProfileSection({
                 />
                 <span className="text-sm font-semibold">{title}</span>
                 {requiresApproval && (
-                  <Badge variant="info">Requires Approval</Badge>
+                  <Badge variant="info">{t("requiresApproval")}</Badge>
                 )}
               </button>
             )}
@@ -155,7 +157,7 @@ export function ProfileSection({
               onClick={handleEditClick}
             >
               <Pencil className="h-3.5 w-3.5" />
-              Edit Section
+              {t("editSection")}
             </Button>
           )}
         </div>
@@ -185,7 +187,7 @@ export function ProfileSection({
                           </Label>
                           <div className="flex items-center gap-2 text-sm">
                             <Lock className="h-3.5 w-3.5 text-muted-foreground" />
-                            <span>{field.value || "\u2014"}</span>
+                            <span>{field.value || t("fallbackValue")}</span>
                           </div>
                           {field.readOnlyCaption && (
                             <p className="text-xs text-muted-foreground">
@@ -215,8 +217,7 @@ export function ProfileSection({
                     <div className="flex items-start gap-2 rounded-md bg-blue-500/10 p-3">
                       <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-700 dark:text-blue-400" />
                       <p className="text-sm text-blue-700 dark:text-blue-400">
-                        Changes to financial details require organization
-                        approval before taking effect.
+                        {t("financialApprovalNote")}
                       </p>
                     </div>
                   )}
@@ -224,7 +225,7 @@ export function ProfileSection({
                   {/* Action buttons */}
                   <div className="flex gap-2 pt-2">
                     <Button type="submit" size="sm" disabled={saving}>
-                      {saving ? "Saving..." : "Save Changes"}
+                      {saving ? t("saving") : t("saveChanges")}
                     </Button>
                     <Button
                       type="button"
@@ -233,7 +234,7 @@ export function ProfileSection({
                       onClick={handleDiscard}
                       disabled={saving}
                     >
-                      Discard Changes
+                      {t("discardChanges")}
                     </Button>
                   </div>
                 </div>
@@ -250,7 +251,7 @@ export function ProfileSection({
                       {field.readOnly && (
                         <Lock className="h-3.5 w-3.5 text-muted-foreground" />
                       )}
-                      <span>{field.value || "\u2014"}</span>
+                      <span>{field.value || t("fallbackValue")}</span>
                     </dd>
                     {field.readOnly && field.readOnlyCaption && (
                       <p className="text-xs text-muted-foreground">

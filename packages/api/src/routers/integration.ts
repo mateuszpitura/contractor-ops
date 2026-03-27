@@ -20,6 +20,7 @@ import { router } from "../init.js";
 import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
 import { syncWorkspaceUsers } from "../services/slack-client.js";
+import * as E from "../errors.js";
 
 // Ensure all provider adapters are registered before any procedure runs
 registerAllAdapters();
@@ -100,8 +101,7 @@ export const integrationRouter = router({
       if (!clientId || !redirectUri || !signingSecret) {
         throw new TRPCError({
           code: "PRECONDITION_FAILED",
-          message:
-            "Slack integration is not configured. Missing SLACK_CLIENT_ID, SLACK_REDIRECT_URI, or SLACK_SIGNING_SECRET.",
+          message: E.INTEGRATION_NOT_CONFIGURED,
         });
       }
 
@@ -147,7 +147,7 @@ export const integrationRouter = router({
       if (!connection) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "No Slack integration found",
+          message: E.INTEGRATION_NOT_FOUND,
         });
       }
 
@@ -243,7 +243,7 @@ export const integrationRouter = router({
       if (!connection) {
         throw new TRPCError({
           code: "PRECONDITION_FAILED",
-          message: "Slack integration is not connected",
+          message: E.INTEGRATION_NOT_CONNECTED,
         });
       }
 
@@ -279,7 +279,7 @@ export const integrationRouter = router({
       if (!existing) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "External link not found",
+          message: E.INTEGRATION_LINK_NOT_FOUND,
         });
       }
 
@@ -301,7 +301,7 @@ export const integrationRouter = router({
       if (!connection) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "No Slack connection found",
+          message: E.INTEGRATION_NOT_CONNECTED,
         });
       }
 
@@ -347,7 +347,7 @@ export const integrationRouter = router({
       if (!adapter?.supportsOAuth || !adapter.getOAuthConfig) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: `Provider "${input.provider}" does not support OAuth.`,
+          message: E.INTEGRATION_NO_OAUTH,
         });
       }
 
@@ -359,7 +359,7 @@ export const integrationRouter = router({
       if (!clientId || !clientSecret || !appUrl) {
         throw new TRPCError({
           code: "PRECONDITION_FAILED",
-          message: `Provider "${input.provider}" is not configured. Missing ${oauthConfig.clientIdEnvVar} or ${oauthConfig.clientSecretEnvVar}.`,
+          message: E.INTEGRATION_NOT_CONFIGURED,
         });
       }
 
@@ -400,7 +400,7 @@ export const integrationRouter = router({
       if (!connection) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: `No ${input.provider} integration found`,
+          message: E.INTEGRATION_NOT_FOUND,
         });
       }
 

@@ -8,15 +8,8 @@ import { useTranslations } from "next-intl";
 import { trpc } from "@/trpc/init";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbSeparator,
-  BreadcrumbPage,
-} from "@/components/ui/breadcrumb";
 import { Link } from "@/i18n/navigation";
+import { useBreadcrumbOverride } from "@/components/layout/breadcrumb-context";
 
 import { DetailHeader } from "@/components/contracts/contract-detail/detail-header";
 import { ContractDetailTabs } from "@/components/contracts/contract-detail/contract-detail-tabs";
@@ -72,6 +65,9 @@ export default function ContractDetailPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const contract = contractQuery.data as any;
 
+  // Set breadcrumb label for this detail page
+  useBreadcrumbOverride(params.id, contract?.title);
+
   // E-sign: check for connected providers
   const connectionsQuery = useQuery(
     trpc.esign.listConnections.queryOptions()
@@ -121,27 +117,6 @@ export default function ContractDetailPage() {
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumb */}
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink
-              render={(props) => <Link {...props} href="/contracts" />}
-            >
-              {t("breadcrumb")}
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>
-              {contract?.title ?? (
-                <Skeleton className="inline-block h-4 w-32" />
-              )}
-            </BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-
       {/* Header */}
       {contractQuery.isLoading || !contract ? (
         <HeaderSkeleton />

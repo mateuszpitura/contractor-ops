@@ -35,6 +35,7 @@ export function InviteAcceptForm({
   const t = useTranslations("Auth.invite");
   const tv = useTranslations("Validation");
   const tc = useTranslations("Common");
+  const tToast = useTranslations("Auth.toast");
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -64,7 +65,7 @@ export function InviteAcceptForm({
       });
 
       if (signUpError) {
-        toast.error(signUpError.message ?? "Failed to create account");
+        toast.error(signUpError.message ?? tToast("createAccountFailed"));
         setIsLoading(false);
         return;
       }
@@ -76,7 +77,7 @@ export function InviteAcceptForm({
         });
 
       if (acceptError) {
-        toast.error(acceptError.message ?? "Failed to accept invitation");
+        toast.error(acceptError.message ?? tToast("acceptInviteFailed"));
         setIsLoading(false);
         return;
       }
@@ -91,7 +92,7 @@ export function InviteAcceptForm({
   return (
     <Card>
       <CardHeader className="space-y-1 text-center">
-        <h1 className="text-[28px] font-semibold leading-[1.2] tracking-tight">
+        <h1 className="font-display text-[28px] font-semibold leading-[1.2] tracking-tight">
           {t("title", { orgName })}
         </h1>
         <p className="text-sm text-muted-foreground">

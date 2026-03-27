@@ -64,10 +64,10 @@ const ACCEPTED_TYPES: Record<string, string[]> = {
 
 const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25 MB
 
-function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+function formatFileSizeData(bytes: number): { key: string; size: string } {
+  if (bytes < 1024) return { key: "bytes", size: String(bytes) };
+  if (bytes < 1024 * 1024) return { key: "kilobytes", size: (bytes / 1024).toFixed(1) };
+  return { key: "megabytes", size: (bytes / (1024 * 1024)).toFixed(1) };
 }
 
 // ---------------------------------------------------------------------------
@@ -126,6 +126,7 @@ export function StepDocuments({
   onDocumentsChange,
 }: StepDocumentsProps) {
   const t = useTranslations("Contracts.wizard");
+  const tCommon = useTranslations("Common");
   const [files, setFiles] = useState<UploadingFile[]>([]);
 
   const requestUploadMutation = useMutation(
@@ -157,6 +158,7 @@ export function StepDocuments({
           filename: file.name,
           mimeType: file.type,
           fileSizeBytes: file.size,
+          documentType: "MASTER_CONTRACT",
         } as Parameters<typeof requestUploadMutation.mutateAsync>[0]);
 
         const documentId = result.documentId as string;
@@ -308,7 +310,7 @@ export function StepDocuments({
                 <p className="text-sm truncate">{item.file.name}</p>
                 <div className="flex items-center gap-2 mt-0.5">
                   <span className="text-xs text-muted-foreground">
-                    {formatFileSize(item.file.size)}
+                    {(() => { const { key, size } = formatFileSizeData(item.file.size); return tCommon(`fileSize.${key}` as Parameters<typeof tCommon>[0], { size }); })()}
                   </span>
                   {item.status === "uploading" ? (
                     <Progress
@@ -328,7 +330,7 @@ export function StepDocuments({
                 onClick={() => removeFile(item.id)}
               >
                 <X className="h-3.5 w-3.5" />
-                <span className="sr-only">Remove</span>
+                <span className="sr-only">{tCommon("srOnly.remove")}</span>
               </Button>
             </div>
           ))}

@@ -39,16 +39,16 @@ function formatAmount(grosze: number, currency: string): string {
   return currencyFormatter.format(grosze / 100);
 }
 
-function getSlaClassName(status: string): string {
+function getSlaVariant(status: string): "success" | "warning" | "destructive" | "secondary" {
   switch (status) {
     case "ON_TRACK":
-      return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400";
+      return "success";
     case "APPROACHING":
-      return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400";
+      return "warning";
     case "BREACHED":
-      return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400";
+      return "destructive";
     default:
-      return "bg-muted text-muted-foreground";
+      return "secondary";
   }
 }
 
@@ -77,7 +77,7 @@ export function ApprovalQueueWidget() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-[20px] font-semibold">
+        <CardTitle className="font-display text-lg font-semibold">
           {t("approvals.title")}
         </CardTitle>
         <CardAction>
@@ -125,8 +125,7 @@ export function ApprovalQueueWidget() {
                     </span>
                     {item.slaStatus && (
                       <Badge
-                        variant="secondary"
-                        className={getSlaClassName(item.slaStatus.status)}
+                        variant={getSlaVariant(item.slaStatus.status)}
                       >
                         {t((SLA_LABEL_KEYS[item.slaStatus.status] ?? item.slaStatus.status) as Parameters<typeof t>[0])}
                       </Badge>

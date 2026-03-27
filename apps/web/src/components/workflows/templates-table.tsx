@@ -290,19 +290,19 @@ export function TemplatesTable() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="text-[13px]">
+              <TableHead>
                 {t("templates.columns.name")}
               </TableHead>
-              <TableHead className="text-[13px]">
+              <TableHead>
                 {t("templates.columns.type")}
               </TableHead>
-              <TableHead className="text-[13px]">
+              <TableHead>
                 {t("templates.columns.status")}
               </TableHead>
-              <TableHead className="text-[13px]">
+              <TableHead>
                 {t("templates.columns.taskCount")}
               </TableHead>
-              <TableHead className="text-[13px]">
+              <TableHead>
                 {t("templates.columns.lastUpdated")}
               </TableHead>
               <TableHead className="w-10" />
@@ -448,7 +448,7 @@ export function TemplatesTable() {
           <AlertDialogFooter>
             <AlertDialogCancel>{t("templates.deleteCancel")}</AlertDialogCancel>
             <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              variant="destructive"
               onClick={() => void handleDelete()}
             >
               {t("templates.deleteConfirm")}

@@ -15,7 +15,7 @@ export const auth = betterAuth({
 
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: false, // TODO: Enable after email service (Resend) is configured in Phase 7
+    requireEmailVerification: true,
   },
 
   socialProviders: {
@@ -37,7 +37,9 @@ export const auth = betterAuth({
   plugins: [
     organization({
       ac,
+      allowCreatorAllPermissions: true,
       roles: {
+        owner: roles.owner,
         admin: roles.admin,
         finance_admin: roles.finance_admin,
         ops_manager: roles.ops_manager,

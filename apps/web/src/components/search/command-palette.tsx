@@ -89,12 +89,12 @@ function writePinned(items: PinnedItem[]): void {
   }
 }
 
-function formatRelativeTime(timestamp: number): string {
+function formatRelativeTimeData(timestamp: number): { key: string; params?: Record<string, number> } {
   const diff = Math.floor((Date.now() - timestamp) / 1000);
-  if (diff < 60) return "just now";
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-  return `${Math.floor(diff / 86400)}d ago`;
+  if (diff < 60) return { key: "justNow" };
+  if (diff < 3600) return { key: "minutesAgo", params: { minutes: Math.floor(diff / 60) } };
+  if (diff < 86400) return { key: "hoursAgo", params: { hours: Math.floor(diff / 3600) } };
+  return { key: "daysAgo", params: { days: Math.floor(diff / 86400) } };
 }
 
 function entityDetailUrl(type: string, id: string): string {
@@ -116,6 +116,7 @@ function entityDetailUrl(type: string, id: string): string {
 
 export function CommandPalette() {
   const t = useTranslations("Search");
+  const tTime = useTranslations("Search.time");
   const { open, setOpen, recentItems, addRecentItem } = useSearch();
   const router = useRouter();
 
@@ -237,15 +238,24 @@ export function CommandPalette() {
     <CommandDialog
       open={open}
       onOpenChange={setOpen}
-      title="Command Palette"
-      description="Search for contractors, contracts, invoices, or navigate to a page"
+      title={t("commandPaletteTitle")}
+      description={t("commandPaletteDescription")}
       className="w-[560px]"
+      shouldFilter={!isSearching}
     >
       <CommandInput
         placeholder={t("placeholder")}
         value={query}
         onValueChange={setQuery}
       />
+      {/* Live region for screen reader result announcements */}
+      {isSearching && !isLoading && (
+        <div className="sr-only" aria-live="polite" aria-atomic="true">
+          {searchResults.length > 0
+            ? t("resultsFound", { count: searchResults.length })
+            : t("noResultsFound")}
+        </div>
+      )}
       <CommandList>
         <CommandEmpty>{t("noResults")}</CommandEmpty>
 
@@ -282,7 +292,7 @@ export function CommandPalette() {
                       </Badge>
                     )}
                     <span className="text-xs text-muted-foreground">
-                      {formatRelativeTime(item.viewedAt)}
+                      {(() => { const { key, params } = formatRelativeTimeData(item.viewedAt); return tTime(key as Parameters<typeof tTime>[0], params); })()}
                     </span>
                   </CommandItem>
                 ))}

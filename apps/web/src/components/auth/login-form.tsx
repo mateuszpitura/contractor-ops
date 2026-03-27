@@ -16,6 +16,7 @@ import { SocialButtons } from "@/components/auth/social-buttons";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "@/i18n/navigation";
 import { Link } from "@/i18n/navigation";
+import { useSearchParams } from "next/navigation";
 
 /**
  * Login form with email/password, magic link option, and social OAuth.
@@ -24,7 +25,10 @@ export function LoginForm() {
   const t = useTranslations("Auth.login");
   const tv = useTranslations("Validation");
   const tc = useTranslations("Common");
+  const tToast = useTranslations("Auth.toast");
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirectTo") ?? "/";
   const [isLoading, setIsLoading] = useState(false);
   const [isMagicLinkSent, setIsMagicLinkSent] = useState(false);
   const [magicLinkLoading, setMagicLinkLoading] = useState(false);
@@ -58,12 +62,12 @@ export function LoginForm() {
       });
 
       if (error) {
-        toast.error(error.message ?? "Invalid email or password");
+        toast.error(error.message ?? tToast("invalidCredentials"));
         setIsLoading(false);
         return;
       }
 
-      router.push("/");
+      router.push(redirectTo);
     } catch {
       toast.error(tc("networkError"));
       setIsLoading(false);
@@ -81,11 +85,11 @@ export function LoginForm() {
     try {
       const { error } = await authClient.signIn.magicLink({
         email,
-        callbackURL: "/",
+        callbackURL: redirectTo,
       });
 
       if (error) {
-        toast.error(error.message ?? "Failed to send magic link");
+        toast.error(error.message ?? tToast("magicLinkFailed"));
         setMagicLinkLoading(false);
         return;
       }
@@ -103,7 +107,7 @@ export function LoginForm() {
       <Card>
         <CardContent className="pt-6 text-center">
           <div className="space-y-2">
-            <h2 className="text-[20px] font-semibold">{t("magicLinkSent")}</h2>
+            <h2 className="font-display text-[20px] font-semibold">{t("magicLinkSent")}</h2>
             <p className="text-sm text-muted-foreground">
               {t("magicLinkSentBody")}{" "}
               <span className="font-medium text-foreground">
@@ -126,7 +130,7 @@ export function LoginForm() {
   return (
     <Card>
       <CardHeader className="space-y-1 text-center">
-        <h1 className="text-[28px] font-semibold leading-[1.2] tracking-tight">
+        <h1 className="font-display text-[28px] font-semibold leading-[1.2] tracking-tight">
           {t("title")}
         </h1>
         <p className="text-sm text-muted-foreground">
@@ -144,10 +148,12 @@ export function LoginForm() {
               type="email"
               placeholder={t("emailPlaceholder")}
               disabled={isLoading}
+              aria-invalid={!!errors.email}
+              aria-describedby={errors.email ? "email-error" : undefined}
               {...register("email")}
             />
             {errors.email && (
-              <p className="text-sm text-destructive">
+              <p id="email-error" role="alert" className="text-sm text-destructive">
                 {errors.email.message}
               </p>
             )}
@@ -164,10 +170,12 @@ export function LoginForm() {
               type="password"
               autoComplete="current-password"
               disabled={isLoading}
+              aria-invalid={!!errors.password}
+              aria-describedby={errors.password ? "password-error" : undefined}
               {...register("password")}
             />
             {errors.password && (
-              <p className="text-sm text-destructive">
+              <p id="password-error" role="alert" className="text-sm text-destructive">
                 {errors.password.message}
               </p>
             )}

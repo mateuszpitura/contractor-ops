@@ -66,6 +66,7 @@ export function StepMapping({
   onMappingChange,
 }: StepMappingProps) {
   const t = useTranslations("Import");
+  const tAria = useTranslations("Common.aria");
 
   const targetFields =
     entityType === "contractor" ? CONTRACTOR_FIELDS : CONTRACT_FIELDS;
@@ -123,9 +124,9 @@ export function StepMapping({
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   {isMapped ? (
-                    <CheckCircle2 className="size-4 shrink-0 text-emerald-600" />
+                    <CheckCircle2 aria-hidden="true" className="size-4 shrink-0 text-emerald-600" />
                   ) : (
-                    <AlertCircle className="size-4 shrink-0 text-amber-500" />
+                    <AlertCircle aria-hidden="true" className="size-4 shrink-0 text-amber-500" />
                   )}
                   <span className="truncate text-sm font-medium">
                     {header}
@@ -141,9 +142,10 @@ export function StepMapping({
               {/* Target field select */}
               <Select
                 value={currentTarget ?? "__skip__"}
-                onValueChange={(val) => handleMappingChange(header, val)}
+                onValueChange={(val) => handleMappingChange(header, val ?? "__skip__")}
+                aria-label={tAria("mapColumnToField", { header })}
               >
-                <SelectTrigger className="w-full">
+                <SelectTrigger className="w-full" aria-label={tAria("mapTo", { header })}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

@@ -28,7 +28,7 @@ interface SummaryCardProps {
  */
 export function SummaryCard({ icon: Icon, label, value, className }: SummaryCardProps) {
   return (
-    <Card className={cn("p-6", className)}>
+    <Card className={cn("card-interactive p-6", className)}>
       <CardContent className="flex items-start gap-4 p-0">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">
           <Icon className="h-5 w-5 text-muted-foreground" />
@@ -37,7 +37,7 @@ export function SummaryCard({ icon: Icon, label, value, className }: SummaryCard
           <p className="text-[13px] font-normal text-muted-foreground">
             {label}
           </p>
-          <p className="text-[28px] font-semibold leading-[1.2]">{value}</p>
+          <p className="font-display text-[28px] font-semibold leading-[1.2]">{value}</p>
         </div>
       </CardContent>
     </Card>

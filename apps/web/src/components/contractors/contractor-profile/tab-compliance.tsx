@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Upload } from "lucide-react";
+import { Upload, ShieldCheck } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -57,8 +57,16 @@ export function TabCompliance({ contractor }: TabComplianceProps) {
 
   if (contractor.complianceItems.length === 0) {
     return (
-      <div className="flex min-h-[300px] items-center justify-center">
-        <p className="text-sm text-muted-foreground">{t("noRequirements")}</p>
+      <div className="flex min-h-[300px] w-full flex-col items-center justify-center gap-3 px-4">
+        <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-muted">
+          <ShieldCheck className="size-6 text-muted-foreground" />
+        </div>
+        <div className="mx-auto w-full max-w-[320px] text-center">
+          <p className="text-sm font-medium">{t("noRequirements")}</p>
+          <p className="mt-1 text-xs text-pretty text-muted-foreground">
+            {t("noRequirementsHint")}
+          </p>
+        </div>
       </div>
     );
   }

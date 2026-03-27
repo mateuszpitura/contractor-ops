@@ -91,7 +91,7 @@ export function DataTableToolbar({
         <div className="flex-1" />
 
         {/* Upload invoices CTA */}
-        <Button size="sm" className="h-9 gap-1.5" onClick={onUpload}>
+        <Button size="lg" onClick={onUpload}>
           <Upload className="h-3.5 w-3.5" />
           {t("uploadInvoices")}
         </Button>

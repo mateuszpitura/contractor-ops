@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { trpc } from "@/trpc/init";
 import { Switch } from "@/components/ui/switch";
@@ -46,39 +47,41 @@ interface CategoryConfig {
   locked?: boolean;
 }
 
-const CATEGORIES: CategoryConfig[] = [
-  {
-    category: "INVOICE_UPDATES",
-    icon: Receipt,
-    label: "Invoice Updates",
-    description: "Get notified when your invoice status changes",
-  },
-  {
-    category: "PAYMENT_CONFIRMATIONS",
-    icon: Banknote,
-    label: "Payment Confirmations",
-    description: "Get notified when a payment is processed",
-  },
-  {
-    category: "CONTRACT_CHANGES",
-    icon: FileText,
-    label: "Contract Changes",
-    description: "Get notified about contract renewals or amendments",
-  },
-  {
-    category: "DOCUMENT_UPLOADS",
-    icon: FolderOpen,
-    label: "Document Uploads",
-    description: "Get notified when new documents are shared",
-  },
-  {
-    category: "SECURITY_ALERTS",
-    icon: Shield,
-    label: "Security Alerts",
-    description: "Get notified about sign-in activity",
-    locked: true,
-  },
-];
+function getCategories(t: (key: string) => string): CategoryConfig[] {
+  return [
+    {
+      category: "INVOICE_UPDATES",
+      icon: Receipt,
+      label: t("categories.invoiceUpdates"),
+      description: t("categories.invoiceUpdatesDesc"),
+    },
+    {
+      category: "PAYMENT_CONFIRMATIONS",
+      icon: Banknote,
+      label: t("categories.paymentConfirmations"),
+      description: t("categories.paymentConfirmationsDesc"),
+    },
+    {
+      category: "CONTRACT_CHANGES",
+      icon: FileText,
+      label: t("categories.contractChanges"),
+      description: t("categories.contractChangesDesc"),
+    },
+    {
+      category: "DOCUMENT_UPLOADS",
+      icon: FolderOpen,
+      label: t("categories.documentUploads"),
+      description: t("categories.documentUploadsDesc"),
+    },
+    {
+      category: "SECURITY_ALERTS",
+      icon: Shield,
+      label: t("categories.securityAlerts"),
+      description: t("categories.securityAlertsDesc"),
+      locked: true,
+    },
+  ];
+}
 
 // ---------------------------------------------------------------------------
 // Loading skeleton
@@ -118,8 +121,11 @@ function PreferencesSkeleton() {
  * Per D-06, D-07, and UI-SPEC.
  */
 export function NotificationPreferencesSection() {
+  const t = useTranslations("Portal.notificationPreferences");
   const [isOpen, setIsOpen] = useState(true);
   const queryClient = useQueryClient();
+
+  const CATEGORIES = getCategories(t);
 
   const prefsQuery = useQuery(
     trpc.portal.getNotificationPreferences.queryOptions(),
@@ -159,7 +165,7 @@ export function NotificationPreferencesSection() {
       if (context?.previousPrefs) {
         queryClient.setQueryData<PreferenceItem[]>(queryKey, context.previousPrefs);
       }
-      toast.error("Failed to update preference. Please try again.");
+      toast.error(t("errors.updateFailed"));
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey });
@@ -194,7 +200,7 @@ export function NotificationPreferencesSection() {
                 }`}
               />
               <span className="text-sm font-semibold">
-                Notification Preferences
+                {t("title")}
               </span>
             </button>
           )}
@@ -236,7 +242,7 @@ export function NotificationPreferencesSection() {
                         />
                         {cat.locked && (
                           <p className="mt-1 text-right text-xs text-muted-foreground">
-                            Security alerts cannot be disabled
+                            {t("securityLocked")}
                           </p>
                         )}
                       </div>

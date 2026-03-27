@@ -7,6 +7,7 @@ import {
   invoiceListSchema,
   invoiceManualMatchSchema,
 } from "@contractor-ops/validators";
+import * as E from "../errors.js";
 import { router } from "../init.js";
 import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
@@ -198,7 +199,7 @@ export const invoiceRouter = router({
       if (!invoice) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Invoice not found",
+          message: E.INVOICE_NOT_FOUND,
         });
       }
 
@@ -225,15 +226,14 @@ export const invoiceRouter = router({
       if (!existing) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Invoice not found",
+          message: E.INVOICE_NOT_FOUND,
         });
       }
 
       if (existing.status !== "RECEIVED") {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message:
-            "Invoice can only be updated while in RECEIVED status.",
+          message: E.INVOICE_NOT_RECEIVED_STATUS,
         });
       }
 
@@ -411,14 +411,14 @@ export const invoiceRouter = router({
       if (!invoice) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Invoice not found",
+          message: E.INVOICE_NOT_FOUND,
         });
       }
 
       if (invoice.status !== "RECEIVED") {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Invoice must be in RECEIVED status to submit for matching.",
+          message: E.INVOICE_NOT_RECEIVED_STATUS,
         });
       }
 
@@ -505,7 +505,7 @@ export const invoiceRouter = router({
       if (!invoice) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Invoice not found",
+          message: E.INVOICE_NOT_FOUND,
         });
       }
 
@@ -521,7 +521,7 @@ export const invoiceRouter = router({
       if (!contractor) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Contractor not found in this organization.",
+          message: E.INVOICE_CONTRACTOR_NOT_FOUND,
         });
       }
 
@@ -538,7 +538,7 @@ export const invoiceRouter = router({
         if (!contract) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Contract not found in this organization.",
+            message: E.INVOICE_CONTRACT_NOT_FOUND,
           });
         }
       }
@@ -591,7 +591,7 @@ export const invoiceRouter = router({
       if (!invoice) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Invoice not found",
+          message: E.INVOICE_NOT_FOUND,
         });
       }
 
@@ -622,7 +622,7 @@ export const invoiceRouter = router({
       if (!invoice) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Invoice not found",
+          message: E.INVOICE_NOT_FOUND,
         });
       }
 

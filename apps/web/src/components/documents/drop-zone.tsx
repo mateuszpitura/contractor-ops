@@ -38,6 +38,7 @@ type DropZoneProps = {
   disabled?: boolean;
   entityType?: string;
   entityId?: string;
+  documentType?: string;
 };
 
 // ---------------------------------------------------------------------------
@@ -50,6 +51,7 @@ export function DropZone({
   disabled,
   entityType,
   entityId,
+  documentType = "OTHER",
 }: DropZoneProps) {
   const t = useTranslations("Documents");
   const queryClient = useQueryClient();
@@ -84,6 +86,7 @@ export function DropZone({
           filename: file.name,
           mimeType: file.type,
           fileSizeBytes: file.size,
+          documentType,
           entityType: entityType as "CONTRACT" | "CONTRACTOR" | undefined,
           entityId,
         } as Parameters<typeof requestUploadMutation.mutateAsync>[0]);

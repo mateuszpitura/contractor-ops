@@ -6,7 +6,33 @@ import { ac } from "./permissions.js";
  * Each role grants a specific subset of permissions defined in permissions.ts.
  * Roles are assigned to organization members and enforced via tRPC middleware.
  */
+/**
+ * All permissions from the access control statement.
+ * Used for the owner role which has full access.
+ */
+const allPermissions = {
+  organization: ["update", "delete"],
+  member: ["create", "read", "update", "delete"],
+  invitation: ["create", "cancel"],
+  contractor: ["create", "read", "update", "delete", "bulk"],
+  contract: ["create", "read", "update", "delete"],
+  document: ["create", "read", "update", "delete"],
+  invoice: ["create", "read", "update", "delete", "approve"],
+  workflow: ["create", "read", "update", "delete", "execute"],
+  payment: ["create", "read", "export"],
+  report: ["read", "export"],
+  settings: ["read", "update"],
+  integration: ["read", "update"],
+} as const;
+
 export const roles = {
+  /**
+   * Owner role: org creator, full access to everything.
+   * Explicitly defined because Better Auth v1.5.5 has a bug where
+   * allowCreatorAllPermissions doesn't propagate to hasPermissionFn.
+   */
+  owner: ac.newRole(allPermissions),
+
   admin: ac.newRole({
     organization: ["update", "delete"],
     member: ["create", "read", "update", "delete"],

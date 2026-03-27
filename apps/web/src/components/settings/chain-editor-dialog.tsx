@@ -379,7 +379,7 @@ export function ChainEditorDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[640px] max-h-[80vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[640px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {isEditMode ? t("approvals.editor.editTitle") : t("approvals.editor.createTitle")}

@@ -13,6 +13,7 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { getAvatarInitials } from "@/lib/avatar-initials";
 import {
   Tooltip,
   TooltipTrigger,
@@ -135,18 +136,6 @@ function ChainTrackerSkeleton() {
 // Approver initials helper
 // ---------------------------------------------------------------------------
 
-function getInitials(name: string | null, email: string): string {
-  if (name) {
-    return name
-      .split(" ")
-      .map((part) => part[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase();
-  }
-  return email.slice(0, 2).toUpperCase();
-}
-
 // ---------------------------------------------------------------------------
 // Step component
 // ---------------------------------------------------------------------------
@@ -207,7 +196,7 @@ function StepCircle({
                     <AvatarImage src={step.approver.image} />
                   )}
                   <AvatarFallback>
-                    {getInitials(step.approver.name, step.approver.email)}
+                    {getAvatarInitials(step.approver.name, step.approver.email)}
                   </AvatarFallback>
                 </Avatar>
               )}

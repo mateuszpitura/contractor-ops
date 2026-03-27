@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Outfit, Bricolage_Grotesque, JetBrains_Mono } from "next/font/google";
 import type { ReactNode } from "react";
 
-const inter = Inter({
+const outfit = Outfit({
   subsets: ["latin", "latin-ext"],
   variable: "--font-sans",
+});
+
+const bricolageGrotesque = Bricolage_Grotesque({
+  subsets: ["latin", "latin-ext"],
+  variable: "--font-display",
 });
 
 const jetbrainsMono = JetBrains_Mono({
@@ -21,7 +26,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${jetbrainsMono.variable} font-sans`}
+      className={`${outfit.variable} ${bricolageGrotesque.variable} ${jetbrainsMono.variable} font-sans`}
       suppressHydrationWarning
     >
       <head>

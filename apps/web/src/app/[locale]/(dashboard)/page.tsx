@@ -10,6 +10,8 @@ import { usePermissions } from "@/hooks/use-permissions";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AnimateIn } from "@/components/shared/animate-in";
+import { DashboardGreeting } from "@/components/dashboard/dashboard-greeting";
 import { KpiCards } from "@/components/dashboard/kpi-cards";
 import { SpendChart } from "@/components/dashboard/spend-chart";
 import { DeadlinesWidget } from "@/components/dashboard/deadlines-widget";
@@ -42,7 +44,7 @@ function DashboardEmptyState() {
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
       <LayoutDashboard className="h-12 w-12 text-muted-foreground" />
-      <h2 className="mt-4 text-[20px] font-semibold">{t("heading")}</h2>
+      <h2 className="mt-4 font-display text-[22px] font-semibold">{t("heading")}</h2>
       <p className="mt-2 max-w-md text-sm text-muted-foreground">
         {t("body")}
       </p>
@@ -82,22 +84,39 @@ function DashboardContent() {
 
   return (
     <div className="flex flex-col gap-8">
-      {/* KPI cards row */}
-      <KpiCards />
+      {/* Greeting */}
+      <AnimateIn delay={0}>
+        <DashboardGreeting />
+      </AnimateIn>
 
-      {/* Two-column layout */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      {/* KPI cards row */}
+      <AnimateIn delay={1}>
+        <KpiCards />
+      </AnimateIn>
+
+      {/* Two-column layout — items-start keeps columns top-aligned */}
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
         {/* Left column */}
         <div className="flex flex-col gap-6">
-          {hasReportAccess && <SpendChart />}
-          <DeadlinesWidget />
+          {hasReportAccess && (
+            <AnimateIn delay={2}>
+              <SpendChart />
+            </AnimateIn>
+          )}
+          <AnimateIn delay={3}>
+            <DeadlinesWidget />
+          </AnimateIn>
         </div>
 
         {/* Right column */}
         <div className="flex flex-col gap-6">
           <OnboardingChecklist />
-          <ApprovalQueueWidget />
-          <ActivityFeed />
+          <AnimateIn delay={2}>
+            <ApprovalQueueWidget />
+          </AnimateIn>
+          <AnimateIn delay={3}>
+            <ActivityFeed />
+          </AnimateIn>
         </div>
       </div>
     </div>
@@ -110,22 +129,33 @@ function DashboardContent() {
 
 /**
  * Dashboard home page.
- * Shows 5 KPI cards, spend chart, deadlines, approval queue, and activity feed.
- * Wrapped in Suspense for nuqs URL state (SpendChart).
+ * Shows greeting, 5 KPI cards, spend chart, deadlines, approval queue, and
+ * activity feed. Wrapped in Suspense for nuqs URL state (SpendChart).
  */
 export default function DashboardPage() {
   return (
     <Suspense
       fallback={
         <div className="flex flex-col gap-8">
+          <div className="space-y-1">
+            <Skeleton className="h-8 w-64 rounded-lg" />
+            <Skeleton className="h-4 w-48 rounded-md" />
+          </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             {Array.from({ length: 5 }).map((_, i) => (
               <Skeleton key={i} className="h-[100px] rounded-xl" />
             ))}
           </div>
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <Skeleton className="h-[400px] rounded-xl" />
-            <Skeleton className="h-[400px] rounded-xl" />
+            <div className="flex flex-col gap-6">
+              <Skeleton className="h-[340px] rounded-xl" />
+              <Skeleton className="h-[280px] rounded-xl" />
+            </div>
+            <div className="flex flex-col gap-6">
+              <Skeleton className="h-[120px] rounded-xl" />
+              <Skeleton className="h-[280px] rounded-xl" />
+              <Skeleton className="h-[320px] rounded-xl" />
+            </div>
           </div>
         </div>
       }

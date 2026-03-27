@@ -119,6 +119,7 @@ type PreferenceFormValues = z.infer<typeof preferenceFormSchema>;
 
 export function NotificationPreferences() {
   const t = useTranslations("Settings");
+  const tAria = useTranslations("Common.aria");
   const queryClient = useQueryClient();
 
   const preferencesQuery = useQuery(
@@ -260,7 +261,7 @@ export function NotificationPreferences() {
                   <TableCell className="text-center">
                     <Tooltip>
                       <TooltipTrigger render={<div className="inline-flex" />}>
-                        <Switch checked disabled aria-label="In-app" />
+                        <Switch checked disabled aria-label={tAria("inApp")} />
                       </TooltipTrigger>
                       <TooltipContent>
                         {t("notifications.inAppTooltip")}
@@ -277,7 +278,7 @@ export function NotificationPreferences() {
                         <Switch
                           checked={field.value}
                           onCheckedChange={field.onChange}
-                          aria-label="Email"
+                          aria-label={tAria("email")}
                         />
                       )}
                     />
@@ -293,7 +294,7 @@ export function NotificationPreferences() {
                           <Switch
                             checked={field.value}
                             onCheckedChange={field.onChange}
-                            aria-label="Slack"
+                            aria-label={tAria("slack")}
                           />
                         )}
                       />
@@ -303,7 +304,7 @@ export function NotificationPreferences() {
                           <Switch
                             checked={false}
                             disabled
-                            aria-label="Slack"
+                            aria-label={tAria("slack")}
                           />
                         </TooltipTrigger>
                         <TooltipContent>

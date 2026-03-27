@@ -49,6 +49,16 @@ const OPERATOR_OPTIONS: { value: Condition["operator"]; labelKey: string }[] = [
 
 export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
   const t = useTranslations("Settings");
+
+  const fieldItems = FIELD_OPTIONS.map((opt) => ({
+    value: opt.value,
+    label: t(opt.labelKey as Parameters<typeof t>[0]),
+  }));
+
+  const operatorItems = OPERATOR_OPTIONS.map((opt) => ({
+    value: opt.value,
+    label: t(opt.labelKey as Parameters<typeof t>[0]),
+  }));
   function handleAdd() {
     onChange([...value, { field: "amount", operator: "gt", value: "" }]);
   }
@@ -81,14 +91,15 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
             onValueChange={(v) =>
               handleUpdate(index, { field: v as Condition["field"] })
             }
+            items={fieldItems}
           >
             <SelectTrigger className="w-[160px]">
               <SelectValue placeholder={t("approvals.editor.conditionField")} />
             </SelectTrigger>
             <SelectContent>
-              {FIELD_OPTIONS.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value}>
-                  {t(opt.labelKey as Parameters<typeof t>[0])}
+              {fieldItems.map((item) => (
+                <SelectItem key={item.value} value={item.value}>
+                  {item.label}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -100,14 +111,15 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
             onValueChange={(v) =>
               handleUpdate(index, { operator: v as Condition["operator"] })
             }
+            items={operatorItems}
           >
             <SelectTrigger className="w-[140px]">
               <SelectValue placeholder={t("approvals.editor.conditionOperator")} />
             </SelectTrigger>
             <SelectContent>
-              {OPERATOR_OPTIONS.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value}>
-                  {t(opt.labelKey as Parameters<typeof t>[0])}
+              {operatorItems.map((item) => (
+                <SelectItem key={item.value} value={item.value}>
+                  {item.label}
                 </SelectItem>
               ))}
             </SelectContent>

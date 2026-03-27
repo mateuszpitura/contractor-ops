@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { trpc } from "@/trpc/init";
+import { getAvatarInitials } from "@/lib/avatar-initials";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -268,7 +269,7 @@ export function SlackUserMapping() {
                     <Avatar className="size-7">
                       <AvatarImage src={mapping.user.image ?? undefined} />
                       <AvatarFallback className="text-xs">
-                        {(mapping.user.name ?? "?").charAt(0).toUpperCase()}
+                        {getAvatarInitials(mapping.user.name, mapping.user.email)}
                       </AvatarFallback>
                     </Avatar>
                     <span className="text-sm font-medium">

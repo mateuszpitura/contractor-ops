@@ -74,7 +74,6 @@ export function PaymentRunDataTable({
                 {headerGroup.headers.map((header) => (
                   <TableHead
                     key={header.id}
-                    className="whitespace-nowrap text-[13px]"
                   >
                     {header.isPlaceholder
                       ? null

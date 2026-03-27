@@ -114,6 +114,7 @@ export function StepUpload({
         <RadioGroup
           value={entityType}
           onValueChange={(val) => onEntityTypeChange(val as EntityType)}
+          aria-label={t("upload.entityType")}
           className="flex gap-4"
         >
           <label className="flex cursor-pointer items-center gap-2">
@@ -131,7 +132,10 @@ export function StepUpload({
       {!fileName ? (
         <div
           {...getRootProps()}
-          className={`flex min-h-[200px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 transition-colors ${
+          role="button"
+          tabIndex={0}
+          aria-label={t("upload.dropHeading")}
+          className={`flex min-h-[200px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 transition-colors focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none ${
             isDragActive
               ? "border-primary bg-primary/[0.03]"
               : "border-border bg-muted/50 hover:border-muted-foreground/30"

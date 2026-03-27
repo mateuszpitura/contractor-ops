@@ -11,6 +11,8 @@ import { trpc } from "@/trpc/init";
 import { usePermissions } from "@/hooks/use-permissions";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/shared/empty-state";
+import { PageHeader } from "@/components/shared/page-header";
+import { AnimateIn } from "@/components/shared/animate-in";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import {
@@ -259,9 +261,12 @@ function ApprovalsContent() {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <h1 className="text-[20px] font-semibold">{t("pageTitle")}</h1>
+      <AnimateIn delay={0}>
+        <PageHeader title={t("pageTitle")} description={t("pageDescription")} />
+      </AnimateIn>
 
       {/* Tabs */}
+      <AnimateIn delay={1}>
       <Tabs
         value={tab}
         onValueChange={(value) => {
@@ -333,6 +338,7 @@ function ApprovalsContent() {
           </TabsContent>
         )}
       </Tabs>
+      </AnimateIn>
 
       {/* Side panel */}
       <ApprovalSidePanel

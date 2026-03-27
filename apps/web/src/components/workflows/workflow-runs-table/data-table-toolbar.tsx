@@ -72,7 +72,7 @@ export function DataTableToolbar({
       <div className="flex-1" />
 
       {/* Start workflow CTA */}
-      <Button size="sm" className="h-9" onClick={onStartWorkflow}>
+      <Button size="lg" onClick={onStartWorkflow}>
         {t("startWorkflow")}
       </Button>
     </div>

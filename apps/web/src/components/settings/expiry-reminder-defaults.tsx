@@ -29,6 +29,7 @@ const DEFAULT_DAYS = [30, 60, 90];
 
 export function ExpiryReminderDefaults() {
   const t = useTranslations("Settings");
+  const tToast = useTranslations("Settings.toast");
   const queryClient = useQueryClient();
 
   const defaultsQuery = useQuery(
@@ -60,7 +61,7 @@ export function ExpiryReminderDefaults() {
         });
       },
       onError: () => {
-        toast.error("Failed to update reminder defaults");
+        toast.error(tToast("reminderDefaultsFailed"));
       },
     })
   );

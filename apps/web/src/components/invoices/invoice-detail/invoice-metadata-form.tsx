@@ -54,37 +54,41 @@ import { trpc } from "@/trpc/init";
 // Local Zod schema (mirrors invoiceUpdateSchema to avoid cross-package dep)
 // ---------------------------------------------------------------------------
 
-const invoiceMetadataSchema = z.object({
-  invoiceNumber: z.string().min(1, "Invoice number is required").max(100),
-  issueDate: z.string().min(1, "Issue date is required"),
-  dueDate: z.string().min(1, "Due date is required"),
-  servicePeriodStart: z.string().optional(),
-  servicePeriodEnd: z.string().optional(),
-  sellerTaxId: z.string().max(50).optional(),
-  subtotalGrosze: z.number().int().min(1, "Net amount must be positive"),
-  vatRate: z.string().optional(),
-  vatAmountGrosze: z.number().int().min(0).optional(),
-  totalGrosze: z.number().int().min(1, "Gross amount must be positive"),
-  withholdingGrosze: z.number().int().min(0).optional(),
-  amountToPayGrosze: z.number().int().min(0),
-  currency: z.string().length(3),
-  sellerBankAccount: z.string().max(34).optional(),
-});
+function createInvoiceMetadataSchema(tv: (key: string) => string) {
+  return z.object({
+    invoiceNumber: z.string().min(1, tv("invoiceNumberRequired")).max(100),
+    issueDate: z.string().min(1, tv("issueDateRequired")),
+    dueDate: z.string().min(1, tv("dueDateRequired")),
+    servicePeriodStart: z.string().optional(),
+    servicePeriodEnd: z.string().optional(),
+    sellerTaxId: z.string().max(50).optional(),
+    subtotalGrosze: z.number().int().min(1, tv("netAmountPositive")),
+    vatRate: z.string().optional(),
+    vatAmountGrosze: z.number().int().min(0).optional(),
+    totalGrosze: z.number().int().min(1, tv("grossAmountPositive")),
+    withholdingGrosze: z.number().int().min(0).optional(),
+    amountToPayGrosze: z.number().int().min(0),
+    currency: z.string().length(3),
+    sellerBankAccount: z.string().max(34).optional(),
+  });
+}
 
-type InvoiceMetadataValues = z.infer<typeof invoiceMetadataSchema>;
+type InvoiceMetadataValues = z.infer<ReturnType<typeof createInvoiceMetadataSchema>>;
 
 // ---------------------------------------------------------------------------
 // VAT rate options
 // ---------------------------------------------------------------------------
 
-const VAT_RATE_OPTIONS = [
-  { value: "23", label: "23%" },
-  { value: "8", label: "8%" },
-  { value: "5", label: "5%" },
-  { value: "0", label: "0%" },
-  { value: "ZW", label: "Exempt (ZW)" },
-  { value: "NP", label: "Not applicable (NP)" },
-] as const;
+function getVatRateOptions(tMeta: (key: string) => string) {
+  return [
+    { value: "23", label: "23%" },
+    { value: "8", label: "8%" },
+    { value: "5", label: "5%" },
+    { value: "0", label: "0%" },
+    { value: "ZW", label: tMeta("vatRates.exempt") },
+    { value: "NP", label: tMeta("vatRates.notApplicable") },
+  ] as const;
+}
 
 const CURRENCY_OPTIONS = [
   { value: "PLN", label: "PLN" },
@@ -150,8 +154,17 @@ export function InvoiceMetadataForm({
   onSubmittedForMatching,
 }: InvoiceMetadataFormProps) {
   const t = useTranslations("Invoices");
+  const tMeta = useTranslations("Invoices.metadata");
+  const tv = useTranslations("Validation.invoice");
   const queryClient = useQueryClient();
   const isEditable = invoice.status === "RECEIVED";
+
+  const invoiceMetadataSchema = createInvoiceMetadataSchema(
+    (key: string) => tv(key as Parameters<typeof tv>[0])
+  );
+  const VAT_RATE_OPTIONS = getVatRateOptions(
+    (key: string) => tMeta(key as Parameters<typeof tMeta>[0])
+  );
   const [voidDialogOpen, setVoidDialogOpen] = useState(false);
 
   const {
@@ -340,6 +353,7 @@ export function InvoiceMetadataForm({
                   value={issueDateValue}
                   onChange={(date) => setValue("issueDate", date)}
                   disabled={!isEditable}
+                  pickDateLabel={tMeta("pickDate")}
                 />
                 {errors.issueDate && (
                   <p className="text-xs text-destructive">
@@ -353,6 +367,7 @@ export function InvoiceMetadataForm({
                   value={dueDateValue}
                   onChange={(date) => setValue("dueDate", date)}
                   disabled={!isEditable}
+                  pickDateLabel={tMeta("pickDate")}
                 />
                 {errors.dueDate && (
                   <p className="text-xs text-destructive">
@@ -372,6 +387,7 @@ export function InvoiceMetadataForm({
                     setValue("servicePeriodStart", date || undefined)
                   }
                   disabled={!isEditable}
+                  pickDateLabel={tMeta("pickDate")}
                 />
               </div>
               <div className="space-y-1.5">
@@ -382,6 +398,7 @@ export function InvoiceMetadataForm({
                     setValue("servicePeriodEnd", date || undefined)
                   }
                   disabled={!isEditable}
+                  pickDateLabel={tMeta("pickDate")}
                 />
               </div>
             </div>
@@ -420,6 +437,7 @@ export function InvoiceMetadataForm({
                   value={vatRateValue ?? undefined}
                   onValueChange={(val) => setValue("vatRate", val ?? undefined)}
                   disabled={!isEditable}
+                  items={VAT_RATE_OPTIONS}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder={t("detail.vatRatePlaceholder")} />
@@ -581,7 +599,7 @@ export function InvoiceMetadataForm({
           <AlertDialogFooter>
             <AlertDialogCancel>{t("detail.cancel")}</AlertDialogCancel>
             <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              variant="destructive"
               onClick={() => {
                 voidMutation.mutate({ id: invoice.id });
                 setVoidDialogOpen(false);
@@ -607,10 +625,12 @@ function DatePicker({
   value,
   onChange,
   disabled,
+  pickDateLabel,
 }: {
   value: string;
   onChange: (date: string) => void;
   disabled?: boolean;
+  pickDateLabel?: string;
 }) {
   const parsed = value ? new Date(value) : undefined;
   const isValid = parsed && !isNaN(parsed.getTime());
@@ -629,7 +649,7 @@ function DatePicker({
         }
       >
         <CalendarIcon className="mr-2 h-4 w-4" />
-        {isValid ? format(parsed, "yyyy-MM-dd") : "Pick a date"}
+        {isValid ? format(parsed, "yyyy-MM-dd") : (pickDateLabel ?? "Pick a date")}
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
         <Calendar

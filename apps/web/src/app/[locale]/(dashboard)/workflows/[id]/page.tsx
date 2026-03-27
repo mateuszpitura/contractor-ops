@@ -8,14 +8,7 @@ import { trpc } from "@/trpc/init";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbSeparator,
-  BreadcrumbPage,
-} from "@/components/ui/breadcrumb";
+import { useBreadcrumbOverride } from "@/components/layout/breadcrumb-context";
 import { Link } from "@/i18n/navigation";
 
 import { RunHeader } from "@/components/workflows/workflow-run/run-header";
@@ -73,6 +66,8 @@ export default function WorkflowRunDetailPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const run = runQuery.data as any;
 
+  useBreadcrumbOverride(params.id, run?.workflowTemplate?.name);
+
   // Error states
   if (runQuery.isError) {
     const isNotFound =
@@ -83,9 +78,9 @@ export default function WorkflowRunDetailPage() {
     if (isNotFound) {
       return (
         <div className="flex min-h-[400px] flex-col items-center justify-center gap-3 text-center">
-          <h2 className="text-lg font-medium">Workflow not found</h2>
+          <h2 className="text-lg font-medium">{t("notFound")}</h2>
           <Button variant="outline" render={<Link href="/workflows" />}>
-            Back to Workflows
+            {t("backToWorkflows")}
           </Button>
         </div>
       );
@@ -105,27 +100,6 @@ export default function WorkflowRunDetailPage() {
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumb */}
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink
-              render={(props) => <Link {...props} href="/workflows" />}
-            >
-              {t("pageTitle")}
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>
-              {run?.workflowTemplate?.name ?? (
-                <Skeleton className="inline-block h-4 w-32" />
-              )}
-            </BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-
       {/* Content */}
       {runQuery.isLoading || !run ? (
         <RunDetailSkeleton />

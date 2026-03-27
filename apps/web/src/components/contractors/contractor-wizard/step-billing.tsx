@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { useTranslations } from "next-intl";
 
@@ -19,12 +20,7 @@ interface StepBillingProps {
   form: UseFormReturn<WizardFormValues>;
 }
 
-const BILLING_MODELS = [
-  { value: "FIXED", labelKey: "FIXED" },
-  { value: "HOURLY", labelKey: "HOURLY" },
-  { value: "PROJECT", labelKey: "PROJECT" },
-  { value: "MILESTONE", labelKey: "MILESTONE" },
-] as const;
+const BILLING_MODEL_VALUES = ["FIXED", "HOURLY", "PROJECT", "MILESTONE"] as const;
 
 const CURRENCIES = ["PLN", "EUR", "USD"] as const;
 
@@ -36,6 +32,16 @@ export function StepBilling({ form }: StepBillingProps) {
   const t = useTranslations("ContractorWizard.fields");
   const tb = useTranslations("ContractorWizard.billingModelOptions");
 
+  const billingModelItems = BILLING_MODEL_VALUES.map((v) => ({
+    value: v,
+    label: tb(v),
+  }));
+
+  const currencyItems = CURRENCIES.map((c) => ({
+    value: c,
+    label: c,
+  }));
+
   const {
     register,
     setValue,
@@ -43,25 +49,40 @@ export function StepBilling({ form }: StepBillingProps) {
     formState: { errors },
   } = form;
 
-  // Rate display: store as grosze, display as zloty
+  // Local state for rate input — prevents cursor jumping during typing.
   const rateGrosze = watch("rateValueGrosze");
-  const rateDisplay =
+  const [rateLocal, setRateLocal] = React.useState(() =>
     typeof rateGrosze === "number" && rateGrosze > 0
-      ? (rateGrosze / 100).toFixed(2)
-      : "";
+      ? (rateGrosze / 100).toString()
+      : "",
+  );
 
-  const handleRateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseFloat(e.target.value);
+  React.useEffect(() => {
+    const fromForm =
+      typeof rateGrosze === "number" && rateGrosze > 0
+        ? (rateGrosze / 100).toString()
+        : "";
+    setRateLocal((prev) => {
+      const prevGrosze = Math.round(parseFloat(prev || "0") * 100);
+      if (prevGrosze !== rateGrosze) return fromForm;
+      return prev;
+    });
+  }, [rateGrosze]);
+
+  const handleRateBlur = () => {
+    const value = parseFloat(rateLocal);
     if (!isNaN(value) && value >= 0) {
       setValue("rateValueGrosze", Math.round(value * 100), {
         shouldDirty: true,
         shouldValidate: true,
       });
-    } else if (e.target.value === "") {
+      setRateLocal(value.toFixed(2));
+    } else {
       setValue("rateValueGrosze", 0, {
         shouldDirty: true,
         shouldValidate: true,
       });
+      setRateLocal("");
     }
   };
 
@@ -78,14 +99,15 @@ export function StepBilling({ form }: StepBillingProps) {
               shouldValidate: true,
             })
           }
+          items={billingModelItems}
         >
           <SelectTrigger className="w-full">
             <SelectValue placeholder={t("billingModel")} />
           </SelectTrigger>
           <SelectContent>
-            {BILLING_MODELS.map((model) => (
+            {billingModelItems.map((model) => (
               <SelectItem key={model.value} value={model.value}>
-                {tb(model.labelKey)}
+                {model.label}
               </SelectItem>
             ))}
           </SelectContent>
@@ -139,8 +161,9 @@ export function StepBilling({ form }: StepBillingProps) {
             step="0.01"
             min="0"
             className="font-mono pr-16"
-            value={rateDisplay}
-            onChange={handleRateChange}
+            value={rateLocal}
+            onChange={(e) => setRateLocal(e.target.value)}
+            onBlur={handleRateBlur}
           />
           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
             {watch("currency") ?? "PLN"}
@@ -181,7 +204,12 @@ export function StepBilling({ form }: StepBillingProps) {
           type="number"
           min="1"
           placeholder="30"
-          {...register("paymentTermsDays", { valueAsNumber: true })}
+          {...register("paymentTermsDays", {
+            setValueAs: (v: string) => {
+              const n = parseInt(v, 10);
+              return isNaN(n) ? undefined : n;
+            },
+          })}
         />
       </div>
     </div>

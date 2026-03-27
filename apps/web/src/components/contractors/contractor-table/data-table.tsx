@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   flexRender,
   getCoreRowModel,
@@ -8,8 +8,8 @@ import {
   type ColumnDef,
   type VisibilityState,
 } from "@tanstack/react-table";
-import { useQuery } from "@tanstack/react-query";
-import { Users } from "lucide-react";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { Users, ArrowUp, ArrowDown, ArrowUpDown, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { trpc } from "@/trpc/init";
@@ -50,25 +50,33 @@ export function ContractorDataTable({
   onImport,
 }: ContractorDataTableProps) {
   const t = useTranslations("Contractors");
+  const tAria = useTranslations("Common.aria");
 
   // URL-synced filter state
   const [filters, setFilters] = useContractorFilters();
 
-  // Column visibility from localStorage
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
-    () => {
-      if (typeof window === "undefined") return {};
-      try {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        return stored ? (JSON.parse(stored) as VisibilityState) : {};
-      } catch {
-        return {};
-      }
-    },
-  );
+  // Column visibility — start empty so SSR and client match, then hydrate from localStorage
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
-  // Persist column visibility
+  // Hydrate from localStorage after mount
   useEffect(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        setColumnVisibility(JSON.parse(stored) as VisibilityState);
+      }
+    } catch {
+      // Ignore localStorage errors
+    }
+  }, []);
+
+  // Persist column visibility changes (skip the initial hydration)
+  const isHydrated = useRef(false);
+  useEffect(() => {
+    if (!isHydrated.current) {
+      isHydrated.current = true;
+      return;
+    }
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(columnVisibility));
     } catch {
@@ -105,9 +113,10 @@ export function ContractorDataTable({
   );
 
   // Fetch data
-  const contractorsQuery = useQuery(
-    trpc.contractor.list.queryOptions(queryInput),
-  );
+  const contractorsQuery = useQuery({
+    ...trpc.contractor.list.queryOptions(queryInput),
+    placeholderData: keepPreviousData,
+  });
 
   const data = useMemo(() => {
     const result = contractorsQuery.data as
@@ -159,8 +168,12 @@ export function ContractorDataTable({
           sortOrder: next[0]!.desc ? "desc" : "asc",
           page: 1,
         });
+      } else {
+        // Sort removed — reset to default
+        void setFilters({ sortBy: "createdAt", sortOrder: "desc", page: 1 });
       }
     },
+    enableSortingRemoval: true,
     getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
     manualSorting: true,
@@ -219,8 +232,10 @@ export function ContractorDataTable({
     });
   }, [setFilters]);
 
-  const isLoading = contractorsQuery.isLoading;
-  const isSearching = contractorsQuery.isFetching && !isLoading;
+  // isLoading = true only on first mount with no data (shows skeletons)
+  // isRefetching = true when data exists but is being refreshed (shows overlay)
+  const isLoading = contractorsQuery.isPending && !contractorsQuery.data;
+  const isRefetching = contractorsQuery.isFetching && !isLoading;
   const hasFiltersOrSearch =
     filters.search.length > 0 ||
     filters.lifecycleStage.length > 0 ||
@@ -243,7 +258,7 @@ export function ContractorDataTable({
           health: filters.health,
         }}
         onFiltersChange={handleFiltersChange}
-        isSearching={isSearching}
+        isSearching={isRefetching}
         onAddContractor={onAddContractor}
         onImport={onImport}
       />
@@ -252,7 +267,13 @@ export function ContractorDataTable({
       <DataTableBulkActions table={table} />
 
       {/* Table */}
-      <div className="rounded-xl border bg-background">
+      <div className="relative rounded-xl border bg-background">
+        {/* Refetch overlay — shows when data is stale and new data is loading */}
+        {isRefetching && (
+          <div className="absolute inset-0 z-10 flex items-start justify-center rounded-xl bg-background/60 pt-20">
+            <Loader2 className="h-5 w-5 animate-spin text-primary" />
+          </div>
+        )}
         <div className="flex items-center justify-end border-b px-4 py-2">
           <DataTableColumnToggle table={table} />
         </div>
@@ -264,7 +285,13 @@ export function ContractorDataTable({
                 {headerGroup.headers.map((header) => (
                   <TableHead
                     key={header.id}
-                    className="whitespace-nowrap text-[13px]"
+                    aria-sort={
+                      header.column.getIsSorted() === "asc"
+                        ? "ascending"
+                        : header.column.getIsSorted() === "desc"
+                          ? "descending"
+                          : undefined
+                    }
                     style={
                       header.column.getSize() !== 150
                         ? { width: header.column.getSize() }
@@ -274,12 +301,20 @@ export function ContractorDataTable({
                     {header.isPlaceholder ? null : header.column.getCanSort() ? (
                       <button
                         type="button"
-                        className="flex items-center gap-1 hover:text-foreground"
+                        className="flex items-center gap-1 uppercase hover:text-foreground"
                         onClick={header.column.getToggleSortingHandler()}
+                        aria-label={tAria("sortBy", { column: typeof header.column.columnDef.header === "string" ? header.column.columnDef.header : header.id })}
                       >
                         {flexRender(
                           header.column.columnDef.header,
                           header.getContext(),
+                        )}
+                        {header.column.getIsSorted() === "asc" ? (
+                          <ArrowUp className="h-3 w-3" />
+                        ) : header.column.getIsSorted() === "desc" ? (
+                          <ArrowDown className="h-3 w-3" />
+                        ) : (
+                          <ArrowUpDown className="h-3 w-3 opacity-40" />
                         )}
                       </button>
                     ) : (

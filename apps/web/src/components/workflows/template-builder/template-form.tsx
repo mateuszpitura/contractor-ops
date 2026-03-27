@@ -215,143 +215,153 @@ export function TemplateForm({ templateId }: TemplateFormProps) {
     deleteMutation.mutate({ id: templateId });
   }, [templateId, deleteMutation]);
 
+  const templateTypeItems = TEMPLATE_TYPES.map((type) => ({
+    value: type,
+    label: t(`type_${type}`),
+  }));
+
   const isSaving = createMutation.isPending || updateMutation.isPending;
 
   return (
     <form
       onSubmit={form.handleSubmit(handleSave)}
-      className="space-y-6"
+      className="space-y-4"
     >
-      {/* Header: name, type, status, actions */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex-1 space-y-3">
-          {/* Template name */}
+      {/* Name + actions */}
+      <div className="space-y-1.5">
+        <Label htmlFor="template-name">{t("templateName")}</Label>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
           <Input
-            className="h-auto border-0 p-0 text-xl font-semibold shadow-none focus-visible:ring-0"
+            id="template-name"
+            className="min-w-0 flex-1"
+            aria-invalid={!!form.formState.errors.name}
             placeholder={t("templateNamePlaceholder")}
             {...form.register("name")}
           />
+          <div className="flex shrink-0 flex-wrap gap-2">
+              <Button type="submit" disabled={isSaving}>
+                {isDirty && (
+                  <span className="mr-1.5 inline-block size-2 rounded-full bg-current" />
+                )}
+                {t("saveTemplate")}
+              </Button>
+              {isEditing && templateStatus === "DRAFT" && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleActivate}
+                  disabled={updateMutation.isPending}
+                >
+                  {t("activate")}
+                </Button>
+              )}
+              {isEditing && templateStatus === "ACTIVE" && (
+                <AlertDialog>
+                  <AlertDialogTrigger render={<Button type="button" variant="outline" />}>
+                    {t("archive")}
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        {t("archiveConfirmTitle", { name: form.watch("name") })}
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {t("archiveConfirmBody")}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleArchive}>
+                        {t("archiveConfirmCta")}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
+              {isEditing && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleDuplicate}
+                  disabled={duplicateMutation.isPending}
+                >
+                  {t("duplicate")}
+                </Button>
+              )}
+              {isEditing && templateStatus === "DRAFT" && (
+                <AlertDialog>
+                  <AlertDialogTrigger
+                    render={<Button type="button" variant="destructive" />}
+                  >
+                    {t("deleteTemplate")}
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        {t("deleteConfirmTitle", { name: form.watch("name") })}
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {t("deleteConfirmBody")}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDelete}>
+                        {t("deleteConfirmCta")}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
+          </div>
+        </div>
+        {form.formState.errors.name?.message && (
+          <p className="text-sm text-destructive" role="alert">
+            {t("validationTemplateNameRequired")}
+          </p>
+        )}
+      </div>
 
-          <div className="flex items-center gap-3">
-            {/* Type select */}
-            <Select
-              value={form.watch("type")}
-              onValueChange={(val) =>
-                form.setValue("type", val as TemplateFormValues["type"], {
-                  shouldDirty: true,
-                })
-              }
-            >
-              <SelectTrigger className="w-auto">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {TEMPLATE_TYPES.map((type) => (
-                  <SelectItem key={type} value={type}>
-                    {t(`type_${type}`)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {/* Status badge */}
-            {isEditing && (
+      {/* Type + status */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
+        <div className="min-w-0 flex-1 space-y-1.5">
+          <Label htmlFor="template-type">{t("columns.templateType")}</Label>
+          <Select
+            value={form.watch("type")}
+            onValueChange={(val) =>
+              form.setValue("type", val as TemplateFormValues["type"], {
+                shouldDirty: true,
+              })
+            }
+            items={templateTypeItems}
+          >
+            <SelectTrigger id="template-type" className="w-full min-w-0">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {templateTypeItems.map((item) => (
+                <SelectItem key={item.value} value={item.value}>
+                  {item.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        {isEditing && (
+          <div className="shrink-0 space-y-1.5 sm:max-w-[200px]">
+            <p className="text-sm font-medium leading-none">
+              {t("columns.status")}
+            </p>
+            <div className="flex min-h-8 items-center">
               <Badge
                 className={STATUS_BADGE_STYLES[templateStatus] ?? ""}
                 variant="secondary"
               >
                 {templateStatus}
               </Badge>
-            )}
+            </div>
           </div>
-        </div>
-
-        {/* Action buttons */}
-        <div className="flex items-center gap-2">
-          {/* Save */}
-          <Button type="submit" disabled={isSaving}>
-            {isDirty && (
-              <span className="mr-1.5 inline-block size-2 rounded-full bg-current" />
-            )}
-            {t("saveTemplate")}
-          </Button>
-
-          {/* Activate (DRAFT only) */}
-          {isEditing && templateStatus === "DRAFT" && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleActivate}
-              disabled={updateMutation.isPending}
-            >
-              {t("activate")}
-            </Button>
-          )}
-
-          {/* Archive (ACTIVE only) */}
-          {isEditing && templateStatus === "ACTIVE" && (
-            <AlertDialog>
-              <AlertDialogTrigger render={<Button type="button" variant="outline" />}>
-                {t("archive")}
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>
-                    {t("archiveConfirmTitle", { name: form.watch("name") })}
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>
-                    {t("archiveConfirmBody")}
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleArchive}>
-                    {t("archiveConfirmCta")}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          )}
-
-          {/* Duplicate */}
-          {isEditing && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleDuplicate}
-              disabled={duplicateMutation.isPending}
-            >
-              {t("duplicate")}
-            </Button>
-          )}
-
-          {/* Delete (DRAFT only) */}
-          {isEditing && templateStatus === "DRAFT" && (
-            <AlertDialog>
-              <AlertDialogTrigger
-                render={<Button type="button" variant="destructive" />}
-              >
-                {t("deleteTemplate")}
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>
-                    {t("deleteConfirmTitle", { name: form.watch("name") })}
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>
-                    {t("deleteConfirmBody")}
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDelete}>
-                    {t("deleteConfirmCta")}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          )}
-        </div>
+        )}
       </div>
 
       {/* Description */}
@@ -366,7 +376,7 @@ export function TemplateForm({ templateId }: TemplateFormProps) {
       </div>
 
       {/* Tasks */}
-      <div className="space-y-3">
+      <div className="space-y-3 border-t border-border pt-6">
         <h2 className="text-lg font-semibold">{t("tasksHeading")}</h2>
         <SortableTaskList
           fields={fields}

@@ -29,6 +29,11 @@ const globalModels = new Set([
   "Verification",
   "PortalSession",
   "PortalMagicToken",
+  // Better Auth organization models — have their own organizationId
+  // but must NOT be auto-scoped (queried cross-org in layout, auth flows)
+  "Organization",
+  "Member",
+  "Invitation",
 ]);
 
 /**

@@ -6,6 +6,7 @@
  */
 
 import { prisma } from "@contractor-ops/db";
+import * as E from "../errors.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -135,19 +136,19 @@ export function validateContractorRow(row: Record<string, unknown>): {
 
   // Required fields
   if (!row.legalName || String(row.legalName).trim() === "") {
-    errors.push({ field: "legalName", message: "Legal name is required" });
+    errors.push({ field: "legalName", message: E.VALIDATION_LEGAL_NAME_REQUIRED });
   }
 
   if (!row.taxId || String(row.taxId).trim() === "") {
-    errors.push({ field: "taxId", message: "Tax ID (NIP) is required" });
+    errors.push({ field: "taxId", message: E.VALIDATION_TAX_ID_REQUIRED });
   }
 
   if (!row.email || String(row.email).trim() === "") {
-    errors.push({ field: "email", message: "Email is required" });
+    errors.push({ field: "email", message: E.VALIDATION_EMAIL_REQUIRED });
   } else {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(String(row.email).trim())) {
-      errors.push({ field: "email", message: "Invalid email format" });
+      errors.push({ field: "email", message: E.VALIDATION_EMAIL_INVALID });
     }
   }
 
@@ -180,7 +181,7 @@ export function validateContractorRow(row: Record<string, unknown>): {
   if (row.countryCode && String(row.countryCode).trim().length !== 2) {
     errors.push({
       field: "countryCode",
-      message: "Country code must be exactly 2 characters",
+      message: E.VALIDATION_COUNTRY_CODE_LENGTH,
     });
   }
 
@@ -188,7 +189,7 @@ export function validateContractorRow(row: Record<string, unknown>): {
   if (row.currency && String(row.currency).trim().length !== 3) {
     errors.push({
       field: "currency",
-      message: "Currency must be exactly 3 characters",
+      message: E.VALIDATION_CURRENCY_LENGTH,
     });
   }
 
@@ -205,11 +206,11 @@ export function validateContractRow(row: Record<string, unknown>): {
   const errors: Array<{ field: string; message: string }> = [];
 
   if (!row.title || String(row.title).trim() === "") {
-    errors.push({ field: "title", message: "Contract title is required" });
+    errors.push({ field: "title", message: E.VALIDATION_CONTRACT_TITLE_REQUIRED });
   }
 
   if (!row.type || String(row.type).trim() === "") {
-    errors.push({ field: "type", message: "Contract type is required" });
+    errors.push({ field: "type", message: E.VALIDATION_CONTRACT_TYPE_REQUIRED });
   } else {
     const validTypes = [
       "B2B_MASTER_SERVICE",
@@ -228,18 +229,18 @@ export function validateContractRow(row: Record<string, unknown>): {
   }
 
   if (!row.startDate || String(row.startDate).trim() === "") {
-    errors.push({ field: "startDate", message: "Start date is required" });
+    errors.push({ field: "startDate", message: E.VALIDATION_START_DATE_REQUIRED });
   } else {
     const parsed = new Date(String(row.startDate));
     if (isNaN(parsed.getTime())) {
-      errors.push({ field: "startDate", message: "Invalid date format" });
+      errors.push({ field: "startDate", message: E.VALIDATION_DATE_INVALID });
     }
   }
 
   if (!row.contractorTaxId || String(row.contractorTaxId).trim() === "") {
     errors.push({
       field: "contractorTaxId",
-      message: "Contractor Tax ID is required for FK resolution",
+      message: E.VALIDATION_TAX_ID_FK_REQUIRED,
     });
   }
 

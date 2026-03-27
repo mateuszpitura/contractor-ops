@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 
 import { trpc } from "@/trpc/init";
 
@@ -10,6 +11,7 @@ import { trpc } from "@/trpc/init";
  * Renders nothing if count is 0.
  */
 export function WorkflowNavBadge() {
+  const tAria = useTranslations("Common.aria");
   const overdueQuery = useQuery({
     ...trpc.workflow.overdueCount.queryOptions(),
     refetchInterval: 60_000,
@@ -22,7 +24,7 @@ export function WorkflowNavBadge() {
   return (
     <span
       className="absolute -right-1 -top-1 flex size-[18px] items-center justify-center rounded-full bg-destructive text-[10px] font-medium leading-none text-destructive-foreground"
-      aria-label={`${count} overdue tasks`}
+      aria-label={tAria("overdueTasks", { count })}
     >
       {count > 9 ? "9+" : count}
     </span>

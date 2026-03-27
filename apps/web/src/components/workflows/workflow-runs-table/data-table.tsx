@@ -7,8 +7,8 @@ import {
   useReactTable,
   type ColumnDef,
 } from "@tanstack/react-table";
-import { useQuery } from "@tanstack/react-query";
-import { GitBranch } from "lucide-react";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { ArrowDown, ArrowUp, ArrowUpDown, GitBranch, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { trpc } from "@/trpc/init";
@@ -44,6 +44,7 @@ export function WorkflowRunsDataTable({
   onStartWorkflow,
 }: WorkflowRunsDataTableProps) {
   const t = useTranslations("Workflows");
+  const tAria = useTranslations("Common.aria");
 
   // URL-synced filter state
   const [filters, setFilters] = useWorkflowFilters();
@@ -73,7 +74,10 @@ export function WorkflowRunsDataTable({
   );
 
   // Fetch data via tRPC
-  const runsQuery = useQuery(trpc.workflow.listRuns.queryOptions(queryInput));
+  const runsQuery = useQuery({
+    ...trpc.workflow.listRuns.queryOptions(queryInput),
+    placeholderData: keepPreviousData,
+  });
 
   const data = useMemo(() => {
     const result = runsQuery.data as
@@ -123,8 +127,12 @@ export function WorkflowRunsDataTable({
           sortOrder: next[0]!.desc ? "desc" : "asc",
           page: 1,
         });
+      } else {
+        // Sort removed — reset to default
+        void setFilters({ sortBy: "dueAt", sortOrder: "asc", page: 1 });
       }
     },
+    enableSortingRemoval: true,
     getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
     manualSorting: true,
@@ -179,8 +187,8 @@ export function WorkflowRunsDataTable({
     });
   }, [setFilters]);
 
-  const isLoading = runsQuery.isLoading;
-  const isSearching = runsQuery.isFetching && !isLoading;
+  const isLoading = runsQuery.isPending && !runsQuery.data;
+  const isRefetching = runsQuery.isFetching && !isLoading;
   const hasFiltersOrSearch =
     filters.search.length > 0 ||
     filters.status.length > 0 ||
@@ -206,7 +214,7 @@ export function WorkflowRunsDataTable({
       <DataTableToolbar
         search={filters.search}
         onSearchChange={handleSearchChange}
-        isSearching={isSearching}
+        isSearching={isRefetching}
         onStartWorkflow={onStartWorkflow}
       />
 
@@ -221,7 +229,13 @@ export function WorkflowRunsDataTable({
       />
 
       {/* Table */}
-      <div className="rounded-xl border bg-background">
+      <div className="relative rounded-xl border bg-background">
+        {/* Refetch overlay */}
+        {isRefetching && (
+          <div className="absolute inset-0 z-10 flex items-start justify-center rounded-xl bg-background/60 pt-20">
+            <Loader2 className="h-5 w-5 animate-spin text-primary" />
+          </div>
+        )}
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -229,22 +243,36 @@ export function WorkflowRunsDataTable({
                 {headerGroup.headers.map((header) => (
                   <TableHead
                     key={header.id}
-                    className="whitespace-nowrap text-[13px]"
                     style={
                       header.column.getSize() !== 150
                         ? { width: header.column.getSize() }
                         : undefined
                     }
+                    aria-sort={
+                      header.column.getIsSorted() === "asc"
+                        ? "ascending"
+                        : header.column.getIsSorted() === "desc"
+                          ? "descending"
+                          : undefined
+                    }
                   >
                     {header.isPlaceholder ? null : header.column.getCanSort() ? (
                       <button
                         type="button"
-                        className="flex items-center gap-1 hover:text-foreground"
+                        className="flex items-center gap-1 uppercase hover:text-foreground"
                         onClick={header.column.getToggleSortingHandler()}
+                        aria-label={tAria("sortBy", { column: typeof header.column.columnDef.header === "string" ? header.column.columnDef.header : header.id })}
                       >
                         {flexRender(
                           header.column.columnDef.header,
                           header.getContext(),
+                        )}
+                        {header.column.getIsSorted() === "asc" ? (
+                          <ArrowUp className="h-3 w-3" />
+                        ) : header.column.getIsSorted() === "desc" ? (
+                          <ArrowDown className="h-3 w-3" />
+                        ) : (
+                          <ArrowUpDown className="h-3 w-3 opacity-40" />
                         )}
                       </button>
                     ) : (

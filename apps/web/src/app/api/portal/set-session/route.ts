@@ -45,8 +45,8 @@ export async function POST(req: NextRequest) {
 
     response.cookies.set("portal_session", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      secure: true,
+      sameSite: "strict",
       path: "/",
       expires: new Date(expiresAt),
     });

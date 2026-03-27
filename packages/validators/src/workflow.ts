@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { optionalString, optionalFk } from "./helpers.js";
 
 // ---------------------------------------------------------------------------
 // Prisma enum mirrors (string unions — validators package has no Prisma dep)
@@ -90,16 +91,16 @@ export const conditionGroupSchema = z.object({
 
 export const taskTemplateInputSchema = z.object({
   title: z.string().min(1).max(255),
-  description: z.string().optional(),
+  description: optionalString,
   taskType: workflowTaskTypeEnum,
   sortOrder: z.number().int().nonnegative(),
   required: z.boolean(),
   assigneeMode: assigneeModeEnum,
   assigneeRole: userRoleEnum.optional(),
-  assigneeUserId: z.string().optional(),
+  assigneeUserId: optionalFk,
   dueOffsetDays: z.number().int().nonnegative().optional(),
   dueOffsetHours: z.number().int().nonnegative().optional(),
-  dependsOnTaskTemplateId: z.string().optional(),
+  dependsOnTaskTemplateId: optionalFk,
   externalUrl: z.string().url().optional().or(z.literal("")),
   conditions: conditionGroupSchema.nullable().optional(),
 });
@@ -146,7 +147,7 @@ export type TemplateListInput = z.infer<typeof templateListSchema>;
 export const startRunSchema = z.object({
   templateId: z.string().min(1),
   contractorId: z.string().min(1),
-  contractId: z.string().optional(),
+  contractId: optionalFk,
 });
 
 export type StartRunInput = z.infer<typeof startRunSchema>;
@@ -208,7 +209,7 @@ export type ReassignTaskInput = z.infer<typeof reassignTaskSchema>;
 
 export const addCommentSchema = z.object({
   workflowRunId: z.string().min(1),
-  workflowTaskRunId: z.string().optional(),
+  workflowTaskRunId: optionalFk,
   body: z.string().min(1).max(5000),
 });
 

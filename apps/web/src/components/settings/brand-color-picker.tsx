@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
+import { useTranslations } from "next-intl";
 import {
   Popover,
   PopoverContent,
@@ -45,6 +46,7 @@ interface BrandColorPickerProps {
  * Uses Popover from shadcn/ui. Trigger is a small color swatch button.
  */
 export function BrandColorPicker({ value, onChange }: BrandColorPickerProps) {
+  const tAria = useTranslations("Common.aria");
   const [hexInput, setHexInput] = useState(value);
   const [open, setOpen] = useState(false);
 
@@ -71,7 +73,7 @@ export function BrandColorPicker({ value, onChange }: BrandColorPickerProps) {
             type="button"
             className="h-6 w-6 rounded-md border border-input shadow-sm transition-colors hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             style={{ backgroundColor: value }}
-            aria-label={`Selected color: ${value}`}
+            aria-label={tAria("selectedColor", { value })}
           />
         }
       />
@@ -91,7 +93,7 @@ export function BrandColorPicker({ value, onChange }: BrandColorPickerProps) {
                 )}
                 style={{ backgroundColor: swatch.hex }}
                 onClick={() => handleSwatchClick(swatch.hex)}
-                aria-label={`${swatch.label} (${swatch.hex})`}
+                aria-label={tAria("colorSwatch", { label: swatch.label, hex: swatch.hex })}
                 aria-pressed={isSelected}
               >
                 {isSelected && (
@@ -110,7 +112,7 @@ export function BrandColorPicker({ value, onChange }: BrandColorPickerProps) {
             placeholder="#4f46e5"
             className="h-8 font-mono text-sm"
             maxLength={7}
-            aria-label="Hex color code"
+            aria-label={tAria("hexColorCode")}
           />
         </div>
       </PopoverContent>

@@ -27,85 +27,117 @@ export interface NavItem {
 }
 
 /**
- * All 10 navigation items visible from day 1.
- * Items are filtered by the user's role permissions — unauthorized items are hidden.
+ * Navigation groups for the sidebar.
+ * Items within each group are filtered by the user's role permissions.
  */
-export const navigationItems: NavItem[] = [
+export interface NavGroup {
+  key: string;
+  items: NavItem[];
+}
+
+export const navigationGroups: NavGroup[] = [
   {
-    key: "dashboard",
-    label: "Dashboard",
-    href: "/",
-    icon: LayoutDashboard,
-    permission: null, // Always visible to authenticated users
+    key: "overview",
+    items: [
+      {
+        key: "dashboard",
+        label: "Dashboard",
+        href: "/",
+        icon: LayoutDashboard,
+        permission: null,
+      },
+    ],
   },
   {
-    key: "contractors",
-    label: "Contractors",
-    href: "/contractors",
-    icon: Users,
-    permission: { resource: "contractor", actions: ["read"] },
+    key: "operations",
+    items: [
+      {
+        key: "contractors",
+        label: "Contractors",
+        href: "/contractors",
+        icon: Users,
+        permission: { resource: "contractor", actions: ["read"] },
+      },
+      {
+        key: "contracts",
+        label: "Contracts",
+        href: "/contracts",
+        icon: FileText,
+        permission: { resource: "contract", actions: ["read"] },
+      },
+      {
+        key: "workflows",
+        label: "Workflows",
+        href: "/workflows",
+        icon: GitBranch,
+        permission: { resource: "workflow", actions: ["read"] },
+      },
+    ],
   },
   {
-    key: "contracts",
-    label: "Contracts",
-    href: "/contracts",
-    icon: FileText,
-    permission: { resource: "contract", actions: ["read"] },
+    key: "finance",
+    items: [
+      {
+        key: "invoices",
+        label: "Invoices",
+        href: "/invoices",
+        icon: Receipt,
+        permission: { resource: "invoice", actions: ["read"] },
+      },
+      {
+        key: "approvals",
+        label: "Approvals",
+        href: "/approvals",
+        icon: CheckCircle,
+        permission: { resource: "invoice", actions: ["approve"] },
+      },
+      {
+        key: "payments",
+        label: "Payments",
+        href: "/payments",
+        icon: Banknote,
+        permission: { resource: "payment", actions: ["read"] },
+      },
+      {
+        key: "reports",
+        label: "Reports",
+        href: "/reports",
+        icon: BarChart3,
+        permission: { resource: "report", actions: ["read"] },
+      },
+    ],
   },
   {
-    key: "workflows",
-    label: "Workflows",
-    href: "/workflows",
-    icon: GitBranch,
-    permission: { resource: "workflow", actions: ["read"] },
-  },
-  {
-    key: "invoices",
-    label: "Invoices",
-    href: "/invoices",
-    icon: Receipt,
-    permission: { resource: "invoice", actions: ["read"] },
-  },
-  {
-    key: "approvals",
-    label: "Approvals",
-    href: "/approvals",
-    icon: CheckCircle,
-    permission: { resource: "invoice", actions: ["approve"] },
-  },
-  {
-    key: "payments",
-    label: "Payments",
-    href: "/payments",
-    icon: Banknote,
-    permission: { resource: "payment", actions: ["read"] },
-  },
-  {
-    key: "reports",
-    label: "Reports",
-    href: "/reports",
-    icon: BarChart3,
-    permission: { resource: "report", actions: ["read"] },
-  },
-  {
-    key: "integrations",
-    label: "Integrations",
-    href: "/settings?tab=integrations",
-    icon: Plug,
-    permission: { resource: "integration", actions: ["read"] },
-  },
-  {
-    key: "notifications",
-    label: "Notifications",
-    href: "/notifications",
-    icon: Bell,
-    permission: null, // Always visible to authenticated users
-  },
-  {
-    key: "settings",
-    label: "Settings",
-    href: "/settings",
-    icon: Settings,
-    permission: { resource: "settings", actions: ["read"] },
+    key: "system",
+    items: [
+      {
+        key: "integrations",
+        label: "Integrations",
+        href: "/settings?tab=integrations",
+        icon: Plug,
+        permission: { resource: "integration", actions: ["read"] },
+      },
+      {
+        key: "notifications",
+        label: "Notifications",
+        href: "/notifications",
+        icon: Bell,
+        permission: null,
+      },
+      {
+        key: "settings",
+        label: "Settings",
+        href: "/settings",
+        icon: Settings,
+        permission: { resource: "settings", actions: ["read"] },
+      },
+    ],
   },
 ];
+
+/**
+ * Flat list of all navigation items (for backward compatibility).
+ */
+export const navigationItems: NavItem[] = navigationGroups.flatMap(
+  (group) => group.items,
+);

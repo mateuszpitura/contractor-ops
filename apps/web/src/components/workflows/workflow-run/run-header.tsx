@@ -121,6 +121,7 @@ function getDaysOverdue(dueDate: string | Date): number {
 
 export function RunHeader({ run }: RunHeaderProps) {
   const t = useTranslations("Workflows");
+  const tCommon = useTranslations("Common");
   const queryClient = useQueryClient();
   const [cancelOpen, setCancelOpen] = useState(false);
 
@@ -155,7 +156,7 @@ export function RunHeader({ run }: RunHeaderProps) {
           {/* Workflow name */}
           <div className="flex items-center gap-3 flex-wrap">
             <h1 className="text-[20px] font-semibold leading-[1.2]">
-              {run.workflowTemplate?.name ?? "Workflow"}
+              {run.workflowTemplate?.name ?? t("workflowLabel")}
             </h1>
             <Badge
               variant="secondary"
@@ -222,7 +223,7 @@ export function RunHeader({ run }: RunHeaderProps) {
                 render={(props) => (
                   <Button {...props} variant="ghost" size="icon">
                     <MoreHorizontal className="size-4" />
-                    <span className="sr-only">Actions</span>
+                    <span className="sr-only">{tCommon("srOnly.actions")}</span>
                   </Button>
                 )}
               />
@@ -248,7 +249,7 @@ export function RunHeader({ run }: RunHeaderProps) {
               <div className="flex justify-end gap-2 pt-2">
                 <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
                 <AlertDialogAction
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  variant="destructive"
                   onClick={() => {
                     cancelMutation.mutate({ runId: run.id });
                   }}

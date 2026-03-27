@@ -205,7 +205,7 @@ export function BankStatementDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-[560px]">
+      <DialogContent className="sm:max-w-[560px]">
         <DialogHeader>
           <DialogTitle>{t("bankStatement.title")}</DialogTitle>
         </DialogHeader>

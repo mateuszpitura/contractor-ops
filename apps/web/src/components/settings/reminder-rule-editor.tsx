@@ -259,12 +259,38 @@ function RuleUserPicker({
 // Component
 // ---------------------------------------------------------------------------
 
+// Items arrays for Select components — built with translations
+function useSelectorItems(t: ReturnType<typeof useTranslations<"Settings">>) {
+  const triggerItems = TRIGGER_TYPES.map((trigger) => ({
+    value: trigger,
+    label: t(`reminderRules.editor.${TRIGGER_LABEL_KEYS[trigger]}` as Parameters<typeof t>[0]),
+  }));
+
+  const entityItems = ENTITY_TYPES.map((e) => ({
+    value: e.value,
+    label: t(`reminderRules.editor.${e.labelKey}` as Parameters<typeof t>[0]),
+  }));
+
+  const channelItems = CHANNELS.map((ch) => ({
+    value: ch.value,
+    label: t(`reminderRules.editor.${ch.labelKey}` as Parameters<typeof t>[0]),
+  }));
+
+  const recipientItems = RECIPIENT_MODES.map((m) => ({
+    value: m.value,
+    label: t(`reminderRules.editor.${m.labelKey}` as Parameters<typeof t>[0]),
+  }));
+
+  return { triggerItems, entityItems, channelItems, recipientItems };
+}
+
 export function ReminderRuleEditor({
   open,
   onOpenChange,
   rule,
 }: ReminderRuleEditorProps) {
   const t = useTranslations("Settings");
+  const { triggerItems, entityItems, channelItems, recipientItems } = useSelectorItems(t);
   const queryClient = useQueryClient();
   const isEditMode = !!rule;
 
@@ -406,7 +432,7 @@ export function ReminderRuleEditor({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[560px] max-h-[70vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[560px] max-h-[70vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {isEditMode
@@ -445,18 +471,16 @@ export function ReminderRuleEditor({
               control={form.control}
               name="triggerType"
               render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
+                <Select value={field.value} onValueChange={field.onChange} items={triggerItems}>
                   <SelectTrigger className="w-full">
                     <SelectValue
                       placeholder={t("reminderRules.editor.triggerType")}
                     />
                   </SelectTrigger>
                   <SelectContent>
-                    {TRIGGER_TYPES.map((trigger) => (
-                      <SelectItem key={trigger} value={trigger}>
-                        {t(
-                          `reminderRules.editor.${TRIGGER_LABEL_KEYS[trigger]}` as Parameters<typeof t>[0],
-                        )}
+                    {triggerItems.map((item) => (
+                      <SelectItem key={item.value} value={item.value}>
+                        {item.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -505,16 +529,14 @@ export function ReminderRuleEditor({
               control={form.control}
               name="entityType"
               render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
+                <Select value={field.value} onValueChange={field.onChange} items={entityItems}>
                   <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {ENTITY_TYPES.map((entity) => (
-                      <SelectItem key={entity.value} value={entity.value}>
-                        {t(
-                          `reminderRules.editor.${entity.labelKey}` as Parameters<typeof t>[0],
-                        )}
+                    {entityItems.map((item) => (
+                      <SelectItem key={item.value} value={item.value}>
+                        {item.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -530,20 +552,18 @@ export function ReminderRuleEditor({
               control={form.control}
               name="channel"
               render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
+                <Select value={field.value} onValueChange={field.onChange} items={channelItems}>
                   <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {CHANNELS.map((ch) => (
+                    {channelItems.map((item) => (
                       <SelectItem
-                        key={ch.value}
-                        value={ch.value}
-                        disabled={ch.value === "SLACK" && !isSlackConnected}
+                        key={item.value}
+                        value={item.value}
+                        disabled={item.value === "SLACK" && !isSlackConnected}
                       >
-                        {t(
-                          `reminderRules.editor.${ch.labelKey}` as Parameters<typeof t>[0],
-                        )}
+                        {item.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -564,16 +584,14 @@ export function ReminderRuleEditor({
               control={form.control}
               name="recipientMode"
               render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
+                <Select value={field.value} onValueChange={field.onChange} items={recipientItems}>
                   <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {RECIPIENT_MODES.map((mode) => (
-                      <SelectItem key={mode.value} value={mode.value}>
-                        {t(
-                          `reminderRules.editor.${mode.labelKey}` as Parameters<typeof t>[0],
-                        )}
+                    {recipientItems.map((item) => (
+                      <SelectItem key={item.value} value={item.value}>
+                        {item.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -613,6 +631,7 @@ export function ReminderRuleEditor({
                   <Select
                     value={field.value ?? undefined}
                     onValueChange={field.onChange}
+                    items={ROLE_OPTIONS.map((r) => ({ value: r, label: ROLE_LABELS[r] ?? r }))}
                   >
                     <SelectTrigger className="w-full">
                       <SelectValue

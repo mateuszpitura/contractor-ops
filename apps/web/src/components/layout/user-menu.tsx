@@ -1,7 +1,9 @@
 "use client";
 
+import { useState, useRef, useEffect } from "react";
 import { useTheme } from "next-themes";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 import {
   LogOut,
   Moon,
@@ -10,6 +12,8 @@ import {
   Minimize2,
   Maximize2,
   Globe,
+  UserPen,
+  Loader2,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -19,6 +23,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -26,6 +39,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { authClient } from "@/lib/auth-client";
+import { getAvatarInitials } from "@/lib/avatar-initials";
 import { useDensity } from "@/hooks/use-density";
 import { useRouter, usePathname } from "@/i18n/navigation";
 import { useLocale } from "next-intl";
@@ -51,14 +65,40 @@ export function UserMenu() {
   const session = authClient.useSession();
 
   const user = session.data?.user;
-  const initials = user?.name
-    ? user.name
-        .split(" ")
-        .map((n) => n[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2)
-    : "??";
+  const initials = getAvatarInitials(
+    user?.name,
+    user?.email ?? undefined,
+  );
+
+  const [nameDialogOpen, setNameDialogOpen] = useState(false);
+  const [nameValue, setNameValue] = useState("");
+  const [nameSaving, setNameSaving] = useState(false);
+  const nameInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (nameDialogOpen) {
+      setNameValue(user?.name ?? "");
+      setTimeout(() => nameInputRef.current?.select(), 50);
+    }
+  }, [nameDialogOpen, user?.name]);
+
+  const handleSaveName = async () => {
+    const trimmed = nameValue.trim();
+    if (!trimmed || trimmed === user?.name) {
+      setNameDialogOpen(false);
+      return;
+    }
+    setNameSaving(true);
+    try {
+      await authClient.updateUser({ name: trimmed });
+      toast.success(t("nameUpdated"));
+      setNameDialogOpen(false);
+    } catch {
+      toast.error(t("nameUpdateFailed"));
+    } finally {
+      setNameSaving(false);
+    }
+  };
 
   const handleSignOut = async () => {
     await authClient.signOut();
@@ -71,6 +111,7 @@ export function UserMenu() {
   };
 
   return (
+    <>
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
@@ -126,6 +167,11 @@ export function UserMenu() {
 
         <DropdownMenuSeparator />
 
+        <DropdownMenuItem onClick={() => setNameDialogOpen(true)}>
+          <UserPen className="mr-2 h-4 w-4" />
+          {t("editName")}
+        </DropdownMenuItem>
+
         <DropdownMenuItem onClick={() => router.push("/settings")}>
           <Settings className="mr-2 h-4 w-4" />
           {t("settings")}
@@ -140,7 +186,13 @@ export function UserMenu() {
           </div>
           <Switch
             checked={theme === "dark"}
-            onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
+            onCheckedChange={(checked) => {
+              document.documentElement.classList.add("theme-transition");
+              setTheme(checked ? "dark" : "light");
+              setTimeout(() => {
+                document.documentElement.classList.remove("theme-transition");
+              }, 350);
+            }}
             aria-label={t("darkMode")}
           />
         </div>
@@ -183,5 +235,47 @@ export function UserMenu() {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+
+    {/* Edit name dialog */}
+    <Dialog open={nameDialogOpen} onOpenChange={setNameDialogOpen}>
+      <DialogContent className="sm:max-w-[360px]">
+        <DialogHeader>
+          <DialogTitle>{t("editName")}</DialogTitle>
+        </DialogHeader>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSaveName();
+          }}
+          className="space-y-4"
+        >
+          <div className="space-y-2">
+            <Label htmlFor="user-name">{t("editNamePrompt")}</Label>
+            <Input
+              ref={nameInputRef}
+              id="user-name"
+              value={nameValue}
+              onChange={(e) => setNameValue(e.target.value)}
+              placeholder={t("editNamePrompt")}
+              autoFocus
+            />
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setNameDialogOpen(false)}
+            >
+              {t("cancel")}
+            </Button>
+            <Button type="submit" disabled={nameSaving || !nameValue.trim()}>
+              {nameSaving && <Loader2 className="mr-1.5 size-3.5 animate-spin" />}
+              {t("save")}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }

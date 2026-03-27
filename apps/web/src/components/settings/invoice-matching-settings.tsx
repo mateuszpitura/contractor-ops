@@ -15,6 +15,7 @@ import {
   CardTitle,
   CardDescription,
   CardContent,
+  CardFooter,
 } from "@/components/ui/card";
 
 // ---------------------------------------------------------------------------
@@ -23,6 +24,7 @@ import {
 
 export function InvoiceMatchingSettings() {
   const t = useTranslations("Settings");
+  const tToast = useTranslations("Settings.toast");
   const queryClient = useQueryClient();
 
   // Load org data for slug (email address)
@@ -56,7 +58,7 @@ export function InvoiceMatchingSettings() {
         });
       },
       onError: () => {
-        toast.error("Failed to update invoice settings");
+        toast.error(tToast("invoiceSettingsFailed"));
       },
     }),
   );
@@ -130,9 +132,10 @@ export function InvoiceMatchingSettings() {
           </p>
         </div>
 
+      </CardContent>
+      <CardFooter>
         <Button
           size="sm"
-          variant="secondary"
           onClick={handleSave}
           disabled={updateMutation.isPending}
         >
@@ -143,7 +146,7 @@ export function InvoiceMatchingSettings() {
           )}
           {t("saveCta")}
         </Button>
-      </CardContent>
+      </CardFooter>
     </Card>
   );
 }

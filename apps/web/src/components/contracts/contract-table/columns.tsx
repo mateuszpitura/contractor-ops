@@ -66,7 +66,7 @@ const riskBadgeColors: Record<string, string> = {
 // Column factory
 // ---------------------------------------------------------------------------
 
-type TranslateFunction = (key: string) => string;
+type TranslateFunction = (key: string, params?: Record<string, string | number>) => string;
 
 /**
  * Returns all column definitions for the contract data table.
@@ -190,8 +190,8 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractRow>[] {
           const daysRemaining = differenceInDays(date, new Date());
           const expired = isPast(date);
           const tooltipText = expired
-            ? t("daysExpired").replace("{count}", String(Math.abs(daysRemaining)))
-            : t("daysRemaining").replace("{count}", String(daysRemaining));
+            ? t("daysExpired", { count: Math.abs(daysRemaining) })
+            : t("daysRemaining", { count: daysRemaining });
 
           return (
             <Tooltip>
@@ -215,6 +215,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractRow>[] {
     {
       accessorKey: "rateValueGrosze",
       header: t("columns.rate"),
+      enableSorting: false,
       cell: ({ row }) => {
         const grosze = row.original.rateValueGrosze;
         if (typeof grosze !== "number")
@@ -237,6 +238,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractRow>[] {
     {
       accessorKey: "currency",
       header: t("columns.currency"),
+      enableSorting: false,
       cell: ({ row }) => (
         <span className="text-sm">{row.original.currency}</span>
       ),
@@ -246,6 +248,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractRow>[] {
     {
       accessorKey: "billingModel",
       header: t("columns.billingCycle"),
+      enableSorting: false,
       cell: ({ row }) => (
         <span className="text-sm">
           {t(`billingModel.${row.original.billingModel}`)}

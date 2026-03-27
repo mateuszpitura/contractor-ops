@@ -9,6 +9,8 @@ import { parseAsString, useQueryState } from "nuqs";
 import { trpc } from "@/trpc/init";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/shared/empty-state";
+import { PageHeader } from "@/components/shared/page-header";
+import { AnimateIn } from "@/components/shared/animate-in";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { usePermissions } from "@/hooks/use-permissions";
@@ -64,10 +66,10 @@ function WorkflowsContent() {
 
   // Count queries for empty state detection
   const runsCountQuery = useQuery(
-    trpc.workflow.listRuns.queryOptions({ page: 1, pageSize: 1 }),
+    trpc.workflow.listRuns.queryOptions({ page: 1, pageSize: 10 }),
   );
   const contractorCountQuery = useQuery(
-    trpc.contractor.list.queryOptions({ page: 1, pageSize: 1 }),
+    trpc.contractor.list.queryOptions({ page: 1, pageSize: 10 }),
   );
   const runsTotal = (runsCountQuery.data as { total: number } | undefined)?.total ?? 0;
   const contractorCount = (contractorCountQuery.data as { total: number } | undefined)?.total ?? 0;
@@ -79,17 +81,24 @@ function WorkflowsContent() {
   if (!isCountLoading && runsTotal === 0) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-[20px] font-semibold">{t("pageTitle")}</h1>
-          <Button size="sm" onClick={handleStartWorkflow}>
-            {t("startWorkflow")}
-          </Button>
-        </div>
+        <PageHeader
+          title={t("pageTitle")}
+          description={t("pageDescription")}
+          actions={
+            <Button size="sm" onClick={handleStartWorkflow}>
+              {t("startWorkflow")}
+            </Button>
+          }
+        />
         <EmptyState
           icon={GitBranch}
           heading={te("workflows.heading")}
           body={te("workflows.body")}
-          primaryAction={{ label: te("workflows.cta"), onClick: handleStartWorkflow }}
+          primaryAction={
+            canManageTemplates
+              ? { label: t("templates.newTemplate"), href: "/workflows/templates/new" }
+              : { label: te("workflows.cta"), onClick: handleStartWorkflow }
+          }
           prerequisiteMissing={contractorCount === 0}
           prerequisiteAction={{ label: te("prerequisite.cta"), href: "/contractors" }}
         />
@@ -104,14 +113,20 @@ function WorkflowsContent() {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-[20px] font-semibold">{t("pageTitle")}</h1>
-        <Button size="sm" onClick={handleStartWorkflow}>
-          {t("startWorkflow")}
-        </Button>
-      </div>
+      <AnimateIn delay={0}>
+        <PageHeader
+          title={t("pageTitle")}
+          description={t("pageDescription")}
+          actions={
+            <Button size="sm" onClick={handleStartWorkflow}>
+              {t("startWorkflow")}
+            </Button>
+          }
+        />
+      </AnimateIn>
 
       {/* Tabs */}
+      <AnimateIn delay={1}>
       <Tabs
         value={tab}
         onValueChange={(value) => void setTab(value)}
@@ -149,6 +164,7 @@ function WorkflowsContent() {
           </TabsContent>
         )}
       </Tabs>
+      </AnimateIn>
 
       {/* Side panel */}
       <WorkflowSidePanel

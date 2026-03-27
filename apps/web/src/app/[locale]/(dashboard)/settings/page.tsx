@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense } from "react";
+import { AnimateIn } from "@/components/shared/animate-in";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { OrgSettingsForm } from "@/components/settings/org-settings-form";
 import { ExpiryReminderDefaults } from "@/components/settings/expiry-reminder-defaults";
@@ -37,11 +38,14 @@ function SettingsContent() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-[20px] font-semibold">{t("title")}</h1>
-        <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
-      </div>
+      <AnimateIn delay={0}>
+        <div>
+          <h1 className="font-display text-[22px] font-semibold leading-tight tracking-tight">{t("title")}</h1>
+          <p className="mt-0.5 text-sm text-muted-foreground">{t("subtitle")}</p>
+        </div>
+      </AnimateIn>
 
+      <AnimateIn delay={1}>
       <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val)} className="w-full">
         <TabsList>
           <TabsTrigger value="general">{t("tabs.general")}</TabsTrigger>
@@ -96,6 +100,7 @@ function SettingsContent() {
           </TabsContent>
         )}
       </Tabs>
+      </AnimateIn>
     </div>
   );
 }

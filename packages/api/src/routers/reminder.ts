@@ -9,6 +9,7 @@ import {
 import { router } from "../init.js";
 import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
+import * as E from "../errors.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -79,7 +80,7 @@ export const reminderRouter = router({
       if (!existing) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Reminder rule not found",
+          message: E.REMINDER_RULE_NOT_FOUND,
         });
       }
 
@@ -110,7 +111,7 @@ export const reminderRouter = router({
       if (!existing) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Reminder rule not found",
+          message: E.REMINDER_RULE_NOT_FOUND,
         });
       }
 
@@ -144,7 +145,7 @@ export const reminderRouter = router({
       if (!existing) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Reminder rule not found",
+          message: E.REMINDER_RULE_NOT_FOUND,
         });
       }
 

@@ -80,44 +80,48 @@ function StepIndicator({
   steps: Array<{ label: string; visible: boolean }>;
   currentStep: number;
 }) {
+  const tAria = useTranslations("Common.aria");
   const visibleSteps = steps.filter((s) => s.visible);
   const visibleIndex = visibleSteps.findIndex(
     (s) => s === steps.filter((_, i) => i <= currentStep).findLast((s2) => s2.visible)
   );
 
   return (
-    <div className="flex items-center justify-center gap-0 px-4 py-3">
+    <nav aria-label={tAria("wizardProgress")} className="flex items-center justify-center gap-0 py-3">
       {visibleSteps.map((step, index) => {
         const isCompleted = index < visibleIndex;
         const isCurrent = index === visibleIndex;
+        const status = isCompleted ? "completed" : isCurrent ? "current" : "upcoming";
 
         return (
-          <div key={step.label} className="flex items-center">
+          <div key={step.label} className="flex items-center" aria-current={isCurrent ? "step" : undefined}>
             {index > 0 && (
               <div
-                className={`mx-2 h-px w-8 ${
+                aria-hidden="true"
+                className={`mx-1.5 h-px w-6 sm:mx-2 sm:w-8 ${
                   index <= visibleIndex ? "bg-primary" : "bg-border"
                 }`}
               />
             )}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5" role="listitem" aria-label={tAria("wizardStep", { step: index + 1, label: step.label, status })}>
               <div
-                className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-medium transition-colors ${
+                aria-hidden="true"
+                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold transition-colors ${
                   isCompleted
                     ? "bg-primary text-primary-foreground"
                     : isCurrent
-                      ? "border-2 border-primary text-primary"
-                      : "border border-border text-muted-foreground"
+                      ? "bg-primary/10 text-primary ring-1 ring-primary"
+                      : "bg-muted text-muted-foreground ring-1 ring-border"
                 }`}
               >
                 {isCompleted ? (
-                  <Check className="h-3.5 w-3.5" />
+                  <Check className="h-3 w-3" />
                 ) : (
                   index + 1
                 )}
               </div>
               <span
-                className={`text-[13px] ${
+                className={`hidden whitespace-nowrap text-[13px] sm:inline ${
                   isCurrent
                     ? "font-medium text-foreground"
                     : "text-muted-foreground"
@@ -129,7 +133,7 @@ function StepIndicator({
           </div>
         );
       })}
-    </div>
+    </nav>
   );
 }
 
@@ -149,6 +153,7 @@ export function ImportWizardDialog({
   defaultEntityType = "contractor",
 }: ImportWizardDialogProps) {
   const t = useTranslations("Import");
+  const tAria = useTranslations("Common.aria");
   const queryClient = useQueryClient();
 
   // Wizard state
@@ -294,13 +299,31 @@ export function ImportWizardDialog({
         break;
       case 4:
         // Confirm -> commit
-        if (!fileBase64) return;
+        if (!validateResult) return;
+        // Remap duplicateActions from rowNumber keys to taxId keys
+        // (backend looks up action by taxId, UI stores by rowNumber)
+        const taxIdActions: Record<string, "skip" | "update" | "create"> = {};
+        for (const row of validateResult.duplicateRows) {
+          const action = duplicateActions[String(row.rowNumber)];
+          if (action) {
+            const taxId = String(
+              row.data.taxId ?? row.data.contractorTaxId ?? "",
+            );
+            if (taxId) taxIdActions[taxId] = action;
+          }
+        }
         commitMutation.mutate({
-          fileBase64,
           entityType,
-          columnMapping,
-          duplicateActions,
-        } as Parameters<typeof commitMutation.mutate>[0]);
+          rows: [
+            ...(validateResult.validRows).map((r) => r.data),
+            ...(validateResult.duplicateRows)
+              .filter(
+                (r) => duplicateActions[String(r.rowNumber)] !== "skip",
+              )
+              .map((r) => r.data),
+          ],
+          duplicateActions: taxIdActions,
+        });
         break;
     }
   }, [
@@ -377,7 +400,7 @@ export function ImportWizardDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
-        <DialogContent className="max-w-[720px]" showCloseButton={false}>
+        <DialogContent className="sm:max-w-[720px]" showCloseButton={false}>
           <DialogHeader>
             <DialogTitle>{t("title")}</DialogTitle>
           </DialogHeader>
@@ -386,7 +409,7 @@ export function ImportWizardDialog({
           <StepIndicator steps={stepLabels} currentStep={currentStep} />
 
           {/* Step content */}
-          <div className="min-h-[360px] px-1">
+          <div className="min-h-[360px]">
             {currentStep === 0 && (
               <StepUpload
                 entityType={entityType}
@@ -494,7 +517,7 @@ export function ImportWizardDialog({
             <AlertDialogCancel>{t("discard.keep")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDiscard}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              variant="destructive"
             >
               {t("discard.discard")}
             </AlertDialogAction>

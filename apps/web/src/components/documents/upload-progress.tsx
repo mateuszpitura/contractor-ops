@@ -45,10 +45,10 @@ type UploadProgressProps = {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+function formatFileSizeData(bytes: number): { key: string; size: string } {
+  if (bytes < 1024) return { key: "bytes", size: String(bytes) };
+  if (bytes < 1024 * 1024) return { key: "kilobytes", size: (bytes / 1024).toFixed(1) };
+  return { key: "megabytes", size: (bytes / (1024 * 1024)).toFixed(1) };
 }
 
 function getFileIcon(mimeType: string) {
@@ -109,6 +109,7 @@ function ScanStatusBadge({ status }: { status: UploadStatus }) {
 // ---------------------------------------------------------------------------
 
 export function UploadProgress({ file, onRemove }: UploadProgressProps) {
+  const tCommon = useTranslations("Common");
   const FileIcon = getFileIcon(file.file.type);
 
   return (
@@ -118,7 +119,7 @@ export function UploadProgress({ file, onRemove }: UploadProgressProps) {
         <p className="truncate text-sm">{file.file.name}</p>
         <div className="mt-0.5 flex items-center gap-2">
           <span className="text-xs text-muted-foreground">
-            {formatFileSize(file.file.size)}
+            {(() => { const { key, size } = formatFileSizeData(file.file.size); return tCommon(`fileSize.${key}` as Parameters<typeof tCommon>[0], { size }); })()}
           </span>
           {file.status === "uploading" ? (
             <Progress
@@ -138,7 +139,7 @@ export function UploadProgress({ file, onRemove }: UploadProgressProps) {
         onClick={onRemove}
       >
         <X className="size-3.5" />
-        <span className="sr-only">Remove</span>
+        <span className="sr-only">{tCommon("srOnly.remove")}</span>
       </Button>
     </div>
   );

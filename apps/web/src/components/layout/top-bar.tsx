@@ -4,13 +4,17 @@ import { useState } from "react";
 import { UserPlus, FilePlus, Upload, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Breadcrumb,
   BreadcrumbItem,
+  BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { Link } from "@/i18n/navigation";
+import { useBreadcrumbContext } from "@/components/layout/breadcrumb-context";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import {
@@ -18,7 +22,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { usePathname } from "@/i18n/navigation";
+import { usePathname, useRouter } from "@/i18n/navigation";
 import { ContractWizardDialog } from "@/components/contracts/contract-wizard/wizard-dialog";
 import { NotificationPopover } from "@/components/notifications/notification-popover";
 import { useSearch } from "@/components/search/search-provider";
@@ -32,40 +36,70 @@ import { CommandPalette } from "@/components/search/command-palette";
 export function TopBar() {
   const pathname = usePathname();
   const t = useTranslations("TopBar");
+  const router = useRouter();
   const { setOpen: setSearchOpen } = useSearch();
 
   const [contractWizardOpen, setContractWizardOpen] = useState(false);
 
+  const { overrides } = useBreadcrumbContext();
+  const tNav = useTranslations("Navigation");
+
   // Build breadcrumb segments from pathname (locale already stripped by next-intl)
   const segments = pathname.split("/").filter(Boolean);
 
-  const breadcrumbLabel = (segment: string): string => {
+  /** Detect UUID/CUID segments that need an override to display properly */
+  const isIdSegment = (segment: string): boolean =>
+    /^[a-zA-Z0-9_-]{20,}$/.test(segment);
+
+  /** Map URL segment → translated label. Uses Navigation i18n, context overrides, or skeleton. */
+  const breadcrumbLabel = (segment: string): string | null => {
+    // 1. Context override from detail pages (entity name)
+    const override = overrides.get(segment);
+    if (override) return override.label;
+
+    // 2. ID segments without override yet → show skeleton
+    if (isIdSegment(segment)) return null;
+
+    // 3. Translated navigation label (contractors → Kontrahenci, etc.)
+    if (tNav.has(segment)) return tNav(segment);
+
+    // 4. Fallback: capitalize the URL segment
     return segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, " ");
   };
 
   return (
     <>
-      <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
+      <header className="flex h-14 shrink-0 items-center gap-2 border-b border-border/60 px-4">
         <SidebarTrigger className="-ml-1" />
-        <Separator orientation="vertical" className="mr-2 h-4" />
+        <Separator orientation="vertical" className="!self-center mr-2 h-4" />
 
-        {/* Breadcrumb */}
+        {/* Unified breadcrumb — single source for all pages */}
         <Breadcrumb>
           <BreadcrumbList>
-            {segments.map((segment, index) => (
-              <span key={segment} className="contents">
-                {index > 0 && <BreadcrumbSeparator />}
-                <BreadcrumbItem>
-                  {index === segments.length - 1 ? (
-                    <BreadcrumbPage>{breadcrumbLabel(segment)}</BreadcrumbPage>
-                  ) : (
-                    <span className="text-muted-foreground">
-                      {breadcrumbLabel(segment)}
-                    </span>
-                  )}
-                </BreadcrumbItem>
-              </span>
-            ))}
+            {segments.map((segment, index) => {
+              const isLast = index === segments.length - 1;
+              const label = breadcrumbLabel(segment);
+              const href = "/" + segments.slice(0, index + 1).join("/");
+
+              return (
+                <span key={`${segment}-${index}`} className="contents">
+                  {index > 0 && <BreadcrumbSeparator />}
+                  <BreadcrumbItem>
+                    {label === null ? (
+                      <Skeleton className="h-4 w-24 rounded" />
+                    ) : isLast ? (
+                      <BreadcrumbPage>{label}</BreadcrumbPage>
+                    ) : (
+                      <BreadcrumbLink
+                        render={(props) => <Link {...props} href={href} />}
+                      >
+                        {label}
+                      </BreadcrumbLink>
+                    )}
+                  </BreadcrumbItem>
+                </span>
+              );
+            })}
           </BreadcrumbList>
         </Breadcrumb>
 
@@ -75,7 +109,16 @@ export function TopBar() {
         {/* Quick action buttons */}
         <div className="flex items-center gap-1">
           <Tooltip>
-            <TooltipTrigger render={<Button variant="ghost" size="icon" className="h-8 w-8" />}>
+            <TooltipTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => router.push("/contractors?action=new")}
+                />
+              }
+            >
               <UserPlus className="h-4 w-4" />
               <span className="sr-only">{t("addContractor")}</span>
             </TooltipTrigger>
@@ -100,7 +143,16 @@ export function TopBar() {
           </Tooltip>
 
           <Tooltip>
-            <TooltipTrigger render={<Button variant="ghost" size="icon" className="h-8 w-8" />}>
+            <TooltipTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => router.push("/invoices?action=upload")}
+                />
+              }
+            >
               <Upload className="h-4 w-4" />
               <span className="sr-only">{t("uploadInvoice")}</span>
             </TooltipTrigger>
@@ -111,12 +163,12 @@ export function TopBar() {
           <button
             type="button"
             onClick={() => setSearchOpen(true)}
-            className="hidden md:flex h-9 w-[240px] items-center gap-2 rounded-md border bg-background px-3 text-sm text-muted-foreground hover:bg-accent"
+            className="search-trigger hidden md:flex h-9 w-[240px] items-center gap-2 rounded-lg border bg-background px-3 text-sm text-muted-foreground"
           >
             <Search className="h-4 w-4" />
             <span>{t("search")}...</span>
-            <kbd className="ml-auto rounded bg-muted px-1.5 py-0.5 text-[12px] font-mono text-muted-foreground">
-              Cmd+K
+            <kbd className="ml-auto rounded-md border border-border/60 bg-muted/60 px-1.5 py-0.5 text-[11px] font-mono font-medium text-muted-foreground shadow-[0_1px_0_0] shadow-border/40">
+              {"\u2318"}K
             </kbd>
           </button>
 

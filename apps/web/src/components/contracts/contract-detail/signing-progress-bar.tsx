@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Check, X, MoreVertical, Ban, RefreshCw } from "lucide-react";
 
+import { useTranslations } from "next-intl";
 import { trpc } from "@/trpc/init";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -107,6 +108,9 @@ function ConnectorLine({ completed }: { completed: boolean }) {
  * Per UI-SPEC D-08.
  */
 export function SigningProgressBar({ envelope }: SigningProgressBarProps) {
+  const t = useTranslations("ContractDetail.signing.progress");
+  const tToast = useTranslations("ContractDetail.signing.toast");
+  const tCommon = useTranslations("Common");
   const queryClient = useQueryClient();
   const [auditOpen, setAuditOpen] = useState(false);
   const [voidOpen, setVoidOpen] = useState(false);
@@ -130,20 +134,20 @@ export function SigningProgressBar({ envelope }: SigningProgressBarProps) {
   const resendMutation = useMutation(
     trpc.esign.resendToRecipient.mutationOptions({
       onSuccess: (_data, variables) => {
-        toast.success(`Signing reminder sent to ${variables.recipientEmail}`);
+        toast.success(tToast("reminderSent", { email: variables.recipientEmail }));
       },
       onError: () => {
-        toast.error("Failed to resend. Please try again.");
+        toast.error(tToast("resendFailed"));
       },
     })
   );
 
   // Status text
-  let statusText = `${signedCount} of ${totalCount} signed`;
+  let statusText = t("signedCount", { signed: signedCount, total: totalCount });
   if (allSigned) {
-    statusText = "All parties have signed";
+    statusText = t("allSigned");
   } else if (currentIndex >= 0) {
-    statusText = `Waiting for ${sortedRecipients[currentIndex]!.name} to sign`;
+    statusText = t("waitingFor", { name: sortedRecipients[currentIndex]!.name });
   }
 
   // Pending recipients for resend
@@ -181,7 +185,7 @@ export function SigningProgressBar({ envelope }: SigningProgressBarProps) {
               size="sm"
               onClick={() => setAuditOpen(true)}
             >
-              View Signing History
+              {t("viewHistory")}
             </Button>
 
             <DropdownMenu>
@@ -189,7 +193,7 @@ export function SigningProgressBar({ envelope }: SigningProgressBarProps) {
                 render={(props) => (
                   <Button {...props} variant="ghost" size="icon-sm">
                     <MoreVertical className="size-4" />
-                    <span className="sr-only">Signing actions</span>
+                    <span className="sr-only">{tCommon("srOnly.signingActions")}</span>
                   </Button>
                 )}
               />
@@ -206,7 +210,7 @@ export function SigningProgressBar({ envelope }: SigningProgressBarProps) {
                     disabled={resendMutation.isPending}
                   >
                     <RefreshCw className="mr-2 size-3.5" />
-                    Resend to {r.name}
+                    {t("resendTo", { name: r.name })}
                   </DropdownMenuItem>
                 ))}
                 <DropdownMenuItem
@@ -214,7 +218,7 @@ export function SigningProgressBar({ envelope }: SigningProgressBarProps) {
                   onClick={() => setVoidOpen(true)}
                 >
                   <Ban className="mr-2 size-3.5" />
-                  Void Envelope
+                  {t("voidEnvelope")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

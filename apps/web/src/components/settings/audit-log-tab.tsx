@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, keepPreviousData } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { parseAsString, useQueryState } from "nuqs";
 import { Search, Download, Loader2 } from "lucide-react";
@@ -66,6 +66,7 @@ const RESOURCE_TYPE_OPTIONS = [
  */
 export function AuditLogTab() {
   const t = useTranslations("Settings.auditLog");
+  const tAria = useTranslations("Common.aria");
 
   // ---------------------------------------------------------------------------
   // URL state (nuqs)
@@ -154,7 +155,10 @@ export function AuditLogTab() {
     ],
   );
 
-  const listQuery = useQuery(trpc.audit.list.queryOptions(queryInput));
+  const listQuery = useQuery({
+    ...trpc.audit.list.queryOptions(queryInput),
+    placeholderData: keepPreviousData,
+  });
   const actorsQuery = useQuery(trpc.audit.actors.queryOptions());
   const exportMutation = useMutation(trpc.audit.export.mutationOptions());
 
@@ -259,7 +263,10 @@ export function AuditLogTab() {
   // Loading skeleton
   // ---------------------------------------------------------------------------
 
-  if (listQuery.isLoading) {
+  const isLoading = listQuery.isPending && !listQuery.data;
+  const isRefetching = listQuery.isFetching && !isLoading;
+
+  if (isLoading) {
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-3">
@@ -392,7 +399,7 @@ export function AuditLogTab() {
             void setAuditPage("1");
           }}
           className="w-36"
-          aria-label="Date from"
+          aria-label={tAria("dateFrom")}
         />
 
         {/* Date range - to */}
@@ -404,7 +411,7 @@ export function AuditLogTab() {
             void setAuditPage("1");
           }}
           className="w-36"
-          aria-label="Date to"
+          aria-label={tAria("dateTo")}
         />
       </div>
 
@@ -419,6 +426,7 @@ export function AuditLogTab() {
         onSortOrderChange={handleSortOrderChange}
         expandedRows={expandedRows}
         onToggleRow={handleToggleRow}
+        isFetching={isRefetching}
       />
     </div>
   );

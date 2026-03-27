@@ -12,6 +12,7 @@ import {
   readyForPaymentListSchema,
   removeFromRunSchema,
 } from "@contractor-ops/validators";
+import * as E from "../errors.js";
 import { router } from "../init.js";
 import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
@@ -151,14 +152,14 @@ export const paymentRouter = router({
         if (notReady.length > 0) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: `${notReady.length} invoice(s) are not ready for payment. Only invoices with paymentStatus READY can be added to a run.`,
+            message: E.PAYMENT_INVOICES_NOT_READY,
           });
         }
 
         if (invoices.length !== input.invoiceIds.length) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "One or more invoices not found in this organization",
+            message: E.PAYMENT_INVOICES_NOT_FOUND,
           });
         }
 
@@ -285,7 +286,7 @@ export const paymentRouter = router({
       if (!run) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Payment run not found",
+          message: E.PAYMENT_RUN_NOT_FOUND,
         });
       }
 
@@ -383,7 +384,7 @@ export const paymentRouter = router({
         if (!run) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Payment run not found",
+            message: E.PAYMENT_RUN_NOT_FOUND,
           });
         }
 
@@ -394,7 +395,7 @@ export const paymentRouter = router({
         ) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: `Cannot lock/export a run in ${run.status} status`,
+            message: E.PAYMENT_RUN_INVALID_STATUS,
           });
         }
 
@@ -511,7 +512,7 @@ export const paymentRouter = router({
         if (!item) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Payment run item not found",
+            message: E.PAYMENT_RUN_ITEM_NOT_FOUND,
           });
         }
 
@@ -596,7 +597,7 @@ export const paymentRouter = router({
         if (!run) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Payment run not found",
+            message: E.PAYMENT_RUN_NOT_FOUND,
           });
         }
 
@@ -654,7 +655,7 @@ export const paymentRouter = router({
         if (!run) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Payment run not found",
+            message: E.PAYMENT_RUN_NOT_FOUND,
           });
         }
 
@@ -662,7 +663,7 @@ export const paymentRouter = router({
         if (!VALID_TRANSITIONS[run.status]?.includes("CANCELLED")) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: `Cannot cancel a run in ${run.status} status`,
+            message: E.PAYMENT_RUN_INVALID_STATUS,
           });
         }
 
@@ -740,7 +741,7 @@ export const paymentRouter = router({
       if (!run) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Payment run not found",
+          message: E.PAYMENT_RUN_NOT_FOUND,
         });
       }
 
@@ -789,7 +790,7 @@ export const paymentRouter = router({
         if (!run) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Payment run not found",
+            message: E.PAYMENT_RUN_NOT_FOUND,
           });
         }
 
@@ -877,14 +878,14 @@ export const paymentRouter = router({
         if (!run) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Payment run not found",
+            message: E.PAYMENT_RUN_NOT_FOUND,
           });
         }
 
         if (run.status !== "DRAFT") {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Can only remove invoices from DRAFT runs",
+            message: E.PAYMENT_RUN_NOT_DRAFT,
           });
         }
 
@@ -900,7 +901,7 @@ export const paymentRouter = router({
         if (!item) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Invoice not found in this payment run",
+            message: E.PAYMENT_INVOICE_NOT_IN_RUN,
           });
         }
 

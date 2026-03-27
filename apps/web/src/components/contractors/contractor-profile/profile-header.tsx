@@ -4,12 +4,13 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { MoreHorizontal, Pencil, FilePlus, Upload, Play } from "lucide-react";
+import { MoreHorizontal, Pencil, FilePlus, Play } from "lucide-react";
 
 import { trpc } from "@/trpc/init";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { getAvatarInitials } from "@/lib/avatar-initials";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -46,27 +47,13 @@ const lifecycleBadgeStyles: Record<string, string> = {
   ENDED: "bg-muted text-muted-foreground border-border",
 };
 
-const lifecycleLabels: Record<string, string> = {
-  DRAFT: "Draft",
-  ONBOARDING: "Onboarding",
-  ACTIVE: "Active",
-  OFFBOARDING: "Offboarding",
-  ENDED: "Ended",
-};
-
-function getOwnerInitials(name: string | null): string {
-  if (!name) return "?";
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-}
+// Lifecycle labels are now served from translations: ContractorProfile.lifecycle.*
 
 export function ProfileHeader({ contractor }: ProfileHeaderProps) {
   const t = useTranslations("ContractorProfile");
+  const tc = useTranslations("Contractors");
+  const tToast = useTranslations("ContractorProfile.toast");
+  const tCommon = useTranslations("Common");
   const queryClient = useQueryClient();
   const [wizardOpen, setWizardOpen] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -87,7 +74,7 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
           typeof error === "object" && error && "message" in error
             ? String((error as { message?: unknown }).message ?? "")
             : "";
-        toast.error(message || "Failed to update status");
+        toast.error(message || tToast("statusFailed"));
       },
     })
   );
@@ -105,7 +92,7 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
           typeof error === "object" && error && "message" in error
             ? String((error as { message?: unknown }).message ?? "")
             : "";
-        toast.error(message || "Failed to archive contractor");
+        toast.error(message || tToast("archiveFailed"));
       },
     })
   );
@@ -133,10 +120,10 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
               variant="secondary"
               className={lifecycleBadgeStyles[stage] ?? ""}
             >
-              {lifecycleLabels[stage] ?? stage}
+              {t(`lifecycle.${stage}` as Parameters<typeof t>[0]) ?? stage}
             </Badge>
             <Badge variant="secondary" className="bg-secondary text-secondary-foreground">
-              {contractor.type}
+              {tc(`type.${contractor.type}` as Parameters<typeof tc>[0])}
             </Badge>
           </div>
           {contractor.owner && (
@@ -146,11 +133,11 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
                   <AvatarImage src={contractor.owner.image} alt={contractor.owner.name ?? ""} />
                 )}
                 <AvatarFallback>
-                  {getOwnerInitials(contractor.owner.name)}
+                  {getAvatarInitials(contractor.owner.name)}
                 </AvatarFallback>
               </Avatar>
               <span className="text-sm text-muted-foreground">
-                {contractor.owner.name ?? "Unknown"}
+                {contractor.owner.name ?? t("unknown")}
               </span>
             </div>
           )}
@@ -158,7 +145,11 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
       </div>
 
       <div className="flex items-center gap-2">
-        <Button variant="outline" size="sm">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => toast.info(t("actions.editComingSoon"))}
+        >
           <Pencil className="mr-1.5 size-3.5" />
           {t("actions.edit")}
         </Button>
@@ -201,20 +192,11 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
             render={(props) => (
               <Button {...props} variant="outline" size="icon-sm">
                 <MoreHorizontal className="size-4" />
-                <span className="sr-only">More actions</span>
+                <span className="sr-only">{tCommon("srOnly.moreActions")}</span>
               </Button>
             )}
           />
           <DropdownMenuContent align="end">
-            <DropdownMenuItem disabled>
-              <Upload className="mr-2 size-3.5" />
-              {t("actions.uploadInvoice")}
-              <span className="ml-auto text-xs text-muted-foreground">
-                Phase 5
-              </span>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-
             {stage === "DRAFT" && (
               <DropdownMenuItem
                 disabled={isPending}

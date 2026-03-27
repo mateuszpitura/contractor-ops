@@ -9,6 +9,8 @@ import { Banknote, CreditCard, Plus } from "lucide-react";
 import { trpc } from "@/trpc/init";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/shared/empty-state";
+import { PageHeader } from "@/components/shared/page-header";
+import { AnimateIn } from "@/components/shared/animate-in";
 import { Button } from "@/components/ui/button";
 
 import {
@@ -157,7 +159,7 @@ function PaymentsContent() {
 
   // Contractor count for smart sequencing
   const contractorCountQuery = useQuery(
-    trpc.contractor.list.queryOptions({ page: 1, pageSize: 1 }),
+    trpc.contractor.list.queryOptions({ page: 1, pageSize: 10 }),
   );
   const contractorCount = (contractorCountQuery.data as { total: number } | undefined)?.total ?? 0;
 
@@ -167,13 +169,18 @@ function PaymentsContent() {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-[20px] font-semibold">{t("title")}</h1>
-        <Button size="sm" className="gap-1.5" onClick={() => setDialogOpen(true)}>
-          <Plus className="h-3.5 w-3.5" />
-          {t("newPaymentRun")}
-        </Button>
-      </div>
+      <AnimateIn delay={0}>
+        <PageHeader
+          title={t("title")}
+          description={t("pageDescription")}
+          actions={
+            <Button size="sm" className="gap-1.5" onClick={() => setDialogOpen(true)}>
+              <Plus className="h-3.5 w-3.5" />
+              {t("newPaymentRun")}
+            </Button>
+          }
+        />
+      </AnimateIn>
 
       {isEmpty ? (
         /* Empty state with smart sequencing */
@@ -186,7 +193,7 @@ function PaymentsContent() {
           prerequisiteAction={{ label: te("prerequisite.cta"), href: "/contractors" }}
         />
       ) : (
-        <>
+        <AnimateIn delay={1}>
           {/* Toolbar */}
           <DataTableToolbar
             activeStatus={status}
@@ -208,7 +215,7 @@ function PaymentsContent() {
             onPreviousPage={handlePreviousPage}
             onRowClick={handleRowClick}
           />
-        </>
+        </AnimateIn>
       )}
 
       {/* Side panel */}

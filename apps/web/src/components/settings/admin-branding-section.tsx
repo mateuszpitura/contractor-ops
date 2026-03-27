@@ -5,6 +5,7 @@ import { Upload, X, Loader2, Globe } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -37,6 +38,8 @@ const DEFAULT_BRAND_COLOR = "#4f46e5"; // indigo-600
  * - Save button wired to settings.updateBranding
  */
 export function AdminBrandingSection() {
+  const t = useTranslations("Settings.branding");
+  const tAria = useTranslations("Common.aria");
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -80,13 +83,13 @@ export function AdminBrandingSection() {
   const updateBrandingMutation = useMutation(
     trpc.settings.updateBranding.mutationOptions({
       onSuccess: () => {
-        toast.success("Portal branding updated");
+        toast.success(t("successToast"));
         queryClient.invalidateQueries({
           queryKey: trpc.settings.getBranding.queryKey(),
         });
       },
       onError: () => {
-        toast.error("Failed to save branding. Please try again.");
+        toast.error(t("errorToast"));
       },
     }),
   );
@@ -105,17 +108,17 @@ export function AdminBrandingSection() {
   const updatePortalDomainMutation = useMutation(
     trpc.settings.updatePortalDomain.mutationOptions({
       onSuccess: () => {
-        toast.success("Portal subdomain updated");
+        toast.success(t("subdomainUpdated"));
         queryClient.invalidateQueries({
           queryKey: trpc.settings.getPortalDomain.queryKey(),
         });
       },
       onError: (error) => {
         if (error.message === "This subdomain is already in use") {
-          toast.error("This subdomain is already in use");
-          setSubdomainError("This subdomain is already in use");
+          toast.error(t("subdomainTaken"));
+          setSubdomainError(t("subdomainTaken"));
         } else {
-          toast.error("Failed to save portal subdomain. Please try again.");
+          toast.error(t("subdomainSaveError"));
         }
       },
     }),
@@ -131,11 +134,11 @@ export function AdminBrandingSection() {
 
     // Client-side validation
     if (!ACCEPTED_TYPES.includes(file.type)) {
-      toast.error("Please upload a PNG, JPG, or SVG file.");
+      toast.error(t("invalidFileType"));
       return;
     }
     if (file.size > MAX_LOGO_SIZE) {
-      toast.error("Logo must be under 2MB.");
+      toast.error(t("fileTooLarge"));
       return;
     }
 
@@ -159,7 +162,7 @@ export function AdminBrandingSection() {
       setLogoUrl(publicUrl);
       setLogoPreview(URL.createObjectURL(file));
     } catch {
-      toast.error("Failed to upload logo. Please try again.");
+      toast.error(t("uploadError"));
     } finally {
       setUploading(false);
       // Reset input so the same file can be re-selected
@@ -183,10 +186,10 @@ export function AdminBrandingSection() {
 
   const validateSubdomain = (value: string): string | null => {
     if (!value) return null; // Empty is valid (clears subdomain)
-    if (value.length < 3) return "Subdomain must be at least 3 characters";
-    if (value.length > 63) return "Subdomain must be at most 63 characters";
+    if (value.length < 3) return t("subdomainMinLength");
+    if (value.length > 63) return t("subdomainMaxLength");
     if (!/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/.test(value)) {
-      return "Only lowercase letters, numbers, and hyphens allowed. Must start and end with a letter or number.";
+      return t("subdomainFormat");
     }
     return null;
   };
@@ -237,21 +240,21 @@ export function AdminBrandingSection() {
   return (
     <Card>
       <CardHeader>
-        <h3 className="text-sm font-semibold">Portal Branding</h3>
+        <h3 className="text-sm font-semibold">{t("heading")}</h3>
         <p className="text-sm text-muted-foreground">
-          Customize how the contractor portal looks for your organization
+          {t("description")}
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Logo upload */}
         <div className="space-y-2">
-          <Label className="text-sm font-normal">Logo</Label>
+          <Label className="text-sm font-normal">{t("logoLabel")}</Label>
 
           {logoPreview ? (
             <div className="flex flex-col items-start gap-2">
               <img
                 src={logoPreview}
-                alt="Organization logo"
+                alt={t("logoAlt")}
                 className="h-20 w-20 rounded-md border object-cover"
               />
               <button
@@ -259,7 +262,7 @@ export function AdminBrandingSection() {
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 onClick={handleRemoveLogo}
               >
-                Remove
+                {t("removeLogo")}
               </button>
             </div>
           ) : (
@@ -274,12 +277,12 @@ export function AdminBrandingSection() {
               ) : (
                 <Upload className="h-6 w-6" />
               )}
-              <span className="text-xs">Upload logo</span>
+              <span className="text-xs">{t("uploadLogo")}</span>
             </button>
           )}
 
           <p className="text-xs text-muted-foreground">
-            PNG, JPG, or SVG. Max 2MB.
+            {t("logoHint")}
           </p>
 
           <input
@@ -293,7 +296,7 @@ export function AdminBrandingSection() {
 
         {/* Brand color picker */}
         <div className="space-y-2">
-          <Label className="text-sm font-normal">Accent Color</Label>
+          <Label className="text-sm font-normal">{t("accentColor")}</Label>
           <BrandColorPicker value={brandColor} onChange={setBrandColor} />
         </div>
 
@@ -309,10 +312,10 @@ export function AdminBrandingSection() {
           {updateBrandingMutation.isPending ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Saving...
+              {t("saving")}
             </>
           ) : (
-            "Save Branding"
+            t("saveBranding")
           )}
         </Button>
 
@@ -322,30 +325,30 @@ export function AdminBrandingSection() {
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <Globe className="h-4 w-4 text-muted-foreground" />
-            <Label className="text-sm font-normal">Portal Subdomain</Label>
+            <Label className="text-sm font-normal">{t("subdomainHeading")}</Label>
           </div>
           <p className="text-sm text-muted-foreground">
-            Contractors will access the portal at{" "}
+            {t("subdomainDescription")}{" "}
             <span className="font-medium text-foreground">
               {portalSubdomain || "your-subdomain"}
             </span>
-            .portal.yourdomain.com
+            {t("subdomainSuffix")}
           </p>
 
           <div className="flex items-center gap-2">
             <Input
               value={portalSubdomain}
               onChange={(e) => handleSubdomainChange(e.target.value)}
-              placeholder="e.g., acme"
+              placeholder={t("subdomainPlaceholder")}
               className="max-w-[200px]"
-              aria-label="Portal subdomain"
+              aria-label={tAria("portalSubdomain")}
               aria-describedby="subdomain-suffix subdomain-error"
             />
             <span
               id="subdomain-suffix"
               className="text-sm text-muted-foreground whitespace-nowrap"
             >
-              .portal.yourdomain.com
+              {t("subdomainSuffix")}
             </span>
           </div>
 
@@ -368,10 +371,10 @@ export function AdminBrandingSection() {
             {updatePortalDomainMutation.isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
+                {t("saving")}
               </>
             ) : (
-              "Save Domain"
+              t("saveDomain")
             )}
           </Button>
         </div>

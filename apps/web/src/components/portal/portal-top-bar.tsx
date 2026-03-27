@@ -16,6 +16,7 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getAvatarInitials } from "@/lib/avatar-initials";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -24,6 +25,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { useTranslations } from "next-intl";
 import { PortalMobileMenu } from "./portal-mobile-menu";
 
 // ---------------------------------------------------------------------------
@@ -42,16 +44,6 @@ const NAV_ITEMS = [
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-}
 
 /**
  * Check if a nav item is active based on the current pathname.
@@ -100,6 +92,7 @@ export function PortalTopBar({
   contractorName,
   contractorEmail,
 }: PortalTopBarProps) {
+  const tAria = useTranslations("Common.aria");
   const pathname = usePathname();
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -130,7 +123,7 @@ export function PortalTopBar({
         {/* Center: Desktop nav links */}
         <nav
           className="hidden md:flex items-center gap-6 flex-1 justify-center"
-          aria-label="Portal navigation"
+          aria-label={tAria("portalNavigation")}
         >
           {NAV_ITEMS.map((item) => {
             const active = isNavActive(item.href, pathname);
@@ -165,7 +158,7 @@ export function PortalTopBar({
                   className="flex items-center gap-2 rounded-md p-1 hover:bg-accent transition-colors outline-none"
                 >
                   <Avatar size="sm">
-                    <AvatarFallback>{getInitials(contractorName)}</AvatarFallback>
+                    <AvatarFallback>{getAvatarInitials(contractorName)}</AvatarFallback>
                   </Avatar>
                 </button>
               }
@@ -194,7 +187,7 @@ export function PortalTopBar({
           size="icon"
           className="md:hidden"
           onClick={() => setMobileMenuOpen(true)}
-          aria-label="Open navigation menu"
+          aria-label={tAria("openNavigationMenu")}
         >
           <Menu className="h-5 w-5" />
         </Button>

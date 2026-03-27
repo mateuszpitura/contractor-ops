@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { prisma } from "@contractor-ops/db";
+import { prisma, type Prisma } from "@contractor-ops/db";
 import {
   getAdapter,
   verifyOAuthState,
@@ -85,7 +85,7 @@ export async function GET(
       credentialsRef: encrypted,
       connectedByUserId: state.userId,
       connectedAt: new Date(),
-      configJson: credentials.extra ?? {},
+      configJson: (credentials.extra ?? {}) as Prisma.InputJsonValue,
       tokenExpiresAt: credentials.expiresAt
         ? new Date(credentials.expiresAt)
         : null,

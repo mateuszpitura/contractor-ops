@@ -13,6 +13,7 @@ import {
   createPresignedUploadUrl,
   generateStorageKey,
 } from "./r2.js";
+import * as E from "../errors.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -78,7 +79,7 @@ async function fetchDocumentContent(
   if (!document) {
     throw new TRPCError({
       code: "NOT_FOUND",
-      message: "Document not found",
+      message: E.ESIGN_DOCUMENT_NOT_FOUND,
     });
   }
 
@@ -89,7 +90,7 @@ async function fetchDocumentContent(
   if (!response.ok) {
     throw new TRPCError({
       code: "INTERNAL_SERVER_ERROR",
-      message: "Failed to download document from storage",
+      message: E.ESIGN_DOWNLOAD_FAILED,
     });
   }
 
@@ -262,14 +263,14 @@ export async function getSigningUrl(params: GetSigningUrlParams) {
   if (!envelope) {
     throw new TRPCError({
       code: "NOT_FOUND",
-      message: "Signing envelope not found",
+      message: E.ESIGN_ENVELOPE_NOT_FOUND,
     });
   }
 
   if (!envelope.externalEnvelopeId) {
     throw new TRPCError({
       code: "PRECONDITION_FAILED",
-      message: "Envelope has no external ID",
+      message: E.ESIGN_NO_EXTERNAL_ID,
     });
   }
 
@@ -430,14 +431,14 @@ export async function voidEnvelope(params: VoidEnvelopeParams) {
   if (!envelope) {
     throw new TRPCError({
       code: "NOT_FOUND",
-      message: "Signing envelope not found",
+      message: E.ESIGN_ENVELOPE_NOT_FOUND,
     });
   }
 
   if (!envelope.externalEnvelopeId) {
     throw new TRPCError({
       code: "PRECONDITION_FAILED",
-      message: "Envelope has no external ID",
+      message: E.ESIGN_NO_EXTERNAL_ID,
     });
   }
 
@@ -507,14 +508,14 @@ export async function resendToRecipient(params: ResendToRecipientParams) {
   if (!envelope) {
     throw new TRPCError({
       code: "NOT_FOUND",
-      message: "Signing envelope not found",
+      message: E.ESIGN_ENVELOPE_NOT_FOUND,
     });
   }
 
   if (!envelope.externalEnvelopeId) {
     throw new TRPCError({
       code: "PRECONDITION_FAILED",
-      message: "Envelope has no external ID",
+      message: E.ESIGN_NO_EXTERNAL_ID,
     });
   }
 

@@ -26,6 +26,7 @@ export function RegisterForm() {
   const t = useTranslations("Auth.register");
   const tv = useTranslations("Validation");
   const tc = useTranslations("Common");
+  const tToast = useTranslations("Auth.toast");
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -61,7 +62,7 @@ export function RegisterForm() {
       });
 
       if (signUpError) {
-        toast.error(signUpError.message ?? "Failed to create account");
+        toast.error(signUpError.message ?? tToast("createAccountFailed"));
         setIsLoading(false);
         return;
       }
@@ -73,12 +74,12 @@ export function RegisterForm() {
       });
 
       if (orgError) {
-        toast.error(orgError.message ?? "Failed to create organization");
+        toast.error(orgError.message ?? tToast("createOrgFailed"));
         setIsLoading(false);
         return;
       }
 
-      router.push("/verify-email");
+      router.push("/");
     } catch {
       toast.error(tc("networkError"));
       setIsLoading(false);
@@ -88,7 +89,7 @@ export function RegisterForm() {
   return (
     <Card>
       <CardHeader className="space-y-1 text-center">
-        <h1 className="text-[28px] font-semibold leading-[1.2] tracking-tight">
+        <h1 className="font-display text-[28px] font-semibold leading-[1.2] tracking-tight">
           {t("title")}
         </h1>
         <p className="text-sm text-muted-foreground">
@@ -105,10 +106,12 @@ export function RegisterForm() {
               id="orgName"
               placeholder={t("orgNamePlaceholder")}
               disabled={isLoading}
+              aria-invalid={!!errors.orgName}
+              aria-describedby={errors.orgName ? "orgName-error" : undefined}
               {...register("orgName")}
             />
             {errors.orgName && (
-              <p className="text-sm text-destructive">
+              <p id="orgName-error" role="alert" className="text-sm text-destructive">
                 {errors.orgName.message}
               </p>
             )}
@@ -123,10 +126,12 @@ export function RegisterForm() {
               type="email"
               placeholder={t("emailPlaceholder")}
               disabled={isLoading}
+              aria-invalid={!!errors.email}
+              aria-describedby={errors.email ? "reg-email-error" : undefined}
               {...register("email")}
             />
             {errors.email && (
-              <p className="text-sm text-destructive">
+              <p id="reg-email-error" role="alert" className="text-sm text-destructive">
                 {errors.email.message}
               </p>
             )}
@@ -142,10 +147,12 @@ export function RegisterForm() {
               autoComplete="new-password"
               placeholder={t("passwordPlaceholder")}
               disabled={isLoading}
+              aria-invalid={!!errors.password}
+              aria-describedby={errors.password ? "reg-password-error" : undefined}
               {...register("password")}
             />
             {errors.password && (
-              <p className="text-sm text-destructive">
+              <p id="reg-password-error" role="alert" className="text-sm text-destructive">
                 {errors.password.message}
               </p>
             )}
