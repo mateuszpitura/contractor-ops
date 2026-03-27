@@ -21,6 +21,7 @@ import { portalRouter } from "./routers/portal.js";
 import { esignRouter } from "./routers/esign.js";
 import { ocrRouter } from "./routers/ocr.js";
 import { ksefRouter } from "./routers/ksef.js";
+import { portalTimeRouter } from "./routers/portal-time.js";
 
 /**
  * Root tRPC router merging all sub-routers.
@@ -43,6 +44,7 @@ import { ksefRouter } from "./routers/ksef.js";
  * - audit: audit log list with search/filter/pagination, actors dropdown, CSV export
  * - import: CSV/XLSX import with parse, validate, commit endpoints for contractors and contracts
  * - search: unified cross-entity global search via tsvector (contractors, contracts, invoices)
+ * - portalTime: time entry CRUD, submit, external sync for portal contractors
  */
 export const appRouter = router({
   organization: organizationRouter,
@@ -67,6 +69,7 @@ export const appRouter = router({
   esign: esignRouter,
   ocr: ocrRouter,
   ksef: ksefRouter,
+  portalTime: portalTimeRouter,
 });
 
 /** Type-safe router type for client consumption */
