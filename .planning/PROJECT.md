@@ -20,6 +20,10 @@ All 14 product modules delivered: org setup, RBAC, contractors, contracts, docum
 
 **Phase 15 complete** — E-sign integration with DocuSign + Autenti dual provider support via provider-agnostic adapter layer. Send-for-signature from contract header and per-document in Documents tab with full setup dialog (provider picker, drag-to-reorder signers, document preview, expiry/reminders). Embedded signing modal (DocuSign iframe + Autenti redirect fallback), sequential multi-party signing with routingOrder, webhook-driven status updates with completion signal pattern (no circular imports), automatic signed PDF download and Document record creation. Portal pending signatures with Sign Now. Signing progress bar, status badges, and audit trail sheet.
 
+**Phase 16 complete** — OCR invoice parsing with Claude Vision API as default provider behind provider-agnostic adapter. Background async processing via queue, pre-fill invoice form with extracted fields and confidence badges (green/amber/red). Full field extraction including line items. Portal invoice form gets inline confidence badges. NIP modulo-11 checksum validation.
+
+**Phase 17 complete** — KSeF native integration. Auto-fetch invoices from Poland's national e-invoicing system via REST API v2 with RSA-OAEP challenge-response auth (token primary, certificate advanced). FA(3) XML parser with Zod validation and grosze conversion. Hourly QStash cron + manual sync. KSeF invoices enter existing matching pipeline as RECEIVED. Cross-source duplicate detection by invoiceNumber + sellerTaxId with bidirectional linking. KSeF badge in invoice table, metadata section with copyable reference/UPO on detail page, duplicate banner. Full PL + EN i18n.
+
 ## Requirements
 
 ### Validated — v1.0
@@ -52,9 +56,9 @@ All 14 product modules delivered: org setup, RBAC, contractors, contracts, docum
 
 - [x] Contractor portal — magic-link auth, contract viewing, invoice submission, payment tracking, document access — Phase 13
 - [ ] Time tracking integration (Clockify, Jira, manual reporting) in contractor portal
-- [ ] E-sign integration (DocuSign + Autenti) for contracts and NDAs
-- [ ] OCR invoice parsing — auto-extract fields from uploaded PDFs
-- [ ] KSeF native integration — pull invoices from national system + validate format compliance
+- [x] E-sign integration (DocuSign + Autenti) for contracts and NDAs — Phase 15
+- [x] OCR invoice parsing — auto-extract fields from uploaded PDFs — Phase 16
+- [x] KSeF native integration — pull invoices from national system — Phase 17
 - [ ] Jira integration — create tickets, update statuses, configurable automation on status changes
 - [ ] Notion/Confluence integration — link onboarding docs, reference external documentation in workflows
 - [ ] Outlook/Google Calendar integration — reminders, meeting scheduling, deadline sync, onboarding meetings (configurable)
@@ -148,4 +152,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-27 after Phase 15 (e-sign-integration) completion*
+*Last updated: 2026-03-27 after Phase 17 (ksef-integration) completion*
