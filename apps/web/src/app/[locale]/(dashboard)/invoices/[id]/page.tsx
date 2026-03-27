@@ -21,6 +21,7 @@ import { KsefDuplicateBanner } from "@/components/invoices/ksef-duplicate-banner
 import { KsefSourceBadge } from "@/components/invoices/ksef-badge";
 import { ChainTracker } from "@/components/approvals/chain-tracker";
 import { AuditTimeline } from "@/components/approvals/audit-timeline";
+import { ReconciliationCard } from "@/components/time/reconciliation-card";
 
 // ---------------------------------------------------------------------------
 // Status badge config (reuse from columns.tsx pattern)
@@ -142,6 +143,17 @@ export default function InvoiceDetailPage() {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const pdfUrl = (pdfUrlQuery.data as any)?.url ?? null;
+
+  // Time reconciliation query (Phase 18, D-16)
+  const reconciliationQuery = useQuery({
+    ...trpc.time.getInvoiceReconciliation.queryOptions({
+      invoiceId: params.id,
+    }),
+    enabled: !!invoice?.contractId,
+  });
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const reconciliation = reconciliationQuery.data as any;
 
   // Submit for approval mutation
   const submitForApproval = useMutation(
@@ -290,6 +302,11 @@ export default function InvoiceDetailPage() {
             });
           }}
         />
+
+        {/* Time reconciliation card (D-16) */}
+        {reconciliation && (
+          <ReconciliationCard reconciliation={reconciliation} />
+        )}
 
         {/* Submit for approval button */}
         {canSubmitForApproval && (

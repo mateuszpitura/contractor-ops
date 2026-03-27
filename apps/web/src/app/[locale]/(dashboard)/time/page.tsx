@@ -18,6 +18,7 @@ import {
   ApprovalQueueTable,
   type TimesheetRow,
 } from "@/components/time/approval-queue-table";
+import { ReconciliationTable } from "@/components/time/reconciliation-table";
 import {
   Table,
   TableBody,
@@ -318,13 +319,9 @@ function TimeTrackingContent() {
             </div>
           </TabsContent>
 
-          {/* Tab 3: Reconciliation (placeholder for Plan 05) */}
+          {/* Tab 3: Reconciliation */}
           <TabsContent value="reconciliation" className="mt-4">
-            <EmptyState
-              icon={ArrowRightLeft}
-              heading="No reconciliation data"
-              body="Reconciliation data appears when invoices have matching approved time entries."
-            />
+            <ReconciliationTable />
           </TabsContent>
         </Tabs>
       </AnimateIn>
