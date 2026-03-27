@@ -38,6 +38,11 @@
       "types": "./src/services/esign-orchestrator.ts",
       "import": "./src/services/esign-orchestrator.ts",
       "default": "./src/services/esign-orchestrator.ts"
+    },
+    "./services/ocr-extraction": {
+      "types": "./src/services/ocr-extraction.ts",
+      "import": "./src/services/ocr-extraction.ts",
+      "default": "./src/services/ocr-extraction.ts"
     }
   },
   "scripts": {
