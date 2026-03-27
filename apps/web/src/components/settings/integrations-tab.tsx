@@ -1,12 +1,17 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-import { Unplug } from "lucide-react";
+import { Loader2, ShieldCheck, Unplug } from "lucide-react";
+import { toast } from "sonner";
 
 import { trpc } from "@/trpc/init";
+import { Button } from "@/components/ui/button";
 import { ProviderConnectionCard } from "./provider-connection-card";
 import { SlackUserMapping } from "./slack-user-mapping";
+import { KsefSetupDialog } from "./ksef-setup-dialog";
+import { KsefSyncHistory } from "./ksef-sync-history";
 
 // ---------------------------------------------------------------------------
 // Slack logo SVG (extracted from slack-connection-card.tsx for reuse)
@@ -53,7 +58,123 @@ const PROVIDER_CONFIG = [
     icon: <SlackLogo className="size-8" />,
     descriptionKey: "slack.descriptionDisconnected" as const,
   },
+  {
+    provider: "ksef",
+    displayName: "KSeF",
+    icon: <ShieldCheck className="size-8 text-primary" />,
+    descriptionKey: "ksef.descriptionDisconnected" as const,
+  },
 ];
+
+// ---------------------------------------------------------------------------
+// KSeF-specific controls (rendered below the provider card when connected)
+// ---------------------------------------------------------------------------
+
+function KsefControls() {
+  const t = useTranslations("ksef");
+  const queryClient = useQueryClient();
+
+  const connectionQuery = useQuery(
+    trpc.ksef.connectionStatus.queryOptions(),
+  );
+  const connection = connectionQuery.data as
+    | { id: string; status: string; lastSyncAt?: string | null }
+    | null
+    | undefined;
+  const isConnected = connection?.status === "CONNECTED";
+
+  const syncMutation = useMutation({
+    ...trpc.ksef.triggerSync.mutationOptions(),
+    onSuccess: () => {
+      toast.success(t("syncSuccessToast", { count: 0 }));
+      queryClient.invalidateQueries({
+        queryKey: trpc.ksef.syncHistory.queryKey(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: trpc.ksef.connectionStatus.queryKey(),
+      });
+    },
+    onError: () => {
+      toast.error(t("syncFailedToast"));
+    },
+  });
+
+  if (!isConnected) return null;
+
+  return (
+    <div className="space-y-3">
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => (syncMutation.mutate as () => void)()}
+        disabled={syncMutation.isPending}
+      >
+        {syncMutation.isPending && (
+          <Loader2
+            className="mr-1.5 size-3.5 animate-spin"
+            aria-hidden="true"
+          />
+        )}
+        {syncMutation.isPending ? t("syncing") : t("syncNow")}
+      </Button>
+
+      <KsefSyncHistory connectionId={connection?.id} />
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// KSeF Provider Section (wraps card + custom setup dialog + controls)
+// ---------------------------------------------------------------------------
+
+function KsefProviderSection() {
+  const tIntegrations = useTranslations("Settings.integrations");
+  const tKsef = useTranslations("ksef");
+  const [setupDialogOpen, setSetupDialogOpen] = useState(false);
+
+  // Get org NIP from settings
+  const settingsQuery = useQuery(trpc.settings.get.queryOptions());
+  const orgData = settingsQuery.data as
+    | { metadata?: Record<string, unknown> }
+    | null
+    | undefined;
+  const orgMetadata = orgData?.metadata ?? {};
+  const settingsJson =
+    (orgMetadata.settingsJson as Record<string, unknown>) ?? {};
+  const orgNip = (settingsJson.taxId as string) ?? null;
+
+  // KSeF connection status
+  const connectionQuery = useQuery(
+    trpc.ksef.connectionStatus.queryOptions(),
+  );
+  const ksefConnection = connectionQuery.data as
+    | { id: string; status: string }
+    | null
+    | undefined;
+  const isConnected = ksefConnection?.status === "CONNECTED";
+
+  return (
+    <div className="space-y-4">
+      {/* Standard provider card — but KSeF uses custom connect dialog instead of OAuth */}
+      <ProviderConnectionCard
+        provider="ksef"
+        displayName="KSeF"
+        icon={<ShieldCheck className="size-8 text-primary" />}
+        description={tIntegrations("ksef.descriptionDisconnected" as Parameters<typeof tIntegrations>[0])}
+      />
+
+      {/* KSeF-specific controls (sync button + history) */}
+      {isConnected && <KsefControls />}
+
+      {/* KSeF setup dialog (triggered by provider card connect) */}
+      <KsefSetupDialog
+        open={setupDialogOpen}
+        onOpenChange={setSetupDialogOpen}
+        orgNip={orgNip}
+      />
+    </div>
+  );
+}
 
 // ---------------------------------------------------------------------------
 // IntegrationsTab
@@ -66,34 +187,34 @@ export function IntegrationsTab() {
   const healthQuery = useQuery(
     trpc.integration.getHealth.queryOptions({ provider: "slack" }),
   );
-  const isSlackConnected = healthQuery.data?.status === "CONNECTED";
+  const slackHealth = healthQuery.data as
+    | { status: string }
+    | null
+    | undefined;
+  const isSlackConnected = slackHealth?.status === "CONNECTED";
+
+  // Non-KSeF providers (KSeF rendered separately for custom behavior)
+  const standardProviders = PROVIDER_CONFIG.filter(
+    (c) => c.provider !== "ksef",
+  );
 
   return (
     <div className="space-y-8">
       {/* Provider cards grid */}
-      {PROVIDER_CONFIG.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <Unplug className="size-12 text-muted-foreground" />
-          <h3 className="mt-4 text-base font-semibold">
-            {t("emptyState.heading")}
-          </h3>
-          <p className="mt-1 max-w-[400px] text-sm text-muted-foreground">
-            {t("emptyState.body")}
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {PROVIDER_CONFIG.map((config) => (
-            <ProviderConnectionCard
-              key={config.provider}
-              provider={config.provider}
-              displayName={config.displayName}
-              icon={config.icon}
-              description={t(config.descriptionKey)}
-            />
-          ))}
-        </div>
-      )}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        {standardProviders.map((config) => (
+          <ProviderConnectionCard
+            key={config.provider}
+            provider={config.provider}
+            displayName={config.displayName}
+            icon={config.icon}
+            description={t(config.descriptionKey)}
+          />
+        ))}
+
+        {/* KSeF has custom connect dialog + sync controls */}
+        <KsefProviderSection />
+      </div>
 
       {/* Slack-specific user mapping (preserved for backward compatibility) */}
       {isSlackConnected && <SlackUserMapping />}
