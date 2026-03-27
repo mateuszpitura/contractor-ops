@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Platform Expansion
 status: Ready to plan
-stopped_at: Phase 18 UI-SPEC approved
-last_updated: "2026-03-27T22:38:38.465Z"
+stopped_at: Completed 18-01-PLAN.md
+last_updated: "2026-03-27T23:25:19.893Z"
 progress:
   total_phases: 9
   completed_phases: 6
-  total_plans: 25
-  completed_plans: 25
+  total_plans: 31
+  completed_plans: 26
 ---
 
 # Project State
@@ -65,6 +65,7 @@ Plan: Not started
 | Phase 17 P01 | 6min | 2 tasks | 11 files |
 | Phase 17 P02 | 4min | 2 tasks | 8 files |
 | Phase 17 P03 | 9min | 2 tasks | 11 files |
+| Phase 18 P01 | 6min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -113,6 +114,7 @@ Recent decisions affecting current work:
 - [Phase 17]: dueDate fallback: issueDate + 14 days when KSeF invoice has no payment term
 - [Phase 17]: Skip distributed Redis lock for KSeF sync; use externalInvoiceId dedup instead
 - [Phase 17]: Single Save Credentials button (no separate verify) since connect mutation verifies per D-04
+- [Phase 18]: Inline ISO Monday helper instead of date-fns dependency (matches Phase 4 convention)
 
 ### Pending Todos
 
@@ -127,6 +129,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-27T22:38:38.463Z
-Stopped at: Phase 18 UI-SPEC approved
-Resume file: .planning/phases/18-time-tracking/18-UI-SPEC.md
+Last session: 2026-03-27T23:25:19.890Z
+Stopped at: Completed 18-01-PLAN.md
+Resume file: None

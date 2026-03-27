@@ -26,8 +26,8 @@ Requirements for v2.0 Platform Expansion. Each maps to roadmap phases.
 
 ### Time Tracking
 
-- [ ] **TIME-01**: Contractor can log hours manually in portal (date, hours, project/task, description)
-- [ ] **TIME-02**: Manager can review and approve/reject submitted time entries
+- [x] **TIME-01**: Contractor can log hours manually in portal (date, hours, project/task, description)
+- [x] **TIME-02**: Manager can review and approve/reject submitted time entries
 - [ ] **TIME-03**: System can import time entries from Clockify via API
 - [ ] **TIME-04**: System can import worklogs from Jira issues assigned to contractor
 - [ ] **TIME-05**: System compares approved hours against invoice amount and flags deviations
@@ -124,8 +124,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PORT-06 | Phase 14 | Complete |
 | PORT-07 | Phase 14 | Complete |
 | PORT-08 | Phase 14 | Complete |
-| TIME-01 | Phase 18 | Pending |
-| TIME-02 | Phase 18 | Pending |
+| TIME-01 | Phase 18 | Complete |
+| TIME-02 | Phase 18 | Complete |
 | TIME-03 | Phase 18 | Pending |
 | TIME-04 | Phase 18 | Pending |
 | TIME-05 | Phase 18 | Pending |
