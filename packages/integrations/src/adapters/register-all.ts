@@ -6,6 +6,8 @@ import { DocuSignAdapter } from "./docusign-adapter.js";
 import { AutentiAdapter } from "./autenti-adapter.js";
 import { ClaudeOcrAdapter } from "./claude-ocr-adapter.js";
 import { KsefAdapter } from "./ksef-adapter.js";
+import { ClockifyAdapter } from "./clockify-adapter.js";
+import { JiraAdapter } from "./jira-adapter.js";
 
 // ---------------------------------------------------------------------------
 // Adapter Registration
@@ -28,6 +30,8 @@ export function registerAllAdapters(): void {
     new ClaudeOcrAdapter() as unknown as IntegrationProviderAdapter,
   );
   registerAdapter(new KsefAdapter());
+  registerAdapter(new ClockifyAdapter());
+  registerAdapter(new JiraAdapter());
 
   registered = true;
 }
