@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Platform Expansion
 status: Ready to execute
-stopped_at: Completed 16-02-PLAN.md
-last_updated: "2026-03-27T15:07:41.038Z"
+stopped_at: Completed 16-01-PLAN.md
+last_updated: "2026-03-27T15:23:56.592Z"
 progress:
   total_phases: 9
   completed_phases: 4
   total_plans: 22
-  completed_plans: 20
+  completed_plans: 21
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-23)
 ## Current Position
 
 Phase: 16 (ocr-invoice-parsing) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 
 ## Performance Metrics
 
@@ -60,6 +60,7 @@ Plan: 2 of 3
 | Phase 15 P03 | 7min | 2 tasks | 9 files |
 | Phase 15 P04 | 10min | 2 tasks | 15 files |
 | Phase 16 P02 | 3min | 2 tasks | 8 files |
+| Phase 16 P01 | 19min | 2 tasks | 15 files |
 
 ## Accumulated Context
 
@@ -99,6 +100,8 @@ Recent decisions affecting current work:
 - [Phase 15]: Added listConnections query to esign router for provider picker UI
 - [Phase 15]: Added docusign-esign.d.ts to API package for composite TypeScript builds
 - [Phase 16]: Inlined NIP validation logic locally since Plan 01 types not yet available in parallel execution
+- [Phase 16]: Claude native PDF document type with tool_use for structured OCR extraction (no image conversion)
+- [Phase 16]: NIP modulo-11 checksum caps confidence to 40, amount cross-validation caps to 60
 
 ### Pending Todos
 
@@ -113,6 +116,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-27T15:07:41.036Z
-Stopped at: Completed 16-02-PLAN.md
+Last session: 2026-03-27T15:23:56.590Z
+Stopped at: Completed 16-01-PLAN.md
 Resume file: None

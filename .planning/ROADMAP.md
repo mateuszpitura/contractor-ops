@@ -124,7 +124,7 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 16-01-PLAN.md — OcrExtraction DB schema, OcrAdapter interface, Claude Vision adapter, OCR service, tRPC router, QStash callback
+- [x] 16-01-PLAN.md — OcrExtraction DB schema, OcrAdapter interface, Claude Vision adapter, OCR service, tRPC router, QStash callback
 - [x] 16-02-PLAN.md — PDF viewer (react-pdf), confidence badges, field wrappers, NIP validation, status bar, processing overlay, line items table
 - [ ] 16-03-PLAN.md — OcrReviewPanel split container, admin upload OCR trigger, portal form OCR pre-fill, human verification
 
@@ -213,7 +213,7 @@ Phases execute in numeric order: 12 → 13 → 14 → 15 → 16 → 17 → 18 �
 | 13. Contractor Portal Auth & Core Views | v2.0 | 5/5 | Complete    | 2026-03-23 |
 | 14. Portal Self-Service & Branding | v2.0 | 5/5 | Complete    | 2026-03-23 |
 | 15. E-Sign Integration | v2.0 | 4/4 | Complete    | 2026-03-27 |
-| 16. OCR Invoice Parsing | v2.0 | 1/3 | In Progress|  |
+| 16. OCR Invoice Parsing | v2.0 | 2/3 | In Progress|  |
 | 17. KSeF Integration | v2.0 | 0/0 | Not started | - |
 | 18. Time Tracking | v2.0 | 0/0 | Not started | - |
 | 19. Jira Integration | v2.0 | 0/0 | Not started | - |
