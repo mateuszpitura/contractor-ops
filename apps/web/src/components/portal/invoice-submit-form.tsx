@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -8,8 +8,16 @@ import { useRouter } from "next/navigation";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
-import { UploadCloud, FileText, X, Loader2 } from "lucide-react";
+import {
+  UploadCloud,
+  FileText,
+  X,
+  Loader2,
+  ExternalLink,
+  Info,
+} from "lucide-react";
 
+import { useTranslations } from "next-intl";
 import { trpc } from "@/trpc/init";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,49 +32,74 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { ConfidenceBadge } from "@/components/ocr/confidence-badge";
+import { NipValidationBadge } from "@/components/ocr/nip-validation-badge";
+import { ExtractionStatusBar } from "@/components/ocr/extraction-status-bar";
+import { OcrProcessingOverlay } from "@/components/ocr/ocr-processing-overlay";
+
+// ---------------------------------------------------------------------------
+// OCR types (mirrored from @contractor-ops/integrations/types/ocr)
+// ---------------------------------------------------------------------------
+
+interface OcrExtractionField {
+  key: string;
+  value: string | number | null;
+  confidence: number;
+}
+
+interface OcrExtractionResult {
+  status: "EXTRACTED" | "PARTIAL" | "FAILED";
+  fields: Record<string, OcrExtractionField>;
+  processingTimeMs: number;
+  pageCount: number;
+  overallConfidence: number;
+  errorMessage?: string;
+}
 
 // ---------------------------------------------------------------------------
 // Schema
 // ---------------------------------------------------------------------------
 
-const invoiceSubmitSchema = z
-  .object({
-    contractId: z.string().min(1, "Please select a contract"),
-    invoiceNumber: z
-      .string()
-      .min(1, "Invoice number is required")
-      .max(100),
-    issueDate: z.string().min(1, "Issue date is required"),
-    dueDate: z.string().min(1, "Due date is required"),
-    netAmount: z
-      .string()
-      .min(1, "Net amount is required")
-      .refine(
-        (v) => !isNaN(Number(v)) && Number(v) > 0,
-        "Must be a positive number",
-      ),
-    grossAmount: z
-      .string()
-      .min(1, "Gross amount is required")
-      .refine(
-        (v) => !isNaN(Number(v)) && Number(v) > 0,
-        "Must be a positive number",
-      ),
-  })
-  .refine(
-    (data) => {
-      if (data.issueDate && data.dueDate) {
-        return new Date(data.dueDate) >= new Date(data.issueDate);
-      }
-      return true;
-    },
-    {
-      message: "Due date must be on or after issue date",
-      path: ["dueDate"],
-    },
-  );
+function createInvoiceSubmitSchema(t: (key: string) => string) {
+  return z
+    .object({
+      contractId: z.string().min(1, t("errors.selectContract")),
+      invoiceNumber: z
+        .string()
+        .min(1, t("errors.invoiceNumberRequired"))
+        .max(100),
+      issueDate: z.string().min(1, t("errors.issueDateRequired")),
+      dueDate: z.string().min(1, t("errors.dueDateRequired")),
+      netAmount: z
+        .string()
+        .min(1, t("errors.netAmountRequired"))
+        .refine(
+          (v) => !isNaN(Number(v)) && Number(v) > 0,
+          t("errors.mustBePositive"),
+        ),
+      grossAmount: z
+        .string()
+        .min(1, t("errors.grossAmountRequired"))
+        .refine(
+          (v) => !isNaN(Number(v)) && Number(v) > 0,
+          t("errors.mustBePositive"),
+        ),
+    })
+    .refine(
+      (data) => {
+        if (data.issueDate && data.dueDate) {
+          return new Date(data.dueDate) >= new Date(data.issueDate);
+        }
+        return true;
+      },
+      {
+        message: t("errors.dueDateAfterIssue"),
+        path: ["dueDate"],
+      },
+    );
+}
 
-type InvoiceSubmitValues = z.infer<typeof invoiceSubmitSchema>;
+type InvoiceSubmitValues = z.infer<ReturnType<typeof createInvoiceSubmitSchema>>;
 
 // ---------------------------------------------------------------------------
 // Upload state
@@ -88,10 +121,13 @@ type UploadState =
 // Helpers
 // ---------------------------------------------------------------------------
 
-function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+function formatFileSize(
+  bytes: number,
+  tc: (key: string, values?: Record<string, string | number | Date>) => string,
+): string {
+  if (bytes < 1024) return tc("bytes", { size: bytes });
+  if (bytes < 1024 * 1024) return tc("kilobytes", { size: (bytes / 1024).toFixed(1) });
+  return tc("megabytes", { size: (bytes / (1024 * 1024)).toFixed(1) });
 }
 
 function formatAmount(grosze: number, currency: string): string {
@@ -103,13 +139,81 @@ function formatAmount(grosze: number, currency: string): string {
   }).format(grosze / 100);
 }
 
+function getFieldValue(
+  fields: Record<string, OcrExtractionField> | undefined,
+  key: string,
+): string {
+  const field = fields?.[key];
+  if (!field || field.value == null) return "";
+  return String(field.value);
+}
+
+function getFieldConfidence(
+  fields: Record<string, OcrExtractionField> | undefined,
+  key: string,
+): number {
+  return fields?.[key]?.confidence ?? 0;
+}
+
+function getNumericFieldGrosze(
+  fields: Record<string, OcrExtractionField> | undefined,
+  key: string,
+): number {
+  const field = fields?.[key];
+  if (!field || field.value == null) return 0;
+  const num = typeof field.value === "number" ? field.value : parseFloat(field.value);
+  return isNaN(num) ? 0 : num;
+}
+
+// ---------------------------------------------------------------------------
+// Cascade animation for field pre-fill
+// ---------------------------------------------------------------------------
+
+const PREFILL_FIELDS = [
+  "invoiceNumber",
+  "issueDate",
+  "dueDate",
+  "netAmount",
+  "grossAmount",
+] as const;
+
+function usePrefillCascade(active: boolean) {
+  const [visible, setVisible] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!active) {
+      setVisible(new Set());
+      return;
+    }
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    PREFILL_FIELDS.forEach((field, i) => {
+      timers.push(
+        setTimeout(() => setVisible((prev) => new Set([...prev, field])), i * 50),
+      );
+    });
+    return () => timers.forEach(clearTimeout);
+  }, [active]);
+
+  return visible;
+}
+
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
 export function InvoiceSubmitForm() {
+  const tAria = useTranslations("Common.aria");
+  const t = useTranslations("Portal.submitInvoice");
+  const tc = useTranslations("Portal.fileSize");
   const router = useRouter();
   const [upload, setUpload] = useState<UploadState>({ status: "idle" });
+
+  // OCR state
+  const [extractionId, setExtractionId] = useState<string | null>(null);
+  const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
+  const [ocrPopulated, setOcrPopulated] = useState(false);
+
+  const invoiceSubmitSchema = createInvoiceSubmitSchema(t);
 
   // Fetch active contracts
   const { data: contracts, isLoading: contractsLoading } = useQuery(
@@ -124,6 +228,34 @@ export function InvoiceSubmitForm() {
   const submitInvoice = useMutation(
     trpc.portal.submitInvoice.mutationOptions(),
   );
+
+  const ocrTriggerMutation = useMutation(
+    trpc.ocr.portalTrigger.mutationOptions({}),
+  );
+
+  // OCR extraction polling
+  const ocrQuery = useQuery({
+    ...trpc.ocr.portalGetResult.queryOptions({ extractionId: extractionId ?? "" }),
+    enabled: !!extractionId,
+    refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      return status === "PROCESSING" || status === "PENDING" ? 2000 : false;
+    },
+  });
+
+  const extraction = ocrQuery.data;
+  const extractionStatus = extraction?.status ?? (extractionId ? "PENDING" : null);
+  const resultJson = extraction?.resultJson as OcrExtractionResult | null | undefined;
+  const isOcrProcessing = extractionStatus === "PROCESSING" || extractionStatus === "PENDING";
+
+  // Computed field counts for status bar
+  const fieldCount = resultJson
+    ? Object.values(resultJson.fields).filter((f) => f.value != null).length
+    : 0;
+  const totalFields = resultJson ? Object.keys(resultJson.fields).length : 0;
+
+  // Cascade animation
+  const visibleFields = usePrefillCascade(ocrPopulated);
 
   // Form
   const {
@@ -159,6 +291,40 @@ export function InvoiceSubmitForm() {
     }
   }, [contracts, selectedContractId, setValue]);
 
+  // Pre-fill form from OCR extraction
+  useEffect(() => {
+    if (!resultJson || ocrPopulated) return;
+    if (resultJson.status !== "EXTRACTED" && resultJson.status !== "PARTIAL") return;
+
+    const fields = resultJson.fields;
+
+    const invoiceNum = getFieldValue(fields, "invoiceNumber");
+    if (invoiceNum) setValue("invoiceNumber", invoiceNum, { shouldValidate: true });
+
+    const issue = getFieldValue(fields, "issueDate");
+    if (issue) setValue("issueDate", issue, { shouldValidate: true });
+
+    const due = getFieldValue(fields, "dueDate");
+    if (due) setValue("dueDate", due, { shouldValidate: true });
+
+    // Amounts: extraction returns grosze, form expects display amounts (e.g. "1234.56")
+    const netGrosze = getNumericFieldGrosze(fields, "totalNet");
+    if (netGrosze > 0) setValue("netAmount", (netGrosze / 100).toFixed(2), { shouldValidate: true });
+
+    const grossGrosze = getNumericFieldGrosze(fields, "totalGross");
+    if (grossGrosze > 0) setValue("grossAmount", (grossGrosze / 100).toFixed(2), { shouldValidate: true });
+
+    setOcrPopulated(true);
+    toast.success("Invoice data extracted -- please review before submitting");
+  }, [resultJson, ocrPopulated, setValue]);
+
+  // Show toast on extraction failure
+  useEffect(() => {
+    if (resultJson?.status === "FAILED") {
+      toast.error("Invoice extraction failed. Please try again or enter data manually.");
+    }
+  }, [resultJson?.status]);
+
   // Selected contract info
   const selectedContract = contracts?.find((c) => c.id === selectedContractId);
 
@@ -169,6 +335,9 @@ export function InvoiceSubmitForm() {
       if (!file) return;
 
       setUpload({ status: "uploading", progress: 0 });
+      // Reset OCR state on new upload
+      setExtractionId(null);
+      setOcrPopulated(false);
 
       try {
         // Step 1: Get presigned upload URL
@@ -213,17 +382,33 @@ export function InvoiceSubmitForm() {
           originalFileName: file.name,
           fileSizeBytes: file.size,
         });
+
+        // Step 3: Trigger OCR for PDF files
+        if (
+          file.type === "application/pdf" ||
+          file.name.toLowerCase().endsWith(".pdf")
+        ) {
+          try {
+            const ocrResult = await ocrTriggerMutation.mutateAsync({
+              documentId,
+              storageKey,
+            });
+            setExtractionId(ocrResult.extractionId);
+            setPdfBlobUrl(URL.createObjectURL(file));
+          } catch {
+            // OCR trigger failure is non-blocking -- form remains for manual entry
+            console.warn("Portal OCR trigger failed, manual entry available");
+          }
+        }
       } catch {
         setUpload({
           status: "error",
-          message: "Failed to upload the file. Check your connection and try again.",
+          message: t("errors.uploadFailed"),
         });
-        toast.error(
-          "Failed to upload the file. Check your connection and try again.",
-        );
+        toast.error(t("errors.uploadFailed"));
       }
     },
-    [getUploadUrl],
+    [getUploadUrl, ocrTriggerMutation],
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -237,12 +422,15 @@ export function InvoiceSubmitForm() {
   // Remove uploaded file
   const removeFile = () => {
     setUpload({ status: "idle" });
+    setExtractionId(null);
+    setOcrPopulated(false);
+    setPdfBlobUrl(null);
   };
 
   // Submit handler
   const onSubmit = async (values: InvoiceSubmitValues) => {
     if (upload.status !== "uploaded") {
-      toast.error("Please upload an invoice PDF first.");
+      toast.error(t("errors.uploadFirst"));
       return;
     }
 
@@ -264,23 +452,35 @@ export function InvoiceSubmitForm() {
         `/portal/invoices/submit/success?invoiceId=${result.invoiceId}&invoiceNumber=${encodeURIComponent(result.invoiceNumber)}`,
       );
     } catch {
-      toast.error(
-        "Failed to submit invoice. Your data has been saved. Please try again.",
-      );
+      toast.error(t("errors.submitFailed"));
     }
   };
 
+  const contractItems = (contracts ?? []).map((contract) => ({
+    value: contract.id,
+    label: `${contract.title} (${((contract.rateValueGrosze ?? 0) / 100).toFixed(0)} ${contract.currency}/${contract.rateType?.toLowerCase()})`,
+  }));
+
   const canSubmit =
     isValid && upload.status === "uploaded" && !submitInvoice.isPending;
+
+  // Helper for cascade animation style
+  const fieldStyle = (key: string) =>
+    ocrPopulated
+      ? {
+          opacity: visibleFields.has(key) ? 1 : 0,
+          transition: "opacity 200ms ease-in-out",
+        }
+      : undefined;
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
       {/* Section 1: Contract Selection */}
       <div className="space-y-4">
-        <h2 className="text-sm font-semibold">Contract</h2>
+        <h2 className="text-sm font-semibold">{t("contract")}</h2>
         <div className="space-y-2">
           <Label htmlFor="contractId" className="text-[13px]">
-            Select contract
+            {t("selectContract")}
           </Label>
           {contractsLoading ? (
             <div className="h-8 animate-pulse rounded-lg bg-muted" />
@@ -290,15 +490,15 @@ export function InvoiceSubmitForm() {
               onValueChange={(val) =>
                 setValue("contractId", val ?? "", { shouldValidate: true })
               }
+              items={contractItems}
             >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Choose a contract..." />
+                <SelectValue placeholder={t("contractPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
-                {contracts?.map((contract) => (
-                  <SelectItem key={contract.id} value={contract.id}>
-                    {contract.title} ({((contract.rateValueGrosze ?? 0) / 100).toFixed(0)}{" "}
-                    {contract.currency}/{contract.rateType?.toLowerCase()})
+                {contractItems.map((item) => (
+                  <SelectItem key={item.value} value={item.value}>
+                    {item.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -311,8 +511,11 @@ export function InvoiceSubmitForm() {
           )}
           {selectedContract && (
             <p className="text-[13px] text-muted-foreground">
-              Expected: {((selectedContract.rateValueGrosze ?? 0) / 100).toFixed(0)}{" "}
-              {selectedContract.currency}/{selectedContract.billingModel?.toLowerCase()}
+              {t("expectedAmount", {
+                amount: ((selectedContract.rateValueGrosze ?? 0) / 100).toFixed(0),
+                currency: selectedContract.currency,
+                model: selectedContract.billingModel?.toLowerCase() ?? "",
+              })}
             </p>
           )}
         </div>
@@ -322,7 +525,7 @@ export function InvoiceSubmitForm() {
 
       {/* Section 2: Upload */}
       <div className="space-y-4">
-        <h2 className="text-sm font-semibold">Invoice PDF</h2>
+        <h2 className="text-sm font-semibold">{t("invoicePdf")}</h2>
 
         {upload.status === "idle" || upload.status === "error" ? (
           <div
@@ -340,20 +543,17 @@ export function InvoiceSubmitForm() {
               }`}
             />
             <p className="text-center text-sm text-muted-foreground">
-              Drop your invoice PDF here or{" "}
-              <span className="cursor-pointer font-medium text-primary">
-                browse
-              </span>
+              {t("dropText")}
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
-              PDF files only, up to 25 MB
+              {t("dropSubtext")}
             </p>
           </div>
         ) : upload.status === "uploading" ? (
           <div className="space-y-3 rounded-lg border p-4">
             <div className="flex items-center gap-3">
               <FileText className="h-5 w-5 text-muted-foreground" />
-              <span className="text-sm">Uploading...</span>
+              <span className="text-sm">{t("uploading")}</span>
             </div>
             <Progress value={upload.progress} />
           </div>
@@ -364,19 +564,32 @@ export function InvoiceSubmitForm() {
               <div>
                 <p className="text-sm font-medium">{upload.originalFileName}</p>
                 <p className="text-[13px] text-muted-foreground">
-                  {formatFileSize(upload.fileSizeBytes)}
+                  {formatFileSize(upload.fileSizeBytes, tc)}
                 </p>
               </div>
             </div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={removeFile}
-              aria-label="Remove file"
-            >
-              <X className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center gap-2">
+              {pdfBlobUrl && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => window.open(pdfBlobUrl, "_blank")}
+                >
+                  <ExternalLink className="mr-1 h-3.5 w-3.5" />
+                  View PDF
+                </Button>
+              )}
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={removeFile}
+                aria-label={tAria("removeFile")}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         ) : null}
 
@@ -387,18 +600,48 @@ export function InvoiceSubmitForm() {
 
       <Separator />
 
-      {/* Section 3: Metadata */}
-      <div className="space-y-4">
-        <h2 className="text-sm font-semibold">Invoice Details</h2>
+      {/* OCR Extraction Status */}
+      {extractionStatus && extractionStatus !== "PENDING" && (
+        <ExtractionStatusBar
+          status={extractionStatus as "PROCESSING" | "EXTRACTED" | "PARTIAL" | "FAILED"}
+          fieldCount={fieldCount}
+          totalFields={totalFields}
+          errorMessage={resultJson?.errorMessage}
+        />
+      )}
 
-        <div className="space-y-2">
-          <Label htmlFor="invoiceNumber" className="text-[13px]">
-            Invoice number
-          </Label>
+      {/* OCR Pre-fill Banner */}
+      {ocrPopulated && (
+        <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950/30">
+          <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400" />
+          <p className="text-sm text-blue-800 dark:text-blue-200">
+            We&apos;ve pre-filled some fields from your invoice. Please review before submitting.
+          </p>
+        </div>
+      )}
+
+      {/* Section 3: Metadata (with OCR processing overlay) */}
+      <div className="relative space-y-4">
+        {isOcrProcessing && <OcrProcessingOverlay />}
+
+        <h2 className="text-sm font-semibold">{t("details")}</h2>
+
+        <div className="space-y-2" style={fieldStyle("invoiceNumber")}>
+          <div className="flex items-center gap-2">
+            <Label htmlFor="invoiceNumber" className="text-[13px]">
+              {t("invoiceNumber")}
+            </Label>
+            {ocrPopulated && resultJson?.fields?.invoiceNumber && (
+              <ConfidenceBadge
+                confidence={getFieldConfidence(resultJson.fields, "invoiceNumber")}
+                showPercentage={false}
+              />
+            )}
+          </div>
           <Input
             id="invoiceNumber"
             type="text"
-            placeholder="INV-001"
+            placeholder={t("invoicePlaceholder")}
             {...register("invoiceNumber")}
           />
           {errors.invoiceNumber && (
@@ -409,10 +652,18 @@ export function InvoiceSubmitForm() {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="issueDate" className="text-[13px]">
-              Issue date
-            </Label>
+          <div className="space-y-2" style={fieldStyle("issueDate")}>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="issueDate" className="text-[13px]">
+                {t("issueDate")}
+              </Label>
+              {ocrPopulated && resultJson?.fields?.issueDate && (
+                <ConfidenceBadge
+                  confidence={getFieldConfidence(resultJson.fields, "issueDate")}
+                  showPercentage={false}
+                />
+              )}
+            </div>
             <Input id="issueDate" type="date" {...register("issueDate")} />
             {errors.issueDate && (
               <p className="text-sm text-destructive">
@@ -420,10 +671,18 @@ export function InvoiceSubmitForm() {
               </p>
             )}
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="dueDate" className="text-[13px]">
-              Due date
-            </Label>
+          <div className="space-y-2" style={fieldStyle("dueDate")}>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="dueDate" className="text-[13px]">
+                {t("dueDate")}
+              </Label>
+              {ocrPopulated && resultJson?.fields?.dueDate && (
+                <ConfidenceBadge
+                  confidence={getFieldConfidence(resultJson.fields, "dueDate")}
+                  showPercentage={false}
+                />
+              )}
+            </div>
             <Input id="dueDate" type="date" {...register("dueDate")} />
             {errors.dueDate && (
               <p className="text-sm text-destructive">
@@ -433,17 +692,67 @@ export function InvoiceSubmitForm() {
           </div>
         </div>
 
+        {/* NIP fields shown when extraction provides them */}
+        {ocrPopulated && resultJson?.fields?.sellerNip && (
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Label className="text-[13px]">Seller NIP</Label>
+                <ConfidenceBadge
+                  confidence={getFieldConfidence(resultJson.fields, "sellerNip")}
+                  showPercentage={false}
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <Input
+                  value={getFieldValue(resultJson.fields, "sellerNip")}
+                  readOnly
+                  className="bg-muted/50"
+                />
+                <NipValidationBadge nip={getFieldValue(resultJson.fields, "sellerNip")} />
+              </div>
+            </div>
+            {resultJson.fields.buyerNip && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Label className="text-[13px]">Buyer NIP</Label>
+                  <ConfidenceBadge
+                    confidence={getFieldConfidence(resultJson.fields, "buyerNip")}
+                    showPercentage={false}
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={getFieldValue(resultJson.fields, "buyerNip")}
+                    readOnly
+                    className="bg-muted/50"
+                  />
+                  <NipValidationBadge nip={getFieldValue(resultJson.fields, "buyerNip")} />
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="netAmount" className="text-[13px]">
-              Net amount{selectedContract ? ` (${selectedContract.currency})` : ""}
-            </Label>
+          <div className="space-y-2" style={fieldStyle("netAmount")}>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="netAmount" className="text-[13px]">
+                {t("netAmount")}{selectedContract ? ` (${selectedContract.currency})` : ""}
+              </Label>
+              {ocrPopulated && resultJson?.fields?.totalNet && (
+                <ConfidenceBadge
+                  confidence={getFieldConfidence(resultJson.fields, "totalNet")}
+                  showPercentage={false}
+                />
+              )}
+            </div>
             <Input
               id="netAmount"
               type="number"
               step="0.01"
               min="0.01"
-              placeholder="0.00"
+              placeholder={t("amountPlaceholder")}
               {...register("netAmount")}
             />
             {errors.netAmount && (
@@ -452,16 +761,24 @@ export function InvoiceSubmitForm() {
               </p>
             )}
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="grossAmount" className="text-[13px]">
-              Gross amount{selectedContract ? ` (${selectedContract.currency})` : ""}
-            </Label>
+          <div className="space-y-2" style={fieldStyle("grossAmount")}>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="grossAmount" className="text-[13px]">
+                {t("grossAmount")}{selectedContract ? ` (${selectedContract.currency})` : ""}
+              </Label>
+              {ocrPopulated && resultJson?.fields?.totalGross && (
+                <ConfidenceBadge
+                  confidence={getFieldConfidence(resultJson.fields, "totalGross")}
+                  showPercentage={false}
+                />
+              )}
+            </div>
             <Input
               id="grossAmount"
               type="number"
               step="0.01"
               min="0.01"
-              placeholder="0.00"
+              placeholder={t("amountPlaceholder")}
               {...register("grossAmount")}
             />
             {errors.grossAmount && (
@@ -479,13 +796,13 @@ export function InvoiceSubmitForm() {
       {(invoiceNumber || selectedContract || upload.status === "uploaded") && (
         <Card>
           <CardHeader>
-            <CardTitle>Review</CardTitle>
+            <CardTitle>{t("review")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {selectedContract && (
               <div className="flex items-center justify-between">
                 <span className="text-[13px] text-muted-foreground">
-                  Contract
+                  {t("contract")}
                 </span>
                 <span className="text-sm">{selectedContract.title}</span>
               </div>
@@ -493,7 +810,7 @@ export function InvoiceSubmitForm() {
             {invoiceNumber && (
               <div className="flex items-center justify-between">
                 <span className="text-[13px] text-muted-foreground">
-                  Invoice Number
+                  {t("invoiceNumber")}
                 </span>
                 <span className="text-sm">{invoiceNumber}</span>
               </div>
@@ -501,7 +818,7 @@ export function InvoiceSubmitForm() {
             {issueDate && (
               <div className="flex items-center justify-between">
                 <span className="text-[13px] text-muted-foreground">
-                  Issue Date
+                  {t("issueDate")}
                 </span>
                 <span className="text-sm">{issueDate}</span>
               </div>
@@ -509,7 +826,7 @@ export function InvoiceSubmitForm() {
             {dueDate && (
               <div className="flex items-center justify-between">
                 <span className="text-[13px] text-muted-foreground">
-                  Due Date
+                  {t("dueDate")}
                 </span>
                 <span className="text-sm">{dueDate}</span>
               </div>
@@ -517,7 +834,7 @@ export function InvoiceSubmitForm() {
             {netAmount && selectedContract && (
               <div className="flex items-center justify-between">
                 <span className="text-[13px] text-muted-foreground">
-                  Net Amount
+                  {t("netAmount")}
                 </span>
                 <span className="text-sm">
                   {formatAmount(
@@ -530,7 +847,7 @@ export function InvoiceSubmitForm() {
             {grossAmount && selectedContract && (
               <div className="flex items-center justify-between">
                 <span className="text-[13px] text-muted-foreground">
-                  Gross Amount
+                  {t("grossAmount")}
                 </span>
                 <span className="text-sm font-medium">
                   {formatAmount(
@@ -543,7 +860,7 @@ export function InvoiceSubmitForm() {
             {upload.status === "uploaded" && (
               <div className="flex items-center justify-between">
                 <span className="text-[13px] text-muted-foreground">
-                  Uploaded File
+                  {t("uploadedFile")}
                 </span>
                 <span className="text-sm">{upload.originalFileName}</span>
               </div>
@@ -561,10 +878,10 @@ export function InvoiceSubmitForm() {
         {submitInvoice.isPending ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Submitting...
+            {t("submitting")}
           </>
         ) : (
-          "Submit Invoice"
+          t("submit")
         )}
       </Button>
     </form>
