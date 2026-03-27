@@ -38,10 +38,10 @@ Declared values (must be multiples of 4):
 | md | 16px | Form field vertical spacing, card content padding, timesheet header row padding |
 | lg | 24px | Section padding, approval queue card internal padding, reconciliation section margin |
 | xl | 32px | Layout gaps between admin time sections, portal timesheet and history sections |
-| 2xl | 48px | Page-level vertical rhythm |
+| 2xl | 48px | Page-level vertical rhythm, touch target minimum height |
 | 3xl | 64px | Not used in Phase 18 |
 
-Exceptions: Timesheet grid cells use 8px (sm) internal padding for density. Weekly grid day columns use 4px (xs) horizontal gap between cells. Touch targets on timesheet cells are 44px minimum height for mobile usability.
+Exceptions: Timesheet grid cells use 8px (sm) internal padding for density. Weekly grid day columns use 4px (xs) horizontal gap between cells. Touch targets on timesheet cells are 48px minimum height for mobile usability.
 
 ---
 
@@ -64,13 +64,13 @@ Two weights: 400 (`font-normal`) for body text, 600 (`font-semibold`) for labels
 |------|-------|-------|
 | Dominant (60%) | `--background` oklch(0.985 0.003 85) | Page background, timesheet panel background |
 | Secondary (30%) | `--card` oklch(1 0 0), `--muted` oklch(0.955 0.004 250) | Timesheet grid container card, approval queue cards, reconciliation card, single entry form card |
-| Accent (10%) | `--primary` oklch(0.44 0.145 178) -- Deep Teal | "Submit Timesheet" CTA, "Approve" button, "Sync from Clockify" button, active week selector, weekly total hours display |
+| Accent (10%) | `--primary` oklch(0.44 0.145 178) -- Deep Teal | "Submit Timesheet" CTA, "Approve Timesheet" button, "Sync from Clockify" button, active week selector, weekly total hours display |
 | Destructive | `--destructive` oklch(0.58 0.23 18) | "Reject" button, rejection reason badge, deviation flag when over threshold |
 | Success | `--success` oklch(0.55 0.17 150) | "Approved" status badge, reconciliation within-threshold indicator |
 | Warning | `--warning` oklch(0.70 0.16 65) | Deviation flag on invoice (within tolerance but notable), "Submitted" status badge (pending review), source badge for imported entries |
 | Info | `--info` oklch(0.55 0.18 260) | Sync in progress spinner, "Draft" status badge, Clockify/Jira source badges |
 
-Accent reserved for: "Submit Timesheet" primary CTA in portal, "Approve" and "Approve All" buttons in admin, "Sync from Clockify" and "Sync from Jira" buttons, active week tab/selector highlight, weekly total hours numeral, focus ring on timesheet cell inputs, "Add Entry" button.
+Accent reserved for: "Submit Timesheet" primary CTA in portal, "Approve Timesheet" and "Approve All" buttons in admin, "Sync from Clockify" and "Sync from Jira" buttons, active week tab/selector highlight, weekly total hours numeral, focus ring on timesheet cell inputs, "Add Entry" button.
 
 ---
 
@@ -81,7 +81,7 @@ Accent reserved for: "Submit Timesheet" primary CTA in portal, "Approve" and "Ap
 | Component | Source | Phase 18 Usage |
 |-----------|--------|----------------|
 | Card, CardContent, CardHeader, CardTitle | `ui/card` | Timesheet container, approval queue cards, reconciliation card, single entry form |
-| Button | `ui/button` | Submit Timesheet, Approve, Reject, Sync from Clockify, Sync from Jira, Add Entry |
+| Button | `ui/button` | Submit Timesheet, Approve Timesheet, Reject, Sync from Clockify, Sync from Jira, Add Entry |
 | Badge | `ui/badge` | Time entry status (Draft/Submitted/Approved/Rejected), source badges (Manual/Clockify/Jira), deviation flag |
 | Input, Label | `ui/input`, `ui/label` | Hours input in timesheet cells, description field, date picker input |
 | Textarea | `ui/textarea` | Description field in single entry form, rejection reason input |
@@ -115,13 +115,13 @@ Accent reserved for: "Submit Timesheet" primary CTA in portal, "Approve" and "Ap
 |-----------|-------------|
 | TimesheetGrid | Weekly timesheet grid (D-01). Card container with week selector header (chevron left/right + "Mar 24 - Mar 30, 2026" label). Rows = projects (from contractor's active contracts). Columns = Mon-Sun + Total. Each cell is an editable hours Input (type="number", step="0.25", min="0", max="24", 64px wide). Row total auto-calculated. Grand total row at bottom with accent-colored sum. Description column (optional, 200px) for per-row notes. Empty project row shows "No active contracts" with muted text. |
 | TimesheetHeader | Header bar above the grid. Left: week selector (Popover with Calendar, week mode). Center: status badge (Draft/Submitted/Approved/Rejected). Right: total hours display (Display typography, accent color) + "Submit Timesheet" primary button (disabled when 0 hours or already submitted). |
-| SingleEntryForm | Dialog form for ad-hoc time entry (D-01 "Add single entry" button). Fields: Date (date picker, required), Project (Select from active contracts, required), Hours (Input number, step="0.25", required), Description (Textarea, optional, max 500 chars). Footer: "Cancel" outline + "Add Entry" primary. Dialog width: `sm:max-w-md` (448px). |
+| SingleEntryForm | Dialog form for ad-hoc time entry (D-01 "Add single entry" button). Fields: Date (date picker, required), Project (Select from active contracts, required), Hours (Input number, step="0.25", required), Description (Textarea, optional, max 500 chars). Footer: "Discard Entry" outline + "Add Entry" primary. Dialog width: `sm:max-w-md` (448px). |
 | TimeEntryStatusBadge | Reusable badge for time entry statuses. Maps status enum to badge variant: DRAFT=info, SUBMITTED=warning, APPROVED=success, REJECTED=destructive. Consistent across portal and admin views. |
 | TimeSourceBadge | Compact inline badge showing entry source. "Manual" (secondary variant, Pencil icon 14px), "Clockify" (info variant, Clock icon 14px), "Jira" (info variant, Ticket icon 14px). Tooltip: "{source} entry" for manual, "Imported from {source} on {date}" for external. |
-| ApprovalQueueTable | Admin table for pending time reviews (D-05). Columns: Checkbox (bulk select), Contractor (avatar + name), Period (week range), Total Hours, Project, Status badge, Actions (Approve/Reject buttons). Sortable by contractor name, period, total hours. Batch action bar appears when checkboxes selected: "Approve {N} timesheets" primary button + "Reject {N}" destructive outline button. |
-| ContractorTimesheetReview | Admin drill-into view for per-contractor timesheet review (D-05). Shows full weekly grid (read-only) with contractor info header. Includes entry-level source badges and descriptions. Action bar at bottom: "Approve" primary + "Reject" destructive outline (opens rejection reason dialog). |
-| RejectionReasonDialog | Dialog for entering rejection reason (D-07). Title: "Reject Timesheet". Description: "Please provide a reason for rejection. The contractor will be notified and can resubmit corrections." Textarea (required, min 10 chars, max 500 chars, placeholder "Describe what needs to be corrected..."). Footer: "Cancel" outline + "Reject Timesheet" destructive button. Dialog width: `sm:max-w-md`. |
-| ExternalSyncButton | Button component for Clockify/Jira sync triggers (D-09, D-10). Shows provider icon + "Sync from {provider}" label. Click opens sync config popover: date range picker (start/end date). "Sync" primary button in popover. Button shows Loader2 spinner during sync. Disabled when no provider connected (tooltip: "Connect {provider} in Settings to import time entries"). |
+| ApprovalQueueTable | Admin table for pending time reviews (D-05). Columns: Checkbox (bulk select), Contractor (avatar + name), Period (week range), Total Hours, Project, Status badge, Actions (Approve Timesheet/Reject buttons). Sortable by contractor name, period, total hours. Batch action bar appears when checkboxes selected: "Approve {N} timesheets" primary button + "Reject {N}" destructive outline button. |
+| ContractorTimesheetReview | Admin drill-into view for per-contractor timesheet review (D-05). Shows full weekly grid (read-only) with contractor info header. Includes entry-level source badges and descriptions. Action bar at bottom: "Approve Timesheet" primary + "Reject" destructive outline (opens rejection reason dialog). |
+| RejectionReasonDialog | Dialog for entering rejection reason (D-07). Title: "Reject Timesheet". Description: "Please provide a reason for rejection. The contractor will be notified and can resubmit corrections." Textarea (required, min 10 chars, max 500 chars, placeholder "Describe what needs to be corrected..."). Footer: "Keep Reviewing" outline + "Reject Timesheet" destructive button. Dialog width: `sm:max-w-md`. |
+| ExternalSyncButton | Button component for Clockify/Jira sync triggers (D-09, D-10). Shows provider icon + "Sync from {provider}" label. Click opens sync config popover: date range picker (start/end date). "Import Entries" primary button in popover. Button shows Loader2 spinner during sync. Disabled when no provider connected (tooltip: "Connect {provider} in Settings to import time entries"). |
 | DeviationFlag | Badge-style component for invoice deviation display (D-14, D-15). Shows percentage deviation with color coding: within threshold = success ("Within 10%"), over threshold = warning ("+15.2% over expected"), significantly over = destructive (">25% deviation"). Includes tooltip explaining: "Expected: {rate} x {hours}h = {expected}. Invoiced: {actual}. Difference: {delta}." |
 | ReconciliationCard | Card on invoice detail page showing time-vs-invoice comparison (D-16). Header: "Time Reconciliation" + DeviationFlag. Content: 3-column layout -- "Approved Hours" (hours + rate), "Expected Amount" (calculated), "Invoiced Amount" (actual). Progress bar below showing ratio of expected to actual (accent fill for expected portion, remaining in muted). Only rendered when contract has hourly rate and approved time entries exist for the invoice period. |
 | ReconciliationTable | Admin view table in Time section (D-16). Columns: Contractor, Period, Approved Hours, Expected Amount, Invoiced Amount, Deviation (DeviationFlag), Invoice Link. Filterable by period and deviation threshold. Sortable by deviation percentage (highest first by default). |
@@ -188,7 +188,7 @@ The primary screen focal points for Phase 18 are:
 - Each row represents one contractor's timesheet for one week
 - Clicking contractor name or "Review" text button navigates to ContractorTimesheetReview
 - Batch action bar: sticky bottom bar (card background, border-t, 16px padding). Appears with slide-up animation when 1+ checkboxes selected. Shows: "{N} timesheets selected" label + "Approve All" primary button + "Reject All" destructive outline button
-- Individual row actions: "Approve" small primary button + "Reject" small destructive outline button (visible on row hover on desktop, always visible on mobile)
+- Individual row actions: "Approve Timesheet" small primary button + "Reject" small destructive outline button (visible on row hover on desktop, always visible on mobile)
 
 ### Per-Contractor Timesheet Review (D-05, D-07)
 
@@ -196,7 +196,7 @@ The primary screen focal points for Phase 18 are:
 - Layout: Contractor info header (avatar + name + contract name) + read-only TimesheetGrid + entry descriptions below grid + action bar
 - Each cell shows hours with source badge (tiny icon in cell corner: manual=pencil, clockify=clock, jira=ticket)
 - Description entries listed below grid as compact rows: date + hours + description text + source badge
-- Action bar (sticky bottom): "Back to Queue" ghost button (left) + "Reject" destructive outline (right) + "Approve" primary (right)
+- Action bar (sticky bottom): "Back to Queue" ghost button (left) + "Reject" destructive outline (right) + "Approve Timesheet" primary (right)
 
 ### External Import UI (D-09, D-10, D-11)
 
@@ -205,7 +205,7 @@ The primary screen focal points for Phase 18 are:
 - Click opens Popover with date range selector:
   - "From" date picker (defaults to current week Monday)
   - "To" date picker (defaults to current week Sunday)
-  - "Import" primary button
+  - "Import Entries" primary button
 - During sync: button shows Loader2 spinner, "Importing..." text. Popover closes
 - On complete: toast notification "{N} entries imported from {provider}"
 - Imported entries appear in timesheet grid with TimeSourceBadge. Cells are read-only (D-11). Muted background tint to distinguish from manual entries
@@ -237,13 +237,13 @@ The primary screen focal points for Phase 18 are:
 | Portal page heading | "Time Entries" |
 | Admin page heading | "Time Tracking" |
 | Primary CTA (portal) | "Submit Timesheet" |
-| Primary CTA (admin) | "Approve" |
+| Primary CTA (admin) | "Approve Timesheet" |
 | Batch approve CTA | "Approve All" |
 | Batch reject CTA | "Reject All" |
 | Add entry button | "Add Entry" |
 | Single entry dialog title | "Log Time Entry" |
 | Single entry dialog description | "Add a single time entry for a specific date and project." |
-| Single entry cancel | "Cancel" |
+| Single entry cancel | "Discard Entry" |
 | Single entry confirm | "Add Entry" |
 | Submit confirmation title | "Submit Timesheet" |
 | Submit confirmation body | "Once submitted, you cannot edit entries until the timesheet is reviewed. Submit {N} hours for the week of {date range}?" |
@@ -253,7 +253,7 @@ The primary screen focal points for Phase 18 are:
 | Reject dialog description | "Please provide a reason for rejection. The contractor will be notified and can resubmit corrections." |
 | Reject reason placeholder | "Describe what needs to be corrected..." |
 | Reject confirm button | "Reject Timesheet" |
-| Reject cancel button | "Cancel" |
+| Reject cancel button | "Keep Reviewing" |
 | Bulk approve confirmation title | "Approve {N} Timesheets" |
 | Bulk approve confirmation body | "This will approve all selected timesheets. The contractors will be notified." |
 | Bulk approve confirm button | "Approve All" |
@@ -264,7 +264,7 @@ The primary screen focal points for Phase 18 are:
 | Sync popover title | "Import from {provider}" |
 | Sync popover from label | "From" |
 | Sync popover to label | "To" |
-| Sync popover confirm | "Import" |
+| Sync popover confirm | "Import Entries" |
 | Sync in progress | "Importing..." |
 | Sync success toast | "{N} entries imported from {provider}" |
 | Sync no entries toast | "No entries found in {provider} for the selected period" |
