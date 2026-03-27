@@ -58,6 +58,16 @@
       "types": "./dist/types/ocr.d.ts",
       "import": "./dist/types/ocr.js",
       "default": "./dist/types/ocr.js"
+    },
+    "./adapters/clockify-adapter": {
+      "types": "./dist/adapters/clockify-adapter.d.ts",
+      "import": "./dist/adapters/clockify-adapter.js",
+      "default": "./dist/adapters/clockify-adapter.js"
+    },
+    "./adapters/jira-adapter": {
+      "types": "./dist/adapters/jira-adapter.d.ts",
+      "import": "./dist/adapters/jira-adapter.js",
+      "default": "./dist/adapters/jira-adapter.js"
     }
   },
   "scripts": {
