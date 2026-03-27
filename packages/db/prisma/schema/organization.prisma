@@ -76,6 +76,8 @@ model Organization {
   signingEnvelopes     SigningEnvelope[]
   signingEvents        SigningEvent[]
   ocrExtractions       OcrExtraction[]
+  timesheets           Timesheet[]
+  timeEntries          TimeEntry[]
 }
 
 model Member {

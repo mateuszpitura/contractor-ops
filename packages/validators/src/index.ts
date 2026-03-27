@@ -234,3 +234,32 @@ export type {
   KsefParsedInvoice,
   KsefSyncParams,
 } from "./ksef.js";
+
+export {
+  draftEntrySchema,
+  saveDraftEntriesSchema,
+  createSingleEntrySchema,
+  submitTimesheetSchema,
+  approveTimesheetSchema,
+  rejectTimesheetSchema,
+  bulkApproveTimesheetsSchema,
+  bulkRejectTimesheetsSchema,
+  getTimesheetSchema,
+  listTimesheetsSchema,
+  syncExternalEntriesSchema,
+  timeReconciliationSchema,
+} from "./time-tracking.js";
+export type {
+  DraftEntry,
+  SaveDraftEntries,
+  CreateSingleEntry,
+  SubmitTimesheet,
+  ApproveTimesheet,
+  RejectTimesheet,
+  BulkApproveTimesheets,
+  BulkRejectTimesheets,
+  GetTimesheet,
+  ListTimesheets,
+  SyncExternalEntries,
+  TimeReconciliation,
+} from "./time-tracking.js";

@@ -50,6 +50,7 @@ model Contract {
   complianceItems               ContractorComplianceItem[]
   invoices                      Invoice[]
   workflowRuns                  WorkflowRun[]
+  timeEntries                   TimeEntry[]
 
   @@index([organizationId])
   @@index([organizationId, contractorId, status])
@@ -259,6 +260,7 @@ enum EntityType {
   PROJECT
   TEAM
   APPROVAL_FLOW
+  TIMESHEET
 }
 
 enum DocumentLinkRole {
