@@ -50,11 +50,11 @@ Exceptions: Split panel gutter uses 16px on desktop, collapses to 0px on mobile 
 | Role | Size | Tailwind Class | Weight | Line Height | Usage |
 |------|------|----------------|--------|-------------|-------|
 | Body | 14px | `text-sm` | 400 (regular) | 1.5 | Form field values, line item text, confidence percentages, extraction status text |
-| Label | 14px | `text-sm` | 500 (medium) | 1.5 | Form field labels, line item column headers, PDF page indicator |
+| Label | 14px | `text-sm` | 600 (semibold) | 1.5 | Form field labels, line item column headers, PDF page indicator |
 | Heading | 20px | `text-xl` | 600 (semibold) | 1.2 | "Review Extracted Data" section heading, "Line Items" subheading |
 | Display | 28px | `text-[28px]` | 600 (semibold) | 1.2 | Not used in Phase 16 |
 
-Three weights: 400 (`font-normal`) for body, 500 (`font-medium`) for labels, 600 (`font-semibold`) for headings. Label weight 500 distinguishes field labels from values in the dense review form.
+Two weights: 400 (`font-normal`) for body text, 600 (`font-semibold`) for labels and headings. Label vs heading distinction is handled via font size (14px label vs 20px heading).
 
 ---
 
@@ -122,7 +122,7 @@ Accent reserved for: "Accept & Save" primary CTA on review form, "Re-run OCR" se
 |-----------|-------------|
 | OcrReviewPanel | Split panel container. Left: PDF viewer (50% width). Right: pre-filled form (50% width). Stacks vertically on mobile. Uses ResizablePanelGroup if available, otherwise CSS grid. |
 | PdfViewer | Renders uploaded invoice PDF in the left panel. Page navigation (prev/next + page indicator). Zoom controls (fit width, zoom in/out). Uses `<iframe>` with R2 presigned URL or `react-pdf` for rendering. Muted background container. |
-| ConfidenceBadge | Inline badge next to each extracted field. Shows confidence icon (CheckCircle2/AlertTriangle/AlertCircle) + percentage text. Color-coded per D-07 thresholds. Tooltip with exact percentage and guidance text. |
+| ConfidenceBadge | Inline badge next to each extracted field. Shows confidence icon (CheckCircle2/AlertTriangle/AlertCircle) + percentage text on desktop. On mobile (icon-only mode), include `aria-label="{N}% confidence"` for screen reader accessibility. Color-coded per D-07 thresholds. Tooltip with exact percentage and guidance text. |
 | ConfidenceFieldWrapper | Wrapper around each Input/Select in the review form. Applies colored left border (2px) based on confidence level. Contains the field label, input, and ConfidenceBadge in a row. |
 | LineItemsTable | Table showing extracted line items (D-08). Columns: description, quantity, unit price, net amount, tax rate, gross amount. Each cell editable inline. Confidence indicator per row. Add/remove row actions. |
 | ExtractionStatusBar | Horizontal bar at top of review panel. Shows extraction status: Processing (spinner + info badge), Complete (success badge + field count), Partial (warning badge + extracted/total count), Failed (destructive badge + retry button). |
@@ -132,6 +132,10 @@ Accent reserved for: "Accept & Save" primary CTA on review form, "Re-run OCR" se
 ---
 
 ## Layout Contract
+
+### Focal Point
+
+The primary screen focal point is the right-side form panel in the split view. On page load after extraction completes, visual attention is directed to the first low- or medium-confidence field (scrolled into view if needed), drawing the user to the data most likely to need manual correction. If all fields are high-confidence, the focal point falls to the "Accept & Save" CTA in the sticky action footer.
 
 ### Split Panel Review (D-06)
 
@@ -198,7 +202,7 @@ Accent reserved for: "Accept & Save" primary CTA on review form, "Re-run OCR" se
 | Line items heading | "Line Items" |
 | Line items count | "{N} items" |
 | Add line item | "Add line item" |
-| Remove line item | "Remove" |
+| Remove line item | "Remove Item" |
 | Empty state heading | "No Extraction Results" |
 | Empty state body | "Upload a PDF invoice to automatically extract fields. You can also fill in the form manually." |
 | Error toast: extraction failed | "Invoice extraction failed. Please try again or enter data manually." |
@@ -235,7 +239,7 @@ Accent reserved for: "Accept & Save" primary CTA on review form, "Re-run OCR" se
 
 | Breakpoint | Width | Layout Changes |
 |------------|-------|----------------|
-| Mobile | <768px | Split panel stacks vertically (PDF on top, max-height 300px, form below). Form fields switch to single-column. Line items table becomes card-based list. Action buttons stack vertically. Confidence badges show icon only (no percentage text). |
+| Mobile | <768px | Split panel stacks vertically (PDF on top, max-height 300px, form below). Form fields switch to single-column. Line items table becomes card-based list. Action buttons stack vertically. Confidence badges show icon only (no percentage text) with `aria-label="{N}% confidence"` for accessibility. |
 | Tablet | 768-1024px | Split panel side-by-side but 40/60 ratio (more space for form). Form fields 2-column where applicable. Line items scrollable table. |
 | Desktop | >1024px | Split panel 50/50 with 16px gap. PDF viewer sticky. Form fields 2-3 column grid. Full line items table. Action footer sticky. |
 
