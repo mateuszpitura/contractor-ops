@@ -1,4 +1,5 @@
 import { prisma } from "@contractor-ops/db";
+import type { Prisma } from "@contractor-ops/db/generated/prisma/client";
 import { getQStashClient } from "@contractor-ops/integrations/services/qstash-client";
 import { extractInvoice } from "@contractor-ops/integrations/services/ocr-service";
 import { createPresignedDownloadUrl } from "./r2.js";
@@ -92,7 +93,7 @@ export async function processOcrExtraction(params: {
       where: { id: params.extractionId },
       data: {
         status: result.status,
-        resultJson: result as unknown as Record<string, unknown>,
+        resultJson: result as unknown as Prisma.InputJsonValue,
         overallConfidence: result.overallConfidence,
         pageCount: result.pageCount,
         processingTimeMs: result.processingTimeMs,

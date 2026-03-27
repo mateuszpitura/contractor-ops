@@ -11,12 +11,18 @@ import {
   XCircle,
   FileText,
   RotateCcw,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { toast } from "sonner";
 
 import { trpc } from "@/trpc/init";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import {
+  OcrReviewPanel,
+  type ExtractedInvoiceData,
+} from "@/components/ocr/ocr-review-panel";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -24,6 +30,7 @@ import { Progress } from "@/components/ui/progress";
 
 interface InvoiceUploadAreaProps {
   onUploadComplete?: () => void;
+  onOcrAccept?: (data: ExtractedInvoiceData) => void;
   className?: string;
 }
 
@@ -35,6 +42,7 @@ interface UploadingFile {
   status: FileUploadStatus;
   progress: number;
   documentId?: string;
+  storageKey?: string;
   error?: string;
 }
 
@@ -58,6 +66,13 @@ function truncateName(name: string, maxLen = 40): string {
   return name.slice(0, maxLen - 3) + "...";
 }
 
+function isPdfFile(file: File): boolean {
+  return (
+    file.type === "application/pdf" ||
+    file.name.toLowerCase().endsWith(".pdf")
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
@@ -69,14 +84,21 @@ const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25 MB
  * Invoice upload area wrapper.
  * Accepts multiple PDFs via drag and drop, uploads each via presigned URL,
  * then creates an invoice draft per file via trpc.invoice.create.
+ * If uploaded file is a PDF, triggers OCR extraction automatically.
  */
 export function InvoiceUploadArea({
   onUploadComplete,
+  onOcrAccept,
   className,
 }: InvoiceUploadAreaProps) {
   const t = useTranslations("Invoices.upload");
   const queryClient = useQueryClient();
   const [files, setFiles] = useState<UploadingFile[]>([]);
+
+  // OCR state
+  const [extractionId, setExtractionId] = useState<string | null>(null);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [showPdfReview, setShowPdfReview] = useState(false);
 
   const requestUploadMutation = useMutation(
     trpc.document.requestUpload.mutationOptions({}),
@@ -88,6 +110,14 @@ export function InvoiceUploadArea({
 
   const createInvoiceMutation = useMutation(
     trpc.invoice.create.mutationOptions({}),
+  );
+
+  const ocrTriggerMutation = useMutation(
+    trpc.ocr.trigger.mutationOptions({}),
+  );
+
+  const ocrRetriggerMutation = useMutation(
+    trpc.ocr.retrigger.mutationOptions({}),
   );
 
   const uploadFile = useCallback(
@@ -110,10 +140,13 @@ export function InvoiceUploadArea({
 
         const documentId = result.documentId as string;
         const uploadUrl = result.uploadUrl as string;
+        const storageKey = (result.storageKey as string) ?? "";
 
         setFiles((prev) =>
           prev.map((f) =>
-            f.id === fileId ? { ...f, documentId, progress: 10 } : f,
+            f.id === fileId
+              ? { ...f, documentId, storageKey, progress: 10 }
+              : f,
           ),
         );
 
@@ -187,6 +220,23 @@ export function InvoiceUploadArea({
               : f,
           ),
         );
+
+        // Step 5: Trigger OCR if file is PDF
+        if (isPdfFile(file) && storageKey) {
+          try {
+            const ocrResult = await ocrTriggerMutation.mutateAsync({
+              documentId,
+              storageKey,
+            });
+            setExtractionId(ocrResult.extractionId);
+            // Create a blob URL for the PDF preview
+            setPdfUrl(URL.createObjectURL(file));
+            setShowPdfReview(true);
+          } catch {
+            // OCR trigger failure is non-blocking
+            console.warn("OCR trigger failed, manual entry available");
+          }
+        }
       } catch {
         setFiles((prev) =>
           prev.map((f) =>
@@ -201,6 +251,7 @@ export function InvoiceUploadArea({
       requestUploadMutation,
       confirmUploadMutation,
       createInvoiceMutation,
+      ocrTriggerMutation,
     ],
   );
 
@@ -261,8 +312,56 @@ export function InvoiceUploadArea({
     multiple: true,
   });
 
+  // OCR handlers
+  const handleOcrAccept = useCallback(
+    (data: ExtractedInvoiceData) => {
+      onOcrAccept?.(data);
+      setShowPdfReview(false);
+    },
+    [onOcrAccept],
+  );
+
+  const handleOcrDiscard = useCallback(() => {
+    setExtractionId(null);
+    setShowPdfReview(false);
+  }, []);
+
+  const handleOcrRetrigger = useCallback(async () => {
+    if (!extractionId) return;
+    try {
+      const result = await ocrRetriggerMutation.mutateAsync({ extractionId });
+      setExtractionId(result.extractionId);
+    } catch {
+      toast.error("Failed to re-run OCR. Please try again.");
+    }
+  }, [extractionId, ocrRetriggerMutation]);
+
   return (
     <div className={`space-y-4 ${className ?? ""}`}>
+      {/* Drop zone header with View PDF toggle */}
+      {extractionId && pdfUrl && (
+        <div className="flex items-center justify-end">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setShowPdfReview((prev) => !prev)}
+          >
+            {showPdfReview ? (
+              <>
+                <EyeOff className="mr-1.5 size-4" />
+                Hide PDF
+              </>
+            ) : (
+              <>
+                <Eye className="mr-1.5 size-4" />
+                View PDF
+              </>
+            )}
+          </Button>
+        </div>
+      )}
+
       {/* Drop zone area */}
       <div
         {...getRootProps()}
@@ -334,6 +433,17 @@ export function InvoiceUploadArea({
             </div>
           ))}
         </div>
+      )}
+
+      {/* OCR Review Panel */}
+      {showPdfReview && extractionId && pdfUrl && (
+        <OcrReviewPanel
+          pdfUrl={pdfUrl}
+          extractionId={extractionId}
+          onAccept={handleOcrAccept}
+          onDiscard={handleOcrDiscard}
+          onRetrigger={handleOcrRetrigger}
+        />
       )}
     </div>
   );
