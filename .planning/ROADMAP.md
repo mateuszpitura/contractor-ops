@@ -137,12 +137,12 @@ Plans:
   2. KSeF FA(3) XML is parsed into the invoice data model with all standard fields populated
   3. Each KSeF-sourced invoice displays its KSeF reference number and UPO receipt confirmation
   4. System detects and flags duplicates when the same invoice exists both from KSeF pull and manual upload
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 17-01: TBD
-- [ ] 17-02: TBD
-- [ ] 17-03: TBD
+- [ ] 17-01-PLAN.md — KSeF Zod validators, FA(3) XML parser, KSeF API client, adapter registration
+- [ ] 17-02-PLAN.md — KSeF sync orchestrator, tRPC router, QStash cron route, duplicate detection, notifications
+- [ ] 17-03-PLAN.md — KSeF setup dialog, provider card, sync history, invoice badges, metadata section, duplicate banner
 
 ### Phase 18: Time Tracking
 **Goal**: Contractors can report hours and managers can verify that invoiced amounts align with approved time
@@ -214,7 +214,7 @@ Phases execute in numeric order: 12 → 13 → 14 → 15 → 16 → 17 → 18 �
 | 14. Portal Self-Service & Branding | v2.0 | 5/5 | Complete    | 2026-03-23 |
 | 15. E-Sign Integration | v2.0 | 4/4 | Complete    | 2026-03-27 |
 | 16. OCR Invoice Parsing | v2.0 | 3/3 | Complete    | 2026-03-27 |
-| 17. KSeF Integration | v2.0 | 0/0 | Not started | - |
+| 17. KSeF Integration | v2.0 | 0/3 | Planning complete | - |
 | 18. Time Tracking | v2.0 | 0/0 | Not started | - |
 | 19. Jira Integration | v2.0 | 0/0 | Not started | - |
 | 20. Documentation & Calendar | v2.0 | 0/0 | Not started | - |
