@@ -1,0 +1,44 @@
+import type { ReactNode } from "react"
+
+import { cn } from "@/lib/utils"
+import { Label } from "@/components/ui/label"
+import { ConfidenceBadge } from "@/components/ocr/confidence-badge"
+
+interface ConfidenceFieldWrapperProps {
+  confidence: number
+  label: string
+  children: ReactNode
+  className?: string
+}
+
+function getBorderColorClass(confidence: number) {
+  if (confidence > 90) return "border-l-green-600 dark:border-l-green-500"
+  if (confidence >= 70) return "border-l-amber-500 dark:border-l-amber-400"
+  return "border-l-destructive dark:border-l-destructive"
+}
+
+export function ConfidenceFieldWrapper({
+  confidence,
+  label,
+  children,
+  className,
+}: ConfidenceFieldWrapperProps) {
+  return (
+    <div
+      className={cn(
+        "flex flex-col gap-2 border-l-2 pl-3 transition-[border-color] duration-150 ease-in-out",
+        getBorderColorClass(confidence),
+        className
+      )}
+    >
+      <div className="flex items-center justify-between">
+        <Label className="text-sm font-semibold">{label}</Label>
+        <ConfidenceBadge
+          confidence={confidence}
+          showPercentage={false}
+        />
+      </div>
+      {children}
+    </div>
+  )
+}
