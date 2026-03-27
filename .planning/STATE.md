@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Platform Expansion
 status: Ready to plan
-stopped_at: Phase 16 context gathered
-last_updated: "2026-03-27T14:28:37.423Z"
+stopped_at: Phase 16 UI-SPEC approved
+last_updated: "2026-03-27T14:37:31.763Z"
 progress:
   total_phases: 9
   completed_phases: 4
@@ -111,6 +111,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-27T14:28:37.419Z
-Stopped at: Phase 16 context gathered
-Resume file: .planning/phases/16-ocr-invoice-parsing/16-CONTEXT.md
+Last session: 2026-03-27T14:37:31.761Z
+Stopped at: Phase 16 UI-SPEC approved
+Resume file: .planning/phases/16-ocr-invoice-parsing/16-UI-SPEC.md
