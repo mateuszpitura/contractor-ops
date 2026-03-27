@@ -83,3 +83,13 @@ export { ResendAdapter } from "./adapters/resend-adapter.js";
 export { DocuSignAdapter } from "./adapters/docusign-adapter.js";
 export { AutentiAdapter } from "./adapters/autenti-adapter.js";
 export { registerAllAdapters } from "./adapters/register-all.js";
+
+// KSeF
+export { KsefApiClient } from "./services/ksef-api-client.js";
+export type {
+  KsefSession,
+  KsefInvoiceMetadata,
+  KsefQueryResult,
+} from "./services/ksef-api-client.js";
+export { parseFa3Xml, mapKsefToInvoiceFields } from "./services/ksef-xml-parser.js";
+export { KsefAdapter } from "./adapters/ksef-adapter.js";

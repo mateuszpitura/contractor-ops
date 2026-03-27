@@ -5,6 +5,7 @@ import { ResendAdapter } from "./resend-adapter.js";
 import { DocuSignAdapter } from "./docusign-adapter.js";
 import { AutentiAdapter } from "./autenti-adapter.js";
 import { ClaudeOcrAdapter } from "./claude-ocr-adapter.js";
+import { KsefAdapter } from "./ksef-adapter.js";
 
 // ---------------------------------------------------------------------------
 // Adapter Registration
@@ -26,6 +27,7 @@ export function registerAllAdapters(): void {
   registerAdapter(
     new ClaudeOcrAdapter() as unknown as IntegrationProviderAdapter,
   );
+  registerAdapter(new KsefAdapter());
 
   registered = true;
 }
