@@ -158,9 +158,9 @@ Plans:
 
 Plans:
 - [x] 18-00-PLAN.md — Wave 0 test stubs for all time tracking requirements (Nyquist compliance)
-- [ ] 18-01-PLAN.md — DB schema (Timesheet, TimeEntry), validators, time entry service with status machine
+- [x] 18-01-PLAN.md — DB schema (Timesheet, TimeEntry), validators, time entry service with status machine
 - [x] 18-02-PLAN.md — Clockify + Jira integration adapters, sync services for external time import
-- [ ] 18-03-PLAN.md — Portal time tRPC router, portal time page, weekly timesheet grid, single entry form, sync buttons
+- [x] 18-03-PLAN.md — Portal time tRPC router, portal time page, weekly timesheet grid, single entry form, sync buttons
 - [ ] 18-04-PLAN.md — Admin time tRPC router, approval queue table, contractor timesheet review, rejection dialog
 - [ ] 18-05-PLAN.md — Time reconciliation service, invoice deviation flagging, reconciliation card + table UI
 
@@ -218,6 +218,6 @@ Phases execute in numeric order: 12 → 13 → 14 → 15 → 16 → 17 → 18 �
 | 15. E-Sign Integration | v2.0 | 4/4 | Complete    | 2026-03-27 |
 | 16. OCR Invoice Parsing | v2.0 | 3/3 | Complete    | 2026-03-27 |
 | 17. KSeF Integration | v2.0 | 3/3 | Complete    | 2026-03-27 |
-| 18. Time Tracking | v2.0 | 2/6 | In Progress|  |
+| 18. Time Tracking | v2.0 | 4/6 | In Progress|  |
 | 19. Jira Integration | v2.0 | 0/0 | Not started | - |
 | 20. Documentation & Calendar | v2.0 | 0/0 | Not started | - |
