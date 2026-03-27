@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Platform Expansion
 status: Ready to execute
-stopped_at: Completed 17-01-PLAN.md
-last_updated: "2026-03-27T17:23:58.815Z"
+stopped_at: Completed 17-02-PLAN.md
+last_updated: "2026-03-27T17:31:21.868Z"
 progress:
   total_phases: 9
   completed_phases: 5
   total_plans: 25
-  completed_plans: 23
+  completed_plans: 24
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-23)
 ## Current Position
 
 Phase: 17 (ksef-integration) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 
 ## Performance Metrics
 
@@ -63,6 +63,7 @@ Plan: 2 of 3
 | Phase 16 P01 | 19min | 2 tasks | 15 files |
 | Phase 16 P03 | 15min | 3 tasks | 4 files |
 | Phase 17 P01 | 6min | 2 tasks | 11 files |
+| Phase 17 P02 | 4min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -108,6 +109,8 @@ Recent decisions affecting current work:
 - [Phase 16]: Portal form gets inline confidence badges without full split panel per UI-SPEC admin vs portal distinction
 - [Phase 17]: Added @contractor-ops/validators as workspace dependency for integrations package
 - [Phase 17]: Used generateKeyPairSync in tests for real RSA key pair instead of fake PEM
+- [Phase 17]: dueDate fallback: issueDate + 14 days when KSeF invoice has no payment term
+- [Phase 17]: Skip distributed Redis lock for KSeF sync; use externalInvoiceId dedup instead
 
 ### Pending Todos
 
@@ -122,6 +125,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-27T17:23:58.813Z
-Stopped at: Completed 17-01-PLAN.md
+Last session: 2026-03-27T17:31:21.866Z
+Stopped at: Completed 17-02-PLAN.md
 Resume file: None

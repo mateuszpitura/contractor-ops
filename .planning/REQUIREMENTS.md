@@ -49,8 +49,8 @@ Requirements for v2.0 Platform Expansion. Each maps to roadmap phases.
 
 - [x] **KSEF-01**: System auto-fetches invoices issued to org's NIP from national KSeF system
 - [x] **KSEF-02**: System parses KSeF FA(3) XML into invoice data model
-- [ ] **KSEF-03**: Invoice displays KSeF reference number and UPO receipt
-- [ ] **KSEF-04**: System detects duplicates between KSeF-pulled and manually uploaded invoices
+- [x] **KSEF-03**: Invoice displays KSeF reference number and UPO receipt
+- [x] **KSEF-04**: System detects duplicates between KSeF-pulled and manually uploaded invoices
 
 ### Jira Integration
 
@@ -138,8 +138,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | OCR-03 | Phase 16 | Complete |
 | KSEF-01 | Phase 17 | Complete |
 | KSEF-02 | Phase 17 | Complete |
-| KSEF-03 | Phase 17 | Pending |
-| KSEF-04 | Phase 17 | Pending |
+| KSEF-03 | Phase 17 | Complete |
+| KSEF-04 | Phase 17 | Complete |
 | JIRA-01 | Phase 19 | Pending |
 | JIRA-02 | Phase 19 | Pending |
 | JIRA-03 | Phase 19 | Pending |
