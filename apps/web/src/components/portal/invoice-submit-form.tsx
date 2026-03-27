@@ -36,25 +36,10 @@ import { ConfidenceBadge } from "@/components/ocr/confidence-badge";
 import { NipValidationBadge } from "@/components/ocr/nip-validation-badge";
 import { ExtractionStatusBar } from "@/components/ocr/extraction-status-bar";
 import { OcrProcessingOverlay } from "@/components/ocr/ocr-processing-overlay";
-
-// ---------------------------------------------------------------------------
-// OCR types (mirrored from @contractor-ops/integrations/types/ocr)
-// ---------------------------------------------------------------------------
-
-interface OcrExtractionField {
-  key: string;
-  value: string | number | null;
-  confidence: number;
-}
-
-interface OcrExtractionResult {
-  status: "EXTRACTED" | "PARTIAL" | "FAILED";
-  fields: Record<string, OcrExtractionField>;
-  processingTimeMs: number;
-  pageCount: number;
-  overallConfidence: number;
-  errorMessage?: string;
-}
+import type {
+  OcrExtractionField,
+  OcrExtractionResult,
+} from "@contractor-ops/integrations/types/ocr";
 
 // ---------------------------------------------------------------------------
 // Schema

@@ -33,38 +33,11 @@ import { NipValidationBadge } from "@/components/ocr/nip-validation-badge";
 import { ExtractionStatusBar } from "@/components/ocr/extraction-status-bar";
 import { OcrProcessingOverlay } from "@/components/ocr/ocr-processing-overlay";
 import { LineItemsTable } from "@/components/ocr/line-items-table";
-
-// ---------------------------------------------------------------------------
-// Types (mirrored from @contractor-ops/integrations/types/ocr)
-// ---------------------------------------------------------------------------
-
-interface OcrExtractionField {
-  key: string;
-  value: string | number | null;
-  confidence: number;
-}
-
-interface OcrLineItem {
-  description: string;
-  quantity: number | null;
-  unit: string | null;
-  unitPriceGrosze: number | null;
-  netAmountGrosze: number | null;
-  vatRate: string | null;
-  vatAmountGrosze: number | null;
-  grossAmountGrosze: number | null;
-  confidence: number;
-}
-
-interface OcrExtractionResult {
-  status: "EXTRACTED" | "PARTIAL" | "FAILED";
-  fields: Record<string, OcrExtractionField>;
-  lineItems: OcrLineItem[];
-  processingTimeMs: number;
-  pageCount: number;
-  overallConfidence: number;
-  errorMessage?: string;
-}
+import type {
+  OcrExtractionField,
+  OcrExtractionResult,
+  OcrLineItem,
+} from "@contractor-ops/integrations/types/ocr";
 
 export interface ExtractedInvoiceData {
   invoiceNumber: string;
