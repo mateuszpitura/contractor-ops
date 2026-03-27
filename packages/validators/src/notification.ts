@@ -11,6 +11,7 @@ export const NOTIFICATION_TYPES = [
   "TASK_OVERDUE",
   "CONTRACT_EXPIRING",
   "INVOICE_RECEIVED",
+  "KSEF_SYNC_COMPLETE",
 ] as const;
 
 export const notificationTypeEnum = z.enum(NOTIFICATION_TYPES);
