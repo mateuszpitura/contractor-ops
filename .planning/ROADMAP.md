@@ -34,7 +34,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 - [x] **Phase 13: Contractor Portal Auth & Core Views** — Magic-link auth, contract viewing, invoice submission, payment tracking, document access (completed 2026-03-23)
 - [x] **Phase 14: Portal Self-Service & Branding** — Profile self-management with approval, notification preferences, org branding (gap closure in progress) (completed 2026-03-23)
 - [x] **Phase 15: E-Sign Integration** — DocuSign + Autenti contract signing with multi-party support and auto-storage (completed 2026-03-23)
-- [ ] **Phase 16: OCR Invoice Parsing** — Auto-extract invoice fields from PDFs with confidence scores and human review
+- [x] **Phase 16: OCR Invoice Parsing** — Auto-extract invoice fields from PDFs with confidence scores and human review (completed 2026-03-27)
 - [ ] **Phase 17: KSeF Integration** — Auto-fetch invoices from national e-invoicing system with XML parsing and duplicate detection
 - [ ] **Phase 18: Time Tracking** — Manual hour logging, manager approval, Clockify/Jira import, invoice deviation flagging
 - [ ] **Phase 19: Jira Integration** — OAuth connection, workflow-to-issue creation, bidirectional status sync, linked issue display
@@ -126,7 +126,7 @@ Plans:
 Plans:
 - [x] 16-01-PLAN.md — OcrExtraction DB schema, OcrAdapter interface, Claude Vision adapter, OCR service, tRPC router, QStash callback
 - [x] 16-02-PLAN.md — PDF viewer (react-pdf), confidence badges, field wrappers, NIP validation, status bar, processing overlay, line items table
-- [ ] 16-03-PLAN.md — OcrReviewPanel split container, admin upload OCR trigger, portal form OCR pre-fill, human verification
+- [x] 16-03-PLAN.md — OcrReviewPanel split container, admin upload OCR trigger, portal form OCR pre-fill, human verification
 
 ### Phase 17: KSeF Integration
 **Goal**: Invoices issued to the org's NIP are automatically pulled from the national KSeF system and flow into the existing matching and approval pipeline
@@ -213,7 +213,7 @@ Phases execute in numeric order: 12 → 13 → 14 → 15 → 16 → 17 → 18 �
 | 13. Contractor Portal Auth & Core Views | v2.0 | 5/5 | Complete    | 2026-03-23 |
 | 14. Portal Self-Service & Branding | v2.0 | 5/5 | Complete    | 2026-03-23 |
 | 15. E-Sign Integration | v2.0 | 4/4 | Complete    | 2026-03-27 |
-| 16. OCR Invoice Parsing | v2.0 | 2/3 | In Progress|  |
+| 16. OCR Invoice Parsing | v2.0 | 3/3 | Complete   | 2026-03-27 |
 | 17. KSeF Integration | v2.0 | 0/0 | Not started | - |
 | 18. Time Tracking | v2.0 | 0/0 | Not started | - |
 | 19. Jira Integration | v2.0 | 0/0 | Not started | - |

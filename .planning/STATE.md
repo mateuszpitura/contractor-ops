@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Platform Expansion
-status: Ready to execute
-stopped_at: Completed 16-01-PLAN.md
-last_updated: "2026-03-27T15:23:56.592Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 16-03-PLAN.md
+last_updated: "2026-03-27T15:58:53.725Z"
 progress:
   total_phases: 9
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 22
-  completed_plans: 21
+  completed_plans: 22
 ---
 
 # Project State
@@ -61,6 +61,7 @@ Plan: 3 of 3
 | Phase 15 P04 | 10min | 2 tasks | 15 files |
 | Phase 16 P02 | 3min | 2 tasks | 8 files |
 | Phase 16 P01 | 19min | 2 tasks | 15 files |
+| Phase 16 P03 | 15min | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -102,6 +103,8 @@ Recent decisions affecting current work:
 - [Phase 16]: Inlined NIP validation logic locally since Plan 01 types not yet available in parallel execution
 - [Phase 16]: Claude native PDF document type with tool_use for structured OCR extraction (no image conversion)
 - [Phase 16]: NIP modulo-11 checksum caps confidence to 40, amount cross-validation caps to 60
+- [Phase 16]: OcrReviewPanel uses local useState (not react-hook-form) since parent form handles submission
+- [Phase 16]: Portal form gets inline confidence badges without full split panel per UI-SPEC admin vs portal distinction
 
 ### Pending Todos
 
@@ -116,6 +119,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-27T15:23:56.590Z
-Stopped at: Completed 16-01-PLAN.md
+Last session: 2026-03-27T15:58:53.722Z
+Stopped at: Completed 16-03-PLAN.md
 Resume file: None
