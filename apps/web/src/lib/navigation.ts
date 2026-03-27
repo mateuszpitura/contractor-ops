@@ -5,6 +5,7 @@ import {
   GitBranch,
   Receipt,
   CheckCircle,
+  Clock,
   Banknote,
   BarChart3,
   Bell,
@@ -90,6 +91,13 @@ export const navigationGroups: NavGroup[] = [
         href: "/approvals",
         icon: CheckCircle,
         permission: { resource: "invoice", actions: ["approve"] },
+      },
+      {
+        key: "time",
+        label: "Time",
+        href: "/time",
+        icon: Clock,
+        permission: { resource: "time", actions: ["read"] },
       },
       {
         key: "payments",
