@@ -154,12 +154,14 @@ Plans:
   3. System imports time entries from Clockify via API and displays them alongside manual entries
   4. System imports Jira worklogs for issues assigned to a contractor and displays them as time entries
   5. When a contractor submits an invoice, the system compares approved hours against the invoice amount and flags deviations
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- [ ] 18-01: TBD
-- [ ] 18-02: TBD
-- [ ] 18-03: TBD
+- [ ] 18-01-PLAN.md — DB schema (Timesheet, TimeEntry), validators, time entry service with status machine
+- [ ] 18-02-PLAN.md — Clockify + Jira integration adapters, sync services for external time import
+- [ ] 18-03-PLAN.md — Portal time tRPC router, portal time page, weekly timesheet grid, single entry form, sync buttons
+- [ ] 18-04-PLAN.md — Admin time tRPC router, approval queue table, contractor timesheet review, rejection dialog
+- [ ] 18-05-PLAN.md — Time reconciliation service, invoice deviation flagging, reconciliation card + table UI
 
 ### Phase 19: Jira Integration
 **Goal**: Workflow tasks and Jira issues stay synchronized so teams do not maintain two systems manually
@@ -215,6 +217,6 @@ Phases execute in numeric order: 12 → 13 → 14 → 15 → 16 → 17 → 18 �
 | 15. E-Sign Integration | v2.0 | 4/4 | Complete    | 2026-03-27 |
 | 16. OCR Invoice Parsing | v2.0 | 3/3 | Complete    | 2026-03-27 |
 | 17. KSeF Integration | v2.0 | 3/3 | Complete    | 2026-03-27 |
-| 18. Time Tracking | v2.0 | 0/0 | Not started | - |
+| 18. Time Tracking | v2.0 | 0/5 | Not started | - |
 | 19. Jira Integration | v2.0 | 0/0 | Not started | - |
 | 20. Documentation & Calendar | v2.0 | 0/0 | Not started | - |
