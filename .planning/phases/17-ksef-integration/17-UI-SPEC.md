@@ -34,14 +34,14 @@ Declared values (must be multiples of 4):
 | Token | Value | Usage |
 |-------|-------|-------|
 | xs | 4px | Icon gaps, badge inline padding, status dot spacing |
-| sm | 8px | Compact element spacing, sync history row gaps, metadata field gaps |
+| sm | 8px | Compact element spacing, sync history row gaps, metadata field gaps, KSeF metadata label-value pair gaps |
 | md | 16px | Default element spacing, form field vertical spacing, card content padding |
 | lg | 24px | Section padding, provider card internal padding, sync history section margin |
 | xl | 32px | Layout gaps between settings sections |
 | 2xl | 48px | Page-level vertical rhythm |
 | 3xl | 64px | Not used in Phase 17 |
 
-Exceptions: Sync history expandable section uses 8px vertical padding per row for density. KSeF metadata section on invoice detail uses 12px (3 * xs) gap between label-value pairs to maintain compact read density.
+Exceptions: Sync history expandable section uses 8px vertical padding per row for density. KSeF metadata section on invoice detail uses 8px (sm) gap between label-value pairs for compact read density while staying on the standard scale.
 
 ---
 
@@ -70,7 +70,7 @@ Two weights: 400 (`font-normal`) for body text, 600 (`font-semibold`) for labels
 | Warning | `--warning` oklch(0.70 0.16 65) | "KSeF duplicate found" badge on manual invoice, token expiry approaching, partial sync result |
 | Info | `--info` oklch(0.55 0.18 260) | Syncing in-progress spinner, "N new invoices" notification badge |
 
-Accent reserved for: "Connect KSeF" primary CTA on provider card, "Sync Now" button, "Save" button in setup dialog, KSeF source badge icon in invoice table rows, focus ring on setup form inputs, active connection dot on provider card header.
+Accent reserved for: "Connect KSeF" primary CTA on provider card, "Sync Now" button, "Save Credentials" button in setup dialog, KSeF source badge icon in invoice table rows, focus ring on setup form inputs, active connection dot on provider card header.
 
 ---
 
@@ -81,7 +81,7 @@ Accent reserved for: "Connect KSeF" primary CTA on provider card, "Sync Now" but
 | Component | Source | Phase 17 Usage |
 |-----------|--------|----------------|
 | Card, CardContent, CardHeader, CardTitle | `ui/card` | Provider card, KSeF metadata card on invoice detail, sync history container |
-| Button | `ui/button` | Connect KSeF, Sync Now, Save, Disconnect, Verify Credentials |
+| Button | `ui/button` | Connect KSeF, Sync Now, Save Credentials, Disconnect, Verify Credentials |
 | Badge | `ui/badge` | Connection status, sync result status, KSeF source badge on invoice rows, duplicate badge |
 | Input, Label | `ui/input`, `ui/label` | Token input field, certificate upload label |
 | Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter | `ui/dialog` | KSeF connection setup dialog |
@@ -107,12 +107,12 @@ Accent reserved for: "Connect KSeF" primary CTA on provider card, "Sync Now" but
 
 | Component | Description |
 |-----------|-------------|
-| KsefSetupDialog | Modal dialog for KSeF credential entry. Two tabs: "Token" (textarea for API token paste) and "Certificate" (file upload for .p12/.pem). Includes NIP display (read-only from org settings), "Verify Credentials" button with inline success/error feedback, and "Save" primary CTA. Dialog width: 480px (sm:max-w-lg). |
+| KsefSetupDialog | Modal dialog for KSeF credential entry. Two tabs: "Token" (textarea for API token paste) and "Certificate" (file upload for .p12/.pem). Includes NIP display (read-only from org settings), "Verify Credentials" button with inline success/error feedback, and "Save Credentials" primary CTA. Dialog width: 480px (sm:max-w-lg). |
 | KsefSyncHistory | Collapsible section within provider card or detail sheet. Shows last 10 sync entries in a compact list. Each row: timestamp (relative, e.g. "2 hours ago"), invoice count pulled, status badge (success/partial/failed). Uses Collapsible from shadcn. |
 | KsefMetadataSection | Card section on invoice detail page for KSeF-sourced invoices. Displays: KSeF reference number (monospace, copyable), UPO receipt number (monospace, copyable), fetch timestamp, and "View in KSeF" external link. Only rendered when invoice.source === "KSEF". |
 | KsefSourceBadge | Compact inline badge for invoice table rows. Shows KSeF shield icon (ShieldCheck from Lucide, 14px) + "KSeF" text in primary color. Tooltip: "Fetched from KSeF on {date}". Used in invoice table source column. |
 | KsefDuplicateBanner | Variant of DuplicateWarning for cross-source KSeF duplicates (D-12). Shows on manual invoice when KSeF duplicate found. Warning-colored left border (not destructive). Copy: "A matching invoice was found in KSeF. The KSeF version is government-validated." Actions: "View KSeF Invoice" link + "Void This Invoice" destructive button + "Keep Both" ghost button. |
-| CopyableField | Small utility: monospace text with copy-to-clipboard icon button. Click copies value, shows brief checkmark confirmation. Used for KSeF reference and UPO numbers. |
+| CopyableField | Small utility: monospace text with copy-to-clipboard icon button. Click copies value, shows brief checkmark confirmation. Used for KSeF reference and UPO numbers. The icon button must declare `aria-label` for accessibility -- use `aria-label="Copy KSeF reference"` for the reference field and `aria-label="Copy UPO receipt"` for the UPO field (pattern: `aria-label="Copy {field name}"`). |
 
 ---
 
@@ -145,7 +145,7 @@ The primary screen focal points for Phase 17 are:
   - **Token tab**: Label "API Token" + textarea (rows=4, monospace font) + helper text "Generate this token in the KSeF portal at ksef.mf.gov.pl"
   - **Certificate tab**: Label "Certificate File (.p12 or .pem)" + file upload drop zone (dashed border, 80px height) + optional password field for encrypted .p12
 - "Verify Credentials" outline button: triggers test API call. Shows inline result: green checkmark + "Credentials verified" or red X + error message. Button shows Loader2 while verifying.
-- Footer: "Cancel" outline button (left) + "Save" primary button (right, disabled until verification passes)
+- Footer: "Discard" outline button (left) + "Save Credentials" primary button (right, disabled until verification passes)
 
 ### Invoice Detail -- KSeF Metadata (D-13)
 
@@ -153,8 +153,8 @@ The primary screen focal points for Phase 17 are:
 - Container: Card with subtle left border in primary color (2px)
 - Header row: ShieldCheck icon (16px, primary color) + "KSeF Data" heading (text-sm font-semibold) + "View in KSeF" external link (right-aligned, text-sm, primary color, opens new tab)
 - Content: 2-column grid (16px gap) on desktop, single column on mobile
-  - Row 1: "KSeF Reference" label + CopyableField with reference number (monospace)
-  - Row 2: "UPO Receipt" label + CopyableField with UPO number (monospace)
+  - Row 1: "KSeF Reference" label + CopyableField with reference number (monospace, `aria-label="Copy KSeF reference"`)
+  - Row 2: "UPO Receipt" label + CopyableField with UPO number (monospace, `aria-label="Copy UPO receipt"`)
   - Row 3: "Fetched" label + relative timestamp + exact date tooltip
   - Row 4: "Source" label + KsefSourceBadge
 
@@ -188,11 +188,12 @@ The primary screen focal points for Phase 17 are:
 | Element | Copy |
 |---------|------|
 | Primary CTA (disconnected) | "Connect KSeF" |
-| Primary CTA (setup dialog) | "Save" |
+| Primary CTA (setup dialog) | "Save Credentials" |
 | Sync trigger | "Sync Now" |
 | Manage connection | "Manage" |
 | Setup dialog title | "Connect to KSeF" |
 | Setup dialog description | "Configure your KSeF credentials to auto-fetch invoices issued to your organization." |
+| Setup dialog dismiss | "Discard" |
 | NIP field label | "Organization NIP" |
 | NIP field helper | "Pulled from your organization settings" |
 | Token tab label | "API Token" |
@@ -209,7 +210,7 @@ The primary screen focal points for Phase 17 are:
 | Disconnect confirmation title | "Disconnect KSeF" |
 | Disconnect confirmation body | "This will stop auto-fetching invoices from KSeF. Existing KSeF invoices will not be affected." |
 | Disconnect confirm button | "Disconnect" |
-| Disconnect cancel button | "Cancel" |
+| Disconnect cancel button | "Keep Connection" |
 | Sync in progress | "Syncing with KSeF..." |
 | Sync success toast | "{N} new invoices fetched from KSeF" |
 | Sync no new invoices toast | "No new invoices found in KSeF" |
@@ -230,7 +231,7 @@ The primary screen focal points for Phase 17 are:
 | Void confirmation title | "Void Invoice" |
 | Void confirmation body | "This invoice will be marked as void. The KSeF version will remain as the authoritative record." |
 | Void confirm button | "Void Invoice" |
-| Void cancel button | "Cancel" |
+| Void cancel button | "Keep Invoice" |
 | Sync history heading | "Sync History" |
 | Sync history empty | "No sync history yet. Click Sync Now to fetch invoices from KSeF." |
 | Sync status: success | "Success" |
@@ -243,6 +244,7 @@ The primary screen focal points for Phase 17 are:
 | Copied confirmation | "Copied" |
 | Connected toast | "KSeF connected successfully" |
 | Connection failed toast | "Failed to connect to KSeF. Please check your credentials." |
+| CopyableField aria-label pattern | "Copy {field name}" (e.g., "Copy KSeF reference", "Copy UPO receipt") |
 
 ---
 
