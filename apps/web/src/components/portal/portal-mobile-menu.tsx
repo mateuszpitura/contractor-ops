@@ -5,6 +5,7 @@ import {
   FileText,
   Receipt,
   FolderOpen,
+  Clock,
   Banknote,
   Settings,
   LogOut,
@@ -32,6 +33,7 @@ function getNavItems(t: (key: string) => string) {
     { label: t("contracts"), href: "/portal/contracts", icon: FileText },
     { label: t("invoices"), href: "/portal/invoices", icon: Receipt },
     { label: t("documents"), href: "/portal/documents", icon: FolderOpen },
+    { label: t("time"), href: "/portal/time", icon: Clock },
     { label: t("payments"), href: "/portal/payments", icon: Banknote },
     { label: t("settings"), href: "/portal/settings", icon: Settings },
   ] as const;
