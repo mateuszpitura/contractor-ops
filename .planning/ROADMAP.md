@@ -36,7 +36,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 - [x] **Phase 15: E-Sign Integration** — DocuSign + Autenti contract signing with multi-party support and auto-storage (completed 2026-03-23)
 - [x] **Phase 16: OCR Invoice Parsing** — Auto-extract invoice fields from PDFs with confidence scores and human review (completed 2026-03-27)
 - [x] **Phase 17: KSeF Integration** — Auto-fetch invoices from national e-invoicing system with XML parsing and duplicate detection (completed 2026-03-27)
-- [ ] **Phase 18: Time Tracking** — Manual hour logging, manager approval, Clockify/Jira import, invoice deviation flagging
+- [x] **Phase 18: Time Tracking** — Manual hour logging, manager approval, Clockify/Jira import, invoice deviation flagging (completed 2026-03-27)
 - [ ] **Phase 19: Jira Integration** — OAuth connection, workflow-to-issue creation, bidirectional status sync, linked issue display
 - [ ] **Phase 20: Documentation & Calendar** — Notion/Confluence page linking and Google/Outlook calendar deadline sync
 
@@ -162,7 +162,7 @@ Plans:
 - [x] 18-02-PLAN.md — Clockify + Jira integration adapters, sync services for external time import
 - [x] 18-03-PLAN.md — Portal time tRPC router, portal time page, weekly timesheet grid, single entry form, sync buttons
 - [x] 18-04-PLAN.md — Admin time tRPC router, approval queue table, contractor timesheet review, rejection dialog
-- [ ] 18-05-PLAN.md — Time reconciliation service, invoice deviation flagging, reconciliation card + table UI
+- [x] 18-05-PLAN.md — Time reconciliation service, invoice deviation flagging, reconciliation card + table UI
 
 ### Phase 19: Jira Integration
 **Goal**: Workflow tasks and Jira issues stay synchronized so teams do not maintain two systems manually
@@ -218,6 +218,6 @@ Phases execute in numeric order: 12 → 13 → 14 → 15 → 16 → 17 → 18 �
 | 15. E-Sign Integration | v2.0 | 4/4 | Complete    | 2026-03-27 |
 | 16. OCR Invoice Parsing | v2.0 | 3/3 | Complete    | 2026-03-27 |
 | 17. KSeF Integration | v2.0 | 3/3 | Complete    | 2026-03-27 |
-| 18. Time Tracking | v2.0 | 5/6 | In Progress|  |
+| 18. Time Tracking | v2.0 | 6/6 | Complete   | 2026-03-27 |
 | 19. Jira Integration | v2.0 | 0/0 | Not started | - |
 | 20. Documentation & Calendar | v2.0 | 0/0 | Not started | - |
