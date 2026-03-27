@@ -1,3 +1,5 @@
+export { optionalString, optionalFk, optionalPositiveInt } from "./helpers.js";
+
 export {
   createOrganizationSchema,
   updateOrganizationSettingsSchema,
@@ -219,3 +221,16 @@ export type {
   ReadyForPaymentList,
   RemoveFromRun,
 } from "./payment.js";
+
+export {
+  ksefAuthMethodEnum,
+  ksefEnvironmentEnum,
+  ksefConnectionConfigSchema,
+  ksefParsedInvoiceSchema,
+  ksefSyncParamsSchema,
+} from "./ksef.js";
+export type {
+  KsefConnectionConfig,
+  KsefParsedInvoice,
+  KsefSyncParams,
+} from "./ksef.js";

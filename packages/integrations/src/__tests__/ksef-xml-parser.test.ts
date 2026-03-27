@@ -1,0 +1,70 @@
+import { describe, it, expect } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { parseFa3Xml, mapKsefToInvoiceFields } from "../services/ksef-xml-parser.js";
+
+const FIXTURE_PATH = resolve(__dirname, "fixtures/sample-fa3.xml");
+const sampleXml = readFileSync(FIXTURE_PATH, "utf-8");
+
+describe("parseFa3Xml", () => {
+  it("parses sample FA(3) XML into validated invoice structure", () => {
+    const result = parseFa3Xml(sampleXml, "KSEF-REF-001", "UPO-001");
+
+    expect(result.invoiceNumber).toBe("FV/2026/03/001");
+    expect(result.issueDate).toBe("2026-03-15");
+    expect(result.invoiceType).toBe("VAT");
+    expect(result.currency).toBe("PLN");
+    expect(result.seller.nip).toBe("1234567890");
+    expect(result.seller.name).toBe("Test Seller Sp. z o.o.");
+    expect(result.buyer.nip).toBe("9876543210");
+    expect(result.buyer.name).toBe("Test Buyer S.A.");
+    expect(result.totals.grossGrosze).toBe(3567000);
+    expect(result.lines).toHaveLength(2);
+    expect(result.lines[0]!.description).toBe("Uslugi programistyczne");
+    expect(result.lines[0]!.netAmountGrosze).toBe(2400000);
+    expect(result.ksefReferenceNumber).toBe("KSEF-REF-001");
+    expect(result.upoNumber).toBe("UPO-001");
+  });
+
+  it("converts PLN amounts to grosze correctly", () => {
+    const result = parseFa3Xml(sampleXml, "KSEF-REF-001");
+
+    expect(result.totals.netGrosze).toBe(2900000);
+    expect(result.totals.vatGrosze).toBe(667000);
+    expect(result.lines[1]!.unitPriceGrosze).toBe(500000);
+  });
+
+  it("handles missing optional payment fields", () => {
+    const xmlWithoutPayment = sampleXml
+      .replace(/<Platnosc>[\s\S]*?<\/Platnosc>/, "");
+
+    const result = parseFa3Xml(xmlWithoutPayment, "KSEF-REF-002");
+
+    expect(result.payment).toBeUndefined();
+    expect(result.invoiceNumber).toBe("FV/2026/03/001");
+  });
+});
+
+describe("mapKsefToInvoiceFields", () => {
+  it("maps parsed invoice to Invoice model fields", () => {
+    const parsed = parseFa3Xml(sampleXml, "KSEF-REF-001", "UPO-001");
+    const { invoice, lines } = mapKsefToInvoiceFields(parsed);
+
+    expect(invoice.source).toBe("KSEF");
+    expect(invoice.externalInvoiceId).toBe("KSEF-REF-001");
+    expect(invoice.sourceReference).toBe("UPO-001");
+    expect(invoice.sellerTaxId).toBe("1234567890");
+    expect(invoice.buyerTaxId).toBe("9876543210");
+    expect(invoice.totalGrosze).toBe(3567000);
+    expect(invoice.subtotalGrosze).toBe(2900000);
+    expect(invoice.vatAmountGrosze).toBe(667000);
+    expect(invoice.amountToPayGrosze).toBe(3567000);
+    expect(invoice.currency).toBe("PLN");
+    expect(invoice.sellerBankAccount).toBe("PL61109010140000071219812874");
+    expect(invoice.issueDate).toBeInstanceOf(Date);
+    expect(invoice.dueDate).toBeInstanceOf(Date);
+    expect(lines).toHaveLength(2);
+    expect(lines[0]!.lineNumber).toBe(1);
+    expect(lines[0]!.description).toBe("Uslugi programistyczne");
+  });
+});
