@@ -1,0 +1,40 @@
+// ---------------------------------------------------------------------------
+// OCR Extraction State & Provider Metadata
+// ---------------------------------------------------------------------------
+
+model OcrExtraction {
+  id               String              @id @default(cuid())
+  organizationId   String
+  invoiceId        String?
+  documentId       String
+  provider         OcrProvider         @default(CLAUDE)
+  status           OcrExtractionStatus @default(PENDING)
+  resultJson       Json?
+  overallConfidence Decimal?           @db.Decimal(5, 2)
+  pageCount        Int?
+  processingTimeMs Int?
+  errorMessage     String?
+  retryCount       Int                 @default(0)
+  createdAt        DateTime            @default(now())
+  completedAt      DateTime?
+
+  organization     Organization        @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+  @@index([organizationId, documentId])
+  @@index([organizationId, status])
+}
+
+enum OcrProvider {
+  CLAUDE
+  GOOGLE_DOCUMENT_AI
+  AZURE_FORM_RECOGNIZER
+}
+
+enum OcrExtractionStatus {
+  PENDING
+  PROCESSING
+  EXTRACTED
+  PARTIAL
+  FAILED
+}

@@ -10,44 +10,54 @@
   ],
   "exports": {
     ".": {
-      "types": "./src/index.ts",
-      "import": "./src/index.ts",
-      "default": "./src/index.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     },
     "./services/credential-service": {
-      "types": "./src/services/credential-service.ts",
-      "import": "./src/services/credential-service.ts",
-      "default": "./src/services/credential-service.ts"
+      "types": "./dist/services/credential-service.d.ts",
+      "import": "./dist/services/credential-service.js",
+      "default": "./dist/services/credential-service.js"
     },
     "./registry": {
-      "types": "./src/registry.ts",
-      "import": "./src/registry.ts",
-      "default": "./src/registry.ts"
+      "types": "./dist/registry.d.ts",
+      "import": "./dist/registry.js",
+      "default": "./dist/registry.js"
     },
     "./types": {
-      "types": "./src/types/index.ts",
-      "import": "./src/types/index.ts",
-      "default": "./src/types/index.ts"
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/types/index.js",
+      "default": "./dist/types/index.js"
     },
     "./services/qstash-client": {
-      "types": "./src/services/qstash-client.ts",
-      "import": "./src/services/qstash-client.ts",
-      "default": "./src/services/qstash-client.ts"
+      "types": "./dist/services/qstash-client.d.ts",
+      "import": "./dist/services/qstash-client.js",
+      "default": "./dist/services/qstash-client.js"
     },
     "./services/webhook-dispatcher": {
-      "types": "./src/services/webhook-dispatcher.ts",
-      "import": "./src/services/webhook-dispatcher.ts",
-      "default": "./src/services/webhook-dispatcher.ts"
+      "types": "./dist/services/webhook-dispatcher.d.ts",
+      "import": "./dist/services/webhook-dispatcher.js",
+      "default": "./dist/services/webhook-dispatcher.js"
     },
     "./adapters/register-all": {
-      "types": "./src/adapters/register-all.ts",
-      "import": "./src/adapters/register-all.ts",
-      "default": "./src/adapters/register-all.ts"
+      "types": "./dist/adapters/register-all.d.ts",
+      "import": "./dist/adapters/register-all.js",
+      "default": "./dist/adapters/register-all.js"
     },
     "./services/esign-service": {
-      "types": "./src/services/esign-service.ts",
-      "import": "./src/services/esign-service.ts",
-      "default": "./src/services/esign-service.ts"
+      "types": "./dist/services/esign-service.d.ts",
+      "import": "./dist/services/esign-service.js",
+      "default": "./dist/services/esign-service.js"
+    },
+    "./services/ocr-service": {
+      "types": "./dist/services/ocr-service.d.ts",
+      "import": "./dist/services/ocr-service.js",
+      "default": "./dist/services/ocr-service.js"
+    },
+    "./types/ocr": {
+      "types": "./dist/types/ocr.d.ts",
+      "import": "./dist/types/ocr.js",
+      "default": "./dist/types/ocr.js"
     }
   },
   "scripts": {
@@ -55,6 +65,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.80.0",
     "@contractor-ops/db": "workspace:*",
     "@upstash/qstash": "^2.10.1",
     "@upstash/redis": "^1.34.0",

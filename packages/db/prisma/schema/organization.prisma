@@ -75,6 +75,7 @@ model Organization {
   reminderInstances    ReminderInstance[]
   signingEnvelopes     SigningEnvelope[]
   signingEvents        SigningEvent[]
+  ocrExtractions       OcrExtraction[]
 }
 
 model Member {
