@@ -20,6 +20,7 @@ import { searchRouter } from "./routers/search.js";
 import { portalRouter } from "./routers/portal.js";
 import { esignRouter } from "./routers/esign.js";
 import { ocrRouter } from "./routers/ocr.js";
+import { ksefRouter } from "./routers/ksef.js";
 
 /**
  * Root tRPC router merging all sub-routers.
@@ -65,6 +66,7 @@ export const appRouter = router({
   portal: portalRouter,
   esign: esignRouter,
   ocr: ocrRouter,
+  ksef: ksefRouter,
 });
 
 /** Type-safe router type for client consumption */
