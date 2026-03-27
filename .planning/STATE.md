@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Platform Expansion
-status: Ready to execute
-stopped_at: Completed 17-02-PLAN.md
-last_updated: "2026-03-27T17:31:21.868Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 17-03-PLAN.md
+last_updated: "2026-03-27T17:42:43.836Z"
 progress:
   total_phases: 9
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 25
-  completed_plans: 24
+  completed_plans: 25
 ---
 
 # Project State
@@ -64,6 +64,7 @@ Plan: 3 of 3
 | Phase 16 P03 | 15min | 3 tasks | 4 files |
 | Phase 17 P01 | 6min | 2 tasks | 11 files |
 | Phase 17 P02 | 4min | 2 tasks | 8 files |
+| Phase 17 P03 | 9min | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -111,6 +112,7 @@ Recent decisions affecting current work:
 - [Phase 17]: Used generateKeyPairSync in tests for real RSA key pair instead of fake PEM
 - [Phase 17]: dueDate fallback: issueDate + 14 days when KSeF invoice has no payment term
 - [Phase 17]: Skip distributed Redis lock for KSeF sync; use externalInvoiceId dedup instead
+- [Phase 17]: Single Save Credentials button (no separate verify) since connect mutation verifies per D-04
 
 ### Pending Todos
 
@@ -125,6 +127,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-27T17:31:21.866Z
-Stopped at: Completed 17-02-PLAN.md
+Last session: 2026-03-27T17:42:43.834Z
+Stopped at: Completed 17-03-PLAN.md
 Resume file: None

@@ -35,7 +35,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 - [x] **Phase 14: Portal Self-Service & Branding** — Profile self-management with approval, notification preferences, org branding (gap closure in progress) (completed 2026-03-23)
 - [x] **Phase 15: E-Sign Integration** — DocuSign + Autenti contract signing with multi-party support and auto-storage (completed 2026-03-23)
 - [x] **Phase 16: OCR Invoice Parsing** — Auto-extract invoice fields from PDFs with confidence scores and human review (completed 2026-03-27)
-- [ ] **Phase 17: KSeF Integration** — Auto-fetch invoices from national e-invoicing system with XML parsing and duplicate detection
+- [x] **Phase 17: KSeF Integration** — Auto-fetch invoices from national e-invoicing system with XML parsing and duplicate detection (completed 2026-03-27)
 - [ ] **Phase 18: Time Tracking** — Manual hour logging, manager approval, Clockify/Jira import, invoice deviation flagging
 - [ ] **Phase 19: Jira Integration** — OAuth connection, workflow-to-issue creation, bidirectional status sync, linked issue display
 - [ ] **Phase 20: Documentation & Calendar** — Notion/Confluence page linking and Google/Outlook calendar deadline sync
@@ -142,7 +142,7 @@ Plans:
 Plans:
 - [x] 17-01-PLAN.md — KSeF Zod validators, FA(3) XML parser, KSeF API client, adapter registration
 - [x] 17-02-PLAN.md — KSeF sync orchestrator, tRPC router, QStash cron route, duplicate detection, notifications
-- [ ] 17-03-PLAN.md — KSeF setup dialog, provider card, sync history, invoice badges, metadata section, duplicate banner
+- [x] 17-03-PLAN.md — KSeF setup dialog, provider card, sync history, invoice badges, metadata section, duplicate banner
 
 ### Phase 18: Time Tracking
 **Goal**: Contractors can report hours and managers can verify that invoiced amounts align with approved time
@@ -214,7 +214,7 @@ Phases execute in numeric order: 12 → 13 → 14 → 15 → 16 → 17 → 18 �
 | 14. Portal Self-Service & Branding | v2.0 | 5/5 | Complete    | 2026-03-23 |
 | 15. E-Sign Integration | v2.0 | 4/4 | Complete    | 2026-03-27 |
 | 16. OCR Invoice Parsing | v2.0 | 3/3 | Complete    | 2026-03-27 |
-| 17. KSeF Integration | v2.0 | 2/3 | In Progress|  |
+| 17. KSeF Integration | v2.0 | 3/3 | Complete   | 2026-03-27 |
 | 18. Time Tracking | v2.0 | 0/0 | Not started | - |
 | 19. Jira Integration | v2.0 | 0/0 | Not started | - |
 | 20. Documentation & Calendar | v2.0 | 0/0 | Not started | - |
