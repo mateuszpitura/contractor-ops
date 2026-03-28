@@ -33,15 +33,15 @@ Declared values (must be multiples of 4):
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| xs | 4px | Icon gaps within Jira chips, badge inline padding |
-| sm | 8px | Status mapping row gaps, chip internal padding, compact list spacing |
+| xs | 4px | Icon gaps within Jira chips, badge inline padding, chip vertical padding |
+| sm | 8px | Status mapping row gaps, chip horizontal padding, compact list spacing |
 | md | 16px | Form field vertical spacing, card content padding, mapping table cell padding |
 | lg | 24px | Section padding within mapping dialog, card internal padding |
 | xl | 32px | Layout gaps between settings sections, dialog section breaks |
 | 2xl | 48px | Page-level vertical rhythm |
 | 3xl | 64px | Not used in Phase 19 |
 
-Exceptions: Jira chip components use 6px vertical padding and 8px horizontal padding for compact inline display. Status mapping rows use 8px vertical padding per row for table density.
+Exceptions: Jira chip components use 4px vertical padding (`py-1`) and 8px horizontal padding (`px-2`) for compact inline display. Status mapping rows use 8px vertical padding per row for table density.
 
 ---
 
@@ -50,7 +50,7 @@ Exceptions: Jira chip components use 6px vertical padding and 8px horizontal pad
 | Role | Size | Tailwind Class | Weight | Line Height | Usage |
 |------|------|----------------|--------|-------------|-------|
 | Body | 14px | `text-sm` | 400 (regular) | 1.5 | Mapping table values, description text, chip summary text, sync log entries |
-| Label | 14px | `text-sm` | 600 (semibold) | 1.5 | Form field labels, mapping column headers, "Jira Project" labels, section subheadings |
+| Label | 14px | `text-sm` | 600 (semibold) | 1.5 | Form field labels, mapping column headers, "Jira Project" labels, section subheadings, section headers (e.g. "Linked Issues") |
 | Heading | 20px | `text-xl` | 600 (semibold) | 1.2 | Dialog titles ("Configure Jira Mapping"), section headings ("Linked Issues") |
 | Display | 28px | `text-[28px]` | 600 (semibold) | 1.2 | Not used in Phase 19 |
 
@@ -70,7 +70,7 @@ Two weights: 400 (`font-normal`) for body text, 600 (`font-semibold`) for labels
 | Warning | `--warning` oklch(0.70 0.16 65) | Unmapped status warning icon, token expiry approaching |
 | Info | `--info` oklch(0.55 0.18 260) | Sync in-progress indicator, "In Progress" Jira status chip color |
 
-Accent reserved for: "Connect Jira" primary CTA on provider card, "Save Mapping" button in mapping dialog, Jira issue key text in chips, focus ring on mapping form inputs, active connection dot on provider card header, "Configure" button on task template.
+Accent reserved for: "Connect Jira" primary CTA on provider card, "Save Mapping" button in mapping dialog, Jira issue key text in chips, focus ring on mapping form inputs, active connection dot on provider card header, "Configure Jira" button on task template.
 
 ### Jira Status Chip Colors
 
@@ -91,7 +91,7 @@ These map to Jira's three status categories. The dot is a 6px circle (existing `
 | Component | Source | Phase 19 Usage |
 |-----------|--------|----------------|
 | Card, CardContent, CardHeader, CardTitle | `ui/card` | Jira provider card, mapping configuration card, Jira activity summary card |
-| Button | `ui/button` | Connect Jira, Save Mapping, Configure, Disconnect |
+| Button | `ui/button` | Connect Jira, Save Mapping, Configure Jira, Disconnect |
 | Badge | `ui/badge` | Connection status, Jira status category, sync result status |
 | Input, Label | `ui/input`, `ui/label` | Mapping form inputs |
 | Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter | `ui/dialog` | Jira project mapping dialog, status mapping dialog |
@@ -119,12 +119,12 @@ These map to Jira's three status categories. The dot is a 6px circle (existing `
 
 | Component | Description |
 |-----------|-------------|
-| JiraIssueChip | Compact inline chip showing Jira issue key + colored status dot + status category label. Renders as `<a>` opening Jira issue URL in new tab. Layout: `[dot] [PROJ-123] [status]` in a single row. Background: `bg-muted/50` with `border border-border` and `rounded-md`. Padding: 6px vertical, 8px horizontal. Issue key in `font-mono text-xs font-medium text-primary`. Status text in `text-xs text-muted-foreground`. Dot uses `.status-dot` + category color. Hover: `bg-muted` transition 150ms. `target="_blank" rel="noopener noreferrer"`. `aria-label="Open Jira issue {key} in new tab"`. Max width: 200px with truncation on status text if needed. |
+| JiraIssueChip | Compact inline chip showing Jira issue key + colored status dot + status category label. Renders as `<a>` opening Jira issue URL in new tab. Layout: `[dot] [PROJ-123] [status]` in a single row. Background: `bg-muted/50` with `border border-border` and `rounded-md`. Padding: `py-1 px-2` (4px vertical, 8px horizontal). Issue key in `font-mono text-xs font-semibold text-primary`. Status text in `text-xs text-muted-foreground`. Dot uses `.status-dot` + category color. Hover: `bg-muted` transition 150ms. `target="_blank" rel="noopener noreferrer"`. `aria-label="Open Jira issue {key} in new tab"`. Max width: 200px with truncation on status text if needed. |
 | JiraActivitySummary | Card section at top of contractor's Workflows tab (D-10). Header: Jira icon (16px) + "Recent Jira Activity" label (text-sm font-semibold). Content: compact list of up to 5 most recently updated linked Jira issues. Each row: JiraIssueChip + issue summary text (truncated, text-sm text-muted-foreground) + relative timestamp. Empty state: "No linked Jira issues yet." Renders only when contractor has at least one linked Jira issue. |
-| JiraProjectMappingDialog | Modal dialog for configuring Jira project + issue type per workflow task template (D-02). Dialog width: `sm:max-w-lg` (480px). Header: "Configure Jira Integration" title + "Map this task to a Jira project and issue type" description. Body: "Jira Project" Select (fetches available projects via API), "Issue Type" Select (fetches types for selected project), "Create issue on activation" Switch. Footer: "Cancel" outline button (left) + "Save Mapping" primary button (right). Selects show Loader2 spinner while loading options. |
-| JiraStatusMappingDialog | Modal dialog for configuring bidirectional status mapping per Jira project (D-04, D-05). Dialog width: `sm:max-w-2xl` (672px). Header: "Status Mapping -- {project name}" title + "Map workflow task statuses to Jira transitions" description. Body: Table with two columns -- "Workflow Status" (left, read-only labels for each WorkflowTaskStatus enum value) and "Jira Transition" (right, Select dropdowns populated from Jira API). Each row maps one workflow status to one Jira transition. Unmapped rows show warning icon (AlertTriangle, 14px, warning color) + tooltip "Unmapped -- status changes will be ignored". Footer: "Cancel" outline button + "Save Mapping" primary button. ScrollArea wraps table body if >6 rows. |
+| JiraProjectMappingDialog | Modal dialog for configuring Jira project + issue type per workflow task template (D-02). Dialog width: `sm:max-w-lg` (480px). Header: "Configure Jira Integration" title + "Map this task to a Jira project and issue type" description. Body: "Jira Project" Select (fetches available projects via API), "Issue Type" Select (fetches types for selected project), "Create issue on activation" Switch. Footer: "Discard Changes" outline button (left) + "Save Mapping" primary button (right). Selects show Loader2 spinner while loading options. |
+| JiraStatusMappingDialog | Modal dialog for configuring bidirectional status mapping per Jira project (D-04, D-05). Dialog width: `sm:max-w-2xl` (672px). Header: "Status Mapping -- {project name}" title + "Map workflow task statuses to Jira transitions" description. Body: Table with two columns -- "Workflow Status" (left, read-only labels for each WorkflowTaskStatus enum value) and "Jira Transition" (right, Select dropdowns populated from Jira API). Each row maps one workflow status to one Jira transition. Unmapped rows show warning icon (AlertTriangle, 14px, warning color) + tooltip "Unmapped -- status changes will be ignored". Footer: "Discard Changes" outline button + "Save Mapping" primary button. ScrollArea wraps table body if >6 rows. |
 | JiraProviderSection | Wrapper component in IntegrationsTab that renders ProviderConnectionCard for Jira (standard OAuth) + "Configure Mapping" button when connected. Button opens JiraStatusMappingDialog for the connected project. Follows existing KsefProviderSection pattern. |
-| JiraTaskConfig | Inline configuration section rendered within workflow task template editor. Contains: "Create Jira issue on activation" Switch + summary of current mapping (project name + issue type) or "Not configured" text. "Configure" ghost button opens JiraProjectMappingDialog. Compact single-row layout: `[switch] [mapping summary] [configure button]`. |
+| JiraTaskConfig | Inline configuration section rendered within workflow task template editor. Contains: "Create Jira issue on activation" Switch + summary of current mapping (project name + issue type) or "Not configured" text. "Configure Jira" ghost button opens JiraProjectMappingDialog. Compact single-row layout: `[switch] [mapping summary] [configure jira button]`. |
 
 ---
 
@@ -157,23 +157,23 @@ The primary screen focal points for Phase 19 are:
   - Left column "Workflow Status": read-only labels showing each WorkflowTaskStatus value (TODO, IN_PROGRESS, DONE, BLOCKED, CANCELLED, SKIPPED)
   - Right column "Jira Transition": Select dropdown per row, populated from Jira project transitions API
   - Unmapped rows: AlertTriangle icon (14px, warning color) + "Not mapped" placeholder text in Select
-- Footer: "Cancel" outline button (left) + "Save Mapping" primary button (right, disabled until at least one mapping changed)
+- Footer: "Discard Changes" outline button (left) + "Save Mapping" primary button (right, disabled until at least one mapping changed)
 - Loading state: Select dropdowns show Loader2 spinner while fetching Jira transitions
 
 ### Jira Task Template Config (D-01, D-02)
 
 - Location: inline within each WorkflowTaskTemplate configuration view
-- Single-row flex layout: Switch (left) + mapping summary text (center, flex-1) + "Configure" ghost button (right)
+- Single-row flex layout: Switch (left) + mapping summary text (center, flex-1) + "Configure Jira" ghost button (right)
 - Switch label: "Create Jira issue when task activates"
 - When mapping exists: summary shows "PROJ-NAME / Bug" (project + issue type) in text-sm
-- When no mapping: shows "Not configured" in text-sm text-muted-foreground, "Configure" button highlighted
-- "Configure" button opens JiraProjectMappingDialog for this specific task template
+- When no mapping: shows "Not configured" in text-sm text-muted-foreground, "Configure Jira" button highlighted
+- "Configure Jira" button opens JiraProjectMappingDialog for this specific task template
 - Switch disabled when no mapping is configured (must configure first)
 
 ### Jira Issue Chips on Workflow Views (D-09, D-10)
 
 - **Workflow run rows** (WorkflowsTab): JiraIssueChip renders inline after the status badge, before the progress counter. Multiple chips separated by 4px gap. Max 3 chips visible, overflow shows "+N more" badge.
-- **Workflow side panel** (WorkflowSidePanel): New "Linked Issues" section after the progress section, before the contractor section. Section header: "Linked Issues" (text-[13px] font-medium text-muted-foreground uppercase tracking-wider, matching existing section header pattern). Each linked task shows: task name (text-sm) + JiraIssueChip(s) on the same row.
+- **Workflow side panel** (WorkflowSidePanel): New "Linked Issues" section after the progress section, before the contractor section. Section header: "Linked Issues" (`text-sm font-semibold text-muted-foreground uppercase tracking-wider`, matching existing section header pattern). Each linked task shows: task name (text-sm) + JiraIssueChip(s) on the same row.
 - **Contractor Workflows tab**: JiraActivitySummary card renders above the workflow runs list. Card uses subtle border (not elevated) to not compete with the main content.
 
 ### Jira Activity Summary (D-10)
@@ -194,20 +194,21 @@ The primary screen focal points for Phase 19 are:
 | Primary CTA (disconnected) | "Connect Jira" |
 | Primary CTA (mapping dialog) | "Save Mapping" |
 | Configure mapping trigger | "Configure Status Mapping" |
-| Task template configure | "Configure" |
+| Task template configure | "Configure Jira" |
 | Task template switch label | "Create Jira issue when task activates" |
 | Task template no mapping | "Not configured" |
 | Task template mapping summary | "{project} / {issue type}" |
 | Mapping dialog title | "Status Mapping" |
 | Mapping dialog description | "Map workflow task statuses to Jira transitions for {project name}." |
 | Mapping dialog unmapped tooltip | "Not mapped -- status changes for this state will be ignored" |
-| Mapping dialog cancel | "Cancel" |
+| Mapping dialog cancel | "Discard Changes" |
 | Project mapping dialog title | "Configure Jira Integration" |
 | Project mapping dialog description | "Map this task to a Jira project and issue type." |
 | Project mapping project label | "Jira Project" |
 | Project mapping project placeholder | "Select a project" |
 | Project mapping type label | "Issue Type" |
 | Project mapping type placeholder | "Select an issue type" |
+| Project mapping cancel | "Discard Changes" |
 | Disconnect confirmation title | "Disconnect Jira" |
 | Disconnect confirmation body | "This will stop syncing workflow tasks with Jira. Existing linked issues will not be affected." |
 | Disconnect confirm button | "Disconnect" |
