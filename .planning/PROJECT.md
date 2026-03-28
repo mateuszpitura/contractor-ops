@@ -24,6 +24,8 @@ All 14 product modules delivered: org setup, RBAC, contractors, contracts, docum
 
 **Phase 17 complete** — KSeF native integration. Auto-fetch invoices from Poland's national e-invoicing system via REST API v2 with RSA-OAEP challenge-response auth (token primary, certificate advanced). FA(3) XML parser with Zod validation and grosze conversion. Hourly QStash cron + manual sync. KSeF invoices enter existing matching pipeline as RECEIVED. Cross-source duplicate detection by invoiceNumber + sellerTaxId with bidirectional linking. KSeF badge in invoice table, metadata section with copyable reference/UPO on detail page, duplicate banner. Full PL + EN i18n.
 
+**Phase 18 complete** — Time tracking with manual entry (weekly timesheet grid + single entry form), Clockify API adapter (5 regional base URLs, API key auth) and Jira OAuth 2.0 adapter for worklog import. Portal "Time" section with submit/approve workflow (DRAFT→SUBMITTED→APPROVED/REJECTED). Admin "Time" section with approval queue, per-contractor review, rejection dialog. Invoice reconciliation: auto-compare approved hours × rate vs invoiced amount with configurable deviation threshold (default 10%), warning-only flags. ReconciliationCard on invoice detail, ReconciliationTable in admin.
+
 ## Requirements
 
 ### Validated — v1.0
@@ -55,7 +57,7 @@ All 14 product modules delivered: org setup, RBAC, contractors, contracts, docum
 ### Active
 
 - [x] Contractor portal — magic-link auth, contract viewing, invoice submission, payment tracking, document access — Phase 13
-- [ ] Time tracking integration (Clockify, Jira, manual reporting) in contractor portal
+- [x] Time tracking integration (Clockify, Jira, manual reporting) in contractor portal — Phase 18
 - [x] E-sign integration (DocuSign + Autenti) for contracts and NDAs — Phase 15
 - [x] OCR invoice parsing — auto-extract fields from uploaded PDFs — Phase 16
 - [x] KSeF native integration — pull invoices from national system — Phase 17
