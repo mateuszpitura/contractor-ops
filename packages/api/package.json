@@ -43,6 +43,11 @@
       "types": "./src/services/ocr-extraction.ts",
       "import": "./src/services/ocr-extraction.ts",
       "default": "./src/services/ocr-extraction.ts"
+    },
+    "./services/jira-webhook-handler": {
+      "types": "./src/services/jira-webhook-handler.ts",
+      "import": "./src/services/jira-webhook-handler.ts",
+      "default": "./src/services/jira-webhook-handler.ts"
     }
   },
   "scripts": {

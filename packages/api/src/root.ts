@@ -23,6 +23,7 @@ import { ocrRouter } from "./routers/ocr.js";
 import { ksefRouter } from "./routers/ksef.js";
 import { portalTimeRouter } from "./routers/portal-time.js";
 import { timeRouter } from "./routers/time.js";
+import { jiraRouter } from "./routers/jira.js";
 
 /**
  * Root tRPC router merging all sub-routers.
@@ -73,6 +74,7 @@ export const appRouter = router({
   ksef: ksefRouter,
   portalTime: portalTimeRouter,
   time: timeRouter,
+  jira: jiraRouter,
 });
 
 /** Type-safe router type for client consumption */
