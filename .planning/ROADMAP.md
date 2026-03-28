@@ -37,7 +37,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 - [x] **Phase 16: OCR Invoice Parsing** — Auto-extract invoice fields from PDFs with confidence scores and human review (completed 2026-03-27)
 - [x] **Phase 17: KSeF Integration** — Auto-fetch invoices from national e-invoicing system with XML parsing and duplicate detection (completed 2026-03-27)
 - [x] **Phase 18: Time Tracking** — Manual hour logging, manager approval, Clockify/Jira import, invoice deviation flagging (completed 2026-03-27)
-- [ ] **Phase 19: Jira Integration** — OAuth connection, workflow-to-issue creation, bidirectional status sync, linked issue display
+- [x] **Phase 19: Jira Integration** — OAuth connection, workflow-to-issue creation, bidirectional status sync, linked issue display (completed 2026-03-28)
 - [ ] **Phase 20: Documentation & Calendar** — Notion/Confluence page linking and Google/Outlook calendar deadline sync
 
 ## Phase Details
@@ -180,7 +180,7 @@ Plans:
 - [x] 19-01-PLAN.md — JiraAdapter scope expansion, Zod validators, issue sync service, webhook handler, status mapping service
 - [x] 19-02-PLAN.md — Jira tRPC router (11 procedures), webhook endpoint for bidirectional sync
 - [x] 19-03-PLAN.md — Jira provider section, status mapping dialog, project mapping dialog in settings UI
-- [ ] 19-04-PLAN.md — JiraIssueChip, JiraActivitySummary, JiraTaskConfig, workflow view integration
+- [x] 19-04-PLAN.md — JiraIssueChip, JiraActivitySummary, JiraTaskConfig, workflow view integration
 
 ### Phase 20: Documentation & Calendar
 **Goal**: External documentation and calendar deadlines are accessible from within Contractor Ops without context-switching
@@ -222,5 +222,5 @@ Phases execute in numeric order: 12 → 13 → 14 → 15 → 16 → 17 → 18 �
 | 16. OCR Invoice Parsing | v2.0 | 3/3 | Complete    | 2026-03-27 |
 | 17. KSeF Integration | v2.0 | 3/3 | Complete    | 2026-03-27 |
 | 18. Time Tracking | v2.0 | 6/6 | Complete    | 2026-03-28 |
-| 19. Jira Integration | v2.0 | 4/5 | In Progress|  |
+| 19. Jira Integration | v2.0 | 5/5 | Complete   | 2026-03-28 |
 | 20. Documentation & Calendar | v2.0 | 0/0 | Not started | - |
