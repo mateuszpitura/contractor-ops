@@ -173,11 +173,14 @@ Plans:
   2. Workflow steps can auto-create Jira issues with configurable project and issue type mapping
   3. When a linked Jira issue changes status, the corresponding workflow task updates automatically (and vice versa via configurable mapping)
   4. Linked Jira issues appear as clickable chips on contractor profile and workflow detail views
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- [ ] 19-01: TBD
-- [ ] 19-02: TBD
+- [ ] 19-00-PLAN.md — Wave 0 test stubs for all Jira backend services (Nyquist compliance)
+- [ ] 19-01-PLAN.md — JiraAdapter scope expansion, Zod validators, issue sync service, webhook handler, status mapping service
+- [ ] 19-02-PLAN.md — Jira tRPC router (11 procedures), webhook endpoint for bidirectional sync
+- [ ] 19-03-PLAN.md — Jira provider section, status mapping dialog, project mapping dialog in settings UI
+- [ ] 19-04-PLAN.md — JiraIssueChip, JiraActivitySummary, JiraTaskConfig, workflow view integration
 
 ### Phase 20: Documentation & Calendar
 **Goal**: External documentation and calendar deadlines are accessible from within Contractor Ops without context-switching
@@ -219,5 +222,5 @@ Phases execute in numeric order: 12 → 13 → 14 → 15 → 16 → 17 → 18 �
 | 16. OCR Invoice Parsing | v2.0 | 3/3 | Complete    | 2026-03-27 |
 | 17. KSeF Integration | v2.0 | 3/3 | Complete    | 2026-03-27 |
 | 18. Time Tracking | v2.0 | 6/6 | Complete    | 2026-03-28 |
-| 19. Jira Integration | v2.0 | 0/0 | Not started | - |
+| 19. Jira Integration | v2.0 | 0/5 | Not started | - |
 | 20. Documentation & Calendar | v2.0 | 0/0 | Not started | - |
