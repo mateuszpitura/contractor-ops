@@ -12,6 +12,8 @@ import { ProviderConnectionCard } from "./provider-connection-card";
 import { SlackUserMapping } from "./slack-user-mapping";
 import { KsefSetupDialog } from "./ksef-setup-dialog";
 import { KsefSyncHistory } from "./ksef-sync-history";
+import { JiraProviderSection } from "@/components/integrations/jira-provider-section";
+import { JiraLogo } from "@/components/integrations/jira-logo";
 
 // ---------------------------------------------------------------------------
 // Slack logo SVG (extracted from slack-connection-card.tsx for reuse)
@@ -63,6 +65,12 @@ const PROVIDER_CONFIG = [
     displayName: "KSeF",
     icon: <ShieldCheck className="size-8 text-primary" />,
     descriptionKey: "ksef.descriptionDisconnected" as const,
+  },
+  {
+    provider: "jira",
+    displayName: "Jira",
+    icon: <JiraLogo className="size-8" />,
+    descriptionKey: "jira.descriptionDisconnected" as const,
   },
 ];
 
@@ -193,9 +201,9 @@ export function IntegrationsTab() {
     | undefined;
   const isSlackConnected = slackHealth?.status === "CONNECTED";
 
-  // Non-KSeF providers (KSeF rendered separately for custom behavior)
+  // Non-KSeF/Jira providers (rendered separately for custom behavior)
   const standardProviders = PROVIDER_CONFIG.filter(
-    (c) => c.provider !== "ksef",
+    (c) => c.provider !== "ksef" && c.provider !== "jira",
   );
 
   return (
@@ -214,6 +222,9 @@ export function IntegrationsTab() {
 
         {/* KSeF has custom connect dialog + sync controls */}
         <KsefProviderSection />
+
+        {/* Jira has custom status mapping controls */}
+        <JiraProviderSection />
       </div>
 
       {/* Slack-specific user mapping (preserved for backward compatibility) */}
