@@ -18,6 +18,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Link } from "@/i18n/navigation";
+import { JiraIssueChip } from "@/components/integrations/jira-issue-chip";
 
 // ---------------------------------------------------------------------------
 // Status badge colors (same as columns.tsx)
@@ -31,6 +32,87 @@ const statusBadgeColors: Record<string, string> = {
   BLOCKED: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
   OVERDUE: "bg-red-500/10 text-red-600 dark:text-red-400",
 };
+
+// ---------------------------------------------------------------------------
+// Linked issue type from metadataJson
+// ---------------------------------------------------------------------------
+
+interface LinkedIssueData {
+  id: string;
+  metadataJson: {
+    key: string;
+    summary: string;
+    status: string;
+    statusCategory: "new" | "indeterminate" | "done";
+    url: string;
+  };
+  externalUrl: string;
+}
+
+/**
+ * Linked Issues section for the workflow side panel.
+ * Only renders when Jira is connected.
+ */
+function LinkedIssuesSection({ runId }: { runId: string }) {
+  const connectionQuery = useQuery({
+    ...trpc.jira.connectionStatus.queryOptions(),
+    staleTime: Infinity,
+  });
+
+  const issuesQuery = useQuery({
+    ...trpc.jira.linkedIssues.queryOptions({
+      entityType: "WORKFLOW_RUN",
+      entityId: runId,
+    }),
+    enabled: !!connectionQuery.data,
+  });
+
+  // Don't render the section at all if Jira isn't connected
+  if (!connectionQuery.data) return null;
+
+  const issues = (issuesQuery.data ?? []) as unknown as LinkedIssueData[];
+
+  return (
+    <>
+      <Separator />
+      <div className="space-y-3">
+        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+          Linked Issues
+        </h3>
+
+        {issuesQuery.isLoading ? (
+          // Loading skeleton: 2 rows
+          <div className="space-y-2">
+            {Array.from({ length: 2 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <Skeleton className="h-4 w-[100px]" />
+                <Skeleton className="h-6 w-[120px] rounded-md" />
+              </div>
+            ))}
+          </div>
+        ) : issues.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            No linked Jira issues for this workflow.
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {issues.map((issue) => (
+              <div key={issue.id} className="flex items-center gap-2">
+                <JiraIssueChip
+                  issueKey={issue.metadataJson.key}
+                  summary={issue.metadataJson.summary}
+                  status={issue.metadataJson.status}
+                  statusCategory={issue.metadataJson.statusCategory}
+                  url={issue.metadataJson.url ?? issue.externalUrl}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Component
@@ -154,6 +236,9 @@ export function WorkflowSidePanel({ runId, onClose }: WorkflowSidePanelProps) {
                     {taskSummary.done} of {taskSummary.total} tasks complete
                   </p>
                 </div>
+
+                {/* Linked Jira Issues */}
+                <LinkedIssuesSection runId={run.id} />
 
                 <Separator />
 
