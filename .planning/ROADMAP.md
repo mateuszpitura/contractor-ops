@@ -176,7 +176,7 @@ Plans:
 **Plans**: 5 plans
 
 Plans:
-- [ ] 19-00-PLAN.md — Wave 0 test stubs for all Jira backend services (Nyquist compliance)
+- [x] 19-00-PLAN.md — Wave 0 test stubs for all Jira backend services (Nyquist compliance)
 - [x] 19-01-PLAN.md — JiraAdapter scope expansion, Zod validators, issue sync service, webhook handler, status mapping service
 - [ ] 19-02-PLAN.md — Jira tRPC router (11 procedures), webhook endpoint for bidirectional sync
 - [ ] 19-03-PLAN.md — Jira provider section, status mapping dialog, project mapping dialog in settings UI

@@ -70,6 +70,7 @@ Plan: 2 of 5
 | Phase 18 P03 | 8min | 2 tasks | 12 files |
 | Phase 18 P04 | 6min | 2 tasks | 8 files |
 | Phase 18-time-tracking P05 | 6min | 2 tasks | 9 files |
+| Phase 19-jira-integration P00 | 2min | 1 tasks | 4 files |
 | Phase 19 P01 | 5min | 2 tasks | 6 files |
 
 ## Accumulated Context
@@ -124,6 +125,7 @@ Recent decisions affecting current work:
 - [Phase 18]: Grid uses local state during edit, onBlur triggers tRPC mutation for responsive UX
 - [Phase 18]: Used groupBy queries for listContractors to avoid Prisma _count relation filter type issues in parallel execution
 - [Phase 18-time-tracking]: Loosely typed PrismaClient in reconciliation service for parallel execution compatibility
+- [Phase 19-jira-integration]: Followed exact ksef-sync.test.ts pattern for consistency across all test stub files
 - [Phase 19]: Loop prevention uses lastSyncOrigin marker on ExternalLink.metadataJson with 30s window
 - [Phase 19]: Webhook verification allows passthrough when no secret configured (3LO dynamic webhook secret support ambiguous)
 - [Phase 19]: Single webhook registration with combined JQL filter to respect 5-per-app limit
