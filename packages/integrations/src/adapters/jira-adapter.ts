@@ -1,5 +1,7 @@
+import { createHmac, timingSafeEqual } from "node:crypto";
 import type { OAuthConfig } from "../types/provider.js";
 import type { CredentialBlob } from "../types/credentials.js";
+import type { WebhookVerificationResult } from "../types/webhook.js";
 import type { ProviderHealthStatus } from "../types/health.js";
 import { BaseAdapter } from "./base-adapter.js";
 
@@ -14,6 +16,8 @@ import { BaseAdapter } from "./base-adapter.js";
  *
  * Scopes:
  * - read:jira-work — read worklogs, issues, projects
+ * - write:jira-work — create issues, execute transitions
+ * - manage:jira-webhook — register/deregister dynamic webhooks
  * - offline_access — receive a refresh token for long-lived access
  */
 const JIRA_OAUTH_CONFIG: OAuthConfig = {
@@ -21,7 +25,7 @@ const JIRA_OAUTH_CONFIG: OAuthConfig = {
   clientSecretEnvVar: "JIRA_CLIENT_SECRET",
   authorizationUrl: "https://auth.atlassian.com/authorize",
   tokenUrl: "https://auth.atlassian.com/oauth/token",
-  scopes: ["read:jira-work", "offline_access"],
+  scopes: ["read:jira-work", "write:jira-work", "manage:jira-webhook", "offline_access"],
   redirectPath: "/api/oauth/jira/callback",
 };
 
@@ -40,15 +44,13 @@ export const JIRA_EXTRA_AUTH_PARAMS: Record<string, string> = {
 // ---------------------------------------------------------------------------
 
 /**
- * Integration adapter for Jira Cloud (worklog import).
+ * Integration adapter for Jira Cloud (issue lifecycle + worklog import).
  *
  * Supports:
  * - OAuth 2.0 3LO Authorization Code Grant
  * - Cloud ID discovery via accessible-resources endpoint
+ * - Webhook signature verification (HMAC-SHA256)
  * - Health status checks via sync log
- *
- * Does NOT support webhooks in this phase (D-09: on-demand polling only).
- * Full Jira integration with issue sync deferred to Phase 19 (D-12).
  *
  * Env vars required:
  * - JIRA_CLIENT_ID, JIRA_CLIENT_SECRET — for OAuth
@@ -58,7 +60,7 @@ export class JiraAdapter extends BaseAdapter {
   readonly slug = "jira";
   readonly displayName = "Jira";
   readonly supportsOAuth = true;
-  readonly supportsWebhooks = false;
+  readonly supportsWebhooks = true;
 
   // -------------------------------------------------------------------------
   // OAuth
@@ -168,6 +170,111 @@ export class JiraAdapter extends BaseAdapter {
         Date.now() + data.expires_in * 1000,
       ).toISOString(),
     };
+  }
+
+  // -------------------------------------------------------------------------
+  // Webhooks
+  // -------------------------------------------------------------------------
+
+  /**
+   * Verifies an inbound Jira webhook signature using HMAC-SHA256.
+   *
+   * Jira sends an `X-Hub-Signature` header with format `sha256=<hex>`.
+   * The secret is stored in IntegrationConnection.configJson.webhookSecret
+   * and passed through the `x-webhook-secret` header by the webhook pipeline.
+   *
+   * @param rawBody - The raw request body string
+   * @param headers - Request headers (lowercased keys)
+   * @returns Verification result with eventType extracted from payload
+   */
+  verifyWebhookSignature(
+    rawBody: string,
+    headers: Record<string, string>,
+  ): WebhookVerificationResult {
+    const signatureHeader =
+      headers["x-hub-signature"] ?? headers["X-Hub-Signature"];
+    const secret =
+      headers["x-webhook-secret"] ?? headers["X-Webhook-Secret"];
+
+    // If no secret is configured, allow through (3LO dynamic webhooks
+    // may not support custom secrets — see RESEARCH.md open question #2).
+    // The webhook pipeline falls back to ExternalLink matching for validation.
+    if (!secret) {
+      let eventType: string | undefined;
+      try {
+        const parsed = JSON.parse(rawBody) as { webhookEvent?: string };
+        eventType = parsed.webhookEvent;
+      } catch {
+        // Payload parse failure — still mark as valid for pipeline to handle
+      }
+      return { valid: true, eventType };
+    }
+
+    if (!signatureHeader) {
+      return { valid: false };
+    }
+
+    const [method, signature] = signatureHeader.split("=");
+    if (method !== "sha256" || !signature) {
+      return { valid: false };
+    }
+
+    const expected = createHmac("sha256", secret)
+      .update(rawBody)
+      .digest("hex");
+
+    let valid: boolean;
+    try {
+      valid = timingSafeEqual(
+        Buffer.from(signature, "hex"),
+        Buffer.from(expected, "hex"),
+      );
+    } catch {
+      // Buffer length mismatch — invalid signature
+      valid = false;
+    }
+
+    let eventType: string | undefined;
+    if (valid) {
+      try {
+        const parsed = JSON.parse(rawBody) as { webhookEvent?: string };
+        eventType = parsed.webhookEvent;
+      } catch {
+        // Payload parse failure handled downstream
+      }
+    }
+
+    return { valid, eventType };
+  }
+
+  /**
+   * Handles an inbound Jira webhook payload.
+   *
+   * This is a thin entry point called by the Phase 12 webhook pipeline.
+   * The actual processing is delegated to the jira-webhook-handler service
+   * which is invoked by the _process route after this method returns.
+   */
+  async handleWebhook(
+    _payload: unknown,
+    _organizationId: string,
+    _connectionId: string,
+  ): Promise<void> {
+    // Webhook processing is handled by the _process route which calls
+    // processJiraWebhook from @contractor-ops/api. This method exists
+    // to satisfy the BaseAdapter interface and signal webhook support.
+  }
+
+  // -------------------------------------------------------------------------
+  // Scopes
+  // -------------------------------------------------------------------------
+
+  /**
+   * Returns the full set of OAuth scopes required by the Jira adapter.
+   * Used to detect whether an existing connection needs scope expansion
+   * (e.g., Phase 18 read-only connections upgraded to Phase 19 write access).
+   */
+  getRequiredScopes(): string[] {
+    return ["read:jira-work", "write:jira-work", "manage:jira-webhook", "offline_access"];
   }
 
   // -------------------------------------------------------------------------
@@ -317,7 +424,7 @@ export class JiraAdapter extends BaseAdapter {
         startedAt: s.startedAt,
         completedAt: s.completedAt,
       })),
-      recentWebhooks: [], // No webhooks in this phase (D-09)
+      recentWebhooks: [],
       errorCountLast24h,
     };
   }

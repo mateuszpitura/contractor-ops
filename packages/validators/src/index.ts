@@ -263,3 +263,24 @@ export type {
   SyncExternalEntries,
   TimeReconciliation,
 } from "./time-tracking.js";
+
+export {
+  jiraWebhookPayloadSchema,
+  jiraTaskConfigSchema,
+  jiraStatusMappingEntrySchema,
+  jiraStatusMappingSchema,
+  jiraIssueMetadataSchema,
+  jiraProjectSchema,
+  jiraIssueTypeSchema,
+  jiraTransitionSchema,
+  jiraWebhookRegistrationSchema,
+  saveJiraStatusMappingInputSchema,
+  saveJiraTaskConfigInputSchema,
+} from "./jira.js";
+export type {
+  JiraWebhookPayload,
+  JiraTaskConfig,
+  JiraStatusMappingEntry,
+  JiraStatusMapping,
+  JiraIssueMetadata,
+} from "./jira.js";
