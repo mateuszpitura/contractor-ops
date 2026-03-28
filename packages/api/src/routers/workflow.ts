@@ -1078,6 +1078,40 @@ export const workflowRouter = router({
         return updated;
       });
 
+      // Fire-and-forget outbound Jira transition (non-blocking)
+      if (result.externalRefType === "JIRA_ISSUE" && result.externalRefId) {
+        void (async () => {
+          try {
+            const { transitionJiraIssue } = await import(
+              "../services/jira-issue-sync.js"
+            );
+            const connection =
+              await prisma.integrationConnection.findFirst({
+                where: {
+                  organizationId: ctx.organizationId,
+                  provider: "JIRA",
+                  status: "CONNECTED",
+                },
+                select: { id: true },
+              });
+            if (connection) {
+              await transitionJiraIssue(
+                prisma,
+                ctx.organizationId,
+                connection.id,
+                result.id,
+                "DONE",
+              );
+            }
+          } catch (err) {
+            console.error(
+              "[workflow/completeTask] Outbound Jira transition failed:",
+              err,
+            );
+          }
+        })();
+      }
+
       return plain(result);
     }),
 
@@ -1150,6 +1184,40 @@ export const workflowRouter = router({
 
         return updated;
       });
+
+      // Fire-and-forget outbound Jira transition (non-blocking)
+      if (result.externalRefType === "JIRA_ISSUE" && result.externalRefId) {
+        void (async () => {
+          try {
+            const { transitionJiraIssue } = await import(
+              "../services/jira-issue-sync.js"
+            );
+            const connection =
+              await prisma.integrationConnection.findFirst({
+                where: {
+                  organizationId: ctx.organizationId,
+                  provider: "JIRA",
+                  status: "CONNECTED",
+                },
+                select: { id: true },
+              });
+            if (connection) {
+              await transitionJiraIssue(
+                prisma,
+                ctx.organizationId,
+                connection.id,
+                result.id,
+                "SKIPPED",
+              );
+            }
+          } catch (err) {
+            console.error(
+              "[workflow/skipTask] Outbound Jira transition failed:",
+              err,
+            );
+          }
+        })();
+      }
 
       return plain(result);
     }),

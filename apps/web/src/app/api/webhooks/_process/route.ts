@@ -68,6 +68,21 @@ async function handler(request: NextRequest) {
       delivery.integrationConnectionId ?? "",
     );
 
+    // For Jira provider, dispatch to processJiraWebhook from @contractor-ops/api.
+    // Done here in apps/web to avoid circular dependency between packages/integrations and packages/api.
+    // JiraAdapter.handleWebhook is a no-op — actual processing dispatched here.
+    if (provider === "jira") {
+      const { processJiraWebhook } = await import(
+        "@contractor-ops/api/services/jira-webhook-handler"
+      );
+      await processJiraWebhook(
+        prisma,
+        delivery.organizationId,
+        delivery.integrationConnectionId ?? "",
+        delivery.payloadJson,
+      );
+    }
+
     // For e-sign providers, check if signing was completed and trigger
     // signed PDF download + R2 storage via the orchestrator
     const isESignProvider = provider === "docusign" || provider === "autenti";
