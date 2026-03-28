@@ -178,7 +178,7 @@ Plans:
 Plans:
 - [x] 19-00-PLAN.md — Wave 0 test stubs for all Jira backend services (Nyquist compliance)
 - [x] 19-01-PLAN.md — JiraAdapter scope expansion, Zod validators, issue sync service, webhook handler, status mapping service
-- [ ] 19-02-PLAN.md — Jira tRPC router (11 procedures), webhook endpoint for bidirectional sync
+- [x] 19-02-PLAN.md — Jira tRPC router (11 procedures), webhook endpoint for bidirectional sync
 - [ ] 19-03-PLAN.md — Jira provider section, status mapping dialog, project mapping dialog in settings UI
 - [ ] 19-04-PLAN.md — JiraIssueChip, JiraActivitySummary, JiraTaskConfig, workflow view integration
 
@@ -222,5 +222,5 @@ Phases execute in numeric order: 12 → 13 → 14 → 15 → 16 → 17 → 18 �
 | 16. OCR Invoice Parsing | v2.0 | 3/3 | Complete    | 2026-03-27 |
 | 17. KSeF Integration | v2.0 | 3/3 | Complete    | 2026-03-27 |
 | 18. Time Tracking | v2.0 | 6/6 | Complete    | 2026-03-28 |
-| 19. Jira Integration | v2.0 | 1/5 | In Progress|  |
+| 19. Jira Integration | v2.0 | 3/5 | In Progress|  |
 | 20. Documentation & Calendar | v2.0 | 0/0 | Not started | - |
