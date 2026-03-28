@@ -54,10 +54,10 @@ Requirements for v2.0 Platform Expansion. Each maps to roadmap phases.
 
 ### Jira Integration
 
-- [ ] **JIRA-01**: Admin can connect Jira Cloud workspace via OAuth 2.0
-- [ ] **JIRA-02**: Workflow steps can auto-create Jira issues with configurable project/type mapping
-- [ ] **JIRA-03**: Jira issue status changes auto-update linked workflow tasks (configurable mapping)
-- [ ] **JIRA-04**: Linked Jira issues display on contractor and workflow views as clickable chips
+- [x] **JIRA-01**: Admin can connect Jira Cloud workspace via OAuth 2.0
+- [x] **JIRA-02**: Workflow steps can auto-create Jira issues with configurable project/type mapping
+- [x] **JIRA-03**: Jira issue status changes auto-update linked workflow tasks (configurable mapping)
+- [x] **JIRA-04**: Linked Jira issues display on contractor and workflow views as clickable chips
 
 ### Documentation Integration
 
@@ -140,10 +140,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | KSEF-02 | Phase 17 | Complete |
 | KSEF-03 | Phase 17 | Complete |
 | KSEF-04 | Phase 17 | Complete |
-| JIRA-01 | Phase 19 | Pending |
-| JIRA-02 | Phase 19 | Pending |
-| JIRA-03 | Phase 19 | Pending |
-| JIRA-04 | Phase 19 | Pending |
+| JIRA-01 | Phase 19 | Complete |
+| JIRA-02 | Phase 19 | Complete |
+| JIRA-03 | Phase 19 | Complete |
+| JIRA-04 | Phase 19 | Complete |
 | DOCS-01 | Phase 20 | Pending |
 | DOCS-02 | Phase 20 | Pending |
 | CAL-01 | Phase 20 | Pending |
