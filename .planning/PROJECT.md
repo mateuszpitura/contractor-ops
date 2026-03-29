@@ -26,6 +26,8 @@ All 14 product modules delivered: org setup, RBAC, contractors, contracts, docum
 
 **Phase 18 complete** — Time tracking with manual entry (weekly timesheet grid + single entry form), Clockify API adapter (5 regional base URLs, API key auth) and Jira OAuth 2.0 adapter for worklog import. Portal "Time" section with submit/approve workflow (DRAFT→SUBMITTED→APPROVED/REJECTED). Admin "Time" section with approval queue, per-contractor review, rejection dialog. Invoice reconciliation: auto-compare approved hours × rate vs invoiced amount with configurable deviation threshold (default 10%), warning-only flags. ReconciliationCard on invoice detail, ReconciliationTable in admin.
 
+**Phase 19 complete** — Jira Cloud bidirectional integration. Extended JiraAdapter with write:jira-work + manage:jira-webhook OAuth scopes and HMAC-SHA256 webhook verification. Issue sync service creates Jira issues (ADF descriptions, configurable project/type per task template) and executes outbound transitions. Inbound webhook handler processes status changes with 30s loop prevention window and 5s deduplication. Per-project status mapping CRUD with bidirectional lookup. 11-procedure tRPC router. Webhook dispatch wired into unified _process route. Fire-and-forget outbound sync in completeTask/skipTask. Settings UI: provider card with scope expansion detection, status mapping dialog, project mapping dialog. Display: JiraIssueChip (clickable with status badges), JiraActivitySummary on contractor profile, JiraTaskConfig toggle in task template editor, LinkedIssuesSection in workflow side panel.
+
 ## Requirements
 
 ### Validated — v1.0
@@ -154,4 +156,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-27 after Phase 17 (ksef-integration) completion*
+*Last updated: 2026-03-29 after Phase 19 (jira-integration) completion*
