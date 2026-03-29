@@ -14,6 +14,11 @@ import { KsefSetupDialog } from "./ksef-setup-dialog";
 import { KsefSyncHistory } from "./ksef-sync-history";
 import { JiraProviderSection } from "@/components/integrations/jira-provider-section";
 import { JiraLogo } from "@/components/integrations/jira-logo";
+import {
+  NotionIcon,
+  ConfluenceIcon,
+} from "@/components/integrations/provider-icons";
+import { OrgCalendarSection } from "./org-calendar-section";
 
 // ---------------------------------------------------------------------------
 // Slack logo SVG (extracted from slack-connection-card.tsx for reuse)
@@ -225,7 +230,26 @@ export function IntegrationsTab() {
 
         {/* Jira has custom status mapping controls */}
         <JiraProviderSection />
+
+        {/* Notion provider card */}
+        <ProviderConnectionCard
+          provider="notion"
+          displayName="Notion"
+          icon={<NotionIcon className="size-8" />}
+          description={t("provider.connectCta" as Parameters<typeof t>[0], { provider: "Notion" })}
+        />
+
+        {/* Confluence provider card */}
+        <ProviderConnectionCard
+          provider="confluence"
+          displayName="Confluence"
+          icon={<ConfluenceIcon className="size-8" />}
+          description={t("provider.connectCta" as Parameters<typeof t>[0], { provider: "Confluence" })}
+        />
       </div>
+
+      {/* Organization shared calendar section */}
+      <OrgCalendarSection />
 
       {/* Slack-specific user mapping (preserved for backward compatibility) */}
       {isSlackConnected && <SlackUserMapping />}
