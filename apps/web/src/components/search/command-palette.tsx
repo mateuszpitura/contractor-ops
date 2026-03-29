@@ -16,6 +16,7 @@ import { trpc } from "@/trpc/init";
 import { useRouter } from "@/i18n/navigation";
 import { navigationItems } from "@/lib/navigation";
 import { useSearch, type RecentItem } from "./search-provider";
+import { NotionIcon, ConfluenceIcon } from "@/components/integrations/provider-icons";
 import {
   CommandDialog,
   CommandInput,
@@ -44,6 +45,15 @@ type SearchResultItem = {
   type: "contractor" | "contract" | "invoice";
 };
 
+type DocSearchResultItem = {
+  id: string;
+  title: string;
+  icon?: string | null;
+  subtitle: string;
+  url: string;
+  provider: "notion" | "confluence";
+};
+
 // ---------------------------------------------------------------------------
 // Type badge color mapping (per UI-SPEC)
 // ---------------------------------------------------------------------------
@@ -52,6 +62,7 @@ const TYPE_BADGE_CLASSES: Record<string, string> = {
   contractor: "bg-primary/10 text-primary border-transparent",
   contract: "bg-chart-2/10 text-chart-2 border-transparent",
   invoice: "bg-warning/10 text-warning border-transparent",
+  doc: "bg-chart-3/10 text-chart-3 border-transparent",
 };
 
 // ---------------------------------------------------------------------------
@@ -158,6 +169,17 @@ export function CommandPalette() {
     if (!searchQuery.data) return [];
     return searchQuery.data as SearchResultItem[];
   }, [searchQuery.data]);
+
+  // Doc search query (runs alongside global search)
+  const docSearchQuery = useQuery({
+    ...trpc.docs.search.queryOptions({ query: debouncedQuery, provider: "all" }),
+    enabled: open && debouncedQuery.length >= 2,
+  });
+
+  const docResults = useMemo(() => {
+    if (!docSearchQuery.data) return [];
+    return (docSearchQuery.data as DocSearchResultItem[]).slice(0, 5);
+  }, [docSearchQuery.data]);
 
   // Client-side page matching
   const matchedPages = useMemo(() => {
@@ -416,6 +438,49 @@ export function CommandPalette() {
                   </CommandItem>
                 ))}
               </CommandGroup>
+            )}
+
+            {/* Doc search results */}
+            {docSearchQuery.isLoading && (
+              <CommandGroup heading="Docs">
+                <div className="space-y-2 p-2">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <Skeleton key={i} className="h-8 w-full rounded-md" />
+                  ))}
+                </div>
+              </CommandGroup>
+            )}
+            {!docSearchQuery.isLoading && docResults.length > 0 && (
+              <>
+                <CommandSeparator />
+                <CommandGroup heading="Docs">
+                  {docResults.map((result) => {
+                    const ProviderIcon =
+                      result.provider === "notion" ? NotionIcon : ConfluenceIcon;
+
+                    return (
+                      <CommandItem
+                        key={`doc-${result.provider}-${result.id}`}
+                        onSelect={() => window.open(result.url, "_blank")}
+                      >
+                        <ProviderIcon className="h-3.5 w-3.5 shrink-0" />
+                        <span className="flex-1 truncate text-sm font-medium">
+                          {result.title}
+                        </span>
+                        <span className="text-xs text-muted-foreground shrink-0">
+                          {result.subtitle}
+                        </span>
+                        <Badge
+                          variant="secondary"
+                          className={TYPE_BADGE_CLASSES.doc}
+                        >
+                          doc
+                        </Badge>
+                      </CommandItem>
+                    );
+                  })}
+                </CommandGroup>
+              </>
             )}
 
             {/* Matching pages */}
