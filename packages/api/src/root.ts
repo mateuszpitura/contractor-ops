@@ -24,6 +24,7 @@ import { ksefRouter } from "./routers/ksef.js";
 import { portalTimeRouter } from "./routers/portal-time.js";
 import { timeRouter } from "./routers/time.js";
 import { jiraRouter } from "./routers/jira.js";
+import { calendarRouter } from "./routers/calendar.js";
 
 /**
  * Root tRPC router merging all sub-routers.
@@ -48,6 +49,8 @@ import { jiraRouter } from "./routers/jira.js";
  * - search: unified cross-entity global search via tsvector (contractors, contracts, invoices)
  * - portalTime: time entry CRUD, submit, external sync for portal contractors
  * - time: manager timesheet review, approve/reject, bulk operations
+ * - jira: Jira Cloud integration — connection, projects, issue types, status mapping, task config, linked issues
+ * - calendar: Google/Outlook calendar connections, deadline sync, task config CRUD
  */
 export const appRouter = router({
   organization: organizationRouter,
@@ -75,6 +78,7 @@ export const appRouter = router({
   portalTime: portalTimeRouter,
   time: timeRouter,
   jira: jiraRouter,
+  calendar: calendarRouter,
 });
 
 /** Type-safe router type for client consumption */
