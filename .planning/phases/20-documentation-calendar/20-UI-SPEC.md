@@ -64,13 +64,13 @@ Two weights: 400 (`font-normal`) for body text, 600 (`font-semibold`) for labels
 |------|-------|-------|
 | Dominant (60%) | `--background` oklch(0.985 0.003 85) | Page background, dialog background, Cmd+K dialog background |
 | Secondary (30%) | `--card` oklch(1 0 0), `--muted` oklch(0.955 0.004 250) | Doc link chips background, calendar settings card, provider card |
-| Accent (10%) | `--primary` oklch(0.44 0.145 178) -- Deep Teal | "Attach Document" CTA, "Connect Calendar" CTA, "Save" button, focus rings, active connection indicator |
+| Accent (10%) | `--primary` oklch(0.44 0.145 178) -- Deep Teal | "Attach Document" CTA, "Connect Calendar" CTA, "Save Event Config" button, focus rings, active connection indicator |
 | Destructive | `--destructive` oklch(0.58 0.23 18) | Remove doc link confirmation, disconnect calendar confirmation, sync failure status |
 | Success | `--success` oklch(0.55 0.17 150) | Connected status badge, calendar event created confirmation |
 | Warning | `--warning` oklch(0.70 0.16 65) | Calendar token expiry approaching, stale doc metadata indicator |
 | Info | `--info` oklch(0.55 0.18 260) | Sync in-progress indicator, Cmd+K doc search loading |
 
-Accent reserved for: "Attach Document" primary CTA on task card, "Connect Calendar" primary CTA on settings, "Save" button in calendar event config dialog, Cmd+K "Docs" group badge text, focus ring on doc search input, active connection dot on calendar provider card.
+Accent reserved for: "Attach Document" primary CTA on task card, "Connect Calendar" primary CTA on settings, "Save Event Config" button in calendar event config dialog, Cmd+K "Docs" group badge text, focus ring on doc search input, active connection dot on calendar provider card.
 
 ### Doc Provider Colors
 
@@ -95,7 +95,7 @@ Accent reserved for: "Attach Document" primary CTA on task card, "Connect Calend
 | Component | Source | Phase 20 Usage |
 |-----------|--------|----------------|
 | Card, CardContent, CardHeader, CardTitle | `ui/card` | Calendar settings card, doc links section card |
-| Button | `ui/button` | Attach Document, Connect Calendar, Remove link, Save |
+| Button | `ui/button` | Attach Document, Connect Calendar, Remove link, Save Event Config |
 | Badge | `ui/badge` | Provider type badge (Notion/Confluence), connection status, Cmd+K doc type badge |
 | Input, Label | `ui/input`, `ui/label` | Calendar event title template, duration, search input |
 | Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter | `ui/dialog` | Attach Document dialog, Calendar Event Config dialog |
@@ -122,13 +122,13 @@ Accent reserved for: "Attach Document" primary CTA on task card, "Connect Calend
 
 | Component | Description |
 |-----------|-------------|
-| DocLinkChip | Compact inline chip showing linked Notion/Confluence page. Renders as `<a>` opening page URL in new tab. Layout: `[provider-icon 14px] [page title]` in a single row. Background: `bg-muted/50` with `border border-border` and `rounded-md`. Padding: `py-1 px-2` (4px vertical, 8px horizontal). Page title in `text-xs font-medium text-foreground` with truncation at max-width 220px. Hover: `bg-muted` transition 150ms. `target="_blank" rel="noopener noreferrer"`. `aria-label="Open {title} in {provider} (new tab)"`. Remove button: X icon (12px) on right, visible on hover, `text-muted-foreground hover:text-destructive`. Tooltip on hover shows "Last edited {relative time}". |
+| DocLinkChip | Compact inline chip showing linked Notion/Confluence page. Renders as `<a>` opening page URL in new tab. Layout: `[provider-icon 14px] [page title]` in a single row. Background: `bg-muted/50` with `border border-border` and `rounded-md`. Padding: `py-1 px-2` (4px vertical, 8px horizontal). Page title in `text-xs font-medium text-foreground` with truncation at max-width 220px. Hover: `bg-muted` transition 150ms. `target="_blank" rel="noopener noreferrer"`. `aria-label="Open {title} in {provider} (new tab)"`. Remove button: X icon (12px) on right, visible on hover, `text-muted-foreground hover:text-destructive`, `aria-label="Remove link to {title}"`. Tooltip on hover shows "Last edited {relative time}". |
 | AttachDocDialog | Modal dialog for searching and attaching Notion/Confluence pages to a workflow step. Dialog width: `sm:max-w-lg` (480px). Header: "Attach Document" title + "Search for a page to link to this step." description. Body: Search input with debounce (200ms), provider filter tabs (All / Notion / Confluence), scrollable results list. Each result row: provider icon (14px) + page title (text-sm font-medium) + workspace/space name (text-xs text-muted-foreground). Click selects and attaches. Footer: "Cancel" outline button. Loading: Skeleton rows (3 items). Empty: "No pages found matching your search." |
-| DocLinksSection | Section within workflow task card (both template and run views) showing attached doc links. Header row: FileText icon (14px) + "Documents" label (text-sm font-semibold) + "Attach" ghost button (right-aligned). Body: flex-wrap list of DocLinkChip components with 8px gap. Empty state: "No documents attached." text in text-xs text-muted-foreground. "Attach" button opens AttachDocDialog. |
-| CalendarProviderCard | Personal calendar connection card in Settings > My Calendar page. Uses ProviderConnectionCard pattern. Card header: provider icon (32px) + "Google Calendar" or "Outlook Calendar" title + status badge. Body when disconnected: "Connect your calendar to receive deadline reminders and meeting invites." + "Connect" primary button (triggers per-user OAuth). Body when connected: account email + connected date + "Disconnect" destructive outline button. |
+| DocLinksSection | Section within workflow task card (both template and run views) showing attached doc links. Header row: FileText icon (14px) + "Documents" label (text-sm font-semibold) + "Attach Document" ghost button (right-aligned). Body: flex-wrap list of DocLinkChip components with 8px gap. Empty state: "No documents attached." text in text-xs text-muted-foreground. "Attach Document" button opens AttachDocDialog. |
+| CalendarProviderCard | Personal calendar connection card in Settings > My Calendar page. Uses ProviderConnectionCard pattern. Card header: provider icon (32px) + "Google Calendar" or "Outlook Calendar" title + status badge. Body when disconnected: "Connect your calendar to receive deadline reminders and meeting invites." + "Connect Calendar" primary button (triggers per-user OAuth). Body when connected: account email + connected date + "Disconnect Calendar" destructive outline button. |
 | MyCalendarPage | New personal settings page at Settings > My Calendar (D-14). Page header: "My Calendar" heading + "Connect your personal calendar to sync deadlines and events from Contractor Ops." description. Body: CalendarProviderCard for Google + CalendarProviderCard for Outlook, stacked with 16px gap. Below cards: "Synced Events" section showing count of active calendar events pushed by the system. |
 | CalendarTaskConfig | Inline configuration section rendered within workflow task template editor, below JiraTaskConfig. Contains: "Create calendar event when task activates" Switch (left) + event summary (center, flex-1) + "Configure" ghost button (right). Single-row flex layout. When configured: summary shows "{title template} - {duration}" in text-sm. When not configured: shows "Not configured" in text-sm text-muted-foreground. "Configure" button opens CalendarEventConfigDialog. Switch disabled when no configuration exists. |
-| CalendarEventConfigDialog | Modal dialog for configuring calendar event creation per workflow task template (D-09). Dialog width: `sm:max-w-md` (448px). Header: "Calendar Event" title + "Configure the event created when this task activates." description. Body: "Event Title" Input with template variables shown as muted hint below ("{contractor}, {contract}, {task}"), "Duration" Select (30min, 1h, 2h, 4h, full day), "Attendees" text area for comma-separated emails. Footer: "Cancel" outline button + "Save" primary button. |
+| CalendarEventConfigDialog | Modal dialog for configuring calendar event creation per workflow task template (D-09). Dialog width: `sm:max-w-md` (448px). Header: "Calendar Event" title + "Configure the event created when this task activates." description. Body: "Event Title" Input with template variables shown as muted hint below ("{contractor}, {contract}, {task}"), "Duration" Select (30min, 1h, 2h, 4h, full day), "Attendees" text area for comma-separated emails. Footer: "Cancel" outline button + "Save Event Config" primary button. |
 | OrgCalendarSection | Admin settings section for shared org calendar connection. Renders in IntegrationsTab alongside Notion/Confluence. Uses ProviderConnectionCard pattern. When connected, events pushed to both org shared calendar and individual user calendars. |
 
 ---
@@ -147,18 +147,18 @@ The primary screen focal points for Phase 20 are:
 ### Doc Links on Workflow Task Card (DOCS-01, D-01, D-02, D-03)
 
 - Location: within each workflow task card (template editor and run view), below JiraTaskConfig, above CalendarTaskConfig
-- DocLinksSection renders a header row with FileText icon + "Documents" label + "Attach" ghost button
+- DocLinksSection renders a header row with FileText icon + "Documents" label + "Attach Document" ghost button
 - Attached docs display as flex-wrap DocLinkChip list with 8px (`gap-2`) between chips
 - Each chip is a clickable link opening the Notion/Confluence page in a new tab (D-07)
-- Remove button (X, 12px) on each chip is visible on hover only, triggers AlertDialog confirmation
-- "Attach" button opens AttachDocDialog for search-and-select
+- Remove button (X, 12px) on each chip is visible on hover only, has `aria-label="Remove link to {title}"`, triggers AlertDialog confirmation
+- "Attach Document" button opens AttachDocDialog for search-and-select
 - Template view: attach/remove available (editable)
 - Run view: read-only display of inherited doc links (no attach/remove buttons)
 - Multiple links per step supported (D-02)
 
 ### Attach Document Dialog (DOCS-01, D-04, D-06)
 
-- Trigger: "Attach" ghost button in DocLinksSection
+- Trigger: "Attach Document" ghost button in DocLinksSection
 - Dialog width: `sm:max-w-lg` (480px)
 - Search input at top with placeholder "Search Notion and Confluence pages..."
 - Provider filter as inline toggle group below search: "All" (default) | "Notion" (with icon) | "Confluence" (with icon)
@@ -209,7 +209,7 @@ The primary screen focal points for Phase 20 are:
 - Below input: muted hint text "Available variables: {contractor}, {contract}, {task}" in text-xs text-muted-foreground
 - "Duration" Select with options: "30 minutes", "1 hour", "2 hours", "4 hours", "Full day"
 - "Attendees" Textarea with placeholder "email@example.com, another@example.com" and helper "Comma-separated email addresses. The contractor and task assignee are included automatically." in text-xs text-muted-foreground
-- Footer: "Cancel" outline button (left) + "Save" primary button (right)
+- Footer: "Cancel" outline button (left) + "Save Event Config" primary button (right)
 
 ### Notion/Confluence Provider Cards (D-13, settings)
 
@@ -232,7 +232,7 @@ The primary screen focal points for Phase 20 are:
 
 | Element | Copy |
 |---------|------|
-| Attach doc CTA | "Attach" |
+| Attach doc CTA | "Attach Document" |
 | Attach dialog title | "Attach Document" |
 | Attach dialog description | "Search for a page to link to this step." |
 | Attach dialog search placeholder | "Search Notion and Confluence pages..." |
@@ -248,13 +248,14 @@ The primary screen focal points for Phase 20 are:
 | Cmd+K docs group heading | "Docs" |
 | Cmd+K doc badge | "doc" |
 | Chip aria-label | "Open {title} in {provider} (new tab)" |
-| Connect calendar CTA | "Connect" |
+| Chip remove aria-label | "Remove link to {title}" |
+| Connect calendar CTA | "Connect Calendar" |
 | My Calendar page heading | "My Calendar" |
 | My Calendar page description | "Connect your personal calendar to sync deadlines and events from Contractor Ops." |
 | Calendar connected toast | "{provider} connected successfully" |
 | Calendar disconnect title | "Disconnect {provider}" |
 | Calendar disconnect body | "Upcoming events will no longer be synced. Existing events on your calendar will not be removed." |
-| Calendar disconnect confirm | "Disconnect" |
+| Calendar disconnect confirm | "Disconnect Calendar" |
 | Calendar disconnect cancel | "Keep Connection" |
 | Calendar task switch label | "Create calendar event when task activates" |
 | Calendar task not configured | "Not configured" |
@@ -269,7 +270,7 @@ The primary screen focal points for Phase 20 are:
 | Calendar event attendees placeholder | "email@example.com, another@example.com" |
 | Calendar event attendees hint | "Comma-separated email addresses. The contractor and task assignee are included automatically." |
 | Calendar event config cancel | "Cancel" |
-| Calendar event config save | "Save" |
+| Calendar event config save | "Save Event Config" |
 | Calendar event saved toast | "Calendar event configuration saved" |
 | Active synced events label | "Active Synced Events" |
 | Active synced events count | "{N} events synced" |
