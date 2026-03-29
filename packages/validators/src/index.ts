@@ -265,6 +265,34 @@ export type {
 } from "./time-tracking.js";
 
 export {
+  notionPageMetadataSchema,
+  confluencePageMetadataSchema,
+  docSearchResultSchema,
+  attachDocInputSchema,
+  docSearchInputSchema,
+} from "./docs.js";
+export type {
+  NotionPageMetadata,
+  ConfluencePageMetadata,
+  DocSearchResult,
+  AttachDocInput,
+  DocSearchInput,
+} from "./docs.js";
+
+export {
+  calendarTaskConfigSchema,
+  calendarEventMetadataSchema,
+  deadlineTypeSchema,
+  createCalendarEventInputSchema,
+} from "./calendar.js";
+export type {
+  CalendarTaskConfig,
+  CalendarEventMetadata,
+  DeadlineType,
+  CreateCalendarEventInput,
+} from "./calendar.js";
+
+export {
   jiraWebhookPayloadSchema,
   jiraTaskConfigSchema,
   jiraStatusMappingEntrySchema,

@@ -46,6 +46,7 @@ model User {
 
   // Integration relations
   integrationConnections IntegrationConnection[]
+  personalConnections    IntegrationConnection[] @relation("personalConnections")
 
   // Communication relations
   notifications        Notification[]

@@ -9,6 +9,7 @@ model IntegrationConnection {
   configJson        Json?
   credentialsRef    String
   connectedByUserId String
+  userId            String?           // null = org-level, set = per-user personal connection (D-12, D-14)
   connectedAt       DateTime          @default(now())
   lastSyncAt        DateTime?
   lastSuccessAt     DateTime?
@@ -21,12 +22,14 @@ model IntegrationConnection {
 
   organization      Organization @relation(fields: [organizationId], references: [id])
   connectedBy       User         @relation(fields: [connectedByUserId], references: [id])
+  user              User?        @relation("personalConnections", fields: [userId], references: [id])
 
   externalLinks     ExternalLink[]
   syncLogs          IntegrationSyncLog[]
 
   @@index([organizationId])
   @@index([organizationId, provider, status])
+  @@index([organizationId, userId, provider])
   @@index([status, tokenExpiresAt])
 }
 
@@ -110,6 +113,10 @@ enum IntegrationProvider {
   GITHUB
   GITLAB
   CLOCKIFY
+  NOTION
+  CONFLUENCE
+  GOOGLE_CALENDAR
+  OUTLOOK_CALENDAR
 }
 
 enum IntegrationStatus {
