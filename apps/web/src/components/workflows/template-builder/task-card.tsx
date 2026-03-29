@@ -40,6 +40,7 @@ import {
 } from "@/components/ui/select";
 
 import { trpc } from "@/trpc/init";
+import { JiraTaskConfig } from "@/components/integrations/jira-task-config";
 import { ConditionBuilder, getConditionSummary } from "./condition-builder";
 import type { TemplateFormValues, TaskFormValues } from "./use-template-form";
 
@@ -482,6 +483,11 @@ export function TaskCard({
                 onChange={handleConditionsChange}
               />
             </div>
+
+            {/* Jira integration — only for saved task templates */}
+            {task?.id && (
+              <JiraTaskConfig taskTemplateId={task.id} />
+            )}
 
             {/* Actions */}
             <div className="flex items-center justify-between border-t pt-3">
