@@ -228,4 +228,4 @@ Phases execute in numeric order: 12 → 13 → 14 → 15 → 16 → 17 → 18 �
 | 17. KSeF Integration | v2.0 | 3/3 | Complete    | 2026-03-27 |
 | 18. Time Tracking | v2.0 | 6/6 | Complete    | 2026-03-28 |
 | 19. Jira Integration | v2.0 | 6/6 | Complete    | 2026-03-29 |
-| 20. Documentation & Calendar | v2.0 | 6/6 | Complete   | 2026-03-29 |
+| 20. Documentation & Calendar | v2.0 | 6/6 | Complete    | 2026-03-29 |
