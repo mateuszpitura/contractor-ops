@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Platform Expansion
 status: Ready to execute
-stopped_at: Completed 20-03-PLAN.md
-last_updated: "2026-03-29T22:14:45.915Z"
+stopped_at: Completed 20-04-PLAN.md
+last_updated: "2026-03-29T22:24:29.402Z"
 progress:
   total_phases: 9
   completed_phases: 8
   total_plans: 43
-  completed_plans: 39
+  completed_plans: 42
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-23)
 ## Current Position
 
 Phase: 20 (documentation-calendar) — EXECUTING
-Plan: 3 of 6
+Plan: 4 of 6
 
 ## Performance Metrics
 
@@ -79,6 +79,7 @@ Plan: 3 of 6
 | Phase 20 P01 | 5min | 2 tasks | 10 files |
 | Phase 20 P02 | 3min | 2 tasks | 3 files |
 | Phase 20 P03 | 4min | 2 tasks | 4 files |
+| Phase 20-documentation-calendar P04 | 6min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -147,6 +148,8 @@ Recent decisions affecting current work:
 - [Phase 20]: Singleton adapter instances for Notion/Confluence search (no registry lookup overhead)
 - [Phase 20]: Calendar dual-push uses Promise.allSettled for resilience; loosely typed PrismaClient for parallel execution
 - [Phase 20]: Calendar router mounted on root.ts (not _app.ts) matching actual codebase structure
+- [Phase 20-documentation-calendar]: Button-based provider filter in AttachDocDialog (no ToggleGroup in codebase)
+- [Phase 20-documentation-calendar]: Doc search in Cmd+K opens via window.open (not in-app navigation) per D-07
 
 ### Pending Todos
 
@@ -161,6 +164,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-29T22:14:45.911Z
-Stopped at: Completed 20-03-PLAN.md
+Last session: 2026-03-29T22:24:29.399Z
+Stopped at: Completed 20-04-PLAN.md
 Resume file: None
