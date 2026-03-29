@@ -38,7 +38,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 - [x] **Phase 17: KSeF Integration** — Auto-fetch invoices from national e-invoicing system with XML parsing and duplicate detection (completed 2026-03-27)
 - [x] **Phase 18: Time Tracking** — Manual hour logging, manager approval, Clockify/Jira import, invoice deviation flagging (completed 2026-03-27)
 - [x] **Phase 19: Jira Integration** — OAuth connection, workflow-to-issue creation, bidirectional status sync, linked issue display (gap closure in progress)
-- [ ] **Phase 20: Documentation & Calendar** — Notion/Confluence page linking and Google/Outlook calendar deadline sync
+- [x] **Phase 20: Documentation & Calendar** — Notion/Confluence page linking and Google/Outlook calendar deadline sync (completed 2026-03-29)
 
 ## Phase Details
 
@@ -200,7 +200,7 @@ Plans:
 - [x] 20-02-PLAN.md — Doc link service, doc search proxy, tRPC docs router
 - [x] 20-03-PLAN.md — Calendar event service, deadline sync watchers, tRPC calendar router
 - [x] 20-04-PLAN.md — DocLinkChip, AttachDocDialog, DocLinksSection, Cmd+K Docs group
-- [ ] 20-05-PLAN.md — My Calendar page, CalendarTaskConfig, CalendarEventConfigDialog, integrations tab updates
+- [x] 20-05-PLAN.md — My Calendar page, CalendarTaskConfig, CalendarEventConfigDialog, integrations tab updates
 
 ## Progress
 
@@ -228,4 +228,4 @@ Phases execute in numeric order: 12 → 13 → 14 → 15 → 16 → 17 → 18 �
 | 17. KSeF Integration | v2.0 | 3/3 | Complete    | 2026-03-27 |
 | 18. Time Tracking | v2.0 | 6/6 | Complete    | 2026-03-28 |
 | 19. Jira Integration | v2.0 | 6/6 | Complete    | 2026-03-29 |
-| 20. Documentation & Calendar | v2.0 | 5/6 | In Progress|  |
+| 20. Documentation & Calendar | v2.0 | 6/6 | Complete   | 2026-03-29 |
