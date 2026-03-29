@@ -61,13 +61,13 @@ Requirements for v2.0 Platform Expansion. Each maps to roadmap phases.
 
 ### Documentation Integration
 
-- [ ] **DOCS-01**: User can attach Notion or Confluence page links to workflow steps
-- [ ] **DOCS-02**: User can search and link Notion/Confluence pages from within Cmd+K
+- [x] **DOCS-01**: User can attach Notion or Confluence page links to workflow steps
+- [x] **DOCS-02**: User can search and link Notion/Confluence pages from within Cmd+K
 
 ### Calendar Integration
 
-- [ ] **CAL-01**: System pushes contract expiry, approval SLA, and payment deadlines to Google/Outlook calendar
-- [ ] **CAL-02**: Workflow steps can create calendar events (e.g., onboarding kickoff meeting)
+- [x] **CAL-01**: System pushes contract expiry, approval SLA, and payment deadlines to Google/Outlook calendar
+- [x] **CAL-02**: Workflow steps can create calendar events (e.g., onboarding kickoff meeting)
 
 ## Future Requirements
 
@@ -144,10 +144,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | JIRA-02 | Phase 19 | Complete |
 | JIRA-03 | Phase 19 | Complete |
 | JIRA-04 | Phase 19 | Complete |
-| DOCS-01 | Phase 20 | Pending |
-| DOCS-02 | Phase 20 | Pending |
-| CAL-01 | Phase 20 | Pending |
-| CAL-02 | Phase 20 | Pending |
+| DOCS-01 | Phase 20 | Complete |
+| DOCS-02 | Phase 20 | Complete |
+| CAL-01 | Phase 20 | Complete |
+| CAL-02 | Phase 20 | Complete |
 
 **Coverage:**
 - v2.0 requirements: 35 total

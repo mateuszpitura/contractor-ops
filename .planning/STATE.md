@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Platform Expansion
-status: Ready to plan
-stopped_at: Phase 20 plans verified
-last_updated: "2026-03-29T21:55:37.046Z"
+status: Ready to execute
+stopped_at: Completed 20-01-PLAN.md
+last_updated: "2026-03-29T22:07:44.978Z"
 progress:
   total_phases: 9
   completed_phases: 8
   total_plans: 43
-  completed_plans: 37
+  completed_plans: 38
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-23)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 19 — jira-integration
+**Current focus:** Phase 20 — documentation-calendar
 
 ## Current Position
 
-Phase: 20
-Plan: Not started
+Phase: 20 (documentation-calendar) — EXECUTING
+Plan: 2 of 6
 
 ## Performance Metrics
 
@@ -76,6 +76,7 @@ Plan: Not started
 | Phase 19-jira-integration P03 | 8min | 2 tasks | 5 files |
 | Phase 19 P04 | 5min | 2 tasks | 5 files |
 | Phase 19 P05 | 2min | 2 tasks | 2 files |
+| Phase 20 P01 | 5min | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -139,6 +140,8 @@ Recent decisions affecting current work:
 - [Phase 19]: Status mapping dialog uses project selector + two-column table with unmapped warnings
 - [Phase 19]: JiraIssueChip uses base-ui Tooltip for summary hover, RunJiraChips with stopPropagation, connectionStatus staleTime Infinity
 - [Phase 19]: JiraTaskConfig only renders for saved tasks with persisted ID; siteUrl null fallback produces empty ExternalLink URL instead of fake URL
+- [Phase 20]: Outlook token exchange uses application/x-www-form-urlencoded (Microsoft Identity Platform requirement)
+- [Phase 20]: Notion adapter uses HTTP Basic auth for token exchange per API requirement
 
 ### Pending Todos
 
@@ -153,6 +156,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-29T21:55:37.040Z
-Stopped at: Phase 20 plans verified
-Resume file: .planning/phases/20-documentation-calendar/20-05-PLAN.md
+Last session: 2026-03-29T22:07:44.975Z
+Stopped at: Completed 20-01-PLAN.md
+Resume file: None
