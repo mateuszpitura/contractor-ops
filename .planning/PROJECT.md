@@ -28,6 +28,8 @@ All 14 product modules delivered: org setup, RBAC, contractors, contracts, docum
 
 **Phase 19 complete** — Jira Cloud bidirectional integration. Extended JiraAdapter with write:jira-work + manage:jira-webhook OAuth scopes and HMAC-SHA256 webhook verification. Issue sync service creates Jira issues (ADF descriptions, configurable project/type per task template) and executes outbound transitions. Inbound webhook handler processes status changes with 30s loop prevention window and 5s deduplication. Per-project status mapping CRUD with bidirectional lookup. 11-procedure tRPC router. Webhook dispatch wired into unified _process route. Fire-and-forget outbound sync in completeTask/skipTask. Settings UI: provider card with scope expansion detection, status mapping dialog, project mapping dialog. Display: JiraIssueChip (clickable with status badges), JiraActivitySummary on contractor profile, JiraTaskConfig toggle in task template editor, LinkedIssuesSection in workflow side panel.
 
+**Phase 20 complete** — Documentation and calendar integrations. Four adapters (Notion, Confluence, Google Calendar, Outlook Calendar) extending BaseAdapter with OAuth token exchange. Doc link service for attaching/detaching external pages to workflow steps with search proxy. Calendar event service with Google/Outlook dual-push (Promise.allSettled), deadline sync watchers for contract expiry, approval SLA, and payment due dates. tRPC routers: docs (5 procedures) and calendar (7 procedures). Frontend: DocLinkChip, AttachDocDialog with provider-filtered search, DocLinksSection for task cards, Cmd+K "Docs" group. Calendar UI: personal calendar settings page, org calendar section, CalendarTaskConfig toggle, CalendarEventConfigDialog. Prisma schema with 4 new IntegrationProvider enum values and per-user connection support.
+
 ## Requirements
 
 ### Validated — v1.0
@@ -63,9 +65,9 @@ All 14 product modules delivered: org setup, RBAC, contractors, contracts, docum
 - [x] E-sign integration (DocuSign + Autenti) for contracts and NDAs — Phase 15
 - [x] OCR invoice parsing — auto-extract fields from uploaded PDFs — Phase 16
 - [x] KSeF native integration — pull invoices from national system — Phase 17
-- [ ] Jira integration — create tickets, update statuses, configurable automation on status changes
-- [ ] Notion/Confluence integration — link onboarding docs, reference external documentation in workflows
-- [ ] Outlook/Google Calendar integration — reminders, meeting scheduling, deadline sync, onboarding meetings (configurable)
+- [x] Jira integration — create tickets, update statuses, configurable automation on status changes — Phase 19
+- [x] Notion/Confluence integration — link onboarding docs, reference external documentation in workflows — Phase 20
+- [x] Outlook/Google Calendar integration — reminders, meeting scheduling, deadline sync, onboarding meetings (configurable) — Phase 20
 
 ### Out of Scope
 
