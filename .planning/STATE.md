@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Platform Expansion
 status: Ready to execute
-stopped_at: Completed 20-01-PLAN.md
-last_updated: "2026-03-29T22:07:44.978Z"
+stopped_at: Completed 20-02-PLAN.md
+last_updated: "2026-03-29T22:13:17.876Z"
 progress:
   total_phases: 9
   completed_phases: 8
   total_plans: 43
-  completed_plans: 38
+  completed_plans: 39
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-23)
 ## Current Position
 
 Phase: 20 (documentation-calendar) — EXECUTING
-Plan: 2 of 6
+Plan: 3 of 6
 
 ## Performance Metrics
 
@@ -77,6 +77,7 @@ Plan: 2 of 6
 | Phase 19 P04 | 5min | 2 tasks | 5 files |
 | Phase 19 P05 | 2min | 2 tasks | 2 files |
 | Phase 20 P01 | 5min | 2 tasks | 10 files |
+| Phase 20 P02 | 3min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -142,6 +143,7 @@ Recent decisions affecting current work:
 - [Phase 19]: JiraTaskConfig only renders for saved tasks with persisted ID; siteUrl null fallback produces empty ExternalLink URL instead of fake URL
 - [Phase 20]: Outlook token exchange uses application/x-www-form-urlencoded (Microsoft Identity Platform requirement)
 - [Phase 20]: Notion adapter uses HTTP Basic auth for token exchange per API requirement
+- [Phase 20]: Singleton adapter instances for Notion/Confluence search (no registry lookup overhead)
 
 ### Pending Todos
 
@@ -156,6 +158,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-29T22:07:44.975Z
-Stopped at: Completed 20-01-PLAN.md
+Last session: 2026-03-29T22:13:17.873Z
+Stopped at: Completed 20-02-PLAN.md
 Resume file: None
