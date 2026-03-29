@@ -192,11 +192,15 @@ Plans:
   2. User can search and select Notion or Confluence pages from within Cmd+K
   3. Contract expiry dates, approval SLA deadlines, and payment due dates push to the user's Google or Outlook calendar
   4. Workflow steps can create calendar events (e.g., onboarding kickoff meeting) on the connected calendar
-**Plans**: TBD
+**Plans**: 6 plans
 
 Plans:
-- [ ] 20-01: TBD
-- [ ] 20-02: TBD
+- [ ] 20-00-PLAN.md — Wave 0 test stubs for all Phase 20 requirements (Nyquist compliance)
+- [ ] 20-01-PLAN.md — DB schema (4 providers, userId), Zod validators, Notion/Confluence/Google Calendar/Outlook adapters
+- [ ] 20-02-PLAN.md — Doc link service, doc search proxy, tRPC docs router
+- [ ] 20-03-PLAN.md — Calendar event service, deadline sync watchers, tRPC calendar router
+- [ ] 20-04-PLAN.md — DocLinkChip, AttachDocDialog, DocLinksSection, Cmd+K Docs group
+- [ ] 20-05-PLAN.md — My Calendar page, CalendarTaskConfig, CalendarEventConfigDialog, integrations tab updates
 
 ## Progress
 
@@ -224,4 +228,4 @@ Phases execute in numeric order: 12 → 13 → 14 → 15 → 16 → 17 → 18 �
 | 17. KSeF Integration | v2.0 | 3/3 | Complete    | 2026-03-27 |
 | 18. Time Tracking | v2.0 | 6/6 | Complete    | 2026-03-28 |
 | 19. Jira Integration | v2.0 | 6/6 | Complete    | 2026-03-29 |
-| 20. Documentation & Calendar | v2.0 | 0/0 | Not started | - |
+| 20. Documentation & Calendar | v2.0 | 0/6 | Not started | - |
