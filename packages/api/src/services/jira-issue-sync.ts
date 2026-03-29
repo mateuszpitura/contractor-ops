@@ -14,6 +14,8 @@ type PrismaClient = any;
 
 interface JiraConnectionConfig {
   cloudId: string;
+  siteName?: string;
+  siteUrl?: string;
   [key: string]: unknown;
 }
 
@@ -143,9 +145,11 @@ export async function createJiraIssue(
     connection.credentialsRef,
   );
 
-  // Derive site URL for issue links
+  // siteUrl is set during OAuth discovery (discoverCloudId returns { cloudId, siteName, siteUrl }).
+  // Fall back to cloudId-based browsable URL if siteUrl/siteName missing (e.g., Phase 18 connections).
   const config = connection.configJson as JiraConnectionConfig;
-  const siteUrl = `https://${(config as Record<string, unknown>).siteName ?? "your-site"}.atlassian.net`;
+  const siteUrl = config.siteUrl
+    ?? (config.siteName ? `https://${config.siteName}.atlassian.net` : null);
 
   // 3. Create sync log
   const syncLog = await prisma.integrationSyncLog.create({
@@ -214,13 +218,13 @@ export async function createJiraIssue(
     });
 
     // 6. Create ExternalLink with cached metadata
-    const issueUrl = `${siteUrl}/browse/${created.key}`;
+    const issueUrl = siteUrl ? `${siteUrl}/browse/${created.key}` : null;
     const metadata: JiraIssueMetadata = {
       key: created.key,
       summary: taskRun.title,
       status: "To Do",
       statusCategory: "new",
-      url: issueUrl,
+      url: issueUrl ?? "",
       lastSyncOrigin: "APP",
       lastSyncAt: new Date().toISOString(),
     };
@@ -233,7 +237,7 @@ export async function createJiraIssue(
         entityId: taskRunId,
         externalType: "JIRA_ISSUE",
         externalId: created.key,
-        externalUrl: issueUrl,
+        externalUrl: issueUrl ?? "",
         metadataJson: metadata,
       },
     });
