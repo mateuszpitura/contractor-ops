@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Platform Expansion
-status: Ready to execute
-stopped_at: Completed 19-04-PLAN.md
-last_updated: "2026-03-28T15:09:47.851Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 19-05-PLAN.md
+last_updated: "2026-03-29T20:55:56.130Z"
 progress:
   total_phases: 9
   completed_phases: 8
-  total_plans: 36
-  completed_plans: 36
+  total_plans: 37
+  completed_plans: 37
 ---
 
 # Project State
@@ -75,6 +75,7 @@ Plan: 5 of 5
 | Phase 19 P02 | 5min | 2 tasks | 5 files |
 | Phase 19-jira-integration P03 | 8min | 2 tasks | 5 files |
 | Phase 19 P04 | 5min | 2 tasks | 5 files |
+| Phase 19 P05 | 2min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -137,6 +138,7 @@ Recent decisions affecting current work:
 - [Phase 19]: JiraProviderSection follows KsefProviderSection pattern: custom wrapper around ProviderConnectionCard with additional controls
 - [Phase 19]: Status mapping dialog uses project selector + two-column table with unmapped warnings
 - [Phase 19]: JiraIssueChip uses base-ui Tooltip for summary hover, RunJiraChips with stopPropagation, connectionStatus staleTime Infinity
+- [Phase 19]: JiraTaskConfig only renders for saved tasks with persisted ID; siteUrl null fallback produces empty ExternalLink URL instead of fake URL
 
 ### Pending Todos
 
@@ -151,6 +153,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-28T15:09:47.849Z
-Stopped at: Completed 19-04-PLAN.md
+Last session: 2026-03-29T20:55:56.127Z
+Stopped at: Completed 19-05-PLAN.md
 Resume file: None

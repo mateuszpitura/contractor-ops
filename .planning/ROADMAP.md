@@ -181,7 +181,7 @@ Plans:
 - [x] 19-02-PLAN.md — Jira tRPC router (11 procedures), webhook endpoint for bidirectional sync
 - [x] 19-03-PLAN.md — Jira provider section, status mapping dialog, project mapping dialog in settings UI
 - [x] 19-04-PLAN.md — JiraIssueChip, JiraActivitySummary, JiraTaskConfig, workflow view integration
-- [ ] 19-05-PLAN.md — Mount orphaned JiraTaskConfig in task template editor, harden siteUrl derivation (gap closure)
+- [x] 19-05-PLAN.md — Mount orphaned JiraTaskConfig in task template editor, harden siteUrl derivation (gap closure)
 
 ### Phase 20: Documentation & Calendar
 **Goal**: External documentation and calendar deadlines are accessible from within Contractor Ops without context-switching
@@ -223,5 +223,5 @@ Phases execute in numeric order: 12 → 13 → 14 → 15 → 16 → 17 → 18 �
 | 16. OCR Invoice Parsing | v2.0 | 3/3 | Complete    | 2026-03-27 |
 | 17. KSeF Integration | v2.0 | 3/3 | Complete    | 2026-03-27 |
 | 18. Time Tracking | v2.0 | 6/6 | Complete    | 2026-03-28 |
-| 19. Jira Integration | v2.0 | 5/6 | Gap closure | - |
+| 19. Jira Integration | v2.0 | 6/6 | Complete   | 2026-03-29 |
 | 20. Documentation & Calendar | v2.0 | 0/0 | Not started | - |
