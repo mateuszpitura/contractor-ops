@@ -195,7 +195,7 @@ Plans:
 **Plans**: 6 plans
 
 Plans:
-- [ ] 20-00-PLAN.md — Wave 0 test stubs for all Phase 20 requirements (Nyquist compliance)
+- [x] 20-00-PLAN.md — Wave 0 test stubs for all Phase 20 requirements (Nyquist compliance)
 - [ ] 20-01-PLAN.md — DB schema (4 providers, userId), Zod validators, Notion/Confluence/Google Calendar/Outlook adapters
 - [ ] 20-02-PLAN.md — Doc link service, doc search proxy, tRPC docs router
 - [ ] 20-03-PLAN.md — Calendar event service, deadline sync watchers, tRPC calendar router
@@ -228,4 +228,4 @@ Phases execute in numeric order: 12 → 13 → 14 → 15 → 16 → 17 → 18 �
 | 17. KSeF Integration | v2.0 | 3/3 | Complete    | 2026-03-27 |
 | 18. Time Tracking | v2.0 | 6/6 | Complete    | 2026-03-28 |
 | 19. Jira Integration | v2.0 | 6/6 | Complete    | 2026-03-29 |
-| 20. Documentation & Calendar | v2.0 | 0/6 | Not started | - |
+| 20. Documentation & Calendar | v2.0 | 1/6 | In Progress|  |
