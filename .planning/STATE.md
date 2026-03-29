@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Platform Expansion
 status: Ready to execute
-stopped_at: Completed 20-02-PLAN.md
-last_updated: "2026-03-29T22:13:17.876Z"
+stopped_at: Completed 20-03-PLAN.md
+last_updated: "2026-03-29T22:14:45.915Z"
 progress:
   total_phases: 9
   completed_phases: 8
@@ -78,6 +78,7 @@ Plan: 3 of 6
 | Phase 19 P05 | 2min | 2 tasks | 2 files |
 | Phase 20 P01 | 5min | 2 tasks | 10 files |
 | Phase 20 P02 | 3min | 2 tasks | 3 files |
+| Phase 20 P03 | 4min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -144,6 +145,8 @@ Recent decisions affecting current work:
 - [Phase 20]: Outlook token exchange uses application/x-www-form-urlencoded (Microsoft Identity Platform requirement)
 - [Phase 20]: Notion adapter uses HTTP Basic auth for token exchange per API requirement
 - [Phase 20]: Singleton adapter instances for Notion/Confluence search (no registry lookup overhead)
+- [Phase 20]: Calendar dual-push uses Promise.allSettled for resilience; loosely typed PrismaClient for parallel execution
+- [Phase 20]: Calendar router mounted on root.ts (not _app.ts) matching actual codebase structure
 
 ### Pending Todos
 
@@ -158,6 +161,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-29T22:13:17.873Z
-Stopped at: Completed 20-02-PLAN.md
+Last session: 2026-03-29T22:14:45.911Z
+Stopped at: Completed 20-03-PLAN.md
 Resume file: None
