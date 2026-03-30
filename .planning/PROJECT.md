@@ -162,4 +162,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-30 after Phase 21 (api-build-fixes-permission-registration) completion*
+*Last updated: 2026-03-30 after Phase 23 (ocr-adapter-registry-fix) completion — OCR adapter registry gap closed, slug property added, adapter re-registered*
