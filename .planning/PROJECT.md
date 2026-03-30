@@ -30,6 +30,8 @@ All 14 product modules delivered: org setup, RBAC, contractors, contracts, docum
 
 **Phase 20 complete** — Documentation and calendar integrations. Four adapters (Notion, Confluence, Google Calendar, Outlook Calendar) extending BaseAdapter with OAuth token exchange. Doc link service for attaching/detaching external pages to workflow steps with search proxy. Calendar event service with Google/Outlook dual-push (Promise.allSettled), deadline sync watchers for contract expiry, approval SLA, and payment due dates. tRPC routers: docs (5 procedures) and calendar (7 procedures). Frontend: DocLinkChip, AttachDocDialog with provider-filtered search, DocLinksSection for task cards, Cmd+K "Docs" group. Calendar UI: personal calendar settings page, org calendar section, CalendarTaskConfig toggle, CalendarEventConfigDialog. Prisma schema with 4 new IntegrationProvider enum values and per-user connection support.
 
+**Phase 21 complete** — API build fixes and permission registration (gap closure). Fixed 8 root causes of TypeScript compilation failure across packages/api: restored validators/src/helpers.ts utility schemas, added 4 adapter subpath exports to integrations package.json (notion, confluence, google-calendar, outlook-calendar), registered `time` resource in permissions.ts with role assignments, fixed ctx.userId → ctx.user!.id (5 occurrences in calendar.ts), contract.name → contract.title, CredentialBlob unsafe cast → direct credentials.extra access, ctx.prisma → imported prisma in docs.ts (5 occurrences), and $transaction callback type using TxClient pattern in time-entry.ts. All API packages now compile with zero TypeScript errors.
+
 ## Requirements
 
 ### Validated — v1.0
@@ -158,4 +160,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-29 after Phase 19 (jira-integration) completion*
+*Last updated: 2026-03-30 after Phase 21 (api-build-fixes-permission-registration) completion*
