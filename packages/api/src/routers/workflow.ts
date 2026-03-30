@@ -13,6 +13,7 @@ import {
   reassignTaskSchema,
   addCommentSchema,
   myTasksListSchema,
+  jiraTaskConfigSchema,
 } from "@contractor-ops/validators";
 import * as E from "../errors.js";
 import { router } from "../init.js";
@@ -716,7 +717,19 @@ export const workflowRouter = router({
           },
         });
 
-        return { run: fullRun, contractorName: contractor.legalName ?? contractor.displayName ?? "Unknown" };
+        // Build set of task run IDs eligible for Jira issue creation
+        const jiraEligibleTaskRunIds = new Set<string>();
+        for (const taskTemplate of template.tasks) {
+          const parsed = jiraTaskConfigSchema.safeParse(taskTemplate.configJson);
+          if (parsed.success && parsed.data.jiraEnabled) {
+            const runId = taskIdMap.get(taskTemplate.id);
+            if (runId) {
+              jiraEligibleTaskRunIds.add(runId);
+            }
+          }
+        }
+
+        return { run: fullRun, contractorName: contractor.legalName ?? contractor.displayName ?? "Unknown", jiraEligibleTaskRunIds };
       });
 
       // Fire-and-forget: dispatch TASK_ASSIGNED to each task assignee
@@ -740,6 +753,49 @@ export const workflowRouter = router({
         }).catch((err) =>
           console.error("[workflow] dispatch TASK_ASSIGNED failed:", err),
         );
+      }
+
+      // Fire-and-forget: create Jira issues for jira-enabled tasks (non-blocking)
+      const todoJiraTasks = run.run.tasks.filter(
+        (t) => t.status === "TODO" && run.jiraEligibleTaskRunIds.has(t.id),
+      );
+      if (todoJiraTasks.length > 0) {
+        void (async () => {
+          try {
+            const { createJiraIssue } = await import(
+              "../services/jira-issue-sync.js"
+            );
+            const connection =
+              await prisma.integrationConnection.findFirst({
+                where: {
+                  organizationId: ctx.organizationId,
+                  provider: "JIRA",
+                  status: "CONNECTED",
+                },
+                select: { id: true },
+              });
+            if (connection) {
+              for (const task of todoJiraTasks) {
+                createJiraIssue(
+                  prisma,
+                  ctx.organizationId,
+                  connection.id,
+                  task.id,
+                ).catch((err) =>
+                  console.error(
+                    `[workflow/startRun] Jira issue creation failed for task ${task.id}:`,
+                    err,
+                  ),
+                );
+              }
+            }
+          } catch (err) {
+            console.error(
+              "[workflow/startRun] Jira issue creation setup failed:",
+              err,
+            );
+          }
+        })();
       }
 
       return plain(run.run);
