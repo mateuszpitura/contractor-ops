@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Platform Expansion
 status: Ready to plan
-stopped_at: Phase 22 UI-SPEC approved
-last_updated: "2026-03-30T11:34:03.512Z"
+stopped_at: Completed 22-01-PLAN.md
+last_updated: "2026-03-30T11:57:53.801Z"
 progress:
   total_phases: 11
   completed_phases: 10
-  total_plans: 45
-  completed_plans: 45
+  total_plans: 47
+  completed_plans: 46
 ---
 
 # Project State
@@ -23,8 +23,8 @@ See: .planning/PROJECT.md (updated 2026-03-23)
 
 ## Current Position
 
-Phase: 22
-Plan: Not started
+Phase: 22 (component-mounting-lifecycle-wiring) — EXECUTING
+Plan: 2 of 2
 
 ## Performance Metrics
 
@@ -83,6 +83,7 @@ Plan: Not started
 | Phase 20 P05 | 6min | 2 tasks | 8 files |
 | Phase 21 P01 | 3min | 2 tasks | 4 files |
 | Phase 21 P02 | 2min | 2 tasks | 4 files |
+| Phase 22 P01 | 1min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -157,6 +158,7 @@ Recent decisions affecting current work:
 - [Phase 20]: CalendarEventConfigDialog uses local useState form state matching OcrReviewPanel pattern
 - [Phase 21]: Restored missing helpers.ts in validators package that was untracked in worktree (Rule 3 - blocking)
 - [Phase 21]: Used same TxClient type derivation pattern as approval-engine.ts for transaction callback typing consistency
+- [Phase 22]: Section order in task-card-run: attachments -> doc links -> comments (files first, external docs second, discussion last)
 
 ### Pending Todos
 
@@ -171,6 +173,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-30T11:34:03.507Z
-Stopped at: Phase 22 UI-SPEC approved
-Resume file: .planning/phases/22-component-mounting-lifecycle-wiring/22-UI-SPEC.md
+Last session: 2026-03-30T11:57:53.798Z
+Stopped at: Completed 22-01-PLAN.md
+Resume file: None
