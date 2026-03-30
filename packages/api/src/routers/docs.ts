@@ -23,7 +23,7 @@ import {
  */
 function providerFromExternalType(
   externalType: "NOTION_PAGE" | "CONFLUENCE_PAGE",
-): string {
+): "NOTION" | "CONFLUENCE" {
   return externalType === "NOTION_PAGE" ? "NOTION" : "CONFLUENCE";
 }
 
@@ -64,7 +64,7 @@ export const docsRouter = router({
         });
       }
 
-      const result = await attachDocLink(ctx.prisma, {
+      const result = await attachDocLink(prisma, {
         organizationId: ctx.organizationId,
         integrationConnectionId: connection.id,
         workflowTaskRunId: input.workflowTaskRunId,
@@ -83,7 +83,7 @@ export const docsRouter = router({
   detach: tenantProcedure
     .input(z.object({ externalLinkId: z.string().cuid() }))
     .mutation(async ({ ctx, input }) => {
-      await detachDocLink(ctx.prisma, {
+      await detachDocLink(prisma, {
         organizationId: ctx.organizationId,
         externalLinkId: input.externalLinkId,
       });
@@ -97,7 +97,7 @@ export const docsRouter = router({
   list: tenantProcedure
     .input(z.object({ workflowTaskRunId: z.string().cuid() }))
     .query(async ({ ctx, input }) => {
-      const links = await getDocLinks(ctx.prisma, {
+      const links = await getDocLinks(prisma, {
         organizationId: ctx.organizationId,
         workflowTaskRunId: input.workflowTaskRunId,
       });
@@ -118,7 +118,7 @@ export const docsRouter = router({
         organizationId: ctx.organizationId,
         query: input.query,
         provider: input.provider,
-        prisma: ctx.prisma,
+        prisma,
       });
 
       return results;
@@ -134,7 +134,7 @@ export const docsRouter = router({
     .input(z.object({ externalLinkId: z.string().cuid() }))
     .mutation(async ({ ctx, input }) => {
       const result = await refreshDocMetadata(
-        ctx.prisma,
+        prisma,
         input.externalLinkId,
         ctx.organizationId,
       );

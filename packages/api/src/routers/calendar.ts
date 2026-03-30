@@ -48,7 +48,7 @@ export const calendarRouter = router({
       where: {
         organizationId: ctx.organizationId,
         provider: { in: [...CALENDAR_PROVIDERS] },
-        OR: [{ userId: ctx.userId }, { userId: null }],
+        OR: [{ userId: ctx.user!.id }, { userId: null }],
       },
       select: {
         id: true,
@@ -72,7 +72,7 @@ export const calendarRouter = router({
     const connections = await prisma.integrationConnection.findMany({
       where: {
         organizationId: ctx.organizationId,
-        userId: ctx.userId,
+        userId: ctx.user!.id,
         provider: { in: [...CALENDAR_PROVIDERS] },
       },
       select: {
@@ -117,7 +117,7 @@ export const calendarRouter = router({
 
       // Users can only disconnect their own personal connections
       // Org-level connections (userId = null) require settings:update permission
-      if (connection.userId !== null && connection.userId !== ctx.userId) {
+      if (connection.userId !== null && connection.userId !== ctx.user!.id) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "PERMISSION_DENIED",
@@ -168,7 +168,7 @@ export const calendarRouter = router({
         },
         select: {
           id: true,
-          name: true,
+          title: true,
           endDate: true,
           contractor: {
             select: { displayName: true },
@@ -191,10 +191,10 @@ export const calendarRouter = router({
       void syncContractExpiryDeadline(prisma, {
         organizationId: ctx.organizationId,
         contractId: contract.id,
-        contractName: contract.name,
+        contractName: contract.title,
         contractorName: contract.contractor.displayName,
         expiryDate: contract.endDate,
-        userId: ctx.userId,
+        userId: ctx.user!.id,
       });
 
       return { synced: true };
@@ -238,9 +238,9 @@ export const calendarRouter = router({
         organizationId: ctx.organizationId,
         invoiceId: invoice.id,
         invoiceNumber: invoice.invoiceNumber ?? `INV-${invoice.id.slice(-6)}`,
-        contractorName: invoice.contractor.displayName,
+        contractorName: invoice.contractor?.displayName ?? "Unknown",
         dueDate: invoice.dueDate,
-        userId: ctx.userId,
+        userId: ctx.user!.id,
       });
 
       return { synced: true };
