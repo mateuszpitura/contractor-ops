@@ -166,4 +166,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-30 after Phase 24 (jira-auto-issue-creation-wiring) completion — createJiraIssue wired into startRun for jiraEnabled tasks, JIRA-02 closed*
+*Last updated: 2026-03-30 after Phase 25 (portal-esign-auth-fix) completion — getPortalSigningUrl portalProcedure endpoint with recipient verification, EmbeddedSigningModal usePortalAuth prop for portal context switching, SIGN-02 closed*
