@@ -16,6 +16,7 @@ import {
   runAutoMatch,
 } from "../services/invoice-matching.js";
 import { dispatch } from "../services/notification-service.js";
+import { deleteCalendarEvent } from "../services/calendar-event-service.js";
 
 // ---------------------------------------------------------------------------
 // Finance team helper
@@ -601,6 +602,15 @@ export const invoiceRouter = router({
         where: { id: input.id },
         data: { status: "VOID" },
       });
+
+      // Calendar cleanup: remove payment deadline event (D-08)
+      void deleteCalendarEvent(prisma, {
+        organizationId: ctx.organizationId,
+        entityType: "INVOICE",
+        entityId: input.id,
+      }).catch((err) =>
+        console.error("[invoice] calendar event cleanup on void failed:", err),
+      );
 
       return plain(updated);
     }),
