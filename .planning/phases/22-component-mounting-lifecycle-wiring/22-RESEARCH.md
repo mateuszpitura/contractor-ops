@@ -72,9 +72,7 @@ None -- discussion stayed within phase scope.
 </CollapsibleContent>
 ```
 
-**Mount point for DocLinksSection:** Between `TaskAttachments` and the end of the div. Per D-01, the order should be: TaskComments, TaskAttachments, DocLinksSection. Note: the CONTEXT says "after TaskAttachments, before TaskComments" but the actual code has Comments first (line 484) then Attachments (line 487). The semantic intent from D-01 is "uploaded files first, then linked external docs, then discussion" which means: TaskAttachments -> DocLinksSection -> TaskComments.
-
-**CRITICAL FINDING:** The current file order is TaskComments (line 484) then TaskAttachments (line 487). To match D-01 intent ("uploaded files first, then linked external docs, then discussion"), the correct ordering is: TaskAttachments, DocLinksSection, TaskComments. This requires reordering the existing sections.
+**CRITICAL FINDING:** The current file order is TaskComments (line 484) then TaskAttachments (line 487). D-01 intent is "uploaded files first, then linked external docs, then discussion" which means: TaskAttachments -> DocLinksSection -> TaskComments. This requires reordering the existing sections.
 
 **readOnly derivation (D-03):**
 ```typescript
@@ -116,7 +114,7 @@ void syncContractExpiryDeadline(prisma, {
 });
 ```
 
-**Key behavior:** Uses `void` keyword to explicitly discard the promise. No `.catch()` on the caller side -- error handling is inside the sync service itself (via try/catch around provider API calls in calendar-event-service.ts).
+**Key behavior:** Uses `void` keyword to explicitly discard the promise. Error handling is inside the sync service itself (via try/catch around provider API calls in calendar-event-service.ts). For router-level hooks, add `.catch()` for defense-in-depth matching the `dispatch().catch()` pattern already in contract/approval/invoice routers.
 
 ### Pattern 4: Calendar Event Cleanup
 
@@ -125,7 +123,12 @@ void syncContractExpiryDeadline(prisma, {
 **Cleanup triggers per D-08:**
 1. Contract deleted (soft-delete in contract.delete mutation) -> delete CONTRACT calendar events
 2. Contract `endDate` cleared (set to null in contract.update) -> delete CONTRACT calendar events
-3. Invoice voided/deleted -> delete INVOICE calendar events
+3. Invoice voided -> delete INVOICE calendar events
+
+### Anti-Patterns to Avoid
+- **Awaiting fire-and-forget calls:** Never `await syncContractExpiryDeadline(...)` in a mutation. Use `void` to explicitly discard the promise.
+- **Duplicating service logic in routers:** The sync service already handles upsert logic (check ExternalLink existence, create or update). Do not re-implement this in the router.
+- **Missing `.catch()` on fire-and-forget:** Add `.catch(err => console.error(...))` to match the notification dispatch pattern and prevent unhandled rejections.
 
 ## Don't Hand-Roll
 
@@ -154,17 +157,27 @@ void syncContractExpiryDeadline(prisma, {
 **Why it happens:** Current code has TaskComments before TaskAttachments, but D-01 intent is "files first, docs second, discussion last".
 **How to avoid:** Reorder to: TaskAttachments, DocLinksSection, TaskComments to match the semantic intent.
 
-### Pitfall 4: Missing Contractor Relation in Contract Queries
-**What goes wrong:** `syncContractExpiryDeadline` needs `contractorName` but the contract create/update mutations may not include the contractor relation in their result.
-**Why it happens:** Contract create includes contractor relation, but contract update does not.
-**How to avoid:** For the update mutation, either fetch contractor separately or add `include: { contractor: { select: { displayName: true } } }` to the update query.
+### Pitfall 4: Missing Contractor Relation in Contract Update
+**What goes wrong:** `syncContractExpiryDeadline` needs `contractorName` but contract.update does NOT include contractor in its return.
+**Why it happens:** Contract create includes `contractor` (line 82), but update only returns the updated fields (line 184-189).
+**How to avoid:** After the update, query contractor separately: `prisma.contractor.findUnique({ where: { id: updated.contractorId } })`.
 
-### Pitfall 5: Invoice APPROVED Transition Happens in Approval Router
-**What goes wrong:** Looking for invoice status transition in invoice.ts when it actually happens in approval.ts `approve` mutation (line 422-429).
+### Pitfall 5: Invoice APPROVED Transition Happens in Approval Router, Not Invoice Router
+**What goes wrong:** Looking for invoice status transition in invoice.ts when it actually happens in approval.ts `approve` mutation (lines 422-429).
 **Why it happens:** The approval flow completion is what transitions invoice to APPROVED, not a direct invoice mutation.
-**How to avoid:** Wire `syncPaymentDueDeadline` into the `approve` mutation in approval.ts after the `advanceResult.completed` check, not in invoice.ts.
+**How to avoid:** Wire `syncPaymentDueDeadline` into approval.ts `approve` and `bulkApprove`, not invoice.ts.
 
-### Pitfall 6: Approval SLA Deadline Missing from First Step
+### Pitfall 6: Invoice dueDate Not in Approval Transaction Select
+**What goes wrong:** The approve mutation fetches invoice with `select: { id, invoiceNumber, totalGrosze, currency, contractorId }` (lines 436-441) but does NOT include `dueDate`.
+**Why it happens:** The original approval code didn't need dueDate.
+**How to avoid:** Add `dueDate: true` to the invoice select inside the approve transaction.
+
+### Pitfall 7: Bulk Approve Also Transitions Invoices
+**What goes wrong:** Calendar sync only wired into single approve, missing bulk approve.
+**Why it happens:** `bulkApprove` mutation (line 773) also sets invoice to APPROVED when flow completes.
+**How to avoid:** Wire sync into both `approve` and `bulkApprove` mutations.
+
+### Pitfall 8: Approval SLA Deadline May Be Null
 **What goes wrong:** Trying to sync SLA deadline but the step's `slaDeadline` might be null.
 **Why it happens:** SLA configuration is optional per chain config step.
 **How to avoid:** Guard with `if (firstStep?.slaDeadline)` before calling `syncApprovalSlaDeadline`.
@@ -214,17 +227,21 @@ if (contract.endDate) {
   void syncContractExpiryDeadline(prisma, {
     organizationId: ctx.organizationId,
     contractId: contract.id,
-    contractName: contract.title ?? "Untitled",
+    contractName: contract.title ?? input.title,
     contractorName: contract.contractor?.displayName ?? "Unknown",
     expiryDate: contract.endDate,
     userId: ctx.user!.id,
-  });
+  }).catch((err) =>
+    console.error("[contract] calendar sync on create failed:", err),
+  );
 }
 ```
 
 ### Contract Update Lifecycle Hook (contract.ts)
 
 ```typescript
+import { deleteCalendarEvent } from "../services/calendar-event-service.js";
+
 // After contract update (line ~189), need contractor data:
 if (updated.endDate) {
   const contractor = await prisma.contractor.findUnique({
@@ -238,23 +255,43 @@ if (updated.endDate) {
     contractorName: contractor?.displayName ?? "Unknown",
     expiryDate: updated.endDate,
     userId: ctx.user!.id,
-  });
+  }).catch((err) =>
+    console.error("[contract] calendar sync on update failed:", err),
+  );
 } else if (!updated.endDate && existing.endDate) {
   // endDate was cleared -- delete calendar event (D-08)
   void deleteCalendarEvent(prisma, {
     organizationId: ctx.organizationId,
     entityType: "CONTRACT",
     entityId: updated.id,
-  });
+  }).catch((err) =>
+    console.error("[contract] calendar event cleanup failed:", err),
+  );
 }
+```
+
+### Contract Delete Lifecycle Hook (contract.ts)
+
+```typescript
+// After soft-delete (line ~478), before return:
+void deleteCalendarEvent(prisma, {
+  organizationId: ctx.organizationId,
+  entityType: "CONTRACT",
+  entityId: input.id,
+}).catch((err) =>
+  console.error("[contract] calendar event cleanup on delete failed:", err),
+);
 ```
 
 ### Invoice Approval Lifecycle Hook (approval.ts)
 
 ```typescript
-import { syncPaymentDueDeadline } from "../services/calendar-deadline-sync.js";
+import { syncPaymentDueDeadline, syncApprovalSlaDeadline } from "../services/calendar-deadline-sync.js";
 
-// Inside approve mutation, after advanceResult.completed block (line ~429):
+// Inside approve mutation, after advanceResult.completed check:
+// Add dueDate to the invoice select (line ~436):
+//   dueDate: true,
+// Then after the invoice APPROVED update:
 if (advanceResult.completed && result.invoice?.dueDate) {
   const contractor = result.invoice.contractorId
     ? await prisma.contractor.findUnique({
@@ -269,16 +306,17 @@ if (advanceResult.completed && result.invoice?.dueDate) {
     contractorName: contractor?.displayName ?? "Unknown",
     dueDate: new Date(result.invoice.dueDate),
     userId: ctx.user!.id,
-  });
+  }).catch((err) =>
+    console.error("[approval] payment deadline sync failed:", err),
+  );
 }
 ```
 
 ### Approval SLA Lifecycle Hook (approval.ts)
 
 ```typescript
-import { syncApprovalSlaDeadline } from "../services/calendar-deadline-sync.js";
-
-// In submitForApproval mutation, after transaction (line ~981), with first step SLA:
+// In submitForApproval mutation, after transaction (line ~981):
+const firstStep = flow.approvalFlow.steps?.[0];
 if (firstStep?.slaDeadline) {
   void syncApprovalSlaDeadline(prisma, {
     organizationId: ctx.organizationId,
@@ -287,23 +325,41 @@ if (firstStep?.slaDeadline) {
     itemName: flow.invoice.invoiceNumber ?? `INV-${flow.invoice.id.slice(-6)}`,
     deadline: new Date(firstStep.slaDeadline),
     userId: ctx.user!.id,
-  });
+  }).catch((err) =>
+    console.error("[approval] SLA deadline sync failed:", err),
+  );
 }
+```
+
+### Invoice Void Cleanup (invoice.ts)
+
+```typescript
+import { deleteCalendarEvent } from "../services/calendar-event-service.js";
+
+// After void status update (line ~604), before return:
+void deleteCalendarEvent(prisma, {
+  organizationId: ctx.organizationId,
+  entityType: "INVOICE",
+  entityId: input.id,
+}).catch((err) =>
+  console.error("[invoice] calendar event cleanup on void failed:", err),
+);
 ```
 
 ## Mutation Hook Points (Claude's Discretion Resolution)
 
 Based on codebase analysis, these are the exact mutations to hook into:
 
-| Lifecycle Event | Router | Mutation | Hook Location |
-|----------------|--------|----------|---------------|
-| Contract created with endDate | contract.ts | `create` | After `prisma.contract.create` (line ~88) |
-| Contract updated with endDate | contract.ts | `update` | After `prisma.contract.update` (line ~189) |
-| Contract endDate cleared | contract.ts | `update` | Same location, else branch |
-| Contract deleted | contract.ts | `delete` | After soft-delete (line ~478) |
-| Invoice approved with dueDate | approval.ts | `approve` | After `advanceResult.completed` check (line ~429) |
-| Invoice voided | invoice.ts | `voidInvoice` | After status update (line ~604) |
-| Approval chain started | approval.ts | `submitForApproval` | After transaction, before return (line ~1020) |
+| Lifecycle Event | Router | Mutation | Hook Location | Sync Function |
+|----------------|--------|----------|---------------|---------------|
+| Contract created with endDate | contract.ts | `create` | After line ~88 | `syncContractExpiryDeadline` |
+| Contract updated with endDate | contract.ts | `update` | After line ~189 | `syncContractExpiryDeadline` |
+| Contract endDate cleared | contract.ts | `update` | Same location, else branch | `deleteCalendarEvent` |
+| Contract deleted | contract.ts | `delete` | After line ~478 | `deleteCalendarEvent` |
+| Invoice approved (single) | approval.ts | `approve` | After line ~429 | `syncPaymentDueDeadline` |
+| Invoice approved (bulk) | approval.ts | `bulkApprove` | After line ~820 | `syncPaymentDueDeadline` |
+| Approval chain started | approval.ts | `submitForApproval` | After line ~1020 | `syncApprovalSlaDeadline` |
+| Invoice voided | invoice.ts | `voidInvoice` | After line ~604 | `deleteCalendarEvent` |
 
 ## Validation Architecture
 
@@ -320,41 +376,41 @@ Based on codebase analysis, these are the exact mutations to hook into:
 |--------|----------|-----------|-------------------|-------------|
 | DOCS-01 | DocLinksSection renders in task-card-run expanded view | manual-only | Visual check -- component mount is a 2-line import+JSX change | N/A |
 | CAL-02 | CalendarTaskConfig renders in template-builder task card | manual-only | Visual check -- component mount is a 2-line import+JSX change | N/A |
-| CAL-01a | Contract create/update fires syncContractExpiryDeadline | unit | `cd packages/api && npx vitest run src/services/__tests__/calendar-lifecycle.test.ts -x` | Wave 0 |
-| CAL-01b | Invoice approval fires syncPaymentDueDeadline | unit | `cd packages/api && npx vitest run src/services/__tests__/calendar-lifecycle.test.ts -x` | Wave 0 |
-| CAL-01c | Approval submit fires syncApprovalSlaDeadline | unit | `cd packages/api && npx vitest run src/services/__tests__/calendar-lifecycle.test.ts -x` | Wave 0 |
-| CAL-01d | Contract delete/clear fires deleteCalendarEvent | unit | `cd packages/api && npx vitest run src/services/__tests__/calendar-lifecycle.test.ts -x` | Wave 0 |
+| CAL-01a | Contract create/update fires syncContractExpiryDeadline | unit | `cd packages/api && npx vitest run src/services/__tests__/calendar-sync.test.ts -x` | Exists (stub) |
+| CAL-01b | Invoice approval fires syncPaymentDueDeadline | unit | Same test file | Exists (stub) |
+| CAL-01c | Approval submit fires syncApprovalSlaDeadline | unit | Same test file | Exists (stub) |
+| CAL-01d | Contract delete/clear fires deleteCalendarEvent | unit | Same test file | Exists (stub) |
 
 ### Sampling Rate
 - **Per task commit:** `cd packages/api && npx vitest run --reporter=verbose`
-- **Per wave merge:** `npx turbo run test`
-- **Phase gate:** Full suite green before `/gsd:verify-work`
+- **Per wave merge:** `npx turbo run build && npx turbo run test`
+- **Phase gate:** Full suite green + TypeScript compilation clean
 
 ### Wave 0 Gaps
-- [ ] `packages/api/src/services/__tests__/calendar-lifecycle.test.ts` -- covers CAL-01 lifecycle wiring (sync called with correct args after mutations)
+None -- existing test infrastructure at `packages/api/src/services/__tests__/calendar-sync.test.ts` covers the calendar sync domain. Frontend component mounts are manual verification (visual).
 
 ## Open Questions
 
 1. **Invoice `dueDate` availability in approval.approve transaction result**
    - What we know: The `approve` mutation's transaction fetches `invoice` with `select: { id, invoiceNumber, totalGrosze, currency, contractorId }` -- it does NOT include `dueDate`.
-   - What's unclear: Whether `dueDate` needs to be added to the select or fetched separately.
-   - Recommendation: Add `dueDate` to the invoice select in the approve transaction (line ~436). Minimal change, no risk.
+   - What's unclear: Nothing -- this is a confirmed gap.
+   - Recommendation: Add `dueDate: true` to the invoice select in the approve transaction (line ~436). Minimal change, no risk.
 
-2. **Contract create `contractor` relation availability**
-   - What we know: Contract create includes `contractor: { select: { id, legalName, displayName, status } }` in the result (line 82-84). `displayName` is available.
-   - What's unclear: Nothing -- this is confirmed available.
-   - Recommendation: Use `contract.contractor.displayName` directly.
+2. **bulkApprove invoice data availability**
+   - What we know: The `bulkApprove` mutation does not fetch invoice details after flow completion (lines 810-823).
+   - What's unclear: How much data is needed for calendar sync inside the bulk loop.
+   - Recommendation: After the `advanceResult.completed` check inside `bulkApprove`, query the invoice to get `dueDate`, `invoiceNumber`, and `contractorId` for the sync call.
 
 ## Sources
 
 ### Primary (HIGH confidence)
 - Direct file reads of all canonical references listed in CONTEXT.md
 - `packages/api/src/routers/contract.ts` -- create (line 54), update (line 147), delete (line 451) mutations
-- `packages/api/src/routers/approval.ts` -- approve (line 359), submitForApproval (line 915) mutations
+- `packages/api/src/routers/approval.ts` -- approve (line 359), bulkApprove (line 773), submitForApproval (line 915) mutations
 - `packages/api/src/routers/invoice.ts` -- voidInvoice (line 581) mutation
 - `packages/api/src/routers/calendar.ts` -- existing manual sync triggers (lines 190, 237)
 - `packages/api/src/services/calendar-deadline-sync.ts` -- all sync function signatures
-- `packages/api/src/services/calendar-event-service.ts` -- deleteCalendarEvent exists
+- `packages/api/src/services/calendar-event-service.ts` -- deleteCalendarEvent at line 384
 - `apps/web/src/components/workflows/workflow-run/task-card-run.tsx` -- current CollapsibleContent structure
 - `apps/web/src/components/workflows/template-builder/task-card.tsx` -- JiraTaskConfig mount pattern at line 488
 - `apps/web/src/components/integrations/doc-links-section.tsx` -- props interface confirmed
