@@ -42,7 +42,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 - [x] **Phase 21: API Build Fixes & Permission Registration** — Fix TypeScript compilation errors, missing adapter exports, runtime bugs, and permission registration (gap closure) (completed 2026-03-30)
 - [x] **Phase 22: Component Mounting & Lifecycle Wiring** — Mount orphaned UI components and wire calendar auto-push into contract/invoice lifecycle (gap closure) (completed 2026-03-30)
 - [x] **Phase 23: OCR Adapter Registry Fix** — Re-register ClaudeOcrAdapter dropped during Phase 20 rewrite (gap closure) (completed 2026-03-30)
-- [ ] **Phase 24: Jira Auto-Issue Creation Wiring** — Wire createJiraIssue into workflow startRun for tasks with jiraEnabled (gap closure)
+- [x] **Phase 24: Jira Auto-Issue Creation Wiring** — Wire createJiraIssue into workflow startRun for tasks with jiraEnabled (gap closure) (completed 2026-03-30)
 
 ## Phase Details
 
@@ -263,10 +263,10 @@ Plans:
   1. `workflow.ts` `startRun` calls `createJiraIssue` fire-and-forget for each newly-TODO task run whose template has `jiraEnabled: true` in `configJson`
   2. Created Jira issue key is stored on the task run record and displayed via `JiraIssueChip`
 
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
-- [ ] 24-01-PLAN.md — Wire createJiraIssue fire-and-forget into workflow startRun for jira-enabled tasks
+- [x] 24-01-PLAN.md — Wire createJiraIssue fire-and-forget into workflow startRun for jira-enabled tasks
 
 ## Progress
 
@@ -298,4 +298,4 @@ Phases execute in numeric order: 12 → 13 → 14 → 15 → 16 → 17 → 18 �
 | 21. API Build Fixes & Permission Registration | v2.0 | 2/2 | Complete    | 2026-03-30 |
 | 22. Component Mounting & Lifecycle Wiring | v2.0 | 2/2 | Complete    | 2026-03-30 |
 | 23. OCR Adapter Registry Fix | v2.0 | 1/1 | Complete    | 2026-03-30 |
-| 24. Jira Auto-Issue Creation Wiring | v2.0 | 0/1 | Pending     | — |
+| 24. Jira Auto-Issue Creation Wiring | v2.0 | 1/1 | Complete   | 2026-03-30 |

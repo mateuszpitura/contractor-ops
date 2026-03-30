@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Platform Expansion
-status: Milestone complete
-stopped_at: Completed 23-01-PLAN.md
-last_updated: "2026-03-30T13:21:01.834Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 24-01-PLAN.md
+last_updated: "2026-03-30T14:31:28.528Z"
 progress:
-  total_phases: 12
-  completed_phases: 12
-  total_plans: 48
-  completed_plans: 48
+  total_phases: 13
+  completed_phases: 13
+  total_plans: 49
+  completed_plans: 49
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-23)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 23 — ocr-adapter-registry-fix
+**Current focus:** Phase 24 — jira-auto-issue-creation-wiring
 
 ## Current Position
 
-Phase: 23
-Plan: Not started
+Phase: 24 (jira-auto-issue-creation-wiring) — EXECUTING
+Plan: 1 of 1
 
 ## Performance Metrics
 
@@ -86,6 +86,7 @@ Plan: Not started
 | Phase 22 P01 | 1min | 2 tasks | 2 files |
 | Phase 22 P02 | 3min | 2 tasks | 3 files |
 | Phase 23 P01 | 1min | 2 tasks | 4 files |
+| Phase 24 P01 | 1min | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -162,6 +163,7 @@ Recent decisions affecting current work:
 - [Phase 21]: Used same TxClient type derivation pattern as approval-engine.ts for transaction callback typing consistency
 - [Phase 22]: Section order in task-card-run: attachments -> doc links -> comments (files first, external docs second, discussion last)
 - [Phase 22]: All calendar lifecycle hooks use void + .catch() fire-and-forget pattern to never block mutations
+- [Phase 24]: Reused existing transitionJiraIssue fire-and-forget pattern for createJiraIssue wiring consistency
 
 ### Pending Todos
 
@@ -176,6 +178,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-30T13:18:06.212Z
-Stopped at: Completed 23-01-PLAN.md
+Last session: 2026-03-30T14:31:28.525Z
+Stopped at: Completed 24-01-PLAN.md
 Resume file: None
