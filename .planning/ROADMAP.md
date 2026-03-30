@@ -39,7 +39,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 - [x] **Phase 18: Time Tracking** — Manual hour logging, manager approval, Clockify/Jira import, invoice deviation flagging (completed 2026-03-27)
 - [x] **Phase 19: Jira Integration** — OAuth connection, workflow-to-issue creation, bidirectional status sync, linked issue display (gap closure in progress)
 - [x] **Phase 20: Documentation & Calendar** — Notion/Confluence page linking and Google/Outlook calendar deadline sync (completed 2026-03-29)
-- [ ] **Phase 21: API Build Fixes & Permission Registration** — Fix TypeScript compilation errors, missing adapter exports, runtime bugs, and permission registration (gap closure)
+- [x] **Phase 21: API Build Fixes & Permission Registration** — Fix TypeScript compilation errors, missing adapter exports, runtime bugs, and permission registration (gap closure) (completed 2026-03-30)
 - [ ] **Phase 22: Component Mounting & Lifecycle Wiring** — Mount orphaned UI components and wire calendar auto-push into contract/invoice lifecycle (gap closure)
 
 ## Phase Details
@@ -220,7 +220,7 @@ Plans:
 
 Plans:
 - [x] 21-01-PLAN.md — Integrations subpath exports, validators rebuild, time permission registration
-- [ ] 21-02-PLAN.md — Calendar/docs/time-entry file-level TypeScript fixes, full API build verification
+- [x] 21-02-PLAN.md — Calendar/docs/time-entry file-level TypeScript fixes, full API build verification
 
 ### Phase 22: Component Mounting & Lifecycle Wiring
 **Goal**: Orphaned UI components are mounted in their target views and calendar auto-push is wired into contract/invoice lifecycle
@@ -261,5 +261,5 @@ Phases execute in numeric order: 12 → 13 → 14 → 15 → 16 → 17 → 18 �
 | 18. Time Tracking | v2.0 | 6/6 | Complete    | 2026-03-28 |
 | 19. Jira Integration | v2.0 | 6/6 | Complete    | 2026-03-29 |
 | 20. Documentation & Calendar | v2.0 | 6/6 | Complete    | 2026-03-29 |
-| 21. API Build Fixes & Permission Registration | v2.0 | 1/2 | In Progress|  |
+| 21. API Build Fixes & Permission Registration | v2.0 | 2/2 | Complete   | 2026-03-30 |
 | 22. Component Mounting & Lifecycle Wiring | v2.0 | 0/0 | Planned | — |
