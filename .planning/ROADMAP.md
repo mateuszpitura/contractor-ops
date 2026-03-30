@@ -293,7 +293,10 @@ Plans:
   1. Personal calendar connect buttons navigate to the provider authorization URL (not callback URL) and Outlook uses correct adapter slug `"outlook-calendar"`
   2. `startRun` in `workflow.ts` calls `createTaskCalendarEvent` fire-and-forget for each task run whose template has calendar event config enabled
 
-Plans: TBD
+**Plans:** 1 plan
+
+Plans:
+- [ ] 26-01-PLAN.md — Fix OAuth connect URL/scopes/extraAuthParams + wire createTaskCalendarEvent into startRun
 
 ## Progress
 
@@ -327,4 +330,4 @@ Phases execute in numeric order: 12 -> 13 -> 14 -> 15 -> 16 -> 17 -> 18 -> 19 ->
 | 23. OCR Adapter Registry Fix | v2.0 | 1/1 | Complete    | 2026-03-30 |
 | 24. Jira Auto-Issue Creation Wiring | v2.0 | 1/1 | Complete    | 2026-03-30 |
 | 25. Portal E-Sign Auth Fix | v2.0 | 1/1 | Complete    | 2026-03-30 |
-| 26. Calendar Wiring Fixes | v2.0 | 0/0 | Planned | — |
+| 26. Calendar Wiring Fixes | v2.0 | 0/1 | Planned | — |
