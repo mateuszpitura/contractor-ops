@@ -32,6 +32,8 @@ All 14 product modules delivered: org setup, RBAC, contractors, contracts, docum
 
 **Phase 21 complete** — API build fixes and permission registration (gap closure). Fixed 8 root causes of TypeScript compilation failure across packages/api: restored validators/src/helpers.ts utility schemas, added 4 adapter subpath exports to integrations package.json (notion, confluence, google-calendar, outlook-calendar), registered `time` resource in permissions.ts with role assignments, fixed ctx.userId → ctx.user!.id (5 occurrences in calendar.ts), contract.name → contract.title, CredentialBlob unsafe cast → direct credentials.extra access, ctx.prisma → imported prisma in docs.ts (5 occurrences), and $transaction callback type using TxClient pattern in time-entry.ts. All API packages now compile with zero TypeScript errors.
 
+**Phase 22 complete** — Component mounting and lifecycle wiring (gap closure). Mounted DocLinksSection in workflow run task card (readOnly for terminal statuses, section order: attachments → doc links → comments) and CalendarTaskConfig in template builder task card (after JiraTaskConfig with persisted-ID guard). Wired calendar auto-push into 8 lifecycle points: contract create/update/delete (syncContractExpiryDeadline, deleteCalendarEvent), approval approve/bulkApprove/submitForApproval (syncPaymentDueDeadline, syncApprovalSlaDeadline), and invoice void (deleteCalendarEvent). All hooks use void + .catch() fire-and-forget pattern to never block mutations.
+
 ## Requirements
 
 ### Validated — v1.0
