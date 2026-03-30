@@ -41,7 +41,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 - [x] **Phase 20: Documentation & Calendar** — Notion/Confluence page linking and Google/Outlook calendar deadline sync (completed 2026-03-29)
 - [x] **Phase 21: API Build Fixes & Permission Registration** — Fix TypeScript compilation errors, missing adapter exports, runtime bugs, and permission registration (gap closure) (completed 2026-03-30)
 - [x] **Phase 22: Component Mounting & Lifecycle Wiring** — Mount orphaned UI components and wire calendar auto-push into contract/invoice lifecycle (gap closure) (completed 2026-03-30)
-- [ ] **Phase 23: OCR Adapter Registry Fix** — Re-register ClaudeOcrAdapter dropped during Phase 20 rewrite (gap closure)
+- [x] **Phase 23: OCR Adapter Registry Fix** — Re-register ClaudeOcrAdapter dropped during Phase 20 rewrite (gap closure) (completed 2026-03-30)
 
 ## Phase Details
 
@@ -248,10 +248,10 @@ Plans:
   1. `ClaudeOcrAdapter` is registered in `registerAllAdapters()` — `getAdapter("claude")` returns the adapter instance at runtime
   2. Portal invoice OCR trigger and admin upload OCR trigger both resolve the adapter without error
 
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
-- [ ] 23-01-PLAN.md — Add slug property to ClaudeOcrAdapter, re-register in registerAllAdapters, add regression tests
+- [x] 23-01-PLAN.md — Add slug property to ClaudeOcrAdapter, re-register in registerAllAdapters, add regression tests
 
 ## Progress
 
@@ -282,4 +282,4 @@ Phases execute in numeric order: 12 → 13 → 14 → 15 → 16 → 17 → 18 �
 | 20. Documentation & Calendar | v2.0 | 6/6 | Complete    | 2026-03-29 |
 | 21. API Build Fixes & Permission Registration | v2.0 | 2/2 | Complete    | 2026-03-30 |
 | 22. Component Mounting & Lifecycle Wiring | v2.0 | 2/2 | Complete    | 2026-03-30 |
-| 23. OCR Adapter Registry Fix | v2.0 | 0/1 | Pending |  |
+| 23. OCR Adapter Registry Fix | v2.0 | 1/1 | Complete   | 2026-03-30 |
