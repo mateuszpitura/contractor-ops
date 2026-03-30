@@ -216,13 +216,34 @@ export function MyCalendarSection() {
     (c) => c.provider === "OUTLOOK_CALENDAR",
   );
 
-  // OAuth connect handlers — redirect to OAuth flow with userId for per-user connection
-  function handleGoogleConnect() {
-    window.location.href = "/api/oauth/google-calendar/callback?action=connect";
+  // OAuth connect handlers — fetch authorization URL via tRPC and redirect
+  const googleOAuthQuery = trpc.integration.getOAuthUrlGeneric.queryOptions(
+    { provider: "google-calendar" },
+  );
+  const outlookOAuthQuery = trpc.integration.getOAuthUrlGeneric.queryOptions(
+    { provider: "outlook-calendar" },
+  );
+
+  async function handleGoogleConnect() {
+    try {
+      const result = await queryClient.fetchQuery(googleOAuthQuery);
+      if (result?.url) {
+        window.location.href = result.url;
+      }
+    } catch {
+      toast.error(t("connectFailedToast"));
+    }
   }
 
-  function handleOutlookConnect() {
-    window.location.href = "/api/oauth/outlook/callback?action=connect";
+  async function handleOutlookConnect() {
+    try {
+      const result = await queryClient.fetchQuery(outlookOAuthQuery);
+      if (result?.url) {
+        window.location.href = result.url;
+      }
+    } catch {
+      toast.error(t("connectFailedToast"));
+    }
   }
 
   function handleDisconnect(connectionId: string) {

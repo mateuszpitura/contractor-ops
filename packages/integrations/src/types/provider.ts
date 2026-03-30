@@ -13,6 +13,8 @@ export interface OAuthConfig {
   scopes: string[];
   /** e.g., "/api/oauth/slack/callback" */
   redirectPath: string;
+  /** Extra query parameters appended to the authorization URL (e.g., access_type, prompt). */
+  extraAuthParams?: Record<string, string>;
 }
 
 /**

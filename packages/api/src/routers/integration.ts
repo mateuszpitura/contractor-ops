@@ -373,10 +373,18 @@ export const integrationRouter = router({
 
       const params = new URLSearchParams({
         client_id: clientId,
-        scope: oauthConfig.scopes.join(","),
+        response_type: "code",
+        scope: oauthConfig.scopes.join(" "),
         redirect_uri: redirectUri,
         state,
       });
+
+      // Append provider-specific extra params (e.g., Google access_type=offline)
+      if (oauthConfig.extraAuthParams) {
+        for (const [key, value] of Object.entries(oauthConfig.extraAuthParams)) {
+          params.set(key, value);
+        }
+      }
 
       const url = `${oauthConfig.authorizationUrl}?${params.toString()}`;
       return { url };
