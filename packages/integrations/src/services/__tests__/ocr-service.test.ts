@@ -98,4 +98,15 @@ describe("ocr-service", () => {
       );
     });
   });
+
+  describe("registerAllAdapters integration", () => {
+    it("resolves ClaudeOcrAdapter from registry after registerAllAdapters", async () => {
+      clearAdapters();
+      const { registerAllAdapters } = await import("../../adapters/register-all.js");
+      registerAllAdapters();
+      const adapter = getOcrAdapter("CLAUDE");
+      expect(adapter).toBeDefined();
+      expect(adapter.providerName).toBe("claude");
+    });
+  });
 });

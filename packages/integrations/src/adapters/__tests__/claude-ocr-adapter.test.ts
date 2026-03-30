@@ -172,6 +172,11 @@ describe("ClaudeOcrAdapter", () => {
     expect(result.errorMessage).toContain("30MB limit");
     expect(mockCreate).not.toHaveBeenCalled();
   });
+
+  it("has slug property matching providerName for registry compatibility", () => {
+    expect(adapter.slug).toBe("claude");
+    expect(adapter.slug).toBe(adapter.providerName);
+  });
 });
 
 // ---------------------------------------------------------------------------
