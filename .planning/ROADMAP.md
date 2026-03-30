@@ -43,6 +43,8 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 - [x] **Phase 22: Component Mounting & Lifecycle Wiring** — Mount orphaned UI components and wire calendar auto-push into contract/invoice lifecycle (gap closure) (completed 2026-03-30)
 - [x] **Phase 23: OCR Adapter Registry Fix** — Re-register ClaudeOcrAdapter dropped during Phase 20 rewrite (gap closure) (completed 2026-03-30)
 - [x] **Phase 24: Jira Auto-Issue Creation Wiring** — Wire createJiraIssue into workflow startRun for tasks with jiraEnabled (gap closure) (completed 2026-03-30)
+- [ ] **Phase 25: Portal E-Sign Auth Fix** — Add portalProcedure signing endpoint so portal contractors can sign documents (gap closure)
+- [ ] **Phase 26: Calendar Wiring Fixes** — Fix personal calendar OAuth URL navigation and wire task calendar event creation into startRun (gap closure)
 
 ## Phase Details
 
@@ -268,6 +270,28 @@ Plans:
 Plans:
 - [x] 24-01-PLAN.md — Wire createJiraIssue fire-and-forget into workflow startRun for jira-enabled tasks
 
+### Phase 25: Portal E-Sign Auth Fix
+**Goal**: Portal contractors can sign documents through the embedded signing flow without hitting UNAUTHORIZED errors
+**Depends on**: Phase 15 (E-Sign Integration), Phase 13 (Portal Auth)
+**Requirements**: SIGN-02
+**Gap Closure:** Closes SIGN-02 portal auth gap + integration gap (Phase 15→13) + broken "Portal contractor signing" flow
+**Success Criteria** (what must be TRUE):
+  1. Portal contractor can request a signing URL via `portalProcedure` endpoint that verifies the contractor is a recipient of the envelope
+  2. `EmbeddedSigningModal` works in portal context — portal session cookie is accepted, signing URL is returned and iframe loads
+
+Plans: TBD
+
+### Phase 26: Calendar Wiring Fixes
+**Goal**: Personal calendar OAuth connect works correctly and workflow task runs create calendar events at runtime
+**Depends on**: Phase 20 (Documentation & Calendar), Phase 22 (Component Mounting)
+**Requirements**: CAL-01, CAL-02
+**Gap Closure:** Closes CAL-01 OAuth URL gap + CAL-02 runtime hook gap + integration gaps (Phase 20→14, Phase 20→4) + broken "Personal calendar OAuth connect" flow
+**Success Criteria** (what must be TRUE):
+  1. Personal calendar connect buttons navigate to the provider authorization URL (not callback URL) and Outlook uses correct adapter slug `"outlook-calendar"`
+  2. `startRun` in `workflow.ts` calls `createTaskCalendarEvent` fire-and-forget for each task run whose template has calendar event config enabled
+
+Plans: TBD
+
 ## Progress
 
 **Execution Order:**
@@ -299,3 +323,5 @@ Phases execute in numeric order: 12 → 13 → 14 → 15 → 16 → 17 → 18 �
 | 22. Component Mounting & Lifecycle Wiring | v2.0 | 2/2 | Complete    | 2026-03-30 |
 | 23. OCR Adapter Registry Fix | v2.0 | 1/1 | Complete    | 2026-03-30 |
 | 24. Jira Auto-Issue Creation Wiring | v2.0 | 1/1 | Complete    | 2026-03-30 |
+| 25. Portal E-Sign Auth Fix | v2.0 | 0/0 | Planned | — |
+| 26. Calendar Wiring Fixes | v2.0 | 0/0 | Planned | — |

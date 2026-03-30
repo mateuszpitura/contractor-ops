@@ -35,7 +35,7 @@ Requirements for v2.0 Platform Expansion. Each maps to roadmap phases.
 ### E-Sign
 
 - [x] **SIGN-01**: User can send a contract or NDA for signature via DocuSign or Autenti
-- [x] **SIGN-02**: Signer can sign documents within Contractor Ops (embedded/redirect flow)
+- [ ] **SIGN-02**: Signer can sign documents within Contractor Ops (embedded/redirect flow)
 - [x] **SIGN-03**: Contracts support multi-party signing (contractor + org rep) in defined order
 - [x] **SIGN-04**: Signed PDF is auto-saved to document management with signature audit trail
 
@@ -66,8 +66,8 @@ Requirements for v2.0 Platform Expansion. Each maps to roadmap phases.
 
 ### Calendar Integration
 
-- [x] **CAL-01**: System pushes contract expiry, approval SLA, and payment deadlines to Google/Outlook calendar
-- [x] **CAL-02**: Workflow steps can create calendar events (e.g., onboarding kickoff meeting)
+- [ ] **CAL-01**: System pushes contract expiry, approval SLA, and payment deadlines to Google/Outlook calendar
+- [ ] **CAL-02**: Workflow steps can create calendar events (e.g., onboarding kickoff meeting)
 
 ## Future Requirements
 
@@ -130,7 +130,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TIME-04 | Phase 18 | Complete |
 | TIME-05 | Phase 18 | Complete |
 | SIGN-01 | Phase 15 | Complete |
-| SIGN-02 | Phase 15 | Complete |
+| SIGN-02 | Phase 25 | Pending |
 | SIGN-03 | Phase 15 | Complete |
 | SIGN-04 | Phase 15 | Complete |
 | OCR-01 | Phase 23 | Complete |
@@ -146,14 +146,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 | JIRA-04 | Phase 19 | Complete |
 | DOCS-01 | Phase 22 | Complete |
 | DOCS-02 | Phase 21 | Complete |
-| CAL-01 | Phase 22 | Complete |
-| CAL-02 | Phase 22 | Complete |
+| CAL-01 | Phase 26 | Pending |
+| CAL-02 | Phase 26 | Pending |
 
 **Coverage:**
 - v2.0 requirements: 35 total
 - Mapped to phases: 35
-- Complete: 34
-- Pending (gap closure): 1 (JIRA-02)
+- Complete: 32
+- Pending (gap closure): 3 (SIGN-02, CAL-01, CAL-02)
 - Unmapped: 0
 
 ---
