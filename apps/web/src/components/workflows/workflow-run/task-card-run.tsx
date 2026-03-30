@@ -51,6 +51,7 @@ import {
   TooltipProvider,
 } from "@/components/ui/tooltip";
 
+import { DocLinksSection } from "@/components/integrations/doc-links-section";
 import { TaskComments } from "./task-comments";
 import { TaskAttachments } from "./task-attachments";
 
@@ -480,11 +481,17 @@ export function TaskCardRun({
               )}
             </div>
 
-            {/* Comments */}
-            <TaskComments runId={runId} taskRunId={task.id} />
-
             {/* Attachments */}
             <TaskAttachments runId={runId} taskRunId={task.id} />
+
+            {/* Document links */}
+            <DocLinksSection
+              workflowTaskRunId={task.id}
+              readOnly={["DONE", "SKIPPED", "CANCELLED"].includes(task.status)}
+            />
+
+            {/* Comments */}
+            <TaskComments runId={runId} taskRunId={task.id} />
           </div>
         </CollapsibleContent>
       </div>
