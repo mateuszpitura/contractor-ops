@@ -27,7 +27,7 @@ Requirements for v2.0 Platform Expansion. Each maps to roadmap phases.
 ### Time Tracking
 
 - [x] **TIME-01**: Contractor can log hours manually in portal (date, hours, project/task, description)
-- [x] **TIME-02**: Manager can review and approve/reject submitted time entries
+- [ ] **TIME-02**: Manager can review and approve/reject submitted time entries
 - [x] **TIME-03**: System can import time entries from Clockify via API
 - [x] **TIME-04**: System can import worklogs from Jira issues assigned to contractor
 - [x] **TIME-05**: System compares approved hours against invoice amount and flags deviations
@@ -61,13 +61,13 @@ Requirements for v2.0 Platform Expansion. Each maps to roadmap phases.
 
 ### Documentation Integration
 
-- [x] **DOCS-01**: User can attach Notion or Confluence page links to workflow steps
-- [x] **DOCS-02**: User can search and link Notion/Confluence pages from within Cmd+K
+- [ ] **DOCS-01**: User can attach Notion or Confluence page links to workflow steps
+- [ ] **DOCS-02**: User can search and link Notion/Confluence pages from within Cmd+K
 
 ### Calendar Integration
 
-- [x] **CAL-01**: System pushes contract expiry, approval SLA, and payment deadlines to Google/Outlook calendar
-- [x] **CAL-02**: Workflow steps can create calendar events (e.g., onboarding kickoff meeting)
+- [ ] **CAL-01**: System pushes contract expiry, approval SLA, and payment deadlines to Google/Outlook calendar
+- [ ] **CAL-02**: Workflow steps can create calendar events (e.g., onboarding kickoff meeting)
 
 ## Future Requirements
 
@@ -125,7 +125,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PORT-07 | Phase 14 | Complete |
 | PORT-08 | Phase 14 | Complete |
 | TIME-01 | Phase 18 | Complete |
-| TIME-02 | Phase 18 | Complete |
+| TIME-02 | Phase 21 | Pending |
 | TIME-03 | Phase 18 | Complete |
 | TIME-04 | Phase 18 | Complete |
 | TIME-05 | Phase 18 | Complete |
@@ -144,14 +144,16 @@ Which phases cover which requirements. Updated during roadmap creation.
 | JIRA-02 | Phase 19 | Complete |
 | JIRA-03 | Phase 19 | Complete |
 | JIRA-04 | Phase 19 | Complete |
-| DOCS-01 | Phase 20 | Complete |
-| DOCS-02 | Phase 20 | Complete |
-| CAL-01 | Phase 20 | Complete |
-| CAL-02 | Phase 20 | Complete |
+| DOCS-01 | Phase 22 | Pending |
+| DOCS-02 | Phase 21 | Pending |
+| CAL-01 | Phase 22 | Pending |
+| CAL-02 | Phase 22 | Pending |
 
 **Coverage:**
 - v2.0 requirements: 35 total
 - Mapped to phases: 35
+- Complete: 30
+- Pending (gap closure): 5 (TIME-02, DOCS-01, DOCS-02, CAL-01, CAL-02)
 - Unmapped: 0
 
 ---

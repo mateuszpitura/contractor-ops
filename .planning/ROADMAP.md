@@ -39,6 +39,8 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 - [x] **Phase 18: Time Tracking** — Manual hour logging, manager approval, Clockify/Jira import, invoice deviation flagging (completed 2026-03-27)
 - [x] **Phase 19: Jira Integration** — OAuth connection, workflow-to-issue creation, bidirectional status sync, linked issue display (gap closure in progress)
 - [x] **Phase 20: Documentation & Calendar** — Notion/Confluence page linking and Google/Outlook calendar deadline sync (completed 2026-03-29)
+- [ ] **Phase 21: API Build Fixes & Permission Registration** — Fix TypeScript compilation errors, missing adapter exports, runtime bugs, and permission registration (gap closure)
+- [ ] **Phase 22: Component Mounting & Lifecycle Wiring** — Mount orphaned UI components and wire calendar auto-push into contract/invoice lifecycle (gap closure)
 
 ## Phase Details
 
@@ -202,6 +204,33 @@ Plans:
 - [x] 20-04-PLAN.md — DocLinkChip, AttachDocDialog, DocLinksSection, Cmd+K Docs group
 - [x] 20-05-PLAN.md — My Calendar page, CalendarTaskConfig, CalendarEventConfigDialog, integrations tab updates
 
+### Phase 21: API Build Fixes & Permission Registration
+**Goal**: All API packages compile cleanly and runtime bugs in calendar/time routers are eliminated
+**Depends on**: Phase 20
+**Requirements**: TIME-02, DOCS-01, DOCS-02, CAL-01, CAL-02
+**Gap Closure:** Closes build/runtime gaps from v2.0 milestone audit
+**Success Criteria** (what must be TRUE):
+  1. `packages/api` compiles with zero TypeScript errors
+  2. All 4 adapter subpath exports resolve correctly from `packages/integrations`
+  3. `time` resource registered in `permissions.ts` — admin time router procedures pass type-check
+  4. `ctx.user.id` used consistently in `calendar.ts` — no runtime crashes
+  5. `contract.title` used in `calendar.ts` — `syncContractDeadline` executes without error
+  6. `CredentialBlob` cast in `doc-link-service.ts` compiles without error
+
+Plans: TBD
+
+### Phase 22: Component Mounting & Lifecycle Wiring
+**Goal**: Orphaned UI components are mounted in their target views and calendar auto-push is wired into contract/invoice lifecycle
+**Depends on**: Phase 21
+**Requirements**: DOCS-01, CAL-01, CAL-02
+**Gap Closure:** Closes UI/lifecycle wiring gaps from v2.0 milestone audit
+**Success Criteria** (what must be TRUE):
+  1. `DocLinksSection` is rendered in workflow task run view — user can attach docs to workflow steps
+  2. `CalendarTaskConfig` is rendered in template builder task card — user can configure per-task calendar events
+  3. Contract creation/update and invoice lifecycle call `syncContractDeadline`/`syncPaymentDeadline` — deadlines auto-push to connected calendar
+
+Plans: TBD
+
 ## Progress
 
 **Execution Order:**
@@ -229,3 +258,5 @@ Phases execute in numeric order: 12 → 13 → 14 → 15 → 16 → 17 → 18 �
 | 18. Time Tracking | v2.0 | 6/6 | Complete    | 2026-03-28 |
 | 19. Jira Integration | v2.0 | 6/6 | Complete    | 2026-03-29 |
 | 20. Documentation & Calendar | v2.0 | 6/6 | Complete    | 2026-03-29 |
+| 21. API Build Fixes & Permission Registration | v2.0 | 0/0 | Planned | — |
+| 22. Component Mounting & Lifecycle Wiring | v2.0 | 0/0 | Planned | — |
