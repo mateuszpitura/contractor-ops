@@ -23,6 +23,7 @@ const allPermissions = {
   report: ["read", "export"],
   settings: ["read", "update"],
   integration: ["read", "update"],
+  time: ["read", "approve"],
 } as const;
 
 export const roles = {
@@ -45,6 +46,7 @@ export const roles = {
     report: ["read", "export"],
     settings: ["read", "update"],
     integration: ["read", "update"],
+    time: ["read", "approve"],
   }),
 
   finance_admin: ac.newRole({
@@ -54,6 +56,7 @@ export const roles = {
     payment: ["create", "read", "export"],
     report: ["read", "export"],
     settings: ["read"],
+    time: ["read"],
   }),
 
   ops_manager: ac.newRole({
@@ -63,6 +66,7 @@ export const roles = {
     workflow: ["create", "read", "update", "delete", "execute"],
     report: ["read", "export"],
     settings: ["read"],
+    time: ["read", "approve"],
   }),
 
   team_manager: ac.newRole({
@@ -71,6 +75,7 @@ export const roles = {
     invoice: ["read", "approve"],
     workflow: ["read", "execute"],
     report: ["read"],
+    time: ["read", "approve"],
   }),
 
   legal_compliance_viewer: ac.newRole({

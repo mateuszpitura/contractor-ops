@@ -20,6 +20,7 @@ const statement = {
   report: ["read", "export"],
   settings: ["read", "update"],
   integration: ["read", "update"],
+  time: ["read", "approve"],
 } as const;
 
 export const ac = createAccessControl(statement);
