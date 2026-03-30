@@ -41,7 +41,7 @@ Requirements for v2.0 Platform Expansion. Each maps to roadmap phases.
 
 ### OCR Invoice Parsing
 
-- [x] **OCR-01**: System auto-extracts fields (NIP, invoice number, date, amount, line items) from uploaded PDF
+- [ ] **OCR-01**: System auto-extracts fields (NIP, invoice number, date, amount, line items) from uploaded PDF
 - [x] **OCR-02**: Extracted fields display confidence scores per field
 - [x] **OCR-03**: User can review OCR results in side-by-side view (PDF + extracted fields with edit-in-place)
 
@@ -133,7 +133,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SIGN-02 | Phase 15 | Complete |
 | SIGN-03 | Phase 15 | Complete |
 | SIGN-04 | Phase 15 | Complete |
-| OCR-01 | Phase 16 | Complete |
+| OCR-01 | Phase 23 | Pending |
 | OCR-02 | Phase 16 | Complete |
 | OCR-03 | Phase 16 | Complete |
 | KSEF-01 | Phase 17 | Complete |
@@ -152,8 +152,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 **Coverage:**
 - v2.0 requirements: 35 total
 - Mapped to phases: 35
-- Complete: 30
-- Pending (gap closure): 5 (TIME-02, DOCS-01, DOCS-02, CAL-01, CAL-02)
+- Complete: 34
+- Pending (gap closure): 1 (OCR-01)
 - Unmapped: 0
 
 ---
