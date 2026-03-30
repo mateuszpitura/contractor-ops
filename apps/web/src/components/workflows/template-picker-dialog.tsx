@@ -122,9 +122,11 @@ export function TemplatePicker({
     if (!selectedId) return;
 
     try {
+      let totalCalendarTasks = 0;
+
       if (isBulk && contractorIds) {
         // Bulk: create one run per contractor
-        await Promise.all(
+        const results = await Promise.all(
           contractorIds.map((cId) =>
             startRunMutation.mutateAsync({
               templateId: selectedId,
@@ -133,15 +135,26 @@ export function TemplatePicker({
             }),
           ),
         );
+        for (const r of results) {
+          const result = r as { calendarTaskCount?: number };
+          totalCalendarTasks += result.calendarTaskCount ?? 0;
+        }
       } else if (effectiveContractorId) {
-        await startRunMutation.mutateAsync({
+        const result = await startRunMutation.mutateAsync({
           templateId: selectedId,
           contractorId: effectiveContractorId,
           contractId,
-        });
+        }) as { calendarTaskCount?: number };
+        totalCalendarTasks = result.calendarTaskCount ?? 0;
       }
 
       toast.success(t("toast.workflowStarted"));
+
+      if (totalCalendarTasks > 0) {
+        toast.info(
+          `Calendar events are being created for ${totalCalendarTasks} task(s)`,
+        );
+      }
       onOpenChange(false);
       setSelectedId(null);
       setSearch("");

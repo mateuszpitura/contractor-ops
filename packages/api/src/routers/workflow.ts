@@ -14,6 +14,7 @@ import {
   addCommentSchema,
   myTasksListSchema,
   jiraTaskConfigSchema,
+  calendarTaskConfigSchema,
 } from "@contractor-ops/validators";
 import * as E from "../errors.js";
 import { router } from "../init.js";
@@ -729,7 +730,26 @@ export const workflowRouter = router({
           }
         }
 
-        return { run: fullRun, contractorName: contractor.legalName ?? contractor.displayName ?? "Unknown", jiraEligibleTaskRunIds };
+        // Build map of task run IDs to their calendar config for calendar event creation
+        const calendarConfigMap = new Map<string, import("@contractor-ops/validators").CalendarTaskConfig>();
+        for (const taskTemplate of template.tasks) {
+          const parsed = calendarTaskConfigSchema.safeParse(taskTemplate.configJson);
+          if (parsed.success && parsed.data.calendarEnabled) {
+            const runId = taskIdMap.get(taskTemplate.id);
+            if (runId) {
+              calendarConfigMap.set(runId, parsed.data);
+            }
+          }
+        }
+
+        return {
+          run: fullRun,
+          contractorName: contractor.legalName ?? contractor.displayName ?? "Unknown",
+          jiraEligibleTaskRunIds,
+          calendarConfigMap,
+          calendarTaskCount: calendarConfigMap.size,
+          contractName: contract?.title ?? "",
+        };
       });
 
       // Fire-and-forget: dispatch TASK_ASSIGNED to each task assignee
@@ -798,7 +818,46 @@ export const workflowRouter = router({
         })();
       }
 
-      return plain(run.run);
+      // Fire-and-forget: create calendar events for calendar-enabled tasks (non-blocking)
+      if (run.calendarConfigMap.size > 0) {
+        const todoCalendarTasks = run.run.tasks.filter(
+          (t) => t.status === "TODO" && run.calendarConfigMap.has(t.id),
+        );
+        if (todoCalendarTasks.length > 0) {
+          void (async () => {
+            try {
+              const { createTaskCalendarEvent } = await import(
+                "../services/calendar-deadline-sync.js"
+              );
+              for (const task of todoCalendarTasks) {
+                const config = run.calendarConfigMap.get(task.id);
+                if (!config) continue;
+                createTaskCalendarEvent(prisma, {
+                  organizationId: ctx.organizationId,
+                  workflowTaskRunId: task.id,
+                  config,
+                  contractorName: run.contractorName,
+                  contractName: run.contractName,
+                  taskName: task.title,
+                  userId: ctx.user!.id,
+                }).catch((err) =>
+                  console.error(
+                    `[workflow/startRun] Calendar event creation failed for task ${task.id}:`,
+                    err,
+                  ),
+                );
+              }
+            } catch (err) {
+              console.error(
+                "[workflow/startRun] Calendar event creation setup failed:",
+                err,
+              );
+            }
+          })();
+        }
+      }
+
+      return plain({ ...run.run, calendarTaskCount: run.calendarTaskCount });
     }),
 
   /**
