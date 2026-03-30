@@ -68,6 +68,26 @@
       "types": "./dist/adapters/jira-adapter.d.ts",
       "import": "./dist/adapters/jira-adapter.js",
       "default": "./dist/adapters/jira-adapter.js"
+    },
+    "./adapters/notion-adapter": {
+      "types": "./dist/adapters/notion-adapter.d.ts",
+      "import": "./dist/adapters/notion-adapter.js",
+      "default": "./dist/adapters/notion-adapter.js"
+    },
+    "./adapters/confluence-adapter": {
+      "types": "./dist/adapters/confluence-adapter.d.ts",
+      "import": "./dist/adapters/confluence-adapter.js",
+      "default": "./dist/adapters/confluence-adapter.js"
+    },
+    "./adapters/google-calendar-adapter": {
+      "types": "./dist/adapters/google-calendar-adapter.d.ts",
+      "import": "./dist/adapters/google-calendar-adapter.js",
+      "default": "./dist/adapters/google-calendar-adapter.js"
+    },
+    "./adapters/outlook-calendar-adapter": {
+      "types": "./dist/adapters/outlook-calendar-adapter.d.ts",
+      "import": "./dist/adapters/outlook-calendar-adapter.js",
+      "default": "./dist/adapters/outlook-calendar-adapter.js"
     }
   },
   "scripts": {
