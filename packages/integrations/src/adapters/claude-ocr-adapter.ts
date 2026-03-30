@@ -217,6 +217,7 @@ const MAX_PDF_SIZE_BYTES = 30 * 1024 * 1024;
  */
 export class ClaudeOcrAdapter implements OcrAdapter {
   readonly providerName = "claude";
+  readonly slug = "claude";
   readonly supportedDocumentTypes = ["application/pdf"];
 
   private readonly client: Anthropic;
