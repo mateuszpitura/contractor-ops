@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import { prisma } from "@contractor-ops/db";
 import { router } from "../init.js";
 import { tenantProcedure } from "../middleware/tenant.js";
@@ -133,6 +134,49 @@ export const esignRouter = router({
       });
 
       return result;
+    }),
+
+  /**
+   * Get an embedded signing URL for a portal contractor.
+   * Verifies the contractor is a recipient of the envelope before
+   * delegating to the shared getSigningUrl orchestrator.
+   */
+  getPortalSigningUrl: portalProcedure
+    .input(getSigningUrlInput)
+    .query(async ({ ctx, input }) => {
+      const envelope = await prisma.signingEnvelope.findFirst({
+        where: {
+          id: input.envelopeId,
+          organizationId: ctx.organizationId,
+        },
+        include: {
+          recipients: { select: { email: true } },
+        },
+      });
+
+      if (!envelope) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Envelope not found" });
+      }
+
+      const contractorEmail = ctx.contractor?.email?.toLowerCase();
+      if (!contractorEmail) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Not a recipient of this envelope" });
+      }
+
+      const isRecipient = envelope.recipients.some(
+        (r) => r.email.toLowerCase() === contractorEmail,
+      );
+
+      if (!isRecipient) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Not a recipient of this envelope" });
+      }
+
+      return getSigningUrl({
+        organizationId: ctx.organizationId,
+        envelopeId: input.envelopeId,
+        recipientEmail: input.recipientEmail,
+        returnUrl: input.returnUrl,
+      });
     }),
 
   /**

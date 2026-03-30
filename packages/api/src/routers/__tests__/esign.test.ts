@@ -6,4 +6,6 @@ describe("esign router", () => {
   it.todo("voidEnvelope voids envelope and updates contract status");
   it.todo("resendToRecipient sends reminder to specific signer");
   it.todo("getEnvelopeStatus returns envelope with recipients and events");
+  it.todo("getPortalSigningUrl returns signing URL when contractor is a recipient");
+  it.todo("getPortalSigningUrl throws FORBIDDEN when contractor is not a recipient");
 });
