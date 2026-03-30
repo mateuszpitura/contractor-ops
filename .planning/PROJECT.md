@@ -34,6 +34,10 @@ All 14 product modules delivered: org setup, RBAC, contractors, contracts, docum
 
 **Phase 22 complete** — Component mounting and lifecycle wiring (gap closure). Mounted DocLinksSection in workflow run task card (readOnly for terminal statuses, section order: attachments → doc links → comments) and CalendarTaskConfig in template builder task card (after JiraTaskConfig with persisted-ID guard). Wired calendar auto-push into 8 lifecycle points: contract create/update/delete (syncContractExpiryDeadline, deleteCalendarEvent), approval approve/bulkApprove/submitForApproval (syncPaymentDueDeadline, syncApprovalSlaDeadline), and invoice void (deleteCalendarEvent). All hooks use void + .catch() fire-and-forget pattern to never block mutations.
 
+**Phase 23 complete** — OCR adapter registry fix (gap closure). Added slug property to ClaudeOcrAdapter, re-registered it in registerAllAdapters.
+
+**Phase 24 complete** — Jira auto-issue creation wiring (gap closure). Wired `createJiraIssue` fire-and-forget into `workflow.ts` `startRun` — tasks with `jiraEnabled: true` in their template configJson now auto-create Jira issues when a workflow run starts. Follows existing transitionJiraIssue pattern. Closes JIRA-02 requirement.
+
 ## Requirements
 
 ### Validated — v1.0
@@ -162,4 +166,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-30 after Phase 23 (ocr-adapter-registry-fix) completion — OCR adapter registry gap closed, slug property added, adapter re-registered*
+*Last updated: 2026-03-30 after Phase 24 (jira-auto-issue-creation-wiring) completion — createJiraIssue wired into startRun for jiraEnabled tasks, JIRA-02 closed*
