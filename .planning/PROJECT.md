@@ -166,4 +166,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-30 after Phase 25 (portal-esign-auth-fix) completion — getPortalSigningUrl portalProcedure endpoint with recipient verification, EmbeddedSigningModal usePortalAuth prop for portal context switching, SIGN-02 closed*
+*Last updated: 2026-03-30 after Phase 26 (calendar-wiring-fixes) completion — OAuth connect URL/scope fixes, createTaskCalendarEvent wired into startRun fire-and-forget, calendarTaskCount informational toast, CAL-01 + CAL-02 closed. v2.0 milestone complete — all 15 phases delivered.*
