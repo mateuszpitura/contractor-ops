@@ -219,7 +219,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 21-01-PLAN.md — Integrations subpath exports, validators rebuild, time permission registration
+- [x] 21-01-PLAN.md — Integrations subpath exports, validators rebuild, time permission registration
 - [ ] 21-02-PLAN.md — Calendar/docs/time-entry file-level TypeScript fixes, full API build verification
 
 ### Phase 22: Component Mounting & Lifecycle Wiring
@@ -261,5 +261,5 @@ Phases execute in numeric order: 12 → 13 → 14 → 15 → 16 → 17 → 18 �
 | 18. Time Tracking | v2.0 | 6/6 | Complete    | 2026-03-28 |
 | 19. Jira Integration | v2.0 | 6/6 | Complete    | 2026-03-29 |
 | 20. Documentation & Calendar | v2.0 | 6/6 | Complete    | 2026-03-29 |
-| 21. API Build Fixes & Permission Registration | v2.0 | 0/2 | In Progress | — |
+| 21. API Build Fixes & Permission Registration | v2.0 | 1/2 | In Progress|  |
 | 22. Component Mounting & Lifecycle Wiring | v2.0 | 0/0 | Planned | — |

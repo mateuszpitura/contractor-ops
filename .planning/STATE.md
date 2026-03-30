@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Platform Expansion
 status: Milestone complete
-stopped_at: Completed 20-05-PLAN.md
-last_updated: "2026-03-29T22:31:20.272Z"
+stopped_at: Completed 21-01-PLAN.md
+last_updated: "2026-03-30T09:19:05.685Z"
 progress:
-  total_phases: 9
+  total_phases: 11
   completed_phases: 9
-  total_plans: 43
-  completed_plans: 43
+  total_plans: 45
+  completed_plans: 44
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-23)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 20 — documentation-calendar
+**Current focus:** Phase 21 — API Build Fixes & Permission Registration
 
 ## Current Position
 
-Phase: 20
-Plan: Not started
+Phase: 21 (API Build Fixes & Permission Registration) — EXECUTING
+Plan: 2 of 2
 
 ## Performance Metrics
 
@@ -81,6 +81,7 @@ Plan: Not started
 | Phase 20 P03 | 4min | 2 tasks | 4 files |
 | Phase 20-documentation-calendar P04 | 6min | 2 tasks | 5 files |
 | Phase 20 P05 | 6min | 2 tasks | 8 files |
+| Phase 21 P01 | 3min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -153,6 +154,7 @@ Recent decisions affecting current work:
 - [Phase 20-documentation-calendar]: Doc search in Cmd+K opens via window.open (not in-app navigation) per D-07
 - [Phase 20]: Inlined CalendarTaskConfig type locally for parallel execution compatibility (precedent: Phase 16)
 - [Phase 20]: CalendarEventConfigDialog uses local useState form state matching OcrReviewPanel pattern
+- [Phase 21]: Restored missing helpers.ts in validators package that was untracked in worktree (Rule 3 - blocking)
 
 ### Pending Todos
 
@@ -167,6 +169,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-29T22:25:36.246Z
-Stopped at: Completed 20-05-PLAN.md
+Last session: 2026-03-30T09:19:05.683Z
+Stopped at: Completed 21-01-PLAN.md
 Resume file: None
