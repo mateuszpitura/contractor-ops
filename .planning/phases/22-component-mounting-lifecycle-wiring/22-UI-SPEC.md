@@ -52,13 +52,12 @@ Exceptions: none
 | Role | Size | Weight | Line Height |
 |------|------|--------|-------------|
 | Body | 14px | 400 (regular) | 1.5 |
-| Label | 13px | 500 (medium) | 1.4 |
+| Label | 14px | 600 (semibold) | 1.4 |
 | Heading | 16px | 600 (semibold) | 1.3 |
-| Display | 20px | 700 (bold) | 1.2 |
 
 Font: `font-sans` (Outfit) for all UI text. `font-display` (Bricolage Grotesque) reserved for page-level headings only -- not used in this phase.
 
-**Phase-specific:** Both mounted components use existing Label (13px/500) for section headers and Body (14px/400) for content. No new typography roles introduced.
+**Phase-specific:** Both mounted components use Label (14px/600) for section headers and Body (14px/400) for content. Label and Body share the same size but are differentiated by weight. No new typography roles introduced.
 
 ---
 
@@ -108,8 +107,8 @@ This is the core of the Phase 22 UI contract -- where existing components mount 
 | Props | `taskTemplateId={task.id}` |
 
 **Interaction states:**
-- **Default:** Switch toggle (off) with "Calendar Event" label. When enabled, shows duration and "Configure" button.
-- **Configured:** Switch on, summary line showing duration label (e.g., "1 hour"), "Configure" button opens CalendarEventConfigDialog
+- **Default:** Switch toggle (off) with "Calendar Event" label. When enabled, shows duration and "Configure Event" button.
+- **Configured:** Switch on, summary line showing duration label (e.g., "1 hour"), "Configure Event" button opens CalendarEventConfigDialog
 - **Loading:** Skeleton matching JiraTaskConfig loading state
 - **Unsaved task:** Component not rendered (conditional guard prevents mount for templates without persisted ID)
 
@@ -120,14 +119,14 @@ This is the core of the Phase 22 UI contract -- where existing components mount 
 | Element | Copy |
 |---------|------|
 | Primary CTA (DocLinksSection) | "Attach Document" |
-| Primary CTA (CalendarTaskConfig) | "Configure" |
+| Primary CTA (CalendarTaskConfig) | "Configure Event" |
 | Empty state heading (DocLinksSection) | "No documents linked" |
 | Empty state body (DocLinksSection) | "Attach Notion or Confluence pages to this task." |
 | Error state (DocLinksSection) | "Failed to load document links. Please try again." |
 | Error state (CalendarTaskConfig) | "Failed to load calendar config. Please try again." |
 | Destructive confirmation (DocLinksSection detach) | "Detach": "Remove this document link? The external document is not affected." |
 
-**Note:** All copy above is already implemented in the existing components. This contract documents what exists for executor verification, not new copy to write.
+**Note:** All copy above is already implemented in the existing components. The CalendarTaskConfig CTA label is updated from "Configure" to "Configure Event" for clarity. All other copy documents what exists for executor verification.
 
 ---
 
