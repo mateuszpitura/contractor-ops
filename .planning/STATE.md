@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Platform Expansion
-status: Ready to plan
-stopped_at: Phase 26 context gathered
-last_updated: "2026-03-30T20:51:11.946Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 26-01-PLAN.md
+last_updated: "2026-03-30T21:50:13.269Z"
 progress:
   total_phases: 15
-  completed_phases: 14
-  total_plans: 50
-  completed_plans: 50
+  completed_phases: 15
+  total_plans: 51
+  completed_plans: 51
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-23)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 25 — portal-esign-auth-fix
+**Current focus:** Phase 26 — calendar-wiring-fixes
 
 ## Current Position
 
-Phase: 26
-Plan: Not started
+Phase: 26 (calendar-wiring-fixes) — EXECUTING
+Plan: 1 of 1
 
 ## Performance Metrics
 
@@ -88,6 +88,7 @@ Plan: Not started
 | Phase 23 P01 | 1min | 2 tasks | 4 files |
 | Phase 24 P01 | 1min | 2 tasks | 1 files |
 | Phase 25 P01 | 2min | 2 tasks | 4 files |
+| Phase 26-calendar-wiring-fixes P01 | 7min | 3 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -166,6 +167,7 @@ Recent decisions affecting current work:
 - [Phase 22]: All calendar lifecycle hooks use void + .catch() fire-and-forget pattern to never block mutations
 - [Phase 24]: Reused existing transitionJiraIssue fire-and-forget pattern for createJiraIssue wiring consistency
 - [Phase 25]: Reuse existing getSigningUrl orchestrator from getPortalSigningUrl after authorization check
+- [Phase 26-calendar-wiring-fixes]: Used queryClient.fetchQuery for on-demand OAuth URL fetch; calendar fire-and-forget block separate from Jira per D-02; plain English toast for calendarTaskCount
 
 ### Pending Todos
 
@@ -180,6 +182,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-30T20:51:11.943Z
-Stopped at: Phase 26 context gathered
-Resume file: .planning/phases/26-calendar-wiring-fixes/26-CONTEXT.md
+Last session: 2026-03-30T21:50:13.266Z
+Stopped at: Completed 26-01-PLAN.md
+Resume file: None

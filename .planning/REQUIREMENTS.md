@@ -66,8 +66,8 @@ Requirements for v2.0 Platform Expansion. Each maps to roadmap phases.
 
 ### Calendar Integration
 
-- [ ] **CAL-01**: System pushes contract expiry, approval SLA, and payment deadlines to Google/Outlook calendar
-- [ ] **CAL-02**: Workflow steps can create calendar events (e.g., onboarding kickoff meeting)
+- [x] **CAL-01**: System pushes contract expiry, approval SLA, and payment deadlines to Google/Outlook calendar
+- [x] **CAL-02**: Workflow steps can create calendar events (e.g., onboarding kickoff meeting)
 
 ## Future Requirements
 
@@ -146,8 +146,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | JIRA-04 | Phase 19 | Complete |
 | DOCS-01 | Phase 22 | Complete |
 | DOCS-02 | Phase 21 | Complete |
-| CAL-01 | Phase 26 | Pending |
-| CAL-02 | Phase 26 | Pending |
+| CAL-01 | Phase 26 | Complete |
+| CAL-02 | Phase 26 | Complete |
 
 **Coverage:**
 - v2.0 requirements: 35 total

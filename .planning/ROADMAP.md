@@ -44,7 +44,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 - [x] **Phase 23: OCR Adapter Registry Fix** — Re-register ClaudeOcrAdapter dropped during Phase 20 rewrite (gap closure) (completed 2026-03-30)
 - [x] **Phase 24: Jira Auto-Issue Creation Wiring** — Wire createJiraIssue into workflow startRun for tasks with jiraEnabled (gap closure) (completed 2026-03-30)
 - [x] **Phase 25: Portal E-Sign Auth Fix** — Add portalProcedure signing endpoint so portal contractors can sign documents (gap closure) (completed 2026-03-30)
-- [ ] **Phase 26: Calendar Wiring Fixes** — Fix personal calendar OAuth URL navigation and wire task calendar event creation into startRun (gap closure)
+- [x] **Phase 26: Calendar Wiring Fixes** — Fix personal calendar OAuth URL navigation and wire task calendar event creation into startRun (gap closure) (completed 2026-03-30)
 
 ## Phase Details
 
@@ -293,10 +293,10 @@ Plans:
   1. Personal calendar connect buttons navigate to the provider authorization URL (not callback URL) and Outlook uses correct adapter slug `"outlook-calendar"`
   2. `startRun` in `workflow.ts` calls `createTaskCalendarEvent` fire-and-forget for each task run whose template has calendar event config enabled
 
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
-- [ ] 26-01-PLAN.md — Fix OAuth connect URL/scopes/extraAuthParams + wire createTaskCalendarEvent into startRun
+- [x] 26-01-PLAN.md — Fix OAuth connect URL/scopes/extraAuthParams + wire createTaskCalendarEvent into startRun
 
 ## Progress
 
@@ -330,4 +330,4 @@ Phases execute in numeric order: 12 -> 13 -> 14 -> 15 -> 16 -> 17 -> 18 -> 19 ->
 | 23. OCR Adapter Registry Fix | v2.0 | 1/1 | Complete    | 2026-03-30 |
 | 24. Jira Auto-Issue Creation Wiring | v2.0 | 1/1 | Complete    | 2026-03-30 |
 | 25. Portal E-Sign Auth Fix | v2.0 | 1/1 | Complete    | 2026-03-30 |
-| 26. Calendar Wiring Fixes | v2.0 | 0/1 | Planned | — |
+| 26. Calendar Wiring Fixes | v2.0 | 1/1 | Complete   | 2026-03-30 |
