@@ -40,7 +40,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 - [x] **Phase 19: Jira Integration** — OAuth connection, workflow-to-issue creation, bidirectional status sync, linked issue display (gap closure in progress)
 - [x] **Phase 20: Documentation & Calendar** — Notion/Confluence page linking and Google/Outlook calendar deadline sync (completed 2026-03-29)
 - [x] **Phase 21: API Build Fixes & Permission Registration** — Fix TypeScript compilation errors, missing adapter exports, runtime bugs, and permission registration (gap closure) (completed 2026-03-30)
-- [ ] **Phase 22: Component Mounting & Lifecycle Wiring** — Mount orphaned UI components and wire calendar auto-push into contract/invoice lifecycle (gap closure)
+- [x] **Phase 22: Component Mounting & Lifecycle Wiring** — Mount orphaned UI components and wire calendar auto-push into contract/invoice lifecycle (gap closure) (completed 2026-03-30)
 
 ## Phase Details
 
@@ -232,7 +232,7 @@ Plans:
   2. `CalendarTaskConfig` is rendered in template builder task card — user can configure per-task calendar events
   3. Contract creation/update and invoice lifecycle call `syncContractDeadline`/`syncPaymentDeadline` — deadlines auto-push to connected calendar
 
-**Plans:** 2/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
 - [x] 22-01-PLAN.md — Mount DocLinksSection in task-card-run and CalendarTaskConfig in template-builder task card
@@ -266,4 +266,4 @@ Phases execute in numeric order: 12 → 13 → 14 → 15 → 16 → 17 → 18 �
 | 19. Jira Integration | v2.0 | 6/6 | Complete    | 2026-03-29 |
 | 20. Documentation & Calendar | v2.0 | 6/6 | Complete    | 2026-03-29 |
 | 21. API Build Fixes & Permission Registration | v2.0 | 2/2 | Complete    | 2026-03-30 |
-| 22. Component Mounting & Lifecycle Wiring | v2.0 | 1/2 | In Progress|  |
+| 22. Component Mounting & Lifecycle Wiring | v2.0 | 1/2 | Complete    | 2026-03-30 |
