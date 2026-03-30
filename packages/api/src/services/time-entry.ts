@@ -1,6 +1,8 @@
 import type { PrismaClient } from "@contractor-ops/db";
 import { TRPCError } from "@trpc/server";
 
+type TxClient = Parameters<Parameters<PrismaClient["$transaction"]>[0]>[0];
+
 // ---------------------------------------------------------------------------
 // Status transition rules (D-03):
 // DRAFT -> SUBMITTED (contractor submits)
@@ -98,7 +100,7 @@ export async function saveDraftEntries(
   }
 
   // Upsert entries in transaction
-  const result = await prisma.$transaction(async (tx: PrismaClient) => {
+  const result = await prisma.$transaction(async (tx: TxClient) => {
     const upserted = [];
     for (const entry of entries) {
       if (entry.id) {

@@ -238,8 +238,8 @@ async function searchNotionPages(
       id: page.id,
       title: page.title,
       icon: page.icon,
-      subtitle: (credentials as Record<string, unknown>).extra
-        ? ((credentials as Record<string, unknown>).extra as Record<string, string>).workspaceName ?? "Notion"
+      subtitle: credentials.extra
+        ? (credentials.extra as Record<string, string>).workspaceName ?? "Notion"
         : "Notion",
       url: page.url,
       provider: "notion" as const,
