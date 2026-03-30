@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Platform Expansion
 status: Ready to plan
-stopped_at: Completed 22-01-PLAN.md
-last_updated: "2026-03-30T11:57:53.801Z"
+stopped_at: Completed 22-02-PLAN.md
+last_updated: "2026-03-30T12:00:07.434Z"
 progress:
   total_phases: 11
   completed_phases: 10
@@ -84,6 +84,7 @@ Plan: 2 of 2
 | Phase 21 P01 | 3min | 2 tasks | 4 files |
 | Phase 21 P02 | 2min | 2 tasks | 4 files |
 | Phase 22 P01 | 1min | 2 tasks | 2 files |
+| Phase 22 P02 | 3min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -159,6 +160,7 @@ Recent decisions affecting current work:
 - [Phase 21]: Restored missing helpers.ts in validators package that was untracked in worktree (Rule 3 - blocking)
 - [Phase 21]: Used same TxClient type derivation pattern as approval-engine.ts for transaction callback typing consistency
 - [Phase 22]: Section order in task-card-run: attachments -> doc links -> comments (files first, external docs second, discussion last)
+- [Phase 22]: All calendar lifecycle hooks use void + .catch() fire-and-forget pattern to never block mutations
 
 ### Pending Todos
 
@@ -173,6 +175,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-30T11:57:53.798Z
-Stopped at: Completed 22-01-PLAN.md
+Last session: 2026-03-30T12:00:07.431Z
+Stopped at: Completed 22-02-PLAN.md
 Resume file: None

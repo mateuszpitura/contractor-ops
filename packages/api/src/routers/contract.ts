@@ -13,6 +13,8 @@ import * as E from "../errors.js";
 import { router } from "../init.js";
 import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
+import { syncContractExpiryDeadline } from "../services/calendar-deadline-sync.js";
+import { deleteCalendarEvent } from "../services/calendar-event-service.js";
 
 // ---------------------------------------------------------------------------
 // Contract status transition map
@@ -84,6 +86,20 @@ export const contractRouter = router({
           },
         },
       });
+
+      // Calendar auto-push: sync contract expiry deadline (D-06)
+      if (contract.endDate) {
+        void syncContractExpiryDeadline(prisma, {
+          organizationId: ctx.organizationId,
+          contractId: contract.id,
+          contractName: contract.title ?? input.title,
+          contractorName: contract.contractor?.displayName ?? "Unknown",
+          expiryDate: contract.endDate,
+          userId: ctx.user!.id,
+        }).catch((err) =>
+          console.error("[contract] calendar sync on create failed:", err),
+        );
+      }
 
       return plain(contract);
     }),
@@ -185,6 +201,33 @@ export const contractRouter = router({
         where: { id: input.id },
         data: updateData,
       });
+
+      // Calendar auto-push: sync or cleanup contract expiry deadline (D-06, D-08)
+      if (updated.endDate) {
+        const contractor = await prisma.contractor.findUnique({
+          where: { id: updated.contractorId },
+          select: { displayName: true },
+        });
+        void syncContractExpiryDeadline(prisma, {
+          organizationId: ctx.organizationId,
+          contractId: updated.id,
+          contractName: updated.title ?? "Untitled",
+          contractorName: contractor?.displayName ?? "Unknown",
+          expiryDate: updated.endDate,
+          userId: ctx.user!.id,
+        }).catch((err) =>
+          console.error("[contract] calendar sync on update failed:", err),
+        );
+      } else if (!updated.endDate && existing.endDate) {
+        // endDate was cleared -- delete calendar event (D-08)
+        void deleteCalendarEvent(prisma, {
+          organizationId: ctx.organizationId,
+          entityType: "CONTRACT",
+          entityId: updated.id,
+        }).catch((err) =>
+          console.error("[contract] calendar event cleanup failed:", err),
+        );
+      }
 
       return plain(updated);
     }),
@@ -476,6 +519,15 @@ export const contractRouter = router({
         where: { id: input.id },
         data: { deletedAt: new Date() },
       });
+
+      // Calendar cleanup: remove contract expiry event (D-08)
+      void deleteCalendarEvent(prisma, {
+        organizationId: ctx.organizationId,
+        entityType: "CONTRACT",
+        entityId: input.id,
+      }).catch((err) =>
+        console.error("[contract] calendar event cleanup on delete failed:", err),
+      );
 
       return { success: true };
     }),

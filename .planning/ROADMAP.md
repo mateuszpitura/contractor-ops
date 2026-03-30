@@ -232,11 +232,11 @@ Plans:
   2. `CalendarTaskConfig` is rendered in template builder task card — user can configure per-task calendar events
   3. Contract creation/update and invoice lifecycle call `syncContractDeadline`/`syncPaymentDeadline` — deadlines auto-push to connected calendar
 
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans executed
 
 Plans:
 - [x] 22-01-PLAN.md — Mount DocLinksSection in task-card-run and CalendarTaskConfig in template-builder task card
-- [ ] 22-02-PLAN.md — Wire calendar auto-push into contract create/update/delete, approval approve/bulkApprove/submitForApproval, and invoice void
+- [x] 22-02-PLAN.md — Wire calendar auto-push into contract create/update/delete, approval approve/bulkApprove/submitForApproval, and invoice void
 
 ## Progress
 

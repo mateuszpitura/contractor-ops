@@ -23,6 +23,10 @@ import {
   computeSlaStatus,
 } from "../services/approval-engine.js";
 import { dispatch } from "../services/notification-service.js";
+import {
+  syncPaymentDueDeadline,
+  syncApprovalSlaDeadline,
+} from "../services/calendar-deadline-sync.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -438,6 +442,7 @@ export const approvalRouter = router({
             totalGrosze: true,
             currency: true,
             contractorId: true,
+            dueDate: true,
           },
         });
 
@@ -507,6 +512,26 @@ export const approvalRouter = router({
             console.error("[approval] dispatch APPROVAL_REQUEST (next level) failed:", err),
           );
         }
+      }
+
+      // Calendar auto-push: sync payment deadline when invoice fully approved (D-07)
+      if (result.advanceResult.completed && result.invoice?.dueDate) {
+        const contractor = result.invoice.contractorId
+          ? await prisma.contractor.findUnique({
+              where: { id: result.invoice.contractorId },
+              select: { displayName: true },
+            })
+          : null;
+        void syncPaymentDueDeadline(prisma, {
+          organizationId: ctx.organizationId,
+          invoiceId: result.invoice.id,
+          invoiceNumber: result.invoice.invoiceNumber ?? `INV-${result.invoice.id.slice(-6)}`,
+          contractorName: contractor?.displayName ?? "Unknown",
+          dueDate: new Date(result.invoice.dueDate),
+          userId: ctx.user!.id,
+        }).catch((err) =>
+          console.error("[approval] payment deadline sync failed:", err),
+        );
       }
 
       return plain(result.updatedStep);
@@ -819,6 +844,30 @@ export const approvalRouter = router({
                   readyForPaymentAt: new Date(),
                 },
               });
+
+              // Calendar auto-push: sync payment deadline for bulk-approved invoice (D-07)
+              const invoice = await tx.invoice.findUnique({
+                where: { id: step.approvalFlow.resourceId },
+                select: { id: true, invoiceNumber: true, dueDate: true, contractorId: true },
+              });
+              if (invoice?.dueDate) {
+                const contractor = invoice.contractorId
+                  ? await prisma.contractor.findUnique({
+                      where: { id: invoice.contractorId },
+                      select: { displayName: true },
+                    })
+                  : null;
+                void syncPaymentDueDeadline(prisma, {
+                  organizationId: ctx.organizationId,
+                  invoiceId: invoice.id,
+                  invoiceNumber: invoice.invoiceNumber ?? `INV-${invoice.id.slice(-6)}`,
+                  contractorName: contractor?.displayName ?? "Unknown",
+                  dueDate: new Date(invoice.dueDate),
+                  userId: ctx.user!.id,
+                }).catch((err) =>
+                  console.error("[approval] bulk payment deadline sync failed:", err),
+                );
+              }
             }
           });
         }),
@@ -1015,6 +1064,20 @@ export const approvalRouter = router({
           },
         }).catch((err) =>
           console.error("[approval] dispatch APPROVAL_REQUEST failed:", err),
+        );
+      }
+
+      // Calendar auto-push: sync approval SLA deadline (D-09)
+      if (firstStep?.slaDeadline) {
+        void syncApprovalSlaDeadline(prisma, {
+          organizationId: ctx.organizationId,
+          approvalFlowId: flow.approvalFlow.id,
+          itemType: "Invoice",
+          itemName: flow.invoice.invoiceNumber ?? `INV-${flow.invoice.id.slice(-6)}`,
+          deadline: new Date(firstStep.slaDeadline),
+          userId: ctx.user!.id,
+        }).catch((err) =>
+          console.error("[approval] SLA deadline sync failed:", err),
         );
       }
 
