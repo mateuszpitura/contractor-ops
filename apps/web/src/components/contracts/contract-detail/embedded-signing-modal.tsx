@@ -23,6 +23,7 @@ type EmbeddedSigningModalProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onComplete: () => void;
+  usePortalAuth?: boolean;
 };
 
 // ---------------------------------------------------------------------------
@@ -41,6 +42,7 @@ export function EmbeddedSigningModal({
   open,
   onOpenChange,
   onComplete,
+  usePortalAuth,
 }: EmbeddedSigningModalProps) {
   const tAria = useTranslations("Common.aria");
   const t = useTranslations("ContractDetail.signing.modal");
@@ -52,15 +54,13 @@ export function EmbeddedSigningModal({
       ? `${window.location.origin}/signing-complete`
       : "";
 
+  const queryInput = { envelopeId, recipientEmail, returnUrl };
+  const queryEnabled = { enabled: open && !!envelopeId && !!returnUrl };
+
   const signingUrlQuery = useQuery(
-    trpc.esign.getSigningUrl.queryOptions(
-      {
-        envelopeId,
-        recipientEmail,
-        returnUrl,
-      },
-      { enabled: open && !!envelopeId && !!returnUrl }
-    )
+    usePortalAuth
+      ? trpc.esign.getPortalSigningUrl.queryOptions(queryInput, queryEnabled)
+      : trpc.esign.getSigningUrl.queryOptions(queryInput, queryEnabled),
   );
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

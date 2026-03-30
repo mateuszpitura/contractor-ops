@@ -164,6 +164,7 @@ export function PortalPendingSignatures() {
           recipientEmail={signingTarget.recipientEmail}
           documentTitle={signingTarget.documentTitle}
           provider="DOCUSIGN"
+          usePortalAuth
           open={!!signingTarget}
           onOpenChange={(open) => {
             if (!open) setSigningTarget(null);
