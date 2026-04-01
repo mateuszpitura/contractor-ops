@@ -1,5 +1,66 @@
 # Milestones
 
+## v2.0 Platform Expansion (Shipped: 2026-04-01)
+
+**Phases completed:** 16 phases, 52 plans, 103 tasks
+
+**Key accomplishments:**
+
+- AES-256-GCM credential encryption with per-provider keys, IntegrationProviderAdapter contract, provider registry, and Prisma schema extension for token expiry tracking
+- Unified webhook ingestion pipeline with Slack HMAC-SHA256 and Resend Svix adapters, QStash async processing, and WebhookDelivery audit logging
+- Generic OAuth callback with HMAC-signed cross-provider CSRF state, proactive token refresh cron with distributed lock, and lazy refresh fallback
+- Health monitoring service with provider card grid, detail sheet (sync log + webhook deliveries), and 30-second polling via TanStack Query
+- Wired IntegrationsTab into settings, documented all env vars, and marked legacy Slack/Resend routes deprecated with backward-compat migration path
+- PortalSession and PortalMagicToken Prisma models with SHA-256 hashed session service (7-day expiry) and single-use magic link service (15-min expiry, Resend email)
+- portalProcedure middleware with cookie auth + 15-endpoint portal tRPC router covering magic link auth, contracts, invoices, documents, payments, and invoice submission
+- Portal layout with top bar navigation (5 links + org branding + profile dropdown), magic link login page, token verification with org picker for multi-org contractors, and httpOnly session cookie management via API routes
+- Overview dashboard with 4 summary cards and activity log, contracts list/detail with document downloads, documents table, and payments table -- all consuming portal tRPC router with loading skeletons and empty states
+- Invoice list with status badges, detail page with 3-layer status tracking (StatusTimeline + ActivityLog), submission form with contract picker and presigned PDF upload, and success confirmation page
+- Two Prisma models (change request + notification prefs), change request service with transactional approval, 6 portal endpoints, and 3 admin endpoints for contractor self-service and org branding
+- Portal settings page with collapsible profile sections (immediate contact edit + approval-flow financial edit), notification preference toggles with optimistic updates, and Settings nav link in portal navigation
+- Portal CSS custom property brand injection, admin branding section with 8-swatch color picker + logo upload, and change request diff cards with approve/reject in approvals tab
+- End-to-end portal subdomain routing via Next.js middleware with x-portal-org-subdomain header flow, admin subdomain config UI, and branded unauthenticated portal shell
+- 21 it.todo() test stubs across 4 files covering all Phase 14 API behaviors: change request service CRUD, portal profile endpoints, notification preference defaults with SECURITY_ALERTS guard, and branding hex validation
+- Prisma signing models (envelope/recipient/event), ESignAdapter interface with 7 operations, and 23 Wave 0 test stubs for DocuSign, Autenti, router, and webhook handler
+- DocuSign and Autenti adapters implementing ESignAdapter interface with provider-agnostic orchestration service
+- Complete server-side signing lifecycle: tRPC router with 7 procedures, orchestrator for envelope creation/void/completion with R2 PDF storage, and webhook handler with idempotency and contract status mapping
+- Complete e-sign UI: SendForSignature dialog with dnd-kit signer reorder and provider picker, signing progress bar with per-signer step indicators, embedded signing modal with DocuSign iframe and Autenti redirect fallback, audit trail sheet, void dialog, and portal pending signatures section
+- Claude Vision OCR pipeline with native PDF extraction, NIP checksum validation, confidence scoring, async QStash processing, and tRPC endpoints for admin and portal
+- Seven composable OCR review components: react-pdf viewer with zoom/navigation, confidence badges with D-07 thresholds, NIP modulo-11 validation, extraction status bar, processing overlay, and editable line items table with grosze formatting
+- OcrReviewPanel split view with PDF + pre-filled form, admin upload auto-trigger, and portal form OCR pre-fill with confidence indicators
+- KSeF API client with RSA-OAEP auth, FA(3) XML parser with Zod-validated grosze conversion, and adapter registered in integration registry
+- KSeF sync orchestrator with hourly QStash cron, cross-source duplicate detection by invoiceNumber+sellerTaxId, tRPC router with connect/disconnect/triggerSync, and KSEF_SYNC_COMPLETE notification
+- 6 KSeF UI components: setup dialog with token/cert auth, provider card with sync controls, invoice table badge, detail metadata section with copyable fields, and cross-source duplicate banner
+- 76 vitest it.todo stubs across 6 files covering time entry CRUD, timesheet lifecycle, approval flow, Clockify sync, Jira worklog import, and invoice reconciliation
+- Timesheet/TimeEntry Prisma models with DRAFT->SUBMITTED->APPROVED/REJECTED status machine, 12 Zod validators, and core service layer using optimistic locking
+- Clockify and Jira adapters with on-demand sync services for external time entry import via API key and OAuth 2.0 3LO
+- Portal time tRPC router with 8 endpoints and full contractor UI: weekly timesheet grid with auto-save, single entry dialog, Clockify/Jira sync buttons, and week navigation
+- Admin time tRPC router with 8 procedures, manager approval queue with batch operations, per-contractor timesheet review, and rejection dialog with 10-char minimum validation
+- Time-vs-invoice reconciliation service with configurable deviation threshold, DeviationFlag badge, ReconciliationCard on invoice detail, and ReconciliationTable in admin time section
+- 60 it.todo behavioral contract entries across 4 test stub files for Jira issue sync, webhook handling, status mapping, and adapter webhooks
+- Extended JiraAdapter with write/webhook scopes, built issue sync with ADF descriptions, inbound webhook handler with loop prevention and deduplication, and per-project bidirectional status mapping
+- Jira tRPC router with 11 procedures (connection status, project/issue type listing, status mapping CRUD, task config, linked issues, recent activity, disconnect), webhook dispatch in _process route, and outbound Jira transitions from workflow task completion
+- Jira provider card with OAuth connect, scope expansion detection, status mapping dialog with per-project two-column table, and project/issue type mapping dialog for task templates
+- JiraIssueChip, JiraActivitySummary, and JiraTaskConfig components wired into contractor Workflows tab and workflow side panel with status-colored chips and overflow handling
+- Mounted orphaned JiraTaskConfig in task-card.tsx and hardened siteUrl derivation removing 'your-site' placeholder fallback
+- 43 it.todo test stubs across 6 files covering Notion, Confluence, Google Calendar, Outlook Calendar adapters plus doc-link and calendar-sync services
+- Four OAuth adapters (Notion, Confluence, Google Calendar, Outlook Calendar) with Prisma schema changes, Zod validators, and per-user connection support
+- Doc link service and tRPC router for attaching/detaching Notion and Confluence pages to workflow steps, with multi-provider search proxy
+- Calendar event lifecycle service with Google/Outlook dual-push, 3 deadline sync watchers, task event creation, and 7-procedure tRPC router
+- Doc link chips, attach dialog with search, doc links section for workflow task cards, and Cmd+K Docs search group with provider icons
+- My Calendar settings page with Google/Outlook provider cards, per-task calendar event config dialog, org calendar section, and Notion/Confluence cards in integrations tab
+- Added 4 adapter subpath exports to integrations, registered time permission resource, and restored validators helpers for clean package compilation
+- Fixed 4 API source files (calendar, docs, doc-link-service, time-entry) eliminating ~20 TypeScript errors from ctx.userId, ctx.prisma, CredentialBlob cast, and PrismaClient transaction type issues
+- Mounted DocLinksSection in workflow run task card and CalendarTaskConfig in template builder task card with correct prop wiring and section ordering
+- Fire-and-forget calendar sync hooks wired into 8 contract/approval/invoice lifecycle mutations using void + .catch() pattern
+- Restored ClaudeOcrAdapter registry resolution by adding missing slug property and re-registering in registerAllAdapters()
+- Wire createJiraIssue fire-and-forget into startRun so TODO tasks with jiraEnabled templates automatically create Jira issues
+- Portal signing URL endpoint via portalProcedure with recipient verification and conditional auth switching in EmbeddedSigningModal
+- Fixed OAuth URL construction (space scopes, response_type=code, extraAuthParams) and wired createTaskCalendarEvent fire-and-forget into startRun with calendarTaskCount response toast
+- registerAllAdapters() added to OAuth callback route + react-pdf CSS converted to dynamic imports for Next.js build compatibility
+
+---
+
 ## v1.0 MVP (Shipped: 2026-03-23)
 
 **Phases completed:** 11 phases, 51 plans, 98 tasks

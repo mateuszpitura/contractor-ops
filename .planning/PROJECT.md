@@ -10,39 +10,11 @@ The invoice-to-payment flow must work end-to-end: a contractor's invoice arrives
 
 ## Current State
 
-**v1.0 MVP shipped 2026-03-23** — 214K LOC TypeScript, 11 phases, 51 plans, 698 files.
+**v2.0 Platform Expansion shipped 2026-04-01** — ~260K LOC TypeScript, 27 phases (11 v1.0 + 16 v2.0), 103 plans, 383 files changed in v2.0.
 
-All 14 product modules delivered: org setup, RBAC, contractors, contracts, documents, workflows, invoices (upload + email intake), approvals, notifications (in-app + email + Slack), payments, dashboard, reports, data import, onboarding wizard, global search + Cmd+K. Full Polish + English i18n.
+v1.0 MVP foundation (shipped 2026-03-23): org setup, RBAC, contractors, contracts, documents, workflows, invoices, approvals, notifications (in-app + email + Slack), payments, dashboard, reports, data import, onboarding wizard, global search + Cmd+K. Full Polish + English i18n.
 
-**Phase 13 complete** — Contractor portal with magic-link auth (SHA-256 sessions, 15-min tokens), portalProcedure middleware, 15-endpoint tRPC router, portal shell with top bar/mobile menu, org picker for multi-org contractors, read-only views (dashboard, contracts, documents, payments), and invoice submission with PDF upload. All queries scoped to authenticated contractor — no internal admin surface exposure.
-
-**Phase 14 complete** — Portal self-service with profile edit (contact info immediate save, financial fields via approval workflow with change request service), notification preferences (5 categories with optimistic toggle, SECURITY_ALERTS immutable), org branding (CSS custom property injection, admin color picker + logo upload, live preview), subdomain routing ({slug}.portal.{domain} via Next.js middleware with portal layout and auth wiring), and admin change request review (diff cards with approve/reject in approvals page). 4 API test stub files created per VALIDATION.md contract.
-
-**Phase 15 complete** — E-sign integration with DocuSign + Autenti dual provider support via provider-agnostic adapter layer. Send-for-signature from contract header and per-document in Documents tab with full setup dialog (provider picker, drag-to-reorder signers, document preview, expiry/reminders). Embedded signing modal (DocuSign iframe + Autenti redirect fallback), sequential multi-party signing with routingOrder, webhook-driven status updates with completion signal pattern (no circular imports), automatic signed PDF download and Document record creation. Portal pending signatures with Sign Now. Signing progress bar, status badges, and audit trail sheet.
-
-**Phase 16 complete** — OCR invoice parsing with Claude Vision API as default provider behind provider-agnostic adapter. Background async processing via queue, pre-fill invoice form with extracted fields and confidence badges (green/amber/red). Full field extraction including line items. Portal invoice form gets inline confidence badges. NIP modulo-11 checksum validation.
-
-**Phase 17 complete** — KSeF native integration. Auto-fetch invoices from Poland's national e-invoicing system via REST API v2 with RSA-OAEP challenge-response auth (token primary, certificate advanced). FA(3) XML parser with Zod validation and grosze conversion. Hourly QStash cron + manual sync. KSeF invoices enter existing matching pipeline as RECEIVED. Cross-source duplicate detection by invoiceNumber + sellerTaxId with bidirectional linking. KSeF badge in invoice table, metadata section with copyable reference/UPO on detail page, duplicate banner. Full PL + EN i18n.
-
-**Phase 18 complete** — Time tracking with manual entry (weekly timesheet grid + single entry form), Clockify API adapter (5 regional base URLs, API key auth) and Jira OAuth 2.0 adapter for worklog import. Portal "Time" section with submit/approve workflow (DRAFT→SUBMITTED→APPROVED/REJECTED). Admin "Time" section with approval queue, per-contractor review, rejection dialog. Invoice reconciliation: auto-compare approved hours × rate vs invoiced amount with configurable deviation threshold (default 10%), warning-only flags. ReconciliationCard on invoice detail, ReconciliationTable in admin.
-
-**Phase 19 complete** — Jira Cloud bidirectional integration. Extended JiraAdapter with write:jira-work + manage:jira-webhook OAuth scopes and HMAC-SHA256 webhook verification. Issue sync service creates Jira issues (ADF descriptions, configurable project/type per task template) and executes outbound transitions. Inbound webhook handler processes status changes with 30s loop prevention window and 5s deduplication. Per-project status mapping CRUD with bidirectional lookup. 11-procedure tRPC router. Webhook dispatch wired into unified _process route. Fire-and-forget outbound sync in completeTask/skipTask. Settings UI: provider card with scope expansion detection, status mapping dialog, project mapping dialog. Display: JiraIssueChip (clickable with status badges), JiraActivitySummary on contractor profile, JiraTaskConfig toggle in task template editor, LinkedIssuesSection in workflow side panel.
-
-**Phase 20 complete** — Documentation and calendar integrations. Four adapters (Notion, Confluence, Google Calendar, Outlook Calendar) extending BaseAdapter with OAuth token exchange. Doc link service for attaching/detaching external pages to workflow steps with search proxy. Calendar event service with Google/Outlook dual-push (Promise.allSettled), deadline sync watchers for contract expiry, approval SLA, and payment due dates. tRPC routers: docs (5 procedures) and calendar (7 procedures). Frontend: DocLinkChip, AttachDocDialog with provider-filtered search, DocLinksSection for task cards, Cmd+K "Docs" group. Calendar UI: personal calendar settings page, org calendar section, CalendarTaskConfig toggle, CalendarEventConfigDialog. Prisma schema with 4 new IntegrationProvider enum values and per-user connection support.
-
-**Phase 21 complete** — API build fixes and permission registration (gap closure). Fixed 8 root causes of TypeScript compilation failure across packages/api: restored validators/src/helpers.ts utility schemas, added 4 adapter subpath exports to integrations package.json (notion, confluence, google-calendar, outlook-calendar), registered `time` resource in permissions.ts with role assignments, fixed ctx.userId → ctx.user!.id (5 occurrences in calendar.ts), contract.name → contract.title, CredentialBlob unsafe cast → direct credentials.extra access, ctx.prisma → imported prisma in docs.ts (5 occurrences), and $transaction callback type using TxClient pattern in time-entry.ts. All API packages now compile with zero TypeScript errors.
-
-**Phase 22 complete** — Component mounting and lifecycle wiring (gap closure). Mounted DocLinksSection in workflow run task card (readOnly for terminal statuses, section order: attachments → doc links → comments) and CalendarTaskConfig in template builder task card (after JiraTaskConfig with persisted-ID guard). Wired calendar auto-push into 8 lifecycle points: contract create/update/delete (syncContractExpiryDeadline, deleteCalendarEvent), approval approve/bulkApprove/submitForApproval (syncPaymentDueDeadline, syncApprovalSlaDeadline), and invoice void (deleteCalendarEvent). All hooks use void + .catch() fire-and-forget pattern to never block mutations.
-
-**Phase 23 complete** — OCR adapter registry fix (gap closure). Added slug property to ClaudeOcrAdapter, re-registered it in registerAllAdapters.
-
-**Phase 24 complete** — Jira auto-issue creation wiring (gap closure). Wired `createJiraIssue` fire-and-forget into `workflow.ts` `startRun` — tasks with `jiraEnabled: true` in their template configJson now auto-create Jira issues when a workflow run starts. Follows existing transitionJiraIssue pattern. Closes JIRA-02 requirement.
-
-**Phase 25 complete** — Portal e-sign auth fix (gap closure). Added `getPortalSigningUrl` portalProcedure endpoint so portal contractors can request signing URLs. Wired `EmbeddedSigningModal` with `usePortalAuth` prop. Closes SIGN-02 requirement.
-
-**Phase 26 complete** — Calendar wiring fixes (gap closure). Fixed personal calendar OAuth connect buttons to navigate to provider authorization URL (not callback URL), corrected Outlook adapter slug to `"outlook-calendar"`, wired `createTaskCalendarEvent` fire-and-forget into `startRun`. Closes CAL-01, CAL-02 requirements.
-
-**Phase 27 complete** — OAuth callback & OCR build fixes (gap closure). Added `registerAllAdapters()` to OAuth callback route so adapter registry is populated before `getAdapter()` executes — unblocks all OAuth provider connect flows. Converted react-pdf static CSS imports to dynamic `useEffect` imports — unblocks Next.js production build for OcrReviewPanel. Closes INTG-01, OCR-03 requirements. All v2.0 milestone gaps closed.
+v2.0 Platform Expansion adds: contractor self-service portal with magic-link auth and org branding, electronic signatures (DocuSign + Autenti), AI-powered invoice OCR (Claude Vision), KSeF national e-invoicing integration, time tracking with Clockify/Jira import and invoice reconciliation, Jira bidirectional sync, Notion/Confluence doc linking with Cmd+K search, Google/Outlook calendar deadline sync, and a provider-agnostic integration framework with OAuth credential store, webhook pipeline, and health monitoring.
 
 ## Requirements
 
@@ -72,16 +44,22 @@ All 14 product modules delivered: org setup, RBAC, contractors, contracts, docum
 - ✓ i18n — Polish + English with locale-aware formatting — v1.0
 - ✓ Settings — org profile, users & roles, approval chains, workflows, notifications, email intake, audit log — v1.0
 
+### Validated — v2.0
+
+- ✓ Contractor portal — magic-link auth, contract viewing, invoice submission, payment tracking, document access — v2.0
+- ✓ Portal self-service — profile edit with approval workflow, notification preferences, org branding with subdomain routing — v2.0
+- ✓ Integration framework — OAuth credential store, webhook pipeline, health monitoring, token refresh — v2.0
+- ✓ E-sign integration (DocuSign + Autenti) — embedded/redirect signing, multi-party, webhook PDF archival — v2.0
+- ✓ OCR invoice parsing — Claude Vision extraction with confidence scoring, side-by-side review — v2.0
+- ✓ KSeF native integration — auto-fetch, FA(3) XML parsing, duplicate detection, KSeF reference display — v2.0
+- ✓ Time tracking — manual logging, Clockify/Jira import, manager approval, invoice deviation flagging — v2.0
+- ✓ Jira integration — OAuth connect, auto-issue creation, bidirectional status sync, linked issue display — v2.0
+- ✓ Notion/Confluence integration — doc page linking in workflows, Cmd+K search — v2.0
+- ✓ Google/Outlook Calendar — deadline auto-push, workflow task event creation — v2.0
+
 ### Active
 
-- [x] Contractor portal — magic-link auth, contract viewing, invoice submission, payment tracking, document access — Phase 13
-- [x] Time tracking integration (Clockify, Jira, manual reporting) in contractor portal — Phase 18
-- [x] E-sign integration (DocuSign + Autenti) for contracts and NDAs — Phase 15
-- [x] OCR invoice parsing — auto-extract fields from uploaded PDFs — Phase 16
-- [x] KSeF native integration — pull invoices from national system — Phase 17
-- [x] Jira integration — create tickets, update statuses, configurable automation on status changes — Phase 19
-- [x] Notion/Confluence integration — link onboarding docs, reference external documentation in workflows — Phase 20
-- [x] Outlook/Google Calendar integration — reminders, meeting scheduling, deadline sync, onboarding meetings (configurable) — Phase 20
+(No active requirements — define next milestone with `/gsd:new-milestone`)
 
 ### Out of Scope
 
@@ -91,20 +69,13 @@ All 14 product modules delivered: org setup, RBAC, contractors, contracts, docum
 - Open banking / payment initiation — v3+
 - SSO/SCIM — v3
 - KSeF invoice validation against structured data — v3
+- KSeF invoice sending (FA(3) XML generation) — v3+, accounting system territory
 - Contractor marketplace / directory — never
 - Full accounting suite — coordination layer, not replacement
 - Mobile native app — desktop-first, responsive to tablet, approval flow works on mobile browser
-
-## Current Milestone: v2.0 Platform Expansion
-
-**Goal:** Transform Contractor Ops from an internal-only tool into a full platform with contractor self-service, intelligent document processing, KSeF compliance, and deep third-party integrations.
-
-**Target features:**
-- Contractor portal (self-service with time tracking)
-- E-sign (DocuSign + Autenti)
-- OCR invoice parsing
-- KSeF native integration
-- Jira, Notion/Confluence, Outlook/Google Calendar integrations
+- Bi-directional calendar sync — one-way push sufficient
+- Notion/Confluence content mirroring — link + preview, not full rendering
+- Build own e-sign engine — legal compliance requires certified providers
 
 ## Context
 
@@ -153,6 +124,14 @@ All 14 product modules delivered: org setup, RBAC, contractors, contracts, docum
 | cmdk for command palette | Already installed, lightweight, accessible | ✓ Good — zero config, works with tRPC search |
 | xlsx for import/export | Single library for both directions | ✓ Good — BOM handling for Polish characters |
 | Recharts for dashboard | Simple API, responsive, works with SSR | ✓ Good — area/bar/pie charts all working |
+| Provider adapter pattern | Every integration shares credential store, webhook pipeline, health monitoring | ✓ Good — 10 providers, zero per-integration infrastructure code |
+| Portal as route group (not separate app) | Shares auth, DB, tRPC, UI packages — avoids duplication | ✓ Good — portalProcedure + magic-link auth clean separation |
+| PortalSession model (not internal User) | Contractors never touch internal user table — separate auth domain | ✓ Good — zero privilege escalation risk |
+| QStash for async processing | Webhook processing, OCR extraction, KSeF sync — all fire-and-forget | ✓ Good — reliable retry, signature verification, no infra to manage |
+| AES-256-GCM per-provider encryption | Each integration has its own key — credential isolation | ✓ Good — 10 provider keys, no shared-key blast radius |
+| Claude Vision for OCR | Native PDF support, tool_use for structured extraction | ✓ Good — high accuracy, grosze handling, confidence scores |
+| KSeF token auth (cert deferred) | XAdES certificate auth requires .p12 + XML signing complexity | ✓ Good — token covers 90%+ of use cases |
+| Fire-and-forget for integrations | Calendar push, Jira sync, OCR — never block user mutations | ✓ Good — void + .catch() pattern consistent across all hooks |
 
 ## Evolution
 
@@ -172,4 +151,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-30 after Phase 26 (calendar-wiring-fixes) completion — OAuth connect URL/scope fixes, createTaskCalendarEvent wired into startRun fire-and-forget, calendarTaskCount informational toast, CAL-01 + CAL-02 closed. v2.0 milestone complete — all 15 phases delivered.*
+*Last updated: 2026-04-01 after v2.0 milestone*
