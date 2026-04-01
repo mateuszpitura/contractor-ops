@@ -12,6 +12,7 @@ import {
   DashboardProvider,
   type OrgInfo,
 } from "@/components/layout/dashboard-context";
+import { BillingOverlay } from "@/components/billing/billing-overlay";
 
 /**
  * Dashboard layout (server component).
@@ -90,6 +91,7 @@ export default async function DashboardLayout({
           <AppSidebar />
           <SidebarInset>
             <TopBar />
+            <BillingOverlay />
             <main id="main-content" className="min-w-0 flex-1 overflow-x-hidden p-6">{children}</main>
           </SidebarInset>
         </SidebarProvider>
