@@ -46,12 +46,12 @@ export interface IntegrationProviderAdapter {
     headers: Record<string, string>,
   ): WebhookVerificationResult;
 
-  /** Processes a verified webhook payload. */
+  /** Processes a verified webhook payload. Returns provider-specific result or void. */
   handleWebhook?(
     payload: unknown,
     organizationId: string,
     connectionId: string,
-  ): Promise<void>;
+  ): Promise<unknown>;
 
   /** Returns health status for a connection (recent syncs, errors, etc.). */
   getHealthStatus?(connectionId: string): Promise<ProviderHealthStatus>;

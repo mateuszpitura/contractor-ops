@@ -39,7 +39,7 @@ export abstract class BaseAdapter implements IntegrationProviderAdapter {
     _payload: unknown,
     _organizationId: string,
     _connectionId: string,
-  ): Promise<void>;
+  ): Promise<unknown>;
 
   getHealthStatus?(_connectionId: string): Promise<ProviderHealthStatus>;
 }

@@ -175,24 +175,17 @@ export class KsefApiClient {
   /**
    * Authenticates with KSeF using a qualified electronic certificate (XAdES).
    *
-   * TODO: Full XAdES implementation -- token auth is primary path per D-01.
-   * Certificate auth requires signing an XAdES challenge XML using the private
-   * key from the .p12 file.
+   * Not implemented — token auth is the primary and supported path.
+   * Certificate auth requires XAdES XML signing with a .p12 private key,
+   * which is deferred to a future milestone if needed.
    */
   async authenticateWithCertificate(
     _certificateBase64: string,
     _password: string | undefined,
     _nip: string,
   ): Promise<KsefSession> {
-    // TODO: Full XAdES implementation -- token auth is primary path per D-01
-    // Steps:
-    // 1. Decode Base64 to buffer
-    // 2. Extract private key from .p12 using password
-    // 3. Sign XAdES challenge XML using private key
-    // 4. Submit to POST ${baseUrl}/auth/certificate/redeem
-    // 5. Follow same polling pattern as token auth
     throw new Error(
-      "Certificate-based KSeF authentication is not yet implemented. Use token-based auth.",
+      "Certificate-based KSeF authentication is not supported. Use token-based auth.",
     );
   }
 

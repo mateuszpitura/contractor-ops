@@ -23,6 +23,7 @@ import {
   generateStorageKey,
 } from "../services/r2.js";
 import { createChangeRequest } from "../services/portal-change-request.js";
+import { encryptBankAccount } from "../services/bank-account-crypto.js";
 import * as E from "../errors.js";
 
 // ---------------------------------------------------------------------------
@@ -1078,12 +1079,12 @@ export const portalRouter = router({
         taxId: currentProfile?.taxId ?? null,
       };
 
-      // Build requested changes — encrypt bank account using existing pattern
+      // Build requested changes — encrypt bank account for storage
       const requestedChanges: Record<string, unknown> = {};
 
       if (input.bankAccountNumber !== undefined) {
         const cleaned = input.bankAccountNumber.replace(/\s/g, "");
-        requestedChanges.bankAccountEncrypted = cleaned;
+        requestedChanges.bankAccountEncrypted = encryptBankAccount(cleaned);
         requestedChanges.bankAccountMasked = `****${cleaned.slice(-4)}`;
       }
       if (input.bankName !== undefined) {
@@ -1206,24 +1207,4 @@ export const portalRouter = router({
 
       return plain(preference);
     }),
-
-  /**
-   * Get organization branding (logo + brand color) for portal theming.
-   * Available to all authenticated portal users per D-12.
-   */
-  getOrgBranding: portalProcedure.query(async ({ ctx }) => {
-    const org = await prisma.organization.findUnique({
-      where: { id: ctx.organizationId },
-      select: { logo: true, settingsJson: true },
-    });
-
-    const settings =
-      (org?.settingsJson as Record<string, unknown>) ?? {};
-    const brandColor = (settings.brandColor as string) ?? null;
-
-    return plain({
-      logo: org?.logo ?? null,
-      brandColor,
-    });
-  }),
 });

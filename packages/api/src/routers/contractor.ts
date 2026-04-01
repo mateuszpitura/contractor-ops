@@ -12,6 +12,7 @@ import * as E from "../errors.js";
 import { router } from "../init.js";
 import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
+import { encryptBankAccount } from "../services/bank-account-crypto.js";
 
 // ---------------------------------------------------------------------------
 // Lifecycle transition map
@@ -432,7 +433,7 @@ export const contractorRouter = router({
             countryCode: companyFields.countryCode,
             bankAccountMasked: maskedIban,
             bankAccountEncrypted: bankAccount
-              ? bankAccount.replace(/\s/g, "")
+              ? encryptBankAccount(bankAccount.replace(/\s/g, ""))
               : null,
             paymentTermsDays: paymentTermsDays ?? null,
             validFrom: new Date(),
@@ -527,11 +528,14 @@ export const contractorRouter = router({
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const profileUpdate: Record<string, any> = {};
           if (bankAccount !== undefined) {
-            profileUpdate.bankAccountEncrypted = bankAccount
+            const cleaned = bankAccount
               ? bankAccount.replace(/\s/g, "")
               : null;
-            profileUpdate.bankAccountMasked = bankAccount
-              ? `****${bankAccount.replace(/\s/g, "").slice(-4)}`
+            profileUpdate.bankAccountEncrypted = cleaned
+              ? encryptBankAccount(cleaned)
+              : null;
+            profileUpdate.bankAccountMasked = cleaned
+              ? `****${cleaned.slice(-4)}`
               : null;
           }
           if (paymentTermsDays !== undefined) {

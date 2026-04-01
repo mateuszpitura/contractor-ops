@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { cookies, headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { prisma } from "@contractor-ops/db";
 import { validatePortalSession } from "@contractor-ops/api/services/portal-session";
 import { PortalTopBar } from "@/components/portal/portal-top-bar";
@@ -60,7 +61,7 @@ export default async function PortalLayout({
   const session = await validatePortalSession(sessionToken);
 
   if (!session) {
-    return <div className="min-h-screen bg-background">{children}</div>;
+    redirect("/portal/login");
   }
 
   // Fetch organization info for the top bar + branding (session.organizationId is authoritative)

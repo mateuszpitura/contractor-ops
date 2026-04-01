@@ -7,10 +7,6 @@ import {
 import { router } from "../init.js";
 import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
-import {
-  syncContractExpiryDeadline,
-  syncPaymentDueDeadline,
-} from "../services/calendar-deadline-sync.js";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -153,98 +149,6 @@ export const calendarRouter = router({
   // =========================================================================
   // Deadline sync mutations
   // =========================================================================
-
-  /**
-   * Trigger sync of a contract's expiry date to connected calendars.
-   * Fire-and-forget — returns immediately.
-   */
-  syncContractDeadline: tenantProcedure
-    .input(z.object({ contractId: z.string().cuid() }))
-    .mutation(async ({ ctx, input }) => {
-      const contract = await prisma.contract.findFirst({
-        where: {
-          id: input.contractId,
-          organizationId: ctx.organizationId,
-        },
-        select: {
-          id: true,
-          title: true,
-          endDate: true,
-          contractor: {
-            select: { displayName: true },
-          },
-        },
-      });
-
-      if (!contract) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "CONTRACT_NOT_FOUND",
-        });
-      }
-
-      if (!contract.endDate) {
-        return { synced: false, reason: "no_expiry_date" };
-      }
-
-      // Fire-and-forget async
-      void syncContractExpiryDeadline(prisma, {
-        organizationId: ctx.organizationId,
-        contractId: contract.id,
-        contractName: contract.title,
-        contractorName: contract.contractor.displayName,
-        expiryDate: contract.endDate,
-        userId: ctx.user!.id,
-      });
-
-      return { synced: true };
-    }),
-
-  /**
-   * Trigger sync of an invoice's payment due date to connected calendars.
-   * Fire-and-forget — returns immediately.
-   */
-  syncPaymentDeadline: tenantProcedure
-    .input(z.object({ invoiceId: z.string().cuid() }))
-    .mutation(async ({ ctx, input }) => {
-      const invoice = await prisma.invoice.findFirst({
-        where: {
-          id: input.invoiceId,
-          organizationId: ctx.organizationId,
-        },
-        select: {
-          id: true,
-          invoiceNumber: true,
-          dueDate: true,
-          contractor: {
-            select: { displayName: true },
-          },
-        },
-      });
-
-      if (!invoice) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "INVOICE_NOT_FOUND",
-        });
-      }
-
-      if (!invoice.dueDate) {
-        return { synced: false, reason: "no_due_date" };
-      }
-
-      // Fire-and-forget async
-      void syncPaymentDueDeadline(prisma, {
-        organizationId: ctx.organizationId,
-        invoiceId: invoice.id,
-        invoiceNumber: invoice.invoiceNumber ?? `INV-${invoice.id.slice(-6)}`,
-        contractorName: invoice.contractor?.displayName ?? "Unknown",
-        dueDate: invoice.dueDate,
-        userId: ctx.user!.id,
-      });
-
-      return { synced: true };
-    }),
 
   // =========================================================================
   // Task config CRUD

@@ -62,7 +62,7 @@ async function handler(request: NextRequest) {
   }
 
   try {
-    await adapter.handleWebhook(
+    const webhookResult = await adapter.handleWebhook(
       delivery.payloadJson,
       delivery.organizationId,
       delivery.integrationConnectionId ?? "",
@@ -87,25 +87,22 @@ async function handler(request: NextRequest) {
     // signed PDF download + R2 storage via the orchestrator
     const isESignProvider = provider === "docusign" || provider === "autenti";
     if (isESignProvider) {
-      const adapterWithResult = adapter as {
-        _lastWebhookResult?: { envelopeId: string; completed: boolean } | null;
-      };
-      const webhookResult = adapterWithResult._lastWebhookResult;
+      const esignResult = webhookResult as
+        | { envelopeId: string; completed: boolean }
+        | undefined;
 
-      if (webhookResult?.completed && delivery.integrationConnectionId) {
+      if (esignResult?.completed && delivery.integrationConnectionId) {
         try {
           await handleSigningCompletion(
-            webhookResult.envelopeId,
+            esignResult.envelopeId,
             delivery.integrationConnectionId,
             provider.toUpperCase() as "DOCUSIGN" | "AUTENTI",
           );
         } catch (completionError) {
           console.error(
-            `[webhook/_process] Failed to handle signing completion for envelope ${webhookResult.envelopeId}:`,
+            `[webhook/_process] Failed to handle signing completion for envelope ${esignResult.envelopeId}:`,
             completionError,
           );
-          // Don't fail the overall webhook — the envelope status is already updated
-          // The signed PDF can be retrieved manually or via retry
         }
       }
     }

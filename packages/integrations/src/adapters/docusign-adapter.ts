@@ -629,27 +629,20 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
   /**
    * Process a DocuSign Connect webhook event.
    * Delegates to the shared esign-webhook-handler for status updates
-   * and idempotency. Returns void per BaseAdapter interface — the
-   * completion signal is handled at the _process route level.
+   * and idempotency. Returns the completion signal directly.
    */
   async handleWebhook(
     payload: unknown,
     organizationId: string,
     connectionId: string,
-  ): Promise<void> {
-    const result = await handleSigningWebhook({
+  ): Promise<{ envelopeId: string; completed: boolean }> {
+    return handleSigningWebhook({
       provider: "DOCUSIGN",
       payload,
       organizationId,
       connectionId,
     });
-
-    // Store completion result for the _process route to pick up
-    this._lastWebhookResult = result;
   }
-
-  /** @internal Last webhook processing result (used by _process route) */
-  _lastWebhookResult: { envelopeId: string; completed: boolean } | null = null;
 }
 
 // ---------------------------------------------------------------------------
