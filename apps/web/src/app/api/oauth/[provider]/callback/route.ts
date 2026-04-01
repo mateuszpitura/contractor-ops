@@ -3,9 +3,13 @@ import type { NextRequest } from "next/server";
 import { prisma, type Prisma } from "@contractor-ops/db";
 import {
   getAdapter,
+  registerAllAdapters,
   verifyOAuthState,
   encryptCredentials,
 } from "@contractor-ops/integrations";
+
+// Ensure all OAuth adapters are registered before any callback is processed
+registerAllAdapters();
 
 // ---------------------------------------------------------------------------
 // GET /api/oauth/[provider]/callback
