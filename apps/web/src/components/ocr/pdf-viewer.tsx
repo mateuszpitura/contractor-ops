@@ -1,9 +1,7 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { Document, Page, pdfjs } from "react-pdf"
-import "react-pdf/dist/esm/Page/AnnotationLayer.css"
-import "react-pdf/dist/esm/Page/TextLayer.css"
 import {
   ChevronLeft,
   ChevronRight,
@@ -36,6 +34,12 @@ export function PdfViewer({ url, className }: PdfViewerProps) {
   const [numPages, setNumPages] = useState<number>(0)
   const [currentPage, setCurrentPage] = useState<number>(1)
   const [scale, setScale] = useState<number>(1.0)
+
+  // Load react-pdf CSS dynamically to avoid Next.js build issues
+  useEffect(() => {
+    import("react-pdf/dist/Page/AnnotationLayer.css" as never)
+    import("react-pdf/dist/Page/TextLayer.css" as never)
+  }, [])
 
   const onDocumentLoadSuccess = useCallback(
     ({ numPages: total }: { numPages: number }) => {
