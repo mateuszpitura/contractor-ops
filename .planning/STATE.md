@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Enterprise & Monetization
 status: executing
-stopped_at: Completed 29-01-PLAN.md
-last_updated: "2026-04-01T23:21:11.440Z"
+stopped_at: Completed 29-02-PLAN.md
+last_updated: "2026-04-01T23:30:48.926Z"
 last_activity: 2026-04-01
 progress:
   total_phases: 8
   completed_phases: 1
   total_plans: 7
-  completed_plans: 5
+  completed_plans: 6
   percent: 0
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-01)
 ## Current Position
 
 Phase: 29 (linear-integration) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-04-01
 
@@ -53,6 +53,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 28 P03 | 6min | 2 tasks | 16 files |
 | Phase 28 P04 | 2min | 2 tasks | 2 files |
 | Phase 29 P01 | 7min | 3 tasks | 13 files |
+| Phase 29 P02 | 6min | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -75,6 +76,8 @@ Recent decisions affecting current work:
 - [Phase 28]: tenantProcedure for getCreditBalance -- any org member can view credit usage, consistent with other billing queries
 - [Phase 29]: PENDING_MAPPING status enables D-03: Linear connections require status mapping before sync activates
 - [Phase 29]: Linear OAuth uses URL-encoded token exchange (application/x-www-form-urlencoded) unlike Jira JSON
+- [Phase 29]: linearGraphQL helper exported from linear-issue-sync.ts for reuse across services and tRPC router
+- [Phase 29]: Webhook registration fires as fire-and-forget on first saveStatusMapping per team
 
 ### Pending Todos
 
@@ -88,6 +91,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-01T23:21:11.438Z
-Stopped at: Completed 29-01-PLAN.md
+Last session: 2026-04-01T23:30:48.924Z
+Stopped at: Completed 29-02-PLAN.md
 Resume file: None

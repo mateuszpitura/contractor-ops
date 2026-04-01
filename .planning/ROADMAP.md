@@ -98,7 +98,7 @@ Plans:
 
 Plans:
 - [x] 29-01-PLAN.md — Prisma enum, LinearAdapter, Zod validators, tRPC router shell, env config (LIN-01)
-- [ ] 29-02-PLAN.md — Status mapping service, issue sync, webhook handler, workflow hooks (LIN-02/03/04/05)
+- [x] 29-02-PLAN.md — Status mapping service, issue sync, webhook handler, workflow hooks (LIN-02/03/04/05)
 - [ ] 29-03-PLAN.md — Provider section UI, status mapping dialog, issue chip, i18n (LIN-02/06)
 
 ### Phase 30: Equipment Tracking Foundation
@@ -232,7 +232,7 @@ Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 �
 | 26. Calendar Wiring Fixes | v2.0 | 1/1 | Complete | 2026-03-30 |
 | 27. OAuth Callback & OCR Build Fixes | v2.0 | 1/1 | Complete | 2026-04-01 |
 | 28. Stripe Billing Foundation | v3.0 | 4/4 | Complete    | 2026-04-01 |
-| 29. Linear Integration | v3.0 | 1/3 | In Progress|  |
+| 29. Linear Integration | v3.0 | 2/3 | In Progress|  |
 | 30. Equipment Tracking Foundation | v3.0 | 0/3 | Not started | - |
 | 31. Google Workspace Directory Import | v3.0 | 0/2 | Not started | - |
 | 32. Teams Integration | v3.0 | 0/3 | Not started | - |

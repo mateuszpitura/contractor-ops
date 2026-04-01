@@ -10,10 +10,10 @@ Requirements for v3.0 Enterprise & Monetization milestone. Each maps to roadmap 
 ### Linear Integration
 
 - [x] **LIN-01**: User can connect Linear workspace via OAuth 2.0 with refresh token support
-- [ ] **LIN-02**: Admin can map Linear workflow states to internal task statuses per team
-- [ ] **LIN-03**: Workflow task with Linear enabled auto-creates Linear issue with team, title, description, and assignee
-- [ ] **LIN-04**: Status changes in Linear sync to linked workflow task via webhooks (with loop prevention)
-- [ ] **LIN-05**: Status changes on workflow task sync to Linear issue via GraphQL mutation
+- [x] **LIN-02**: Admin can map Linear workflow states to internal task statuses per team
+- [x] **LIN-03**: Workflow task with Linear enabled auto-creates Linear issue with team, title, description, and assignee
+- [x] **LIN-04**: Status changes in Linear sync to linked workflow task via webhooks (with loop prevention)
+- [x] **LIN-05**: Status changes on workflow task sync to Linear issue via GraphQL mutation
 - [ ] **LIN-06**: Linked Linear issue displays as clickable chip with status badge on workflow task view
 
 ### Teams Integration
@@ -107,10 +107,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | LIN-01 | Phase 29 | Complete |
-| LIN-02 | Phase 29 | Pending |
-| LIN-03 | Phase 29 | Pending |
-| LIN-04 | Phase 29 | Pending |
-| LIN-05 | Phase 29 | Pending |
+| LIN-02 | Phase 29 | Complete |
+| LIN-03 | Phase 29 | Complete |
+| LIN-04 | Phase 29 | Complete |
+| LIN-05 | Phase 29 | Complete |
 | LIN-06 | Phase 29 | Pending |
 | TEAM-01 | Phase 32 | Pending |
 | TEAM-02 | Phase 32 | Pending |
