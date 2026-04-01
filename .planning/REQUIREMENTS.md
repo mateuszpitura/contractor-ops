@@ -9,7 +9,7 @@ Requirements for v3.0 Enterprise & Monetization milestone. Each maps to roadmap 
 
 ### Linear Integration
 
-- [ ] **LIN-01**: User can connect Linear workspace via OAuth 2.0 with refresh token support
+- [x] **LIN-01**: User can connect Linear workspace via OAuth 2.0 with refresh token support
 - [ ] **LIN-02**: Admin can map Linear workflow states to internal task statuses per team
 - [ ] **LIN-03**: Workflow task with Linear enabled auto-creates Linear issue with team, title, description, and assignee
 - [ ] **LIN-04**: Status changes in Linear sync to linked workflow task via webhooks (with loop prevention)
@@ -106,7 +106,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| LIN-01 | Phase 29 | Pending |
+| LIN-01 | Phase 29 | Complete |
 | LIN-02 | Phase 29 | Pending |
 | LIN-03 | Phase 29 | Pending |
 | LIN-04 | Phase 29 | Pending |

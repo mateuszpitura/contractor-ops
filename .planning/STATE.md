@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Enterprise & Monetization
 status: executing
-stopped_at: Phase 29 plans verified
-last_updated: "2026-04-01T23:11:18.051Z"
+stopped_at: Completed 29-01-PLAN.md
+last_updated: "2026-04-01T23:21:11.440Z"
 last_activity: 2026-04-01
 progress:
   total_phases: 8
   completed_phases: 1
   total_plans: 7
-  completed_plans: 4
+  completed_plans: 5
   percent: 0
 ---
 
@@ -21,12 +21,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-01)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 28 — stripe-billing-foundation
+**Current focus:** Phase 29 — linear-integration
 
 ## Current Position
 
-Phase: 29
-Plan: Not started
+Phase: 29 (linear-integration) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
 Last activity: 2026-04-01
 
@@ -52,6 +52,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 28 P02 | 3min | 2 tasks | 4 files |
 | Phase 28 P03 | 6min | 2 tasks | 16 files |
 | Phase 28 P04 | 2min | 2 tasks | 2 files |
+| Phase 29 P01 | 7min | 3 tasks | 13 files |
 
 ## Accumulated Context
 
@@ -72,6 +73,8 @@ Recent decisions affecting current work:
 - [Phase 28]: Meter event fires outside transaction (fire-and-forget) to avoid blocking on Stripe API latency
 - [Phase 28]: BillingOverlay client wrapper pattern for server-component dashboard layout integration
 - [Phase 28]: tenantProcedure for getCreditBalance -- any org member can view credit usage, consistent with other billing queries
+- [Phase 29]: PENDING_MAPPING status enables D-03: Linear connections require status mapping before sync activates
+- [Phase 29]: Linear OAuth uses URL-encoded token exchange (application/x-www-form-urlencoded) unlike Jira JSON
 
 ### Pending Todos
 
@@ -85,6 +88,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-01T23:11:18.044Z
-Stopped at: Phase 29 plans verified
-Resume file: .planning/phases/29-linear-integration/29-01-PLAN.md
+Last session: 2026-04-01T23:21:11.438Z
+Stopped at: Completed 29-01-PLAN.md
+Resume file: None
