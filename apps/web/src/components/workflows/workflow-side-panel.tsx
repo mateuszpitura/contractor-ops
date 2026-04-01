@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/sheet";
 import { Link } from "@/i18n/navigation";
 import { JiraIssueChip } from "@/components/integrations/jira-issue-chip";
+import { LinearIssueChip } from "@/components/integrations/linear-issue-chip";
 
 // ---------------------------------------------------------------------------
 // Status badge colors (same as columns.tsx)
@@ -37,7 +38,7 @@ const statusBadgeColors: Record<string, string> = {
 // Linked issue type from metadataJson
 // ---------------------------------------------------------------------------
 
-interface LinkedIssueData {
+interface LinkedJiraIssueData {
   id: string;
   metadataJson: {
     key: string;
@@ -70,7 +71,7 @@ function LinkedIssuesSection({ runId }: { runId: string }) {
   // Don't render the section at all if Jira isn't connected
   if (!connectionQuery.data) return null;
 
-  const issues = (issuesQuery.data ?? []) as unknown as LinkedIssueData[];
+  const issues = (issuesQuery.data ?? []) as unknown as LinkedJiraIssueData[];
 
   return (
     <>
@@ -103,6 +104,84 @@ function LinkedIssuesSection({ runId }: { runId: string }) {
                   summary={issue.metadataJson.summary}
                   status={issue.metadataJson.status}
                   statusCategory={issue.metadataJson.statusCategory}
+                  url={issue.metadataJson.url ?? issue.externalUrl}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Linked Linear issue type from metadataJson
+// ---------------------------------------------------------------------------
+
+interface LinkedLinearIssueData {
+  id: string;
+  metadataJson: {
+    identifier: string;
+    title: string;
+    status: string;
+    statusType: "triage" | "backlog" | "unstarted" | "started" | "completed" | "cancelled";
+    url: string;
+  };
+  externalUrl: string;
+}
+
+/**
+ * Linked Linear Issues section for the workflow side panel.
+ * Only renders when Linear is connected and has linked issues.
+ */
+function LinkedLinearIssuesSection({ runId }: { runId: string }) {
+  const connectionQuery = useQuery({
+    ...trpc.linear.connectionStatus.queryOptions(),
+    staleTime: Infinity,
+  });
+
+  const issuesQuery = useQuery({
+    ...trpc.linear.linkedIssues.queryOptions({
+      entityType: "WORKFLOW_RUN",
+      entityId: runId,
+    }),
+    enabled: !!connectionQuery.data,
+  });
+
+  // Don't render the section at all if Linear isn't connected
+  if (!connectionQuery.data) return null;
+
+  const issues = (issuesQuery.data ?? []) as unknown as LinkedLinearIssueData[];
+
+  if (!issuesQuery.isLoading && issues.length === 0) return null;
+
+  return (
+    <>
+      <Separator />
+      <div className="space-y-3">
+        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+          Linear Issues
+        </h3>
+
+        {issuesQuery.isLoading ? (
+          <div className="space-y-2">
+            {Array.from({ length: 2 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <Skeleton className="h-4 w-[100px]" />
+                <Skeleton className="h-6 w-[120px] rounded-md" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {issues.map((issue) => (
+              <div key={issue.id} className="flex items-center gap-2">
+                <LinearIssueChip
+                  identifier={issue.metadataJson.identifier}
+                  title={issue.metadataJson.title}
+                  status={issue.metadataJson.status}
+                  statusType={issue.metadataJson.statusType}
                   url={issue.metadataJson.url ?? issue.externalUrl}
                 />
               </div>
@@ -239,6 +318,9 @@ export function WorkflowSidePanel({ runId, onClose }: WorkflowSidePanelProps) {
 
                 {/* Linked Jira Issues */}
                 <LinkedIssuesSection runId={run.id} />
+
+                {/* Linked Linear Issues (LIN-06) */}
+                <LinkedLinearIssuesSection runId={run.id} />
 
                 <Separator />
 

@@ -493,6 +493,61 @@
         "connectFailed": "Nie udało się połączyć z {provider}. Spróbuj ponownie.",
         "disconnected": "{provider} rozłączony",
         "disconnectFailed": "Nie udało się odłączyć {provider}. Spróbuj ponownie."
+      },
+      "ksef": {
+        "descriptionDisconnected": "Automatyczne pobieranie faktur z Krajowego Systemu e-Faktur"
+      },
+      "linear": {
+        "heading": "Linear",
+        "descriptionDisconnected": "Połącz workspace Linear, aby synchronizować zadania z Linear dwukierunkowo.",
+        "connectCta": "Połącz Linear",
+        "connectedTo": "Połączono z",
+        "connectedBy": "Połączono przez",
+        "connectedOn": "Połączono dnia",
+        "disconnectCta": "Odłącz Linear",
+        "reconnectCta": "Połącz ponownie Linear",
+        "statusConnected": "Połączono",
+        "statusDisconnected": "Nie połączono",
+        "statusError": "Błąd połączenia",
+        "statusReauth": "Wymagana ponowna autoryzacja",
+        "configureMapping": "Konfiguruj mapowanie statusów",
+        "pendingMappingWarning": "Linear połączony -- skonfiguruj mapowanie statusów dla przynajmniej jednego zespołu, aby aktywować synchronizację.",
+        "scopeExpansionWarning": "Wymagana ponowna autoryzacja -- nowe uprawnienia potrzebne do tworzenia zadań i webhooków.",
+        "mapping": {
+          "title": "Mapowanie statusów",
+          "description": "Mapuj statusy zadań na stany Linear dla {teamName}.",
+          "selectTeam": "Wybierz zespół",
+          "workflowStatus": "Status zadania",
+          "linearState": "Stan Linear",
+          "unmappedTooltip": "Nie zmapowano -- zmiany tego stanu będą ignorowane",
+          "noTeams": "Nie znaleziono zespołów Linear",
+          "noTeamsBody": "Połącz workspace Linear, aby zobaczyć dostępne zespoły. Sprawdź, czy workspace ma przynajmniej jeden zespół.",
+          "save": "Zapisz mapowanie",
+          "discard": "Odrzuć zmiany",
+          "saving": "Zapisywanie..."
+        },
+        "templateSettings": {
+          "heading": "Linear",
+          "enableToggle": "Włącz tworzenie zadań Linear",
+          "teamLabel": "Zespół Linear",
+          "teamPlaceholder": "Wybierz zespół",
+          "noConnection": "Połącz Linear w Ustawienia > Integracje, aby włączyć."
+        },
+        "disconnectConfirm": {
+          "title": "Odłączyć Linear?",
+          "body": "Zsynchronizowane zadania zachowają aktualny status, ale synchronizacja dwukierunkowa zostanie zatrzymana. Możesz połączyć ponownie w dowolnym momencie.",
+          "confirm": "Odłącz Linear",
+          "cancel": "Pozostań połączony"
+        },
+        "toasts": {
+          "connected": "Workspace Linear połączony pomyślnie",
+          "disconnected": "Linear odłączony",
+          "mappingSaved": "Mapowanie statusów zapisane",
+          "mappingFailed": "Nie udało się zapisać mapowania. Spróbuj ponownie.",
+          "connectFailed": "Połączenie z Linear nie powiodło się. Sprawdź uprawnienia i spróbuj ponownie.",
+          "syncError": "Nie udało się zsynchronizować z Linear",
+          "tokenExpired": "Token Linear wygasł. Połącz ponownie, aby przywrócić synchronizację."
+        }
       }
     },
     "provider": {
@@ -742,6 +797,12 @@
       "heading": "Nie znaleziono strony",
       "body": "Strona, której szukasz, nie istnieje lub została przeniesiona.",
       "cta": "Powrót do pulpitu"
+    },
+    "serverError": {
+      "code": "500",
+      "heading": "Coś poszło nie tak",
+      "body": "Wystąpił nieoczekiwany błąd po naszej stronie. Spróbuj ponownie lub skontaktuj się z pomocą techniczną.",
+      "cta": "Spróbuj ponownie"
     },
     "UNAUTHORIZED": "Nie masz uprawnień do wykonania tej akcji.",
     "FORBIDDEN": "Odmowa dostępu.",

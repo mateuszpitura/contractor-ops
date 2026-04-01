@@ -13,6 +13,7 @@ import { Link } from "@/i18n/navigation";
 import { TemplatePicker } from "@/components/workflows/template-picker-dialog";
 import { JiraActivitySummary } from "@/components/integrations/jira-activity-summary";
 import { JiraIssueChip } from "@/components/integrations/jira-issue-chip";
+import { LinearIssueChip } from "@/components/integrations/linear-issue-chip";
 
 // ---------------------------------------------------------------------------
 // Run status badge styling (matching UI-SPEC)
@@ -60,6 +61,68 @@ interface LinkedIssueData {
     url: string;
   };
   externalUrl: string;
+}
+
+// ---------------------------------------------------------------------------
+// Linked Linear issue type
+// ---------------------------------------------------------------------------
+
+interface LinkedLinearIssueData {
+  id: string;
+  metadataJson: {
+    identifier: string;
+    title: string;
+    status: string;
+    statusType: "triage" | "backlog" | "unstarted" | "started" | "completed" | "cancelled";
+    url: string;
+  };
+  externalUrl: string;
+}
+
+/**
+ * Inline Linear chips for a workflow run row.
+ * Shows max 3 chips with "+N more" overflow badge.
+ */
+function RunLinearChips({ runId }: { runId: string }) {
+  const connectionQuery = useQuery({
+    ...trpc.linear.connectionStatus.queryOptions(),
+    staleTime: Infinity,
+  });
+
+  const issuesQuery = useQuery({
+    ...trpc.linear.linkedIssues.queryOptions({
+      entityType: "WORKFLOW_RUN",
+      entityId: runId,
+    }),
+    enabled: !!connectionQuery.data,
+  });
+
+  const issues = (issuesQuery.data ?? []) as unknown as LinkedLinearIssueData[];
+
+  if (!connectionQuery.data || !issues.length) return null;
+
+  const visible = issues.slice(0, 3);
+  const overflow = issues.length - 3;
+
+  return (
+    <div className="flex items-center gap-1" onClick={(e) => e.preventDefault()}>
+      {visible.map((issue) => (
+        <LinearIssueChip
+          key={issue.id}
+          identifier={issue.metadataJson.identifier}
+          title={issue.metadataJson.title}
+          status={issue.metadataJson.status}
+          statusType={issue.metadataJson.statusType}
+          url={issue.metadataJson.url ?? issue.externalUrl}
+        />
+      ))}
+      {overflow > 0 && (
+        <Badge variant="secondary" className="text-xs">
+          +{overflow} more
+        </Badge>
+      )}
+    </div>
+  );
 }
 
 /**
@@ -225,6 +288,7 @@ export function WorkflowsTab({ contractorId }: WorkflowsTabProps) {
               )}
             </Badge>
             <RunJiraChips runId={run.id} />
+            <RunLinearChips runId={run.id} />
             <span className="text-sm tabular-nums text-muted-foreground">
               {run.progress.done}/{run.progress.total}
             </span>

@@ -493,6 +493,61 @@
         "connectFailed": "Could not connect {provider}. Try again.",
         "disconnected": "{provider} disconnected",
         "disconnectFailed": "Could not disconnect {provider}. Try again."
+      },
+      "ksef": {
+        "descriptionDisconnected": "Auto-fetch invoices from Poland's national e-invoicing system"
+      },
+      "linear": {
+        "heading": "Linear",
+        "descriptionDisconnected": "Connect your Linear workspace to sync workflow tasks with Linear issues bidirectionally.",
+        "connectCta": "Connect Linear",
+        "connectedTo": "Connected to",
+        "connectedBy": "Connected by",
+        "connectedOn": "Connected on",
+        "disconnectCta": "Disconnect Linear",
+        "reconnectCta": "Reconnect Linear",
+        "statusConnected": "Connected",
+        "statusDisconnected": "Not connected",
+        "statusError": "Connection error",
+        "statusReauth": "Re-authentication required",
+        "configureMapping": "Configure Status Mapping",
+        "pendingMappingWarning": "Linear connected -- configure status mapping for at least one team to activate bidirectional sync.",
+        "scopeExpansionWarning": "Re-auth required -- new scopes needed for issue creation and webhooks.",
+        "mapping": {
+          "title": "Status Mapping",
+          "description": "Map workflow task statuses to Linear workflow states for {teamName}.",
+          "selectTeam": "Select a team",
+          "workflowStatus": "Workflow Status",
+          "linearState": "Linear State",
+          "unmappedTooltip": "Not mapped -- status changes for this state will be ignored",
+          "noTeams": "No Linear teams found",
+          "noTeamsBody": "Connect your Linear workspace to see available teams. Check that the workspace has at least one team.",
+          "save": "Save Mapping",
+          "discard": "Discard Changes",
+          "saving": "Saving..."
+        },
+        "templateSettings": {
+          "heading": "Linear",
+          "enableToggle": "Enable Linear issue creation",
+          "teamLabel": "Linear Team",
+          "teamPlaceholder": "Select a team",
+          "noConnection": "Connect Linear in Settings > Integrations to enable."
+        },
+        "disconnectConfirm": {
+          "title": "Disconnect Linear?",
+          "body": "All synced issues will keep their current status but bidirectional sync will stop. You can reconnect at any time.",
+          "confirm": "Disconnect Linear",
+          "cancel": "Keep Connected"
+        },
+        "toasts": {
+          "connected": "Linear workspace connected successfully",
+          "disconnected": "Linear disconnected",
+          "mappingSaved": "Status mapping saved",
+          "mappingFailed": "Failed to save status mapping. Please try again.",
+          "connectFailed": "Linear connection failed. Check your workspace permissions and try again.",
+          "syncError": "Failed to sync with Linear",
+          "tokenExpired": "Linear token expired. Reconnect to restore bidirectional sync."
+        }
       }
     },
     "provider": {
@@ -742,6 +797,12 @@
       "heading": "Page not found",
       "body": "The page you're looking for doesn't exist or has been moved.",
       "cta": "Back to dashboard"
+    },
+    "serverError": {
+      "code": "500",
+      "heading": "Something went wrong",
+      "body": "An unexpected error occurred on our end. Please try again or contact support if the problem persists.",
+      "cta": "Try again"
     },
     "UNAUTHORIZED": "You are not authorized to perform this action.",
     "FORBIDDEN": "Access denied.",
