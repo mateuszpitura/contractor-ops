@@ -1,311 +1,308 @@
-# Feature Research: v2.0 Platform Expansion
+# Feature Research: v3.0 Enterprise & Monetization
 
-**Domain:** B2B Contractor Operations Platform -- self-service portal, e-sign, OCR, KSeF, integrations
-**Researched:** 2026-03-23
-**Confidence:** MEDIUM-HIGH (verified against official APIs, competitor analysis, regulatory docs)
+**Domain:** B2B Contractor Operations Platform -- enterprise integrations, intelligent onboarding, equipment tracking, monetization
+**Researched:** 2026-04-01
+**Confidence:** MEDIUM-HIGH (verified against official APIs, Stripe docs, courier API docs, existing codebase patterns)
 
 ## Feature Landscape
 
 ### Table Stakes (Users Expect These)
 
-Features that v2.0 must ship. Without these, each module feels incomplete or unusable.
+Features that each v3.0 module must ship. Without these, each integration feels half-baked.
 
-#### Contractor Self-Service Portal
+#### Linear Bidirectional Integration
 
-| Feature | Why Expected | Complexity | Dependencies on v1.0 | Notes |
+Mirrors the existing Jira integration pattern. Linear uses GraphQL API + webhooks, not REST.
+
+| Feature | Why Expected | Complexity | Dependencies on v2.0 | Notes |
 |---------|--------------|------------|----------------------|-------|
-| Contractor login with scoped access | Contractors need their own auth context, not org-member accounts | HIGH | Better Auth (new role type), RBAC, multi-tenant | New auth flow: magic link or password. Contractors are NOT org users -- separate identity model with org-scoped access |
-| View own contracts (read-only) | Contractors expect to see active contracts, terms, rates | LOW | Contract repository | Read-only filtered view of existing contract data |
-| Submit invoices via portal | Core Deel-like expectation: contractor uploads invoice, it enters org's intake pipeline | MEDIUM | Invoice intake pipeline | Replaces email/upload -- portal submission feeds into existing matching + approval flow |
-| Payment status tracking | "When am I getting paid?" is the #1 contractor question | LOW | Payment runs | Read-only view: invoice submitted -> approved -> in payment run -> paid. Expose status from existing data |
-| View/download own documents | Contractors need access to signed contracts, NDAs, tax forms | LOW | Document management, R2 storage | Scoped access to documents tagged to their contractor record |
-| Profile self-management | Update bank details, tax info, contact info, NIP | MEDIUM | Contractor registry | Edits go through approval/review before updating master record (security concern) |
-| Portal notification preferences | Contractors control what emails they receive | LOW | Notification system | Subset of existing notification engine |
+| Connect Linear workspace (OAuth 2.0) | Same pattern users already have for Jira -- connect once, use everywhere | LOW | Integration framework, OAuth credential store | Linear OAuth 2.0 with mandatory refresh tokens (enforced from April 2026). New LinearAdapter extending BaseAdapter |
+| Create Linear issue from workflow | Onboarding step auto-creates Linear issue for IT setup, access provisioning, etc. | MEDIUM | Workflow engine | GraphQL mutation `issueCreate` with teamId, title, description, assigneeId, labelIds. Must resolve team/project IDs first |
+| Bidirectional status sync | When Linear issue moves to "Done", linked workflow task updates. When task completes, Linear issue closes | MEDIUM | Workflow engine, webhook pipeline | Linear webhooks fire on Issue create/update/remove. Payload mirrors GraphQL entity. HMAC-SHA256 verification. Map Linear workflow states to internal task statuses |
+| Linked issue display | Show Linear issue key + status badge on workflow task views, clickable to Linear | LOW | UI components | Store Linear issue ID + URL + status. Same chip/badge pattern as existing Jira linked issues |
+| Status mapping configuration | Admin maps Linear workflow states (e.g., "In Progress", "Done") to internal task statuses | MEDIUM | Settings UI | Per-team status mapping since Linear statuses are per-team. Similar to existing Jira status mapping |
 
-#### E-Sign Integration
+#### Teams Integration (Approve/Reject + Notifications)
 
-| Feature | Why Expected | Complexity | Dependencies on v1.0 | Notes |
+Mirrors existing Slack integration. Teams uses Bot Framework + Adaptive Cards instead of Slack Block Kit.
+
+| Feature | Why Expected | Complexity | Dependencies on v2.0 | Notes |
 |---------|--------------|------------|----------------------|-------|
-| Send contract for signature from app | Click "Send for signing" on any contract -- routes to DocuSign or Autenti | MEDIUM | Contract repository | Provider-agnostic adapter: same UX regardless of backend provider |
-| Embedded signing experience | Signer signs within Contractor Ops (iframe/redirect), not in separate DocuSign tab | MEDIUM | None (new UI flow) | DocuSign embedded signing URL + Autenti redirect flow. Both support this pattern |
-| Signature status tracking | Real-time status: sent -> viewed -> signed -> completed | LOW | Contract repository | Webhook-driven status updates from providers, stored on contract record |
-| Multi-party signing (contractor + org rep) | Contracts need both parties to sign, in defined order | MEDIUM | Contract repository | Signing order / routing rules. DocuSign and Autenti both support sequential signing |
-| Signed document auto-storage | Completed signed PDF automatically saved to document management | LOW | Document management, R2 | Webhook on completion -> download signed PDF -> upload to R2 -> link to contract |
-| Audit trail for signatures | Legal requirement: who signed what, when, from where | LOW | Audit log | Both providers return detailed audit certificates. Store as linked document |
+| Approve/reject from Teams message | Manager receives approval request in Teams, clicks Approve/Reject without leaving Teams | HIGH | Approval workflow, notification system | Requires a registered Teams Bot (Azure Bot Service) + Adaptive Cards with Action.Execute buttons. Action payloads route back to webhook endpoint. Significantly more complex than Slack -- requires Azure AD app registration, bot manifest, Teams app package |
+| Approval reminders in Teams | Overdue approval requests send reminder in Teams DM | MEDIUM | Approval SLA timers | Proactive messaging via stored ConversationReference. Bot must capture reference on first interaction, store per-user. Uses `adapter.continueConversation()` pattern |
+| Activity alerts in Teams | Invoice received, payment completed, contract expiring -- same alerts as Slack channel | MEDIUM | Notification system | Adaptive Card templates for each notification type. Post to configured Teams channel via bot. User-specific views for approval cards |
+| Teams channel configuration | Admin selects which Teams channel receives which notification types | LOW | Settings UI, notification routing | Store Teams channel ID + webhook URL per notification category. Similar to existing Slack channel config |
+| Connect Teams workspace | Admin authorizes the Teams bot for their tenant | HIGH | Integration framework | Azure AD OAuth 2.0 with admin consent for the bot. Requires Azure App Registration with `ChannelMessage.Send`, `User.Read` permissions. Bot must be published to org's Teams app catalog or sideloaded |
 
-#### OCR Invoice Parsing
+#### Google Workspace Directory Import
 
-| Feature | Why Expected | Complexity | Dependencies on v1.0 | Notes |
+New capability -- importing org structure from Google Workspace to bootstrap the platform.
+
+| Feature | Why Expected | Complexity | Dependencies on v2.0 | Notes |
 |---------|--------------|------------|----------------------|-------|
-| Auto-extract fields from uploaded PDF | Upload invoice PDF -> pre-fill: vendor NIP, invoice number, date, amount, line items | MEDIUM | Invoice intake | Use Mindee Invoice API or equivalent. 98-99% accuracy on structured Polish invoices |
-| Confidence scores per field | Show which extracted fields are high/low confidence so user knows what to verify | LOW | None (new UI) | Mindee returns confidence per field. Display as visual indicator |
-| Human review/correction UI | Side-by-side: PDF preview on left, extracted fields on right, edit-in-place | HIGH | Invoice intake forms | Key UX investment. This is where OCR becomes useful vs annoying |
-| Line item extraction | Extract individual line items, not just header totals | MEDIUM | Invoice data model | Mindee supports line items. May need invoice schema expansion |
-| Multi-page invoice support | Invoices can span multiple pages | LOW | None | Mindee handles this natively |
+| Connect Google Workspace (OAuth + admin consent) | One-click connect to pull organization directory | MEDIUM | Integration framework, existing Google Calendar OAuth can be extended | Requires Admin SDK Directory API scopes: `admin.directory.user.readonly`, `admin.directory.group.readonly`. Needs domain-wide delegation OR admin consent. Builds on existing Google OAuth flow |
+| List and preview users from directory | Show Google Workspace users with name, email, department, org unit before importing | LOW | UI components | `GET /admin/directory/v1/users?domain=example.com` returns full user list with org unit, department, title. Paginated (max 500/request) |
+| Selective user import as org members | Pick which Google users to import as internal org members (not contractors) | MEDIUM | User management, RBAC | Map Google user fields to internal user model. Auto-assign roles based on department/org unit rules. Dedup against existing users by email |
+| Group-based role mapping | Map Google Workspace groups to internal RBAC roles (e.g., "Finance" group -> "approver" role) | MEDIUM | RBAC system | `GET /admin/directory/v1/groups` + member listing. Pre-populate role assignments during import |
+| Periodic directory sync | Keep internal user list in sync with Google Workspace changes (new hires, departures) | HIGH | Background jobs, user management | Scheduled sync via QStash cron. Diff detection: new users -> invite, removed users -> flag for deactivation. Must NOT auto-delete -- flag only |
 
-#### KSeF Native Integration
+#### Intelligent Org Onboarding via Connected Tools
 
-| Feature | Why Expected | Complexity | Dependencies on v1.0 | Notes |
+Enhances existing 5-step onboarding checklist with data import from connected integrations.
+
+| Feature | Why Expected | Complexity | Dependencies on v2.0 | Notes |
 |---------|--------------|------------|----------------------|-------|
-| Pull invoices from KSeF | Auto-fetch invoices issued to the org's NIP from the national system | HIGH | Invoice intake, org NIP config | KSeF 2.0 API (OpenAPI 3.0.4). Auth via tokens (until 2027) then certificates. XML FA(3) schema |
-| Parse KSeF XML into invoice records | Convert FA(3) structured XML into existing invoice data model | MEDIUM | Invoice data model | XML parsing + field mapping. KSeF invoices are already structured -- no OCR needed |
-| KSeF invoice status display | Show KSeF reference number (numer KSeF), UPO receipt | LOW | Invoice records | Additional metadata fields on invoice record |
-| Duplicate detection: KSeF vs uploaded | If an invoice comes via KSeF AND is uploaded manually, detect the duplicate | MEDIUM | Existing duplicate detection | Extend existing NIP + invoice number matching to include KSeF reference |
-| KSeF compliance badge | Visual indicator that invoice was received/validated via KSeF | LOW | Invoice list UI | Simple badge/icon. Important for audit confidence |
+| Import wizard with source selection | "Where do you manage your team today?" -> select Linear/Jira/Google/Slack -> import relevant data | MEDIUM | Onboarding wizard (existing), integration connections | Step-by-step wizard: (1) connect tools, (2) preview data, (3) map fields, (4) confirm import. Extends existing 5-step onboarding |
+| Import team members from connected tools | Pull users from Jira, Linear, Google Workspace, Slack and create org members | MEDIUM | User management, connected integrations | Each source provides user data: Jira users via `/rest/api/3/users/search`, Linear team members via GraphQL, Google via Directory API, Slack via `users.list`. Dedup across sources by email |
+| Import projects/statuses from PM tools | Pull Jira projects + Linear teams/projects to pre-configure workflow templates | MEDIUM | Workflow engine | Map external project structures to internal workflow templates. Pre-populate status mappings |
+| Data preview and conflict resolution | Show what will be imported, highlight duplicates, let admin resolve conflicts before committing | MEDIUM | UI components | Preview table with diff indicators: new (green), duplicate (yellow), conflict (red). Batch confirm/skip/edit |
+| Progress tracking with partial retry | Import progress bar, ability to retry failed items without re-importing everything | LOW | Background jobs | QStash for async import. Track per-item status. Failed items shown in review screen with retry button |
 
-#### Jira Integration
+#### Equipment/Shipment Tracking
 
-| Feature | Why Expected | Complexity | Dependencies on v1.0 | Notes |
+New domain -- tracking physical equipment (laptops, phones, access cards) tied to contractor lifecycle.
+
+| Feature | Why Expected | Complexity | Dependencies on v2.0 | Notes |
 |---------|--------------|------------|----------------------|-------|
-| Connect Jira workspace (OAuth) | Admin configures Jira Cloud connection via OAuth 2.0 | MEDIUM | Settings, integration framework | Atlassian OAuth 2.0 (3LO). Store tokens per org |
-| Create Jira issue from Contractor Ops | E.g., onboarding workflow step -> auto-create Jira ticket for IT setup | MEDIUM | Workflow engine | Jira REST API v3: POST /rest/api/3/issue. Configurable project + issue type mapping |
-| Sync Jira issue status back | When Jira ticket moves to "Done", update linked workflow task | MEDIUM | Workflow engine | Jira webhooks (jira:issue_updated). Map Jira statuses to workflow task statuses |
-| Bidirectional link display | Show linked Jira issues on contractor/workflow views, clickable | LOW | UI components | Store Jira issue key + URL. Display as linked chip |
+| Equipment registry | CRUD for equipment items: type, serial number, assigned contractor, status (in stock, assigned, in transit, returned) | MEDIUM | Contractor registry | New `equipment` table with contractor FK. Equipment types: laptop, phone, access card, other. Status lifecycle: available -> assigned -> in_transit -> delivered -> return_requested -> returned |
+| Assign equipment to contractor | Link equipment to contractor, track assignment history | LOW | Contractor profiles | Assignment creates audit trail entry. Shows on contractor profile "Equipment" tab |
+| Create shipment for equipment | Ship equipment to contractor (onboarding) or request return (offboarding). Manual entry: carrier, tracking number, expected delivery | MEDIUM | Equipment registry | New `shipment` table linked to equipment + contractor. Manual entry always available regardless of courier API integration |
+| InPost ShipX API integration | Create InPost shipments (Parcel Locker + courier), track status automatically | HIGH | Integration framework | InPost ShipX API with OAuth 2.0. Sandbox at `sandbox-api-shipx-pl.easypack24.net`. Create shipment -> get tracking number -> webhook/poll for status updates. Parcel Locker selection UI needed (list of lockers via API) |
+| DPD API integration | Create DPD shipments, generate labels, track status | HIGH | Integration framework | DPD WebAPI (SOAP/REST). Shipment creation, label PDF generation, tracking status polling. Less documented than InPost, may need direct DPD partner onboarding |
+| UPS API integration | Create UPS shipments, track status | HIGH | Integration framework | UPS Developer Kit REST API. OAuth 2.0 auth. Shipment creation + tracking. Well-documented but requires UPS developer account approval |
+| Tracking status display | Show shipment status timeline on equipment detail and contractor profile | MEDIUM | Equipment registry, shipments | Unified status model across carriers: created -> picked_up -> in_transit -> out_for_delivery -> delivered. Map each carrier's native statuses to this model |
+| Workflow integration for equipment | Onboarding workflow step: "Ship laptop to contractor" triggers shipment creation. Offboarding: "Return equipment" triggers return request | MEDIUM | Workflow engine, equipment registry | New workflow action types: `create_shipment`, `request_return`. Auto-advance workflow task when shipment status reaches target (e.g., "delivered") |
+| Equipment return tracking | Track return shipments. Contractor initiates return via portal, gets shipping label | MEDIUM | Contractor portal, equipment registry | Return flow: contractor requests return -> org approves -> system generates return label (via courier API) -> contractor ships -> status tracked |
 
-#### Notion/Confluence Integration
+#### Stripe Paywall (Subscriptions + AI Credit Metering)
 
-| Feature | Why Expected | Complexity | Dependencies on v1.0 | Notes |
+Monetization layer. First paywall for the platform.
+
+| Feature | Why Expected | Complexity | Dependencies on v2.0 | Notes |
 |---------|--------------|------------|----------------------|-------|
-| Link external docs to workflows | Attach Notion page or Confluence page URL to onboarding workflow steps | LOW | Workflow engine | URL + metadata (title, icon). Fetch page title via API for display |
-| Embed/preview linked pages | Show page preview or content snippet inline, not just a bare URL | MEDIUM | UI components | Notion API: retrieve block children. Confluence REST API: get page content. Render markdown preview |
-| Search external docs from within app | Find and link Notion/Confluence pages without leaving Contractor Ops | MEDIUM | Cmd+K, search UI | Notion: POST /search. Confluence: GET /wiki/rest/api/content/search |
-
-#### Calendar Integration
-
-| Feature | Why Expected | Complexity | Dependencies on v1.0 | Notes |
-|---------|--------------|------------|----------------------|-------|
-| Sync deadlines to calendar | Contract expiry, approval SLA, payment due dates appear in Google/Outlook calendar | MEDIUM | Contracts, approvals, payments | Create calendar events via API. Google Calendar API + Microsoft Graph API, OR unified via Cronofy |
-| Schedule meetings from workflows | Onboarding workflow step: "Schedule kickoff meeting" -> create calendar event | MEDIUM | Workflow engine | Event creation with attendees. Needs calendar provider auth per user |
-| Calendar reminders for deadlines | Push reminders for upcoming contract renewals, payment dates | LOW | Notification system | Extend existing reminder system to push to external calendars |
-
-#### Time Tracking (Portal Feature)
-
-| Feature | Why Expected | Complexity | Dependencies on v1.0 | Notes |
-|---------|--------------|------------|----------------------|-------|
-| Manual time entry in portal | Contractor logs hours: date, hours, project/task, description | MEDIUM | Contractor portal, new data model | New time_entries table. Simple form in portal |
-| Time entry approval by org | Manager reviews and approves submitted hours before invoicing | MEDIUM | Approval workflow | Reuse existing approval chain infrastructure. New approval type |
-| Clockify import | Pull time entries from Clockify via API (REST, free tier available) | MEDIUM | Time tracking data model | Clockify API: GET /workspaces/{id}/time-entries. Map to internal model |
-| Jira time log import | Pull worklogs from Jira issues assigned to contractor | MEDIUM | Jira integration, time tracking model | Jira REST API: GET /rest/api/3/issue/{id}/worklog. Requires Jira integration first |
-| Time-to-invoice matching | Link approved hours to invoice line items for verification | MEDIUM | Invoice matching | Compare: (approved hours x rate) vs invoice amount. Flag deviations |
+| Subscription tiers (flat + per-seat) | Standard SaaS pricing: Starter/Pro/Enterprise with per-seat component | HIGH | Org management, user management | Stripe Subscription with `quantity` for per-seat. Products + Prices in Stripe Dashboard. Subscription lifecycle: `trial -> active -> past_due -> canceled`. Webhook-driven status sync |
+| Free trial period | 14-day free trial, no credit card required (or card required -- product decision) | MEDIUM | Subscription management | Stripe `trial_period_days` on subscription creation. Trial-end webhook triggers "upgrade or lose access" flow |
+| AI/OCR credit metering | Track Claude Vision OCR usage per org, bill overage beyond plan allowance | HIGH | OCR service (existing), invoice processing | Stripe Meter API (post-2025-03-31 API version). Create Meter for `ocr_pages_processed`. Report meter events on each OCR call. Metered price attached to subscription. Credits burned at invoice finalization |
+| Credit grants for plans | Each tier includes N free OCR pages/month. Overage billed per-page | MEDIUM | AI credit metering | Stripe Billing Credits with credit grants. Reset monthly. Grant applied before overage kicks in |
+| Billing portal (Stripe hosted) | Customer manages payment method, views invoices, cancels subscription | LOW | Subscription management | Stripe Customer Portal -- hosted by Stripe. One redirect URL. Handles payment method updates, invoice history, cancellation |
+| Feature gating by plan | Restrict features by subscription tier (e.g., integrations only on Pro+, equipment tracking on Enterprise) | MEDIUM | All feature modules | Middleware that checks org's active subscription tier. Plan limits stored in config, checked on feature access. Graceful upgrade prompts, not hard blocks |
+| Usage dashboard | Org admin sees current plan, usage stats (seats, OCR credits), billing date | LOW | Subscription management, metering | Pull from Stripe API: subscription status, current period, upcoming invoice amount. Combine with internal usage counters |
+| Upgrade/downgrade flow | Change plans with proration | MEDIUM | Subscription management | Stripe handles proration automatically. `subscription.update` with `proration_behavior: 'create_prorations'`. Show price difference preview before confirming |
+| Webhook-driven billing sync | Stripe events (`invoice.paid`, `customer.subscription.updated`, `invoice.payment_failed`) update internal state | MEDIUM | Integration framework | Stripe webhook endpoint with signature verification (`stripe-signature` header). Idempotent event processing. Critical events: subscription status changes, payment failures, trial ending |
 
 ### Differentiators (Competitive Advantage)
 
-Features that make Contractor Ops stand out vs Deel, Faktura.pl, and manual Excel workflows.
+Features that make v3.0 stand out vs competitors attempting similar integrations.
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| KSeF-first invoice intake | While competitors bolt on KSeF as afterthought, Contractor Ops treats it as primary intake channel alongside upload and email. Auto-pull + auto-match + compliance badge | HIGH | Poland-specific but massive competitive advantage given April 2026 mandate for all companies. No competitor in the contractor-ops niche does this natively |
-| Unified OCR + KSeF pipeline | Same invoice goes through OCR (if uploaded) or XML parsing (if KSeF), both feed into identical matching + approval flow. Contractor and org never think about the source | MEDIUM | Abstraction layer that normalizes invoice data regardless of source. Key architectural differentiator |
-| Contractor portal with org branding | White-labeled portal URL (contractors.yourcompany.com or similar), org logo, colors. Feels like the client's tool, not a generic SaaS | MEDIUM | Custom subdomain/path + org branding settings (already partially built in v1.0 org setup). Builds trust with contractors |
-| Time tracking -> invoice verification | Approved hours automatically compared against submitted invoice amounts. Flags deviations. "You approved 160h at 150 PLN/h but invoice says 25,000 PLN" | MEDIUM | Requires time tracking + invoice matching. Unique workflow that competitors don't automate |
-| E-sign with dual provider (DocuSign + Autenti) | DocuSign for international contractors, Autenti for Polish QES compliance. Auto-route based on contractor country or contract type | MEDIUM | Poland-specific advantage. Autenti provides legally required QES for certain document types. No competitor offers both in one flow |
-| Cross-system workflow automation | Onboarding workflow that creates Jira ticket, sends contract for e-sign, schedules kickoff meeting, and links Notion docs -- all from one workflow template | HIGH | Requires all integrations working together. The "killer" v2.0 demo scenario |
-| Smart OCR correction learning | Track which OCR fields users correct most often. Surface "frequently corrected" fields more prominently. Per-vendor accuracy tracking | LOW | Analytics on correction patterns. Low effort, high perceived value |
+| Unified PM tool abstraction (Jira + Linear) | Same workflow templates work with either Jira or Linear -- admin picks PM tool, workflow doesn't change. No competitor offers dual PM bidirectional sync in contractor ops | MEDIUM | Shared interface: `createIssue()`, `syncStatus()`, `getIssueLink()`. Linear adapter mirrors Jira adapter. Workflow engine calls abstraction, not provider directly |
+| Equipment lifecycle tied to contractor lifecycle | Onboarding auto-ships laptop, offboarding auto-triggers return. Equipment tracking is integrated, not a separate spreadsheet. No contractor ops tool does this | HIGH | Equipment status changes trigger workflow events. Contractor status change (e.g., "offboarding") auto-creates return shipment task |
+| Intelligent onboarding from connected tools | Instead of manual data entry, connect your Jira + Google Workspace + Slack and the platform bootstraps itself. Import users, projects, statuses in minutes. Massive time-to-value improvement | MEDIUM | Multi-source import with dedup. Each source contributes different data: Google = users + structure, Jira/Linear = projects + statuses, Slack = channels for notifications |
+| Multi-channel approval (Slack + Teams) | Approve invoices from whichever messaging tool the org uses. Same approval flow, two delivery channels. Most tools pick one | MEDIUM | Shared approval action handler. Notification routing decides Slack vs Teams per org. Same approval mutation regardless of source |
+| Credit-based AI billing | OCR usage metered per page, included credits per plan, transparent overage pricing. Aligns cost with value -- light users pay less. Builds on Stripe's 2026 meter infrastructure | MEDIUM | Stripe Meter + Billing Credits. Report usage on each OCR call. Credits refresh monthly per plan tier |
+| Polish courier ecosystem (InPost + DPD) | InPost Parcel Lockers are the default shipping method in Poland. Having native InPost integration with locker selection is a huge UX win for Polish companies. No B2B contractor tool supports this | HIGH | InPost ShipX API for locker selection + shipment creation. Parcel Locker picker component (search by address, show on map via InPost Geowidget) |
 
 ### Anti-Features (Commonly Requested, Often Problematic)
 
 | Feature | Why Requested | Why Problematic | Alternative |
 |---------|---------------|-----------------|-------------|
-| Full time tracking app (timers, screenshots, activity) | "We need to track contractor productivity" | Massive scope, hostile to contractors, Clockify/Toggl do this better. Building a timer app is not your business | Import from Clockify/Jira. Manual entry for simple cases. Link, don't build |
-| KSeF invoice SENDING (issuing invoices via KSeF) | "If we can pull, we should push too" | Sending structured invoices requires full FA(3) XML generation, which is an accounting system's job. Out of scope per PROJECT.md | Pull-only for v2.0. Sending is v3+ if ever. Contractors issue their own invoices |
-| Real-time calendar sync (bi-directional) | "Keep everything in sync always" | Complex conflict resolution, rate limits, credential management per user. Calendar APIs have aggressive rate limits | Push events TO calendar (one-way). Don't try to read/sync back. Use calendar as notification channel |
-| Notion/Confluence content mirroring | "Show the full Notion page inside our app" | Content rendering is complex, breaks on updates, requires constant API polling. Notion blocks have 100+ types | Link + title + preview snippet. Open in new tab for full content. Don't try to replicate Notion's renderer |
-| Build own e-sign engine | "DocuSign is expensive, let's just do PDF stamping" | Legal compliance (eIDAS, QES), audit trails, identity verification -- this is a regulated domain. Homebrew e-sign has zero legal standing | Use DocuSign + Autenti. The cost ($600/yr DocuSign starter) is trivial vs legal risk |
-| Contractor messaging / chat | "Let contractors message the org through the portal" | Chat is a massive feature (real-time, history, notifications, read receipts). Slack/email already exists | Use existing notification system for status updates. Link to Slack channel if needed |
-| Multi-provider calendar aggregation | "Show a unified calendar view of all providers" | Building a calendar UI is enormous scope. Different providers have different event models | Push deadlines to user's preferred calendar. Don't build a calendar view |
-| Automated invoice creation from time entries | "Just auto-generate the invoice from approved hours" | Contractors issue their own invoices (B2B model). Auto-generating invoices crosses into accounting territory and has tax implications | Show "expected amount" based on approved hours. Contractor creates actual invoice. Flag discrepancy if mismatch |
+| Full asset management system | "Track all company assets, not just contractor equipment" | Massive scope -- inventory management, depreciation, procurement. Asset management tools (Snipe-IT, AssetTiger) exist. Contractor Ops tracks equipment tied to contractor lifecycle only | Track equipment assigned to contractors. For full asset management, integrate with dedicated tools |
+| Teams bot as full messaging layer | "Let contractors chat with managers through Teams" | Building a chat relay between Teams and the platform is enormous scope. Message threading, history, presence, file sharing -- this is Teams' job | Use Teams for notifications + approvals only. Link to contractor profile/invoice for context. Don't relay messages |
+| Build own subscription/billing system | "Stripe takes 2.9%. We can save money with direct bank integration" | Payment processing compliance (PCI-DSS), invoice generation, tax handling, dunning, card retry logic -- Stripe handles all of this. Building it is 6+ months of work with ongoing maintenance | Use Stripe. The 2.9% fee is trivial at current scale. Revisit at 500+ customers if fee becomes material |
+| SCIM provisioning from Google Workspace | "Auto-provision users when they're added to Google Workspace" | SCIM is a full identity lifecycle protocol (create, update, deactivate, delete). Requires SCIM server implementation, continuous sync, conflict resolution. Enterprise feature that very few customers at 10-200 employees need | Directory import (one-time + scheduled sync) covers 95% of the need. Full SCIM is v4+ if demand materializes |
+| Multi-carrier rate comparison | "Show shipping rates from InPost vs DPD vs UPS and let user pick cheapest" | Requires real-time rate API calls to all carriers, address validation, weight/dimension input. This is a shipping platform feature (e.g., Shippo, EasyPost) | Default to org's preferred carrier. Manual carrier selection when creating shipment. Don't build a rate engine |
+| Linear/Jira time tracking import merged | "Pull time from both Linear and Jira into one view" | Linear has no native time tracking -- it's an issue tracker. Time tracking in Linear requires third-party integrations (Clockify, Toggl). Importing from two PM tools simultaneously creates messy data | Import time from Clockify (works with both Linear and Jira). PM tool provides issues, time tracking tool provides hours |
+| Stripe Connect for contractor payments | "Pay contractors directly through Stripe" | Stripe Connect requires KYC for each contractor, adds per-transaction fees, doesn't handle Polish B2B invoice requirements (NIP, KSeF). Bank transfer is the standard B2B payment method in Poland | Keep existing payment run + bank file export flow. Stripe handles platform billing (SaaS subscription), not contractor payments |
 
 ## Feature Dependencies
 
 ```
-[Contractor Portal Auth]
-    |-- requires --> [New contractor identity model in Better Auth]
-    |-- requires --> [Portal-scoped RBAC (separate from org RBAC)]
+[Linear Integration]
+    |-- requires --> [Integration framework (existing)]
+    |-- requires --> [LinearAdapter extending BaseAdapter]
     |
-    +-- [Contract Viewing] -- requires --> [Existing contract repository]
-    +-- [Invoice Submission] -- requires --> [Existing invoice intake]
-    +-- [Payment Tracking] -- requires --> [Existing payment runs]
-    +-- [Document Access] -- requires --> [Existing document management]
-    +-- [Profile Management] -- requires --> [Existing contractor registry]
-    +-- [Time Entry] -- requires --> [New time tracking data model]
-         |
-         +-- [Time Entry Approval] -- requires --> [Existing approval workflow]
-         +-- [Clockify Import] -- requires --> [Time tracking data model]
-         +-- [Jira Time Import] -- requires --> [Jira Integration] + [Time tracking data model]
-         +-- [Time-to-Invoice Match] -- requires --> [Time tracking] + [Invoice matching]
+    +-- [Linear OAuth Connect] -- uses --> [OAuth credential store (existing)]
+    +-- [Create Linear Issue] -- enhances --> [Workflow engine]
+    +-- [Bidirectional Status Sync] -- uses --> [Webhook pipeline (existing)]
+    +-- [Status Mapping Config] -- similar to --> [Jira status mapping (existing)]
 
-[E-Sign Integration]
-    |-- requires --> [Provider adapter layer (DocuSign + Autenti)]
-    |-- requires --> [Webhook endpoint for status callbacks]
+[Teams Integration]
+    |-- requires --> [Integration framework (existing)]
+    |-- requires --> [Azure AD app registration + Bot Service]
+    |-- requires --> [TeamsAdapter extending BaseAdapter]
     |
-    +-- [Send for Signing] -- requires --> [Contract repository]
-    +-- [Embedded Signing] -- requires --> [Provider adapter + frontend redirect/iframe]
-    +-- [Signed Doc Storage] -- requires --> [Document management, R2]
-    +-- [Portal Signing] -- enhances --> [Contractor Portal]
+    +-- [Approve/Reject in Teams] -- mirrors --> [Slack approve/reject (existing)]
+    +-- [Activity Alerts] -- uses --> [Notification system (existing)]
+    +-- [Proactive Messaging] -- requires --> [ConversationReference storage]
 
-[OCR Invoice Parsing]
-    |-- requires --> [Mindee API integration (or equivalent)]
-    |-- requires --> [Human review UI (side-by-side PDF + fields)]
+[Google Workspace Directory]
+    |-- requires --> [Integration framework (existing)]
+    |-- extends --> [Google Calendar OAuth (existing) with additional scopes]
     |
-    +-- [Auto-extract Fields] -- enhances --> [Invoice intake]
-    +-- [Line Item Extraction] -- may require --> [Invoice schema expansion]
+    +-- [User Import] -- enhances --> [User management (existing)]
+    +-- [Group-Role Mapping] -- enhances --> [RBAC (existing)]
+    +-- [Periodic Sync] -- requires --> [QStash cron (existing infra)]
 
-[KSeF Integration]
-    |-- requires --> [KSeF 2.0 API client (OpenAPI, XML/FA(3))]
-    |-- requires --> [Org-level KSeF auth token configuration]
-    |-- requires --> [XML to invoice data model mapper]
+[Intelligent Onboarding]
+    |-- requires --> [At least one connected integration]
+    |-- enhances --> [Onboarding wizard (existing 5-step)]
     |
-    +-- [Pull Invoices] -- enhances --> [Invoice intake]
-    +-- [KSeF Duplicate Detection] -- enhances --> [Existing duplicate detection]
-    +-- [KSeF + OCR Unified Pipeline] -- requires --> [Both OCR and KSeF]
+    +-- [Import from Jira] -- requires --> [Jira integration (existing v2.0)]
+    +-- [Import from Linear] -- requires --> [Linear integration (v3.0)]
+    +-- [Import from Google] -- requires --> [Google Workspace (v3.0)]
+    +-- [Import from Slack] -- requires --> [Slack integration (existing v1.0)]
+    +-- [Data Preview + Dedup] -- independent (UI component)
 
-[Jira Integration]
-    |-- requires --> [Atlassian OAuth 2.0 connection]
-    |-- requires --> [Webhook receiver for Jira events]
+[Equipment/Shipment Tracking]
+    |-- requires --> [New equipment + shipment data models]
+    |-- independent of other v3.0 features
     |
-    +-- [Create Issues] -- enhances --> [Workflow engine]
-    +-- [Status Sync] -- enhances --> [Workflow engine]
-    +-- [Jira Time Import] -- enhances --> [Time tracking]
+    +-- [Equipment Registry] -- enhances --> [Contractor profiles (existing)]
+    +-- [Manual Shipment Entry] -- standalone (no API required)
+    +-- [InPost Integration] -- requires --> [InPost ShipX API adapter]
+    +-- [DPD Integration] -- requires --> [DPD WebAPI adapter]
+    +-- [UPS Integration] -- requires --> [UPS REST API adapter]
+    +-- [Workflow Integration] -- enhances --> [Workflow engine (existing)]
+    +-- [Portal Equipment View] -- enhances --> [Contractor portal (existing)]
+    +-- [Return Flow] -- requires --> [Equipment registry + courier API]
 
-[Notion/Confluence Integration]
-    |-- requires --> [Notion OAuth + Confluence OAuth connections]
+[Stripe Paywall]
+    |-- independent of other v3.0 features (can be built first or last)
+    |-- gates all other features via plan tiers
     |
-    +-- [Link Docs] -- enhances --> [Workflow engine]
-    +-- [Search Docs] -- enhances --> [Cmd+K, search]
+    +-- [Subscription Management] -- new domain
+    +-- [AI Credit Metering] -- hooks into --> [OCR service (existing)]
+    +-- [Feature Gating] -- wraps --> [All feature modules]
+    +-- [Billing Portal] -- uses --> [Stripe Customer Portal (hosted)]
+    +-- [Webhook Sync] -- uses --> [Webhook pipeline (existing)]
 
-[Calendar Integration]
-    |-- requires --> [Google Calendar API + Microsoft Graph API auth per user]
-    |       OR --> [Cronofy unified API (simpler but adds cost)]
-    |
-    +-- [Deadline Sync] -- requires --> [Contract reminders, approval SLAs, payment dates]
-    +-- [Meeting Scheduling] -- enhances --> [Workflow engine]
+[Stripe Paywall] ──gates──> [All features based on plan tier]
+[Equipment Tracking] ──enhances──> [Workflow engine] (onboarding/offboarding steps)
+[Intelligent Onboarding] ──requires──> [Linear, Google Workspace, or existing integrations]
+[Linear Integration] ──conflicts with──> nothing (additive)
+[Teams Integration] ──parallel to──> [Slack Integration] (orgs use one or the other)
 ```
 
 ### Dependency Notes
 
-- **Contractor Portal requires new auth model:** Contractors are NOT org members. They need a separate identity type in Better Auth with org-scoped access. This is the foundational prerequisite -- everything else in the portal depends on it.
-- **Time tracking requires portal first:** Time entry lives in the contractor portal. The data model and approval flow can be designed in parallel, but the UI is portal-dependent.
-- **Jira time import requires Jira integration:** The Jira connection must exist before worklogs can be pulled. Plan Jira integration before time tracking import.
-- **KSeF and OCR are independent but converge:** Both feed into invoice intake. They can be built in parallel, but the unified pipeline (normalizing both sources) should be designed upfront.
-- **E-sign enhances portal:** Contractors signing contracts via the portal is a key flow, but e-sign can work standalone (org sends signing link via email) even without the portal.
-- **Calendar integration is leaf-level:** Depends on existing data (deadlines, meetings) but nothing depends on it. Build last.
-- **Notion/Confluence are leaf-level:** Low dependency, low risk. Can be built in any order after the integration framework exists.
+- **Linear Integration is a straightforward clone of Jira pattern:** Same adapter interface, same webhook pipeline, same workflow engine hooks. Primary difference is GraphQL vs REST and Linear's per-team status model.
+- **Teams Integration is significantly harder than Slack:** Slack uses simple webhook + interactivity endpoint. Teams requires Azure Bot Service registration, Teams app manifest, proactive messaging with stored conversation references, and Adaptive Cards instead of Block Kit. Estimate 2-3x the effort of Slack.
+- **Google Workspace extends existing Google OAuth:** The Google Calendar adapter already handles OAuth. Directory API just needs additional scopes. Can share the same OAuth connection with expanded permissions.
+- **Intelligent Onboarding depends on connected integrations:** Cannot build the import wizard until at least the source integrations exist. Jira + Slack already exist from v2.0/v1.0. Linear + Google Workspace are new in v3.0.
+- **Equipment Tracking is fully independent:** New domain with no dependencies on other v3.0 features. Can be built in parallel. Only dependency is on existing contractor registry and workflow engine.
+- **Stripe Paywall should be built early but activated late:** Build subscription infrastructure early (it gates everything), but don't enforce paywall until other v3.0 features are ready. Feature gating middleware should be the last piece.
 
 ## MVP Definition
 
-### Phase 1: Build First (Foundation)
+### Phase 1: Build First (Infrastructure + Independent Features)
 
-- [ ] **Contractor portal auth + scoped access** -- Everything else in the portal depends on this. New identity model, magic link login, org-scoped contractor view
-- [ ] **Contract viewing + document access in portal** -- Lowest complexity portal features, validates the auth model end-to-end
-- [ ] **Invoice submission via portal** -- Core value: contractor submits invoice, it enters existing intake pipeline. Validates portal -> org data flow
-- [ ] **Payment status tracking** -- Read-only, uses existing data. Completes the contractor's core question loop
-- [ ] **E-sign integration (DocuSign + Autenti)** -- Independent of portal. High business value: contracts go from "print, sign, scan, email" to one-click. Provider adapter pattern for both
+- [ ] **Stripe subscription management** -- Foundation for monetization. Build Products/Prices in Stripe, subscription lifecycle, webhook sync. Don't enforce yet, but track
+- [ ] **Linear integration (OAuth + issue create + status sync)** -- Direct clone of Jira pattern. Low risk, reuses integration framework. Adds value to dev-heavy orgs using Linear instead of Jira
+- [ ] **Equipment registry + manual shipment tracking** -- New data model, CRUD, contractor profile tab. No courier API dependency -- manual tracking number entry works immediately
+- [ ] **Teams bot registration + basic notifications** -- Azure app setup, bot manifest, simple notification cards. Establish the connection before adding approve/reject complexity
 
 ### Phase 2: Add After Foundation
 
-- [ ] **OCR invoice parsing** -- Enhances invoice intake. High perceived value. Mindee integration is straightforward (API call + UI work)
-- [ ] **KSeF native integration** -- URGENT due to April 2026 mandate. Pull invoices from national system. Can be built in parallel with OCR
-- [ ] **KSeF + OCR unified pipeline** -- Normalize both sources into one intake flow. Design this when both are working
-- [ ] **Profile self-management** -- Contractor edits own profile. Needs review/approval flow for security
-- [ ] **Human review UI for OCR** -- Side-by-side PDF + extracted fields. Key UX investment
+- [ ] **Teams approve/reject with Adaptive Cards** -- Complex: Action.Execute buttons, user-specific views, proactive messaging. Needs Teams bot foundation from Phase 1
+- [ ] **Google Workspace directory import** -- Extend Google OAuth with Admin SDK scopes, build import wizard UI, role mapping
+- [ ] **InPost ShipX API integration** -- Most important courier for Poland. Parcel Locker selection, shipment creation, status tracking
+- [ ] **AI/OCR credit metering** -- Stripe Meter integration, usage reporting on each OCR call, credit grants per plan tier
+- [ ] **Feature gating by plan** -- Middleware to check subscription tier on feature access
 
-### Phase 3: Expand
+### Phase 3: Connect and Polish
 
-- [ ] **Time tracking (manual entry + approval)** -- New data model, portal UI, approval integration
-- [ ] **Clockify import** -- Pull time entries from external tracker
-- [ ] **Jira integration (create issues + status sync)** -- Workflow engine enhancement. OAuth + webhooks
-- [ ] **Jira time log import** -- Requires both Jira integration and time tracking model
-- [ ] **Time-to-invoice matching** -- Compare approved hours vs invoice amount
+- [ ] **Intelligent onboarding wizard** -- Multi-source import from connected tools. Depends on Linear + Google Workspace being ready
+- [ ] **DPD + UPS courier integrations** -- Additional carriers beyond InPost. Lower priority for Polish market
+- [ ] **Equipment workflow integration** -- Auto-ship on onboarding, auto-return on offboarding
+- [ ] **Equipment return flow via portal** -- Contractor initiates return, gets shipping label
+- [ ] **Periodic Google Workspace sync** -- Scheduled directory sync for ongoing user management
+- [ ] **Free trial flow** -- Trial period, trial-ending notifications, upgrade prompts
+- [ ] **Billing portal + usage dashboard** -- Stripe Customer Portal redirect, internal usage stats display
 
-### Phase 4: Polish and Connect
+### Defer (v4+)
 
-- [ ] **Notion/Confluence doc linking** -- URL + preview in workflows
-- [ ] **Calendar deadline sync** -- Push contract/payment deadlines to Google/Outlook calendars
-- [ ] **Meeting scheduling from workflows** -- Create calendar events as workflow steps
-- [ ] **Contractor portal branding** -- White-label with org logo/colors
-- [ ] **Cross-system workflow templates** -- Pre-built templates combining Jira + e-sign + calendar + docs
-
-### Defer (v3+)
-
-- [ ] **KSeF invoice sending** -- Issuing invoices is accounting system territory. v3 if ever
-- [ ] **Full time tracker (timers, screenshots)** -- Clockify does this better. Import, don't build
-- [ ] **Calendar bi-directional sync** -- One-way push is sufficient. Reading back creates complexity
-- [ ] **Notion content rendering** -- Link + preview, not full mirroring
+- [ ] **SCIM provisioning** -- Full identity lifecycle protocol. Overkill at current scale
+- [ ] **Multi-carrier rate comparison** -- Shipping platform territory, not contractor ops
+- [ ] **Stripe Connect for contractor payments** -- Polish B2B uses bank transfers, not Stripe payouts
+- [ ] **Teams as full messaging layer** -- Notifications and approvals only, not chat relay
 
 ## Feature Prioritization Matrix
 
 | Feature | User Value | Implementation Cost | Priority | Urgency |
 |---------|------------|---------------------|----------|---------|
-| Contractor portal (auth + core views) | HIGH | HIGH | P1 | High -- enables all portal features |
-| Invoice submission via portal | HIGH | MEDIUM | P1 | High -- core contractor workflow |
-| E-sign (DocuSign + Autenti) | HIGH | MEDIUM | P1 | High -- immediate business value |
-| KSeF invoice pull | HIGH | HIGH | P1 | CRITICAL -- April 2026 mandate |
-| OCR invoice parsing | HIGH | MEDIUM | P1 | High -- reduces manual data entry |
-| Payment status tracking | HIGH | LOW | P1 | High -- #1 contractor question |
-| Human review UI for OCR | MEDIUM | HIGH | P2 | Medium -- OCR is less useful without it |
-| Profile self-management | MEDIUM | MEDIUM | P2 | Medium -- nice to have, not blocking |
-| Time tracking (manual) | MEDIUM | MEDIUM | P2 | Medium -- some orgs need it, many don't |
-| Jira integration | MEDIUM | MEDIUM | P2 | Medium -- dev-heavy orgs want this |
-| Time-to-invoice matching | MEDIUM | MEDIUM | P2 | Medium -- differentiator, not urgent |
-| Clockify import | LOW | MEDIUM | P2 | Low -- niche need |
-| Notion/Confluence linking | LOW | LOW | P3 | Low -- nice to have |
-| Calendar sync | LOW | MEDIUM | P3 | Low -- nice to have |
-| Meeting scheduling | LOW | MEDIUM | P3 | Low -- nice to have |
-| Portal branding | LOW | LOW | P3 | Low -- polish feature |
+| Stripe subscriptions + billing | HIGH | HIGH | P1 | CRITICAL -- needed for revenue |
+| Linear bidirectional sync | MEDIUM | MEDIUM | P1 | High -- dev orgs using Linear have no option today |
+| Teams approve/reject | HIGH | HIGH | P1 | High -- Teams-first orgs can't use the platform without it |
+| Equipment registry + manual tracking | MEDIUM | MEDIUM | P1 | High -- physical equipment tracking is unserved |
+| AI/OCR credit metering | HIGH | MEDIUM | P1 | High -- usage-based billing for AI features |
+| Feature gating by plan | HIGH | MEDIUM | P1 | High -- enforces monetization |
+| Google Workspace directory import | MEDIUM | MEDIUM | P2 | Medium -- speeds up onboarding but not blocking |
+| InPost ShipX integration | MEDIUM | HIGH | P2 | Medium -- manual tracking works as fallback |
+| Intelligent onboarding wizard | MEDIUM | MEDIUM | P2 | Medium -- nice to have, not blocking |
+| Teams notifications/reminders | MEDIUM | MEDIUM | P2 | Medium -- basic cards before approve/reject |
+| Free trial flow | HIGH | LOW | P2 | Medium -- needed for go-to-market |
+| DPD API integration | LOW | HIGH | P3 | Low -- InPost covers most Polish shipments |
+| UPS API integration | LOW | HIGH | P3 | Low -- international only |
+| Equipment return via portal | LOW | MEDIUM | P3 | Low -- manual process works initially |
+| Periodic Google sync | LOW | MEDIUM | P3 | Low -- one-time import covers initial need |
+| Billing portal + usage dashboard | LOW | LOW | P3 | Low -- Stripe portal handles essentials |
 
 **Priority key:**
-- P1: Must have for v2.0 launch -- without these, v2.0 has no story
-- P2: Should have, add in later v2.0 phases
-- P3: Nice to have, can ship v2.0 without these
+- P1: Must have for v3.0 launch -- revenue generation + core enterprise features
+- P2: Should have, add in later v3.0 phases
+- P3: Nice to have, can ship v3.0 without these
 
 ## Competitor Feature Analysis
 
-| Feature | Deel | Faktura.pl | Manual (Excel+Email) | Contractor Ops v2.0 |
-|---------|------|------------|----------------------|----------------------|
-| Contractor portal | Full portal with login, contracts, invoices, payments | No portal (invoice-focused) | N/A | Full portal with org branding |
-| Invoice submission | Auto-generated from contract terms OR manual upload | Upload/create invoices | Email PDF to accountant | Portal upload + email intake + KSeF pull |
-| E-sign | Built-in (own engine) | No | DocuSign separately | DocuSign + Autenti (dual provider) |
-| OCR parsing | Minimal (structured invoices auto-generated) | Basic field extraction | Manual | Mindee-powered with confidence scores |
-| KSeF integration | Not applicable (global platform) | Yes (invoice tool) | Manual portal login | Native pull + auto-match + compliance |
-| Time tracking | Basic (hours + description) | No | Clockify/Toggl | Manual + Clockify/Jira import |
-| Jira integration | No native Jira | No | N/A | Create issues + status sync + time import |
-| Calendar sync | No | No | Manual calendar entries | Push deadlines + schedule meetings |
-| Approval workflow | Basic approve/reject | No | Email threads | 1-3 level chains with SLA (existing v1.0) |
-| Payment tracking | Real-time with multi-currency | Invoice status only | Bank statement checking | Status tracking linked to payment runs |
-| Audit trail | Yes | Basic | None | Immutable audit log (existing v1.0) |
+| Feature | Deel | Rippling | Manual (Excel+Email) | Contractor Ops v3.0 |
+|---------|------|----------|----------------------|----------------------|
+| Linear integration | No | No | N/A | Bidirectional sync with workflow automation |
+| Teams approve/reject | No (Slack only) | Yes (basic) | Email threads | Full Adaptive Card approval with user-specific views |
+| Google Workspace import | No (own identity) | Yes (native) | Manual user creation | Directory import + group-to-role mapping |
+| Intelligent onboarding | Basic wizard | Yes (connected tools) | N/A | Multi-source import from PM + directory + messaging tools |
+| Equipment tracking | Basic asset list | Yes (full IT asset mgmt) | Spreadsheet | Equipment lifecycle tied to contractor onboarding/offboarding |
+| Courier API tracking | No | No | Manual tracking | InPost + DPD + UPS with auto-status updates |
+| Subscription billing | N/A (usage-based) | N/A (enterprise) | N/A | Stripe subscriptions + AI credit metering |
+| Multi-channel approvals | Slack only | Email + Slack | Email | Slack + Teams (same flow, two channels) |
 
-**Key takeaway:** Deel is the feature leader for contractor portals globally, but has zero KSeF/Polish compliance features. Faktura.pl handles invoicing but has no contractor lifecycle. Contractor Ops v2.0 uniquely combines portal + KSeF + lifecycle in one Polish-market-focused platform.
+**Key takeaway:** Rippling is the closest competitor for enterprise features (directory import, asset management), but they're an HR platform at enterprise pricing ($8+/user/mo). Contractor Ops targets the 10-200 employee sweet spot with Poland-specific courier integrations (InPost) and competitive pricing. No competitor combines PM bidirectional sync + equipment tracking + Polish courier APIs.
 
 ## Complexity Estimates (for Roadmap Planning)
 
 | Module | Estimated Effort | Risk Level | Notes |
 |--------|-----------------|------------|-------|
-| Contractor portal (auth + views) | 3-4 weeks | HIGH | New auth model is the risk. Views are straightforward once auth works |
-| E-sign integration | 2-3 weeks | MEDIUM | Well-documented APIs. Autenti API V2 has Postman collection. DocuSign has JS SDK |
-| OCR invoice parsing | 2-3 weeks | MEDIUM | API integration is easy. Human review UI is the real work |
-| KSeF integration | 3-4 weeks | HIGH | XML schema (FA(3)), government API quirks, auth token management. Test environment available |
-| Time tracking | 2-3 weeks | LOW | Standard CRUD + approval reuse. Straightforward |
-| Jira integration | 2 weeks | MEDIUM | OAuth 2.0 + webhooks. Well-documented but webhook reliability needs handling |
-| Notion/Confluence | 1-2 weeks | LOW | Simple API calls. Link + search + preview |
-| Calendar integration | 2 weeks | MEDIUM | Two providers (Google + Microsoft) OR Cronofy ($139/mo+). Direct integration is cheaper but more work |
-| Integration framework | 1 week | LOW | Shared patterns: OAuth token storage, webhook receiver, retry logic. Build once, reuse for all integrations |
+| Linear integration | 1-2 weeks | LOW | Direct clone of Jira adapter pattern. GraphQL instead of REST, but same webhook pipeline and workflow hooks |
+| Teams integration | 3-4 weeks | HIGH | Azure Bot Service setup, Adaptive Cards, proactive messaging, Teams app manifest. Much more complex than Slack. Azure AD admin consent flow is the biggest risk |
+| Google Workspace import | 2 weeks | MEDIUM | Extends existing Google OAuth. Admin SDK Directory API is well-documented. Import wizard UI is the main effort |
+| Intelligent onboarding | 2-3 weeks | MEDIUM | Multi-source import logic, dedup, preview UI. Depends on connected integrations existing first |
+| Equipment registry + manual tracking | 2 weeks | LOW | Standard CRUD, new data model. No external API dependency for manual tracking |
+| InPost ShipX integration | 2-3 weeks | MEDIUM | OAuth 2.0, shipment creation, Parcel Locker selection. Sandbox available. Well-documented for Polish market |
+| DPD API integration | 2 weeks | MEDIUM | Less documented than InPost. May need partner onboarding process |
+| UPS API integration | 2 weeks | MEDIUM | Well-documented REST API. Developer account approval may take time |
+| Stripe subscriptions | 2-3 weeks | MEDIUM | Products/Prices setup, subscription lifecycle, webhook handling. Well-documented but many edge cases (proration, dunning, trial expiry) |
+| AI credit metering | 1-2 weeks | MEDIUM | New Stripe Meter API (2025+). Create meter, report events, billing credits. Newer API -- less community knowledge |
+| Feature gating | 1 week | LOW | Middleware/guard checking org's plan tier. Configuration-driven |
+| Free trial + billing portal | 1 week | LOW | Stripe handles most of this. Trial config on subscription, portal is a redirect |
 
 ## Sources
 
-- [DocuSign Embedded Signing](https://developers.docusign.com/docs/esign-rest-api/esign101/concepts/embedding/) -- official developer docs
-- [Autenti API V2 Documentation](https://developers.autenti.com/docs/autenti-public-api-v2/overview) -- official developer portal
-- [Autenti API Pricing](https://autenti.com/en/pricing/api) -- pricing page
-- [Mindee Invoice OCR API](https://www.mindee.com/product/invoice-ocr-api) -- product page with accuracy claims
-- [Mindee Pricing](https://www.mindee.com/pricing) -- 250 free pages/mo, $0.01-0.10/page
-- [KSeF 2.0 API Documentation](https://rtcsuite.com/understanding-polands-ksef-2-0-api-documentation-and-fa3-structure-key-changes-and-released-api-documentation/) -- API overview and FA(3) schema analysis
-- [KSeF GitHub Docs](https://github.com/CIRFMF/ksef-docs) -- official KSeF documentation repository
-- [Jira Cloud REST API v3](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-webhooks/) -- webhooks documentation
-- [Jira Webhooks Guide](https://developer.atlassian.com/cloud/jira/platform/webhooks/) -- webhook setup and events
-- [Cronofy Calendar API Pricing](https://www.cronofy.com/api-pricing) -- unified calendar API pricing ($139/mo starter)
-- [Clockify API Documentation](https://docs.clockify.me/) -- REST API for time tracking integration
-- [Deel Contractor Portal Features](https://www.deel.com/blog/features-any-deel-contractor-can-use/) -- competitor analysis
-- [Deel Contractor Invoicing Guide](https://help.letsdeel.com/hc/en-gb/articles/9266361465361-Guide-to-Contractor-Invoices-Adjustments) -- competitor invoice flow
+- [Linear Developers - Webhooks](https://linear.app/developers/webhooks) -- webhook events, payload format, HMAC-SHA256 verification
+- [Linear Developers - GraphQL API](https://linear.app/developers/graphql) -- query/mutation reference for issue operations
+- [Linear Changelog](https://linear.app/changelog/page/2) -- refresh token migration deadline April 2026
+- [Microsoft Teams - Universal Actions for Adaptive Cards](https://learn.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/universal-actions-for-adaptive-cards/overview) -- Action.Execute pattern
+- [Microsoft Teams - Bot Request Approval Sample](https://learn.microsoft.com/en-us/samples/officedev/microsoft-teams-samples/officedev-microsoft-teams-samples-bot-request-approval-nodejs/) -- Node.js approval bot sample
+- [Microsoft Teams - Proactive Messages](https://learn.microsoft.com/en-us/microsoftteams/platform/bots/how-to/conversations/send-proactive-messages) -- ConversationReference pattern
+- [Google Admin SDK Directory API](https://developers.google.com/workspace/admin/directory/v1/guides) -- user/group management
+- [Google Directory API - Manage Users](https://developers.google.com/workspace/admin/directory/v1/guides/manage-users) -- user listing/creation
+- [InPost ShipX API Documentation](https://dokumentacja-inpost.atlassian.net/wiki/spaces/PL/pages/622754/API+ShipX) -- official API docs
+- [InPost Integration](https://inpost.pl/en/integration) -- integration overview + sandbox
+- [Stripe Usage-Based Billing](https://docs.stripe.com/billing/subscriptions/usage-based) -- Meter API, metered pricing
+- [Stripe Billing Credits](https://docs.stripe.com/billing/subscriptions/usage-based/billing-credits) -- credit grants for plan allowances
+- [Stripe Subscriptions - Free Trials](https://docs.stripe.com/billing/subscriptions/trials/free-trials) -- trial period configuration
+- [Stripe Metered Billing Guide (2026)](https://www.buildmvpfast.com/blog/stripe-metered-billing-implementation-guide-saas-2026) -- implementation patterns for new Meter API
+- [Stripe Build Usage-Based Billing for AI](https://docs.stripe.com/get-started/use-cases/usage-based-billing) -- AI startup billing use case
 
 ---
-*Feature research for: Contractor Ops v2.0 Platform Expansion*
-*Researched: 2026-03-23*
+*Feature research for: Contractor Ops v3.0 Enterprise & Monetization*
+*Researched: 2026-04-01*
