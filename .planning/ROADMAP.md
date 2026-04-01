@@ -55,7 +55,7 @@ Full details: `.planning/milestones/v2.0-ROADMAP.md`
 
 **Milestone Goal:** Deep integrations with major project/communication platforms, intelligent organization onboarding via connected tools, physical equipment/shipment tracking tied to contractor lifecycle, and Stripe-based monetization with subscription tiers + AI credit metering.
 
-- [ ] **Phase 28: Stripe Billing Foundation** - Subscription lifecycle, AI credit metering, and webhook-driven billing infrastructure
+- [x] **Phase 28: Stripe Billing Foundation** - Subscription lifecycle, AI credit metering, and webhook-driven billing infrastructure (completed 2026-04-01)
 - [ ] **Phase 29: Linear Integration** - Bidirectional issue sync between workflow tasks and Linear
 - [ ] **Phase 30: Equipment Tracking Foundation** - Equipment registry, contractor assignment, manual shipment tracking, and workflow integration
 - [ ] **Phase 31: Google Workspace Directory Import** - Paginated directory import with group-to-role mapping
@@ -81,7 +81,7 @@ Full details: `.planning/milestones/v2.0-ROADMAP.md`
 Plans:
 - [x] 28-01-PLAN.md — Billing schema, Stripe client, webhook route, tRPC router (BILL-01/02/03/07/08)
 - [x] 28-02-PLAN.md — OCR credit service with atomic deduction and Stripe Meter reporting (BILL-04/05/06)
-- [ ] 28-03-PLAN.md — Billing UI: Settings tab, plan comparison, trial banner, soft-block modal (all BILL reqs)
+- [x] 28-03-PLAN.md — Billing UI: Settings tab, plan comparison, trial banner, soft-block modal (all BILL reqs)
 
 ### Phase 29: Linear Integration
 **Goal**: Teams using Linear get the same bidirectional workflow-to-issue sync that Jira users already have
@@ -230,7 +230,7 @@ Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 �
 | 25. Portal E-Sign Auth Fix | v2.0 | 1/1 | Complete | 2026-03-30 |
 | 26. Calendar Wiring Fixes | v2.0 | 1/1 | Complete | 2026-03-30 |
 | 27. OAuth Callback & OCR Build Fixes | v2.0 | 1/1 | Complete | 2026-04-01 |
-| 28. Stripe Billing Foundation | v3.0 | 2/3 | In Progress|  |
+| 28. Stripe Billing Foundation | v3.0 | 3/3 | Complete   | 2026-04-01 |
 | 29. Linear Integration | v3.0 | 0/3 | Not started | - |
 | 30. Equipment Tracking Foundation | v3.0 | 0/3 | Not started | - |
 | 31. Google Workspace Directory Import | v3.0 | 0/2 | Not started | - |
