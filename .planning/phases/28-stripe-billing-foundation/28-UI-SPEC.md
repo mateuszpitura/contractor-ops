@@ -48,9 +48,11 @@ Exceptions: none
 | Role | Size | Weight | Line Height |
 |------|------|--------|-------------|
 | Body | 14px | 400 (regular) | 1.5 |
-| Label | 14px | 500 (medium) | 1.4 |
+| Label | 14px | 600 (semibold) | 1.4 |
 | Heading | 22px | 600 (semibold) | 1.2 |
 | Display | 28px | 600 (semibold) | 1.2 |
+
+Two declared weights: 400 (regular) for body text and 600 (semibold) for labels, headings, and display. Labels are differentiated from Body by weight alone (semibold vs regular at the same 14px size), creating a clear visual hierarchy without a third weight.
 
 Source: Existing codebase patterns. Headings use `font-display text-[22px] font-semibold leading-tight tracking-tight` throughout the app. Display size (28px) reserved for pricing amounts in plan comparison cards.
 
@@ -126,7 +128,7 @@ The Billing tab is added to the existing Settings page TabsList (after "Integrat
 ### Plan Comparison Grid
 
 Each `PlanCard` contains:
-1. Tier name (Label weight, 14px)
+1. Tier name (Label role, 14px semibold)
 2. Price display: flat fee in Display size (28px semibold), per-seat price in Body (14px muted)
 3. Included seats count
 4. Feature list with check/x icons (lucide `Check` / `X`)
