@@ -16,7 +16,7 @@ v1.0 MVP foundation (shipped 2026-03-23): org setup, RBAC, contractors, contract
 
 v2.0 Platform Expansion adds: contractor self-service portal with magic-link auth and org branding, electronic signatures (DocuSign + Autenti), AI-powered invoice OCR (Claude Vision), KSeF national e-invoicing integration, time tracking with Clockify/Jira import and invoice reconciliation, Jira bidirectional sync, Notion/Confluence doc linking with Cmd+K search, Google/Outlook calendar deadline sync, and a provider-agnostic integration framework with OAuth credential store, webhook pipeline, and health monitoring.
 
-v3.0 Enterprise & Monetization Phase 28 complete: Stripe billing foundation — subscription tiers (Starter/Pro/Enterprise) with Checkout, proration preview, billing portal, idempotent webhooks, 14-day free trial with notifications, OCR credit metering with hard-block at exhaustion, and full billing UI in Settings tab.
+v3.0 Enterprise & Monetization Phase 29 complete: Linear bidirectional integration — Linear adapter with OAuth and HMAC-SHA256 webhook verification, status mapping service (PENDING_MAPPING→CONNECTED flow), issue creation/sync with 30s loop prevention, webhook handler, workflow hooks for automatic issue sync on task transitions, and full UI (provider section, status mapping dialog, issue chip, team selector). Follows same adapter framework pattern as Jira.
 
 ## Requirements
 
@@ -163,4 +163,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-01 after Phase 28 (Stripe Billing Foundation) complete*
+*Last updated: 2026-04-02 after Phase 29 (Linear Integration) complete*
