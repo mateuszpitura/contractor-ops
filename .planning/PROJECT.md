@@ -38,6 +38,12 @@ All 14 product modules delivered: org setup, RBAC, contractors, contracts, docum
 
 **Phase 24 complete** — Jira auto-issue creation wiring (gap closure). Wired `createJiraIssue` fire-and-forget into `workflow.ts` `startRun` — tasks with `jiraEnabled: true` in their template configJson now auto-create Jira issues when a workflow run starts. Follows existing transitionJiraIssue pattern. Closes JIRA-02 requirement.
 
+**Phase 25 complete** — Portal e-sign auth fix (gap closure). Added `getPortalSigningUrl` portalProcedure endpoint so portal contractors can request signing URLs. Wired `EmbeddedSigningModal` with `usePortalAuth` prop. Closes SIGN-02 requirement.
+
+**Phase 26 complete** — Calendar wiring fixes (gap closure). Fixed personal calendar OAuth connect buttons to navigate to provider authorization URL (not callback URL), corrected Outlook adapter slug to `"outlook-calendar"`, wired `createTaskCalendarEvent` fire-and-forget into `startRun`. Closes CAL-01, CAL-02 requirements.
+
+**Phase 27 complete** — OAuth callback & OCR build fixes (gap closure). Added `registerAllAdapters()` to OAuth callback route so adapter registry is populated before `getAdapter()` executes — unblocks all OAuth provider connect flows. Converted react-pdf static CSS imports to dynamic `useEffect` imports — unblocks Next.js production build for OcrReviewPanel. Closes INTG-01, OCR-03 requirements. All v2.0 milestone gaps closed.
+
 ## Requirements
 
 ### Validated — v1.0
