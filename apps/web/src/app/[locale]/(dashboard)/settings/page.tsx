@@ -13,6 +13,7 @@ import { NotificationPreferences } from "@/components/settings/notification-pref
 import { ReminderRulesSection } from "@/components/settings/reminder-rules-section";
 import { IntegrationsTab } from "@/components/settings/integrations-tab";
 import { AuditLogTab } from "@/components/settings/audit-log-tab";
+import { BillingTab } from "@/components/billing/billing-tab";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { usePermissions } from "@/hooks/use-permissions";
@@ -34,6 +35,7 @@ function SettingsContent() {
   );
 
   const canManageIntegrations = can("organization", ["update"]);
+  const canManageBilling = can("organization", ["update"]);
   const canViewAuditLog = can("settings", ["read"]);
 
   return (
@@ -56,6 +58,11 @@ function SettingsContent() {
           {canManageIntegrations && (
             <TabsTrigger value="integrations">
               {t("tabs.integrations")}
+            </TabsTrigger>
+          )}
+          {canManageBilling && (
+            <TabsTrigger value="billing">
+              {t("tabs.billing")}
             </TabsTrigger>
           )}
           {canViewAuditLog && (
@@ -91,6 +98,12 @@ function SettingsContent() {
         {canManageIntegrations && (
           <TabsContent value="integrations" className="mt-6 space-y-8">
             <IntegrationsTab />
+          </TabsContent>
+        )}
+
+        {canManageBilling && (
+          <TabsContent value="billing" className="mt-6 space-y-8">
+            <BillingTab />
           </TabsContent>
         )}
 

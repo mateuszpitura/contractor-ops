@@ -188,7 +188,8 @@
       "approvals": "Approvals",
       "notifications": "Notifications",
       "integrations": "Integrations",
-      "auditLog": "Audit log"
+      "auditLog": "Audit log",
+      "billing": "Billing"
     },
     "saveCta": "Save changes",
     "saving": "Saving...",

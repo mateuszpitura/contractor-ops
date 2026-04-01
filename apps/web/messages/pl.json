@@ -188,7 +188,8 @@
       "approvals": "Akceptacje",
       "notifications": "Powiadomienia",
       "integrations": "Integracje",
-      "auditLog": "Dziennik audytu"
+      "auditLog": "Dziennik audytu",
+      "billing": "Rozliczenia"
     },
     "saveCta": "Zapisz zmiany",
     "saving": "Zapisywanie...",
