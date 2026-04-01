@@ -48,15 +48,19 @@ Exceptions: none
 | Role | Size | Weight | Line Height |
 |------|------|--------|-------------|
 | Body | 14px | 400 (regular) | 1.5 |
-| Label | 14px | 500 (medium) | 1.4 |
+| Label | 14px | 400 (regular) | 1.4 |
 | Heading | 16px | 600 (semibold) | 1.2 |
 | Display | 20px | 600 (semibold) | 1.2 |
+
+Labels are visually distinguished from body text via color (`text-muted-foreground`) or uppercase transform, not via a separate font weight.
 
 Note: Issue identifier text on chips uses JetBrains Mono at 12px / 600 weight (matching existing Jira chip `font-mono text-xs font-semibold`).
 
 ---
 
 ## Color
+
+**Primary visual anchor:** the "Connect Linear" CTA button when disconnected; the status badge + workspace name when connected.
 
 | Role | Value | Usage |
 |------|-------|-------|
