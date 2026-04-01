@@ -59,7 +59,17 @@ v2.0 Platform Expansion adds: contractor self-service portal with magic-link aut
 
 ### Active
 
-(No active requirements — define next milestone with `/gsd:new-milestone`)
+#### Current Milestone: v3.0 Enterprise & Monetization
+
+**Goal:** Deep integrations with major project/communication platforms, intelligent organization onboarding via connected tools, physical equipment/shipment tracking tied to contractor lifecycle, and Stripe-based monetization with subscription tiers + AI credit metering.
+
+**Target features:**
+- Linear bidirectional integration (issue sync, status mapping, webhooks)
+- Teams integration (approve/reject, reminders, alerts — like Slack)
+- Google Workspace integration (directory import, communication)
+- Intelligent org onboarding via connected tools (import wizard for users, projects, statuses)
+- Equipment/shipment tracking with courier APIs (InPost, DPD, UPS) + manual entry, tied to workflows
+- Stripe paywall with subscription tiers (flat + per-seat), AI/OCR credit metering, free trial
 
 ### Out of Scope
 
@@ -151,4 +161,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-01 after v2.0 milestone*
+*Last updated: 2026-04-01 after v3.0 milestone started*
