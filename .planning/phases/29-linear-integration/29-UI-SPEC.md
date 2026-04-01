@@ -1,7 +1,8 @@
 ---
 phase: 29
 slug: linear-integration
-status: draft
+status: approved
+reviewed_at: 2026-04-02
 shadcn_initialized: true
 preset: base-nova
 created: 2026-04-02
@@ -192,8 +193,8 @@ Structure mirrors `JiraIssueChip` with Linear branding per D-08/D-09:
 | Loading | Skeleton: 32x32 icon placeholder + 16px text placeholder + 64px body placeholder |
 | Disconnected | Card with Linear logo, description text, "Connect Linear" primary button |
 | Connected | Card with logo, status badge (emerald), connected workspace name, connection date, token expiry, "Manage" + "Disconnect Linear" outline buttons |
-| Re-auth required | Amber status badge, warning text, "Reconnect" + "Disconnect Linear" buttons |
-| Error | Destructive status badge, error text, "Reconnect" button |
+| Re-auth required | Amber status badge, warning text, "Reconnect Linear" + "Disconnect Linear" buttons |
+| Error | Destructive status badge, error text, "Reconnect Linear" button |
 
 ### Status Mapping Dialog
 
