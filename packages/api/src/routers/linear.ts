@@ -12,6 +12,8 @@ import { router } from "../init.js";
 import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
 import * as E from "../errors.js";
+import { linearGraphQL } from "../services/linear-issue-sync.js";
+import { registerLinearWebhook } from "../services/linear-webhook-handler.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -86,63 +88,48 @@ export const linearRouter = router({
    */
   teams: tenantProcedure.query(async ({ ctx }) => {
     const connection = await loadLinearConnection(ctx.organizationId);
-    const { authHeaders } = buildLinearApiContext(connection.credentialsRef);
+    const { accessToken } = buildLinearApiContext(connection.credentialsRef);
 
-    const query = `{
-      teams {
-        nodes {
-          id
-          name
-          key
-          states {
-            nodes {
-              id
-              name
-              type
-              color
-              position
+    const result = await linearGraphQL<{
+      teams: {
+        nodes: Array<{
+          id: string;
+          name: string;
+          key: string;
+          states: {
+            nodes: Array<{
+              id: string;
+              name: string;
+              type: string;
+              color: string;
+              position: number;
+            }>;
+          };
+        }>;
+      };
+    }>(
+      accessToken,
+      `{
+        teams {
+          nodes {
+            id
+            name
+            key
+            states {
+              nodes {
+                id
+                name
+                type
+                color
+                position
+              }
             }
           }
         }
-      }
-    }`;
+      }`,
+    );
 
-    const response = await fetch("https://api.linear.app/graphql", {
-      method: "POST",
-      headers: authHeaders,
-      body: JSON.stringify({ query }),
-    });
-
-    if (!response.ok) {
-      const text = await response.text();
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: `Failed to fetch Linear teams: ${text}`,
-      });
-    }
-
-    const result = (await response.json()) as {
-      data: {
-        teams: {
-          nodes: Array<{
-            id: string;
-            name: string;
-            key: string;
-            states: {
-              nodes: Array<{
-                id: string;
-                name: string;
-                type: string;
-                color: string;
-                position: number;
-              }>;
-            };
-          }>;
-        };
-      };
-    };
-
-    return result.data.teams.nodes.map((team) => ({
+    return result.teams.nodes.map((team) => ({
       id: team.id,
       name: team.name,
       key: team.key,
@@ -223,6 +210,18 @@ export const linearRouter = router({
             : {}),
         },
       });
+
+      // Fire-and-forget: register webhook for this team if not yet registered
+      const webhooks = (config.webhooks as Record<string, string> | undefined) ?? {};
+      if (!webhooks[input.teamId]) {
+        void registerLinearWebhook(prisma, connection.id, input.teamId).catch(
+          (err) =>
+            console.error(
+              `[Linear] Webhook registration failed for team ${input.teamId}:`,
+              err,
+            ),
+        );
+      }
 
       return { success: true };
     }),

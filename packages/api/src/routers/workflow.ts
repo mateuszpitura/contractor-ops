@@ -15,6 +15,7 @@ import {
   myTasksListSchema,
   jiraTaskConfigSchema,
   calendarTaskConfigSchema,
+  linearTaskConfigSchema,
 } from "@contractor-ops/validators";
 import * as E from "../errors.js";
 import { router } from "../init.js";
@@ -730,6 +731,21 @@ export const workflowRouter = router({
           }
         }
 
+        // Build map of task run IDs eligible for Linear issue creation
+        const linearEligibleTaskRuns = new Map<string, { teamId: string; teamKey: string }>();
+        for (const taskTemplate of template.tasks) {
+          const linearParsed = linearTaskConfigSchema.safeParse(taskTemplate.configJson);
+          if (linearParsed.success && linearParsed.data.linearEnabled && linearParsed.data.linearTeamId) {
+            const runId = taskIdMap.get(taskTemplate.id);
+            if (runId) {
+              linearEligibleTaskRuns.set(runId, {
+                teamId: linearParsed.data.linearTeamId,
+                teamKey: linearParsed.data.linearTeamKey ?? "",
+              });
+            }
+          }
+        }
+
         // Build map of task run IDs to their calendar config for calendar event creation
         const calendarConfigMap = new Map<string, import("@contractor-ops/validators").CalendarTaskConfig>();
         for (const taskTemplate of template.tasks) {
@@ -746,6 +762,7 @@ export const workflowRouter = router({
           run: fullRun,
           contractorName: contractor.legalName ?? contractor.displayName ?? "Unknown",
           jiraEligibleTaskRunIds,
+          linearEligibleTaskRuns,
           calendarConfigMap,
           calendarTaskCount: calendarConfigMap.size,
           contractName: contract?.title ?? "",
@@ -812,6 +829,56 @@ export const workflowRouter = router({
           } catch (err) {
             console.error(
               "[workflow/startRun] Jira issue creation setup failed:",
+              err,
+            );
+          }
+        })();
+      }
+
+      // Fire-and-forget: create Linear issues for linear-enabled tasks (non-blocking)
+      const todoLinearTasks = run.run.tasks.filter(
+        (t) => t.status === "TODO" && run.linearEligibleTaskRuns.has(t.id),
+      );
+      if (todoLinearTasks.length > 0) {
+        void (async () => {
+          try {
+            const { createLinearIssue } = await import(
+              "../services/linear-issue-sync.js"
+            );
+            const linearConnection =
+              await prisma.integrationConnection.findFirst({
+                where: {
+                  organizationId: ctx.organizationId,
+                  provider: "LINEAR",
+                  status: "CONNECTED",
+                },
+                select: { id: true },
+              });
+            if (linearConnection) {
+              for (const task of todoLinearTasks) {
+                const linearConfig = run.linearEligibleTaskRuns.get(task.id);
+                if (linearConfig) {
+                  createLinearIssue(prisma, {
+                    organizationId: ctx.organizationId,
+                    connectionId: linearConnection.id,
+                    taskRunId: task.id,
+                    title: task.title,
+                    description: task.description ?? task.title,
+                    assigneeEmail: undefined, // Resolved separately if needed
+                    teamId: linearConfig.teamId,
+                    teamKey: linearConfig.teamKey,
+                  }).catch((err) =>
+                    console.error(
+                      `[workflow/startRun] Linear issue creation failed for task ${task.id}:`,
+                      err,
+                    ),
+                  );
+                }
+              }
+            }
+          } catch (err) {
+            console.error(
+              "[workflow/startRun] Linear issue creation setup failed:",
               err,
             );
           }
@@ -1227,6 +1294,21 @@ export const workflowRouter = router({
         })();
       }
 
+      // Fire-and-forget outbound Linear sync (non-blocking)
+      void (async () => {
+        try {
+          const { syncTaskStatusToLinear } = await import(
+            "../services/linear-issue-sync.js"
+          );
+          await syncTaskStatusToLinear(prisma, result.id, "DONE");
+        } catch (err) {
+          console.error(
+            "[workflow/completeTask] Outbound Linear sync failed:",
+            err,
+          );
+        }
+      })();
+
       return plain(result);
     }),
 
@@ -1333,6 +1415,21 @@ export const workflowRouter = router({
           }
         })();
       }
+
+      // Fire-and-forget outbound Linear sync (non-blocking)
+      void (async () => {
+        try {
+          const { syncTaskStatusToLinear } = await import(
+            "../services/linear-issue-sync.js"
+          );
+          await syncTaskStatusToLinear(prisma, result.id, "SKIPPED");
+        } catch (err) {
+          console.error(
+            "[workflow/skipTask] Outbound Linear sync failed:",
+            err,
+          );
+        }
+      })();
 
       return plain(result);
     }),
