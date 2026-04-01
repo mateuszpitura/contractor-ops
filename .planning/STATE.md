@@ -4,12 +4,12 @@ milestone: v2.0
 milestone_name: Platform Expansion
 status: Milestone complete
 stopped_at: Completed 26-01-PLAN.md
-last_updated: "2026-03-30T21:54:44.600Z"
+last_updated: "2026-04-01T15:13:47.194Z"
 progress:
-  total_phases: 15
-  completed_phases: 15
-  total_plans: 51
-  completed_plans: 51
+  total_phases: 16
+  completed_phases: 16
+  total_plans: 52
+  completed_plans: 52
 ---
 
 # Project State
@@ -19,11 +19,11 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-23)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 26 — calendar-wiring-fixes
+**Current focus:** Phase 27 — oauth-callback-ocr-build-fixes
 
 ## Current Position
 
-Phase: 26
+Phase: 27
 Plan: Not started
 
 ## Performance Metrics

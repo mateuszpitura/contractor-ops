@@ -308,7 +308,7 @@ Plans:
   2. `OcrReviewPanel` (admin side-by-side invoice review) renders without Next.js build errors from react-pdf CSS imports
 
 Plans:
-- [ ] 27-01-PLAN.md — Add registerAllAdapters() to OAuth callback route + fix react-pdf CSS build
+- [x] 27-01-PLAN.md — Add registerAllAdapters() to OAuth callback route + fix react-pdf CSS build
 
 ## Progress
 
@@ -343,4 +343,4 @@ Phases execute in numeric order: 12 -> 13 -> 14 -> 15 -> 16 -> 17 -> 18 -> 19 ->
 | 24. Jira Auto-Issue Creation Wiring | v2.0 | 1/1 | Complete    | 2026-03-30 |
 | 25. Portal E-Sign Auth Fix | v2.0 | 1/1 | Complete    | 2026-03-30 |
 | 26. Calendar Wiring Fixes | v2.0 | 1/1 | Complete    | 2026-03-30 |
-| 27. OAuth Callback & OCR Build Fixes | v2.0 | 0/1 | Pending | — |
+| 27. OAuth Callback & OCR Build Fixes | v2.0 | 1/1 | Complete    | 2026-04-01 |
