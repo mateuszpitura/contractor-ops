@@ -84,7 +84,7 @@ export async function GET(
       adapter.displayName;
 
     const connectionData = {
-      status: "CONNECTED" as const,
+      status: (provider === "linear" ? "PENDING_MAPPING" : "CONNECTED") as never,
       displayName,
       credentialsRef: encrypted,
       connectedByUserId: state.userId,

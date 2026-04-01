@@ -312,3 +312,22 @@ export type {
   JiraStatusMapping,
   JiraIssueMetadata,
 } from "./jira.js";
+
+export {
+  linearStateTypeEnum,
+  linearWebhookPayloadSchema,
+  linearTaskConfigSchema,
+  linearStatusMappingEntrySchema,
+  linearStatusMappingSchema,
+  linearIssueMetadataSchema,
+  saveLinearStatusMappingInputSchema,
+  saveLinearTaskConfigInputSchema,
+} from "./linear.js";
+export type {
+  LinearStateType,
+  LinearWebhookPayload,
+  LinearTaskConfig,
+  LinearStatusMappingEntry,
+  LinearStatusMapping,
+  LinearIssueMetadata,
+} from "./linear.js";

@@ -11,6 +11,7 @@ import { NotionAdapter } from "./notion-adapter.js";
 import { ConfluenceAdapter } from "./confluence-adapter.js";
 import { GoogleCalendarAdapter } from "./google-calendar-adapter.js";
 import { OutlookCalendarAdapter } from "./outlook-calendar-adapter.js";
+import { LinearAdapter } from "./linear-adapter.js";
 import { ClaudeOcrAdapter } from "./claude-ocr-adapter.js";
 
 // ---------------------------------------------------------------------------
@@ -37,6 +38,7 @@ export function registerAllAdapters(): void {
   registerAdapter(new ConfluenceAdapter());
   registerAdapter(new GoogleCalendarAdapter());
   registerAdapter(new OutlookCalendarAdapter());
+  registerAdapter(new LinearAdapter());
   registerAdapter(new ClaudeOcrAdapter() as unknown as IntegrationProviderAdapter);
 
   registered = true;
