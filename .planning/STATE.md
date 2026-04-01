@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Enterprise & Monetization
-status: planning
-stopped_at: Phase 28 plans verified (3 plans, 3 waves)
-last_updated: "2026-04-01T18:58:24.446Z"
-last_activity: 2026-04-01 — v3.0 roadmap created (8 phases, 43 requirements mapped)
+status: executing
+stopped_at: Completed 28-01-PLAN.md
+last_updated: "2026-04-01T19:17:13.707Z"
+last_activity: 2026-04-01
 progress:
   total_phases: 8
   completed_phases: 0
   total_plans: 3
-  completed_plans: 0
+  completed_plans: 1
   percent: 0
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-01)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 28 - Stripe Billing Foundation
+**Current focus:** Phase 28 — stripe-billing-foundation
 
 ## Current Position
 
-Phase: 28 of 35 (Stripe Billing Foundation)
-Plan: 0 of 3 in current phase
-Status: Ready to plan
-Last activity: 2026-04-01 — v3.0 roadmap created (8 phases, 43 requirements mapped)
+Phase: 28 (stripe-billing-foundation) — EXECUTING
+Plan: 2 of 3
+Status: Ready to execute
+Last activity: 2026-04-01
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -48,6 +48,7 @@ Progress: [░░░░░░░░░░] 0%
 | - | - | - | - |
 
 *Updated after each plan completion*
+| Phase 28 P01 | 13min | 2 tasks | 16 files |
 
 ## Accumulated Context
 
@@ -62,6 +63,8 @@ Recent decisions affecting current work:
 - [v3.0]: Stripe billing is separate bounded context — dedicated webhook route, not through integration adapter pipeline
 - [v3.0]: Equipment tracking is separate bounded context — CourierClient interface, not BaseAdapter
 - [v3.0]: Teams requires MessagingProvider abstraction — refactor notification-service.ts away from direct Slack calls
+- [Phase 28]: Stripe SDK v21 uses apiVersion 2026-03-25.dahlia; adapted type interfaces for removed period fields
+- [Phase 28]: billing-constants.ts is single source of truth for all billing constants (TIER_CREDIT_ALLOWANCE, TRIAL_CREDIT_ALLOWANCE, PRICE_TO_TIER_MAP)
 
 ### Pending Todos
 
@@ -75,6 +78,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-01T18:58:24.444Z
-Stopped at: Phase 28 plans verified (3 plans, 3 waves)
-Resume file: .planning/phases/28-stripe-billing-foundation/28-01-PLAN.md
+Last session: 2026-04-01T19:17:13.705Z
+Stopped at: Completed 28-01-PLAN.md
+Resume file: None

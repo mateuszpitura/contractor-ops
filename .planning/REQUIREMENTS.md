@@ -57,14 +57,14 @@ Requirements for v3.0 Enterprise & Monetization milestone. Each maps to roadmap 
 
 ### Stripe Billing
 
-- [ ] **BILL-01**: System manages subscription tiers (Starter/Pro/Enterprise) with flat + per-seat pricing via Stripe
-- [ ] **BILL-02**: Admin can upgrade or downgrade plan with proration preview
-- [ ] **BILL-03**: New org starts with free trial (1 org / 2 users, limited features) with trial-ending notifications
+- [x] **BILL-01**: System manages subscription tiers (Starter/Pro/Enterprise) with flat + per-seat pricing via Stripe
+- [x] **BILL-02**: Admin can upgrade or downgrade plan with proration preview
+- [x] **BILL-03**: New org starts with free trial (1 org / 2 users, limited features) with trial-ending notifications
 - [ ] **BILL-04**: System meters AI/OCR usage per org via Stripe Meters and reports events on each OCR call
 - [ ] **BILL-05**: Each plan tier includes N free OCR credits/month with configurable auto-renewal top-up bundles
 - [ ] **BILL-06**: System hard-blocks OCR when credits exhausted (with upgrade/top-up prompt)
-- [ ] **BILL-07**: Stripe webhook events drive internal subscription state with database-level idempotency
-- [ ] **BILL-08**: Admin can access Stripe-hosted billing portal for payment method, invoices, and cancellation
+- [x] **BILL-07**: Stripe webhook events drive internal subscription state with database-level idempotency
+- [x] **BILL-08**: Admin can access Stripe-hosted billing portal for payment method, invoices, and cancellation
 - [ ] **BILL-09**: Middleware gates features by org's active subscription tier with graceful upgrade prompts
 - [ ] **BILL-10**: Admin sees usage dashboard with current plan, seat count, OCR credits used/remaining, and billing date
 
@@ -139,14 +139,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 | EQUIP-09 | Phase 30 | Pending |
 | EQUIP-10 | Phase 30 | Pending |
 | EQUIP-11 | Phase 33 | Pending |
-| BILL-01 | Phase 28 | Pending |
-| BILL-02 | Phase 28 | Pending |
-| BILL-03 | Phase 28 | Pending |
+| BILL-01 | Phase 28 | Complete |
+| BILL-02 | Phase 28 | Complete |
+| BILL-03 | Phase 28 | Complete |
 | BILL-04 | Phase 28 | Pending |
 | BILL-05 | Phase 28 | Pending |
 | BILL-06 | Phase 28 | Pending |
-| BILL-07 | Phase 28 | Pending |
-| BILL-08 | Phase 28 | Pending |
+| BILL-07 | Phase 28 | Complete |
+| BILL-08 | Phase 28 | Complete |
 | BILL-09 | Phase 35 | Pending |
 | BILL-10 | Phase 35 | Pending |
 
