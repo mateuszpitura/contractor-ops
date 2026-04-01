@@ -50,21 +50,14 @@ export function CreditUsageCard() {
     );
   }
 
-  // Derive credit info from subscription tier
-  // Until a dedicated getCreditBalance endpoint exists, we show the tier allowance
-  const TIER_ALLOWANCES: Record<string, number> = {
-    STARTER: 20,
-    PRO: 100,
-    ENTERPRISE: 500,
-  };
-  const allowance =
-    subscription.status === "TRIALING"
-      ? 5
-      : (TIER_ALLOWANCES[subscription.tier] ?? 0);
+  // Fetch real credit balance from the backend ledger
+  const { data: creditBalance } = useQuery(
+    trpc.billing.getCreditBalance.queryOptions(),
+  );
 
-  // We don't yet have a credit balance endpoint, so show allowance info only
-  const used = 0; // Placeholder until getCreditBalance is exposed via tRPC
-  const remaining = allowance - used;
+  const used = creditBalance?.used ?? 0;
+  const allowance = creditBalance?.allowance ?? 0;
+  const remaining = creditBalance?.balance ?? 0;
   const percentUsed = allowance > 0 ? (used / allowance) * 100 : 0;
   const isLow = allowance > 0 && remaining / allowance < 0.2;
 
