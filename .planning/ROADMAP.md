@@ -94,12 +94,12 @@ Plans:
   3. Starting a workflow task with Linear enabled auto-creates a Linear issue with correct team, title, description, and assignee
   4. Status changes flow bidirectionally between Linear and workflow tasks without creating sync loops
   5. Linked Linear issues display as clickable chips with live status badges on workflow task views
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 29-01: TBD
-- [ ] 29-02: TBD
-- [ ] 29-03: TBD
+- [ ] 29-01-PLAN.md — Prisma enum, LinearAdapter, Zod validators, tRPC router shell, env config (LIN-01)
+- [ ] 29-02-PLAN.md — Status mapping service, issue sync, webhook handler, workflow hooks (LIN-02/03/04/05)
+- [ ] 29-03-PLAN.md — Provider section UI, status mapping dialog, issue chip, i18n (LIN-02/06)
 
 ### Phase 30: Equipment Tracking Foundation
 **Goal**: Organizations can track physical equipment assigned to contractors with manual shipment entry and lifecycle-aware workflow steps
@@ -231,7 +231,7 @@ Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 �
 | 25. Portal E-Sign Auth Fix | v2.0 | 1/1 | Complete | 2026-03-30 |
 | 26. Calendar Wiring Fixes | v2.0 | 1/1 | Complete | 2026-03-30 |
 | 27. OAuth Callback & OCR Build Fixes | v2.0 | 1/1 | Complete | 2026-04-01 |
-| 28. Stripe Billing Foundation | v3.0 | 4/4 | Complete   | 2026-04-01 |
+| 28. Stripe Billing Foundation | v3.0 | 4/4 | Complete    | 2026-04-01 |
 | 29. Linear Integration | v3.0 | 0/3 | Not started | - |
 | 30. Equipment Tracking Foundation | v3.0 | 0/3 | Not started | - |
 | 31. Google Workspace Directory Import | v3.0 | 0/2 | Not started | - |
