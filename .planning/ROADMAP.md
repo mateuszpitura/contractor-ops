@@ -232,7 +232,7 @@ Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 �
 | 26. Calendar Wiring Fixes | v2.0 | 1/1 | Complete | 2026-03-30 |
 | 27. OAuth Callback & OCR Build Fixes | v2.0 | 1/1 | Complete | 2026-04-01 |
 | 28. Stripe Billing Foundation | v3.0 | 4/4 | Complete    | 2026-04-01 |
-| 29. Linear Integration | v3.0 | 3/3 | Complete   | 2026-04-01 |
+| 29. Linear Integration | v3.0 | 3/3 | Complete    | 2026-04-01 |
 | 30. Equipment Tracking Foundation | v3.0 | 0/3 | Not started | - |
 | 31. Google Workspace Directory Import | v3.0 | 0/2 | Not started | - |
 | 32. Teams Integration | v3.0 | 0/3 | Not started | - |
