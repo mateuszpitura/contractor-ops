@@ -9,7 +9,7 @@ Requirements for v2.0 Platform Expansion. Each maps to roadmap phases.
 
 ### Integration Framework
 
-- [x] **INTG-01**: Admin can connect third-party services via OAuth 2.0 with encrypted token storage
+- [ ] **INTG-01**: Admin can connect third-party services via OAuth 2.0 with encrypted token storage
 - [x] **INTG-02**: System receives and routes webhooks from external services (Jira, DocuSign, Autenti, KSeF)
 - [x] **INTG-03**: Admin can view integration connection health and sync status per provider
 
@@ -43,7 +43,7 @@ Requirements for v2.0 Platform Expansion. Each maps to roadmap phases.
 
 - [x] **OCR-01**: System auto-extracts fields (NIP, invoice number, date, amount, line items) from uploaded PDF
 - [x] **OCR-02**: Extracted fields display confidence scores per field
-- [x] **OCR-03**: User can review OCR results in side-by-side view (PDF + extracted fields with edit-in-place)
+- [ ] **OCR-03**: User can review OCR results in side-by-side view (PDF + extracted fields with edit-in-place)
 
 ### KSeF Integration
 
@@ -113,7 +113,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INTG-01 | Phase 12 | Complete |
+| INTG-01 | Phase 27 | Pending |
 | INTG-02 | Phase 12 | Complete |
 | INTG-03 | Phase 12 | Complete |
 | PORT-01 | Phase 13 | Complete |
@@ -135,7 +135,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SIGN-04 | Phase 15 | Complete |
 | OCR-01 | Phase 23 | Complete |
 | OCR-02 | Phase 16 | Complete |
-| OCR-03 | Phase 16 | Complete |
+| OCR-03 | Phase 27 | Pending |
 | KSEF-01 | Phase 17 | Complete |
 | KSEF-02 | Phase 17 | Complete |
 | KSEF-03 | Phase 17 | Complete |
@@ -152,8 +152,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 **Coverage:**
 - v2.0 requirements: 35 total
 - Mapped to phases: 35
-- Complete: 32
-- Pending (gap closure): 3 (SIGN-02, CAL-01, CAL-02)
+- Complete: 33
+- Pending (gap closure): 2 (INTG-01, OCR-03)
 - Unmapped: 0
 
 ---

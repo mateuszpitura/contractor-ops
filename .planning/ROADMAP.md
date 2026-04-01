@@ -298,6 +298,18 @@ Plans:
 Plans:
 - [x] 26-01-PLAN.md — Fix OAuth connect URL/scopes/extraAuthParams + wire createTaskCalendarEvent into startRun
 
+### Phase 27: OAuth Callback & OCR Build Fixes
+**Goal**: OAuth provider connect flows complete successfully and admin OCR review panel builds in production
+**Depends on**: Phase 12 (Integration Foundation), Phase 16 (OCR Invoice Parsing)
+**Requirements**: INTG-01, OCR-03
+**Gap Closure:** Closes INTG-01 OAuth callback wiring gap + OCR-03 react-pdf build failure + integration gaps (Phase 12→All OAuth providers, Phase 16→Next.js build) + broken "Personal calendar OAuth connect" flow
+**Success Criteria** (what must be TRUE):
+  1. `/api/oauth/[provider]/callback/route.ts` calls `registerAllAdapters()` before `getAdapter(provider)` — OAuth connect flows store credentials and redirect with success status
+  2. `OcrReviewPanel` (admin side-by-side invoice review) renders without Next.js build errors from react-pdf CSS imports
+
+Plans:
+- [ ] 27-01-PLAN.md — Add registerAllAdapters() to OAuth callback route + fix react-pdf CSS build
+
 ## Progress
 
 **Execution Order:**
@@ -331,3 +343,4 @@ Phases execute in numeric order: 12 -> 13 -> 14 -> 15 -> 16 -> 17 -> 18 -> 19 ->
 | 24. Jira Auto-Issue Creation Wiring | v2.0 | 1/1 | Complete    | 2026-03-30 |
 | 25. Portal E-Sign Auth Fix | v2.0 | 1/1 | Complete    | 2026-03-30 |
 | 26. Calendar Wiring Fixes | v2.0 | 1/1 | Complete    | 2026-03-30 |
+| 27. OAuth Callback & OCR Build Fixes | v2.0 | 0/1 | Pending | — |
