@@ -3,6 +3,7 @@ import type { Prisma } from "@contractor-ops/db/generated/prisma/client";
 import { getQStashClient } from "@contractor-ops/integrations/services/qstash-client";
 import { extractInvoice } from "@contractor-ops/integrations/services/ocr-service";
 import { createPresignedDownloadUrl } from "./r2.js";
+import { checkAndDeductCredit } from "./credit-service.js";
 
 // ---------------------------------------------------------------------------
 // OCR Extraction Orchestrator
@@ -21,7 +22,19 @@ export async function triggerOcrExtraction(params: {
   documentId: string;
   storageKey: string;
   invoiceId?: string;
-}): Promise<{ extractionId: string }> {
+}): Promise<
+  | { extractionId: string }
+  | { error: "no_subscription" | "credits_exhausted"; remaining: number }
+> {
+  // Credit check per BILL-06 -- hard-block when exhausted
+  const creditResult = await checkAndDeductCredit(params.organizationId);
+  if (!creditResult.allowed) {
+    return {
+      error: creditResult.reason ?? "credits_exhausted",
+      remaining: creditResult.remaining,
+    };
+  }
+
   const extraction = await prisma.ocrExtraction.create({
     data: {
       organizationId: params.organizationId,

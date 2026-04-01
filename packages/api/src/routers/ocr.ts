@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import { router } from "../init.js";
 import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
@@ -65,6 +66,17 @@ export const ocrRouter = router({
         storageKey: input.storageKey,
         invoiceId: input.invoiceId,
       });
+
+      if ("error" in result) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message:
+            result.error === "credits_exhausted"
+              ? "OCR credits exhausted"
+              : "No active subscription",
+          cause: { reason: result.error, remaining: result.remaining },
+        });
+      }
 
       return result;
     }),
@@ -173,6 +185,17 @@ export const ocrRouter = router({
         storageKey: input.storageKey,
         invoiceId: input.invoiceId,
       });
+
+      if ("error" in result) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message:
+            result.error === "credits_exhausted"
+              ? "OCR credits exhausted"
+              : "No active subscription",
+          cause: { reason: result.error, remaining: result.remaining },
+        });
+      }
 
       return result;
     }),
