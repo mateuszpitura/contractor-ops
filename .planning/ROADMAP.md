@@ -4,6 +4,7 @@
 
 - ✅ **v1.0 MVP** — Phases 1-11 (shipped 2026-03-23)
 - ✅ **v2.0 Platform Expansion** — Phases 12-27 (shipped 2026-04-01)
+- 🚧 **v3.0 Enterprise & Monetization** — Phases 28-35 (in progress)
 
 ## Phases
 
@@ -50,7 +51,155 @@ Full details: `.planning/milestones/v2.0-ROADMAP.md`
 
 </details>
 
+### 🚧 v3.0 Enterprise & Monetization (In Progress)
+
+**Milestone Goal:** Deep integrations with major project/communication platforms, intelligent organization onboarding via connected tools, physical equipment/shipment tracking tied to contractor lifecycle, and Stripe-based monetization with subscription tiers + AI credit metering.
+
+- [ ] **Phase 28: Stripe Billing Foundation** - Subscription lifecycle, AI credit metering, and webhook-driven billing infrastructure
+- [ ] **Phase 29: Linear Integration** - Bidirectional issue sync between workflow tasks and Linear
+- [ ] **Phase 30: Equipment Tracking Foundation** - Equipment registry, contractor assignment, manual shipment tracking, and workflow integration
+- [ ] **Phase 31: Google Workspace Directory Import** - Paginated directory import with group-to-role mapping
+- [ ] **Phase 32: Teams Integration** - Approve/reject from Teams Adaptive Cards, reminders, and activity alerts
+- [ ] **Phase 33: InPost Courier Integration** - First courier API with Parcel Locker selection and auto-status tracking
+- [ ] **Phase 34: Intelligent Onboarding Wizard** - Cross-tool import orchestrator with preview, dedup, and batch confirm
+- [ ] **Phase 35: Feature Gating + DPD/UPS + Billing Polish** - Paywall activation, remaining couriers, usage dashboard
+
+## Phase Details
+
+### Phase 28: Stripe Billing Foundation
+**Goal**: Organizations have working subscription billing with AI credit metering before any other v3.0 feature ships
+**Depends on**: Nothing (independent foundation)
+**Requirements**: BILL-01, BILL-02, BILL-03, BILL-04, BILL-05, BILL-06, BILL-07, BILL-08
+**Success Criteria** (what must be TRUE):
+  1. Admin can subscribe org to a plan (Starter/Pro/Enterprise) and see the subscription reflected in the app immediately
+  2. New org starts with a free trial that shows trial status and days remaining, with warning notifications at 7/3/1 days
+  3. Each OCR call records usage against the org's AI credit allowance, and OCR is hard-blocked with an upgrade prompt when credits are exhausted
+  4. Stripe webhook events (subscription changes, payment failures, trial endings) update internal state idempotently without race conditions
+  5. Admin can access Stripe-hosted billing portal to manage payment methods, view invoices, and cancel subscription
+**Plans**: TBD
+
+Plans:
+- [ ] 28-01: TBD
+- [ ] 28-02: TBD
+- [ ] 28-03: TBD
+
+### Phase 29: Linear Integration
+**Goal**: Teams using Linear get the same bidirectional workflow-to-issue sync that Jira users already have
+**Depends on**: Nothing (uses existing adapter framework)
+**Requirements**: LIN-01, LIN-02, LIN-03, LIN-04, LIN-05, LIN-06
+**Success Criteria** (what must be TRUE):
+  1. Admin can connect Linear workspace via OAuth and see connection status in integrations settings
+  2. Admin can map Linear workflow states to internal task statuses per team
+  3. Starting a workflow task with Linear enabled auto-creates a Linear issue with correct team, title, description, and assignee
+  4. Status changes flow bidirectionally between Linear and workflow tasks without creating sync loops
+  5. Linked Linear issues display as clickable chips with live status badges on workflow task views
+**Plans**: TBD
+
+Plans:
+- [ ] 29-01: TBD
+- [ ] 29-02: TBD
+- [ ] 29-03: TBD
+
+### Phase 30: Equipment Tracking Foundation
+**Goal**: Organizations can track physical equipment assigned to contractors with manual shipment entry and lifecycle-aware workflow steps
+**Depends on**: Nothing (independent domain)
+**Requirements**: EQUIP-01, EQUIP-02, EQUIP-03, EQUIP-04, EQUIP-08, EQUIP-09, EQUIP-10
+**Success Criteria** (what must be TRUE):
+  1. Admin can create, edit, and manage equipment items with type, serial number, status, and assignment to contractors
+  2. Admin can assign and unassign equipment to contractors with full assignment history visible in audit trail
+  3. Contractor profile shows an Equipment tab with assigned items and their current shipment status
+  4. Admin can create a shipment with carrier, tracking number, and expected delivery date, and shipment progress displays as a timeline
+  5. Onboarding workflow auto-creates "ship equipment" shipment and offboarding triggers return request, with tasks auto-completing on target shipment status
+**Plans**: TBD
+**UI hint**: yes
+
+Plans:
+- [ ] 30-01: TBD
+- [ ] 30-02: TBD
+- [ ] 30-03: TBD
+
+### Phase 31: Google Workspace Directory Import
+**Goal**: Organizations using Google Workspace can import their team directory into the platform with role mapping
+**Depends on**: Nothing (extends existing Google OAuth)
+**Requirements**: GOOG-01, GOOG-02, GOOG-03, GOOG-04, GOOG-05
+**Success Criteria** (what must be TRUE):
+  1. Admin can connect Google Workspace with Admin SDK Directory API scopes via OAuth
+  2. Admin can preview Google Workspace users with name, email, department, and org unit before importing
+  3. Admin can selectively import users as org members with role assignment, including mapping Google Workspace groups to internal RBAC roles
+  4. System periodically syncs the directory to detect new hires and flag departures without auto-deleting anyone
+**Plans**: TBD
+**UI hint**: yes
+
+Plans:
+- [ ] 31-01: TBD
+- [ ] 31-02: TBD
+
+### Phase 32: Teams Integration
+**Goal**: Organizations using Microsoft Teams can receive notifications and approve/reject invoices directly from Teams
+**Depends on**: Nothing (uses existing adapter framework; messaging abstraction refactors Slack delivery)
+**Requirements**: TEAM-01, TEAM-02, TEAM-03, TEAM-04, TEAM-05, TEAM-06
+**Success Criteria** (what must be TRUE):
+  1. Admin can connect Teams workspace via Azure AD OAuth with bot registration and configure which channels receive which notification types
+  2. Activity alerts (invoice received, contract expiring, payment completed) appear in configured Teams channels as Adaptive Cards
+  3. Manager can approve or reject invoices directly from a Teams Adaptive Card without opening the web app
+  4. Approvers receive proactive DM reminders in Teams for overdue approval items
+**Plans**: TBD
+**UI hint**: yes
+
+Plans:
+- [ ] 32-01: TBD
+- [ ] 32-02: TBD
+- [ ] 32-03: TBD
+
+### Phase 33: InPost Courier Integration
+**Goal**: Organizations can create InPost shipments with Parcel Locker selection and get automatic delivery status tracking
+**Depends on**: Phase 30 (equipment tracking foundation and CourierClient interface)
+**Requirements**: EQUIP-05, EQUIP-11
+**Success Criteria** (what must be TRUE):
+  1. Admin can create an InPost shipment with Parcel Locker selection via the InPost Geowidget and the shipment status updates automatically via ShipX API
+  2. Contractor can initiate equipment return via the portal and receive a shipping label
+**Plans**: TBD
+**UI hint**: yes
+
+Plans:
+- [ ] 33-01: TBD
+
+### Phase 34: Intelligent Onboarding Wizard
+**Goal**: New organizations can bootstrap their account by importing team members, projects, and statuses from connected tools in one guided flow
+**Depends on**: Phase 29 (Linear), Phase 31 (Google Workspace), Phase 32 (Teams) for source data availability
+**Requirements**: ONBD-01, ONBD-02, ONBD-03, ONBD-04, ONBD-05
+**Success Criteria** (what must be TRUE):
+  1. User sees source selection during onboarding offering connected tools (Jira, Linear, Google Workspace, Slack) as import sources
+  2. System imports team members from selected tools with email-based deduplication across sources
+  3. System imports projects and statuses from PM tools (Jira, Linear) to pre-configure workflow templates
+  4. User can preview all imported data with diff indicators (new/duplicate/conflict) and batch confirm, skip, or edit before committing
+  5. Import runs async with progress tracking, and user can retry individual failed items without re-importing everything
+**Plans**: TBD
+**UI hint**: yes
+
+Plans:
+- [ ] 34-01: TBD
+- [ ] 34-02: TBD
+
+### Phase 35: Feature Gating + DPD/UPS + Billing Polish
+**Goal**: Paywall is enforced per subscription tier, remaining courier integrations ship, and billing UX is polished for launch
+**Depends on**: Phase 28 (billing foundation), Phase 30 (courier interface), Phase 33 (proven CourierClient pattern)
+**Requirements**: BILL-09, BILL-10, EQUIP-06, EQUIP-07
+**Success Criteria** (what must be TRUE):
+  1. Middleware gates features by org's active subscription tier with graceful upgrade prompts that name the specific feature and required plan
+  2. Admin sees a usage dashboard showing current plan, seat count, OCR credits used/remaining, and next billing date
+  3. DPD and UPS shipments can be created and tracked through the same equipment shipment flow as InPost
+**Plans**: TBD
+**UI hint**: yes
+
+Plans:
+- [ ] 35-01: TBD
+- [ ] 35-02: TBD
+
 ## Progress
+
+**Execution Order:**
+Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 → 35
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -81,3 +230,11 @@ Full details: `.planning/milestones/v2.0-ROADMAP.md`
 | 25. Portal E-Sign Auth Fix | v2.0 | 1/1 | Complete | 2026-03-30 |
 | 26. Calendar Wiring Fixes | v2.0 | 1/1 | Complete | 2026-03-30 |
 | 27. OAuth Callback & OCR Build Fixes | v2.0 | 1/1 | Complete | 2026-04-01 |
+| 28. Stripe Billing Foundation | v3.0 | 0/3 | Not started | - |
+| 29. Linear Integration | v3.0 | 0/3 | Not started | - |
+| 30. Equipment Tracking Foundation | v3.0 | 0/3 | Not started | - |
+| 31. Google Workspace Directory Import | v3.0 | 0/2 | Not started | - |
+| 32. Teams Integration | v3.0 | 0/3 | Not started | - |
+| 33. InPost Courier Integration | v3.0 | 0/1 | Not started | - |
+| 34. Intelligent Onboarding Wizard | v3.0 | 0/2 | Not started | - |
+| 35. Feature Gating + DPD/UPS + Billing Polish | v3.0 | 0/2 | Not started | - |

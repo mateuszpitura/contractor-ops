@@ -106,55 +106,55 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| LIN-01 | — | Pending |
-| LIN-02 | — | Pending |
-| LIN-03 | — | Pending |
-| LIN-04 | — | Pending |
-| LIN-05 | — | Pending |
-| LIN-06 | — | Pending |
-| TEAM-01 | — | Pending |
-| TEAM-02 | — | Pending |
-| TEAM-03 | — | Pending |
-| TEAM-04 | — | Pending |
-| TEAM-05 | — | Pending |
-| TEAM-06 | — | Pending |
-| GOOG-01 | — | Pending |
-| GOOG-02 | — | Pending |
-| GOOG-03 | — | Pending |
-| GOOG-04 | — | Pending |
-| GOOG-05 | — | Pending |
-| ONBD-01 | — | Pending |
-| ONBD-02 | — | Pending |
-| ONBD-03 | — | Pending |
-| ONBD-04 | — | Pending |
-| ONBD-05 | — | Pending |
-| EQUIP-01 | — | Pending |
-| EQUIP-02 | — | Pending |
-| EQUIP-03 | — | Pending |
-| EQUIP-04 | — | Pending |
-| EQUIP-05 | — | Pending |
-| EQUIP-06 | — | Pending |
-| EQUIP-07 | — | Pending |
-| EQUIP-08 | — | Pending |
-| EQUIP-09 | — | Pending |
-| EQUIP-10 | — | Pending |
-| EQUIP-11 | — | Pending |
-| BILL-01 | — | Pending |
-| BILL-02 | — | Pending |
-| BILL-03 | — | Pending |
-| BILL-04 | — | Pending |
-| BILL-05 | — | Pending |
-| BILL-06 | — | Pending |
-| BILL-07 | — | Pending |
-| BILL-08 | — | Pending |
-| BILL-09 | — | Pending |
-| BILL-10 | — | Pending |
+| LIN-01 | Phase 29 | Pending |
+| LIN-02 | Phase 29 | Pending |
+| LIN-03 | Phase 29 | Pending |
+| LIN-04 | Phase 29 | Pending |
+| LIN-05 | Phase 29 | Pending |
+| LIN-06 | Phase 29 | Pending |
+| TEAM-01 | Phase 32 | Pending |
+| TEAM-02 | Phase 32 | Pending |
+| TEAM-03 | Phase 32 | Pending |
+| TEAM-04 | Phase 32 | Pending |
+| TEAM-05 | Phase 32 | Pending |
+| TEAM-06 | Phase 32 | Pending |
+| GOOG-01 | Phase 31 | Pending |
+| GOOG-02 | Phase 31 | Pending |
+| GOOG-03 | Phase 31 | Pending |
+| GOOG-04 | Phase 31 | Pending |
+| GOOG-05 | Phase 31 | Pending |
+| ONBD-01 | Phase 34 | Pending |
+| ONBD-02 | Phase 34 | Pending |
+| ONBD-03 | Phase 34 | Pending |
+| ONBD-04 | Phase 34 | Pending |
+| ONBD-05 | Phase 34 | Pending |
+| EQUIP-01 | Phase 30 | Pending |
+| EQUIP-02 | Phase 30 | Pending |
+| EQUIP-03 | Phase 30 | Pending |
+| EQUIP-04 | Phase 30 | Pending |
+| EQUIP-05 | Phase 33 | Pending |
+| EQUIP-06 | Phase 35 | Pending |
+| EQUIP-07 | Phase 35 | Pending |
+| EQUIP-08 | Phase 30 | Pending |
+| EQUIP-09 | Phase 30 | Pending |
+| EQUIP-10 | Phase 30 | Pending |
+| EQUIP-11 | Phase 33 | Pending |
+| BILL-01 | Phase 28 | Pending |
+| BILL-02 | Phase 28 | Pending |
+| BILL-03 | Phase 28 | Pending |
+| BILL-04 | Phase 28 | Pending |
+| BILL-05 | Phase 28 | Pending |
+| BILL-06 | Phase 28 | Pending |
+| BILL-07 | Phase 28 | Pending |
+| BILL-08 | Phase 28 | Pending |
+| BILL-09 | Phase 35 | Pending |
+| BILL-10 | Phase 35 | Pending |
 
 **Coverage:**
-- v3.0 requirements: 39 total
-- Mapped to phases: 0
-- Unmapped: 39 ⚠️
+- v3.0 requirements: 43 total
+- Mapped to phases: 43
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-01*
-*Last updated: 2026-04-01 after initial definition*
+*Last updated: 2026-04-01 after roadmap creation*
