@@ -117,13 +117,15 @@ export async function getProrationPreview(
     const preview = await stripe.invoices.createPreview({
       customer: params.stripeCustomerId,
       subscription: params.stripeSubscriptionId,
-      subscription_items: [
-        {
-          id: params.stripeSubscriptionItemId,
-          price: params.newPriceId,
-        },
-      ],
-      subscription_proration_behavior: "create_prorations",
+      subscription_details: {
+        items: [
+          {
+            id: params.stripeSubscriptionItemId,
+            price: params.newPriceId,
+          },
+        ],
+        proration_behavior: "create_prorations",
+      },
     });
 
     const lines = (preview.lines?.data ?? []).map((line) => ({

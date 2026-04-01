@@ -44,10 +44,20 @@
       "import": "./src/services/ocr-extraction.ts",
       "default": "./src/services/ocr-extraction.ts"
     },
+    "./services/stripe-client": {
+      "types": "./src/services/stripe-client.ts",
+      "import": "./src/services/stripe-client.ts",
+      "default": "./src/services/stripe-client.ts"
+    },
     "./services/billing-constants": {
       "types": "./src/services/billing-constants.ts",
       "import": "./src/services/billing-constants.ts",
       "default": "./src/services/billing-constants.ts"
+    },
+    "./services/billing-webhook": {
+      "types": "./src/services/billing-webhook.ts",
+      "import": "./src/services/billing-webhook.ts",
+      "default": "./src/services/billing-webhook.ts"
     },
     "./services/jira-webhook-handler": {
       "types": "./src/services/jira-webhook-handler.ts",
