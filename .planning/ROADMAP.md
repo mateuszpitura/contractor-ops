@@ -51,7 +51,7 @@ Full details: `.planning/milestones/v2.0-ROADMAP.md`
 
 </details>
 
-### 🚧 v3.0 Enterprise & Monetization (In Progress)
+### v3.0 Enterprise & Monetization (In Progress)
 
 **Milestone Goal:** Deep integrations with major project/communication platforms, intelligent organization onboarding via connected tools, physical equipment/shipment tracking tied to contractor lifecycle, and Stripe-based monetization with subscription tiers + AI credit metering.
 
@@ -76,12 +76,12 @@ Full details: `.planning/milestones/v2.0-ROADMAP.md`
   3. Each OCR call records usage against the org's AI credit allowance, and OCR is hard-blocked with an upgrade prompt when credits are exhausted
   4. Stripe webhook events (subscription changes, payment failures, trial endings) update internal state idempotently without race conditions
   5. Admin can access Stripe-hosted billing portal to manage payment methods, view invoices, and cancel subscription
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 28-01: TBD
-- [ ] 28-02: TBD
-- [ ] 28-03: TBD
+- [ ] 28-01-PLAN.md — Billing schema, Stripe client, webhook route, tRPC router (BILL-01/02/03/07/08)
+- [ ] 28-02-PLAN.md — OCR credit service with atomic deduction and Stripe Meter reporting (BILL-04/05/06)
+- [ ] 28-03-PLAN.md — Billing UI: Settings tab, plan comparison, trial banner, soft-block modal (all BILL reqs)
 
 ### Phase 29: Linear Integration
 **Goal**: Teams using Linear get the same bidirectional workflow-to-issue sync that Jira users already have
@@ -230,7 +230,7 @@ Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 �
 | 25. Portal E-Sign Auth Fix | v2.0 | 1/1 | Complete | 2026-03-30 |
 | 26. Calendar Wiring Fixes | v2.0 | 1/1 | Complete | 2026-03-30 |
 | 27. OAuth Callback & OCR Build Fixes | v2.0 | 1/1 | Complete | 2026-04-01 |
-| 28. Stripe Billing Foundation | v3.0 | 0/3 | Not started | - |
+| 28. Stripe Billing Foundation | v3.0 | 0/3 | Planning | - |
 | 29. Linear Integration | v3.0 | 0/3 | Not started | - |
 | 30. Equipment Tracking Foundation | v3.0 | 0/3 | Not started | - |
 | 31. Google Workspace Directory Import | v3.0 | 0/2 | Not started | - |
