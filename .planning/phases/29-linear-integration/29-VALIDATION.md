@@ -38,14 +38,14 @@ created: 2026-04-02
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 29-01-01 | 01 | 1 | LIN-01 | unit | `cd packages/integrations && pnpm vitest run src/adapters/__tests__/linear-adapter.test.ts -x` | ❌ W0 | ⬜ pending |
-| 29-01-02 | 01 | 1 | LIN-04 | unit | `cd packages/integrations && pnpm vitest run src/__tests__/linear-adapter-webhooks.test.ts -x` | ❌ W0 | ⬜ pending |
-| 29-02-01 | 02 | 1 | LIN-02 | unit | `cd packages/api && pnpm vitest run src/__tests__/linear-status-mapping.test.ts -x` | ❌ W0 | ⬜ pending |
-| 29-02-02 | 02 | 1 | LIN-03 | unit | `cd packages/api && pnpm vitest run src/__tests__/linear-issue-sync.test.ts -x` | ❌ W0 | ⬜ pending |
-| 29-02-03 | 02 | 1 | LIN-05 | unit | `cd packages/api && pnpm vitest run src/__tests__/linear-issue-sync.test.ts -x` | ❌ W0 | ⬜ pending |
-| 29-03-01 | 03 | 2 | LIN-06 | manual-only | Visual verification in browser | N/A | ⬜ pending |
+| 29-01-01 | 01 | 1 | LIN-01 | unit | `cd packages/integrations && pnpm vitest run src/adapters/__tests__/linear-adapter.test.ts -x` | W0 | pending |
+| 29-01-02 | 01 | 1 | LIN-04 | unit | `cd packages/integrations && pnpm vitest run src/adapters/__tests__/linear-adapter.test.ts -x` | W0 | pending |
+| 29-02-01 | 02 | 1 | LIN-02 | unit | `cd packages/api && pnpm vitest run src/__tests__/linear-status-mapping.test.ts -x` | W0 | pending |
+| 29-02-02 | 02 | 1 | LIN-03 | unit | `cd packages/api && pnpm vitest run src/__tests__/linear-issue-sync.test.ts -x` | W0 | pending |
+| 29-02-03 | 02 | 1 | LIN-05 | unit | `cd packages/api && pnpm vitest run src/__tests__/linear-issue-sync.test.ts -x` | W0 | pending |
+| 29-03-01 | 03 | 2 | LIN-06 | manual-only | Visual verification in browser | N/A | pending |
 
-*Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
+*Status: pending / green / red / flaky*
 
 ---
 
