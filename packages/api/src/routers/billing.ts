@@ -11,6 +11,7 @@ import {
   createPortalSession,
   ensureStripeCustomer,
 } from "../services/billing-service.js";
+import { getCreditBalance } from "../services/credit-service.js";
 import {
   TIER_CREDIT_ALLOWANCE,
   TRIAL_CREDIT_ALLOWANCE,
@@ -186,6 +187,14 @@ export const billingRouter = router({
       stripeCustomerId: sub.stripeCustomerId,
       returnUrl: `${baseUrl}/settings?tab=billing`,
     });
+  }),
+
+  /**
+   * Get the current OCR credit balance for the organization.
+   * Available to all authenticated users (tenantProcedure).
+   */
+  getCreditBalance: tenantProcedure.query(async ({ ctx }) => {
+    return getCreditBalance(ctx.organizationId);
   }),
 
   /**
