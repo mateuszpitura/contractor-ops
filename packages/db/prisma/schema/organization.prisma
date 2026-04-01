@@ -78,6 +78,8 @@ model Organization {
   ocrExtractions       OcrExtraction[]
   timesheets           Timesheet[]
   timeEntries          TimeEntry[]
+  subscription         Subscription?
+  ocrCreditLedger      OcrCreditLedger[]
 }
 
 model Member {

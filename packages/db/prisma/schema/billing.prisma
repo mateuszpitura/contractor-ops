@@ -1,0 +1,68 @@
+// Billing — Stripe subscription management, OCR credit ledger, event deduplication
+
+model Subscription {
+  id                       String             @id @default(cuid())
+  organizationId           String             @unique
+  stripeCustomerId         String
+  stripeSubscriptionId     String             @unique
+  stripeSubscriptionItemId String?
+  stripePriceId            String?
+  tier                     SubscriptionTier
+  status                   SubscriptionStatus
+  currentPeriodStart       DateTime
+  currentPeriodEnd         DateTime
+  trialEnd                 DateTime?
+  cancelAtPeriodEnd        Boolean            @default(false)
+  seatCount                Int                @default(1)
+  createdAt                DateTime           @default(now())
+  updatedAt                DateTime           @updatedAt
+
+  organization             Organization       @relation(fields: [organizationId], references: [id])
+
+  @@index([stripeCustomerId])
+  @@index([status])
+}
+
+model OcrCreditLedger {
+  id             String   @id @default(cuid())
+  organizationId String
+  credits        Int
+  reason         String
+  periodStart    DateTime
+  periodEnd      DateTime
+  stripeEventId  String?
+  createdAt      DateTime @default(now())
+
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+  @@index([organizationId, periodStart, periodEnd])
+}
+
+model StripeEvent {
+  id            String    @id @default(cuid())
+  stripeEventId String    @unique
+  eventType     String
+  payloadJson   Json
+  processedAt   DateTime?
+  createdAt     DateTime  @default(now())
+
+  @@index([eventType])
+}
+
+enum SubscriptionTier {
+  STARTER
+  PRO
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  UNPAID
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+  PAUSED
+}
