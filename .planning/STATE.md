@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Enterprise & Monetization
-status: executing
-stopped_at: Completed 29-02-PLAN.md
-last_updated: "2026-04-01T23:30:48.926Z"
+status: verifying
+stopped_at: Completed 29-03-PLAN.md
+last_updated: "2026-04-01T23:46:11.590Z"
 last_activity: 2026-04-01
 progress:
   total_phases: 8
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 7
-  completed_plans: 6
+  completed_plans: 7
   percent: 0
 ---
 
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-01)
 
 Phase: 29 (linear-integration) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-01
 
 Progress: [░░░░░░░░░░] 0%
@@ -54,6 +54,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 28 P04 | 2min | 2 tasks | 2 files |
 | Phase 29 P01 | 7min | 3 tasks | 13 files |
 | Phase 29 P02 | 6min | 3 tasks | 7 files |
+| Phase 29 P03 | 11min | 2 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -78,6 +79,8 @@ Recent decisions affecting current work:
 - [Phase 29]: Linear OAuth uses URL-encoded token exchange (application/x-www-form-urlencoded) unlike Jira JSON
 - [Phase 29]: linearGraphQL helper exported from linear-issue-sync.ts for reuse across services and tRPC router
 - [Phase 29]: Webhook registration fires as fire-and-forget on first saveStatusMapping per team
+- [Phase 29]: Used SiLinear from react-icons/si for brand icon, consistent with existing provider icon pattern
+- [Phase 29]: Added connectionStatus and linkedIssues tRPC endpoints to Linear router for UI component queries
 
 ### Pending Todos
 
@@ -91,6 +94,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-01T23:30:48.924Z
-Stopped at: Completed 29-02-PLAN.md
+Last session: 2026-04-01T23:46:11.588Z
+Stopped at: Completed 29-03-PLAN.md
 Resume file: None

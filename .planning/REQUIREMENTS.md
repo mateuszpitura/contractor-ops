@@ -14,7 +14,7 @@ Requirements for v3.0 Enterprise & Monetization milestone. Each maps to roadmap 
 - [x] **LIN-03**: Workflow task with Linear enabled auto-creates Linear issue with team, title, description, and assignee
 - [x] **LIN-04**: Status changes in Linear sync to linked workflow task via webhooks (with loop prevention)
 - [x] **LIN-05**: Status changes on workflow task sync to Linear issue via GraphQL mutation
-- [ ] **LIN-06**: Linked Linear issue displays as clickable chip with status badge on workflow task view
+- [x] **LIN-06**: Linked Linear issue displays as clickable chip with status badge on workflow task view
 
 ### Teams Integration
 
@@ -111,7 +111,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LIN-03 | Phase 29 | Complete |
 | LIN-04 | Phase 29 | Complete |
 | LIN-05 | Phase 29 | Complete |
-| LIN-06 | Phase 29 | Pending |
+| LIN-06 | Phase 29 | Complete |
 | TEAM-01 | Phase 32 | Pending |
 | TEAM-02 | Phase 32 | Pending |
 | TEAM-03 | Phase 32 | Pending |

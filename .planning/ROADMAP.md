@@ -56,7 +56,7 @@ Full details: `.planning/milestones/v2.0-ROADMAP.md`
 **Milestone Goal:** Deep integrations with major project/communication platforms, intelligent organization onboarding via connected tools, physical equipment/shipment tracking tied to contractor lifecycle, and Stripe-based monetization with subscription tiers + AI credit metering.
 
 - [x] **Phase 28: Stripe Billing Foundation** - Subscription lifecycle, AI credit metering, and webhook-driven billing infrastructure (completed 2026-04-01)
-- [ ] **Phase 29: Linear Integration** - Bidirectional issue sync between workflow tasks and Linear
+- [x] **Phase 29: Linear Integration** - Bidirectional issue sync between workflow tasks and Linear (completed 2026-04-01)
 - [ ] **Phase 30: Equipment Tracking Foundation** - Equipment registry, contractor assignment, manual shipment tracking, and workflow integration
 - [ ] **Phase 31: Google Workspace Directory Import** - Paginated directory import with group-to-role mapping
 - [ ] **Phase 32: Teams Integration** - Approve/reject from Teams Adaptive Cards, reminders, and activity alerts
@@ -99,7 +99,7 @@ Plans:
 Plans:
 - [x] 29-01-PLAN.md — Prisma enum, LinearAdapter, Zod validators, tRPC router shell, env config (LIN-01)
 - [x] 29-02-PLAN.md — Status mapping service, issue sync, webhook handler, workflow hooks (LIN-02/03/04/05)
-- [ ] 29-03-PLAN.md — Provider section UI, status mapping dialog, issue chip, i18n (LIN-02/06)
+- [x] 29-03-PLAN.md — Provider section UI, status mapping dialog, issue chip, i18n (LIN-02/06)
 
 ### Phase 30: Equipment Tracking Foundation
 **Goal**: Organizations can track physical equipment assigned to contractors with manual shipment entry and lifecycle-aware workflow steps
@@ -232,7 +232,7 @@ Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 �
 | 26. Calendar Wiring Fixes | v2.0 | 1/1 | Complete | 2026-03-30 |
 | 27. OAuth Callback & OCR Build Fixes | v2.0 | 1/1 | Complete | 2026-04-01 |
 | 28. Stripe Billing Foundation | v3.0 | 4/4 | Complete    | 2026-04-01 |
-| 29. Linear Integration | v3.0 | 2/3 | In Progress|  |
+| 29. Linear Integration | v3.0 | 3/3 | Complete   | 2026-04-01 |
 | 30. Equipment Tracking Foundation | v3.0 | 0/3 | Not started | - |
 | 31. Google Workspace Directory Import | v3.0 | 0/2 | Not started | - |
 | 32. Teams Integration | v3.0 | 0/3 | Not started | - |
