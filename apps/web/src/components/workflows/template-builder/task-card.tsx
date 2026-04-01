@@ -41,6 +41,7 @@ import {
 
 import { trpc } from "@/trpc/init";
 import { JiraTaskConfig } from "@/components/integrations/jira-task-config";
+import { LinearTaskConfig } from "@/components/integrations/linear-task-config";
 import { CalendarTaskConfig } from "@/components/workflow/calendar-task-config";
 import { ConditionBuilder, getConditionSummary } from "./condition-builder";
 import type { TemplateFormValues, TaskFormValues } from "./use-template-form";
@@ -488,6 +489,11 @@ export function TaskCard({
             {/* Jira integration — only for saved task templates */}
             {task?.id && (
               <JiraTaskConfig taskTemplateId={task.id} />
+            )}
+
+            {/* Linear integration — only for saved task templates (D-05) */}
+            {task?.id && (
+              <LinearTaskConfig taskTemplateId={task.id} />
             )}
 
             {/* Calendar integration — only for saved task templates */}

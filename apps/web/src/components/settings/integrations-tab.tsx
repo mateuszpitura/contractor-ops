@@ -13,46 +13,14 @@ import { SlackUserMapping } from "./slack-user-mapping";
 import { KsefSetupDialog } from "./ksef-setup-dialog";
 import { KsefSyncHistory } from "./ksef-sync-history";
 import { JiraProviderSection } from "@/components/integrations/jira-provider-section";
+import { LinearProviderSection } from "@/components/integrations/linear-provider-section";
 import { JiraLogo } from "@/components/integrations/jira-logo";
+import { SlackBrandIcon } from "@/components/integrations/brand-icons";
 import {
   NotionIcon,
   ConfluenceIcon,
 } from "@/components/integrations/provider-icons";
 import { OrgCalendarSection } from "./org-calendar-section";
-
-// ---------------------------------------------------------------------------
-// Slack logo SVG (extracted from slack-connection-card.tsx for reuse)
-// ---------------------------------------------------------------------------
-
-function SlackLogo({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 54 54"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden="true"
-    >
-      <g fill="none" fillRule="evenodd">
-        <path
-          d="M19.712.133a5.381 5.381 0 0 0-5.376 5.387 5.381 5.381 0 0 0 5.376 5.386h5.376V5.52A5.381 5.381 0 0 0 19.712.133m0 14.365H5.376A5.381 5.381 0 0 0 0 19.884a5.381 5.381 0 0 0 5.376 5.387h14.336a5.381 5.381 0 0 0 5.376-5.387 5.381 5.381 0 0 0-5.376-5.386"
-          fill="#36C5F0"
-        />
-        <path
-          d="M53.76 19.884a5.381 5.381 0 0 0-5.376-5.386 5.381 5.381 0 0 0-5.376 5.386v5.387h5.376a5.381 5.381 0 0 0 5.376-5.387m-14.336 0V5.52A5.381 5.381 0 0 0 34.048.133a5.381 5.381 0 0 0-5.376 5.387v14.364a5.381 5.381 0 0 0 5.376 5.387 5.381 5.381 0 0 0 5.376-5.387"
-          fill="#2EB67D"
-        />
-        <path
-          d="M34.048 54a5.381 5.381 0 0 0 5.376-5.387 5.381 5.381 0 0 0-5.376-5.386h-5.376v5.386A5.381 5.381 0 0 0 34.048 54m0-14.365h14.336a5.381 5.381 0 0 0 5.376-5.386 5.381 5.381 0 0 0-5.376-5.387H34.048a5.381 5.381 0 0 0-5.376 5.387 5.381 5.381 0 0 0 5.376 5.386"
-          fill="#ECB22E"
-        />
-        <path
-          d="M0 34.249a5.381 5.381 0 0 0 5.376 5.386 5.381 5.381 0 0 0 5.376-5.386v-5.387H5.376A5.381 5.381 0 0 0 0 34.249m14.336 0v14.364A5.381 5.381 0 0 0 19.712 54a5.381 5.381 0 0 0 5.376-5.387V34.25a5.381 5.381 0 0 0-5.376-5.387 5.381 5.381 0 0 0-5.376 5.387"
-          fill="#E01E5A"
-        />
-      </g>
-    </svg>
-  );
-}
 
 // ---------------------------------------------------------------------------
 // Provider registry for UI (static for now, will be dynamic in future phases)
@@ -62,7 +30,7 @@ const PROVIDER_CONFIG = [
   {
     provider: "slack",
     displayName: "Slack",
-    icon: <SlackLogo className="size-8" />,
+    icon: <SlackBrandIcon className="size-8" />,
     descriptionKey: "slack.descriptionDisconnected" as const,
   },
   {
@@ -230,6 +198,9 @@ export function IntegrationsTab() {
 
         {/* Jira has custom status mapping controls */}
         <JiraProviderSection />
+
+        {/* Linear has custom status mapping controls (D-03, D-11: coexists with Jira) */}
+        <LinearProviderSection />
 
         {/* Notion provider card */}
         <ProviderConnectionCard

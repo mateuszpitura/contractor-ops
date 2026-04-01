@@ -82,6 +82,32 @@ export const linearRouter = router({
   // =========================================================================
 
   /**
+   * Get Linear connection status (id, status, config) for the current org.
+   * Returns null when no connection exists.
+   */
+  connectionStatus: tenantProcedure.query(async ({ ctx }) => {
+    const connection = await prisma.integrationConnection.findFirst({
+      where: {
+        organizationId: ctx.organizationId,
+        provider: "LINEAR",
+      },
+      select: {
+        id: true,
+        status: true,
+        configJson: true,
+      },
+    });
+
+    if (!connection) return null;
+
+    return {
+      id: connection.id,
+      status: connection.status,
+      configJson: connection.configJson as Record<string, unknown> | null,
+    };
+  }),
+
+  /**
    * Fetch Linear teams for the connected workspace.
    * Queries Linear GraphQL API for teams with their workflow states.
    * Accepts both PENDING_MAPPING and CONNECTED connections (D-03).
@@ -346,5 +372,65 @@ export const linearRouter = router({
       }
 
       return plain(result);
+    }),
+
+  /**
+   * Get linked Linear issues for a workflow entity (run or task run).
+   * Mirrors jira.linkedIssues for UI consistency.
+   */
+  linkedIssues: tenantProcedure
+    .input(
+      z.object({
+        entityType: z.enum(["WORKFLOW_TASK_RUN", "WORKFLOW_RUN"]),
+        entityId: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      if (input.entityType === "WORKFLOW_TASK_RUN") {
+        const links = await prisma.externalLink.findMany({
+          where: {
+            organizationId: ctx.organizationId,
+            entityType: "WORKFLOW_TASK_RUN",
+            entityId: input.entityId,
+            externalType: "LINEAR_ISSUE",
+          },
+          select: {
+            id: true,
+            externalId: true,
+            externalUrl: true,
+            metadataJson: true,
+          },
+        });
+
+        return plain(links);
+      }
+
+      // WORKFLOW_RUN: find all task runs, then their external links
+      const taskRuns = await prisma.workflowTaskRun.findMany({
+        where: {
+          workflowRunId: input.entityId,
+          organizationId: ctx.organizationId,
+        },
+        select: { id: true },
+      });
+
+      if (taskRuns.length === 0) return [];
+
+      const links = await prisma.externalLink.findMany({
+        where: {
+          organizationId: ctx.organizationId,
+          entityType: "WORKFLOW_TASK_RUN",
+          entityId: { in: taskRuns.map((t) => t.id) },
+          externalType: "LINEAR_ISSUE",
+        },
+        select: {
+          id: true,
+          externalId: true,
+          externalUrl: true,
+          metadataJson: true,
+        },
+      });
+
+      return plain(links);
     }),
 });
