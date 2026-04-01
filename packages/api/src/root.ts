@@ -24,6 +24,7 @@ import { ksefRouter } from "./routers/ksef.js";
 import { portalTimeRouter } from "./routers/portal-time.js";
 import { timeRouter } from "./routers/time.js";
 import { jiraRouter } from "./routers/jira.js";
+import { linearRouter } from "./routers/linear.js";
 import { docsRouter } from "./routers/docs.js";
 import { calendarRouter } from "./routers/calendar.js";
 import { billingRouter } from "./routers/billing.js";
@@ -81,6 +82,7 @@ export const appRouter = router({
   portalTime: portalTimeRouter,
   time: timeRouter,
   jira: jiraRouter,
+  linear: linearRouter, // linear: Linear integration -- connection, teams, status mapping, task config, linked issues
   docs: docsRouter,
   calendar: calendarRouter,
   billing: billingRouter,
