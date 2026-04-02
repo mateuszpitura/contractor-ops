@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Enterprise & Monetization
 status: executing
-stopped_at: Phase 31 context gathered
-last_updated: "2026-04-02T14:28:22.154Z"
+stopped_at: Completed 31-01-PLAN.md
+last_updated: "2026-04-02T15:24:12.087Z"
 last_activity: 2026-04-02
 progress:
   total_phases: 8
   completed_phases: 3
-  total_plans: 10
-  completed_plans: 10
+  total_plans: 14
+  completed_plans: 11
   percent: 0
 ---
 
@@ -21,12 +21,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-01)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 30 — equipment-tracking-foundation
+**Current focus:** Phase 31 — google-workspace-directory-import
 
 ## Current Position
 
-Phase: 31
-Plan: Not started
+Phase: 31 (google-workspace-directory-import) — EXECUTING
+Plan: 2 of 4
 Status: Ready to execute
 Last activity: 2026-04-02
 
@@ -58,6 +58,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 30 P01 | 6min | 2 tasks | 10 files |
 | Phase 30 P02 | 12min | 2 tasks | 24 files |
 | Phase 30 P03 | 3min | 2 tasks | 3 files |
+| Phase 31 P01 | 6min | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -90,6 +91,8 @@ Recent decisions affecting current work:
 - [Phase 30]: Equipment table uses local state for filters instead of nuqs URL state (simpler for first version)
 - [Phase 30]: Equipment tasks with no assigned equipment auto-complete immediately (no-op optimization)
 - [Phase 30]: equipmentEligibleTaskRunIds built inside transaction matching Jira/Linear/Calendar pattern
+- [Phase 31]: Adapter slug uses underscore (google_workspace) so toUpperCase maps to GOOGLE_WORKSPACE Prisma enum
+- [Phase 31]: Directory import role enum uses actual system roles not simplified admin/manager/viewer
 
 ### Pending Todos
 
@@ -103,6 +106,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-02T14:28:22.151Z
-Stopped at: Phase 31 context gathered
-Resume file: .planning/phases/31-google-workspace-directory-import/31-CONTEXT.md
+Last session: 2026-04-02T15:24:12.085Z
+Stopped at: Completed 31-01-PLAN.md
+Resume file: None

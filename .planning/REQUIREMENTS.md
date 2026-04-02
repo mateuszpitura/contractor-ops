@@ -27,10 +27,10 @@ Requirements for v3.0 Enterprise & Monetization milestone. Each maps to roadmap 
 
 ### Google Workspace
 
-- [ ] **GOOG-01**: Admin can connect Google Workspace with Admin SDK Directory API scopes via OAuth
-- [ ] **GOOG-02**: User can preview Google Workspace users with name, email, department, and org unit before importing
-- [ ] **GOOG-03**: Admin can selectively import Google Workspace users as org members with role assignment
-- [ ] **GOOG-04**: Admin can map Google Workspace groups to internal RBAC roles during import
+- [x] **GOOG-01**: Admin can connect Google Workspace with Admin SDK Directory API scopes via OAuth
+- [x] **GOOG-02**: User can preview Google Workspace users with name, email, department, and org unit before importing
+- [x] **GOOG-03**: Admin can selectively import Google Workspace users as org members with role assignment
+- [x] **GOOG-04**: Admin can map Google Workspace groups to internal RBAC roles during import
 - [ ] **GOOG-05**: System periodically syncs Google Workspace directory to detect new hires and flag departures (no auto-delete)
 
 ### Intelligent Onboarding
@@ -118,10 +118,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TEAM-04 | Phase 32 | Pending |
 | TEAM-05 | Phase 32 | Pending |
 | TEAM-06 | Phase 32 | Pending |
-| GOOG-01 | Phase 31 | Pending |
-| GOOG-02 | Phase 31 | Pending |
-| GOOG-03 | Phase 31 | Pending |
-| GOOG-04 | Phase 31 | Pending |
+| GOOG-01 | Phase 31 | Complete |
+| GOOG-02 | Phase 31 | Complete |
+| GOOG-03 | Phase 31 | Complete |
+| GOOG-04 | Phase 31 | Complete |
 | GOOG-05 | Phase 31 | Pending |
 | ONBD-01 | Phase 34 | Pending |
 | ONBD-02 | Phase 34 | Pending |
