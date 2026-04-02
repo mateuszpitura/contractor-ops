@@ -45,12 +45,12 @@ Requirements for v3.0 Enterprise & Monetization milestone. Each maps to roadmap 
 
 - [x] **EQUIP-01**: Admin can manage equipment registry (CRUD) with type, serial number, status, and assigned contractor
 - [x] **EQUIP-02**: Admin can assign/unassign equipment to contractors with assignment history and audit trail
-- [ ] **EQUIP-03**: Contractor profile shows Equipment tab with assigned items and shipment status
+- [x] **EQUIP-03**: Contractor profile shows Equipment tab with assigned items and shipment status
 - [x] **EQUIP-04**: Admin can create shipment for equipment with carrier, tracking number, and expected delivery (manual entry)
 - [ ] **EQUIP-05**: System integrates with InPost ShipX API for shipment creation, Parcel Locker selection, and auto-status tracking
 - [ ] **EQUIP-06**: System integrates with DPD API for shipment creation, label generation, and status tracking
 - [ ] **EQUIP-07**: System integrates with UPS API for shipment creation and status tracking
-- [ ] **EQUIP-08**: Shipment status displays as timeline on equipment detail and contractor profile with unified status model
+- [x] **EQUIP-08**: Shipment status displays as timeline on equipment detail and contractor profile with unified status model
 - [ ] **EQUIP-09**: Onboarding workflow task "Ship equipment" auto-creates shipment, offboarding task "Return equipment" triggers return request
 - [ ] **EQUIP-10**: Workflow task auto-completes when shipment reaches target status (e.g., "delivered")
 - [ ] **EQUIP-11**: Contractor can initiate equipment return via portal and receive shipping label
@@ -130,12 +130,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ONBD-05 | Phase 34 | Pending |
 | EQUIP-01 | Phase 30 | Complete |
 | EQUIP-02 | Phase 30 | Complete |
-| EQUIP-03 | Phase 30 | Pending |
+| EQUIP-03 | Phase 30 | Complete |
 | EQUIP-04 | Phase 30 | Complete |
 | EQUIP-05 | Phase 33 | Pending |
 | EQUIP-06 | Phase 35 | Pending |
 | EQUIP-07 | Phase 35 | Pending |
-| EQUIP-08 | Phase 30 | Pending |
+| EQUIP-08 | Phase 30 | Complete |
 | EQUIP-09 | Phase 30 | Pending |
 | EQUIP-10 | Phase 30 | Pending |
 | EQUIP-11 | Phase 33 | Pending |
