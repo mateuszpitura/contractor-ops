@@ -11,6 +11,7 @@ import {
   Bell,
   Plug,
   Settings,
+  Package,
   type LucideIcon,
 } from "lucide-react";
 
@@ -72,6 +73,13 @@ export const navigationGroups: NavGroup[] = [
         href: "/workflows",
         icon: GitBranch,
         permission: { resource: "workflow", actions: ["read"] },
+      },
+      {
+        key: "equipment",
+        label: "Equipment",
+        href: "/equipment",
+        icon: Package,
+        permission: { resource: "equipment", actions: ["read"] },
       },
     ],
   },

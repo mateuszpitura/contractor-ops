@@ -1,0 +1,165 @@
+"use client";
+
+import { Suspense, useState } from "react";
+import { useParams } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
+
+import { trpc } from "@/trpc/init";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Link } from "@/i18n/navigation";
+import { useBreadcrumbOverride } from "@/components/layout/breadcrumb-context";
+
+import { EquipmentDetailHeader } from "@/components/equipment/equipment-detail/equipment-detail-header";
+import { EquipmentDetailTabs } from "@/components/equipment/equipment-detail/equipment-detail-tabs";
+import { TabInfo } from "@/components/equipment/equipment-detail/tab-info";
+import { TabAssignments } from "@/components/equipment/equipment-detail/tab-assignments";
+import { TabShipments } from "@/components/equipment/equipment-detail/tab-shipments";
+import { EquipmentForm } from "@/components/equipment/equipment-form";
+import { AssignmentDialog } from "@/components/equipment/assignment-dialog";
+import { ShipmentForm } from "@/components/equipment/shipment-form";
+
+// ---------------------------------------------------------------------------
+// Skeleton
+// ---------------------------------------------------------------------------
+
+function DetailSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center gap-3">
+        <Skeleton className="h-6 w-[200px]" />
+        <Skeleton className="h-5 w-20 rounded-full" />
+        <Skeleton className="h-5 w-16 rounded-full" />
+      </div>
+      <div className="flex gap-2 border-b pb-2">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Skeleton key={i} className="h-7 w-24" />
+        ))}
+      </div>
+      <div className="grid gap-4 md:grid-cols-2">
+        {Array.from({ length: 2 }).map((_, i) => (
+          <div key={i} className="rounded-xl border bg-card p-4">
+            <Skeleton className="mb-3 h-5 w-32" />
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Page
+// ---------------------------------------------------------------------------
+
+export default function EquipmentDetailPage() {
+  const params = useParams<{ id: string }>();
+  const t = useTranslations("Equipment");
+
+  const [formOpen, setFormOpen] = useState(false);
+  const [assignOpen, setAssignOpen] = useState(false);
+  const [shipmentOpen, setShipmentOpen] = useState(false);
+
+  const equipmentQuery = useQuery(
+    trpc.equipment.getById.queryOptions({ id: params.id }),
+  );
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const equipment = equipmentQuery.data as any;
+
+  // Breadcrumb override
+  useBreadcrumbOverride(params.id, equipment?.name);
+
+  // Error state
+  if (equipmentQuery.isError) {
+    const isNotFound =
+      equipmentQuery.error?.message?.includes("NOT_FOUND") ||
+      (equipmentQuery.error as { data?: { code?: string } })?.data?.code ===
+        "NOT_FOUND";
+
+    if (isNotFound) {
+      return (
+        <div className="flex min-h-[400px] flex-col items-center justify-center gap-3 text-center">
+          <h2 className="text-lg font-medium">Equipment not found</h2>
+          <Button variant="outline" render={<Link href="/equipment" />}>
+            Back to equipment
+          </Button>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex min-h-[400px] flex-col items-center justify-center gap-3 text-center">
+        <h2 className="text-lg font-medium">{t("error.loadFailed")}</h2>
+        <Button
+          variant="outline"
+          onClick={() => equipmentQuery.refetch()}
+        >
+          Retry
+        </Button>
+      </div>
+    );
+  }
+
+  // Loading
+  if (equipmentQuery.isLoading || !equipment) {
+    return <DetailSkeleton />;
+  }
+
+  return (
+    <div className="space-y-6">
+      <EquipmentDetailHeader
+        equipment={equipment}
+        onEdit={() => setFormOpen(true)}
+        onAssign={() => setAssignOpen(true)}
+        onCreateShipment={() => setShipmentOpen(true)}
+      />
+
+      <Suspense fallback={<DetailSkeleton />}>
+        <EquipmentDetailTabs
+          infoContent={
+            <TabInfo equipment={equipment} onEdit={() => setFormOpen(true)} />
+          }
+          assignmentsContent={
+            <TabAssignments
+              assignments={equipment.assignments ?? []}
+              currentAssignmentId={equipment.currentAssignment?.id ?? null}
+            />
+          }
+          shipmentsContent={
+            <TabShipments
+              shipments={equipment.shipments ?? []}
+              equipmentId={equipment.id}
+              onCreateShipment={() => setShipmentOpen(true)}
+            />
+          }
+        />
+      </Suspense>
+
+      {/* Dialogs */}
+      <EquipmentForm
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        equipment={equipment}
+      />
+
+      <AssignmentDialog
+        open={assignOpen}
+        onOpenChange={setAssignOpen}
+        equipmentId={equipment.id}
+        equipmentName={equipment.name}
+      />
+
+      <ShipmentForm
+        open={shipmentOpen}
+        onOpenChange={setShipmentOpen}
+        equipmentId={equipment.id}
+        equipmentName={equipment.name}
+      />
+    </div>
+  );
+}
