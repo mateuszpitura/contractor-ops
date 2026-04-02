@@ -16,7 +16,7 @@ v1.0 MVP foundation (shipped 2026-03-23): org setup, RBAC, contractors, contract
 
 v2.0 Platform Expansion adds: contractor self-service portal with magic-link auth and org branding, electronic signatures (DocuSign + Autenti), AI-powered invoice OCR (Claude Vision), KSeF national e-invoicing integration, time tracking with Clockify/Jira import and invoice reconciliation, Jira bidirectional sync, Notion/Confluence doc linking with Cmd+K search, Google/Outlook calendar deadline sync, and a provider-agnostic integration framework with OAuth credential store, webhook pipeline, and health monitoring.
 
-v3.0 Enterprise & Monetization Phase 30 complete: Equipment tracking foundation — 4 Prisma models (Equipment, EquipmentAssignment, Shipment, ShipmentEvent) with status enums, 13-endpoint tRPC router with RBAC, full equipment management UI (list/detail/forms/dialogs/timeline/badges), contractor profile Equipment tab, and workflow engine integration (onboarding auto-creates shipments, offboarding triggers returns, shipment status auto-completes linked tasks).
+v3.0 Enterprise & Monetization Phase 31 complete: Google Workspace directory import — GoogleWorkspaceAdapter with Admin SDK OAuth, multi-step import wizard (directory preview, group-to-role mapping, bulk import with server-side role resolution), periodic directory sync via QStash cron detecting new hires and departures with admin notifications, provider section UI with connect/disconnect/sync status.
 
 ## Requirements
 
@@ -163,4 +163,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-02 after Phase 29 (Linear Integration) complete*
+*Last updated: 2026-04-02 after Phase 31 (Google Workspace Directory Import) complete*
