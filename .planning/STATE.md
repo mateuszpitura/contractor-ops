@@ -58,6 +58,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 30 P01 | 6min | 2 tasks | 10 files |
 | Phase 30 P02 | 12min | 2 tasks | 24 files |
 | Phase 30 P03 | 3min | 2 tasks | 3 files |
+| Phase 31 P00 | 3min | 2 tasks | 6 files |
 | Phase 31 P01 | 6min | 2 tasks | 10 files |
 
 ## Accumulated Context
@@ -93,6 +94,7 @@ Recent decisions affecting current work:
 - [Phase 30]: equipmentEligibleTaskRunIds built inside transaction matching Jira/Linear/Calendar pattern
 - [Phase 31]: Adapter slug uses underscore (google_workspace) so toUpperCase maps to GOOGLE_WORKSPACE Prisma enum
 - [Phase 31]: Directory import role enum uses actual system roles not simplified admin/manager/viewer
+- [Phase 31]: Added vitest.config.ts and test script to validators package to enable test execution
 
 ### Pending Todos
 

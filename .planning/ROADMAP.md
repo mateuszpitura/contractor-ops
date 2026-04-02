@@ -132,7 +132,7 @@ Plans:
 **UI hint**: yes
 
 Plans:
-- [ ] 31-00-PLAN.md — Wave 0 test stubs for all GOOG requirements (GOOG-01/02/03/04/05)
+- [x] 31-00-PLAN.md — Wave 0 test stubs for all GOOG requirements (GOOG-01/02/03/04/05)
 - [x] 31-01-PLAN.md — GoogleWorkspaceAdapter, Zod validators, tRPC router with directory listing, group resolution, bulk import (GOOG-01/02/03/04)
 - [ ] 31-02-PLAN.md — Provider section UI, multi-step import wizard, directory preview table, role mapping, i18n (GOOG-01/02/03/04)
 - [ ] 31-03-PLAN.md — Directory sync orchestrator, QStash cron endpoint, new hire/departure notifications (GOOG-05)
