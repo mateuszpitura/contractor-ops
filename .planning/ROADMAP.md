@@ -111,13 +111,13 @@ Plans:
   3. Contractor profile shows an Equipment tab with assigned items and their current shipment status
   4. Admin can create a shipment with carrier, tracking number, and expected delivery date, and shipment progress displays as a timeline
   5. Onboarding workflow auto-creates "ship equipment" shipment and offboarding triggers return request, with tasks auto-completing on target shipment status
-**Plans**: TBD
+**Plans**: 3 plans
 **UI hint**: yes
 
 Plans:
-- [ ] 30-01: TBD
-- [ ] 30-02: TBD
-- [ ] 30-03: TBD
+- [ ] 30-01-PLAN.md — Prisma schema (4 models, 4 enums), Zod validators, RBAC permission, tRPC router (EQUIP-01/02/04)
+- [ ] 30-02-PLAN.md — Equipment UI: list page, detail page, forms, assignment dialog, shipment timeline, contractor tab, i18n (EQUIP-01/02/03/04/08)
+- [ ] 30-03-PLAN.md — Workflow integration: equipment task handler, shipment auto-completion service, router hooks (EQUIP-09/10)
 
 ### Phase 31: Google Workspace Directory Import
 **Goal**: Organizations using Google Workspace can import their team directory into the platform with role mapping
