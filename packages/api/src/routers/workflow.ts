@@ -16,12 +16,14 @@ import {
   jiraTaskConfigSchema,
   calendarTaskConfigSchema,
   linearTaskConfigSchema,
+  equipmentTaskConfigSchema,
 } from "@contractor-ops/validators";
 import * as E from "../errors.js";
 import { router } from "../init.js";
 import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
 import { dispatch } from "../services/notification-service.js";
+import { handleEquipmentTaskStart } from "../services/equipment-workflow.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -758,6 +760,20 @@ export const workflowRouter = router({
           }
         }
 
+        // Build set of task run IDs eligible for equipment workflow hook
+        const equipmentEligibleTaskRunIds = new Set<string>();
+        for (const taskTemplate of template.tasks) {
+          if (taskTemplate.taskType === "EQUIPMENT") {
+            const parsed = equipmentTaskConfigSchema.safeParse(taskTemplate.configJson);
+            if (!parsed.success || parsed.data.equipmentEnabled !== false) {
+              const runId = taskIdMap.get(taskTemplate.id);
+              if (runId) {
+                equipmentEligibleTaskRunIds.add(runId);
+              }
+            }
+          }
+        }
+
         return {
           run: fullRun,
           contractorName: contractor.legalName ?? contractor.displayName ?? "Unknown",
@@ -766,6 +782,8 @@ export const workflowRouter = router({
           calendarConfigMap,
           calendarTaskCount: calendarConfigMap.size,
           contractName: contract?.title ?? "",
+          equipmentEligibleTaskRunIds,
+          templateType: template.type,
         };
       });
 
@@ -922,6 +940,22 @@ export const workflowRouter = router({
             }
           })();
         }
+      }
+
+      // Fire-and-forget: handle EQUIPMENT task integration hooks (Phase 30)
+      const equipmentTasks = run.run.tasks.filter(
+        (t) =>
+          t.status !== "SKIPPED" &&
+          run.equipmentEligibleTaskRunIds.has(t.id),
+      );
+      for (const eqTask of equipmentTasks) {
+        void (async () => {
+          await handleEquipmentTaskStart(prisma, ctx.organizationId, eqTask, {
+            id: run.run.id,
+            contractorId: run.run.contractorId,
+            templateType: run.templateType,
+          });
+        })();
       }
 
       return plain({ ...run.run, calendarTaskCount: run.calendarTaskCount });
