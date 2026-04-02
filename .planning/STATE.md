@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Enterprise & Monetization
 status: executing
-stopped_at: Completed 30-02-PLAN.md
+stopped_at: Completed 30-03-PLAN.md
 last_updated: "2026-04-02T11:22:45.965Z"
 last_activity: 2026-04-02
 progress:
@@ -57,6 +57,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 29 P03 | 11min | 2 tasks | 14 files |
 | Phase 30 P01 | 6min | 2 tasks | 10 files |
 | Phase 30 P02 | 12min | 2 tasks | 24 files |
+| Phase 30 P03 | 3min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -87,6 +88,8 @@ Recent decisions affecting current work:
 - [Phase 30]: Equipment status transition map as flat constant, validated before applying changes
 - [Phase 30]: base-ui Select onValueChange receives nullable value -- guard with val && before setValue calls
 - [Phase 30]: Equipment table uses local state for filters instead of nuqs URL state (simpler for first version)
+- [Phase 30]: Equipment tasks with no assigned equipment auto-complete immediately (no-op optimization)
+- [Phase 30]: equipmentEligibleTaskRunIds built inside transaction matching Jira/Linear/Calendar pattern
 
 ### Pending Todos
 
@@ -101,5 +104,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-02T11:22:45.963Z
-Stopped at: Completed 30-02-PLAN.md
+Stopped at: Completed 30-03-PLAN.md
 Resume file: None

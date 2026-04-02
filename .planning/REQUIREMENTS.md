@@ -51,8 +51,8 @@ Requirements for v3.0 Enterprise & Monetization milestone. Each maps to roadmap 
 - [ ] **EQUIP-06**: System integrates with DPD API for shipment creation, label generation, and status tracking
 - [ ] **EQUIP-07**: System integrates with UPS API for shipment creation and status tracking
 - [x] **EQUIP-08**: Shipment status displays as timeline on equipment detail and contractor profile with unified status model
-- [ ] **EQUIP-09**: Onboarding workflow task "Ship equipment" auto-creates shipment, offboarding task "Return equipment" triggers return request
-- [ ] **EQUIP-10**: Workflow task auto-completes when shipment reaches target status (e.g., "delivered")
+- [x] **EQUIP-09**: Onboarding workflow task "Ship equipment" auto-creates shipment, offboarding task "Return equipment" triggers return request
+- [x] **EQUIP-10**: Workflow task auto-completes when shipment reaches target status (e.g., "delivered")
 - [ ] **EQUIP-11**: Contractor can initiate equipment return via portal and receive shipping label
 
 ### Stripe Billing
@@ -136,8 +136,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | EQUIP-06 | Phase 35 | Pending |
 | EQUIP-07 | Phase 35 | Pending |
 | EQUIP-08 | Phase 30 | Complete |
-| EQUIP-09 | Phase 30 | Pending |
-| EQUIP-10 | Phase 30 | Pending |
+| EQUIP-09 | Phase 30 | Complete |
+| EQUIP-10 | Phase 30 | Complete |
 | EQUIP-11 | Phase 33 | Pending |
 | BILL-01 | Phase 28 | Complete |
 | BILL-02 | Phase 28 | Complete |

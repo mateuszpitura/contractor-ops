@@ -117,7 +117,7 @@ Plans:
 Plans:
 - [x] 30-01-PLAN.md — Prisma schema (4 models, 4 enums), Zod validators, RBAC permission, tRPC router (EQUIP-01/02/04)
 - [x] 30-02-PLAN.md — Equipment UI: list page, detail page, forms, assignment dialog, shipment timeline, contractor tab, i18n (EQUIP-01/02/03/04/08)
-- [ ] 30-03-PLAN.md — Workflow integration: equipment task handler, shipment auto-completion service, router hooks (EQUIP-09/10)
+- [x] 30-03-PLAN.md — Workflow integration: equipment task handler, shipment auto-completion service, router hooks (EQUIP-09/10)
 
 ### Phase 31: Google Workspace Directory Import
 **Goal**: Organizations using Google Workspace can import their team directory into the platform with role mapping

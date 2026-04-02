@@ -13,6 +13,7 @@ import {
 import { router } from "../init.js";
 import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
+import { checkShipmentTaskCompletion } from "../services/equipment-workflow.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -703,6 +704,16 @@ export const equipmentRouter = router({
           },
         },
       });
+
+      // Fire-and-forget: auto-complete linked workflow task if shipment reached target status (Phase 30)
+      void (async () => {
+        await checkShipmentTaskCompletion(prisma, ctx.organizationId, {
+          id: shipment.id,
+          workflowTaskRunId: shipment.workflowTaskRunId,
+          direction: shipment.direction as "OUTBOUND" | "RETURN",
+          currentStatus: input.status,
+        });
+      })();
 
       return plain(result);
     }),
