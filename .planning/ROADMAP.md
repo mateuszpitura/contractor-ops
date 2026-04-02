@@ -117,7 +117,7 @@ Plans:
 Plans:
 - [x] 30-01-PLAN.md — Prisma schema (4 models, 4 enums), Zod validators, RBAC permission, tRPC router (EQUIP-01/02/04)
 - [ ] 30-02-PLAN.md — Equipment UI: list page, detail page, forms, assignment dialog, shipment timeline, contractor tab, i18n (EQUIP-01/02/03/04/08)
-- [ ] 30-03-PLAN.md — Workflow integration: equipment task handler, shipment auto-completion service, router hooks (EQUIP-09/10)
+- [x] 30-03-PLAN.md — Workflow integration: equipment task handler, shipment auto-completion service, router hooks (EQUIP-09/10)
 
 ### Phase 31: Google Workspace Directory Import
 **Goal**: Organizations using Google Workspace can import their team directory into the platform with role mapping
@@ -233,7 +233,7 @@ Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 �
 | 27. OAuth Callback & OCR Build Fixes | v2.0 | 1/1 | Complete | 2026-04-01 |
 | 28. Stripe Billing Foundation | v3.0 | 4/4 | Complete    | 2026-04-01 |
 | 29. Linear Integration | v3.0 | 3/3 | Complete    | 2026-04-01 |
-| 30. Equipment Tracking Foundation | v3.0 | 1/3 | In Progress|  |
+| 30. Equipment Tracking Foundation | v3.0 | 2/3 | In Progress|  |
 | 31. Google Workspace Directory Import | v3.0 | 0/2 | Not started | - |
 | 32. Teams Integration | v3.0 | 0/3 | Not started | - |
 | 33. InPost Courier Integration | v3.0 | 0/1 | Not started | - |

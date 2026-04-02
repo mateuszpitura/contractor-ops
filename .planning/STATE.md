@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Enterprise & Monetization
 status: executing
-stopped_at: Completed 30-01-PLAN.md
-last_updated: "2026-04-02T11:06:21.430Z"
+stopped_at: Completed 30-03-PLAN.md
+last_updated: "2026-04-02T11:13:02.026Z"
 last_activity: 2026-04-02
 progress:
   total_phases: 8
   completed_phases: 2
   total_plans: 10
-  completed_plans: 8
+  completed_plans: 9
   percent: 0
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-01)
 ## Current Position
 
 Phase: 30 (equipment-tracking-foundation) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-04-02
 
@@ -56,6 +56,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 29 P02 | 6min | 3 tasks | 7 files |
 | Phase 29 P03 | 11min | 2 tasks | 14 files |
 | Phase 30 P01 | 6min | 2 tasks | 10 files |
+| Phase 30 P03 | 3min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -84,6 +85,8 @@ Recent decisions affecting current work:
 - [Phase 29]: Added connectionStatus and linkedIssues tRPC endpoints to Linear router for UI component queries
 - [Phase 30]: Audit log entries created directly via prisma.auditLog.create in equipment router mutations
 - [Phase 30]: Equipment status transition map as flat constant, validated before applying changes
+- [Phase 30]: Equipment tasks with no assigned equipment auto-complete immediately (no-op optimization)
+- [Phase 30]: equipmentEligibleTaskRunIds built inside transaction matching Jira/Linear/Calendar pattern
 
 ### Pending Todos
 
@@ -97,6 +100,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-02T11:06:21.428Z
-Stopped at: Completed 30-01-PLAN.md
+Last session: 2026-04-02T11:13:02.023Z
+Stopped at: Completed 30-03-PLAN.md
 Resume file: None
