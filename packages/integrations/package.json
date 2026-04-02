@@ -88,6 +88,11 @@
       "types": "./dist/adapters/outlook-calendar-adapter.d.ts",
       "import": "./dist/adapters/outlook-calendar-adapter.js",
       "default": "./dist/adapters/outlook-calendar-adapter.js"
+    },
+    "./adapters/google-workspace-adapter": {
+      "types": "./dist/adapters/google-workspace-adapter.d.ts",
+      "import": "./dist/adapters/google-workspace-adapter.js",
+      "default": "./dist/adapters/google-workspace-adapter.js"
     }
   },
   "scripts": {

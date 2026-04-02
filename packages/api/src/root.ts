@@ -29,6 +29,7 @@ import { docsRouter } from "./routers/docs.js";
 import { calendarRouter } from "./routers/calendar.js";
 import { billingRouter } from "./routers/billing.js";
 import { equipmentRouter } from "./routers/equipment.js";
+import { googleWorkspaceRouter } from "./routers/google-workspace.js";
 
 /**
  * Root tRPC router merging all sub-routers.
@@ -89,6 +90,7 @@ export const appRouter = router({
   calendar: calendarRouter,
   billing: billingRouter,
   equipment: equipmentRouter,
+  googleWorkspace: googleWorkspaceRouter, // Google Workspace directory import, group resolution, bulk import, sync
 });
 
 /** Type-safe router type for client consumption */

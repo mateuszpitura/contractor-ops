@@ -1,6 +1,23 @@
 import { z } from "zod";
 
 // ---------------------------------------------------------------------------
+// Shared role enum (must match Better Auth organization roles)
+// ---------------------------------------------------------------------------
+
+export const directoryRoleEnum = z.enum([
+  "admin",
+  "finance_admin",
+  "ops_manager",
+  "team_manager",
+  "legal_compliance_viewer",
+  "it_admin",
+  "external_accountant",
+  "readonly",
+]);
+
+export type DirectoryRole = z.infer<typeof directoryRoleEnum>;
+
+// ---------------------------------------------------------------------------
 // Google Directory User Schema
 // ---------------------------------------------------------------------------
 
@@ -43,7 +60,7 @@ export type GoogleGroupParsed = z.infer<typeof googleGroupSchema>;
 export const groupRoleMappingSchema = z.object({
   groupEmail: z.string().email(),
   groupName: z.string(),
-  role: z.enum(["admin", "manager", "viewer"]),
+  role: directoryRoleEnum,
 });
 
 export type GroupRoleMapping = z.infer<typeof groupRoleMappingSchema>;
@@ -60,10 +77,10 @@ export const directoryImportInputSchema = z.object({
       googleUserId: z.string(),
     }),
   ),
-  defaultRole: z.enum(["admin", "manager", "viewer"]),
+  defaultRole: directoryRoleEnum,
   groupRoleMappings: z.array(groupRoleMappingSchema).default([]),
   userRoleOverrides: z
-    .record(z.string().email(), z.enum(["admin", "manager", "viewer"]))
+    .record(z.string().email(), directoryRoleEnum)
     .default({}),
   /**
    * Client-supplied group memberships for display purposes only.

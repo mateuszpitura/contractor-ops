@@ -322,6 +322,7 @@ export type {
 } from "./jira.js";
 
 export {
+  directoryRoleEnum,
   googleDirectoryUserSchema,
   googleGroupSchema,
   groupRoleMappingSchema,
@@ -329,6 +330,7 @@ export {
   directoryImportResultSchema,
 } from "./google-workspace.js";
 export type {
+  DirectoryRole,
   GoogleDirectoryUserParsed,
   GoogleGroupParsed,
   GroupRoleMapping,
