@@ -261,6 +261,8 @@ enum EntityType {
   TEAM
   APPROVAL_FLOW
   TIMESHEET
+  EQUIPMENT
+  SHIPMENT
 }
 
 enum DocumentLinkRole {

@@ -1,6 +1,14 @@
 export { optionalString, optionalFk, optionalPositiveInt } from "./helpers.js";
 
 export {
+  serverEnvSchema,
+  clientEnvSchema,
+  validateServerEnv,
+  validateClientEnv,
+} from "./env.js";
+export type { ServerEnv, ClientEnv } from "./env.js";
+
+export {
   createOrganizationSchema,
   updateOrganizationSettingsSchema,
 } from "./organization.js";
@@ -312,6 +320,31 @@ export type {
   JiraStatusMapping,
   JiraIssueMetadata,
 } from "./jira.js";
+
+export {
+  equipmentTypeEnum,
+  equipmentStatusEnum,
+  shipmentStatusEnum,
+  shipmentDirectionEnum,
+  equipmentCreateSchema,
+  equipmentUpdateSchema,
+  equipmentListSchema,
+  equipmentAssignSchema,
+  equipmentUnassignSchema,
+  shipmentCreateSchema,
+  shipmentEventCreateSchema,
+  equipmentTaskConfigSchema,
+} from "./equipment.js";
+export type {
+  EquipmentCreateInput,
+  EquipmentUpdateInput,
+  EquipmentListInput,
+  EquipmentAssignInput,
+  EquipmentUnassignInput,
+  ShipmentCreateInput,
+  ShipmentEventCreateInput,
+  EquipmentTaskConfig,
+} from "./equipment.js";
 
 export {
   linearStateTypeEnum,

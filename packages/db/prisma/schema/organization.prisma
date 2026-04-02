@@ -80,6 +80,10 @@ model Organization {
   timeEntries          TimeEntry[]
   subscription         Subscription?
   ocrCreditLedger      OcrCreditLedger[]
+  equipment            Equipment[]
+  equipmentAssignments EquipmentAssignment[]
+  shipments            Shipment[]
+  shipmentEvents       ShipmentEvent[]
 }
 
 model Member {

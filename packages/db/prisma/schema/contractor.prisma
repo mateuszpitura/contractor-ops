@@ -58,6 +58,7 @@ model Contractor {
   notificationPreferences  ContractorNotificationPreference[]
   timesheets               Timesheet[]
   timeEntries              TimeEntry[]
+  equipmentAssignments     EquipmentAssignment[]
 
   @@index([organizationId])
   @@index([organizationId, status])

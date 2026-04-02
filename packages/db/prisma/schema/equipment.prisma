@@ -1,0 +1,127 @@
+// Equipment, EquipmentAssignment, Shipment, ShipmentEvent
+
+model Equipment {
+  id             String          @id @default(cuid())
+  organizationId String
+  name           String
+  serialNumber   String?
+  type           EquipmentType
+  customType     String?
+  status         EquipmentStatus @default(AVAILABLE)
+  notes          String?
+  purchaseDate   DateTime?       @db.Date
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  organization   Organization          @relation(fields: [organizationId], references: [id])
+  assignments    EquipmentAssignment[]
+  shipments      Shipment[]
+
+  @@unique([organizationId, serialNumber])
+  @@index([organizationId])
+  @@index([organizationId, status])
+  @@index([organizationId, type])
+}
+
+model EquipmentAssignment {
+  id                 String    @id @default(cuid())
+  organizationId     String
+  equipmentId        String
+  contractorId       String
+  assignedByUserId   String
+  assignedAt         DateTime  @default(now())
+  unassignedAt       DateTime?
+  unassignedByUserId String?
+  notes              String?
+
+  organization       Organization @relation(fields: [organizationId], references: [id])
+  equipment          Equipment    @relation(fields: [equipmentId], references: [id])
+  contractor         Contractor   @relation(fields: [contractorId], references: [id])
+
+  @@index([organizationId])
+  @@index([organizationId, equipmentId])
+  @@index([organizationId, contractorId])
+  @@index([organizationId, equipmentId, unassignedAt])
+}
+
+model Shipment {
+  id                 String          @id @default(cuid())
+  organizationId     String
+  equipmentId        String
+  assignmentId       String?
+  workflowTaskRunId  String?
+  direction          ShipmentDirection
+  carrier            String
+  carrierCustom      String?
+  trackingNumber     String?
+  expectedDeliveryAt DateTime?       @db.Date
+  currentStatus      ShipmentStatus  @default(CREATED)
+  createdByUserId    String
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  organization       Organization    @relation(fields: [organizationId], references: [id])
+  equipment          Equipment       @relation(fields: [equipmentId], references: [id])
+  events             ShipmentEvent[]
+
+  @@index([organizationId])
+  @@index([organizationId, equipmentId])
+  @@index([organizationId, currentStatus])
+  @@index([organizationId, workflowTaskRunId])
+}
+
+model ShipmentEvent {
+  id              String         @id @default(cuid())
+  organizationId  String
+  shipmentId      String
+  status          ShipmentStatus
+  notes           String?
+  occurredAt      DateTime       @default(now())
+  createdByUserId String?
+  createdAt       DateTime       @default(now())
+
+  organization    Organization   @relation(fields: [organizationId], references: [id])
+  shipment        Shipment       @relation(fields: [shipmentId], references: [id])
+
+  @@index([organizationId])
+  @@index([organizationId, shipmentId, occurredAt])
+}
+
+// --- Enums ---
+
+enum EquipmentType {
+  LAPTOP
+  MONITOR
+  PHONE
+  HEADSET
+  KEYBOARD
+  MOUSE
+  OTHER
+}
+
+enum EquipmentStatus {
+  AVAILABLE
+  ASSIGNED
+  IN_TRANSIT
+  DELIVERED
+  RETURN_REQUESTED
+  RETURN_IN_TRANSIT
+  RETURNED
+  RETIRED
+}
+
+enum ShipmentStatus {
+  CREATED
+  LABEL_GENERATED
+  PICKED_UP
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED
+  FAILED
+  RETURNED
+}
+
+enum ShipmentDirection {
+  OUTBOUND
+  RETURN
+}

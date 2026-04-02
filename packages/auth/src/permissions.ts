@@ -21,6 +21,7 @@ const statement = {
   settings: ["read", "update"],
   integration: ["read", "update"],
   time: ["read", "approve"],
+  equipment: ["read", "create", "update", "delete"],
 } as const;
 
 export const ac = createAccessControl(statement);

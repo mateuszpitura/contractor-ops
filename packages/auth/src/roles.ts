@@ -24,6 +24,7 @@ const allPermissions = {
   settings: ["read", "update"],
   integration: ["read", "update"],
   time: ["read", "approve"],
+  equipment: ["read", "create", "update", "delete"],
 } as const;
 
 export const roles = {
@@ -40,6 +41,7 @@ export const roles = {
     invitation: ["create", "cancel"],
     contractor: ["create", "read", "update", "delete", "bulk"],
     contract: ["create", "read", "update", "delete"],
+    document: ["create", "read", "update", "delete"],
     invoice: ["create", "read", "update", "delete", "approve"],
     workflow: ["create", "read", "update", "delete", "execute"],
     payment: ["create", "read", "export"],
@@ -47,6 +49,7 @@ export const roles = {
     settings: ["read", "update"],
     integration: ["read", "update"],
     time: ["read", "approve"],
+    equipment: ["read", "create", "update", "delete"],
   }),
 
   finance_admin: ac.newRole({
@@ -67,6 +70,7 @@ export const roles = {
     report: ["read", "export"],
     settings: ["read"],
     time: ["read", "approve"],
+    equipment: ["read", "create", "update", "delete"],
   }),
 
   team_manager: ac.newRole({
@@ -76,6 +80,7 @@ export const roles = {
     workflow: ["read", "execute"],
     report: ["read"],
     time: ["read", "approve"],
+    equipment: ["read"],
   }),
 
   legal_compliance_viewer: ac.newRole({
@@ -90,6 +95,7 @@ export const roles = {
     invitation: ["create", "cancel"],
     settings: ["read", "update"],
     integration: ["read", "update"],
+    equipment: ["read"],
   }),
 
   external_accountant: ac.newRole({
