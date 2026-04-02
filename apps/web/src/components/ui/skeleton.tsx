@@ -5,7 +5,10 @@ function Skeleton({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="skeleton"
       aria-hidden="true"
-      className={cn("animate-shimmer rounded-md", className)}
+      className={cn(
+        "animate-shimmer rounded-md ring-1 ring-foreground/[0.03]",
+        className
+      )}
       {...props}
     />
   )

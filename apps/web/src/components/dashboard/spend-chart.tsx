@@ -45,7 +45,7 @@ function formatMonthLabel(isoString: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// Toggle buttons (inline -- no toggle-group UI primitive needed)
+// Toggle buttons
 // ---------------------------------------------------------------------------
 
 interface RangeToggleProps {
@@ -62,16 +62,16 @@ const RANGES = [
 
 function RangeToggle({ value, onChange, t }: RangeToggleProps) {
   return (
-    <div className="flex items-center gap-1 rounded-lg bg-muted p-0.5">
+    <div className="flex items-center gap-0.5 rounded-lg bg-surface-3 p-0.5">
       {RANGES.map((range) => (
         <button
           key={range.value}
           type="button"
           onClick={() => onChange(range.value)}
-          className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+          className={`rounded-md px-2.5 py-1 text-xs font-medium transition-all duration-200 ${
             value === range.value
-              ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
+              ? "bg-surface-1 text-foreground shadow-sm ring-1 ring-foreground/[0.06]"
+              : "text-muted-foreground hover:text-foreground hover:bg-surface-2"
           }`}
         >
           {t(range.labelKey as Parameters<typeof t>[0])}
@@ -82,7 +82,7 @@ function RangeToggle({ value, onChange, t }: RangeToggleProps) {
 }
 
 // ---------------------------------------------------------------------------
-// Custom tooltip
+// Custom tooltip — glass morphism with accent line
 // ---------------------------------------------------------------------------
 
 function ChartTooltip({
@@ -97,12 +97,23 @@ function ChartTooltip({
   if (!active || !payload?.length) return null;
 
   return (
-    <div className="rounded-lg border bg-background p-3 shadow-md">
-      <p className="mb-1 text-xs font-medium text-muted-foreground">{label}</p>
+    <div className="glass-medium relative overflow-hidden rounded-xl border border-border/40 p-3 shadow-lg">
+      {/* Top accent line */}
+      <div className="accent-line absolute top-0 right-0 left-0 rounded-t-xl" />
+      <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/60">
+        {label}
+      </p>
       {payload.map((entry) => (
-        <p key={entry.name} className="text-sm font-semibold" style={{ color: entry.color }}>
-          {entry.name}: {currencyFormatter.format(entry.value / 100)}
-        </p>
+        <div key={entry.name} className="flex items-baseline gap-2">
+          <span
+            className="inline-block h-2 w-2 shrink-0 rounded-full"
+            style={{ backgroundColor: entry.color }}
+          />
+          <span className="text-xs text-muted-foreground">{entry.name}</span>
+          <span className="ml-auto font-display text-sm font-bold tabular-nums" style={{ color: entry.color }}>
+            {currencyFormatter.format(entry.value / 100)}
+          </span>
+        </div>
       ))}
     </div>
   );
@@ -115,6 +126,7 @@ function ChartTooltip({
 /**
  * Recharts AreaChart showing monthly spend with 6m/12m/YTD toggle.
  * Supports multi-currency stacking (PLN + EUR).
+ * Enhanced with gradient fills and glow-line strokes.
  */
 export function SpendChart() {
   const t = useTranslations("Dashboard");
@@ -152,7 +164,7 @@ export function SpendChart() {
   const hasEur = chartData.some((d) => d.EUR > 0);
 
   return (
-    <Card>
+    <Card className="iridescent neon-card">
       <CardHeader className="flex-row items-center justify-between">
         <CardTitle className="font-display text-lg font-semibold">
           {t("spend.title")}
@@ -163,42 +175,91 @@ export function SpendChart() {
         {isLoading ? (
           <Skeleton className="h-[280px] w-full rounded-lg" />
         ) : chartData.length === 0 ? (
-          <div className="flex h-[280px] items-center justify-center text-sm text-muted-foreground">
+          <div className="corner-marks flex h-[280px] items-center justify-center text-sm text-muted-foreground">
             {t("spend.empty")}
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={280}>
             <AreaChart data={chartData}>
+              <defs>
+                <linearGradient id="gradPLN" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="oklch(0.65 0.145 178)" stopOpacity={0.35} />
+                  <stop offset="50%" stopColor="oklch(0.55 0.15 178)" stopOpacity={0.12} />
+                  <stop offset="100%" stopColor="oklch(0.55 0.15 178)" stopOpacity={0.02} />
+                </linearGradient>
+                <linearGradient id="gradEUR" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="oklch(0.72 0.14 65)" stopOpacity={0.30} />
+                  <stop offset="50%" stopColor="oklch(0.72 0.14 65)" stopOpacity={0.10} />
+                  <stop offset="100%" stopColor="oklch(0.72 0.14 65)" stopOpacity={0.02} />
+                </linearGradient>
+                {/* Glow filter for stroke lines */}
+                <filter id="glowPLN" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="3" result="blur" />
+                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                </filter>
+              </defs>
               <CartesianGrid
                 strokeDasharray="3 3"
-                stroke="color-mix(in oklch, var(--color-muted-foreground) 15%, transparent)"
+                stroke="color-mix(in oklch, var(--color-muted-foreground) 10%, transparent)"
+                vertical={false}
               />
-              <XAxis dataKey="month" fontSize={12} tickLine={false} axisLine={false} />
-              <YAxis
-                fontSize={12}
+              <XAxis
+                dataKey="month"
+                fontSize={11}
                 tickLine={false}
                 axisLine={false}
+                tick={{ fill: "var(--color-muted-foreground)" }}
+              />
+              <YAxis
+                fontSize={11}
+                tickLine={false}
+                axisLine={false}
+                tick={{ fill: "var(--color-muted-foreground)" }}
                 tickFormatter={(val: number) =>
                   currencyFormatter.format(val / 100)
                 }
+                width={70}
               />
-              <Tooltip content={<ChartTooltip />} />
+              <Tooltip
+                content={<ChartTooltip />}
+                cursor={{
+                  stroke: "var(--color-primary)",
+                  strokeWidth: 1,
+                  strokeDasharray: "4 4",
+                  strokeOpacity: 0.3,
+                }}
+              />
               <Area
                 type="monotone"
                 dataKey="PLN"
                 stackId="1"
-                stroke="var(--color-chart-1)"
-                fill="color-mix(in oklch, var(--color-chart-1) 20%, transparent)"
-                strokeWidth={2}
+                stroke="var(--color-viz-1)"
+                fill="url(#gradPLN)"
+                strokeWidth={2.5}
+                filter="url(#glowPLN)"
+                dot={false}
+                activeDot={{
+                  r: 5,
+                  fill: "var(--color-viz-1)",
+                  stroke: "var(--color-surface-1)",
+                  strokeWidth: 2,
+                }}
               />
               {hasEur && (
                 <Area
                   type="monotone"
                   dataKey="EUR"
                   stackId="1"
-                  stroke="var(--color-chart-2)"
-                  fill="color-mix(in oklch, var(--color-chart-2) 20%, transparent)"
+                  stroke="var(--color-viz-2)"
+                  fill="url(#gradEUR)"
                   strokeWidth={2}
+                  dot={false}
+                  activeDot={{
+                    r: 4,
+                    fill: "var(--color-viz-2)",
+                    stroke: "var(--color-surface-1)",
+                    strokeWidth: 2,
+                  }}
                 />
               )}
             </AreaChart>

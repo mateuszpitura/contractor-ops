@@ -39,19 +39,22 @@ function getEntityHref(type: DeadlineType, entityId: string): string {
 
 const DEADLINE_BADGE_CONFIG: Record<
   DeadlineType,
-  { variant: "warning" | "destructive" | "info"; labelKey: string }
+  { variant: "warning" | "destructive" | "info"; labelKey: string; accent: string }
 > = {
   CONTRACT_EXPIRING: {
     variant: "warning",
     labelKey: "deadlines.badgeContract",
+    accent: "border-l-warning",
   },
   TASK_OVERDUE: {
     variant: "destructive",
     labelKey: "deadlines.badgeTask",
+    accent: "border-l-destructive",
   },
   INVOICE_DUE: {
     variant: "info",
     labelKey: "deadlines.badgeInvoice",
+    accent: "border-l-info",
   },
 };
 
@@ -61,7 +64,7 @@ const DEADLINE_BADGE_CONFIG: Record<
 
 /**
  * Upcoming deadlines widget showing contract expirations, overdue tasks,
- * and due invoices. Items sorted by urgency.
+ * and due invoices. Items sorted by urgency. Color-coded left border.
  */
 export function DeadlinesWidget() {
   const t = useTranslations("Dashboard");
@@ -70,7 +73,7 @@ export function DeadlinesWidget() {
   );
 
   return (
-    <Card>
+    <Card className="neon-card">
       <CardHeader>
         <CardTitle className="font-display text-lg font-semibold">
           {t("deadlines.title")}
@@ -96,7 +99,7 @@ export function DeadlinesWidget() {
             {t("deadlines.empty")}
           </p>
         ) : (
-          <ScrollArea className="max-h-[320px]">
+          <ScrollArea className="scroll-fade-bottom max-h-[320px]">
             <div className="flex flex-col gap-2">
               {data.map((item) => {
                 const badge = DEADLINE_BADGE_CONFIG[item.type as DeadlineType];
@@ -106,10 +109,11 @@ export function DeadlinesWidget() {
                 return (
                   <div
                     key={`${item.type}-${item.entityId}`}
-                    className="flex items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-muted/50"
+                    className={`flex items-center gap-3 rounded-lg border-l-2 ${badge.accent} pl-3 pr-2.5 py-2.5 transition-all duration-200 hover:bg-surface-2 hover:pl-3.5`}
                   >
                     <Badge
                       variant={badge.variant}
+                      className={isOverdue ? "badge-glow" : ""}
                     >
                       {t(badge.labelKey as Parameters<typeof t>[0])}
                     </Badge>
@@ -120,9 +124,9 @@ export function DeadlinesWidget() {
                       {item.entityName}
                     </Link>
                     <span
-                      className={`shrink-0 text-xs ${
+                      className={`shrink-0 text-xs font-mono tabular-nums ${
                         isOverdue
-                          ? "font-semibold text-destructive"
+                          ? "font-bold text-destructive"
                           : "text-muted-foreground"
                       }`}
                     >

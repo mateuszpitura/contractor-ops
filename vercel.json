@@ -3,6 +3,14 @@
     {
       "path": "/api/cron/token-refresh",
       "schedule": "*/15 * * * *"
+    },
+    {
+      "path": "/api/cron/reminders",
+      "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/trial-notifications",
+      "schedule": "0 9 * * *"
     }
   ]
 }

@@ -104,8 +104,14 @@ export function CurrentPlanSummary() {
         <p className="text-sm text-muted-foreground">{renewalText}</p>
         <p className="text-sm text-muted-foreground">
           {subscription.seatCount} seat{subscription.seatCount !== 1 ? "s" : ""}{" "}
-          in use
+          (active contractors)
         </p>
+        {(subscription.status === "PAST_DUE" ||
+          subscription.status === "UNPAID") && (
+          <p className="text-sm font-medium text-destructive">
+            Update your payment method to avoid service interruption.
+          </p>
+        )}
       </CardContent>
     </Card>
   );

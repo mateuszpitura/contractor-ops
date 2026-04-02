@@ -17,6 +17,7 @@ import {
 } from "../services/invoice-matching.js";
 import { dispatch } from "../services/notification-service.js";
 import { deleteCalendarEvent } from "../services/calendar-event-service.js";
+import { invalidateByPrefix, CacheKeys } from "../services/cache.js";
 
 // ---------------------------------------------------------------------------
 // Finance team helper
@@ -155,6 +156,8 @@ export const invoiceRouter = router({
           console.error("[invoice] dispatch INVOICE_RECEIVED failed:", err),
         );
       }
+
+      void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
 
       return plain(invoice);
     }),
@@ -486,6 +489,8 @@ export const invoiceRouter = router({
         return inv;
       });
 
+      void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
+
       return plain(updated);
     }),
 
@@ -611,6 +616,8 @@ export const invoiceRouter = router({
       }).catch((err) =>
         console.error("[invoice] calendar event cleanup on void failed:", err),
       );
+
+      void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
 
       return plain(updated);
     }),

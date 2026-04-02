@@ -55,8 +55,8 @@ export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
     return {
       clientIdEnvVar: "AUTENTI_CLIENT_ID",
       clientSecretEnvVar: "AUTENTI_CLIENT_SECRET",
-      authorizationUrl: "https://app.autenti.com/oauth/authorize",
-      tokenUrl: "https://app.autenti.com/oauth/token",
+      authorizationUrl: "https://api.autenti.com/api/v2/auth/authorize",
+      tokenUrl: "https://api.autenti.com/api/v2/auth/token",
       scopes: ["document-process:write", "document-process:read"],
       redirectPath: "/api/oauth/autenti/callback",
     };
@@ -75,7 +75,7 @@ export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
       );
     }
 
-    const response = await fetch("https://app.autenti.com/oauth/token", {
+    const response = await fetch("https://api.autenti.com/api/v2/auth/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({
@@ -124,7 +124,7 @@ export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
       throw new Error("No refresh token available for Autenti");
     }
 
-    const response = await fetch("https://app.autenti.com/oauth/token", {
+    const response = await fetch("https://api.autenti.com/api/v2/auth/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({

@@ -1,6 +1,11 @@
+import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { createCronLogger } from "@contractor-ops/logger";
+import { metrics } from "@contractor-ops/logger/metrics";
 import { refreshExpiring } from "@contractor-ops/integrations";
+
+const log = createCronLogger("token-refresh");
 
 // ---------------------------------------------------------------------------
 // GET /api/cron/token-refresh
@@ -16,14 +21,25 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  try {
-    const result = await refreshExpiring();
-    console.log(
-      `[token-refresh] Refreshed ${result.refreshed}/${result.total}, failed: ${result.failed}`,
-    );
-    return NextResponse.json(result);
-  } catch (error) {
-    console.error("[token-refresh] Cron error:", error);
-    return NextResponse.json({ error: "Refresh failed" }, { status: 500 });
-  }
+  return Sentry.withMonitor("token-refresh", async () => {
+    try {
+      const result = await refreshExpiring();
+      log.info(
+        { refreshed: result.refreshed, total: result.total, failed: result.failed },
+        "token refresh completed",
+      );
+      metrics.gauge("cron.token_refresh.refreshed", result.refreshed);
+      metrics.gauge("cron.token_refresh.failed", result.failed);
+      return NextResponse.json(result);
+    } catch (error) {
+      log.error({ err: error }, "token refresh failed");
+      Sentry.captureException(error, {
+        tags: { "cron.job": "token-refresh" },
+      });
+      return NextResponse.json({ error: "Refresh failed" }, { status: 500 });
+    }
+  }, {
+    schedule: { type: "crontab", value: "*/15 * * * *" },
+    timezone: "UTC",
+  });
 }

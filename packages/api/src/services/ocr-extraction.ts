@@ -1,9 +1,14 @@
+import * as Sentry from "@sentry/nextjs";
 import { prisma } from "@contractor-ops/db";
 import type { Prisma } from "@contractor-ops/db/generated/prisma/client";
+import { createLogger } from "@contractor-ops/logger";
+import { metrics } from "@contractor-ops/logger/metrics";
 import { getQStashClient } from "@contractor-ops/integrations/services/qstash-client";
 import { extractInvoice } from "@contractor-ops/integrations/services/ocr-service";
 import { createPresignedDownloadUrl } from "./r2.js";
 import { checkAndDeductCredit } from "./credit-service.js";
+
+const log = createLogger({ service: "ocr" });
 
 // ---------------------------------------------------------------------------
 // OCR Extraction Orchestrator
@@ -55,6 +60,14 @@ export async function triggerOcrExtraction(params: {
     },
     retries: 2,
     timeout: "60s",
+  });
+
+  log.info(
+    { extractionId: extraction.id, organizationId: params.organizationId },
+    "ocr extraction triggered",
+  );
+  metrics.increment("ocr.triggered", 1, {
+    organizationId: params.organizationId,
   });
 
   return { extractionId: extraction.id };
@@ -114,7 +127,35 @@ export async function processOcrExtraction(params: {
         errorMessage: result.errorMessage ?? null,
       },
     });
+
+    log.info(
+      {
+        extractionId: params.extractionId,
+        status: result.status,
+        confidence: result.overallConfidence,
+        durationMs: result.processingTimeMs,
+      },
+      "ocr extraction completed",
+    );
+    metrics.increment("ocr.completed", 1, { status: result.status });
+    if (result.processingTimeMs) {
+      metrics.distribution("ocr.processing_time", result.processingTimeMs, {
+        unit: "millisecond",
+      });
+    }
+    if (result.overallConfidence != null) {
+      metrics.distribution("ocr.confidence", result.overallConfidence);
+    }
   } catch (error) {
+    log.error(
+      { err: error, extractionId: params.extractionId },
+      "ocr extraction failed",
+    );
+    Sentry.captureException(error, {
+      tags: { "ocr.extraction_id": params.extractionId },
+    });
+    metrics.increment("ocr.failed");
+
     // Mark as failed
     await prisma.ocrExtraction.update({
       where: { id: params.extractionId },

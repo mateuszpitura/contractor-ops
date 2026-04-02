@@ -87,7 +87,7 @@ export function OrgSwitcher() {
             />
           }
         >
-          <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/70 text-primary-foreground font-display text-sm font-bold shadow-sm">
+          <div className="org-logo-gradient flex aspect-square size-8 items-center justify-center rounded-lg text-primary-foreground font-display text-sm font-bold shadow-sm">
             {currentOrg?.name?.charAt(0)?.toUpperCase() ?? "O"}
           </div>
           <div className="grid flex-1 text-left text-sm leading-tight">

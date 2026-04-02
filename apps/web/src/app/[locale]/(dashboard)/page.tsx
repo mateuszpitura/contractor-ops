@@ -26,7 +26,7 @@ import { OnboardingChecklist } from "@/components/onboarding/onboarding-checklis
 function WidgetErrorFallback({ name }: { name: string }) {
   const t = useTranslations("Dashboard");
   return (
-    <div className="flex h-[200px] flex-col items-center justify-center rounded-xl border bg-card p-6 text-center">
+    <div className="flex h-[200px] flex-col items-center justify-center rounded-xl border border-border/40 bg-surface-1 p-6 text-center shadow-sm">
       <p className="text-sm text-destructive">
         {t("errors.widgetFailed", { name })}
       </p>
@@ -42,15 +42,19 @@ function DashboardEmptyState() {
   const t = useTranslations("Dashboard.emptyState");
 
   return (
-    <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
-      <LayoutDashboard className="h-12 w-12 text-muted-foreground" />
-      <h2 className="mt-4 font-display text-[22px] font-semibold">{t("heading")}</h2>
-      <p className="mt-2 max-w-md text-sm text-muted-foreground">
-        {t("body")}
-      </p>
-      <Button render={<Link href="/contractors?action=new" />} className="mt-6">
-        {t("cta")}
-      </Button>
+    <div className="dot-grid corner-marks flex min-h-[60vh] flex-col items-center justify-center rounded-2xl border border-border/40 text-center">
+      <div className="flex flex-col items-center px-6 py-16">
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
+          <LayoutDashboard className="h-8 w-8 text-primary" />
+        </div>
+        <h2 className="mt-6 font-display text-2xl font-semibold tracking-tight">{t("heading")}</h2>
+        <p className="mt-2 max-w-md text-sm text-muted-foreground">
+          {t("body")}
+        </p>
+        <Button render={<Link href="/contractors?action=new" />} className="mt-8">
+          {t("cta")}
+        </Button>
+      </div>
     </div>
   );
 }
@@ -84,12 +88,17 @@ function DashboardContent() {
 
   return (
     <div className="flex flex-col gap-8">
-      {/* Greeting */}
+      {/* Greeting with gradient text */}
       <AnimateIn delay={0}>
         <DashboardGreeting />
       </AnimateIn>
 
-      {/* KPI cards row */}
+      {/* Accent line separator */}
+      <AnimateIn delay={0}>
+        <div className="accent-line w-full rounded-full" />
+      </AnimateIn>
+
+      {/* KPI bento grid */}
       <AnimateIn delay={1}>
         <KpiCards />
       </AnimateIn>

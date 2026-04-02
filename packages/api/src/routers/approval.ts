@@ -27,6 +27,13 @@ import {
   syncPaymentDueDeadline,
   syncApprovalSlaDeadline,
 } from "../services/calendar-deadline-sync.js";
+import {
+  cached,
+  invalidate,
+  invalidateByPrefix,
+  CacheKeys,
+  CacheTTL,
+} from "../services/cache.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -56,15 +63,21 @@ export const approvalRouter = router({
   listChains: tenantProcedure
     .use(requirePermission({ settings: ["read"] }))
     .query(async ({ ctx }) => {
-      const chains = await prisma.approvalChainConfig.findMany({
-        where: {
-          organizationId: ctx.organizationId,
-          resourceType: "INVOICE",
-        },
-        orderBy: { createdAt: "asc" },
-      });
+      return cached(
+        CacheKeys.approvalChains(ctx.organizationId),
+        CacheTTL.APPROVAL_CHAINS,
+        async () => {
+          const chains = await prisma.approvalChainConfig.findMany({
+            where: {
+              organizationId: ctx.organizationId,
+              resourceType: "INVOICE",
+            },
+            orderBy: { createdAt: "asc" },
+          });
 
-      return plain(chains);
+          return plain(chains);
+        },
+      );
     }),
 
   /**
@@ -124,6 +137,8 @@ export const approvalRouter = router({
         });
       });
 
+      void invalidate(CacheKeys.approvalChains(ctx.organizationId));
+
       return plain(chain);
     }),
 
@@ -175,6 +190,8 @@ export const approvalRouter = router({
         });
       });
 
+      void invalidate(CacheKeys.approvalChains(ctx.organizationId));
+
       return plain(updated);
     }),
 
@@ -216,6 +233,8 @@ export const approvalRouter = router({
 
         await tx.approvalChainConfig.delete({ where: { id: input.id } });
       });
+
+      void invalidate(CacheKeys.approvalChains(ctx.organizationId));
 
       return { success: true };
     }),
@@ -534,6 +553,8 @@ export const approvalRouter = router({
         );
       }
 
+      void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
+
       return plain(result.updatedStep);
     }),
 
@@ -728,6 +749,8 @@ export const approvalRouter = router({
         return updatedStep;
       });
 
+      void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
+
       return plain(result);
     }),
 
@@ -879,6 +902,10 @@ export const approvalRouter = router({
         .filter((r): r is PromiseRejectedResult => r.status === "rejected")
         .map((r) => String(r.reason));
 
+      if (succeeded > 0) {
+        void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
+      }
+
       return { succeeded, failed, errors };
     }),
 
@@ -948,6 +975,10 @@ export const approvalRouter = router({
       const errors = results
         .filter((r): r is PromiseRejectedResult => r.status === "rejected")
         .map((r) => String(r.reason));
+
+      if (succeeded > 0) {
+        void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
+      }
 
       return { succeeded, failed, errors };
     }),

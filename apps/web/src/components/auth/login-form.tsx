@@ -128,9 +128,10 @@ export function LoginForm() {
   }
 
   return (
-    <Card>
-      <CardHeader className="space-y-1 text-center">
-        <h1 className="font-display text-[28px] font-semibold leading-[1.2] tracking-tight">
+    <div className="conic-border rounded-xl">
+      <Card className="glass-medium border-0 ring-0 shadow-2xl hover:ring-0 hover:shadow-2xl">
+      <CardHeader className="space-y-1.5 text-center">
+        <h1 className="gradient-text font-display text-2xl font-bold leading-[1.2] tracking-tight">
           {t("title")}
         </h1>
         <p className="text-sm text-muted-foreground">
@@ -224,5 +225,6 @@ export function LoginForm() {
         </p>
       </CardContent>
     </Card>
+    </div>
   );
 }

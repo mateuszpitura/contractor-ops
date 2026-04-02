@@ -65,7 +65,18 @@ function getEntityHref(resourceType: string, resourceId: string): string {
   }
 }
 
-// Resource type labels are now externalized via t("activity.resources.{TYPE}")
+/** Color-coded left border accent per resource type */
+const RESOURCE_ACCENT: Record<string, string> = {
+  CONTRACTOR: "border-l-teal-400",
+  CONTRACT: "border-l-info",
+  INVOICE: "border-l-warning",
+  WORKFLOW_TEMPLATE: "border-l-accent-warm",
+  WORKFLOW_RUN: "border-l-accent-warm",
+  DOCUMENT: "border-l-muted-foreground/40",
+  PAYMENT_RUN: "border-l-success",
+  APPROVAL_FLOW: "border-l-primary",
+  APPROVAL_STEP: "border-l-primary",
+};
 
 function groupByDay(items: ActivityItem[]): GroupedActivities[] {
   const today = new Date();
@@ -109,6 +120,7 @@ function groupByDay(items: ActivityItem[]): GroupedActivities[] {
 /**
  * Activity feed showing last 20 audit log events grouped by today/yesterday/earlier.
  * Each event shows actor, action, resource type badge, and relative timestamp.
+ * Color-coded left border per resource type.
  */
 export function ActivityFeed() {
   const t = useTranslations("Dashboard");
@@ -122,7 +134,7 @@ export function ActivityFeed() {
   );
 
   return (
-    <Card>
+    <Card className="neon-card">
       <CardHeader>
         <CardTitle className="font-display text-lg font-semibold">
           {t("activity.title")}
@@ -148,48 +160,51 @@ export function ActivityFeed() {
             {t("activity.empty")}
           </p>
         ) : (
-          <ScrollArea className="max-h-[400px]">
+          <ScrollArea className="scroll-fade-bottom max-h-[400px]">
             <div className="flex flex-col gap-4">
               {grouped.map((group) => (
                 <div key={group.label}>
-                  <p className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/60">
                     {t(`activity.${group.label}` as Parameters<typeof t>[0])}
                   </p>
                   <div className="flex flex-col gap-1">
-                    {group.items.map((item) => (
-                      <div
-                        key={item.id}
-                        className="rounded-md px-2 py-1.5 transition-colors hover:bg-muted/50"
-                      >
-                        <p className="text-sm">
-                          <span className="text-foreground">
-                            {item.actorName ?? t("activity.systemActor")}
-                          </span>{" "}
-                          <span className="font-semibold">
-                            {t(`activity.actions.${item.action}` as Parameters<typeof t>[0])}
-                          </span>
-                        </p>
-                        <div className="mt-0.5 flex items-center gap-2">
-                          <Badge variant="secondary" className="text-[10px]">
-                            {t(`activity.resources.${item.resourceType}` as Parameters<typeof t>[0])}
-                          </Badge>
-                          <Link
-                            href={getEntityHref(
-                              item.resourceType,
-                              item.resourceId,
-                            )}
-                            className="min-w-0 truncate text-xs text-foreground hover:underline"
-                          >
-                            {item.resourceName ?? item.resourceId}
-                          </Link>
-                          <span className="shrink-0 text-xs text-muted-foreground">
-                            {formatDistanceToNow(new Date(item.createdAt), {
-                              addSuffix: true,
-                            })}
-                          </span>
+                    {group.items.map((item) => {
+                      const accent = RESOURCE_ACCENT[item.resourceType] ?? "border-l-muted-foreground/20";
+                      return (
+                        <div
+                          key={item.id}
+                          className={`rounded-lg border-l-2 ${accent} pl-3 pr-2.5 py-2 transition-all duration-200 hover:bg-surface-2 hover:pl-3.5`}
+                        >
+                          <p className="text-sm">
+                            <span className="text-foreground">
+                              {item.actorName ?? t("activity.systemActor")}
+                            </span>{" "}
+                            <span className="font-semibold">
+                              {t(`activity.actions.${item.action}` as Parameters<typeof t>[0])}
+                            </span>
+                          </p>
+                          <div className="mt-0.5 flex items-center gap-2">
+                            <Badge variant="secondary" className="text-[10px]">
+                              {t(`activity.resources.${item.resourceType}` as Parameters<typeof t>[0])}
+                            </Badge>
+                            <Link
+                              href={getEntityHref(
+                                item.resourceType,
+                                item.resourceId,
+                              )}
+                              className="min-w-0 truncate text-xs text-foreground hover:underline"
+                            >
+                              {item.resourceName ?? item.resourceId}
+                            </Link>
+                            <span className="shrink-0 text-xs tabular-nums text-muted-foreground/60">
+                              {formatDistanceToNow(new Date(item.createdAt), {
+                                addSuffix: true,
+                              })}
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               ))}

@@ -14,6 +14,9 @@ export const NOTIFICATION_TYPES = [
   "KSEF_SYNC_COMPLETE",
   "TRIAL_ENDING",
   "PAYMENT_FAILED",
+  "PAYMENT_ACTION_REQUIRED",
+  "CREDIT_EXHAUSTED",
+  "SUBSCRIPTION_CHANGED",
 ] as const;
 
 export const notificationTypeEnum = z.enum(NOTIFICATION_TYPES);

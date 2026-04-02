@@ -69,7 +69,7 @@ export function TopBar() {
 
   return (
     <>
-      <header className="flex h-14 shrink-0 items-center gap-2 border-b border-border/60 px-4">
+      <header className="glass-subtle sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 border-b-0 px-4">
         <SidebarTrigger className="-ml-1" />
         <Separator orientation="vertical" className="!self-center mr-2 h-4" />
 
@@ -193,6 +193,9 @@ export function TopBar() {
           <NotificationPopover />
         </div>
       </header>
+
+      {/* Animated accent line below header */}
+      <div className="accent-line sticky top-14 z-30 w-full" />
 
       {/* Contract creation wizard (portal/dialog, works from any page) */}
       <ContractWizardDialog

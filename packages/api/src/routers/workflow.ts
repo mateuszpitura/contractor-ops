@@ -24,6 +24,7 @@ import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
 import { dispatch } from "../services/notification-service.js";
 import { handleEquipmentTaskStart } from "../services/equipment-workflow.js";
+import { invalidateByPrefix, CacheKeys } from "../services/cache.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -958,6 +959,8 @@ export const workflowRouter = router({
         })();
       }
 
+      void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
+
       return plain({ ...run.run, calendarTaskCount: run.calendarTaskCount });
     }),
 
@@ -1016,6 +1019,8 @@ export const workflowRouter = router({
           },
         });
       });
+
+      void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
 
       return plain(run);
     }),
@@ -1343,6 +1348,8 @@ export const workflowRouter = router({
         }
       })();
 
+      void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
+
       return plain(result);
     }),
 
@@ -1464,6 +1471,8 @@ export const workflowRouter = router({
           );
         }
       })();
+
+      void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
 
       return plain(result);
     }),

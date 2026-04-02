@@ -1,12 +1,20 @@
 import type Stripe from "stripe";
+import { prisma } from "@contractor-ops/db";
+import { createLogger } from "@contractor-ops/logger";
+import { metrics } from "@contractor-ops/logger/metrics";
 import { stripe } from "./stripe-client.js";
 import {
   TIER_CREDIT_ALLOWANCE,
   TRIAL_CREDIT_ALLOWANCE,
   resolveTierFromPriceId,
+  resolveTopUpCredits,
 } from "./billing-constants.js";
+import { allocateTopUpCredits } from "./credit-service.js";
 import { dispatch } from "./notification-service.js";
 import { Resend } from "resend";
+import { invalidate, CacheKeys } from "./cache.js";
+
+const log = createLogger({ service: "billing-webhook" });
 
 // ---------------------------------------------------------------------------
 // Types
@@ -111,11 +119,19 @@ export async function routeStripeEvent(
   event: Stripe.Event,
   tx: TxClient,
 ): Promise<void> {
+  log.info({ eventId: event.id, eventType: event.type }, "routing stripe event");
+  metrics.increment("billing.event", 1, { eventType: event.type });
+
   switch (event.type) {
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
       if (session.mode === "subscription" && session.subscription) {
         await handleCheckoutCompleted(session, tx);
+      } else if (
+        session.mode === "payment" &&
+        session.metadata?.type === "top_up"
+      ) {
+        await handleTopUpCompleted(session, tx);
       }
       break;
     }
@@ -149,6 +165,31 @@ export async function routeStripeEvent(
     case "invoice.payment_failed": {
       const invoice = event.data.object as Stripe.Invoice;
       await handlePaymentFailed(invoice, tx);
+      break;
+    }
+
+    case "invoice.payment_action_required": {
+      const invoice = event.data.object as Stripe.Invoice;
+      await handlePaymentActionRequired(invoice, tx);
+      break;
+    }
+
+    case "customer.subscription.paused": {
+      const subscription = event.data.object as Stripe.Subscription;
+      await handleSubscriptionPaused(subscription, tx);
+      break;
+    }
+
+    case "customer.subscription.resumed": {
+      const subscription = event.data
+        .object as unknown as SubscriptionWithPeriod;
+      await handleSubscriptionUpdated(subscription, tx);
+      break;
+    }
+
+    case "charge.refunded": {
+      const charge = event.data.object as Stripe.Charge;
+      await handleChargeRefunded(charge, tx);
       break;
     }
 
@@ -200,6 +241,21 @@ async function handleCheckoutCompleted(
       return;
     }
 
+    // Dedup: use checkout session ID for uniqueness (guaranteed unique per checkout)
+    const trialEventId = `trial_${session.id}`;
+    const existingTrial = await tx.ocrCreditLedger.findFirst({
+      where: { stripeEventId: trialEventId },
+      select: { id: true },
+    });
+
+    if (existingTrial) {
+      log.info(
+        { subscriptionId, organizationId },
+        "trial credits already allocated, skipping",
+      );
+      return;
+    }
+
     const periodStart = subscription.current_period_start
       ? new Date(subscription.current_period_start * 1000)
       : new Date();
@@ -212,11 +268,91 @@ async function handleCheckoutCompleted(
         organizationId,
         credits: TRIAL_CREDIT_ALLOWANCE,
         reason: "TRIAL_ALLOWANCE",
+        stripeEventId: trialEventId,
         periodStart,
         periodEnd,
       },
     });
+
+    log.info(
+      { organizationId, credits: TRIAL_CREDIT_ALLOWANCE },
+      "trial credits allocated",
+    );
   }
+}
+
+/**
+ * Handles checkout.session.completed for one-time top-up payments.
+ * Resolves credits from the price ID and allocates them via the credit service.
+ */
+async function handleTopUpCompleted(
+  session: Stripe.Checkout.Session,
+  tx: TxClient,
+): Promise<void> {
+  const organizationId = session.metadata?.organizationId;
+  const priceId = session.metadata?.priceId;
+
+  if (!organizationId || !priceId) {
+    log.error(
+      { sessionId: session.id },
+      "handleTopUpCompleted: missing organizationId or priceId in metadata",
+    );
+    return;
+  }
+
+  const credits = resolveTopUpCredits(priceId);
+  if (!credits) {
+    log.error(
+      { priceId, sessionId: session.id },
+      "handleTopUpCompleted: unknown top-up price ID",
+    );
+    return;
+  }
+
+  // Dedup: check if we already allocated credits for this session (inside tx for safety)
+  const existing = await tx.ocrCreditLedger.findFirst({
+    where: { stripeEventId: session.id },
+    select: { id: true },
+  });
+
+  if (existing) {
+    log.info(
+      { sessionId: session.id },
+      "handleTopUpCompleted: credits already allocated, skipping",
+    );
+    return;
+  }
+
+  const subscription = await tx.subscription.findUnique({
+    where: { organizationId },
+  });
+
+  if (!subscription) {
+    log.error(
+      { organizationId },
+      "handleTopUpCompleted: no subscription found for org",
+    );
+    return;
+  }
+
+  await tx.ocrCreditLedger.create({
+    data: {
+      organizationId,
+      credits,
+      reason: "TOP_UP",
+      periodStart: subscription.currentPeriodStart,
+      periodEnd: subscription.currentPeriodEnd,
+      stripeEventId: session.id,
+    },
+  });
+
+  // Invalidate credit cache
+  void invalidate(CacheKeys.creditBalance(organizationId));
+
+  log.info(
+    { organizationId, credits, sessionId: session.id },
+    "top-up credits allocated",
+  );
 }
 
 /**
@@ -241,8 +377,9 @@ async function handleSubscriptionUpdated(
   try {
     tier = priceId ? resolveTierFromPriceId(priceId) : "STARTER";
   } catch {
-    console.warn(
-      `[stripe-webhook] Unknown price ID ${priceId}, defaulting to STARTER`,
+    log.error(
+      { priceId, subscriptionId: subscription.id, organizationId },
+      "BILLING ALERT: unknown price ID in subscription, defaulting to STARTER - verify Stripe configuration",
     );
     tier = "STARTER";
   }
@@ -250,12 +387,14 @@ async function handleSubscriptionUpdated(
   // Period dates from subscription (webhook payloads include these)
   const currentPeriodStart = subscription.current_period_start
     ? new Date(subscription.current_period_start * 1000)
-    : new Date(subscription.start_date * 1000);
+    : subscription.start_date
+      ? new Date(subscription.start_date * 1000)
+      : new Date();
   const currentPeriodEnd = subscription.current_period_end
     ? new Date(subscription.current_period_end * 1000)
-    : new Date(
-        (subscription.start_date + 30 * 24 * 60 * 60) * 1000,
-      );
+    : subscription.start_date
+      ? new Date((subscription.start_date + 30 * 24 * 60 * 60) * 1000)
+      : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
   const data = {
     organizationId,
@@ -276,6 +415,13 @@ async function handleSubscriptionUpdated(
     seatCount: subscription.items.data[0]?.quantity ?? 1,
   };
 
+  // Check if tier changed (for notification)
+  const previousSub = await tx.subscription.findUnique({
+    where: { stripeSubscriptionId: subscription.id },
+    select: { tier: true },
+  });
+  const tierChanged = previousSub && previousSub.tier !== tier;
+
   await tx.subscription.upsert({
     where: { stripeSubscriptionId: subscription.id },
     create: {
@@ -284,6 +430,45 @@ async function handleSubscriptionUpdated(
     },
     update: data,
   });
+
+  // Invalidate billing caches after subscription state change
+  void invalidate(
+    CacheKeys.subscription(organizationId),
+    CacheKeys.creditBalance(organizationId),
+  );
+
+  // Notify admins when subscription tier changes
+  if (tierChanged && previousSub) {
+    const previousTier = previousSub.tier;
+    const adminMembers = await tx.member.findMany({
+      where: {
+        organizationId,
+        role: { in: ["owner", "admin"] },
+      },
+      select: { userId: true },
+    });
+
+    const adminUserIds = adminMembers.map(
+      (m: { userId: string }) => m.userId,
+    );
+
+    if (adminUserIds.length > 0) {
+      void dispatch({
+        organizationId,
+        type: "SUBSCRIPTION_CHANGED" as const,
+        recipientUserIds: adminUserIds,
+        title: "Subscription plan changed",
+        body: `Your plan has been changed from ${previousTier} to ${tier}.`,
+        entityType: "ORGANIZATION",
+        entityId: organizationId,
+      }).catch((error: unknown) =>
+        console.error(
+          "[stripe-webhook] Subscription change notification failed:",
+          error,
+        ),
+      );
+    }
+  }
 }
 
 /**
@@ -293,10 +478,28 @@ async function handleSubscriptionDeleted(
   subscription: Stripe.Subscription,
   tx: TxClient,
 ): Promise<void> {
+  const existing = await tx.subscription.findUnique({
+    where: { stripeSubscriptionId: subscription.id },
+    select: { id: true, organizationId: true },
+  });
+
+  if (!existing) {
+    log.warn(
+      { subscriptionId: subscription.id },
+      "handleSubscriptionDeleted: subscription not found in DB, skipping",
+    );
+    return;
+  }
+
   await tx.subscription.update({
     where: { stripeSubscriptionId: subscription.id },
     data: { status: "CANCELED" },
   });
+
+  void invalidate(
+    CacheKeys.subscription(existing.organizationId),
+    CacheKeys.creditBalance(existing.organizationId),
+  );
 }
 
 /**
@@ -373,6 +576,22 @@ async function handleInvoicePaid(
   const subscriptionId = getSubscriptionIdFromInvoice(invoice);
 
   if (!subscriptionId || invoice.billing_reason === "subscription_create") {
+    console.log(
+      `[stripe-webhook] handleInvoicePaid: skipping invoice ${invoice.id} (reason: ${invoice.billing_reason ?? "no subscription"})`,
+    );
+    return;
+  }
+
+  // Dedup: check if we already allocated credits for this invoice
+  const existingAllocation = await tx.ocrCreditLedger.findFirst({
+    where: { stripeEventId: invoice.id },
+    select: { id: true },
+  });
+
+  if (existingAllocation) {
+    console.log(
+      `[stripe-webhook] handleInvoicePaid: credits already allocated for invoice ${invoice.id}, skipping`,
+    );
     return;
   }
 
@@ -399,6 +618,10 @@ async function handleInvoicePaid(
 
   const credits =
     TIER_CREDIT_ALLOWANCE[tier as keyof typeof TIER_CREDIT_ALLOWANCE];
+
+  console.log(
+    `[stripe-webhook] Allocating ${credits} credits for org ${sub.organizationId} (tier: ${tier}, invoice: ${invoice.id})`,
+  );
 
   await tx.ocrCreditLedger.create({
     data: {
@@ -434,6 +657,12 @@ async function handlePaymentFailed(
     where: { stripeSubscriptionId: subscriptionId },
     data: { status: "PAST_DUE" },
   });
+
+  // Invalidate billing caches so soft-block kicks in
+  void invalidate(
+    CacheKeys.subscription(sub.organizationId),
+    CacheKeys.creditBalance(sub.organizationId),
+  );
 
   // Notify admin users
   const adminMembers = await tx.member.findMany({
@@ -473,4 +702,176 @@ async function handlePaymentFailed(
       body: "Payment failed. Update your payment method to continue your subscription.",
     });
   }
+}
+
+/**
+ * Handles invoice.payment_action_required (3D Secure / SCA).
+ * Notifies admins that payment verification is needed.
+ */
+async function handlePaymentActionRequired(
+  invoice: Stripe.Invoice,
+  tx: TxClient,
+): Promise<void> {
+  const subscriptionId = getSubscriptionIdFromInvoice(invoice);
+  if (!subscriptionId) return;
+
+  const sub = await tx.subscription.findUnique({
+    where: { stripeSubscriptionId: subscriptionId },
+    include: { organization: { select: { id: true, billingEmail: true } } },
+  });
+
+  if (!sub) return;
+
+  const adminMembers = await tx.member.findMany({
+    where: {
+      organizationId: sub.organizationId,
+      role: { in: ["owner", "admin"] },
+    },
+    select: { userId: true },
+  });
+
+  const adminUserIds = adminMembers.map(
+    (m: { userId: string }) => m.userId,
+  );
+
+  if (adminUserIds.length > 0) {
+    void dispatch({
+      organizationId: sub.organizationId,
+      type: "PAYMENT_ACTION_REQUIRED" as const,
+      recipientUserIds: adminUserIds,
+      title: "Payment verification required",
+      body: "Your bank requires additional verification. Please complete the payment to keep your subscription active.",
+      entityType: "ORGANIZATION",
+      entityId: sub.organizationId,
+    }).catch((error: unknown) =>
+      console.error(
+        "[stripe-webhook] Payment action required notification failed:",
+        error,
+      ),
+    );
+  }
+
+  if (sub.organization?.billingEmail) {
+    await sendBillingEmail({
+      to: sub.organization.billingEmail,
+      subject: "Payment verification required",
+      body: "Your bank requires additional verification. Please complete the payment to keep your subscription active.",
+    });
+  }
+}
+
+/**
+ * Handles customer.subscription.paused.
+ * Marks subscription as PAUSED in DB.
+ */
+async function handleSubscriptionPaused(
+  subscription: Stripe.Subscription,
+  tx: TxClient,
+): Promise<void> {
+  const existing = await tx.subscription.findUnique({
+    where: { stripeSubscriptionId: subscription.id },
+    select: { id: true },
+  });
+
+  if (!existing) {
+    console.warn(
+      `[stripe-webhook] handleSubscriptionPaused: subscription ${subscription.id} not found in DB`,
+    );
+    return;
+  }
+
+  const sub = await tx.subscription.update({
+    where: { stripeSubscriptionId: subscription.id },
+    data: { status: "PAUSED" },
+  });
+
+  void invalidate(
+    CacheKeys.subscription(sub.organizationId),
+    CacheKeys.creditBalance(sub.organizationId),
+  );
+
+  log.info(
+    { subscriptionId: subscription.id, organizationId: sub.organizationId },
+    "subscription paused",
+  );
+}
+
+/**
+ * Handles charge.refunded.
+ * Logs the refund for audit trail. Does NOT auto-revoke credits because
+ * partial refunds and credit reversal are complex — flag for manual review.
+ */
+async function handleChargeRefunded(
+  charge: Stripe.Charge,
+  tx: TxClient,
+): Promise<void> {
+  const customerId =
+    typeof charge.customer === "string"
+      ? charge.customer
+      : charge.customer?.id;
+
+  log.warn(
+    {
+      chargeId: charge.id,
+      amountRefunded: charge.amount_refunded,
+      customerId: customerId ?? "unknown",
+    },
+    "charge refunded - checking for associated credit allocations",
+  );
+
+  if (!customerId) return;
+
+  // Find the subscription for this customer to get organizationId + billing period
+  const sub = await tx.subscription.findFirst({
+    where: { stripeCustomerId: customerId },
+    select: {
+      organizationId: true,
+      currentPeriodStart: true,
+      currentPeriodEnd: true,
+    },
+  });
+
+  if (!sub) {
+    log.warn({ customerId }, "refund: no subscription found for customer");
+    return;
+  }
+
+  // Create audit entry for every refund regardless of payment_intent presence
+  const refundEventId = `refund_${charge.id}`;
+  const existingRefund = await tx.ocrCreditLedger.findFirst({
+    where: { stripeEventId: refundEventId },
+    select: { id: true },
+  });
+
+  if (existingRefund) {
+    log.info({ chargeId: charge.id }, "refund already processed, skipping");
+    return;
+  }
+
+  // Create audit entry for the refund (0 credits - just an audit trail)
+  // Actual credit reversal requires manual review since partial refunds
+  // and subscription vs top-up refunds have different implications
+  await tx.ocrCreditLedger.create({
+    data: {
+      organizationId: sub.organizationId,
+      credits: 0,
+      reason: "REFUND_AUDIT",
+      stripeEventId: refundEventId,
+      periodStart: sub.currentPeriodStart,
+      periodEnd: sub.currentPeriodEnd,
+    },
+  });
+
+  log.warn(
+    {
+      chargeId: charge.id,
+      organizationId: sub.organizationId,
+      amountRefundedGrosze: charge.amount_refunded,
+      paymentIntentId:
+        typeof charge.payment_intent === "string"
+          ? charge.payment_intent
+          : charge.payment_intent?.id ?? null,
+    },
+    "REFUND AUDIT: manual credit reversal may be needed - verify against ledger",
+  );
 }

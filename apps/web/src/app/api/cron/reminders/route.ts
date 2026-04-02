@@ -1,7 +1,12 @@
+import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { prisma } from "@contractor-ops/db";
 import { dispatch } from "@contractor-ops/api/services/notification-service";
+import { createCronLogger } from "@contractor-ops/logger";
+import { metrics } from "@contractor-ops/logger/metrics";
+
+const log = createCronLogger("reminders");
 
 // ---------------------------------------------------------------------------
 // Auth
@@ -417,22 +422,37 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  try {
-    const [ruleResults, overdueTasksNotified] = await Promise.all([
-      evaluateReminderRules(),
-      detectOverdueTasks(),
-    ]);
+  return Sentry.withMonitor("reminders", async () => {
+    try {
+      const [ruleResults, overdueTasksNotified] = await Promise.all([
+        evaluateReminderRules(),
+        detectOverdueTasks(),
+      ]);
 
-    return NextResponse.json({
-      processed: ruleResults.processed,
-      sent: ruleResults.sent,
-      overdueTasksNotified,
-    });
-  } catch (error) {
-    console.error("[cron-reminders] Error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
-  }
+      log.info(
+        { processed: ruleResults.processed, sent: ruleResults.sent, overdueTasksNotified },
+        "reminders cron completed",
+      );
+      metrics.gauge("cron.reminders.sent", ruleResults.sent);
+      metrics.gauge("cron.reminders.overdue_tasks", overdueTasksNotified);
+
+      return NextResponse.json({
+        processed: ruleResults.processed,
+        sent: ruleResults.sent,
+        overdueTasksNotified,
+      });
+    } catch (error) {
+      log.error({ err: error }, "reminders cron failed");
+      Sentry.captureException(error, {
+        tags: { "cron.job": "reminders" },
+      });
+      return NextResponse.json(
+        { error: "Internal server error" },
+        { status: 500 },
+      );
+    }
+  }, {
+    schedule: { type: "crontab", value: "0 9 * * *" },
+    timezone: "UTC",
+  });
 }

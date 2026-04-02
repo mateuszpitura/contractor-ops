@@ -59,7 +59,8 @@ export function CreditUsageCard() {
   const allowance = creditBalance?.allowance ?? 0;
   const remaining = creditBalance?.balance ?? 0;
   const percentUsed = allowance > 0 ? (used / allowance) * 100 : 0;
-  const isLow = allowance > 0 && remaining / allowance < 0.2;
+  const isExhausted = remaining <= 0 && allowance > 0;
+  const isLow = !isExhausted && allowance > 0 && remaining / allowance < 0.2;
 
   return (
     <>
@@ -77,9 +78,11 @@ export function CreditUsageCard() {
           />
 
           <p
-            className={`text-sm ${isLow ? "text-destructive font-medium" : "text-muted-foreground"}`}
+            className={`text-sm ${isExhausted || isLow ? "text-destructive font-medium" : "text-muted-foreground"}`}
           >
-            {remaining} of {allowance} credits remaining
+            {isExhausted
+              ? "No credits remaining - purchase more to continue OCR processing"
+              : `${remaining} of ${allowance} credits remaining`}
           </p>
 
           <Button

@@ -1,14 +1,22 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 import createNextIntlPlugin from "next-intl/plugin";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 const nextConfig: NextConfig = {
+  // Disable Next.js built-in request logging — all observability goes through
+  // pino (observability middleware) for consistent structured logging.
+  logging: {
+    incomingRequests: false,
+  },
   transpilePackages: [
     "@contractor-ops/auth",
     "@contractor-ops/api",
+    "@contractor-ops/logger",
     "@contractor-ops/validators",
     "@contractor-ops/ui",
+    "react-pdf",
   ],
   serverExternalPackages: [
     "@contractor-ops/db",
@@ -31,6 +39,14 @@ const nextConfig: NextConfig = {
         config.externals.push("docusign-esign");
       }
     }
+
+    // Suppress "Serializing big strings" warnings from webpack cache.
+    // These are informational and do not affect the build output.
+    config.infrastructureLogging = {
+      ...config.infrastructureLogging,
+      level: "error",
+    };
+
     return config;
   },
   async headers() {
@@ -42,11 +58,11 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://*.sentry-cdn.com",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: blob: https:",
-              "connect-src 'self' https://*.docusign.com",
+              "connect-src 'self' https://*.docusign.com https://unpkg.com https://*.sentry.io https://*.ingest.sentry.io",
               "frame-src 'self' https://*.docusign.com https://*.docusign.net https://apps-d.docusign.com",
               "object-src 'none'",
               "base-uri 'self'",
@@ -79,4 +95,23 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withNextIntl(nextConfig);
+export default withSentryConfig(withNextIntl(nextConfig), {
+  // Sentry org/project — set via env or replace with your values
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+
+  // Source map upload auth token
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+
+  // Route Sentry events through the app to bypass ad blockers
+  tunnelRoute: "/monitoring",
+
+  // Automatically monitor Vercel cron jobs
+  automaticVercelMonitors: true,
+
+  // Suppress source map upload logs in CI
+  silent: !process.env.CI,
+
+  // Tree-shake Sentry debug code in production
+  disableLogger: true,
+});

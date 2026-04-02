@@ -421,7 +421,7 @@ export default function PortalTimePage() {
                   <TableCell className="text-muted-foreground">
                     {ts.submittedAt
                       ? format(
-                          new Date(ts.submittedAt as string),
+                          new Date(ts.submittedAt as unknown as string),
                           "MMM d, yyyy",
                         )
                       : "-"}

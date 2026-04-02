@@ -7,12 +7,25 @@ import { TrialBanner } from "./trial-banner";
 import { SoftBlockModal } from "./soft-block-modal";
 
 // ---------------------------------------------------------------------------
+// Statuses that should trigger the soft-block modal
+// ---------------------------------------------------------------------------
+
+const BLOCKED_STATUSES = new Set([
+  "CANCELED",
+  "UNPAID",
+  "INCOMPLETE",
+  "INCOMPLETE_EXPIRED",
+  "PAUSED",
+]);
+
+// ---------------------------------------------------------------------------
 // BillingOverlay
 // ---------------------------------------------------------------------------
 // Client component rendered inside the dashboard layout (server component).
 // Queries the subscription status and conditionally renders:
 // 1. TrialBanner (last 7 days of trial)
-// 2. SoftBlockModal (trial expired)
+// 2. SoftBlockModal (trial expired, canceled, unpaid, etc.)
+// 3. PastDueBanner (payment failed but still has access)
 // ---------------------------------------------------------------------------
 
 export function BillingOverlay() {
@@ -43,8 +56,14 @@ export function BillingOverlay() {
   const isTrialExpired =
     isTrialing && trialEnd !== null && trialEnd.getTime() < Date.now();
 
+  // Subscription in a blocked state (canceled, unpaid, etc.)
+  const isBlocked = BLOCKED_STATUSES.has(subscription.status);
+
+  // Past due: show warning banner but don't block
+  const isPastDue = subscription.status === "PAST_DUE";
+
   // Trial ending soon: show banner (last 7 days)
-  const showBanner =
+  const showTrialBanner =
     isTrialing &&
     trialEnd !== null &&
     !isTrialExpired;
@@ -59,13 +78,37 @@ export function BillingOverlay() {
 
   return (
     <>
-      {showBanner && trialEnd && (
+      {showTrialBanner && trialEnd && (
         <TrialBanner trialEnd={trialEnd} onUpgrade={handleUpgrade} />
       )}
+      {isPastDue && <PastDueBanner onResolve={handleUpgrade} />}
       <SoftBlockModal
-        isOpen={isTrialExpired}
+        isOpen={isTrialExpired || isBlocked}
         onSelectPlan={handleSelectPlan}
       />
     </>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// PastDueBanner
+// ---------------------------------------------------------------------------
+
+function PastDueBanner({ onResolve }: { onResolve: () => void }) {
+  return (
+    <div
+      role="alert"
+      className="bg-destructive/10 border-b border-destructive/20 px-4 py-2 text-center text-sm text-destructive"
+    >
+      <span className="font-medium">Payment failed.</span>{" "}
+      Update your payment method to avoid service interruption.{" "}
+      <button
+        type="button"
+        onClick={onResolve}
+        className="underline font-medium hover:no-underline"
+      >
+        Go to billing
+      </button>
+    </div>
   );
 }

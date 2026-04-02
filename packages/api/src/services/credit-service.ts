@@ -1,9 +1,17 @@
 import { prisma } from "@contractor-ops/db";
+import { metrics } from "@contractor-ops/logger/metrics";
 import {
   TIER_CREDIT_ALLOWANCE,
   TRIAL_CREDIT_ALLOWANCE,
 } from "./billing-constants.js";
 import { stripe } from "./stripe-client.js";
+import { dispatch } from "./notification-service.js";
+import {
+  cached,
+  invalidate,
+  CacheKeys,
+  CacheTTL,
+} from "./cache.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -39,6 +47,16 @@ export interface TopUpResult {
  * - Aggregates OcrCreditLedger entries within the current billing period
  */
 export async function getCreditBalance(
+  organizationId: string,
+): Promise<CreditBalance> {
+  return cached(
+    CacheKeys.creditBalance(organizationId),
+    CacheTTL.CREDIT_BALANCE,
+    () => fetchCreditBalance(organizationId),
+  );
+}
+
+async function fetchCreditBalance(
   organizationId: string,
 ): Promise<CreditBalance> {
   const subscription = await prisma.subscription.findUnique({
@@ -182,6 +200,22 @@ export async function checkAndDeductCredit(
     },
   );
 
+  // Track metrics
+  metrics.increment("billing.credit_deduction", 1, {
+    outcome: result.allowed ? "granted" : (result.reason ?? "unknown"),
+  });
+
+  // Invalidate credit cache after deduction
+  if (result.allowed) {
+    void invalidate(CacheKeys.creditBalance(organizationId));
+  }
+
+  // Notify admins when credits are exhausted
+  if (result.allowed && result.remaining === 0) {
+    metrics.increment("billing.credits_exhausted", 1);
+    void notifyCreditExhausted(organizationId);
+  }
+
   // Fire-and-forget Stripe Meter event after successful deduction (outside transaction)
   if (result.allowed && result.stripeCustomerId) {
     stripe.billing.meterEvents
@@ -222,6 +256,12 @@ export async function allocateTopUpCredits(params: {
   credits: number;
   stripeEventId?: string;
 }): Promise<TopUpResult> {
+  if (params.credits <= 0) {
+    throw new Error(
+      `[billing] Credits must be positive, got ${params.credits}`,
+    );
+  }
+
   const subscription = await prisma.subscription.findUnique({
     where: { organizationId: params.organizationId },
   });
@@ -243,6 +283,9 @@ export async function allocateTopUpCredits(params: {
     },
   });
 
+  // Invalidate credit cache after top-up
+  void invalidate(CacheKeys.creditBalance(params.organizationId));
+
   // Return updated balance
   const aggregation = await prisma.ocrCreditLedger.aggregate({
     where: {
@@ -254,4 +297,40 @@ export async function allocateTopUpCredits(params: {
   });
 
   return { balance: aggregation._sum.credits ?? 0 };
+}
+
+// ---------------------------------------------------------------------------
+// Credit Exhaustion Notification
+// ---------------------------------------------------------------------------
+
+async function notifyCreditExhausted(
+  organizationId: string,
+): Promise<void> {
+  try {
+    const adminMembers = await prisma.member.findMany({
+      where: {
+        organizationId,
+        role: { in: ["owner", "admin"] },
+      },
+      select: { userId: true },
+    });
+
+    const adminUserIds = adminMembers.map((m) => m.userId);
+    if (adminUserIds.length === 0) return;
+
+    await dispatch({
+      organizationId,
+      type: "CREDIT_EXHAUSTED" as const,
+      recipientUserIds: adminUserIds,
+      title: "OCR credits exhausted",
+      body: "Your organization has used all OCR credits for this billing period. Purchase additional credits to continue processing invoices.",
+      entityType: "ORGANIZATION",
+      entityId: organizationId,
+    });
+  } catch (error) {
+    console.error(
+      `[billing] Failed to send credit exhaustion notification for org ${organizationId}:`,
+      error,
+    );
+  }
 }

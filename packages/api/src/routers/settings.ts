@@ -16,6 +16,12 @@ import {
 } from "../services/portal-change-request.js";
 import { createPresignedUploadUrl } from "../services/r2.js";
 import * as E from "../errors.js";
+import {
+  cached,
+  invalidateByPrefix,
+  CacheKeys,
+  CacheTTL,
+} from "../services/cache.js";
 
 export const settingsRouter = router({
   /**
@@ -25,17 +31,23 @@ export const settingsRouter = router({
   get: tenantProcedure
     .use(requirePermission({ settings: ["read"] }))
     .query(async ({ ctx }) => {
-      const org = await auth.api.getFullOrganization({
-        headers: ctx.headers,
-        query: { organizationId: ctx.organizationId },
-      });
+      return cached(
+        CacheKeys.orgSettings(ctx.organizationId),
+        CacheTTL.ORG_SETTINGS,
+        async () => {
+          const org = await auth.api.getFullOrganization({
+            headers: ctx.headers,
+            query: { organizationId: ctx.organizationId },
+          });
 
-      return {
-        id: org?.id,
-        name: org?.name,
-        slug: org?.slug,
-        metadata: org?.metadata,
-      };
+          return {
+            id: org?.id,
+            name: org?.name,
+            slug: org?.slug,
+            metadata: org?.metadata,
+          };
+        },
+      );
     }),
 
   /**
@@ -85,6 +97,9 @@ export const settingsRouter = router({
         },
       });
 
+      // Invalidate all settings caches for this org
+      void invalidateByPrefix(CacheKeys.settingsPrefix(ctx.organizationId));
+
       return updated;
     }),
 
@@ -95,16 +110,22 @@ export const settingsRouter = router({
   getExpiryReminderDefaults: tenantProcedure
     .use(requirePermission({ settings: ["read"] }))
     .query(async ({ ctx }) => {
-      const org = await prisma.organization.findUnique({
-        where: { id: ctx.organizationId },
-        select: { settingsJson: true },
-      });
+      return cached(
+        CacheKeys.orgSettingsJson(ctx.organizationId, "expiry"),
+        CacheTTL.ORG_SETTINGS_JSON,
+        async () => {
+          const org = await prisma.organization.findUnique({
+            where: { id: ctx.organizationId },
+            select: { settingsJson: true },
+          });
 
-      const settings = (org?.settingsJson as Record<string, unknown>) ?? {};
-      const reminderDaysBefore =
-        (settings.contractExpiryReminderDaysBefore as number[]) ?? [30, 60, 90];
+          const settings = (org?.settingsJson as Record<string, unknown>) ?? {};
+          const reminderDaysBefore =
+            (settings.contractExpiryReminderDaysBefore as number[]) ?? [30, 60, 90];
 
-      return { reminderDaysBefore };
+          return { reminderDaysBefore };
+        },
+      );
     }),
 
   /**
@@ -135,6 +156,8 @@ export const settingsRouter = router({
         },
       });
 
+      void invalidateByPrefix(CacheKeys.settingsPrefix(ctx.organizationId));
+
       return { reminderDaysBefore: input.reminderDaysBefore };
     }),
 
@@ -145,16 +168,22 @@ export const settingsRouter = router({
   getInvoiceSettings: tenantProcedure
     .use(requirePermission({ settings: ["read"] }))
     .query(async ({ ctx }) => {
-      const org = await prisma.organization.findUnique({
-        where: { id: ctx.organizationId },
-        select: { settingsJson: true },
-      });
+      return cached(
+        CacheKeys.orgSettingsJson(ctx.organizationId, "invoice"),
+        CacheTTL.ORG_SETTINGS_JSON,
+        async () => {
+          const org = await prisma.organization.findUnique({
+            where: { id: ctx.organizationId },
+            select: { settingsJson: true },
+          });
 
-      const settings = (org?.settingsJson as Record<string, unknown>) ?? {};
-      const invoiceDeviationThresholdPercent =
-        (settings.invoiceDeviationThresholdPercent as number) ?? 10;
+          const settings = (org?.settingsJson as Record<string, unknown>) ?? {};
+          const invoiceDeviationThresholdPercent =
+            (settings.invoiceDeviationThresholdPercent as number) ?? 10;
 
-      return { invoiceDeviationThresholdPercent };
+          return { invoiceDeviationThresholdPercent };
+        },
+      );
     }),
 
   /**
@@ -190,6 +219,8 @@ export const settingsRouter = router({
         },
       });
 
+      void invalidateByPrefix(CacheKeys.settingsPrefix(ctx.organizationId));
+
       return {
         invoiceDeviationThresholdPercent:
           input.invoiceDeviationThresholdPercent,
@@ -207,18 +238,24 @@ export const settingsRouter = router({
   getBranding: tenantProcedure
     .use(requirePermission({ settings: ["read"] }))
     .query(async ({ ctx }) => {
-      const org = await prisma.organization.findUnique({
-        where: { id: ctx.organizationId },
-        select: { logo: true, settingsJson: true },
-      });
+      return cached(
+        CacheKeys.orgBranding(ctx.organizationId),
+        CacheTTL.ORG_BRANDING,
+        async () => {
+          const org = await prisma.organization.findUnique({
+            where: { id: ctx.organizationId },
+            select: { logo: true, settingsJson: true },
+          });
 
-      const settings =
-        (org?.settingsJson as Record<string, unknown>) ?? {};
+          const settings =
+            (org?.settingsJson as Record<string, unknown>) ?? {};
 
-      return {
-        brandColor: (settings.brandColor as string) ?? null,
-        logo: org?.logo ?? null,
-      };
+          return {
+            brandColor: (settings.brandColor as string) ?? null,
+            logo: org?.logo ?? null,
+          };
+        },
+      );
     }),
 
   /**
@@ -302,6 +339,8 @@ export const settingsRouter = router({
         where: { id: ctx.organizationId },
         data: updateData,
       });
+
+      void invalidateByPrefix(CacheKeys.settingsPrefix(ctx.organizationId));
 
       return {
         brandColor:

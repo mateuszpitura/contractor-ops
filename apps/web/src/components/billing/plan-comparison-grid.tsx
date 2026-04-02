@@ -13,9 +13,8 @@ type TierId = (typeof TIER_ORDER)[number];
 const PLANS: Array<{
   id: TierId;
   name: string;
-  priceGrosze: number;
+  basePriceGrosze: number;
   seatPriceGrosze: number;
-  includedSeats: number;
   creditAllowance: number;
   features: string[];
   excludedFeatures: string[];
@@ -25,9 +24,8 @@ const PLANS: Array<{
   {
     id: "STARTER",
     name: "Starter",
-    priceGrosze: 19900,
-    seatPriceGrosze: 1900,
-    includedSeats: 2,
+    basePriceGrosze: 9_900, // 99 PLN
+    seatPriceGrosze: 1_000, // 10 PLN per contractor
     creditAllowance: 20,
     features: [
       "Contractor management",
@@ -44,14 +42,13 @@ const PLANS: Array<{
       "API access",
     ],
     description: "Everything you need to manage contractors",
-    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_STARTER ?? "price_starter",
+    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_STARTER ?? "",
   },
   {
     id: "PRO",
     name: "Pro",
-    priceGrosze: 44900,
-    seatPriceGrosze: 2900,
-    includedSeats: 5,
+    basePriceGrosze: 29_900, // 299 PLN
+    seatPriceGrosze: 1_500, // 15 PLN per contractor
     creditAllowance: 100,
     features: [
       "Everything in Starter",
@@ -62,14 +59,13 @@ const PLANS: Array<{
     ],
     excludedFeatures: ["Audit log export", "API access"],
     description: "Integrations, OCR, and advanced workflows",
-    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO ?? "price_pro",
+    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO ?? "",
   },
   {
     id: "ENTERPRISE",
     name: "Enterprise",
-    priceGrosze: 84900,
-    seatPriceGrosze: 4900,
-    includedSeats: 15,
+    basePriceGrosze: 89_900, // 899 PLN
+    seatPriceGrosze: 2_900, // 29 PLN per contractor
     creditAllowance: 500,
     features: [
       "Everything in Pro",
@@ -81,7 +77,7 @@ const PLANS: Array<{
     excludedFeatures: [],
     description: "Full platform access with audit and API",
     priceId:
-      process.env.NEXT_PUBLIC_STRIPE_PRICE_ENTERPRISE ?? "price_enterprise",
+      process.env.NEXT_PUBLIC_STRIPE_PRICE_ENTERPRISE ?? "",
   },
 ];
 
@@ -139,6 +135,7 @@ export function PlanComparisonGrid({
             ctaMode={getCtaMode(plan.id, currentTier)}
             isRecommended={plan.id === "PRO"}
             onSelect={() => onSelectPlan(plan.priceId)}
+            disabled={!plan.priceId}
             compact={compact}
           />
         </div>

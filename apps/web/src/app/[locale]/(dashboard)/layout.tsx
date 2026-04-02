@@ -92,7 +92,7 @@ export default async function DashboardLayout({
           <SidebarInset>
             <TopBar />
             <BillingOverlay />
-            <main id="main-content" className="min-w-0 flex-1 overflow-x-hidden p-6">{children}</main>
+            <main id="main-content" className="mesh-bg grain-overlay min-w-0 flex-1 overflow-x-hidden p-6">{children}</main>
           </SidebarInset>
         </SidebarProvider>
       </SearchProvider>

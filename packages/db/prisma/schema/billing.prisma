@@ -35,6 +35,7 @@ model OcrCreditLedger {
 
   organization   Organization @relation(fields: [organizationId], references: [id])
 
+  @@unique([stripeEventId], map: "OcrCreditLedger_stripeEventId_unique")
   @@index([organizationId])
   @@index([organizationId, periodStart, periodEnd])
 }

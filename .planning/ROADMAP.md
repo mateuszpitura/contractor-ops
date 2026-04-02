@@ -57,7 +57,7 @@ Full details: `.planning/milestones/v2.0-ROADMAP.md`
 
 - [x] **Phase 28: Stripe Billing Foundation** - Subscription lifecycle, AI credit metering, and webhook-driven billing infrastructure (completed 2026-04-01)
 - [x] **Phase 29: Linear Integration** - Bidirectional issue sync between workflow tasks and Linear (completed 2026-04-01)
-- [ ] **Phase 30: Equipment Tracking Foundation** - Equipment registry, contractor assignment, manual shipment tracking, and workflow integration
+- [x] **Phase 30: Equipment Tracking Foundation** - Equipment registry, contractor assignment, manual shipment tracking, and workflow integration (completed 2026-04-02)
 - [ ] **Phase 31: Google Workspace Directory Import** - Paginated directory import with group-to-role mapping
 - [ ] **Phase 32: Teams Integration** - Approve/reject from Teams Adaptive Cards, reminders, and activity alerts
 - [ ] **Phase 33: InPost Courier Integration** - First courier API with Parcel Locker selection and auto-status tracking
@@ -233,7 +233,7 @@ Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 �
 | 27. OAuth Callback & OCR Build Fixes | v2.0 | 1/1 | Complete | 2026-04-01 |
 | 28. Stripe Billing Foundation | v3.0 | 4/4 | Complete    | 2026-04-01 |
 | 29. Linear Integration | v3.0 | 3/3 | Complete    | 2026-04-01 |
-| 30. Equipment Tracking Foundation | v3.0 | 2/3 | In Progress|  |
+| 30. Equipment Tracking Foundation | v3.0 | 2/3 | Complete    | 2026-04-02 |
 | 31. Google Workspace Directory Import | v3.0 | 0/2 | Not started | - |
 | 32. Teams Integration | v3.0 | 0/3 | Not started | - |
 | 33. InPost Courier Integration | v3.0 | 0/1 | Not started | - |

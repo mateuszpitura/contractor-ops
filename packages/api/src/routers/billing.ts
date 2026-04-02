@@ -7,14 +7,18 @@ import { tenantProcedure } from "../middleware/tenant.js";
 import {
   getSubscription,
   createCheckoutSession,
+  createTopUpCheckoutSession,
   getProrationPreview,
   createPortalSession,
   ensureStripeCustomer,
+  updateSubscriptionSeatCount,
 } from "../services/billing-service.js";
 import { getCreditBalance } from "../services/credit-service.js";
 import {
   TIER_CREDIT_ALLOWANCE,
   TRIAL_CREDIT_ALLOWANCE,
+  KNOWN_SUBSCRIPTION_PRICE_IDS,
+  KNOWN_TOPUP_PRICE_IDS,
 } from "../services/billing-constants.js";
 
 // ---------------------------------------------------------------------------
@@ -26,45 +30,59 @@ const PLAN_CONFIG = {
     {
       id: "STARTER" as const,
       name: "Starter",
-      monthlyPriceGrosze: 35_000, // 350 PLN
-      includedSeats: 5,
+      basePriceGrosze: 9_900, // 99 PLN base
+      seatPriceGrosze: 1_000, // 10 PLN per contractor
       monthlyOcrCredits: TIER_CREDIT_ALLOWANCE.STARTER,
+      description: "Everything you need to manage contractors",
       features: [
-        "Core contractor management",
-        "Invoice processing",
-        "Basic approval workflows",
-        "Email notifications",
+        "Contractor management",
+        "Contracts & documents",
+        "Invoice intake & matching",
+        "Approval workflows",
+        "Payment batching",
+      ],
+      excludedFeatures: [
+        "Integrations (Jira, Linear, Calendar)",
+        "OCR invoice parsing",
+        "Advanced workflows",
+        "Audit log export",
+        "API access",
       ],
     },
     {
       id: "PRO" as const,
       name: "Pro",
-      monthlyPriceGrosze: 50_000, // 500 PLN
-      includedSeats: 15,
+      basePriceGrosze: 29_900, // 299 PLN base
+      seatPriceGrosze: 1_500, // 15 PLN per contractor
       monthlyOcrCredits: TIER_CREDIT_ALLOWANCE.PRO,
+      description: "Integrations, OCR, and advanced workflows",
       features: [
         "Everything in Starter",
-        "Advanced workflows",
-        "Slack integration",
-        "Jira integration",
+        "Integrations (Jira, Linear, Calendar)",
         "OCR invoice parsing",
-        "Time tracking",
+        "Advanced workflows",
+        "E-signatures",
+      ],
+      excludedFeatures: [
+        "Audit log export",
+        "API access",
       ],
     },
     {
       id: "ENTERPRISE" as const,
       name: "Enterprise",
-      monthlyPriceGrosze: 65_000, // 650 PLN
-      includedSeats: 50,
+      basePriceGrosze: 89_900, // 899 PLN base
+      seatPriceGrosze: 2_900, // 29 PLN per contractor
       monthlyOcrCredits: TIER_CREDIT_ALLOWANCE.ENTERPRISE,
+      description: "Full platform access with audit and API",
       features: [
         "Everything in Pro",
-        "Contractor portal",
-        "E-signatures",
-        "KSeF integration",
-        "Calendar sync",
+        "Audit log export",
+        "API access",
         "Priority support",
+        "Custom onboarding",
       ],
+      excludedFeatures: [],
     },
   ],
   trialDays: 14,
@@ -95,6 +113,13 @@ export const billingRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      if (!KNOWN_SUBSCRIPTION_PRICE_IDS.has(input.priceId)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Invalid subscription price ID",
+        });
+      }
+
       const org = await prisma.organization.findUnique({
         where: { id: ctx.organizationId },
         select: { billingEmail: true, name: true },
@@ -119,6 +144,12 @@ export const billingRouter = router({
       const existingSub = await getSubscription(ctx.organizationId);
       const isNewOrg = !existingSub;
 
+      // Count active contractors as seat quantity (minimum 1)
+      const contractorCount = await prisma.contractor.count({
+        where: { organizationId: ctx.organizationId, status: "ACTIVE" },
+      });
+      const quantity = Math.max(1, contractorCount);
+
       const baseUrl =
         process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
@@ -127,6 +158,7 @@ export const billingRouter = router({
         priceId: input.priceId,
         stripeCustomerId,
         isNewOrg,
+        quantity,
         successUrl: `${baseUrl}/settings?tab=billing&session_id={CHECKOUT_SESSION_ID}`,
         cancelUrl: `${baseUrl}/settings?tab=billing`,
       });
@@ -143,6 +175,13 @@ export const billingRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
+      if (!KNOWN_SUBSCRIPTION_PRICE_IDS.has(input.newPriceId)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Invalid subscription price ID",
+        });
+      }
+
       const sub = await getSubscription(ctx.organizationId);
 
       if (!sub) {
@@ -187,6 +226,84 @@ export const billingRouter = router({
       stripeCustomerId: sub.stripeCustomerId,
       returnUrl: `${baseUrl}/settings?tab=billing`,
     });
+  }),
+
+  /**
+   * Create a Stripe Checkout session for a one-time credit top-up.
+   * Admin-only.
+   */
+  createTopUpCheckout: adminProcedure
+    .input(
+      z.object({
+        priceId: z.string().min(1, "Price ID is required"),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      if (!KNOWN_TOPUP_PRICE_IDS.has(input.priceId)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Invalid top-up price ID",
+        });
+      }
+
+      const sub = await getSubscription(ctx.organizationId);
+
+      if (!sub) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "No active subscription found. Subscribe to a plan first.",
+        });
+      }
+
+      const baseUrl =
+        process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+
+      return createTopUpCheckoutSession({
+        organizationId: ctx.organizationId,
+        priceId: input.priceId,
+        stripeCustomerId: sub.stripeCustomerId,
+        successUrl: `${baseUrl}/settings?tab=billing&topup=success`,
+        cancelUrl: `${baseUrl}/settings?tab=billing`,
+      });
+    }),
+
+  /**
+   * Sync the subscription seat count with the current number of active contractors.
+   * Admin-only. Call this after adding/removing contractors.
+   */
+  syncSeatCount: adminProcedure.mutation(async ({ ctx }) => {
+    const sub = await getSubscription(ctx.organizationId);
+
+    if (!sub || !sub.stripeSubscriptionItemId) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "No active subscription with a subscription item found",
+      });
+    }
+
+    if (sub.status !== "ACTIVE" && sub.status !== "TRIALING") {
+      throw new TRPCError({
+        code: "PRECONDITION_FAILED",
+        message: "Subscription is not active",
+      });
+    }
+
+    const contractorCount = await prisma.contractor.count({
+      where: { organizationId: ctx.organizationId, status: "ACTIVE" },
+    });
+    const newQuantity = Math.max(1, contractorCount);
+
+    if (newQuantity === sub.seatCount) {
+      return { updated: false, seatCount: sub.seatCount };
+    }
+
+    await updateSubscriptionSeatCount({
+      stripeSubscriptionId: sub.stripeSubscriptionId,
+      stripeSubscriptionItemId: sub.stripeSubscriptionItemId,
+      newQuantity,
+    });
+
+    return { updated: true, seatCount: newQuantity };
   }),
 
   /**

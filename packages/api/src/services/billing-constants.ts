@@ -13,12 +13,23 @@ export const TRIAL_CREDIT_ALLOWANCE = 5;
 /**
  * Maps Stripe Price IDs to subscription tiers.
  * Uses env vars so prices are configurable without code changes.
+ * Empty/missing env vars are filtered out to prevent "" key collisions.
  */
-export const PRICE_TO_TIER_MAP: Record<string, SubscriptionTier> = {
-  [process.env.STRIPE_PRICE_STARTER ?? ""]: "STARTER",
-  [process.env.STRIPE_PRICE_PRO ?? ""]: "PRO",
-  [process.env.STRIPE_PRICE_ENTERPRISE ?? ""]: "ENTERPRISE",
-};
+export const PRICE_TO_TIER_MAP: Record<string, SubscriptionTier> =
+  Object.fromEntries(
+    (
+      [
+        [process.env.STRIPE_PRICE_STARTER, "STARTER"],
+        [process.env.STRIPE_PRICE_PRO, "PRO"],
+        [process.env.STRIPE_PRICE_ENTERPRISE, "ENTERPRISE"],
+      ] as const
+    ).filter(([key]) => key),
+  ) as Record<string, SubscriptionTier>;
+
+/** Set of all known subscription price IDs for server-side validation. */
+export const KNOWN_SUBSCRIPTION_PRICE_IDS = new Set(
+  Object.keys(PRICE_TO_TIER_MAP),
+);
 
 /** Resolve tier from a Stripe Price ID. Throws if price is unknown. */
 export function resolveTierFromPriceId(priceId: string): SubscriptionTier {
@@ -27,4 +38,29 @@ export function resolveTierFromPriceId(priceId: string): SubscriptionTier {
     throw new Error(`[billing] Unknown Stripe price ID: ${priceId}`);
   }
   return tier;
+}
+
+/**
+ * Maps top-up Stripe Price IDs to the number of OCR credits they grant.
+ * Empty/missing env vars are filtered out to prevent "" key collisions.
+ */
+export const TOPUP_PRICE_TO_CREDITS: Record<string, number> =
+  Object.fromEntries(
+    (
+      [
+        [process.env.NEXT_PUBLIC_STRIPE_PRICE_TOPUP_10, 10],
+        [process.env.NEXT_PUBLIC_STRIPE_PRICE_TOPUP_25, 25],
+        [process.env.NEXT_PUBLIC_STRIPE_PRICE_TOPUP_50, 50],
+      ] as const
+    ).filter(([key]) => key),
+  );
+
+/** Set of all known top-up price IDs for server-side validation. */
+export const KNOWN_TOPUP_PRICE_IDS = new Set(
+  Object.keys(TOPUP_PRICE_TO_CREDITS),
+);
+
+/** Resolve credit count from a top-up Price ID. Returns null if unknown. */
+export function resolveTopUpCredits(priceId: string): number | null {
+  return TOPUP_PRICE_TO_CREDITS[priceId] ?? null;
 }

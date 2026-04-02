@@ -45,8 +45,8 @@ export function BillingTab() {
   const portalMutation = useMutation({
     ...trpc.billing.createPortalSession.mutationOptions(),
     onSuccess(data) {
-      if (data.portalUrl) {
-        window.location.href = data.portalUrl;
+      if (data.url) {
+        window.location.href = data.url;
       }
     },
     onError() {

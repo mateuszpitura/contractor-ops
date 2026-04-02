@@ -12,9 +12,8 @@ import { cn } from "@/lib/utils";
 
 export interface PlanTier {
   name: string;
-  priceGrosze: number;
+  basePriceGrosze: number;
   seatPriceGrosze: number;
-  includedSeats: number;
   creditAllowance: number;
   features: string[];
   excludedFeatures: string[];
@@ -95,14 +94,13 @@ export function PlanCard({
         {/* Price display */}
         <div>
           <span className="font-display text-[28px] font-semibold leading-tight tabular-nums">
-            {formatPLN(tier.priceGrosze)} PLN
+            {formatPLN(tier.basePriceGrosze)} PLN
           </span>
           <span className="text-sm text-muted-foreground">/month</span>
         </div>
 
         <p className="text-sm text-muted-foreground">
-          +{formatPLN(tier.seatPriceGrosze)} PLN/seat above{" "}
-          {tier.includedSeats} included
+          +{formatPLN(tier.seatPriceGrosze)} PLN per contractor
         </p>
 
         <p className="text-sm text-muted-foreground">

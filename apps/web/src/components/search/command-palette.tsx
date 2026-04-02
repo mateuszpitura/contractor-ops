@@ -523,14 +523,14 @@ export function CommandPalette() {
       </CommandList>
 
       {/* Footer keyboard hints */}
-      <div className="flex items-center gap-4 border-t px-3 py-2">
-        <span className="text-xs font-mono text-muted-foreground">
+      <div className="flex items-center gap-4 border-t border-border/40 px-3 py-2">
+        <span className="text-xs font-mono text-muted-foreground/70">
           {t("footer.select")}
         </span>
-        <span className="text-xs font-mono text-muted-foreground">
+        <span className="text-xs font-mono text-muted-foreground/70">
           {t("footer.navigate")}
         </span>
-        <span className="text-xs font-mono text-muted-foreground">
+        <span className="text-xs font-mono text-muted-foreground/70">
           {t("footer.close")}
         </span>
       </div>

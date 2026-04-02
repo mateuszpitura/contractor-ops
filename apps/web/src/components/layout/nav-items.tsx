@@ -1,5 +1,7 @@
 "use client";
 
+import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
   SidebarGroup,
@@ -8,18 +10,76 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { navigationGroups } from "@/lib/navigation";
+import {
+  navigationGroups,
+  type NavItem,
+} from "@/lib/navigation";
 import { usePermissions } from "@/hooks/use-permissions";
 import { Link, usePathname } from "@/i18n/navigation";
 import { WorkflowNavBadge } from "@/components/workflows/workflow-nav-badge";
+
+function settingsTabFromSearch(
+  searchParams: ReturnType<typeof useSearchParams>,
+): string {
+  return searchParams.get("tab") ?? "general";
+}
+
+/**
+ * Sidebar active state must consider `?tab=` on /settings — usePathname() has no query string,
+ * so hrefs like `/settings?tab=integrations` never matched and plain `/settings` always won.
+ */
+function isNavItemActive(
+  pathname: string,
+  searchParams: ReturnType<typeof useSearchParams>,
+  item: NavItem,
+): boolean {
+  const [basePath, queryPart] = item.href.split("?");
+  const tabFromHref = queryPart
+    ? new URLSearchParams(queryPart).get("tab")
+    : null;
+
+  if (tabFromHref && basePath === "/settings") {
+    if (pathname !== "/settings") return false;
+    return settingsTabFromSearch(searchParams) === tabFromHref;
+  }
+
+  if (item.key === "notifications") {
+    if (
+      pathname === "/notifications" ||
+      pathname.startsWith("/notifications/")
+    ) {
+      return true;
+    }
+    if (pathname === "/settings") {
+      return settingsTabFromSearch(searchParams) === "notifications";
+    }
+    return false;
+  }
+
+  if (item.key === "settings") {
+    const pathMatches =
+      pathname === "/settings" || pathname.startsWith("/settings/");
+    if (!pathMatches) return false;
+    if (pathname === "/settings") {
+      const tab = settingsTabFromSearch(searchParams);
+      if (tab === "integrations" || tab === "notifications") return false;
+    }
+    return true;
+  }
+
+  return (
+    pathname === basePath || pathname.startsWith(`${basePath}/`)
+  );
+}
 
 /**
  * Sidebar navigation items organized into labeled groups (Overview, Operations,
  * Finance, System). Each group is filtered by RBAC — groups with no visible
  * items are hidden entirely. Active item shows highlight.
  */
-export function NavItems() {
+function NavItemsContent() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { can } = usePermissions();
   const t = useTranslations("Navigation");
 
@@ -47,9 +107,7 @@ export function NavItems() {
             )}
             <SidebarMenu>
               {visibleItems.map((item) => {
-                const isActive =
-                  pathname === item.href ||
-                  pathname.startsWith(`${item.href}/`);
+                const isActive = isNavItemActive(pathname, searchParams, item);
 
                 const label = t(item.key as Parameters<typeof t>[0]);
 
@@ -72,5 +130,14 @@ export function NavItems() {
         );
       })}
     </>
+  );
+}
+
+/** `useSearchParams` must be under Suspense (Next.js). */
+export function NavItems() {
+  return (
+    <Suspense fallback={null}>
+      <NavItemsContent />
+    </Suspense>
   );
 }

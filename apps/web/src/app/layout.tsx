@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Outfit, Bricolage_Grotesque, JetBrains_Mono } from "next/font/google";
 import type { ReactNode } from "react";
 
+// Sentry: instrument client-side route transitions for performance tracing
+export { onRouterTransitionStart } from "@/sentry.client.config";
+
 const outfit = Outfit({
   subsets: ["latin", "latin-ext"],
   variable: "--font-sans",
@@ -20,6 +23,9 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "Contractor Ops",
   description: "Contractor management and invoice processing platform",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

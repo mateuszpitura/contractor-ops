@@ -101,7 +101,7 @@ function StepIndicator({
 
   if (current) {
     return (
-      <div className="h-6 w-6 shrink-0 rounded-full ring-2 ring-primary" />
+      <div className="step-current-ring h-6 w-6 shrink-0 rounded-full ring-2 ring-primary" />
     );
   }
 
@@ -283,10 +283,10 @@ export function OnboardingChecklist() {
   )?.id;
 
   return (
-    <Card>
+    <Card className="iridescent neon-card">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-[20px] font-semibold">
+          <CardTitle className="gradient-text text-[20px] font-bold">
             {t("widgetTitle")}
           </CardTitle>
           <span className="text-xs font-semibold text-primary">

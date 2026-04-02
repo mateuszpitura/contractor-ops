@@ -41,21 +41,38 @@ function formatAmount(grosze: number, currency: string): string {
 
 function getSlaVariant(status: string): "success" | "warning" | "destructive" | "secondary" {
   switch (status) {
-    case "ON_TRACK":
+    case "green":
       return "success";
-    case "APPROACHING":
+    case "yellow":
       return "warning";
-    case "BREACHED":
+    case "red":
+    case "overdue":
       return "destructive";
     default:
       return "secondary";
   }
 }
 
+/** Left border accent color per SLA status */
+function getSlaAccent(status: string): string {
+  switch (status) {
+    case "green":
+      return "border-l-success";
+    case "yellow":
+      return "border-l-warning";
+    case "red":
+    case "overdue":
+      return "border-l-destructive";
+    default:
+      return "border-l-muted-foreground/30";
+  }
+}
+
 const SLA_LABEL_KEYS: Record<string, string> = {
-  ON_TRACK: "approvals.slaOnTrack",
-  APPROACHING: "approvals.slaApproaching",
-  BREACHED: "approvals.slaBreached",
+  green: "approvals.slaOnTrack",
+  yellow: "approvals.slaApproaching",
+  red: "approvals.slaBreached",
+  overdue: "approvals.slaBreached",
 };
 
 // ---------------------------------------------------------------------------
@@ -64,7 +81,7 @@ const SLA_LABEL_KEYS: Record<string, string> = {
 
 /**
  * Approval queue widget showing top 5 pending approvals with SLA badges.
- * Reuses the existing approval.listPending tRPC procedure.
+ * Color-coded left border per SLA status. Glowing badges on breached items.
  */
 export function ApprovalQueueWidget() {
   const t = useTranslations("Dashboard");
@@ -75,7 +92,7 @@ export function ApprovalQueueWidget() {
   const items = data?.items ?? [];
 
   return (
-    <Card>
+    <Card className="neon-card">
       <CardHeader>
         <CardTitle className="font-display text-lg font-semibold">
           {t("approvals.title")}
@@ -101,7 +118,7 @@ export function ApprovalQueueWidget() {
             {t("approvals.empty")}
           </p>
         ) : (
-          <ScrollArea className="max-h-[280px]">
+          <ScrollArea className="scroll-fade-bottom max-h-[280px]">
             <div className="flex flex-col gap-2">
               {items.map((item) => {
                 const invoice = item.invoice;
@@ -110,24 +127,28 @@ export function ApprovalQueueWidget() {
                 const amount = invoice?.totalGrosze ?? 0;
                 const currency = invoice?.currency ?? "PLN";
                 const invoiceId = item.approvalFlow?.resourceId;
+                const slaStatus = item.slaStatus?.status ?? "";
+                const accent = getSlaAccent(slaStatus);
+                const isBreached = slaStatus === "red" || slaStatus === "overdue";
 
                 return (
                   <Link
                     key={item.id}
                     href={invoiceId ? `/invoices/${invoiceId}` : "/approvals"}
-                    className="flex items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-muted/50"
+                    className={`flex items-center gap-3 rounded-lg border-l-2 ${accent} pl-3 pr-2.5 py-2.5 transition-all duration-200 hover:bg-surface-2 hover:pl-3.5`}
                   >
                     <span className="min-w-0 flex-1 truncate text-sm font-medium">
                       {contractorName}
                     </span>
-                    <span className="shrink-0 text-sm tabular-nums text-muted-foreground">
+                    <span className="shrink-0 font-display text-sm font-semibold tabular-nums text-foreground">
                       {formatAmount(amount, currency)}
                     </span>
                     {item.slaStatus && (
                       <Badge
-                        variant={getSlaVariant(item.slaStatus.status)}
+                        variant={getSlaVariant(slaStatus)}
+                        className={isBreached ? "badge-glow" : ""}
                       >
-                        {t((SLA_LABEL_KEYS[item.slaStatus.status] ?? item.slaStatus.status) as Parameters<typeof t>[0])}
+                        {t((SLA_LABEL_KEYS[slaStatus] ?? slaStatus) as Parameters<typeof t>[0])}
                       </Badge>
                     )}
                   </Link>

@@ -49,7 +49,7 @@ export function TopUpDialog({ open, onOpenChange }: TopUpDialogProps) {
   const [selectedBundle, setSelectedBundle] = useState<string>("10");
 
   const checkoutMutation = useMutation({
-    ...trpc.billing.createCheckoutSession.mutationOptions(),
+    ...trpc.billing.createTopUpCheckout.mutationOptions(),
     onSuccess(data) {
       if (data.sessionUrl) {
         window.location.href = data.sessionUrl;
@@ -61,14 +61,16 @@ export function TopUpDialog({ open, onOpenChange }: TopUpDialogProps) {
   });
 
   function handleConfirm() {
-    // Use a dedicated top-up price ID based on bundle selection
-    // For now, this will route through the standard checkout flow
     const priceIdMap: Record<string, string> = {
-      "10": process.env.NEXT_PUBLIC_STRIPE_PRICE_TOPUP_10 ?? "price_topup_10",
-      "25": process.env.NEXT_PUBLIC_STRIPE_PRICE_TOPUP_25 ?? "price_topup_25",
-      "50": process.env.NEXT_PUBLIC_STRIPE_PRICE_TOPUP_50 ?? "price_topup_50",
+      "10": process.env.NEXT_PUBLIC_STRIPE_PRICE_TOPUP_10 ?? "",
+      "25": process.env.NEXT_PUBLIC_STRIPE_PRICE_TOPUP_25 ?? "",
+      "50": process.env.NEXT_PUBLIC_STRIPE_PRICE_TOPUP_50 ?? "",
     };
-    const priceId = priceIdMap[selectedBundle] ?? priceIdMap["10"]!;
+    const priceId = priceIdMap[selectedBundle];
+    if (!priceId) {
+      toast.error("Top-up price not configured.");
+      return;
+    }
     checkoutMutation.mutate({ priceId });
   }
 

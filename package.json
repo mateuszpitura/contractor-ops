@@ -10,7 +10,7 @@
     "test": "turbo test",
     "db:generate": "turbo db:generate",
     "db:push": "turbo db:push",
-    "postinstall": "turbo build --filter=@contractor-ops/validators --filter=@contractor-ops/auth --filter=@contractor-ops/integrations --filter=@contractor-ops/api"
+    "postinstall": "turbo build --filter=@contractor-ops/validators --filter=@contractor-ops/auth --filter=@contractor-ops/integrations --filter=@contractor-ops/logger --filter=@contractor-ops/api"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.0",

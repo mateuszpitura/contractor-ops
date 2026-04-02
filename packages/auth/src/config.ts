@@ -29,6 +29,21 @@ export const auth = betterAuth({
     },
   },
 
+  account: {
+    accountLinking: {
+      enabled: true,
+      trustedProviders: ["microsoft", "google"],
+    },
+  },
+
+  advanced: {
+    defaultCookieAttributes: {
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+    },
+  },
+
   session: {
     expiresIn: 60 * 60 * 24, // 24 hours
     updateAge: 60 * 60, // Refresh session every hour on activity

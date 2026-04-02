@@ -1,9 +1,13 @@
+import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { verifySignatureAppRouter } from "@upstash/qstash/nextjs";
 import { prisma } from "@contractor-ops/db";
 import { dispatch } from "@contractor-ops/api/services/notification-service";
+import { createCronLogger } from "@contractor-ops/logger";
+import { metrics } from "@contractor-ops/logger/metrics";
 import { Resend } from "resend";
+
+const log = createCronLogger("trial-notifications");
 
 // ---------------------------------------------------------------------------
 // Resend client (lazy init)
@@ -24,17 +28,29 @@ function buildBillingUrl(): string {
 }
 
 // ---------------------------------------------------------------------------
-// POST /api/cron/trial-notifications
+// GET /api/cron/trial-notifications
 // ---------------------------------------------------------------------------
 
 /**
- * QStash cron endpoint for trial expiry notifications.
+ * Vercel Cron endpoint for trial expiry notifications.
  *
  * Stripe only sends `trial_will_end` at 3 days before expiry.
  * Per D-10, we also need notifications at 7 days and 1 day.
- * This cron runs daily (recommended: 0 9 * * *).
+ * Runs daily at 09:00 UTC (configured in vercel.json).
  */
-async function handler(_request: NextRequest) {
+export async function GET(request: NextRequest) {
+  const authHeader = request.headers.get("authorization");
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  return Sentry.withMonitor("trial-notifications", () => handleTrialNotifications(), {
+    schedule: { type: "crontab", value: "0 9 * * *" },
+    timezone: "UTC",
+  });
+}
+
+async function handleTrialNotifications() {
   let notificationCount = 0;
 
   try {
@@ -94,10 +110,7 @@ async function handler(_request: NextRequest) {
               html: `<p>Your trial ends in 7 days. Upgrade to keep your data and full access.</p><p><a href="${buildBillingUrl()}">Go to billing settings</a></p>`,
             });
           } catch (error) {
-            console.error(
-              "[trial-notifications] Email send failed:",
-              error,
-            );
+            log.error({ err: error }, "email send failed");
           }
         }
 
@@ -128,10 +141,7 @@ async function handler(_request: NextRequest) {
               html: `<p>Your trial ends tomorrow. Upgrade now to avoid losing access to features.</p><p><a href="${buildBillingUrl()}">Go to billing settings</a></p>`,
             });
           } catch (error) {
-            console.error(
-              "[trial-notifications] Email send failed:",
-              error,
-            );
+            log.error({ err: error }, "email send failed");
           }
         }
 
@@ -139,12 +149,21 @@ async function handler(_request: NextRequest) {
       }
     }
 
+    log.info(
+      { processed: trialingSubscriptions.length, sent: notificationCount },
+      "cron completed",
+    );
+    metrics.gauge("cron.trial_notifications.sent", notificationCount);
+
     return NextResponse.json({
       processed: trialingSubscriptions.length,
       notificationsSent: notificationCount,
     });
   } catch (error) {
-    console.error("[trial-notifications] Cron handler failed:", error);
+    log.error({ err: error }, "cron handler failed");
+    Sentry.captureException(error, {
+      tags: { "cron.job": "trial-notifications" },
+    });
     return NextResponse.json(
       { error: "Cron processing failed" },
       { status: 500 },
@@ -152,5 +171,3 @@ async function handler(_request: NextRequest) {
   }
 }
 
-// Wrap with QStash signature verification
-export const POST = verifySignatureAppRouter(handler);

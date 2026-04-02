@@ -27,7 +27,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { PdfViewer } from "@/components/ocr/pdf-viewer";
+import dynamic from "next/dynamic";
+
+const PdfViewer = dynamic(
+  () => import("@/components/ocr/pdf-viewer").then((mod) => mod.PdfViewer),
+  { ssr: false },
+);
 import { ConfidenceFieldWrapper } from "@/components/ocr/confidence-field-wrapper";
 import { NipValidationBadge } from "@/components/ocr/nip-validation-badge";
 import { ExtractionStatusBar } from "@/components/ocr/extraction-status-bar";

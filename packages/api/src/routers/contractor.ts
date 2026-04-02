@@ -13,6 +13,8 @@ import { router } from "../init.js";
 import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
 import { encryptBankAccount } from "../services/bank-account-crypto.js";
+import { syncSeatCountForOrg } from "../services/billing-service.js";
+import { invalidateByPrefix, CacheKeys } from "../services/cache.js";
 
 // ---------------------------------------------------------------------------
 // Lifecycle transition map
@@ -444,6 +446,10 @@ export const contractorRouter = router({
         return created;
       });
 
+      // Fire-and-forget: sync Stripe seat count after new contractor
+      void syncSeatCountForOrg(ctx.organizationId);
+      void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
+
       return plain(contractor);
     }),
 
@@ -602,6 +608,12 @@ export const contractorRouter = router({
         data: updateData,
       });
 
+      // Sync seat count if status changed (ENDED→INACTIVE or restored→ACTIVE)
+      if (updateData.status) {
+        void syncSeatCountForOrg(ctx.organizationId);
+      }
+      void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
+
       return plain(updated);
     }),
 
@@ -636,6 +648,10 @@ export const contractorRouter = router({
         },
       });
 
+      // Fire-and-forget: sync Stripe seat count after archiving
+      void syncSeatCountForOrg(ctx.organizationId);
+      void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
+
       return plain(updated);
     }),
 
@@ -658,6 +674,12 @@ export const contractorRouter = router({
           archivedAt: new Date(),
         },
       });
+
+      // Fire-and-forget: sync Stripe seat count after bulk archiving
+      if (result.count > 0) {
+        void syncSeatCountForOrg(ctx.organizationId);
+        void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
+      }
 
       return { count: result.count };
     }),
