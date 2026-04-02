@@ -48,11 +48,11 @@ Exceptions: Timeline connector line uses 2px width. Timeline node circles are 12
 | Role | Size | Weight | Line Height |
 |------|------|--------|-------------|
 | Body | text-sm (clamp 13-14px) | 400 (regular) | 1.25rem |
-| Label | text-xs (clamp 11-12px) | 500 (medium) | 1rem |
+| Label | text-xs (clamp 11-12px) | 400 (regular) | 1rem |
 | Heading | text-lg (clamp 16-18px) | 600 (semibold) | 1.75rem |
-| Display | text-2xl (clamp 22-30px) | 700 (bold) | 2.25rem |
+| Display | text-2xl (clamp 22-30px) | 600 (semibold) | 2.25rem |
 
-Notes: All sizes use the project's existing fluid clamp() scale defined in globals.css. Equipment type labels and serial numbers use font-mono (JetBrains Mono) at text-xs for scanability.
+Notes: All sizes use the project's existing fluid clamp() scale defined in globals.css. Equipment type labels and serial numbers use font-mono (JetBrains Mono) at text-xs for scanability. Label role differentiates from Body through size (text-xs vs text-sm), not weight.
 
 ---
 
@@ -222,7 +222,7 @@ Matches the contractor profile pattern: header with metadata, tabbed content bel
 | Primary CTA (list page) | "Add equipment" |
 | Primary CTA (detail page) | "Create shipment" |
 | Assignment CTA | "Assign to contractor" |
-| Unassignment CTA | "Unassign" |
+| Unassignment CTA | "Unassign equipment" |
 | Empty state heading (list) | "No equipment tracked yet" |
 | Empty state body (list) | "Add your first piece of equipment to start tracking assignments and shipments." |
 | Empty state heading (shipments tab) | "No shipments" |
@@ -266,7 +266,7 @@ Both `en` and `pl` translations required (project standard).
 | Action | Trigger | Interaction | Feedback |
 |--------|---------|-------------|----------|
 | Assign | "Assign to contractor" button (detail page) | Dialog with Command-based contractor picker (search by name) | Sonner toast "Equipment assigned to {name}", status changes to ASSIGNED |
-| Unassign | "Unassign" button (detail page, visible only when assigned) | Confirmation dialog | Sonner toast "Equipment unassigned", status changes to AVAILABLE |
+| Unassign | "Unassign equipment" button (detail page, visible only when assigned) | Confirmation dialog | Sonner toast "Equipment unassigned", status changes to AVAILABLE |
 
 ### Shipment Flow
 
