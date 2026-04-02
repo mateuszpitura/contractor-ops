@@ -14,6 +14,7 @@ import { KsefSetupDialog } from "./ksef-setup-dialog";
 import { KsefSyncHistory } from "./ksef-sync-history";
 import { JiraProviderSection } from "@/components/integrations/jira-provider-section";
 import { LinearProviderSection } from "@/components/integrations/linear-provider-section";
+import { GoogleWorkspaceProviderSection } from "@/components/integrations/google-workspace-provider-section";
 import { JiraLogo } from "@/components/integrations/jira-logo";
 import { SlackBrandIcon } from "@/components/integrations/brand-icons";
 import {
@@ -201,6 +202,9 @@ export function IntegrationsTab() {
 
         {/* Linear has custom status mapping controls (D-03, D-11: coexists with Jira) */}
         <LinearProviderSection />
+
+        {/* Google Workspace has directory import wizard */}
+        <GoogleWorkspaceProviderSection />
 
         {/* Notion provider card */}
         <ProviderConnectionCard
