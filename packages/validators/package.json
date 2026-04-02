@@ -16,7 +16,8 @@
     }
   },
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "test": "vitest run"
   },
   "dependencies": {
     "ibantools": "^4.5.1",
