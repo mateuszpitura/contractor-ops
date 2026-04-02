@@ -22,7 +22,7 @@ export function GoogleWorkspaceProviderSection() {
 
   // Check connection health
   const healthQuery = useQuery(
-    trpc.integration.getHealth.queryOptions({ provider: "google-workspace" }),
+    trpc.integration.getHealth.queryOptions({ provider: "google_workspace" }),
   );
   const health = healthQuery.data as
     | { status: string; connectionId?: string }
@@ -32,7 +32,7 @@ export function GoogleWorkspaceProviderSection() {
 
   // D-04: After OAuth redirect, auto-open import wizard
   useEffect(() => {
-    if (searchParams.get("google-workspace") === "connected") {
+    if (searchParams.get("google_workspace") === "connected") {
       setWizardOpen(true);
     }
   }, [searchParams]);
@@ -40,7 +40,7 @@ export function GoogleWorkspaceProviderSection() {
   return (
     <div className="space-y-4">
       <ProviderConnectionCard
-        provider="google-workspace"
+        provider="google_workspace"
         displayName="Google Workspace"
         icon={<GoogleWorkspaceLogo className="size-8" />}
         description={
