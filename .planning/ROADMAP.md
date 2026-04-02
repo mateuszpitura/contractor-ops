@@ -58,7 +58,7 @@ Full details: `.planning/milestones/v2.0-ROADMAP.md`
 - [x] **Phase 28: Stripe Billing Foundation** - Subscription lifecycle, AI credit metering, and webhook-driven billing infrastructure (completed 2026-04-01)
 - [x] **Phase 29: Linear Integration** - Bidirectional issue sync between workflow tasks and Linear (completed 2026-04-01)
 - [x] **Phase 30: Equipment Tracking Foundation** - Equipment registry, contractor assignment, manual shipment tracking, and workflow integration (completed 2026-04-02)
-- [ ] **Phase 31: Google Workspace Directory Import** - Paginated directory import with group-to-role mapping
+- [x] **Phase 31: Google Workspace Directory Import** - Paginated directory import with group-to-role mapping (completed 2026-04-02)
 - [ ] **Phase 32: Teams Integration** - Approve/reject from Teams Adaptive Cards, reminders, and activity alerts
 - [ ] **Phase 33: InPost Courier Integration** - First courier API with Parcel Locker selection and auto-status tracking
 - [ ] **Phase 34: Intelligent Onboarding Wizard** - Cross-tool import orchestrator with preview, dedup, and batch confirm
@@ -134,7 +134,7 @@ Plans:
 Plans:
 - [x] 31-00-PLAN.md — Wave 0 test stubs for all GOOG requirements (GOOG-01/02/03/04/05)
 - [x] 31-01-PLAN.md — GoogleWorkspaceAdapter, Zod validators, tRPC router with directory listing, group resolution, bulk import (GOOG-01/02/03/04)
-- [ ] 31-02-PLAN.md — Provider section UI, multi-step import wizard, directory preview table, role mapping, i18n (GOOG-01/02/03/04)
+- [x] 31-02-PLAN.md — Provider section UI, multi-step import wizard, directory preview table, role mapping, i18n (GOOG-01/02/03/04)
 - [x] 31-03-PLAN.md — Directory sync orchestrator, QStash cron endpoint, new hire/departure notifications (GOOG-05)
 
 ### Phase 32: Teams Integration
@@ -236,7 +236,7 @@ Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 �
 | 28. Stripe Billing Foundation | v3.0 | 4/4 | Complete    | 2026-04-01 |
 | 29. Linear Integration | v3.0 | 3/3 | Complete    | 2026-04-01 |
 | 30. Equipment Tracking Foundation | v3.0 | 2/3 | Complete    | 2026-04-02 |
-| 31. Google Workspace Directory Import | v3.0 | 3/4 | In Progress|  |
+| 31. Google Workspace Directory Import | v3.0 | 4/4 | Complete   | 2026-04-02 |
 | 32. Teams Integration | v3.0 | 0/3 | Not started | - |
 | 33. InPost Courier Integration | v3.0 | 0/1 | Not started | - |
 | 34. Intelligent Onboarding Wizard | v3.0 | 0/2 | Not started | - |
