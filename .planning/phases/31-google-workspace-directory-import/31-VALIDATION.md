@@ -2,7 +2,7 @@
 phase: 31
 slug: google-workspace-directory-import
 status: draft
-nyquist_compliant: false
+nyquist_compliant: true
 wave_0_complete: false
 created: 2026-04-02
 ---
@@ -34,29 +34,30 @@ created: 2026-04-02
 
 ---
 
+## Wave 0 Plan
+
+31-00-PLAN.md creates all 4 test stub files before implementation begins:
+- `packages/integrations/src/__tests__/google-workspace-adapter.test.ts` (GOOG-01)
+- `packages/integrations/src/__tests__/google-workspace-directory.test.ts` (GOOG-02, GOOG-04)
+- `packages/api/src/__tests__/google-workspace-sync.test.ts` (GOOG-03, GOOG-05)
+- `packages/validators/src/__tests__/google-workspace.test.ts` (Zod schemas)
+
+---
+
 ## Per-Task Verification Map
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 31-01-01 | 01 | 1 | GOOG-01 | unit | `pnpm test --filter=@contractor-ops/integrations` | ❌ W0 | ⬜ pending |
-| 31-01-02 | 01 | 1 | GOOG-01 | unit | `pnpm test --filter=@contractor-ops/integrations` | ❌ W0 | ⬜ pending |
-| 31-02-01 | 02 | 1 | GOOG-02 | unit | `pnpm test --filter=@contractor-ops/api` | ❌ W0 | ⬜ pending |
-| 31-03-01 | 03 | 2 | GOOG-03 | unit | `pnpm test --filter=@contractor-ops/api` | ❌ W0 | ⬜ pending |
-| 31-04-01 | 04 | 2 | GOOG-04 | unit | `pnpm test --filter=@contractor-ops/api` | ❌ W0 | ⬜ pending |
-| 31-05-01 | 05 | 3 | GOOG-05 | unit | `pnpm test --filter=@contractor-ops/api` | ❌ W0 | ⬜ pending |
+| 31-00-01 | 00 | 0 | GOOG-01/02/04 | stub | `pnpm test --filter=@contractor-ops/integrations` | W0 creates | pending |
+| 31-00-02 | 00 | 0 | GOOG-03/05 | stub | `pnpm test --filter=@contractor-ops/api --filter=@contractor-ops/validators` | W0 creates | pending |
+| 31-01-01 | 01 | 1 | GOOG-01 | unit | `pnpm test --filter=@contractor-ops/integrations` | W0 | pending |
+| 31-01-02 | 01 | 1 | GOOG-01/02/03/04 | unit | `pnpm test --filter=@contractor-ops/api` | W0 | pending |
+| 31-02-01 | 02 | 2 | GOOG-02 | tsc | `pnpm --filter web exec tsc --noEmit` | n/a (UI) | pending |
+| 31-02-02 | 02 | 2 | GOOG-02/03/04 | tsc | `pnpm --filter web exec tsc --noEmit` | n/a (UI) | pending |
+| 31-03-01 | 03 | 2 | GOOG-05 | unit | `pnpm test --filter=@contractor-ops/api -- --grep "directory-sync"` | W0 | pending |
+| 31-03-02 | 03 | 2 | GOOG-05 | tsc | `pnpm --filter web exec tsc --noEmit` | n/a | pending |
 
-*Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
-
----
-
-## Wave 0 Requirements
-
-- [ ] Test stubs for GoogleWorkspaceAdapter (OAuth, directory listing, group listing)
-- [ ] Test stubs for directory import tRPC procedures
-- [ ] Test stubs for sync service (new hire detection, departure flagging)
-- [ ] Shared fixtures for mock Google API responses
-
-*Existing infrastructure covers test framework — only test files needed.*
+*Status: pending -- updated during execution*
 
 ---
 
@@ -72,11 +73,11 @@ created: 2026-04-02
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 30s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references (31-00-PLAN.md)
+- [x] No watch-mode flags
+- [x] Feedback latency < 30s
+- [ ] `wave_0_complete: true` set after 31-00 execution
 
-**Approval:** pending
+**Approval:** pending execution

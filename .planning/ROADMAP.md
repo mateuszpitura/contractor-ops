@@ -94,7 +94,7 @@ Plans:
   3. Starting a workflow task with Linear enabled auto-creates a Linear issue with correct team, title, description, and assignee
   4. Status changes flow bidirectionally between Linear and workflow tasks without creating sync loops
   5. Linked Linear issues display as clickable chips with live status badges on workflow task views
-**Plans**: 3 plans
+**Plans**: 4 plans
 
 Plans:
 - [x] 29-01-PLAN.md — Prisma enum, LinearAdapter, Zod validators, tRPC router shell, env config (LIN-01)
@@ -111,7 +111,7 @@ Plans:
   3. Contractor profile shows an Equipment tab with assigned items and their current shipment status
   4. Admin can create a shipment with carrier, tracking number, and expected delivery date, and shipment progress displays as a timeline
   5. Onboarding workflow auto-creates "ship equipment" shipment and offboarding triggers return request, with tasks auto-completing on target shipment status
-**Plans**: 3 plans
+**Plans**: 4 plans
 **UI hint**: yes
 
 Plans:
@@ -128,10 +128,11 @@ Plans:
   2. Admin can preview Google Workspace users with name, email, department, and org unit before importing
   3. Admin can selectively import users as org members with role assignment, including mapping Google Workspace groups to internal RBAC roles
   4. System periodically syncs the directory to detect new hires and flag departures without auto-deleting anyone
-**Plans**: 3 plans
+**Plans**: 4 plans
 **UI hint**: yes
 
 Plans:
+- [ ] 31-00-PLAN.md — Wave 0 test stubs for all GOOG requirements (GOOG-01/02/03/04/05)
 - [ ] 31-01-PLAN.md — GoogleWorkspaceAdapter, Zod validators, tRPC router with directory listing, group resolution, bulk import (GOOG-01/02/03/04)
 - [ ] 31-02-PLAN.md — Provider section UI, multi-step import wizard, directory preview table, role mapping, i18n (GOOG-01/02/03/04)
 - [ ] 31-03-PLAN.md — Directory sync orchestrator, QStash cron endpoint, new hire/departure notifications (GOOG-05)
@@ -235,7 +236,7 @@ Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 �
 | 28. Stripe Billing Foundation | v3.0 | 4/4 | Complete    | 2026-04-01 |
 | 29. Linear Integration | v3.0 | 3/3 | Complete    | 2026-04-01 |
 | 30. Equipment Tracking Foundation | v3.0 | 2/3 | Complete    | 2026-04-02 |
-| 31. Google Workspace Directory Import | v3.0 | 0/3 | Not started | - |
+| 31. Google Workspace Directory Import | v3.0 | 0/4 | Not started | - |
 | 32. Teams Integration | v3.0 | 0/3 | Not started | - |
 | 33. InPost Courier Integration | v3.0 | 0/1 | Not started | - |
 | 34. Intelligent Onboarding Wizard | v3.0 | 0/2 | Not started | - |
