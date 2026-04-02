@@ -16,7 +16,7 @@ v1.0 MVP foundation (shipped 2026-03-23): org setup, RBAC, contractors, contract
 
 v2.0 Platform Expansion adds: contractor self-service portal with magic-link auth and org branding, electronic signatures (DocuSign + Autenti), AI-powered invoice OCR (Claude Vision), KSeF national e-invoicing integration, time tracking with Clockify/Jira import and invoice reconciliation, Jira bidirectional sync, Notion/Confluence doc linking with Cmd+K search, Google/Outlook calendar deadline sync, and a provider-agnostic integration framework with OAuth credential store, webhook pipeline, and health monitoring.
 
-v3.0 Enterprise & Monetization Phase 29 complete: Linear bidirectional integration — Linear adapter with OAuth and HMAC-SHA256 webhook verification, status mapping service (PENDING_MAPPING→CONNECTED flow), issue creation/sync with 30s loop prevention, webhook handler, workflow hooks for automatic issue sync on task transitions, and full UI (provider section, status mapping dialog, issue chip, team selector). Follows same adapter framework pattern as Jira.
+v3.0 Enterprise & Monetization Phase 30 complete: Equipment tracking foundation — 4 Prisma models (Equipment, EquipmentAssignment, Shipment, ShipmentEvent) with status enums, 13-endpoint tRPC router with RBAC, full equipment management UI (list/detail/forms/dialogs/timeline/badges), contractor profile Equipment tab, and workflow engine integration (onboarding auto-creates shipments, offboarding triggers returns, shipment status auto-completes linked tasks).
 
 ## Requirements
 
