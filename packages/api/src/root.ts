@@ -28,6 +28,7 @@ import { linearRouter } from "./routers/linear.js";
 import { docsRouter } from "./routers/docs.js";
 import { calendarRouter } from "./routers/calendar.js";
 import { billingRouter } from "./routers/billing.js";
+import { equipmentRouter } from "./routers/equipment.js";
 
 /**
  * Root tRPC router merging all sub-routers.
@@ -55,6 +56,7 @@ import { billingRouter } from "./routers/billing.js";
  * - jira: Jira Cloud integration — connection, projects, issue types, status mapping, task config, linked issues
  * - calendar: Google/Outlook calendar connections, deadline sync, task config CRUD
  * - billing: Stripe subscription management, checkout, portal, plan config
+ * - equipment: CRUD, assignment, shipment tracking, status management, contractor equipment view
  */
 export const appRouter = router({
   organization: organizationRouter,
@@ -86,6 +88,7 @@ export const appRouter = router({
   docs: docsRouter,
   calendar: calendarRouter,
   billing: billingRouter,
+  equipment: equipmentRouter,
 });
 
 /** Type-safe router type for client consumption */
