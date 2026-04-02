@@ -15,6 +15,7 @@ const TAB_KEYS = [
   "workflows",
   "invoices",
   "payments",
+  "equipment",
   "activity",
   "compliance",
 ] as const;
@@ -30,6 +31,7 @@ type ProfileTabsProps = {
   workflowsContent: ReactNode;
   invoicesContent: ReactNode;
   paymentsContent: ReactNode;
+  equipmentContent: ReactNode;
 };
 
 export function ProfileTabs({
@@ -41,6 +43,7 @@ export function ProfileTabs({
   workflowsContent,
   invoicesContent,
   paymentsContent,
+  equipmentContent,
 }: ProfileTabsProps) {
   const t = useTranslations("ContractorProfile");
   const searchParams = useSearchParams();
@@ -94,6 +97,10 @@ export function ProfileTabs({
 
       <TabsContent value="payments" className="mt-4 min-h-[400px]">
         {paymentsContent}
+      </TabsContent>
+
+      <TabsContent value="equipment" className="mt-4 min-h-[400px]">
+        {equipmentContent}
       </TabsContent>
 
       <TabsContent value="activity" className="mt-4 min-h-[400px]">

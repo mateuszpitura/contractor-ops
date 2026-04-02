@@ -77,7 +77,8 @@
     "members": "Członkowie",
     "templates": "Szablony",
     "new": "Nowy",
-    "unauthorized": "Brak dostępu"
+    "unauthorized": "Brak dostępu",
+    "equipment": "Sprzet"
   },
   "TopBar": {
     "addContractor": "Dodaj kontrahenta",
@@ -1024,7 +1025,8 @@
       "invoices": "Faktury",
       "payments": "Płatności",
       "activity": "Aktywność",
-      "compliance": "Zgodność"
+      "compliance": "Zgodność",
+      "equipment": "Sprzet"
     },
     "placeholder": {
       "heading": "Dostępne w fazie {phase}",
@@ -3547,5 +3549,123 @@
     "configureButton": "Konfiguruj",
     "orgCalendarDescription": "Wydarzenia beda wysylane do tego wspoldzielonego kalendarza dla calej organizacji.",
     "calendarSectionTitle": "Kalendarz"
+  },
+  "Equipment": {
+    "title": "Sprzet",
+    "addEquipment": "Dodaj sprzet",
+    "list": {
+      "emptyTitle": "Brak sledzonych urzadzen",
+      "emptyDescription": "Dodaj pierwszy sprzet, aby zaczac sledzic przypisania i przesylki.",
+      "columns": {
+        "name": "Nazwa",
+        "serialNumber": "Numer seryjny",
+        "type": "Typ",
+        "status": "Status",
+        "assignee": "Przypisany",
+        "actions": "Akcje"
+      },
+      "filters": {
+        "search": "Szukaj sprzetu...",
+        "type": "Typ",
+        "status": "Status",
+        "assignee": "Przypisany"
+      },
+      "unassigned": "Nieprzypisany"
+    },
+    "detail": {
+      "info": "Informacje",
+      "assignments": "Przypisania",
+      "shipments": "Przesylki",
+      "workflows": "Procesy",
+      "edit": "Edytuj",
+      "retire": "Wycofaj",
+      "assignToContractor": "Przypisz do wykonawcy",
+      "unassignEquipment": "Odlacz sprzet",
+      "createShipment": "Utworz przesylke",
+      "retireConfirmTitle": "Wycofaj sprzet",
+      "retireConfirmDescription": "Sprzet zostanie oznaczony jako wycofany. Nie bedzie mozna go przypisac ani wyslac. Kontynuowac?",
+      "unassignConfirmTitle": "Odlacz sprzet",
+      "unassignConfirmDescription": "Sprzet zostanie odlaczony od {contractorName}. Kontynuowac?",
+      "assignmentsEmpty": "Brak historii przypisan",
+      "assignmentsEmptyDescription": "Ten sprzet nie byl jeszcze przypisany do zadnego wykonawcy.",
+      "shipmentsEmpty": "Brak przesylek",
+      "shipmentsEmptyDescription": "Utworz przesylke, aby zaczac sledzic dostawe tego sprzetu."
+    },
+    "form": {
+      "createTitle": "Dodaj sprzet",
+      "editTitle": "Edytuj sprzet",
+      "name": "Nazwa",
+      "namePlaceholder": "np. MacBook Pro 14\"",
+      "serialNumber": "Numer seryjny",
+      "serialNumberPlaceholder": "np. C02X12345",
+      "type": "Typ",
+      "customType": "Typ niestandardowy",
+      "customTypePlaceholder": "np. Stacja dokujaca",
+      "notes": "Notatki",
+      "purchaseDate": "Data zakupu",
+      "save": "Zapisz",
+      "cancel": "Anuluj"
+    },
+    "shipment": {
+      "createTitle": "Utworz przesylke",
+      "direction": "Kierunek",
+      "outbound": "Wychodzaca (do wykonawcy)",
+      "return": "Zwrot (od wykonawcy)",
+      "carrier": "Kurier",
+      "carrierCustom": "Nazwa kuriera",
+      "trackingNumber": "Numer sledzenia",
+      "expectedDelivery": "Oczekiwana dostawa",
+      "notes": "Notatki",
+      "addStatusUpdate": "Dodaj aktualizacje statusu",
+      "deleteTitle": "Usun przesylke",
+      "deleteDescription": "Przesylka zostanie trwale usunieta. Tej operacji nie mozna cofnac.",
+      "status": {
+        "CREATED": "Utworzona",
+        "LABEL_GENERATED": "Etykieta wygenerowana",
+        "PICKED_UP": "Odebrana",
+        "IN_TRANSIT": "W transporcie",
+        "OUT_FOR_DELIVERY": "W dostawie",
+        "DELIVERED": "Dostarczona",
+        "FAILED": "Nieudana",
+        "RETURNED": "Zwrocona"
+      }
+    },
+    "status": {
+      "AVAILABLE": "Dostepny",
+      "ASSIGNED": "Przypisany",
+      "IN_TRANSIT": "W transporcie",
+      "DELIVERED": "Dostarczony",
+      "RETURN_REQUESTED": "Zwrot zgloszony",
+      "RETURN_IN_TRANSIT": "Zwrot w transporcie",
+      "RETURNED": "Zwrocony",
+      "RETIRED": "Wycofany"
+    },
+    "type": {
+      "LAPTOP": "Laptop",
+      "MONITOR": "Monitor",
+      "PHONE": "Telefon",
+      "HEADSET": "Sluchawki",
+      "KEYBOARD": "Klawiatura",
+      "MOUSE": "Myszka",
+      "OTHER": "Inny"
+    },
+    "toast": {
+      "created": "Sprzet dodany",
+      "updated": "Sprzet zaktualizowany",
+      "retired": "Sprzet wycofany",
+      "assigned": "Sprzet przypisany do {name}",
+      "unassigned": "Sprzet odlaczony",
+      "shipmentCreated": "Przesylka utworzona",
+      "shipmentDeleted": "Przesylka usunieta",
+      "statusUpdated": "Status zaktualizowany"
+    },
+    "error": {
+      "loadFailed": "Nie udalo sie wczytac sprzetu. Sprawdz polaczenie i sprobuj ponownie.",
+      "actionFailed": "Nie udalo sie wykonac akcji. Sprobuj ponownie."
+    },
+    "contractorTab": {
+      "emptyTitle": "Brak przypisanego sprzetu",
+      "emptyDescription": "Ten wykonawca nie ma przypisanego sprzetu. Przypisz sprzet z rejestru sprzetu."
+    }
   }
 }

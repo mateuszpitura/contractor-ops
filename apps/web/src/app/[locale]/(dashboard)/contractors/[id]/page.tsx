@@ -22,6 +22,7 @@ import { InvoicesTab } from "@/components/contractors/contractor-profile/tabs/in
 import { TabPayments } from "@/components/contractors/contractor-profile/tab-payments";
 import { RightRail } from "@/components/contractors/contractor-profile/right-rail";
 import { ActivityTimeline } from "@/components/contractors/contractor-profile/right-rail";
+import { TabEquipment } from "@/components/contractors/contractor-profile/tab-equipment";
 
 function ProfileHeaderSkeleton() {
   return (
@@ -142,6 +143,7 @@ export default function ContractorProfilePage() {
                 workflowsContent={<WorkflowsTab contractorId={params.id} />}
                 invoicesContent={<InvoicesTab contractorId={params.id} />}
                 paymentsContent={<TabPayments contractorId={params.id} />}
+                equipmentContent={<TabEquipment contractorId={params.id} />}
                 activityContent={
                   <ActivityTimeline
                     createdAt={String(contractor.createdAt)}

@@ -77,7 +77,8 @@
     "members": "Members",
     "templates": "Templates",
     "new": "New",
-    "unauthorized": "Unauthorized"
+    "unauthorized": "Unauthorized",
+    "equipment": "Equipment"
   },
   "TopBar": {
     "addContractor": "Add contractor",
@@ -1024,7 +1025,8 @@
       "invoices": "Invoices",
       "payments": "Payments",
       "activity": "Activity",
-      "compliance": "Compliance"
+      "compliance": "Compliance",
+      "equipment": "Equipment"
     },
     "placeholder": {
       "heading": "Coming in Phase {phase}",
@@ -3547,5 +3549,123 @@
     "configureButton": "Configure",
     "orgCalendarDescription": "Events will be pushed to this shared calendar for the entire organization.",
     "calendarSectionTitle": "Calendar"
+  },
+  "Equipment": {
+    "title": "Equipment",
+    "addEquipment": "Add equipment",
+    "list": {
+      "emptyTitle": "No equipment tracked yet",
+      "emptyDescription": "Add your first piece of equipment to start tracking assignments and shipments.",
+      "columns": {
+        "name": "Name",
+        "serialNumber": "Serial Number",
+        "type": "Type",
+        "status": "Status",
+        "assignee": "Assignee",
+        "actions": "Actions"
+      },
+      "filters": {
+        "search": "Search equipment...",
+        "type": "Type",
+        "status": "Status",
+        "assignee": "Assignee"
+      },
+      "unassigned": "Unassigned"
+    },
+    "detail": {
+      "info": "Info",
+      "assignments": "Assignments",
+      "shipments": "Shipments",
+      "workflows": "Workflows",
+      "edit": "Edit",
+      "retire": "Retire",
+      "assignToContractor": "Assign to contractor",
+      "unassignEquipment": "Unassign equipment",
+      "createShipment": "Create shipment",
+      "retireConfirmTitle": "Retire equipment",
+      "retireConfirmDescription": "This will mark the equipment as retired. It cannot be assigned or shipped after this. Continue?",
+      "unassignConfirmTitle": "Unassign equipment",
+      "unassignConfirmDescription": "This will remove the equipment from {contractorName}. Continue?",
+      "assignmentsEmpty": "No assignment history",
+      "assignmentsEmptyDescription": "This equipment has not been assigned to any contractor yet.",
+      "shipmentsEmpty": "No shipments",
+      "shipmentsEmptyDescription": "Create a shipment to start tracking delivery for this equipment."
+    },
+    "form": {
+      "createTitle": "Add equipment",
+      "editTitle": "Edit equipment",
+      "name": "Name",
+      "namePlaceholder": "e.g. MacBook Pro 14\"",
+      "serialNumber": "Serial number",
+      "serialNumberPlaceholder": "e.g. C02X12345",
+      "type": "Type",
+      "customType": "Custom type",
+      "customTypePlaceholder": "e.g. Docking Station",
+      "notes": "Notes",
+      "purchaseDate": "Purchase date",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "shipment": {
+      "createTitle": "Create shipment",
+      "direction": "Direction",
+      "outbound": "Outbound (to contractor)",
+      "return": "Return (from contractor)",
+      "carrier": "Carrier",
+      "carrierCustom": "Carrier name",
+      "trackingNumber": "Tracking number",
+      "expectedDelivery": "Expected delivery",
+      "notes": "Notes",
+      "addStatusUpdate": "Add status update",
+      "deleteTitle": "Delete shipment",
+      "deleteDescription": "This will permanently remove this shipment record. This action cannot be undone.",
+      "status": {
+        "CREATED": "Created",
+        "LABEL_GENERATED": "Label generated",
+        "PICKED_UP": "Picked up",
+        "IN_TRANSIT": "In transit",
+        "OUT_FOR_DELIVERY": "Out for delivery",
+        "DELIVERED": "Delivered",
+        "FAILED": "Failed",
+        "RETURNED": "Returned"
+      }
+    },
+    "status": {
+      "AVAILABLE": "Available",
+      "ASSIGNED": "Assigned",
+      "IN_TRANSIT": "In transit",
+      "DELIVERED": "Delivered",
+      "RETURN_REQUESTED": "Return requested",
+      "RETURN_IN_TRANSIT": "Return in transit",
+      "RETURNED": "Returned",
+      "RETIRED": "Retired"
+    },
+    "type": {
+      "LAPTOP": "Laptop",
+      "MONITOR": "Monitor",
+      "PHONE": "Phone",
+      "HEADSET": "Headset",
+      "KEYBOARD": "Keyboard",
+      "MOUSE": "Mouse",
+      "OTHER": "Other"
+    },
+    "toast": {
+      "created": "Equipment added",
+      "updated": "Equipment updated",
+      "retired": "Equipment retired",
+      "assigned": "Equipment assigned to {name}",
+      "unassigned": "Equipment unassigned",
+      "shipmentCreated": "Shipment created",
+      "shipmentDeleted": "Shipment deleted",
+      "statusUpdated": "Status updated"
+    },
+    "error": {
+      "loadFailed": "Could not load equipment. Check your connection and try again.",
+      "actionFailed": "Could not complete the action. Please try again."
+    },
+    "contractorTab": {
+      "emptyTitle": "No equipment assigned",
+      "emptyDescription": "This contractor has no equipment assigned. Assign equipment from the equipment registry."
+    }
   }
 }
