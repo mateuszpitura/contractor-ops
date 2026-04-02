@@ -549,6 +549,10 @@
           "syncError": "Failed to sync with Linear",
           "tokenExpired": "Linear token expired. Reconnect to restore bidirectional sync."
         }
+      },
+      "googleWorkspace": {
+        "descriptionDisconnected": "Import your team directory from Google Workspace with role mapping.",
+        "descriptionConnected": "Google Workspace connected. Directory syncs daily at 2:00 AM."
       }
     },
     "provider": {
@@ -807,9 +811,13 @@
     },
     "UNAUTHORIZED": "You are not authorized to perform this action.",
     "FORBIDDEN": "Access denied.",
+    "ACCOUNT_BANNED": "Your account has been deactivated. Please contact your organization administrator.",
+    "ACCOUNT_LOCKED": "Too many failed login attempts. Your account is temporarily locked. Please try again later.",
+    "LAST_ADMIN_CANNOT_DEACTIVATE": "Cannot deactivate the last administrator. Assign another admin first.",
     "PERMISSION_DENIED": "You do not have permission to perform this action.",
     "UNKNOWN_ERROR": "An unexpected error occurred. Please try again.",
     "CONTRACTOR_NOT_FOUND": "Contractor not found.",
+    "CONTRACTOR_HAS_UNPAID_INVOICES": "Cannot archive contractor with unpaid invoices. Resolve all pending payments first.",
     "CONTRACTOR_INVALID_TRANSITION": "This status transition is not allowed.",
     "GUS_LOOKUP_FAILED": "GUS lookup failed.",
     "CONTRACT_NOT_FOUND": "Contract not found.",
@@ -820,6 +828,7 @@
     "INVOICE_CONTRACTOR_NOT_FOUND": "Contractor not found in this organization.",
     "INVOICE_CONTRACT_NOT_FOUND": "Contract not found in this organization.",
     "INVOICE_ALREADY_PENDING": "Invoice is already pending approval.",
+    "INVOICE_DUPLICATE": "A duplicate invoice already exists with the same number, seller, and amount.",
     "PAYMENT_RUN_NOT_FOUND": "Payment run not found.",
     "PAYMENT_INVOICES_NOT_READY": "Some invoices are not ready for payment.",
     "PAYMENT_INVOICES_NOT_FOUND": "One or more invoices not found in this organization.",
@@ -3666,6 +3675,166 @@
     "contractorTab": {
       "emptyTitle": "No equipment assigned",
       "emptyDescription": "This contractor has no equipment assigned. Assign equipment from the equipment registry."
+    }
+  },
+  "Legal": {
+    "privacy": {
+      "title": "Privacy Policy",
+      "lastUpdated": "Last updated: April 2026",
+      "sections": {
+        "introduction": {
+          "heading": "1. Introduction",
+          "body": "Contractor Ops (\"we\", \"us\", \"our\") operates the contractorops.com platform. This Privacy Policy explains how we collect, use, store, and protect your personal data when you use our services. We are committed to protecting your privacy in accordance with the General Data Protection Regulation (GDPR), the Polish Act on Personal Data Protection, and other applicable data protection laws."
+        },
+        "dataCollected": {
+          "heading": "2. Data We Collect",
+          "body": "We collect the following categories of personal data: Account data (name, email address, organization name); Contractor data (legal name, tax identification numbers (NIP), bank account details, addresses, phone numbers, email addresses); Invoice and payment data (invoice numbers, amounts, payment details); Usage data (IP addresses, browser type, access times, pages visited); Integration data (tokens and identifiers for connected services such as Slack, Jira, Google Calendar)."
+        },
+        "purpose": {
+          "heading": "3. How We Use Your Data",
+          "body": "We process personal data for the following purposes: Providing and maintaining our contractor management platform; Processing invoices and facilitating payment workflows; Managing contractor onboarding and offboarding workflows; Sending transactional notifications (approval requests, invoice alerts, contract reminders); Ensuring security and preventing fraud; Complying with legal obligations (tax reporting, audit requirements)."
+        },
+        "legalBasis": {
+          "heading": "4. Legal Basis for Processing",
+          "body": "We process your data based on: Performance of a contract (providing our services to you); Legitimate interests (improving our platform, ensuring security); Legal obligations (tax compliance, financial record-keeping); Consent (for optional features like analytics and marketing communications, which you can withdraw at any time)."
+        },
+        "dataSharing": {
+          "heading": "5. Data Sharing and Sub-processors",
+          "body": "We share data with the following categories of third parties only as necessary to provide our services: Cloud infrastructure providers (Vercel, Neon, Cloudflare) for hosting and data storage; Payment processors (Stripe) for subscription billing; Email service providers (Resend) for transactional notifications; Error monitoring (Sentry) for application reliability; Log aggregation (Axiom) for operational monitoring. We do not sell your personal data. All sub-processors are bound by data processing agreements ensuring GDPR compliance."
+        },
+        "retention": {
+          "heading": "6. Data Retention",
+          "body": "We retain your personal data for the duration of your subscription plus 30 days. Financial records (invoices, payment data) are retained for the legally required period (typically 5-10 years depending on jurisdiction). You may request earlier deletion of non-legally-required data at any time. Deleted data is soft-deleted immediately and permanently purged within 90 days."
+        },
+        "security": {
+          "heading": "7. Security Measures",
+          "body": "We implement appropriate technical and organizational measures to protect your data, including: Encryption at rest (database-level and application-level for sensitive fields such as bank accounts); Encryption in transit (TLS 1.2+ for all connections); Role-based access control with principle of least privilege; Audit logging of all access to sensitive data; Regular security assessments; Virus scanning of uploaded documents."
+        },
+        "rights": {
+          "heading": "8. Your Rights",
+          "body": "Under GDPR, you have the right to: Access your personal data; Rectify inaccurate data; Request erasure of your data (right to be forgotten); Restrict processing of your data; Data portability (receive your data in a structured, machine-readable format); Object to processing based on legitimate interests; Withdraw consent at any time. To exercise these rights, contact us at privacy@contractorops.com. We will respond within 30 days."
+        },
+        "cookies": {
+          "heading": "9. Cookies",
+          "body": "We use strictly necessary cookies for authentication and session management. These cookies are essential for the platform to function and cannot be disabled. We do not use third-party tracking cookies or advertising cookies. Session cookies expire after 24 hours of inactivity."
+        },
+        "contact": {
+          "heading": "10. Contact",
+          "body": "For privacy-related inquiries, contact our Data Protection Officer at privacy@contractorops.com. If you believe your data protection rights have been violated, you have the right to lodge a complaint with your local supervisory authority. In Poland, this is the President of the Personal Data Protection Office (UODO)."
+        }
+      }
+    },
+    "terms": {
+      "title": "Terms of Service",
+      "lastUpdated": "Last updated: April 2026",
+      "sections": {
+        "acceptance": {
+          "heading": "1. Acceptance of Terms",
+          "body": "By accessing or using Contractor Ops (\"the Service\"), you agree to be bound by these Terms of Service. If you are using the Service on behalf of an organization, you represent that you have the authority to bind that organization to these terms. If you do not agree, you may not use the Service."
+        },
+        "serviceDescription": {
+          "heading": "2. Service Description",
+          "body": "Contractor Ops is a SaaS platform for managing contractor relationships, including onboarding, contract management, invoice processing, approval workflows, and payment facilitation. The Service is provided on an as-is basis. We reserve the right to modify, suspend, or discontinue features with reasonable notice."
+        },
+        "accounts": {
+          "heading": "3. Accounts and Access",
+          "body": "You are responsible for maintaining the confidentiality of your account credentials. You must notify us immediately of any unauthorized access. Each user account is for a single individual and may not be shared. Organization administrators are responsible for managing user access and permissions within their organization."
+        },
+        "dataProcessing": {
+          "heading": "4. Data Processing",
+          "body": "You act as the Data Controller for contractor data processed through our platform. We act as the Data Processor. Our processing activities are governed by our Data Processing Agreement (DPA), available upon request. You are responsible for ensuring you have a lawful basis for processing contractor personal data through our platform."
+        },
+        "acceptableUse": {
+          "heading": "5. Acceptable Use",
+          "body": "You agree not to: Use the Service for any unlawful purpose; Upload malicious files or attempt to compromise the platform's security; Attempt to access data belonging to other organizations; Exceed reasonable usage limits or abuse API endpoints; Reverse-engineer, decompile, or attempt to extract the source code of the Service."
+        },
+        "intellectualProperty": {
+          "heading": "6. Intellectual Property",
+          "body": "The Service, including its code, design, and documentation, is owned by Contractor Ops. You retain ownership of all data you upload to the Service. We claim no intellectual property rights over your contractor data, invoices, or documents."
+        },
+        "liability": {
+          "heading": "7. Limitation of Liability",
+          "body": "To the maximum extent permitted by applicable law, Contractor Ops shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including loss of profits, data, or business opportunities. Our total liability shall not exceed the amount paid by you in the 12 months preceding the claim. This limitation does not apply to liability that cannot be excluded by law."
+        },
+        "termination": {
+          "heading": "8. Termination",
+          "body": "Either party may terminate this agreement at any time. Upon termination: Your access to the Service will be revoked; Your data will be retained for 30 days, after which it will be permanently deleted; You may request a data export before termination. We may suspend or terminate your account immediately if you violate these terms."
+        },
+        "governingLaw": {
+          "heading": "9. Governing Law",
+          "body": "These Terms shall be governed by and construed in accordance with the laws of the Republic of Poland. Any disputes arising from these Terms shall be subject to the exclusive jurisdiction of the courts in Warsaw, Poland. For EU consumers, this does not affect your right to bring proceedings in your country of residence."
+        },
+        "contact": {
+          "heading": "10. Contact",
+          "body": "For questions about these Terms, contact us at legal@contractorops.com."
+        }
+      }
+    }
+  },
+  "CookieConsent": {
+    "message": "This site uses essential cookies for authentication and session management. No tracking or advertising cookies are used.",
+    "accept": "Got it",
+    "learnMore": "Privacy policy"
+  },
+  "GoogleWorkspace": {
+    "import": {
+      "title": "Import Google Workspace Users",
+      "step1Title": "Preview directory",
+      "step2Title": "Assign roles",
+      "step3Title": "Review and import",
+      "summaryFound": "{total} users found",
+      "summaryExisting": "{count} already imported",
+      "summaryNew": "{count} new",
+      "summarySelected": "{count} selected",
+      "searchPlaceholder": "Search users...",
+      "orgUnitFilter": "Org unit",
+      "allOrgUnits": "All org units",
+      "alreadyExists": "Already exists",
+      "alreadyExistsTooltip": "This user is already a member of your organization.",
+      "selectAll": "Select all users",
+      "nextRoles": "Next: Roles",
+      "nextReview": "Next: Review",
+      "back": "Back",
+      "defaultRoleLabel": "Default role for all imported users:",
+      "groupMappingTitle": "Group-to-role mapping (optional)",
+      "groupMappingFound": "Found {count} Google groups among selected users:",
+      "groupMappingHint": "Users in mapped groups get that role instead of the default.",
+      "default": "(default)",
+      "readyToImport": "Ready to import {count} users",
+      "roleBreakdown": "Role breakdown:",
+      "roleCount": "{count} as {role}",
+      "roleSource": "({source})",
+      "roleSourceDefault": "default",
+      "inviteNotice": "Each imported user will receive an invite email.",
+      "importCta": "Import {count} users",
+      "importing": "Importing users...",
+      "successToast": "Successfully imported {count} users",
+      "partialError": "{succeeded} of {total} users imported. {failed} failed — review errors and retry.",
+      "retryFailed": "Retry failed",
+      "emptyNoUsers": "No users found",
+      "emptyNoUsersBody": "The connected Google Workspace directory has no users, or the admin account lacks directory access.",
+      "emptyAllImported": "All users imported",
+      "emptyAllImportedBody": "Every user in the Google Workspace directory is already a member of this organization.",
+      "fetchError": "Could not load the directory. Verify that the connected account has Admin SDK access and try again."
+    },
+    "sync": {
+      "lastSynced": "Last synced: {time}",
+      "nextSync": "Next: Tomorrow 2:00 AM",
+      "syncNow": "Sync now",
+      "importUsers": "Import users",
+      "syncing": "Syncing...",
+      "syncStarted": "Directory sync started",
+      "syncComplete": "Sync complete — {count} changes detected",
+      "syncNoChanges": "No changes detected",
+      "syncError": "Sync failed. Please try again."
+    },
+    "notifications": {
+      "newHire": "New team member detected: {name} ({email}) was added to Google Workspace.",
+      "departure": "{name} ({email}) was removed or suspended in Google Workspace."
+    },
+    "disconnect": {
+      "title": "Disconnect Google Workspace",
+      "body": "This will stop directory sync and remove stored credentials. Existing imported users are not affected. Continue?"
     }
   }
 }

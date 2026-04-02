@@ -549,6 +549,10 @@
           "syncError": "Nie udało się zsynchronizować z Linear",
           "tokenExpired": "Token Linear wygasł. Połącz ponownie, aby przywrócić synchronizację."
         }
+      },
+      "googleWorkspace": {
+        "descriptionDisconnected": "Importuj katalog zespołu z Google Workspace z mapowaniem ról.",
+        "descriptionConnected": "Google Workspace połączony. Synchronizacja katalogu codziennie o 2:00."
       }
     },
     "provider": {
@@ -807,9 +811,13 @@
     },
     "UNAUTHORIZED": "Nie masz uprawnień do wykonania tej akcji.",
     "FORBIDDEN": "Odmowa dostępu.",
+    "ACCOUNT_BANNED": "Twoje konto zostało dezaktywowane. Skontaktuj się z administratorem organizacji.",
+    "ACCOUNT_LOCKED": "Zbyt wiele nieudanych prób logowania. Twoje konto jest tymczasowo zablokowane. Spróbuj ponownie później.",
+    "LAST_ADMIN_CANNOT_DEACTIVATE": "Nie można dezaktywować ostatniego administratora. Najpierw wyznacz innego administratora.",
     "PERMISSION_DENIED": "Nie masz uprawnień do wykonania tej akcji.",
     "UNKNOWN_ERROR": "Wystąpił nieoczekiwany błąd. Spróbuj ponownie.",
     "CONTRACTOR_NOT_FOUND": "Nie znaleziono kontrahenta.",
+    "CONTRACTOR_HAS_UNPAID_INVOICES": "Nie można zarchiwizować kontrahenta z nieopłaconymi fakturami. Najpierw rozlicz wszystkie zaległe płatności.",
     "CONTRACTOR_INVALID_TRANSITION": "Ta zmiana statusu nie jest dozwolona.",
     "GUS_LOOKUP_FAILED": "Wyszukiwanie GUS nie powiodło się.",
     "CONTRACT_NOT_FOUND": "Nie znaleziono umowy.",
@@ -820,6 +828,7 @@
     "INVOICE_CONTRACTOR_NOT_FOUND": "Nie znaleziono kontrahenta w tej organizacji.",
     "INVOICE_CONTRACT_NOT_FOUND": "Nie znaleziono umowy w tej organizacji.",
     "INVOICE_ALREADY_PENDING": "Faktura jest już w trakcie zatwierdzania.",
+    "INVOICE_DUPLICATE": "Duplikat faktury o tym samym numerze, sprzedawcy i kwocie już istnieje.",
     "PAYMENT_RUN_NOT_FOUND": "Nie znaleziono przebiegu płatności.",
     "PAYMENT_INVOICES_NOT_READY": "Niektóre faktury nie są gotowe do płatności.",
     "PAYMENT_INVOICES_NOT_FOUND": "Jedna lub więcej faktur nie została znaleziona w tej organizacji.",
@@ -3666,6 +3675,166 @@
     "contractorTab": {
       "emptyTitle": "Brak przypisanego sprzetu",
       "emptyDescription": "Ten wykonawca nie ma przypisanego sprzetu. Przypisz sprzet z rejestru sprzetu."
+    }
+  },
+  "Legal": {
+    "privacy": {
+      "title": "Polityka Prywatności",
+      "lastUpdated": "Ostatnia aktualizacja: kwiecień 2026",
+      "sections": {
+        "introduction": {
+          "heading": "1. Wprowadzenie",
+          "body": "Contractor Ops (\"my\", \"nas\", \"nasz\") obsługuje platformę contractorops.com. Niniejsza Polityka Prywatności wyjaśnia, w jaki sposób zbieramy, wykorzystujemy, przechowujemy i chronimy Twoje dane osobowe podczas korzystania z naszych usług. Zobowiązujemy się do ochrony Twojej prywatności zgodnie z Ogólnym Rozporządzeniem o Ochronie Danych (RODO), polską Ustawą o Ochronie Danych Osobowych oraz innymi obowiązującymi przepisami o ochronie danych."
+        },
+        "dataCollected": {
+          "heading": "2. Dane, które zbieramy",
+          "body": "Zbieramy następujące kategorie danych osobowych: Dane konta (imię i nazwisko, adres e-mail, nazwa organizacji); Dane wykonawców (nazwa firmy, numery identyfikacji podatkowej (NIP), dane rachunków bankowych, adresy, numery telefonów, adresy e-mail); Dane faktur i płatności (numery faktur, kwoty, dane płatności); Dane dotyczące użytkowania (adresy IP, typ przeglądarki, czasy dostępu, odwiedzane strony); Dane integracji (tokeny i identyfikatory połączonych usług, takich jak Slack, Jira, Google Calendar)."
+        },
+        "purpose": {
+          "heading": "3. Jak wykorzystujemy Twoje dane",
+          "body": "Przetwarzamy dane osobowe w następujących celach: Świadczenie i utrzymanie naszej platformy do zarządzania wykonawcami; Przetwarzanie faktur i ułatwianie procesów płatności; Zarządzanie procesami onboardingu i offboardingu wykonawców; Wysyłanie powiadomień transakcyjnych (wnioski o zatwierdzenie, alerty fakturowe, przypomnienia o umowach); Zapewnienie bezpieczeństwa i zapobieganie oszustwom; Spełnienie obowiązków prawnych (sprawozdawczość podatkowa, wymogi audytu)."
+        },
+        "legalBasis": {
+          "heading": "4. Podstawa prawna przetwarzania",
+          "body": "Przetwarzamy Twoje dane na podstawie: Wykonania umowy (świadczenie naszych usług); Prawnie uzasadnionych interesów (ulepszanie naszej platformy, zapewnienie bezpieczeństwa); Obowiązków prawnych (zgodność podatkowa, prowadzenie dokumentacji finansowej); Zgody (dla opcjonalnych funkcji, takich jak analityka i komunikaty marketingowe, którą możesz wycofać w dowolnym momencie)."
+        },
+        "dataSharing": {
+          "heading": "5. Udostępnianie danych i podwykonawcy",
+          "body": "Udostępniamy dane następującym kategoriom podmiotów trzecich wyłącznie w zakresie niezbędnym do świadczenia naszych usług: Dostawcy infrastruktury chmurowej (Vercel, Neon, Cloudflare) do hostingu i przechowywania danych; Operatorzy płatności (Stripe) do obsługi subskrypcji; Dostawcy usług e-mail (Resend) do powiadomień transakcyjnych; Monitoring błędów (Sentry) do niezawodności aplikacji; Agregacja logów (Axiom) do monitoringu operacyjnego. Nie sprzedajemy Twoich danych osobowych. Wszyscy podwykonawcy są związani umowami o przetwarzanie danych zapewniającymi zgodność z RODO."
+        },
+        "retention": {
+          "heading": "6. Okres przechowywania danych",
+          "body": "Przechowujemy Twoje dane osobowe przez okres trwania subskrypcji plus 30 dni. Dokumentacja finansowa (faktury, dane płatności) jest przechowywana przez prawnie wymagany okres (zazwyczaj 5-10 lat w zależności od jurysdykcji). Możesz w dowolnym momencie zażądać wcześniejszego usunięcia danych, które nie podlegają obowiązkowi przechowywania. Usunięte dane są natychmiast oznaczane jako usunięte i trwale usuwane w ciągu 90 dni."
+        },
+        "security": {
+          "heading": "7. Środki bezpieczeństwa",
+          "body": "Wdrażamy odpowiednie środki techniczne i organizacyjne w celu ochrony Twoich danych, w tym: Szyfrowanie w spoczynku (na poziomie bazy danych i aplikacji dla wrażliwych pól, takich jak rachunki bankowe); Szyfrowanie w transmisji (TLS 1.2+ dla wszystkich połączeń); Kontrolę dostępu opartą na rolach z zasadą najmniejszych uprawnień; Rejestrowanie audytu całego dostępu do danych wrażliwych; Regularne oceny bezpieczeństwa; Skanowanie antywirusowe przesyłanych dokumentów."
+        },
+        "rights": {
+          "heading": "8. Twoje prawa",
+          "body": "Zgodnie z RODO przysługują Ci następujące prawa: Dostęp do Twoich danych osobowych; Sprostowanie nieprawidłowych danych; Żądanie usunięcia danych (prawo do bycia zapomnianym); Ograniczenie przetwarzania danych; Przenoszenie danych (otrzymanie danych w ustrukturyzowanym, nadającym się do odczytu maszynowego formacie); Sprzeciw wobec przetwarzania opartego na prawnie uzasadnionych interesach; Wycofanie zgody w dowolnym momencie. Aby skorzystać z tych praw, skontaktuj się z nami pod adresem privacy@contractorops.com. Odpowiemy w ciągu 30 dni."
+        },
+        "cookies": {
+          "heading": "9. Pliki cookie",
+          "body": "Używamy wyłącznie niezbędnych plików cookie do uwierzytelniania i zarządzania sesją. Te pliki cookie są niezbędne do funkcjonowania platformy i nie można ich wyłączyć. Nie używamy plików cookie śledzących firm trzecich ani reklamowych. Sesyjne pliki cookie wygasają po 24 godzinach nieaktywności."
+        },
+        "contact": {
+          "heading": "10. Kontakt",
+          "body": "W sprawach związanych z prywatnością skontaktuj się z naszym Inspektorem Ochrony Danych pod adresem privacy@contractorops.com. Jeśli uważasz, że Twoje prawa do ochrony danych zostały naruszone, masz prawo złożyć skargę do właściwego organu nadzorczego. W Polsce jest to Prezes Urzędu Ochrony Danych Osobowych (UODO)."
+        }
+      }
+    },
+    "terms": {
+      "title": "Regulamin",
+      "lastUpdated": "Ostatnia aktualizacja: kwiecień 2026",
+      "sections": {
+        "acceptance": {
+          "heading": "1. Akceptacja warunków",
+          "body": "Korzystając z Contractor Ops (\"Usługa\"), akceptujesz niniejszy Regulamin. Jeśli korzystasz z Usługi w imieniu organizacji, oświadczasz, że masz uprawnienia do zobowiązania tej organizacji do przestrzegania niniejszych warunków. Jeśli nie wyrażasz zgody, nie możesz korzystać z Usługi."
+        },
+        "serviceDescription": {
+          "heading": "2. Opis usługi",
+          "body": "Contractor Ops to platforma SaaS do zarządzania relacjami z wykonawcami, obejmująca onboarding, zarządzanie umowami, przetwarzanie faktur, procesy zatwierdzania i ułatwianie płatności. Usługa jest świadczona w stanie, w jakim jest. Zastrzegamy sobie prawo do modyfikacji, zawieszenia lub wycofania funkcji z odpowiednim wyprzedzeniem."
+        },
+        "accounts": {
+          "heading": "3. Konta i dostęp",
+          "body": "Ponosisz odpowiedzialność za zachowanie poufności danych logowania do konta. Musisz niezwłocznie powiadomić nas o każdym nieautoryzowanym dostępie. Każde konto użytkownika jest przeznaczone dla jednej osoby i nie może być udostępniane. Administratorzy organizacji są odpowiedzialni za zarządzanie dostępem użytkowników i uprawnieniami w swojej organizacji."
+        },
+        "dataProcessing": {
+          "heading": "4. Przetwarzanie danych",
+          "body": "Działasz jako Administrator Danych dla danych wykonawców przetwarzanych za pośrednictwem naszej platformy. My działamy jako Podmiot Przetwarzający. Nasze czynności przetwarzania reguluje nasza Umowa o Przetwarzanie Danych (DPA), dostępna na życzenie. Ponosisz odpowiedzialność za zapewnienie, że posiadasz podstawę prawną do przetwarzania danych osobowych wykonawców za pośrednictwem naszej platformy."
+        },
+        "acceptableUse": {
+          "heading": "5. Dopuszczalne użytkowanie",
+          "body": "Zobowiązujesz się nie: Używać Usługi w celach niezgodnych z prawem; Przesyłać złośliwych plików ani próbować naruszyć bezpieczeństwa platformy; Próbować uzyskać dostęp do danych należących do innych organizacji; Przekraczać rozsądnych limitów użytkowania ani nadużywać punktów końcowych API; Przeprowadzać inżynierii wstecznej, dekompilacji ani próbować wyodrębnić kodu źródłowego Usługi."
+        },
+        "intellectualProperty": {
+          "heading": "6. Własność intelektualna",
+          "body": "Usługa, w tym jej kod, projekt i dokumentacja, jest własnością Contractor Ops. Zachowujesz własność wszystkich danych przesłanych do Usługi. Nie rościmy sobie praw własności intelektualnej do Twoich danych wykonawców, faktur ani dokumentów."
+        },
+        "liability": {
+          "heading": "7. Ograniczenie odpowiedzialności",
+          "body": "W maksymalnym zakresie dozwolonym przez obowiązujące prawo, Contractor Ops nie ponosi odpowiedzialności za jakiekolwiek szkody pośrednie, przypadkowe, specjalne, wynikowe lub karne, w tym utratę zysków, danych lub możliwości biznesowych. Nasza całkowita odpowiedzialność nie przekroczy kwoty zapłaconej przez Ciebie w ciągu 12 miesięcy poprzedzających roszczenie. To ograniczenie nie dotyczy odpowiedzialności, która nie może być wyłączona na mocy prawa."
+        },
+        "termination": {
+          "heading": "8. Rozwiązanie umowy",
+          "body": "Każda ze stron może rozwiązać niniejszą umowę w dowolnym momencie. Po rozwiązaniu: Twój dostęp do Usługi zostanie cofnięty; Twoje dane będą przechowywane przez 30 dni, po czym zostaną trwale usunięte; Możesz zażądać eksportu danych przed rozwiązaniem. Możemy zawiesić lub zamknąć Twoje konto natychmiast, jeśli naruszysz niniejsze warunki."
+        },
+        "governingLaw": {
+          "heading": "9. Prawo właściwe",
+          "body": "Niniejszy Regulamin podlega prawu Rzeczypospolitej Polskiej i będzie interpretowany zgodnie z nim. Wszelkie spory wynikające z niniejszego Regulaminu podlegają wyłącznej jurysdykcji sądów w Warszawie. Dla konsumentów z UE, nie wpływa to na Twoje prawo do wszczęcia postępowania w kraju zamieszkania."
+        },
+        "contact": {
+          "heading": "10. Kontakt",
+          "body": "W przypadku pytań dotyczących niniejszego Regulaminu, skontaktuj się z nami pod adresem legal@contractorops.com."
+        }
+      }
+    }
+  },
+  "CookieConsent": {
+    "message": "Ta strona używa wyłącznie niezbędnych plików cookie do uwierzytelniania i zarządzania sesją. Nie stosujemy plików cookie śledzących ani reklamowych.",
+    "accept": "Rozumiem",
+    "learnMore": "Polityka prywatności"
+  },
+  "GoogleWorkspace": {
+    "import": {
+      "title": "Importuj użytkowników z Google Workspace",
+      "step1Title": "Podgląd katalogu",
+      "step2Title": "Przypisz role",
+      "step3Title": "Przejrzyj i importuj",
+      "summaryFound": "{total} użytkowników znalezionych",
+      "summaryExisting": "{count} już zaimportowanych",
+      "summaryNew": "{count} nowych",
+      "summarySelected": "{count} wybranych",
+      "searchPlaceholder": "Szukaj użytkowników...",
+      "orgUnitFilter": "Jednostka organizacyjna",
+      "allOrgUnits": "Wszystkie jednostki",
+      "alreadyExists": "Już istnieje",
+      "alreadyExistsTooltip": "Ten użytkownik jest już członkiem Twojej organizacji.",
+      "selectAll": "Zaznacz wszystkich użytkowników",
+      "nextRoles": "Dalej: Role",
+      "nextReview": "Dalej: Przegląd",
+      "back": "Wstecz",
+      "defaultRoleLabel": "Domyślna rola dla wszystkich importowanych użytkowników:",
+      "groupMappingTitle": "Mapowanie grup na role (opcjonalne)",
+      "groupMappingFound": "Znaleziono {count} grup Google wśród wybranych użytkowników:",
+      "groupMappingHint": "Użytkownicy w zmapowanych grupach otrzymają tę rolę zamiast domyślnej.",
+      "default": "(domyślna)",
+      "readyToImport": "Gotowe do importu {count} użytkowników",
+      "roleBreakdown": "Podział ról:",
+      "roleCount": "{count} jako {role}",
+      "roleSource": "({source})",
+      "roleSourceDefault": "domyślna",
+      "inviteNotice": "Każdy zaimportowany użytkownik otrzyma e-mail z zaproszeniem.",
+      "importCta": "Importuj {count} użytkowników",
+      "importing": "Importowanie użytkowników...",
+      "successToast": "Pomyślnie zaimportowano {count} użytkowników",
+      "partialError": "{succeeded} z {total} użytkowników zaimportowanych. {failed} nie powiodło się — przejrzyj błędy i spróbuj ponownie.",
+      "retryFailed": "Ponów nieudane",
+      "emptyNoUsers": "Nie znaleziono użytkowników",
+      "emptyNoUsersBody": "Połączony katalog Google Workspace nie zawiera użytkowników lub konto administratora nie ma dostępu do katalogu.",
+      "emptyAllImported": "Wszyscy użytkownicy zaimportowani",
+      "emptyAllImportedBody": "Każdy użytkownik z katalogu Google Workspace jest już członkiem tej organizacji.",
+      "fetchError": "Nie udało się załadować katalogu. Sprawdź, czy połączone konto ma dostęp do Admin SDK i spróbuj ponownie."
+    },
+    "sync": {
+      "lastSynced": "Ostatnia synchronizacja: {time}",
+      "nextSync": "Następna: Jutro 2:00",
+      "syncNow": "Synchronizuj teraz",
+      "importUsers": "Importuj użytkowników",
+      "syncing": "Synchronizowanie...",
+      "syncStarted": "Synchronizacja katalogu rozpoczęta",
+      "syncComplete": "Synchronizacja zakończona — {count} zmian wykrytych",
+      "syncNoChanges": "Brak zmian",
+      "syncError": "Synchronizacja nie powiodła się. Spróbuj ponownie."
+    },
+    "notifications": {
+      "newHire": "Wykryto nowego członka zespołu: {name} ({email}) został dodany do Google Workspace.",
+      "departure": "{name} ({email}) został usunięty lub zawieszony w Google Workspace."
+    },
+    "disconnect": {
+      "title": "Rozłącz Google Workspace",
+      "body": "Spowoduje to zatrzymanie synchronizacji katalogu i usunięcie zapisanych danych uwierzytelniających. Istniejący zaimportowani użytkownicy nie zostaną usunięci. Kontynuować?"
     }
   }
 }
