@@ -32,14 +32,14 @@ Declared values (must be multiples of 4):
 | Token | Value | Usage |
 |-------|-------|-------|
 | xs | 4px | Icon gaps, inline padding, badge internal padding |
-| sm | 8px | Compact element spacing, table cell padding |
+| sm | 8px | Compact element spacing, table cell padding, summary bar vertical padding |
 | md | 16px | Default element spacing, card padding |
 | lg | 24px | Section padding, form group gaps |
 | xl | 32px | Layout gaps between major sections |
 | 2xl | 48px | Page-level section breaks |
 | 3xl | 64px | Page-level top/bottom padding |
 
-Exceptions: Summary bar uses 12px vertical padding for compact density. Avatar circles are 32px diameter in the directory table (consistent with existing user avatar pattern).
+Exceptions: Summary bar uses 8px (py-2) vertical padding for compact density. Avatar circles are 32px diameter in the directory table (consistent with existing user avatar pattern).
 
 ---
 
@@ -52,7 +52,7 @@ Exceptions: Summary bar uses 12px vertical padding for compact density. Avatar c
 | Heading | text-lg (clamp 16-18px) | 600 (semibold) | 1.75rem |
 | Display | text-2xl (clamp 22-30px) | 600 (semibold) | 2.25rem |
 
-Notes: All sizes use the project's existing fluid clamp() scale defined in globals.css. Email addresses in the directory table use `text-muted-foreground` at Body size. Department and org unit labels use Label size. Google group names in the mapping step use Body size with `font-medium` (500) for visual grouping.
+Notes: All sizes use the project's existing fluid clamp() scale defined in globals.css. Email addresses in the directory table use `text-muted-foreground` at Body size. Department and org unit labels use Label size. Google group names in the mapping step use Body size with `font-semibold` (600) for visual grouping.
 
 ---
 
@@ -75,6 +75,15 @@ Accent reserved for: "Connect Google Workspace" button, "Import selected users" 
 | Already exists | `secondary` (neutral) | Already imported, greyed out row |
 | New hire (sync) | `info` (blue) | Detected by periodic sync |
 | Departed (sync) | `warning` (amber) | Flagged for admin review |
+
+---
+
+## Visual Focal Points
+
+| Priority | Element | Rationale |
+|----------|---------|-----------|
+| Primary | "Import {N} users" CTA (Step 3) / "Connect Google Workspace" button | The terminal action the entire wizard funnels toward; accent-colored, largest button in its context |
+| Secondary | Summary bar counts (Step 1) | Immediate orientation -- tells the admin the scope of the import at a glance |
 
 ---
 
@@ -143,7 +152,7 @@ Follows the same vertical section layout as LinearProviderSection and JiraProvid
 | Step indicator: [1 Preview] [2 Roles] [3 Confirm] |
 +--------------------------------------------------+
 
-Step 1 — Preview:
+Step 1 -- Preview:
 +--------------------------------------------------+
 | Summary bar                                       |
 | 47 users found | 12 already imported | 35 new     |
@@ -157,10 +166,10 @@ Step 1 — Preview:
 +--------------------------------------------------+
 | Showing 1-20 of 35  [< 1 2 >]                    |
 +--------------------------------------------------+
-|                             [Cancel] [Next: Roles]|
+|                                    [Next: Roles]  |
 +--------------------------------------------------+
 
-Step 2 — Role Assignment:
+Step 2 -- Role Assignment:
 +--------------------------------------------------+
 | Default role for all imported users:              |
 | [VIEWER v]                                        |
@@ -178,7 +187,7 @@ Step 2 — Role Assignment:
 |                       [Back] [Next: Review]       |
 +--------------------------------------------------+
 
-Step 3 — Confirm:
+Step 3 -- Confirm:
 +--------------------------------------------------+
 | Ready to import 28 users                          |
 |                                                   |
@@ -229,6 +238,8 @@ Step 3 — Confirm:
 | Group mapping hint | "Users in mapped groups get that role instead of the default." |
 | Invite notice | "Each imported user will receive an invite email." |
 
+Note: Step 1 footer has no "Cancel" button -- the dialog header [X] close button serves as the dismiss action, avoiding a generic CTA label.
+
 ### i18n Keys
 
 All copy above maps to `next-intl` keys under namespaces:
@@ -262,6 +273,7 @@ Both `en` and `pl` translations required (project standard).
 | Map group to role | Role dropdown per group (step 2) | Users in that group get the mapped role | Confirm step reflects role breakdown |
 | Confirm import | "Import {N} users" button (step 3) | Button shows loading spinner, disables | Progress: sonner toast "Importing users...", on complete: "Successfully imported {N} users", dialog closes, integrations tab refreshes |
 | Partial failure | Some users fail during import | Dialog stays open showing error state | Error banner with count of failures + retry button for failed users |
+| Dismiss wizard | [X] close button in dialog header | Dialog closes, no import occurs | No confirmation needed -- no destructive action has been taken |
 
 ### Sync Controls
 
