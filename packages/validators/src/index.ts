@@ -322,6 +322,21 @@ export type {
 } from "./jira.js";
 
 export {
+  googleDirectoryUserSchema,
+  googleGroupSchema,
+  groupRoleMappingSchema,
+  directoryImportInputSchema,
+  directoryImportResultSchema,
+} from "./google-workspace.js";
+export type {
+  GoogleDirectoryUserParsed,
+  GoogleGroupParsed,
+  GroupRoleMapping,
+  DirectoryImportInput,
+  DirectoryImportResult,
+} from "./google-workspace.js";
+
+export {
   equipmentTypeEnum,
   equipmentStatusEnum,
   shipmentStatusEnum,

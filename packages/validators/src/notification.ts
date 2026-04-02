@@ -17,6 +17,8 @@ export const NOTIFICATION_TYPES = [
   "PAYMENT_ACTION_REQUIRED",
   "CREDIT_EXHAUSTED",
   "SUBSCRIPTION_CHANGED",
+  "DIRECTORY_NEW_HIRE",
+  "DIRECTORY_DEPARTURE",
 ] as const;
 
 export const notificationTypeEnum = z.enum(NOTIFICATION_TYPES);
