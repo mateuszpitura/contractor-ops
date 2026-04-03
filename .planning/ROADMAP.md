@@ -146,13 +146,13 @@ Plans:
   2. Activity alerts (invoice received, contract expiring, payment completed) appear in configured Teams channels as Adaptive Cards
   3. Manager can approve or reject invoices directly from a Teams Adaptive Card without opening the web app
   4. Approvers receive proactive DM reminders in Teams for overdue approval items
-**Plans**: TBD
+**Plans**: 3 plans
 **UI hint**: yes
 
 Plans:
-- [ ] 32-01: TBD
-- [ ] 32-02: TBD
-- [ ] 32-03: TBD
+- [ ] 32-01-PLAN.md — MessagingProvider interface, SlackMessagingProvider, dispatch refactor, schema updates (TEAM-01/03/05)
+- [ ] 32-02-PLAN.md — TeamsAdapter, Bot Framework handler, Adaptive Cards, TeamsMessagingProvider, tRPC router (TEAM-01/03/04/05/06)
+- [ ] 32-03-PLAN.md — Teams UI: provider section, channel mapping, notification prefs Teams column, i18n (TEAM-02/06)
 
 ### Phase 33: InPost Courier Integration
 **Goal**: Organizations can create InPost shipments with Parcel Locker selection and get automatic delivery status tracking
