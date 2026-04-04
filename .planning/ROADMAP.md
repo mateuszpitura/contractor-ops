@@ -180,12 +180,12 @@ Plans:
   3. System imports projects and statuses from PM tools (Jira, Linear) to pre-configure workflow templates
   4. User can preview all imported data with diff indicators (new/duplicate/conflict) and batch confirm, skip, or edit before committing
   5. Import runs async with progress tracking, and user can retry individual failed items without re-importing everything
-**Plans**: TBD
+**Plans**: 2 plans
 **UI hint**: yes
 
 Plans:
-- [ ] 34-01: TBD
-- [ ] 34-02: TBD
+- [ ] 34-01-PLAN.md — Tests, Zod validators, tRPC router, cross-tool fetch/merge/dedup service, batch import, workflow template creation, async progress (ONBD-01/02/03/04/05)
+- [ ] 34-02-PLAN.md — Full-page 4-step wizard UI, onboarding checklist modification, i18n EN/PL (ONBD-01/02/03/04/05)
 
 ### Phase 35: Feature Gating + DPD/UPS + Billing Polish
 **Goal**: Paywall is enforced per subscription tier, remaining courier integrations ship, and billing UX is polished for launch
@@ -242,5 +242,5 @@ Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 �
 | 31. Google Workspace Directory Import | v3.0 | 5/5 | Complete    | 2026-04-02 |
 | 32. Teams Integration | v3.0 | 4/4 | Complete    | 2026-04-04 |
 | 33. InPost Courier Integration | v3.0 | 3/3 | Complete    | 2026-04-04 |
-| 34. Intelligent Onboarding Wizard | v3.0 | 0/2 | Not started | - |
+| 34. Intelligent Onboarding Wizard | v3.0 | 0/2 | Planning | - |
 | 35. Feature Gating + DPD/UPS + Billing Polish | v3.0 | 0/2 | Not started | - |
