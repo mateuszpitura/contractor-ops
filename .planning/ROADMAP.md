@@ -59,7 +59,7 @@ Full details: `.planning/milestones/v2.0-ROADMAP.md`
 - [x] **Phase 29: Linear Integration** - Bidirectional issue sync between workflow tasks and Linear (completed 2026-04-01)
 - [x] **Phase 30: Equipment Tracking Foundation** - Equipment registry, contractor assignment, manual shipment tracking, and workflow integration (completed 2026-04-02)
 - [x] **Phase 31: Google Workspace Directory Import** - Paginated directory import with group-to-role mapping (completed 2026-04-02)
-- [ ] **Phase 32: Teams Integration** - Approve/reject from Teams Adaptive Cards, reminders, and activity alerts
+- [x] **Phase 32: Teams Integration** - Approve/reject from Teams Adaptive Cards, reminders, and activity alerts (completed 2026-04-04)
 - [ ] **Phase 33: InPost Courier Integration** - First courier API with Parcel Locker selection and auto-status tracking
 - [ ] **Phase 34: Intelligent Onboarding Wizard** - Cross-tool import orchestrator with preview, dedup, and batch confirm
 - [ ] **Phase 35: Feature Gating + DPD/UPS + Billing Polish** - Paywall activation, remaining couriers, usage dashboard
@@ -151,9 +151,9 @@ Plans:
 
 Plans:
 - [x] 32-01-PLAN.md — MessagingProvider interface, SlackMessagingProvider, dispatch refactor, schema updates (TEAM-01/03/05)
-- [ ] 32-02-PLAN.md — TeamsAdapter, Adaptive Cards, Graph API client (TEAM-01/03)
+- [x] 32-02-PLAN.md — TeamsAdapter, Adaptive Cards, Graph API client (TEAM-01/03)
 - [x] 32-03-PLAN.md — TeamsBotHandler, TeamsMessagingProvider, endpoint, tRPC router, USER-SETUP.md (TEAM-01/03/04/05/06)
-- [ ] 32-04-PLAN.md — Teams UI: provider section, channel mapping, notification prefs Teams column, i18n (TEAM-02/06)
+- [x] 32-04-PLAN.md — Teams UI: provider section, channel mapping, notification prefs Teams column, i18n (TEAM-02/06)
 
 ### Phase 33: InPost Courier Integration
 **Goal**: Organizations can create InPost shipments with Parcel Locker selection and get automatic delivery status tracking
@@ -238,7 +238,7 @@ Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 �
 | 29. Linear Integration | v3.0 | 3/3 | Complete    | 2026-04-01 |
 | 30. Equipment Tracking Foundation | v3.0 | 2/3 | Complete    | 2026-04-02 |
 | 31. Google Workspace Directory Import | v3.0 | 5/5 | Complete    | 2026-04-02 |
-| 32. Teams Integration | v3.0 | 2/4 | In Progress|  |
+| 32. Teams Integration | v3.0 | 4/4 | Complete   | 2026-04-04 |
 | 33. InPost Courier Integration | v3.0 | 0/1 | Not started | - |
 | 34. Intelligent Onboarding Wizard | v3.0 | 0/2 | Not started | - |
 | 35. Feature Gating + DPD/UPS + Billing Polish | v3.0 | 0/2 | Not started | - |
