@@ -39,7 +39,7 @@ Declared values (must be multiples of 4):
 | 2xl | 48px | Wizard header to content break |
 | 3xl | 64px | Page-level top/bottom padding |
 
-Exceptions: 44px minimum touch target for source selection cards on mobile (accessibility).
+Exceptions: 48px minimum touch target for source selection cards on mobile (accessibility).
 
 ---
 
@@ -48,9 +48,9 @@ Exceptions: 44px minimum touch target for source selection cards on mobile (acce
 | Role | Size | Weight | Line Height | Font |
 |------|------|--------|-------------|------|
 | Body | 14px | 400 (regular) | 1.5 | Outfit |
-| Label | 14px | 500 (medium) | 1.4 | Outfit |
+| Label | 14px | 400 (regular) | 1.4 | Outfit |
 | Heading | 20px | 600 (semibold) | 1.2 | Bricolage Grotesque |
-| Display | 28px | 700 (bold) | 1.15 | Bricolage Grotesque |
+| Display | 28px | 600 (semibold) | 1.15 | Bricolage Grotesque |
 
 Usage in this phase:
 - **Display**: Wizard page title ("Import Your Team")
