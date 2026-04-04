@@ -21,9 +21,9 @@ Requirements for v3.0 Enterprise & Monetization milestone. Each maps to roadmap 
 - [x] **TEAM-01**: Admin can connect Teams workspace via Azure AD OAuth with bot registration
 - [ ] **TEAM-02**: Admin can configure which Teams channel receives which notification types
 - [x] **TEAM-03**: System sends activity alerts to configured Teams channels via Adaptive Cards
-- [ ] **TEAM-04**: Manager can approve or reject invoices directly from Teams Adaptive Card actions
+- [x] **TEAM-04**: Manager can approve or reject invoices directly from Teams Adaptive Card actions
 - [x] **TEAM-05**: System sends approval reminder DMs to approvers with overdue items via proactive messaging
-- [ ] **TEAM-06**: Teams bot stores ConversationReferences for proactive messaging per user
+- [x] **TEAM-06**: Teams bot stores ConversationReferences for proactive messaging per user
 
 ### Google Workspace
 
@@ -115,9 +115,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TEAM-01 | Phase 32 | Complete |
 | TEAM-02 | Phase 32 | Pending |
 | TEAM-03 | Phase 32 | Complete |
-| TEAM-04 | Phase 32 | Pending |
+| TEAM-04 | Phase 32 | Complete |
 | TEAM-05 | Phase 32 | Complete |
-| TEAM-06 | Phase 32 | Pending |
+| TEAM-06 | Phase 32 | Complete |
 | GOOG-01 | Phase 31 | Complete |
 | GOOG-02 | Phase 31 | Complete |
 | GOOG-03 | Phase 31 | Complete |
