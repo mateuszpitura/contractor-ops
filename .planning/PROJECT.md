@@ -16,7 +16,7 @@ v1.0 MVP foundation (shipped 2026-03-23): org setup, RBAC, contractors, contract
 
 v2.0 Platform Expansion adds: contractor self-service portal with magic-link auth and org branding, electronic signatures (DocuSign + Autenti), AI-powered invoice OCR (Claude Vision), KSeF national e-invoicing integration, time tracking with Clockify/Jira import and invoice reconciliation, Jira bidirectional sync, Notion/Confluence doc linking with Cmd+K search, Google/Outlook calendar deadline sync, and a provider-agnostic integration framework with OAuth credential store, webhook pipeline, and health monitoring.
 
-v3.0 Enterprise & Monetization Phase 32 complete: Microsoft Teams integration — MessagingProvider abstraction replacing hardcoded Slack dispatch, TeamsAdapter with Azure AD OAuth, 5 Adaptive Card templates (approval, result, alert, reminder, reject modal), Graph API client for channel discovery, TeamsBotHandler with conversation reference storage, TeamsMessagingProvider for proactive messaging, tRPC router for channel mapping CRUD, Bot Framework endpoint, Teams UI in settings (provider section, channel mapping card, notification preferences column), full en/pl i18n.
+v3.0 Enterprise & Monetization Phase 33 complete: InPost courier integration — CourierClient interface with ShipX API wrapper, 17-status mapping, webhook handler with dedup, polling fallback, tRPC equipment/portal router extensions (10 new endpoints), webhook + cron API routes, offboarding auto-shipment at D-10, Paczkomat picker (Geowidget iframe), shipment form, label/QR viewer, return approval banner, portal Equipment tab with 3-step contractor return flow, en/pl i18n.
 
 ## Requirements
 
@@ -163,4 +163,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-02 after Phase 31 (Google Workspace Directory Import) complete*
+*Last updated: 2026-04-04 after Phase 33 (InPost Courier Integration) complete*
