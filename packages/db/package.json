@@ -23,6 +23,7 @@
   },
   "scripts": {
     "build": "tsc",
+    "test": "vitest run",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate:dev": "prisma migrate dev",
@@ -37,6 +38,7 @@
     "dotenv": "^17.3.1"
   },
   "devDependencies": {
-    "typescript": "^5.7.0"
+    "typescript": "^5.7.0",
+    "vitest": "^4.1.0"
   }
 }

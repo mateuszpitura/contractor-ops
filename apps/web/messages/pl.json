@@ -818,6 +818,7 @@
     "UNKNOWN_ERROR": "Wystąpił nieoczekiwany błąd. Spróbuj ponownie.",
     "CONTRACTOR_NOT_FOUND": "Nie znaleziono kontrahenta.",
     "CONTRACTOR_HAS_UNPAID_INVOICES": "Nie można zarchiwizować kontrahenta z nieopłaconymi fakturami. Najpierw rozlicz wszystkie zaległe płatności.",
+    "CONTRACTOR_HAS_ACTIVE_WORKFLOWS": "Nie można zarchiwizować kontrahenta z aktywnymi workflow. Najpierw dokończ lub anuluj workflow.",
     "CONTRACTOR_INVALID_TRANSITION": "Ta zmiana statusu nie jest dozwolona.",
     "GUS_LOOKUP_FAILED": "Wyszukiwanie GUS nie powiodło się.",
     "CONTRACT_NOT_FOUND": "Nie znaleziono umowy.",
@@ -836,6 +837,7 @@
     "PAYMENT_RUN_ITEM_NOT_FOUND": "Nie znaleziono pozycji przebiegu płatności.",
     "PAYMENT_RUN_NOT_DRAFT": "Faktury można usuwać tylko z roboczych przebiegów płatności.",
     "PAYMENT_INVOICE_NOT_IN_RUN": "Nie znaleziono faktury w tym przebiegu płatności.",
+    "PAYMENT_MIXED_CURRENCIES": "Wszystkie faktury w przebiegu płatności muszą mieć tę samą walutę.",
     "APPROVAL_CHAIN_NOT_FOUND": "Nie znaleziono łańcucha zatwierdzania.",
     "APPROVAL_CHAIN_HAS_ACTIVE_FLOWS": "Nie można usunąć łańcucha z aktywnymi przepływami zatwierdzania.",
     "APPROVAL_STEP_NOT_FOUND": "Nie znaleziono kroku zatwierdzania.",
@@ -3767,6 +3769,143 @@
         "contact": {
           "heading": "10. Kontakt",
           "body": "W przypadku pytań dotyczących niniejszego Regulaminu, skontaktuj się z nami pod adresem legal@contractorops.com."
+        }
+      }
+    },
+    "subProcessors": {
+      "title": "Podwykonawcy przetwarzania danych",
+      "lastUpdated": "Ostatnia aktualizacja: kwiecień 2026",
+      "table": {
+        "processor": "Podwykonawca",
+        "purpose": "Cel",
+        "dataProcessed": "Przetwarzane dane",
+        "location": "Lokalizacja"
+      },
+      "sections": {
+        "introduction": {
+          "heading": "Informacje ogólne",
+          "body": "Contractor Ops korzysta z następujących podwykonawców przetwarzania danych w celu świadczenia naszych usług. Każdy podwykonawca jest związany umową o przetwarzanie danych zapewniającą zgodność z RODO. Udostępniamy jedynie minimum danych niezbędnych do realizacji funkcji każdego podwykonawcy."
+        },
+        "processors": {
+          "heading": "Aktualni podwykonawcy"
+        },
+        "changes": {
+          "heading": "Zmiany podwykonawców",
+          "body": "Powiadomimy klientów z co najmniej 30-dniowym wyprzedzeniem o wszelkich zmianach na liście podwykonawców. Powiadomienia będą wysyłane e-mailem do administratorów organizacji. Jeśli sprzeciwiasz się nowemu podwykonawcy, możesz wypowiedzieć subskrypcję przed wejściem zmiany w życie."
+        },
+        "contact": {
+          "heading": "Kontakt",
+          "body": "W przypadku pytań dotyczących naszych podwykonawców lub praktyk przetwarzania danych, skontaktuj się z nami pod adresem privacy@contractorops.com."
+        }
+      },
+      "processors": {
+        "vercel": {
+          "name": "Vercel Inc.",
+          "purpose": "Hosting aplikacji, funkcje serverless, sieć edge",
+          "data": "Żądania HTTP, adresy IP, tokeny sesji",
+          "location": "Stany Zjednoczone (dostępny region UE)"
+        },
+        "neon": {
+          "name": "Neon Inc.",
+          "purpose": "Hosting bazy danych PostgreSQL",
+          "data": "Wszystkie dane aplikacji (szyfrowane w spoczynku)",
+          "location": "UE (Frankfurt)"
+        },
+        "cloudflare": {
+          "name": "Cloudflare Inc.",
+          "purpose": "Przechowywanie obiektów (R2) dla dokumentów i plików",
+          "data": "Przesłane dokumenty, umowy, faktury (szyfrowane w spoczynku)",
+          "location": "Automatycznie (najbliższy region)"
+        },
+        "stripe": {
+          "name": "Stripe Inc.",
+          "purpose": "Obsługa subskrypcji i przetwarzanie płatności",
+          "data": "Nazwa organizacji, e-mail rozliczeniowy, szczegóły subskrypcji",
+          "location": "Stany Zjednoczone / Irlandia"
+        },
+        "resend": {
+          "name": "Resend Inc.",
+          "purpose": "Dostarczanie e-maili transakcyjnych i przetwarzanie poczty przychodzącej",
+          "data": "Adresy e-mail, treść powiadomień, załączniki faktur",
+          "location": "Stany Zjednoczone"
+        },
+        "sentry": {
+          "name": "Sentry (Functional Software Inc.)",
+          "purpose": "Monitoring błędów i śledzenie wydajności",
+          "data": "Ślady stosu błędów, metadane żądań, identyfikatory użytkowników (bez danych osobowych)",
+          "location": "Stany Zjednoczone"
+        },
+        "axiom": {
+          "name": "Axiom Inc.",
+          "purpose": "Agregacja logów i monitoring operacyjny",
+          "data": "Strukturalne logi aplikacji, identyfikatory żądań, metryki wydajności",
+          "location": "Stany Zjednoczone"
+        },
+        "upstash": {
+          "name": "Upstash Inc.",
+          "purpose": "Limitowanie zapytań i cache oparty na Redis",
+          "data": "Liczniki limitów, adresy IP, identyfikatory użytkowników/organizacji",
+          "location": "UE (Frankfurt)"
+        },
+        "cronitor": {
+          "name": "Cronitor Inc.",
+          "purpose": "Monitoring zadań cron i alerty",
+          "data": "Status wykonania zadań, znaczniki czasu (bez danych użytkowników)",
+          "location": "Stany Zjednoczone"
+        },
+        "uptimerobot": {
+          "name": "UptimeRobot",
+          "purpose": "Zewnętrzny monitoring dostępności",
+          "data": "Odpowiedzi endpointu zdrowia (bez danych użytkowników)",
+          "location": "Stany Zjednoczone"
+        },
+        "qstash": {
+          "name": "Upstash QStash",
+          "purpose": "Asynchroniczna kolejka wiadomości do przetwarzania webhooków",
+          "data": "Dane webhooków, metadane dostarczania",
+          "location": "UE (Frankfurt)"
+        }
+      }
+    },
+    "breachNotification": {
+      "title": "Procedura powiadamiania o naruszeniu danych",
+      "lastUpdated": "Ostatnia aktualizacja: kwiecień 2026",
+      "sections": {
+        "introduction": {
+          "heading": "1. Cel",
+          "body": "Niniejszy dokument opisuje procedurę Contractor Ops dotyczącą wykrywania, oceny i powiadamiania odpowiednich stron w przypadku naruszenia ochrony danych osobowych, zgodnie z art. 33 i 34 Ogólnego Rozporządzenia o Ochronie Danych (RODO)."
+        },
+        "definition": {
+          "heading": "2. Co stanowi naruszenie danych",
+          "body": "Naruszenie ochrony danych osobowych to naruszenie bezpieczeństwa prowadzące do przypadkowego lub niezgodnego z prawem zniszczenia, utraty, zmiany, nieuprawnionego ujawnienia lub dostępu do danych osobowych przesyłanych, przechowywanych lub w inny sposób przetwarzanych. Obejmuje to: nieuprawniony dostęp do kont użytkowników lub danych organizacji; przypadkowe ujawnienie danych osobowych niezamierzonym odbiorcom; utratę lub kradzież urządzeń przechowujących dane lub kopii zapasowych; złośliwe ataki skutkujące eksfiltracją danych; przypadkowe usunięcie danych bez możliwości odzyskania z kopii zapasowej."
+        },
+        "detection": {
+          "heading": "3. Wykrywanie i zgłaszanie",
+          "body": "Stosujemy wielowarstwowy monitoring w celu wykrywania potencjalnych naruszeń: automatyczny monitoring bezpieczeństwa przez Sentry (śledzenie błędów i wykrywanie anomalii); strukturalne logowanie przez Axiom (analiza wzorców dostępu); logi audytu rejestrujące cały dostęp do danych wrażliwych; zewnętrzny monitoring dostępności przez UptimeRobot; monitoring stanu zadań w tle dla integralności przetwarzania webhooków. Każdy członek zespołu, który podejrzewa naruszenie danych, musi natychmiast zgłosić to zespołowi ds. bezpieczeństwa pod adresem security@contractorops.com."
+        },
+        "assessment": {
+          "heading": "4. Ocena naruszenia",
+          "body": "Po wykryciu nasz zespół reagowania na incydenty: potwierdzi, czy doszło do naruszenia; zidentyfikuje zakres i charakter dotkniętych danych; oceni ryzyko dla praw i wolności osób; ustali przyczynę i wdroży natychmiastowe środki ograniczające; sklasyfikuje wagę (niska, średnia, wysoka, krytyczna) na podstawie wrażliwości danych, liczby dotkniętych osób i potencjału szkody."
+        },
+        "authorityNotification": {
+          "heading": "5. Powiadomienie organu nadzorczego",
+          "body": "Jeśli naruszenie może skutkować ryzykiem dla praw i wolności osób, powiadomimy właściwy organ nadzorczy w ciągu 72 godzin od momentu uzyskania informacji o naruszeniu. Dla klientów w Polsce jest to Prezes Urzędu Ochrony Danych Osobowych (UODO). Powiadomienie będzie zawierać: charakter naruszenia i przybliżoną liczbę dotkniętych osób; kategorie danych, których dotyczy naruszenie; prawdopodobne konsekwencje; środki podjęte lub proponowane w celu zaradzenia naruszeniu."
+        },
+        "customerNotification": {
+          "heading": "6. Powiadomienie dotkniętych klientów",
+          "body": "Powiadomimy dotkniętych klientów (administratorów danych) bez zbędnej zwłoki poprzez: e-mail do wszystkich administratorów organizacji; baner powiadomienia w aplikacji dla dotkniętych organizacji; aktualizację dedykowanej strony statusu. Powiadomienie będzie opisywać: co się wydarzyło i kiedy; jakie dane zostały dotknięte; co zrobiliśmy, aby opanować naruszenie; jakie kroki powinni podjąć klienci; dane kontaktowe naszego zespołu ds. bezpieczeństwa. Jeśli naruszenie może skutkować wysokim ryzykiem dla osób, pomożemy również klientom w powiadomieniu dotkniętych osób."
+        },
+        "timeline": {
+          "heading": "7. Harmonogram reakcji",
+          "body": "Nasz docelowy harmonogram reakcji: Natychmiast (0-1 godzin): Opanowanie i wstępna ocena; W ciągu 4 godzin: Zebranie wewnętrznego zespołu ds. incydentów, określenie zakresu; W ciągu 24 godzin: Identyfikacja przyczyny, plan naprawczy; W ciągu 72 godzin: Powiadomienie organu nadzorczego (jeśli wymagane); W ciągu 7 dni: Pełny raport z incydentu dla dotkniętych klientów; W ciągu 30 dni: Przegląd po incydencie i wdrożenie środków zapobiegawczych."
+        },
+        "documentation": {
+          "heading": "8. Prowadzenie dokumentacji",
+          "body": "Prowadzimy dokumentację wszystkich naruszeń danych, w tym tych, które nie wymagają powiadomienia, dokumentując: okoliczności naruszenia; jego skutki; podjęte działania naprawcze; uzasadnienie decyzji podjętych w sprawie powiadomienia. Dokumentacja ta jest przechowywana przez minimum 5 lat i jest dostępna do wglądu organów nadzorczych na żądanie."
+        },
+        "contact": {
+          "heading": "9. Kontakt",
+          "body": "Aby zgłosić podejrzenie naruszenia danych lub w przypadku pytań dotyczących tej procedury, skontaktuj się z naszym zespołem ds. bezpieczeństwa pod adresem security@contractorops.com. W sprawach ogólnych dotyczących prywatności, skontaktuj się pod adresem privacy@contractorops.com."
         }
       }
     }

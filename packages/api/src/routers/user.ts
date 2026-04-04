@@ -1,5 +1,7 @@
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import { auth } from "@contractor-ops/auth";
+import { prisma } from "@contractor-ops/db";
 import { inviteUserSchema, updateUserRoleSchema } from "@contractor-ops/validators";
 import { router } from "../init.js";
 import { tenantProcedure } from "../middleware/tenant.js";
@@ -84,10 +86,113 @@ export const userRouter = router({
     .use(requirePermission({ member: ["delete"] }))
     .input(z.object({ userId: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
+      // Prevent deactivating the last admin/owner in the organization
+      const targetMember = await prisma.member.findFirst({
+        where: {
+          organizationId: ctx.organizationId,
+          userId: input.userId,
+        },
+        select: { role: true },
+      });
+
+      if (targetMember && (targetMember.role === "owner" || targetMember.role === "admin")) {
+        const adminCount = await prisma.member.count({
+          where: {
+            organizationId: ctx.organizationId,
+            role: { in: ["owner", "admin"] },
+            user: { banned: { not: true } },
+          },
+        });
+
+        if (adminCount <= 1) {
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message: "LAST_ADMIN_CANNOT_DEACTIVATE",
+          });
+        }
+      }
+
       const result = await auth.api.banUser({
         headers: ctx.headers,
         body: { userId: input.userId },
       });
+
+      // Reassign pending approval steps from deactivated user to another
+      // eligible user with the same role, or clear the assignment so the
+      // step can be picked up by any user with the matching role.
+      const pendingSteps = await prisma.approvalStep.findMany({
+        where: {
+          organizationId: ctx.organizationId,
+          approverUserId: input.userId,
+          status: { in: ["NOT_STARTED", "PENDING"] },
+        },
+        select: { id: true, approverRole: true },
+      });
+
+      if (pendingSteps.length > 0) {
+        for (const step of pendingSteps) {
+          // Try to find a replacement with the same role
+          let replacementUserId: string | null = null;
+
+          if (step.approverRole) {
+            const replacement = await prisma.member.findFirst({
+              where: {
+                organizationId: ctx.organizationId,
+                role: step.approverRole,
+                userId: { not: input.userId },
+                user: { banned: { not: true } },
+              },
+              select: { userId: true },
+            });
+            replacementUserId = replacement?.userId ?? null;
+          }
+
+          await prisma.approvalStep.update({
+            where: { id: step.id },
+            data: { approverUserId: replacementUserId },
+          });
+        }
+      }
+
+      // Transfer contractor ownership from deactivated user to an admin
+      const ownedContractors = await prisma.contractor.findMany({
+        where: {
+          organizationId: ctx.organizationId,
+          ownerUserId: input.userId,
+          deletedAt: null,
+        },
+        select: { id: true },
+      });
+
+      if (ownedContractors.length > 0) {
+        // Find a replacement admin (prefer owner, then admin role)
+        const replacement = await prisma.member.findFirst({
+          where: {
+            organizationId: ctx.organizationId,
+            role: { in: ["owner", "admin"] },
+            userId: { not: input.userId },
+            user: { banned: { not: true } },
+          },
+          select: { userId: true },
+        });
+
+        if (replacement) {
+          await prisma.contractor.updateMany({
+            where: {
+              id: { in: ownedContractors.map((c) => c.id) },
+            },
+            data: { ownerUserId: replacement.userId },
+          });
+        } else {
+          // No admin available — clear ownership to prevent dangling reference
+          await prisma.contractor.updateMany({
+            where: {
+              id: { in: ownedContractors.map((c) => c.id) },
+            },
+            data: { ownerUserId: null },
+          });
+        }
+      }
 
       return result;
     }),

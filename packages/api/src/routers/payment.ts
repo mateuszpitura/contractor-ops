@@ -42,6 +42,28 @@ function plain<T>(data: T): T {
 }
 
 // ---------------------------------------------------------------------------
+// Idempotency key cache for payment run creation (5-minute window)
+// ---------------------------------------------------------------------------
+
+const IDEMPOTENCY_TTL_MS = 5 * 60_000;
+
+/** Maps "orgId:idempotencyKey" → { runIds, expiresAt } */
+const idempotencyCache = new Map<
+  string,
+  { result: unknown; expiresAt: number }
+>();
+
+if (typeof globalThis !== "undefined") {
+  const cleanup = () => {
+    const now = Date.now();
+    for (const [key, entry] of idempotencyCache) {
+      if (now > entry.expiresAt) idempotencyCache.delete(key);
+    }
+  };
+  setInterval(cleanup, 60_000).unref?.();
+}
+
+// ---------------------------------------------------------------------------
 // Valid status transitions
 // ---------------------------------------------------------------------------
 
@@ -132,6 +154,15 @@ export const paymentRouter = router({
     .use(requirePermission({ payment: ["create"] }))
     .input(paymentRunCreateSchema)
     .mutation(async ({ ctx, input }) => {
+      // Idempotency check: return cached result if same key was used recently
+      if (input.idempotencyKey) {
+        const cacheKey = `${ctx.organizationId}:${input.idempotencyKey}`;
+        const cached = idempotencyCache.get(cacheKey);
+        if (cached && Date.now() < cached.expiresAt) {
+          return cached.result as ReturnType<typeof plain>;
+        }
+      }
+
       const result = await prisma.$transaction(async (tx) => {
         // Fetch all invoices with their data
         const invoices = await tx.invoice.findMany({
@@ -172,6 +203,14 @@ export const paymentRouter = router({
             groups.get(curr)!.push(inv);
           }
         } else {
+          // Validate all invoices share the same currency
+          const currencies = new Set(invoices.map((inv) => inv.currency));
+          if (currencies.size > 1) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: E.PAYMENT_MIXED_CURRENCIES,
+            });
+          }
           groups.set(input.currency ?? invoices[0]?.currency ?? "PLN", invoices);
         }
 
@@ -245,7 +284,18 @@ export const paymentRouter = router({
         return runs;
       });
 
-      return plain(result);
+      const plainResult = plain(result);
+
+      // Cache result under idempotency key
+      if (input.idempotencyKey) {
+        const cacheKey = `${ctx.organizationId}:${input.idempotencyKey}`;
+        idempotencyCache.set(cacheKey, {
+          result: plainResult,
+          expiresAt: Date.now() + IDEMPOTENCY_TTL_MS,
+        });
+      }
+
+      return plainResult;
     }),
 
   // =========================================================================
@@ -602,23 +652,24 @@ export const paymentRouter = router({
         }
 
         const now = new Date();
+        const itemIds = run.items.map((i) => i.id);
+        const invoiceIds = run.items.map((i) => i.invoiceId);
 
-        // Update all pending items to PAID
-        for (const item of run.items) {
-          await tx.paymentRunItem.update({
-            where: { id: item.id },
-            data: {
-              status: "PAID",
-              paymentReference: input.batchReference ?? null,
-              markedPaidAt: now,
-            },
-          });
+        // Batch update all pending items to PAID
+        await tx.paymentRunItem.updateMany({
+          where: { id: { in: itemIds } },
+          data: {
+            status: "PAID",
+            paymentReference: input.batchReference ?? null,
+            markedPaidAt: now,
+          },
+        });
 
-          await tx.invoice.update({
-            where: { id: item.invoiceId },
-            data: { paymentStatus: "PAID", paidAt: now },
-          });
-        }
+        // Batch update all linked invoices to PAID
+        await tx.invoice.updateMany({
+          where: { id: { in: invoiceIds } },
+          data: { paymentStatus: "PAID", paidAt: now },
+        });
 
         // Mark run as completed
         const updatedRun = await tx.paymentRun.update({
@@ -686,14 +737,16 @@ export const paymentRouter = router({
           }
         }
 
-        // Release all items' invoices back to READY
-        for (const item of run.items) {
-          if (item.status !== "PAID") {
-            await tx.invoice.update({
-              where: { id: item.invoiceId },
-              data: { paymentStatus: "READY" },
-            });
-          }
+        // Batch release all non-paid items' invoices back to READY
+        const unpaidInvoiceIds = run.items
+          .filter((item) => item.status !== "PAID")
+          .map((item) => item.invoiceId);
+
+        if (unpaidInvoiceIds.length > 0) {
+          await tx.invoice.updateMany({
+            where: { id: { in: unpaidInvoiceIds } },
+            data: { paymentStatus: "READY" },
+          });
         }
 
         // Cancel the run

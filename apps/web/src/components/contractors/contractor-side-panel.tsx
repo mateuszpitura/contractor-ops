@@ -13,6 +13,8 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Link } from "@/i18n/navigation";
+import { usePermissions } from "@/hooks/use-permissions";
+import { maskTaxId, canViewSensitivePii } from "@/lib/mask-pii";
 import { ComplianceHealthBadge } from "./compliance-health-badge";
 import type { ContractorRow } from "./contractor-table/columns";
 
@@ -49,6 +51,8 @@ export function ContractorSidePanel({
 }: ContractorSidePanelProps) {
   const t = useTranslations("Contractors");
   const ts = useTranslations("Contractors.sidePanel");
+  const { role } = usePermissions();
+  const showPii = canViewSensitivePii(role);
 
   if (!contractor) return null;
 
@@ -108,7 +112,7 @@ export function ContractorSidePanel({
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <DetailItem
                   label="NIP"
-                  value={contractor.taxId}
+                  value={showPii ? contractor.taxId : maskTaxId(contractor.taxId)}
                   mono
                 />
                 <DetailItem

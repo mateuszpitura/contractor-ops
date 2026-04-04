@@ -30,6 +30,7 @@ import { calendarRouter } from "./routers/calendar.js";
 import { billingRouter } from "./routers/billing.js";
 import { equipmentRouter } from "./routers/equipment.js";
 import { googleWorkspaceRouter } from "./routers/google-workspace.js";
+import { gdprRouter } from "./routers/gdpr.js";
 
 /**
  * Root tRPC router merging all sub-routers.
@@ -91,6 +92,7 @@ export const appRouter = router({
   billing: billingRouter,
   equipment: equipmentRouter,
   googleWorkspace: googleWorkspaceRouter, // Google Workspace directory import, group resolution, bulk import, sync
+  gdpr: gdprRouter, // GDPR: right to erasure (Art. 17), data portability/export (Art. 20)
 });
 
 /** Type-safe router type for client consumption */

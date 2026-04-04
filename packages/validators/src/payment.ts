@@ -41,6 +41,8 @@ export const paymentRunCreateSchema = z.object({
   name: z.string().max(100).optional(),
   notes: z.string().max(500).optional(),
   groupByCurrency: z.boolean().default(false),
+  /** Client-generated idempotency key to prevent duplicate payment runs. */
+  idempotencyKey: z.string().max(64).optional(),
 });
 
 export type PaymentRunCreate = z.infer<typeof paymentRunCreateSchema>;

@@ -38,6 +38,8 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "@/i18n/navigation";
+import { usePermissions } from "@/hooks/use-permissions";
+import { maskTaxId, canViewSensitivePii } from "@/lib/mask-pii";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -139,6 +141,8 @@ const FLAG_CONFIG: Record<
 
 export function MatchCard({ invoice, onMatchConfirmed }: MatchCardProps) {
   const t = useTranslations("Invoices");
+  const { role } = usePermissions();
+  const showPii = canViewSensitivePii(role);
   const matchStatus = invoice.matchStatus;
   const latestResult = invoice.matchResults?.[0];
   const flags: string[] = Array.isArray(invoice.flagsJson)
@@ -204,7 +208,7 @@ export function MatchCard({ invoice, onMatchConfirmed }: MatchCardProps) {
               </Link>
               {invoice.contractor.taxId && (
                 <span className="font-mono text-[13px] text-muted-foreground">
-                  {invoice.contractor.taxId}
+                  {showPii ? invoice.contractor.taxId : maskTaxId(invoice.contractor.taxId)}
                 </span>
               )}
             </div>

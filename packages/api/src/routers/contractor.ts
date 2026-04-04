@@ -13,6 +13,7 @@ import { router } from "../init.js";
 import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
 import { encryptBankAccount } from "../services/bank-account-crypto.js";
+import { sanitizeStrings } from "../services/sanitize.js";
 import { syncSeatCountForOrg } from "../services/billing-service.js";
 import { invalidateByPrefix, CacheKeys } from "../services/cache.js";
 
@@ -310,6 +311,26 @@ export const contractorRouter = router({
           defaultCostCenter: { select: { id: true, name: true } },
           billingProfiles: {
             orderBy: { isDefault: "desc" },
+            select: {
+              id: true,
+              legalEntityName: true,
+              billingEmail: true,
+              countryCode: true,
+              addressLine1: true,
+              addressLine2: true,
+              city: true,
+              postalCode: true,
+              bankAccountMasked: true,
+              bankName: true,
+              swiftBic: true,
+              preferredCurrency: true,
+              paymentTermsDays: true,
+              taxId: true,
+              vatId: true,
+              isDefault: true,
+              validFrom: true,
+              validTo: true,
+            },
           },
           complianceItems: {
             include: {
@@ -380,7 +401,8 @@ export const contractorRouter = router({
   create: tenantProcedure
     .use(requirePermission({ contractor: ["create"] }))
     .input(contractorCreateSchema)
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ ctx, input: rawInput }) => {
+      const input = sanitizeStrings(rawInput);
       const {
         billingModel,
         rateValueGrosze,
@@ -459,7 +481,8 @@ export const contractorRouter = router({
   update: tenantProcedure
     .use(requirePermission({ contractor: ["update"] }))
     .input(contractorUpdateSchema.extend({ id: z.string().min(1) }))
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ ctx, input: rawInput }) => {
+      const input = sanitizeStrings(rawInput);
       const {
         id,
         billingModel,
@@ -639,6 +662,37 @@ export const contractorRouter = router({
         });
       }
 
+      // Block archival if contractor has unpaid invoices
+      const unpaidInvoiceCount = await prisma.invoice.count({
+        where: {
+          contractorId: input.id,
+          organizationId: ctx.organizationId,
+          paymentStatus: { notIn: ["PAID", "NOT_READY"] },
+        },
+      });
+
+      if (unpaidInvoiceCount > 0) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: E.CONTRACTOR_HAS_UNPAID_INVOICES,
+        });
+      }
+
+      // Block archival if contractor has active workflow runs
+      const activeWorkflowCount = await prisma.workflowRun.count({
+        where: {
+          contractorId: input.id,
+          status: { in: ["IN_PROGRESS", "BLOCKED"] },
+        },
+      });
+
+      if (activeWorkflowCount > 0) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: E.CONTRACTOR_HAS_ACTIVE_WORKFLOWS,
+        });
+      }
+
       const updated = await prisma.contractor.update({
         where: { id: input.id },
         data: {
@@ -662,9 +716,29 @@ export const contractorRouter = router({
     .use(requirePermission({ contractor: ["delete"] }))
     .input(z.object({ ids: z.array(z.string()).min(1).max(100) }))
     .mutation(async ({ ctx, input }) => {
+      // Block archival for contractors with unpaid invoices
+      const contractorsWithUnpaid = await prisma.invoice.groupBy({
+        by: ["contractorId"],
+        where: {
+          contractorId: { in: input.ids },
+          organizationId: ctx.organizationId,
+          paymentStatus: { notIn: ["PAID", "NOT_READY"] },
+        },
+      });
+
+      const blockedIds = new Set(contractorsWithUnpaid.map((i) => i.contractorId).filter(Boolean));
+      const archivableIds = input.ids.filter((id) => !blockedIds.has(id));
+
+      if (archivableIds.length === 0 && blockedIds.size > 0) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: E.CONTRACTOR_HAS_UNPAID_INVOICES,
+        });
+      }
+
       const result = await prisma.contractor.updateMany({
         where: {
-          id: { in: input.ids },
+          id: { in: archivableIds },
           organizationId: ctx.organizationId,
           deletedAt: null,
         },
@@ -732,6 +806,13 @@ export const contractorRouter = router({
           billingProfiles: {
             where: { isDefault: true },
             take: 1,
+            select: {
+              id: true,
+              legalEntityName: true,
+              preferredCurrency: true,
+              bankAccountMasked: true,
+              paymentTermsDays: true,
+            },
           },
         },
       });

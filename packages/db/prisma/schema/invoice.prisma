@@ -62,7 +62,7 @@ model Invoice {
   @@index([organizationId, contractorId])
   @@index([organizationId, contractId])
   @@index([organizationId, receivedAt])
-  @@index([organizationId, duplicateCheckHash])
+  @@unique([organizationId, duplicateCheckHash])
   @@index([organizationId, sellerTaxId])
 }
 

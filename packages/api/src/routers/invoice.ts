@@ -18,6 +18,7 @@ import {
 import { dispatch } from "../services/notification-service.js";
 import { deleteCalendarEvent } from "../services/calendar-event-service.js";
 import { invalidateByPrefix, CacheKeys } from "../services/cache.js";
+import { sanitizeStrings } from "../services/sanitize.js";
 
 // ---------------------------------------------------------------------------
 // Finance team helper
@@ -63,10 +64,11 @@ export const invoiceRouter = router({
   create: tenantProcedure
     .use(requirePermission({ invoice: ["create"] }))
     .input(invoiceCreateSchema)
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ ctx, input: rawInput }) => {
+      const input = sanitizeStrings(rawInput);
       const { documentIds, ...invoiceData } = input;
 
-      // Compute duplicate check hash if seller info available
+      // Check for duplicate before creating
       let duplicateCheckHash: string | null = null;
       if (invoiceData.sellerTaxId && invoiceData.invoiceNumber) {
         duplicateCheckHash = computeDuplicateCheckHash(
@@ -74,6 +76,21 @@ export const invoiceRouter = router({
           invoiceData.sellerTaxId,
           invoiceData.totalGrosze,
         );
+
+        const existing = await prisma.invoice.findFirst({
+          where: {
+            organizationId: ctx.organizationId,
+            duplicateCheckHash,
+          },
+          select: { id: true, invoiceNumber: true },
+        });
+
+        if (existing) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: E.INVOICE_DUPLICATE,
+          });
+        }
       }
 
       const invoice = await prisma.$transaction(async (tx) => {
@@ -218,7 +235,8 @@ export const invoiceRouter = router({
   update: tenantProcedure
     .use(requirePermission({ invoice: ["update"] }))
     .input(z.object({ id: z.string(), data: invoiceUpdateSchema }))
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ ctx, input: rawInput }) => {
+      const input = sanitizeStrings(rawInput);
       const existing = await prisma.invoice.findFirst({
         where: {
           id: input.id,

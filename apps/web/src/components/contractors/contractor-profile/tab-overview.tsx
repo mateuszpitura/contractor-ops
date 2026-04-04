@@ -13,6 +13,8 @@ import {
   CardAction,
 } from "@/components/ui/card";
 import { ComplianceHealthBadge } from "@/components/contractors/compliance-health-badge";
+import { usePermissions } from "@/hooks/use-permissions";
+import { maskTaxId, canViewSensitivePii } from "@/lib/mask-pii";
 
 type HealthFactor = {
   key: "documents" | "contract" | "tasks" | "invoices";
@@ -122,6 +124,8 @@ function formatDate(date: string | Date, locale?: string): string {
 export function TabOverview({ contractor }: TabOverviewProps) {
   const t = useTranslations("ContractorProfile.overview");
   const tc = useTranslations("Contractors");
+  const { role } = usePermissions();
+  const showPii = canViewSensitivePii(role);
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -172,7 +176,7 @@ export function TabOverview({ contractor }: TabOverviewProps) {
             value={contractor.displayName}
           />
           <FieldRow label={t("fields.type")} value={tc(`type.${contractor.type}` as Parameters<typeof tc>[0])} />
-          <FieldRow label={t("fields.nip")} value={contractor.taxId} mono />
+          <FieldRow label={t("fields.nip")} value={showPii ? contractor.taxId : maskTaxId(contractor.taxId)} mono />
           <FieldRow label={t("fields.vatEu")} value={contractor.vatId} mono />
           <FieldRow
             label={t("fields.regon")}

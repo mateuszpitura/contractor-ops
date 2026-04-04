@@ -15,6 +15,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
+import { usePermissions } from "@/hooks/use-permissions";
+import { maskTaxId, canViewSensitivePii } from "@/lib/mask-pii";
 import type { ImportRow } from "./import-wizard-dialog";
 
 // ---------------------------------------------------------------------------
@@ -35,6 +37,8 @@ export function StepDuplicates({
   onActionsChange,
 }: StepDuplicatesProps) {
   const t = useTranslations("Import");
+  const { role } = usePermissions();
+  const showPii = canViewSensitivePii(role);
 
   const getAction = (rowNumber: number): "skip" | "update" | "create" => {
     return duplicateActions[String(rowNumber)] ?? "skip";
@@ -112,7 +116,7 @@ export function StepDuplicates({
 
               return (
                 <TableRow key={row.rowNumber}>
-                  <TableCell className="font-mono text-sm">{taxId}</TableCell>
+                  <TableCell className="font-mono text-sm">{showPii ? taxId : maskTaxId(taxId)}</TableCell>
                   <TableCell className="text-sm">{name}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     {existingName}

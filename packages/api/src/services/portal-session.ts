@@ -77,6 +77,14 @@ export async function validatePortalSession(rawToken: string) {
   if (!session) return null;
   if (session.expiresAt < new Date()) return null;
 
+  // Block access if the contractor has been archived or deactivated
+  if (
+    session.contractor.status === "ARCHIVED" ||
+    session.contractor.status === "INACTIVE"
+  ) {
+    return null;
+  }
+
   return session;
 }
 

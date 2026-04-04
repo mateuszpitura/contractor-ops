@@ -163,6 +163,7 @@ async function sendNotificationEmail(
     react,
     headers: {
       "List-Unsubscribe": `<${preferencesUrl}>`,
+      "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
     },
   });
 }

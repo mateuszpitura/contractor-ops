@@ -8,6 +8,10 @@
     "build": "turbo build",
     "lint": "turbo lint",
     "test": "turbo test",
+    "load:smoke": "k6 run load-tests/smoke.js",
+    "load:api": "k6 run load-tests/api-read.js",
+    "load:stress": "k6 run -e K6_PROFILE=stress load-tests/api-read.js",
+    "e2e:perf": "pnpm --filter @contractor-ops/web run e2e:perf",
     "db:generate": "turbo db:generate",
     "db:push": "turbo db:push",
     "postinstall": "turbo build --filter=@contractor-ops/validators --filter=@contractor-ops/auth --filter=@contractor-ops/integrations --filter=@contractor-ops/logger --filter=@contractor-ops/api"
@@ -15,6 +19,8 @@
   "devDependencies": {
     "@biomejs/biome": "^2.4.0",
     "@types/node": "^22.0.0",
+    "@vitest/coverage-v8": "^4.1.2",
+    "dotenv": "^17.3.1",
     "turbo": "^2.4.0",
     "typescript": "^5.7.0"
   },

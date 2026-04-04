@@ -18,6 +18,51 @@ import { randomUUID } from "node:crypto";
 const EMAIL_DOMAIN_SUFFIX = ".contractorhub.io";
 
 // ---------------------------------------------------------------------------
+// Email intake rate limiting (per-org, 100 emails/hour)
+// ---------------------------------------------------------------------------
+
+const EMAIL_RATE_WINDOW_MS = 60 * 60_000; // 1 hour
+const EMAIL_RATE_MAX = 100;
+
+const emailIntakeMap = new Map<string, { timestamps: number[] }>();
+
+// Periodic cleanup
+if (typeof globalThis !== "undefined") {
+  const cleanup = () => {
+    const now = Date.now();
+    for (const [key, entry] of emailIntakeMap) {
+      entry.timestamps = entry.timestamps.filter(
+        (ts) => now - ts < EMAIL_RATE_WINDOW_MS,
+      );
+      if (entry.timestamps.length === 0) emailIntakeMap.delete(key);
+    }
+  };
+  setInterval(cleanup, 10 * 60_000).unref?.();
+}
+
+function checkEmailIntakeLimit(orgId: string): {
+  allowed: boolean;
+  remaining: number;
+} {
+  const now = Date.now();
+  const entry = emailIntakeMap.get(orgId) ?? { timestamps: [] };
+  entry.timestamps = entry.timestamps.filter(
+    (ts) => now - ts < EMAIL_RATE_WINDOW_MS,
+  );
+
+  if (entry.timestamps.length >= EMAIL_RATE_MAX) {
+    return { allowed: false, remaining: 0 };
+  }
+
+  entry.timestamps.push(now);
+  emailIntakeMap.set(orgId, entry);
+  return {
+    allowed: true,
+    remaining: EMAIL_RATE_MAX - entry.timestamps.length,
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
@@ -164,6 +209,22 @@ export async function POST(request: NextRequest) {
       orgSlug,
     );
     return NextResponse.json({ received: true });
+  }
+
+  // ---------- Step 3.5: Email intake rate limiting ----------
+
+  const { allowed: emailAllowed } = checkEmailIntakeLimit(organization.id);
+  if (!emailAllowed) {
+    console.warn(
+      "[resend-inbound] Rate limit exceeded for org %s (%s): %d emails/hour max",
+      organization.id,
+      orgSlug,
+      EMAIL_RATE_MAX,
+    );
+    return NextResponse.json(
+      { error: "Email intake rate limit exceeded" },
+      { status: 429 },
+    );
   }
 
   // ---------- Step 4: Fetch attachments via Resend Receiving API ----------

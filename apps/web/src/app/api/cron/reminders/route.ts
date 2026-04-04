@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { prisma } from "@contractor-ops/db";
 import { dispatch } from "@contractor-ops/api/services/notification-service";
+import { withCronMonitor } from "@contractor-ops/api/services/cron-monitor";
 import { createCronLogger } from "@contractor-ops/logger";
 import { metrics } from "@contractor-ops/logger/metrics";
 
@@ -422,7 +423,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  return Sentry.withMonitor("reminders", async () => {
+  return Sentry.withMonitor("reminders", () => withCronMonitor("reminders", async () => {
     try {
       const [ruleResults, overdueTasksNotified] = await Promise.all([
         evaluateReminderRules(),
@@ -451,7 +452,7 @@ export async function GET(request: NextRequest) {
         { status: 500 },
       );
     }
-  }, {
+  }), {
     schedule: { type: "crontab", value: "0 9 * * *" },
     timezone: "UTC",
   });

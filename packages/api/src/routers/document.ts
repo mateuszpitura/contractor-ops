@@ -20,6 +20,7 @@ import {
 } from "../services/r2.js";
 import { isAllowedMimeType, validateMimeType } from "../services/mime-validator.js";
 import { isClamAvailable, scanBuffer } from "../services/virus-scanner.js";
+import { uploadRateLimitMiddleware } from "../middleware/upload-rate-limit.js";
 import * as E from "../errors.js";
 
 // ---------------------------------------------------------------------------
@@ -128,6 +129,7 @@ export const documentRouter = router({
    */
   requestUpload: tenantProcedure
     .use(requirePermission({ document: ["create"] }))
+    .use(uploadRateLimitMiddleware)
     .input(documentRequestUploadSchema)
     .mutation(async ({ ctx, input }) => {
       // Validate MIME type before creating record
@@ -321,6 +323,7 @@ export const documentRouter = router({
    */
   uploadNewVersion: tenantProcedure
     .use(requirePermission({ document: ["create"] }))
+    .use(uploadRateLimitMiddleware)
     .input(documentVersionUploadSchema)
     .mutation(async ({ ctx, input }) => {
       // Validate MIME type

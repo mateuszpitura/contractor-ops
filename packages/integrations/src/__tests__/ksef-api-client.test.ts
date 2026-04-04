@@ -47,7 +47,7 @@ describe("KsefApiClient", () => {
 
   afterEach(() => {
     vi.stubGlobal("fetch", originalFetch);
-    vi.restoreAllMocks();
+    vi.clearAllMocks();
   });
 
   /**

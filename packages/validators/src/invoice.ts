@@ -47,7 +47,7 @@ export const invoiceFileRoleEnum = z.enum([
  * Schema for creating a new invoice.
  * Covers invoice metadata, financial fields, seller info, and linked documents.
  */
-export const invoiceCreateSchema = z.object({
+const invoiceCreateBaseSchema = z.object({
   invoiceNumber: z.string().min(1, "Invoice number is required").max(100),
   issueDate: z.string().date(),
   dueDate: z.string().date(),
@@ -66,12 +66,37 @@ export const invoiceCreateSchema = z.object({
   documentIds: z.array(z.string()).min(1, "At least one document is required"),
 });
 
+export const invoiceCreateSchema = invoiceCreateBaseSchema
+  .refine(
+    (d) => {
+      const issue = new Date(d.issueDate);
+      const today = new Date();
+      today.setHours(23, 59, 59, 999);
+      return issue <= today;
+    },
+    { message: "Issue date cannot be in the future", path: ["issueDate"] },
+  )
+  .refine(
+    (d) => new Date(d.dueDate) >= new Date(d.issueDate),
+    { message: "Due date must be on or after issue date", path: ["dueDate"] },
+  )
+  .refine(
+    (d) => {
+      if (!d.servicePeriodStart || !d.servicePeriodEnd) return true;
+      return new Date(d.servicePeriodEnd) >= new Date(d.servicePeriodStart);
+    },
+    {
+      message: "Service period end must be on or after start",
+      path: ["servicePeriodEnd"],
+    },
+  );
+
 export type InvoiceCreate = z.infer<typeof invoiceCreateSchema>;
 
 /**
  * Schema for partial updates (PATCH semantics — all fields optional).
  */
-export const invoiceUpdateSchema = invoiceCreateSchema.partial();
+export const invoiceUpdateSchema = invoiceCreateBaseSchema.partial();
 
 export type InvoiceUpdate = z.infer<typeof invoiceUpdateSchema>;
 

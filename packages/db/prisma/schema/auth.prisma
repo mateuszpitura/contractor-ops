@@ -16,6 +16,10 @@ model User {
   banReason     String?
   banExpires    DateTime?
 
+  // Account lockout (brute-force protection)
+  failedLoginAttempts Int       @default(0)
+  lockedUntil         DateTime?
+
   sessions      Session[]
   accounts      Account[]
 

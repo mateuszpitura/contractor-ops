@@ -7,6 +7,7 @@ import { useDashboardContext } from "@/components/layout/dashboard-context";
  * Permission matrix matching packages/auth/src/roles.ts.
  * "owner" is the default role Better Auth assigns to org creators — full access.
  */
+/** Mirrors `packages/auth/src/roles.ts` — kept in sync via use-permissions-parity.test.ts */
 const permissions: Record<string, Record<string, string[]>> = {
   owner: {
     organization: ["update", "delete"],
@@ -14,12 +15,15 @@ const permissions: Record<string, Record<string, string[]>> = {
     invitation: ["create", "cancel"],
     contractor: ["create", "read", "update", "delete", "bulk"],
     contract: ["create", "read", "update", "delete"],
+    document: ["create", "read", "update", "delete"],
     invoice: ["create", "read", "update", "delete", "approve"],
     workflow: ["create", "read", "update", "delete", "execute"],
     payment: ["create", "read", "export"],
     report: ["read", "export"],
     settings: ["read", "update"],
     integration: ["read", "update"],
+    time: ["read", "approve"],
+    equipment: ["read", "create", "update", "delete"],
   },
   admin: {
     organization: ["update", "delete"],
@@ -27,12 +31,15 @@ const permissions: Record<string, Record<string, string[]>> = {
     invitation: ["create", "cancel"],
     contractor: ["create", "read", "update", "delete", "bulk"],
     contract: ["create", "read", "update", "delete"],
+    document: ["create", "read", "update", "delete"],
     invoice: ["create", "read", "update", "delete", "approve"],
     workflow: ["create", "read", "update", "delete", "execute"],
     payment: ["create", "read", "export"],
     report: ["read", "export"],
     settings: ["read", "update"],
     integration: ["read", "update"],
+    time: ["read", "approve"],
+    equipment: ["read", "create", "update", "delete"],
   },
   finance_admin: {
     contractor: ["read"],
@@ -41,6 +48,7 @@ const permissions: Record<string, Record<string, string[]>> = {
     payment: ["create", "read", "export"],
     report: ["read", "export"],
     settings: ["read"],
+    time: ["read"],
   },
   ops_manager: {
     contractor: ["create", "read", "update", "delete", "bulk"],
@@ -49,6 +57,8 @@ const permissions: Record<string, Record<string, string[]>> = {
     workflow: ["create", "read", "update", "delete", "execute"],
     report: ["read", "export"],
     settings: ["read"],
+    time: ["read", "approve"],
+    equipment: ["read", "create", "update", "delete"],
   },
   team_manager: {
     contractor: ["read", "update"],
@@ -56,6 +66,8 @@ const permissions: Record<string, Record<string, string[]>> = {
     invoice: ["read", "approve"],
     workflow: ["read", "execute"],
     report: ["read"],
+    time: ["read", "approve"],
+    equipment: ["read"],
   },
   legal_compliance_viewer: {
     contractor: ["read"],
@@ -68,6 +80,7 @@ const permissions: Record<string, Record<string, string[]>> = {
     invitation: ["create", "cancel"],
     settings: ["read", "update"],
     integration: ["read", "update"],
+    equipment: ["read"],
   },
   external_accountant: {
     contractor: ["read"],
@@ -84,6 +97,9 @@ const permissions: Record<string, Record<string, string[]>> = {
     report: ["read"],
   },
 };
+
+/** For parity tests against `packages/auth` roles. */
+export const frontendRolePermissionMatrix = permissions;
 
 /**
  * Custom hook that provides RBAC permission checks.

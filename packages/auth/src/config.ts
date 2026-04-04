@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { createAuthMiddleware, APIError } from "better-auth/api";
 import { nextCookies } from "better-auth/next-js";
 import { admin } from "better-auth/plugins/admin";
 import { magicLink } from "better-auth/plugins/magic-link";
@@ -7,6 +8,11 @@ import { organization } from "better-auth/plugins/organization";
 import { prisma } from "@contractor-ops/db";
 import { ac } from "./permissions.js";
 import { roles } from "./roles.js";
+
+/** Maximum failed login attempts before account is locked */
+const MAX_LOGIN_ATTEMPTS = 5;
+/** Lockout duration in minutes */
+const LOCKOUT_DURATION_MIN = 15;
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -47,6 +53,64 @@ export const auth = betterAuth({
   session: {
     expiresIn: 60 * 60 * 24, // 24 hours
     updateAge: 60 * 60, // Refresh session every hour on activity
+  },
+
+  hooks: {
+    before: createAuthMiddleware(async (ctx) => {
+      // Account lockout: block sign-in if user is locked
+      if (ctx.path === "/sign-in/email" && ctx.body?.email) {
+        const user = await prisma.user.findUnique({
+          where: { email: ctx.body.email },
+          select: { lockedUntil: true },
+        });
+
+        if (user?.lockedUntil && user.lockedUntil > new Date()) {
+          const minutesLeft = Math.ceil(
+            (user.lockedUntil.getTime() - Date.now()) / 60_000,
+          );
+          throw new APIError("TOO_MANY_REQUESTS", {
+            message: `Account locked. Try again in ${minutesLeft} minute${minutesLeft === 1 ? "" : "s"}.`,
+          });
+        }
+      }
+    }),
+    after: createAuthMiddleware(async (ctx) => {
+      // Track failed/successful sign-in attempts
+      if (ctx.path === "/sign-in/email" && ctx.body?.email) {
+        const email = ctx.body.email as string;
+
+        if (ctx.context.newSession) {
+          // Successful login: reset failed attempts
+          await prisma.user.updateMany({
+            where: { email },
+            data: { failedLoginAttempts: 0, lockedUntil: null },
+          });
+        } else {
+          // Failed login: atomically increment attempts
+          const updated = await prisma.user.updateMany({
+            where: { email },
+            data: { failedLoginAttempts: { increment: 1 } },
+          });
+
+          if (updated.count > 0) {
+            // Check if threshold reached and lock if needed
+            const user = await prisma.user.findUnique({
+              where: { email },
+              select: { failedLoginAttempts: true },
+            });
+
+            if (user && user.failedLoginAttempts >= MAX_LOGIN_ATTEMPTS) {
+              await prisma.user.updateMany({
+                where: { email },
+                data: {
+                  lockedUntil: new Date(Date.now() + LOCKOUT_DURATION_MIN * 60_000),
+                },
+              });
+            }
+          }
+        }
+      }
+    }),
   },
 
   plugins: [

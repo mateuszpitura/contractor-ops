@@ -85,7 +85,8 @@ export class KsefApiClient {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          contextIdentifier: { type: "nip", value: nip },
+          // KSeF API 2.x: AuthenticationContextIdentifierType enum is PascalCase (Nip, InternalId, …).
+          contextIdentifier: { type: "Nip", value: nip },
         }),
       },
     );

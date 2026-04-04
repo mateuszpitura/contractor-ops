@@ -6,8 +6,10 @@ import { createAccessControl } from "better-auth/plugins/access";
  *
  * Each resource maps to the set of actions that can be performed on it.
  * Roles are defined in roles.ts by selecting subsets of these permissions.
+ *
+ * Exported as `accessControlStatement` for tests — must stay in sync with roles.
  */
-const statement = {
+export const accessControlStatement = {
   organization: ["update", "delete"],
   member: ["create", "read", "update", "delete"],
   invitation: ["create", "cancel"],
@@ -24,13 +26,13 @@ const statement = {
   equipment: ["read", "create", "update", "delete"],
 } as const;
 
-export const ac = createAccessControl(statement);
+export const ac = createAccessControl(accessControlStatement);
 
 /** Resource names from the access control statement */
-type Resource = keyof typeof statement;
+type Resource = keyof typeof accessControlStatement;
 
 /** Action names for a given resource */
-type ActionsFor<R extends Resource> = (typeof statement)[R][number];
+type ActionsFor<R extends Resource> = (typeof accessControlStatement)[R][number];
 
 /**
  * Permission type: a partial record mapping resources to arrays of their actions.

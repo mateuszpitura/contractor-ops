@@ -34,6 +34,8 @@ import {
   CommandList,
 } from "@/components/ui/command";
 
+import { usePermissions } from "@/hooks/use-permissions";
+import { maskTaxId, canViewSensitivePii } from "@/lib/mask-pii";
 import type { ContractWizardFormValues } from "./wizard-dialog";
 
 // ---------------------------------------------------------------------------
@@ -76,6 +78,8 @@ interface StepDetailsProps {
  */
 export function StepDetails({ form, contractorId }: StepDetailsProps) {
   const t = useTranslations("Contracts.wizard");
+  const { role } = usePermissions();
+  const showPii = canViewSensitivePii(role);
   const [contractorSearch, setContractorSearch] = useState("");
   const [contractorPopoverOpen, setContractorPopoverOpen] = useState(false);
   const [startDateOpen, setStartDateOpen] = useState(false);
@@ -196,7 +200,7 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
                         <span>{contractor.displayName}</span>
                         {contractor.taxId ? (
                           <span className="ml-auto text-xs text-muted-foreground font-mono">
-                            {String(contractor.taxId)}
+                            {showPii ? String(contractor.taxId) : maskTaxId(String(contractor.taxId))}
                           </span>
                         ) : null}
                       </CommandItem>

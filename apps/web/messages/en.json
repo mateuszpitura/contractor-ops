@@ -818,6 +818,7 @@
     "UNKNOWN_ERROR": "An unexpected error occurred. Please try again.",
     "CONTRACTOR_NOT_FOUND": "Contractor not found.",
     "CONTRACTOR_HAS_UNPAID_INVOICES": "Cannot archive contractor with unpaid invoices. Resolve all pending payments first.",
+    "CONTRACTOR_HAS_ACTIVE_WORKFLOWS": "Cannot archive contractor with active workflows. Complete or cancel workflows first.",
     "CONTRACTOR_INVALID_TRANSITION": "This status transition is not allowed.",
     "GUS_LOOKUP_FAILED": "GUS lookup failed.",
     "CONTRACT_NOT_FOUND": "Contract not found.",
@@ -836,6 +837,7 @@
     "PAYMENT_RUN_ITEM_NOT_FOUND": "Payment run item not found.",
     "PAYMENT_RUN_NOT_DRAFT": "Can only remove invoices from draft payment runs.",
     "PAYMENT_INVOICE_NOT_IN_RUN": "Invoice not found in this payment run.",
+    "PAYMENT_MIXED_CURRENCIES": "All invoices in a payment run must use the same currency.",
     "APPROVAL_CHAIN_NOT_FOUND": "Approval chain not found.",
     "APPROVAL_CHAIN_HAS_ACTIVE_FLOWS": "Cannot delete chain with active approval flows.",
     "APPROVAL_STEP_NOT_FOUND": "Approval step not found.",
@@ -3767,6 +3769,143 @@
         "contact": {
           "heading": "10. Contact",
           "body": "For questions about these Terms, contact us at legal@contractorops.com."
+        }
+      }
+    },
+    "subProcessors": {
+      "title": "Sub-processors",
+      "lastUpdated": "Last updated: April 2026",
+      "table": {
+        "processor": "Processor",
+        "purpose": "Purpose",
+        "dataProcessed": "Data Processed",
+        "location": "Location"
+      },
+      "sections": {
+        "introduction": {
+          "heading": "Overview",
+          "body": "Contractor Ops uses the following third-party sub-processors to deliver our services. Each sub-processor is bound by a data processing agreement ensuring GDPR compliance. We only share the minimum data necessary for each processor to fulfil its function."
+        },
+        "processors": {
+          "heading": "Current Sub-processors"
+        },
+        "changes": {
+          "heading": "Changes to Sub-processors",
+          "body": "We will notify customers at least 30 days in advance of any changes to this sub-processor list. Notifications will be sent via email to organization administrators. If you object to a new sub-processor, you may terminate your subscription before the change takes effect."
+        },
+        "contact": {
+          "heading": "Contact",
+          "body": "For questions about our sub-processors or data processing practices, contact us at privacy@contractorops.com."
+        }
+      },
+      "processors": {
+        "vercel": {
+          "name": "Vercel Inc.",
+          "purpose": "Application hosting, serverless functions, edge network",
+          "data": "HTTP requests, IP addresses, session tokens",
+          "location": "United States (EU data region available)"
+        },
+        "neon": {
+          "name": "Neon Inc.",
+          "purpose": "PostgreSQL database hosting",
+          "data": "All application data (encrypted at rest)",
+          "location": "EU (Frankfurt)"
+        },
+        "cloudflare": {
+          "name": "Cloudflare Inc.",
+          "purpose": "Object storage (R2) for documents and files",
+          "data": "Uploaded documents, contracts, invoices (encrypted at rest)",
+          "location": "Automatic (nearest region)"
+        },
+        "stripe": {
+          "name": "Stripe Inc.",
+          "purpose": "Subscription billing and payment processing",
+          "data": "Organization name, billing email, subscription details",
+          "location": "United States / Ireland"
+        },
+        "resend": {
+          "name": "Resend Inc.",
+          "purpose": "Transactional email delivery and inbound email processing",
+          "data": "Email addresses, notification content, invoice email attachments",
+          "location": "United States"
+        },
+        "sentry": {
+          "name": "Sentry (Functional Software Inc.)",
+          "purpose": "Error monitoring and performance tracking",
+          "data": "Error stack traces, request metadata, user IDs (no PII)",
+          "location": "United States"
+        },
+        "axiom": {
+          "name": "Axiom Inc.",
+          "purpose": "Log aggregation and operational monitoring",
+          "data": "Structured application logs, request IDs, performance metrics",
+          "location": "United States"
+        },
+        "upstash": {
+          "name": "Upstash Inc.",
+          "purpose": "Redis-based rate limiting and caching",
+          "data": "Rate limit counters, IP addresses, user/org identifiers",
+          "location": "EU (Frankfurt)"
+        },
+        "cronitor": {
+          "name": "Cronitor Inc.",
+          "purpose": "Cron job monitoring and alerting",
+          "data": "Job execution status, timestamps (no user data)",
+          "location": "United States"
+        },
+        "uptimerobot": {
+          "name": "UptimeRobot",
+          "purpose": "External uptime monitoring",
+          "data": "Health endpoint responses (no user data)",
+          "location": "United States"
+        },
+        "qstash": {
+          "name": "Upstash QStash",
+          "purpose": "Asynchronous message queue for webhook processing",
+          "data": "Webhook payloads, delivery metadata",
+          "location": "EU (Frankfurt)"
+        }
+      }
+    },
+    "breachNotification": {
+      "title": "Data Breach Notification Procedure",
+      "lastUpdated": "Last updated: April 2026",
+      "sections": {
+        "introduction": {
+          "heading": "1. Purpose",
+          "body": "This document describes Contractor Ops' procedure for detecting, assessing, and notifying relevant parties in the event of a personal data breach, in accordance with Articles 33 and 34 of the General Data Protection Regulation (GDPR)."
+        },
+        "definition": {
+          "heading": "2. What Constitutes a Data Breach",
+          "body": "A personal data breach is a breach of security leading to the accidental or unlawful destruction, loss, alteration, unauthorized disclosure of, or access to, personal data transmitted, stored, or otherwise processed. This includes: unauthorized access to user accounts or organization data; accidental exposure of personal data to unintended recipients; loss or theft of data storage devices or backups; malicious attacks resulting in data exfiltration; accidental deletion of data without backup recovery capability."
+        },
+        "detection": {
+          "heading": "3. Detection and Reporting",
+          "body": "We employ multiple layers of monitoring to detect potential breaches: automated security monitoring via Sentry (error tracking and anomaly detection); structured logging via Axiom (access pattern analysis); audit logs capturing all access to sensitive data; external uptime monitoring via UptimeRobot; background job health monitoring for webhook processing integrity. Any team member who suspects a data breach must immediately report it to the security team at security@contractorops.com."
+        },
+        "assessment": {
+          "heading": "4. Breach Assessment",
+          "body": "Upon detection, our incident response team will: confirm whether a breach has occurred; identify the scope and nature of data affected; assess the risk to individuals' rights and freedoms; determine the cause and implement immediate containment measures; classify the severity (low, medium, high, critical) based on data sensitivity, number of affected individuals, and potential for harm."
+        },
+        "authorityNotification": {
+          "heading": "5. Notification to Supervisory Authority",
+          "body": "If the breach is likely to result in a risk to individuals' rights and freedoms, we will notify the relevant supervisory authority within 72 hours of becoming aware of the breach. For customers in Poland, this is the President of the Personal Data Protection Office (UODO). The notification will include: the nature of the breach and approximate number of affected individuals; the categories of data concerned; the likely consequences; the measures taken or proposed to address the breach."
+        },
+        "customerNotification": {
+          "heading": "6. Notification to Affected Customers",
+          "body": "We will notify affected customers (data controllers) without undue delay via: email to all organization administrators; in-app notification banner for affected organizations; dedicated status page update. The notification will describe: what happened and when; what data was affected; what we have done to contain the breach; what steps customers should take; contact information for our security team. If the breach is likely to result in a high risk to individuals, we will also assist customers in notifying affected data subjects."
+        },
+        "timeline": {
+          "heading": "7. Response Timeline",
+          "body": "Our target response timeline is: Immediate (0-1 hours): Containment and initial assessment; Within 4 hours: Internal incident team assembled, scope determined; Within 24 hours: Root cause identified, remediation plan in place; Within 72 hours: Supervisory authority notified (if required); Within 7 days: Full incident report provided to affected customers; Within 30 days: Post-incident review completed and preventive measures implemented."
+        },
+        "documentation": {
+          "heading": "8. Record Keeping",
+          "body": "We maintain records of all data breaches, including those that do not require notification, documenting: the facts surrounding the breach; its effects; the remediation actions taken; the reasoning for decisions made regarding notification. These records are retained for a minimum of 5 years and are available for inspection by supervisory authorities upon request."
+        },
+        "contact": {
+          "heading": "9. Contact",
+          "body": "To report a suspected data breach or for questions about this procedure, contact our security team at security@contractorops.com. For general privacy inquiries, contact privacy@contractorops.com."
         }
       }
     }

@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { Providers } from "@/app/providers";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { CookieConsentBanner } from "@/components/layout/cookie-consent-banner";
 import { routing } from "@/i18n/routing";
 import "@/app/globals.css";
 
@@ -48,6 +49,7 @@ export default async function LocaleLayout({
         <Providers>
           <TooltipProvider delay={300}>
             {children}
+            <CookieConsentBanner />
             <Toaster richColors position="bottom-right" />
           </TooltipProvider>
         </Providers>

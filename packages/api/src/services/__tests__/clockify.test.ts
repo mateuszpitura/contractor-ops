@@ -1,67 +1,369 @@
-import { describe, it } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+
+// ---------------------------------------------------------------------------
+// Mocks (must be declared before imports)
+// ---------------------------------------------------------------------------
+
+vi.mock("@contractor-ops/integrations/services/credential-service", () => ({
+  decryptCredentials: vi.fn().mockReturnValue({ accessToken: "fake-api-key" }),
+}));
+
+vi.mock("@contractor-ops/integrations/adapters/clockify-adapter", () => ({
+  CLOCKIFY_REGIONS: {
+    global: "https://api.clockify.me/api/v1",
+    eu: "https://euc1.clockify.me/api/v1",
+    us: "https://use2.clockify.me/api/v1",
+  },
+}));
+
+import { parseDurationToMinutes, syncClockifyEntries } from "../clockify-sync.js";
+import { decryptCredentials } from "@contractor-ops/integrations/services/credential-service";
+
+// ---------------------------------------------------------------------------
+// Prisma mock builder
+// ---------------------------------------------------------------------------
+
+function createMockPrisma(overrides: Record<string, unknown> = {}) {
+  return {
+    integrationConnection: {
+      findUnique: vi.fn().mockResolvedValue({
+        id: "conn_1",
+        status: "CONNECTED",
+        credentialsRef: "encrypted-ref",
+        configJson: {
+          workspaceId: "ws_1",
+          userId: "clockify_user_1",
+          region: "global",
+        },
+      }),
+      update: vi.fn().mockResolvedValue({}),
+    },
+    integrationSyncLog: {
+      create: vi.fn().mockResolvedValue({ id: "sync_log_1" }),
+      update: vi.fn().mockResolvedValue({}),
+    },
+    timeEntry: {
+      findFirst: vi.fn().mockResolvedValue(null), // no duplicates by default
+      create: vi.fn().mockResolvedValue({ id: "te_new" }),
+      update: vi.fn().mockResolvedValue({}),
+      aggregate: vi.fn().mockResolvedValue({ _sum: { minutes: 90 } }),
+    },
+    timesheet: {
+      update: vi.fn().mockResolvedValue({}),
+    },
+    ...overrides,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Fetch mock helper
+// ---------------------------------------------------------------------------
+
+function mockFetchResponse(entries: unknown[], status = 200) {
+  return vi.fn().mockResolvedValue({
+    ok: status >= 200 && status < 300,
+    status,
+    json: () => Promise.resolve(entries),
+    text: () => Promise.resolve(JSON.stringify(entries)),
+    headers: { get: () => null },
+  });
+}
+
+function makeClockifyEntry(id: string, duration: string, description = "Work") {
+  return {
+    id,
+    description,
+    timeInterval: {
+      start: "2024-06-15T09:00:00Z",
+      end: "2024-06-15T10:30:00Z",
+      duration,
+    },
+    projectId: "proj_1",
+    project: { name: "Project Alpha" },
+  };
+}
+
+// ---------------------------------------------------------------------------
+// parseDurationToMinutes (existing tests)
+// ---------------------------------------------------------------------------
 
 describe("clockify", () => {
-  describe("syncClockifyEntries", () => {
-    it.todo(
-      "fetches entries from correct regional base URL",
-    );
+  describe("parseDurationToMinutes", () => {
+    it("parses PT1H30M to 90", () => {
+      expect(parseDurationToMinutes("PT1H30M")).toBe(90);
+    });
 
-    it.todo(
-      "paginates with page-size=100 until last page",
-    );
+    it("parses PT2H to 120", () => {
+      expect(parseDurationToMinutes("PT2H")).toBe(120);
+    });
 
-    it.todo(
-      "parses PT duration format to integer minutes",
-    );
+    it("parses PT45M to 45", () => {
+      expect(parseDurationToMinutes("PT45M")).toBe(45);
+    });
 
-    it.todo(
-      "deduplicates entries by externalId using unique constraint",
-    );
+    it("parses PT0S to 0", () => {
+      expect(parseDurationToMinutes("PT0S")).toBe(0);
+    });
 
-    it.todo(
-      "sets source=CLOCKIFY on all imported entries",
-    );
+    it("rounds seconds >= 30 up to next minute (PT45M30S -> 46)", () => {
+      expect(parseDurationToMinutes("PT45M30S")).toBe(46);
+    });
 
-    it.todo(
-      "stores clockify metadata in metadataJson",
-    );
+    it("parses PT1H to 60", () => {
+      expect(parseDurationToMinutes("PT1H")).toBe(60);
+    });
 
-    it.todo(
-      "recalculates timesheet totalMinutes after import",
-    );
+    it("rounds PT30S up to 1 minute", () => {
+      expect(parseDurationToMinutes("PT30S")).toBe(1);
+    });
 
-    it.todo(
-      "returns count of imported and skipped entries",
-    );
-
-    it.todo(
-      "uses contractId parameter for contract assignment",
-    );
-
-    it.todo(
-      "handles 401 with reconnect error message",
-    );
+    it("does not round PT29S (stays 0)", () => {
+      expect(parseDurationToMinutes("PT29S")).toBe(0);
+    });
   });
 
-  describe("parseDurationToMinutes", () => {
-    it.todo(
-      "parses PT1H30M to 90",
-    );
+  // -------------------------------------------------------------------------
+  // syncClockifyEntries
+  // -------------------------------------------------------------------------
 
-    it.todo(
-      "parses PT2H to 120",
-    );
+  describe("syncClockifyEntries", () => {
+    let mockPrisma: ReturnType<typeof createMockPrisma>;
 
-    it.todo(
-      "parses PT45M to 45",
-    );
+    beforeEach(() => {
+      vi.clearAllMocks();
+      mockPrisma = createMockPrisma();
+    });
 
-    it.todo(
-      "parses PT0S to 0",
-    );
+    it("uses correct regional base URL for API calls", async () => {
+      const entries = [makeClockifyEntry("e1", "PT1H30M")];
+      const fetchSpy = mockFetchResponse(entries);
+      vi.stubGlobal("fetch", fetchSpy);
 
-    it.todo(
-      "rounds seconds >= 30 up to next minute",
-    );
+      await syncClockifyEntries(
+        mockPrisma,
+        "org_1",
+        "contractor_1",
+        "contract_1",
+        "ts_1",
+        "conn_1",
+        "2024-06-01",
+        "2024-06-30",
+      );
+
+      const calledUrl = fetchSpy.mock.calls[0][0] as string;
+      expect(calledUrl).toContain("https://api.clockify.me/api/v1");
+      expect(calledUrl).toContain("/workspaces/ws_1/user/clockify_user_1/time-entries");
+
+      vi.unstubAllGlobals();
+    });
+
+    it("uses EU regional URL when region is eu", async () => {
+      mockPrisma.integrationConnection.findUnique.mockResolvedValueOnce({
+        id: "conn_1",
+        status: "CONNECTED",
+        credentialsRef: "encrypted-ref",
+        configJson: { workspaceId: "ws_1", userId: "cu_1", region: "eu" },
+      });
+
+      const fetchSpy = mockFetchResponse([]);
+      vi.stubGlobal("fetch", fetchSpy);
+
+      await syncClockifyEntries(
+        mockPrisma, "org_1", "c_1", "ct_1", "ts_1", "conn_1", "2024-06-01", "2024-06-30",
+      );
+
+      const calledUrl = fetchSpy.mock.calls[0][0] as string;
+      expect(calledUrl).toContain("https://euc1.clockify.me/api/v1");
+
+      vi.unstubAllGlobals();
+    });
+
+    it("paginates with page-size=100", async () => {
+      // First page: 100 entries (triggers next page fetch)
+      const page1 = Array.from({ length: 100 }, (_, i) =>
+        makeClockifyEntry(`e${i}`, "PT1H"),
+      );
+      // Second page: fewer than 100 (last page)
+      const page2 = [makeClockifyEntry("e100", "PT30M")];
+
+      const fetchSpy = vi.fn()
+        .mockResolvedValueOnce({
+          ok: true, status: 200,
+          json: () => Promise.resolve(page1),
+          headers: { get: () => null },
+        })
+        .mockResolvedValueOnce({
+          ok: true, status: 200,
+          json: () => Promise.resolve(page2),
+          headers: { get: () => null },
+        });
+
+      vi.stubGlobal("fetch", fetchSpy);
+
+      const result = await syncClockifyEntries(
+        mockPrisma, "org_1", "c_1", "ct_1", "ts_1", "conn_1", "2024-06-01", "2024-06-30",
+      );
+
+      expect(fetchSpy).toHaveBeenCalledTimes(2);
+
+      // Verify page-size param
+      const url1 = new URL(fetchSpy.mock.calls[0][0] as string);
+      expect(url1.searchParams.get("page-size")).toBe("100");
+      expect(url1.searchParams.get("page")).toBe("1");
+
+      const url2 = new URL(fetchSpy.mock.calls[1][0] as string);
+      expect(url2.searchParams.get("page")).toBe("2");
+
+      // 101 total entries imported
+      expect(result.imported).toBe(101);
+
+      vi.unstubAllGlobals();
+    });
+
+    it("creates time entries with source=CLOCKIFY", async () => {
+      const entries = [makeClockifyEntry("e1", "PT1H")];
+      vi.stubGlobal("fetch", mockFetchResponse(entries));
+
+      await syncClockifyEntries(
+        mockPrisma, "org_1", "c_1", "ct_1", "ts_1", "conn_1", "2024-06-01", "2024-06-30",
+      );
+
+      expect(mockPrisma.timeEntry.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          source: "CLOCKIFY",
+          externalId: "e1",
+          minutes: 60,
+          organizationId: "org_1",
+          contractorId: "c_1",
+          timesheetId: "ts_1",
+          contractId: "ct_1",
+        }),
+      });
+
+      vi.unstubAllGlobals();
+    });
+
+    it("deduplicates by externalId — updates existing entry instead of creating", async () => {
+      // Existing entry found
+      mockPrisma.timeEntry.findFirst.mockResolvedValueOnce({ id: "existing_te_1" });
+
+      const entries = [makeClockifyEntry("e1", "PT2H")];
+      vi.stubGlobal("fetch", mockFetchResponse(entries));
+
+      const result = await syncClockifyEntries(
+        mockPrisma, "org_1", "c_1", "ct_1", "ts_1", "conn_1", "2024-06-01", "2024-06-30",
+      );
+
+      expect(mockPrisma.timeEntry.create).not.toHaveBeenCalled();
+      expect(mockPrisma.timeEntry.update).toHaveBeenCalledWith({
+        where: { id: "existing_te_1" },
+        data: expect.objectContaining({ minutes: 120 }),
+      });
+      // Existing entries count as skipped
+      expect(result.skipped).toBe(1);
+      expect(result.imported).toBe(0);
+
+      vi.unstubAllGlobals();
+    });
+
+    it("recalculates timesheet totalMinutes after sync", async () => {
+      const entries = [makeClockifyEntry("e1", "PT1H30M")];
+      vi.stubGlobal("fetch", mockFetchResponse(entries));
+
+      mockPrisma.timeEntry.aggregate.mockResolvedValueOnce({
+        _sum: { minutes: 150 },
+      });
+
+      await syncClockifyEntries(
+        mockPrisma, "org_1", "c_1", "ct_1", "ts_1", "conn_1", "2024-06-01", "2024-06-30",
+      );
+
+      expect(mockPrisma.timeEntry.aggregate).toHaveBeenCalledWith({
+        where: { timesheetId: "ts_1" },
+        _sum: { minutes: true },
+      });
+      expect(mockPrisma.timesheet.update).toHaveBeenCalledWith({
+        where: { id: "ts_1" },
+        data: { totalMinutes: 150 },
+      });
+
+      vi.unstubAllGlobals();
+    });
+
+    it("throws UNAUTHORIZED TRPCError on 401 response", async () => {
+      vi.stubGlobal("fetch", mockFetchResponse([], 401));
+
+      await expect(
+        syncClockifyEntries(
+          mockPrisma, "org_1", "c_1", "ct_1", "ts_1", "conn_1", "2024-06-01", "2024-06-30",
+        ),
+      ).rejects.toThrow(/invalid or expired/i);
+
+      // Sync log should be updated with FAILED status
+      expect(mockPrisma.integrationSyncLog.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ status: "FAILED" }),
+        }),
+      );
+
+      vi.unstubAllGlobals();
+    });
+
+    it("throws NOT_FOUND when connection does not exist", async () => {
+      mockPrisma.integrationConnection.findUnique.mockResolvedValueOnce(null);
+
+      await expect(
+        syncClockifyEntries(
+          mockPrisma, "org_1", "c_1", "ct_1", "ts_1", "conn_1", "2024-06-01", "2024-06-30",
+        ),
+      ).rejects.toThrow(/not found/i);
+    });
+
+    it("throws PRECONDITION_FAILED when connection is not CONNECTED", async () => {
+      mockPrisma.integrationConnection.findUnique.mockResolvedValueOnce({
+        id: "conn_1",
+        status: "DISCONNECTED",
+        credentialsRef: "ref",
+        configJson: { workspaceId: "ws_1", userId: "u_1", region: "global" },
+      });
+
+      await expect(
+        syncClockifyEntries(
+          mockPrisma, "org_1", "c_1", "ct_1", "ts_1", "conn_1", "2024-06-01", "2024-06-30",
+        ),
+      ).rejects.toThrow(/not active/i);
+    });
+
+    it("skips zero-duration entries", async () => {
+      const entries = [
+        makeClockifyEntry("e1", "PT1H"),
+        makeClockifyEntry("e2", "PT0S"), // zero duration
+      ];
+      vi.stubGlobal("fetch", mockFetchResponse(entries));
+
+      const result = await syncClockifyEntries(
+        mockPrisma, "org_1", "c_1", "ct_1", "ts_1", "conn_1", "2024-06-01", "2024-06-30",
+      );
+
+      expect(result.imported).toBe(1);
+      expect(result.skipped).toBe(1);
+      expect(mockPrisma.timeEntry.create).toHaveBeenCalledTimes(1);
+
+      vi.unstubAllGlobals();
+    });
+
+    it("passes API key from decrypted credentials in X-Api-Key header", async () => {
+      vi.stubGlobal("fetch", mockFetchResponse([]));
+
+      await syncClockifyEntries(
+        mockPrisma, "org_1", "c_1", "ct_1", "ts_1", "conn_1", "2024-06-01", "2024-06-30",
+      );
+
+      const fetchCall = vi.mocked(fetch).mock.calls[0];
+      const headers = fetchCall[1]?.headers as Record<string, string>;
+      expect(headers["X-Api-Key"]).toBe("fake-api-key");
+
+      vi.unstubAllGlobals();
+    });
   });
 });

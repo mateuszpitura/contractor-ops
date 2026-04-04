@@ -8,7 +8,7 @@ const TEST_SECRET = "test-signing-secret-for-oauth-state";
 
 describe("oauth-state", () => {
   afterEach(() => {
-    vi.restoreAllMocks();
+    vi.clearAllMocks();
   });
 
   describe("generateOAuthState / verifyOAuthState round-trip", () => {

@@ -1,22 +1,355 @@
-import { describe, it } from "vitest";
+/**
+ * Portal branding router tests.
+ *
+ * Tests settings.getBranding, settings.updateBranding.
+ * Note: portal.getOrgBranding does not exist in the codebase — those tests are skipped.
+ */
 
-describe("settings.updateBranding", () => {
-  it.todo("saves brandColor as hex to organization settingsJson (PORT-08a)");
-  it.todo("validates brandColor matches /^#[0-9a-fA-F]{6}$/ regex");
-  it.todo("rejects invalid hex colors (e.g., '#xyz', '#12345', 'red')");
-  it.todo("saves logoUrl to organization.logo field");
-  it.todo("accepts null brandColor to remove brand color");
-  it.todo("accepts null logoUrl to remove logo");
-  it.todo("merges brandColor into existing settingsJson without overwriting other keys");
+import { describe, it, expect, vi, beforeEach } from "vitest";
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const ORG_ID = "org-branding-001";
+const USER_ID = "user-branding-001";
+
+// ---------------------------------------------------------------------------
+// Mock Prisma via vi.hoisted
+// ---------------------------------------------------------------------------
+
+const { mockPrisma } = vi.hoisted(() => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  type Rec = Record<string, any>;
+
+  const mockPrisma: Rec = {
+    organization: {
+      findUnique: vi.fn(),
+      update: vi.fn(),
+    },
+    $transaction: vi.fn(async (fn: (tx: Rec) => Promise<unknown>) => fn(mockPrisma)),
+  };
+
+  return { mockPrisma };
 });
+
+// ---------------------------------------------------------------------------
+// Module mocks
+// ---------------------------------------------------------------------------
+
+vi.mock("@contractor-ops/auth", () => ({
+  auth: {
+    api: {
+      getSession: vi.fn(),
+      hasPermission: vi.fn().mockResolvedValue({ success: true }),
+    },
+  },
+}));
+
+vi.mock("@contractor-ops/db", () => ({
+  prisma: mockPrisma,
+  tenantStore: {
+    run: (_ctx: unknown, fn: () => unknown) => fn(),
+    getStore: vi.fn(),
+  },
+}));
+
+vi.mock("../../services/r2.js", () => ({
+  createPresignedUploadUrl: vi.fn(async () => ({ url: "https://r2.test/upload", key: "k" })),
+  createPresignedDownloadUrl: vi.fn(async () => "https://r2.test/download"),
+  generateStorageKey: vi.fn(() => "mock-key"),
+}));
+
+vi.mock("../../services/cache.js", () => ({
+  cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
+  invalidate: vi.fn(async () => undefined),
+  invalidateByPrefix: vi.fn(async () => undefined),
+  CacheKeys: {
+    orgBranding: (orgId: string) => `org-branding:${orgId}`,
+    settingsPrefix: (orgId: string) => `settings:${orgId}`,
+    approvalChains: (orgId: string) => `approval-chains:${orgId}`,
+  },
+  CacheTTL: { ORG_BRANDING: 300, APPROVAL_CHAINS: 300 },
+}));
+
+vi.mock("../../services/portal-session.js", () => ({
+  validatePortalSession: vi.fn(),
+  createPortalSession: vi.fn(),
+  deletePortalSession: vi.fn(),
+}));
+
+vi.mock("../../services/portal-magic-link.js", () => ({
+  createMagicLinkToken: vi.fn(),
+  verifyMagicLinkToken: vi.fn(),
+  findContractorsByEmail: vi.fn(),
+  sendPortalMagicLink: vi.fn(),
+}));
+
+vi.mock("../../services/bank-account-crypto.js", () => ({
+  encryptBankAccount: vi.fn((v: string) => `encrypted:${v}`),
+}));
+
+vi.mock("../../services/portal-change-request.js", () => ({
+  createChangeRequest: vi.fn(),
+}));
+
+vi.mock("../../services/notification-service.js", () => ({
+  dispatch: vi.fn(async () => undefined),
+}));
+
+vi.mock("../../services/billing-service.js", () => ({
+  syncSeatCountForOrg: vi.fn(async () => undefined),
+}));
+
+vi.mock("../../services/stripe-client.js", () => ({
+  stripe: {
+    subscriptions: { retrieve: vi.fn(), update: vi.fn(), list: vi.fn(async () => ({ data: [] })) },
+    customers: { create: vi.fn(), retrieve: vi.fn() },
+    checkout: { sessions: { create: vi.fn() } },
+    billingPortal: { sessions: { create: vi.fn() } },
+  },
+}));
+
+vi.mock("@contractor-ops/logger", () => ({
+  createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+}));
+
+vi.mock("@contractor-ops/logger/metrics", () => ({
+  metrics: { increment: vi.fn(), histogram: vi.fn(), distribution: vi.fn() },
+}));
+
+vi.mock("@sentry/nextjs", () => {
+  const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
+  return {
+    startSpan: vi.fn((_o: unknown, fn: (span: typeof mockSpan) => unknown) => fn(mockSpan)),
+    captureException: vi.fn(),
+  };
+});
+
+// ---------------------------------------------------------------------------
+// Imports (after mocks)
+// ---------------------------------------------------------------------------
+
+import { createCallerFactory } from "../../init.js";
+import { appRouter } from "../../root.js";
+
+// ---------------------------------------------------------------------------
+// Caller setup — admin tenant caller
+// ---------------------------------------------------------------------------
+
+const createCaller = createCallerFactory(appRouter);
+
+function makeTenantCaller() {
+  const session = {
+    session: {
+      id: "session-1",
+      userId: USER_ID,
+      activeOrganizationId: ORG_ID,
+      expiresAt: new Date("2099-01-01"),
+      token: "mock-token",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      ipAddress: null,
+      userAgent: null,
+    },
+    user: {
+      id: USER_ID,
+      name: "Admin User",
+      email: "admin@test.com",
+      emailVerified: true,
+      image: null,
+      banned: false,
+      banReason: null,
+      banExpires: null,
+      role: "admin",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  };
+  return createCaller({
+    headers: new Headers(),
+    session: session as never,
+    user: session.user as never,
+  });
+}
+
+const caller = makeTenantCaller();
+
+// ---------------------------------------------------------------------------
+// Reset
+// ---------------------------------------------------------------------------
+
+beforeEach(() => {
+  vi.clearAllMocks();
+});
+
+// ===========================================================================
+// settings.getBranding
+// ===========================================================================
 
 describe("settings.getBranding", () => {
-  it.todo("returns current brandColor from settingsJson and logo from org");
-  it.todo("returns null brandColor when settingsJson has no brandColor key");
-  it.todo("returns null logo when org has no logo set");
+  it("returns current brandColor from settingsJson and logo from org", async () => {
+    mockPrisma.organization.findUnique.mockResolvedValue({
+      logo: "https://cdn.test/logo.png",
+      settingsJson: { brandColor: "#FF5500", otherSetting: "value" },
+    });
+
+    const result = await caller.settings.getBranding();
+
+    expect(result.brandColor).toBe("#FF5500");
+    expect(result.logo).toBe("https://cdn.test/logo.png");
+  });
+
+  it("returns null brandColor when settingsJson has no brandColor key", async () => {
+    mockPrisma.organization.findUnique.mockResolvedValue({
+      logo: null,
+      settingsJson: { someOtherKey: "value" },
+    });
+
+    const result = await caller.settings.getBranding();
+
+    expect(result.brandColor).toBeNull();
+  });
+
+  it("returns null logo when org has no logo set", async () => {
+    mockPrisma.organization.findUnique.mockResolvedValue({
+      logo: null,
+      settingsJson: {},
+    });
+
+    const result = await caller.settings.getBranding();
+
+    expect(result.logo).toBeNull();
+  });
 });
 
+// ===========================================================================
+// settings.updateBranding
+// ===========================================================================
+
+describe("settings.updateBranding", () => {
+  it("saves brandColor as hex to organization settingsJson (PORT-08a)", async () => {
+    mockPrisma.organization.findUnique.mockResolvedValue({
+      settingsJson: { existingKey: "keep" },
+      logo: null,
+    });
+    mockPrisma.organization.update.mockResolvedValue({});
+
+    const result = await caller.settings.updateBranding({
+      brandColor: "#AA33CC",
+    });
+
+    expect(result.brandColor).toBe("#AA33CC");
+
+    // Verify the update call merges into settingsJson
+    const updateCall = mockPrisma.organization.update.mock.calls[0][0];
+    expect(updateCall.where).toEqual({ id: ORG_ID });
+    expect(updateCall.data.settingsJson).toMatchObject({
+      existingKey: "keep",
+      brandColor: "#AA33CC",
+    });
+  });
+
+  it("validates brandColor matches /^#[0-9a-fA-F]{6}$/ regex", async () => {
+    await expect(
+      caller.settings.updateBranding({ brandColor: "#xyz" }),
+    ).rejects.toThrow();
+
+    await expect(
+      caller.settings.updateBranding({ brandColor: "#12345" }),
+    ).rejects.toThrow();
+
+    await expect(
+      caller.settings.updateBranding({ brandColor: "red" }),
+    ).rejects.toThrow();
+  });
+
+  it("rejects invalid hex colors (e.g., '#xyz', '#12345', 'red')", async () => {
+    // 7 chars instead of 6
+    await expect(
+      caller.settings.updateBranding({ brandColor: "#1234567" }),
+    ).rejects.toThrow();
+  });
+
+  it("saves logoUrl to organization.logo field", async () => {
+    mockPrisma.organization.findUnique.mockResolvedValue({
+      settingsJson: {},
+      logo: null,
+    });
+    mockPrisma.organization.update.mockResolvedValue({});
+
+    const result = await caller.settings.updateBranding({
+      logoUrl: "https://cdn.test/new-logo.png",
+    });
+
+    expect(result.logo).toBe("https://cdn.test/new-logo.png");
+
+    const updateCall = mockPrisma.organization.update.mock.calls[0][0];
+    expect(updateCall.data.logo).toBe("https://cdn.test/new-logo.png");
+  });
+
+  it("accepts null brandColor to remove brand color", async () => {
+    mockPrisma.organization.findUnique.mockResolvedValue({
+      settingsJson: { brandColor: "#FF0000", otherKey: "keep" },
+      logo: "logo.png",
+    });
+    mockPrisma.organization.update.mockResolvedValue({});
+
+    const result = await caller.settings.updateBranding({
+      brandColor: null,
+    });
+
+    expect(result.brandColor).toBeNull();
+
+    // Verify brandColor was deleted from settingsJson
+    const updateCall = mockPrisma.organization.update.mock.calls[0][0];
+    expect(updateCall.data.settingsJson).not.toHaveProperty("brandColor");
+    expect(updateCall.data.settingsJson).toHaveProperty("otherKey", "keep");
+  });
+
+  it("accepts null logoUrl to remove logo", async () => {
+    mockPrisma.organization.findUnique.mockResolvedValue({
+      settingsJson: {},
+      logo: "https://cdn.test/old-logo.png",
+    });
+    mockPrisma.organization.update.mockResolvedValue({});
+
+    const result = await caller.settings.updateBranding({
+      logoUrl: null,
+    });
+
+    expect(result.logo).toBeNull();
+
+    const updateCall = mockPrisma.organization.update.mock.calls[0][0];
+    expect(updateCall.data.logo).toBeNull();
+  });
+
+  it("merges brandColor into existing settingsJson without overwriting other keys", async () => {
+    mockPrisma.organization.findUnique.mockResolvedValue({
+      settingsJson: { portalTheme: "dark", lang: "pl" },
+      logo: null,
+    });
+    mockPrisma.organization.update.mockResolvedValue({});
+
+    await caller.settings.updateBranding({
+      brandColor: "#123456",
+    });
+
+    const updateCall = mockPrisma.organization.update.mock.calls[0][0];
+    expect(updateCall.data.settingsJson).toMatchObject({
+      portalTheme: "dark",
+      lang: "pl",
+      brandColor: "#123456",
+    });
+  });
+});
+
+// ===========================================================================
+// portal.getOrgBranding — does not exist in codebase
+// ===========================================================================
+
 describe("portal.getOrgBranding", () => {
-  it.todo("returns brandColor and logo for portal consumption");
-  it.todo("returns null values when no branding configured");
+  it.todo("returns brandColor and logo for portal consumption — procedure not yet implemented");
+  it.todo("returns null values when no branding configured — procedure not yet implemented");
 });

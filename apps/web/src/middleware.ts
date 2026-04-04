@@ -1,30 +1,48 @@
 import { NextRequest, NextResponse } from "next/server";
 import createMiddleware from "next-intl/middleware";
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
 import { routing } from "@/i18n/routing";
 
 const intlMiddleware = createMiddleware(routing);
 
 // ---------------------------------------------------------------------------
-// In-memory rate limiter (per-IP, sliding window)
-// For production, replace with Redis-based solution (e.g. @upstash/ratelimit).
+// Rate limiting (Upstash Redis with in-memory fallback)
 // ---------------------------------------------------------------------------
 
-const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
-const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
-const RATE_LIMIT_MAX_AUTH = 10; // max 10 auth requests per minute per IP
-const RATE_LIMIT_MAX_API = 60; // max 60 API requests per minute per IP
+const upstashUrl = process.env.UPSTASH_REDIS_REST_URL;
+const upstashToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+const hasRedis = Boolean(upstashUrl && upstashToken);
 
-function checkRateLimit(
-  ip: string,
-  prefix: string,
+function createLimiter(maxRequests: number, window: Parameters<typeof Ratelimit.slidingWindow>[1]) {
+  if (!hasRedis) return null;
+  return new Ratelimit({
+    redis: new Redis({ url: upstashUrl!, token: upstashToken! }),
+    limiter: Ratelimit.slidingWindow(maxRequests, window),
+    analytics: false,
+  });
+}
+
+// Per-IP limiters
+const authLimiter = createLimiter(10, "1m");     // 10 auth requests per minute per IP
+const portalLimiter = createLimiter(10, "1m");    // 10 portal requests per minute per IP
+const apiLimiter = createLimiter(60, "1m");       // 60 API requests per minute per IP
+// Per-org limiter
+const orgLimiter = createLimiter(500, "1m");      // 500 requests per minute per org
+
+// In-memory fallback when Redis is unavailable (dev / single-instance)
+const fallbackMap = new Map<string, { count: number; resetAt: number }>();
+const FALLBACK_WINDOW_MS = 60_000;
+
+function fallbackRateLimit(
+  key: string,
   max: number,
 ): { allowed: boolean; remaining: number } {
-  const key = `${prefix}:${ip}`;
   const now = Date.now();
-  const entry = rateLimitMap.get(key);
+  const entry = fallbackMap.get(key);
 
   if (!entry || now > entry.resetAt) {
-    rateLimitMap.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    fallbackMap.set(key, { count: 1, resetAt: now + FALLBACK_WINDOW_MS });
     return { allowed: true, remaining: max - 1 };
   }
 
@@ -33,16 +51,72 @@ function checkRateLimit(
   return { allowed: entry.count <= max, remaining };
 }
 
-// Periodic cleanup of expired entries (every 5 minutes)
+// Periodic cleanup of expired fallback entries
 if (typeof globalThis !== "undefined") {
   const cleanup = () => {
     const now = Date.now();
-    for (const [key, entry] of rateLimitMap) {
-      if (now > entry.resetAt) rateLimitMap.delete(key);
+    for (const [key, entry] of fallbackMap) {
+      if (now > entry.resetAt) fallbackMap.delete(key);
     }
   };
   setInterval(cleanup, 5 * 60_000).unref?.();
 }
+
+/**
+ * Check rate limit using Redis (preferred) or in-memory fallback.
+ * Returns { allowed, remaining } or null if an error occurred (fail-open).
+ */
+async function checkLimit(
+  limiter: Ratelimit | null,
+  identifier: string,
+  fallbackPrefix: string,
+  fallbackMax: number,
+): Promise<{ allowed: boolean; remaining: number }> {
+  if (limiter) {
+    try {
+      const result = await limiter.limit(identifier);
+      return { allowed: result.success, remaining: result.remaining };
+    } catch {
+      // Redis error: fail-open to avoid blocking all requests
+      return { allowed: true, remaining: fallbackMax };
+    }
+  }
+  // No Redis: use in-memory fallback
+  return fallbackRateLimit(`${fallbackPrefix}:${identifier}`, fallbackMax);
+}
+
+function rateLimitResponse(remaining: number) {
+  return NextResponse.json(
+    { error: "Too many requests. Please try again later." },
+    {
+      status: 429,
+      headers: {
+        "Retry-After": "60",
+        "X-RateLimit-Remaining": String(remaining),
+      },
+    },
+  );
+}
+
+const LOAD_TEST_HEADER = "x-load-test-secret";
+
+/**
+ * When LOAD_TEST_BYPASS=1 and LOAD_TEST_SECRET match the request header, skip
+ * per-IP and per-org rate limits for /api/trpc (k6 / staging load tests).
+ * Blocked on Vercel production. Never enable LOAD_TEST_BYPASS on public prod.
+ */
+function shouldSkipTrpcRateLimitForLoadTest(request: NextRequest): boolean {
+  if (process.env.LOAD_TEST_BYPASS !== "1") return false;
+  const secret = process.env.LOAD_TEST_SECRET?.trim();
+  if (!secret) return false;
+  if (process.env.VERCEL_ENV === "production") return false;
+  const header = request.headers.get(LOAD_TEST_HEADER);
+  return header === secret;
+}
+
+// ---------------------------------------------------------------------------
+// Portal subdomain routing
+// ---------------------------------------------------------------------------
 
 /**
  * Base domain for portal subdomain routing.
@@ -69,28 +143,44 @@ function isAuthRoute(pathname: string): boolean {
   );
 }
 
+/** Public routes accessible without authentication */
+const PUBLIC_ROUTES = ["/privacy", "/terms"];
+
+function isPublicRoute(pathname: string): boolean {
+  const withoutLocale = pathname.replace(/^\/[a-z]{2}(?=\/)/, "");
+  return PUBLIC_ROUTES.some(
+    (route) => withoutLocale === route || withoutLocale.startsWith(`${route}/`),
+  );
+}
+
 /**
- * Check if a pathname is a dashboard route (not auth, not portal, not api).
+ * Check if a pathname is a dashboard route (not auth, not portal, not api, not public).
  */
 function isDashboardRoute(pathname: string): boolean {
   const withoutLocale = pathname.replace(/^\/[a-z]{2}(?=\/)/, "");
   return (
     !isAuthRoute(pathname) &&
+    !isPublicRoute(pathname) &&
     !withoutLocale.startsWith("/portal") &&
     !withoutLocale.startsWith("/invite") &&
     withoutLocale !== "/" // root redirect handled separately
   );
 }
 
+// ---------------------------------------------------------------------------
+// Combined middleware
+// ---------------------------------------------------------------------------
+
 /**
- * Combined middleware: auth guards + portal subdomain routing + next-intl i18n.
+ * Combined middleware: rate limiting + auth guards + portal subdomain routing + next-intl i18n.
  *
- * 1. Checks for portal subdomain pattern and rewrites accordingly.
- * 2. Redirects unauthenticated users from dashboard routes to /login.
- * 3. Redirects authenticated users from auth routes to / (or redirectTo param).
- * 4. Falls through to next-intl middleware for i18n.
+ * 1. Rate limits API endpoints (per-IP + per-org).
+ * 2. Checks for portal subdomain pattern and rewrites accordingly.
+ * 3. Redirects unauthenticated users from dashboard routes to /login.
+ * 4. Redirects authenticated users from auth routes to / (or redirectTo param).
+ * 5. Falls through to next-intl middleware for i18n.
  */
-export default function middleware(request: NextRequest) {
+export default async function middleware(request: NextRequest) {
   const hostname = request.headers.get("host") ?? "";
   const ip =
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
@@ -98,58 +188,35 @@ export default function middleware(request: NextRequest) {
     "unknown";
   const pathname = request.nextUrl.pathname;
 
-  // Rate limit auth API endpoints (login, register, magic link)
+  // ── Rate limiting (API routes) ────────────────────────────────────────
+
   if (pathname.startsWith("/api/auth")) {
-    const { allowed, remaining } = checkRateLimit(ip, "auth", RATE_LIMIT_MAX_AUTH);
-    if (!allowed) {
-      return NextResponse.json(
-        { error: "Too many requests. Please try again later." },
-        {
-          status: 429,
-          headers: {
-            "Retry-After": "60",
-            "X-RateLimit-Remaining": String(remaining),
-          },
-        },
-      );
-    }
+    const { allowed, remaining } = await checkLimit(authLimiter, ip, "auth", 10);
+    if (!allowed) return rateLimitResponse(remaining);
   }
 
-  // Rate limit portal session endpoint
   if (pathname.startsWith("/api/portal")) {
-    const { allowed, remaining } = checkRateLimit(ip, "portal", RATE_LIMIT_MAX_AUTH);
-    if (!allowed) {
-      return NextResponse.json(
-        { error: "Too many requests. Please try again later." },
-        {
-          status: 429,
-          headers: {
-            "Retry-After": "60",
-            "X-RateLimit-Remaining": String(remaining),
-          },
-        },
-      );
-    }
+    const { allowed, remaining } = await checkLimit(portalLimiter, ip, "portal", 10);
+    if (!allowed) return rateLimitResponse(remaining);
   }
 
-  // Rate limit tRPC API
   if (pathname.startsWith("/api/trpc")) {
-    const { allowed, remaining } = checkRateLimit(ip, "api", RATE_LIMIT_MAX_API);
-    if (!allowed) {
-      return NextResponse.json(
-        { error: "Too many requests. Please try again later." },
-        {
-          status: 429,
-          headers: {
-            "Retry-After": "60",
-            "X-RateLimit-Remaining": String(remaining),
-          },
-        },
-      );
+    if (!shouldSkipTrpcRateLimitForLoadTest(request)) {
+      // Per-IP rate limit
+      const ipResult = await checkLimit(apiLimiter, ip, "api", 60);
+      if (!ipResult.allowed) return rateLimitResponse(ipResult.remaining);
+
+      // Per-org rate limit (extract from session cookie → org cookie if available)
+      const orgId = request.cookies.get("better-auth.active_organization")?.value;
+      if (orgId) {
+        const orgResult = await checkLimit(orgLimiter, orgId, "org", 500);
+        if (!orgResult.allowed) return rateLimitResponse(orgResult.remaining);
+      }
     }
   }
 
-  // Check for portal subdomain pattern: {slug}.{PORTAL_BASE_DOMAIN}
+  // ── Portal subdomain routing ──────────────────────────────────────────
+
   if (
     hostname.endsWith(PORTAL_BASE_DOMAIN) &&
     hostname !== PORTAL_BASE_DOMAIN
@@ -157,50 +224,48 @@ export default function middleware(request: NextRequest) {
     const subdomain = hostname.replace(`.${PORTAL_BASE_DOMAIN}`, "");
 
     if (subdomain && !subdomain.includes(".")) {
-      // Set header for downstream consumption (portal layout / auth middleware)
       const requestHeaders = new Headers(request.headers);
       requestHeaders.set("x-portal-org-subdomain", subdomain);
 
       const url = request.nextUrl.clone();
-      const pathname = url.pathname;
+      const subPathname = url.pathname;
 
-      // If accessing root of subdomain, rewrite to portal entry point
-      if (pathname === "/" || pathname === "") {
+      if (subPathname === "/" || subPathname === "") {
         url.pathname = "/en/portal";
         return NextResponse.rewrite(url, {
           request: { headers: requestHeaders },
         });
       }
 
-      // For all other paths under the subdomain, pass through with header
       return NextResponse.next({
         request: { headers: requestHeaders },
       });
     }
   }
 
-  // Auth guards for non-portal routes
+  // ── API routes: skip auth guards and intl (rate limiting already handled above)
+  if (pathname.startsWith("/api/")) {
+    return NextResponse.next();
+  }
+
+  // ── Auth guards for non-portal routes ─────────────────────────────────
+
   const hasSession = request.cookies.has("better-auth.session_token");
 
-  // Extract locale prefix from pathname (e.g. "/en/contractors" -> "en", "/en/contractors" -> "/contractors")
   const localeMatch = pathname.match(/^\/([a-z]{2})(\/.*)?$/);
   const locale = localeMatch?.[1] ?? "en";
   const pathWithoutLocale = localeMatch?.[2] ?? "/";
 
   if (!hasSession && isDashboardRoute(pathname)) {
-    // Unauthenticated user trying to access dashboard -> redirect to login
     const url = request.nextUrl.clone();
     url.pathname = `/${locale}/login`;
-    // Store path without locale so next-intl router.push() doesn't double-prefix
     url.searchParams.set("redirectTo", pathWithoutLocale);
     return NextResponse.redirect(url);
   }
 
   if (hasSession && isAuthRoute(pathname)) {
-    // Authenticated user trying to access login/register -> redirect to dashboard
     const url = request.nextUrl.clone();
     const redirectTo = url.searchParams.get("redirectTo");
-    // redirectTo is already without locale prefix, so add locale back for the raw redirect
     url.pathname = redirectTo ? `/${locale}${redirectTo}` : `/${locale}`;
     url.search = "";
     return NextResponse.redirect(url);
@@ -211,6 +276,10 @@ export default function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Match all pathnames except API routes, static files, and internal Next.js paths
-  matcher: ["/((?!api|monitoring|_next|_vercel|.*\\..*).*)"],
+  // Match all pathnames except static files and internal Next.js paths.
+  // API routes are included for rate limiting.
+  matcher: [
+    "/((?!monitoring|_next|_vercel|.*\\..*).*)",
+    "/api/:path*",
+  ],
 };

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { createCronLogger } from "@contractor-ops/logger";
 import { metrics } from "@contractor-ops/logger/metrics";
+import { withCronMonitor } from "@contractor-ops/api/services/cron-monitor";
 import { refreshExpiring } from "@contractor-ops/integrations";
 
 const log = createCronLogger("token-refresh");
@@ -21,7 +22,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  return Sentry.withMonitor("token-refresh", async () => {
+  return Sentry.withMonitor("token-refresh", () => withCronMonitor("token-refresh", async () => {
     try {
       const result = await refreshExpiring();
       log.info(
@@ -38,7 +39,7 @@ export async function GET(request: NextRequest) {
       });
       return NextResponse.json({ error: "Refresh failed" }, { status: 500 });
     }
-  }, {
+  }), {
     schedule: { type: "crontab", value: "*/15 * * * *" },
     timezone: "UTC",
   });
