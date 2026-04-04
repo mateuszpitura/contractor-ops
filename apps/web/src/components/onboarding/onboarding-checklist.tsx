@@ -55,7 +55,7 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
     icon: UserPlus,
     optional: false,
     stepKey: "inviteTeam",
-    ctaHref: "/settings?tab=members",
+    ctaHref: "/onboarding/import",
   },
   {
     id: "add-contractor",

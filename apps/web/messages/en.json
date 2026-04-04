@@ -4087,5 +4087,79 @@
       "reminderTitle": "Overdue Approval Reminder",
       "overdueLabel": "{days} days overdue"
     }
+  },
+  "OnboardingImport": {
+    "pageTitle": "Import Your Team",
+    "pageSubtitle": "Pull in team members and projects from your connected tools. You can always add more later.",
+    "step1": {
+      "heading": "Where do you manage your team?",
+      "subtitle": "Select the tools you want to import from. You can connect new tools right here.",
+      "skipLink": "Skip -- I'll invite people manually"
+    },
+    "step2": {
+      "heading": "Review team members",
+      "subtitle": "We found people across your connected tools. Review and confirm who to import.",
+      "summaryNew": "New",
+      "summaryConflicts": "Conflicts",
+      "summaryExisting": "Existing",
+      "summaryTotal": "Total",
+      "filterAll": "All",
+      "filterNew": "New",
+      "filterConflicts": "Conflicts",
+      "filterExisting": "Existing",
+      "columnName": "Name",
+      "columnEmail": "Email",
+      "columnSources": "Sources",
+      "columnStatus": "Status",
+      "columnRole": "Role",
+      "columnAction": "Action",
+      "skipRow": "Skip",
+      "batchImport": "Import Selected",
+      "batchSkip": "Skip Selected",
+      "batchRole": "Assign Role",
+      "emptyHeading": "No team members found",
+      "emptyBody": "The selected sources didn't return any team members. Try connecting a different tool or invite people manually.",
+      "conflictTooltip": "Data mismatch -- click to resolve",
+      "conflictCustom": "Custom value"
+    },
+    "step3": {
+      "heading": "Import projects",
+      "subtitle": "These projects will become workflow templates with their statuses as steps.",
+      "editSteps": "Edit steps",
+      "skipProject": "Skip this project",
+      "syncNote": "Bidirectional sync will be configured automatically based on imported statuses.",
+      "addStep": "Add step",
+      "emptyHeading": "No projects found",
+      "emptyBody": "No projects were found in the selected PM tools. You can create workflow templates manually later."
+    },
+    "step4": {
+      "heading": "Ready to import",
+      "subtitle": "Review your selections and start the import. This may take a moment.",
+      "peopleCard": "People to import",
+      "projectsCard": "Projects to create",
+      "startImport": "Start Import",
+      "progressLabel": "Importing {current} of {total}...",
+      "completeHeading": "Import complete",
+      "completeBody": "{imported} people and {projects} projects imported successfully.",
+      "completeCta": "Go to Dashboard",
+      "retryButton": "Retry",
+      "errorPrefix": "Failed to import {name}. Click Retry to try again, or skip this person."
+    },
+    "nav": {
+      "back": "Back",
+      "continue": "Continue",
+      "step1Label": "Select Sources",
+      "step2Label": "Review People",
+      "step3Label": "Import Projects",
+      "step4Label": "Confirm & Import"
+    },
+    "sourceCard": {
+      "connected": "Connected",
+      "notConnected": "Not connected",
+      "connect": "Connect",
+      "importToggle": "Import from {tool}"
+    },
+    "oauthError": "Could not connect to {tool}. Check your permissions and try again.",
+    "settingsReimport": "Re-import from tools"
   }
 }

@@ -8,6 +8,7 @@ import { toast } from "sonner";
 
 import { trpc } from "@/trpc/init";
 import { Button } from "@/components/ui/button";
+import { Link } from "@/i18n/navigation";
 import { ProviderConnectionCard } from "./provider-connection-card";
 import { SlackUserMapping } from "./slack-user-mapping";
 import { KsefSetupDialog } from "./ksef-setup-dialog";
@@ -165,6 +166,7 @@ function KsefProviderSection() {
 
 export function IntegrationsTab() {
   const t = useTranslations("Settings.integrations");
+  const tImport = useTranslations("OnboardingImport");
 
   // Check Slack connection status for user mapping visibility
   const healthQuery = useQuery(
@@ -183,6 +185,13 @@ export function IntegrationsTab() {
 
   return (
     <div className="space-y-8">
+      {/* Re-import from tools link (D-03) */}
+      <div className="flex items-center justify-between">
+        <Button variant="outline" render={<Link href="/onboarding/import" />}>
+          {tImport("settingsReimport")}
+        </Button>
+      </div>
+
       {/* Provider cards grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {standardProviders.map((config) => (

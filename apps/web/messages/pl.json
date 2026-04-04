@@ -4087,5 +4087,79 @@
       "reminderTitle": "Przypomnienie o zaleglosci",
       "overdueLabel": "{days} dni po terminie"
     }
+  },
+  "OnboardingImport": {
+    "pageTitle": "Importuj swoj zespol",
+    "pageSubtitle": "Pobierz czlonkow zespolu i projekty z polaczonych narzedzi. Zawsze mozesz dodac wiecej pozniej.",
+    "step1": {
+      "heading": "Gdzie zarzadzasz swoim zespolem?",
+      "subtitle": "Wybierz narzedzia, z ktorych chcesz importowac. Mozesz polaczyc nowe narzedzia tutaj.",
+      "skipLink": "Pomin -- zaprosze osoby recznie"
+    },
+    "step2": {
+      "heading": "Sprawdz czlonkow zespolu",
+      "subtitle": "Znalezlismy osoby w polaczonych narzedziach. Sprawdz i potwierdz kogo zaimportowac.",
+      "summaryNew": "Nowe",
+      "summaryConflicts": "Konflikty",
+      "summaryExisting": "Istniejace",
+      "summaryTotal": "Lacznie",
+      "filterAll": "Wszystkie",
+      "filterNew": "Nowe",
+      "filterConflicts": "Konflikty",
+      "filterExisting": "Istniejace",
+      "columnName": "Imie",
+      "columnEmail": "Email",
+      "columnSources": "Zrodla",
+      "columnStatus": "Status",
+      "columnRole": "Rola",
+      "columnAction": "Akcja",
+      "skipRow": "Pomin",
+      "batchImport": "Importuj zaznaczone",
+      "batchSkip": "Pomin zaznaczone",
+      "batchRole": "Przypisz role",
+      "emptyHeading": "Nie znaleziono czlonkow zespolu",
+      "emptyBody": "Wybrane zrodla nie zwrocily zadnych czlonkow zespolu. Sprobuj polaczyc inne narzedzie lub zapros osoby recznie.",
+      "conflictTooltip": "Niezgodnosc danych -- kliknij aby rozwiazac",
+      "conflictCustom": "Wartosc niestandardowa"
+    },
+    "step3": {
+      "heading": "Importuj projekty",
+      "subtitle": "Te projekty stana sie szablonami workflow z ich statusami jako krokami.",
+      "editSteps": "Edytuj kroki",
+      "skipProject": "Pomin ten projekt",
+      "syncNote": "Dwukierunkowa synchronizacja zostanie skonfigurowana automatycznie na podstawie importowanych statusow.",
+      "addStep": "Dodaj krok",
+      "emptyHeading": "Nie znaleziono projektow",
+      "emptyBody": "Nie znaleziono projektow w wybranych narzedziach PM. Mozesz pozniej recznie utworzyc szablony workflow."
+    },
+    "step4": {
+      "heading": "Gotowy do importu",
+      "subtitle": "Sprawdz swoje wybory i rozpocznij import. To moze chwile potrwac.",
+      "peopleCard": "Osoby do zaimportowania",
+      "projectsCard": "Projekty do utworzenia",
+      "startImport": "Rozpocznij import",
+      "progressLabel": "Importowanie {current} z {total}...",
+      "completeHeading": "Import zakonczony",
+      "completeBody": "Zaimportowano {imported} osob i {projects} projektow.",
+      "completeCta": "Przejdz do pulpitu",
+      "retryButton": "Ponow",
+      "errorPrefix": "Nie udalo sie zaimportowac {name}. Kliknij Ponow aby sprobowac ponownie, lub pomin te osobe."
+    },
+    "nav": {
+      "back": "Wstecz",
+      "continue": "Kontynuuj",
+      "step1Label": "Wybierz zrodla",
+      "step2Label": "Sprawdz osoby",
+      "step3Label": "Importuj projekty",
+      "step4Label": "Potwierdz i importuj"
+    },
+    "sourceCard": {
+      "connected": "Polaczono",
+      "notConnected": "Nie polaczono",
+      "connect": "Polacz",
+      "importToggle": "Importuj z {tool}"
+    },
+    "oauthError": "Nie udalo sie polaczyc z {tool}. Sprawdz uprawnienia i sprobuj ponownie.",
+    "settingsReimport": "Ponowny import z narzedzi"
   }
 }
