@@ -107,6 +107,7 @@ const preferenceFormSchema = z.object({
       notificationType: z.string(),
       channelEmail: z.boolean(),
       channelSlack: z.boolean(),
+      channelTeams: z.boolean(),
     }),
   ),
 });
@@ -128,8 +129,14 @@ export function NotificationPreferences() {
   const slackStatusQuery = useQuery(
     trpc.integration.getSlackStatus.queryOptions(),
   );
+  const teamsHealthQuery = useQuery(
+    trpc.integration.getHealth.queryOptions({ provider: "microsoft_teams" }),
+  );
 
   const isSlackConnected = slackStatusQuery.data?.connected === true;
+  const isTeamsConnected =
+    (teamsHealthQuery.data as { status?: string } | null | undefined)?.status ===
+    "CONNECTED";
 
   const form = useForm<PreferenceFormValues>({
     resolver: zodResolver(preferenceFormSchema),
@@ -138,6 +145,7 @@ export function NotificationPreferences() {
         notificationType: type,
         channelEmail: true,
         channelSlack: true,
+        channelTeams: false,
       })),
     },
   });
@@ -155,6 +163,7 @@ export function NotificationPreferences() {
             notificationType: type,
             channelEmail: pref?.channelEmail ?? true,
             channelSlack: pref?.channelSlack ?? true,
+            channelTeams: pref?.channelTeams ?? false,
           };
         }),
       });
@@ -230,6 +239,9 @@ export function NotificationPreferences() {
               </TableHead>
               <TableHead className="w-20 text-center">
                 {t("notifications.columnSlack")}
+              </TableHead>
+              <TableHead className="w-20 text-center">
+                {t("notifications.columnTeams" as Parameters<typeof t>[0])}
               </TableHead>
             </TableRow>
           </TableHeader>
@@ -309,6 +321,36 @@ export function NotificationPreferences() {
                         </TooltipTrigger>
                         <TooltipContent>
                           {t("notifications.slackDisabledTooltip")}
+                        </TooltipContent>
+                      </Tooltip>
+                    )}
+                  </TableCell>
+
+                  {/* Teams */}
+                  <TableCell className="text-center">
+                    {isTeamsConnected ? (
+                      <Controller
+                        control={form.control}
+                        name={`preferences.${index}.channelTeams`}
+                        render={({ field }) => (
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            aria-label={tAria("teams" as Parameters<typeof tAria>[0])}
+                          />
+                        )}
+                      />
+                    ) : (
+                      <Tooltip>
+                        <TooltipTrigger render={<div className="inline-flex" />}>
+                          <Switch
+                            checked={false}
+                            disabled
+                            aria-label={tAria("teams" as Parameters<typeof tAria>[0])}
+                          />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          {t("notifications.teamsDisabledTooltip" as Parameters<typeof t>[0])}
                         </TooltipContent>
                       </Tooltip>
                     )}

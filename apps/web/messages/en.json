@@ -324,7 +324,9 @@
       "eventInvoiceReceived": "Invoice received",
       "savePreferences": "Save preferences",
       "preferencesSaved": "Notification preferences saved",
-      "preferencesSaveFailed": "Could not save notification preferences. Try again."
+      "preferencesSaveFailed": "Could not save notification preferences. Try again.",
+      "columnTeams": "Teams",
+      "teamsDisabledTooltip": "Connect Microsoft Teams in Integrations to enable Teams notifications."
     },
     "reminderRules": {
       "heading": "Custom reminder rules",
@@ -553,6 +555,27 @@
       "googleWorkspace": {
         "descriptionDisconnected": "Import your team directory from Google Workspace with role mapping.",
         "descriptionConnected": "Google Workspace connected. Directory syncs daily at 2:00 AM."
+      },
+      "teams": {
+        "descriptionDisconnected": "Receive notifications and approve invoices directly in Microsoft Teams.",
+        "descriptionConnected": "Microsoft Teams connected. Notifications deliver to configured channels.",
+        "channelMappingHeading": "Channel mapping",
+        "channelMappingDescription": "Configure which channel receives each notification type.",
+        "saveMapping": "Save mapping",
+        "refreshChannels": "Refresh channel list",
+        "selectChannel": "Select a channel",
+        "noChannels": "No channels available. Ensure the bot is added to at least one team.",
+        "channelFetchError": "Could not load Teams channels. Verify the bot is installed in your Teams workspace and try again.",
+        "disconnectTitle": "Disconnect Microsoft Teams",
+        "disconnectMessage": "This will stop all Teams notifications and remove stored credentials. Existing approval decisions are not affected. Continue?",
+        "mappingSaved": "Channel mapping saved.",
+        "mappingSaveFailed": "Failed to save channel mapping. Try again.",
+        "disconnectSuccess": "Microsoft Teams disconnected.",
+        "categoryApprovals": "Approvals",
+        "categoryInvoices": "Invoices",
+        "categoryContracts": "Contracts",
+        "categoryTasks": "Tasks",
+        "categoryEquipment": "Equipment"
       }
     },
     "provider": {
@@ -3974,6 +3997,22 @@
     "disconnect": {
       "title": "Disconnect Google Workspace",
       "body": "This will stop directory sync and remove stored credentials. Existing imported users are not affected. Continue?"
+    }
+  },
+  "Teams": {
+    "cards": {
+      "approvalTitle": "Invoice Approval Required",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "approve": "Approve",
+      "reject": "Reject",
+      "rejectModalTitle": "Reject Invoice",
+      "rejectCommentLabel": "Reason for rejection (required)",
+      "rejectCommentPlaceholder": "Explain why this invoice is being rejected...",
+      "rejectSubmit": "Reject Invoice",
+      "viewInApp": "View in Contractor Ops",
+      "reminderTitle": "Overdue Approval Reminder",
+      "overdueLabel": "{days} days overdue"
     }
   }
 }

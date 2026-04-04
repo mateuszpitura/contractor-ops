@@ -15,6 +15,7 @@ import { KsefSyncHistory } from "./ksef-sync-history";
 import { JiraProviderSection } from "@/components/integrations/jira-provider-section";
 import { LinearProviderSection } from "@/components/integrations/linear-provider-section";
 import { GoogleWorkspaceProviderSection } from "@/components/integrations/google-workspace-provider-section";
+import { TeamsProviderSection } from "@/components/integrations/teams-provider-section";
 import { JiraLogo } from "@/components/integrations/jira-logo";
 import { SlackBrandIcon } from "@/components/integrations/brand-icons";
 import {
@@ -205,6 +206,9 @@ export function IntegrationsTab() {
 
         {/* Google Workspace has directory import wizard */}
         <GoogleWorkspaceProviderSection />
+
+        {/* Microsoft Teams integration with channel mapping */}
+        <TeamsProviderSection />
 
         {/* Notion provider card */}
         <ProviderConnectionCard

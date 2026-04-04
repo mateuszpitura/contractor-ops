@@ -324,7 +324,9 @@
       "eventInvoiceReceived": "Otrzymana faktura",
       "savePreferences": "Zapisz preferencje",
       "preferencesSaved": "Preferencje powiadomień zapisane",
-      "preferencesSaveFailed": "Nie udało się zapisać preferencji powiadomień. Spróbuj ponownie."
+      "preferencesSaveFailed": "Nie udało się zapisać preferencji powiadomień. Spróbuj ponownie.",
+      "columnTeams": "Teams",
+      "teamsDisabledTooltip": "Polacz Microsoft Teams w Integracjach, aby wlaczyc powiadomienia Teams."
     },
     "reminderRules": {
       "heading": "Własne reguły przypomnień",
@@ -553,6 +555,27 @@
       "googleWorkspace": {
         "descriptionDisconnected": "Importuj katalog zespołu z Google Workspace z mapowaniem ról.",
         "descriptionConnected": "Google Workspace połączony. Synchronizacja katalogu codziennie o 2:00."
+      },
+      "teams": {
+        "descriptionDisconnected": "Otrzymuj powiadomienia i zatwierdzaj faktury bezposrednio w Microsoft Teams.",
+        "descriptionConnected": "Microsoft Teams polaczony. Powiadomienia dostarczane na skonfigurowane kanaly.",
+        "channelMappingHeading": "Mapowanie kanalow",
+        "channelMappingDescription": "Skonfiguruj, ktory kanal otrzymuje kazdy typ powiadomien.",
+        "saveMapping": "Zapisz mapowanie",
+        "refreshChannels": "Odswiez liste kanalow",
+        "selectChannel": "Wybierz kanal",
+        "noChannels": "Brak dostepnych kanalow. Upewnij sie, ze bot jest dodany do co najmniej jednego zespolu.",
+        "channelFetchError": "Nie udalo sie zaladowac kanalow Teams. Sprawdz, czy bot jest zainstalowany w Twoim obszarze roboczym Teams i sprobuj ponownie.",
+        "disconnectTitle": "Odlacz Microsoft Teams",
+        "disconnectMessage": "Spowoduje to zatrzymanie wszystkich powiadomien Teams i usuniecie zapisanych danych uwierzytelniajacych. Istniejace decyzje zatwierdzenia nie zostana zmienione. Kontynuowac?",
+        "mappingSaved": "Mapowanie kanalow zapisane.",
+        "mappingSaveFailed": "Nie udalo sie zapisac mapowania kanalow. Sprobuj ponownie.",
+        "disconnectSuccess": "Microsoft Teams odlaczony.",
+        "categoryApprovals": "Zatwierdzenia",
+        "categoryInvoices": "Faktury",
+        "categoryContracts": "Umowy",
+        "categoryTasks": "Zadania",
+        "categoryEquipment": "Sprzet"
       }
     },
     "provider": {
@@ -3974,6 +3997,22 @@
     "disconnect": {
       "title": "Rozłącz Google Workspace",
       "body": "Spowoduje to zatrzymanie synchronizacji katalogu i usunięcie zapisanych danych uwierzytelniających. Istniejący zaimportowani użytkownicy nie zostaną usunięci. Kontynuować?"
+    }
+  },
+  "Teams": {
+    "cards": {
+      "approvalTitle": "Wymagane zatwierdzenie faktury",
+      "approved": "Zatwierdzona",
+      "rejected": "Odrzucona",
+      "approve": "Zatwierdz",
+      "reject": "Odrzuc",
+      "rejectModalTitle": "Odrzuc fakture",
+      "rejectCommentLabel": "Powod odrzucenia (wymagany)",
+      "rejectCommentPlaceholder": "Wyjasnij, dlaczego ta faktura jest odrzucana...",
+      "rejectSubmit": "Odrzuc fakture",
+      "viewInApp": "Zobacz w Contractor Ops",
+      "reminderTitle": "Przypomnienie o zaleglosci",
+      "overdueLabel": "{days} dni po terminie"
     }
   }
 }
