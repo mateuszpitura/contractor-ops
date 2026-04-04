@@ -37,7 +37,7 @@ interface ConnectionConfig {
   [key: string]: unknown;
 }
 
-interface ImportJob {
+export interface ImportJob {
   jobId: string;
   status: "pending" | "processing" | "completed" | "failed";
   totalItems: number;
@@ -84,7 +84,7 @@ async function updateImportJob(
       settingsJson: {
         ...currentSettings,
         importJobs: jobs,
-      } as Prisma.InputJsonValue,
+      } as unknown as Prisma.InputJsonValue,
     },
   });
 }
@@ -353,7 +353,7 @@ export const onboardingImportRouter = router({
             headers: ctx.headers,
             body: {
               email: person.email,
-              role: person.role,
+              role: person.role as "admin" | "owner" | "finance_admin" | "ops_manager" | "team_manager" | "legal_compliance_viewer" | "it_admin" | "external_accountant" | "readonly",
               organizationId: ctx.organizationId,
             },
           });
@@ -371,7 +371,7 @@ export const onboardingImportRouter = router({
           await createWorkflowTemplatesFromProjects({
             projects: nonSkippedProjects,
             organizationId: ctx.organizationId,
-            createdByUserId: ctx.user.id,
+            createdByUserId: ctx.user!.id,
           });
           job.completedItems += nonSkippedProjects.length;
         } catch (error) {
