@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Enterprise & Monetization
-status: verifying
-stopped_at: Phase 34 context gathered
-last_updated: "2026-04-04T22:15:44.577Z"
+status: executing
+stopped_at: Completed 34-01-PLAN.md
+last_updated: "2026-04-04T23:31:10.749Z"
 last_activity: 2026-04-04
 progress:
   total_phases: 8
   completed_phases: 6
-  total_plans: 22
-  completed_plans: 22
+  total_plans: 24
+  completed_plans: 23
   percent: 84
 ---
 
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-01)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 33 — inpost-courier-integration
+**Current focus:** Phase 34 — intelligent-onboarding-wizard
 
 ## Current Position
 
-Phase: 34
-Plan: Not started
-Status: Phase complete — ready for verification
+Phase: 34 (intelligent-onboarding-wizard) — EXECUTING
+Plan: 2 of 2
+Status: Ready to execute
 Last activity: 2026-04-04
 
 Progress: [████████░░] 84%
@@ -68,6 +68,7 @@ Progress: [████████░░] 84%
 | Phase 33 P01 | 8min | 2 tasks | 14 files |
 | Phase 33 P02 | 14min | 2 tasks | 10 files |
 | Phase 33 P03 | 5min | 3 tasks | 14 files |
+| Phase 34 P01 | 8min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -118,6 +119,8 @@ Recent decisions affecting current work:
 - [Phase 33]: Webhook endpoint matches org by signature first, falls back to shipment externalId/trackingNumber lookup
 - [Phase 33]: Offboarding auto-shipment uses system as createdByUserId; try/catch prevents API failures from blocking task start
 - [Phase 33]: Geowidget iframe with postMessage origin validation for secure Paczkomat selection
+- [Phase 34]: Used org settingsJson for import job progress persistence (no separate model)
+- [Phase 34]: Synchronous import within mutation for MVP; QStash async upgradeable later
 
 ### Pending Todos
 
@@ -131,6 +134,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-04T22:15:44.574Z
-Stopped at: Phase 34 context gathered
-Resume file: .planning/phases/34-intelligent-onboarding-wizard/34-CONTEXT.md
+Last session: 2026-04-04T23:31:10.747Z
+Stopped at: Completed 34-01-PLAN.md
+Resume file: None

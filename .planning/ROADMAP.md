@@ -184,7 +184,7 @@ Plans:
 **UI hint**: yes
 
 Plans:
-- [ ] 34-01-PLAN.md — Tests, Zod validators, tRPC router, cross-tool fetch/merge/dedup service, batch import, workflow template creation, async progress (ONBD-01/02/03/04/05)
+- [x] 34-01-PLAN.md — Tests, Zod validators, tRPC router, cross-tool fetch/merge/dedup service, batch import, workflow template creation, async progress (ONBD-01/02/03/04/05)
 - [ ] 34-02-PLAN.md — Full-page 4-step wizard UI, onboarding checklist modification, i18n EN/PL (ONBD-01/02/03/04/05)
 
 ### Phase 35: Feature Gating + DPD/UPS + Billing Polish
@@ -242,5 +242,5 @@ Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 �
 | 31. Google Workspace Directory Import | v3.0 | 5/5 | Complete    | 2026-04-02 |
 | 32. Teams Integration | v3.0 | 4/4 | Complete    | 2026-04-04 |
 | 33. InPost Courier Integration | v3.0 | 3/3 | Complete    | 2026-04-04 |
-| 34. Intelligent Onboarding Wizard | v3.0 | 0/2 | Planning | - |
+| 34. Intelligent Onboarding Wizard | v3.0 | 1/2 | In Progress|  |
 | 35. Feature Gating + DPD/UPS + Billing Polish | v3.0 | 0/2 | Not started | - |

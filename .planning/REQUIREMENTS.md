@@ -35,11 +35,11 @@ Requirements for v3.0 Enterprise & Monetization milestone. Each maps to roadmap 
 
 ### Intelligent Onboarding
 
-- [ ] **ONBD-01**: User sees "Where do you manage your team?" source selection during onboarding with connected tool options
-- [ ] **ONBD-02**: System imports team members from connected tools (Jira, Linear, Google Workspace, Slack) with email-based dedup
-- [ ] **ONBD-03**: System imports projects and statuses from PM tools (Jira, Linear) to pre-configure workflow templates
-- [ ] **ONBD-04**: User can preview imported data with diff indicators (new/duplicate/conflict) and batch confirm, skip, or edit
-- [ ] **ONBD-05**: Import runs async with progress tracking, and user can retry failed items without re-importing
+- [x] **ONBD-01**: User sees "Where do you manage your team?" source selection during onboarding with connected tool options
+- [x] **ONBD-02**: System imports team members from connected tools (Jira, Linear, Google Workspace, Slack) with email-based dedup
+- [x] **ONBD-03**: System imports projects and statuses from PM tools (Jira, Linear) to pre-configure workflow templates
+- [x] **ONBD-04**: User can preview imported data with diff indicators (new/duplicate/conflict) and batch confirm, skip, or edit
+- [x] **ONBD-05**: Import runs async with progress tracking, and user can retry failed items without re-importing
 
 ### Equipment & Shipment Tracking
 
@@ -123,11 +123,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | GOOG-03 | Phase 31 | Complete |
 | GOOG-04 | Phase 31 | Complete |
 | GOOG-05 | Phase 31 | Complete |
-| ONBD-01 | Phase 34 | Pending |
-| ONBD-02 | Phase 34 | Pending |
-| ONBD-03 | Phase 34 | Pending |
-| ONBD-04 | Phase 34 | Pending |
-| ONBD-05 | Phase 34 | Pending |
+| ONBD-01 | Phase 34 | Complete |
+| ONBD-02 | Phase 34 | Complete |
+| ONBD-03 | Phase 34 | Complete |
+| ONBD-04 | Phase 34 | Complete |
+| ONBD-05 | Phase 34 | Complete |
 | EQUIP-01 | Phase 30 | Complete |
 | EQUIP-02 | Phase 30 | Complete |
 | EQUIP-03 | Phase 30 | Complete |
