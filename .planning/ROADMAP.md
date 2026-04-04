@@ -61,7 +61,7 @@ Full details: `.planning/milestones/v2.0-ROADMAP.md`
 - [x] **Phase 31: Google Workspace Directory Import** - Paginated directory import with group-to-role mapping (completed 2026-04-02)
 - [x] **Phase 32: Teams Integration** - Approve/reject from Teams Adaptive Cards, reminders, and activity alerts (completed 2026-04-04)
 - [x] **Phase 33: InPost Courier Integration** - First courier API with Parcel Locker selection and auto-status tracking (completed 2026-04-04)
-- [ ] **Phase 34: Intelligent Onboarding Wizard** - Cross-tool import orchestrator with preview, dedup, and batch confirm
+- [x] **Phase 34: Intelligent Onboarding Wizard** - Cross-tool import orchestrator with preview, dedup, and batch confirm (completed 2026-04-04)
 - [ ] **Phase 35: Feature Gating + DPD/UPS + Billing Polish** - Paywall activation, remaining couriers, usage dashboard
 
 ## Phase Details
@@ -185,7 +185,7 @@ Plans:
 
 Plans:
 - [x] 34-01-PLAN.md — Tests, Zod validators, tRPC router, cross-tool fetch/merge/dedup service, batch import, workflow template creation, async progress (ONBD-01/02/03/04/05)
-- [ ] 34-02-PLAN.md — Full-page 4-step wizard UI, onboarding checklist modification, i18n EN/PL (ONBD-01/02/03/04/05)
+- [x] 34-02-PLAN.md — Full-page 4-step wizard UI, onboarding checklist modification, i18n EN/PL (ONBD-01/02/03/04/05)
 
 ### Phase 35: Feature Gating + DPD/UPS + Billing Polish
 **Goal**: Paywall is enforced per subscription tier, remaining courier integrations ship, and billing UX is polished for launch
@@ -242,5 +242,5 @@ Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 �
 | 31. Google Workspace Directory Import | v3.0 | 5/5 | Complete    | 2026-04-02 |
 | 32. Teams Integration | v3.0 | 4/4 | Complete    | 2026-04-04 |
 | 33. InPost Courier Integration | v3.0 | 3/3 | Complete    | 2026-04-04 |
-| 34. Intelligent Onboarding Wizard | v3.0 | 1/2 | In Progress|  |
+| 34. Intelligent Onboarding Wizard | v3.0 | 2/2 | Complete   | 2026-04-04 |
 | 35. Feature Gating + DPD/UPS + Billing Polish | v3.0 | 0/2 | Not started | - |
