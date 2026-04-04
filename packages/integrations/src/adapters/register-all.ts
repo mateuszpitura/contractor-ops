@@ -13,6 +13,7 @@ import { GoogleCalendarAdapter } from "./google-calendar-adapter.js";
 import { GoogleWorkspaceAdapter } from "./google-workspace-adapter.js";
 import { OutlookCalendarAdapter } from "./outlook-calendar-adapter.js";
 import { LinearAdapter } from "./linear-adapter.js";
+import { TeamsAdapter } from "./teams-adapter.js";
 import { ClaudeOcrAdapter } from "./claude-ocr-adapter.js";
 
 // ---------------------------------------------------------------------------
@@ -41,6 +42,7 @@ export function registerAllAdapters(): void {
   registerAdapter(new GoogleWorkspaceAdapter());
   registerAdapter(new OutlookCalendarAdapter());
   registerAdapter(new LinearAdapter());
+  registerAdapter(new TeamsAdapter());
   registerAdapter(new ClaudeOcrAdapter() as unknown as IntegrationProviderAdapter);
 
   registered = true;
