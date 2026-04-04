@@ -395,3 +395,33 @@ export type {
   LinearStatusMapping,
   LinearIssueMetadata,
 } from "./linear.js";
+
+export {
+  sourceProviderSchema,
+  listSourcesOutputSchema,
+  fetchPeopleInputSchema,
+  sourceEntrySchema,
+  conflictSchema,
+  mergedPersonSchema,
+  fetchPeopleOutputSchema,
+  batchImportInputSchema,
+  importedProjectSchema,
+  fetchProjectsOutputSchema,
+  importProjectInputSchema,
+  startImportInputSchema,
+  importProgressOutputSchema,
+  retryItemInputSchema,
+} from "./onboarding-import.js";
+export type {
+  SourceProvider,
+  ListSourcesOutput,
+  FetchPeopleInput,
+  MergedPerson,
+  FetchPeopleOutput,
+  BatchImportInput,
+  FetchProjectsOutput,
+  ImportProjectInput,
+  StartImportInput,
+  ImportProgressOutput,
+  RetryItemInput,
+} from "./onboarding-import.js";

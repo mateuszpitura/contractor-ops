@@ -31,9 +31,8 @@ const {
     member: {
       findMany: vi.fn(),
     },
-    settings: {
+    organization: {
       findFirst: vi.fn(),
-      upsert: vi.fn(),
       update: vi.fn(),
     },
     workflowTemplate: {
@@ -41,9 +40,6 @@ const {
     },
     workflowTaskTemplate: {
       createMany: vi.fn(),
-    },
-    organization: {
-      findFirst: vi.fn(),
     },
   };
 
@@ -202,9 +198,8 @@ beforeEach(() => {
   mockPrisma.integrationConnection.findMany.mockResolvedValue([]);
   mockPrisma.integrationConnection.findFirst.mockResolvedValue(null);
   mockPrisma.member.findMany.mockResolvedValue([]);
-  mockPrisma.settings.findFirst.mockResolvedValue(null);
-  mockPrisma.settings.upsert.mockResolvedValue({});
-  mockPrisma.settings.update.mockResolvedValue({});
+  mockPrisma.organization.findFirst.mockResolvedValue({ id: ORG_ID, settingsJson: {} });
+  mockPrisma.organization.update.mockResolvedValue({});
 
   // Reset global fetch
   globalThis.fetch = mockFetch as unknown as typeof fetch;
@@ -450,10 +445,7 @@ describe("onboardingImport", () => {
   // -------------------------------------------------------------------------
 
   it("batchImport calls createInvitation for each selected person with correct role", async () => {
-    mockPrisma.settings.findFirst.mockResolvedValue({
-      id: "settings-1",
-      metadataJson: {},
-    });
+    mockPrisma.organization.findFirst.mockResolvedValue({ id: ORG_ID, settingsJson: {} });
     mockPrisma.workflowTemplate.create.mockResolvedValue({ id: "tpl-1" });
 
     const result = await caller.startImport({
@@ -492,10 +484,7 @@ describe("onboardingImport", () => {
   // -------------------------------------------------------------------------
 
   it("importProjects creates WorkflowTemplate (type: CUSTOM) with WorkflowTaskTemplate per status (taskType: MANUAL)", async () => {
-    mockPrisma.settings.findFirst.mockResolvedValue({
-      id: "settings-1",
-      metadataJson: {},
-    });
+    mockPrisma.organization.findFirst.mockResolvedValue({ id: ORG_ID, settingsJson: {} });
     mockPrisma.workflowTemplate.create.mockResolvedValue({ id: "tpl-1" });
     mockPrisma.workflowTaskTemplate.createMany.mockResolvedValue({ count: 2 });
 
@@ -545,10 +534,7 @@ describe("onboardingImport", () => {
   // -------------------------------------------------------------------------
 
   it("startImport returns jobId, getProgress returns completedItems/failedItems", async () => {
-    mockPrisma.settings.findFirst.mockResolvedValue({
-      id: "settings-1",
-      metadataJson: {},
-    });
+    mockPrisma.organization.findFirst.mockResolvedValue({ id: ORG_ID, settingsJson: {} });
 
     const importResult = await caller.startImport({
       people: [
@@ -559,10 +545,10 @@ describe("onboardingImport", () => {
 
     expect(importResult.jobId).toBeDefined();
 
-    // Mock getProgress reading from settings
-    mockPrisma.settings.findFirst.mockResolvedValue({
-      id: "settings-1",
-      metadataJson: {
+    // Mock getProgress reading from org settingsJson
+    mockPrisma.organization.findFirst.mockResolvedValue({
+      id: ORG_ID,
+      settingsJson: {
         importJobs: {
           [importResult.jobId]: {
             jobId: importResult.jobId,
@@ -590,9 +576,9 @@ describe("onboardingImport", () => {
   it("retryFailedItem re-processes single item without affecting others", async () => {
     const jobId = "job-retry-1";
 
-    mockPrisma.settings.findFirst.mockResolvedValue({
-      id: "settings-1",
-      metadataJson: {
+    mockPrisma.organization.findFirst.mockResolvedValue({
+      id: ORG_ID,
+      settingsJson: {
         importJobs: {
           [jobId]: {
             jobId,
