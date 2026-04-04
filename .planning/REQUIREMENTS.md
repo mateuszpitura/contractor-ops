@@ -53,7 +53,7 @@ Requirements for v3.0 Enterprise & Monetization milestone. Each maps to roadmap 
 - [x] **EQUIP-08**: Shipment status displays as timeline on equipment detail and contractor profile with unified status model
 - [x] **EQUIP-09**: Onboarding workflow task "Ship equipment" auto-creates shipment, offboarding task "Return equipment" triggers return request
 - [x] **EQUIP-10**: Workflow task auto-completes when shipment reaches target status (e.g., "delivered")
-- [ ] **EQUIP-11**: Contractor can initiate equipment return via portal and receive shipping label
+- [x] **EQUIP-11**: Contractor can initiate equipment return via portal and receive shipping label
 
 ### Stripe Billing
 
@@ -138,7 +138,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | EQUIP-08 | Phase 30 | Complete |
 | EQUIP-09 | Phase 30 | Complete |
 | EQUIP-10 | Phase 30 | Complete |
-| EQUIP-11 | Phase 33 | Pending |
+| EQUIP-11 | Phase 33 | Complete |
 | BILL-01 | Phase 28 | Complete |
 | BILL-02 | Phase 28 | Complete |
 | BILL-03 | Phase 28 | Complete |

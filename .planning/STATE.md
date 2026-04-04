@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Enterprise & Monetization
 status: executing
-stopped_at: Completed 33-01-PLAN.md
-last_updated: "2026-04-04T15:42:43.949Z"
+stopped_at: Completed 33-02-PLAN.md
+last_updated: "2026-04-04T16:02:40.001Z"
 last_activity: 2026-04-04
 progress:
   total_phases: 8
   completed_phases: 5
   total_plans: 22
-  completed_plans: 20
+  completed_plans: 21
   percent: 84
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-01)
 ## Current Position
 
 Phase: 33 (inpost-courier-integration) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-04-04
 
@@ -66,6 +66,7 @@ Progress: [████████░░] 84%
 | Phase 32 P03 | 13min | 2 tasks | 16 files |
 | Phase 32 P04 | 9min | 2 tasks | 7 files |
 | Phase 33 P01 | 8min | 2 tasks | 14 files |
+| Phase 33 P02 | 14min | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -113,6 +114,8 @@ Recent decisions affecting current work:
 - [Phase 32]: tRPC proxy workaround for stale API dist types; teams router accessible via typed any cast
 - [Phase 33]: CourierClient interface as separate bounded context with duplicated equipment status maps to avoid circular imports
 - [Phase 33]: Webhook HMAC-SHA256 with graceful no-secret degradation; ReturnRequest with @unique shipmentId for 1:1 relation
+- [Phase 33]: Webhook endpoint matches org by signature first, falls back to shipment externalId/trackingNumber lookup
+- [Phase 33]: Offboarding auto-shipment uses system as createdByUserId; try/catch prevents API failures from blocking task start
 
 ### Pending Todos
 
@@ -126,6 +129,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-04T15:42:43.947Z
-Stopped at: Completed 33-01-PLAN.md
+Last session: 2026-04-04T16:02:39.998Z
+Stopped at: Completed 33-02-PLAN.md
 Resume file: None

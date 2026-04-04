@@ -167,7 +167,7 @@ Plans:
 
 Plans:
 - [x] 33-01-PLAN.md — CourierClient interface, InPostClient, status mapper, webhook handler, polling service, schema extensions, validators, tests (EQUIP-05)
-- [ ] 33-02-PLAN.md — Equipment router InPost extensions, portal router equipment/return endpoints, webhook/cron routes (EQUIP-05/EQUIP-11)
+- [x] 33-02-PLAN.md — Equipment router InPost extensions, portal router equipment/return endpoints, webhook/cron routes (EQUIP-05/EQUIP-11)
 - [ ] 33-03-PLAN.md — Paczkomat picker, InPost shipment form, label view, return approval banner, portal equipment tab, return flow, i18n (EQUIP-05/EQUIP-11)
 
 ### Phase 34: Intelligent Onboarding Wizard
@@ -241,6 +241,6 @@ Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 �
 | 30. Equipment Tracking Foundation | v3.0 | 2/3 | Complete    | 2026-04-02 |
 | 31. Google Workspace Directory Import | v3.0 | 5/5 | Complete    | 2026-04-02 |
 | 32. Teams Integration | v3.0 | 4/4 | Complete    | 2026-04-04 |
-| 33. InPost Courier Integration | v3.0 | 1/3 | In Progress|  |
+| 33. InPost Courier Integration | v3.0 | 2/3 | In Progress|  |
 | 34. Intelligent Onboarding Wizard | v3.0 | 0/2 | Not started | - |
 | 35. Feature Gating + DPD/UPS + Billing Polish | v3.0 | 0/2 | Not started | - |
