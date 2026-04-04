@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { prisma } from "@contractor-ops/db";
+import { returnRequestCreateSchema } from "@contractor-ops/validators";
 import { router } from "../init.js";
 import {
   portalProcedure,
@@ -24,6 +25,9 @@ import {
 } from "../services/r2.js";
 import { createChangeRequest } from "../services/portal-change-request.js";
 import { encryptBankAccount } from "../services/bank-account-crypto.js";
+import { InPostClient } from "../services/courier/inpost-client.js";
+import type { InPostClientConfig } from "../services/courier/inpost-client.js";
+import { dispatch } from "../services/notification-service.js";
 import * as E from "../errors.js";
 
 // ---------------------------------------------------------------------------
@@ -1206,5 +1210,335 @@ export const portalRouter = router({
         });
 
       return plain(preference);
+    }),
+
+  // =========================================================================
+  // EQUIPMENT ENDPOINTS (authenticated)
+  // =========================================================================
+
+  /**
+   * List equipment assigned to the authenticated contractor.
+   * Returns active assignments with equipment details and latest shipment.
+   */
+  listEquipment: portalProcedure.query(async ({ ctx }) => {
+    const assignments = await prisma.equipmentAssignment.findMany({
+      where: {
+        contractorId: ctx.contractorId,
+        organizationId: ctx.organizationId,
+        unassignedAt: null,
+      },
+      include: {
+        equipment: {
+          include: {
+            shipments: {
+              orderBy: { createdAt: "desc" as const },
+              take: 1,
+              select: {
+                id: true,
+                direction: true,
+                carrier: true,
+                trackingNumber: true,
+                currentStatus: true,
+                expectedDeliveryAt: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const items = assignments.map((a) => ({
+      assignmentId: a.id,
+      assignedAt: a.assignedAt,
+      equipment: {
+        id: a.equipment.id,
+        name: a.equipment.name,
+        serialNumber: a.equipment.serialNumber,
+        type: a.equipment.type,
+        status: a.equipment.status,
+      },
+      latestShipment: a.equipment.shipments[0] ?? null,
+    }));
+
+    return plain(items);
+  }),
+
+  /**
+   * Get the most recent active return request for the authenticated contractor.
+   * Returns null if no active return exists.
+   */
+  getReturnStatus: portalProcedure.query(async ({ ctx }) => {
+    const returnRequest = await prisma.returnRequest.findFirst({
+      where: {
+        contractorId: ctx.contractorId,
+        organizationId: ctx.organizationId,
+        status: {
+          notIn: ["CANCELLED", "REJECTED"],
+        },
+      },
+      orderBy: { createdAt: "desc" },
+      include: {
+        shipment: {
+          select: {
+            id: true,
+            trackingNumber: true,
+            currentStatus: true,
+            carrier: true,
+            labelUrl: true,
+          },
+        },
+      },
+    });
+
+    return returnRequest ? plain(returnRequest) : null;
+  }),
+
+  /**
+   * Request a return of all assigned equipment.
+   * Creates a ReturnRequest with PENDING_APPROVAL status (D-09: admin must approve).
+   */
+  requestReturn: portalProcedure
+    .input(returnRequestCreateSchema)
+    .mutation(async ({ ctx, input }) => {
+      // Verify contractor has assigned equipment
+      const assignments = await prisma.equipmentAssignment.findMany({
+        where: {
+          contractorId: ctx.contractorId,
+          organizationId: ctx.organizationId,
+          unassignedAt: null,
+        },
+        include: {
+          equipment: { select: { id: true, name: true, status: true } },
+        },
+      });
+
+      if (assignments.length === 0) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "NO_EQUIPMENT_ASSIGNED",
+        });
+      }
+
+      // Verify no existing active return request
+      const existingReturn = await prisma.returnRequest.findFirst({
+        where: {
+          contractorId: ctx.contractorId,
+          organizationId: ctx.organizationId,
+          status: {
+            in: ["PENDING_APPROVAL", "APPROVED", "SHIPMENT_CREATED"],
+          },
+        },
+      });
+
+      if (existingReturn) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "RETURN_ALREADY_PENDING",
+        });
+      }
+
+      const result = await prisma.$transaction(async (tx) => {
+        // Create return request
+        const returnRequest = await tx.returnRequest.create({
+          data: {
+            organizationId: ctx.organizationId,
+            contractorId: ctx.contractorId,
+            status: "PENDING_APPROVAL",
+            targetPointId: input.targetPointId,
+            targetPointName: input.targetPointName,
+            targetPointAddress: input.targetPointAddress,
+          },
+        });
+
+        // Update all assigned equipment to RETURN_REQUESTED
+        const equipmentIds = assignments.map((a) => a.equipment.id);
+        await tx.equipment.updateMany({
+          where: {
+            id: { in: equipmentIds },
+            organizationId: ctx.organizationId,
+          },
+          data: { status: "RETURN_REQUESTED" },
+        });
+
+        // Audit log
+        await tx.auditLog.create({
+          data: {
+            organizationId: ctx.organizationId,
+            actorType: "CONTRACTOR",
+            actorId: ctx.contractorId,
+            actorName: ctx.contractor?.email ?? "contractor",
+            action: "returnRequest.create",
+            resourceType: "RETURN_REQUEST",
+            resourceId: returnRequest.id,
+            newValuesJson: {
+              targetPointId: input.targetPointId,
+              targetPointName: input.targetPointName,
+              equipmentCount: equipmentIds.length,
+            },
+          },
+        });
+
+        return returnRequest;
+      });
+
+      // Fire-and-forget: notify admins about pending return request
+      void dispatch({
+        organizationId: ctx.organizationId,
+        type: "EQUIPMENT_RETURN_REQUESTED",
+        recipientUserIds: [],
+        title: "New equipment return request",
+        body: `Contractor ${ctx.contractor?.email ?? "unknown"} requested equipment return`,
+        entityType: "RETURN_REQUEST",
+        entityId: result.id,
+        metadata: {
+          contractorId: ctx.contractorId,
+          targetPoint: input.targetPointName,
+        },
+      }).catch((err) =>
+        console.error("[portal] Failed to dispatch return request notification:", err),
+      );
+
+      return plain(result);
+    }),
+
+  /**
+   * Cancel a pending return request.
+   * Only allowed when status is PENDING_APPROVAL.
+   */
+  cancelReturn: portalProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const returnRequest = await prisma.returnRequest.findFirst({
+        where: {
+          id: input.id,
+          contractorId: ctx.contractorId,
+          organizationId: ctx.organizationId,
+        },
+      });
+
+      if (!returnRequest) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "RETURN_REQUEST_NOT_FOUND",
+        });
+      }
+
+      if (returnRequest.status !== "PENDING_APPROVAL") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "RETURN_CANNOT_CANCEL",
+        });
+      }
+
+      const result = await prisma.$transaction(async (tx) => {
+        const updated = await tx.returnRequest.update({
+          where: { id: input.id },
+          data: { status: "CANCELLED" },
+        });
+
+        // Revert equipment statuses from RETURN_REQUESTED back to ASSIGNED
+        await tx.equipment.updateMany({
+          where: {
+            organizationId: ctx.organizationId,
+            status: "RETURN_REQUESTED",
+            assignments: {
+              some: {
+                contractorId: ctx.contractorId,
+                unassignedAt: null,
+              },
+            },
+          },
+          data: { status: "ASSIGNED" },
+        });
+
+        // Audit log
+        await tx.auditLog.create({
+          data: {
+            organizationId: ctx.organizationId,
+            actorType: "CONTRACTOR",
+            actorId: ctx.contractorId,
+            actorName: ctx.contractor?.email ?? "contractor",
+            action: "returnRequest.cancel",
+            resourceType: "RETURN_REQUEST",
+            resourceId: input.id,
+            newValuesJson: { status: "CANCELLED" },
+          },
+        });
+
+        return updated;
+      });
+
+      return plain(result);
+    }),
+
+  /**
+   * Get the return shipping label for an approved return request.
+   * Only available when status is SHIPMENT_CREATED and shipment exists.
+   */
+  getReturnLabel: portalProcedure
+    .input(z.object({ returnRequestId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const returnRequest = await prisma.returnRequest.findFirst({
+        where: {
+          id: input.returnRequestId,
+          contractorId: ctx.contractorId,
+          organizationId: ctx.organizationId,
+        },
+      });
+
+      if (!returnRequest) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "RETURN_REQUEST_NOT_FOUND",
+        });
+      }
+
+      if (returnRequest.status !== "SHIPMENT_CREATED" || !returnRequest.shipmentId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "RETURN_LABEL_NOT_AVAILABLE",
+        });
+      }
+
+      const shipment = await prisma.shipment.findFirst({
+        where: {
+          id: returnRequest.shipmentId,
+          organizationId: ctx.organizationId,
+        },
+      });
+
+      if (!shipment || shipment.carrier !== "InPost" || !shipment.externalId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "SHIPMENT_NO_INPOST_LABEL",
+        });
+      }
+
+      const courierConfig = await prisma.courierConfig.findUnique({
+        where: {
+          organizationId_carrier: {
+            organizationId: ctx.organizationId,
+            carrier: "inpost",
+          },
+        },
+      });
+
+      if (!courierConfig) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "COURIER_CONFIG_NOT_FOUND",
+        });
+      }
+
+      const configJson = courierConfig.configJson as InPostClientConfig;
+      const client = new InPostClient(configJson);
+
+      const labelBuffer = await client.getLabel(shipment.externalId, "pdf");
+
+      return {
+        data: labelBuffer.toString("base64"),
+        contentType: "application/pdf",
+        filename: `return-label-${shipment.trackingNumber ?? shipment.externalId}.pdf`,
+      };
     }),
 });
