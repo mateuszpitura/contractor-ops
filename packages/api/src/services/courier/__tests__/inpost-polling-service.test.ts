@@ -6,12 +6,17 @@ import { pollInPostShipmentStatuses } from "../inpost-polling-service";
 // InPost Polling Service Tests
 // ---------------------------------------------------------------------------
 
-// Mock InPostClient
-vi.mock("../inpost-client", () => ({
-  InPostClient: vi.fn().mockImplementation(() => ({
-    getStatus: vi.fn(),
-  })),
-}));
+// Shared mock for getStatus — tests configure it per-case
+const mockGetStatus = vi.fn();
+
+// Mock InPostClient as a class
+vi.mock("../inpost-client", () => {
+  return {
+    InPostClient: class MockInPostClient {
+      getStatus = mockGetStatus;
+    },
+  };
+});
 
 function createMockDb() {
   return {
@@ -38,6 +43,7 @@ describe("pollInPostShipmentStatuses", () => {
 
   beforeEach(() => {
     db = createMockDb();
+    mockGetStatus.mockReset();
     vi.spyOn(console, "info").mockImplementation(() => {});
     vi.spyOn(console, "warn").mockImplementation(() => {});
     vi.spyOn(console, "error").mockImplementation(() => {});
@@ -92,16 +98,11 @@ describe("pollInPostShipmentStatuses", () => {
       },
     ]);
 
-    // Mock InPostClient.getStatus via module mock
-    const { InPostClient } = await import("../inpost-client");
-    const mockGetStatus = vi.fn().mockResolvedValue({
+    mockGetStatus.mockResolvedValue({
       externalId: "ext-1",
       status: "delivered",
       trackingNumber: "T1",
     });
-    vi.mocked(InPostClient).mockImplementation(
-      () => ({ getStatus: mockGetStatus } as any),
-    );
 
     db.shipmentEvent.findFirst.mockResolvedValue(null); // no duplicate
     db.shipmentEvent.create.mockResolvedValue({});
@@ -167,16 +168,10 @@ describe("pollInPostShipmentStatuses", () => {
       },
     ]);
 
-    const { InPostClient } = await import("../inpost-client");
-    vi.mocked(InPostClient).mockImplementation(
-      () =>
-        ({
-          getStatus: vi.fn().mockResolvedValue({
-            externalId: "ext-1",
-            status: "adopted_at_source_branch", // maps to IN_TRANSIT — same as current
-          }),
-        }) as any,
-    );
+    mockGetStatus.mockResolvedValue({
+      externalId: "ext-1",
+      status: "adopted_at_source_branch", // maps to IN_TRANSIT — same as current
+    });
 
     const result = await pollInPostShipmentStatuses(db as any, "org-1");
 

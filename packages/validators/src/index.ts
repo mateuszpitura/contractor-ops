@@ -351,6 +351,13 @@ export {
   shipmentCreateSchema,
   shipmentEventCreateSchema,
   equipmentTaskConfigSchema,
+  returnRequestStatusEnum,
+  returnRequestCreateSchema,
+  returnRequestApproveSchema,
+  returnRequestRejectSchema,
+  inpostShipmentCreateSchema,
+  courierConfigSchema,
+  inpostWebhookPayloadSchema,
 } from "./equipment.js";
 export type {
   EquipmentCreateInput,
@@ -361,6 +368,13 @@ export type {
   ShipmentCreateInput,
   ShipmentEventCreateInput,
   EquipmentTaskConfig,
+  ReturnRequestStatus,
+  ReturnRequestCreateInput,
+  ReturnRequestApproveInput,
+  ReturnRequestRejectInput,
+  InpostShipmentCreateInput,
+  CourierConfigInput,
+  InpostWebhookPayload,
 } from "./equipment.js";
 
 export {
