@@ -241,6 +241,6 @@ Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 �
 | 30. Equipment Tracking Foundation | v3.0 | 2/3 | Complete    | 2026-04-02 |
 | 31. Google Workspace Directory Import | v3.0 | 5/5 | Complete    | 2026-04-02 |
 | 32. Teams Integration | v3.0 | 4/4 | Complete    | 2026-04-04 |
-| 33. InPost Courier Integration | v3.0 | 3/3 | Complete   | 2026-04-04 |
+| 33. InPost Courier Integration | v3.0 | 3/3 | Complete    | 2026-04-04 |
 | 34. Intelligent Onboarding Wizard | v3.0 | 0/2 | Not started | - |
 | 35. Feature Gating + DPD/UPS + Billing Polish | v3.0 | 0/2 | Not started | - |
