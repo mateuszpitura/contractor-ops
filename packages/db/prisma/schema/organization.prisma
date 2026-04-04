@@ -84,6 +84,8 @@ model Organization {
   equipmentAssignments EquipmentAssignment[]
   shipments            Shipment[]
   shipmentEvents       ShipmentEvent[]
+  returnRequests       ReturnRequest[]
+  courierConfigs       CourierConfig[]
 }
 
 model Member {

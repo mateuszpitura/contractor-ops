@@ -54,6 +54,8 @@ model Shipment {
   carrier            String
   carrierCustom      String?
   trackingNumber     String?
+  externalId         String?
+  labelUrl           String?
   expectedDeliveryAt DateTime?       @db.Date
   currentStatus      ShipmentStatus  @default(CREATED)
   createdByUserId    String
@@ -63,11 +65,13 @@ model Shipment {
   organization       Organization    @relation(fields: [organizationId], references: [id])
   equipment          Equipment       @relation(fields: [equipmentId], references: [id])
   events             ShipmentEvent[]
+  returnRequest      ReturnRequest?
 
   @@index([organizationId])
   @@index([organizationId, equipmentId])
   @@index([organizationId, currentStatus])
   @@index([organizationId, workflowTaskRunId])
+  @@index([organizationId, carrier, currentStatus])
 }
 
 model ShipmentEvent {
@@ -124,4 +128,56 @@ enum ShipmentStatus {
 enum ShipmentDirection {
   OUTBOUND
   RETURN
+}
+
+// --- Return Requests ---
+
+model ReturnRequest {
+  id                 String              @id @default(cuid())
+  organizationId     String
+  contractorId       String
+  status             ReturnRequestStatus @default(PENDING_APPROVAL)
+  targetPointId      String?
+  targetPointName    String?
+  targetPointAddress String?
+  shipmentId         String?             @unique
+  rejectedReason     String?
+  approvedByUserId   String?
+  approvedAt         DateTime?
+  rejectedByUserId   String?
+  rejectedAt         DateTime?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  organization       Organization        @relation(fields: [organizationId], references: [id])
+  contractor         Contractor          @relation(fields: [contractorId], references: [id])
+  shipment           Shipment?           @relation(fields: [shipmentId], references: [id])
+
+  @@index([organizationId])
+  @@index([organizationId, contractorId])
+  @@index([organizationId, status])
+}
+
+enum ReturnRequestStatus {
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+  SHIPMENT_CREATED
+  CANCELLED
+}
+
+// --- Courier Config ---
+
+model CourierConfig {
+  id              String   @id @default(cuid())
+  organizationId  String
+  carrier         String
+  configJson      Json     @default("{}")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  organization    Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([organizationId, carrier])
+  @@index([organizationId])
 }

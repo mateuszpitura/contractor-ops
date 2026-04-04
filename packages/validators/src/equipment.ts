@@ -154,3 +154,105 @@ export const equipmentTaskConfigSchema = z.object({
 });
 
 export type EquipmentTaskConfig = z.infer<typeof equipmentTaskConfigSchema>;
+
+// ---------------------------------------------------------------------------
+// Return request schemas
+// ---------------------------------------------------------------------------
+
+export const returnRequestStatusEnum = z.enum([
+  "PENDING_APPROVAL",
+  "APPROVED",
+  "REJECTED",
+  "SHIPMENT_CREATED",
+  "CANCELLED",
+]);
+
+export type ReturnRequestStatus = z.infer<typeof returnRequestStatusEnum>;
+
+/**
+ * Schema for creating a return request from the contractor portal.
+ */
+export const returnRequestCreateSchema = z.object({
+  targetPointId: z.string().min(1),
+  targetPointName: z.string().min(1),
+  targetPointAddress: z.string().min(1),
+});
+
+export type ReturnRequestCreateInput = z.infer<
+  typeof returnRequestCreateSchema
+>;
+
+/**
+ * Schema for approving a return request (admin action).
+ */
+export const returnRequestApproveSchema = z.object({
+  id: z.string().min(1),
+  parcelSize: z.enum(["small", "medium", "large"]).default("large"),
+});
+
+export type ReturnRequestApproveInput = z.infer<
+  typeof returnRequestApproveSchema
+>;
+
+/**
+ * Schema for rejecting a return request (admin action).
+ */
+export const returnRequestRejectSchema = z.object({
+  id: z.string().min(1),
+  reason: z.string().max(2000).optional(),
+});
+
+export type ReturnRequestRejectInput = z.infer<
+  typeof returnRequestRejectSchema
+>;
+
+// ---------------------------------------------------------------------------
+// InPost / Courier schemas
+// ---------------------------------------------------------------------------
+
+/**
+ * Schema for creating an InPost shipment via ShipX API.
+ */
+export const inpostShipmentCreateSchema = z.object({
+  equipmentIds: z.array(z.string().min(1)).min(1),
+  targetPointId: z.string().min(1),
+  targetPointName: z.string().min(1),
+  targetPointAddress: z.string().min(1),
+  parcelSize: z.enum(["small", "medium", "large"]),
+  direction: shipmentDirectionEnum,
+  workflowTaskRunId: z.string().optional(),
+  notes: z.string().max(2000).optional(),
+});
+
+export type InpostShipmentCreateInput = z.infer<
+  typeof inpostShipmentCreateSchema
+>;
+
+/**
+ * Schema for courier configuration (stored encrypted per org).
+ */
+export const courierConfigSchema = z.object({
+  carrier: z.string().min(1),
+  apiToken: z.string().min(1),
+  organizationId: z.string().min(1),
+  geowidgetToken: z.string().min(1),
+  sandbox: z.boolean().default(true),
+  webhookSecret: z.string().optional(),
+});
+
+export type CourierConfigInput = z.infer<typeof courierConfigSchema>;
+
+/**
+ * Schema for validating InPost webhook payloads (ShipX status push).
+ */
+export const inpostWebhookPayloadSchema = z.object({
+  id: z.number(),
+  shipment_id: z.string(),
+  status: z.string(),
+  tracking_number: z.string().optional(),
+  created_at: z.string().optional(),
+});
+
+export type InpostWebhookPayload = z.infer<
+  typeof inpostWebhookPayloadSchema
+>;

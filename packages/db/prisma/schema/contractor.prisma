@@ -59,6 +59,12 @@ model Contractor {
   timesheets               Timesheet[]
   timeEntries              TimeEntry[]
   equipmentAssignments     EquipmentAssignment[]
+  returnRequests           ReturnRequest[]
+
+  // InPost preferred Paczkomat (D-03)
+  preferredPaczkomatId      String?
+  preferredPaczkomatName    String?
+  preferredPaczkomatAddress String?
 
   @@index([organizationId])
   @@index([organizationId, status])
