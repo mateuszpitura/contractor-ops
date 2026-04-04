@@ -1,0 +1,184 @@
+"use client";
+
+import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { AlertTriangle, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { useTranslations } from "next-intl";
+import { format } from "date-fns";
+
+import { trpc } from "@/trpc/init";
+import { Button } from "@/components/ui/button";
+
+// ---------------------------------------------------------------------------
+// tRPC equipment proxy (workaround: API dist types are stale until next build)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const equipmentProxy = (trpc as any).equipment as {
+  approveReturnRequest: { mutationOptions: (opts: any) => any };
+  rejectReturnRequest: { mutationOptions: (opts: any) => any };
+  getById: { queryKey: () => any[] };
+  listReturnRequests: { queryKey: () => any[] };
+};
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+interface ReturnRequest {
+  id: string;
+  contractorName: string;
+  itemCount: number;
+  targetPointName: string;
+  createdAt: string;
+}
+
+interface ReturnApprovalBannerProps {
+  returnRequest: ReturnRequest;
+}
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
+
+/**
+ * Admin-facing banner displayed at the top of the equipment detail page
+ * when a contractor has submitted a return request pending approval.
+ */
+export function ReturnApprovalBanner({
+  returnRequest,
+}: ReturnApprovalBannerProps) {
+  const t = useTranslations("Equipment.return");
+  const queryClient = useQueryClient();
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const approveMutation = useMutation<any, Error, Record<string, unknown>>(
+    equipmentProxy.approveReturnRequest.mutationOptions({
+      onSuccess: () => {
+        toast.success(t("approvedToast"));
+        queryClient.invalidateQueries({
+          queryKey: equipmentProxy.getById.queryKey(),
+        });
+        queryClient.invalidateQueries({
+          queryKey: equipmentProxy.listReturnRequests.queryKey(),
+        });
+      },
+      onError: () => {
+        toast.error(t("actionFailed"));
+      },
+    }),
+  );
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const rejectMutation = useMutation<any, Error, Record<string, unknown>>(
+    equipmentProxy.rejectReturnRequest.mutationOptions({
+      onSuccess: () => {
+        toast.success(t("rejectedToast"));
+        setRejectDialogOpen(false);
+        queryClient.invalidateQueries({
+          queryKey: equipmentProxy.getById.queryKey(),
+        });
+        queryClient.invalidateQueries({
+          queryKey: equipmentProxy.listReturnRequests.queryKey(),
+        });
+      },
+      onError: () => {
+        toast.error(t("actionFailed"));
+      },
+    }),
+  );
+
+  const handleApprove = () => {
+    approveMutation.mutate({
+      id: returnRequest.id,
+      parcelSize: "large",
+    });
+  };
+
+  const handleReject = () => {
+    rejectMutation.mutate({ id: returnRequest.id });
+  };
+
+  const isPending = approveMutation.isPending || rejectMutation.isPending;
+
+  return (
+    <>
+      <div className="rounded-md border-l-4 border-warning bg-warning/10 p-4">
+        <div className="flex items-start gap-3">
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-warning" />
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium">
+              {t("requestedBy", { name: returnRequest.contractorName })}
+            </p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {t("itemCount", { count: returnRequest.itemCount })} |{" "}
+              {t("dropOff")}: {returnRequest.targetPointName} |{" "}
+              {t("requested")}:{" "}
+              {format(new Date(returnRequest.createdAt), "MMM d, yyyy")}
+            </p>
+          </div>
+          <div className="flex shrink-0 gap-2">
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => setRejectDialogOpen(true)}
+              disabled={isPending}
+            >
+              {rejectMutation.isPending && (
+                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+              )}
+              {t("reject")}
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleApprove}
+              disabled={isPending}
+            >
+              {approveMutation.isPending && (
+                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+              )}
+              {t("approve")}
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Reject confirmation dialog */}
+      <AlertDialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("rejectConfirmTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("rejectConfirmDescription")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={rejectMutation.isPending}>
+              {t("cancelAction")}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={handleReject}
+              disabled={rejectMutation.isPending}
+            >
+              {rejectMutation.isPending && (
+                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+              )}
+              {t("reject")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
+}

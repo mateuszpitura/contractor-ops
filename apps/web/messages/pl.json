@@ -3214,9 +3214,42 @@
       "invoices": "Faktury",
       "documents": "Dokumenty",
       "payments": "Płatności",
+      "equipment": "Sprzet",
       "settings": "Ustawienia",
       "signOut": "Wyloguj się",
-      "menuDescription": "Menu nawigacji portalu"
+      "menuDescription": "Menu nawigacji portalu",
+      "time": "Czas"
+    },
+    "equipment": {
+      "title": "Twoj sprzet",
+      "emptyTitle": "Brak przypisanego sprzetu",
+      "emptyDescription": "Nie masz jeszcze przypisanego sprzetu. Skontaktuj sie z przelozonym, jesli oczekujesz na sprzet.",
+      "returnButton": "Zwroc",
+      "returnAll": "Zwroc sprzet",
+      "deliveredOn": "Dostarczono {date}",
+      "pendingApproval": "Zwrot oczekuje na zatwierdzenie",
+      "cancelReturn": "Anuluj zwrot",
+      "returnApproved": "Zwrot zatwierdzony -- etykieta gotowa",
+      "viewLabel": "Zobacz etykiete"
+    },
+    "return": {
+      "title": "Zwroc sprzet",
+      "step1Title": "Wybierz Paczkomat nadawczy",
+      "step2Title": "Potwierdz zwrot",
+      "step3Title": "Zwrot zatwierdzony",
+      "itemsToReturn": "Zwracasz {count, plural, one {# przedmiot} few {# przedmioty} many {# przedmiotow} other {# przedmiotow}}:",
+      "selectDropOff": "Wybierz Paczkomat nadawczy",
+      "next": "Dalej",
+      "back": "Wstecz",
+      "cancel": "Anuluj",
+      "requestReturn": "Zglosz zwrot",
+      "approvalNotice": "Ten zwrot wymaga zatwierdzenia przez administratora. Etykiete otrzymasz po zatwierdzeniu.",
+      "returnRequested": "Zwrot zgloszony",
+      "dropOffAt": "Nadaj w: {name}",
+      "dropOffBy": "do: {date}",
+      "cancelConfirmTitle": "Anuluj zwrot",
+      "cancelConfirmDescription": "Twoja prosba o zwrot zostanie anulowana. Mozesz zlozyc ja ponownie pozniej. Kontynuowac?",
+      "cancelledToast": "Zwrot anulowany"
     },
     "dashboard": {
       "welcomeBack": "Witaj ponownie, {name}",
@@ -3700,6 +3733,46 @@
     "contractorTab": {
       "emptyTitle": "Brak przypisanego sprzetu",
       "emptyDescription": "Ten wykonawca nie ma przypisanego sprzetu. Przypisz sprzet z rejestru sprzetu."
+    },
+    "inpost": {
+      "createShipment": "Utworz przesylke InPost",
+      "selectPaczkomat": "Wybierz Paczkomat",
+      "recipient": "Odbiorca",
+      "destinationPaczkomat": "Paczkomat docelowy",
+      "parcelSize": "Rozmiar paczki",
+      "shipmentCreated": "Przesylka InPost utworzona",
+      "shipmentError": "Nie udalo sie utworzyc przesylki InPost. Sprobuj ponownie."
+    },
+    "paczkomat": {
+      "selectPaczkomat": "Wybierz Paczkomat",
+      "confirmLocker": "Potwierdz skrytke",
+      "change": "Zmien",
+      "cancel": "Anuluj",
+      "retry": "Sprobuj ponownie",
+      "loadError": "Nie udalo sie zaladowac mapy Paczkomatow. Sprawdz polaczenie i sprobuj ponownie.",
+      "noSelection": "Nie wybrano Paczkomatu",
+      "noSelectionDescription": "Wybierz Paczkomat na mapie, aby ustawic miejsce dostawy."
+    },
+    "label": {
+      "download": "Pobierz etykiete",
+      "print": "Drukuj",
+      "notAvailable": "Etykieta jeszcze niedostepna",
+      "notAvailableDescription": "Etykieta pojawi sie tutaj po utworzeniu przesylki w InPost.",
+      "downloadError": "Nie udalo sie pobrac etykiety. Sprobuj ponownie."
+    },
+    "return": {
+      "requestedBy": "Zwrot zgloszony przez {name}",
+      "itemCount": "{count, plural, one {# przedmiot} few {# przedmioty} many {# przedmiotow} other {# przedmiotow}}",
+      "dropOff": "Punkt nadania",
+      "requested": "Zgloszono",
+      "approve": "Zatwierdz zwrot",
+      "reject": "Odrzuc zwrot",
+      "approvedToast": "Zwrot zatwierdzony -- przesylka utworzona",
+      "rejectedToast": "Zwrot odrzucony",
+      "actionFailed": "Nie udalo sie wykonac akcji. Sprobuj ponownie.",
+      "rejectConfirmTitle": "Odrzuc zwrot",
+      "rejectConfirmDescription": "Prosby o zwrot wykonawcy zostanie odrzucona. Wykonawca zostanie powiadomiony. Kontynuowac?",
+      "cancelAction": "Anuluj"
     }
   },
   "Legal": {

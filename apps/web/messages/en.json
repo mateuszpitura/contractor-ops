@@ -3214,9 +3214,42 @@
       "invoices": "Invoices",
       "documents": "Documents",
       "payments": "Payments",
+      "equipment": "Equipment",
       "settings": "Settings",
       "signOut": "Sign out",
-      "menuDescription": "Portal navigation menu"
+      "menuDescription": "Portal navigation menu",
+      "time": "Time"
+    },
+    "equipment": {
+      "title": "Your equipment",
+      "emptyTitle": "No equipment assigned",
+      "emptyDescription": "You don't have any equipment assigned to you yet. Contact your manager if you expect to receive equipment.",
+      "returnButton": "Return",
+      "returnAll": "Return equipment",
+      "deliveredOn": "Delivered {date}",
+      "pendingApproval": "Return pending approval",
+      "cancelReturn": "Cancel return",
+      "returnApproved": "Return approved -- your label is ready",
+      "viewLabel": "View label"
+    },
+    "return": {
+      "title": "Return equipment",
+      "step1Title": "Select drop-off Paczkomat",
+      "step2Title": "Confirm return",
+      "step3Title": "Return approved",
+      "itemsToReturn": "You are returning {count, plural, one {# item} other {# items}}:",
+      "selectDropOff": "Select drop-off Paczkomat",
+      "next": "Next",
+      "back": "Back",
+      "cancel": "Cancel",
+      "requestReturn": "Request return",
+      "approvalNotice": "This return requires admin approval. You will receive the shipping label once approved.",
+      "returnRequested": "Return requested",
+      "dropOffAt": "Drop off at: {name}",
+      "dropOffBy": "by: {date}",
+      "cancelConfirmTitle": "Cancel return",
+      "cancelConfirmDescription": "This will cancel your return request. You can request a return again later. Continue?",
+      "cancelledToast": "Return cancelled"
     },
     "dashboard": {
       "welcomeBack": "Welcome back, {name}",
@@ -3700,6 +3733,46 @@
     "contractorTab": {
       "emptyTitle": "No equipment assigned",
       "emptyDescription": "This contractor has no equipment assigned. Assign equipment from the equipment registry."
+    },
+    "inpost": {
+      "createShipment": "Create InPost shipment",
+      "selectPaczkomat": "Select Paczkomat",
+      "recipient": "Recipient",
+      "destinationPaczkomat": "Destination Paczkomat",
+      "parcelSize": "Parcel size",
+      "shipmentCreated": "InPost shipment created",
+      "shipmentError": "Could not create the InPost shipment. Please try again."
+    },
+    "paczkomat": {
+      "selectPaczkomat": "Select Paczkomat",
+      "confirmLocker": "Confirm locker",
+      "change": "Change",
+      "cancel": "Cancel",
+      "retry": "Try again",
+      "loadError": "Could not load the Paczkomat map. Check your connection and try again.",
+      "noSelection": "No Paczkomat selected",
+      "noSelectionDescription": "Select a Paczkomat locker on the map to set the delivery destination."
+    },
+    "label": {
+      "download": "Download label",
+      "print": "Print",
+      "notAvailable": "Label not yet available",
+      "notAvailableDescription": "The shipping label will appear here once the shipment is created with InPost.",
+      "downloadError": "Could not download the label. Please try again."
+    },
+    "return": {
+      "requestedBy": "Return requested by {name}",
+      "itemCount": "{count, plural, one {# item} other {# items}}",
+      "dropOff": "Drop-off",
+      "requested": "Requested",
+      "approve": "Approve return",
+      "reject": "Reject return",
+      "approvedToast": "Return approved -- shipment created",
+      "rejectedToast": "Return rejected",
+      "actionFailed": "Could not complete the action. Please try again.",
+      "rejectConfirmTitle": "Reject return",
+      "rejectConfirmDescription": "This will decline the contractor's return request. They will be notified. Continue?",
+      "cancelAction": "Cancel"
     }
   },
   "Legal": {
