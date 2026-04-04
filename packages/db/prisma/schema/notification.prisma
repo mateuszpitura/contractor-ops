@@ -29,6 +29,7 @@ model UserNotificationPreference {
   notificationType String
   channelEmail     Boolean  @default(true)
   channelSlack     Boolean  @default(true)
+  channelTeams     Boolean  @default(false)
   channelInApp     Boolean  @default(true)
   digestMode       Boolean  @default(false)
   createdAt        DateTime @default(now())
@@ -101,6 +102,7 @@ enum NotificationChannel {
   IN_APP
   EMAIL
   SLACK
+  TEAMS
 }
 
 enum NotificationStatus {
