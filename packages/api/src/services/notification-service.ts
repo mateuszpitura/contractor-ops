@@ -2,11 +2,7 @@ import { prisma } from "@contractor-ops/db";
 import { Resend } from "resend";
 import type { NOTIFICATION_TYPES } from "@contractor-ops/validators";
 import { renderNotificationEmail } from "./email-templates.js";
-import {
-  getSlackUserIdForUser,
-  sendApprovalCard,
-  sendReminderDM,
-} from "./slack-client.js";
+import { getConnectedMessagingProviders } from "./messaging/index.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -114,6 +110,7 @@ export async function getOrCreatePreferences(
       notificationType,
       channelEmail: true,
       channelSlack: true,
+      channelTeams: false,
       channelInApp: true,
       digestMode: false,
     },
@@ -168,51 +165,6 @@ async function sendNotificationEmail(
       "List-Unsubscribe": `<${preferencesUrl}>`,
     },
   });
-}
-
-// ---------------------------------------------------------------------------
-// Real Slack DM sender (replaces placeholder)
-// ---------------------------------------------------------------------------
-
-/**
- * Sends a Slack DM for a notification event.
- * For APPROVAL_REQUEST: sends a Block Kit approval card.
- * For other types: sends a text-based reminder DM.
- */
-async function sendSlackDM(
-  userId: string,
-  event: NotificationEvent,
-): Promise<void> {
-  const slackUserId = await getSlackUserIdForUser(
-    event.organizationId,
-    userId,
-  );
-
-  if (!slackUserId) {
-    // User not mapped to Slack — skip silently
-    return;
-  }
-
-  if (event.type === "APPROVAL_REQUEST") {
-    const meta = event.metadata ?? {};
-    await sendApprovalCard({
-      organizationId: event.organizationId,
-      slackUserId,
-      invoiceNumber: (meta.invoiceNumber as string) ?? "",
-      contractorName: (meta.contractorName as string) ?? "",
-      amount: String(meta.amount ?? ""),
-      currency: (meta.currency as string) ?? "",
-      slaDeadline: (meta.slaDeadline as string) ?? "",
-      invoiceId: (meta.invoiceId as string) ?? "",
-      flowId: (meta.flowId as string) ?? "",
-    });
-  } else {
-    await sendReminderDM({
-      organizationId: event.organizationId,
-      slackUserId,
-      text: `*${event.title}*\n${event.body}`,
-    });
-  }
 }
 
 // ---------------------------------------------------------------------------
@@ -284,13 +236,39 @@ export async function dispatch(event: NotificationEvent): Promise<void> {
       }
     }
 
-    // Slack notification (preference-gated, try/catch wrapped)
-    if (prefs.channelSlack) {
+    // Messaging provider dispatch (Slack, Teams, future platforms)
+    const providers = await getConnectedMessagingProviders(event.organizationId);
+    for (const provider of providers) {
+      const prefKey = provider.platform === "slack" ? "channelSlack" : "channelTeams";
+      if (!prefs[prefKey]) continue;
+
       try {
-        await sendSlackDM(userId, event);
+        const recipientId = await provider.getUserId(event.organizationId, userId);
+        if (!recipientId) continue;
+
+        if (event.type === "APPROVAL_REQUEST") {
+          const meta = event.metadata ?? {};
+          await provider.sendApprovalCard({
+            organizationId: event.organizationId,
+            recipientId,
+            invoiceNumber: (meta.invoiceNumber as string) ?? "",
+            contractorName: (meta.contractorName as string) ?? "",
+            amount: String(meta.amount ?? ""),
+            currency: (meta.currency as string) ?? "",
+            dueDate: (meta.slaDeadline as string) ?? "",
+            invoiceId: (meta.invoiceId as string) ?? "",
+            flowId: (meta.flowId as string) ?? "",
+          });
+        } else {
+          await provider.sendReminderDM({
+            organizationId: event.organizationId,
+            recipientId,
+            text: `*${event.title}*\n${event.body}`,
+          });
+        }
       } catch (error) {
         console.error(
-          `[notification-service] Slack DM send failed for user=${userId}:`,
+          `[notification-service] ${provider.platform} send failed for user=${userId}:`,
           error,
         );
       }
