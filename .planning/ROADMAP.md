@@ -152,7 +152,7 @@ Plans:
 Plans:
 - [x] 32-01-PLAN.md — MessagingProvider interface, SlackMessagingProvider, dispatch refactor, schema updates (TEAM-01/03/05)
 - [ ] 32-02-PLAN.md — TeamsAdapter, Adaptive Cards, Graph API client (TEAM-01/03)
-- [ ] 32-03-PLAN.md — TeamsBotHandler, TeamsMessagingProvider, endpoint, tRPC router, USER-SETUP.md (TEAM-01/03/04/05/06)
+- [x] 32-03-PLAN.md — TeamsBotHandler, TeamsMessagingProvider, endpoint, tRPC router, USER-SETUP.md (TEAM-01/03/04/05/06)
 - [ ] 32-04-PLAN.md — Teams UI: provider section, channel mapping, notification prefs Teams column, i18n (TEAM-02/06)
 
 ### Phase 33: InPost Courier Integration
@@ -238,7 +238,7 @@ Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 �
 | 29. Linear Integration | v3.0 | 3/3 | Complete    | 2026-04-01 |
 | 30. Equipment Tracking Foundation | v3.0 | 2/3 | Complete    | 2026-04-02 |
 | 31. Google Workspace Directory Import | v3.0 | 5/5 | Complete    | 2026-04-02 |
-| 32. Teams Integration | v3.0 | 1/4 | In Progress|  |
+| 32. Teams Integration | v3.0 | 2/4 | In Progress|  |
 | 33. InPost Courier Integration | v3.0 | 0/1 | Not started | - |
 | 34. Intelligent Onboarding Wizard | v3.0 | 0/2 | Not started | - |
 | 35. Feature Gating + DPD/UPS + Billing Polish | v3.0 | 0/2 | Not started | - |
