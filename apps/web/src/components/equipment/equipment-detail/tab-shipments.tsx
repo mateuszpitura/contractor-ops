@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/dialog";
 import { ShipmentTimeline } from "../shipment-timeline";
 import { ShipmentStatusBadge } from "../shipment-status-badge";
+import { ReturnApprovalBanner } from "../return-approval-banner";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -51,10 +52,19 @@ interface Shipment {
   events: ShipmentEvent[];
 }
 
+interface PendingReturn {
+  id: string;
+  contractorName: string;
+  itemCount: number;
+  targetPointName: string;
+  createdAt: string;
+}
+
 interface TabShipmentsProps {
   shipments: Shipment[];
   equipmentId: string;
   onCreateShipment: () => void;
+  pendingReturn?: PendingReturn | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -65,6 +75,7 @@ export function TabShipments({
   shipments,
   equipmentId,
   onCreateShipment,
+  pendingReturn,
 }: TabShipmentsProps) {
   const t = useTranslations("Equipment");
   const queryClient = useQueryClient();
@@ -88,6 +99,9 @@ export function TabShipments({
   if (shipments.length === 0) {
     return (
       <div className="space-y-4">
+        {pendingReturn && (
+          <ReturnApprovalBanner returnRequest={pendingReturn} />
+        )}
         <div className="flex justify-end">
           <Button onClick={onCreateShipment}>
             <Truck className="mr-1.5 size-3.5" />
@@ -109,6 +123,9 @@ export function TabShipments({
 
   return (
     <div className="space-y-4">
+      {pendingReturn && (
+        <ReturnApprovalBanner returnRequest={pendingReturn} />
+      )}
       <div className="flex justify-end">
         <Button onClick={onCreateShipment}>
           <Truck className="mr-1.5 size-3.5" />

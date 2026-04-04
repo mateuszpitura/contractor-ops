@@ -8,6 +8,7 @@ import {
   FolderOpen,
   Clock,
   Banknote,
+  Package,
   Settings,
   Menu,
   LogOut,
@@ -39,6 +40,7 @@ const NAV_ITEMS = [
   { label: "Invoices", href: "/portal/invoices", icon: Receipt },
   { label: "Documents", href: "/portal/documents", icon: FolderOpen },
   { label: "Time", href: "/portal/time", icon: Clock },
+  { label: "Equipment", href: "/portal/equipment", icon: Package },
   { label: "Payments", href: "/portal/payments", icon: Banknote },
   { label: "Settings", href: "/portal/settings", icon: Settings },
 ] as const;

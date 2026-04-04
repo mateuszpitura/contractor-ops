@@ -11,6 +11,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "@/i18n/navigation";
 import { useBreadcrumbOverride } from "@/components/layout/breadcrumb-context";
 
+// tRPC equipment proxy for new procedures (stale dist types workaround)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const equipmentProxy = (trpc as any).equipment as {
+  listReturnRequests: {
+    queryOptions: (input?: { status?: string }) => any;
+  };
+};
+
 import { EquipmentDetailHeader } from "@/components/equipment/equipment-detail/equipment-detail-header";
 import { EquipmentDetailTabs } from "@/components/equipment/equipment-detail/equipment-detail-tabs";
 import { TabInfo } from "@/components/equipment/equipment-detail/tab-info";
@@ -70,6 +78,46 @@ export default function EquipmentDetailPage() {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const equipment = equipmentQuery.data as any;
+
+  // Query pending return requests for the current equipment's contractor
+  const returnRequestsQuery = useQuery({
+    ...equipmentProxy.listReturnRequests.queryOptions({
+      status: "PENDING_APPROVAL",
+    }),
+    enabled: !!equipment?.currentAssignment,
+  });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const returnRequests = (returnRequestsQuery.data ?? []) as Array<{
+    id: string;
+    contractorId: string;
+    status: string;
+    targetPointName: string | null;
+    itemCount: number;
+    createdAt: string;
+    contractor?: { displayName?: string; legalName?: string };
+  }>;
+
+  // Find pending return for current contractor
+  const pendingReturn = equipment?.currentAssignment
+    ? returnRequests.find(
+        (r) => r.contractorId === equipment.currentAssignment?.contractorId,
+      )
+    : null;
+
+  const pendingReturnData = pendingReturn
+    ? {
+        id: pendingReturn.id,
+        contractorName:
+          pendingReturn.contractor?.displayName ??
+          pendingReturn.contractor?.legalName ??
+          equipment?.currentAssignment?.contractor?.displayName ??
+          equipment?.currentAssignment?.contractor?.legalName ??
+          "",
+        itemCount: pendingReturn.itemCount ?? 1,
+        targetPointName: pendingReturn.targetPointName ?? "",
+        createdAt: pendingReturn.createdAt,
+      }
+    : null;
 
   // Breadcrumb override
   useBreadcrumbOverride(params.id, equipment?.name);
@@ -135,6 +183,7 @@ export default function EquipmentDetailPage() {
               shipments={equipment.shipments ?? []}
               equipmentId={equipment.id}
               onCreateShipment={() => setShipmentOpen(true)}
+              pendingReturn={pendingReturnData}
             />
           }
         />
