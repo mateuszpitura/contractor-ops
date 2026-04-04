@@ -30,6 +30,7 @@ import { calendarRouter } from "./routers/calendar.js";
 import { billingRouter } from "./routers/billing.js";
 import { equipmentRouter } from "./routers/equipment.js";
 import { googleWorkspaceRouter } from "./routers/google-workspace.js";
+import { teamsRouter } from "./routers/teams.js";
 
 /**
  * Root tRPC router merging all sub-routers.
@@ -91,6 +92,7 @@ export const appRouter = router({
   billing: billingRouter,
   equipment: equipmentRouter,
   googleWorkspace: googleWorkspaceRouter, // Google Workspace directory import, group resolution, bulk import, sync
+  teams: teamsRouter, // Microsoft Teams integration -- channel discovery, channel mapping, connection status
 });
 
 /** Type-safe router type for client consumption */

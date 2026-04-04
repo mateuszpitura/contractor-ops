@@ -1,6 +1,7 @@
 import { prisma } from "@contractor-ops/db";
 import type { MessagingProvider } from "./types.js";
 import { SlackMessagingProvider } from "./slack-messaging-provider.js";
+import { TeamsMessagingProvider } from "./teams-messaging-provider.js";
 
 // ---------------------------------------------------------------------------
 // Provider Factory
@@ -14,8 +15,7 @@ import { SlackMessagingProvider } from "./slack-messaging-provider.js";
  * Returns an array of MessagingProvider instances for all connected
  * messaging integrations in the given organization.
  *
- * Currently supports: SLACK.
- * MICROSOFT_TEAMS will be added in Plan 02.
+ * Supports: SLACK, MICROSOFT_TEAMS.
  */
 export async function getConnectedMessagingProviders(
   organizationId: string,
@@ -37,7 +37,7 @@ export async function getConnectedMessagingProviders(
         providers.push(new SlackMessagingProvider());
         break;
       case "MICROSOFT_TEAMS":
-        // TeamsMessagingProvider will be added in Phase 32 Plan 02
+        providers.push(new TeamsMessagingProvider());
         break;
     }
   }
