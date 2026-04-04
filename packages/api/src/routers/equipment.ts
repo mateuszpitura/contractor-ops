@@ -9,11 +9,18 @@ import {
   equipmentUnassignSchema,
   shipmentCreateSchema,
   shipmentEventCreateSchema,
+  inpostShipmentCreateSchema,
+  returnRequestApproveSchema,
+  returnRequestRejectSchema,
+  returnRequestStatusEnum,
 } from "@contractor-ops/validators";
 import { router } from "../init.js";
 import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
 import { checkShipmentTaskCompletion } from "../services/equipment-workflow.js";
+import { InPostClient } from "../services/courier/inpost-client.js";
+import type { InPostClientConfig } from "../services/courier/inpost-client.js";
+import { dispatch } from "../services/notification-service.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -868,5 +875,627 @@ export const equipmentRouter = router({
       }));
 
       return plain(items);
+    }),
+
+  // ─── InPost Integration ─────────────────────────────────────────────
+
+  /**
+   * Create an InPost shipment via ShipX API for one or more equipment items.
+   * Creates Shipment + ShipmentEvent records and auto-advances equipment status.
+   */
+  createInPostShipment: tenantProcedure
+    .use(requirePermission({ equipment: ["create"] }))
+    .input(inpostShipmentCreateSchema)
+    .mutation(async ({ ctx, input }) => {
+      // Load courier config for InPost
+      const courierConfig = await prisma.courierConfig.findUnique({
+        where: {
+          organizationId_carrier: {
+            organizationId: ctx.organizationId,
+            carrier: "inpost",
+          },
+        },
+      });
+
+      if (!courierConfig) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "COURIER_CONFIG_NOT_FOUND",
+        });
+      }
+
+      const configJson = courierConfig.configJson as InPostClientConfig;
+      const client = new InPostClient(configJson);
+
+      // Verify all equipment items exist and load contractor details
+      const equipmentItems = await prisma.equipment.findMany({
+        where: {
+          id: { in: input.equipmentIds },
+          organizationId: ctx.organizationId,
+        },
+        include: {
+          assignments: {
+            where: { unassignedAt: null },
+            take: 1,
+            include: {
+              contractor: {
+                select: {
+                  id: true,
+                  displayName: true,
+                  email: true,
+                  phone: true,
+                  preferredPaczkomatId: true,
+                  preferredPaczkomatName: true,
+                  preferredPaczkomatAddress: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (equipmentItems.length !== input.equipmentIds.length) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: EQUIPMENT_NOT_FOUND,
+        });
+      }
+
+      // Get contractor from first assignment for shipment receiver/sender details
+      const firstAssignment = equipmentItems[0]?.assignments[0];
+      const contractor = firstAssignment?.contractor;
+
+      if (!contractor) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: EQUIPMENT_NOT_ASSIGNED,
+        });
+      }
+
+      // Load org for sender details
+      const org = await prisma.organization.findUnique({
+        where: { id: ctx.organizationId },
+        select: { name: true },
+      });
+
+      // Build shipment params
+      const shipmentResult = await client.createShipment({
+        organizationId: ctx.organizationId,
+        direction: input.direction,
+        receiver: {
+          name: contractor.displayName,
+          email: contractor.email ?? "",
+          phone: contractor.phone ?? "",
+        },
+        sender: {
+          name: org?.name ?? "Organization",
+          email: "",
+          phone: "",
+        },
+        targetPoint: input.targetPointId,
+        parcelSize: input.parcelSize,
+        reference: input.workflowTaskRunId
+          ? `workflow-${input.workflowTaskRunId}`
+          : undefined,
+      });
+
+      // Determine new equipment status
+      const newEquipmentStatus =
+        input.direction === "OUTBOUND" ? "IN_TRANSIT" : "RETURN_IN_TRANSIT";
+
+      // Create shipment records for each equipment item
+      const shipments = await prisma.$transaction(async (tx) => {
+        const created = [];
+
+        for (const eq of equipmentItems) {
+          const shipment = await tx.shipment.create({
+            data: {
+              organizationId: ctx.organizationId,
+              equipmentId: eq.id,
+              workflowTaskRunId: input.workflowTaskRunId ?? null,
+              direction: input.direction,
+              carrier: "InPost",
+              trackingNumber: shipmentResult.trackingNumber,
+              externalId: shipmentResult.externalId,
+              labelUrl: shipmentResult.labelUrl ?? null,
+              currentStatus: "CREATED",
+              createdByUserId: ctx.user!.id,
+            },
+          });
+
+          // Create initial CREATED event
+          await tx.shipmentEvent.create({
+            data: {
+              organizationId: ctx.organizationId,
+              shipmentId: shipment.id,
+              status: "CREATED",
+              notes: input.notes ?? null,
+              createdByUserId: ctx.user!.id,
+            },
+          });
+
+          // Create LABEL_GENERATED event (ShipX auto-generates label)
+          await tx.shipmentEvent.create({
+            data: {
+              organizationId: ctx.organizationId,
+              shipmentId: shipment.id,
+              status: "LABEL_GENERATED",
+              notes: "Label auto-generated by ShipX on shipment creation",
+              createdByUserId: ctx.user!.id,
+            },
+          });
+
+          // Auto-advance equipment status
+          await tx.equipment.update({
+            where: { id: eq.id },
+            data: { status: newEquipmentStatus },
+          });
+
+          created.push(shipment);
+        }
+
+        // Update contractor's preferred Paczkomat on outbound shipments (D-03)
+        if (input.direction === "OUTBOUND" && contractor) {
+          await tx.contractor.update({
+            where: { id: contractor.id },
+            data: {
+              preferredPaczkomatId: input.targetPointId,
+              preferredPaczkomatName: input.targetPointName,
+              preferredPaczkomatAddress: input.targetPointAddress,
+            },
+          });
+        }
+
+        return created;
+      });
+
+      // Audit log
+      await prisma.auditLog.create({
+        data: {
+          organizationId: ctx.organizationId,
+          actorType: "USER",
+          actorId: ctx.user!.id,
+          actorName: ctx.user!.name,
+          action: "shipment.createInPost",
+          resourceType: "SHIPMENT",
+          resourceId: shipments[0]?.id ?? "",
+          newValuesJson: {
+            equipmentIds: input.equipmentIds,
+            direction: input.direction,
+            externalId: shipmentResult.externalId,
+            trackingNumber: shipmentResult.trackingNumber,
+            targetPoint: input.targetPointId,
+          },
+        },
+      });
+
+      // Fetch created shipments with events
+      const result = await prisma.shipment.findMany({
+        where: {
+          id: { in: shipments.map((s) => s.id) },
+        },
+        include: {
+          events: { orderBy: { occurredAt: "asc" } },
+        },
+      });
+
+      return plain(result);
+    }),
+
+  /**
+   * Approve a return request and create an InPost shipment.
+   * All equipment assigned to the contractor is included (D-11 all-or-nothing).
+   */
+  approveReturnRequest: tenantProcedure
+    .use(requirePermission({ equipment: ["update"] }))
+    .input(returnRequestApproveSchema)
+    .mutation(async ({ ctx, input }) => {
+      const returnRequest = await prisma.returnRequest.findFirst({
+        where: {
+          id: input.id,
+          organizationId: ctx.organizationId,
+        },
+        include: {
+          contractor: {
+            select: {
+              id: true,
+              displayName: true,
+              email: true,
+              phone: true,
+            },
+          },
+        },
+      });
+
+      if (!returnRequest) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "RETURN_REQUEST_NOT_FOUND",
+        });
+      }
+
+      if (returnRequest.status !== "PENDING_APPROVAL") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "RETURN_REQUEST_NOT_PENDING",
+        });
+      }
+
+      // Load all equipment assigned to the contractor (D-11 all-or-nothing)
+      const assignments = await prisma.equipmentAssignment.findMany({
+        where: {
+          organizationId: ctx.organizationId,
+          contractorId: returnRequest.contractorId,
+          unassignedAt: null,
+        },
+        include: {
+          equipment: { select: { id: true, name: true } },
+        },
+      });
+
+      // Load courier config
+      const courierConfig = await prisma.courierConfig.findUnique({
+        where: {
+          organizationId_carrier: {
+            organizationId: ctx.organizationId,
+            carrier: "inpost",
+          },
+        },
+      });
+
+      if (!courierConfig) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "COURIER_CONFIG_NOT_FOUND",
+        });
+      }
+
+      const configJson = courierConfig.configJson as InPostClientConfig;
+      const client = new InPostClient(configJson);
+
+      // Load org for sender info
+      const org = await prisma.organization.findUnique({
+        where: { id: ctx.organizationId },
+        select: { name: true },
+      });
+
+      // Create InPost shipment
+      const shipmentResult = await client.createShipment({
+        organizationId: ctx.organizationId,
+        direction: "RETURN",
+        receiver: {
+          name: returnRequest.contractor.displayName,
+          email: returnRequest.contractor.email ?? "",
+          phone: returnRequest.contractor.phone ?? "",
+        },
+        sender: {
+          name: org?.name ?? "Organization",
+          email: "",
+          phone: "",
+        },
+        targetPoint: returnRequest.targetPointId ?? "",
+        parcelSize: input.parcelSize,
+        reference: `return-${returnRequest.id}`,
+      });
+
+      // Create records in transaction
+      const result = await prisma.$transaction(async (tx) => {
+        // Create shipment records for each equipment item
+        let firstShipmentId: string | null = null;
+
+        for (const assignment of assignments) {
+          const shipment = await tx.shipment.create({
+            data: {
+              organizationId: ctx.organizationId,
+              equipmentId: assignment.equipment.id,
+              direction: "RETURN",
+              carrier: "InPost",
+              trackingNumber: shipmentResult.trackingNumber,
+              externalId: shipmentResult.externalId,
+              labelUrl: shipmentResult.labelUrl ?? null,
+              currentStatus: "CREATED",
+              createdByUserId: ctx.user!.id,
+            },
+          });
+
+          if (!firstShipmentId) {
+            firstShipmentId = shipment.id;
+          }
+
+          // Create events
+          await tx.shipmentEvent.create({
+            data: {
+              organizationId: ctx.organizationId,
+              shipmentId: shipment.id,
+              status: "CREATED",
+              notes: `Return request approved by ${ctx.user!.name ?? "admin"}`,
+              createdByUserId: ctx.user!.id,
+            },
+          });
+
+          await tx.shipmentEvent.create({
+            data: {
+              organizationId: ctx.organizationId,
+              shipmentId: shipment.id,
+              status: "LABEL_GENERATED",
+              notes: "Label auto-generated by ShipX",
+              createdByUserId: ctx.user!.id,
+            },
+          });
+
+          // Update equipment status
+          await tx.equipment.update({
+            where: { id: assignment.equipment.id },
+            data: { status: "RETURN_IN_TRANSIT" },
+          });
+        }
+
+        // Update ReturnRequest
+        const updated = await tx.returnRequest.update({
+          where: { id: input.id },
+          data: {
+            status: "SHIPMENT_CREATED",
+            approvedByUserId: ctx.user!.id,
+            approvedAt: new Date(),
+            shipmentId: firstShipmentId,
+          },
+          include: {
+            contractor: {
+              select: { id: true, displayName: true },
+            },
+            shipment: true,
+          },
+        });
+
+        return updated;
+      });
+
+      // Fire-and-forget: notify contractor about approved return with label info (D-13)
+      void dispatch({
+        organizationId: ctx.organizationId,
+        type: "EQUIPMENT_RETURN_APPROVED",
+        recipientUserIds: [],
+        title: "Return request approved",
+        body: `Your return request has been approved. A shipping label has been generated.`,
+        entityType: "RETURN_REQUEST",
+        entityId: returnRequest.id,
+        metadata: {
+          contractorId: returnRequest.contractorId,
+          trackingNumber: shipmentResult.trackingNumber,
+          targetPoint: returnRequest.targetPointName,
+        },
+      }).catch((err) =>
+        console.error("[equipment] Failed to dispatch return approval notification:", err),
+      );
+
+      // Audit log
+      await prisma.auditLog.create({
+        data: {
+          organizationId: ctx.organizationId,
+          actorType: "USER",
+          actorId: ctx.user!.id,
+          actorName: ctx.user!.name,
+          action: "returnRequest.approve",
+          resourceType: "RETURN_REQUEST",
+          resourceId: returnRequest.id,
+          newValuesJson: {
+            status: "SHIPMENT_CREATED",
+            externalId: shipmentResult.externalId,
+            trackingNumber: shipmentResult.trackingNumber,
+            equipmentCount: assignments.length,
+          },
+        },
+      });
+
+      return plain(result);
+    }),
+
+  /**
+   * Reject a return request.
+   * Reverts equipment statuses from RETURN_REQUESTED back to previous state.
+   */
+  rejectReturnRequest: tenantProcedure
+    .use(requirePermission({ equipment: ["update"] }))
+    .input(returnRequestRejectSchema)
+    .mutation(async ({ ctx, input }) => {
+      const returnRequest = await prisma.returnRequest.findFirst({
+        where: {
+          id: input.id,
+          organizationId: ctx.organizationId,
+        },
+      });
+
+      if (!returnRequest) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "RETURN_REQUEST_NOT_FOUND",
+        });
+      }
+
+      if (returnRequest.status !== "PENDING_APPROVAL") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "RETURN_REQUEST_NOT_PENDING",
+        });
+      }
+
+      const result = await prisma.$transaction(async (tx) => {
+        // Update ReturnRequest
+        const updated = await tx.returnRequest.update({
+          where: { id: input.id },
+          data: {
+            status: "REJECTED",
+            rejectedReason: input.reason ?? null,
+            rejectedByUserId: ctx.user!.id,
+            rejectedAt: new Date(),
+          },
+          include: {
+            contractor: {
+              select: { id: true, displayName: true },
+            },
+          },
+        });
+
+        // Revert equipment statuses from RETURN_REQUESTED back to ASSIGNED/DELIVERED
+        await tx.equipment.updateMany({
+          where: {
+            organizationId: ctx.organizationId,
+            status: "RETURN_REQUESTED",
+            assignments: {
+              some: {
+                contractorId: returnRequest.contractorId,
+                unassignedAt: null,
+              },
+            },
+          },
+          data: { status: "ASSIGNED" },
+        });
+
+        return updated;
+      });
+
+      // Fire-and-forget: notify contractor about rejection
+      void dispatch({
+        organizationId: ctx.organizationId,
+        type: "EQUIPMENT_RETURN_REJECTED",
+        recipientUserIds: [],
+        title: "Return request rejected",
+        body: input.reason
+          ? `Your return request was rejected: ${input.reason}`
+          : "Your return request was rejected.",
+        entityType: "RETURN_REQUEST",
+        entityId: returnRequest.id,
+        metadata: {
+          contractorId: returnRequest.contractorId,
+          reason: input.reason,
+        },
+      }).catch((err) =>
+        console.error("[equipment] Failed to dispatch return rejection notification:", err),
+      );
+
+      // Audit log
+      await prisma.auditLog.create({
+        data: {
+          organizationId: ctx.organizationId,
+          actorType: "USER",
+          actorId: ctx.user!.id,
+          actorName: ctx.user!.name,
+          action: "returnRequest.reject",
+          resourceType: "RETURN_REQUEST",
+          resourceId: returnRequest.id,
+          newValuesJson: {
+            status: "REJECTED",
+            reason: input.reason,
+          },
+        },
+      });
+
+      return plain(result);
+    }),
+
+  /**
+   * List return requests for the organization.
+   * Optionally filter by status.
+   */
+  listReturnRequests: tenantProcedure
+    .use(requirePermission({ equipment: ["read"] }))
+    .input(
+      z.object({
+        status: returnRequestStatusEnum.optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const where: Record<string, any> = {
+        organizationId: ctx.organizationId,
+      };
+
+      if (input.status) {
+        where.status = input.status;
+      }
+
+      const returnRequests = await prisma.returnRequest.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        include: {
+          contractor: {
+            select: {
+              id: true,
+              displayName: true,
+              email: true,
+            },
+          },
+          shipment: {
+            select: {
+              id: true,
+              trackingNumber: true,
+              externalId: true,
+              currentStatus: true,
+              carrier: true,
+              labelUrl: true,
+            },
+          },
+        },
+      });
+
+      return plain(returnRequests);
+    }),
+
+  /**
+   * Get shipment label as base64-encoded PDF.
+   * Fetches from ShipX API using the shipment's externalId.
+   */
+  getShipmentLabel: tenantProcedure
+    .use(requirePermission({ equipment: ["read"] }))
+    .input(z.object({ shipmentId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const shipment = await prisma.shipment.findFirst({
+        where: {
+          id: input.shipmentId,
+          organizationId: ctx.organizationId,
+        },
+      });
+
+      if (!shipment) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: SHIPMENT_NOT_FOUND,
+        });
+      }
+
+      if (shipment.carrier !== "InPost" || !shipment.externalId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "SHIPMENT_NO_INPOST_LABEL",
+        });
+      }
+
+      // Load courier config
+      const courierConfig = await prisma.courierConfig.findUnique({
+        where: {
+          organizationId_carrier: {
+            organizationId: ctx.organizationId,
+            carrier: "inpost",
+          },
+        },
+      });
+
+      if (!courierConfig) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "COURIER_CONFIG_NOT_FOUND",
+        });
+      }
+
+      const configJson = courierConfig.configJson as InPostClientConfig;
+      const client = new InPostClient(configJson);
+
+      const labelBuffer = await client.getLabel(shipment.externalId, "pdf");
+
+      return {
+        data: labelBuffer.toString("base64"),
+        contentType: "application/pdf",
+        filename: `inpost-label-${shipment.trackingNumber ?? shipment.externalId}.pdf`,
+      };
     }),
 });

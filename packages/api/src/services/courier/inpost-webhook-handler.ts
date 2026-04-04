@@ -2,7 +2,7 @@ import crypto from "crypto";
 
 import { inpostWebhookPayloadSchema } from "@contractor-ops/validators";
 
-import { mapInPostStatus, NOTIFICATION_STATUSES } from "./inpost-status-mapper";
+import { mapInPostStatus, NOTIFICATION_STATUSES } from "./inpost-status-mapper.js";
 
 // ---------------------------------------------------------------------------
 // InPost Webhook Handler

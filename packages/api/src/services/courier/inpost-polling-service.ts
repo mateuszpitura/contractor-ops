@@ -1,5 +1,5 @@
-import { InPostClient } from "./inpost-client";
-import { mapInPostStatus } from "./inpost-status-mapper";
+import { InPostClient } from "./inpost-client.js";
+import { mapInPostStatus } from "./inpost-status-mapper.js";
 
 // ---------------------------------------------------------------------------
 // InPost Polling Service
