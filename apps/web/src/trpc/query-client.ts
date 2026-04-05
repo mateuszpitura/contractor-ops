@@ -1,4 +1,46 @@
 import { QueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+
+/**
+ * Intercepts TIER_REQUIRED errors from requireTier middleware and shows
+ * an upgrade toast instead of a generic error. Per D-04.
+ *
+ * tRPC FORBIDDEN errors carry the structured payload as
+ * JSON.stringify({ type, requiredTier, currentTier }) in error.message.
+ */
+function handleTierError(error: unknown): boolean {
+  const trpcErr = error as
+    | {
+        message?: string;
+        data?: { code?: string };
+      }
+    | undefined;
+
+  if (trpcErr?.data?.code !== "FORBIDDEN" || !trpcErr.message) return false;
+
+  try {
+    const parsed = JSON.parse(trpcErr.message) as {
+      type?: string;
+      requiredTier?: string;
+    };
+    if (parsed.type === "TIER_REQUIRED" && parsed.requiredTier) {
+      const tierLabel =
+        parsed.requiredTier === "ENTERPRISE" ? "Enterprise" : "Pro";
+      toast.error(`This feature requires ${tierLabel} plan.`, {
+        action: {
+          label: "Upgrade",
+          onClick: () => {
+            window.location.href = "/settings?tab=billing";
+          },
+        },
+      });
+      return true;
+    }
+  } catch {
+    // Not a tier error JSON, fall through
+  }
+  return false;
+}
 
 /**
  * Determines whether a failed query/mutation should be retried.
@@ -43,6 +85,9 @@ export function makeQueryClient() {
         retry: shouldRetry,
         retryDelay: (attemptIndex) =>
           Math.min(1000 * 3 ** attemptIndex, 30_000),
+        onError: (error) => {
+          handleTierError(error);
+        },
       },
     },
   });

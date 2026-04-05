@@ -4221,7 +4221,9 @@
       "requiresTier": "{feature} requires {tier}.",
       "pageHeading": "This feature requires an upgrade",
       "pageBody": "Your current plan does not include {feature}. Upgrade to {tier} to unlock it.",
-      "upgradePlan": "Upgrade Plan"
+      "upgradePlan": "Upgrade Plan",
+      "tierErrorToast": "This feature requires {tier} plan.",
+      "upgradeAction": "Upgrade"
     },
     "usage": {
       "currentPlan": "Current Plan",
