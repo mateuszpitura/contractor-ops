@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Enterprise & Monetization
-status: executing
-stopped_at: Phase 36 context gathered
-last_updated: "2026-04-05T12:23:08.825Z"
+status: verifying
+stopped_at: Completed 36-02-PLAN.md
+last_updated: "2026-04-05T13:15:59.584Z"
 last_activity: 2026-04-05
 progress:
   total_phases: 9
   completed_phases: 8
-  total_plans: 30
-  completed_plans: 30
-  percent: 84
+  total_plans: 33
+  completed_plans: 32
+  percent: 91
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-01)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 35 — feature-gating-dpd-ups-billing-polish
+**Current focus:** Phase 36 — wiring-fixes-webhook-ui-featuregate
 
 ## Current Position
 
-Phase: 35
-Plan: Not started
-Status: Executing Phase 35
+Phase: 36 (wiring-fixes-webhook-ui-featuregate) — EXECUTING
+Plan: 3 of 3
+Status: Phase complete — ready for verification
 Last activity: 2026-04-05
 
-Progress: [████████░░] 84%
+Progress: [█████████░] 91%
 
 ## Performance Metrics
 
@@ -74,6 +74,7 @@ Progress: [████████░░] 84%
 | Phase 35 P02 | 6min | 2 tasks | 14 files |
 | Phase 35 P04 | 5min | 2 tasks | 10 files |
 | Phase 35 P05 | 7min | 2 tasks | 8 files |
+| Phase 36 P02 | 3min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -139,6 +140,7 @@ Recent decisions affecting current work:
 - [Phase 35]: base-ui Button uses render prop for Link composition (not asChild)
 - [Phase 35]: CarrierShipmentForm uses tRPC proxy pattern for stale dist types, consistent with InPostShipmentForm
 - [Phase 35]: UPS service code stored as string literal (11/65/07) matching actual UPS API codes for direct passthrough
+- [Phase 36]: Used simple Card with Badge for DPD/UPS provider sections instead of ProviderConnectionCard (courier configs are not OAuth integrations)
 
 ### Pending Todos
 
@@ -152,6 +154,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T12:23:08.820Z
-Stopped at: Phase 36 context gathered
-Resume file: .planning/phases/36-wiring-fixes-webhook-ui-featuregate/36-CONTEXT.md
+Last session: 2026-04-05T13:15:59.581Z
+Stopped at: Completed 36-02-PLAN.md
+Resume file: None
