@@ -11,6 +11,7 @@ import type { LinearIssueMetadata } from "@contractor-ops/validators";
 import { router } from "../init.js";
 import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
+import { requireTier } from "../middleware/tier.js";
 import * as E from "../errors.js";
 import { linearGraphQL } from "../services/linear-issue-sync.js";
 import { registerLinearWebhook } from "../services/linear-webhook-handler.js";
@@ -192,6 +193,7 @@ export const linearRouter = router({
    */
   saveStatusMapping: tenantProcedure
     .use(requirePermission({ settings: ["update"] }))
+    .use(requireTier("PRO"))
     .input(saveLinearStatusMappingInputSchema)
     .mutation(async ({ ctx, input }) => {
       const connection = await loadLinearConnection(ctx.organizationId);
@@ -258,6 +260,7 @@ export const linearRouter = router({
    */
   saveTaskConfig: tenantProcedure
     .use(requirePermission({ workflow: ["update"] }))
+    .use(requireTier("PRO"))
     .input(saveLinearTaskConfigInputSchema)
     .mutation(async ({ ctx, input }) => {
       const template = await prisma.workflowTaskTemplate.findFirst({

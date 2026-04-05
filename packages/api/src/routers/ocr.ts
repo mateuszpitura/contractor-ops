@@ -3,6 +3,7 @@ import { TRPCError } from "@trpc/server";
 import { router } from "../init.js";
 import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
+import { requireTier } from "../middleware/tier.js";
 import { portalProcedure } from "../middleware/portal-auth.js";
 import {
   triggerOcrExtraction,
@@ -58,6 +59,7 @@ export const ocrRouter = router({
    */
   trigger: tenantProcedure
     .use(requirePermission({ invoice: ["create"] }))
+    .use(requireTier("PRO"))
     .input(triggerInput)
     .mutation(async ({ ctx, input }) => {
       const result = await triggerOcrExtraction({
@@ -115,6 +117,7 @@ export const ocrRouter = router({
    */
   retrigger: tenantProcedure
     .use(requirePermission({ invoice: ["create"] }))
+    .use(requireTier("PRO"))
     .input(retriggerInput)
     .mutation(async ({ ctx, input }) => {
       // Find the existing extraction to get documentId and storageKey

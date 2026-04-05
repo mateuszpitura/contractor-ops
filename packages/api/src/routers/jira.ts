@@ -11,6 +11,7 @@ import type { JiraIssueMetadata } from "@contractor-ops/validators";
 import { router } from "../init.js";
 import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
+import { requireTier } from "../middleware/tier.js";
 import { detectScopeExpansionNeeded } from "../services/jira-issue-sync.js";
 import {
   getStatusMapping,
@@ -430,6 +431,7 @@ export const jiraRouter = router({
    */
   saveStatusMapping: tenantProcedure
     .use(requirePermission({ settings: ["update"] }))
+    .use(requireTier("PRO"))
     .input(saveJiraStatusMappingInputSchema)
     .mutation(async ({ ctx, input }) => {
       const connection = await loadConnection(
@@ -478,6 +480,7 @@ export const jiraRouter = router({
    */
   saveTaskConfig: tenantProcedure
     .use(requirePermission({ workflow: ["update"] }))
+    .use(requireTier("PRO"))
     .input(saveJiraTaskConfigInputSchema)
     .mutation(async ({ ctx, input }) => {
       const template = await prisma.workflowTaskTemplate.findFirst({
@@ -517,6 +520,7 @@ export const jiraRouter = router({
    */
   disconnect: tenantProcedure
     .use(requirePermission({ settings: ["update"] }))
+    .use(requireTier("PRO"))
     .input(z.object({ connectionId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const connection = await prisma.integrationConnection.findFirst({

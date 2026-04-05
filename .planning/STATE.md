@@ -144,6 +144,7 @@ Recent decisions affecting current work:
 - [Phase 35]: UPS service code stored as string literal (11/65/07) matching actual UPS API codes for direct passthrough
 - [Phase 36]: Fixed transitionJiraIssue call to use 5-arg signature with connection lookup in cancelRun (plan had incorrect 3-arg call)
 - [Phase 36]: Used simple Card with Badge for DPD/UPS provider sections instead of ProviderConnectionCard (courier configs are not OAuth integrations)
+- [Phase 36]: Gate mutations only -- read queries ungated for STARTER upgrade prompts
 
 ### Pending Todos
 

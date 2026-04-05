@@ -4231,7 +4231,9 @@
       "requiresTier": "{feature} wymaga planu {tier}.",
       "pageHeading": "Ta funkcja wymaga wyzszego planu",
       "pageBody": "Twoj obecny plan nie obejmuje {feature}. Zmien plan na {tier}, aby odblokowac.",
-      "upgradePlan": "Zmien plan"
+      "upgradePlan": "Zmien plan",
+      "tierErrorToast": "Ta funkcja wymaga planu {tier}.",
+      "upgradeAction": "Ulepsz"
     },
     "usage": {
       "currentPlan": "Obecny plan",
