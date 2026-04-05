@@ -171,6 +171,24 @@ async function sendNotificationEmail(
 }
 
 // ---------------------------------------------------------------------------
+// Channel alert category mapping
+// ---------------------------------------------------------------------------
+
+const NOTIFICATION_TYPE_TO_CHANNEL_CATEGORY: Partial<
+  Record<NotificationType, string>
+> = {
+  APPROVAL_REQUEST: "approvals",
+  APPROVAL_DECISION: "approvals",
+  INVOICE_RECEIVED: "invoices",
+  CONTRACT_EXPIRING: "contracts",
+  TASK_ASSIGNED: "tasks",
+  TASK_OVERDUE: "tasks",
+  EQUIPMENT_RETURN_REQUESTED: "equipment",
+  EQUIPMENT_RETURN_APPROVED: "equipment",
+  EQUIPMENT_RETURN_REJECTED: "equipment",
+};
+
+// ---------------------------------------------------------------------------
 // Dispatch
 // ---------------------------------------------------------------------------
 
@@ -272,6 +290,57 @@ export async function dispatch(event: NotificationEvent): Promise<void> {
       } catch (error) {
         console.error(
           `[notification-service] ${provider.platform} send failed for user=${userId}:`,
+          error,
+        );
+      }
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Channel alert dispatch (org-level, not per-user)
+  // ---------------------------------------------------------------------------
+  const category = NOTIFICATION_TYPE_TO_CHANNEL_CATEGORY[event.type];
+  if (category) {
+    const channelProviders = await getConnectedMessagingProviders(
+      event.organizationId,
+    );
+    for (const provider of channelProviders) {
+      try {
+        const providerKey =
+          provider.platform === "teams" ? "MICROSOFT_TEAMS" : "SLACK";
+        const connection = await prisma.integrationConnection.findFirst({
+          where: {
+            organizationId: event.organizationId,
+            provider: providerKey,
+            status: "CONNECTED",
+          },
+          select: { configJson: true },
+        });
+
+        const config =
+          (connection?.configJson as Record<string, unknown>) ?? {};
+        const channelMapping =
+          (config.channelMapping as Record<string, string>) ?? {};
+        const channelId = channelMapping[category];
+
+        if (!channelId) continue;
+
+        await provider.sendChannelAlert({
+          organizationId: event.organizationId,
+          channelId,
+          title: event.title,
+          body: event.body,
+          entityType: event.entityType ?? "unknown",
+          entityId: event.entityId ?? "",
+          details: [],
+          viewUrl: buildEntityUrl(
+            event.entityType ?? "unknown",
+            event.entityId ?? "",
+          ),
+        });
+      } catch (error) {
+        console.error(
+          `[notification-service] ${provider.platform} channel alert failed:`,
           error,
         );
       }
