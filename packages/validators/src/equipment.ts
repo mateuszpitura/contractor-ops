@@ -287,6 +287,34 @@ export const dpdConfigSchema = z.object({
 export type DpdConfigInput = z.infer<typeof dpdConfigSchema>;
 
 /**
+ * Schema for creating a UPS shipment.
+ */
+export const upsShipmentCreateSchema = z.object({
+  equipmentIds: z.array(z.string().min(1)).min(1),
+  deliveryAddress: deliveryAddressSchema,
+  parcelSize: z.enum(["small", "medium", "large"]),
+  serviceCode: z.enum(["11", "65", "07"]).default("11"),
+  direction: shipmentDirectionEnum,
+  workflowTaskRunId: z.string().optional(),
+  notes: z.string().max(2000).optional(),
+});
+
+export type UpsShipmentCreateInput = z.infer<typeof upsShipmentCreateSchema>;
+
+/**
+ * Schema for UPS courier configuration.
+ */
+export const upsConfigSchema = z.object({
+  carrier: z.literal("ups"),
+  clientId: z.string().min(1),
+  clientSecret: z.string().min(1),
+  accountNumber: z.string().min(1),
+  sandbox: z.boolean().default(true),
+});
+
+export type UpsConfigInput = z.infer<typeof upsConfigSchema>;
+
+/**
  * Schema for validating InPost webhook payloads (ShipX status push).
  */
 export const inpostWebhookPayloadSchema = z.object({
