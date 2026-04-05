@@ -63,7 +63,7 @@ Full details: `.planning/milestones/v2.0-ROADMAP.md`
 - [x] **Phase 33: InPost Courier Integration** - First courier API with Parcel Locker selection and auto-status tracking (completed 2026-04-04)
 - [x] **Phase 34: Intelligent Onboarding Wizard** - Cross-tool import orchestrator with preview, dedup, and batch confirm (completed 2026-04-04)
 - [x] **Phase 35: Feature Gating + DPD/UPS + Billing Polish** - Paywall activation, remaining couriers, usage dashboard (completed 2026-04-05)
-- [ ] **Phase 36: Wiring Fixes — Webhook Dispatch + UI Mounting + Feature Gate** - Close audit gaps: Linear webhook dispatch, carrier UI mounting, feature gate wiring
+- [x] **Phase 36: Wiring Fixes — Webhook Dispatch + UI Mounting + Feature Gate** - Close audit gaps: Linear webhook dispatch, carrier UI mounting, feature gate wiring (completed 2026-04-05)
 
 ## Phase Details
 
@@ -266,4 +266,4 @@ Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 �
 | 33. InPost Courier Integration | v3.0 | 3/3 | Complete    | 2026-04-04 |
 | 34. Intelligent Onboarding Wizard | v3.0 | 2/2 | Complete    | 2026-04-05 |
 | 35. Feature Gating + DPD/UPS + Billing Polish | v3.0 | 6/6 | Complete    | 2026-04-05 |
-| 36. Wiring Fixes — Webhook Dispatch + UI Mounting + Feature Gate | v3.0 | 3/3 | In Progress|  |
+| 36. Wiring Fixes — Webhook Dispatch + UI Mounting + Feature Gate | v3.0 | 3/3 | Complete    | 2026-04-05 |
