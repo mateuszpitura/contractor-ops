@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 
 import { trpc } from "@/trpc/init";
+import { FeatureGate } from "@/components/billing/feature-gate";
 import { ProviderConnectionCard } from "@/components/settings/provider-connection-card";
 import { TeamsLogo } from "./teams-logo";
 import { TeamsChannelMappingCard } from "./teams-channel-mapping-card";
@@ -25,17 +26,19 @@ export function TeamsProviderSection() {
   const isConnected = health?.status === "CONNECTED";
 
   return (
-    <div className="space-y-4">
-      <ProviderConnectionCard
-        provider="microsoft_teams"
-        displayName="Microsoft Teams"
-        icon={<TeamsLogo className="size-8" />}
-        description={
-          isConnected ? t("descriptionConnected") : t("descriptionDisconnected")
-        }
-      />
+    <FeatureGate requiredTier="Pro" featureName="Microsoft Teams integration">
+      <div className="space-y-4">
+        <ProviderConnectionCard
+          provider="microsoft_teams"
+          displayName="Microsoft Teams"
+          icon={<TeamsLogo className="size-8" />}
+          description={
+            isConnected ? t("descriptionConnected") : t("descriptionDisconnected")
+          }
+        />
 
-      {isConnected && <TeamsChannelMappingCard />}
-    </div>
+        {isConnected && <TeamsChannelMappingCard />}
+      </div>
+    </FeatureGate>
   );
 }

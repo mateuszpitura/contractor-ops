@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 
 import { trpc } from "@/trpc/init";
+import { FeatureGate } from "@/components/billing/feature-gate";
 import { ProviderConnectionCard } from "@/components/settings/provider-connection-card";
 import { GoogleWorkspaceLogo } from "./google-workspace-logo";
 import { SyncStatusSection } from "./google-workspace/sync-status-section";
@@ -38,24 +39,26 @@ export function GoogleWorkspaceProviderSection() {
   }, [searchParams]);
 
   return (
-    <div className="space-y-4">
-      <ProviderConnectionCard
-        provider="google_workspace"
-        displayName="Google Workspace"
-        icon={<GoogleWorkspaceLogo className="size-8" />}
-        description={
-          isConnected ? t("descriptionConnected") : t("descriptionDisconnected")
-        }
-      />
+    <FeatureGate requiredTier="Pro" featureName="Google Workspace integration">
+      <div className="space-y-4">
+        <ProviderConnectionCard
+          provider="google_workspace"
+          displayName="Google Workspace"
+          icon={<GoogleWorkspaceLogo className="size-8" />}
+          description={
+            isConnected ? t("descriptionConnected") : t("descriptionDisconnected")
+          }
+        />
 
-      {isConnected && (
-        <SyncStatusSection onImportClick={() => setWizardOpen(true)} />
-      )}
+        {isConnected && (
+          <SyncStatusSection onImportClick={() => setWizardOpen(true)} />
+        )}
 
-      <DirectoryImportWizard
-        open={wizardOpen}
-        onOpenChange={setWizardOpen}
-      />
-    </div>
+        <DirectoryImportWizard
+          open={wizardOpen}
+          onOpenChange={setWizardOpen}
+        />
+      </div>
+    </FeatureGate>
   );
 }

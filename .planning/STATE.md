@@ -83,6 +83,7 @@ Progress: [█████████░] 91%
 | Phase 38 P03 | 1min | 2 tasks | 3 files |
 | Phase 39 P01 | 3min | 2 tasks | 2 files |
 | Phase 39 P02 | 12min | 2 tasks | 4 files |
+| Phase 39 P03 | 8min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -160,6 +161,7 @@ Recent decisions affecting current work:
 - [Phase 39]: Channel alerts dispatch outside per-recipient loop (org-level, once per event per channel)
 - [Phase 39]: Only activity types mapped to channel categories; billing/system types excluded from channel alerts
 - [Phase 39]: Admin uses useRouter from @/i18n/navigation; portal keeps next/navigation for CreditExhaustedInline navigation
+- [Phase 39]: Vitest config for web app uses @vitejs/plugin-react for JSX transform with jsdom environment
 
 ### Pending Todos
 
