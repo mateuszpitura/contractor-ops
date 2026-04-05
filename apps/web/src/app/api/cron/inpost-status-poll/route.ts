@@ -3,19 +3,36 @@ import type { NextRequest } from "next/server";
 import { verifySignatureAppRouter } from "@upstash/qstash/nextjs";
 import { prisma } from "@contractor-ops/db";
 import { pollInPostShipmentStatuses } from "@contractor-ops/api/services/courier/inpost-polling-service";
+import { pollDpdShipmentStatuses } from "@contractor-ops/api/services/courier/dpd-polling-service";
+import { pollUpsShipmentStatuses } from "@contractor-ops/api/services/courier/ups-polling-service";
 
 // ---------------------------------------------------------------------------
 // POST /api/cron/inpost-status-poll
 //
-// QStash-scheduled polling endpoint for InPost shipment status updates.
-// Polls active InPost shipments hourly as a fallback for missed webhooks.
+// QStash-scheduled polling endpoint for courier shipment status updates.
+// Polls active shipments hourly across all carriers (InPost, DPD, UPS)
+// as a fallback for missed webhooks.
 // ---------------------------------------------------------------------------
 
+interface CarrierResult {
+  carrier: string;
+  checked: number;
+  updated: number;
+}
+
+interface OrgResult {
+  organizationId: string;
+  carriers: CarrierResult[];
+}
+
 /**
- * Poll active InPost shipments for status updates.
+ * Poll active shipments for status updates across all carriers.
  *
  * If body contains `organizationId`, polls that org only.
- * Otherwise, polls ALL orgs with an InPost CourierConfig.
+ * Otherwise, polls ALL orgs with any CourierConfig.
+ *
+ * Each carrier is polled independently -- one carrier failure does not
+ * prevent polling other carriers (fire-and-forget resilience per D-07).
  *
  * Protected by QStash signature verification.
  */
@@ -28,64 +45,79 @@ async function handler(request: NextRequest) {
       body = JSON.parse(text);
     }
   } catch {
-    // Empty body is OK — we'll poll all orgs
+    // Empty body is OK -- we'll poll all orgs
   }
 
-  const results: Array<{
-    organizationId: string;
-    checked: number;
-    updated: number;
-  }> = [];
+  const results: OrgResult[] = [];
 
   if (body.organizationId) {
-    // Poll a specific org
-    const result = await pollInPostShipmentStatuses(
-      prisma,
-      body.organizationId,
-    );
-    results.push({
-      organizationId: body.organizationId,
-      ...result,
-    });
+    // Poll a specific org across all carriers
+    const orgResult = await pollAllCarriersForOrg(body.organizationId);
+    results.push(orgResult);
   } else {
-    // Poll ALL orgs with InPost config
+    // Poll ALL orgs with any courier config
     const configs = await prisma.courierConfig.findMany({
-      where: { carrier: "inpost" },
       select: { organizationId: true },
+      distinct: ["organizationId"],
     });
 
     for (const config of configs) {
-      try {
-        const result = await pollInPostShipmentStatuses(
-          prisma,
-          config.organizationId,
-        );
-        results.push({
-          organizationId: config.organizationId,
-          ...result,
-        });
-      } catch (error) {
-        console.error(
-          `[inpost-status-poll] Failed for org=${config.organizationId}:`,
-          error,
-        );
-        results.push({
-          organizationId: config.organizationId,
-          checked: 0,
-          updated: 0,
-        });
-      }
+      const orgResult = await pollAllCarriersForOrg(config.organizationId);
+      results.push(orgResult);
     }
   }
 
-  const totalChecked = results.reduce((sum, r) => sum + r.checked, 0);
-  const totalUpdated = results.reduce((sum, r) => sum + r.updated, 0);
+  const totalChecked = results.reduce(
+    (sum, r) => sum + r.carriers.reduce((s, c) => s + c.checked, 0),
+    0,
+  );
+  const totalUpdated = results.reduce(
+    (sum, r) => sum + r.carriers.reduce((s, c) => s + c.updated, 0),
+    0,
+  );
 
   console.info(
-    `[inpost-status-poll] Completed: ${results.length} org(s), ${totalChecked} checked, ${totalUpdated} updated`,
+    `[courier-status-poll] Completed: ${results.length} org(s), ${totalChecked} checked, ${totalUpdated} updated`,
   );
 
   return NextResponse.json({ results });
+}
+
+/**
+ * Poll all three carriers for a single organization.
+ * Each carrier is wrapped in independent try/catch for resilience.
+ */
+async function pollAllCarriersForOrg(organizationId: string): Promise<OrgResult> {
+  const carriers: CarrierResult[] = [];
+
+  // Poll InPost shipments
+  const inpostResult = await pollInPostShipmentStatuses(prisma, organizationId).catch(
+    (err) => {
+      console.error(`[courier-status-poll] InPost error for org ${organizationId}:`, err);
+      return { checked: 0, updated: 0 };
+    },
+  );
+  carriers.push({ carrier: "inpost", ...inpostResult });
+
+  // Poll DPD shipments
+  const dpdResult = await pollDpdShipmentStatuses(prisma, organizationId).catch(
+    (err) => {
+      console.error(`[courier-status-poll] DPD error for org ${organizationId}:`, err);
+      return { checked: 0, updated: 0 };
+    },
+  );
+  carriers.push({ carrier: "dpd", ...dpdResult });
+
+  // Poll UPS shipments
+  const upsResult = await pollUpsShipmentStatuses(prisma, organizationId).catch(
+    (err) => {
+      console.error(`[courier-status-poll] UPS error for org ${organizationId}:`, err);
+      return { checked: 0, updated: 0 };
+    },
+  );
+  carriers.push({ carrier: "ups", ...upsResult });
+
+  return { organizationId, carriers };
 }
 
 export const POST = verifySignatureAppRouter(handler);
