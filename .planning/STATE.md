@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Enterprise & Monetization
 status: executing
-stopped_at: Completed all Phase 38 plans (38-01, 38-02, 38-03)
-last_updated: "2026-04-05T21:12:53.665Z"
-last_activity: 2026-04-05
+stopped_at: Completed 39-01-PLAN.md
+last_updated: "2026-04-05T22:39:35.594Z"
+last_activity: 2026-04-06 -- Completed 39-01 channel alert dispatch
 progress:
-  total_phases: 11
+  total_phases: 12
   completed_phases: 11
-  total_plans: 37
-  completed_plans: 37
+  total_plans: 40
+  completed_plans: 38
   percent: 91
 ---
 
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-04-01)
 
 ## Current Position
 
-Phase: 38
-Plan: Not started
-Status: Executing Phase 38
-Last activity: 2026-04-05
+Phase: 39 (final-wiring-channel-alerts-credit-ui-oauth-gate) — EXECUTING
+Plan: 1 of 3 complete
+Status: Executing Phase 39
+Last activity: 2026-04-06 -- Completed 39-01 channel alert dispatch
 
 Progress: [█████████░] 91%
 
@@ -81,6 +81,7 @@ Progress: [█████████░] 91%
 | Phase 38 P01 | 5min | 2 tasks | 6 files |
 | Phase 38 P02 | 4min | 2 tasks | 5 files |
 | Phase 38 P03 | 1min | 2 tasks | 3 files |
+| Phase 39 P01 | 3min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -155,6 +156,8 @@ Recent decisions affecting current work:
 - [Phase 38]: Used Omit<BaseShipmentParams, 'sender'> for AddressShipmentParams to safely override sender type with AddressSender
 - [Phase 38]: Runtime type guards for carrier narrowing ('targetPoint' in params, 'deliveryAddress' in params)
 - [Phase 38]: FeatureGate wraps at component return level for dedicated feature components
+- [Phase 39]: Channel alerts dispatch outside per-recipient loop (org-level, once per event per channel)
+- [Phase 39]: Only activity types mapped to channel categories; billing/system types excluded from channel alerts
 
 ### Pending Todos
 
@@ -168,6 +171,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05
-Stopped at: Completed all Phase 38 plans (38-01, 38-02, 38-03)
+Last session: 2026-04-05T22:39:35.591Z
+Stopped at: Completed 39-01-PLAN.md
 Resume file: None
