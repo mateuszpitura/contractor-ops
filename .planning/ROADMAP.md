@@ -4,7 +4,7 @@
 
 - ✅ **v1.0 MVP** — Phases 1-11 (shipped 2026-03-23)
 - ✅ **v2.0 Platform Expansion** — Phases 12-27 (shipped 2026-04-01)
-- 🚧 **v3.0 Enterprise & Monetization** — Phases 28-38 (in progress)
+- 🚧 **v3.0 Enterprise & Monetization** — Phases 28-39 (in progress)
 
 ## Phases
 
@@ -64,6 +64,9 @@ Full details: `.planning/milestones/v2.0-ROADMAP.md`
 - [x] **Phase 34: Intelligent Onboarding Wizard** - Cross-tool import orchestrator with preview, dedup, and batch confirm (completed 2026-04-04)
 - [x] **Phase 35: Feature Gating + DPD/UPS + Billing Polish** - Paywall activation, remaining couriers, usage dashboard (completed 2026-04-05)
 - [x] **Phase 36: Wiring Fixes — Webhook Dispatch + UI Mounting + Feature Gate** - Close audit gaps: Linear webhook dispatch, carrier UI mounting, feature gate wiring (completed 2026-04-05)
+- [x] **Phase 37: Shipment Task Auto-Completion Wiring** - Webhook and polling paths trigger workflow task auto-completion (completed 2026-04-05)
+- [x] **Phase 38: Tier Gate Expansion + CourierClient Type Fix** - All mutations enforce tier gating, CourierClient generic base type (completed 2026-04-05)
+- [ ] **Phase 39: Final Wiring — Channel Alerts + Credit Exhaustion UI + OAuth FeatureGate** - Wire sendChannelAlert dispatch, mount CreditExhaustedInline, wrap OAuth CTAs with FeatureGate
 
 ## Phase Details
 
@@ -256,10 +259,24 @@ Plans:
 - [x] 38-02-PLAN.md — CourierClient BaseShipmentParams type hierarchy refactor + test updates (EQUIP-05/EQUIP-06/EQUIP-07)
 - [x] 38-03-PLAN.md — FeatureGate wrappers on Teams, GWS, Onboarding Import UI components (BILL-09)
 
+### Phase 39: Final Wiring — Channel Alerts + Credit Exhaustion UI + OAuth FeatureGate
+**Goal**: Wire remaining notification dispatch, mount credit exhaustion UI, and gate OAuth connect buttons by tier
+**Depends on**: Phase 32 (Teams), Phase 28 (billing), Phase 35 (FeatureGate), Phase 36 (notification dispatch)
+**Requirements**: TEAM-02, TEAM-03, BILL-06, BILL-09
+**Gap Closure**: Closes MISSING-04 (sendChannelAlert never called), MISSING-05 (CreditExhaustedInline never mounted), MISSING-06 (OAuth connect buttons missing FeatureGate) from v3.0 re-audit
+**Success Criteria** (what must be TRUE):
+  1. Notification dispatch routes activity alerts to configured Teams/Slack channels via sendChannelAlert based on channelMapping in configJson
+  2. OCR-triggering UI shows CreditExhaustedInline with upgrade/top-up prompt when credits are exhausted instead of generic error
+  3. STARTER-tier users see FeatureGate upgrade prompt on OAuth connect buttons for Linear, Google Workspace, and Teams
+**Plans**: TBD
+
+Plans:
+- (not yet planned)
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 → 35 → 36 → 37 → 38
+Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 → 35 → 36 → 37 → 38 → 39
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -301,3 +318,4 @@ Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 �
 | 36. Wiring Fixes — Webhook Dispatch + UI Mounting + Feature Gate | v3.0 | 3/3 | Complete    | 2026-04-05 |
 | 37. Shipment Task Auto-Completion Wiring | v3.0 | 1/1 | Complete    | 2026-04-05 |
 | 38. Tier Gate Expansion + CourierClient Type Fix | v3.0 | 3/3 | Complete    | 2026-04-05 |
+| 39. Final Wiring — Channel Alerts + Credit Exhaustion UI + OAuth FeatureGate | v3.0 | 0/0 | Planned | — |

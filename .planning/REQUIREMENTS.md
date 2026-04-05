@@ -19,7 +19,7 @@ Requirements for v3.0 Enterprise & Monetization milestone. Each maps to roadmap 
 ### Teams Integration
 
 - [x] **TEAM-01**: Admin can connect Teams workspace via Azure AD OAuth with bot registration
-- [x] **TEAM-02**: Admin can configure which Teams channel receives which notification types
+- [ ] **TEAM-02**: Admin can configure which Teams channel receives which notification types
 - [x] **TEAM-03**: System sends activity alerts to configured Teams channels via Adaptive Cards
 - [x] **TEAM-04**: Manager can approve or reject invoices directly from Teams Adaptive Card actions
 - [x] **TEAM-05**: System sends approval reminder DMs to approvers with overdue items via proactive messaging
@@ -62,7 +62,7 @@ Requirements for v3.0 Enterprise & Monetization milestone. Each maps to roadmap 
 - [x] **BILL-03**: New org starts with free trial (1 org / 2 users, limited features) with trial-ending notifications
 - [x] **BILL-04**: System meters AI/OCR usage per org via Stripe Meters and reports events on each OCR call
 - [x] **BILL-05**: Each plan tier includes N free OCR credits/month with configurable auto-renewal top-up bundles
-- [x] **BILL-06**: System hard-blocks OCR when credits exhausted (with upgrade/top-up prompt)
+- [ ] **BILL-06**: System hard-blocks OCR when credits exhausted (with upgrade/top-up prompt)
 - [x] **BILL-07**: Stripe webhook events drive internal subscription state with database-level idempotency
 - [x] **BILL-08**: Admin can access Stripe-hosted billing portal for payment method, invoices, and cancellation
 - [x] **BILL-09**: Middleware gates features by org's active subscription tier with graceful upgrade prompts
@@ -113,8 +113,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LIN-05 | Phase 36 | Complete |
 | LIN-06 | Phase 29 | Complete |
 | TEAM-01 | Phase 32 | Complete |
-| TEAM-02 | Phase 32 | Complete |
-| TEAM-03 | Phase 32 | Complete |
+| TEAM-02 | Phase 39 | Pending |
+| TEAM-03 | Phase 39 | Pending |
 | TEAM-04 | Phase 32 | Complete |
 | TEAM-05 | Phase 32 | Complete |
 | TEAM-06 | Phase 32 | Complete |
@@ -144,10 +144,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | BILL-03 | Phase 28 | Complete |
 | BILL-04 | Phase 28 | Complete |
 | BILL-05 | Phase 28 | Complete |
-| BILL-06 | Phase 28 | Complete |
+| BILL-06 | Phase 39 | Pending |
 | BILL-07 | Phase 28 | Complete |
 | BILL-08 | Phase 28 | Complete |
-| BILL-09 | Phase 36 | Complete |
+| BILL-09 | Phase 39 | Pending |
 | BILL-10 | Phase 35 | Complete |
 
 **Coverage:**
@@ -157,4 +157,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-04-01*
-*Last updated: 2026-04-01 after roadmap creation*
+*Last updated: 2026-04-05 after gap closure phase creation*
