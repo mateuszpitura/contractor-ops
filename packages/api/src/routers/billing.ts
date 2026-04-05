@@ -321,4 +321,34 @@ export const billingRouter = router({
   getPlanConfig: tenantProcedure.query(() => {
     return PLAN_CONFIG;
   }),
+
+  /**
+   * Aggregated usage dashboard data: subscription, credits, active contractors,
+   * included seats, and plan configuration in a single call.
+   * Available to all authenticated users (tenantProcedure).
+   */
+  getUsageDashboard: tenantProcedure.query(async ({ ctx }) => {
+    const [sub, credits, activeContractors] = await Promise.all([
+      getSubscription(ctx.organizationId),
+      getCreditBalance(ctx.organizationId),
+      prisma.contractor.count({
+        where: { organizationId: ctx.organizationId, status: "ACTIVE" },
+      }),
+    ]);
+
+    const tierConfig = PLAN_CONFIG.tiers.find((t) => t.id === sub?.tier);
+    const includedSeats = tierConfig
+      ? Math.floor(tierConfig.basePriceGrosze / tierConfig.seatPriceGrosze)
+      : 0;
+
+    return {
+      subscription: sub,
+      credits,
+      activeContractors,
+      includedSeats,
+      planConfig: PLAN_CONFIG,
+    };
+  }),
 });
+
+export { PLAN_CONFIG };
