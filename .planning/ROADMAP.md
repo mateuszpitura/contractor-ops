@@ -62,7 +62,7 @@ Full details: `.planning/milestones/v2.0-ROADMAP.md`
 - [x] **Phase 32: Teams Integration** - Approve/reject from Teams Adaptive Cards, reminders, and activity alerts (completed 2026-04-04)
 - [x] **Phase 33: InPost Courier Integration** - First courier API with Parcel Locker selection and auto-status tracking (completed 2026-04-04)
 - [x] **Phase 34: Intelligent Onboarding Wizard** - Cross-tool import orchestrator with preview, dedup, and batch confirm (completed 2026-04-04)
-- [ ] **Phase 35: Feature Gating + DPD/UPS + Billing Polish** - Paywall activation, remaining couriers, usage dashboard
+- [x] **Phase 35: Feature Gating + DPD/UPS + Billing Polish** - Paywall activation, remaining couriers, usage dashboard (completed 2026-04-05)
 
 ## Phase Details
 
@@ -201,10 +201,10 @@ Plans:
 Plans:
 - [x] 35-01-PLAN.md — requireTier tRPC middleware + getUsageDashboard endpoint (BILL-09/BILL-10)
 - [x] 35-02-PLAN.md — DPD + UPS courier clients, status mappers, polling, validators (EQUIP-06/EQUIP-07)
-- [ ] 35-03-PLAN.md — Equipment router DPD/UPS procedures + courier polling cron (EQUIP-06/EQUIP-07/BILL-09)
+- [x] 35-03-PLAN.md — Equipment router DPD/UPS procedures + courier polling cron (EQUIP-06/EQUIP-07/BILL-09)
 - [x] 35-04-PLAN.md — FeatureGate, UpgradeInlineBanner, UsageDashboard, KPI cards, i18n (BILL-09/BILL-10)
 - [x] 35-05-PLAN.md — CarrierShipmentForm, DPD/UPS fieldsets, credential setup, default return carrier, i18n (EQUIP-06/EQUIP-07)
-- [ ] 35-06-PLAN.md — Gap closure: testCourierConnection tRPC procedure (EQUIP-06/EQUIP-07)
+- [x] 35-06-PLAN.md — Gap closure: testCourierConnection tRPC procedure (EQUIP-06/EQUIP-07)
 
 ## Progress
 
@@ -247,4 +247,4 @@ Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 �
 | 32. Teams Integration | v3.0 | 4/4 | Complete    | 2026-04-04 |
 | 33. InPost Courier Integration | v3.0 | 3/3 | Complete    | 2026-04-04 |
 | 34. Intelligent Onboarding Wizard | v3.0 | 2/2 | Complete    | 2026-04-05 |
-| 35. Feature Gating + DPD/UPS + Billing Polish | v3.0 | 4/6 | In Progress|  |
+| 35. Feature Gating + DPD/UPS + Billing Polish | v3.0 | 6/6 | Complete   | 2026-04-05 |
