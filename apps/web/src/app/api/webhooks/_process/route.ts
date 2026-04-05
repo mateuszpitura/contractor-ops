@@ -83,6 +83,21 @@ async function handler(request: NextRequest) {
       );
     }
 
+    // For Linear provider, dispatch to processLinearWebhook from @contractor-ops/api.
+    // Done here in apps/web to avoid circular dependency between packages/integrations and packages/api.
+    // LinearAdapter.handleWebhook is a no-op — actual processing dispatched here.
+    if (provider === "linear") {
+      const { processLinearWebhook } = await import(
+        "@contractor-ops/api/services/linear-webhook-handler"
+      );
+      await processLinearWebhook(
+        prisma,
+        delivery.organizationId,
+        delivery.integrationConnectionId ?? "",
+        delivery.payloadJson,
+      );
+    }
+
     // For e-sign providers, check if signing was completed and trigger
     // signed PDF download + R2 storage via the orchestrator
     const isESignProvider = provider === "docusign" || provider === "autenti";
