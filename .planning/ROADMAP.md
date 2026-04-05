@@ -67,6 +67,7 @@ Full details: `.planning/milestones/v2.0-ROADMAP.md`
 - [x] **Phase 37: Shipment Task Auto-Completion Wiring** - Webhook and polling paths trigger workflow task auto-completion (completed 2026-04-05)
 - [x] **Phase 38: Tier Gate Expansion + CourierClient Type Fix** - All mutations enforce tier gating, CourierClient generic base type (completed 2026-04-05)
 - [x] **Phase 39: Final Wiring — Channel Alerts + Credit Exhaustion UI + OAuth FeatureGate** - Wire sendChannelAlert dispatch, mount CreditExhaustedInline, wrap OAuth CTAs with FeatureGate (completed 2026-04-05)
+- [ ] **Phase 40: Integration Cleanup — FeatureGate + Type Safety** - Wrap Jira/Calendar provider sections with FeatureGate, rebuild API dist types, remove (trpc as any) proxies
 
 ## Phase Details
 
@@ -275,10 +276,23 @@ Plans:
 - [x] 39-02-PLAN.md — Mount CreditExhaustedInline in invoice upload areas (BILL-06)
 - [x] 39-03-PLAN.md — Wrap Linear/GWS/Teams provider sections with FeatureGate (BILL-09)
 
+### Phase 40: Integration Cleanup — FeatureGate + Type Safety
+**Goal**: Close remaining integration findings: consistent FeatureGate wrappers on all OAuth provider sections, and restore full type safety by rebuilding API dist types
+**Depends on**: Phase 35 (FeatureGate component), Phase 38 (tier gate middleware), Phase 39 (FeatureGate pattern)
+**Requirements**: BILL-09, EQUIP-05, EQUIP-06, EQUIP-07, TEAM-02, BILL-10
+**Gap Closure**: Closes FINDING-01 (Jira/Calendar FeatureGate UI gap) and FINDING-02 (stale API dist types) from v3.0 milestone audit
+**Success Criteria** (what must be TRUE):
+  1. Jira and Calendar OAuth provider sections are wrapped with FeatureGate requiring PRO tier, consistent with Linear/GWS/Teams pattern
+  2. API dist types are rebuilt and all 4 components (usage-dashboard, teams-channel-mapping-card, carrier-shipment-form, inpost-shipment-form) use proper typed tRPC calls without `as any` proxies
+**Plans**: 0 plans
+
+Plans:
+- (none yet)
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 → 35 → 36 → 37 → 38 → 39
+Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 → 35 → 36 → 37 → 38 → 39 → 40
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -321,3 +335,4 @@ Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 �
 | 37. Shipment Task Auto-Completion Wiring | v3.0 | 1/1 | Complete    | 2026-04-05 |
 | 38. Tier Gate Expansion + CourierClient Type Fix | v3.0 | 3/3 | Complete    | 2026-04-05 |
 | 39. Final Wiring — Channel Alerts + Credit Exhaustion UI + OAuth FeatureGate | v3.0 | 1/3 | Complete    | 2026-04-05 |
+| 40. Integration Cleanup — FeatureGate + Type Safety | v3.0 | 0/0 | Planned | — |
