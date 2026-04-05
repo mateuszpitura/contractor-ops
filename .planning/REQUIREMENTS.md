@@ -65,8 +65,8 @@ Requirements for v3.0 Enterprise & Monetization milestone. Each maps to roadmap 
 - [x] **BILL-06**: System hard-blocks OCR when credits exhausted (with upgrade/top-up prompt)
 - [x] **BILL-07**: Stripe webhook events drive internal subscription state with database-level idempotency
 - [x] **BILL-08**: Admin can access Stripe-hosted billing portal for payment method, invoices, and cancellation
-- [ ] **BILL-09**: Middleware gates features by org's active subscription tier with graceful upgrade prompts
-- [ ] **BILL-10**: Admin sees usage dashboard with current plan, seat count, OCR credits used/remaining, and billing date
+- [x] **BILL-09**: Middleware gates features by org's active subscription tier with graceful upgrade prompts
+- [x] **BILL-10**: Admin sees usage dashboard with current plan, seat count, OCR credits used/remaining, and billing date
 
 ## Future Requirements
 
@@ -147,8 +147,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | BILL-06 | Phase 28 | Complete |
 | BILL-07 | Phase 28 | Complete |
 | BILL-08 | Phase 28 | Complete |
-| BILL-09 | Phase 35 | Pending |
-| BILL-10 | Phase 35 | Pending |
+| BILL-09 | Phase 35 | Complete |
+| BILL-10 | Phase 35 | Complete |
 
 **Coverage:**
 - v3.0 requirements: 43 total
