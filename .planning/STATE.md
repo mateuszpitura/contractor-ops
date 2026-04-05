@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Enterprise & Monetization
 status: verifying
-stopped_at: Phase 37 context gathered
-last_updated: "2026-04-05T19:47:28.563Z"
+stopped_at: Completed 37-01-PLAN.md
+last_updated: "2026-04-05T20:13:48.871Z"
 last_activity: 2026-04-05
 progress:
   total_phases: 11
-  completed_phases: 9
-  total_plans: 33
-  completed_plans: 33
+  completed_phases: 10
+  total_plans: 34
+  completed_plans: 34
   percent: 91
 ---
 
@@ -21,12 +21,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-01)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 36 — wiring-fixes-webhook-ui-featuregate
+**Current focus:** Phase 37 — shipment-task-auto-completion
 
 ## Current Position
 
-Phase: 36
-Plan: Not started
+Phase: 37 (shipment-task-auto-completion) — EXECUTING
+Plan: 1 of 1
 Status: Phase complete — ready for verification
 Last activity: 2026-04-05
 
@@ -77,6 +77,7 @@ Progress: [█████████░] 91%
 | Phase 36 P01 | 3min | 2 tasks | 2 files |
 | Phase 36 P02 | 3min | 2 tasks | 6 files |
 | Phase 36 P03 | 3min | 2 tasks | 8 files |
+| Phase 37 P01 | 7min | 3 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -145,6 +146,8 @@ Recent decisions affecting current work:
 - [Phase 36]: Fixed transitionJiraIssue call to use 5-arg signature with connection lookup in cancelRun (plan had incorrect 3-arg call)
 - [Phase 36]: Used simple Card with Badge for DPD/UPS provider sections instead of ProviderConnectionCard (courier configs are not OAuth integrations)
 - [Phase 36]: Gate mutations only -- read queries ungated for STARTER upgrade prompts
+- [Phase 37]: Used vi.hoisted() for mock variable declarations to avoid ReferenceError with vi.mock hoisting
+- [Phase 37]: DPD status DEP_DELIVERED maps to DELIVERED (not DOR as initially researched)
 
 ### Pending Todos
 
@@ -158,6 +161,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T19:47:28.559Z
-Stopped at: Phase 37 context gathered
-Resume file: .planning/phases/37-shipment-task-auto-completion/37-CONTEXT.md
+Last session: 2026-04-05T20:13:48.866Z
+Stopped at: Completed 37-01-PLAN.md
+Resume file: None
