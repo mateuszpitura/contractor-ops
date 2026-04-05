@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Enterprise & Monetization
 status: executing
-stopped_at: Completed 35-04-PLAN.md
-last_updated: "2026-04-05T10:54:46.176Z"
+stopped_at: Completed 35-05-PLAN.md
+last_updated: "2026-04-05T10:57:19.840Z"
 last_activity: 2026-04-05
 progress:
   total_phases: 8
   completed_phases: 7
   total_plans: 29
-  completed_plans: 27
+  completed_plans: 28
   percent: 84
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-01)
 ## Current Position
 
 Phase: 35 (feature-gating-dpd-ups-billing-polish) — EXECUTING
-Plan: 4 of 5
+Plan: 5 of 5
 Status: Ready to execute
 Last activity: 2026-04-05
 
@@ -73,6 +73,7 @@ Progress: [████████░░] 84%
 | Phase 35 P01 | 4min | 2 tasks | 4 files |
 | Phase 35 P02 | 6min | 2 tasks | 14 files |
 | Phase 35 P04 | 5min | 2 tasks | 10 files |
+| Phase 35 P05 | 7min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -136,6 +137,8 @@ Recent decisions affecting current work:
 - [Phase 35]: FeatureGate renders children during loading to avoid flashing upgrade banner
 - [Phase 35]: CreditProgressBar uses inline style override on base-ui ProgressIndicator for dynamic bar color
 - [Phase 35]: base-ui Button uses render prop for Link composition (not asChild)
+- [Phase 35]: CarrierShipmentForm uses tRPC proxy pattern for stale dist types, consistent with InPostShipmentForm
+- [Phase 35]: UPS service code stored as string literal (11/65/07) matching actual UPS API codes for direct passthrough
 
 ### Pending Todos
 
@@ -149,6 +152,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T10:54:46.172Z
-Stopped at: Completed 35-04-PLAN.md
+Last session: 2026-04-05T10:57:19.837Z
+Stopped at: Completed 35-05-PLAN.md
 Resume file: None
