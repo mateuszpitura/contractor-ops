@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 import { InPostClient } from "../inpost-client";
-import type { CreateShipmentParams } from "../courier-client";
+import type { InPostShipmentParams } from "../courier-client";
 
 // ---------------------------------------------------------------------------
 // InPost Client Tests
@@ -48,7 +48,7 @@ describe("InPostClient", () => {
       globalThis.fetch = mockFetch;
 
       const client = createClient();
-      const params: CreateShipmentParams = {
+      const params: InPostShipmentParams = {
         organizationId: "org-abc",
         direction: "OUTBOUND",
         receiver: {
