@@ -3,6 +3,7 @@ import crypto from "crypto";
 import { inpostWebhookPayloadSchema } from "@contractor-ops/validators";
 
 import { mapInPostStatus, NOTIFICATION_STATUSES } from "./inpost-status-mapper.js";
+import { checkShipmentTaskCompletion } from "../equipment-workflow.js";
 
 // ---------------------------------------------------------------------------
 // InPost Webhook Handler
@@ -172,6 +173,14 @@ export async function handleInPostWebhook(
       ...(shipment.externalId ? {} : { externalId: String(data.shipment_id) }),
     },
   });
+
+  // 6b. Fire-and-forget: check workflow task auto-completion (per D-01/D-02)
+  void checkShipmentTaskCompletion(db, organizationId, {
+    id: shipment.id,
+    workflowTaskRunId: shipment.workflowTaskRunId,
+    direction: shipment.direction as "OUTBOUND" | "RETURN",
+    currentStatus: mappedStatus,
+  }).catch(console.error);
 
   // 7. Auto-advance equipment status
   const directionMap = SHIPMENT_TO_EQUIPMENT_STATUS[mappedStatus];

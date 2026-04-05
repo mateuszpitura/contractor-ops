@@ -1,5 +1,6 @@
 import { DPDClient } from "./dpd-client.js";
 import { mapDpdStatus } from "./dpd-status-mapper.js";
+import { checkShipmentTaskCompletion } from "../equipment-workflow.js";
 
 // ---------------------------------------------------------------------------
 // DPD Polling Service
@@ -141,6 +142,14 @@ export async function pollDpdShipmentStatuses(
         where: { id: shipment.id },
         data: { currentStatus: mappedStatus },
       });
+
+      // Fire-and-forget: check workflow task auto-completion (per D-01/D-02)
+      void checkShipmentTaskCompletion(db, organizationId, {
+        id: shipment.id,
+        workflowTaskRunId: shipment.workflowTaskRunId,
+        direction: shipment.direction as "OUTBOUND" | "RETURN",
+        currentStatus: mappedStatus,
+      }).catch(console.error);
 
       // Auto-advance equipment status
       const directionMap = SHIPMENT_TO_EQUIPMENT_STATUS[mappedStatus];

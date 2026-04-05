@@ -1,5 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
+const { mockCheckShipmentTaskCompletion } = vi.hoisted(() => ({
+  mockCheckShipmentTaskCompletion: vi.fn().mockResolvedValue(undefined),
+}));
+vi.mock("../../equipment-workflow", () => ({
+  checkShipmentTaskCompletion: mockCheckShipmentTaskCompletion,
+}));
+
 import {
   handleInPostWebhook,
   verifyInPostSignature,
@@ -72,6 +79,7 @@ describe("handleInPostWebhook", () => {
 
   beforeEach(() => {
     db = createMockDb();
+    mockCheckShipmentTaskCompletion.mockReset().mockResolvedValue(undefined);
     vi.spyOn(console, "warn").mockImplementation(() => {});
     vi.spyOn(console, "info").mockImplementation(() => {});
   });
@@ -249,5 +257,48 @@ describe("handleInPostWebhook", () => {
     // Second findFirst should be called with trackingNumber
     expect(db.shipment.findFirst).toHaveBeenCalledTimes(2);
     expect(db.shipmentEvent.create).toHaveBeenCalled();
+  });
+
+  it("calls checkShipmentTaskCompletion after status update", async () => {
+    const mockShipment = {
+      id: "ship-1",
+      organizationId: "org-1",
+      equipmentId: "equip-1",
+      direction: "OUTBOUND",
+      currentStatus: "IN_TRANSIT",
+      workflowTaskRunId: "task-1",
+      externalId: "12345678",
+    };
+
+    db.shipment.findFirst.mockResolvedValue(mockShipment);
+    db.shipmentEvent.findFirst.mockResolvedValue(null);
+    db.shipmentEvent.create.mockResolvedValue({});
+    db.shipment.update.mockResolvedValue({});
+    db.equipment.findUnique.mockResolvedValue({
+      id: "equip-1",
+      status: "IN_TRANSIT",
+    });
+    db.equipment.update.mockResolvedValue({});
+
+    await handleInPostWebhook(db as any, "org-1", validPayload);
+
+    expect(mockCheckShipmentTaskCompletion).toHaveBeenCalledWith(
+      db,
+      "org-1",
+      expect.objectContaining({
+        id: "ship-1",
+        workflowTaskRunId: "task-1",
+        direction: "OUTBOUND",
+        currentStatus: "DELIVERED",
+      }),
+    );
+  });
+
+  it("does not call checkShipmentTaskCompletion when shipment not found", async () => {
+    db.shipment.findFirst.mockResolvedValue(null);
+
+    await handleInPostWebhook(db as any, "org-1", validPayload);
+
+    expect(mockCheckShipmentTaskCompletion).not.toHaveBeenCalled();
   });
 });

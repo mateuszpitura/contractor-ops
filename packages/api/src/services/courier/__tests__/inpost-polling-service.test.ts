@@ -1,7 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import { pollInPostShipmentStatuses } from "../inpost-polling-service";
-
 // ---------------------------------------------------------------------------
 // InPost Polling Service Tests
 // ---------------------------------------------------------------------------
@@ -17,6 +15,15 @@ vi.mock("../inpost-client", () => {
     },
   };
 });
+
+const { mockCheckShipmentTaskCompletion } = vi.hoisted(() => ({
+  mockCheckShipmentTaskCompletion: vi.fn().mockResolvedValue(undefined),
+}));
+vi.mock("../../equipment-workflow", () => ({
+  checkShipmentTaskCompletion: mockCheckShipmentTaskCompletion,
+}));
+
+import { pollInPostShipmentStatuses } from "../inpost-polling-service";
 
 function createMockDb() {
   return {
@@ -44,6 +51,7 @@ describe("pollInPostShipmentStatuses", () => {
   beforeEach(() => {
     db = createMockDb();
     mockGetStatus.mockReset();
+    mockCheckShipmentTaskCompletion.mockReset().mockResolvedValue(undefined);
     vi.spyOn(console, "info").mockImplementation(() => {});
     vi.spyOn(console, "warn").mockImplementation(() => {});
     vi.spyOn(console, "error").mockImplementation(() => {});
@@ -178,5 +186,86 @@ describe("pollInPostShipmentStatuses", () => {
     expect(result.checked).toBe(1);
     expect(result.updated).toBe(0);
     expect(db.shipmentEvent.create).not.toHaveBeenCalled();
+  });
+
+  it("calls checkShipmentTaskCompletion after polling status update", async () => {
+    db.courierConfig.findUnique.mockResolvedValue({
+      configJson: {
+        apiToken: "token-123",
+        shipxOrganizationId: "org-shipx",
+        sandbox: true,
+      },
+    });
+
+    db.shipment.findMany.mockResolvedValue([
+      {
+        id: "ship-1",
+        organizationId: "org-1",
+        equipmentId: "equip-1",
+        externalId: "ext-1",
+        direction: "OUTBOUND",
+        currentStatus: "IN_TRANSIT",
+        workflowTaskRunId: "task-1",
+      },
+    ]);
+
+    mockGetStatus.mockResolvedValue({
+      externalId: "ext-1",
+      status: "delivered",
+      trackingNumber: "T1",
+    });
+
+    db.shipmentEvent.findFirst.mockResolvedValue(null);
+    db.shipmentEvent.create.mockResolvedValue({});
+    db.shipment.update.mockResolvedValue({});
+    db.equipment.findUnique.mockResolvedValue({
+      id: "equip-1",
+      status: "IN_TRANSIT",
+    });
+    db.equipment.update.mockResolvedValue({});
+
+    await pollInPostShipmentStatuses(db as any, "org-1");
+
+    expect(mockCheckShipmentTaskCompletion).toHaveBeenCalledWith(
+      db,
+      "org-1",
+      expect.objectContaining({
+        id: "ship-1",
+        workflowTaskRunId: "task-1",
+        direction: "OUTBOUND",
+        currentStatus: "DELIVERED",
+      }),
+    );
+  });
+
+  it("does not call checkShipmentTaskCompletion when status unchanged", async () => {
+    db.courierConfig.findUnique.mockResolvedValue({
+      configJson: {
+        apiToken: "token-123",
+        shipxOrganizationId: "org-shipx",
+        sandbox: true,
+      },
+    });
+
+    db.shipment.findMany.mockResolvedValue([
+      {
+        id: "ship-1",
+        organizationId: "org-1",
+        equipmentId: "equip-1",
+        externalId: "ext-1",
+        direction: "OUTBOUND",
+        currentStatus: "IN_TRANSIT",
+        workflowTaskRunId: "task-1",
+      },
+    ]);
+
+    mockGetStatus.mockResolvedValue({
+      externalId: "ext-1",
+      status: "adopted_at_source_branch", // maps to IN_TRANSIT — same as current
+    });
+
+    await pollInPostShipmentStatuses(db as any, "org-1");
+
+    expect(mockCheckShipmentTaskCompletion).not.toHaveBeenCalled();
   });
 });
