@@ -7,6 +7,7 @@ import { Check, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
 import { trpc } from "@/trpc/init";
+import { FeatureGate } from "@/components/billing/feature-gate";
 import {
   Dialog,
   DialogContent,
@@ -289,6 +290,7 @@ export function DirectoryImportWizard({
   // ---------------------------------------------------------------------------
 
   return (
+    <FeatureGate requiredTier="Pro" featureName="Google Workspace directory import">
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto sm:max-w-3xl">
         <DialogHeader>
@@ -418,5 +420,6 @@ export function DirectoryImportWizard({
         )}
       </DialogContent>
     </Dialog>
+    </FeatureGate>
   );
 }

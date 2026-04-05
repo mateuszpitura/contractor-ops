@@ -4,6 +4,7 @@ import { useState, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Check } from "lucide-react";
 
+import { FeatureGate } from "@/components/billing/feature-gate";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 
@@ -188,6 +189,7 @@ export function ImportWizard() {
   const progressPercent = step * 25;
 
   return (
+    <FeatureGate requiredTier="Pro" featureName="Onboarding import wizard">
     <div className="flex flex-col gap-8">
       {/* Page title */}
       <div>
@@ -265,5 +267,6 @@ export function ImportWizard() {
         </div>
       )}
     </div>
+    </FeatureGate>
   );
 }

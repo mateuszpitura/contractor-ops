@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Loader2, RefreshCw } from "lucide-react";
 
 import { trpc } from "@/trpc/init";
+import { FeatureGate } from "@/components/billing/feature-gate";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
@@ -155,6 +156,7 @@ export function TeamsChannelMappingCard() {
   const isChannelError = channelsQuery.isError;
 
   return (
+    <FeatureGate requiredTier="Pro" featureName="Teams channel mapping">
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
@@ -286,5 +288,6 @@ export function TeamsChannelMappingCard() {
         )}
       </CardContent>
     </Card>
+    </FeatureGate>
   );
 }
