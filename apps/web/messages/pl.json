@@ -4161,5 +4161,34 @@
     },
     "oauthError": "Nie udalo sie polaczyc z {tool}. Sprawdz uprawnienia i sprobuj ponownie.",
     "settingsReimport": "Ponowny import z narzedzi"
+  },
+  "Billing": {
+    "gate": {
+      "requiresTier": "{feature} wymaga planu {tier}.",
+      "pageHeading": "Ta funkcja wymaga wyzszego planu",
+      "pageBody": "Twoj obecny plan nie obejmuje {feature}. Zmien plan na {tier}, aby odblokowac.",
+      "upgradePlan": "Zmien plan"
+    },
+    "usage": {
+      "currentPlan": "Obecny plan",
+      "activeSeats": "Aktywne stanowiska",
+      "ocrCredits": "Kredyty OCR",
+      "nextBillingDate": "Nastepna data rozliczenia",
+      "active": "{active} aktywnych / {included} w planie",
+      "overage": "{overage} dodatkowych stanowisk rozliczanych po {price}/stanowisko",
+      "renewsOn": "Odnowienie",
+      "trialEnds": "Koniec okresu probnego",
+      "manageBilling": "Zarzadzaj rozliczeniami",
+      "noSubscription": "Brak aktywnej subskrypcji",
+      "noSubscriptionBody": "Wybierz plan, aby odblokowac wszystkie funkcje dla Twojej organizacji. Dane z okresu probnego sa zachowane.",
+      "choosePlan": "Wybierz plan",
+      "errorLoading": "Nie udalo sie zaladowac danych rozliczeniowych",
+      "retry": "Ponow"
+    },
+    "credits": {
+      "remaining": "{remaining} z {total} kredytow pozostalo",
+      "exhausted": "Brak kredytow -- kup wiecej, aby kontynuowac przetwarzanie OCR",
+      "buyMore": "Kup wiecej"
+    }
   }
 }

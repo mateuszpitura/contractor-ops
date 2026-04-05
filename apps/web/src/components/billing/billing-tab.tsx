@@ -9,9 +9,7 @@ import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { CurrentPlanSummary } from "./current-plan-summary";
-import { CreditUsageCard } from "./credit-usage-card";
-import { PlanComparisonGrid } from "./plan-comparison-grid";
+import { UsageDashboard } from "./usage-dashboard";
 import { ProrationPreview } from "./proration-preview";
 import type { TierId } from "./plan-comparison-grid";
 
@@ -92,32 +90,22 @@ export function BillingTab() {
     portalMutation.mutate();
   }
 
-  const currentTier = subscription?.tier as TierId | undefined;
-
   return (
     <div className="space-y-8">
-      {/* Top row: Current Plan + Credit Usage */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <CurrentPlanSummary />
-        <CreditUsageCard />
-      </div>
-
-      <Separator />
+      {/* Usage Dashboard with KPI cards + plan comparison */}
+      <UsageDashboard />
 
       {/* Proration preview (shown when upgrading/downgrading) */}
       {selectedPriceId && (
-        <ProrationPreview
-          newPriceId={selectedPriceId}
-          onConfirm={handleConfirmChange}
-          onCancel={handleCancelChange}
-        />
+        <>
+          <Separator />
+          <ProrationPreview
+            newPriceId={selectedPriceId}
+            onConfirm={handleConfirmChange}
+            onCancel={handleCancelChange}
+          />
+        </>
       )}
-
-      {/* Plan Comparison Grid */}
-      <PlanComparisonGrid
-        currentTier={currentTier}
-        onSelectPlan={handleSelectPlan}
-      />
 
       <Separator />
 

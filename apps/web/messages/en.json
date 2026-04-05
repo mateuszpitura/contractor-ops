@@ -752,6 +752,29 @@
         "rejectFailed": "Failed to reject change request. Please try again."
       }
     },
+    "carriers": {
+      "heading": "Shipping",
+      "notConfigured": "Not configured",
+      "connected": "Connected",
+      "testConnection": "Test connection",
+      "saveCredentials": "Save credentials",
+      "connectionVerified": "Connection verified",
+      "connectionFailed": "Connection failed -- check your credentials and try again",
+      "credentialsSaved": "Credentials saved successfully",
+      "saveFailed": "Could not save credentials. Please try again.",
+      "username": "Username",
+      "password": "Password",
+      "fid": "FID Account Number",
+      "clientId": "Client ID",
+      "clientSecret": "Client Secret",
+      "accountNumber": "Account Number",
+      "sandbox": "Sandbox mode"
+    },
+    "returnCarrier": {
+      "label": "Default return carrier",
+      "helper": "Used for all contractor return shipments.",
+      "saved": "Default return carrier updated"
+    },
     "toast": {
       "invoiceSettingsFailed": "Failed to update invoice settings",
       "saveSettingsFailed": "Failed to save settings",
@@ -3773,6 +3796,37 @@
       "rejectConfirmTitle": "Reject return",
       "rejectConfirmDescription": "This will decline the contractor's return request. They will be notified. Continue?",
       "cancelAction": "Cancel"
+    },
+    "carrier": {
+      "selectCarrier": "Carrier",
+      "created": "Shipment created with {carrier}",
+      "createShipment": "Create shipment",
+      "createError": "Could not create shipment. Please try again.",
+      "cancel": "Cancel",
+      "noCarriers": "No carriers configured",
+      "noCarriersBody": "Set up carrier credentials in Settings to create shipments.",
+      "parcelSize": "Parcel size",
+      "small": "Small",
+      "medium": "Medium",
+      "large": "Large"
+    },
+    "dpd": {
+      "deliveryAddress": "Delivery address",
+      "street": "Street",
+      "city": "City",
+      "postalCode": "Postal code",
+      "countryCode": "Country code"
+    },
+    "ups": {
+      "deliveryAddress": "Delivery address",
+      "street": "Street",
+      "city": "City",
+      "postalCode": "Postal code",
+      "countryCode": "Country code",
+      "serviceType": "Service type",
+      "standard": "Standard",
+      "expressSaver": "Express Saver",
+      "express": "Express"
     }
   },
   "Legal": {
@@ -4161,5 +4215,34 @@
     },
     "oauthError": "Could not connect to {tool}. Check your permissions and try again.",
     "settingsReimport": "Re-import from tools"
+  },
+  "Billing": {
+    "gate": {
+      "requiresTier": "{feature} requires {tier}.",
+      "pageHeading": "This feature requires an upgrade",
+      "pageBody": "Your current plan does not include {feature}. Upgrade to {tier} to unlock it.",
+      "upgradePlan": "Upgrade Plan"
+    },
+    "usage": {
+      "currentPlan": "Current Plan",
+      "activeSeats": "Active Seats",
+      "ocrCredits": "OCR Credits",
+      "nextBillingDate": "Next Billing Date",
+      "active": "{active} active / {included} included",
+      "overage": "{overage} additional seats billed at {price}/seat",
+      "renewsOn": "Renews on",
+      "trialEnds": "Trial ends",
+      "manageBilling": "Manage billing",
+      "noSubscription": "No active subscription",
+      "noSubscriptionBody": "Choose a plan to unlock all features for your organization. Your data from the trial is preserved.",
+      "choosePlan": "Choose a plan",
+      "errorLoading": "Failed to load billing data",
+      "retry": "Retry"
+    },
+    "credits": {
+      "remaining": "{remaining} of {total} credits remaining",
+      "exhausted": "No credits remaining -- purchase more to continue OCR processing",
+      "buyMore": "Buy more"
+    }
   }
 }
