@@ -188,6 +188,24 @@ vi.mock("../../services/courier/inpost-client.js", () => ({
   },
 }));
 
+vi.mock("../../services/courier/dpd-client.js", () => ({
+  DPDClient: class MockDPDClient {
+    createShipment = vi.fn();
+    getLabel = vi.fn();
+    getStatus = vi.fn();
+    cancelShipment = vi.fn();
+  },
+}));
+
+vi.mock("../../services/courier/ups-client.js", () => ({
+  UPSClient: class MockUPSClient {
+    createShipment = vi.fn();
+    getLabel = vi.fn();
+    getStatus = vi.fn();
+    cancelShipment = vi.fn();
+  },
+}));
+
 vi.mock("@contractor-ops/logger", () => ({
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
