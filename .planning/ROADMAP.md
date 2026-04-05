@@ -4,7 +4,7 @@
 
 - ✅ **v1.0 MVP** — Phases 1-11 (shipped 2026-03-23)
 - ✅ **v2.0 Platform Expansion** — Phases 12-27 (shipped 2026-04-01)
-- 🚧 **v3.0 Enterprise & Monetization** — Phases 28-35 (in progress)
+- 🚧 **v3.0 Enterprise & Monetization** — Phases 28-38 (in progress)
 
 ## Phases
 
@@ -224,10 +224,32 @@ Plans:
 - [x] 36-02-PLAN.md — DPD/UPS provider sections + CarrierShipmentForm mounting (EQUIP-06/EQUIP-07)
 - [x] 36-03-PLAN.md — requireTier middleware + global TIER_REQUIRED error handler (BILL-09)
 
+### Phase 37: Shipment Task Auto-Completion Wiring
+**Goal**: Webhook and polling paths trigger workflow task auto-completion when shipments reach target status
+**Depends on**: Phase 30 (equipment workflow), Phase 33 (InPost), Phase 35 (DPD/UPS)
+**Requirements**: EQUIP-09, EQUIP-10
+**Gap Closure**: Closes MISSING-02 from v3.0 audit — webhook/polling paths skip checkShipmentTaskCompletion
+**Success Criteria** (what must be TRUE):
+  1. InPost webhook status update triggers checkShipmentTaskCompletion and auto-completes linked workflow task on target status
+  2. InPost polling status update triggers checkShipmentTaskCompletion and auto-completes linked workflow task on target status
+  3. DPD polling status update triggers checkShipmentTaskCompletion and auto-completes linked workflow task on target status
+  4. UPS polling status update triggers checkShipmentTaskCompletion and auto-completes linked workflow task on target status
+
+### Phase 38: Tier Gate Expansion + CourierClient Type Fix
+**Goal**: All mutation endpoints enforce subscription tier gating and CourierClient interface uses a generic base type
+**Depends on**: Phase 36 (requireTier middleware), Phase 35 (CourierClient interface)
+**Requirements**: BILL-09, EQUIP-05, EQUIP-06, EQUIP-07
+**Gap Closure**: Closes MISSING-01 (tier gate gaps) and MISSING-03 (CourierClient type contract) from v3.0 audit
+**Success Criteria** (what must be TRUE):
+  1. Teams router mutation procedures (saveChannelMapping) are gated by requireTier("PRO")
+  2. Google Workspace router mutation procedures (bulkImport, triggerSync, listUserGroups) are gated by requireTier("PRO")
+  3. Onboarding import router procedures are gated by requireTier("PRO")
+  4. CourierClient interface uses a generic base type for createShipment params instead of InPost-specific targetPoint
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 → 35 → 36
+Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 → 35 → 36 → 37 → 38
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -267,3 +289,5 @@ Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 �
 | 34. Intelligent Onboarding Wizard | v3.0 | 2/2 | Complete    | 2026-04-05 |
 | 35. Feature Gating + DPD/UPS + Billing Polish | v3.0 | 6/6 | Complete    | 2026-04-05 |
 | 36. Wiring Fixes — Webhook Dispatch + UI Mounting + Feature Gate | v3.0 | 3/3 | Complete    | 2026-04-05 |
+| 37. Shipment Task Auto-Completion Wiring | v3.0 | 0/0 | Planned | — |
+| 38. Tier Gate Expansion + CourierClient Type Fix | v3.0 | 0/0 | Planned | — |
