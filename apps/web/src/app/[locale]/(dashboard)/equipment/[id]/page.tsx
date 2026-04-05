@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 
 import { trpc } from "@/trpc/init";
+import { Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "@/i18n/navigation";
@@ -27,6 +28,13 @@ import { TabShipments } from "@/components/equipment/equipment-detail/tab-shipme
 import { EquipmentForm } from "@/components/equipment/equipment-form";
 import { AssignmentDialog } from "@/components/equipment/assignment-dialog";
 import { ShipmentForm } from "@/components/equipment/shipment-form";
+import { CarrierShipmentForm } from "@/components/equipment/carrier-shipment-form";
+
+// tRPC proxy for courier configs (stale dist types workaround)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const courierConfigProxy = (trpc as any).equipment as {
+  getCourierConfigs: { queryOptions: () => any };
+};
 
 // ---------------------------------------------------------------------------
 // Skeleton
@@ -71,6 +79,7 @@ export default function EquipmentDetailPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
   const [shipmentOpen, setShipmentOpen] = useState(false);
+  const [carrierShipmentOpen, setCarrierShipmentOpen] = useState(false);
 
   const equipmentQuery = useQuery(
     trpc.equipment.getById.queryOptions({ id: params.id }),
@@ -96,6 +105,12 @@ export default function EquipmentDetailPage() {
     createdAt: string;
     contractor?: { displayName?: string; legalName?: string };
   }>;
+
+  // Query configured carriers for carrier shipment form
+  const courierConfigsQuery = useQuery(courierConfigProxy.getCourierConfigs.queryOptions());
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const courierConfigs = (courierConfigsQuery.data ?? []) as Array<{ carrier: string }>;
+  const configuredCarriers = courierConfigs.map((c) => c.carrier);
 
   // Find pending return for current contractor
   const pendingReturn = equipment?.currentAssignment
@@ -167,6 +182,19 @@ export default function EquipmentDetailPage() {
         onCreateShipment={() => setShipmentOpen(true)}
       />
 
+      {configuredCarriers.length > 0 && !equipment.status?.includes("RETIRED") && (
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCarrierShipmentOpen(true)}
+          >
+            <Truck className="mr-1.5 size-4" />
+            {t("carrier.shipViaCarrier")}
+          </Button>
+        </div>
+      )}
+
       <Suspense fallback={<DetailSkeleton />}>
         <EquipmentDetailTabs
           infoContent={
@@ -208,6 +236,23 @@ export default function EquipmentDetailPage() {
         onOpenChange={setShipmentOpen}
         equipmentId={equipment.id}
         equipmentName={equipment.name}
+      />
+
+      <CarrierShipmentForm
+        open={carrierShipmentOpen}
+        onOpenChange={setCarrierShipmentOpen}
+        equipmentIds={[equipment.id]}
+        contractorName={
+          equipment.currentAssignment?.contractor?.displayName ??
+          equipment.currentAssignment?.contractor?.legalName ??
+          ""
+        }
+        direction="OUTBOUND"
+        configuredCarriers={configuredCarriers}
+        onSuccess={() => {
+          setCarrierShipmentOpen(false);
+          equipmentQuery.refetch();
+        }}
       />
     </div>
   );
