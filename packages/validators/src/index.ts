@@ -356,6 +356,10 @@ export {
   returnRequestApproveSchema,
   returnRequestRejectSchema,
   inpostShipmentCreateSchema,
+  dpdShipmentCreateSchema,
+  upsShipmentCreateSchema,
+  dpdConfigSchema,
+  upsConfigSchema,
   courierConfigSchema,
   inpostWebhookPayloadSchema,
 } from "./equipment.js";
@@ -373,6 +377,10 @@ export type {
   ReturnRequestApproveInput,
   ReturnRequestRejectInput,
   InpostShipmentCreateInput,
+  DpdShipmentCreateInput,
+  UpsShipmentCreateInput,
+  DpdConfigInput,
+  UpsConfigInput,
   CourierConfigInput,
   InpostWebhookPayload,
 } from "./equipment.js";
