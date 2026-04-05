@@ -66,7 +66,7 @@ Full details: `.planning/milestones/v2.0-ROADMAP.md`
 - [x] **Phase 36: Wiring Fixes — Webhook Dispatch + UI Mounting + Feature Gate** - Close audit gaps: Linear webhook dispatch, carrier UI mounting, feature gate wiring (completed 2026-04-05)
 - [x] **Phase 37: Shipment Task Auto-Completion Wiring** - Webhook and polling paths trigger workflow task auto-completion (completed 2026-04-05)
 - [x] **Phase 38: Tier Gate Expansion + CourierClient Type Fix** - All mutations enforce tier gating, CourierClient generic base type (completed 2026-04-05)
-- [ ] **Phase 39: Final Wiring — Channel Alerts + Credit Exhaustion UI + OAuth FeatureGate** - Wire sendChannelAlert dispatch, mount CreditExhaustedInline, wrap OAuth CTAs with FeatureGate
+- [x] **Phase 39: Final Wiring — Channel Alerts + Credit Exhaustion UI + OAuth FeatureGate** - Wire sendChannelAlert dispatch, mount CreditExhaustedInline, wrap OAuth CTAs with FeatureGate (completed 2026-04-05)
 
 ## Phase Details
 
@@ -320,4 +320,4 @@ Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 �
 | 36. Wiring Fixes — Webhook Dispatch + UI Mounting + Feature Gate | v3.0 | 3/3 | Complete    | 2026-04-05 |
 | 37. Shipment Task Auto-Completion Wiring | v3.0 | 1/1 | Complete    | 2026-04-05 |
 | 38. Tier Gate Expansion + CourierClient Type Fix | v3.0 | 3/3 | Complete    | 2026-04-05 |
-| 39. Final Wiring — Channel Alerts + Credit Exhaustion UI + OAuth FeatureGate | v3.0 | 1/3 | In Progress|  |
+| 39. Final Wiring — Channel Alerts + Credit Exhaustion UI + OAuth FeatureGate | v3.0 | 1/3 | Complete    | 2026-04-05 |
