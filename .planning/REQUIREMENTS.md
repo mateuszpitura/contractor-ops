@@ -147,7 +147,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | BILL-06 | Phase 39 | Pending |
 | BILL-07 | Phase 28 | Complete |
 | BILL-08 | Phase 28 | Complete |
-| BILL-09 | Phase 39 | Pending |
+| BILL-09 | Phase 39 | Complete |
 | BILL-10 | Phase 35 | Complete |
 
 **Coverage:**

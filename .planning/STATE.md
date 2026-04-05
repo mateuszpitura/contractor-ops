@@ -81,6 +81,7 @@ Progress: [█████████░] 91%
 | Phase 38 P01 | 5min | 2 tasks | 6 files |
 | Phase 38 P02 | 4min | 2 tasks | 5 files |
 | Phase 38 P03 | 1min | 2 tasks | 3 files |
+| Phase 39 P03 | 8min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -155,6 +156,7 @@ Recent decisions affecting current work:
 - [Phase 38]: Used Omit<BaseShipmentParams, 'sender'> for AddressShipmentParams to safely override sender type with AddressSender
 - [Phase 38]: Runtime type guards for carrier narrowing ('targetPoint' in params, 'deliveryAddress' in params)
 - [Phase 38]: FeatureGate wraps at component return level for dedicated feature components
+- [Phase 39]: Vitest config for web app uses @vitejs/plugin-react for JSX transform with jsdom environment
 
 ### Pending Todos
 
