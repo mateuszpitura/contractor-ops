@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { TRPCError } from "@trpc/server";
 
 vi.mock("@contractor-ops/integrations/services/credential-service", () => ({
@@ -95,6 +95,10 @@ describe("jira-worklog", () => {
     vi.stubGlobal("fetch", vi.fn());
     const mod = await import("../../services/jira-worklog-sync.js");
     syncJiraWorklogs = mod.syncJiraWorklogs;
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   const baseArgs = [

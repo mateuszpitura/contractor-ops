@@ -88,6 +88,19 @@ describe("ConfluenceAdapter", () => {
     ).rejects.toThrow(/Confluence OAuth exchange failed: invalid_client/);
   });
 
+  it("throws when refreshToken is called without env credentials", async () => {
+    await expect(
+      adapter.refreshToken({
+        accessToken: "a",
+        refreshToken: "rt",
+        tokenType: "Bearer",
+        scope: "x",
+      }),
+    ).rejects.toThrow(
+      /CONFLUENCE_CLIENT_ID and CONFLUENCE_CLIENT_SECRET environment variables are required/,
+    );
+  });
+
   it("refreshes token using refresh_token grant", async () => {
     process.env.CONFLUENCE_CLIENT_ID = "cid";
     process.env.CONFLUENCE_CLIENT_SECRET = "csec";
@@ -145,6 +158,20 @@ describe("ConfluenceAdapter", () => {
       adapter.refreshToken({
         accessToken: "a",
         refreshToken: "",
+        tokenType: "Bearer",
+        scope: "x",
+      }),
+    ).rejects.toThrow(/No refresh token available for Confluence/);
+  });
+
+  it("throws when refreshToken blob has undefined refreshToken", async () => {
+    process.env.CONFLUENCE_CLIENT_ID = "cid";
+    process.env.CONFLUENCE_CLIENT_SECRET = "csec";
+
+    await expect(
+      adapter.refreshToken({
+        accessToken: "a",
+        refreshToken: undefined,
         tokenType: "Bearer",
         scope: "x",
       }),

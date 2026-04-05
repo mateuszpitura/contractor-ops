@@ -29,7 +29,7 @@ interface SpendTeamReportProps {
 
 type TeamSpendRow = {
   teamId: string | null;
-  teamName: string;
+  teamName: string | null;
   contractorCount: number;
   invoiceCount: number;
   totalGrosze: number;
@@ -90,18 +90,22 @@ export function SpendTeamReport({ dateFrom, dateTo }: SpendTeamReportProps) {
   }, [tableQuery.data]);
 
   const chartData = useMemo(() => {
-    return (chartQuery.data ?? []) as Array<{
+    const raw = (chartQuery.data ?? []) as Array<{
       teamId: string | null;
-      teamName: string;
+      teamName: string | null;
       totalGrosze: number;
     }>;
-  }, [chartQuery.data]);
+    return raw.map((item) => ({
+      ...item,
+      teamName: item.teamName ?? t("unassignedTeam"),
+    }));
+  }, [chartQuery.data, t]);
 
   const drillDownName = useMemo(() => {
     if (!drillDownTeamId) return null;
-    const item = chartData.find((d) => d.teamId === drillDownTeamId);
-    return item?.teamName ?? drillDownTeamId;
-  }, [drillDownTeamId, chartData]);
+    const item = tableData.find((d) => d.teamId === drillDownTeamId);
+    return item?.teamName ?? t("unassignedTeam");
+  }, [drillDownTeamId, tableData, t]);
 
   const grandTotal = useMemo(() => {
     return tableData.reduce((sum, row) => sum + row.totalGrosze, 0);
@@ -113,6 +117,7 @@ export function SpendTeamReport({ dateFrom, dateTo }: SpendTeamReportProps) {
         accessorKey: "teamName",
         header: t("team"),
         enableSorting: true,
+        cell: ({ getValue }) => getValue<string | null>() ?? t("unassignedTeam"),
       },
       {
         accessorKey: "contractorCount",

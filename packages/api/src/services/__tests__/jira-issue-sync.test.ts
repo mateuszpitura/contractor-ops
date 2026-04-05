@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterAll } from "vitest";
 import { TRPCError } from "@trpc/server";
 import {
   createJiraIssue,
@@ -149,6 +149,10 @@ beforeEach(() => {
 });
 
 describe("jira-issue-sync", () => {
+  afterAll(() => {
+    vi.unstubAllGlobals();
+  });
+
   // =========================================================================
   // createJiraIssue
   // =========================================================================

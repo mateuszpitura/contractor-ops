@@ -100,6 +100,11 @@ vi.mock("../../services/stripe-client.js", () => ({
 
 vi.mock("../../services/billing-service.js", () => ({
   syncSeatCountForOrg: vi.fn(async () => undefined),
+  getSubscription: vi.fn(async () => ({
+    id: "sub_audit_mock",
+    status: "ACTIVE",
+    tier: "ENTERPRISE",
+  })),
 }));
 
 vi.mock("../../services/billing-webhook.js", () => ({

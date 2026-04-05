@@ -113,7 +113,7 @@ export const templateCreateSchema = z.object({
   name: z.string().min(1).max(255),
   type: workflowTemplateTypeEnum,
   description: z.string().optional(),
-  tasks: z.array(taskTemplateInputSchema),
+  tasks: z.array(taskTemplateInputSchema).min(1),
 });
 
 export type TemplateCreateInput = z.infer<typeof templateCreateSchema>;

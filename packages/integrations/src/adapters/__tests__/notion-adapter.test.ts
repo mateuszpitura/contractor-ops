@@ -100,6 +100,31 @@ describe("NotionAdapter", () => {
     expect(body.refresh_token).toBe("rt");
   });
 
+  it("throws when refreshToken is called without env credentials", async () => {
+    await expect(
+      adapter.refreshToken({
+        accessToken: "old",
+        refreshToken: "rt",
+        tokenType: "bearer",
+      }),
+    ).rejects.toThrow(
+      /NOTION_CLIENT_ID and NOTION_CLIENT_SECRET environment variables are required/,
+    );
+  });
+
+  it("throws when refreshToken has no refresh_token in blob", async () => {
+    process.env.NOTION_CLIENT_ID = "nid";
+    process.env.NOTION_CLIENT_SECRET = "nsec";
+
+    await expect(
+      adapter.refreshToken({
+        accessToken: "old",
+        refreshToken: undefined,
+        tokenType: "bearer",
+      }),
+    ).rejects.toThrow(/No refresh token available for Notion/);
+  });
+
   it("throws when OAuth exchange returns non-OK", async () => {
     process.env.NOTION_CLIENT_ID = "nid";
     process.env.NOTION_CLIENT_SECRET = "nsec";
@@ -193,6 +218,26 @@ describe("NotionAdapter", () => {
 
     const rows = await adapter.searchPages("tok", "q");
     expect(rows[0]?.icon).toBe("https://cdn/x.png");
+  });
+
+  it("searchPages uses Untitled when page has no title property", async () => {
+    const fetchMock = mockFetch({
+      ok: true,
+      body: {
+        results: [
+          {
+            object: "page",
+            id: "p-no-title",
+            last_edited_time: "2026-04-01T00:00:00.000Z",
+            properties: {},
+          },
+        ],
+      },
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const rows = await adapter.searchPages("tok", "q");
+    expect(rows[0]?.title).toBe("Untitled");
   });
 
   it("throws when search returns non-OK", async () => {

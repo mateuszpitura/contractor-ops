@@ -46,6 +46,7 @@ describe("KsefApiClient", () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.stubGlobal("fetch", originalFetch);
     vi.clearAllMocks();
   });
@@ -81,7 +82,7 @@ describe("KsefApiClient", () => {
       mockAuthFlow();
 
       const client = new KsefApiClient("test");
-      const session = await client.authenticate("test-token", "1234567890");
+      const session = await client.authenticate("test-token", "5261040828");
 
       expect(session.jwt).toBe("test-jwt-token-abc");
       expect(session.referenceNumber).toBe("KSEF-REF-SESSION-001");
@@ -104,7 +105,7 @@ describe("KsefApiClient", () => {
 
       const client = new KsefApiClient("test");
       await expect(
-        client.authenticate("bad-token", "1234567890"),
+        client.authenticate("bad-token", "5261040828"),
       ).rejects.toThrow("KSeF API error 401");
     });
   });
@@ -117,7 +118,7 @@ describe("KsefApiClient", () => {
         {
           ksefReferenceNumber: "KSEF-INV-001",
           invoiceNumber: "FV/001",
-          subjectNip: "1234567890",
+          subjectNip: "5261040828",
           invoiceDate: "2026-03-15",
         },
       ];
@@ -137,9 +138,9 @@ describe("KsefApiClient", () => {
       );
 
       const client = new KsefApiClient("test");
-      await client.authenticate("test-token", "1234567890");
+      await client.authenticate("test-token", "5261040828");
       const result = await client.queryInvoices(
-        "1234567890",
+        "5261040828",
         "2026-03-01",
         "2026-03-31",
       );
@@ -155,7 +156,7 @@ describe("KsefApiClient", () => {
       const client = new KsefApiClient("test");
 
       await expect(
-        client.queryInvoices("1234567890", "2026-03-01", "2026-03-31"),
+        client.queryInvoices("5261040828", "2026-03-01", "2026-03-31"),
       ).rejects.toThrow("KSeF session not established");
     });
   });
@@ -169,7 +170,7 @@ describe("KsefApiClient", () => {
       const client = new KsefApiClient("test");
       const result = await client.verifyCredentials(
         "test-token",
-        "1234567890",
+        "5261040828",
       );
 
       expect(result).toBe(true);
@@ -183,10 +184,57 @@ describe("KsefApiClient", () => {
       const client = new KsefApiClient("test");
       const result = await client.verifyCredentials(
         "bad-token",
-        "1234567890",
+        "5261040828",
       );
 
       expect(result).toBe(false);
+    });
+  });
+
+  describe("session polling timeout", () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it("throws when session never reaches READY status after 30 polls", async () => {
+      // Stub setTimeout to resolve immediately so polling completes without real delays
+      vi.spyOn(globalThis, "setTimeout").mockImplementation((fn: () => void) => {
+        fn();
+        return 0 as unknown as ReturnType<typeof setTimeout>;
+      });
+
+      fetchMock
+        // Step 1: GET /auth/public-key
+        .mockResolvedValueOnce(
+          jsonResponse({ publicKey: TEST_PUBLIC_KEY_PEM }),
+        )
+        // Step 2: POST /auth/challenge
+        .mockResolvedValueOnce(
+          jsonResponse({ challenge: "test-challenge-123", timestampMs: Date.now() }),
+        )
+        // Step 3: POST /auth/token/redeem
+        .mockResolvedValueOnce(
+          jsonResponse({
+            jwt: "test-jwt-token-abc",
+            referenceNumber: "KSEF-REF-SESSION-001",
+          }),
+        );
+
+      // Step 4: All 30 session status polls return PENDING (never READY)
+      for (let i = 0; i < 30; i++) {
+        fetchMock.mockResolvedValueOnce(
+          jsonResponse({ status: "PENDING", processingCode: 100 }),
+        );
+      }
+
+      const client = new KsefApiClient("test");
+
+      await expect(client.authenticate("test-token", "5261040828")).rejects.toThrow(
+        "KSeF session did not become ready within 30 seconds",
+      );
+
+      // 3 auth calls + 30 polling calls = 33
+      expect(fetchMock).toHaveBeenCalledTimes(33);
     });
   });
 
@@ -209,7 +257,7 @@ describe("KsefApiClient", () => {
       );
 
       const client = new KsefApiClient("test");
-      await client.authenticate("test-token", "1234567890");
+      await client.authenticate("test-token", "5261040828");
 
       const xml = await client.downloadInvoiceXml("KSEF-INV-001");
       expect(xml).toBe("<xml>invoice</xml>");

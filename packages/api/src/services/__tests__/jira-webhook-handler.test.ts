@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterAll } from "vitest";
 import {
   processJiraWebhook,
   registerJiraWebhooks,
@@ -146,6 +146,10 @@ beforeEach(() => {
 });
 
 describe("jira-webhook-handler", () => {
+  afterAll(() => {
+    vi.unstubAllGlobals();
+  });
+
   // =========================================================================
   // processJiraWebhook
   // =========================================================================

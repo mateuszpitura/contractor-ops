@@ -10,7 +10,7 @@
     "lint": "biome check .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage",
+    "test:coverage": "vitest run --coverage --coverage.all --coverage.include='src/components/**/*.tsx'",
     "e2e:perf": "playwright test -c playwright.perf.config.ts",
     "e2e:perf:install": "playwright install chromium",
     "e2e:integration": "playwright test -c playwright.integration.config.ts",

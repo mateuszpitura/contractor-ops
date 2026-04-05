@@ -31,7 +31,7 @@ const TIER_RANK: Record<SubscriptionTier, number> = {
 export function requireTier(minimumTier: SubscriptionTier) {
   return t.middleware(async ({ ctx, next }) => {
     const sub = await getSubscription(
-      (ctx as { organizationId: string }).organizationId,
+      (ctx as unknown as { organizationId: string }).organizationId,
     );
 
     // No subscription or inactive status

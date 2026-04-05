@@ -41,6 +41,14 @@ describe("OutlookCalendarAdapter", () => {
     expect(c.scopes).toContain("offline_access");
   });
 
+  it("throws when OAuth env vars are missing for exchangeCodeForTokens", async () => {
+    await expect(
+      adapter.exchangeCodeForTokens("code", "http://localhost/cb"),
+    ).rejects.toThrow(
+      /OUTLOOK_CLIENT_ID and OUTLOOK_CLIENT_SECRET environment variables are required/,
+    );
+  });
+
   it("exchanges code for tokens using application/x-www-form-urlencoded", async () => {
     process.env.OUTLOOK_CLIENT_ID = "oid";
     process.env.OUTLOOK_CLIENT_SECRET = "osec";
@@ -82,6 +90,33 @@ describe("OutlookCalendarAdapter", () => {
     await expect(
       adapter.exchangeCodeForTokens("bad", "http://localhost/cb"),
     ).rejects.toThrow(/Outlook Calendar OAuth exchange failed: invalid_grant/);
+  });
+
+  it("throws when refreshToken is called without env credentials", async () => {
+    await expect(
+      adapter.refreshToken({
+        accessToken: "a",
+        refreshToken: "rt",
+        tokenType: "Bearer",
+        scope: "x",
+      }),
+    ).rejects.toThrow(
+      /OUTLOOK_CLIENT_ID and OUTLOOK_CLIENT_SECRET environment variables are required/,
+    );
+  });
+
+  it("throws when refreshToken has no refresh_token in blob", async () => {
+    process.env.OUTLOOK_CLIENT_ID = "oid";
+    process.env.OUTLOOK_CLIENT_SECRET = "osec";
+
+    await expect(
+      adapter.refreshToken({
+        accessToken: "a",
+        refreshToken: undefined,
+        tokenType: "Bearer",
+        scope: "x",
+      }),
+    ).rejects.toThrow(/No refresh token available for Outlook Calendar/);
   });
 
   it("refreshes token using refresh_token grant", async () => {
@@ -147,6 +182,32 @@ describe("OutlookCalendarAdapter", () => {
         endDateTime: "2026-04-04T11:00:00.000Z",
       }),
     ).rejects.toThrow(/Outlook Calendar create event failed: AccessDenied/);
+  });
+
+  it("createEvent sends attendees and HTML body when provided", async () => {
+    const fetchMock = mockFetch({
+      ok: true,
+      body: { id: "e-att", webLink: "https://outlook.office365.com/x" },
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await adapter.createEvent("tok", {
+      subject: "Sync",
+      bodyHtml: "<p>Hello</p>",
+      startDateTime: "2026-04-04T10:00:00.000Z",
+      endDateTime: "2026-04-04T11:00:00.000Z",
+      attendees: ["x@example.com"],
+    });
+
+    const [, init] = fetchMock.mock.calls[0]!;
+    const body = JSON.parse((init as RequestInit).body as string);
+    expect(body.body).toEqual({
+      contentType: "HTML",
+      content: "<p>Hello</p>",
+    });
+    expect(body.attendees).toEqual([
+      { emailAddress: { address: "x@example.com" }, type: "required" },
+    ]);
   });
 
   it("createEvent uses dateTime + timeZone objects on start/end (Graph shape)", async () => {

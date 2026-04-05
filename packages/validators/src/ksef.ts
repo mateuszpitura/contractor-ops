@@ -52,7 +52,7 @@ export type KsefConnectionConfig = z.infer<typeof ksefConnectionConfigSchema>;
 // ---------------------------------------------------------------------------
 
 const ksefPartySchema = z.object({
-  nip: z.string(),
+  nip: z.string().length(10).regex(/^\d{10}$/, "NIP must be exactly 10 digits"),
   name: z.string(),
   address: z.string().optional(),
 });

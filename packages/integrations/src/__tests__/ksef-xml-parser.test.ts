@@ -14,7 +14,7 @@ describe("parseFa3Xml", () => {
     expect(result.issueDate).toBe("2026-03-15");
     expect(result.invoiceType).toBe("VAT");
     expect(result.currency).toBe("PLN");
-    expect(result.seller.nip).toBe("1234567890");
+    expect(result.seller.nip).toBe("5261040828");
     expect(result.seller.name).toBe("Test Seller Sp. z o.o.");
     expect(result.buyer.nip).toBe("9876543210");
     expect(result.buyer.name).toBe("Test Buyer S.A.");
@@ -43,6 +43,24 @@ describe("parseFa3Xml", () => {
     expect(result.payment).toBeUndefined();
     expect(result.invoiceNumber).toBe("FV/2026/03/001");
   });
+
+  it("throws on malformed XML (not valid XML at all)", () => {
+    expect(() =>
+      parseFa3Xml("this is not xml at all {{{", "KSEF-REF-BAD"),
+    ).toThrow();
+  });
+
+  it("throws on XML missing required seller NIP", () => {
+    // Remove the seller NIP element to trigger Zod validation failure
+    const xmlWithoutSellerNip = sampleXml.replace(
+      /<NIP>5261040828<\/NIP>/,
+      "",
+    );
+
+    expect(() =>
+      parseFa3Xml(xmlWithoutSellerNip, "KSEF-REF-NO-NIP"),
+    ).toThrow();
+  });
 });
 
 describe("mapKsefToInvoiceFields", () => {
@@ -53,7 +71,7 @@ describe("mapKsefToInvoiceFields", () => {
     expect(invoice.source).toBe("KSEF");
     expect(invoice.externalInvoiceId).toBe("KSEF-REF-001");
     expect(invoice.sourceReference).toBe("UPO-001");
-    expect(invoice.sellerTaxId).toBe("1234567890");
+    expect(invoice.sellerTaxId).toBe("5261040828");
     expect(invoice.buyerTaxId).toBe("9876543210");
     expect(invoice.totalGrosze).toBe(3567000);
     expect(invoice.subtotalGrosze).toBe(2900000);

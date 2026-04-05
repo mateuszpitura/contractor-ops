@@ -41,6 +41,14 @@ describe("GoogleCalendarAdapter", () => {
     expect(c.extraAuthParams?.access_type).toBe("offline");
   });
 
+  it("throws when OAuth env vars are missing for exchangeCodeForTokens", async () => {
+    await expect(
+      adapter.exchangeCodeForTokens("code", "http://localhost/cb"),
+    ).rejects.toThrow(
+      /GOOGLE_CALENDAR_CLIENT_ID and GOOGLE_CALENDAR_CLIENT_SECRET environment variables are required/,
+    );
+  });
+
   it("exchanges code for tokens using JSON body", async () => {
     process.env.GOOGLE_CALENDAR_CLIENT_ID = "cid";
     process.env.GOOGLE_CALENDAR_CLIENT_SECRET = "csec";
@@ -114,6 +122,33 @@ describe("GoogleCalendarAdapter", () => {
     expect(body.refresh_token).toBe("rt");
   });
 
+  it("throws when refreshToken is called without env credentials", async () => {
+    await expect(
+      adapter.refreshToken({
+        accessToken: "old",
+        refreshToken: "rt",
+        tokenType: "Bearer",
+        scope: "cal",
+      }),
+    ).rejects.toThrow(
+      /GOOGLE_CALENDAR_CLIENT_ID and GOOGLE_CALENDAR_CLIENT_SECRET environment variables are required/,
+    );
+  });
+
+  it("throws when refreshToken has no refresh_token in blob", async () => {
+    process.env.GOOGLE_CALENDAR_CLIENT_ID = "cid";
+    process.env.GOOGLE_CALENDAR_CLIENT_SECRET = "csec";
+
+    await expect(
+      adapter.refreshToken({
+        accessToken: "old",
+        refreshToken: undefined,
+        tokenType: "Bearer",
+        scope: "cal",
+      }),
+    ).rejects.toThrow(/No refresh token available for Google Calendar/);
+  });
+
   it("throws when token refresh returns non-OK", async () => {
     process.env.GOOGLE_CALENDAR_CLIENT_ID = "cid";
     process.env.GOOGLE_CALENDAR_CLIENT_SECRET = "csec";
@@ -160,6 +195,28 @@ describe("GoogleCalendarAdapter", () => {
     expect(fetchMock.mock.calls[0]![0]).toBe(
       "https://www.googleapis.com/calendar/v3/calendars/primary/events",
     );
+  });
+
+  it("createEvent sends attendees in request body when provided", async () => {
+    const fetchMock = mockFetch({
+      ok: true,
+      body: { id: "e2", htmlLink: "https://x", etag: "e" },
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await adapter.createEvent("tok", {
+      summary: "Review",
+      startDateTime: "2026-04-04T10:00:00.000Z",
+      endDateTime: "2026-04-04T11:00:00.000Z",
+      attendees: ["a@example.com", "b@example.com"],
+    });
+
+    const [, init] = fetchMock.mock.calls[0]!;
+    const parsed = JSON.parse((init as RequestInit).body as string);
+    expect(parsed.attendees).toEqual([
+      { email: "a@example.com" },
+      { email: "b@example.com" },
+    ]);
   });
 
   it("throws when createEvent returns non-OK", async () => {

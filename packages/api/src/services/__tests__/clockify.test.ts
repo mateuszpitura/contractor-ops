@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Mocks (must be declared before imports)
@@ -134,6 +134,10 @@ describe("clockify", () => {
       mockPrisma = createMockPrisma();
     });
 
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
     it("uses correct regional base URL for API calls", async () => {
       const entries = [makeClockifyEntry("e1", "PT1H30M")];
       const fetchSpy = mockFetchResponse(entries);
@@ -153,8 +157,6 @@ describe("clockify", () => {
       const calledUrl = fetchSpy.mock.calls[0][0] as string;
       expect(calledUrl).toContain("https://api.clockify.me/api/v1");
       expect(calledUrl).toContain("/workspaces/ws_1/user/clockify_user_1/time-entries");
-
-      vi.unstubAllGlobals();
     });
 
     it("uses EU regional URL when region is eu", async () => {
@@ -174,8 +176,6 @@ describe("clockify", () => {
 
       const calledUrl = fetchSpy.mock.calls[0][0] as string;
       expect(calledUrl).toContain("https://euc1.clockify.me/api/v1");
-
-      vi.unstubAllGlobals();
     });
 
     it("paginates with page-size=100", async () => {
@@ -216,8 +216,6 @@ describe("clockify", () => {
 
       // 101 total entries imported
       expect(result.imported).toBe(101);
-
-      vi.unstubAllGlobals();
     });
 
     it("creates time entries with source=CLOCKIFY", async () => {
@@ -239,8 +237,6 @@ describe("clockify", () => {
           contractId: "ct_1",
         }),
       });
-
-      vi.unstubAllGlobals();
     });
 
     it("deduplicates by externalId — updates existing entry instead of creating", async () => {
@@ -262,8 +258,6 @@ describe("clockify", () => {
       // Existing entries count as skipped
       expect(result.skipped).toBe(1);
       expect(result.imported).toBe(0);
-
-      vi.unstubAllGlobals();
     });
 
     it("recalculates timesheet totalMinutes after sync", async () => {
@@ -286,8 +280,6 @@ describe("clockify", () => {
         where: { id: "ts_1" },
         data: { totalMinutes: 150 },
       });
-
-      vi.unstubAllGlobals();
     });
 
     it("throws UNAUTHORIZED TRPCError on 401 response", async () => {
@@ -305,8 +297,6 @@ describe("clockify", () => {
           data: expect.objectContaining({ status: "FAILED" }),
         }),
       );
-
-      vi.unstubAllGlobals();
     });
 
     it("throws NOT_FOUND when connection does not exist", async () => {
@@ -348,8 +338,6 @@ describe("clockify", () => {
       expect(result.imported).toBe(1);
       expect(result.skipped).toBe(1);
       expect(mockPrisma.timeEntry.create).toHaveBeenCalledTimes(1);
-
-      vi.unstubAllGlobals();
     });
 
     it("passes API key from decrypted credentials in X-Api-Key header", async () => {
@@ -362,8 +350,6 @@ describe("clockify", () => {
       const fetchCall = vi.mocked(fetch).mock.calls[0];
       const headers = fetchCall[1]?.headers as Record<string, string>;
       expect(headers["X-Api-Key"]).toBe("fake-api-key");
-
-      vi.unstubAllGlobals();
     });
   });
 });

@@ -124,10 +124,17 @@ export function StepPreview({
       )}
 
       {/* All valid message */}
-      {hasNoInvalidRows && (
+      {hasNoInvalidRows && validRows.length > 0 && (
         <div className="flex items-center gap-2 text-sm text-emerald-600">
           <CheckCircle2 className="size-4" />
           <span>{t("preview.allValid", { count: validRows.length })}</span>
+        </div>
+      )}
+
+      {/* Empty state */}
+      {totalRows === 0 && (
+        <div className="text-sm text-muted-foreground">
+          {t("preview.noRows")}
         </div>
       )}
 

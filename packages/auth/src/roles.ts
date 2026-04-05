@@ -1,7 +1,7 @@
 import { ac } from "./permissions.js";
 
 /**
- * 8 predefined roles for the Contractor Ops platform.
+ * 9 predefined roles for the Contractor Ops platform.
  *
  * Each role grants a specific subset of permissions defined in permissions.ts.
  * Roles are assigned to organization members and enforced via tRPC middleware.

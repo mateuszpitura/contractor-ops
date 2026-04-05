@@ -23,6 +23,7 @@ describe("LinearAdapter", () => {
   });
 
   afterEach(() => {
+    vi.unstubAllGlobals();
     vi.restoreAllMocks();
     delete process.env.LINEAR_CLIENT_ID;
     delete process.env.LINEAR_CLIENT_SECRET;

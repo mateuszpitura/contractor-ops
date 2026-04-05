@@ -69,6 +69,11 @@
       "import": "./src/services/jira-webhook-handler.ts",
       "default": "./src/services/jira-webhook-handler.ts"
     },
+    "./services/linear-webhook-handler": {
+      "types": "./src/services/linear-webhook-handler.ts",
+      "import": "./src/services/linear-webhook-handler.ts",
+      "default": "./src/services/linear-webhook-handler.ts"
+    },
     "./services/google-workspace-sync-orchestrator": {
       "types": "./src/services/google-workspace-sync-orchestrator.ts",
       "import": "./src/services/google-workspace-sync-orchestrator.ts",

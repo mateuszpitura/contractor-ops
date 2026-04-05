@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { prisma } from "@contractor-ops/db";
+import type { Prisma } from "@contractor-ops/db/generated/prisma/client";
 import {
   equipmentCreateSchema,
   equipmentUpdateSchema,
@@ -914,7 +915,7 @@ export const equipmentRouter = router({
         });
       }
 
-      const configJson = courierConfig.configJson as InPostClientConfig;
+      const configJson = courierConfig.configJson as unknown as InPostClientConfig;
       const client = new InPostClient(configJson);
 
       // Verify all equipment items exist and load contractor details
@@ -1489,10 +1490,10 @@ export const equipmentRouter = router({
         create: {
           organizationId: ctx.organizationId,
           carrier,
-          configJson: credentials as Record<string, unknown>,
+          configJson: credentials as unknown as Prisma.InputJsonValue,
         },
         update: {
-          configJson: credentials as Record<string, unknown>,
+          configJson: credentials as unknown as Prisma.InputJsonValue,
         },
       });
 
@@ -1503,9 +1504,9 @@ export const equipmentRouter = router({
           actorId: ctx.user!.id,
           actorName: ctx.user!.name,
           action: "courierConfig.save",
-          resourceType: "COURIER_CONFIG",
+          resourceType: "ORGANIZATION",
           resourceId: carrier,
-          newValuesJson: { carrier, updated: true },
+          newValuesJson: { carrier, updated: true } as Prisma.InputJsonValue,
         },
       });
 
@@ -1630,7 +1631,7 @@ export const equipmentRouter = router({
         });
       }
 
-      const configJson = courierConfig.configJson as InPostClientConfig;
+      const configJson = courierConfig.configJson as unknown as InPostClientConfig;
       const client = new InPostClient(configJson);
 
       // Load org for sender info
@@ -1967,7 +1968,7 @@ export const equipmentRouter = router({
         });
       }
 
-      const configJson = courierConfig.configJson as InPostClientConfig;
+      const configJson = courierConfig.configJson as unknown as InPostClientConfig;
       const client = new InPostClient(configJson);
 
       const labelBuffer = await client.getLabel(shipment.externalId, "pdf");

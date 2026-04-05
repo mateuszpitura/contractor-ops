@@ -82,6 +82,37 @@ describe("checkCrossSourceDuplicate", () => {
 
     expect(result.existingSource).toBe("KSEF");
   });
+
+  it("excludes soft-deleted invoices via deletedAt: null", async () => {
+    mockPrisma.invoice.findFirst.mockResolvedValue(null);
+
+    await checkCrossSourceDuplicate(
+      mockPrisma,
+      ORG_ID,
+      "FV/2026/003",
+      "1111111111",
+    );
+
+    const whereArg = mockPrisma.invoice.findFirst.mock.calls[0][0].where;
+    expect(whereArg.deletedAt).toBeNull();
+  });
+
+  it("uses case-insensitive match on invoiceNumber", async () => {
+    mockPrisma.invoice.findFirst.mockResolvedValue(null);
+
+    await checkCrossSourceDuplicate(
+      mockPrisma,
+      ORG_ID,
+      "FV/2026/004",
+      "2222222222",
+    );
+
+    const whereArg = mockPrisma.invoice.findFirst.mock.calls[0][0].where;
+    expect(whereArg.invoiceNumber).toEqual({
+      equals: "FV/2026/004",
+      mode: "insensitive",
+    });
+  });
 });
 
 describe("linkDuplicateInvoices", () => {

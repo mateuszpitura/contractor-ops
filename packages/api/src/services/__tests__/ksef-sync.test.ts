@@ -258,19 +258,24 @@ describe("processKsefSync", () => {
   });
 
   it("falls back to 90-day date range on first sync (no lastSuccessAt)", async () => {
-    setupSuccessfulSync({
-      connection: { lastSuccessAt: null },
-      invoiceRefs: [],
-    });
+    const FAKE_NOW = new Date("2026-04-01T12:00:00.000Z");
+    vi.useFakeTimers({ now: FAKE_NOW });
 
-    await processKsefSync({ organizationId: ORG_ID, connectionId: CONN_ID });
+    try {
+      setupSuccessfulSync({
+        connection: { lastSuccessAt: null },
+        invoiceRefs: [],
+      });
 
-    const queryCall = mockKsefClient.queryInvoices.mock.calls[0]!;
-    const dateFrom = queryCall[1] as string;
-    // dateFrom should be ~90 days ago, not the current date
-    const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 3600 * 1000);
-    const expectedDate = ninetyDaysAgo.toISOString().split("T")[0]!;
-    expect(dateFrom).toBe(expectedDate);
+      await processKsefSync({ organizationId: ORG_ID, connectionId: CONN_ID });
+
+      const queryCall = mockKsefClient.queryInvoices.mock.calls[0]!;
+      const dateFrom = queryCall[1] as string;
+      // 90 days before 2026-04-01 is 2026-01-01
+      expect(dateFrom).toBe("2026-01-01");
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("uses lastSuccessAt as dateFrom for subsequent syncs", async () => {

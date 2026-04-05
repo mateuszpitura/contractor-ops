@@ -131,6 +131,15 @@ vi.mock("../../services/stripe-client.js", () => ({
   },
 }));
 
+vi.mock("../../services/billing-service.js", () => ({
+  syncSeatCountForOrg: vi.fn(async () => undefined),
+  getSubscription: vi.fn(async () => ({
+    id: "sub_ocr_mock",
+    status: "ACTIVE",
+    tier: "PRO",
+  })),
+}));
+
 vi.mock("@contractor-ops/logger", () => ({
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
