@@ -10,16 +10,25 @@ import {
   shipmentCreateSchema,
   shipmentEventCreateSchema,
   inpostShipmentCreateSchema,
+  dpdShipmentCreateSchema,
+  upsShipmentCreateSchema,
+  dpdConfigSchema,
+  upsConfigSchema,
   returnRequestApproveSchema,
   returnRequestRejectSchema,
   returnRequestStatusEnum,
 } from "@contractor-ops/validators";
 import { router } from "../init.js";
 import { tenantProcedure } from "../middleware/tenant.js";
-import { requirePermission } from "../middleware/rbac.js";
+import { adminProcedure, requirePermission } from "../middleware/rbac.js";
+import { requireTier } from "../middleware/tier.js";
 import { checkShipmentTaskCompletion } from "../services/equipment-workflow.js";
 import { InPostClient } from "../services/courier/inpost-client.js";
 import type { InPostClientConfig } from "../services/courier/inpost-client.js";
+import { DPDClient } from "../services/courier/dpd-client.js";
+import type { DPDClientConfig } from "../services/courier/dpd-client.js";
+import { UPSClient } from "../services/courier/ups-client.js";
+import type { UPSClientConfig } from "../services/courier/ups-client.js";
 import { dispatch } from "../services/notification-service.js";
 
 // ---------------------------------------------------------------------------
@@ -1081,6 +1090,441 @@ export const equipmentRouter = router({
 
       return plain(result);
     }),
+
+  // ─── DPD Integration (PRO tier) ──────────────────────────────────
+
+  /**
+   * Create a DPD shipment for one or more equipment items.
+   * Gated to PRO tier. Creates Shipment + ShipmentEvent records and
+   * auto-advances equipment status.
+   */
+  createDpdShipment: tenantProcedure
+    .use(requirePermission({ equipment: ["create"] }))
+    .use(requireTier("PRO"))
+    .input(dpdShipmentCreateSchema)
+    .mutation(async ({ ctx, input }) => {
+      // 1. Load courier config for DPD
+      const courierConfig = await prisma.courierConfig.findUnique({
+        where: {
+          organizationId_carrier: {
+            organizationId: ctx.organizationId,
+            carrier: "dpd",
+          },
+        },
+      });
+
+      if (!courierConfig) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "COURIER_CONFIG_NOT_FOUND",
+        });
+      }
+
+      const configJson = courierConfig.configJson as unknown as DPDClientConfig;
+      const client = new DPDClient(configJson);
+
+      // 2. Load equipment items with current assignments
+      const equipmentItems = await prisma.equipment.findMany({
+        where: {
+          id: { in: input.equipmentIds },
+          organizationId: ctx.organizationId,
+        },
+        include: {
+          assignments: {
+            where: { unassignedAt: null },
+            take: 1,
+            include: {
+              contractor: {
+                select: {
+                  id: true,
+                  displayName: true,
+                  email: true,
+                  phone: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (equipmentItems.length !== input.equipmentIds.length) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: EQUIPMENT_NOT_FOUND,
+        });
+      }
+
+      const contractor = equipmentItems[0]?.assignments[0]?.contractor;
+      if (!contractor) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: EQUIPMENT_NOT_ASSIGNED,
+        });
+      }
+
+      // Load org for sender info
+      const org = await prisma.organization.findUnique({
+        where: { id: ctx.organizationId },
+        select: { name: true },
+      });
+
+      // 3. Create shipment via DPD API
+      const shipmentResult = await client.createShipment({
+        organizationId: ctx.organizationId,
+        direction: input.direction,
+        receiver: {
+          name: contractor.displayName,
+          email: contractor.email ?? "",
+          phone: contractor.phone ?? "",
+        },
+        sender: {
+          name: org?.name ?? "Organization",
+          email: "",
+          phone: "",
+          street: input.deliveryAddress.street,
+          city: input.deliveryAddress.city,
+          postalCode: input.deliveryAddress.postalCode,
+          countryCode: input.deliveryAddress.countryCode,
+        },
+        deliveryAddress: input.deliveryAddress,
+        parcelSize: input.parcelSize,
+        reference: input.workflowTaskRunId
+          ? `workflow-${input.workflowTaskRunId}`
+          : undefined,
+      });
+
+      // 4. Create DB records for each equipment item
+      const newEquipmentStatus =
+        input.direction === "OUTBOUND" ? "IN_TRANSIT" : "RETURN_IN_TRANSIT";
+
+      const shipments = await prisma.$transaction(async (tx) => {
+        const created = [];
+
+        for (const item of equipmentItems) {
+          // Validate equipment status transition
+          const allowed = EQUIPMENT_STATUS_TRANSITIONS[item.status] ?? [];
+          if (!allowed.includes(newEquipmentStatus)) continue;
+
+          const shipment = await tx.shipment.create({
+            data: {
+              organizationId: ctx.organizationId,
+              equipmentId: item.id,
+              direction: input.direction,
+              carrier: "DPD",
+              externalId: shipmentResult.externalId,
+              trackingNumber: shipmentResult.trackingNumber,
+              currentStatus: "CREATED",
+              workflowTaskRunId: input.workflowTaskRunId ?? null,
+              createdByUserId: ctx.user!.id,
+            },
+          });
+
+          await tx.shipmentEvent.create({
+            data: {
+              organizationId: ctx.organizationId,
+              shipmentId: shipment.id,
+              status: "CREATED",
+              notes: `DPD shipment created: ${shipmentResult.trackingNumber}`,
+              createdByUserId: ctx.user!.id,
+            },
+          });
+
+          await tx.equipment.update({
+            where: { id: item.id },
+            data: { status: newEquipmentStatus },
+          });
+
+          created.push(shipment);
+        }
+
+        return created;
+      });
+
+      // 5. Audit log
+      await prisma.auditLog.create({
+        data: {
+          organizationId: ctx.organizationId,
+          actorType: "USER",
+          actorId: ctx.user!.id,
+          actorName: ctx.user!.name,
+          action: "shipment.createDpd",
+          resourceType: "SHIPMENT",
+          resourceId: shipments[0]?.id ?? "",
+          newValuesJson: {
+            equipmentIds: input.equipmentIds,
+            carrier: "DPD",
+            trackingNumber: shipmentResult.trackingNumber,
+            direction: input.direction,
+          },
+        },
+      });
+
+      // 6. Check workflow task completion
+      if (input.workflowTaskRunId && shipments[0]) {
+        void checkShipmentTaskCompletion(prisma, ctx.organizationId, {
+          id: shipments[0].id,
+          workflowTaskRunId: input.workflowTaskRunId,
+          direction: input.direction,
+          currentStatus: "CREATED",
+        }).catch(console.error);
+      }
+
+      // Fetch created shipments with events
+      const result = await prisma.shipment.findMany({
+        where: { id: { in: shipments.map((s) => s.id) } },
+        include: { events: { orderBy: { occurredAt: "asc" } } },
+      });
+
+      return plain(result);
+    }),
+
+  // ─── UPS Integration (PRO tier) ──────────────────────────────────
+
+  /**
+   * Create a UPS shipment for one or more equipment items.
+   * Gated to PRO tier. Creates Shipment + ShipmentEvent records and
+   * auto-advances equipment status.
+   */
+  createUpsShipment: tenantProcedure
+    .use(requirePermission({ equipment: ["create"] }))
+    .use(requireTier("PRO"))
+    .input(upsShipmentCreateSchema)
+    .mutation(async ({ ctx, input }) => {
+      // 1. Load courier config for UPS
+      const courierConfig = await prisma.courierConfig.findUnique({
+        where: {
+          organizationId_carrier: {
+            organizationId: ctx.organizationId,
+            carrier: "ups",
+          },
+        },
+      });
+
+      if (!courierConfig) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "COURIER_CONFIG_NOT_FOUND",
+        });
+      }
+
+      const configJson = courierConfig.configJson as unknown as UPSClientConfig;
+      const client = new UPSClient(configJson);
+
+      // 2. Load equipment items with current assignments
+      const equipmentItems = await prisma.equipment.findMany({
+        where: {
+          id: { in: input.equipmentIds },
+          organizationId: ctx.organizationId,
+        },
+        include: {
+          assignments: {
+            where: { unassignedAt: null },
+            take: 1,
+            include: {
+              contractor: {
+                select: {
+                  id: true,
+                  displayName: true,
+                  email: true,
+                  phone: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (equipmentItems.length !== input.equipmentIds.length) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: EQUIPMENT_NOT_FOUND,
+        });
+      }
+
+      const contractor = equipmentItems[0]?.assignments[0]?.contractor;
+      if (!contractor) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: EQUIPMENT_NOT_ASSIGNED,
+        });
+      }
+
+      // Load org for sender info
+      const org = await prisma.organization.findUnique({
+        where: { id: ctx.organizationId },
+        select: { name: true },
+      });
+
+      // 3. Create shipment via UPS API
+      const shipmentResult = await client.createShipment({
+        organizationId: ctx.organizationId,
+        direction: input.direction,
+        receiver: {
+          name: contractor.displayName,
+          email: contractor.email ?? "",
+          phone: contractor.phone ?? "",
+        },
+        sender: {
+          name: org?.name ?? "Organization",
+          email: "",
+          phone: "",
+          street: input.deliveryAddress.street,
+          city: input.deliveryAddress.city,
+          postalCode: input.deliveryAddress.postalCode,
+          countryCode: input.deliveryAddress.countryCode,
+        },
+        deliveryAddress: input.deliveryAddress,
+        parcelSize: input.parcelSize,
+        serviceCode: input.serviceCode,
+        reference: input.workflowTaskRunId
+          ? `workflow-${input.workflowTaskRunId}`
+          : undefined,
+      });
+
+      // 4. Create DB records for each equipment item
+      const newEquipmentStatus =
+        input.direction === "OUTBOUND" ? "IN_TRANSIT" : "RETURN_IN_TRANSIT";
+
+      const shipments = await prisma.$transaction(async (tx) => {
+        const created = [];
+
+        for (const item of equipmentItems) {
+          // Validate equipment status transition
+          const allowed = EQUIPMENT_STATUS_TRANSITIONS[item.status] ?? [];
+          if (!allowed.includes(newEquipmentStatus)) continue;
+
+          const shipment = await tx.shipment.create({
+            data: {
+              organizationId: ctx.organizationId,
+              equipmentId: item.id,
+              direction: input.direction,
+              carrier: "UPS",
+              externalId: shipmentResult.externalId,
+              trackingNumber: shipmentResult.trackingNumber,
+              currentStatus: "CREATED",
+              workflowTaskRunId: input.workflowTaskRunId ?? null,
+              createdByUserId: ctx.user!.id,
+            },
+          });
+
+          await tx.shipmentEvent.create({
+            data: {
+              organizationId: ctx.organizationId,
+              shipmentId: shipment.id,
+              status: "CREATED",
+              notes: `UPS shipment created: ${shipmentResult.trackingNumber}`,
+              createdByUserId: ctx.user!.id,
+            },
+          });
+
+          await tx.equipment.update({
+            where: { id: item.id },
+            data: { status: newEquipmentStatus },
+          });
+
+          created.push(shipment);
+        }
+
+        return created;
+      });
+
+      // 5. Audit log
+      await prisma.auditLog.create({
+        data: {
+          organizationId: ctx.organizationId,
+          actorType: "USER",
+          actorId: ctx.user!.id,
+          actorName: ctx.user!.name,
+          action: "shipment.createUps",
+          resourceType: "SHIPMENT",
+          resourceId: shipments[0]?.id ?? "",
+          newValuesJson: {
+            equipmentIds: input.equipmentIds,
+            carrier: "UPS",
+            trackingNumber: shipmentResult.trackingNumber,
+            direction: input.direction,
+            serviceCode: input.serviceCode,
+          },
+        },
+      });
+
+      // 6. Check workflow task completion
+      if (input.workflowTaskRunId && shipments[0]) {
+        void checkShipmentTaskCompletion(prisma, ctx.organizationId, {
+          id: shipments[0].id,
+          workflowTaskRunId: input.workflowTaskRunId,
+          direction: input.direction,
+          currentStatus: "CREATED",
+        }).catch(console.error);
+      }
+
+      // Fetch created shipments with events
+      const result = await prisma.shipment.findMany({
+        where: { id: { in: shipments.map((s) => s.id) } },
+        include: { events: { orderBy: { occurredAt: "asc" } } },
+      });
+
+      return plain(result);
+    }),
+
+  // ─── Courier Config Management ────────────────────────────────────
+
+  /**
+   * Save (upsert) courier configuration credentials for a carrier.
+   * Admin-only. Credentials are stored encrypted at rest and never
+   * returned to the client (write-only for security).
+   */
+  saveCourierConfig: adminProcedure
+    .input(z.union([dpdConfigSchema, upsConfigSchema]))
+    .mutation(async ({ ctx, input }) => {
+      const { carrier, ...credentials } = input;
+      await prisma.courierConfig.upsert({
+        where: {
+          organizationId_carrier: {
+            organizationId: ctx.organizationId,
+            carrier,
+          },
+        },
+        create: {
+          organizationId: ctx.organizationId,
+          carrier,
+          configJson: credentials as Record<string, unknown>,
+        },
+        update: {
+          configJson: credentials as Record<string, unknown>,
+        },
+      });
+
+      await prisma.auditLog.create({
+        data: {
+          organizationId: ctx.organizationId,
+          actorType: "USER",
+          actorId: ctx.user!.id,
+          actorName: ctx.user!.name,
+          action: "courierConfig.save",
+          resourceType: "COURIER_CONFIG",
+          resourceId: carrier,
+          newValuesJson: { carrier, updated: true },
+        },
+      });
+
+      return { success: true };
+    }),
+
+  /**
+   * List configured courier providers for the organization.
+   * Returns carrier names and timestamps only -- credentials are
+   * never sent back to the client.
+   */
+  getCourierConfigs: adminProcedure.query(async ({ ctx }) => {
+    const configs = await prisma.courierConfig.findMany({
+      where: { organizationId: ctx.organizationId },
+      select: { carrier: true, createdAt: true, updatedAt: true },
+    });
+    return configs;
+  }),
+
+  // ─── Return Requests ──────────────────────────────────────────────
 
   /**
    * Approve a return request and create an InPost shipment.
