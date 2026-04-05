@@ -217,7 +217,12 @@ Plans:
   2. Admin can reach CarrierShipmentForm from equipment detail page to create DPD/UPS shipments
   3. Admin can configure DPD/UPS API credentials via CarrierCredentialForm in Settings > Integrations
   4. STARTER-tier users see FeatureGate upgrade prompts instead of raw tRPC errors when accessing PRO features
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 36-01-PLAN.md — Linear webhook dispatch + outbound CANCELLED sync (LIN-04/LIN-05)
+- [ ] 36-02-PLAN.md — DPD/UPS provider sections + CarrierShipmentForm mounting (EQUIP-06/EQUIP-07)
+- [ ] 36-03-PLAN.md — requireTier middleware + global TIER_REQUIRED error handler (BILL-09)
 
 ## Progress
 
@@ -261,4 +266,4 @@ Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 �
 | 33. InPost Courier Integration | v3.0 | 3/3 | Complete    | 2026-04-04 |
 | 34. Intelligent Onboarding Wizard | v3.0 | 2/2 | Complete    | 2026-04-05 |
 | 35. Feature Gating + DPD/UPS + Billing Polish | v3.0 | 6/6 | Complete    | 2026-04-05 |
-| 36. Wiring Fixes — Webhook Dispatch + UI Mounting + Feature Gate | v3.0 | 0/0 | Pending | — |
+| 36. Wiring Fixes — Webhook Dispatch + UI Mounting + Feature Gate | v3.0 | 0/3 | In Progress | — |
