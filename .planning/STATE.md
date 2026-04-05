@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-01)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 37 — shipment-task-auto-completion
+**Current focus:** Phase 38 — tier-gate-courier-type-fix
 
 ## Current Position
 
-Phase: 38
-Plan: Not started
-Status: Phase complete — ready for verification
-Last activity: 2026-04-05
+Phase: 38 (tier-gate-courier-type-fix) — EXECUTING
+Plan: 2 of 3 complete
+Status: Executing Phase 38
+Last activity: 2026-04-05 -- Completed 38-02 CourierClient type fix
 
 Progress: [█████████░] 91%
 
@@ -148,6 +148,8 @@ Recent decisions affecting current work:
 - [Phase 36]: Gate mutations only -- read queries ungated for STARTER upgrade prompts
 - [Phase 37]: Used vi.hoisted() for mock variable declarations to avoid ReferenceError with vi.mock hoisting
 - [Phase 37]: DPD status DEP_DELIVERED maps to DELIVERED (not DOR as initially researched)
+- [Phase 38]: Used Omit<BaseShipmentParams, 'sender'> for AddressShipmentParams to safely override sender type with AddressSender
+- [Phase 38]: Runtime type guards for carrier narrowing ('targetPoint' in params, 'deliveryAddress' in params)
 
 ### Pending Todos
 
@@ -161,6 +163,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T20:33:41.999Z
-Stopped at: Phase 38 context gathered
-Resume file: .planning/phases/38-tier-gate-courier-type-fix/38-CONTEXT.md
+Last session: 2026-04-05T21:03:04Z
+Stopped at: Completed 38-02-PLAN.md (CourierClient type fix)
+Resume file: .planning/phases/38-tier-gate-courier-type-fix/38-02-SUMMARY.md
