@@ -242,6 +242,50 @@ export const courierConfigSchema = z.object({
 
 export type CourierConfigInput = z.infer<typeof courierConfigSchema>;
 
+// ---------------------------------------------------------------------------
+// DPD / UPS Courier schemas
+// ---------------------------------------------------------------------------
+
+/** Delivery address sub-schema for DPD/UPS. */
+export const deliveryAddressSchema = z.object({
+  street: z.string().min(1, "Street is required").max(200),
+  city: z.string().min(1, "City is required").max(100),
+  postalCode: z.string().min(1, "Postal code is required").max(20),
+  countryCode: z
+    .string()
+    .length(2, "Country code must be 2 characters")
+    .default("PL"),
+});
+
+export type DeliveryAddressInput = z.infer<typeof deliveryAddressSchema>;
+
+/**
+ * Schema for creating a DPD shipment.
+ */
+export const dpdShipmentCreateSchema = z.object({
+  equipmentIds: z.array(z.string().min(1)).min(1),
+  deliveryAddress: deliveryAddressSchema,
+  parcelSize: z.enum(["small", "medium", "large"]),
+  direction: shipmentDirectionEnum,
+  workflowTaskRunId: z.string().optional(),
+  notes: z.string().max(2000).optional(),
+});
+
+export type DpdShipmentCreateInput = z.infer<typeof dpdShipmentCreateSchema>;
+
+/**
+ * Schema for DPD courier configuration.
+ */
+export const dpdConfigSchema = z.object({
+  carrier: z.literal("dpd"),
+  username: z.string().min(1),
+  password: z.string().min(1),
+  fid: z.string().min(1),
+  sandbox: z.boolean().default(true),
+});
+
+export type DpdConfigInput = z.infer<typeof dpdConfigSchema>;
+
 /**
  * Schema for validating InPost webhook payloads (ShipX status push).
  */

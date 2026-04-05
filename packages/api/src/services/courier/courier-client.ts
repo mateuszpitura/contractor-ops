@@ -52,3 +52,45 @@ export interface CourierStatusResult {
  * Supported label formats.
  */
 export type LabelFormat = "pdf" | "zpl";
+
+// ---------------------------------------------------------------------------
+// Address-based carrier params (DPD, UPS)
+// ---------------------------------------------------------------------------
+
+/** Delivery address for DPD/UPS shipments. */
+export interface DeliveryAddress {
+  street: string;
+  city: string;
+  postalCode: string;
+  countryCode: string;
+}
+
+/** Sender with full address (required by address-based carriers). */
+export interface AddressSender {
+  name: string;
+  email: string;
+  phone: string;
+  street: string;
+  city: string;
+  postalCode: string;
+  countryCode: string;
+}
+
+/** Base shipment params shared by address-based carriers (DPD, UPS). */
+export interface AddressShipmentParams {
+  organizationId: string;
+  direction: "OUTBOUND" | "RETURN";
+  receiver: { name: string; email: string; phone: string };
+  sender: AddressSender;
+  parcelSize: "small" | "medium" | "large";
+  reference?: string;
+  deliveryAddress: DeliveryAddress;
+}
+
+/** DPD-specific shipment params. */
+export interface DPDShipmentParams extends AddressShipmentParams {}
+
+/** UPS-specific shipment params. */
+export interface UPSShipmentParams extends AddressShipmentParams {
+  serviceCode: string; // "11" Standard, "65" Saver, "07" Express
+}
