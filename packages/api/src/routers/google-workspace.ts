@@ -15,6 +15,7 @@ import type { GoogleWorkspaceAdapter } from "@contractor-ops/integrations/adapte
 import { router } from "../init.js";
 import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
+import { requireTier } from "../middleware/tier.js";
 
 // Ensure adapters are registered before any procedure runs
 registerAllAdapters();
@@ -224,6 +225,7 @@ export const googleWorkspaceRouter = router({
    */
   listUserGroups: tenantProcedure
     .use(requirePermission({ member: ["read"] }))
+    .use(requireTier("PRO"))
     .input(
       z.object({
         userEmails: z.array(z.string().email()).min(1).max(500),
@@ -278,6 +280,7 @@ export const googleWorkspaceRouter = router({
    */
   bulkImport: tenantProcedure
     .use(requirePermission({ member: ["create"] }))
+    .use(requireTier("PRO"))
     .input(directoryImportInputSchema)
     .mutation(async ({ ctx, input }) => {
       const { connection, credentials, adapter } =
@@ -349,6 +352,7 @@ export const googleWorkspaceRouter = router({
    */
   triggerSync: tenantProcedure
     .use(requirePermission({ member: ["read"] }))
+    .use(requireTier("PRO"))
     .mutation(async ({ ctx }) => {
       const { connection } = await getGoogleWorkspaceConnection(
         ctx.organizationId,

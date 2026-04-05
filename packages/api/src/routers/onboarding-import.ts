@@ -13,6 +13,7 @@ import {
 } from "@contractor-ops/validators";
 import { router } from "../init.js";
 import { tenantProcedure } from "../middleware/tenant.js";
+import { requireTier } from "../middleware/tier.js";
 import {
   fetchUsersFromSource,
   mergeByEmail,
@@ -98,7 +99,7 @@ export const onboardingImportRouter = router({
   /**
    * Lists all 4 supported integration sources with their connection status.
    */
-  listSources: tenantProcedure.query(async ({ ctx }) => {
+  listSources: tenantProcedure.use(requireTier("PRO")).query(async ({ ctx }) => {
     const connections = await prisma.integrationConnection.findMany({
       where: { organizationId: ctx.organizationId },
       select: { provider: true, status: true, credentialsRef: true },
@@ -122,6 +123,7 @@ export const onboardingImportRouter = router({
    * Fetches users from selected sources, merges by email, detects conflicts.
    */
   fetchPeople: tenantProcedure
+    .use(requireTier("PRO"))
     .input(fetchPeopleInputSchema)
     .query(async ({ ctx, input }) => {
       const allSourcePeople: Array<{
@@ -186,6 +188,7 @@ export const onboardingImportRouter = router({
    * Fetches projects from Jira and teams from Linear with their statuses.
    */
   fetchProjects: tenantProcedure
+    .use(requireTier("PRO"))
     .input(z.object({ sources: z.array(sourceProviderSchema) }))
     .query(async ({ ctx, input }) => {
       const projects: Array<{
@@ -327,6 +330,7 @@ export const onboardingImportRouter = router({
    * workflow templates from projects. Tracks progress in settings metadata.
    */
   startImport: tenantProcedure
+    .use(requireTier("PRO"))
     .input(startImportInputSchema)
     .mutation(async ({ ctx, input }) => {
       const jobId = randomUUID();
@@ -407,6 +411,7 @@ export const onboardingImportRouter = router({
    * Returns the progress of an import job by jobId.
    */
   getProgress: tenantProcedure
+    .use(requireTier("PRO"))
     .input(z.object({ jobId: z.string() }))
     .query(async ({ ctx, input }) => {
       const { settings } = await getOrgSettings(ctx.organizationId);
@@ -426,6 +431,7 @@ export const onboardingImportRouter = router({
    * Retries a single failed item from an import job.
    */
   retryFailedItem: tenantProcedure
+    .use(requireTier("PRO"))
     .input(retryItemInputSchema)
     .mutation(async ({ ctx, input }) => {
       const { settings } = await getOrgSettings(ctx.organizationId);

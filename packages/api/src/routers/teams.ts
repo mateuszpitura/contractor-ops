@@ -5,6 +5,7 @@ import { decryptCredentials } from "@contractor-ops/integrations/services/creden
 import { router } from "../init.js";
 import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
+import { requireTier } from "../middleware/tier.js";
 import * as E from "../errors.js";
 import { getTeamsChannels, getJoinedTeams } from "../services/teams/teams-graph-client.js";
 
@@ -135,6 +136,7 @@ export const teamsRouter = router({
    */
   saveChannelMapping: tenantProcedure
     .use(requirePermission({ settings: ["update"] }))
+    .use(requireTier("PRO"))
     .input(channelMappingSchema)
     .mutation(async ({ ctx, input }) => {
       const connection = await loadTeamsConnection(ctx.organizationId);
