@@ -50,11 +50,11 @@ Exceptions: none — phase mounts existing components; no new spacing tokens req
 | Role | Size | Weight | Line Height |
 |------|------|--------|-------------|
 | Body | 14px | 400 (regular) | 1.5 |
-| Label | 14px | 500 (medium) | 1.4 |
+| Label | 14px | 400 (regular) | 1.4 |
 | Heading | 20px | 600 (semibold) | 1.2 |
-| Display | 28px | 700 (bold) | 1.2 |
+| Display | 28px | 600 (semibold) | 1.2 |
 
-**Source:** Existing design system "Precision Craft" in globals.css. Phase 36 introduces no new typography — all text renders through existing components (ProviderConnectionCard, FeatureGate, UpgradeInlineBanner, Dialog headings).
+**Source:** Existing design system "Precision Craft" in globals.css. Phase 36 introduces no new typography — all text renders through existing components (ProviderConnectionCard, FeatureGate, UpgradeInlineBanner, Dialog headings). Weight palette consolidated to 400 (regular) for body/label roles and 600 (semibold) for heading/display roles.
 
 ---
 
@@ -69,7 +69,7 @@ Exceptions: none — phase mounts existing components; no new spacing tokens req
 
 Accent reserved for:
 - "Upgrade Plan" button in UpgradeInlineBanner (primary variant)
-- "Configure" button on carrier provider cards (primary variant)
+- "Configure DPD" / "Configure UPS" button on carrier provider cards (primary variant)
 - "Create Shipment" button on equipment detail page (primary variant)
 - Focus ring on form inputs within CarrierCredentialForm and CarrierShipmentForm
 - Left border accent on UpgradeInlineBanner (`border-primary bg-primary/5`)
@@ -88,17 +88,19 @@ All copy is delivered through next-intl translation keys in `en.json` and `pl.js
 | Feature gate CTA | "Upgrade Plan" | `Billing.gate.upgradePlan` | EXISTS |
 | Feature gate page heading | "This feature requires an upgrade" | `Billing.gate.pageHeading` | EXISTS |
 | Global tier error toast | "This feature requires {tier} plan." | NEW — `Billing.gate.tierErrorToast` | NEW |
-| Global tier error toast action | "Upgrade" | NEW — `Billing.gate.upgradeAction` | NEW |
+| Global tier error toast action | "Upgrade Plan" | NEW — `Billing.gate.upgradeAction` | NEW |
 | DPD card title | "DPD" | Inline string in ProviderConnectionCard `displayName` prop | EXISTS (pattern) |
 | DPD card description | "Ship equipment via DPD courier" | NEW — `Equipment.carrier.dpdDescription` | NEW |
+| DPD card configure button | "Configure DPD" | NEW — `Equipment.carrier.configureDpd` | NEW |
 | UPS card title | "UPS" | Inline string in ProviderConnectionCard `displayName` prop | EXISTS (pattern) |
 | UPS card description | "Ship equipment via UPS courier" | NEW — `Equipment.carrier.upsDescription` | NEW |
+| UPS card configure button | "Configure UPS" | NEW — `Equipment.carrier.configureUps` | NEW |
 | Create carrier shipment button | "Ship via Carrier" | NEW — `Equipment.carrier.shipViaCarrier` | NEW |
 | Carrier shipment dialog title | "Create Carrier Shipment" | NEW — `Equipment.carrier.createShipmentTitle` | NEW |
 | DPD credential form empty | "Enter your DPD API credentials to enable shipment creation" | NEW — `Equipment.carrier.dpdCredentialHint` | NEW |
 | UPS credential form empty | "Enter your UPS API credentials to enable shipment creation" | NEW — `Equipment.carrier.upsCredentialHint` | NEW |
 
-**New i18n keys total:** 8 (both EN and PL files)
+**New i18n keys total:** 10 (both EN and PL files)
 
 ### Destructive Actions
 
@@ -120,7 +122,7 @@ This is the core of Phase 36's UI work. All components already exist and are ful
 | Inner components | `ProviderConnectionCard` + `Dialog` containing `CarrierCredentialForm` |
 | Icon | `Truck` from lucide, `size-8`, color `text-red-600` (DPD brand red) |
 | Status badge | Show "Connected" (green) when DPD credentials exist in org settings, "Not configured" (muted) otherwise |
-| Dialog trigger | "Configure" button on card (outline variant, sm size) |
+| Dialog trigger | "Configure DPD" button on card (outline variant, sm size) |
 | Dialog title | "DPD Configuration" |
 | Dialog content | `CarrierCredentialForm carrier="dpd"` |
 
@@ -134,7 +136,7 @@ This is the core of Phase 36's UI work. All components already exist and are ful
 | Inner components | `ProviderConnectionCard` + `Dialog` containing `CarrierCredentialForm` |
 | Icon | `Truck` from lucide, `size-8`, color `text-amber-700` (UPS brand brown approximation) |
 | Status badge | Show "Connected" (green) when UPS credentials exist, "Not configured" (muted) otherwise |
-| Dialog trigger | "Configure" button on card (outline variant, sm size) |
+| Dialog trigger | "Configure UPS" button on card (outline variant, sm size) |
 | Dialog title | "UPS Configuration" |
 | Dialog content | `CarrierCredentialForm carrier="ups"` |
 
@@ -172,7 +174,7 @@ Based on PLAN_CONFIG excludedFeatures for STARTER tier:
 | Trigger | `FORBIDDEN` error with `JSON.parse(message).type === "TIER_REQUIRED"` |
 | UI response | Sonner toast with error variant |
 | Toast message | "This feature requires {requiredTier} plan." |
-| Toast action | "Upgrade" button linking to `/settings?tab=billing` |
+| Toast action | "Upgrade Plan" button linking to `/settings?tab=billing` |
 | Fallthrough | Non-tier FORBIDDEN errors pass through to default error handling |
 | Parse safety | `try/catch` around `JSON.parse` — malformed messages fall through silently |
 
@@ -184,8 +186,8 @@ Based on PLAN_CONFIG excludedFeatures for STARTER tier:
 
 | State | Visual |
 |-------|--------|
-| Not configured | Muted status badge "Not configured", "Configure" button enabled |
-| Configured/Connected | Green status badge "Connected", "Configure" button still enabled (for editing) |
+| Not configured | Muted status badge "Not configured", "Configure DPD" / "Configure UPS" button enabled |
+| Configured/Connected | Green status badge "Connected", "Configure DPD" / "Configure UPS" button still enabled (for editing) |
 | Loading | Skeleton pulse on status badge area |
 
 ### FeatureGate States
@@ -209,7 +211,7 @@ Based on PLAN_CONFIG excludedFeatures for STARTER tier:
 | State | Visual |
 |-------|--------|
 | Toast appears | Sonner error toast, bottom-right, auto-dismiss after 5s |
-| User clicks "Upgrade" | Navigate to `/settings?tab=billing` |
+| User clicks "Upgrade Plan" | Navigate to `/settings?tab=billing` |
 | User dismisses | Toast closes, no side effects |
 
 ---
