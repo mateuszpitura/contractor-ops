@@ -752,6 +752,29 @@
         "rejectFailed": "Nie udało się odrzucić wniosku. Spróbuj ponownie."
       }
     },
+    "carriers": {
+      "heading": "Wysylka",
+      "notConfigured": "Nieskonfigurowany",
+      "connected": "Polaczony",
+      "testConnection": "Testuj polaczenie",
+      "saveCredentials": "Zapisz dane dostepowe",
+      "connectionVerified": "Polaczenie zweryfikowane",
+      "connectionFailed": "Polaczenie nieudane -- sprawdz dane dostepowe i sprobuj ponownie",
+      "credentialsSaved": "Dane dostepowe zapisane pomyslnie",
+      "saveFailed": "Nie udalo sie zapisac danych dostepowych. Sprobuj ponownie.",
+      "username": "Nazwa uzytkownika",
+      "password": "Haslo",
+      "fid": "Numer konta FID",
+      "clientId": "ID klienta",
+      "clientSecret": "Sekret klienta",
+      "accountNumber": "Numer konta",
+      "sandbox": "Tryb testowy"
+    },
+    "returnCarrier": {
+      "label": "Domyslny przewoznik zwrotow",
+      "helper": "Uzywany do wszystkich przesylek zwrotnych wykonawcow.",
+      "saved": "Domyslny przewoznik zwrotow zaktualizowany"
+    },
     "toast": {
       "invoiceSettingsFailed": "Nie udało się zaktualizować ustawień faktur",
       "saveSettingsFailed": "Nie udało się zapisać ustawień",
@@ -3773,6 +3796,37 @@
       "rejectConfirmTitle": "Odrzuc zwrot",
       "rejectConfirmDescription": "Prosby o zwrot wykonawcy zostanie odrzucona. Wykonawca zostanie powiadomiony. Kontynuowac?",
       "cancelAction": "Anuluj"
+    },
+    "carrier": {
+      "selectCarrier": "Przewoznik",
+      "created": "Przesylka utworzona z {carrier}",
+      "createShipment": "Utworz przesylke",
+      "createError": "Nie udalo sie utworzyc przesylki. Sprobuj ponownie.",
+      "cancel": "Anuluj",
+      "noCarriers": "Brak skonfigurowanych przewoznikow",
+      "noCarriersBody": "Skonfiguruj dane dostepowe przewoznikow w Ustawieniach, aby tworzyc przesylki.",
+      "parcelSize": "Rozmiar paczki",
+      "small": "Mala",
+      "medium": "Srednia",
+      "large": "Duza"
+    },
+    "dpd": {
+      "deliveryAddress": "Adres dostawy",
+      "street": "Ulica",
+      "city": "Miasto",
+      "postalCode": "Kod pocztowy",
+      "countryCode": "Kod kraju"
+    },
+    "ups": {
+      "deliveryAddress": "Adres dostawy",
+      "street": "Ulica",
+      "city": "Miasto",
+      "postalCode": "Kod pocztowy",
+      "countryCode": "Kod kraju",
+      "serviceType": "Typ uslugi",
+      "standard": "Standard",
+      "expressSaver": "Express Saver",
+      "express": "Express"
     }
   },
   "Legal": {
