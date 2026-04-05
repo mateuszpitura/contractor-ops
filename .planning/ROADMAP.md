@@ -195,12 +195,15 @@ Plans:
   1. Middleware gates features by org's active subscription tier with graceful upgrade prompts that name the specific feature and required plan
   2. Admin sees a usage dashboard showing current plan, seat count, OCR credits used/remaining, and next billing date
   3. DPD and UPS shipments can be created and tracked through the same equipment shipment flow as InPost
-**Plans**: TBD
+**Plans**: 5 plans
 **UI hint**: yes
 
 Plans:
-- [ ] 35-01: TBD
-- [ ] 35-02: TBD
+- [ ] 35-01-PLAN.md — requireTier tRPC middleware + getUsageDashboard endpoint (BILL-09/BILL-10)
+- [ ] 35-02-PLAN.md — DPD + UPS courier clients, status mappers, polling, validators (EQUIP-06/EQUIP-07)
+- [ ] 35-03-PLAN.md — Equipment router DPD/UPS procedures + courier polling cron (EQUIP-06/EQUIP-07/BILL-09)
+- [ ] 35-04-PLAN.md — FeatureGate, UpgradeInlineBanner, UsageDashboard, KPI cards, i18n (BILL-09/BILL-10)
+- [ ] 35-05-PLAN.md — CarrierShipmentForm, DPD/UPS fieldsets, credential setup, default return carrier, i18n (EQUIP-06/EQUIP-07)
 
 ## Progress
 
@@ -243,4 +246,4 @@ Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 �
 | 32. Teams Integration | v3.0 | 4/4 | Complete    | 2026-04-04 |
 | 33. InPost Courier Integration | v3.0 | 3/3 | Complete    | 2026-04-04 |
 | 34. Intelligent Onboarding Wizard | v3.0 | 2/2 | Complete    | 2026-04-05 |
-| 35. Feature Gating + DPD/UPS + Billing Polish | v3.0 | 0/2 | Not started | - |
+| 35. Feature Gating + DPD/UPS + Billing Polish | v3.0 | 0/5 | Not started | - |
