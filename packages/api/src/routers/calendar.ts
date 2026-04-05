@@ -7,6 +7,7 @@ import {
 import { router } from "../init.js";
 import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
+import { requireTier } from "../middleware/tier.js";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -94,6 +95,7 @@ export const calendarRouter = router({
    * Existing calendar events are NOT removed (per UI spec).
    */
   disconnect: tenantProcedure
+    .use(requireTier("PRO"))
     .input(z.object({ connectionId: z.string().cuid() }))
     .mutation(async ({ ctx, input }) => {
       const connection = await prisma.integrationConnection.findFirst({
@@ -183,6 +185,7 @@ export const calendarRouter = router({
    */
   saveTaskConfig: tenantProcedure
     .use(requirePermission({ workflow: ["update"] }))
+    .use(requireTier("PRO"))
     .input(
       z.object({
         taskTemplateId: z.string().cuid(),

@@ -3,6 +3,7 @@ import { prisma } from "@contractor-ops/db";
 import { router } from "../init.js";
 import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
+import { requireTier } from "../middleware/tier.js";
 import { generateAuditCsv } from "../services/report-export.js";
 
 // ---------------------------------------------------------------------------
@@ -122,6 +123,7 @@ export const auditRouter = router({
    */
   export: tenantProcedure
     .use(settingsRead)
+    .use(requireTier("ENTERPRISE"))
     .input(auditFilterSchema)
     .mutation(async ({ ctx, input }) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
