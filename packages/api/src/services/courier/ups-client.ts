@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import type {
+  BaseShipmentParams,
   CourierClient,
   CourierShipmentResult,
   CourierStatusResult,
@@ -178,38 +179,45 @@ export class UPSClient implements CourierClient {
    * POST /api/shipments/v2409/ship
    */
   async createShipment(
-    params: UPSShipmentParams,
+    params: BaseShipmentParams,
   ): Promise<CourierShipmentResult> {
+    if (!("deliveryAddress" in params) || !("serviceCode" in params)) {
+      throw new Error(
+        "[ups-client] createShipment requires deliveryAddress and serviceCode for UPS shipments",
+      );
+    }
+    const upsParams = params as UPSShipmentParams;
+
     const url = `${this.baseUrl}/api/shipments/v2409/ship`;
     const headers = await this.authHeaders();
-    const size = UPS_SIZE_MAP[params.parcelSize];
+    const size = UPS_SIZE_MAP[upsParams.parcelSize];
 
     const body = {
       ShipmentRequest: {
         Shipment: {
-          Description: params.reference ?? "Equipment shipment",
+          Description: upsParams.reference ?? "Equipment shipment",
           Shipper: {
-            Name: params.sender.name,
+            Name: upsParams.sender.name,
             ShipperNumber: this.accountNumber,
-            Phone: { Number: params.sender.phone },
+            Phone: { Number: upsParams.sender.phone },
             Address: {
-              AddressLine: [params.sender.street],
-              City: params.sender.city,
-              PostalCode: params.sender.postalCode,
-              CountryCode: params.sender.countryCode,
+              AddressLine: [upsParams.sender.street],
+              City: upsParams.sender.city,
+              PostalCode: upsParams.sender.postalCode,
+              CountryCode: upsParams.sender.countryCode,
             },
           },
           ShipTo: {
-            Name: params.receiver.name,
-            Phone: { Number: params.receiver.phone },
+            Name: upsParams.receiver.name,
+            Phone: { Number: upsParams.receiver.phone },
             Address: {
-              AddressLine: [params.deliveryAddress.street],
-              City: params.deliveryAddress.city,
-              PostalCode: params.deliveryAddress.postalCode,
-              CountryCode: params.deliveryAddress.countryCode,
+              AddressLine: [upsParams.deliveryAddress.street],
+              City: upsParams.deliveryAddress.city,
+              PostalCode: upsParams.deliveryAddress.postalCode,
+              CountryCode: upsParams.deliveryAddress.countryCode,
             },
           },
-          Service: { Code: params.serviceCode },
+          Service: { Code: upsParams.serviceCode },
           Package: [
             {
               PackagingType: { Code: "02" }, // Customer Supplied Package

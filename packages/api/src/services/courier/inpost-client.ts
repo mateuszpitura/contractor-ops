@@ -1,10 +1,11 @@
 import { z } from "zod";
 
 import type {
+  BaseShipmentParams,
   CourierClient,
   CourierShipmentResult,
   CourierStatusResult,
-  CreateShipmentParams,
+  InPostShipmentParams,
   LabelFormat,
 } from "./courier-client.js";
 
@@ -68,24 +69,31 @@ export class InPostClient implements CourierClient {
    * POST /v1/organizations/{orgId}/shipments
    */
   async createShipment(
-    params: CreateShipmentParams,
+    params: BaseShipmentParams,
   ): Promise<CourierShipmentResult> {
+    if (!("targetPoint" in params)) {
+      throw new Error(
+        "[InPostClient] createShipment requires targetPoint (Paczkomat ID)",
+      );
+    }
+    const inpostParams = params as InPostShipmentParams;
+
     const url = `${this.baseUrl}/v1/organizations/${this.shipxOrganizationId}/shipments`;
 
     const body = {
       receiver: {
-        name: params.receiver.name,
-        email: params.receiver.email,
-        phone: params.receiver.phone,
+        name: inpostParams.receiver.name,
+        email: inpostParams.receiver.email,
+        phone: inpostParams.receiver.phone,
       },
-      parcels: [{ template: params.parcelSize }],
+      parcels: [{ template: inpostParams.parcelSize }],
       custom_attributes: {
-        target_point: params.targetPoint,
+        target_point: inpostParams.targetPoint,
         sending_method: "dispatch_order",
       },
       service: "inpost_locker_standard",
-      reference: params.reference,
-      external_customer_id: params.organizationId,
+      reference: inpostParams.reference,
+      external_customer_id: inpostParams.organizationId,
     };
 
     const response = await globalThis.fetch(url, {

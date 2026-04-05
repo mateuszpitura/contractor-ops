@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-04-01)
 ## Current Position
 
 Phase: 38 (tier-gate-courier-type-fix) — EXECUTING
-Plan: 2 of 3
-Status: Ready to execute
-Last activity: 2026-04-05
+Plan: 3 of 3 complete
+Status: Executing Phase 38
+Last activity: 2026-04-05 -- Completed all 3 plans (38-01, 38-02, 38-03)
 
 Progress: [█████████░] 91%
 
@@ -150,6 +150,8 @@ Recent decisions affecting current work:
 - [Phase 37]: Used vi.hoisted() for mock variable declarations to avoid ReferenceError with vi.mock hoisting
 - [Phase 37]: DPD status DEP_DELIVERED maps to DELIVERED (not DOR as initially researched)
 - [Phase 38]: Gate mutations only -- read queries remain ungated for STARTER upgrade prompts (consistent with Phase 36)
+- [Phase 38]: Used Omit<BaseShipmentParams, 'sender'> for AddressShipmentParams to safely override sender type with AddressSender
+- [Phase 38]: Runtime type guards for carrier narrowing ('targetPoint' in params, 'deliveryAddress' in params)
 
 ### Pending Todos
 
@@ -163,6 +165,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T21:05:07.830Z
-Stopped at: Completed 38-01-PLAN.md
+Last session: 2026-04-05
+Stopped at: Completed all Phase 38 plans (38-01, 38-02, 38-03)
 Resume file: None

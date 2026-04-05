@@ -9,23 +9,30 @@
  * Generic courier client interface that all carrier implementations must satisfy.
  */
 export interface CourierClient {
-  createShipment(params: CreateShipmentParams): Promise<CourierShipmentResult>;
+  createShipment(params: BaseShipmentParams): Promise<CourierShipmentResult>;
   getLabel(shipmentExternalId: string, format: LabelFormat): Promise<Buffer>;
   getStatus(shipmentExternalId: string): Promise<CourierStatusResult>;
   cancelShipment(shipmentExternalId: string): Promise<void>;
 }
 
 /**
- * Parameters for creating a shipment via any courier provider.
+ * Base shipment parameters shared by all courier providers.
+ * Carrier-specific params extend this interface with additional fields.
  */
-export interface CreateShipmentParams {
+export interface BaseShipmentParams {
   organizationId: string;
   direction: "OUTBOUND" | "RETURN";
   receiver: { name: string; email: string; phone: string };
   sender: { name: string; email: string; phone: string };
-  targetPoint: string; // Paczkomat ID (e.g., "KRA012")
   parcelSize: "small" | "medium" | "large";
   reference?: string;
+}
+
+/**
+ * InPost-specific shipment params with Paczkomat target point.
+ */
+export interface InPostShipmentParams extends BaseShipmentParams {
+  targetPoint: string; // Paczkomat ID (e.g., "KRA012")
 }
 
 /**
@@ -76,14 +83,9 @@ export interface AddressSender {
   countryCode: string;
 }
 
-/** Base shipment params shared by address-based carriers (DPD, UPS). */
-export interface AddressShipmentParams {
-  organizationId: string;
-  direction: "OUTBOUND" | "RETURN";
-  receiver: { name: string; email: string; phone: string };
+/** Address-based shipment params for carriers that deliver to street addresses (DPD, UPS). */
+export interface AddressShipmentParams extends Omit<BaseShipmentParams, "sender"> {
   sender: AddressSender;
-  parcelSize: "small" | "medium" | "large";
-  reference?: string;
   deliveryAddress: DeliveryAddress;
 }
 
