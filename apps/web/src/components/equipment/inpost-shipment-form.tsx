@@ -1,3 +1,7 @@
+// NOTE: This component is now used internally by CarrierShipmentForm for
+// InPost-specific fields. The primary entry point for creating shipments is
+// CarrierShipmentForm which provides a unified carrier selection experience.
+// This component is kept functional for backward compatibility.
 "use client";
 
 import { useCallback, useState } from "react";
