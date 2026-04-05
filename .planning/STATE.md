@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Enterprise & Monetization
 status: executing
-stopped_at: Completed 35-01-PLAN.md
-last_updated: "2026-04-05T10:41:07.608Z"
+stopped_at: Completed 35-02-PLAN.md
+last_updated: "2026-04-05T10:45:51.630Z"
 last_activity: 2026-04-05
 progress:
   total_phases: 8
   completed_phases: 7
   total_plans: 29
-  completed_plans: 25
+  completed_plans: 26
   percent: 84
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-01)
 ## Current Position
 
 Phase: 35 (feature-gating-dpd-ups-billing-polish) — EXECUTING
-Plan: 2 of 5
+Plan: 3 of 5
 Status: Ready to execute
 Last activity: 2026-04-05
 
@@ -71,6 +71,7 @@ Progress: [████████░░] 84%
 | Phase 34 P01 | 8min | 2 tasks | 6 files |
 | Phase 34 P02 | 11min | 2 tasks | 14 files |
 | Phase 35 P01 | 4min | 2 tasks | 4 files |
+| Phase 35 P02 | 6min | 2 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -127,6 +128,10 @@ Recent decisions affecting current work:
 - [Phase 34]: base-ui Select onValueChange typed as unknown -- cast to string for role handlers
 - [Phase 35]: TIER_RANK Record<SubscriptionTier, number> for numeric tier comparison in requireTier middleware
 - [Phase 35]: Structured JSON error message with type/requiredTier/currentTier for client-side upgrade prompts
+- [Phase 35]: DPD uses SOAP-like REST with auth credentials in request body (not headers)
+- [Phase 35]: UPS OAuth 2.0 token caching with 5-minute pre-expiry refresh buffer
+- [Phase 35]: AddressShipmentParams base interface for address-based carriers (DPD, UPS) vs point-based (InPost)
+- [Phase 35]: Carrier factory getCourierClient dispatches to correct client by case-insensitive carrier string
 
 ### Pending Todos
 
@@ -140,6 +145,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T10:41:07.604Z
-Stopped at: Completed 35-01-PLAN.md
+Last session: 2026-04-05T10:45:51.628Z
+Stopped at: Completed 35-02-PLAN.md
 Resume file: None
