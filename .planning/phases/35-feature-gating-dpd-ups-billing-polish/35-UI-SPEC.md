@@ -32,14 +32,14 @@ Declared values (must be multiples of 4):
 | Token | Value | Usage |
 |-------|-------|-------|
 | xs | 4px | Icon gaps, inline padding, badge internal padding |
-| sm | 8px | Compact element spacing, KPI card internal gaps |
+| sm | 8px | Compact element spacing, KPI card internal gaps, upgrade inline banner vertical padding |
 | md | 16px | Default element spacing, card padding, form field gaps |
-| lg | 24px | Section padding, form group gaps, upgrade banner padding |
+| lg | 24px | Section padding, form group gaps, upgrade banner horizontal padding |
 | xl | 32px | Layout gaps between KPI card row and detail sections |
 | 2xl | 48px | Page-level section breaks |
 | 3xl | 64px | Page-level top/bottom padding |
 
-Exceptions: Upgrade inline banner uses 12px vertical padding (compact form factor to not dominate the gated section). KPI cards use equal 16px internal padding on all sides.
+Exceptions: Upgrade inline banner uses 8px vertical padding (compact form factor to not dominate the gated section; uses the standard `sm` token). KPI cards use equal 16px internal padding on all sides.
 
 ---
 
@@ -65,7 +65,7 @@ Notes: KPI card values (plan name, seat count number, credit count, billing date
 | Accent (10%) | `--primary` oklch(0.44 0.145 178) | Upgrade CTA buttons, active plan highlight ring, progress bar fill (healthy state) |
 | Destructive | `--destructive` oklch(0.58 0.23 18) | Cancel subscription destructive action, exhausted credit bar |
 
-Accent reserved for: "Upgrade plan" button in upgrade banners, "Create shipment" button (carrier forms), active plan card border in plan comparison, progress bar fill at healthy credit levels, "Save credentials" button in carrier setup, "Buy credits" button.
+Accent reserved for: "Upgrade Plan" button in upgrade banners, "Create shipment" button (carrier forms), active plan card border in plan comparison, progress bar fill at healthy credit levels, "Save credentials" button in carrier setup, "Buy credits" button.
 
 ### Credit Progress Bar Color Thresholds
 
@@ -88,7 +88,7 @@ Upgrade inline banners use `--primary` at 5% opacity as background with `--prima
 | Component | Location | shadcn Base | Purpose |
 |-----------|----------|-------------|---------|
 | FeatureGate | `components/billing/feature-gate.tsx` | none (wrapper) | Client component that checks org tier and renders children or upgrade banner |
-| UpgradeInlineBanner | `components/billing/upgrade-inline-banner.tsx` | Card, Button | Inline banner replacing gated UI: Gem icon + feature name + required plan + "Upgrade" CTA |
+| UpgradeInlineBanner | `components/billing/upgrade-inline-banner.tsx` | Card, Button | Inline banner replacing gated UI: Gem icon + feature name + required plan + "Upgrade Plan" CTA |
 | UsageDashboard | `components/billing/usage-dashboard.tsx` | Card | Full usage dashboard with 4 KPI cards + plan comparison below |
 | UsageKpiCard | `components/billing/usage-kpi-card.tsx` | Card | Individual KPI card: icon, label, value, optional sub-text |
 | SeatCountCard | `components/billing/seat-count-card.tsx` | Card, Progress | Active contractors / included seats display with overage indicator |
@@ -181,15 +181,16 @@ Upgrade inline banners use `--primary` at 5% opacity as background with `--prima
 
 ```
 +--------------------------------------------------+
-| [Gem]  Time tracking requires Pro.  [Upgrade]    |
+| [Gem]  Time tracking requires Pro. [Upgrade Plan]|
 +--------------------------------------------------+
 ```
 
 - Full-width within the parent container where the gated feature would appear
 - Left border 4px `--primary`, background `--primary` at 5% opacity
+- Vertical padding 8px (`sm` token), horizontal padding 24px (`lg` token)
 - Gem icon at 16px in `--primary` color
 - Copy pattern: "{Feature name} requires {Tier}." -- always a single sentence
-- "Upgrade" button: `variant="default" size="sm"` -- navigates to billing settings
+- "Upgrade Plan" button: `variant="default" size="sm"` -- navigates to billing settings
 - No close/dismiss button -- banner is persistent until tier qualifies
 
 ### Carrier Shipment Form (unified, replaces separate InPost form trigger)
@@ -277,7 +278,7 @@ Upgrade inline banners use `--primary` at 5% opacity as background with `--prima
 
 | Element | Copy |
 |---------|------|
-| Primary CTA (upgrade banner) | "Upgrade" |
+| Primary CTA (upgrade banner) | "Upgrade Plan" |
 | Primary CTA (shipment form) | "Create shipment" |
 | Primary CTA (save credentials) | "Save credentials" |
 | Test credentials CTA | "Test connection" |
@@ -330,7 +331,7 @@ Both `en` and `pl` translations required (project standard).
 |--------|---------|-------------|----------|
 | Page-level gate (middleware) | User navigates to gated page without required tier | Redirect to `/settings/billing` with `?upgrade={feature}` query param | Billing page opens with upgrade context banner at top |
 | Inline gate (tRPC) | User sees gated sub-feature within accessible page | UpgradeInlineBanner replaces the gated section | Banner visible immediately, no loading state |
-| Upgrade from banner | Click "Upgrade" on inline banner | Navigate to `/settings/billing` | Billing tab opens with plan comparison |
+| Upgrade from banner | Click "Upgrade Plan" on inline banner | Navigate to `/settings/billing` | Billing tab opens with plan comparison |
 | Mid-session tier change | Org tier changes (downgrade, trial expiry) | Next action against gated feature triggers the gate (D-03) | Upgrade banner appears on next load/action |
 
 ### Usage Dashboard
@@ -387,7 +388,7 @@ Both `en` and `pl` translations required (project standard).
 
 | Requirement | Implementation |
 |-------------|----------------|
-| Keyboard navigation | Carrier dropdown navigable with arrow keys; upgrade banner "Upgrade" button focusable via Tab; credential fields follow standard tab order |
+| Keyboard navigation | Carrier dropdown navigable with arrow keys; upgrade banner "Upgrade Plan" button focusable via Tab; credential fields follow standard tab order |
 | Screen reader | KPI cards use `aria-label` describing the metric (e.g., "OCR credits: 73 of 100 used"); progress bars use `aria-valuenow`, `aria-valuemin`, `aria-valuemax`; upgrade banners use `role="status"` |
 | Focus visible | All interactive elements show `ring` on focus (project default via `outline-ring/50`) |
 | Color contrast | Credit progress bar colors all meet 4.5:1 against card background; upgrade banner text meets 4.5:1 against tinted background |
