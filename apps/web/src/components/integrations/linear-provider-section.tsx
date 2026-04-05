@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { AlertTriangle } from "lucide-react";
 
 import { trpc } from "@/trpc/init";
+import { FeatureGate } from "@/components/billing/feature-gate";
 import { ProviderConnectionCard } from "@/components/settings/provider-connection-card";
 import { LinearLogo } from "./linear-logo";
 import { LinearStatusMappingDialog } from "./linear-status-mapping-dialog";
@@ -41,38 +42,40 @@ export function LinearProviderSection() {
   }, [isPendingMapping]);
 
   return (
-    <div className="space-y-4">
-      <ProviderConnectionCard
-        provider="linear"
-        displayName="Linear"
-        icon={<LinearLogo className="size-8" />}
-        description={t("descriptionDisconnected")}
-      />
+    <FeatureGate requiredTier="Pro" featureName="Linear integration">
+      <div className="space-y-4">
+        <ProviderConnectionCard
+          provider="linear"
+          displayName="Linear"
+          icon={<LinearLogo className="size-8" />}
+          description={t("descriptionDisconnected")}
+        />
 
-      {isPendingMapping && (
-        <div className="flex items-center gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200">
-          <AlertTriangle className="size-4 shrink-0" aria-hidden="true" />
-          {t("pendingMappingWarning")}
-        </div>
-      )}
+        {isPendingMapping && (
+          <div className="flex items-center gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200">
+            <AlertTriangle className="size-4 shrink-0" aria-hidden="true" />
+            {t("pendingMappingWarning")}
+          </div>
+        )}
 
-      {(isConnected || isPendingMapping) && (
-        <Button variant="outline" size="sm" onClick={() => setMappingOpen(true)}>
-          {t("configureMapping")}
-        </Button>
-      )}
+        {(isConnected || isPendingMapping) && (
+          <Button variant="outline" size="sm" onClick={() => setMappingOpen(true)}>
+            {t("configureMapping")}
+          </Button>
+        )}
 
-      {needsReauth && (
-        <div className="flex items-center gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200">
-          <AlertTriangle className="size-4 shrink-0" aria-hidden="true" />
-          {t("scopeExpansionWarning")}
-        </div>
-      )}
+        {needsReauth && (
+          <div className="flex items-center gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200">
+            <AlertTriangle className="size-4 shrink-0" aria-hidden="true" />
+            {t("scopeExpansionWarning")}
+          </div>
+        )}
 
-      <LinearStatusMappingDialog
-        open={mappingOpen}
-        onOpenChange={setMappingOpen}
-      />
-    </div>
+        <LinearStatusMappingDialog
+          open={mappingOpen}
+          onOpenChange={setMappingOpen}
+        />
+      </div>
+    </FeatureGate>
   );
 }
