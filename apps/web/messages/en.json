@@ -2801,6 +2801,7 @@
     "grandTotal": "Grand total",
     "emptySpendContractor": "No spend data yet",
     "emptySpendContractorBody": "Spend data will appear once invoices are marked as paid.",
+    "unassignedTeam": "Unassigned",
     "emptySpendTeam": "No team spend data",
     "emptySpendTeamBody": "Team spend data will appear once invoices are marked as paid.",
     "emptyExpiringContracts": "No contracts expiring in this period",
@@ -2855,12 +2856,13 @@
       "note": "Unmapped columns will be ignored during import."
     },
     "preview": {
-      "validRows": "{count} valid rows",
-      "invalidRows": "{count} invalid rows",
-      "totalRows": "{count} total rows",
+      "validRows": "{count, plural, one {# valid row} other {# valid rows}}",
+      "invalidRows": "{count, plural, one {# invalid row} other {# invalid rows}}",
+      "totalRows": "{count, plural, one {# total row} other {# total rows}}",
       "showAll": "Show all",
       "showErrors": "Show errors only",
-      "allValid": "All {count} rows are valid"
+      "allValid": "All {count} rows are valid",
+      "noRows": "No rows to preview"
     },
     "duplicates": {
       "banner": "We found {count} potential duplicates based on NIP/tax ID",
@@ -3808,7 +3810,15 @@
       "parcelSize": "Parcel size",
       "small": "Small",
       "medium": "Medium",
-      "large": "Large"
+      "large": "Large",
+      "dpdDescription": "Ship equipment via DPD courier",
+      "configureDpd": "Configure DPD",
+      "upsDescription": "Ship equipment via UPS courier",
+      "configureUps": "Configure UPS",
+      "shipViaCarrier": "Ship via Carrier",
+      "createShipmentTitle": "Create Carrier Shipment",
+      "dpdCredentialHint": "Enter your DPD API credentials to enable shipment creation",
+      "upsCredentialHint": "Enter your UPS API credentials to enable shipment creation"
     },
     "dpd": {
       "deliveryAddress": "Delivery address",

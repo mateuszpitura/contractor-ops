@@ -2801,6 +2801,7 @@
     "grandTotal": "Suma całkowita",
     "emptySpendContractor": "Brak danych o wydatkach",
     "emptySpendContractorBody": "Dane o wydatkach pojawią się po oznaczeniu faktur jako zapłacone.",
+    "unassignedTeam": "Nieprzypisany",
     "emptySpendTeam": "Brak danych o wydatkach zespołów",
     "emptySpendTeamBody": "Dane o wydatkach zespołów pojawią się po oznaczeniu faktur jako zapłacone.",
     "emptyExpiringContracts": "Brak wygasających umów w tym okresie",
@@ -2855,12 +2856,13 @@
       "note": "Niedopasowane kolumny zostaną pominięte podczas importu."
     },
     "preview": {
-      "validRows": "{count} poprawnych wierszy",
-      "invalidRows": "{count} błędnych wierszy",
-      "totalRows": "{count} wszystkich wierszy",
+      "validRows": "{count, plural, one {# poprawny wiersz} few {# poprawne wiersze} many {# poprawnych wierszy} other {# poprawnych wierszy}}",
+      "invalidRows": "{count, plural, one {# nieprawidłowy wiersz} few {# nieprawidłowe wiersze} many {# nieprawidłowych wierszy} other {# nieprawidłowych wierszy}}",
+      "totalRows": "{count, plural, one {# wiersz łącznie} few {# wiersze łącznie} many {# wierszy łącznie} other {# wierszy łącznie}}",
       "showAll": "Pokaż wszystkie",
       "showErrors": "Pokaż tylko błędy",
-      "allValid": "Wszystkie {count} wierszy są poprawne"
+      "allValid": "Wszystkie {count} wierszy są poprawne",
+      "noRows": "Brak wierszy do podglądu"
     },
     "duplicates": {
       "banner": "Znaleźliśmy {count} potencjalnych duplikatów na podstawie NIP",
@@ -3808,7 +3810,15 @@
       "parcelSize": "Rozmiar paczki",
       "small": "Mala",
       "medium": "Srednia",
-      "large": "Duza"
+      "large": "Duza",
+      "dpdDescription": "Wysylaj sprzet kurierem DPD",
+      "configureDpd": "Konfiguruj DPD",
+      "upsDescription": "Wysylaj sprzet kurierem UPS",
+      "configureUps": "Konfiguruj UPS",
+      "shipViaCarrier": "Wyslij kurierem",
+      "createShipmentTitle": "Utworz przesylke kurierska",
+      "dpdCredentialHint": "Wprowadz dane API DPD, aby moc tworzyc przesylki",
+      "upsCredentialHint": "Wprowadz dane API UPS, aby moc tworzyc przesylki"
     },
     "dpd": {
       "deliveryAddress": "Adres dostawy",

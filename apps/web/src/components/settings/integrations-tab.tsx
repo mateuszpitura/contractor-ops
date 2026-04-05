@@ -17,6 +17,8 @@ import { JiraProviderSection } from "@/components/integrations/jira-provider-sec
 import { LinearProviderSection } from "@/components/integrations/linear-provider-section";
 import { GoogleWorkspaceProviderSection } from "@/components/integrations/google-workspace-provider-section";
 import { TeamsProviderSection } from "@/components/integrations/teams-provider-section";
+import { DpdProviderSection } from "@/components/settings/dpd-provider-section";
+import { UpsProviderSection } from "@/components/settings/ups-provider-section";
 import { JiraLogo } from "@/components/integrations/jira-logo";
 import { SlackBrandIcon } from "@/components/integrations/brand-icons";
 import {
@@ -218,6 +220,12 @@ export function IntegrationsTab() {
 
         {/* Microsoft Teams integration with channel mapping */}
         <TeamsProviderSection />
+
+        {/* DPD courier integration */}
+        <DpdProviderSection />
+
+        {/* UPS courier integration */}
+        <UpsProviderSection />
 
         {/* Notion provider card */}
         <ProviderConnectionCard
