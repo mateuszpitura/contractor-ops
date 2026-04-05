@@ -16,7 +16,7 @@ v1.0 MVP foundation (shipped 2026-03-23): org setup, RBAC, contractors, contract
 
 v2.0 Platform Expansion adds: contractor self-service portal with magic-link auth and org branding, electronic signatures (DocuSign + Autenti), AI-powered invoice OCR (Claude Vision), KSeF national e-invoicing integration, time tracking with Clockify/Jira import and invoice reconciliation, Jira bidirectional sync, Notion/Confluence doc linking with Cmd+K search, Google/Outlook calendar deadline sync, and a provider-agnostic integration framework with OAuth credential store, webhook pipeline, and health monitoring.
 
-v3.0 Enterprise & Monetization Phase 35 complete: Feature gating with requireTier tRPC middleware, DPD/UPS courier clients with carrier factory + credential testing, billing usage dashboard with KPI cards, and carrier shipment UI with dynamic fieldsets. Previous: Phase 34 intelligent onboarding wizard, Phase 33 InPost courier integration.
+v3.0 Enterprise & Monetization Phase 37 complete: Shipment task auto-completion — webhook and polling status changes from all 4 courier providers (InPost, DPD, UPS) now trigger workflow task auto-completion. Previous: Phase 36 feature gating middleware + carrier shipment UI, Phase 35 DPD/UPS courier clients, Phase 34 intelligent onboarding wizard, Phase 33 InPost courier integration.
 
 ## Requirements
 
