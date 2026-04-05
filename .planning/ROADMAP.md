@@ -234,6 +234,10 @@ Plans:
   2. InPost polling status update triggers checkShipmentTaskCompletion and auto-completes linked workflow task on target status
   3. DPD polling status update triggers checkShipmentTaskCompletion and auto-completes linked workflow task on target status
   4. UPS polling status update triggers checkShipmentTaskCompletion and auto-completes linked workflow task on target status
+**Plans**: 1 plan
+
+Plans:
+- [ ] 37-01-PLAN.md — Wire checkShipmentTaskCompletion into InPost webhook, InPost/DPD/UPS polling + tests (EQUIP-09/EQUIP-10)
 
 ### Phase 38: Tier Gate Expansion + CourierClient Type Fix
 **Goal**: All mutation endpoints enforce subscription tier gating and CourierClient interface uses a generic base type
@@ -289,5 +293,5 @@ Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 �
 | 34. Intelligent Onboarding Wizard | v3.0 | 2/2 | Complete    | 2026-04-05 |
 | 35. Feature Gating + DPD/UPS + Billing Polish | v3.0 | 6/6 | Complete    | 2026-04-05 |
 | 36. Wiring Fixes — Webhook Dispatch + UI Mounting + Feature Gate | v3.0 | 3/3 | Complete    | 2026-04-05 |
-| 37. Shipment Task Auto-Completion Wiring | v3.0 | 0/0 | Planned | — |
+| 37. Shipment Task Auto-Completion Wiring | v3.0 | 0/1 | Planned | — |
 | 38. Tier Gate Expansion + CourierClient Type Fix | v3.0 | 0/0 | Planned | — |
