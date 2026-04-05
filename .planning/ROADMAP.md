@@ -220,7 +220,7 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 36-01-PLAN.md — Linear webhook dispatch + outbound CANCELLED sync (LIN-04/LIN-05)
+- [x] 36-01-PLAN.md — Linear webhook dispatch + outbound CANCELLED sync (LIN-04/LIN-05)
 - [x] 36-02-PLAN.md — DPD/UPS provider sections + CarrierShipmentForm mounting (EQUIP-06/EQUIP-07)
 - [x] 36-03-PLAN.md — requireTier middleware + global TIER_REQUIRED error handler (BILL-09)
 
@@ -266,4 +266,4 @@ Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 �
 | 33. InPost Courier Integration | v3.0 | 3/3 | Complete    | 2026-04-04 |
 | 34. Intelligent Onboarding Wizard | v3.0 | 2/2 | Complete    | 2026-04-05 |
 | 35. Feature Gating + DPD/UPS + Billing Polish | v3.0 | 6/6 | Complete    | 2026-04-05 |
-| 36. Wiring Fixes — Webhook Dispatch + UI Mounting + Feature Gate | v3.0 | 2/3 | In Progress|  |
+| 36. Wiring Fixes — Webhook Dispatch + UI Mounting + Feature Gate | v3.0 | 3/3 | In Progress|  |

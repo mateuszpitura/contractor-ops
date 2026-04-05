@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Enterprise & Monetization
 status: verifying
-stopped_at: Completed 36-02-PLAN.md
-last_updated: "2026-04-05T13:15:59.584Z"
+stopped_at: Completed all phase 36 plans
+last_updated: "2026-04-05T13:20:00.000Z"
 last_activity: 2026-04-05
 progress:
   total_phases: 9
   completed_phases: 8
   total_plans: 33
-  completed_plans: 32
-  percent: 91
+  completed_plans: 33
+  percent: 100
 ---
 
 # Project State
@@ -74,7 +74,9 @@ Progress: [█████████░] 91%
 | Phase 35 P02 | 6min | 2 tasks | 14 files |
 | Phase 35 P04 | 5min | 2 tasks | 10 files |
 | Phase 35 P05 | 7min | 2 tasks | 8 files |
+| Phase 36 P01 | 3min | 2 tasks | 2 files |
 | Phase 36 P02 | 3min | 2 tasks | 6 files |
+| Phase 36 P03 | 3min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -140,6 +142,7 @@ Recent decisions affecting current work:
 - [Phase 35]: base-ui Button uses render prop for Link composition (not asChild)
 - [Phase 35]: CarrierShipmentForm uses tRPC proxy pattern for stale dist types, consistent with InPostShipmentForm
 - [Phase 35]: UPS service code stored as string literal (11/65/07) matching actual UPS API codes for direct passthrough
+- [Phase 36]: Fixed transitionJiraIssue call to use 5-arg signature with connection lookup in cancelRun (plan had incorrect 3-arg call)
 - [Phase 36]: Used simple Card with Badge for DPD/UPS provider sections instead of ProviderConnectionCard (courier configs are not OAuth integrations)
 
 ### Pending Todos
@@ -154,6 +157,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T13:15:59.581Z
-Stopped at: Completed 36-02-PLAN.md
+Last session: 2026-04-05T13:20:00.000Z
+Stopped at: Completed all phase 36 plans
 Resume file: None

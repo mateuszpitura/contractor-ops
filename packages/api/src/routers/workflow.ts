@@ -1020,6 +1020,65 @@ export const workflowRouter = router({
         });
       });
 
+      // Fire-and-forget outbound sync for cancelled tasks with external links
+      // Per D-09/D-10: Linear and Jira always reflect real task state
+      const cancelledTasks = run.tasks.filter(
+        (t) => t.status === "CANCELLED",
+      );
+
+      for (const task of cancelledTasks) {
+        // Outbound Jira transition (same pattern as completeTask/skipTask)
+        if (task.externalRefType === "JIRA_ISSUE" && task.externalRefId) {
+          void (async () => {
+            try {
+              const { transitionJiraIssue } = await import(
+                "../services/jira-issue-sync.js"
+              );
+              const connection =
+                await prisma.integrationConnection.findFirst({
+                  where: {
+                    organizationId: ctx.organizationId,
+                    provider: "JIRA",
+                    status: "CONNECTED",
+                  },
+                  select: { id: true },
+                });
+              if (connection) {
+                await transitionJiraIssue(
+                  prisma,
+                  ctx.organizationId,
+                  connection.id,
+                  task.id,
+                  "CANCELLED",
+                );
+              }
+            } catch (err) {
+              console.error(
+                "[workflow/cancelRun] Outbound Jira transition failed:",
+                err,
+              );
+            }
+          })();
+        }
+
+        // Outbound Linear sync (same pattern as completeTask/skipTask)
+        if (task.externalRefType === "LINEAR_ISSUE" && task.externalRefId) {
+          void (async () => {
+            try {
+              const { syncTaskStatusToLinear } = await import(
+                "../services/linear-issue-sync.js"
+              );
+              await syncTaskStatusToLinear(prisma, task.id, "CANCELLED");
+            } catch (err) {
+              console.error(
+                "[workflow/cancelRun] Outbound Linear sync failed:",
+                err,
+              );
+            }
+          })();
+        }
+      }
+
       void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
 
       return plain(run);
