@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Enterprise & Monetization
-status: verifying
-stopped_at: Phase 38 context gathered
-last_updated: "2026-04-05T20:33:42.005Z"
+status: executing
+stopped_at: Completed 38-01-PLAN.md
+last_updated: "2026-04-05T21:05:07.834Z"
 last_activity: 2026-04-05
 progress:
   total_phases: 11
   completed_phases: 10
-  total_plans: 34
-  completed_plans: 34
+  total_plans: 37
+  completed_plans: 36
   percent: 91
 ---
 
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-01)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 37 — shipment-task-auto-completion
+**Current focus:** Phase 38 — tier-gate-courier-type-fix
 
 ## Current Position
 
-Phase: 38
-Plan: Not started
-Status: Phase complete — ready for verification
+Phase: 38 (tier-gate-courier-type-fix) — EXECUTING
+Plan: 2 of 3
+Status: Ready to execute
 Last activity: 2026-04-05
 
 Progress: [█████████░] 91%
@@ -78,6 +78,7 @@ Progress: [█████████░] 91%
 | Phase 36 P02 | 3min | 2 tasks | 6 files |
 | Phase 36 P03 | 3min | 2 tasks | 8 files |
 | Phase 37 P01 | 7min | 3 tasks | 9 files |
+| Phase 38 P01 | 5min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -148,6 +149,7 @@ Recent decisions affecting current work:
 - [Phase 36]: Gate mutations only -- read queries ungated for STARTER upgrade prompts
 - [Phase 37]: Used vi.hoisted() for mock variable declarations to avoid ReferenceError with vi.mock hoisting
 - [Phase 37]: DPD status DEP_DELIVERED maps to DELIVERED (not DOR as initially researched)
+- [Phase 38]: Gate mutations only -- read queries remain ungated for STARTER upgrade prompts (consistent with Phase 36)
 
 ### Pending Todos
 
@@ -161,6 +163,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T20:33:41.999Z
-Stopped at: Phase 38 context gathered
-Resume file: .planning/phases/38-tier-gate-courier-type-fix/38-CONTEXT.md
+Last session: 2026-04-05T21:05:07.830Z
+Stopped at: Completed 38-01-PLAN.md
+Resume file: None

@@ -252,9 +252,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 38-01-PLAN.md — Tier gate Teams, GWS, Onboarding Import routers with requireTier("PRO") + tests (BILL-09)
+- [x] 38-01-PLAN.md — Tier gate Teams, GWS, Onboarding Import routers with requireTier("PRO") + tests (BILL-09)
 - [ ] 38-02-PLAN.md — CourierClient BaseShipmentParams type hierarchy refactor + test updates (EQUIP-05/EQUIP-06/EQUIP-07)
-- [ ] 38-03-PLAN.md — FeatureGate wrappers on Teams, GWS, Onboarding Import UI components (BILL-09)
+- [x] 38-03-PLAN.md — FeatureGate wrappers on Teams, GWS, Onboarding Import UI components (BILL-09)
 
 ## Progress
 
@@ -300,4 +300,4 @@ Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 �
 | 35. Feature Gating + DPD/UPS + Billing Polish | v3.0 | 6/6 | Complete    | 2026-04-05 |
 | 36. Wiring Fixes — Webhook Dispatch + UI Mounting + Feature Gate | v3.0 | 3/3 | Complete    | 2026-04-05 |
 | 37. Shipment Task Auto-Completion Wiring | v3.0 | 1/1 | Complete    | 2026-04-05 |
-| 38. Tier Gate Expansion + CourierClient Type Fix | v3.0 | 0/3 | Planned | — |
+| 38. Tier Gate Expansion + CourierClient Type Fix | v3.0 | 2/3 | In Progress|  |
