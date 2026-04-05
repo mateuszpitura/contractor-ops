@@ -12,8 +12,8 @@ Requirements for v3.0 Enterprise & Monetization milestone. Each maps to roadmap 
 - [x] **LIN-01**: User can connect Linear workspace via OAuth 2.0 with refresh token support
 - [x] **LIN-02**: Admin can map Linear workflow states to internal task statuses per team
 - [x] **LIN-03**: Workflow task with Linear enabled auto-creates Linear issue with team, title, description, and assignee
-- [x] **LIN-04**: Status changes in Linear sync to linked workflow task via webhooks (with loop prevention)
-- [x] **LIN-05**: Status changes on workflow task sync to Linear issue via GraphQL mutation
+- [ ] **LIN-04**: Status changes in Linear sync to linked workflow task via webhooks (with loop prevention)
+- [ ] **LIN-05**: Status changes on workflow task sync to Linear issue via GraphQL mutation
 - [x] **LIN-06**: Linked Linear issue displays as clickable chip with status badge on workflow task view
 
 ### Teams Integration
@@ -48,8 +48,8 @@ Requirements for v3.0 Enterprise & Monetization milestone. Each maps to roadmap 
 - [x] **EQUIP-03**: Contractor profile shows Equipment tab with assigned items and shipment status
 - [x] **EQUIP-04**: Admin can create shipment for equipment with carrier, tracking number, and expected delivery (manual entry)
 - [x] **EQUIP-05**: System integrates with InPost ShipX API for shipment creation, Parcel Locker selection, and auto-status tracking
-- [x] **EQUIP-06**: System integrates with DPD API for shipment creation, label generation, and status tracking
-- [x] **EQUIP-07**: System integrates with UPS API for shipment creation and status tracking
+- [ ] **EQUIP-06**: System integrates with DPD API for shipment creation, label generation, and status tracking
+- [ ] **EQUIP-07**: System integrates with UPS API for shipment creation and status tracking
 - [x] **EQUIP-08**: Shipment status displays as timeline on equipment detail and contractor profile with unified status model
 - [x] **EQUIP-09**: Onboarding workflow task "Ship equipment" auto-creates shipment, offboarding task "Return equipment" triggers return request
 - [x] **EQUIP-10**: Workflow task auto-completes when shipment reaches target status (e.g., "delivered")
@@ -65,7 +65,7 @@ Requirements for v3.0 Enterprise & Monetization milestone. Each maps to roadmap 
 - [x] **BILL-06**: System hard-blocks OCR when credits exhausted (with upgrade/top-up prompt)
 - [x] **BILL-07**: Stripe webhook events drive internal subscription state with database-level idempotency
 - [x] **BILL-08**: Admin can access Stripe-hosted billing portal for payment method, invoices, and cancellation
-- [x] **BILL-09**: Middleware gates features by org's active subscription tier with graceful upgrade prompts
+- [ ] **BILL-09**: Middleware gates features by org's active subscription tier with graceful upgrade prompts
 - [x] **BILL-10**: Admin sees usage dashboard with current plan, seat count, OCR credits used/remaining, and billing date
 
 ## Future Requirements
@@ -109,8 +109,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LIN-01 | Phase 29 | Complete |
 | LIN-02 | Phase 29 | Complete |
 | LIN-03 | Phase 29 | Complete |
-| LIN-04 | Phase 29 | Complete |
-| LIN-05 | Phase 29 | Complete |
+| LIN-04 | Phase 36 | Pending |
+| LIN-05 | Phase 36 | Pending |
 | LIN-06 | Phase 29 | Complete |
 | TEAM-01 | Phase 32 | Complete |
 | TEAM-02 | Phase 32 | Complete |
@@ -133,8 +133,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | EQUIP-03 | Phase 30 | Complete |
 | EQUIP-04 | Phase 30 | Complete |
 | EQUIP-05 | Phase 33 | Complete |
-| EQUIP-06 | Phase 35 | Complete |
-| EQUIP-07 | Phase 35 | Complete |
+| EQUIP-06 | Phase 36 | Pending |
+| EQUIP-07 | Phase 36 | Pending |
 | EQUIP-08 | Phase 30 | Complete |
 | EQUIP-09 | Phase 30 | Complete |
 | EQUIP-10 | Phase 30 | Complete |
@@ -147,7 +147,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | BILL-06 | Phase 28 | Complete |
 | BILL-07 | Phase 28 | Complete |
 | BILL-08 | Phase 28 | Complete |
-| BILL-09 | Phase 35 | Complete |
+| BILL-09 | Phase 36 | Pending |
 | BILL-10 | Phase 35 | Complete |
 
 **Coverage:**

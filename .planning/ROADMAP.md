@@ -63,6 +63,7 @@ Full details: `.planning/milestones/v2.0-ROADMAP.md`
 - [x] **Phase 33: InPost Courier Integration** - First courier API with Parcel Locker selection and auto-status tracking (completed 2026-04-04)
 - [x] **Phase 34: Intelligent Onboarding Wizard** - Cross-tool import orchestrator with preview, dedup, and batch confirm (completed 2026-04-04)
 - [x] **Phase 35: Feature Gating + DPD/UPS + Billing Polish** - Paywall activation, remaining couriers, usage dashboard (completed 2026-04-05)
+- [ ] **Phase 36: Wiring Fixes — Webhook Dispatch + UI Mounting + Feature Gate** - Close audit gaps: Linear webhook dispatch, carrier UI mounting, feature gate wiring
 
 ## Phase Details
 
@@ -206,10 +207,22 @@ Plans:
 - [x] 35-05-PLAN.md — CarrierShipmentForm, DPD/UPS fieldsets, credential setup, default return carrier, i18n (EQUIP-06/EQUIP-07)
 - [x] 35-06-PLAN.md — Gap closure: testCourierConnection tRPC procedure (EQUIP-06/EQUIP-07)
 
+### Phase 36: Wiring Fixes — Webhook Dispatch + UI Mounting + Feature Gate
+**Goal**: Close all audit gaps: wire Linear inbound webhook dispatch, mount carrier UI components, activate feature gating in UI
+**Depends on**: Phase 29 (Linear), Phase 30 (equipment), Phase 35 (carrier forms, feature gate)
+**Requirements**: LIN-04, LIN-05, EQUIP-06, EQUIP-07, BILL-09
+**Gap Closure**: Closes all gaps from v3.0 milestone audit
+**Success Criteria** (what must be TRUE):
+  1. Linear status changes sent via webhook are dispatched to processLinearWebhook and update linked workflow task status (bidirectional sync complete)
+  2. Admin can reach CarrierShipmentForm from equipment detail page to create DPD/UPS shipments
+  3. Admin can configure DPD/UPS API credentials via CarrierCredentialForm in Settings > Integrations
+  4. STARTER-tier users see FeatureGate upgrade prompts instead of raw tRPC errors when accessing PRO features
+**Plans**: TBD
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 → 35
+Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 → 35 → 36
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -248,3 +261,4 @@ Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 �
 | 33. InPost Courier Integration | v3.0 | 3/3 | Complete    | 2026-04-04 |
 | 34. Intelligent Onboarding Wizard | v3.0 | 2/2 | Complete    | 2026-04-05 |
 | 35. Feature Gating + DPD/UPS + Billing Polish | v3.0 | 6/6 | Complete    | 2026-04-05 |
+| 36. Wiring Fixes — Webhook Dispatch + UI Mounting + Feature Gate | v3.0 | 0/0 | Pending | — |
