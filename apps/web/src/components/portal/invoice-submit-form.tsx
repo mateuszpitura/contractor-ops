@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 
 import { useTranslations } from "next-intl";
+import { TRPCClientError } from "@trpc/client";
 import { trpc } from "@/trpc/init";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,6 +37,7 @@ import { ConfidenceBadge } from "@/components/ocr/confidence-badge";
 import { NipValidationBadge } from "@/components/ocr/nip-validation-badge";
 import { ExtractionStatusBar } from "@/components/ocr/extraction-status-bar";
 import { OcrProcessingOverlay } from "@/components/ocr/ocr-processing-overlay";
+import { CreditExhaustedInline } from "@/components/billing/credit-exhausted-inline";
 import type {
   OcrExtractionField,
   OcrExtractionResult,
@@ -197,6 +199,7 @@ export function InvoiceSubmitForm() {
   const [extractionId, setExtractionId] = useState<string | null>(null);
   const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
   const [ocrPopulated, setOcrPopulated] = useState(false);
+  const [creditExhausted, setCreditExhausted] = useState(false);
 
   const invoiceSubmitSchema = createInvoiceSubmitSchema(t);
 
@@ -323,6 +326,7 @@ export function InvoiceSubmitForm() {
       // Reset OCR state on new upload
       setExtractionId(null);
       setOcrPopulated(false);
+      setCreditExhausted(false);
 
       try {
         // Step 1: Get presigned upload URL
@@ -380,9 +384,17 @@ export function InvoiceSubmitForm() {
             });
             setExtractionId(ocrResult.extractionId);
             setPdfBlobUrl(URL.createObjectURL(file));
-          } catch {
-            // OCR trigger failure is non-blocking -- form remains for manual entry
-            console.warn("Portal OCR trigger failed, manual entry available");
+          } catch (error) {
+            if (
+              error instanceof TRPCClientError &&
+              error.data?.code === "PRECONDITION_FAILED" &&
+              error.message === "OCR credits exhausted"
+            ) {
+              setCreditExhausted(true);
+            } else {
+              // OCR trigger failure is non-blocking -- form remains for manual entry
+              console.warn("Portal OCR trigger failed, manual entry available");
+            }
           }
         }
       } catch {
@@ -409,6 +421,7 @@ export function InvoiceSubmitForm() {
     setUpload({ status: "idle" });
     setExtractionId(null);
     setOcrPopulated(false);
+    setCreditExhausted(false);
     setPdfBlobUrl(null);
   };
 
@@ -580,6 +593,14 @@ export function InvoiceSubmitForm() {
 
         {upload.status === "error" && (
           <p className="text-sm text-destructive">{upload.message}</p>
+        )}
+
+        {/* Credit exhaustion banner */}
+        {creditExhausted && (
+          <CreditExhaustedInline
+            onUpgrade={() => router.push("/settings?tab=billing")}
+            onBuyCredits={() => router.push("/settings?tab=billing")}
+          />
         )}
       </div>
 

@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Enterprise & Monetization
 status: executing
-stopped_at: Completed 39-01-PLAN.md
-last_updated: "2026-04-05T22:39:35.594Z"
-last_activity: 2026-04-06 -- Completed 39-01 channel alert dispatch
+stopped_at: Completed 39-02-PLAN.md
+last_updated: "2026-04-06T00:00:00.000Z"
+last_activity: 2026-04-06 -- Completed 39-01, 39-02 plans
 progress:
   total_phases: 12
   completed_phases: 11
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-01)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 38 — tier-gate-courier-type-fix
+**Current focus:** Phase 39 — final-wiring-channel-alerts-credit-ui-oauth-gate
 
 ## Current Position
 
 Phase: 39 (final-wiring-channel-alerts-credit-ui-oauth-gate) — EXECUTING
-Plan: 1 of 3 complete
+Plan: 2 of 3 complete
 Status: Executing Phase 39
-Last activity: 2026-04-06 -- Completed 39-01 channel alert dispatch
+Last activity: 2026-04-06 -- Completed 39-01, 39-02 plans
 
 Progress: [█████████░] 91%
 
@@ -82,6 +82,7 @@ Progress: [█████████░] 91%
 | Phase 38 P02 | 4min | 2 tasks | 5 files |
 | Phase 38 P03 | 1min | 2 tasks | 3 files |
 | Phase 39 P01 | 3min | 2 tasks | 2 files |
+| Phase 39 P02 | 12min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -158,6 +159,7 @@ Recent decisions affecting current work:
 - [Phase 38]: FeatureGate wraps at component return level for dedicated feature components
 - [Phase 39]: Channel alerts dispatch outside per-recipient loop (org-level, once per event per channel)
 - [Phase 39]: Only activity types mapped to channel categories; billing/system types excluded from channel alerts
+- [Phase 39]: Admin uses useRouter from @/i18n/navigation; portal keeps next/navigation for CreditExhaustedInline navigation
 
 ### Pending Todos
 
@@ -171,6 +173,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T22:39:35.591Z
-Stopped at: Completed 39-01-PLAN.md
+Last session: 2026-04-06T00:00:00.000Z
+Stopped at: Completed 39-01, 39-02 plans
 Resume file: None

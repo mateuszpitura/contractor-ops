@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+import { TRPCClientError } from "@trpc/client";
 import { trpc } from "@/trpc/init";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -23,6 +24,8 @@ import {
   OcrReviewPanel,
   type ExtractedInvoiceData,
 } from "@/components/ocr/ocr-review-panel";
+import { CreditExhaustedInline } from "@/components/billing/credit-exhausted-inline";
+import { useRouter } from "@/i18n/navigation";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -93,7 +96,9 @@ export function InvoiceUploadArea({
 }: InvoiceUploadAreaProps) {
   const t = useTranslations("Invoices.upload");
   const queryClient = useQueryClient();
+  const router = useRouter();
   const [files, setFiles] = useState<UploadingFile[]>([]);
+  const [creditExhausted, setCreditExhausted] = useState(false);
 
   // OCR state
   const [extractionId, setExtractionId] = useState<string | null>(null);
@@ -232,9 +237,17 @@ export function InvoiceUploadArea({
             // Create a blob URL for the PDF preview
             setPdfUrl(URL.createObjectURL(file));
             setShowPdfReview(true);
-          } catch {
-            // OCR trigger failure is non-blocking
-            console.warn("OCR trigger failed, manual entry available");
+          } catch (error) {
+            if (
+              error instanceof TRPCClientError &&
+              error.data?.code === "PRECONDITION_FAILED" &&
+              error.message === "OCR credits exhausted"
+            ) {
+              setCreditExhausted(true);
+            } else {
+              // OCR trigger failure is non-blocking
+              console.warn("OCR trigger failed, manual entry available");
+            }
           }
         }
       } catch {
@@ -382,6 +395,14 @@ export function InvoiceUploadArea({
         </p>
         <p className="mt-1 text-xs text-muted-foreground">{t("accepted")}</p>
       </div>
+
+      {/* Credit exhaustion banner */}
+      {creditExhausted && (
+        <CreditExhaustedInline
+          onUpgrade={() => router.push("/settings?tab=billing")}
+          onBuyCredits={() => router.push("/settings?tab=billing")}
+        />
+      )}
 
       {/* Upload progress list */}
       {files.length > 0 && (

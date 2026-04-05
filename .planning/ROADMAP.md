@@ -272,7 +272,7 @@ Plans:
 
 Plans:
 - [x] 39-01-PLAN.md — Wire sendChannelAlert dispatch in notification-service.ts (TEAM-02/TEAM-03)
-- [ ] 39-02-PLAN.md — Mount CreditExhaustedInline in invoice upload areas (BILL-06)
+- [x] 39-02-PLAN.md — Mount CreditExhaustedInline in invoice upload areas (BILL-06)
 - [ ] 39-03-PLAN.md — Wrap Linear/GWS/Teams provider sections with FeatureGate (BILL-09)
 
 ## Progress
