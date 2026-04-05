@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Enterprise & Monetization
 status: executing
-stopped_at: Phase 36 context gathered
-last_updated: "2026-04-05T12:23:08.825Z"
+stopped_at: Completed 36-03-PLAN.md
+last_updated: "2026-04-05T13:15:09.156Z"
 last_activity: 2026-04-05
 progress:
   total_phases: 9
   completed_phases: 8
-  total_plans: 30
+  total_plans: 33
   completed_plans: 30
   percent: 84
 ---
@@ -74,6 +74,7 @@ Progress: [████████░░] 84%
 | Phase 35 P02 | 6min | 2 tasks | 14 files |
 | Phase 35 P04 | 5min | 2 tasks | 10 files |
 | Phase 35 P05 | 7min | 2 tasks | 8 files |
+| Phase 36 P03 | 3min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -139,6 +140,7 @@ Recent decisions affecting current work:
 - [Phase 35]: base-ui Button uses render prop for Link composition (not asChild)
 - [Phase 35]: CarrierShipmentForm uses tRPC proxy pattern for stale dist types, consistent with InPostShipmentForm
 - [Phase 35]: UPS service code stored as string literal (11/65/07) matching actual UPS API codes for direct passthrough
+- [Phase 36]: Gate mutations only -- read queries ungated for STARTER upgrade prompts
 
 ### Pending Todos
 
@@ -152,6 +154,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T12:23:08.820Z
-Stopped at: Phase 36 context gathered
-Resume file: .planning/phases/36-wiring-fixes-webhook-ui-featuregate/36-CONTEXT.md
+Last session: 2026-04-05T13:15:09.154Z
+Stopped at: Completed 36-03-PLAN.md
+Resume file: None

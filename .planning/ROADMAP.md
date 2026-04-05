@@ -266,4 +266,4 @@ Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 �
 | 33. InPost Courier Integration | v3.0 | 3/3 | Complete    | 2026-04-04 |
 | 34. Intelligent Onboarding Wizard | v3.0 | 2/2 | Complete    | 2026-04-05 |
 | 35. Feature Gating + DPD/UPS + Billing Polish | v3.0 | 6/6 | Complete    | 2026-04-05 |
-| 36. Wiring Fixes — Webhook Dispatch + UI Mounting + Feature Gate | v3.0 | 0/3 | In Progress | — |
+| 36. Wiring Fixes — Webhook Dispatch + UI Mounting + Feature Gate | v3.0 | 0/3 | Planned    |  |
