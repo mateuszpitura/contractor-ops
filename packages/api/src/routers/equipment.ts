@@ -30,6 +30,7 @@ import type { DPDClientConfig } from "../services/courier/dpd-client.js";
 import { UPSClient } from "../services/courier/ups-client.js";
 import type { UPSClientConfig } from "../services/courier/ups-client.js";
 import { dispatch } from "../services/notification-service.js";
+import { getCourierClient } from "../services/courier/carrier-factory.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -1523,6 +1524,41 @@ export const equipmentRouter = router({
     });
     return configs;
   }),
+
+  /**
+   * Test courier connection by instantiating the carrier client and making
+   * a lightweight API probe. Returns structured success/failure so the UI
+   * can show a toast without exposing internal error details.
+   */
+  testCourierConnection: adminProcedure
+    .input(z.union([dpdConfigSchema, upsConfigSchema]))
+    .mutation(async ({ input }) => {
+      const { carrier, ...credentials } = input;
+      try {
+        const client = getCourierClient(carrier, credentials);
+        // Attempt a lightweight API call to verify credentials work.
+        // getStatus with a dummy ID will authenticate and return an error
+        // about the shipment not existing (not an auth error).
+        // If auth fails, it throws before reaching the API response.
+        await client.getStatus("TEST_CONNECTION_PROBE");
+        return { success: true as const };
+      } catch (error) {
+        // If the error is about the shipment not being found, that means
+        // auth succeeded -- the API accepted our credentials.
+        const msg = error instanceof Error ? error.message : String(error);
+        if (
+          msg.includes("not found") ||
+          msg.includes("NOT_FOUND") ||
+          msg.includes("404")
+        ) {
+          return { success: true as const };
+        }
+        return {
+          success: false as const,
+          error: "Connection failed. Check your credentials.",
+        };
+      }
+    }),
 
   // ─── Return Requests ──────────────────────────────────────────────
 
