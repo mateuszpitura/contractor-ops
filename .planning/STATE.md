@@ -3,11 +3,11 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Enterprise & Monetization
 status: executing
-stopped_at: Completed 35-05-PLAN.md
-last_updated: "2026-04-05T11:36:22.065Z"
+stopped_at: Phase 36 context gathered
+last_updated: "2026-04-05T12:23:08.825Z"
 last_activity: 2026-04-05
 progress:
-  total_phases: 8
+  total_phases: 9
   completed_phases: 8
   total_plans: 30
   completed_plans: 30
@@ -152,6 +152,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T10:57:19.837Z
-Stopped at: Completed 35-05-PLAN.md
-Resume file: None
+Last session: 2026-04-05T12:23:08.820Z
+Stopped at: Phase 36 context gathered
+Resume file: .planning/phases/36-wiring-fixes-webhook-ui-featuregate/36-CONTEXT.md
