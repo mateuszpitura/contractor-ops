@@ -65,6 +65,10 @@ vi.mock("../../middleware/rbac.js", () => ({
   requirePermission: vi.fn(() => vi.fn()),
 }));
 
+vi.mock("../../middleware/tier.js", () => ({
+  requireTier: vi.fn(() => vi.fn()),
+}));
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -292,6 +296,47 @@ describe("teamsRouter", () => {
         { id: "ch-1", displayName: "General" },
         { id: "ch-2", displayName: "Approvals" },
       ]);
+    });
+  });
+
+  describe("tier gating", () => {
+    it("saveChannelMapping procedure includes requireTier(PRO) in middleware chain", async () => {
+      const fs = await import("node:fs");
+      const path = await import("node:path");
+      const sourceDir = path.resolve(import.meta.dirname, "../../routers");
+      const source = fs.readFileSync(
+        path.join(sourceDir, "teams.ts"),
+        "utf-8",
+      );
+
+      // Verify import exists
+      expect(source).toContain('import { requireTier } from "../middleware/tier.js"');
+
+      // Verify saveChannelMapping has requireTier
+      expect(source).toContain('requireTier("PRO")');
+
+      // Count occurrences -- should be exactly 1 (only saveChannelMapping, not read-only procedures)
+      const matches = source.match(/\.use\(requireTier\("PRO"\)\)/g);
+      expect(matches).toHaveLength(1);
+    });
+
+    it("read-only procedures (connectionStatus, getTeams, getChannels, getChannelMapping) do NOT include requireTier", async () => {
+      const fs = await import("node:fs");
+      const path = await import("node:path");
+      const sourceDir = path.resolve(import.meta.dirname, "../../routers");
+      const source = fs.readFileSync(
+        path.join(sourceDir, "teams.ts"),
+        "utf-8",
+      );
+
+      // Extract each read-only procedure block and verify no requireTier
+      for (const proc of ["connectionStatus", "getTeams", "getChannels", "getChannelMapping"]) {
+        const procRegex = new RegExp(`${proc}:\\s*tenantProcedure[\\s\\S]*?(?=\\w+:\\s*tenantProcedure|\\}\\);$)`, "m");
+        const match = source.match(procRegex);
+        if (match) {
+          expect(match[0]).not.toContain("requireTier");
+        }
+      }
     });
   });
 });

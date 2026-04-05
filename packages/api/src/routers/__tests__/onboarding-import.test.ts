@@ -20,6 +20,7 @@ const {
   mockCreateInvitation,
   mockGetFullOrganization,
   mockFetch,
+  mockGetSubscription,
 } = vi.hoisted(() => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mockPrisma: Record<string, any> = {
@@ -52,12 +53,19 @@ const {
   }));
   const mockFetch = vi.fn();
 
+  const mockGetSubscription = vi.fn(async () => ({
+    id: "sub_onb_mock",
+    status: "ACTIVE",
+    tier: "PRO",
+  }));
+
   return {
     mockPrisma,
     mockLinearGraphQL,
     mockCreateInvitation,
     mockGetFullOrganization,
     mockFetch,
+    mockGetSubscription,
   };
 });
 
@@ -141,6 +149,35 @@ vi.mock("../../services/cache.js", () => ({
   invalidateByPrefix: vi.fn(async () => undefined),
   CacheKeys: {},
   CacheTTL: {},
+}));
+
+vi.mock("../../services/billing-service.js", () => ({
+  syncSeatCountForOrg: vi.fn(async () => undefined),
+  getSubscription: (...args: unknown[]) => mockGetSubscription(...args),
+  createCheckoutSession: vi.fn(async () => ({ url: "https://stripe.test/checkout" })),
+  createPortalSession: vi.fn(async () => ({})),
+  getProrationPreview: vi.fn(async () => ({})),
+  ensureStripeCustomer: vi.fn(async () => "cus_mock"),
+  createTopUpCheckoutSession: vi.fn(async () => ({})),
+  updateSubscriptionSeatCount: vi.fn(async () => undefined),
+}));
+
+vi.mock("../../services/stripe-client.js", () => ({
+  stripe: {
+    subscriptions: { retrieve: vi.fn(), update: vi.fn(), list: vi.fn(async () => ({ data: [] })) },
+    customers: { create: vi.fn(), retrieve: vi.fn() },
+    checkout: { sessions: { create: vi.fn() } },
+    billingPortal: { sessions: { create: vi.fn() } },
+    invoices: { retrieveUpcoming: vi.fn() },
+  },
+}));
+
+vi.mock("../../services/billing-constants.js", () => ({
+  TIER_CREDIT_ALLOWANCE: { STARTER: 20, PRO: 100, ENTERPRISE: 500 },
+  TRIAL_CREDIT_ALLOWANCE: 5,
+  KNOWN_SUBSCRIPTION_PRICE_IDS: new Set(["price_starter_monthly"]),
+  KNOWN_TOPUP_PRICE_IDS: new Set(["price_topup_10"]),
+  PRICE_TO_TIER_MAP: {},
 }));
 
 // ---------------------------------------------------------------------------
@@ -644,6 +681,49 @@ describe("onboardingImport", () => {
       expect(merged[0]!.status).toBe("conflict");
       expect(merged[1]!.status).toBe("new");
       expect(merged[2]!.status).toBe("exists");
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Tier gating
+  // -------------------------------------------------------------------------
+
+  describe("tier gating", () => {
+    beforeEach(() => {
+      mockGetSubscription.mockResolvedValue({
+        id: "sub_starter",
+        status: "ACTIVE",
+        tier: "STARTER",
+      });
+    });
+
+    it("listSources rejects STARTER tier with TIER_REQUIRED error", async () => {
+      await expect(caller.listSources()).rejects.toMatchObject({
+        code: "FORBIDDEN",
+      });
+
+      await expect(caller.listSources()).rejects.toThrow(/TIER_REQUIRED/);
+    });
+
+    it("startImport rejects STARTER tier with TIER_REQUIRED error", async () => {
+      await expect(
+        caller.startImport({
+          people: [{ email: "a@example.com", name: "A", role: "readonly", skip: false }],
+          projects: [],
+        }),
+      ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    });
+
+    it("fetchPeople rejects STARTER tier with TIER_REQUIRED error", async () => {
+      await expect(
+        caller.fetchPeople({ sources: ["JIRA"] }),
+      ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    });
+
+    it("getProgress rejects STARTER tier with TIER_REQUIRED error", async () => {
+      await expect(
+        caller.getProgress({ jobId: "job-1" }),
+      ).rejects.toMatchObject({ code: "FORBIDDEN" });
     });
   });
 });
