@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Enterprise & Monetization
 status: executing
-stopped_at: Completed all Phase 38 plans (38-01, 38-02, 38-03)
-last_updated: "2026-04-05T21:12:53.665Z"
+stopped_at: Completed 39-02-PLAN.md
+last_updated: "2026-04-05T22:48:22.411Z"
 last_activity: 2026-04-05
 progress:
-  total_phases: 11
+  total_phases: 12
   completed_phases: 11
-  total_plans: 37
-  completed_plans: 37
+  total_plans: 40
+  completed_plans: 38
   percent: 91
 ---
 
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-01)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 38 — tier-gate-courier-type-fix
+**Current focus:** Phase 39 — final-wiring-channel-alerts-credit-ui-oauth-gate
 
 ## Current Position
 
-Phase: 38
-Plan: Not started
-Status: Executing Phase 38
+Phase: 39 (final-wiring-channel-alerts-credit-ui-oauth-gate) — EXECUTING
+Plan: 2 of 3
+Status: Ready to execute
 Last activity: 2026-04-05
 
 Progress: [█████████░] 91%
@@ -81,6 +81,7 @@ Progress: [█████████░] 91%
 | Phase 38 P01 | 5min | 2 tasks | 6 files |
 | Phase 38 P02 | 4min | 2 tasks | 5 files |
 | Phase 38 P03 | 1min | 2 tasks | 3 files |
+| Phase 39 P02 | 12min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -155,6 +156,7 @@ Recent decisions affecting current work:
 - [Phase 38]: Used Omit<BaseShipmentParams, 'sender'> for AddressShipmentParams to safely override sender type with AddressSender
 - [Phase 38]: Runtime type guards for carrier narrowing ('targetPoint' in params, 'deliveryAddress' in params)
 - [Phase 38]: FeatureGate wraps at component return level for dedicated feature components
+- [Phase 39]: Admin uses useRouter from @/i18n/navigation; portal keeps next/navigation for CreditExhaustedInline navigation
 
 ### Pending Todos
 
@@ -168,6 +170,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05
-Stopped at: Completed all Phase 38 plans (38-01, 38-02, 38-03)
+Last session: 2026-04-05T22:48:22.407Z
+Stopped at: Completed 39-02-PLAN.md
 Resume file: None

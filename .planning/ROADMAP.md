@@ -272,7 +272,7 @@ Plans:
 
 Plans:
 - [ ] 39-01-PLAN.md — Wire sendChannelAlert dispatch in notification-service.ts (TEAM-02/TEAM-03)
-- [ ] 39-02-PLAN.md — Mount CreditExhaustedInline in invoice upload areas (BILL-06)
+- [x] 39-02-PLAN.md — Mount CreditExhaustedInline in invoice upload areas (BILL-06)
 - [ ] 39-03-PLAN.md — Wrap Linear/GWS/Teams provider sections with FeatureGate (BILL-09)
 
 ## Progress
@@ -320,4 +320,4 @@ Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 �
 | 36. Wiring Fixes — Webhook Dispatch + UI Mounting + Feature Gate | v3.0 | 3/3 | Complete    | 2026-04-05 |
 | 37. Shipment Task Auto-Completion Wiring | v3.0 | 1/1 | Complete    | 2026-04-05 |
 | 38. Tier Gate Expansion + CourierClient Type Fix | v3.0 | 3/3 | Complete    | 2026-04-05 |
-| 39. Final Wiring — Channel Alerts + Credit Exhaustion UI + OAuth FeatureGate | v3.0 | 0/3 | Planned | — |
+| 39. Final Wiring — Channel Alerts + Credit Exhaustion UI + OAuth FeatureGate | v3.0 | 1/3 | In Progress|  |
