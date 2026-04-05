@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import type {
+  BaseShipmentParams,
   CourierClient,
   CourierShipmentResult,
   CourierStatusResult,
@@ -81,13 +82,19 @@ export class DPDClient implements CourierClient {
   /**
    * Create a shipment via DPD Package API.
    *
-   * DPD accepts createShipment as a typed param (not generic CreateShipmentParams).
+   * Accepts BaseShipmentParams and narrows to DPDShipmentParams internally.
    */
   async createShipment(
-    params: DPDShipmentParams,
+    params: BaseShipmentParams,
   ): Promise<CourierShipmentResult> {
+    if (!("deliveryAddress" in params)) {
+      throw new Error(
+        "[dpd-client] createShipment requires deliveryAddress for DPD shipments",
+      );
+    }
+    const dpdParams = params as DPDShipmentParams;
     const url = `${this.baseUrl}/createShipment`;
-    const size = DPD_SIZE_MAP[params.parcelSize];
+    const size = DPD_SIZE_MAP[dpdParams.parcelSize];
 
     const body = {
       authData: this.authData,
@@ -98,29 +105,29 @@ export class DPDClient implements CourierClient {
           sizeY: size.sizeY,
           sizeZ: size.sizeZ,
           receiver: {
-            name: params.receiver.name,
-            email: params.receiver.email,
-            phone: params.receiver.phone,
+            name: dpdParams.receiver.name,
+            email: dpdParams.receiver.email,
+            phone: dpdParams.receiver.phone,
             address: {
-              street: params.deliveryAddress.street,
-              city: params.deliveryAddress.city,
-              postalCode: params.deliveryAddress.postalCode,
-              countryCode: params.deliveryAddress.countryCode,
+              street: dpdParams.deliveryAddress.street,
+              city: dpdParams.deliveryAddress.city,
+              postalCode: dpdParams.deliveryAddress.postalCode,
+              countryCode: dpdParams.deliveryAddress.countryCode,
             },
           },
           sender: {
-            name: params.sender.name,
-            email: params.sender.email,
-            phone: params.sender.phone,
+            name: dpdParams.sender.name,
+            email: dpdParams.sender.email,
+            phone: dpdParams.sender.phone,
             fid: this.fid,
             address: {
-              street: params.sender.street,
-              city: params.sender.city,
-              postalCode: params.sender.postalCode,
-              countryCode: params.sender.countryCode,
+              street: dpdParams.sender.street,
+              city: dpdParams.sender.city,
+              postalCode: dpdParams.sender.postalCode,
+              countryCode: dpdParams.sender.countryCode,
             },
           },
-          reference: params.reference ?? "",
+          reference: dpdParams.reference ?? "",
         },
       ],
     };
