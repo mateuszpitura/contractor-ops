@@ -16,7 +16,7 @@ v1.0 MVP foundation (shipped 2026-03-23): org setup, RBAC, contractors, contract
 
 v2.0 Platform Expansion adds: contractor self-service portal with magic-link auth and org branding, electronic signatures (DocuSign + Autenti), AI-powered invoice OCR (Claude Vision), KSeF national e-invoicing integration, time tracking with Clockify/Jira import and invoice reconciliation, Jira bidirectional sync, Notion/Confluence doc linking with Cmd+K search, Google/Outlook calendar deadline sync, and a provider-agnostic integration framework with OAuth credential store, webhook pipeline, and health monitoring.
 
-v3.0 Enterprise & Monetization Phase 34 complete: Intelligent onboarding wizard — cross-tool import from Jira, Linear, Google Workspace, and Slack. Backend: 6 tRPC endpoints, email-based merge/dedup with conflict detection, workflow template auto-creation from project statuses, async import with progress tracking and per-item retry. Frontend: 4-step full-page wizard (source selection with inline OAuth, people review with conflict resolution popovers and batch actions, project import with editable steps, confirm & import with live progress). Previous: Phase 33 InPost courier integration.
+v3.0 Enterprise & Monetization Phase 35 complete: Feature gating with requireTier tRPC middleware, DPD/UPS courier clients with carrier factory + credential testing, billing usage dashboard with KPI cards, and carrier shipment UI with dynamic fieldsets. Previous: Phase 34 intelligent onboarding wizard, Phase 33 InPost courier integration.
 
 ## Requirements
 
@@ -163,4 +163,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-05 after Phase 34 (Intelligent Onboarding Wizard) complete*
+*Last updated: 2026-04-05 after Phase 35 (Feature Gating, DPD/UPS, Billing Polish) complete*
