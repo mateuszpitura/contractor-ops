@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { SlackMessagingProvider } from "../slack-messaging-provider.js";
+import { TeamsMessagingProvider } from "../teams-messaging-provider.js";
 import type { MessagingProvider } from "../types.js";
 
 // ---------------------------------------------------------------------------
@@ -92,6 +93,54 @@ describe("SlackMessagingProvider", () => {
       text: "Reminder text",
     });
   });
+
+  it("sendChannelAlert throws when no Slack integration exists", async () => {
+    await expect(
+      provider.sendChannelAlert({
+        organizationId: "org-1",
+        channelId: "C_CHANNEL_1",
+        title: "New Invoice",
+        body: "Invoice INV-001 submitted",
+        entityType: "INVOICE",
+        entityId: "inv-1",
+        details: [{ label: "Amount", value: "5000 PLN" }],
+        viewUrl: "https://app.example.com/invoices/inv-1",
+      }),
+    ).rejects.toThrow("No Slack integration for organization org-1");
+  });
+
+  it("sendChannelAlert posts to channel when Slack client is available", async () => {
+    const { getSlackClient } = await import("../../slack-client.js");
+    const mockPostMessage = vi.fn().mockResolvedValue({ ok: true });
+    vi.mocked(getSlackClient).mockResolvedValueOnce({
+      chat: { postMessage: mockPostMessage },
+    } as never);
+
+    await provider.sendChannelAlert({
+      organizationId: "org-1",
+      channelId: "C_CHANNEL_1",
+      title: "New Invoice",
+      body: "Invoice INV-001 submitted",
+      entityType: "INVOICE",
+      entityId: "inv-1",
+      details: [
+        { label: "Amount", value: "5000 PLN" },
+        { label: "Contractor", value: "Alpha Corp" },
+      ],
+      viewUrl: "https://app.example.com/invoices/inv-1",
+    });
+
+    expect(mockPostMessage).toHaveBeenCalledWith({
+      channel: "C_CHANNEL_1",
+      text: expect.stringContaining("*New Invoice*"),
+      mrkdwn: true,
+    });
+    expect(mockPostMessage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        text: expect.stringContaining("*Amount:* 5000 PLN"),
+      }),
+    );
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -125,7 +174,7 @@ describe("getConnectedMessagingProviders", () => {
     expect(providers[0]).toBeInstanceOf(SlackMessagingProvider);
   });
 
-  it("skips MICROSOFT_TEAMS until TeamsMessagingProvider is implemented", async () => {
+  it("returns TeamsMessagingProvider when MICROSOFT_TEAMS connection exists", async () => {
     const { prisma } = await import("@contractor-ops/db");
     vi.mocked(prisma.integrationConnection.findMany).mockResolvedValue([
       { provider: "MICROSOFT_TEAMS" } as never,
@@ -133,6 +182,8 @@ describe("getConnectedMessagingProviders", () => {
 
     const { getConnectedMessagingProviders } = await import("../index.js");
     const providers = await getConnectedMessagingProviders("org-1");
-    expect(providers).toEqual([]);
+    expect(providers).toHaveLength(1);
+    expect(providers[0]!.platform).toBe("teams");
+    expect(providers[0]).toBeInstanceOf(TeamsMessagingProvider);
   });
 });

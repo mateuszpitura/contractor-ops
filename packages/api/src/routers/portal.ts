@@ -1530,7 +1530,7 @@ export const portalRouter = router({
         });
       }
 
-      const configJson = courierConfig.configJson as InPostClientConfig;
+      const configJson = courierConfig.configJson as unknown as InPostClientConfig;
       const client = new InPostClient(configJson);
 
       const labelBuffer = await client.getLabel(shipment.externalId, "pdf");

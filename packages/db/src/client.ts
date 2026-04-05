@@ -1,7 +1,8 @@
 import { PrismaNeon } from "@prisma/adapter-neon";
 import { PrismaClient } from "../generated/prisma/client/index.js";
 
-function createMissingDatabaseUrlProxy(): PrismaClient {
+/** Safe to unit-test without touching the module singleton `prisma`. */
+export function createMissingDatabaseUrlProxy(): PrismaClient {
   return new Proxy(
     {},
     {

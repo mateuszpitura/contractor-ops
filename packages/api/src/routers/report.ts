@@ -170,7 +170,7 @@ export const reportRouter = router({
       >`
         SELECT
           t.id AS "teamId",
-          COALESCE(t.name, 'Unassigned') AS "teamName",
+          t.name AS "teamName",
           COUNT(DISTINCT c.id)::int AS "contractorCount",
           COUNT(i.id)::int AS "invoiceCount",
           COALESCE(SUM(i."amountToPayGrosze")::int, 0) AS "totalGrosze"
@@ -202,7 +202,7 @@ export const reportRouter = router({
       return {
         items: items.map((r) => ({
           teamId: r.teamId,
-          teamName: r.teamName ?? "Unassigned",
+          teamName: r.teamName,
           contractorCount: Number(r.contractorCount),
           invoiceCount: Number(r.invoiceCount),
           totalGrosze: Number(r.totalGrosze),
@@ -512,7 +512,7 @@ export const reportRouter = router({
       >`
         SELECT
           t.id AS "teamId",
-          COALESCE(t.name, 'Unassigned') AS "teamName",
+          t.name AS "teamName",
           COALESCE(SUM(i."amountToPayGrosze")::int, 0) AS "totalGrosze"
         FROM "Invoice" i
         JOIN "Contractor" c ON c.id = i."contractorId"
@@ -528,7 +528,7 @@ export const reportRouter = router({
 
       return items.map((r) => ({
         teamId: r.teamId,
-        teamName: r.teamName ?? "Unassigned",
+        teamName: r.teamName,
         totalGrosze: Number(r.totalGrosze),
       }));
     }),
@@ -715,7 +715,7 @@ export const reportRouter = router({
         }>
       >`
         SELECT
-          COALESCE(t.name, 'Unassigned') AS "teamName",
+          t.name AS "teamName",
           COUNT(DISTINCT c.id)::int AS "contractorCount",
           COUNT(i.id)::int AS "invoiceCount",
           COALESCE(SUM(i."amountToPayGrosze")::int, 0) AS "totalGrosze"
@@ -734,7 +734,7 @@ export const reportRouter = router({
       // Reuse generateSpendCsv with adapted data
       const csv = await generateSpendCsv(
         items.map((r) => ({
-          contractorName: r.teamName ?? "Unassigned",
+          contractorName: r.teamName ?? "",
           invoiceCount: Number(r.invoiceCount),
           totalGrosze: Number(r.totalGrosze),
           avgGrosze: 0,

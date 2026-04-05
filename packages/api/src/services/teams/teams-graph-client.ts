@@ -26,17 +26,17 @@ function createGraphClient(accessToken: string): Client {
 // Team Discovery
 // ---------------------------------------------------------------------------
 
-interface TeamInfo {
+export interface TeamInfo {
   id: string;
   displayName: string;
 }
 
-interface ChannelInfo {
+export interface ChannelInfo {
   id: string;
   displayName: string;
 }
 
-interface UserInfo {
+export interface UserInfo {
   id: string;
   displayName: string;
 }

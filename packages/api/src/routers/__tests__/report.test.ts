@@ -286,6 +286,18 @@ const DATE_RANGE = { dateFrom: "2025-01-01", dateTo: "2025-12-31" };
 
 describe("report router", () => {
   describe("spendByContractor", () => {
+    it("rejects invalid pagination (page < 1)", async () => {
+      await expect(
+        caller.report.spendByContractor({
+          ...DATE_RANGE,
+          page: 0,
+          pageSize: 20,
+          sortBy: "totalSpend",
+          sortOrder: "desc",
+        }),
+      ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    });
+
     it("aggregates paid invoices grouped by contractor with date range filter", async () => {
       mockPrisma.$queryRaw
         .mockResolvedValueOnce([
@@ -439,8 +451,8 @@ describe("report router", () => {
         teamId: "team-1",
         teamName: "Engineering",
       });
-      // Null team should be mapped to "Unassigned"
-      expect(result.items[1]!.teamName).toBe("Unassigned");
+      // Null team stays null — frontend handles i18n display
+      expect(result.items[1]!.teamName).toBeNull();
     });
 
     it("groups by team with contractor count", async () => {
@@ -764,7 +776,7 @@ describe("report router", () => {
       const result = await caller.report.spendByTeamChart(DATE_RANGE);
 
       expect(result).toHaveLength(2);
-      expect(result[1]!.teamName).toBe("Unassigned");
+      expect(result[1]!.teamName).toBeNull();
     });
 
     it("expiringContractsChart returns counts by 30-day buckets", async () => {

@@ -293,18 +293,4 @@ describe("reconciliation", () => {
       expect(result!.expectedAmountGrosze).toBe(50000);
     });
   });
-
-  describe("invoice-matching TIME_DEVIATION flag", () => {
-    it.todo(
-      "adds TIME_DEVIATION to flags when deviation exceeds threshold",
-    );
-
-    it.todo(
-      "does not add TIME_DEVIATION when within threshold",
-    );
-
-    it.todo(
-      "does not block invoice approval (warning only)",
-    );
-  });
 });

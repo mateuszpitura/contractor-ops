@@ -219,4 +219,79 @@ describe("teamsRouter", () => {
       });
     });
   });
+
+  describe("getTeams", () => {
+    it("throws NOT_FOUND when no CONNECTED Teams integration", async () => {
+      mockFindFirst.mockResolvedValue(null);
+      const { teamsRouter } = await import("../../routers/teams.js");
+      const handler = teamsRouter.getTeams as unknown as (params: {
+        ctx: { organizationId: string };
+      }) => Promise<unknown>;
+
+      await expect(
+        handler({ ctx: { organizationId: "org-1" } }),
+      ).rejects.toMatchObject({ code: "NOT_FOUND" });
+    });
+
+    it("returns joined teams when connection exists", async () => {
+      mockFindFirst.mockResolvedValue({
+        id: "conn-1",
+        credentialsRef: "encrypted-ref",
+        configJson: {},
+      });
+
+      const { teamsRouter } = await import("../../routers/teams.js");
+      const handler = teamsRouter.getTeams as unknown as (params: {
+        ctx: { organizationId: string };
+      }) => Promise<Array<{ id: string; displayName: string }>>;
+
+      const result = await handler({
+        ctx: { organizationId: "org-1" },
+      });
+
+      expect(result).toEqual([
+        { id: "team-1", displayName: "Engineering" },
+        { id: "team-2", displayName: "Finance" },
+      ]);
+    });
+  });
+
+  describe("getChannels", () => {
+    it("throws NOT_FOUND when no CONNECTED Teams integration", async () => {
+      mockFindFirst.mockResolvedValue(null);
+      const { teamsRouter } = await import("../../routers/teams.js");
+      const handler = teamsRouter.getChannels as unknown as (params: {
+        ctx: { organizationId: string };
+        input: { teamId: string };
+      }) => Promise<unknown>;
+
+      await expect(
+        handler({ ctx: { organizationId: "org-1" }, input: { teamId: "team-1" } }),
+      ).rejects.toMatchObject({ code: "NOT_FOUND" });
+    });
+
+    it("returns channels for a given team", async () => {
+      mockFindFirst.mockResolvedValue({
+        id: "conn-1",
+        credentialsRef: "encrypted-ref",
+        configJson: {},
+      });
+
+      const { teamsRouter } = await import("../../routers/teams.js");
+      const handler = teamsRouter.getChannels as unknown as (params: {
+        ctx: { organizationId: string };
+        input: { teamId: string };
+      }) => Promise<Array<{ id: string; displayName: string }>>;
+
+      const result = await handler({
+        ctx: { organizationId: "org-1" },
+        input: { teamId: "team-1" },
+      });
+
+      expect(result).toEqual([
+        { id: "ch-1", displayName: "General" },
+        { id: "ch-2", displayName: "Approvals" },
+      ]);
+    });
+  });
 });

@@ -10,6 +10,7 @@ import {
   CloudAdapter,
   ConfigurationBotFrameworkAuthentication,
   CardFactory,
+  type ConversationReference,
   type TurnContext,
 } from "botbuilder";
 import { prisma } from "@contractor-ops/db";
@@ -206,7 +207,7 @@ export class TeamsMessagingProvider implements MessagingProvider {
     const adapter = getCloudAdapter();
     await adapter.continueConversationAsync(
       process.env.AZURE_BOT_APP_ID ?? "",
-      channelRef as import("botframework-schema").ConversationReference,
+      channelRef as ConversationReference,
       async (context: TurnContext) => {
         await context.sendActivity({
           type: "message",

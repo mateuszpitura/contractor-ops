@@ -70,13 +70,15 @@ export type GroupRoleMapping = z.infer<typeof groupRoleMappingSchema>;
 // ---------------------------------------------------------------------------
 
 export const directoryImportInputSchema = z.object({
-  users: z.array(
-    z.object({
-      email: z.string().email(),
-      name: z.string(),
-      googleUserId: z.string(),
-    }),
-  ),
+  users: z
+    .array(
+      z.object({
+        email: z.string().email(),
+        name: z.string(),
+        googleUserId: z.string(),
+      }),
+    )
+    .min(1),
   defaultRole: directoryRoleEnum,
   groupRoleMappings: z.array(groupRoleMappingSchema).default([]),
   userRoleOverrides: z

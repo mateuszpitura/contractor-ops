@@ -470,5 +470,17 @@ describe("portal.submitFinancialChangeRequest", () => {
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
   });
 
-  it.todo("throws CONFLICT when a pending request already exists (PORT-06d) — conflict check is in createChangeRequest service, tested separately");
+  it("propagates CONFLICT when createChangeRequest rejects with pending duplicate", async () => {
+    const { TRPCError } = await import("@trpc/server");
+    vi.mocked(createChangeRequest).mockRejectedValueOnce(
+      new TRPCError({
+        code: "CONFLICT",
+        message: "PORTAL_PENDING_CHANGE_EXISTS",
+      }),
+    );
+
+    await expect(
+      caller.portal.submitFinancialChangeRequest({ bankName: "Dup Bank" }),
+    ).rejects.toMatchObject({ code: "CONFLICT" });
+  });
 });

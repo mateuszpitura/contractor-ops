@@ -207,6 +207,58 @@ describe("LinearAdapter", () => {
 
       expect(result.refreshToken).toBe("original-rt");
     });
+
+    it("throws when client credentials are missing", async () => {
+      delete process.env.LINEAR_CLIENT_ID;
+      delete process.env.LINEAR_CLIENT_SECRET;
+
+      await expect(
+        adapter.refreshToken({
+          accessToken: "a",
+          refreshToken: "rt",
+          tokenType: "Bearer",
+          scope: "read",
+          expiresAt: "2024-01-01T00:00:00Z",
+        }),
+      ).rejects.toThrow(/LINEAR_CLIENT_ID and LINEAR_CLIENT_SECRET/);
+    });
+
+    it("throws when no refresh token on credential blob", async () => {
+      process.env.LINEAR_CLIENT_ID = "client-id";
+      process.env.LINEAR_CLIENT_SECRET = "client-secret";
+
+      await expect(
+        adapter.refreshToken({
+          accessToken: "a",
+          refreshToken: "",
+          tokenType: "Bearer",
+          scope: "read",
+          expiresAt: "2024-01-01T00:00:00Z",
+        }),
+      ).rejects.toThrow(/No refresh token available for Linear/);
+    });
+
+    it("throws with response body when token endpoint returns error", async () => {
+      process.env.LINEAR_CLIENT_ID = "client-id";
+      process.env.LINEAR_CLIENT_SECRET = "client-secret";
+
+      const fetchMock = mockFetch({
+        ok: false,
+        status: 401,
+        body: "invalid_grant",
+      });
+      vi.stubGlobal("fetch", fetchMock);
+
+      await expect(
+        adapter.refreshToken({
+          accessToken: "old-at",
+          refreshToken: "old-rt",
+          tokenType: "Bearer",
+          scope: "read",
+          expiresAt: "2024-01-01T00:00:00Z",
+        }),
+      ).rejects.toThrow(/Linear token refresh failed: invalid_grant/);
+    });
   });
 
   describe("verifyWebhookSignature", () => {
@@ -264,6 +316,24 @@ describe("LinearAdapter", () => {
 
       expect(result.valid).toBe(false);
     });
+
+    it("returns invalid when no signing secret is configured", () => {
+      delete process.env.LINEAR_WEBHOOK_SECRET;
+      const body = JSON.stringify({ type: "Issue", action: "create" });
+      const result = adapter.verifyWebhookSignature(body, {});
+      expect(result.valid).toBe(false);
+    });
+
+    it("accepts valid signature but omits eventType when type or action is missing", () => {
+      const body = JSON.stringify({ type: "Issue", data: {} });
+      const signature = createHmac("sha256", webhookSecret).update(body).digest("hex");
+      const result = adapter.verifyWebhookSignature(body, {
+        "linear-signature": signature,
+        "x-webhook-secret": webhookSecret,
+      });
+      expect(result.valid).toBe(true);
+      expect(result.eventType).toBeUndefined();
+    });
   });
 
   describe("discoverWorkspace", () => {
@@ -319,6 +389,31 @@ describe("LinearAdapter", () => {
       expect(result.teams[0]!.key).toBe("ENG");
       expect(result.teams[0]!.states).toHaveLength(2);
       expect(result.teams[0]!.states[0]!.type).toBe("unstarted");
+    });
+
+    it("throws when GraphQL endpoint returns non-OK", async () => {
+      const fetchMock = mockFetch({
+        ok: false,
+        status: 401,
+        body: "Unauthorized",
+      });
+      vi.stubGlobal("fetch", fetchMock);
+
+      await expect(adapter.discoverWorkspace("bad-token")).rejects.toThrow(
+        /Linear workspace discovery failed: Unauthorized/,
+      );
+    });
+
+    it("throws when GraphQL returns 200 but response omits data (errors-only envelope)", async () => {
+      const fetchMock = mockFetch({
+        ok: true,
+        body: {
+          errors: [{ message: "Authentication required", extensions: { code: "UNAUTHENTICATED" } }],
+        },
+      });
+      vi.stubGlobal("fetch", fetchMock);
+
+      await expect(adapter.discoverWorkspace("expired-token")).rejects.toThrow();
     });
   });
 });

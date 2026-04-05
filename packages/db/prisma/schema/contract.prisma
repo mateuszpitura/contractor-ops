@@ -263,6 +263,8 @@ enum EntityType {
   TIMESHEET
   EQUIPMENT
   SHIPMENT
+  USER
+  RETURN_REQUEST
 }
 
 enum DocumentLinkRole {

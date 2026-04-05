@@ -19,6 +19,9 @@ export const NOTIFICATION_TYPES = [
   "SUBSCRIPTION_CHANGED",
   "DIRECTORY_NEW_HIRE",
   "DIRECTORY_DEPARTURE",
+  "EQUIPMENT_RETURN_APPROVED",
+  "EQUIPMENT_RETURN_REJECTED",
+  "EQUIPMENT_RETURN_REQUESTED",
 ] as const;
 
 export const notificationTypeEnum = z.enum(NOTIFICATION_TYPES);
@@ -54,7 +57,7 @@ export type NotificationListInput = z.infer<typeof notificationListSchema>;
 // ---------------------------------------------------------------------------
 
 export const notificationMarkReadSchema = z.object({
-  notificationId: z.string(),
+  notificationId: z.string().min(1),
 });
 
 export type NotificationMarkReadInput = z.infer<

@@ -15,10 +15,10 @@ import {
   CardFactory,
   type AdaptiveCardInvokeValue,
   type AdaptiveCardInvokeResponse,
+  type ConversationReference,
   type TaskModuleRequest,
   type TaskModuleResponse,
 } from "botbuilder";
-import type { ConversationReference } from "botframework-schema";
 import { z } from "zod";
 import { prisma, type Prisma } from "@contractor-ops/db";
 import { buildApprovalResultCard } from "./cards/approval-result-card.js";
@@ -119,7 +119,7 @@ export async function storeConversationReference(
         ...config,
         conversationReferences,
         teamConversationReferences,
-      } as Prisma.InputJsonValue,
+      } as unknown as Prisma.InputJsonValue,
     },
   });
 }
@@ -277,7 +277,7 @@ export class TeamsBotHandler extends TeamsActivityHandler {
   async handleTeamsTaskModuleSubmit(
     context: TurnContext,
     taskModuleRequest: TaskModuleRequest,
-  ): Promise<TaskModuleResponse | null> {
+  ): Promise<TaskModuleResponse> {
     const parsed = submitRejectionSchema.safeParse(taskModuleRequest.data);
     if (!parsed.success) {
       return {
@@ -316,26 +316,29 @@ export class TeamsBotHandler extends TeamsActivityHandler {
       // Process rejection in a transaction
       await this.processRejection(flowId, user.userId, comment);
 
-      // Fetch invoice data for result card
       const flow = await prisma.approvalFlow.findUnique({
         where: { id: flowId },
-        include: {
-          invoice: {
-            select: {
-              invoiceNumber: true,
-              totalGrosze: true,
-              currency: true,
-            },
-          },
-        },
+        select: { resourceId: true, resourceType: true },
       });
 
-      if (flow?.invoice) {
+      const invoice =
+        flow?.resourceType === "INVOICE"
+          ? await prisma.invoice.findUnique({
+              where: { id: flow.resourceId },
+              select: {
+                invoiceNumber: true,
+                totalGrosze: true,
+                currency: true,
+              },
+            })
+          : null;
+
+      if (invoice && flow) {
         const resultCard = buildApprovalResultCard({
           result: "rejected",
-          invoiceNumber: flow.invoice.invoiceNumber ?? "N/A",
-          amount: (flow.invoice.totalGrosze / 100).toFixed(2),
-          currency: flow.invoice.currency,
+          invoiceNumber: invoice.invoiceNumber ?? "N/A",
+          amount: (invoice.totalGrosze / 100).toFixed(2),
+          currency: invoice.currency,
           approverName: user.userName,
           comment,
           viewUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/invoices/${flow.resourceId}`,
@@ -358,8 +361,7 @@ export class TeamsBotHandler extends TeamsActivityHandler {
       return { task: { type: "message", value: message } };
     }
 
-    // Return null to close the modal
-    return null;
+    return { task: { type: "message", value: " " } };
   }
 
   // -------------------------------------------------------------------------
@@ -442,14 +444,13 @@ export class TeamsBotHandler extends TeamsActivityHandler {
       return errorInvokeResponse(400, "Invalid payload");
     }
 
-    // For reject, we return a card indicating the task module should open.
-    // The actual task module is triggered by handleTeamsTaskModuleFetch.
-    // The card button should use Action.Submit with msteams taskModule fetch.
-    return {
-      statusCode: 200,
-      type: "application/vnd.microsoft.activity.message",
-      value: "Opening rejection form...",
-    };
+    return cardInvokeResponse({
+      type: "AdaptiveCard",
+      version: "1.5",
+      body: [
+        { type: "TextBlock", text: "Opening rejection form...", wrap: true },
+      ],
+    });
   }
 
   // -------------------------------------------------------------------------
@@ -475,15 +476,10 @@ export class TeamsBotHandler extends TeamsActivityHandler {
         },
         include: {
           approvalFlow: {
-            include: {
-              invoice: {
-                select: {
-                  id: true,
-                  invoiceNumber: true,
-                  totalGrosze: true,
-                  currency: true,
-                },
-              },
+            select: {
+              id: true,
+              resourceId: true,
+              resourceType: true,
             },
           },
         },
@@ -499,6 +495,20 @@ export class TeamsBotHandler extends TeamsActivityHandler {
         }
         throw new Error("APPROVAL_NOT_ASSIGNED");
       }
+
+      const flow = step.approvalFlow;
+      const invoice =
+        flow.resourceType === "INVOICE"
+          ? await tx.invoice.findUnique({
+              where: { id: flow.resourceId },
+              select: {
+                id: true,
+                invoiceNumber: true,
+                totalGrosze: true,
+                currency: true,
+              },
+            })
+          : null;
 
       // Create decision
       await tx.approvalDecision.create({
@@ -524,9 +534,9 @@ export class TeamsBotHandler extends TeamsActivityHandler {
       const advanceResult = await advanceFlow(tx, step.approvalFlowId);
 
       // If flow completed, update invoice
-      if (advanceResult.completed) {
+      if (advanceResult.completed && flow.resourceType === "INVOICE") {
         await tx.invoice.update({
-          where: { id: step.approvalFlow.resourceId },
+          where: { id: flow.resourceId },
           data: {
             status: "APPROVED",
             paymentStatus: "READY",
@@ -535,12 +545,11 @@ export class TeamsBotHandler extends TeamsActivityHandler {
         });
       }
 
-      const invoice = step.approvalFlow.invoice;
       return {
         invoiceNumber: invoice?.invoiceNumber ?? "N/A",
         amount: ((invoice?.totalGrosze ?? 0) / 100).toFixed(2),
         currency: invoice?.currency ?? "PLN",
-        viewUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/invoices/${step.approvalFlow.resourceId}`,
+        viewUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/invoices/${flow.resourceId}`,
       };
     });
   }
@@ -616,21 +625,15 @@ export class TeamsBotHandler extends TeamsActivityHandler {
   // Override onTeamsMembersAdded to capture references when the bot is
   // installed or new members are added to a conversation.
 
-  protected async onTeamsMembersAdded(
-    membersAdded: import("botframework-schema").ChannelAccount[],
-    teamInfo: unknown,
-    context: TurnContext,
-    next: () => Promise<void>,
-  ): Promise<void> {
+  protected async onTeamsMembersAdded(context: TurnContext): Promise<void> {
     await this.captureConversationReference(context);
-    await next();
   }
 
   /**
    * Called when the bot is installed in a personal scope or team.
    * Captures the ConversationReference for future proactive messaging.
    */
-  protected async onInstallationUpdateAdd(
+  protected async onInstallationUpdateAddActivity(
     context: TurnContext,
   ): Promise<void> {
     await this.captureConversationReference(context);

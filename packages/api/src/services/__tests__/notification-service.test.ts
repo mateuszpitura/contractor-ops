@@ -90,6 +90,7 @@ const defaultPrefs = {
   id: "pref_1",
   channelEmail: true,
   channelSlack: true,
+  channelTeams: false,
   channelInApp: true,
   digestMode: false,
 };

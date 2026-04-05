@@ -21,7 +21,9 @@ type EntityType =
   | "PAYMENT_RUN"
   | "PROJECT"
   | "TEAM"
-  | "APPROVAL_FLOW";
+  | "APPROVAL_FLOW"
+  | "USER"
+  | "RETURN_REQUEST";
 
 export interface NotificationEvent {
   organizationId: string;

@@ -107,6 +107,24 @@ describe("evaluateCondition (workflow helper)", () => {
     );
     expect(result).toBe(true);
   });
+
+  it("returns false for unknown operator (default branch)", () => {
+    const badOp = evaluateCondition(
+      {
+        combinator: "AND",
+        rules: [
+          {
+            field: "contractor.type",
+            // @ts-expect-error intentional unknown operator for default switch branch
+            operator: "unknownOp",
+            value: "B2B",
+          },
+        ],
+      },
+      { contractor: { type: "B2B" } },
+    );
+    expect(badOp).toBe(false);
+  });
 });
 
 // ===========================================================================

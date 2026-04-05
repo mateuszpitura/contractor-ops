@@ -34,6 +34,11 @@
       "import": "./src/services/portal-session.ts",
       "default": "./src/services/portal-session.ts"
     },
+    "./services/r2": {
+      "types": "./src/services/r2.ts",
+      "import": "./src/services/r2.ts",
+      "default": "./src/services/r2.ts"
+    },
     "./services/esign-orchestrator": {
       "types": "./src/services/esign-orchestrator.ts",
       "import": "./src/services/esign-orchestrator.ts",
@@ -69,10 +74,20 @@
       "import": "./src/services/google-workspace-sync-orchestrator.ts",
       "default": "./src/services/google-workspace-sync-orchestrator.ts"
     },
+    "./services/ksef-sync-orchestrator": {
+      "types": "./src/services/ksef-sync-orchestrator.ts",
+      "import": "./src/services/ksef-sync-orchestrator.ts",
+      "default": "./src/services/ksef-sync-orchestrator.ts"
+    },
     "./services/cron-monitor": {
       "types": "./src/services/cron-monitor.ts",
       "import": "./src/services/cron-monitor.ts",
       "default": "./src/services/cron-monitor.ts"
+    },
+    "./services/teams/teams-bot-handler": {
+      "types": "./src/services/teams/teams-bot-handler.ts",
+      "import": "./src/services/teams/teams-bot-handler.ts",
+      "default": "./src/services/teams/teams-bot-handler.ts"
     }
   },
   "scripts": {
@@ -87,13 +102,13 @@
     "@contractor-ops/validators": "workspace:*",
     "@azure/identity": "^4.7.0",
     "@microsoft/microsoft-graph-client": "^3.0.7",
-    "botbuilder": "^4.24.0",
     "@react-email/components": "^1.0.10",
     "@sentry/nextjs": "^9.0.0",
     "@slack/web-api": "^7.15.0",
     "@trpc/server": "^11.0.0",
     "@upstash/redis": "^1.34.0",
     "bir1": "^4.1.1",
+    "botbuilder": "^4.23.3",
     "clamscan": "^2.4.0",
     "file-type": "^21.3.3",
     "mt940js": "^1.3.5",
@@ -109,6 +124,6 @@
     "@types/react": "^19.0.0",
     "@vitest/coverage-v8": "^4.1.2",
     "typescript": "^5.7.0",
-    "vitest": "^4.1.0"
+    "vitest": "^4.1.2"
   }
 }

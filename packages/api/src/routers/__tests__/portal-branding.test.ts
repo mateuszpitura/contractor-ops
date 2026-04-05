@@ -1,37 +1,37 @@
 /**
  * Portal branding router tests.
  *
- * Tests settings.getBranding, settings.updateBranding.
- * Note: portal.getOrgBranding does not exist in the codebase — those tests are skipped.
+ * Tests settings.getBranding, settings.updateBranding, and portal.getSession
+ * (portal layout: org name + logo; brandColor remains admin-only via settings.getBranding).
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // ---------------------------------------------------------------------------
-// Constants
+// Mock Prisma + ids (hoisted for portal-session mock)
 // ---------------------------------------------------------------------------
 
-const ORG_ID = "org-branding-001";
-const USER_ID = "user-branding-001";
+const { ORG_ID, USER_ID, PORTAL_SESSION_TOKEN, CONTRACTOR_ID, mockPrisma } =
+  vi.hoisted(() => {
+    const ORG_ID = "org-branding-001";
+    const USER_ID = "user-branding-001";
+    const PORTAL_SESSION_TOKEN = "portal-branding-session";
+    const CONTRACTOR_ID = "contractor-branding-001";
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    type Rec = Record<string, any>;
 
-// ---------------------------------------------------------------------------
-// Mock Prisma via vi.hoisted
-// ---------------------------------------------------------------------------
+    const mockPrisma: Rec = {
+      organization: {
+        findUnique: vi.fn(),
+        update: vi.fn(),
+      },
+      $transaction: vi.fn(async (fn: (tx: Rec) => Promise<unknown>) =>
+        fn(mockPrisma),
+      ),
+    };
 
-const { mockPrisma } = vi.hoisted(() => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  type Rec = Record<string, any>;
-
-  const mockPrisma: Rec = {
-    organization: {
-      findUnique: vi.fn(),
-      update: vi.fn(),
-    },
-    $transaction: vi.fn(async (fn: (tx: Rec) => Promise<unknown>) => fn(mockPrisma)),
-  };
-
-  return { mockPrisma };
-});
+    return { ORG_ID, USER_ID, PORTAL_SESSION_TOKEN, CONTRACTOR_ID, mockPrisma };
+  });
 
 // ---------------------------------------------------------------------------
 // Module mocks
@@ -73,7 +73,19 @@ vi.mock("../../services/cache.js", () => ({
 }));
 
 vi.mock("../../services/portal-session.js", () => ({
-  validatePortalSession: vi.fn(),
+  validatePortalSession: vi.fn(async (token: string) => {
+    if (token !== PORTAL_SESSION_TOKEN) return null;
+    return {
+      contractorId: CONTRACTOR_ID,
+      organizationId: ORG_ID,
+      email: "portal@contractor.test",
+      contractor: {
+        id: CONTRACTOR_ID,
+        displayName: "Portal Contractor",
+        email: "portal@contractor.test",
+      },
+    };
+  }),
   createPortalSession: vi.fn(),
   deletePortalSession: vi.fn(),
 }));
@@ -127,6 +139,12 @@ vi.mock("@sentry/nextjs", () => {
   };
 });
 
+vi.mock("../../services/teams/teams-graph-client.js", () => ({
+  getTeamsChannels: vi.fn(),
+  getJoinedTeams: vi.fn(),
+  getUserByEmail: vi.fn(),
+}));
+
 // ---------------------------------------------------------------------------
 // Imports (after mocks)
 // ---------------------------------------------------------------------------
@@ -175,6 +193,16 @@ function makeTenantCaller() {
 }
 
 const caller = makeTenantCaller();
+
+function makePortalCaller() {
+  return createCaller({
+    headers: new Headers({ cookie: `portal_session=${PORTAL_SESSION_TOKEN}` }),
+    session: null as never,
+    user: null as never,
+  });
+}
+
+const portalCaller = makePortalCaller();
 
 // ---------------------------------------------------------------------------
 // Reset
@@ -346,10 +374,33 @@ describe("settings.updateBranding", () => {
 });
 
 // ===========================================================================
-// portal.getOrgBranding — does not exist in codebase
+// portal.getSession — org name + logo for portal layout (no brandColor)
 // ===========================================================================
 
-describe("portal.getOrgBranding", () => {
-  it.todo("returns brandColor and logo for portal consumption — procedure not yet implemented");
-  it.todo("returns null values when no branding configured — procedure not yet implemented");
+describe("portal.getSession", () => {
+  it("returns organization name and logo for portal layout", async () => {
+    mockPrisma.organization.findUnique.mockResolvedValue({
+      id: ORG_ID,
+      name: "Branded Org",
+      logo: "https://cdn.test/logo.png",
+    });
+
+    const result = await portalCaller.portal.getSession();
+
+    expect(result.organization.id).toBe(ORG_ID);
+    expect(result.organization.name).toBe("Branded Org");
+    expect(result.organization.logo).toBe("https://cdn.test/logo.png");
+    expect(result.contractor.id).toBe(CONTRACTOR_ID);
+    expect(result.contractor.displayName).toBe("Portal Contractor");
+    expect(result.contractor.email).toBe("portal@contractor.test");
+  });
+
+  it("returns null logo and empty name when organization row is missing", async () => {
+    mockPrisma.organization.findUnique.mockResolvedValue(null);
+
+    const result = await portalCaller.portal.getSession();
+
+    expect(result.organization.name).toBe("");
+    expect(result.organization.logo).toBeNull();
+  });
 });

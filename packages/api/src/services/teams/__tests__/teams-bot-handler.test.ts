@@ -186,6 +186,25 @@ describe("TeamsBotHandler", () => {
       expect(result.statusCode).toBe(403);
     });
 
+    it("returns adaptive card for reject_invoice with valid UUIDs", async () => {
+      const context = createMockContext();
+      const result = await handler.onAdaptiveCardInvoke(
+        context as never,
+        {
+          action: {
+            data: {
+              action: "reject_invoice",
+              invoiceId: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+              flowId: "f1e2d3c4-b5a6-7890-dcba-0987654321fe",
+            },
+          },
+        } as never,
+      );
+
+      expect(result.statusCode).toBe(200);
+      expect(result.type).toBe("application/vnd.microsoft.card.adaptive");
+    });
+
     it("calls advanceFlow for approve_invoice with valid data and linked user", async () => {
       const { prisma } = await import("@contractor-ops/db");
       const { advanceFlow } = await import("../../approval-engine.js");

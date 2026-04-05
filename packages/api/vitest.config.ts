@@ -10,8 +10,5 @@ export default defineConfig({
     ],
     /** Avoid cross-file `vi.mock("@contractor-ops/db")` leakage between workers */
     pool: "forks",
-    poolOptions: {
-      forks: { singleFork: false },
-    },
   },
 });

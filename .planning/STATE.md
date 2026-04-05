@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Enterprise & Monetization
-status: verifying
-stopped_at: Completed 35-06-PLAN.md
-last_updated: "2026-04-05T11:26:12.569Z"
-last_activity: 2026-04-05
+status: executing
+stopped_at: Completed 35-05-PLAN.md
+last_updated: "2026-04-05T11:19:27.522Z"
+last_activity: 2026-04-05 -- Phase 35 execution started
 progress:
   total_phases: 8
-  completed_phases: 8
+  completed_phases: 7
   total_plans: 30
-  completed_plans: 30
+  completed_plans: 29
   percent: 84
 ---
 
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-04-01)
 ## Current Position
 
 Phase: 35 (feature-gating-dpd-ups-billing-polish) — EXECUTING
-Plan: 5 of 5
-Status: Phase complete — ready for verification
-Last activity: 2026-04-05
+Plan: 1 of 6
+Status: Executing Phase 35
+Last activity: 2026-04-05 -- Phase 35 execution started
 
 Progress: [████████░░] 84%
 
@@ -74,7 +74,6 @@ Progress: [████████░░] 84%
 | Phase 35 P02 | 6min | 2 tasks | 14 files |
 | Phase 35 P04 | 5min | 2 tasks | 10 files |
 | Phase 35 P05 | 7min | 2 tasks | 8 files |
-| Phase 35 P06 | 5min | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -140,7 +139,6 @@ Recent decisions affecting current work:
 - [Phase 35]: base-ui Button uses render prop for Link composition (not asChild)
 - [Phase 35]: CarrierShipmentForm uses tRPC proxy pattern for stale dist types, consistent with InPostShipmentForm
 - [Phase 35]: UPS service code stored as string literal (11/65/07) matching actual UPS API codes for direct passthrough
-- [Phase 35]: getStatus with TEST_CONNECTION_PROBE as lightweight credential validation probe -- not-found proves auth succeeded
 
 ### Pending Todos
 
@@ -154,6 +152,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T11:26:12.566Z
-Stopped at: Completed 35-06-PLAN.md
+Last session: 2026-04-05T10:57:19.837Z
+Stopped at: Completed 35-05-PLAN.md
 Resume file: None

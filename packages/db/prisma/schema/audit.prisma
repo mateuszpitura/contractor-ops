@@ -51,6 +51,7 @@ enum ActorType {
   SYSTEM
   INTEGRATION
   API_KEY
+  CONTRACTOR
 }
 
 enum OutboxStatus {
