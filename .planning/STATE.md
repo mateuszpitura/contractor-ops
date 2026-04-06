@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Enterprise & Monetization
-status: executing
-stopped_at: Completed 40-01-PLAN.md
-last_updated: "2026-04-06T09:18:04.368Z"
+status: verifying
+stopped_at: Completed 40-02-PLAN.md
+last_updated: "2026-04-06T09:45:46.357Z"
 last_activity: 2026-04-06
 progress:
   total_phases: 13
-  completed_phases: 12
+  completed_phases: 13
   total_plans: 42
-  completed_plans: 41
+  completed_plans: 42
   percent: 91
 ---
 
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-01)
 
 Phase: 40 (integration-cleanup-featuregate-type-safety) — EXECUTING
 Plan: 2 of 2
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-06
 
 Progress: [█████████░] 91%
@@ -85,6 +85,7 @@ Progress: [█████████░] 91%
 | Phase 39 P02 | 12min | 2 tasks | 4 files |
 | Phase 39 P03 | 8min | 2 tasks | 8 files |
 | Phase 40 P01 | 6min | 2 tasks | 7 files |
+| Phase 40 P02 | 25min | 2 tasks | 15 files |
 
 ## Accumulated Context
 
@@ -164,6 +165,9 @@ Recent decisions affecting current work:
 - [Phase 39]: Admin uses useRouter from @/i18n/navigation; portal keeps next/navigation for CreditExhaustedInline navigation
 - [Phase 39]: Vitest config for web app uses @vitejs/plugin-react for JSX transform with jsdom environment
 - [Phase 40]: ShipmentParams union type (Base | InPost | Address | DPD | UPS) instead of widening BaseShipmentParams -- preserves type narrowing in individual clients
+- [Phase 40]: Removed explicit useMutation generics to let tRPC types flow through properly
+- [Phase 40]: Fixed settings.getOrgSettings/updateOrgSettings to actual router names settings.get/settings.update
+- [Phase 40]: Added defaultReturnCarrier to updateOrganizationSettingsSchema (was silently broken behind proxy)
 
 ### Pending Todos
 
@@ -177,6 +181,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-06T09:18:04.362Z
-Stopped at: Completed 40-01-PLAN.md
+Last session: 2026-04-06T09:45:37.907Z
+Stopped at: Completed 40-02-PLAN.md
 Resume file: None
