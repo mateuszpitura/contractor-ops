@@ -16,7 +16,7 @@ v1.0 MVP foundation (shipped 2026-03-23): org setup, RBAC, contractors, contract
 
 v2.0 Platform Expansion adds: contractor self-service portal with magic-link auth and org branding, electronic signatures (DocuSign + Autenti), AI-powered invoice OCR (Claude Vision), KSeF national e-invoicing integration, time tracking with Clockify/Jira import and invoice reconciliation, Jira bidirectional sync, Notion/Confluence doc linking with Cmd+K search, Google/Outlook calendar deadline sync, and a provider-agnostic integration framework with OAuth credential store, webhook pipeline, and health monitoring.
 
-v3.0 Enterprise & Monetization Phase 39 complete (final): Channel alert dispatch wired into notification-service for Teams/Slack, CreditExhaustedInline mounted in OCR upload UIs, OAuth provider sections gated with FeatureGate for PRO tier. All 12 phases complete (39 plans). Previous: Phase 38 tier gate expansion, Phase 37 shipment task auto-completion, Phase 36 feature gating middleware, Phase 35 DPD/UPS courier clients, Phase 34 intelligent onboarding wizard, Phase 33 InPost courier integration.
+v3.0 Enterprise & Monetization Phase 40 complete (gap closure): FeatureGate wrappers added to Jira and Calendar OAuth sections (PRO tier), all 13 `(trpc as any)` proxy workarounds removed restoring full type safety, API dist types rebuilt with ShipmentParams union fix. All 13 phases complete (41 plans). Previous: Phase 39 channel alerts + credit UI + OAuth gate, Phase 38 tier gate expansion, Phase 37 shipment task auto-completion, Phase 36 feature gating middleware, Phase 35 DPD/UPS courier clients, Phase 34 intelligent onboarding wizard, Phase 33 InPost courier integration.
 
 ## Requirements
 
@@ -163,4 +163,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-06 after Phase 39 (Final Wiring — Channel Alerts, Credit UI, OAuth Gate) complete — v3.0 milestone complete*
+*Last updated: 2026-04-06 after Phase 40 (Integration Cleanup — FeatureGate + Type Safety) complete — v3.0 milestone gap closure complete*
