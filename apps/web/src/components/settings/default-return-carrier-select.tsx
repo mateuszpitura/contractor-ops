@@ -17,19 +17,6 @@ import {
 } from "@/components/ui/select";
 
 // ---------------------------------------------------------------------------
-// tRPC proxies (workaround: API dist types are stale until next build)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const equipmentProxy = (trpc as any).equipment as {
-  getCourierConfigs: { queryOptions: () => any; queryKey: () => any[] };
-};
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const settingsProxy = (trpc as any).settings as {
-  updateOrgSettings: { mutationOptions: (opts: any) => any };
-  getOrgSettings: { queryOptions: () => any; queryKey: () => any[] };
-};
-
-// ---------------------------------------------------------------------------
 // Carrier labels
 // ---------------------------------------------------------------------------
 
@@ -53,31 +40,22 @@ export function DefaultReturnCarrierSelect() {
   const queryClient = useQueryClient();
 
   // Fetch configured carriers
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const configsQuery = useQuery<any>(equipmentProxy.getCourierConfigs.queryOptions());
-  const configs = (configsQuery.data ?? []) as Array<{ carrier: string }>;
+  const configsQuery = useQuery(trpc.equipment.getCourierConfigs.queryOptions());
+  const configs = (configsQuery.data ?? []) as unknown as Array<{ carrier: string }>;
   const configuredCarriers = configs.map((c) => c.carrier.toLowerCase());
 
   // Fetch current org settings to get the default return carrier
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const settingsQuery = useQuery<any>(settingsProxy.getOrgSettings.queryOptions());
-  const settingsJson = (settingsQuery.data?.settingsJson ?? {}) as Record<
-    string,
-    unknown
-  >;
-  const currentDefault = (settingsJson.defaultReturnCarrier as string) ?? "";
+  const settingsQuery = useQuery(trpc.settings.get.queryOptions());
+  const metadata = ((settingsQuery.data?.metadata ?? {}) as Record<string, unknown>);
+  const currentDefault = (metadata.defaultReturnCarrier as string) ?? "";
 
   // Save mutation
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const saveMutation = useMutation<any, Error, Record<string, unknown>>(
-    settingsProxy.updateOrgSettings.mutationOptions({
+  const saveMutation = useMutation(
+    trpc.settings.update.mutationOptions({
       onSuccess: () => {
         toast.success(t("saved"));
         queryClient.invalidateQueries({
-          queryKey: settingsProxy.getOrgSettings.queryKey?.() ?? [
-            "settings",
-            "getOrgSettings",
-          ],
+          queryKey: trpc.settings.get.queryKey(),
         });
       },
     }),
@@ -87,13 +65,10 @@ export function DefaultReturnCarrierSelect() {
     (val: string | null) => {
       if (!val) return;
       saveMutation.mutate({
-        settingsJson: {
-          ...settingsJson,
-          defaultReturnCarrier: val,
-        },
+        defaultReturnCarrier: val,
       });
     },
-    [saveMutation, settingsJson],
+    [saveMutation],
   );
 
   if (configuredCarriers.length === 0) {

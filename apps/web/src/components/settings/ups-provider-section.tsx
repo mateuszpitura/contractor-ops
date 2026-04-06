@@ -21,12 +21,6 @@ import {
 } from "@/components/ui/dialog";
 import { CarrierCredentialForm } from "./carrier-credential-form";
 
-// tRPC proxy for stale dist types
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const equipmentProxy = (trpc as any).equipment as {
-  getCourierConfigs: { queryOptions: () => any };
-};
-
 // ---------------------------------------------------------------------------
 // UpsProviderSection
 // ---------------------------------------------------------------------------
@@ -36,9 +30,8 @@ export function UpsProviderSection() {
   const tCarriers = useTranslations("Settings.carriers");
   const [configOpen, setConfigOpen] = useState(false);
 
-  const configsQuery = useQuery(equipmentProxy.getCourierConfigs.queryOptions());
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const configs = (configsQuery.data ?? []) as Array<{ carrier: string }>;
+  const configsQuery = useQuery(trpc.equipment.getCourierConfigs.queryOptions());
+  const configs = (configsQuery.data ?? []) as unknown as Array<{ carrier: string }>;
   const isConfigured = configs.some(
     (c) => c.carrier.toLowerCase() === "ups",
   );

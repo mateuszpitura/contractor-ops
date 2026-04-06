@@ -119,8 +119,7 @@ export function PortalReturnFlow({
   // Mutations
   // -------------------------------------------------------------------------
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const requestMutation = useMutation<any, Error, Record<string, unknown>>(
+  const requestMutation = useMutation(
     trpc.portal.requestReturn.mutationOptions({
       onSuccess: () => {
         toast.success(t("returnRequested"));

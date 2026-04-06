@@ -21,14 +21,6 @@ import type { TierId } from "./plan-comparison-grid";
 import { Link } from "@/i18n/navigation";
 
 // ---------------------------------------------------------------------------
-// Proxy for getUsageDashboard (types may not be in dist yet)
-// ---------------------------------------------------------------------------
-
-const billingProxy = (trpc as any).billing as {
-  getUsageDashboard: { queryOptions: () => any };
-};
-
-// ---------------------------------------------------------------------------
 // Status badge variant mapping
 // ---------------------------------------------------------------------------
 
@@ -74,7 +66,7 @@ export function UsageDashboard() {
     isLoading,
     isError,
     refetch,
-  } = useQuery(billingProxy.getUsageDashboard.queryOptions());
+  } = useQuery(trpc.billing.getUsageDashboard.queryOptions());
 
   // ---- Loading state ----
   if (isLoading) {

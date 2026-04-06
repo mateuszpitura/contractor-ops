@@ -81,8 +81,7 @@ export default function EquipmentDetailPage() {
     }),
     enabled: !!equipment?.currentAssignment,
   });
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const returnRequests = (returnRequestsQuery.data ?? []) as Array<{
+  const returnRequests = (returnRequestsQuery.data ?? []) as unknown as Array<{
     id: string;
     contractorId: string;
     status: string;
@@ -94,8 +93,7 @@ export default function EquipmentDetailPage() {
 
   // Query configured carriers for carrier shipment form
   const courierConfigsQuery = useQuery(trpc.equipment.getCourierConfigs.queryOptions());
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const courierConfigs = (courierConfigsQuery.data ?? []) as Array<{ carrier: string }>;
+  const courierConfigs = (courierConfigsQuery.data ?? []) as unknown as Array<{ carrier: string }>;
   const configuredCarriers = courierConfigs.map((c) => c.carrier);
 
   // Find pending return for current contractor

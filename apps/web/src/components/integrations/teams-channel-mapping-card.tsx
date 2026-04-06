@@ -25,20 +25,6 @@ import {
 } from "@/components/ui/tooltip";
 
 // ---------------------------------------------------------------------------
-// tRPC teams proxy (workaround: API dist types are stale until next build)
-// The teams router IS registered in root.ts but dist/index.d.ts predates it.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const teamsProxy = (trpc as any).teams as {
-  getTeams: { queryOptions: () => any; queryKey: () => any[] };
-  getChannels: {
-    queryOptions: (input: { teamId: string }) => any;
-    queryKey: (input: { teamId: string }) => any[];
-  };
-  getChannelMapping: { queryOptions: () => any; queryKey: () => any[] };
-  saveChannelMapping: { mutationOptions: () => any };
-};
-
-// ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
@@ -88,7 +74,7 @@ export function TeamsChannelMappingCard() {
   >({});
 
   // ---- Fetch joined teams ----
-  const teamsQuery = useQuery(teamsProxy.getTeams.queryOptions());
+  const teamsQuery = useQuery(trpc.teams.getTeams.queryOptions());
   const teams = (teamsQuery.data ?? []) as TeamsTeam[];
 
   // ---- Auto-select single team ----
@@ -100,13 +86,13 @@ export function TeamsChannelMappingCard() {
 
   // ---- Fetch channels for selected team ----
   const channelsQuery = useQuery({
-    ...teamsProxy.getChannels.queryOptions({ teamId: selectedTeamId ?? "" }),
+    ...trpc.teams.getChannels.queryOptions({ teamId: selectedTeamId ?? "" }),
     enabled: !!selectedTeamId,
   });
   const channels = (channelsQuery.data ?? []) as TeamsChannel[];
 
   // ---- Fetch existing mapping ----
-  const mappingQuery = useQuery(teamsProxy.getChannelMapping.queryOptions());
+  const mappingQuery = useQuery(trpc.teams.getChannelMapping.queryOptions());
 
   // ---- Populate local mapping from server ----
   useEffect(() => {
@@ -117,11 +103,11 @@ export function TeamsChannelMappingCard() {
 
   // ---- Save mutation ----
   const saveMutation = useMutation({
-    ...teamsProxy.saveChannelMapping.mutationOptions(),
+    ...trpc.teams.saveChannelMapping.mutationOptions(),
     onSuccess: () => {
       toast.success(t("mappingSaved"));
       queryClient.invalidateQueries({
-        queryKey: teamsProxy.getChannelMapping.queryKey(),
+        queryKey: trpc.teams.getChannelMapping.queryKey(),
       });
     },
     onError: () => {
@@ -141,13 +127,13 @@ export function TeamsChannelMappingCard() {
   function handleRefresh() {
     if (selectedTeamId) {
       queryClient.invalidateQueries({
-        queryKey: teamsProxy.getChannels.queryKey({
+        queryKey: trpc.teams.getChannels.queryKey({
           teamId: selectedTeamId,
         }),
       });
     }
     queryClient.invalidateQueries({
-      queryKey: teamsProxy.getTeams.queryKey(),
+      queryKey: trpc.teams.getTeams.queryKey(),
     });
   }
 

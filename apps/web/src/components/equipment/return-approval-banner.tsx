@@ -52,8 +52,7 @@ export function ReturnApprovalBanner({
   const queryClient = useQueryClient();
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const approveMutation = useMutation<any, Error, Record<string, unknown>>(
+  const approveMutation = useMutation(
     trpc.equipment.approveReturnRequest.mutationOptions({
       onSuccess: () => {
         toast.success(t("approvedToast"));
@@ -70,8 +69,7 @@ export function ReturnApprovalBanner({
     }),
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const rejectMutation = useMutation<any, Error, Record<string, unknown>>(
+  const rejectMutation = useMutation(
     trpc.equipment.rejectReturnRequest.mutationOptions({
       onSuccess: () => {
         toast.success(t("rejectedToast"));

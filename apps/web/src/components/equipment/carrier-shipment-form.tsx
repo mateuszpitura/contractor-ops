@@ -164,24 +164,21 @@ export function CarrierShipmentForm({
     toast.error(t("createError"));
   }, [t]);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const inpostMutation = useMutation<any, Error, Record<string, unknown>>(
+  const inpostMutation = useMutation(
     trpc.equipment.createInPostShipment.mutationOptions({
       onSuccess: () => onMutationSuccess("InPost"),
       onError: onMutationError,
     }),
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const dpdMutation = useMutation<any, Error, Record<string, unknown>>(
+  const dpdMutation = useMutation(
     trpc.equipment.createDpdShipment.mutationOptions({
       onSuccess: () => onMutationSuccess("DPD"),
       onError: onMutationError,
     }),
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const upsMutation = useMutation<any, Error, Record<string, unknown>>(
+  const upsMutation = useMutation(
     trpc.equipment.createUpsShipment.mutationOptions({
       onSuccess: () => onMutationSuccess("UPS"),
       onError: onMutationError,

@@ -104,9 +104,8 @@ export function CarrierCredentialForm({
   const queryClient = useQueryClient();
 
   // Check if this carrier is already configured
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const configsQuery = useQuery<any>(trpc.equipment.getCourierConfigs.queryOptions());
-  const configs = (configsQuery.data ?? []) as Array<{ carrier: string }>;
+  const configsQuery = useQuery(trpc.equipment.getCourierConfigs.queryOptions());
+  const configs = (configsQuery.data ?? []) as unknown as Array<{ carrier: string }>;
   const isConnected = configs.some(
     (c) => c.carrier.toLowerCase() === carrier,
   );
@@ -128,13 +127,12 @@ export function CarrierCredentialForm({
   });
 
   // Save mutation
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const saveMutation = useMutation<any, Error, Record<string, unknown>>(
+  const saveMutation = useMutation(
     trpc.equipment.saveCourierConfig.mutationOptions({
       onSuccess: () => {
         toast.success(t("credentialsSaved"));
         queryClient.invalidateQueries({
-          queryKey: (trpc.equipment.getCourierConfigs as any).queryKey?.() ?? ["equipment", "getCourierConfigs"],
+          queryKey: trpc.equipment.getCourierConfigs.queryKey(),
         });
       },
       onError: () => {
@@ -144,8 +142,7 @@ export function CarrierCredentialForm({
   );
 
   // Test connection mutation
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const testMutation = useMutation<any, Error, Record<string, unknown>>(
+  const testMutation = useMutation(
     trpc.equipment.testCourierConnection.mutationOptions({
       onSuccess: () => {
         toast.success(t("connectionVerified"));
@@ -159,16 +156,16 @@ export function CarrierCredentialForm({
   const handleSave = useCallback(() => {
     const credentials =
       carrier === "dpd"
-        ? { carrier: "dpd", ...dpdCreds }
-        : { carrier: "ups", ...upsCreds };
+        ? { carrier: "dpd" as const, ...dpdCreds }
+        : { carrier: "ups" as const, ...upsCreds };
     saveMutation.mutate(credentials);
   }, [carrier, dpdCreds, upsCreds, saveMutation]);
 
   const handleTest = useCallback(() => {
     const credentials =
       carrier === "dpd"
-        ? { carrier: "dpd", ...dpdCreds }
-        : { carrier: "ups", ...upsCreds };
+        ? { carrier: "dpd" as const, ...dpdCreds }
+        : { carrier: "ups" as const, ...upsCreds };
     testMutation.mutate(credentials);
   }, [carrier, dpdCreds, upsCreds, testMutation]);
 

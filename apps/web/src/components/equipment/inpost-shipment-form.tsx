@@ -86,8 +86,7 @@ export function InPostShipmentForm({
     [onOpenChange, preferredPaczkomat],
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const createMutation = useMutation<any, Error, Record<string, unknown>>(
+  const createMutation = useMutation(
     trpc.equipment.createInPostShipment.mutationOptions({
       onSuccess: () => {
         toast.success(t("shipmentCreated"));

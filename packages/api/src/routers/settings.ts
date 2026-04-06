@@ -73,6 +73,8 @@ export const settingsRouter = router({
           input.onboardingCompletedSteps;
       if (input.onboardingDismissed !== undefined)
         metadataUpdates.onboardingDismissed = input.onboardingDismissed;
+      if (input.defaultReturnCarrier !== undefined)
+        metadataUpdates.defaultReturnCarrier = input.defaultReturnCarrier;
 
       const data: {
         name?: string;

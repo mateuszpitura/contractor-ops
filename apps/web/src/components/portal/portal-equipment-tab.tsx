@@ -47,8 +47,7 @@ export function PortalEquipmentTab() {
   // -------------------------------------------------------------------------
 
   const equipmentQuery = useQuery(trpc.portal.listEquipment.queryOptions());
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const equipment = (equipmentQuery.data ?? []) as Array<{
+  const equipment = (equipmentQuery.data ?? []) as unknown as Array<{
     assignmentId: string;
     assignedAt: string;
     equipment: {
@@ -67,8 +66,7 @@ export function PortalEquipmentTab() {
   const returnStatusQuery = useQuery(
     trpc.portal.getReturnStatus.queryOptions(),
   );
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const returnRequest = returnStatusQuery.data as {
+  const returnRequest = returnStatusQuery.data as unknown as {
     id: string;
     status: string;
     shipmentId: string | null;
@@ -79,8 +77,7 @@ export function PortalEquipmentTab() {
   // Mutations
   // -------------------------------------------------------------------------
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const cancelMutation = useMutation<any, Error, Record<string, unknown>>(
+  const cancelMutation = useMutation(
     trpc.portal.cancelReturn.mutationOptions({
       onSuccess: () => {
         toast.success(tReturn("cancelledToast"));

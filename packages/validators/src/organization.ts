@@ -28,6 +28,7 @@ export const updateOrganizationSettingsSchema = z.object({
     .max(10)
     .optional(),
   onboardingDismissed: z.boolean().optional(),
+  defaultReturnCarrier: z.string().max(20).optional(),
 });
 
 export type UpdateOrganizationSettingsInput = z.infer<typeof updateOrganizationSettingsSchema>;
