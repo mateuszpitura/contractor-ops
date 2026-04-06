@@ -1,12 +1,12 @@
 import { z } from "zod";
 
 import type {
-  BaseShipmentParams,
   CourierClient,
   CourierShipmentResult,
   CourierStatusResult,
   InPostShipmentParams,
   LabelFormat,
+  ShipmentParams,
 } from "./courier-client.js";
 
 // ---------------------------------------------------------------------------
@@ -69,7 +69,7 @@ export class InPostClient implements CourierClient {
    * POST /v1/organizations/{orgId}/shipments
    */
   async createShipment(
-    params: BaseShipmentParams,
+    params: ShipmentParams,
   ): Promise<CourierShipmentResult> {
     if (!("targetPoint" in params)) {
       throw new Error(

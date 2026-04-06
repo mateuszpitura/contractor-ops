@@ -8,8 +8,16 @@
 /**
  * Generic courier client interface that all carrier implementations must satisfy.
  */
+/** Union of all shipment param types accepted by courier clients. */
+export type ShipmentParams =
+  | BaseShipmentParams
+  | InPostShipmentParams
+  | AddressShipmentParams
+  | DPDShipmentParams
+  | UPSShipmentParams;
+
 export interface CourierClient {
-  createShipment(params: BaseShipmentParams): Promise<CourierShipmentResult>;
+  createShipment(params: ShipmentParams): Promise<CourierShipmentResult>;
   getLabel(shipmentExternalId: string, format: LabelFormat): Promise<Buffer>;
   getStatus(shipmentExternalId: string): Promise<CourierStatusResult>;
   cancelShipment(shipmentExternalId: string): Promise<void>;

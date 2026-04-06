@@ -1,12 +1,12 @@
 import { z } from "zod";
 
 import type {
-  BaseShipmentParams,
   CourierClient,
   CourierShipmentResult,
   CourierStatusResult,
   DPDShipmentParams,
   LabelFormat,
+  ShipmentParams,
 } from "./courier-client.js";
 
 // ---------------------------------------------------------------------------
@@ -85,7 +85,7 @@ export class DPDClient implements CourierClient {
    * Accepts BaseShipmentParams and narrows to DPDShipmentParams internally.
    */
   async createShipment(
-    params: BaseShipmentParams,
+    params: ShipmentParams,
   ): Promise<CourierShipmentResult> {
     if (!("deliveryAddress" in params)) {
       throw new Error(

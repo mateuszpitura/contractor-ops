@@ -1,11 +1,11 @@
 import { z } from "zod";
 
 import type {
-  BaseShipmentParams,
   CourierClient,
   CourierShipmentResult,
   CourierStatusResult,
   LabelFormat,
+  ShipmentParams,
   UPSShipmentParams,
 } from "./courier-client.js";
 
@@ -179,7 +179,7 @@ export class UPSClient implements CourierClient {
    * POST /api/shipments/v2409/ship
    */
   async createShipment(
-    params: BaseShipmentParams,
+    params: ShipmentParams,
   ): Promise<CourierShipmentResult> {
     if (!("deliveryAddress" in params) || !("serviceCode" in params)) {
       throw new Error(
