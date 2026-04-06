@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Enterprise & Monetization
-status: verifying
-stopped_at: Completed 40-02-PLAN.md
-last_updated: "2026-04-06T09:57:13.010Z"
+status: executing
+stopped_at: Completed 41-01-PLAN.md
+last_updated: "2026-04-06T12:36:01.662Z"
 last_activity: 2026-04-06
 progress:
-  total_phases: 13
+  total_phases: 14
   completed_phases: 13
-  total_plans: 42
-  completed_plans: 42
+  total_plans: 44
+  completed_plans: 43
   percent: 91
 ---
 
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-01)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 40 — integration-cleanup-featuregate-type-safety
+**Current focus:** Phase 41 — teams-channel-ref-onboarding-oauth
 
 ## Current Position
 
-Phase: 40
-Plan: Not started
-Status: Phase complete — ready for verification
+Phase: 41 (teams-channel-ref-onboarding-oauth) — EXECUTING
+Plan: 2 of 2
+Status: Ready to execute
 Last activity: 2026-04-06
 
 Progress: [█████████░] 91%
@@ -86,6 +86,7 @@ Progress: [█████████░] 91%
 | Phase 39 P03 | 8min | 2 tasks | 8 files |
 | Phase 40 P01 | 6min | 2 tasks | 7 files |
 | Phase 40 P02 | 25min | 2 tasks | 15 files |
+| Phase 41 P01 | 1min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -168,6 +169,7 @@ Recent decisions affecting current work:
 - [Phase 40]: Removed explicit useMutation generics to let tRPC types flow through properly
 - [Phase 40]: Fixed settings.getOrgSettings/updateOrgSettings to actual router names settings.get/settings.update
 - [Phase 40]: Added defaultReturnCarrier to updateOrganizationSettingsSchema (was silently broken behind proxy)
+- [Phase 41]: Channel ConversationReference keyed by conversation.id (channel thread ID) instead of tenantId (AAD GUID)
 
 ### Pending Todos
 
@@ -181,6 +183,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-06T09:45:37.907Z
-Stopped at: Completed 40-02-PLAN.md
+Last session: 2026-04-06T12:36:01.660Z
+Stopped at: Completed 41-01-PLAN.md
 Resume file: None
