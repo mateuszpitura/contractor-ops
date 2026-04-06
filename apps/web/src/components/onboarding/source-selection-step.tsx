@@ -34,35 +34,6 @@ const PROVIDER_NAMES: Record<string, string> = {
 };
 
 // ---------------------------------------------------------------------------
-// OAuth popup helper
-// ---------------------------------------------------------------------------
-
-function openOAuthPopup(provider: string, onComplete: () => void) {
-  const providerSlug = provider.toLowerCase().replace("_", "-");
-  const url = `/api/oauth/${providerSlug}/authorize`;
-  const width = 600;
-  const height = 700;
-  const left = window.screenX + (window.outerWidth - width) / 2;
-  const top = window.screenY + (window.outerHeight - height) / 2;
-
-  const popup = window.open(
-    url,
-    `oauth-${provider}`,
-    `width=${width},height=${height},left=${left},top=${top}`,
-  );
-
-  if (!popup) return;
-
-  // Poll for popup close
-  const interval = setInterval(() => {
-    if (popup.closed) {
-      clearInterval(interval);
-      onComplete();
-    }
-  }, 500);
-}
-
-// ---------------------------------------------------------------------------
 // SourceSelectionStep
 // ---------------------------------------------------------------------------
 
@@ -97,16 +68,50 @@ export function SourceSelectionStep({
   );
 
   const handleConnect = useCallback(
-    (provider: string) => {
-      openOAuthPopup(provider, () => {
-        // Invalidate to check if connection succeeded
-        void queryClient.invalidateQueries({
-          queryKey: trpc.onboardingImport.listSources.queryKey(),
-        });
-        toast.info(`Checking ${PROVIDER_NAMES[provider] ?? provider} connection...`);
-      });
+    async (provider: string) => {
+      try {
+        const result = await queryClient.fetchQuery(
+          trpc.integration.getOAuthUrlGeneric.queryOptions({ provider }),
+        );
+        if (!result?.url) {
+          toast.error(t("step1.connectError"));
+          return;
+        }
+
+        const width = 600;
+        const height = 700;
+        const left = window.screenX + (window.outerWidth - width) / 2;
+        const top = window.screenY + (window.outerHeight - height) / 2;
+
+        const popup = window.open(
+          result.url,
+          `oauth-${provider}`,
+          `width=${width},height=${height},left=${left},top=${top}`,
+        );
+
+        if (!popup) {
+          // Fallback: redirect in same window
+          window.location.href = result.url;
+          return;
+        }
+
+        // Poll for popup close
+        const interval = setInterval(() => {
+          if (popup.closed) {
+            clearInterval(interval);
+            void queryClient.invalidateQueries({
+              queryKey: trpc.onboardingImport.listSources.queryKey(),
+            });
+            toast.info(
+              `Checking ${PROVIDER_NAMES[provider] ?? provider} connection...`,
+            );
+          }
+        }, 500);
+      } catch {
+        toast.error(t("step1.connectError"));
+      }
     },
-    [queryClient],
+    [queryClient, t],
   );
 
   const handleSkip = useCallback(() => {

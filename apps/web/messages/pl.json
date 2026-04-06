@@ -4158,7 +4158,8 @@
     "step1": {
       "heading": "Gdzie zarzadzasz swoim zespolem?",
       "subtitle": "Wybierz narzedzia, z ktorych chcesz importowac. Mozesz polaczyc nowe narzedzia tutaj.",
-      "skipLink": "Pomin -- zaprosze osoby recznie"
+      "skipLink": "Pomin -- zaprosze osoby recznie",
+      "connectError": "Nie udalo sie rozpoczac polaczenia. Sprobuj ponownie."
     },
     "step2": {
       "heading": "Sprawdz czlonkow zespolu",
