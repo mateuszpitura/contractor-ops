@@ -287,7 +287,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 40-01-PLAN.md — FeatureGate wrappers on Jira/Calendar + rebuild API dist types (BILL-09)
+- [x] 40-01-PLAN.md — FeatureGate wrappers on Jira/Calendar + rebuild API dist types (BILL-09)
 - [ ] 40-02-PLAN.md — Remove all (trpc as any) proxy workarounds across 13 files (EQUIP-05/EQUIP-06/EQUIP-07/TEAM-02/BILL-10)
 
 ## Progress
@@ -336,4 +336,4 @@ Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 �
 | 37. Shipment Task Auto-Completion Wiring | v3.0 | 1/1 | Complete    | 2026-04-05 |
 | 38. Tier Gate Expansion + CourierClient Type Fix | v3.0 | 3/3 | Complete    | 2026-04-05 |
 | 39. Final Wiring — Channel Alerts + Credit Exhaustion UI + OAuth FeatureGate | v3.0 | 1/3 | Complete    | 2026-04-05 |
-| 40. Integration Cleanup — FeatureGate + Type Safety | v3.0 | 0/2 | Planned | — |
+| 40. Integration Cleanup — FeatureGate + Type Safety | v3.0 | 1/2 | In Progress|  |

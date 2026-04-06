@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Enterprise & Monetization
 status: executing
-stopped_at: Completed 39-01, 39-02 plans
-last_updated: "2026-04-05T22:53:31.690Z"
-last_activity: 2026-04-05
+stopped_at: Completed 40-01-PLAN.md
+last_updated: "2026-04-06T09:18:04.368Z"
+last_activity: 2026-04-06
 progress:
-  total_phases: 12
+  total_phases: 13
   completed_phases: 12
-  total_plans: 40
-  completed_plans: 40
+  total_plans: 42
+  completed_plans: 41
   percent: 91
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-01)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 39 — final-wiring-channel-alerts-credit-ui-oauth-gate
+**Current focus:** Phase 40 — integration-cleanup-featuregate-type-safety
 
 ## Current Position
 
-Phase: 39
-Plan: Not started
-Status: Executing Phase 39
-Last activity: 2026-04-05
+Phase: 40 (integration-cleanup-featuregate-type-safety) — EXECUTING
+Plan: 2 of 2
+Status: Ready to execute
+Last activity: 2026-04-06
 
 Progress: [█████████░] 91%
 
@@ -84,6 +84,7 @@ Progress: [█████████░] 91%
 | Phase 39 P01 | 3min | 2 tasks | 2 files |
 | Phase 39 P02 | 12min | 2 tasks | 4 files |
 | Phase 39 P03 | 8min | 2 tasks | 8 files |
+| Phase 40 P01 | 6min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -162,6 +163,7 @@ Recent decisions affecting current work:
 - [Phase 39]: Only activity types mapped to channel categories; billing/system types excluded from channel alerts
 - [Phase 39]: Admin uses useRouter from @/i18n/navigation; portal keeps next/navigation for CreditExhaustedInline navigation
 - [Phase 39]: Vitest config for web app uses @vitejs/plugin-react for JSX transform with jsdom environment
+- [Phase 40]: ShipmentParams union type (Base | InPost | Address | DPD | UPS) instead of widening BaseShipmentParams -- preserves type narrowing in individual clients
 
 ### Pending Todos
 
@@ -175,6 +177,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-06T00:00:00.000Z
-Stopped at: Completed 39-01, 39-02 plans
+Last session: 2026-04-06T09:18:04.362Z
+Stopped at: Completed 40-01-PLAN.md
 Resume file: None
