@@ -303,7 +303,7 @@ Plans:
 
 Plans:
 - [x] 41-01-PLAN.md — Fix ConversationReference key mismatch for Teams channel alerts (TEAM-03)
-- [ ] 41-02-PLAN.md — Fix onboarding wizard OAuth connect URL to use tRPC (ONBD-01)
+- [x] 41-02-PLAN.md — Fix onboarding wizard OAuth connect URL to use tRPC (ONBD-01)
 
 ## Progress
 

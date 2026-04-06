@@ -4158,7 +4158,8 @@
     "step1": {
       "heading": "Where do you manage your team?",
       "subtitle": "Select the tools you want to import from. You can connect new tools right here.",
-      "skipLink": "Skip -- I'll invite people manually"
+      "skipLink": "Skip -- I'll invite people manually",
+      "connectError": "Failed to start connection. Please try again."
     },
     "step2": {
       "heading": "Review team members",
