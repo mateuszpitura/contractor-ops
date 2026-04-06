@@ -27,15 +27,6 @@ import { EquipmentStatusBadge } from "@/components/equipment/equipment-status-ba
 import { PortalReturnFlow } from "./portal-return-flow";
 
 // ---------------------------------------------------------------------------
-// tRPC portal proxy (workaround: API dist types are stale until next build)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const portalProxy = (trpc as any).portal as {
-  listEquipment: { queryOptions: () => any; queryKey: () => any[] };
-  getReturnStatus: { queryOptions: () => any; queryKey: () => any[] };
-  cancelReturn: { mutationOptions: (opts: any) => any };
-};
-
-// ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
@@ -55,7 +46,7 @@ export function PortalEquipmentTab() {
   // Queries
   // -------------------------------------------------------------------------
 
-  const equipmentQuery = useQuery(portalProxy.listEquipment.queryOptions());
+  const equipmentQuery = useQuery(trpc.portal.listEquipment.queryOptions());
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const equipment = (equipmentQuery.data ?? []) as Array<{
     assignmentId: string;
@@ -74,7 +65,7 @@ export function PortalEquipmentTab() {
   }>;
 
   const returnStatusQuery = useQuery(
-    portalProxy.getReturnStatus.queryOptions(),
+    trpc.portal.getReturnStatus.queryOptions(),
   );
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const returnRequest = returnStatusQuery.data as {
@@ -90,15 +81,15 @@ export function PortalEquipmentTab() {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const cancelMutation = useMutation<any, Error, Record<string, unknown>>(
-    portalProxy.cancelReturn.mutationOptions({
+    trpc.portal.cancelReturn.mutationOptions({
       onSuccess: () => {
         toast.success(tReturn("cancelledToast"));
         setCancelDialogOpen(false);
         queryClient.invalidateQueries({
-          queryKey: portalProxy.getReturnStatus.queryKey(),
+          queryKey: trpc.portal.getReturnStatus.queryKey(),
         });
         queryClient.invalidateQueries({
-          queryKey: portalProxy.listEquipment.queryKey(),
+          queryKey: trpc.portal.listEquipment.queryKey(),
         });
       },
       onError: () => {
@@ -264,10 +255,10 @@ export function PortalEquipmentTab() {
         returnRequest={returnRequest}
         onSuccess={() => {
           queryClient.invalidateQueries({
-            queryKey: portalProxy.getReturnStatus.queryKey(),
+            queryKey: trpc.portal.getReturnStatus.queryKey(),
           });
           queryClient.invalidateQueries({
-            queryKey: portalProxy.listEquipment.queryKey(),
+            queryKey: trpc.portal.listEquipment.queryKey(),
           });
         }}
       />

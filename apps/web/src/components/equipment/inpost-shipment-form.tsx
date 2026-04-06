@@ -28,16 +28,6 @@ import {
 import { PaczkomatDisplay } from "./paczkomat-display";
 
 // ---------------------------------------------------------------------------
-// tRPC equipment proxy (workaround: API dist types are stale until next build)
-// The createInPostShipment procedure IS registered but dist/index.d.ts predates it.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const equipmentProxy = (trpc as any).equipment as {
-  createInPostShipment: { mutationOptions: (opts: any) => any };
-  getById: { queryKey: () => any[] };
-  list: { queryKey: () => any[] };
-};
-
-// ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
@@ -98,14 +88,14 @@ export function InPostShipmentForm({
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const createMutation = useMutation<any, Error, Record<string, unknown>>(
-    equipmentProxy.createInPostShipment.mutationOptions({
+    trpc.equipment.createInPostShipment.mutationOptions({
       onSuccess: () => {
         toast.success(t("shipmentCreated"));
         queryClient.invalidateQueries({
-          queryKey: equipmentProxy.getById.queryKey(),
+          queryKey: trpc.equipment.getById.queryKey(),
         });
         queryClient.invalidateQueries({
-          queryKey: equipmentProxy.list.queryKey(),
+          queryKey: trpc.equipment.list.queryKey(),
         });
         onSuccess();
         onOpenChange(false);

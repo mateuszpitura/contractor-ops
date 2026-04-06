@@ -12,14 +12,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "@/i18n/navigation";
 import { useBreadcrumbOverride } from "@/components/layout/breadcrumb-context";
 
-// tRPC equipment proxy for new procedures (stale dist types workaround)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const equipmentProxy = (trpc as any).equipment as {
-  listReturnRequests: {
-    queryOptions: (input?: { status?: string }) => any;
-  };
-};
-
 import { EquipmentDetailHeader } from "@/components/equipment/equipment-detail/equipment-detail-header";
 import { EquipmentDetailTabs } from "@/components/equipment/equipment-detail/equipment-detail-tabs";
 import { TabInfo } from "@/components/equipment/equipment-detail/tab-info";
@@ -29,12 +21,6 @@ import { EquipmentForm } from "@/components/equipment/equipment-form";
 import { AssignmentDialog } from "@/components/equipment/assignment-dialog";
 import { ShipmentForm } from "@/components/equipment/shipment-form";
 import { CarrierShipmentForm } from "@/components/equipment/carrier-shipment-form";
-
-// tRPC proxy for courier configs (stale dist types workaround)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const courierConfigProxy = (trpc as any).equipment as {
-  getCourierConfigs: { queryOptions: () => any };
-};
 
 // ---------------------------------------------------------------------------
 // Skeleton
@@ -90,7 +76,7 @@ export default function EquipmentDetailPage() {
 
   // Query pending return requests for the current equipment's contractor
   const returnRequestsQuery = useQuery({
-    ...equipmentProxy.listReturnRequests.queryOptions({
+    ...trpc.equipment.listReturnRequests.queryOptions({
       status: "PENDING_APPROVAL",
     }),
     enabled: !!equipment?.currentAssignment,
@@ -107,7 +93,7 @@ export default function EquipmentDetailPage() {
   }>;
 
   // Query configured carriers for carrier shipment form
-  const courierConfigsQuery = useQuery(courierConfigProxy.getCourierConfigs.queryOptions());
+  const courierConfigsQuery = useQuery(trpc.equipment.getCourierConfigs.queryOptions());
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const courierConfigs = (courierConfigsQuery.data ?? []) as Array<{ carrier: string }>;
   const configuredCarriers = courierConfigs.map((c) => c.carrier);

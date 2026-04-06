@@ -25,18 +25,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 // ---------------------------------------------------------------------------
-// tRPC portal proxy (workaround: API dist types are stale until next build)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const portalProxy = (trpc as any).portal as {
-  requestReturn: { mutationOptions: (opts: any) => any };
-  getReturnStatus: { queryKey: () => any[] };
-  getReturnLabel: {
-    queryOptions: (input: { returnRequestId: string }) => any;
-  };
-  listEquipment: { queryKey: () => any[] };
-};
-
-// ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
@@ -133,14 +121,14 @@ export function PortalReturnFlow({
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const requestMutation = useMutation<any, Error, Record<string, unknown>>(
-    portalProxy.requestReturn.mutationOptions({
+    trpc.portal.requestReturn.mutationOptions({
       onSuccess: () => {
         toast.success(t("returnRequested"));
         queryClient.invalidateQueries({
-          queryKey: portalProxy.getReturnStatus.queryKey(),
+          queryKey: trpc.portal.getReturnStatus.queryKey(),
         });
         queryClient.invalidateQueries({
-          queryKey: portalProxy.listEquipment.queryKey(),
+          queryKey: trpc.portal.listEquipment.queryKey(),
         });
         onSuccess();
         // Stay on step 2 to show pending state
@@ -165,7 +153,7 @@ export function PortalReturnFlow({
   // -------------------------------------------------------------------------
 
   const labelQuery = useQuery({
-    ...portalProxy.getReturnLabel.queryOptions({
+    ...trpc.portal.getReturnLabel.queryOptions({
       returnRequestId: returnRequest?.id ?? "",
     }),
     enabled: step === 3 && !!returnRequest?.id,

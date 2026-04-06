@@ -20,15 +20,6 @@ import {
 } from "@/components/ui/card";
 
 // ---------------------------------------------------------------------------
-// tRPC equipment proxy (workaround: API dist types are stale until next build)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const equipmentProxy = (trpc as any).equipment as {
-  saveCourierConfig: { mutationOptions: (opts: any) => any };
-  getCourierConfigs: { queryOptions: () => any };
-  testCourierConnection: { mutationOptions: (opts: any) => any };
-};
-
-// ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
@@ -114,7 +105,7 @@ export function CarrierCredentialForm({
 
   // Check if this carrier is already configured
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const configsQuery = useQuery<any>(equipmentProxy.getCourierConfigs.queryOptions());
+  const configsQuery = useQuery<any>(trpc.equipment.getCourierConfigs.queryOptions());
   const configs = (configsQuery.data ?? []) as Array<{ carrier: string }>;
   const isConnected = configs.some(
     (c) => c.carrier.toLowerCase() === carrier,
@@ -139,11 +130,11 @@ export function CarrierCredentialForm({
   // Save mutation
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const saveMutation = useMutation<any, Error, Record<string, unknown>>(
-    equipmentProxy.saveCourierConfig.mutationOptions({
+    trpc.equipment.saveCourierConfig.mutationOptions({
       onSuccess: () => {
         toast.success(t("credentialsSaved"));
         queryClient.invalidateQueries({
-          queryKey: (equipmentProxy.getCourierConfigs as any).queryKey?.() ?? ["equipment", "getCourierConfigs"],
+          queryKey: (trpc.equipment.getCourierConfigs as any).queryKey?.() ?? ["equipment", "getCourierConfigs"],
         });
       },
       onError: () => {
@@ -155,7 +146,7 @@ export function CarrierCredentialForm({
   // Test connection mutation
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const testMutation = useMutation<any, Error, Record<string, unknown>>(
-    equipmentProxy.testCourierConnection.mutationOptions({
+    trpc.equipment.testCourierConnection.mutationOptions({
       onSuccess: () => {
         toast.success(t("connectionVerified"));
       },

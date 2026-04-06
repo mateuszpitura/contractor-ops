@@ -34,17 +34,6 @@ import { DpdFieldset, type DpdAddress, type ParcelSize } from "./dpd-fieldset";
 import { UpsFieldset, type UpsServiceCode } from "./ups-fieldset";
 
 // ---------------------------------------------------------------------------
-// tRPC equipment proxy (workaround: API dist types are stale until next build)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const equipmentProxy = (trpc as any).equipment as {
-  createInPostShipment: { mutationOptions: (opts: any) => any };
-  createDpdShipment: { mutationOptions: (opts: any) => any };
-  createUpsShipment: { mutationOptions: (opts: any) => any };
-  getById: { queryKey: () => any[] };
-  list: { queryKey: () => any[] };
-};
-
-// ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
@@ -154,10 +143,10 @@ export function CarrierShipmentForm({
 
   const invalidateQueries = useCallback(() => {
     queryClient.invalidateQueries({
-      queryKey: equipmentProxy.getById.queryKey(),
+      queryKey: trpc.equipment.getById.queryKey(),
     });
     queryClient.invalidateQueries({
-      queryKey: equipmentProxy.list.queryKey(),
+      queryKey: trpc.equipment.list.queryKey(),
     });
   }, [queryClient]);
 
@@ -177,7 +166,7 @@ export function CarrierShipmentForm({
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const inpostMutation = useMutation<any, Error, Record<string, unknown>>(
-    equipmentProxy.createInPostShipment.mutationOptions({
+    trpc.equipment.createInPostShipment.mutationOptions({
       onSuccess: () => onMutationSuccess("InPost"),
       onError: onMutationError,
     }),
@@ -185,7 +174,7 @@ export function CarrierShipmentForm({
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const dpdMutation = useMutation<any, Error, Record<string, unknown>>(
-    equipmentProxy.createDpdShipment.mutationOptions({
+    trpc.equipment.createDpdShipment.mutationOptions({
       onSuccess: () => onMutationSuccess("DPD"),
       onError: onMutationError,
     }),
@@ -193,7 +182,7 @@ export function CarrierShipmentForm({
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const upsMutation = useMutation<any, Error, Record<string, unknown>>(
-    equipmentProxy.createUpsShipment.mutationOptions({
+    trpc.equipment.createUpsShipment.mutationOptions({
       onSuccess: () => onMutationSuccess("UPS"),
       onError: onMutationError,
     }),

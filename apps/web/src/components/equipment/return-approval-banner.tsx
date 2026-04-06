@@ -10,15 +10,6 @@ import { format } from "date-fns";
 import { trpc } from "@/trpc/init";
 import { Button } from "@/components/ui/button";
 
-// ---------------------------------------------------------------------------
-// tRPC equipment proxy (workaround: API dist types are stale until next build)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const equipmentProxy = (trpc as any).equipment as {
-  approveReturnRequest: { mutationOptions: (opts: any) => any };
-  rejectReturnRequest: { mutationOptions: (opts: any) => any };
-  getById: { queryKey: () => any[] };
-  listReturnRequests: { queryKey: () => any[] };
-};
 import {
   AlertDialog,
   AlertDialogAction,
@@ -63,14 +54,14 @@ export function ReturnApprovalBanner({
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const approveMutation = useMutation<any, Error, Record<string, unknown>>(
-    equipmentProxy.approveReturnRequest.mutationOptions({
+    trpc.equipment.approveReturnRequest.mutationOptions({
       onSuccess: () => {
         toast.success(t("approvedToast"));
         queryClient.invalidateQueries({
-          queryKey: equipmentProxy.getById.queryKey(),
+          queryKey: trpc.equipment.getById.queryKey(),
         });
         queryClient.invalidateQueries({
-          queryKey: equipmentProxy.listReturnRequests.queryKey(),
+          queryKey: trpc.equipment.listReturnRequests.queryKey(),
         });
       },
       onError: () => {
@@ -81,15 +72,15 @@ export function ReturnApprovalBanner({
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rejectMutation = useMutation<any, Error, Record<string, unknown>>(
-    equipmentProxy.rejectReturnRequest.mutationOptions({
+    trpc.equipment.rejectReturnRequest.mutationOptions({
       onSuccess: () => {
         toast.success(t("rejectedToast"));
         setRejectDialogOpen(false);
         queryClient.invalidateQueries({
-          queryKey: equipmentProxy.getById.queryKey(),
+          queryKey: trpc.equipment.getById.queryKey(),
         });
         queryClient.invalidateQueries({
-          queryKey: equipmentProxy.listReturnRequests.queryKey(),
+          queryKey: trpc.equipment.listReturnRequests.queryKey(),
         });
       },
       onError: () => {

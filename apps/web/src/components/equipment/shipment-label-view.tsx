@@ -10,13 +10,6 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // ---------------------------------------------------------------------------
-// tRPC equipment proxy (workaround: API dist types are stale until next build)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const equipmentProxy = (trpc as any).equipment as {
-  getShipmentLabel: { queryOptions: (input: { shipmentId: string }) => any };
-};
-
-// ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
@@ -144,7 +137,7 @@ export function ShipmentLabelView({
   const t = useTranslations("Equipment.label");
 
   const labelQuery = useQuery(
-    equipmentProxy.getShipmentLabel.queryOptions({ shipmentId }),
+    trpc.equipment.getShipmentLabel.queryOptions({ shipmentId }),
   );
 
   if (labelQuery.isPending) {
