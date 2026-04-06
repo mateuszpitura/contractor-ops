@@ -7,6 +7,7 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { trpc } from "@/trpc/init";
+import { FeatureGate } from "@/components/billing/feature-gate";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -265,26 +266,28 @@ export function OrgCalendarSection() {
   }
 
   return (
-    <div className="space-y-4">
-      <h3 className="text-sm font-semibold">{t("calendarSectionTitle")}</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <OrgCalendarProviderCard
-          provider="google-calendar"
-          displayName={t("googleCalendar")}
-          icon={<GoogleCalendarIcon className="h-8 w-8" />}
-          connection={googleConnection}
-          onDisconnect={handleDisconnect}
-          isDisconnecting={disconnectMutation.isPending}
-        />
-        <OrgCalendarProviderCard
-          provider="outlook-calendar"
-          displayName={t("outlookCalendar")}
-          icon={<OutlookCalendarIcon className="h-8 w-8 text-[#0078D4]" />}
-          connection={outlookConnection}
-          onDisconnect={handleDisconnect}
-          isDisconnecting={disconnectMutation.isPending}
-        />
+    <FeatureGate requiredTier="Pro" featureName="Calendar integration">
+      <div className="space-y-4">
+        <h3 className="text-sm font-semibold">{t("calendarSectionTitle")}</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <OrgCalendarProviderCard
+            provider="google-calendar"
+            displayName={t("googleCalendar")}
+            icon={<GoogleCalendarIcon className="h-8 w-8" />}
+            connection={googleConnection}
+            onDisconnect={handleDisconnect}
+            isDisconnecting={disconnectMutation.isPending}
+          />
+          <OrgCalendarProviderCard
+            provider="outlook-calendar"
+            displayName={t("outlookCalendar")}
+            icon={<OutlookCalendarIcon className="h-8 w-8 text-[#0078D4]" />}
+            connection={outlookConnection}
+            onDisconnect={handleDisconnect}
+            isDisconnecting={disconnectMutation.isPending}
+          />
+        </div>
       </div>
-    </div>
+    </FeatureGate>
   );
 }

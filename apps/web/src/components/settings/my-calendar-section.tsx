@@ -7,6 +7,7 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { trpc } from "@/trpc/init";
+import { FeatureGate } from "@/components/billing/feature-gate";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -283,39 +284,41 @@ export function MyCalendarSection() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Calendar provider cards */}
-      <div className="space-y-4">
-        <CalendarProviderCard
-          provider="GOOGLE_CALENDAR"
-          displayName={t("googleCalendar")}
-          icon={<GoogleCalendarIcon className="h-8 w-8" />}
-          connection={googleConnection}
-          onConnect={handleGoogleConnect}
-          onDisconnect={handleDisconnect}
-          isDisconnecting={disconnectMutation.isPending}
-        />
-        <CalendarProviderCard
-          provider="OUTLOOK_CALENDAR"
-          displayName={t("outlookCalendar")}
-          icon={<OutlookCalendarIcon className="h-8 w-8 text-[#0078D4]" />}
-          connection={outlookConnection}
-          onConnect={handleOutlookConnect}
-          onDisconnect={handleDisconnect}
-          isDisconnecting={disconnectMutation.isPending}
-        />
-      </div>
+    <FeatureGate requiredTier="Pro" featureName="Calendar integration">
+      <div className="space-y-6">
+        {/* Calendar provider cards */}
+        <div className="space-y-4">
+          <CalendarProviderCard
+            provider="GOOGLE_CALENDAR"
+            displayName={t("googleCalendar")}
+            icon={<GoogleCalendarIcon className="h-8 w-8" />}
+            connection={googleConnection}
+            onConnect={handleGoogleConnect}
+            onDisconnect={handleDisconnect}
+            isDisconnecting={disconnectMutation.isPending}
+          />
+          <CalendarProviderCard
+            provider="OUTLOOK_CALENDAR"
+            displayName={t("outlookCalendar")}
+            icon={<OutlookCalendarIcon className="h-8 w-8 text-[#0078D4]" />}
+            connection={outlookConnection}
+            onConnect={handleOutlookConnect}
+            onDisconnect={handleDisconnect}
+            isDisconnecting={disconnectMutation.isPending}
+          />
+        </div>
 
-      {/* Active Synced Events section */}
-      <div className="space-y-2">
-        <h3 className="text-sm font-semibold">{t("activeSyncedEvents")}</h3>
-        <Badge variant="secondary">
-          {t("eventsSynced", { count: eventCount })}
-        </Badge>
-        <p className="text-xs text-muted-foreground">
-          {t("syncedEventsHelper")}
-        </p>
+        {/* Active Synced Events section */}
+        <div className="space-y-2">
+          <h3 className="text-sm font-semibold">{t("activeSyncedEvents")}</h3>
+          <Badge variant="secondary">
+            {t("eventsSynced", { count: eventCount })}
+          </Badge>
+          <p className="text-xs text-muted-foreground">
+            {t("syncedEventsHelper")}
+          </p>
+        </div>
       </div>
-    </div>
+    </FeatureGate>
   );
 }
