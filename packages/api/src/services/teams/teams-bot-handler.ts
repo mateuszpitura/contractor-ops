@@ -67,7 +67,9 @@ interface TeamsConnectionConfig {
 
 /**
  * Stores a ConversationReference for proactive messaging.
- * Keyed by the user's AAD Object ID within the MICROSOFT_TEAMS
+ * Personal refs are keyed by the user's AAD Object ID.
+ * Channel refs are keyed by conversation.id (channel thread ID,
+ * e.g. "19:xxx@thread.tacv2") within the MICROSOFT_TEAMS
  * IntegrationConnection configJson.
  */
 export async function storeConversationReference(
@@ -101,15 +103,16 @@ export async function storeConversationReference(
 
   conversationReferences[aadObjectId] = ref as ConversationReference;
 
-  // For team-scoped conversations, also store under teamConversationReferences
+  // For channel-scoped conversations, store under teamConversationReferences
+  // keyed by conversation.id (channel thread ID like "19:xxx@thread.tacv2")
+  // so sendChannelAlert can look up by params.channelId
   const teamConversationReferences = config.teamConversationReferences ?? {};
-  const teamId = (ref.conversation as Record<string, unknown> | undefined)
-    ?.tenantId as string | undefined;
+  const channelId = ref.conversation?.id;
   if (
-    teamId &&
+    channelId &&
     ref.conversation?.conversationType === "channel"
   ) {
-    teamConversationReferences[teamId] = ref as ConversationReference;
+    teamConversationReferences[channelId] = ref as ConversationReference;
   }
 
   await prisma.integrationConnection.update({
