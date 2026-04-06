@@ -299,7 +299,11 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. Teams channel alerts deliver Adaptive Cards to configured channels when activity events fire (ConversationReference looked up by channel thread ID)
   2. Onboarding wizard "Connect" button for disconnected providers opens OAuth authorization via `trpc.integration.getOAuthUrlGeneric` instead of 404
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 41-01-PLAN.md — Fix ConversationReference key mismatch for Teams channel alerts (TEAM-03)
+- [ ] 41-02-PLAN.md — Fix onboarding wizard OAuth connect URL to use tRPC (ONBD-01)
 
 ## Progress
 
@@ -348,4 +352,4 @@ Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 �
 | 38. Tier Gate Expansion + CourierClient Type Fix | v3.0 | 3/3 | Complete    | 2026-04-05 |
 | 39. Final Wiring — Channel Alerts + Credit Exhaustion UI + OAuth FeatureGate | v3.0 | 1/3 | Complete    | 2026-04-05 |
 | 40. Integration Cleanup — FeatureGate + Type Safety | v3.0 | 2/2 | Complete    | 2026-04-06 |
-| 41. Teams Channel Ref + Onboarding OAuth | v3.0 | 0/0 | Planned    | — |
+| 41. Teams Channel Ref + Onboarding OAuth | v3.0 | 0/2 | Planned    | — |
