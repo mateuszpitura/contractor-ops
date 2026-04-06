@@ -20,7 +20,7 @@ Requirements for v3.0 Enterprise & Monetization milestone. Each maps to roadmap 
 
 - [x] **TEAM-01**: Admin can connect Teams workspace via Azure AD OAuth with bot registration
 - [x] **TEAM-02**: Admin can configure which Teams channel receives which notification types
-- [x] **TEAM-03**: System sends activity alerts to configured Teams channels via Adaptive Cards
+- [ ] **TEAM-03**: System sends activity alerts to configured Teams channels via Adaptive Cards
 - [x] **TEAM-04**: Manager can approve or reject invoices directly from Teams Adaptive Card actions
 - [x] **TEAM-05**: System sends approval reminder DMs to approvers with overdue items via proactive messaging
 - [x] **TEAM-06**: Teams bot stores ConversationReferences for proactive messaging per user
@@ -35,7 +35,7 @@ Requirements for v3.0 Enterprise & Monetization milestone. Each maps to roadmap 
 
 ### Intelligent Onboarding
 
-- [x] **ONBD-01**: User sees "Where do you manage your team?" source selection during onboarding with connected tool options
+- [ ] **ONBD-01**: User sees "Where do you manage your team?" source selection during onboarding with connected tool options
 - [x] **ONBD-02**: System imports team members from connected tools (Jira, Linear, Google Workspace, Slack) with email-based dedup
 - [x] **ONBD-03**: System imports projects and statuses from PM tools (Jira, Linear) to pre-configure workflow templates
 - [x] **ONBD-04**: User can preview imported data with diff indicators (new/duplicate/conflict) and batch confirm, skip, or edit
@@ -114,7 +114,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LIN-06 | Phase 29 | Complete |
 | TEAM-01 | Phase 32 | Complete |
 | TEAM-02 | Phase 39 | Complete |
-| TEAM-03 | Phase 39 | Complete |
+| TEAM-03 | Phase 41 | Pending |
 | TEAM-04 | Phase 32 | Complete |
 | TEAM-05 | Phase 32 | Complete |
 | TEAM-06 | Phase 32 | Complete |
@@ -123,7 +123,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | GOOG-03 | Phase 31 | Complete |
 | GOOG-04 | Phase 31 | Complete |
 | GOOG-05 | Phase 31 | Complete |
-| ONBD-01 | Phase 34 | Complete |
+| ONBD-01 | Phase 41 | Pending |
 | ONBD-02 | Phase 34 | Complete |
 | ONBD-03 | Phase 34 | Complete |
 | ONBD-04 | Phase 34 | Complete |
@@ -152,6 +152,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 **Coverage:**
 - v3.0 requirements: 43 total
+- Satisfied: 41
+- Pending (gap closure): 2 (TEAM-03, ONBD-01)
 - Mapped to phases: 43
 - Unmapped: 0
 
