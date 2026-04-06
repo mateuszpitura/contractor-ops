@@ -35,7 +35,7 @@ Requirements for v3.0 Enterprise & Monetization milestone. Each maps to roadmap 
 
 ### Intelligent Onboarding
 
-- [ ] **ONBD-01**: User sees "Where do you manage your team?" source selection during onboarding with connected tool options
+- [x] **ONBD-01**: User sees "Where do you manage your team?" source selection during onboarding with connected tool options
 - [x] **ONBD-02**: System imports team members from connected tools (Jira, Linear, Google Workspace, Slack) with email-based dedup
 - [x] **ONBD-03**: System imports projects and statuses from PM tools (Jira, Linear) to pre-configure workflow templates
 - [x] **ONBD-04**: User can preview imported data with diff indicators (new/duplicate/conflict) and batch confirm, skip, or edit
@@ -123,7 +123,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | GOOG-03 | Phase 31 | Complete |
 | GOOG-04 | Phase 31 | Complete |
 | GOOG-05 | Phase 31 | Complete |
-| ONBD-01 | Phase 41 | Pending |
+| ONBD-01 | Phase 41 | Complete |
 | ONBD-02 | Phase 34 | Complete |
 | ONBD-03 | Phase 34 | Complete |
 | ONBD-04 | Phase 34 | Complete |
