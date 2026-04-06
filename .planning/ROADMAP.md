@@ -68,7 +68,7 @@ Full details: `.planning/milestones/v2.0-ROADMAP.md`
 - [x] **Phase 38: Tier Gate Expansion + CourierClient Type Fix** - All mutations enforce tier gating, CourierClient generic base type (completed 2026-04-05)
 - [x] **Phase 39: Final Wiring — Channel Alerts + Credit Exhaustion UI + OAuth FeatureGate** - Wire sendChannelAlert dispatch, mount CreditExhaustedInline, wrap OAuth CTAs with FeatureGate (completed 2026-04-05)
 - [x] **Phase 40: Integration Cleanup — FeatureGate + Type Safety** - Wrap Jira/Calendar provider sections with FeatureGate, rebuild API dist types, remove (trpc as any) proxies (completed 2026-04-06)
-- [ ] **Phase 41: Wiring Fixes — Teams Channel Ref + Onboarding OAuth** - Fix ConversationReference key mismatch for Teams channel alerts, fix onboarding wizard OAuth connect URL (in progress)
+- [x] **Phase 41: Wiring Fixes — Teams Channel Ref + Onboarding OAuth** - Fix ConversationReference key mismatch for Teams channel alerts, fix onboarding wizard OAuth connect URL (in progress) (completed 2026-04-06)
 
 ## Phase Details
 
@@ -352,4 +352,4 @@ Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 �
 | 38. Tier Gate Expansion + CourierClient Type Fix | v3.0 | 3/3 | Complete    | 2026-04-05 |
 | 39. Final Wiring — Channel Alerts + Credit Exhaustion UI + OAuth FeatureGate | v3.0 | 1/3 | Complete    | 2026-04-05 |
 | 40. Integration Cleanup — FeatureGate + Type Safety | v3.0 | 2/2 | Complete    | 2026-04-06 |
-| 41. Teams Channel Ref + Onboarding OAuth | v3.0 | 1/2 | In Progress|  |
+| 41. Teams Channel Ref + Onboarding OAuth | v3.0 | 1/2 | Complete    | 2026-04-06 |
