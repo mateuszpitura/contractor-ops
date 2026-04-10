@@ -4,7 +4,7 @@
 
 - ✅ **v1.0 MVP** — Phases 1-11 (shipped 2026-03-23)
 - ✅ **v2.0 Platform Expansion** — Phases 12-27 (shipped 2026-04-01)
-- 🚧 **v3.0 Enterprise & Monetization** — Phases 28-39 (in progress)
+- 🚧 **v3.0 Enterprise & Monetization** — Phases 28-44 (in progress)
 
 ## Phases
 
@@ -70,6 +70,8 @@ Full details: `.planning/milestones/v2.0-ROADMAP.md`
 - [x] **Phase 40: Integration Cleanup — FeatureGate + Type Safety** - Wrap Jira/Calendar provider sections with FeatureGate, rebuild API dist types, remove (trpc as any) proxies (completed 2026-04-06)
 - [x] **Phase 41: Wiring Fixes — Teams Channel Ref + Onboarding OAuth** - Fix ConversationReference key mismatch for Teams channel alerts, fix onboarding wizard OAuth connect URL (in progress) (completed 2026-04-06)
 - [x] **Phase 42: Tech Debt Cleanup** - Fill it.todo() test stubs, fix hardcoded retry role, wire InPost notification dispatch (in progress) (completed 2026-04-10)
+- [ ] **Phase 43: DPD/UPS Notification Dispatch Wiring** - Wire SHIPMENT_STATUS_CHANGE notifications in DPD/UPS polling services
+- [ ] **Phase 44: Test Stub Completion** - Replace all it.todo() stubs with real assertions in billing, Linear, GWS tests
 
 ## Phase Details
 
@@ -322,10 +324,37 @@ Plans:
 Plans:
 (none yet — run `/gsd:plan-phase 42`)
 
+### Phase 43: DPD/UPS Notification Dispatch Wiring
+**Goal**: DPD and UPS polling services dispatch SHIPMENT_STATUS_CHANGE notifications on terminal statuses, matching the InPost webhook handler pattern
+**Depends on**: Phase 33 (InPost notification pattern), Phase 35 (DPD/UPS polling services)
+**Requirements**: EQUIP-06, EQUIP-07
+**Gap Closure**: Closes DPD-UPS-NOTIFICATION-DISPATCH integration gap and DPD/UPS notification flow gap from v3.0 milestone audit
+**Success Criteria** (what must be TRUE):
+  1. DPD polling service dispatches SHIPMENT_STATUS_CHANGE notification when shipment reaches a terminal status (delivered, returned, lost)
+  2. UPS polling service dispatches SHIPMENT_STATUS_CHANGE notification when shipment reaches a terminal status (delivered, returned, lost)
+**Plans**: 0 plans
+
+Plans:
+(none yet — run `/gsd:plan-phase 43`)
+
+### Phase 44: Test Stub Completion
+**Goal**: Replace all remaining it.todo() test stubs with real assertions across billing, Linear, and Google Workspace test files
+**Depends on**: Phase 28 (billing), Phase 29 (Linear), Phase 31 (GWS)
+**Requirements**: None (tech debt — all requirements already satisfied)
+**Tech Debt Closure**: Completes Phase 42 unfinished success criteria 1-3
+**Success Criteria** (what must be TRUE):
+  1. Billing test files (billing-service.test.ts, billing-webhook.test.ts, credit-service.test.ts) have real assertions replacing all it.todo() stubs
+  2. Linear test files (linear-adapter.test.ts, linear.test.ts, linear-status-mapping.test.ts, linear-issue-sync.test.ts) have real assertions replacing all it.todo() stubs
+  3. Google Workspace test files (google-workspace-adapter.test.ts, google-workspace-directory.test.ts, google-workspace-sync.test.ts, google-workspace.test.ts) have real assertions replacing all it.todo() stubs
+**Plans**: 0 plans
+
+Plans:
+(none yet — run `/gsd:plan-phase 44`)
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 → 35 → 36 → 37 → 38 → 39 → 40 → 41 → 42
+Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 → 35 → 36 → 37 → 38 → 39 → 40 → 41 → 42 → 43 → 44
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -371,3 +400,5 @@ Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 �
 | 40. Integration Cleanup — FeatureGate + Type Safety | v3.0 | 2/2 | Complete    | 2026-04-06 |
 | 41. Teams Channel Ref + Onboarding OAuth | v3.0 | 1/2 | Complete    | 2026-04-06 |
 | 42. Tech Debt Cleanup | v3.0 | 2/2 | Complete   | 2026-04-10 |
+| 43. DPD/UPS Notification Dispatch Wiring | v3.0 | 0/0 | Pending | — |
+| 44. Test Stub Completion | v3.0 | 0/0 | Pending | — |
