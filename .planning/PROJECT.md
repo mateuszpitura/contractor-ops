@@ -73,7 +73,23 @@ v3.0 Enterprise & Monetization (shipped 2026-04-11): Stripe subscription billing
 
 ### Active
 
-(No active milestone — run `/gsd:new-milestone` to start v4.0)
+#### Current Milestone: v4.0 International Foundation & Gulf Expansion
+
+**Goal:** Build pluggable multi-market infrastructure (e-invoicing engine, multi-currency, i18n framework, multi-region) and launch UAE + Saudi Arabia as first international markets.
+
+**Target features:**
+- Pluggable e-invoicing engine with abstract core (EN 16931 / UBL 2.1) — refactoring existing KSeF into this architecture
+- ZATCA Fatoorah integration (Saudi Arabia — clearance, reporting, XML DSig, QR codes)
+- Peppol PINT-AE integration (UAE — XML generation, ASP integration)
+- Multi-currency support (AED, SAR, GBP + existing PLN/EUR)
+- Multi-tier VAT engine (5% UAE, 15% Saudi, replacing hardcoded Polish VAT)
+- SWIFT payment export format + purpose codes
+- Full Arabic localization with RTL layout support
+- Country-specific contractor profile fields (freelance permits, trade licenses, tax IDs)
+- WHT calculator for Saudi cross-border payments + certificate generation
+- PDPL compliance (UAE + Saudi) with consent management
+- Multi-region deployment infrastructure (Middle East cloud region)
+- Government API integration framework (reusable for ZATCA, Peppol, future markets)
 
 ### Out of Scope
 
@@ -165,4 +181,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-11 after v3.0 Enterprise & Monetization milestone complete*
+*Last updated: 2026-04-11 after v4.0 International Foundation & Gulf Expansion milestone started*

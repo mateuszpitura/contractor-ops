@@ -1,36 +1,34 @@
 ---
 gsd_state_version: 1.0
-milestone: v3.0
-milestone_name: Enterprise & Monetization
-status: executing
-stopped_at: Phase 43 executed and verified — all courier polling services dispatch notifications
-last_updated: "2026-04-10T22:25:12.270Z"
-last_activity: 2026-04-10
+milestone: v4.0
+milestone_name: International Foundation & Gulf Expansion
+status: defining_requirements
+stopped_at: null
+last_updated: "2026-04-11T00:00:00.000Z"
+last_activity: 2026-04-11
 progress:
-  total_phases: 17
-  completed_phases: 16
-  total_plans: 47
-  completed_plans: 47
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-01)
+See: .planning/PROJECT.md (updated 2026-04-11)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 43 — dpd-ups-notification-dispatch
+**Current focus:** Defining requirements for v4.0 International Foundation & Gulf Expansion
 
 ## Current Position
 
-Phase: 44
-Plan: Not started
-Status: Executing Phase 43
-Last activity: 2026-04-10
-
-Progress: [█████████░] 91%
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-04-11 — Milestone v4.0 started
 
 ## Performance Metrics
 
