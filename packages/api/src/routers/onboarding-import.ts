@@ -386,6 +386,7 @@ export const onboardingImportRouter = router({
             job.failedItems.push({
               email: `project:${proj.externalId}`,
               error: message,
+              role: "readonly",
             });
           }
         }
