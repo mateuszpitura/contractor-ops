@@ -70,7 +70,7 @@ Full details: `.planning/milestones/v2.0-ROADMAP.md`
 - [x] **Phase 40: Integration Cleanup — FeatureGate + Type Safety** - Wrap Jira/Calendar provider sections with FeatureGate, rebuild API dist types, remove (trpc as any) proxies (completed 2026-04-06)
 - [x] **Phase 41: Wiring Fixes — Teams Channel Ref + Onboarding OAuth** - Fix ConversationReference key mismatch for Teams channel alerts, fix onboarding wizard OAuth connect URL (in progress) (completed 2026-04-06)
 - [x] **Phase 42: Tech Debt Cleanup** - Fill it.todo() test stubs, fix hardcoded retry role, wire InPost notification dispatch (in progress) (completed 2026-04-10)
-- [ ] **Phase 43: DPD/UPS Notification Dispatch Wiring** - Wire SHIPMENT_STATUS_CHANGE notifications in DPD/UPS polling services
+- [x] **Phase 43: DPD/UPS Notification Dispatch Wiring** - Wire SHIPMENT_STATUS_CHANGE notifications in DPD/UPS polling services (completed 2026-04-11)
 - [x] **Phase 44: Test Stub Completion** - Replace all it.todo() stubs with real assertions in billing, Linear, GWS tests (completed 2026-04-11 — already satisfied before phase creation)
 
 ## Phase Details
