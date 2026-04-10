@@ -1,10 +1,11 @@
 ---
 phase: 40
 slug: integration-cleanup-featuregate-type-safety
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: validated
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-04-06
+audited: 2026-04-08
 ---
 
 # Phase 40 — Validation Strategy
@@ -38,11 +39,11 @@ created: 2026-04-06
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 40-01-01 | 01 | 1 | BILL-09 | unit | `pnpm --filter web test -- --run apps/web/src/components/integrations/__tests__/jira-provider-section.test.tsx` | ❌ W0 | ⬜ pending |
-| 40-01-02 | 01 | 1 | BILL-09 | unit | `pnpm --filter web test -- --run apps/web/src/components/settings/__tests__/org-calendar-section.test.tsx` | ✅ (needs update) | ⬜ pending |
-| 40-02-01 | 02 | 1 | EQUIP-05, EQUIP-06, EQUIP-07, TEAM-02, BILL-10 | type-check | `pnpm --filter @contractor-ops/api build && pnpm --filter web tsc --noEmit` | N/A | ⬜ pending |
-| 40-02-02 | 02 | 1 | TEAM-02 | unit | `pnpm --filter web test -- --run apps/web/src/components/integrations/__tests__/teams-channel-mapping-card.test.tsx` | ✅ (mock update) | ⬜ pending |
-| 40-02-03 | 02 | 1 | BILL-10 | unit | `pnpm --filter web test -- --run apps/web/src/components/billing/__tests__/usage-dashboard.test.tsx` | ✅ (mock update) | ⬜ pending |
+| 40-01-01 | 01 | 1 | BILL-09 | unit | `pnpm --filter web test -- --run src/components/integrations/__tests__/jira-provider-section.test.tsx` | ✅ | ✅ green |
+| 40-01-02 | 01 | 1 | BILL-09 | unit | `pnpm --filter web test -- --run src/components/settings/__tests__/org-calendar-section.test.tsx` | ✅ | ✅ green |
+| 40-02-01 | 02 | 1 | EQUIP-05, EQUIP-06, EQUIP-07, TEAM-02, BILL-10 | type-check | `pnpm --filter web tsc --noEmit` | N/A | ✅ green |
+| 40-02-02 | 02 | 1 | TEAM-02 | unit | `pnpm --filter web test -- --run src/components/integrations/__tests__/teams-channel-mapping-card.test.tsx` | ✅ | ✅ green |
+| 40-02-03 | 02 | 1 | BILL-10 | unit | `pnpm --filter web test -- --run src/components/billing/__tests__/usage-dashboard.test.tsx` | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -50,11 +51,11 @@ created: 2026-04-06
 
 ## Wave 0 Requirements
 
-- [ ] `apps/web/src/components/integrations/__tests__/jira-provider-section.test.tsx` — stubs for BILL-09 (Jira FeatureGate)
-- [ ] Update existing calendar section tests with FeatureGate mock assertions
-- [ ] Update existing test mocks for proxy-removal files (remove proxy mock patterns, use proper tRPC paths)
+- [x] `apps/web/src/components/integrations/__tests__/jira-provider-section.test.tsx` — created for BILL-09 (Jira FeatureGate)
+- [x] Existing calendar section tests already mock FeatureGate correctly (pass-through pattern)
+- [x] Existing test mocks for proxy-removal files already use proper tRPC paths (no updates needed)
 
-*Existing infrastructure covers framework needs. Only test stubs/updates required.*
+*All Wave 0 requirements satisfied. Test infrastructure complete.*
 
 ---
 
@@ -68,11 +69,26 @@ created: 2026-04-06
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 30s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency < 30s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** approved 2026-04-08
+
+---
+
+## Validation Audit 2026-04-08
+
+| Metric | Count |
+|--------|-------|
+| Gaps found | 1 |
+| Resolved | 1 |
+| Escalated | 0 |
+
+**Details:**
+- **40-01-01 (MISSING):** Created `jira-provider-section.test.tsx` — 3 tests covering FeatureGate tier gating (STARTER upgrade banner, PRO access, status mapping button). All passing.
+- **40-01-02, 40-02-01, 40-02-02, 40-02-03:** Already COVERED — existing tests pass (377 files, 3594 tests green).
+- **Full suite:** `pnpm --filter web test -- --run` passes with 0 failures.

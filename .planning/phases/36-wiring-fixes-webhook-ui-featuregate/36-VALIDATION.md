@@ -1,10 +1,11 @@
 ---
 phase: 36
 slug: wiring-fixes-webhook-ui-featuregate
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: complete
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-04-05
+audited: 2026-04-08
 ---
 
 # Phase 36 — Validation Strategy
@@ -38,11 +39,15 @@ created: 2026-04-05
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 36-01-01 | 01 | 1 | LIN-04 | integration | `pnpm vitest run packages/api/src/routes/__tests__/webhook-linear-dispatch.test.ts` | ❌ W0 | ⬜ pending |
-| 36-01-02 | 01 | 1 | LIN-05 | integration | `pnpm vitest run packages/api/src/services/__tests__/linear-outbound-sync.test.ts` | ❌ W0 | ⬜ pending |
-| 36-02-01 | 02 | 1 | EQUIP-06 | unit | `pnpm vitest run apps/web/src/components/equipment/__tests__/shipment-form-mount.test.tsx` | ❌ W0 | ⬜ pending |
-| 36-02-02 | 02 | 1 | EQUIP-07 | unit | `pnpm vitest run apps/web/src/components/settings/__tests__/carrier-credentials-mount.test.tsx` | ❌ W0 | ⬜ pending |
-| 36-03-01 | 03 | 1 | BILL-09 | unit | `pnpm vitest run apps/web/src/components/__tests__/feature-gate-mount.test.tsx` | ❌ W0 | ⬜ pending |
+| 36-01-01 | 01 | 1 | LIN-04 | integration | `pnpm vitest run apps/web/src/app/api/webhooks/_process/__tests__/route.test.ts` | ✅ | ✅ green |
+| 36-01-02 | 01 | 1 | LIN-05 | unit | `pnpm vitest run packages/api/src/services/__tests__/linear-issue-sync.test.ts` | ✅ | ✅ green |
+| 36-02-01 | 02 | 1 | EQUIP-06 | unit | `pnpm vitest run apps/web/src/components/settings/__tests__/integrations-tab.test.tsx` | ✅ | ✅ green |
+| 36-02-02 | 02 | 1 | EQUIP-07 | unit | `pnpm vitest run apps/web/src/components/settings/__tests__/integrations-tab.test.tsx` | ✅ | ✅ green |
+| 36-03-01a | 03 | 1 | BILL-09 | unit | `pnpm vitest run packages/api/src/routers/__tests__/linear.test.ts` | ✅ | ✅ green |
+| 36-03-01b | 03 | 1 | BILL-09 | unit | `pnpm vitest run packages/api/src/routers/__tests__/jira.test.ts` | ✅ | ✅ green |
+| 36-03-01c | 03 | 1 | BILL-09 | unit | `pnpm vitest run packages/api/src/routers/__tests__/calendar.test.ts` | ✅ | ✅ green |
+| 36-03-01d | 03 | 1 | BILL-09 | unit | `pnpm vitest run packages/api/src/routers/__tests__/ocr.test.ts` | ✅ | ✅ green |
+| 36-03-01e | 03 | 1 | BILL-09 | unit | `pnpm vitest run packages/api/src/routers/__tests__/audit.test.ts` | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -50,13 +55,13 @@ created: 2026-04-05
 
 ## Wave 0 Requirements
 
-- [ ] Test stubs for Linear webhook dispatch (LIN-04)
-- [ ] Test stubs for Linear outbound sync on cancel (LIN-05)
-- [ ] Test stubs for CarrierShipmentForm mounting (EQUIP-06)
-- [ ] Test stubs for CarrierCredentialForm settings mount (EQUIP-07)
-- [ ] Test stubs for FeatureGate UI activation (BILL-09)
+- [x] Test for Linear webhook dispatch (LIN-04) — added to route.test.ts
+- [x] Test for Linear outbound sync on cancel (LIN-05) — covered by linear-issue-sync.test.ts
+- [x] Test for CarrierShipmentForm mounting (EQUIP-06) — added DPD/UPS assertions to integrations-tab.test.tsx
+- [x] Test for CarrierCredentialForm settings mount (EQUIP-07) — added DPD/UPS assertions to integrations-tab.test.tsx
+- [x] Test for FeatureGate tier gating (BILL-09) — added tier gating tests to linear, jira, calendar, ocr, audit router tests
 
-*Existing test infrastructure (vitest) covers framework needs — only test files needed.*
+*All gaps resolved via retroactive validation audit.*
 
 ---
 
@@ -72,11 +77,31 @@ created: 2026-04-05
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 30s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency < 30s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** approved 2026-04-08
+
+---
+
+## Validation Audit 2026-04-08
+
+| Metric | Count |
+|--------|-------|
+| Gaps found | 5 |
+| Resolved | 5 |
+| Escalated | 0 |
+
+### Tests Added
+
+1. `apps/web/src/app/api/webhooks/_process/__tests__/route.test.ts` — added "dispatches to processLinearWebhook for linear provider" test (LIN-04)
+2. `apps/web/src/components/settings/__tests__/integrations-tab.test.tsx` — added "renders DPD and UPS carrier provider sections" test (EQUIP-06, EQUIP-07)
+3. `packages/api/src/routers/__tests__/linear.test.ts` — added tier gating describe block verifying requireTier(PRO) on mutations and absence on read-only queries (BILL-09)
+4. `packages/api/src/routers/__tests__/jira.test.ts` — added tier gating describe block verifying requireTier(PRO) on 3 mutations (BILL-09)
+5. `packages/api/src/routers/__tests__/calendar.test.ts` — added tier gating describe block verifying requireTier(PRO) on 2 mutations (BILL-09)
+6. `packages/api/src/routers/__tests__/ocr.test.ts` — added tier gating describe block verifying requireTier(PRO) on trigger/retrigger (BILL-09)
+7. `packages/api/src/routers/__tests__/audit.test.ts` — added tier gating describe block verifying requireTier(ENTERPRISE) on export (BILL-09)
