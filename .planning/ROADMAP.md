@@ -71,7 +71,7 @@ Full details: `.planning/milestones/v2.0-ROADMAP.md`
 - [x] **Phase 41: Wiring Fixes — Teams Channel Ref + Onboarding OAuth** - Fix ConversationReference key mismatch for Teams channel alerts, fix onboarding wizard OAuth connect URL (in progress) (completed 2026-04-06)
 - [x] **Phase 42: Tech Debt Cleanup** - Fill it.todo() test stubs, fix hardcoded retry role, wire InPost notification dispatch (in progress) (completed 2026-04-10)
 - [ ] **Phase 43: DPD/UPS Notification Dispatch Wiring** - Wire SHIPMENT_STATUS_CHANGE notifications in DPD/UPS polling services
-- [ ] **Phase 44: Test Stub Completion** - Replace all it.todo() stubs with real assertions in billing, Linear, GWS tests
+- [x] **Phase 44: Test Stub Completion** - Replace all it.todo() stubs with real assertions in billing, Linear, GWS tests (completed 2026-04-11 — already satisfied before phase creation)
 
 ## Phase Details
 
@@ -346,10 +346,10 @@ Plans:
   1. Billing test files (billing-service.test.ts, billing-webhook.test.ts, credit-service.test.ts) have real assertions replacing all it.todo() stubs
   2. Linear test files (linear-adapter.test.ts, linear.test.ts, linear-status-mapping.test.ts, linear-issue-sync.test.ts) have real assertions replacing all it.todo() stubs
   3. Google Workspace test files (google-workspace-adapter.test.ts, google-workspace-directory.test.ts, google-workspace-sync.test.ts, google-workspace.test.ts) have real assertions replacing all it.todo() stubs
-**Plans**: 0 plans
+**Plans**: 0 plans (completed without plans — all SC already satisfied)
 
 Plans:
-(none yet — run `/gsd:plan-phase 44`)
+(skipped — all success criteria verified as already met on 2026-04-11)
 
 ## Progress
 
