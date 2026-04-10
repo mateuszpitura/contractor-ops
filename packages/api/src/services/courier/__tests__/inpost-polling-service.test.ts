@@ -364,4 +364,52 @@ describe("pollInPostShipmentStatuses", () => {
 
     expect(mockDispatchShipmentNotification).not.toHaveBeenCalled();
   });
+
+  it("continues polling when notification dispatch fails", async () => {
+    db.courierConfig.findUnique.mockResolvedValue({
+      configJson: {
+        apiToken: "token-123",
+        shipxOrganizationId: "org-shipx",
+        sandbox: true,
+      },
+    });
+
+    db.shipment.findMany.mockResolvedValue([
+      {
+        id: "ship-1",
+        externalId: "ext-1",
+        trackingNumber: "TRK-001",
+        currentStatus: "IN_TRANSIT",
+        equipmentId: "equip-1",
+        direction: "OUTBOUND",
+        workflowTaskRunId: null,
+      },
+      {
+        id: "ship-2",
+        externalId: "ext-2",
+        trackingNumber: "TRK-002",
+        currentStatus: "IN_TRANSIT",
+        equipmentId: "equip-2",
+        direction: "OUTBOUND",
+        workflowTaskRunId: null,
+      },
+    ]);
+
+    mockGetStatus.mockResolvedValue({
+      status: "delivered",
+    });
+
+    db.shipmentEvent.findFirst.mockResolvedValue(null);
+    db.shipmentEvent.create.mockResolvedValue({});
+    db.shipment.update.mockResolvedValue({});
+    db.equipment.findUnique.mockResolvedValue({
+      id: "equip-1",
+      status: "IN_TRANSIT",
+    });
+    db.equipment.update.mockResolvedValue({});
+
+    await pollInPostShipmentStatuses(db as any, "org-1");
+
+    expect(db.shipment.update).toHaveBeenCalledTimes(2);
+  });
 });
