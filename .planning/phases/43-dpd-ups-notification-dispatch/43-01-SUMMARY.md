@@ -69,7 +69,7 @@ Each task was committed atomically:
 
 1. **Task 1: Create shared dispatchShipmentNotification helper** - `222c9e4` (feat)
 2. **Task 2: Wire notification dispatch into polling services + refactor webhook handler** - `5c07dbd` (feat)
-3. **Task 3: Add notification dispatch tests** - `4516f81` (test)
+3. **Task 3: Add notification dispatch tests** - `4516f81`, `7153439` (test)
 
 ## Files Created/Modified
 - `packages/api/src/services/courier/shipment-notification.ts` - Shared helper for SHIPMENT_STATUS_CHANGE dispatch
