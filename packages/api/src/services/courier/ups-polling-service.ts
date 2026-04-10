@@ -1,5 +1,7 @@
 import { UPSClient } from "./ups-client.js";
 import { mapUpsStatus } from "./ups-status-mapper.js";
+import { NOTIFICATION_STATUSES } from "./inpost-status-mapper.js";
+import { dispatchShipmentNotification } from "./shipment-notification.js";
 import { checkShipmentTaskCompletion } from "../equipment-workflow.js";
 
 // ---------------------------------------------------------------------------
@@ -142,6 +144,15 @@ export async function pollUpsShipmentStatuses(
         where: { id: shipment.id },
         data: { currentStatus: mappedStatus },
       });
+
+      // Dispatch notification for terminal shipment statuses
+      if ((NOTIFICATION_STATUSES as readonly string[]).includes(mappedStatus)) {
+        void dispatchShipmentNotification(db, organizationId, {
+          id: shipment.id,
+          trackingNumber: shipment.trackingNumber,
+          currentStatus: shipment.currentStatus,
+        }, mappedStatus, "UPS");
+      }
 
       // Fire-and-forget: check workflow task auto-completion (per D-01/D-02)
       void checkShipmentTaskCompletion(db, organizationId, {
