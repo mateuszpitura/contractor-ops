@@ -332,10 +332,10 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. DPD polling service dispatches SHIPMENT_STATUS_CHANGE notification when shipment reaches a terminal status (delivered, returned, lost)
   2. UPS polling service dispatches SHIPMENT_STATUS_CHANGE notification when shipment reaches a terminal status (delivered, returned, lost)
-**Plans**: 0 plans
+**Plans**: 1 plan
 
 Plans:
-(none yet — run `/gsd:plan-phase 43`)
+- Plan 01 (Wave 1): Extract shared dispatchShipmentNotification helper, wire notification dispatch into DPD/UPS/InPost polling services, refactor InPost webhook handler, add tests
 
 ### Phase 44: Test Stub Completion
 **Goal**: Replace all remaining it.todo() test stubs with real assertions across billing, Linear, and Google Workspace test files
