@@ -91,7 +91,7 @@ audited: 2026-04-08
 
 **Details:**
 - Initial audit found VALIDATION.md referenced `packages/api/src/__tests__/` paths for status mapping and issue sync tests. These files did not exist at that path.
-- Investigation revealed the tests actually exist at `packages/api/src/services/__tests__/` (3 files: linear-status-mapping, linear-issue-sync, linear-webhook-handler), all untracked but present and passing.
+- Investigation revealed the tests actually exist at `packages/api/src/services/__tests__/` (3 files: linear-status-mapping, linear-issue-sync, linear-webhook-handler), all present and passing.
 - Corrected VALIDATION.md paths to reference the actual test file locations.
 - All test files verified green: adapter (21), validators (10), status mapping (4), issue sync (14), webhook handler (10) = 59 total automated tests.
 
