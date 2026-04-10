@@ -131,8 +131,8 @@ describe("ConversationReference storage (TEAM-06)", () => {
       const configJson = mockUpdate.mock.calls[0]![0].data.configJson;
       // Personal ref stored by aadObjectId
       expect(configJson.conversationReferences["aad-user-2"]).toEqual(ref);
-      // Team ref stored by teamId
-      expect(configJson.teamConversationReferences["team-abc"]).toEqual(ref);
+      // Team ref stored by channelId (conversation.id) for sendChannelAlert lookup
+      expect(configJson.teamConversationReferences["channel-1"]).toEqual(ref);
     });
 
     it("does nothing when ref has no aadObjectId", async () => {
