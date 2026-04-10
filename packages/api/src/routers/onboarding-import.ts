@@ -43,7 +43,7 @@ export interface ImportJob {
   status: "pending" | "processing" | "completed" | "failed";
   totalItems: number;
   completedItems: number;
-  failedItems: Array<{ email: string; error: string }>;
+  failedItems: Array<{ email: string; error: string; role: string }>;
 }
 
 interface OrgSettings {
@@ -365,7 +365,7 @@ export const onboardingImportRouter = router({
         } catch (error) {
           const message =
             error instanceof Error ? error.message : "Unknown error";
-          job.failedItems.push({ email: person.email, error: message });
+          job.failedItems.push({ email: person.email, error: message, role: person.role });
         }
       }
 
@@ -456,13 +456,14 @@ export const onboardingImportRouter = router({
         });
       }
 
-      // Retry the invitation
+      // Retry the invitation with the original role
+      const failedItem = job.failedItems[failedIndex]!;
       try {
         await auth.api.createInvitation({
           headers: ctx.headers,
           body: {
             email: input.email,
-            role: "readonly", // Default role for retried items
+            role: (failedItem.role || "readonly") as "admin" | "owner" | "finance_admin" | "ops_manager" | "team_manager" | "legal_compliance_viewer" | "it_admin" | "external_accountant" | "readonly",
             organizationId: ctx.organizationId,
           },
         });

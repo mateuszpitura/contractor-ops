@@ -154,6 +154,7 @@ export const importProgressOutputSchema = z.object({
     z.object({
       email: z.string(),
       error: z.string(),
+      role: z.string(),
     }),
   ),
 });
