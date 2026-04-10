@@ -1,10 +1,11 @@
 ---
 phase: 37
 slug: shipment-task-auto-completion
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: validated
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-04-05
+audited: 2026-04-08
 ---
 
 # Phase 37 — Validation Strategy
@@ -38,10 +39,10 @@ created: 2026-04-05
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 37-01-01 | 01 | 1 | EQUIP-09 | unit | `cd packages/api && npx vitest run src/services/courier/__tests__/inpost-webhook-handler.test.ts -x` | ✅ extend | ⬜ pending |
-| 37-01-02 | 01 | 1 | EQUIP-10 | unit | `cd packages/api && npx vitest run src/services/courier/__tests__/inpost-polling-service.test.ts -x` | ✅ extend | ⬜ pending |
-| 37-01-03 | 01 | 1 | EQUIP-10 | unit | `cd packages/api && npx vitest run src/services/courier/__tests__/dpd-polling-service.test.ts -x` | ❌ W0 | ⬜ pending |
-| 37-01-04 | 01 | 1 | EQUIP-10 | unit | `cd packages/api && npx vitest run src/services/courier/__tests__/ups-polling-service.test.ts -x` | ❌ W0 | ⬜ pending |
+| 37-01-01 | 01 | 1 | EQUIP-09 | unit + integration | `cd packages/api && npx vitest run src/services/courier/__tests__/inpost-webhook-handler.test.ts -x` | ✅ | ✅ green |
+| 37-01-02 | 01 | 1 | EQUIP-10 | unit + integration | `cd packages/api && npx vitest run src/services/courier/__tests__/inpost-polling-service.test.ts -x` | ✅ | ✅ green |
+| 37-01-03 | 01 | 1 | EQUIP-10 | unit | `cd packages/api && npx vitest run src/services/courier/__tests__/dpd-polling-service.test.ts -x` | ✅ | ✅ green |
+| 37-01-04 | 01 | 1 | EQUIP-10 | unit | `cd packages/api && npx vitest run src/services/courier/__tests__/ups-polling-service.test.ts -x` | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -49,8 +50,8 @@ created: 2026-04-05
 
 ## Wave 0 Requirements
 
-- [ ] `packages/api/src/services/courier/__tests__/dpd-polling-service.test.ts` — stubs for EQUIP-10 (DPD polling). Follow inpost-polling-service.test.ts pattern
-- [ ] `packages/api/src/services/courier/__tests__/ups-polling-service.test.ts` — stubs for EQUIP-10 (UPS polling). Follow inpost-polling-service.test.ts pattern
+- [x] `packages/api/src/services/courier/__tests__/dpd-polling-service.test.ts` — stubs for EQUIP-10 (DPD polling). Follow inpost-polling-service.test.ts pattern
+- [x] `packages/api/src/services/courier/__tests__/ups-polling-service.test.ts` — stubs for EQUIP-10 (UPS polling). Follow inpost-polling-service.test.ts pattern
 
 ---
 
@@ -65,11 +66,30 @@ created: 2026-04-05
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 15s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency < 15s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** approved 2026-04-08
+
+---
+
+## Validation Audit 2026-04-08
+
+| Metric | Count |
+|--------|-------|
+| Gaps found | 0 |
+| Resolved | 0 |
+| Escalated | 0 |
+
+**Audit result:** All 4 tasks have automated verification (unit tests + integration tests). 98 tests across 11 test files pass green. No gaps detected. Phase is Nyquist-compliant.
+
+Test coverage breakdown:
+- `inpost-webhook-handler.test.ts`: 2 task completion wiring tests (positive + negative)
+- `inpost-polling-service.test.ts`: 2 task completion wiring tests (positive + negative)
+- `dpd-polling-service.test.ts`: 5 tests including task completion wiring
+- `ups-polling-service.test.ts`: 5 tests including task completion wiring
+- `shipment-task-completion-integration.test.ts`: 4 integration tests (real checkShipmentTaskCompletion, not mocked)
