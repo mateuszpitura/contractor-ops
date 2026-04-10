@@ -23,7 +23,8 @@ type EntityType =
   | "TEAM"
   | "APPROVAL_FLOW"
   | "USER"
-  | "RETURN_REQUEST";
+  | "RETURN_REQUEST"
+  | "SHIPMENT";
 
 export interface NotificationEvent {
   organizationId: string;

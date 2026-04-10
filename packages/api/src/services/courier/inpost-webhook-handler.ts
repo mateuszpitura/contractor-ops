@@ -4,6 +4,7 @@ import { inpostWebhookPayloadSchema } from "@contractor-ops/validators";
 
 import { mapInPostStatus, NOTIFICATION_STATUSES } from "./inpost-status-mapper.js";
 import { checkShipmentTaskCompletion } from "../equipment-workflow.js";
+import { dispatch } from "../notification-service.js";
 
 // ---------------------------------------------------------------------------
 // InPost Webhook Handler
@@ -173,6 +174,45 @@ export async function handleInPostWebhook(
       ...(shipment.externalId ? {} : { externalId: String(data.shipment_id) }),
     },
   });
+
+  // 6a. Dispatch notification for terminal shipment statuses
+  if ((NOTIFICATION_STATUSES as readonly string[]).includes(mappedStatus)) {
+    try {
+      const adminMembers = await db.member.findMany({
+        where: {
+          organizationId,
+          role: { in: ["owner", "admin"] },
+        },
+        select: { userId: true },
+      });
+
+      const adminUserIds = adminMembers.map(
+        (m: { userId: string }) => m.userId,
+      );
+
+      if (adminUserIds.length > 0) {
+        const statusLabel = mappedStatus.toLowerCase().replace("_", " ");
+        void dispatch({
+          organizationId,
+          type: "SHIPMENT_STATUS_CHANGE" as const,
+          recipientUserIds: adminUserIds,
+          title: `Shipment ${statusLabel}`,
+          body: `Shipment ${shipment.trackingNumber ?? shipment.id} status changed to ${statusLabel}.`,
+          entityType: "SHIPMENT",
+          entityId: shipment.id,
+          metadata: {
+            shipmentId: shipment.id,
+            trackingNumber: shipment.trackingNumber,
+            carrier: "INPOST",
+            previousStatus: shipment.currentStatus,
+            newStatus: mappedStatus,
+          },
+        });
+      }
+    } catch (err) {
+      console.error("[inpost-webhook] Failed to dispatch notification:", err);
+    }
+  }
 
   // 6b. Fire-and-forget: check workflow task auto-completion (per D-01/D-02)
   void checkShipmentTaskCompletion(db, organizationId, {
