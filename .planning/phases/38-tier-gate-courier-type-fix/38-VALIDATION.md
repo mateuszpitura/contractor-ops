@@ -70,11 +70,40 @@ audited: 2026-04-08
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 30s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency < 30s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** approved 2026-04-08
+
+---
+
+## Validation Audit 2026-04-08
+
+| Metric | Count |
+|--------|-------|
+| Gaps found | 0 |
+| Resolved | 0 |
+| Escalated | 0 |
+
+### Audit Details
+
+**Input State:** A (existing VALIDATION.md)
+
+**Test Coverage Summary:**
+- Plan 01 (Tier Gate Expansion): 9 tier-rejection tests across 3 router test files (2 structural for Teams, 3 behavioral for GWS, 4 behavioral for onboarding import). 37 total tests pass.
+- Plan 02 (CourierClient Type Fix): 98 courier client tests pass with renamed type references. InPost test updated to use InPostShipmentParams.
+- Plan 03 (UI Feature Gates): FeatureGate wrapping structurally confirmed in all 3 component source files. No automated UI tests (classified as manual-only — requires browser rendering with STARTER-tier session).
+
+**Cross-Reference Results:**
+- BILL-09: COVERED — 9 API tier-rejection tests + 3 FeatureGate structural confirmations + 2 manual-only UI verifications
+- EQUIP-05: COVERED — InPost client tests pass with BaseShipmentParams/InPostShipmentParams type hierarchy
+- EQUIP-06: COVERED — DPD client tests pass with BaseShipmentParams interface
+- EQUIP-07: COVERED — UPS client tests pass with BaseShipmentParams interface
+
+**Verification Report Cross-Check:** 38-VERIFICATION.md confirms 7/7 observable truths verified, 135 tests passing (37 router + 98 courier), all artifacts and key links confirmed.
+
+**Conclusion:** Phase 38 is Nyquist-compliant. All requirements have automated verification coverage. Two UI behaviors are legitimately manual-only (browser rendering with real subscription state).
