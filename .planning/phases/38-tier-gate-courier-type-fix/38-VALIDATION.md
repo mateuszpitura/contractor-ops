@@ -1,10 +1,11 @@
 ---
 phase: 38
 slug: tier-gate-courier-type-fix
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: audited
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-04-05
+audited: 2026-04-08
 ---
 
 # Phase 38 — Validation Strategy
@@ -38,10 +39,12 @@ created: 2026-04-05
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 38-01-01 | 01 | 1 | BILL-09 | unit | `cd packages/api && npx vitest run src/routers/__tests__/teams.test.ts -x` | ✅ (needs tier test) | ⬜ pending |
-| 38-01-02 | 01 | 1 | BILL-09 | unit | `cd packages/api && npx vitest run src/routers/__tests__/google-workspace.test.ts -x` | ✅ (needs tier tests) | ⬜ pending |
-| 38-01-03 | 01 | 1 | BILL-09 | unit | `cd packages/api && npx vitest run src/routers/__tests__/onboarding-import.test.ts -x` | ✅ (needs tier tests) | ⬜ pending |
-| 38-02-01 | 02 | 1 | EQUIP-05/06/07 | unit | `cd packages/api && npx vitest run src/services/courier/__tests__/ -x` | ✅ (needs type updates) | ⬜ pending |
+| 38-01-01 | 01 | 1 | BILL-09 | unit (structural) | `cd packages/api && npx vitest run src/routers/__tests__/teams.test.ts -x` | ✅ | ✅ green |
+| 38-01-02 | 01 | 1 | BILL-09 | unit (behavioral) | `cd packages/api && npx vitest run src/routers/__tests__/google-workspace.test.ts -x` | ✅ | ✅ green |
+| 38-01-03 | 01 | 1 | BILL-09 | unit (behavioral) | `cd packages/api && npx vitest run src/routers/__tests__/onboarding-import.test.ts -x` | ✅ | ✅ green |
+| 38-02-01 | 02 | 1 | EQUIP-05/06/07 | unit | `cd packages/api && npx vitest run src/services/courier/__tests__/ -x` | ✅ | ✅ green |
+| 38-03-01 | 03 | 1 | BILL-09 | manual | N/A — UI rendering requires browser | ✅ (source verified) | ✅ manual-only |
+| 38-03-02 | 03 | 1 | BILL-09 | manual | N/A — UI rendering requires browser | ✅ (source verified) | ✅ manual-only |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -49,10 +52,10 @@ created: 2026-04-05
 
 ## Wave 0 Requirements
 
-- [ ] Add `subscription.findUnique` mock to `teams.test.ts`, `google-workspace.test.ts`, `onboarding-import.test.ts`
-- [ ] Update courier test files to reference `BaseShipmentParams` and `InPostShipmentParams` instead of removed types
+- [x] Add `subscription.findUnique` mock to `teams.test.ts`, `google-workspace.test.ts`, `onboarding-import.test.ts`
+- [x] Update courier test files to reference `BaseShipmentParams` and `InPostShipmentParams` instead of removed types
 
-*Existing test infrastructure covers framework needs. Wave 0 is mock/type updates only.*
+*All Wave 0 requirements completed during phase execution.*
 
 ---
 
@@ -60,7 +63,8 @@ created: 2026-04-05
 
 | Behavior | Requirement | Why Manual | Test Instructions |
 |----------|-------------|------------|-------------------|
-| FeatureGate renders upgrade banner for STARTER tier | BILL-09 | UI component rendering | Render Teams/GWS/Onboarding pages with STARTER subscription, verify UpgradeInlineBanner visible |
+| FeatureGate renders upgrade banner for STARTER tier on Teams, GWS, Onboarding | BILL-09 | UI component rendering requires live browser with STARTER-tier session | Log in as STARTER-tier org user. Navigate to Teams channel mapping, GWS directory import, and onboarding import wizard. Verify UpgradeInlineBanner visible instead of feature content. |
+| API TIER_REQUIRED error format in client | BILL-09 | Requires live session with real DB subscription record | Trigger gated endpoint as STARTER-tier user. Verify TRPCClientError with code FORBIDDEN and TIER_REQUIRED message JSON. |
 
 ---
 
