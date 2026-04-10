@@ -1,5 +1,59 @@
 # Milestones
 
+## v3.0 Enterprise & Monetization (Shipped: 2026-04-10)
+
+**Phases completed:** 17 phases, 47 plans, 91 tasks
+
+**Key accomplishments:**
+
+- Stripe billing backend with subscription schema, idempotent webhook processing, trial credits, trial notification cron, and tRPC billing router
+- Atomic OCR credit deduction with Serializable isolation, trial-aware allowances (5 credits per D-08), Stripe Meter reporting, and hard-block on credit exhaustion
+- Complete billing UI with Settings tab, 3-tier plan comparison grid (199/449/849 PLN), trial banner, soft-block modal, credit usage with progress bar, and Stripe Checkout integration via tRPC
+- Wire getCreditBalance through tRPC so CreditUsageCard displays real OCR credit consumption from the ledger
+- LinearAdapter with OAuth + HMAC-SHA256 webhook verification, Zod validators, PENDING_MAPPING status flow, and 6-procedure tRPC router for Linear issue sync foundation
+- Bidirectional Linear sync with status mapping (PENDING_MAPPING->CONNECTED D-03), GraphQL issue creation with email assignee lookup, inbound webhook processing, and workflow router integration for auto-issue creation and outbound status sync
+- Linear provider section with post-OAuth mandatory mapping flow, status mapping dialog with smart defaults, workflow template team selector, issue chips on workflow task views, and full EN/PL i18n
+- Prisma schema with 4 models and 4 enums, Zod validators, RBAC permissions, and 13-endpoint tRPC router for equipment tracking
+- Equipment list/detail pages with TanStack Table, CRUD/assignment/shipment dialogs, shipment timeline, contractor profile Equipment tab, and full EN/PL i18n
+- Equipment workflow service wiring EQUIPMENT tasks into onboarding/offboarding workflows with shipment-driven auto-completion and multi-shipment gate
+- 49 vitest todo stubs across 4 test files covering all GOOG requirements (OAuth, Directory API, sync detection, bulk import, Zod validators)
+- Google Workspace Admin SDK adapter with directory/group listing, tRPC router with 5 procedures including server-side RBAC group re-fetch, and QStash daily sync cron
+- Complete Google Workspace directory import UI: 9 components with 3-step wizard, TanStack Table with selection/search/filter, role assignment with group mapping, and en/pl i18n
+- Directory sync orchestrator with QStash endpoint that detects Google Workspace new hires and departures via email snapshot diffing, dispatching admin notifications without auto-modifying users
+- Fixed 3 provider slug string literals from hyphen to underscore, unblocking OAuth connect, health check, disconnect, and post-OAuth wizard auto-open
+- MessagingProvider abstraction over Slack with provider iteration in dispatch(), Prisma schema for MICROSOFT_TEAMS/TEAMS/channelTeams, and SlackMessagingProvider delegating to existing slack-client.ts
+- TeamsAdapter with Azure AD OAuth, 5 Adaptive Card templates for approval workflow, and Graph API client for channel discovery
+- TeamsBotHandler with Zod-validated card actions, TeamsMessagingProvider for proactive messaging, Bot Framework endpoint, tRPC channel router, and Azure Bot Service setup guide
+- Teams provider section with channel mapping card, notification preferences Teams column, and full en/pl i18n
+- CourierClient interface with InPostClient ShipX wrapper, webhook handler with event deduplication, polling fallback service, and 44 passing tests
+- tRPC equipment/portal router extensions with InPost shipment creation, return approval workflow, webhook/cron endpoints, and offboarding auto-shipment
+- Complete InPost courier UI: Paczkomat picker with Geowidget iframe, shipment creation form, label viewer with download/print, admin return approval banner, portal equipment tab, and contractor 3-step return flow with en/pl i18n
+- Cross-tool onboarding import API with Jira/Linear/Google Workspace/Slack user fetch, email-based merge/dedup with conflict detection, project-to-workflow template conversion, and per-item retry
+- 4-step full-page wizard with source selection, merged people review with conflict resolution, project import with editable steps, and async progress tracker with per-item retry
+- requireTier tRPC middleware with TIER_RANK gating and getUsageDashboard endpoint aggregating subscription, credits, seats, and plan config
+- DPD and UPS courier clients with OAuth token caching, status mappers, polling services, carrier factory, and Zod validators -- all following InPost's CourierClient pattern
+- DPD and UPS shipment creation procedures with PRO tier gating, courier config CRUD, and multi-carrier polling cron
+- FeatureGate wrapper with tier-based inline upgrade banners and 4-card usage dashboard (plan, seats, credits, billing date) with green/yellow/red credit progress bar
+- Unified carrier shipment form with dynamic DPD/UPS/InPost fieldsets, credential setup cards with test/save, and default return carrier selector
+- testCourierConnection tRPC procedure closing CarrierCredentialForm verification gap, with getStatus probe and structured success/failure response
+- Bidirectional Linear sync wired via QStash webhook dispatch and outbound CANCELLED status sync in cancelRun for both Linear and Jira
+- DPD and UPS integration cards mounted in Settings with credential dialogs, and CarrierShipmentForm wired to equipment detail page with carrier-configured visibility gate
+- requireTier middleware applied to 10 integration/OCR/audit mutations with global TIER_REQUIRED upgrade toast in QueryClient
+- Fire-and-forget checkShipmentTaskCompletion wired into all 4 courier status update paths (InPost webhook, InPost/DPD/UPS polling) with unit and integration tests
+- requireTier("PRO") added to 10 ungated procedures across Teams, GWS, and Onboarding Import routers with STARTER-rejection tests
+- Extracted generic BaseShipmentParams from InPost-specific CreateShipmentParams, making CourierClient interface carrier-agnostic
+- FeatureGate wrapping on 3 PRO-only components (Teams mapping, GWS import, onboarding wizard) for defense-in-depth tier gating
+- sendChannelAlert wired into notification-service dispatch loop for 9 activity notification types with channelMapping lookup from integrationConnection configJson
+- CreditExhaustedInline mounted in OCR-triggering upload components with TRPCClientError PRECONDITION_FAILED detection and /settings?tab=billing navigation
+- FeatureGate wrapping on Linear, Google Workspace, and Teams OAuth sections — STARTER users see upgrade prompt instead of connect buttons
+- FeatureGate PRO-tier wrappers on Jira/Calendar sections + ShipmentParams union type fix enabling clean API dist build
+- Removed all 13 (trpc as any) proxy workarounds, restoring full type safety across billing, teams, equipment, portal, and settings components
+- Fixed ConversationReference key mismatch from tenantId to conversation.id so Teams channel alerts resolve stored refs correctly
+- Replaced broken hardcoded /api/oauth URL in onboarding wizard with tRPC getOAuthUrlGeneric call for working OAuth connect flow
+- Shared dispatchShipmentNotification helper wired into DPD, UPS, and InPost polling services for terminal status notifications
+
+---
+
 ## v2.0 Platform Expansion (Shipped: 2026-04-01)
 
 **Phases completed:** 16 phases, 52 plans, 103 tasks

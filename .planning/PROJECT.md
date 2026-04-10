@@ -10,13 +10,13 @@ The invoice-to-payment flow must work end-to-end: a contractor's invoice arrives
 
 ## Current State
 
-**v2.0 Platform Expansion shipped 2026-04-01** — ~260K LOC TypeScript, 27 phases (11 v1.0 + 16 v2.0), 103 plans, 383 files changed in v2.0.
+**v3.0 Enterprise & Monetization shipped 2026-04-11** — ~469K LOC TypeScript, 44 phases (11 v1.0 + 16 v2.0 + 17 v3.0), 150 plans, 91 tasks in v3.0.
 
 v1.0 MVP foundation (shipped 2026-03-23): org setup, RBAC, contractors, contracts, documents, workflows, invoices, approvals, notifications (in-app + email + Slack), payments, dashboard, reports, data import, onboarding wizard, global search + Cmd+K. Full Polish + English i18n.
 
-v2.0 Platform Expansion adds: contractor self-service portal with magic-link auth and org branding, electronic signatures (DocuSign + Autenti), AI-powered invoice OCR (Claude Vision), KSeF national e-invoicing integration, time tracking with Clockify/Jira import and invoice reconciliation, Jira bidirectional sync, Notion/Confluence doc linking with Cmd+K search, Google/Outlook calendar deadline sync, and a provider-agnostic integration framework with OAuth credential store, webhook pipeline, and health monitoring.
+v2.0 Platform Expansion (shipped 2026-04-01): contractor self-service portal with magic-link auth and org branding, electronic signatures (DocuSign + Autenti), AI-powered invoice OCR (Claude Vision), KSeF national e-invoicing integration, time tracking with Clockify/Jira import and invoice reconciliation, Jira bidirectional sync, Notion/Confluence doc linking with Cmd+K search, Google/Outlook calendar deadline sync, and a provider-agnostic integration framework with OAuth credential store, webhook pipeline, and health monitoring.
 
-v3.0 Enterprise & Monetization Phase 43 complete: Phase 43 wired SHIPMENT_STATUS_CHANGE notification dispatch into DPD, UPS, and InPost polling services via shared dispatchShipmentNotification helper. Previous: Phase 42 tech debt cleanup, Phase 41 Teams channel + onboarding OAuth fixes, Phase 40 FeatureGate + type safety, Phase 39 channel alerts + credit UI + OAuth gate, Phase 38 tier gate expansion, Phase 37 shipment task auto-completion, Phase 36 wiring fixes, Phase 35 DPD/UPS + billing polish, Phase 34 onboarding wizard, Phase 33 InPost courier.
+v3.0 Enterprise & Monetization (shipped 2026-04-11): Stripe subscription billing with 3-tier plans (Starter/Pro/Enterprise), AI credit metering with hard-block, free trial system. Linear bidirectional sync with status mapping and workflow integration. Equipment tracking with InPost/DPD/UPS courier integrations including automated shipment status tracking via webhooks and polling. Google Workspace directory import with Admin SDK sync and new hire/departure detection. Microsoft Teams integration with Adaptive Card approvals and proactive channel alerts. Intelligent onboarding wizard importing team members and projects from connected tools. Feature gating with requireTier middleware enforcing subscription tiers across all premium features.
 
 ## Requirements
 
@@ -59,29 +59,31 @@ v3.0 Enterprise & Monetization Phase 43 complete: Phase 43 wired SHIPMENT_STATUS
 - ✓ Notion/Confluence integration — doc page linking in workflows, Cmd+K search — v2.0
 - ✓ Google/Outlook Calendar — deadline auto-push, workflow task event creation — v2.0
 
+### Validated — v3.0
+
+- ✓ Stripe subscription billing with 3-tier plans, trial system, and Stripe-hosted portal — v3.0
+- ✓ AI credit metering with hard-block on exhaustion and usage dashboard — v3.0
+- ✓ Linear bidirectional integration (issue sync, status mapping, webhooks) — v3.0
+- ✓ Teams integration (Adaptive Card approvals, proactive messaging, channel alerts) — v3.0
+- ✓ Google Workspace directory import with Admin SDK sync — v3.0
+- ✓ Intelligent onboarding wizard importing from connected tools — v3.0
+- ✓ Equipment tracking with manual entry tied to contractor lifecycle — v3.0
+- ✓ InPost/DPD/UPS courier integrations with automated shipment tracking — v3.0
+- ✓ Feature gating with requireTier middleware on all premium features — v3.0
+
 ### Active
 
-#### Current Milestone: v3.0 Enterprise & Monetization
-
-**Goal:** Deep integrations with major project/communication platforms, intelligent organization onboarding via connected tools, physical equipment/shipment tracking tied to contractor lifecycle, and Stripe-based monetization with subscription tiers + AI credit metering.
-
-**Target features:**
-- Linear bidirectional integration (issue sync, status mapping, webhooks)
-- Teams integration (approve/reject, reminders, alerts — like Slack)
-- Google Workspace integration (directory import, communication)
-- Intelligent org onboarding via connected tools (import wizard for users, projects, statuses)
-- Equipment/shipment tracking with courier APIs (InPost, DPD, UPS) + manual entry, tied to workflows
-- Stripe paywall with subscription tiers (flat + per-seat), AI/OCR credit metering, free trial
+(No active milestone — run `/gsd:new-milestone` to start v4.0)
 
 ### Out of Scope
 
 - Payroll for employees — not an HR tool, contractor ops only
 - EOR/AOR — local contractors only, not employer of record
 - Performance reviews / recruiting / ATS — not HR
-- Open banking / payment initiation — v3+
-- SSO/SCIM — v3
-- KSeF invoice validation against structured data — v3
-- KSeF invoice sending (FA(3) XML generation) — v3+, accounting system territory
+- Open banking / payment initiation — v4+
+- SSO/SCIM — v4+
+- KSeF invoice validation against structured data — v4+
+- KSeF invoice sending (FA(3) XML generation — accounting system territory
 - Contractor marketplace / directory — never
 - Full accounting suite — coordination layer, not replacement
 - Mobile native app — desktop-first, responsive to tablet, approval flow works on mobile browser
@@ -163,4 +165,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-11 after Phase 43 (DPD/UPS Notification Dispatch Wiring) complete*
+*Last updated: 2026-04-11 after v3.0 Enterprise & Monetization milestone complete*
