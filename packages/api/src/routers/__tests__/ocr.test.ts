@@ -406,4 +406,40 @@ describe("ocr.portalGetResult", () => {
       extractionId: "ext-portal-result",
     });
   });
+
+  describe("tier gating", () => {
+    it("trigger and retrigger include requireTier(PRO)", async () => {
+      const fs = await import("node:fs");
+      const path = await import("node:path");
+      const sourceDir = path.resolve(import.meta.dirname, "../../routers");
+      const source = fs.readFileSync(
+        path.join(sourceDir, "ocr.ts"),
+        "utf-8",
+      );
+
+      expect(source).toContain('import { requireTier } from "../middleware/tier.js"');
+      expect(source).toContain('requireTier("PRO")');
+
+      const matches = source.match(/\.use\(requireTier\("PRO"\)\)/g);
+      expect(matches).toHaveLength(2);
+    });
+
+    it("read-only procedures do NOT include requireTier", async () => {
+      const fs = await import("node:fs");
+      const path = await import("node:path");
+      const sourceDir = path.resolve(import.meta.dirname, "../../routers");
+      const source = fs.readFileSync(
+        path.join(sourceDir, "ocr.ts"),
+        "utf-8",
+      );
+
+      for (const proc of ["getResult", "getByDocument"]) {
+        const procRegex = new RegExp(`${proc}:\\s*tenantProcedure[\\s\\S]*?(?=\\w+:\\s*tenantProcedure|\\}\\);$)`, "m");
+        const match = source.match(procRegex);
+        if (match) {
+          expect(match[0]).not.toContain("requireTier");
+        }
+      }
+    });
+  });
 });

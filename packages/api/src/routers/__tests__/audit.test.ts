@@ -451,4 +451,22 @@ describe("audit router", () => {
       expect(result.filename).toMatch(/^audit-log-\d{4}-\d{2}-\d{2}\.csv$/);
     });
   });
+
+  describe("tier gating", () => {
+    it("export includes requireTier(ENTERPRISE)", async () => {
+      const fs = await import("node:fs");
+      const path = await import("node:path");
+      const sourceDir = path.resolve(import.meta.dirname, "../../routers");
+      const source = fs.readFileSync(
+        path.join(sourceDir, "audit.ts"),
+        "utf-8",
+      );
+
+      expect(source).toContain('import { requireTier } from "../middleware/tier.js"');
+      expect(source).toContain('requireTier("ENTERPRISE")');
+
+      const matches = source.match(/\.use\(requireTier\("ENTERPRISE"\)\)/g);
+      expect(matches).toHaveLength(1);
+    });
+  });
 });
