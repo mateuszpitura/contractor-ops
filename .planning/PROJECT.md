@@ -16,7 +16,7 @@ v1.0 MVP foundation (shipped 2026-03-23): org setup, RBAC, contractors, contract
 
 v2.0 Platform Expansion adds: contractor self-service portal with magic-link auth and org branding, electronic signatures (DocuSign + Autenti), AI-powered invoice OCR (Claude Vision), KSeF national e-invoicing integration, time tracking with Clockify/Jira import and invoice reconciliation, Jira bidirectional sync, Notion/Confluence doc linking with Cmd+K search, Google/Outlook calendar deadline sync, and a provider-agnostic integration framework with OAuth credential store, webhook pipeline, and health monitoring.
 
-v3.0 Enterprise & Monetization Phase 41 complete (all 14 phases, 44 plans): Phase 41 closed final two audit gaps — Teams channel alerts fixed (ConversationReference keyed by channel thread ID instead of tenant GUID), onboarding OAuth connect button fixed (tRPC getOAuthUrlGeneric replaces hardcoded 404 URL). Previous: Phase 40 FeatureGate + type safety cleanup, Phase 39 channel alerts + credit UI + OAuth gate, Phase 38 tier gate expansion, Phase 37 shipment task auto-completion, Phase 36 wiring fixes, Phase 35 DPD/UPS + billing polish, Phase 34 onboarding wizard, Phase 33 InPost courier.
+v3.0 Enterprise & Monetization Phase 43 complete: Phase 43 wired SHIPMENT_STATUS_CHANGE notification dispatch into DPD, UPS, and InPost polling services via shared dispatchShipmentNotification helper. Previous: Phase 42 tech debt cleanup, Phase 41 Teams channel + onboarding OAuth fixes, Phase 40 FeatureGate + type safety, Phase 39 channel alerts + credit UI + OAuth gate, Phase 38 tier gate expansion, Phase 37 shipment task auto-completion, Phase 36 wiring fixes, Phase 35 DPD/UPS + billing polish, Phase 34 onboarding wizard, Phase 33 InPost courier.
 
 ## Requirements
 
@@ -163,4 +163,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-06 after Phase 40 (Integration Cleanup — FeatureGate + Type Safety) complete — v3.0 milestone gap closure complete*
+*Last updated: 2026-04-11 after Phase 43 (DPD/UPS Notification Dispatch Wiring) complete*
