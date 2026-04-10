@@ -69,6 +69,7 @@ Full details: `.planning/milestones/v2.0-ROADMAP.md`
 - [x] **Phase 39: Final Wiring — Channel Alerts + Credit Exhaustion UI + OAuth FeatureGate** - Wire sendChannelAlert dispatch, mount CreditExhaustedInline, wrap OAuth CTAs with FeatureGate (completed 2026-04-05)
 - [x] **Phase 40: Integration Cleanup — FeatureGate + Type Safety** - Wrap Jira/Calendar provider sections with FeatureGate, rebuild API dist types, remove (trpc as any) proxies (completed 2026-04-06)
 - [x] **Phase 41: Wiring Fixes — Teams Channel Ref + Onboarding OAuth** - Fix ConversationReference key mismatch for Teams channel alerts, fix onboarding wizard OAuth connect URL (in progress) (completed 2026-04-06)
+- [ ] **Phase 42: Tech Debt Cleanup** - Fill it.todo() test stubs, fix hardcoded retry role, wire InPost notification dispatch (in progress)
 
 ## Phase Details
 
@@ -305,10 +306,26 @@ Plans:
 - [x] 41-01-PLAN.md — Fix ConversationReference key mismatch for Teams channel alerts (TEAM-03)
 - [x] 41-02-PLAN.md — Fix onboarding wizard OAuth connect URL to use tRPC (ONBD-01)
 
+### Phase 42: Tech Debt Cleanup
+**Goal**: Eliminate test scaffolds with zero assertions, fix hardcoded retry role, and wire unused InPost notification dispatch
+**Depends on**: Phase 28 (billing tests), Phase 29 (Linear tests), Phase 31 (GWS tests), Phase 33 (InPost notifications), Phase 34 (onboarding retry)
+**Requirements**: None (tech debt — all requirements already satisfied)
+**Tech Debt Closure**: Closes all 5 tech debt items from v3.0 milestone audit
+**Success Criteria** (what must be TRUE):
+  1. Billing test files (billing-service.test.ts, billing-webhook.test.ts, credit-service.test.ts) have real assertions replacing all it.todo() stubs
+  2. Linear test files (linear-adapter.test.ts, linear.test.ts, linear-status-mapping.test.ts, linear-issue-sync.test.ts) have real assertions replacing all it.todo() stubs
+  3. Google Workspace test files (google-workspace-adapter.test.ts, google-workspace-directory.test.ts, google-workspace-sync.test.ts, google-workspace.test.ts) have real assertions replacing all it.todo() stubs
+  4. retryFailedItem preserves and uses the original role from failedItems instead of hardcoding 'readonly'
+  5. InPost webhook handler dispatches NOTIFICATION_STATUSES on terminal shipment status changes
+**Plans**: 0 plans
+
+Plans:
+(none yet — run `/gsd:plan-phase 42`)
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 → 35 → 36 → 37 → 38 → 39 → 40 → 41
+Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 → 35 → 36 → 37 → 38 → 39 → 40 → 41 → 42
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -353,3 +370,4 @@ Phases execute in numeric order: 28 → 29 → 30 → 31 → 32 → 33 → 34 �
 | 39. Final Wiring — Channel Alerts + Credit Exhaustion UI + OAuth FeatureGate | v3.0 | 1/3 | Complete    | 2026-04-05 |
 | 40. Integration Cleanup — FeatureGate + Type Safety | v3.0 | 2/2 | Complete    | 2026-04-06 |
 | 41. Teams Channel Ref + Onboarding OAuth | v3.0 | 1/2 | Complete    | 2026-04-06 |
+| 42. Tech Debt Cleanup | v3.0 | 0/0 | In Progress | — |
