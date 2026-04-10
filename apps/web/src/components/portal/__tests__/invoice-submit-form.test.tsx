@@ -106,8 +106,7 @@ let contractsData: typeof mockContracts | null = mockContracts;
 let contractsLoading = false;
 let ocrData: Record<string, unknown> | null = null;
 
-// Track which mutation call we're on to simulate the OCR trigger failure
-let mutationCallIndex = 0;
+// Track OCR trigger behavior for credit exhaustion tests
 let ocrTriggerBehavior: "success" | "credit-exhausted" | "generic-error" = "success";
 
 vi.mock("@tanstack/react-query", async () => {
@@ -123,21 +122,19 @@ vi.mock("@tanstack/react-query", async () => {
       }
       return { isLoading: contractsLoading, data: contractsData };
     },
-    useMutation: () => {
-      const idx = mutationCallIndex++;
+    useMutation: (opts?: { mutationKey?: string[] }) => {
+      const key = opts?.mutationKey?.join(".") ?? "";
       return {
         mutate: vi.fn(),
         mutateAsync: vi.fn().mockImplementation(async () => {
-          // Mutation order: 0=getUploadUrl, 1=submitInvoice, 2=ocrTrigger
-          // The idx is set at render time, but mutateAsync is called later.
-          // We need to check at call time. Use the fact that ocrTrigger is the 3rd mutation.
-          if (idx === 2) {
+          if (key === "ocr.portalTrigger") {
             if (ocrTriggerBehavior === "credit-exhausted") {
               throw new MockTRPCClientError("OCR credits exhausted", "PRECONDITION_FAILED");
             }
             if (ocrTriggerBehavior === "generic-error") {
               throw new Error("Network error");
             }
+            return { extractionId: "ext-1" };
           }
           return {
             uploadUrl: "https://upload.test/put",
@@ -158,11 +155,11 @@ vi.mock("@/trpc/init", () => ({
   trpc: {
     portal: {
       getActiveContracts: { queryOptions: vi.fn(() => ({ queryKey: ["portal", "getActiveContracts"] })) },
-      getUploadUrl: { mutationOptions: vi.fn(() => ({})) },
-      submitInvoice: { mutationOptions: vi.fn(() => ({})) },
+      getUploadUrl: { mutationOptions: vi.fn(() => ({ mutationKey: ["portal", "getUploadUrl"] })) },
+      submitInvoice: { mutationOptions: vi.fn(() => ({ mutationKey: ["portal", "submitInvoice"] })) },
     },
     ocr: {
-      portalTrigger: { mutationOptions: vi.fn(() => ({})) },
+      portalTrigger: { mutationOptions: vi.fn(() => ({ mutationKey: ["ocr", "portalTrigger"] })) },
       portalGetResult: { queryOptions: vi.fn(() => ({ queryKey: ["ocr", "portalGetResult"] })) },
     },
   },
@@ -204,7 +201,6 @@ describe("InvoiceSubmitForm", () => {
     contractsData = mockContracts;
     contractsLoading = false;
     ocrData = null;
-    mutationCallIndex = 0;
     ocrTriggerBehavior = "success";
   });
 
@@ -360,11 +356,7 @@ describe("InvoiceSubmitForm", () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // Credit exhaustion tests
-  // ---------------------------------------------------------------------------
-
-  it("renders CreditExhaustedInline when OCR returns credit exhaustion error", async () => {
+  it("renders CreditExhaustedInline when OCR returns PRECONDITION_FAILED credit error", async () => {
     ocrTriggerBehavior = "credit-exhausted";
     stubXhr();
 
@@ -373,14 +365,17 @@ describe("InvoiceSubmitForm", () => {
     // No credit-exhausted banner initially
     expect(screen.queryByTestId("credit-exhausted-inline")).not.toBeInTheDocument();
 
-    // Simulate PDF file drop
+    // Simulate file drop via the hidden file input
     const file = new File(["%PDF-1.4 test"], "inv-credit.pdf", {
       type: "application/pdf",
     });
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
     expect(input).toBeTruthy();
     await user.upload(input, file);
 
+    // Wait for the async upload chain to complete and credit exhaustion to be detected
     await waitFor(() => {
       expect(screen.getByTestId("credit-exhausted-inline")).toBeInTheDocument();
     });
@@ -393,21 +388,29 @@ describe("InvoiceSubmitForm", () => {
   it("does not render CreditExhaustedInline on generic OCR error", async () => {
     ocrTriggerBehavior = "generic-error";
     stubXhr();
+    const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
     const { user } = setup(<InvoiceSubmitForm />);
 
     const file = new File(["%PDF-1.4 test"], "inv-generic.pdf", {
       type: "application/pdf",
     });
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
+    expect(input).toBeTruthy();
     await user.upload(input, file);
 
-    // Wait for upload to complete (file info should appear)
+    // Wait for the upload chain to settle
     await waitFor(() => {
-      expect(screen.getByText("inv-generic.pdf")).toBeInTheDocument();
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining("manual entry available"),
+      );
     });
 
     // CreditExhaustedInline should NOT appear for generic errors
     expect(screen.queryByTestId("credit-exhausted-inline")).not.toBeInTheDocument();
+
+    consoleSpy.mockRestore();
   });
 });
