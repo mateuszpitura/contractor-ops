@@ -35,6 +35,7 @@ import { teamsRouter } from "./routers/teams.js";
 import { onboardingImportRouter } from "./routers/onboarding-import.js";
 import { einvoiceRouter } from "./routers/einvoice.js";
 import { exchangeRateRouter } from "./routers/exchange-rate.js";
+import { consentRouter } from "./routers/consent.js";
 
 /**
  * Root tRPC router merging all sub-routers.
@@ -101,6 +102,7 @@ export const appRouter = router({
   onboardingImport: onboardingImportRouter, // onboardingImport: Cross-tool import wizard -- source discovery, user merge, project import, async progress
   einvoice: einvoiceRouter, // einvoice: E-invoicing compliance statuses per country profile
   exchangeRate: exchangeRateRouter, // exchangeRate: Daily ECB exchange rates — query, convert, cron fetch
+  consent: consentRouter, // consent: PDPL consent management — privacy notices, per-purpose consent, admin audit
 });
 
 /** Type-safe router type for client consumption */
