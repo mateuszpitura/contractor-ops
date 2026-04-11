@@ -154,7 +154,7 @@ Full details: `.planning/milestones/v3.0-ROADMAP.md`
   4. Generated invoices include QR codes per UAE e-invoicing requirements
 **Plans**: 4 plans
 Plans:
-- [ ] 49-01-PLAN.md — Peppol-AE Profile & ASP Adapter Interface
+- [x] 49-01-PLAN.md — Peppol-AE Profile & ASP Adapter Interface
 - [ ] 49-02-PLAN.md — Prisma Models, Enum Extensions & tRPC Router
 - [ ] 49-03-PLAN.md — Storecove ASP Adapter, Outbound Orchestrator & Inbound Processing
 - [ ] 49-04-PLAN.md — Peppol UI — Connection Wizard, Status Views & Compliance Widget
@@ -208,7 +208,7 @@ Phases execute in numeric order: 45 -> 46 -> 47 -> 48 -> 49 -> 50 -> 51 -> 52
 | 46. Multi-Currency & SWIFT Payments | v4.0 | 5/5 | Complete    | 2026-04-11 |
 | 47. VAT Engine, WHT & Country Fields | v4.0 | 0/TBD | Not started | - |
 | 48. ZATCA Fatoorah Integration | v4.0 | 0/TBD | Not started | - |
-| 49. Peppol PINT-AE Integration | v4.0 | 0/TBD | Not started | - |
+| 49. Peppol PINT-AE Integration | v4.0 | 1/4 | In Progress|  |
 | 50. Arabic Localization & RTL Layout | v4.0 | 0/TBD | Not started | - |
 | 51. PDPL Compliance | v4.0 | 0/TBD | Not started | - |
 | 52. Multi-Region Infrastructure | v4.0 | 0/TBD | Not started | - |

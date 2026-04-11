@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: International Foundation & Gulf Expansion
 status: executing
-stopped_at: Phase 51 context gathered
-last_updated: "2026-04-11T10:46:20.953Z"
-last_activity: 2026-04-11
+stopped_at: Phase 49 Plan 01 complete, Plans 02-04 remain
+last_updated: "2026-04-11T10:53:44.642Z"
+last_activity: 2026-04-11 -- Phase 49 execution started
 progress:
   total_phases: 8
   completed_phases: 2
   total_plans: 14
-  completed_plans: 10
-  percent: 71
+  completed_plans: 11
+  percent: 79
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-11)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 46 — Multi-Currency Foundation & SWIFT Payment Export
+**Current focus:** Phase 49 — Peppol PINT-AE Integration
 
 ## Current Position
 
-Phase: 47
-Plan: Not started
-Status: Executing Phase 46
-Last activity: 2026-04-11
+Phase: 49 (Peppol PINT-AE Integration) — EXECUTING
+Plan: 1 of 4
+Status: Executing Phase 49
+Last activity: 2026-04-11 -- Phase 49 execution started
 
 Progress: [░░░░░░░░░░] 0% (v4.0)
 
@@ -73,6 +73,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-11T10:46:20.951Z
-Stopped at: Phase 51 context gathered
-Resume file: .planning/phases/51-pdpl-compliance/51-CONTEXT.md
+Last session: 2026-04-11T10:53:44.640Z
+Stopped at: Phase 49 Plan 01 complete, Plans 02-04 remain
+Resume file: .planning/phases/49-peppol-pint-ae-integration/49-02-PLAN.md
