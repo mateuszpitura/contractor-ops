@@ -20,9 +20,11 @@ import {
   generateCsv,
   generateElixir,
   generateSepaXml,
+  generateSwiftXml,
   resolveTransferTitle,
 } from "../services/payment-export.js";
 import type { ExportItem, OrgBankInfo } from "../services/payment-export.js";
+import { groupItemsByFormat } from "../services/payment-format-detection.js";
 import {
   parseBankStatement,
   matchStatementToRun,
@@ -42,21 +44,24 @@ function plain<T>(data: T): T {
 }
 
 // ---------------------------------------------------------------------------
-// Idempotency key cache for payment run creation (5-minute window)
+// Idempotency key cache for payment run creation (24-hour window)
+// Payment runs persist much longer than a few minutes, so the cache TTL
+// must cover the realistic window in which duplicate requests may arrive.
 // ---------------------------------------------------------------------------
 
-const IDEMPOTENCY_TTL_MS = 5 * 60_000;
+const IDEMPOTENCY_TTL_MS = 24 * 60 * 60_000;
 
-/** Maps "orgId:idempotencyKey" → { runIds, expiresAt } */
+/** Maps "orgId:idempotencyKey" → { runIds, expiresAt } or "PENDING" sentinel */
 const idempotencyCache = new Map<
   string,
-  { result: unknown; expiresAt: number }
+  { result: unknown; expiresAt: number } | "PENDING"
 >();
 
 if (typeof globalThis !== "undefined") {
   const cleanup = () => {
     const now = Date.now();
     for (const [key, entry] of idempotencyCache) {
+      if (entry === "PENDING") continue;
       if (now > entry.expiresAt) idempotencyCache.delete(key);
     }
   };
@@ -155,15 +160,28 @@ export const paymentRouter = router({
     .input(paymentRunCreateSchema)
     .mutation(async ({ ctx, input }) => {
       // Idempotency check: return cached result if same key was used recently
-      if (input.idempotencyKey) {
-        const cacheKey = `${ctx.organizationId}:${input.idempotencyKey}`;
+      const cacheKey = input.idempotencyKey
+        ? `${ctx.organizationId}:${input.idempotencyKey}`
+        : null;
+
+      if (cacheKey) {
         const cached = idempotencyCache.get(cacheKey);
+        if (cached === "PENDING") {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "Payment run creation in progress",
+          });
+        }
         if (cached && Date.now() < cached.expiresAt) {
           return cached.result as ReturnType<typeof plain>;
         }
+        // Reserve the key immediately to prevent concurrent requests
+        idempotencyCache.set(cacheKey, "PENDING");
       }
 
-      const result = await prisma.$transaction(async (tx) => {
+      let result;
+      try {
+        result = await prisma.$transaction(async (tx) => {
         // Fetch all invoices with their data
         const invoices = await tx.invoice.findMany({
           where: {
@@ -237,8 +255,8 @@ export const paymentRouter = router({
           const runNumber = `${prefix}${String(seq).padStart(3, "0")}`;
 
           // Calculate totals
-          const totalGrosze = groupInvoices.reduce(
-            (sum, inv) => sum + inv.amountToPayGrosze,
+          const totalMinor = groupInvoices.reduce(
+            (sum, inv) => sum + inv.amountToPayMinor,
             0,
           );
 
@@ -251,32 +269,30 @@ export const paymentRouter = router({
               status: "DRAFT",
               currency,
               createdByUserId: ctx.user!.id,
-              totalGrosze,
+              totalMinor,
               invoiceCount: groupInvoices.length,
               notes: input.notes ?? null,
             },
           });
 
-          // Create items and update invoice paymentStatus
-          for (const inv of groupInvoices) {
-            await tx.paymentRunItem.create({
-              data: {
-                organizationId: ctx.organizationId,
-                paymentRunId: run.id,
-                invoiceId: inv.id,
-                contractorId: inv.contractorId!,
-                billingProfileId: inv.billingProfileId ?? null,
-                amountGrosze: inv.amountToPayGrosze,
-                currency: inv.currency,
-                status: "PENDING",
-              },
-            });
+          // Batch-create items and update invoice statuses
+          await tx.paymentRunItem.createMany({
+            data: groupInvoices.map((inv) => ({
+              organizationId: ctx.organizationId,
+              paymentRunId: run.id,
+              invoiceId: inv.id,
+              contractorId: inv.contractorId!,
+              billingProfileId: inv.billingProfileId ?? null,
+              amountMinor: inv.amountToPayMinor,
+              currency: inv.currency,
+              status: "PENDING" as const,
+            })),
+          });
 
-            await tx.invoice.update({
-              where: { id: inv.id },
-              data: { paymentStatus: "IN_RUN" },
-            });
-          }
+          await tx.invoice.updateMany({
+            where: { id: { in: groupInvoices.map((inv) => inv.id) } },
+            data: { paymentStatus: "IN_RUN" },
+          });
 
           runs.push(run);
         }
@@ -284,18 +300,24 @@ export const paymentRouter = router({
         return runs;
       });
 
-      const plainResult = plain(result);
+        const plainResult = plain(result);
 
-      // Cache result under idempotency key
-      if (input.idempotencyKey) {
-        const cacheKey = `${ctx.organizationId}:${input.idempotencyKey}`;
-        idempotencyCache.set(cacheKey, {
-          result: plainResult,
-          expiresAt: Date.now() + IDEMPOTENCY_TTL_MS,
-        });
+        // Update cache with actual result
+        if (cacheKey) {
+          idempotencyCache.set(cacheKey, {
+            result: plainResult,
+            expiresAt: Date.now() + IDEMPOTENCY_TTL_MS,
+          });
+        }
+
+        return plainResult;
+      } catch (err) {
+        // Clear reservation on failure so the key can be retried
+        if (cacheKey) {
+          idempotencyCache.delete(cacheKey);
+        }
+        throw err;
       }
-
-      return plainResult;
     }),
 
   // =========================================================================
@@ -438,6 +460,16 @@ export const paymentRouter = router({
           });
         }
 
+        // Idempotent: if already LOCKED or EXPORTED, return existing run
+        if (run.status === "LOCKED" || run.status === "EXPORTED") {
+          return {
+            run,
+            fileBase64: null,
+            fileName: null,
+            idempotent: true,
+          };
+        }
+
         // Validate transition
         if (
           !VALID_TRANSITIONS[run.status]?.includes("LOCKED") &&
@@ -448,6 +480,34 @@ export const paymentRouter = router({
             message: E.PAYMENT_RUN_INVALID_STATUS,
           });
         }
+
+        // Re-validate currency consistency at lock time
+        const itemCurrencies = await tx.paymentRunItem.findMany({
+          where: { paymentRunId: run.id, status: { not: "SKIPPED" } },
+          select: { currency: true },
+          distinct: ["currency"],
+        });
+
+        const mismatchedCurrencies = itemCurrencies.filter(
+          (item) => item.currency !== run.currency,
+        );
+
+        if (mismatchedCurrencies.length > 0) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: E.PAYMENT_MIXED_CURRENCIES,
+          });
+        }
+
+        // Recalculate totals from actual items to ensure export uses fresh data
+        const itemsAgg = await tx.paymentRunItem.aggregate({
+          where: { paymentRunId: run.id, status: { not: "SKIPPED" } },
+          _sum: { amountMinor: true },
+          _count: true,
+        });
+
+        const freshTotalMinor = itemsAgg._sum.amountMinor ?? 0;
+        const freshInvoiceCount = itemsAgg._count;
 
         // Fetch org settings for transfer title template and bank info
         const org = await tx.organization.findUnique({
@@ -481,7 +541,7 @@ export const paymentRouter = router({
           return {
             contractorName: item.contractor.legalName,
             iban: item.billingProfile?.bankAccountMasked ?? "",
-            amountGrosze: item.amountGrosze,
+            amountMinor: item.amountMinor,
             currency: item.currency,
             invoiceNumber: item.invoice.invoiceNumber,
             taxId: item.contractor.taxId,
@@ -502,6 +562,13 @@ export const paymentRouter = router({
         } else if (input.exportFormat === "BANK_FILE") {
           fileBuffer = generateElixir(exportItems, orgBank);
           ext = "txt";
+        } else if (input.exportFormat === "SWIFT_XML") {
+          fileBuffer = generateSwiftXml(
+            exportItems,
+            orgBank,
+            run.runNumber ?? run.id,
+          );
+          ext = "xml";
         } else {
           fileBuffer = generateSepaXml(
             exportItems,
@@ -511,13 +578,15 @@ export const paymentRouter = router({
           ext = "xml";
         }
 
-        // Update run status to EXPORTED
+        // Update run status to EXPORTED with fresh totals
         const updatedRun = await tx.paymentRun.update({
           where: { id: run.id },
           data: {
             status: "EXPORTED",
             exportFormat: input.exportFormat,
             exportedAt: new Date(),
+            totalMinor: freshTotalMinor,
+            invoiceCount: freshInvoiceCount,
           },
         });
 
@@ -815,7 +884,7 @@ export const paymentRouter = router({
       // Build items for matching
       const matchItems = run.items.map((item) => ({
         id: item.id,
-        amountGrosze: item.amountGrosze,
+        amountMinor: item.amountMinor,
         iban: item.billingProfile?.bankAccountMasked ?? "",
       }));
 
@@ -849,28 +918,30 @@ export const paymentRouter = router({
 
         const now = new Date();
 
-        // Update each matched item to PAID
-        for (const match of input.matches) {
-          const item = await tx.paymentRunItem.findFirst({
-            where: {
-              id: match.itemId,
-              paymentRunId: run.id,
-              organizationId: ctx.organizationId,
-            },
+        // Batch-verify all matched items exist in this run
+        const matchedItemIds = input.matches.map((m) => m.itemId);
+        const validItems = await tx.paymentRunItem.findMany({
+          where: {
+            id: { in: matchedItemIds },
+            paymentRunId: run.id,
+            organizationId: ctx.organizationId,
+          },
+          select: { id: true, invoiceId: true },
+        });
+
+        if (validItems.length > 0) {
+          const validItemIds = validItems.map((i) => i.id);
+          const invoiceIds = validItems.map((i) => i.invoiceId);
+
+          // Batch-update all matched items to PAID
+          await tx.paymentRunItem.updateMany({
+            where: { id: { in: validItemIds } },
+            data: { status: "PAID", markedPaidAt: now },
           });
 
-          if (!item) continue;
-
-          await tx.paymentRunItem.update({
-            where: { id: item.id },
-            data: {
-              status: "PAID",
-              markedPaidAt: now,
-            },
-          });
-
-          await tx.invoice.update({
-            where: { id: item.invoiceId },
+          // Batch-update all linked invoices to PAID
+          await tx.invoice.updateMany({
+            where: { id: { in: invoiceIds } },
             data: { paymentStatus: "PAID", paidAt: now },
           });
         }
@@ -969,23 +1040,22 @@ export const paymentRouter = router({
           data: { paymentStatus: "READY" },
         });
 
-        // Recalculate run totals
-        const remainingItems = await tx.paymentRunItem.findMany({
-          where: { paymentRunId: run.id },
-          select: { amountGrosze: true },
+        // Recalculate run totals from actual remaining items (not cached values)
+        const remainingAgg = await tx.paymentRunItem.aggregate({
+          where: { paymentRunId: run.id, status: { not: "SKIPPED" } },
+          _sum: { amountMinor: true },
+          _count: true,
         });
 
-        const newTotalGrosze = remainingItems.reduce(
-          (sum, i) => sum + i.amountGrosze,
-          0,
-        );
+        const newTotalMinor = remainingAgg._sum.amountMinor ?? 0;
+        const newInvoiceCount = remainingAgg._count;
 
         // If no items remain, auto-cancel the run
-        if (remainingItems.length === 0) {
+        if (newInvoiceCount === 0) {
           return tx.paymentRun.update({
             where: { id: run.id },
             data: {
-              totalGrosze: 0,
+              totalMinor: 0,
               invoiceCount: 0,
               status: "CANCELLED",
             },
@@ -995,11 +1065,11 @@ export const paymentRouter = router({
         return tx.paymentRun.update({
           where: { id: run.id },
           data: {
-            totalGrosze: newTotalGrosze,
-            invoiceCount: remainingItems.length,
+            totalMinor: newTotalMinor,
+            invoiceCount: newInvoiceCount,
           },
         });
-      });
+      }, { isolationLevel: "Serializable" });
 
       return plain(result);
     }),

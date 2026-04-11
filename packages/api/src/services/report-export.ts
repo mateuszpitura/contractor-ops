@@ -1,7 +1,12 @@
 /**
  * CSV generation functions for reports and audit log export.
  * Uses xlsx library with BOM for Polish character support.
+ * Phase 46: Added home-currency conversion for multi-currency reports.
  */
+
+import { convertAmount } from "./exchange-rate.js";
+import type { PrismaClient } from "@contractor-ops/db";
+import { minorToDecimalStr } from "@contractor-ops/shared";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -137,8 +142,8 @@ export async function generateSpendCsv(
   items: Array<{
     contractorName: string;
     invoiceCount: number;
-    totalGrosze: number;
-    avgGrosze: number;
+    totalMinor: number;
+    avgMinor: number;
     lastPaidAt: string | null;
   }>,
 ): Promise<{ data: string; mimeType: string }> {
@@ -153,8 +158,8 @@ export async function generateSpendCsv(
   const rows = items.map((item) => ({
     contractorName: item.contractorName,
     invoiceCount: item.invoiceCount,
-    totalAmount: (item.totalGrosze / 100).toFixed(2),
-    avgAmount: (item.avgGrosze / 100).toFixed(2),
+    totalAmount: minorToDecimalStr(item.totalMinor, "PLN"),
+    avgAmount: minorToDecimalStr(item.avgMinor, "PLN"),
     lastPaidAt: item.lastPaidAt ?? "",
   }));
 
@@ -191,7 +196,7 @@ export async function generateInvoicesCsv(
   items: Array<{
     invoiceNumber: string;
     contractorName: string;
-    amountGrosze: number;
+    amountMinor: number;
     currency: string;
     dueDate: string;
     daysOverdue: number;
@@ -211,7 +216,7 @@ export async function generateInvoicesCsv(
   const rows = items.map((item) => ({
     invoiceNumber: item.invoiceNumber,
     contractorName: item.contractorName,
-    amount: (item.amountGrosze / 100).toFixed(2),
+    amount: minorToDecimalStr(item.amountMinor, item.currency),
     currency: item.currency,
     dueDate: item.dueDate,
     daysOverdue: item.daysOverdue,
@@ -242,4 +247,35 @@ export async function generateComplianceCsv(
   ];
 
   return generateReportCsv(columns, items as unknown as Record<string, unknown>[]);
+}
+
+// ---------------------------------------------------------------------------
+// Home Currency Conversion (Phase 46)
+// ---------------------------------------------------------------------------
+
+/**
+ * Convert a minor-unit amount to the organization's home currency for report display.
+ * Returns the original amount unchanged if currencies match.
+ * Returns null if conversion is not possible (missing rate).
+ * Per CURR-05: display-only conversion, not FX settlement.
+ */
+export async function convertToHomeCurrency(
+  prisma: PrismaClient,
+  amountMinor: number,
+  fromCurrency: string,
+  homeCurrency: string,
+  date?: Date,
+): Promise<{ amountMinor: number; rate: number } | null> {
+  if (fromCurrency === homeCurrency) {
+    return { amountMinor, rate: 1 };
+  }
+  const result = await convertAmount(
+    prisma,
+    amountMinor,
+    fromCurrency,
+    homeCurrency,
+    date,
+  );
+  if (!result) return null;
+  return { amountMinor: result.amountMinor, rate: result.rate };
 }
