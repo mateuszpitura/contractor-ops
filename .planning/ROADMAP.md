@@ -86,7 +86,7 @@ Full details: `.planning/milestones/v3.0-ROADMAP.md`
 - [x] **Phase 47: VAT Engine, WHT Calculator & Country Fields** - Configuration-driven multi-tier VAT, Saudi WHT with certificate generation, and country-specific contractor profiles (5 plans) (completed 2026-04-11)
 - [ ] **Phase 48: ZATCA Fatoorah Integration** - Saudi e-invoicing with XML DSig, hash chain, QR codes, and Fatoora Portal API clearance (6 plans)
 - [ ] **Phase 49: Peppol PINT-AE Integration** - UAE e-invoicing via certified ASP with inbound invoice parsing
-- [ ] **Phase 50: Arabic Localization & RTL Layout** - Full Arabic translation with codebase-wide RTL migration to CSS logical properties
+- [x] **Phase 50: Arabic Localization & RTL Layout** - Full Arabic translation with codebase-wide RTL migration to CSS logical properties (completed 2026-04-11)
 - [x] **Phase 51: PDPL Compliance** - UAE and Saudi privacy law compliance with consent management and cross-border transfer safeguards (completed 2026-04-11)
 - [x] **Phase 52: Multi-Region Infrastructure** - Regional database routing, file storage residency, and government API framework (completed 2026-04-11)
 
@@ -223,6 +223,6 @@ Phases execute in numeric order: 45 -> 46 -> 47 -> 48 -> 49 -> 50 -> 51 -> 52
 | 47. VAT Engine, WHT & Country Fields | v4.0 | 5/5 | Complete   | 2026-04-11 |
 | 48. ZATCA Fatoorah Integration | v4.0 | 0/6 | Planned | - |
 | 49. Peppol PINT-AE Integration | v4.0 | 3/4 | In Progress|  |
-| 50. Arabic Localization & RTL Layout | v4.0 | 0/TBD | Not started | - |
+| 50. Arabic Localization & RTL Layout | v4.0 | 5/5 | Complete   | 2026-04-11 |
 | 51. PDPL Compliance | v4.0 | 4/4 | Complete    | 2026-04-11 |
 | 52. Multi-Region Infrastructure | v4.0 | 4/4 | Complete    | 2026-04-11 |
