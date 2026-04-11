@@ -37,6 +37,7 @@ import { einvoiceRouter } from "./routers/einvoice.js";
 import { exchangeRateRouter } from "./routers/exchange-rate.js";
 import { consentRouter } from "./routers/consent.js";
 import { peppolRouter } from "./routers/peppol.js";
+import { taxRouter } from "./routers/tax.js";
 
 /**
  * Root tRPC router merging all sub-routers.
@@ -105,6 +106,7 @@ export const appRouter = router({
   exchangeRate: exchangeRateRouter, // exchangeRate: Daily ECB exchange rates — query, convert, cron fetch
   consent: consentRouter, // consent: PDPL consent management — privacy notices, per-purpose consent, admin audit
   peppol: peppolRouter, // peppol: Peppol network integration — participant registration, transmission tracking, ASP management
+  tax: taxRouter, // tax: Tax rate lookup, VAT validation, WHT calculation, WHT certificates, tax summary dashboard
 });
 
 /** Type-safe router type for client consumption */

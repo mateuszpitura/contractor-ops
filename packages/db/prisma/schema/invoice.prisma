@@ -20,6 +20,8 @@ model Invoice {
   vatAmountMinor      Int?
   totalMinor          Int
   withholdingMinor    Int?
+  isReverseCharge     Boolean            @default(false)
+  reverseChargeOverride Boolean?         // null = auto-detected, true/false = manually set
   amountToPayMinor    Int
   sellerTaxId         String?            @db.VarChar(50)
   sellerName          String?            @db.VarChar(500)

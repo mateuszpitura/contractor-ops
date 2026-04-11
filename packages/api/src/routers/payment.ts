@@ -23,6 +23,7 @@ import {
   generateSwiftXml,
   resolveTransferTitle,
 } from "../services/payment-export.js";
+import { calculateWht } from "../services/tax-rate.service.js";
 import type { ExportItem, OrgBankInfo } from "../services/payment-export.js";
 import { groupItemsByFormat } from "../services/payment-format-detection.js";
 import {
@@ -288,6 +289,44 @@ export const paymentRouter = router({
               status: "PENDING" as const,
             })),
           });
+
+          // Apply WHT calculations for Saudi orgs on cross-border payments
+          const org = await tx.organization.findUniqueOrThrow({
+            where: { id: ctx.organizationId },
+            select: { countryCode: true },
+          });
+          if (org.countryCode === "SA") {
+            const items = await tx.paymentRunItem.findMany({
+              where: { paymentRunId: run.id },
+              include: { contractor: { select: { countryCode: true } } },
+            });
+            for (const item of items) {
+              const whtResult = await calculateWht(
+                org.countryCode,
+                item.contractor.countryCode,
+                "technical_services",
+                item.amountMinor,
+              );
+              if (whtResult) {
+                await tx.paymentRunItem.update({
+                  where: { id: item.id },
+                  data: {
+                    grossAmountMinor: item.amountMinor,
+                    amountMinor: whtResult.netAmountMinor,
+                    whtAmountMinor: whtResult.whtAmountMinor,
+                    whtRate: whtResult.whtRate,
+                    whtTreatyApplied: whtResult.treatyApplied,
+                    whtTreatyReference: whtResult.treatyReference,
+                    whtServiceType: "technical_services",
+                  },
+                });
+                await tx.invoice.update({
+                  where: { id: item.invoiceId },
+                  data: { withholdingMinor: whtResult.whtAmountMinor },
+                });
+              }
+            }
+          }
 
           await tx.invoice.updateMany({
             where: { id: { in: groupInvoices.map((inv) => inv.id) } },

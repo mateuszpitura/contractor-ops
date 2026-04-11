@@ -7,6 +7,8 @@ import {
   contractorListSchema,
   contractorLifecycleTransitionSchema,
   gusLookupSchema,
+  countryFieldsSchemaMap,
+  validateTin,
 } from "@contractor-ops/validators";
 import * as E from "../errors.js";
 import { router } from "../init.js";
@@ -405,7 +407,7 @@ export const contractorRouter = router({
       const input = sanitizeStrings(rawInput);
       const {
         billingModel,
-        rateValueGrosze,
+        rateValueMinor,
         bankAccount,
         paymentTermsDays,
         ownerUserId,
@@ -439,7 +441,7 @@ export const contractorRouter = router({
             primaryTeamId,
             primaryProjectId,
             defaultCostCenterId,
-            customFieldsJson: { billingModel, rateValueGrosze },
+            customFieldsJson: { billingModel, rateValueMinor },
           },
         });
 
@@ -486,7 +488,7 @@ export const contractorRouter = router({
       const {
         id,
         billingModel,
-        rateValueGrosze,
+        rateValueMinor,
         bankAccount,
         paymentTermsDays,
         ownerUserId,
@@ -527,13 +529,13 @@ export const contractorRouter = router({
         updateData.defaultCostCenterId = defaultCostCenterId ?? null;
 
       // Update customFieldsJson for billing fields
-      if (billingModel !== undefined || rateValueGrosze !== undefined) {
+      if (billingModel !== undefined || rateValueMinor !== undefined) {
         const currentCustom =
           (existing.customFieldsJson as Record<string, unknown>) ?? {};
         updateData.customFieldsJson = {
           ...currentCustom,
           ...(billingModel !== undefined ? { billingModel } : {}),
-          ...(rateValueGrosze !== undefined ? { rateValueGrosze } : {}),
+          ...(rateValueMinor !== undefined ? { rateValueMinor } : {}),
         };
       }
 
@@ -616,6 +618,25 @@ export const contractorRouter = router({
         lifecycleStage: input.stage,
       };
 
+      // Block ENDED transition if contractor has active contracts
+      if (input.stage === "ENDED") {
+        const activeContracts = await prisma.contract.count({
+          where: {
+            contractorId: input.id,
+            organizationId: ctx.organizationId,
+            status: { in: ["ACTIVE", "EXPIRING"] },
+            deletedAt: null,
+          },
+        });
+
+        if (activeContracts > 0) {
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message: E.CONTRACTOR_HAS_ACTIVE_CONTRACTS,
+          });
+        }
+      }
+
       // Side-effects based on target stage
       if (input.stage === "ENDED") {
         updateData.status = "INACTIVE";
@@ -693,6 +714,36 @@ export const contractorRouter = router({
         });
       }
 
+      // Block archival if contractor has active contracts
+      const activeContracts = await prisma.contract.count({
+        where: {
+          contractorId: input.id,
+          organizationId: ctx.organizationId,
+          status: { in: ["ACTIVE", "EXPIRING"] },
+          deletedAt: null,
+        },
+      });
+
+      if (activeContracts > 0) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: E.CONTRACTOR_HAS_ACTIVE_CONTRACTS,
+        });
+      }
+
+      // Auto-reject any pending change requests before archiving
+      await prisma.contractorChangeRequest.updateMany({
+        where: {
+          contractorId: input.id,
+          organizationId: ctx.organizationId,
+          status: "PENDING",
+        },
+        data: {
+          status: "REJECTED",
+          reviewComment: "Auto-rejected: contractor archived",
+        },
+      });
+
       const updated = await prisma.contractor.update({
         where: { id: input.id },
         data: {
@@ -726,13 +777,29 @@ export const contractorRouter = router({
         },
       });
 
-      const blockedIds = new Set(contractorsWithUnpaid.map((i) => i.contractorId).filter(Boolean));
+      const blockedByUnpaid = new Set(contractorsWithUnpaid.map((i) => i.contractorId).filter(Boolean));
+
+      // Block archival for contractors with active contracts
+      const contractorsWithActiveContracts = await prisma.contract.groupBy({
+        by: ["contractorId"],
+        where: {
+          contractorId: { in: input.ids },
+          organizationId: ctx.organizationId,
+          status: { in: ["ACTIVE", "EXPIRING"] },
+          deletedAt: null,
+        },
+      });
+
+      const blockedByContracts = new Set(contractorsWithActiveContracts.map((c) => c.contractorId).filter(Boolean));
+      const blockedIds = new Set([...blockedByUnpaid, ...blockedByContracts]);
       const archivableIds = input.ids.filter((id) => !blockedIds.has(id));
 
       if (archivableIds.length === 0 && blockedIds.size > 0) {
         throw new TRPCError({
           code: "PRECONDITION_FAILED",
-          message: E.CONTRACTOR_HAS_UNPAID_INVOICES,
+          message: blockedByContracts.size > 0
+            ? E.CONTRACTOR_HAS_ACTIVE_CONTRACTS
+            : E.CONTRACTOR_HAS_UNPAID_INVOICES,
         });
       }
 
@@ -864,7 +931,30 @@ export const contractorRouter = router({
     .use(requirePermission({ contractor: ["create"] }))
     .input(gusLookupSchema)
     .query(async ({ input }) => {
-      try {
+      const NETWORK_ERROR_CODES = new Set([
+        "ECONNREFUSED",
+        "ECONNRESET",
+        "ETIMEDOUT",
+        "ENOTFOUND",
+        "EAI_AGAIN",
+      ]);
+
+      const isNetworkError = (err: unknown): boolean => {
+        if (err instanceof Error) {
+          const code = (err as NodeJS.ErrnoException).code;
+          if (code && NETWORK_ERROR_CODES.has(code)) return true;
+          if (err.name === "FetchError" || err.name === "AbortError")
+            return true;
+          if (
+            err.message.includes("fetch failed") ||
+            err.message.includes("network")
+          )
+            return true;
+        }
+        return false;
+      };
+
+      const attempt = async () => {
         const birModule = await import("bir1");
         const Bir = birModule.default;
         const bir = new Bir();
@@ -902,8 +992,100 @@ export const contractorRouter = router({
             // Ignore logout errors
           });
         }
-      } catch {
+      };
+
+      try {
+        return await attempt();
+      } catch (err) {
+        // Retry once after 2s for network errors
+        if (isNetworkError(err)) {
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+          try {
+            return await attempt();
+          } catch {
+            return { found: false as const, error: E.GUS_LOOKUP_FAILED };
+          }
+        }
         return { found: false as const, error: E.GUS_LOOKUP_FAILED };
       }
+    }),
+
+  // ---------------------------------------------------------------------------
+  // Country-specific compliance fields (Phase 47)
+  // ---------------------------------------------------------------------------
+
+  /** Get country-specific field configuration for the org's country */
+  getCountryFieldsConfig: tenantProcedure
+    .query(async ({ ctx }) => {
+      const org = await prisma.organization.findUniqueOrThrow({
+        where: { id: ctx.organizationId },
+        select: { countryCode: true },
+      });
+      if (!org.countryCode || !countryFieldsSchemaMap[org.countryCode]) {
+        return { hasCountryFields: false, countryCode: org.countryCode };
+      }
+      const fields = org.countryCode === "AE"
+        ? ["freelancePermitNumber", "tradeLicenseNumber", "freeZone", "tradeLicenseExpiry"]
+        : ["freelanceSaLicense", "commercialRegistration", "commercialRegistrationExpiry"];
+      return { hasCountryFields: true, countryCode: org.countryCode, fields };
+    }),
+
+  /** Get country fields for a specific contractor */
+  getCountryFields: tenantProcedure
+    .input(z.object({ contractorId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const contractor = await prisma.contractor.findUnique({
+        where: { id: input.contractorId, organizationId: ctx.organizationId },
+        select: { countryFields: true },
+      });
+      if (!contractor) throw new TRPCError({ code: "NOT_FOUND" });
+      return contractor.countryFields ?? {};
+    }),
+
+  /** Update country fields for a contractor (validated per org country) */
+  updateCountryFields: tenantProcedure
+    .use(requirePermission({ contractor: ["update"] }))
+    .input(z.object({
+      contractorId: z.string(),
+      countryCode: z.string().length(2),
+      fields: z.record(z.unknown()),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const org = await prisma.organization.findUniqueOrThrow({
+        where: { id: ctx.organizationId },
+        select: { countryCode: true },
+      });
+      if (!org.countryCode) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Organization has no country set" });
+      }
+      const schema = countryFieldsSchemaMap[org.countryCode];
+      if (!schema) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `No country-specific fields defined for ${org.countryCode}`,
+        });
+      }
+      const parsed = schema.safeParse(input.fields);
+      if (!parsed.success) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `Invalid country fields: ${parsed.error.message}`,
+        });
+      }
+      return prisma.contractor.update({
+        where: { id: input.contractorId, organizationId: ctx.organizationId },
+        data: { countryFields: parsed.data as object },
+      });
+    }),
+
+  /** Validate a TIN for a given country */
+  validateTin: tenantProcedure
+    .input(z.object({
+      countryCode: z.string().length(2),
+      tin: z.string().min(1),
+    }))
+    .query(({ input }) => {
+      const valid = validateTin(input.countryCode, input.tin);
+      return { valid };
     }),
 });

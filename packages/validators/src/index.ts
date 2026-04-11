@@ -436,6 +436,34 @@ export type {
 } from "./consent.js";
 
 export {
+  taxRateCodeSchema,
+  taxRateResponseSchema,
+  whtServiceTypeEnum,
+  whtCalculationSchema,
+} from "./tax.js";
+export type {
+  TaxRateResponse,
+  WhtServiceType,
+  WhtCalculation,
+} from "./tax.js";
+
+export {
+  uaeCountryFieldsSchema,
+  saudiCountryFieldsSchema,
+  countryFieldsSchemaMap,
+  validateCountryFields,
+  validateUaeTin,
+  validateSaudiTin,
+  validatePolishNip,
+  tinValidators,
+  validateTin,
+} from "./country-fields.js";
+export type {
+  UaeCountryFields,
+  SaudiCountryFields,
+} from "./country-fields.js";
+
+export {
   peppolParticipantIdSchema,
   connectPeppolSchema,
   transmitInvoiceSchema,

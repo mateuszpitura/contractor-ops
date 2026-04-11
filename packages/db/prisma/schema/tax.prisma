@@ -1,0 +1,64 @@
+// TaxRate — country-specific VAT/tax rates (read-only, seed data managed)
+// WithholdingTaxRate — Saudi WHT rates with DTA treaty data
+
+model TaxRate {
+  id              String    @id @default(cuid())
+  countryCode     String    @db.Char(2)
+  code            String    @db.VarChar(10)
+  description     String    @db.VarChar(100)
+  ratePercent     Decimal   @db.Decimal(5, 2)
+  isDefault       Boolean   @default(false)
+  isReverseCharge Boolean   @default(false)
+  isExempt        Boolean   @default(false)
+  effectiveFrom   DateTime  @db.Date
+  effectiveTo     DateTime? @db.Date
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([countryCode, code, effectiveFrom])
+  @@index([countryCode])
+  @@index([countryCode, effectiveFrom, effectiveTo])
+}
+
+model WithholdingTaxRate {
+  id                  String    @id @default(cuid())
+  sourceCountry       String    @db.Char(2)
+  contractorResidency String    @db.Char(2)
+  serviceType         String    @db.VarChar(50)
+  standardRate        Decimal   @db.Decimal(5, 2)
+  treatyRate          Decimal?  @db.Decimal(5, 2)
+  treatyReference     String?   @db.VarChar(100)
+  effectiveFrom       DateTime  @db.Date
+  effectiveTo         DateTime? @db.Date
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@unique([sourceCountry, contractorResidency, serviceType, effectiveFrom])
+  @@index([sourceCountry])
+  @@index([sourceCountry, contractorResidency])
+}
+
+model WhtCertificate {
+  id                 String   @id @default(cuid())
+  organizationId     String
+  paymentRunItemId   String
+  certificateNumber  String   @db.VarChar(50)
+  documentId         String?
+  grossAmountMinor   Int
+  whtRate            Decimal  @db.Decimal(5, 2)
+  whtAmountMinor     Int
+  netAmountMinor     Int
+  currency           String   @db.Char(3)
+  contractorName     String
+  contractorTaxId    String?
+  contractorCountry  String   @db.Char(2)
+  treatyApplied      Boolean  @default(false)
+  treatyReference    String?  @db.VarChar(100)
+  paymentDate        DateTime @db.Date
+  generatedAt        DateTime @default(now())
+  generatedByUserId  String
+
+  @@unique([organizationId, certificateNumber])
+  @@index([organizationId])
+  @@index([organizationId, paymentRunItemId])
+}

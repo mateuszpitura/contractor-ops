@@ -54,12 +54,15 @@ const invoiceCreateBaseSchema = z.object({
   servicePeriodStart: z.string().date().optional(),
   servicePeriodEnd: z.string().date().optional(),
   currency: z.string().length(3).default("PLN"),
-  subtotalGrosze: z.number().int().min(0),
-  vatRate: z.enum(["23", "8", "5", "0", "ZW", "NP"]).optional(),
-  vatAmountGrosze: z.number().int().min(0).optional(),
-  totalGrosze: z.number().int().min(0),
-  withholdingGrosze: z.number().int().min(0).optional(),
-  amountToPayGrosze: z.number().int().min(0),
+  subtotalMinor: z.number().int().min(0),
+  // Dynamic VAT rate code — validated against TaxRate table at creation time
+  vatRate: z.string().max(10).optional(),
+  vatAmountMinor: z.number().int().min(0).optional(),
+  totalMinor: z.number().int().min(0),
+  withholdingMinor: z.number().int().min(0).optional(),
+  isReverseCharge: z.boolean().optional().default(false),
+  reverseChargeOverride: z.boolean().optional(),
+  amountToPayMinor: z.number().int().min(0),
   sellerTaxId: z.string().max(50).optional(),
   sellerName: z.string().max(500).optional(),
   sellerBankAccount: z.string().max(34).optional(),
@@ -89,7 +92,20 @@ export const invoiceCreateSchema = invoiceCreateBaseSchema
       message: "Service period end must be on or after start",
       path: ["servicePeriodEnd"],
     },
-  );
+  )
+  .refine(
+    (d) =>
+      d.totalMinor ===
+      d.subtotalMinor + (d.vatAmountMinor ?? 0) - (d.withholdingMinor ?? 0),
+    {
+      message: "INVOICE_AMOUNT_MISMATCH",
+      path: ["totalMinor"],
+    },
+  )
+  .refine((d) => d.amountToPayMinor === d.totalMinor, {
+    message: "INVOICE_AMOUNT_MISMATCH",
+    path: ["amountToPayMinor"],
+  });
 
 export type InvoiceCreate = z.infer<typeof invoiceCreateSchema>;
 
@@ -113,7 +129,7 @@ export const invoiceListSchema = z.object({
       "invoiceNumber",
       "issueDate",
       "dueDate",
-      "totalGrosze",
+      "totalMinor",
       "status",
     ])
     .default("receivedAt"),

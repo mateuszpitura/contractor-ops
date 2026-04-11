@@ -15,6 +15,7 @@ import {
   computeDuplicateCheckHash,
   runAutoMatch,
 } from "../services/invoice-matching.js";
+import { applyReverseCharge } from "../services/reverse-charge.service.js";
 import { dispatch } from "../services/notification-service.js";
 import { deleteCalendarEvent } from "../services/calendar-event-service.js";
 import { invalidateByPrefix, CacheKeys } from "../services/cache.js";
@@ -74,7 +75,7 @@ export const invoiceRouter = router({
         duplicateCheckHash = computeDuplicateCheckHash(
           invoiceData.invoiceNumber,
           invoiceData.sellerTaxId,
-          invoiceData.totalGrosze,
+          invoiceData.totalMinor,
         );
 
         const existing = await prisma.invoice.findFirst({
@@ -108,15 +109,17 @@ export const invoiceRouter = router({
               ? new Date(invoiceData.servicePeriodEnd)
               : null,
             currency: invoiceData.currency,
-            subtotalGrosze: invoiceData.subtotalGrosze,
+            subtotalMinor: invoiceData.subtotalMinor,
             vatRate: invoiceData.vatRate ?? null,
-            vatAmountGrosze: invoiceData.vatAmountGrosze ?? null,
-            totalGrosze: invoiceData.totalGrosze,
-            withholdingGrosze: invoiceData.withholdingGrosze ?? null,
-            amountToPayGrosze: invoiceData.amountToPayGrosze,
+            vatAmountMinor: invoiceData.vatAmountMinor ?? null,
+            totalMinor: invoiceData.totalMinor,
+            withholdingMinor: invoiceData.withholdingMinor ?? null,
+            amountToPayMinor: invoiceData.amountToPayMinor,
             sellerTaxId: invoiceData.sellerTaxId ?? null,
             sellerName: invoiceData.sellerName ?? null,
             sellerBankAccount: invoiceData.sellerBankAccount ?? null,
+            isReverseCharge: invoiceData.isReverseCharge ?? false,
+            reverseChargeOverride: invoiceData.reverseChargeOverride ?? null,
             status: "RECEIVED",
             matchStatus: "UNMATCHED",
             source: "MANUAL_UPLOAD",
@@ -160,13 +163,13 @@ export const invoiceRouter = router({
           type: "INVOICE_RECEIVED",
           recipientUserIds: financeUserIds,
           title: `New invoice received: ${invoice.invoiceNumber}`,
-          body: `From ${invoiceData.sellerName ?? "Unknown"} - ${(invoiceData.totalGrosze / 100).toFixed(2)} ${invoiceData.currency}`,
+          body: `From ${invoiceData.sellerName ?? "Unknown"} - ${(invoiceData.totalMinor / 100).toFixed(2)} ${invoiceData.currency}`,
           entityType: "INVOICE",
           entityId: invoice.id,
           metadata: {
             invoiceNumber: invoice.invoiceNumber,
             contractorName: invoiceData.sellerName ?? "Unknown",
-            amount: (invoiceData.totalGrosze / 100).toFixed(2),
+            amount: (invoiceData.totalMinor / 100).toFixed(2),
             currency: invoiceData.currency,
           },
         }).catch((err) =>
@@ -202,13 +205,22 @@ export const invoiceRouter = router({
               title: true,
               type: true,
               status: true,
-              rateValueGrosze: true,
+              rateValueMinor: true,
               currency: true,
             },
           },
           files: {
             include: {
-              document: true,
+              document: {
+                select: {
+                  id: true,
+                  originalFileName: true,
+                  mimeType: true,
+                  fileSizeBytes: true,
+                  createdAt: true,
+                  virusScanStatus: true,
+                },
+              },
             },
           },
           matchResults: {
@@ -283,31 +295,118 @@ export const invoiceRouter = router({
         );
       }
 
-      // Recompute duplicate check hash if relevant fields changed
-      const invoiceNumber =
-        (updateData.invoiceNumber as string) ?? existing.invoiceNumber;
-      const sellerTaxId =
-        (updateData.sellerTaxId as string) ?? existing.sellerTaxId;
-      const totalGrosze =
-        (updateData.totalGrosze as number) ?? existing.totalGrosze;
-
+      // Validate service period: end must be >= start (merge with existing values)
+      const effectiveStart =
+        (updateData.servicePeriodStart as Date | undefined) ??
+        existing.servicePeriodStart;
+      const effectiveEnd =
+        (updateData.servicePeriodEnd as Date | undefined) ??
+        existing.servicePeriodEnd;
       if (
-        sellerTaxId &&
-        invoiceNumber &&
-        (updateData.invoiceNumber ||
-          updateData.sellerTaxId ||
-          updateData.totalGrosze !== undefined)
+        effectiveStart &&
+        effectiveEnd &&
+        effectiveEnd < effectiveStart
       ) {
-        updateData.duplicateCheckHash = computeDuplicateCheckHash(
-          invoiceNumber,
-          sellerTaxId,
-          totalGrosze,
-        );
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "Service period end date must be on or after the start date.",
+        });
+      }
+
+      // Validate arithmetic consistency when any amount field is updated
+      if (
+        updateData.subtotalMinor !== undefined ||
+        updateData.vatAmountMinor !== undefined ||
+        updateData.totalMinor !== undefined ||
+        updateData.withholdingMinor !== undefined ||
+        updateData.amountToPayMinor !== undefined
+      ) {
+        const effective = {
+          subtotalMinor:
+            (updateData.subtotalMinor as number) ?? existing.subtotalMinor,
+          vatAmountMinor:
+            (updateData.vatAmountMinor as number) ??
+            existing.vatAmountMinor ??
+            0,
+          totalMinor:
+            (updateData.totalMinor as number) ?? existing.totalMinor,
+          withholdingMinor:
+            (updateData.withholdingMinor as number) ??
+            existing.withholdingMinor ??
+            0,
+          amountToPayMinor:
+            (updateData.amountToPayMinor as number) ??
+            existing.amountToPayMinor,
+        };
+        const expectedTotal =
+          effective.subtotalMinor +
+          effective.vatAmountMinor -
+          effective.withholdingMinor;
+        if (effective.totalMinor !== expectedTotal) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: E.INVOICE_AMOUNT_MISMATCH,
+          });
+        }
+        if (effective.amountToPayMinor !== effective.totalMinor) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: E.INVOICE_AMOUNT_MISMATCH,
+          });
+        }
+      }
+
+      // Recompute duplicate check hash if relevant fields changed
+      if (
+        updateData.invoiceNumber ||
+        updateData.sellerTaxId ||
+        updateData.totalMinor !== undefined
+      ) {
+        const effectiveNumber =
+          (updateData.invoiceNumber as string) ?? existing.invoiceNumber;
+        const effectiveTaxId =
+          (updateData.sellerTaxId as string) ?? existing.sellerTaxId;
+        const effectiveTotal =
+          (updateData.totalMinor as number) ?? existing.totalMinor;
+
+        if (effectiveNumber && effectiveTaxId) {
+          updateData.duplicateCheckHash = computeDuplicateCheckHash(
+            effectiveNumber,
+            effectiveTaxId,
+            effectiveTotal,
+          );
+        }
       }
 
       const updated = await prisma.invoice.update({
         where: { id: input.id },
         data: updateData,
+        select: {
+          id: true,
+          organizationId: true,
+          invoiceNumber: true,
+          issueDate: true,
+          dueDate: true,
+          servicePeriodStart: true,
+          servicePeriodEnd: true,
+          currency: true,
+          subtotalMinor: true,
+          vatRate: true,
+          vatAmountMinor: true,
+          totalMinor: true,
+          withholdingMinor: true,
+          amountToPayMinor: true,
+          sellerTaxId: true,
+          sellerName: true,
+          status: true,
+          matchStatus: true,
+          source: true,
+          contractorId: true,
+          contractId: true,
+          createdAt: true,
+          updatedAt: true,
+        },
       });
 
       return plain(updated);
@@ -462,9 +561,10 @@ export const invoiceRouter = router({
         {
           id: invoice.id,
           sellerTaxId: invoice.sellerTaxId,
-          totalGrosze: invoice.totalGrosze,
+          totalMinor: invoice.totalMinor,
           currency: invoice.currency,
           duplicateCheckHash: invoice.duplicateCheckHash,
+          issueDate: invoice.issueDate,
           servicePeriodStart: invoice.servicePeriodStart,
           servicePeriodEnd: invoice.servicePeriodEnd,
         },
@@ -480,8 +580,8 @@ export const invoiceRouter = router({
             matchedContractId: matchResult.contractId,
             matchedContractorId: matchResult.contractorId,
             matchScore: matchResult.score,
-            expectedAmountGrosze: matchResult.expectedAmountGrosze,
-            amountDeltaGrosze: matchResult.amountDeltaGrosze,
+            expectedAmountMinor: matchResult.expectedAmountMinor,
+            amountDeltaMinor: matchResult.amountDeltaMinor,
             amountDeltaPercent: matchResult.amountDeltaPercent,
             matchedBy: "RULE_ENGINE",
             status: matchResult.matchStatus,
@@ -732,11 +832,35 @@ export const invoiceRouter = router({
           title: true,
           type: true,
           status: true,
-          rateValueGrosze: true,
+          rateValueMinor: true,
           currency: true,
         },
       });
 
       return plain(contracts);
+    }),
+
+  /**
+   * Toggle reverse charge status on an invoice.
+   * Records the override so audit trail distinguishes auto-detected from manual.
+   */
+  toggleReverseCharge: tenantProcedure
+    .use(requirePermission({ invoice: ["update"] }))
+    .input(z.object({
+      invoiceId: z.string(),
+      isReverseCharge: z.boolean(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const invoice = await prisma.invoice.update({
+        where: {
+          id: input.invoiceId,
+          organizationId: ctx.organizationId,
+        },
+        data: {
+          isReverseCharge: input.isReverseCharge,
+          reverseChargeOverride: input.isReverseCharge,
+        },
+      });
+      return plain(invoice);
     }),
 });

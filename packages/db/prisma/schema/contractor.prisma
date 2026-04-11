@@ -33,6 +33,7 @@ model Contractor {
   notes                String?
   isSensitive          Boolean                  @default(false)
   customFieldsJson     Json?
+  countryFields        Json?              // Country-specific compliance fields (validated by Zod per country)
   createdAt            DateTime                 @default(now())
   updatedAt            DateTime                 @updatedAt
   archivedAt           DateTime?
@@ -175,6 +176,7 @@ model ContractorTagLink {
   tag          ContractorTag @relation(fields: [tagId], references: [id])
 
   @@id([contractorId, tagId])
+  @@index([tagId])
 }
 
 model ComplianceRequirementTemplate {

@@ -44,6 +44,12 @@ model PaymentRunItem {
   paymentReference String?
   markedPaidAt     DateTime?
   failureReason    String?
+  whtAmountMinor       Int?
+  whtRate              Decimal?           @db.Decimal(5, 2)
+  whtTreatyApplied     Boolean?
+  whtTreatyReference   String?            @db.VarChar(100)
+  whtServiceType       String?            @db.VarChar(50)
+  grossAmountMinor     Int?               // Original amount before WHT deduction
   createdAt        DateTime             @default(now())
   updatedAt        DateTime             @updatedAt
 
