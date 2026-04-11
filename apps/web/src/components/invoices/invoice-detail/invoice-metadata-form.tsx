@@ -49,6 +49,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { trpc } from "@/trpc/init";
+import { VatRateSelector } from "@/components/invoices/vat-rate-selector";
 
 // ---------------------------------------------------------------------------
 // Local Zod schema (mirrors invoiceUpdateSchema to avoid cross-package dep)
@@ -78,17 +79,6 @@ type InvoiceMetadataValues = z.infer<ReturnType<typeof createInvoiceMetadataSche
 // ---------------------------------------------------------------------------
 // VAT rate options
 // ---------------------------------------------------------------------------
-
-function getVatRateOptions(tMeta: (key: string) => string) {
-  return [
-    { value: "23", label: "23%" },
-    { value: "8", label: "8%" },
-    { value: "5", label: "5%" },
-    { value: "0", label: "0%" },
-    { value: "ZW", label: tMeta("vatRates.exempt") },
-    { value: "NP", label: tMeta("vatRates.notApplicable") },
-  ] as const;
-}
 
 const CURRENCY_OPTIONS = [
   { value: "PLN", label: "PLN" },
@@ -150,9 +140,6 @@ export function InvoiceMetadataForm({
 
   const invoiceMetadataSchema = createInvoiceMetadataSchema(
     (key: string) => tv(key as Parameters<typeof tv>[0])
-  );
-  const VAT_RATE_OPTIONS = getVatRateOptions(
-    (key: string) => tMeta(key as Parameters<typeof tMeta>[0])
   );
   const [voidDialogOpen, setVoidDialogOpen] = useState(false);
 
@@ -422,23 +409,11 @@ export function InvoiceMetadataForm({
               </div>
               <div className="space-y-1.5">
                 <Label>{t("detail.vatRate")}</Label>
-                <Select
+                <VatRateSelector
                   value={vatRateValue ?? undefined}
-                  onValueChange={(val) => setValue("vatRate", val ?? undefined)}
+                  onChange={(code) => setValue("vatRate", code)}
                   disabled={!isEditable}
-                  items={VAT_RATE_OPTIONS}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={t("detail.vatRatePlaceholder")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {VAT_RATE_OPTIONS.map((opt) => (
-                      <SelectItem key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                />
               </div>
             </div>
 
