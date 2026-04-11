@@ -152,7 +152,12 @@ Full details: `.planning/milestones/v3.0-ROADMAP.md`
   2. Outbound invoices are generated as PINT-AE compliant UBL 2.1 XML and transmitted via the ASP, with delivery confirmation tracked
   3. Inbound Peppol invoices received from the ASP are parsed and appear in the invoice intake queue
   4. Generated invoices include QR codes per UAE e-invoicing requirements
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+- [ ] 49-01-PLAN.md — Peppol-AE Profile & ASP Adapter Interface
+- [ ] 49-02-PLAN.md — Prisma Models, Enum Extensions & tRPC Router
+- [ ] 49-03-PLAN.md — Storecove ASP Adapter, Outbound Orchestrator & Inbound Processing
+- [ ] 49-04-PLAN.md — Peppol UI — Connection Wizard, Status Views & Compliance Widget
 **UI hint**: yes
 
 ### Phase 50: Arabic Localization & RTL Layout
