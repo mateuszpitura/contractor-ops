@@ -158,6 +158,24 @@ export {
   zatcaOnboardingStepSchema,
   zatcaTaxDetailsSchema,
 } from "./profiles/zatca/schemas.js";
+// ZATCA API client
+export {
+  ZatcaApiClient,
+  ZatcaApiError,
+  ZATCA_SANDBOX_URL,
+  ZATCA_PRODUCTION_URL,
+} from "./profiles/zatca/api-client.js";
+export type {
+  ZatcaApiClientConfig,
+  ZatcaClearanceResponse,
+  ZatcaCsidResponse,
+  ZatcaReportingResponse,
+  ZatcaSubmissionPayload,
+  ZatcaValidationResult,
+} from "./profiles/zatca/api-client.js";
+// ZATCA signer and QR
+export { ZatcaXAdESSigner } from "./profiles/zatca/signer.js";
+export { ZatcaTLVQRCode } from "./profiles/zatca/qr-code.js";
 // ZATCA types
 export type {
   ZatcaInvoiceExtensions,

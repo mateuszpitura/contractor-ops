@@ -2,16 +2,16 @@
 // ZATCA (Saudi Arabia) Country Profile
 // ---------------------------------------------------------------------------
 
-import type { EInvoiceProfile } from "../../types/profile.js";
-import type { EInvoice } from "../../types/invoice.js";
-import type { ValidationResult } from "../../types/validation.js";
 import type { ComplianceStatus } from "../../types/compliance.js";
+import type { EInvoice } from "../../types/invoice.js";
+import type { EInvoiceProfile } from "../../types/profile.js";
+import type { ValidationResult } from "../../types/validation.js";
+import type { ZatcaConnectionData } from "./compliance.js";
+import { computeZatcaComplianceStatus } from "./compliance.js";
 import { generateZatcaXml } from "./generator.js";
 import { parseZatcaXml } from "./parser.js";
-import {
-  computeZatcaComplianceStatus,
-  type ZatcaConnectionData,
-} from "./compliance.js";
+import { ZatcaTLVQRCode } from "./qr-code.js";
+import { ZatcaXAdESSigner } from "./signer.js";
 
 // ---------------------------------------------------------------------------
 // ZatcaProfile
@@ -30,19 +30,17 @@ export class ZatcaProfile implements EInvoiceProfile {
   readonly country = "SA" as const;
   readonly displayName = "ZATCA (Saudi Arabia)";
 
-  /** XAdES signing capability — wired by Plan 02 */
-  readonly sign = undefined;
-  /** TLV QR code capability — wired by Plan 03 */
-  readonly qrCode = undefined;
+  /** XAdES-BES enveloped digital signature (Plan 02) */
+  readonly sign = new ZatcaXAdESSigner();
+  /** TLV-encoded QR code generator (Plan 03) */
+  readonly qrCode = new ZatcaTLVQRCode();
 
   private complianceFetcher?:
     | ((organizationId: string) => Promise<ZatcaConnectionData | null>)
     | undefined;
 
   constructor(options?: {
-    complianceFetcher?: (
-      organizationId: string,
-    ) => Promise<ZatcaConnectionData | null>;
+    complianceFetcher?: (organizationId: string) => Promise<ZatcaConnectionData | null>;
   }) {
     this.complianceFetcher = options?.complianceFetcher;
   }
@@ -51,10 +49,7 @@ export class ZatcaProfile implements EInvoiceProfile {
     return generateZatcaXml(invoice);
   }
 
-  async parse(
-    xml: string,
-    metadata?: Record<string, unknown>,
-  ): Promise<EInvoice> {
+  async parse(xml: string, metadata?: Record<string, unknown>): Promise<EInvoice> {
     return parseZatcaXml(xml, metadata);
   }
 
@@ -68,8 +63,7 @@ export class ZatcaProfile implements EInvoiceProfile {
         profileId: this.profileId,
       };
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : String(error);
+      const message = error instanceof Error ? error.message : String(error);
       return {
         valid: false,
         errors: [{ code: "PARSE_ERROR", message, severity: "error" }],
@@ -79,9 +73,7 @@ export class ZatcaProfile implements EInvoiceProfile {
     }
   }
 
-  async getComplianceStatus(
-    organizationId: string,
-  ): Promise<ComplianceStatus> {
+  async getComplianceStatus(organizationId: string): Promise<ComplianceStatus> {
     if (!this.complianceFetcher) {
       return computeZatcaComplianceStatus(null);
     }
