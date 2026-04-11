@@ -83,7 +83,7 @@ Full details: `.planning/milestones/v3.0-ROADMAP.md`
 
 - [x] **Phase 45: Pluggable E-Invoicing Engine Core** - Abstract UBL 2.1 engine with KSeF refactored as first country profile (completed 2026-04-11)
 - [x] **Phase 46: Multi-Currency Foundation & SWIFT Payment Export** - AED/SAR/GBP currencies with Money utility, exchange rates, and ISO 20022 SWIFT export (completed 2026-04-11)
-- [ ] **Phase 47: VAT Engine, WHT Calculator & Country Fields** - Configuration-driven multi-tier VAT, Saudi WHT with certificate generation, and country-specific contractor profiles (5 plans)
+- [x] **Phase 47: VAT Engine, WHT Calculator & Country Fields** - Configuration-driven multi-tier VAT, Saudi WHT with certificate generation, and country-specific contractor profiles (5 plans) (completed 2026-04-11)
 - [ ] **Phase 48: ZATCA Fatoorah Integration** - Saudi e-invoicing with XML DSig, hash chain, QR codes, and Fatoora Portal API clearance (6 plans)
 - [ ] **Phase 49: Peppol PINT-AE Integration** - UAE e-invoicing via certified ASP with inbound invoice parsing
 - [ ] **Phase 50: Arabic Localization & RTL Layout** - Full Arabic translation with codebase-wide RTL migration to CSS logical properties
@@ -129,11 +129,11 @@ Full details: `.planning/milestones/v3.0-ROADMAP.md`
   5. UAE contractor profiles show freelance permit and trade license fields; Saudi profiles show Freelance.sa license and commercial registration fields, activated by the organization's country setting
 **Plans**: 5 plans
 Plans:
-- [ ] 47-01-PLAN.md — TaxRate & WithholdingTaxRate Models, Seed Data, and VAT Rate Service
-- [ ] 47-02-PLAN.md — Reverse Charge Detection Service and Invoice Integration
-- [ ] 47-03-PLAN.md — WHT Certificate PDF Generation and Payment Run Integration
-- [ ] 47-04-PLAN.md — Country-Specific Contractor Profile Fields and TIN Validation
-- [ ] 47-05-PLAN.md — VAT Rate Selector UI, Reverse Charge Banner, WHT Payment View, and Compliance Dashboard Tax Widget
+- [x] 47-01-PLAN.md — TaxRate & WithholdingTaxRate Models, Seed Data, and VAT Rate Service
+- [x] 47-02-PLAN.md — Reverse Charge Detection Service and Invoice Integration
+- [x] 47-03-PLAN.md — WHT Certificate PDF Generation and Payment Run Integration
+- [x] 47-04-PLAN.md — Country-Specific Contractor Profile Fields and TIN Validation
+- [x] 47-05-PLAN.md — VAT Rate Selector UI, Reverse Charge Banner, WHT Payment View, and Compliance Dashboard Tax Widget
 **UI hint**: yes
 
 ### Phase 48: ZATCA Fatoorah Integration
@@ -220,7 +220,7 @@ Phases execute in numeric order: 45 -> 46 -> 47 -> 48 -> 49 -> 50 -> 51 -> 52
 |-------|-----------|----------------|--------|-----------|
 | 45. Pluggable E-Invoicing Engine Core | v4.0 | 5/5 | Complete    | 2026-04-11 |
 | 46. Multi-Currency & SWIFT Payments | v4.0 | 5/5 | Complete    | 2026-04-11 |
-| 47. VAT Engine, WHT & Country Fields | v4.0 | 0/5 | Planned    |  |
+| 47. VAT Engine, WHT & Country Fields | v4.0 | 5/5 | Complete    | 2026-04-11 |
 | 48. ZATCA Fatoorah Integration | v4.0 | 0/6 | Planned | - |
 | 49. Peppol PINT-AE Integration | v4.0 | 3/4 | In Progress|  |
 | 50. Arabic Localization & RTL Layout | v4.0 | 0/TBD | Not started | - |
