@@ -1,710 +1,709 @@
-# Architecture Research: v3.0 Enterprise & Monetization
+# Architecture Research
 
-**Domain:** B2B contractor operations platform -- integration expansion, equipment tracking, billing infrastructure
-**Researched:** 2026-04-01
-**Confidence:** HIGH (existing adapter architecture well-understood, new integration APIs documented, Stripe billing patterns established)
+**Domain:** International expansion of contractor ops platform -- pluggable e-invoicing, multi-currency, multi-region, RTL, government API integrations
+**Researched:** 2026-04-11
+**Confidence:** HIGH (existing codebase fully inspected, government API specs verified via official sources)
 
 ## System Overview
 
-The existing integration framework (Phase 12, v2.0) provides a well-defined extension surface with `IntegrationProviderAdapter`, a provider registry, generic OAuth callback, generic webhook ingestion, QStash async processing, and AES-256-GCM credential encryption. The key architectural question is: which v3.0 features fit cleanly into this adapter pattern, which need new bounded contexts, and which require infrastructure-level changes?
-
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                        NEW v3.0 Components                              │
-│                                                                         │
-│  ┌───────────┐ ┌───────────┐ ┌────────────┐ ┌──────────┐ ┌──────────┐ │
-│  │  Linear   │ │  Teams    │ │ Google WS  │ │Equipment │ │  Stripe  │ │
-│  │  Adapter  │ │  Adapter  │ │  Adapter   │ │ Tracker  │ │ Billing  │ │
-│  └─────┬─────┘ └─────┬─────┘ └─────┬──────┘ └────┬─────┘ └────┬─────┘ │
-│        │              │             │              │            │       │
-├────────┴──────────────┴─────────────┴──────────────┼────────────┼───────┤
-│              EXISTING Integration Framework        │            │       │
-│  ┌──────────────────────────────────────────────┐  │            │       │
-│  │  Registry │ OAuth │ Webhook Pipeline │ Health │  │            │       │
-│  └──────────────────────────────────────────────┘  │            │       │
-├────────────────────────────────────────────────────┼────────────┼───────┤
-│                    NEW Cross-Cutting Concerns       │            │       │
-│  ┌────────────────────┐  ┌──────────────────────┐  │            │       │
-│  │ Onboarding Import  │  │ Messaging Abstraction│  │            │       │
-│  │ Orchestrator       │  │ (Slack + Teams)       │  │            │       │
-│  └────────────────────┘  └──────────────────────┘  │            │       │
-├────────────────────────────────────────────────────┴────────────┴───────┤
-│                    EXISTING Infrastructure                              │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐               │
-│  │ Prisma   │  │ QStash   │  │ tRPC     │  │ Neon PG  │               │
-│  │ (40+ mod)│  │ (async)  │  │ (19 rtr) │  │ (DB)     │               │
-│  └──────────┘  └──────────┘  └──────────┘  └──────────┘               │
-└─────────────────────────────────────────────────────────────────────────┘
-```
-
-### Component Classification
-
-| v3.0 Feature | Integration Type | Fits Existing Adapter? | New Infrastructure? |
-|---|---|---|---|
-| Linear integration | New adapter (mirrors Jira) | YES -- extends BaseAdapter, uses all existing infra | No |
-| Teams integration | New adapter + messaging abstraction | PARTIALLY -- adapter yes, but notification-service needs refactor to abstract Slack/Teams | Messaging abstraction layer |
-| Google Workspace | New adapter + directory import | PARTIALLY -- OAuth adapter yes, directory import is a new capability type | Directory sync service |
-| Intelligent onboarding | Cross-cutting orchestrator | NO -- new bounded context that consumes data from existing integrations | Import orchestrator, data mapping engine |
-| Equipment tracking | New domain model | NO -- not an integration provider | New Prisma schema, courier API clients |
-| Stripe billing | Tenant-level infrastructure | NO -- billing is infrastructure, not a user-managed integration | Billing service, tRPC middleware, usage metering |
-
-## Integration Point Analysis
-
-### 1. Linear Adapter -- Clean Fit
-
-Linear's API mirrors Jira closely: OAuth 2.0, webhooks with HMAC-SHA256 verification, bidirectional issue sync. The existing `JiraAdapter` is the exact template.
-
-**What exists and can be reused (zero changes needed):**
-- `BaseAdapter` class -- extend directly
-- Generic OAuth callback route `/api/oauth/[provider]/callback` -- works as-is
-- Generic webhook ingestion route `/api/webhooks/[provider]` -- works as-is
-- `IntegrationConnection` model -- works as-is
-- `ExternalLink` model -- works as-is (link Linear issues to contractors/projects)
-- `IntegrationSyncLog` -- works as-is
-- QStash async processing via `_process` route -- works as-is
-- AES-256-GCM per-provider credential encryption -- add `LINEAR_ENCRYPTION_KEY`
-- `verifyOAuthState()` / `generateOAuthState()` -- works as-is
-
-**New components needed:**
-- `packages/integrations/src/adapters/linear-adapter.ts` -- OAuth config, token exchange, refresh token, webhook HMAC verification
-- `packages/api/src/services/linear-issue-sync.ts` -- bidirectional issue sync (mirrors `jira-issue-sync.ts`)
-- `packages/api/src/services/linear-webhook-handler.ts` -- webhook event processing (issue created/updated/deleted)
-- `packages/api/src/routers/linear.ts` -- tRPC router for Linear-specific operations (connect project, map statuses, manual sync)
-
-**Schema changes:**
-- Add `LINEAR` to `IntegrationProvider` enum
-
-**Linear-specific considerations:**
-- Linear uses **GraphQL** (not REST like Jira) -- the adapter's sync service needs a lightweight GraphQL client (`graphql-request` or direct `fetch`), but the adapter interface itself is unchanged
-- Linear webhooks use HMAC-SHA256 with a signing secret -- identical verification pattern to Jira's `X-Hub-Signature: sha256=<hex>`
-- Linear OAuth now **requires refresh tokens** (mandatory since April 2026) -- the existing `refreshToken()` flow handles this without changes
-- Linear has team-scoped access, analogous to Jira's cloudId -- store `teamId`/`workspaceId` in `configJson`
-- Linear supports `client_credentials` grant for server-to-server (app actor tokens, 30-day validity) -- not needed if using per-user OAuth
-
-**Data flow (identical to Jira pattern):**
-```
-Linear Webhook → /api/webhooks/linear → LinearAdapter.verifyWebhookSignature()
-    → WebhookDelivery log → QStash → /api/webhooks/_process
-    → linear-webhook-handler.processLinearWebhook()
-    → Update ExternalLink + sync contractor/project status
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                           apps/web (Next.js)                                 │
+│  ┌──────────┐  ┌──────────────┐  ┌───────────┐  ┌─────────────────────────┐ │
+│  │ RTL/i18n │  │ Multi-currency│  │ Gov API   │  │ Country-specific       │ │
+│  │ Layout   │  │ Display Layer │  │ Status UI │  │ Contractor Fields UI   │ │
+│  └────┬─────┘  └──────┬───────┘  └─────┬─────┘  └──────────┬────────────┘ │
+├───────┴───────────────┴────────────────┴─────────────────────┴──────────────┤
+│                         packages/api (tRPC)                                  │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌────────────────┐  │
+│  │ einvoicing   │  │ currency     │  │ tax          │  │ payment        │  │
+│  │ router       │  │ router       │  │ router       │  │ router (ext)   │  │
+│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘  └──────┬─────────┘  │
+├─────────┴──────────────────┴────────────────┴──────────────────┴────────────┤
+│                    NEW: packages/einvoicing                                   │
+│  ┌─────────────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐            │
+│  │ Core Engine     │  │ KSeF     │  │ ZATCA    │  │ Peppol   │            │
+│  │ (EN 16931/UBL)  │  │ Profile  │  │ Profile  │  │ PINT-AE  │            │
+│  └────────┬────────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘            │
+│           │                │              │              │                   │
+│  ┌────────┴────────┐  ┌───┴──────────────┴──────────────┴────┐             │
+│  │ XML/Validation  │  │ Government API Clients               │             │
+│  │ Pipeline        │  │ (KSeF, ZATCA Fatoora, Peppol ASP)    │             │
+│  └─────────────────┘  └─────────────────────────────────────┘             │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                    EXISTING: packages/integrations                            │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────────┐ │
+│  │ Registry │  │ Cred Svc │  │ Webhook  │  │ Health   │  │ ZATCA/Peppol │ │
+│  │          │  │ (AES-GCM)│  │ Pipeline │  │ Monitor  │  │ Adapters     │ │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘  └──────────────┘ │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                    packages/db (Prisma) + packages/validators (Zod)          │
+│  ┌───────────────┐  ┌──────────────┐  ┌──────────────┐  ┌───────────────┐ │
+│  │ einvoice.prisma│ │ currency.prisma│ │ tax.prisma   │ │ consent.prisma│ │
+│  │ (submissions, │  │ (rates, Money │  │ (WHT, rules, │  │ (PDPL, data  │ │
+│  │  documents)   │  │  conversion)  │  │  certificates)│ │  residency)  │ │
+│  └───────────────┘  └──────────────┘  └──────────────┘  └───────────────┘ │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                    Infrastructure                                            │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌───────────────┐  │
+│  │ Neon PG      │  │ QStash       │  │ R2 Storage   │  │ Vercel Edge   │  │
+│  │ (eu-central-1│  │ (async govt  │  │ (XML archive,│  │ (geo-routing) │  │
+│  │  + logical   │  │  API calls)  │  │  certificates)│ │               │  │
+│  │  replication) │  │              │  │              │  │               │  │
+│  └──────────────┘  └──────────────┘  └──────────────┘  └───────────────┘  │
+└──────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 2. Teams Adapter -- Requires Messaging Abstraction
+### Component Responsibilities
 
-Teams integration is NOT a simple adapter addition. The current Slack integration is deeply coupled: `slack-client.ts` contains approval card rendering (Block Kit), reminder DMs, user sync, and message updates. The `notification-service.ts` calls `sendSlackDM()` and `sendApprovalCard()` directly.
+| Component | Responsibility | Typical Implementation |
+|-----------|----------------|------------------------|
+| `packages/einvoicing` (NEW) | Pluggable e-invoicing engine -- XML generation, validation, signing, QR codes | Country profiles implementing abstract core; EN 16931/UBL 2.1 base |
+| `packages/integrations` (EXTENDED) | ZATCA + Peppol adapters in existing adapter registry | New `ZatcaAdapter`, `PeppolAdapter` extending `BaseAdapter` |
+| `packages/db` (EXTENDED) | New schemas for e-invoice submissions, currency rates, tax rules, WHT, PDPL consent | New Prisma schema files in existing multi-file structure |
+| `packages/validators` (EXTENDED) | Zod schemas for ZATCA XML fields, currency amounts, tax calculations | New validator files following existing pattern |
+| `packages/api` (EXTENDED) | New tRPC routers for e-invoicing, currency, tax | New routers in existing router structure |
+| `apps/web` (EXTENDED) | RTL layout, currency display, government API status UIs | Existing pages + new country-specific components |
 
-Adding Teams means every notification call site would need `if (slack) ... else if (teams) ...` unless we extract a messaging abstraction.
+## Recommended Project Structure
 
-**The core problem in code:**
-```typescript
-// Current notification-service.ts (line 182-198)
-async function sendSlackDM(userId: string, event: NotificationEvent): Promise<void> {
-  const slackUserId = await getSlackUserIdForUser(event.organizationId, userId);
-  if (!slackUserId) return;
-  if (event.type === "APPROVAL_REQUEST") {
-    await sendApprovalCard({ ... });  // Directly coupled to Slack Block Kit
-  }
-  // ...
-}
-```
-
-**Recommended approach -- MessagingProvider interface:**
-
-```typescript
-// packages/api/src/services/messaging/types.ts
-interface MessageRef {
-  platform: "slack" | "teams";
-  channelId: string;
-  messageId: string;  // Slack ts, Teams message id
-}
-
-interface MessagingProvider {
-  readonly platform: "slack" | "teams";
-  sendApprovalCard(params: ApprovalCardParams): Promise<MessageRef>;
-  updateApprovalResult(ref: MessageRef, result: ApprovalResult): Promise<void>;
-  sendReminderDM(params: ReminderParams): Promise<void>;
-  resolveUserMapping(orgId: string, userId: string): Promise<string | null>;
-  syncWorkspaceUsers(orgId: string, connectionId: string): Promise<SyncResult>;
-}
-```
-
-**What exists and can be reused:**
-- `BaseAdapter` -- extend for Teams OAuth (Azure AD) + webhook verification
-- OAuth callback route -- works as-is (Azure AD uses standard OAuth 2.0 Authorization Code Grant)
-- `ExternalLink` model -- for user mapping (`TEAMS_USER` external type, like existing `SLACK_USER`)
-- `UserNotificationPreference` model -- add `channelTeams` boolean (mirrors `channelSlack`)
-
-**What CANNOT be reused as-is:**
-- Webhook ingestion route -- Teams Bot Framework uses a different messaging endpoint pattern (`/api/messages/teams`), not the generic webhook pipeline. The Bot Framework SDK expects to handle the HTTP request directly via `BotFrameworkAdapter.processActivity()`
-- `notification-service.ts` -- must be refactored to dispatch through messaging abstraction instead of calling Slack directly
-
-**New components needed:**
-- `packages/integrations/src/adapters/teams-adapter.ts` -- Azure AD OAuth config, token exchange
-- `packages/api/src/services/messaging/types.ts` -- `MessagingProvider` interface
-- `packages/api/src/services/messaging/slack-provider.ts` -- wraps existing `slack-client.ts` functions behind interface
-- `packages/api/src/services/messaging/teams-provider.ts` -- Bot Framework SDK + Adaptive Cards for approval UI
-- `packages/api/src/services/messaging/index.ts` -- `getMessagingProviders(orgId)` resolution (returns all connected providers)
-- `apps/web/src/app/api/messages/teams/route.ts` -- Bot Framework messaging endpoint (separate from generic webhook route)
-- Refactor `notification-service.ts` -- replace direct `sendSlackDM()` / `sendApprovalCard()` calls with messaging abstraction dispatch
-
-**Teams-specific infrastructure requirements:**
-- **Azure Bot registration** required in Azure Portal (Bot Channels Registration resource)
-- `botbuilder` npm package (Bot Framework SDK v4 for Node.js) for message handling
-- **Adaptive Cards** JSON schema for approval UI (replaces Slack's Block Kit)
-- **Proactive messaging** requires storing `ConversationReference` per user -- store in `ExternalLink.metadataJson` (fields: `serviceUrl`, `conversationId`, `tenantId`, `userId`)
-- **Admin consent** required for organizational installation -- more complex than Slack's simple bot token
-
-**Schema changes:**
-- Add `MICROSOFT_TEAMS` to `IntegrationProvider` enum (note: `MICROSOFT_365` already exists for Outlook Calendar -- Teams requires a separate connection)
-- Add `channelTeams` to `UserNotificationPreference` model
-
-### 3. Google Workspace Adapter -- Directory Import is the Novel Part
-
-Google OAuth infrastructure is already partially established: `GoogleCalendarAdapter` handles Google OAuth token exchange. `GOOGLE_WORKSPACE` already exists in the `IntegrationProvider` enum. The directory import capability is what is new.
-
-**What exists and can be reused:**
-- Google OAuth token exchange pattern from `GoogleCalendarAdapter` -- same auth server, different scopes
-- OAuth callback route -- works as-is
-- `ExternalLink` model -- for mapping Google Workspace users to internal users
-
-**Critical distinction from Google Calendar:**
-- Google Calendar uses **per-user OAuth** (personal calendar access, scope: `calendar.events`)
-- Google Workspace Directory requires **domain-wide admin consent** or service account with domain delegation (scope: `admin.directory.user.readonly`, `admin.directory.group.readonly`)
-- These are **separate connections** in `IntegrationConnection` -- one `GOOGLE_CALENDAR`, one `GOOGLE_WORKSPACE`
-
-**New components needed:**
-- `packages/integrations/src/adapters/google-workspace-adapter.ts` -- OAuth config with Admin SDK scopes
-- `packages/api/src/services/google-directory-sync.ts` -- fetch users, groups, org units from Google Workspace directory via Admin SDK
-- Directory data mapper for import orchestrator consumption
-
-**Schema changes:**
-- `GOOGLE_WORKSPACE` already exists in enum -- no change needed
-- Consider adding `USER` to `EntityType` enum for ExternalLink user mapping (currently uses `CONTRACTOR` or `ORGANIZATION` as workaround for Slack user mapping -- line 102-108 of `slack-client.ts`)
-
-### 4. Intelligent Onboarding Import -- New Bounded Context
-
-This is NOT an integration adapter. It is an orchestrator that reads data FROM connected integrations to pre-populate the organization during initial setup or periodic sync.
-
-**Architecture:**
+### New Package: `packages/einvoicing`
 
 ```
-Onboarding Wizard UI (step in existing wizard or new settings page)
-    ↓
-Import Orchestrator (new service)
-    ├── Google Workspace → fetch users, departments, org units
-    ├── Linear → fetch teams, projects, members
-    ├── Jira → fetch projects, team members (via existing Jira connection)
-    ├── Slack → fetch channels, members (existing syncWorkspaceUsers pattern)
-    └── Teams → fetch teams, channels, members
-    ↓
-Per-Provider Data Mapper (normalize to internal schema candidates)
-    ↓
-Preview / Confirmation UI (show what will be created, let user deselect)
-    ↓
-Batch Create (users, contractors, projects, teams -- with audit trail)
+packages/einvoicing/
+├── src/
+│   ├── core/
+│   │   ├── types.ts                  # InvoiceDocument, LineItem, Party, TaxSubtotal
+│   │   ├── ubl-builder.ts            # UBL 2.1 XML document builder
+│   │   ├── en16931-validator.ts       # EN 16931 semantic validation rules
+│   │   ├── xml-signer.ts             # XML DSig / XAdES signing abstraction
+│   │   └── qr-generator.ts           # QR code generation (TLV + standard)
+│   ├── profiles/
+│   │   ├── base-profile.ts           # Abstract profile interface
+│   │   ├── ksef/
+│   │   │   ├── ksef-profile.ts       # KSeF FA(3) XML specifics
+│   │   │   ├── ksef-mapper.ts        # Invoice -> KSeF FA(3) XML mapping
+│   │   │   └── ksef-validator.ts     # KSeF-specific validation rules
+│   │   ├── zatca/
+│   │   │   ├── zatca-profile.ts      # ZATCA Fatoorah specifics
+│   │   │   ├── zatca-mapper.ts       # Invoice -> ZATCA UBL 2.1 mapping
+│   │   │   ├── zatca-signer.ts       # ZATCA XML DSig + hash chain
+│   │   │   ├── zatca-qr.ts           # TLV-encoded Base64 QR for ZATCA
+│   │   │   └── zatca-validator.ts    # ZATCA-specific validation
+│   │   └── peppol/
+│   │       ├── peppol-profile.ts     # Peppol BIS Billing 3.0
+│   │       ├── pint-ae-mapper.ts     # Invoice -> PINT-AE mapping
+│   │       └── peppol-validator.ts   # Peppol-specific validation
+│   ├── clients/
+│   │   ├── zatca-api-client.ts       # ZATCA Fatoora Portal REST API
+│   │   └── peppol-asp-client.ts      # Peppol ASP integration client
+│   └── index.ts
+├── package.json
+└── tsconfig.json
 ```
 
-**New components needed:**
-- `packages/api/src/services/import-orchestrator.ts` -- coordinates multi-source import, deduplication
-- `packages/api/src/services/import-mappers/` -- per-provider data mappers:
-  - `linear-mapper.ts` -- Linear teams/projects/members to internal entities
-  - `jira-mapper.ts` -- Jira projects/team members to internal entities
-  - `google-workspace-mapper.ts` -- Google Workspace users/groups to internal entities
-  - `slack-mapper.ts` -- Slack members to internal users (extends existing `syncWorkspaceUsers`)
-  - `teams-mapper.ts` -- Teams members/channels to internal entities
-- `packages/api/src/routers/onboarding-import.ts` -- tRPC router for import flow (list sources, preview, confirm, status)
-
-**Key design principle:** Import is a one-time (or periodic) operation, not a continuous sync. It uses existing `IntegrationConnection` credentials to call provider APIs but does not create new connections. The orchestrator reads, normalizes, previews, and batch-creates on user confirmation.
-
-**Schema changes:**
-- `ImportSession` model -- tracks import state, source providers, preview data, status
-- `ImportMapping` model -- stores field mappings, dedup keys, and transformation rules per provider
-
-**Dependency chain:** Requires at least one integration (Google Workspace, Linear, Jira, Slack, or Teams) to be connected first. The onboarding wizard should guide connection setup before import.
-
-### 5. Equipment/Shipment Tracking -- New Domain Model
-
-This is a new bounded context, not an integration adapter. Courier API clients (InPost, DPD, UPS) are lightweight HTTP clients with fundamentally different characteristics from integration providers:
-- API-key authenticated (not OAuth, except InPost which supports both)
-- Mostly read-only tracking (poll for status or receive status webhooks)
-- No bidirectional sync, no credential rotation
-- No user-facing "connect" flow
-
-**Architecture decision: DO NOT use the IntegrationProviderAdapter pattern for couriers.** Use a simpler `CourierClient` interface:
-
-```typescript
-// packages/api/src/services/courier/types.ts
-interface TrackingStatus {
-  carrier: "inpost" | "dpd" | "ups";
-  trackingNumber: string;
-  status: string;
-  statusCode: string;
-  timestamp: Date;
-  location?: string;
-  estimatedDelivery?: Date;
-  isDelivered: boolean;
-}
-
-interface CourierClient {
-  readonly carrier: "inpost" | "dpd" | "ups";
-  getTrackingStatus(trackingNumber: string): Promise<TrackingStatus>;
-  verifyWebhook?(rawBody: string, headers: Record<string, string>): boolean;
-}
-```
-
-**New components needed:**
-
-Schema (new bounded context -- `packages/db/prisma/schema/equipment.prisma`):
-- `Equipment` model -- name, serial number, type (laptop/monitor/etc.), contractor assignment, status (AVAILABLE/ASSIGNED/IN_TRANSIT/RETURNED), condition, purchase date, notes
-- `Shipment` model -- tracking number, carrier, origin/destination, status, linked equipment IDs, linked contractor, direction (OUTBOUND/RETURN)
-- `ShipmentStatusUpdate` model -- status history from courier API or webhooks
-
-Service layer:
-- `packages/api/src/services/courier/inpost-client.ts` -- InPost ShipX API client (OAuth 2.0 or API key, base: `api-shipx-pl.easypack24.net/v1/`)
-- `packages/api/src/services/courier/dpd-client.ts` -- DPD tracking API client
-- `packages/api/src/services/courier/ups-client.ts` -- UPS tracking API client
-- `packages/api/src/services/courier/index.ts` -- carrier resolution by tracking number prefix or explicit selection
-- `packages/api/src/services/equipment-service.ts` -- equipment lifecycle (assign, ship, receive, return)
-
-Routers:
-- `packages/api/src/routers/equipment.ts` -- CRUD, assign to contractor, view history
-- `packages/api/src/routers/shipment.ts` -- create shipment, track, manual status update
-
-**Schema changes:**
-- Add `EQUIPMENT` and `SHIPMENT` to `EntityType` enum (for ExternalLink, audit log)
-- New `equipment.prisma` schema file with models above
-- Equipment links to Contractor (many-to-one) and WorkflowRun (equipment handoff as workflow task)
-
-**Status polling:** QStash cron job polls courier APIs for active shipment status updates. When a courier supports webhooks (InPost does), those bypass polling.
-
-**Workflow integration:** Equipment handoff (assign laptop to contractor on onboarding, collect on offboarding) ties into the existing workflow engine as specialized workflow task types.
-
-### 6. Stripe Billing -- Tenant-Level Infrastructure
-
-Stripe billing is NOT an integration adapter. It is infrastructure that gates access to features. It operates at the tenant (organization) level and affects every tRPC request.
-
-**Architecture -- new middleware in the existing chain:**
+### Extensions to Existing Packages
 
 ```
-Request → tRPC Middleware Chain
-    auth → tenant → rbac → [NEW: billing] → sensitive → handler
-                              ↓
-                    Check subscription tier (cached)
-                    Check AI credit balance (for OCR routes)
-                    Enforce feature gates
-```
+packages/db/prisma/schema/
+├── einvoice.prisma               # NEW: EInvoiceSubmission, EInvoiceDocument, HashChain
+├── currency.prisma                # NEW: ExchangeRate, CurrencyConfig
+├── tax-rule.prisma                # NEW: TaxRule, WHTRate, WHTCertificate
+├── consent.prisma                 # NEW: ConsentRecord, DataResidencyConfig
+├── invoice.prisma                 # MODIFIED: add eInvoiceStatus, clearanceRef
+├── payment.prisma                 # MODIFIED: add SWIFT format, purpose codes
+├── contractor.prisma              # MODIFIED: add country-specific fields JSON
+├── organization.prisma            # MODIFIED: add region, taxJurisdiction
+└── integration.prisma             # MODIFIED: add ZATCA, PEPPOL to IntegrationProvider enum
 
-**New components needed:**
+packages/integrations/src/adapters/
+├── zatca-adapter.ts               # NEW: extends BaseAdapter, ZATCA Fatoorah
+├── peppol-adapter.ts              # NEW: extends BaseAdapter, Peppol ASP
+└── ksef-adapter.ts                # EXISTING: refactored to use packages/einvoicing
 
-Billing service layer (`packages/api/src/services/billing/`):
-- `stripe-client.ts` -- Stripe SDK wrapper, lazy initialization
-- `subscription-service.ts` -- create/update/cancel subscriptions, handle tier changes, per-seat quantity updates
-- `usage-metering.ts` -- record AI/OCR usage events to Stripe Billing Meters (new API since version 2025-03-31.basil)
-- `feature-gates.ts` -- check if org's tier allows feature X (e.g., Linear integration only on Pro+)
-- `webhook-handler.ts` -- process Stripe webhook events (invoice.paid, subscription.updated, etc.)
+packages/validators/src/
+├── einvoicing.ts                  # NEW: ZATCA XML fields, UBL validation
+├── currency.ts                    # NEW: exchange rates, Money type validation
+├── tax-rules.ts                   # NEW: WHT rates, VAT config validation
+└── invoice.ts                     # MODIFIED: multi-currency amount validation
 
-Middleware:
-- `packages/api/src/middleware/billing.ts` -- tRPC middleware checking subscription status on protected routes
-
-Routers:
-- `packages/api/src/routers/billing.ts` -- manage subscription, view usage dashboard, redirect to Stripe Customer Portal
-
-Webhook route:
-- `apps/web/src/app/api/webhooks/stripe/route.ts` -- **dedicated** Stripe webhook handler, NOT through the generic `/api/webhooks/[provider]` pipeline
-
-**Schema changes (new `billing.prisma`):**
-- `Subscription` model -- Stripe subscription ID, tier (FREE/STARTER/PRO/ENTERPRISE), status, current period start/end, seat count, Stripe price IDs
-- `UsageRecord` model -- local mirror of metered usage (type: AI_EXTRACTION/OCR, count, period, Stripe meter event ID)
-- `BillingEvent` model -- audit trail (upgrade, downgrade, payment_failed, trial_ended, etc.)
-- Add to `Organization` model: `stripeCustomerId`, `subscriptionTier` (enum), `trialEndsAt`
-
-**Stripe-specific architecture decisions:**
-
-Per-seat pricing: Use Stripe `subscription.quantity` for seat count. Update quantity on user invite (`subscription.update({ quantity: newCount })`) and user removal. Prorate automatically.
-
-AI credit metering: Use Stripe Billing Meters (current API, legacy `usage_records` removed since 2025-03-31.basil):
-```typescript
-// Create meter once during Stripe product setup
-const meter = await stripe.billing.meters.create({
-  display_name: "AI Extractions",
-  event_name: "ai_extraction",
-  default_aggregation: { formula: "sum" },
-  customer_mapping: { event_payload_key: "stripe_customer_id", type: "by_id" },
-  value_settings: { event_payload_key: "value" },
-});
-
-// Record each OCR/AI usage
-await stripe.billing.meterEvents.create({
-  event_name: "ai_extraction",
-  payload: { stripe_customer_id: org.stripeCustomerId, value: "1" },
-});
-```
-
-Free trial: Create subscription with `trial_period_days`, no payment method required initially. On trial end, Stripe fires `customer.subscription.trial_will_end` webhook.
-
-Self-service: Use Stripe Customer Portal for billing management (payment method updates, invoice history, plan changes) -- reduces code to maintain.
-
-**Key design decision:** Stripe webhooks bypass the integration adapter pipeline. Stripe is infrastructure, not a user-managed integration. The webhook uses `stripe.webhooks.constructEvent()` for signature verification, which is incompatible with the adapter's `verifyWebhookSignature()` method signature. Keeping billing separate from integration concerns is architecturally correct.
-
-## Recommended Project Structure (New Files Only)
-
-```
-packages/
-├── integrations/src/
-│   ├── adapters/
-│   │   ├── linear-adapter.ts           # NEW — extends BaseAdapter
-│   │   ├── teams-adapter.ts            # NEW — extends BaseAdapter
-│   │   ├── google-workspace-adapter.ts # NEW — extends BaseAdapter
-│   │   └── register-all.ts            # MODIFY — register 3 new adapters
-│   └── types/
-│       └── provider.ts                # EXISTING — no interface changes needed
-│
-├── api/src/
-│   ├── services/
-│   │   ├── linear-issue-sync.ts        # NEW — bidirectional issue sync
-│   │   ├── linear-webhook-handler.ts   # NEW — webhook event processing
-│   │   ├── google-directory-sync.ts    # NEW — directory user/group fetch
-│   │   ├── messaging/                  # NEW directory
-│   │   │   ├── types.ts               # MessagingProvider interface
-│   │   │   ├── slack-provider.ts      # Wraps existing slack-client.ts
-│   │   │   ├── teams-provider.ts      # Bot Framework + Adaptive Cards
-│   │   │   └── index.ts              # Provider resolution
-│   │   ├── import-orchestrator.ts      # NEW — multi-source import
-│   │   ├── import-mappers/             # NEW directory
-│   │   │   ├── linear-mapper.ts
-│   │   │   ├── jira-mapper.ts
-│   │   │   ├── google-workspace-mapper.ts
-│   │   │   ├── slack-mapper.ts
-│   │   │   └── teams-mapper.ts
-│   │   ├── equipment-service.ts        # NEW — equipment lifecycle
-│   │   ├── courier/                    # NEW directory
-│   │   │   ├── types.ts               # CourierClient interface
-│   │   │   ├── inpost-client.ts       # InPost ShipX API
-│   │   │   ├── dpd-client.ts          # DPD tracking API
-│   │   │   ├── ups-client.ts          # UPS tracking API
-│   │   │   └── index.ts              # Carrier resolution
-│   │   ├── billing/                    # NEW directory
-│   │   │   ├── stripe-client.ts       # Stripe SDK wrapper
-│   │   │   ├── subscription-service.ts # Subscription lifecycle
-│   │   │   ├── usage-metering.ts      # AI/OCR credit metering
-│   │   │   ├── feature-gates.ts       # Tier-based feature access
-│   │   │   └── webhook-handler.ts     # Stripe event processing
-│   │   └── notification-service.ts     # MODIFY — use messaging abstraction
-│   ├── routers/
-│   │   ├── linear.ts                   # NEW
-│   │   ├── equipment.ts               # NEW
-│   │   ├── shipment.ts                # NEW
-│   │   ├── onboarding-import.ts       # NEW
-│   │   └── billing.ts                # NEW
-│   └── middleware/
-│       └── billing.ts                 # NEW — subscription/tier check
-│
-├── db/prisma/schema/
-│   ├── integration.prisma             # MODIFY — add LINEAR, MICROSOFT_TEAMS to enum
-│   ├── equipment.prisma               # NEW — Equipment, Shipment, ShipmentStatusUpdate
-│   ├── billing.prisma                 # NEW — Subscription, UsageRecord, BillingEvent
-│   ├── organization.prisma            # MODIFY — add stripeCustomerId, subscriptionTier, trialEndsAt
-│   ├── contract.prisma                # MODIFY — add EQUIPMENT, SHIPMENT to EntityType
-│   └── notification.prisma            # MODIFY — add channelTeams to UserNotificationPreference
-│
-└── web/src/app/api/
-    ├── webhooks/stripe/route.ts       # NEW — dedicated Stripe webhook (NOT generic pipeline)
-    └── messages/teams/route.ts        # NEW — Bot Framework messaging endpoint
+packages/api/src/routers/
+├── einvoicing.ts                  # NEW: e-invoice submission, status, history
+├── currency.ts                    # NEW: exchange rates, conversion endpoints
+├── tax.ts                         # NEW: WHT calculation, tax rule config
+└── payment.ts                     # MODIFIED: SWIFT export, purpose codes
 ```
 
 ### Structure Rationale
 
-- **Adapters in `packages/integrations`:** Linear, Teams, and Google Workspace adapters follow the established pattern. They implement `BaseAdapter` and register in `register-all.ts`. Zero deviation from the convention established by the 12 existing adapters.
-- **Services in `packages/api`:** Domain-specific logic stays in `api/src/services/`. Messaging abstraction, import orchestrator, equipment service, courier clients, and billing service all follow the existing pattern of service files exporting functions.
-- **Courier clients NOT in integrations package:** Courier APIs are simple HTTP clients with API keys, not OAuth-based provider adapters. Putting them in `api/src/services/courier/` correctly scopes them as domain services, not integration adapters.
-- **Billing NOT in integrations package:** Stripe billing is tenant infrastructure, not a user-managed integration connection. It has its own middleware, its own webhook route, and its own schema file. Users do not "connect" and "disconnect" Stripe like they do Slack or Jira.
-- **Teams messaging endpoint separate from webhook route:** Bot Framework SDK expects to handle the full HTTP request via `BotFrameworkAdapter.processActivity()`, which is incompatible with the generic webhook pipeline's verify-then-queue pattern.
+- **`packages/einvoicing` as a separate package:** The e-invoicing engine has complex XML generation, cryptographic signing, and government-specific validation that should not live inside `packages/integrations`. The integrations package handles connection lifecycle (OAuth, credentials, health) while einvoicing handles document generation and compliance logic. The ZATCA/Peppol adapters in integrations delegate to einvoicing for XML work.
+- **Profile-based architecture:** Each country's e-invoicing requirements differ in XML format, validation rules, signing requirements, and QR codes. A profile pattern (similar to the existing `BaseAdapter` pattern) keeps country-specific logic isolated while sharing the UBL 2.1 core.
+- **No new `packages/currency`:** Multi-currency is a cross-cutting concern. Exchange rates go in `packages/db`, conversion logic goes in a utility module within `packages/api` or a shared helper in `packages/validators`, display formatting stays in `apps/web`. Creating a full package for this would be overengineering.
 
 ## Architectural Patterns
 
-### Pattern 1: Adapter Extension (Linear, Teams, Google Workspace)
+### Pattern 1: E-Invoice Profile Strategy
 
-**What:** Extend `BaseAdapter`, implement OAuth config + token exchange + webhook verification, register in `register-all.ts`.
-**When to use:** Any new provider that supports OAuth and/or webhooks and fits the existing credential/webhook infrastructure.
-**Trade-offs:** Very low friction to add (proven 12 times), but limited to the `IntegrationProviderAdapter` interface capabilities. Provider-specific features (e.g., Linear's GraphQL, Teams' Adaptive Cards) live in separate service files, not in the adapter.
+**What:** Abstract base profile with country-specific implementations, each providing XML generation, validation, signing, and submission logic.
+**When to use:** Adding any new country's e-invoicing requirements.
+**Trade-offs:** More initial setup per country, but complete isolation of country-specific logic. Prevents one country's changes from breaking another.
 
 ```typescript
-// packages/integrations/src/adapters/linear-adapter.ts
-export class LinearAdapter extends BaseAdapter {
-  readonly slug = "linear";
-  readonly displayName = "Linear";
-  readonly supportsOAuth = true;
-  readonly supportsWebhooks = true;
+// packages/einvoicing/src/profiles/base-profile.ts
+export interface EInvoiceProfile {
+  readonly countryCode: string;
+  readonly formatName: string;
 
-  getOAuthConfig(): OAuthConfig {
-    return {
-      clientIdEnvVar: "LINEAR_CLIENT_ID",
-      clientSecretEnvVar: "LINEAR_CLIENT_SECRET",
-      authorizationUrl: "https://linear.app/oauth/authorize",
-      tokenUrl: "https://api.linear.app/oauth/token",
-      scopes: ["read", "write", "issues:create", "comments:create"],
-      redirectPath: "/api/oauth/linear/callback",
-    };
+  /** Generate compliant XML from normalized invoice data */
+  generateXml(invoice: InvoiceDocument): Promise<string>;
+
+  /** Validate invoice against country-specific rules */
+  validate(invoice: InvoiceDocument): ValidationResult;
+
+  /** Sign XML (XML DSig, XAdES, or country-specific) */
+  signXml?(xml: string, certificate: SigningCertificate): Promise<string>;
+
+  /** Generate QR code data (TLV for ZATCA, standard for others) */
+  generateQrData?(invoice: InvoiceDocument): string;
+
+  /** Submit to government API (clearance/reporting) */
+  submit?(signedXml: string, client: GovernmentApiClient): Promise<SubmissionResult>;
+}
+
+// packages/einvoicing/src/profiles/zatca/zatca-profile.ts
+export class ZatcaProfile implements EInvoiceProfile {
+  readonly countryCode = "SA";
+  readonly formatName = "ZATCA Fatoorah UBL 2.1";
+
+  async generateXml(invoice: InvoiceDocument): Promise<string> {
+    // ZATCA-specific UBL 2.1 with required extensions
+    // UUID, seller/buyer TIN, hash of previous invoice
   }
 
-  // exchangeCodeForTokens, refreshToken — standard OAuth 2.0
-  // verifyWebhookSignature — HMAC-SHA256, same pattern as JiraAdapter
-  // getHealthStatus — same pattern as JiraAdapter
+  validate(invoice: InvoiceDocument): ValidationResult {
+    // ZATCA-specific: TIN format, hash chain, mandatory fields
+  }
+
+  async signXml(xml: string, cert: SigningCertificate): Promise<string> {
+    // XML DSig with X.509 CSD certificate from ZATCA
+  }
+
+  generateQrData(invoice: InvoiceDocument): string {
+    // TLV-encoded Base64: seller name, VAT number, timestamp, total, VAT
+  }
+
+  async submit(signedXml: string, client: GovernmentApiClient): Promise<SubmissionResult> {
+    // B2B: clearance (synchronous validation by ZATCA)
+    // B2C: reporting (within 24 hours)
+  }
 }
 ```
 
-### Pattern 2: Messaging Abstraction (Slack + Teams Unification)
+### Pattern 2: Integration Adapter Delegation to E-Invoice Engine
 
-**What:** Extract a `MessagingProvider` interface from the existing Slack-specific code, allowing `notification-service.ts` to dispatch to all connected messaging platforms without knowing which ones are active.
-**When to use:** Whenever the platform sends interactive messages (approval cards, reminders, activity alerts) to external messaging systems.
-**Trade-offs:** Introduces an abstraction layer that adds one level of indirection, but eliminates the `if slack else if teams` anti-pattern. Both Slack and Teams can be active simultaneously for the same org -- notifications go to both.
+**What:** ZATCA and Peppol adapters in `packages/integrations` handle connection lifecycle (credentials, health, webhooks) and delegate document work to `packages/einvoicing`.
+**When to use:** Any government e-invoicing API that requires both connection management AND document generation.
+**Trade-offs:** Two-package coordination adds indirection but maintains clean separation of concerns. The adapter registry stays lightweight; the heavy XML/crypto work lives in the specialized package.
 
 ```typescript
-// In notification-service.ts (refactored)
-async function sendMessagingNotification(
-  userId: string,
-  event: NotificationEvent,
-): Promise<void> {
-  const providers = await getMessagingProviders(event.organizationId);
-  // Fire-and-forget to ALL connected messaging platforms
-  // Matches existing void + .catch() pattern
-  void Promise.allSettled(
-    providers.map(provider =>
-      event.type === "APPROVAL_REQUEST"
-        ? provider.sendApprovalCard({ /* ... */ })
-        : provider.sendReminderDM({ /* ... */ })
-    )
-  ).catch(err => console.error("[messaging] dispatch failed:", err));
+// packages/integrations/src/adapters/zatca-adapter.ts
+export class ZatcaAdapter extends BaseAdapter {
+  readonly slug = "zatca";
+  readonly displayName = "ZATCA Fatoorah";
+  readonly supportsOAuth = false;  // Uses CSD certificate, not OAuth
+  readonly supportsWebhooks = false;  // Polling-based like KSeF
+
+  async getHealthStatus(connectionId: string): Promise<ProviderHealthStatus> {
+    // Same pattern as KsefAdapter -- check sync logs, token expiry
+    // ZATCA CSD certificates have expiration dates
+  }
+
+  // Document generation delegated to packages/einvoicing
+  // This adapter does NOT generate XML -- it manages the connection
 }
 ```
 
-### Pattern 3: Infrastructure Billing (Not Integration Billing)
+### Pattern 3: Multi-Currency Money Type with Integer Minor Units
 
-**What:** Billing middleware in the tRPC chain that checks subscription status before handler execution. Feature gates as utility functions called by routers. Usage metering as fire-and-forget after successful operations.
-**When to use:** Stripe billing specifically. Any future billing/monetization concern.
-**Trade-offs:** Every request pays a small cost for the billing check. Mitigate by caching the subscription tier in Redis (Upstash) with 5-minute TTL, invalidated on Stripe webhook.
+**What:** Extend existing integer grosze pattern to handle multiple currencies with different decimal places (AED: 2 decimals = fils, SAR: 2 decimals = halalas, BHD: 3 decimals = fils). All arithmetic stays in minor units. Exchange rate conversion produces a new Money value with explicit rate + timestamp.
+**When to use:** Any monetary calculation, display, or storage.
+**Trade-offs:** Requires knowing each currency's minor unit factor (stored in a lookup). Conversion always produces a new amount -- never mutate in place.
 
 ```typescript
-// packages/api/src/middleware/billing.ts
-const billingMiddleware = t.middleware(async ({ ctx, next }) => {
-  // Fast path: check Redis cache first
-  const cached = await redis.get(`billing:${ctx.organizationId}`);
-  if (cached) {
-    return next({ ctx: { ...ctx, subscription: JSON.parse(cached) } });
-  }
+// packages/validators/src/currency.ts
+import { z } from "zod";
 
-  const sub = await prisma.subscription.findFirst({
-    where: { organizationId: ctx.organizationId, status: { in: ["ACTIVE", "TRIALING"] } },
-  });
+export const CURRENCY_MINOR_UNITS: Record<string, number> = {
+  PLN: 2, EUR: 2, USD: 2, GBP: 2, AED: 2, SAR: 2,
+  BHD: 3, KWD: 3, OMR: 3,  // Gulf currencies with 3 decimals
+  JPY: 0,                    // Zero-decimal currencies
+};
 
-  if (!sub) {
-    throw new TRPCError({ code: "FORBIDDEN", message: "Active subscription required" });
-  }
-
-  await redis.set(`billing:${ctx.organizationId}`, JSON.stringify(sub), { ex: 300 });
-  return next({ ctx: { ...ctx, subscription: sub } });
+export const moneySchema = z.object({
+  amountMinor: z.number().int(),
+  currency: z.string().length(3),
 });
+
+export const exchangeRateSchema = z.object({
+  fromCurrency: z.string().length(3),
+  toCurrency: z.string().length(3),
+  rate: z.number().positive(),        // e.g., 1 PLN = 0.92 SAR
+  inverseRate: z.number().positive(),  // e.g., 1 SAR = 1.087 PLN
+  effectiveDate: z.date(),
+  source: z.enum(["ECB", "MANUAL", "API"]),
+});
+
+// Conversion function -- always explicit, never implicit
+export function convertCurrency(
+  amountMinor: number,
+  fromCurrency: string,
+  toCurrency: string,
+  rate: number,
+): { amountMinor: number; currency: string } {
+  const fromDecimals = CURRENCY_MINOR_UNITS[fromCurrency] ?? 2;
+  const toDecimals = CURRENCY_MINOR_UNITS[toCurrency] ?? 2;
+
+  // Convert to major units, apply rate, convert back to minor units
+  const majorAmount = amountMinor / Math.pow(10, fromDecimals);
+  const convertedMajor = majorAmount * rate;
+  const convertedMinor = Math.round(convertedMajor * Math.pow(10, toDecimals));
+
+  return { amountMinor: convertedMinor, currency: toCurrency };
+}
+```
+
+### Pattern 4: Country-Scoped Tax Rules via Organization Configuration
+
+**What:** Tax rules (VAT rates, WHT rates, reverse charge rules) stored per-organization based on their `countryCode` and `taxJurisdiction`. Rules are configurable but seeded with country defaults. The tax engine resolves applicable rules at invoice/payment time.
+**When to use:** Any tax calculation -- VAT on invoices, WHT on cross-border payments.
+**Trade-offs:** Slightly more complex than hardcoded Polish VAT, but essential for multi-market. Default seeding means zero config for standard cases.
+
+```typescript
+// Tax rule resolution at invoice time
+async function resolveTaxRules(
+  orgId: string,
+  contractorCountry: string,
+  serviceType: string,
+): Promise<TaxRuleSet> {
+  const org = await getOrganization(orgId);
+
+  // 1. Get org's country VAT rate
+  const vatRule = await getVatRule(org.countryCode, serviceType);
+
+  // 2. Check for reverse charge (cross-border B2B within EU)
+  const reverseCharge = shouldApplyReverseCharge(org.countryCode, contractorCountry);
+
+  // 3. Check for WHT (Saudi cross-border payments)
+  const whtRule = await getWhtRule(org.countryCode, contractorCountry, serviceType);
+
+  return { vatRule, reverseCharge, whtRule };
+}
+```
+
+### Pattern 5: QStash-Based Government API Submission Pipeline
+
+**What:** All government API calls (ZATCA clearance, Peppol submission, KSeF sync) go through QStash for reliability. The flow: tRPC mutation triggers QStash job, QStash calls a Next.js API route, API route calls the einvoicing engine, result is stored in DB and surfaces via tRPC query.
+**When to use:** Any government API interaction that can fail, retry, or take time.
+**Trade-offs:** Async means UI needs polling/optimistic state. But government APIs are unreliable and slow -- synchronous calls would block the user and risk timeouts.
+
+```
+User submits invoice for clearance
+    |
+tRPC mutation: creates EInvoiceSubmission (status: PENDING)
+    |
+QStash: enqueue "zatca-clearance" job with submissionId
+    |
+API route: /api/qstash/zatca-clearance
+    |
+packages/einvoicing: generateXml() -> signXml() -> submit()
+    |
+DB update: EInvoiceSubmission (status: CLEARED | REJECTED)
+    |
+User polls via tRPC query or receives notification
 ```
 
 ## Data Flow
 
-### Webhook Processing (Existing -- Extended for Linear)
+### E-Invoice Submission Flow (ZATCA Example)
 
 ```
-Linear/Teams Webhook
-    ↓ HTTP POST
-/api/webhooks/linear (generic route) OR /api/messages/teams (Bot Framework)
-    ↓
-Adapter.verifyWebhookSignature() (Linear) OR botFramework.processActivity() (Teams)
-    ↓
-WebhookDelivery log (Prisma)
-    ↓
-QStash queue → /api/webhooks/_process
-    ↓
-Provider-specific handler (linear-webhook-handler, teams-action-handler)
-    ↓
-Domain mutations (ExternalLink sync, approval actions, status updates)
+Invoice (existing) -> [Generate XML] -> [Validate] -> [Sign with CSD] -> [Add QR] -> [Submit to ZATCA]
+       |                    |              |              |                |              |
+  packages/db        einvoicing/      einvoicing/    einvoicing/     einvoicing/    integrations/
+  Invoice model      core/ubl-builder profiles/zatca  profiles/zatca  profiles/zatca  zatca-adapter
+                     + zatca-mapper   zatca-validator  zatca-signer    zatca-qr       -> zatca-api-client
 ```
 
-### Billing Middleware (New)
+### Multi-Currency Invoice Processing Flow
 
 ```
-tRPC Request
-    ↓
-authMiddleware → tenantMiddleware → rbacMiddleware
-    ↓
-billingMiddleware ← Redis cache OR Subscription.findFirst({ orgId })
-    ↓
-  ├─ ACTIVE subscription → check feature gates → proceed
-  ├─ TRIALING → proceed (all features enabled during trial)
-  ├─ PAST_DUE → proceed with warning (grace period)
-  └─ CANCELED/UNPAID → reject with 402 + upgrade URL
-    ↓
-sensitiveMiddleware → handler
+Invoice received (SAR amount)
+    |
+OCR/KSeF/Portal extracts: { amountMinor: 150000, currency: "SAR" }
+    |
+Match against contract (contract may be in PLN)
+    |
+Currency conversion: SAR 1500.00 -> PLN at rate from ExchangeRate table
+    |
+Deviation check: converted PLN amount vs expected contract amount
+    |
+Store both original (SAR) and converted (PLN) amounts on invoice
+    |
+Payment run: group by currency, SWIFT export for SAR, SEPA for PLN
 ```
 
-### AI Credit Metering (New)
+### RTL Layout Flow
 
 ```
-OCR Extraction Request
-    ↓
-billingMiddleware → check subscription tier allows OCR
-    ↓
-featureGates.checkAICredits(orgId)
-  ├─ Credits available → proceed
-  └─ Credits exhausted → reject with 402 + buy credits CTA
-    ↓
-Claude Vision API call (existing ocr-extraction.ts)
-    ↓
-On success: fire-and-forget meter event
-  void stripe.billing.meterEvents.create({
-    event_name: "ai_extraction",
-    payload: { stripe_customer_id: org.stripeCustomerId, value: "1" },
-  }).catch(...)
-    ↓
-Update local UsageRecord for dashboard display
+Request with locale cookie/header
+    |
+next-intl resolves locale (ar, pl, en)
+    |
+Root layout: <html lang={locale} dir={rtlLocales.includes(locale) ? 'rtl' : 'ltr'}>
+    |
+shadcn/ui components: logical CSS properties (ms-*, me-*, ps-*, pe-*, start-*, end-*)
+    |
+Tailwind RTL plugin: rtl:rotate-180 on directional icons (chevrons, arrows)
+    |
+Currency/number formatting: Intl.NumberFormat(locale, { style: 'currency', currency })
 ```
 
-### Equipment Lifecycle (New)
+### Key Data Flows
 
-```
-Equipment Assignment (via onboarding workflow task or manual)
-    ↓
-equipment-service.assignToContractor(equipmentId, contractorId)
-    ↓
-Create Shipment → courier-client.createShipment() OR manual tracking number entry
-    ↓
-Status tracking: QStash cron polls courier API  OR  courier webhook callback
-    ↓
-ShipmentStatusUpdate log → update Shipment.status
-    ↓
-On delivery: Equipment.status = ASSIGNED, notify contractor via portal + messaging
-    ↓
-On offboarding: Create return Shipment, track return, Equipment.status = RETURNED
+1. **E-invoice lifecycle:** Invoice created/received -> XML generated per country profile -> validated -> signed -> submitted to government API via QStash -> clearance/rejection stored -> status surfaces in UI
+2. **Multi-currency payment:** Invoices in mixed currencies -> grouped by currency in payment run -> SEPA export for EUR/PLN, SWIFT export for AED/SAR/GBP -> purpose codes added for Gulf SWIFT transfers
+3. **WHT calculation:** Cross-border payment detected (org=SA, contractor=foreign) -> resolve WHT rate by service type + treaty -> calculate withholding -> generate WHT certificate -> net payment = gross - WHT
+4. **Country profile onboarding:** Organization selects country -> tax rules seeded (VAT rates, WHT rates) -> e-invoicing profile configured -> contractor fields schema adjusted (freelance permit for UAE, commercial registration for SA)
+
+## Schema Changes
+
+### New Models
+
+```prisma
+// einvoice.prisma
+model EInvoiceSubmission {
+  id                String              @id @default(cuid())
+  organizationId    String
+  invoiceId         String
+  profile           EInvoiceProfile     // KSEF, ZATCA, PEPPOL
+  status            EInvoiceStatus      // PENDING, GENERATING, SUBMITTED, CLEARED, REJECTED, ERROR
+  xmlDocumentId     String?             // Reference to R2-stored XML
+  signedXmlDocumentId String?
+  governmentRef     String?             // KSeF ref, ZATCA clearance ID, Peppol message ID
+  previousHashRef   String?             // For ZATCA hash chain
+  qrCodeData        String?
+  submittedAt       DateTime?
+  clearedAt         DateTime?
+  rejectedAt        DateTime?
+  rejectionReason   String?
+  retryCount        Int                 @default(0)
+  lastErrorMessage  String?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  organization      Organization        @relation(fields: [organizationId], references: [id])
+  invoice           Invoice             @relation(fields: [invoiceId], references: [id])
+
+  @@index([organizationId])
+  @@index([organizationId, invoiceId])
+  @@index([organizationId, status])
+}
+
+// currency.prisma
+model ExchangeRate {
+  id              String   @id @default(cuid())
+  organizationId  String?  // null = system-wide rate
+  fromCurrency    String   @db.Char(3)
+  toCurrency      String   @db.Char(3)
+  rate            Decimal  @db.Decimal(18, 8)
+  inverseRate     Decimal  @db.Decimal(18, 8)
+  effectiveDate   DateTime @db.Date
+  source          String   // ECB, MANUAL, etc.
+  createdAt       DateTime @default(now())
+
+  organization    Organization? @relation(fields: [organizationId], references: [id])
+
+  @@unique([organizationId, fromCurrency, toCurrency, effectiveDate])
+  @@index([fromCurrency, toCurrency, effectiveDate])
+}
+
+// tax-rule.prisma
+model TaxRule {
+  id              String   @id @default(cuid())
+  organizationId  String?  // null = system default
+  countryCode     String   @db.Char(2)
+  taxType         TaxType  // VAT, WHT, CORPORATE_TAX
+  name            String
+  rate            Decimal  @db.Decimal(8, 4)
+  serviceCategory String?  // For WHT: MANAGEMENT, TECHNICAL, ROYALTY
+  appliesToNonResident Boolean @default(false)
+  effectiveFrom   DateTime @db.Date
+  effectiveTo     DateTime? @db.Date
+  createdAt       DateTime @default(now())
+
+  organization    Organization? @relation(fields: [organizationId], references: [id])
+
+  @@index([countryCode, taxType])
+}
+
+model WhtCertificate {
+  id              String   @id @default(cuid())
+  organizationId  String
+  invoiceId       String
+  contractorId    String
+  grossAmountMinor Int
+  whtAmountMinor  Int
+  whtRate         Decimal  @db.Decimal(8, 4)
+  netAmountMinor  Int
+  currency        String   @db.Char(3)
+  certificateRef  String?
+  documentId      String?  // Generated PDF stored in R2
+  issuedAt        DateTime @default(now())
+
+  organization    Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+  @@index([organizationId, contractorId])
+}
+
+// consent.prisma
+model ConsentRecord {
+  id              String      @id @default(cuid())
+  organizationId  String
+  entityType      String      // CONTRACTOR, PORTAL_USER
+  entityId        String
+  consentType     String      // DATA_PROCESSING, CROSS_BORDER_TRANSFER, MARKETING
+  jurisdiction    String      @db.Char(2) // AE, SA
+  granted         Boolean
+  grantedAt       DateTime?
+  revokedAt       DateTime?
+  ipAddress       String?
+  userAgent       String?
+  createdAt       DateTime    @default(now())
+
+  organization    Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId, entityType, entityId])
+  @@index([organizationId, consentType])
+}
 ```
 
-### Onboarding Import (New)
+### Modified Existing Models
 
+```prisma
+// invoice.prisma -- ADD fields
+model Invoice {
+  // ... existing fields ...
+  originalCurrency      String?   @db.Char(3)   // Original invoice currency
+  originalAmountMinor   Int?                     // Original amount before conversion
+  exchangeRateId        String?                  // Rate used for conversion
+  eInvoiceProfile       String?                  // KSEF, ZATCA, PEPPOL
+  eInvoiceStatus        String?                  // CLEARED, REPORTED, PENDING
+  governmentRef         String?                  // External reference from govt API
+  eInvoiceSubmissions   EInvoiceSubmission[]
+}
+
+// payment.prisma -- ADD to PaymentExportFormat enum
+enum PaymentExportFormat {
+  CSV
+  BANK_FILE
+  SEPA_XML
+  MT940
+  XML
+  API_PUSH
+  SWIFT_MT103    // NEW: SWIFT single payment
+  SWIFT_MT101    // NEW: SWIFT batch payment
+}
+
+// payment.prisma -- ADD to PaymentRunItem
+model PaymentRunItem {
+  // ... existing fields ...
+  purposeCode     String?   @db.VarChar(10)  // SWIFT purpose code (e.g., SCVE for services)
+  whtAmountMinor  Int?                        // Withheld tax amount
+  netAmountMinor  Int?                        // Amount after WHT
+}
+
+// organization.prisma -- ADD fields
+model Organization {
+  // ... existing fields ...
+  taxJurisdiction   String?   @db.Char(2)  // Primary tax jurisdiction
+  region            String?                 // Deployment region hint
+  eInvoiceProfile   String?                 // Default e-invoice profile
+}
+
+// contractor.prisma -- ADD to ContractorType enum
+enum ContractorType {
+  SOLE_TRADER
+  COMPANY
+  INDIVIDUAL_FREELANCER
+  FREEZONE_ENTITY        // NEW: UAE free zone
+  MICRO_ENTREPRENEUR     // NEW: France
+  OTHER
+}
+
+// integration.prisma -- ADD to IntegrationProvider enum
+enum IntegrationProvider {
+  // ... existing providers ...
+  ZATCA              // NEW
+  PEPPOL             // NEW
+}
 ```
-User connects integrations (Google Workspace, Linear, Jira, etc.)
-    ↓
-User clicks "Import from connected tools" in onboarding wizard
-    ↓
-Import Orchestrator reads from each connected provider:
-  ├── Google Workspace API → users, departments
-  ├── Linear GraphQL → teams, projects, members
-  ├── Jira REST → projects, team members
-  └── Slack API → workspace members
-    ↓
-Per-provider mapper normalizes to import candidates:
-  { type: "user"|"contractor"|"project"|"team", data: {...}, source: "linear", dedup_key: "email" }
-    ↓
-Deduplication across sources (merge by email, name)
-    ↓
-Preview UI → user reviews, selects/deselects candidates
-    ↓
-Batch create via Prisma transaction
-    ↓
-ImportSession.status = COMPLETED, audit log entries
-```
+
+## Integration Points with Existing Architecture
+
+### What Gets Reused Directly
+
+| Existing Component | How v4.0 Uses It |
+|-------------------|-----------------|
+| `BaseAdapter` + adapter registry | ZATCA and Peppol adapters register via `registerAdapter()` |
+| `CredentialService` (AES-256-GCM) | ZATCA CSD certificates and Peppol ASP credentials stored encrypted |
+| QStash pipeline | Government API calls (clearance, reporting) use existing async pattern |
+| Health monitoring | ZATCA/Peppol health status follows same `getHealthStatus()` pattern |
+| `IntegrationSyncLog` | All government API interactions logged via existing sync log model |
+| `WebhookDelivery` | Peppol ASP may send webhooks for delivery receipts |
+| Multi-tenant scoping | All new models include `organizationId` + existing Prisma extension |
+| `InvoiceSource` enum | Add `ZATCA` and `PEPPOL` sources (already has `KSEF`) |
+| next-intl | Add Arabic locale + RTL detection |
+| Integer minor units | All new monetary fields use `*Minor: Int` pattern |
+| Document/R2 storage | XML documents, signed XML, WHT certificates stored via existing document service |
+
+### What Gets Modified
+
+| Component | Change | Risk |
+|-----------|--------|------|
+| `KsefAdapter` | Refactor to delegate XML parsing to `packages/einvoicing` KSeF profile | LOW -- adapter becomes thinner, logic moves to dedicated package |
+| `KsefApiClient` | Move to `packages/einvoicing/src/clients/` or keep in integrations and import | LOW -- just a location change |
+| Invoice model | Add e-invoice fields + multi-currency fields | LOW -- additive columns only |
+| Payment export | Add SWIFT formats + purpose codes | LOW -- new enum values + export generator |
+| `PaymentExportFormat` enum | Add SWIFT_MT103, SWIFT_MT101 | LOW -- additive |
+| `IntegrationProvider` enum | Add ZATCA, PEPPOL | LOW -- additive |
+| Organization model | Add taxJurisdiction, region, eInvoiceProfile | LOW -- additive nullable columns |
+
+### What Is Completely New
+
+| Component | Complexity | Dependencies |
+|-----------|-----------|-------------|
+| `packages/einvoicing` | HIGH | `packages/db`, `packages/validators`, node:crypto |
+| ZATCA API client | MEDIUM | ZATCA sandbox/prod, CSD certificates |
+| Peppol ASP client | MEDIUM | Third-party ASP provider selection required |
+| Multi-currency exchange rate service | MEDIUM | ECB API or manual rate entry |
+| WHT calculator + certificate generator | LOW-MEDIUM | Tax rule configuration |
+| Arabic locale files + RTL layout | MEDIUM | next-intl, shadcn RTL mode |
+| PDPL consent management | LOW | New DB models + UI forms |
+| SWIFT payment export generator | LOW-MEDIUM | MT103/MT101 format specification |
+| Country-specific contractor fields | LOW | JSON schema in existing `customFieldsJson` |
 
 ## Scaling Considerations
 
 | Scale | Architecture Adjustments |
 |-------|--------------------------|
-| 0-500 orgs | Current architecture handles fine. Billing middleware hits DB once per 5 min (Redis cache). Equipment polling via QStash cron is low volume. |
-| 500-5K orgs | Billing middleware must use Redis cache (DB per request is too expensive). Courier polling needs batching -- fan out QStash cron to process N shipments per invocation. |
-| 5K+ orgs | Stripe Meter events at volume -- batch meter events using `stripe.billing.meterEvents.create()` in bulk windows instead of per-request. Move billing tier check entirely to Redis. |
+| 1-50 orgs (current) | Single Neon instance in eu-central-1. Government API calls via QStash. No caching needed for exchange rates. |
+| 50-500 orgs | ECB rate caching in Upstash Redis (rates change daily, cache for 1h). ZATCA API rate limiting may require per-org queuing. Peppol ASP selection affects throughput. |
+| 500+ orgs | Logical replication from Neon eu-central-1 to a second Neon project in ap-southeast-1 (Singapore, closest to Gulf). Read replicas for Gulf users. Consider dedicated ZATCA submission queue per large org. |
+
+### Neon Multi-Region Strategy
+
+Neon does NOT have a Middle East region. Available closest options:
+- **Primary:** `aws-eu-central-1` (Frankfurt) -- existing, serves EU + UK
+- **Gulf read replica:** `aws-ap-southeast-1` (Singapore) -- closest to UAE/Saudi
+- **Implementation:** Neon logical replication from Frankfurt to Singapore project
+- **Latency:** Frankfurt-to-Dubai ~100ms, Singapore-to-Dubai ~80ms -- marginal improvement
+- **Recommendation:** Stay on Frankfurt for now. Gulf latency is acceptable for B2B SaaS (not real-time). Revisit when Neon adds `me-south-1` (Bahrain) or `me-central-1` (UAE).
 
 ### Scaling Priorities
 
-1. **First bottleneck -- Billing middleware DB query:** Every tRPC request checks subscription status. Without caching, this adds ~5ms per request. At 5K orgs with 100 RPM each, that is 500K queries/minute on the subscription table. **Solution:** Redis cache with 5-minute TTL, invalidated on Stripe webhook events (`customer.subscription.updated`, `invoice.paid`).
-2. **Second bottleneck -- Courier status polling:** Polling 3 courier APIs for every active shipment on a cron schedule. At 1000 active shipments across 3 carriers, that is 1000 API calls every polling interval. **Solution:** Switch to webhook-only for carriers that support it (InPost), poll only for carriers without webhook support, increase polling interval for non-urgent shipments.
+1. **First bottleneck:** ZATCA API rate limits during invoice volume spikes. Mitigation: per-org QStash queuing with configurable concurrency.
+2. **Second bottleneck:** Exchange rate freshness for multi-currency matching. Mitigation: daily ECB rate fetch + manual override capability.
 
 ## Anti-Patterns
 
-### Anti-Pattern 1: Using IntegrationProviderAdapter for Couriers
+### Anti-Pattern 1: Monolithic E-Invoice Processor
 
-**What people do:** Create `InPostAdapter extends BaseAdapter` and register it alongside Slack, Jira, Linear.
-**Why it's wrong:** Courier APIs use API keys (not OAuth), don't have bidirectional sync, and don't need the credential encryption/rotation infrastructure. The `IntegrationProviderAdapter` interface has methods (`exchangeCodeForTokens`, `refreshToken`, `getOAuthConfig`) that would be empty stubs. The `IntegrationConnection` model tracks OAuth state that doesn't apply.
-**Do this instead:** Simple `CourierClient` interface with carrier-specific HTTP clients in `packages/api/src/services/courier/`. Store API keys in environment variables, not in encrypted credential blobs.
+**What people do:** Put all country-specific XML generation, signing, validation, and API calls in a single service or a single massive function with country-code switches.
+**Why it's wrong:** Each country's requirements are complex enough to warrant isolation. ZATCA needs hash chains and TLV QR codes; KSeF needs RSA-OAEP auth and FA(3) format; Peppol needs ASP routing. Mixing them creates untestable spaghetti.
+**Do this instead:** Profile-per-country pattern. Each profile is independently testable and deployable.
 
-### Anti-Pattern 2: Using IntegrationProviderAdapter for Stripe
+### Anti-Pattern 2: Synchronous Government API Calls
 
-**What people do:** Create `StripeAdapter extends BaseAdapter` and route Stripe webhooks through the generic `/api/webhooks/[provider]` pipeline.
-**Why it's wrong:** Stripe is tenant infrastructure, not a user-managed integration. Org admins don't "connect" and "disconnect" Stripe -- it's always active once the org has a subscription. Stripe webhook verification uses `stripe.webhooks.constructEvent()` with a webhook signing secret, which is incompatible with the adapter's `verifyWebhookSignature(rawBody, headers)` return type. The WebhookDelivery log and QStash queue add unnecessary latency to billing-critical events.
-**Do this instead:** Dedicated `/api/webhooks/stripe/route.ts` with Stripe SDK verification. Billing service in `packages/api/src/services/billing/`. Subscription data in its own Prisma schema.
+**What people do:** Call ZATCA clearance API synchronously in the tRPC mutation that processes the invoice.
+**Why it's wrong:** Government APIs are slow (2-10 seconds for ZATCA clearance), unreliable (maintenance windows), and rate-limited. Synchronous calls block the user and risk Vercel function timeouts (default 10s).
+**Do this instead:** QStash-based async pipeline. Create submission record immediately, process via background job, surface result via polling or notification.
 
-### Anti-Pattern 3: Direct Teams/Slack Calls in Business Logic
+### Anti-Pattern 3: Implicit Currency Conversion
 
-**What people do:** Import `teams-provider.ts` directly in the approval router, creating tight coupling to a specific messaging platform.
-**Why it's wrong:** When a third messaging platform appears (Discord, Google Chat), every call site needs `if/else` branching. The existing `slack-client.ts` direct-call pattern already shows this problem -- `notification-service.ts` has Slack-specific imports and function calls.
-**Do this instead:** All messaging dispatch goes through `getMessagingProviders(orgId)` which returns all connected providers. Business logic never references Slack or Teams directly. The fire-and-forget pattern (`void + .catch()`) already established in the codebase is the right dispatch model.
+**What people do:** Auto-convert all amounts to org's default currency at storage time, discarding the original currency/amount.
+**Why it's wrong:** Audit trails require original amounts. Exchange rates change daily. WHT calculations need original currency. Tax authorities audit in the original transaction currency.
+**Do this instead:** Always store original `currency` + `amountMinor`. Store converted amounts separately with explicit rate reference. Never overwrite originals.
 
-### Anti-Pattern 4: Putting Onboarding Import Logic in Adapters
+### Anti-Pattern 4: Hardcoded Tax Rates
 
-**What people do:** Add `importUsers()` or `listTeamMembers()` methods to `GoogleWorkspaceAdapter` or `LinearAdapter`.
-**Why it's wrong:** Import orchestration is a cross-cutting concern that spans multiple providers and involves deduplication, preview, and batch creation. The adapter interface should only handle OAuth plumbing and webhook verification -- it has no concept of "import" or "batch create".
-**Do this instead:** Import orchestrator service that reads from provider APIs using the existing `IntegrationConnection` credentials. Per-provider mapper services handle data normalization. The orchestrator handles dedup, preview, and batch create.
+**What people do:** Replace the existing hardcoded Polish VAT with hardcoded rate tables per country.
+**Why it's wrong:** Tax rates change (Saudi VAT went from 5% to 15% in 2020). WHT rates vary by treaty. New countries mean code changes instead of data changes.
+**Do this instead:** Tax rules in the database, seeded with defaults, configurable per org. Rate lookups at calculation time with effective date filtering.
 
-## Integration Points
+### Anti-Pattern 5: RTL as an Afterthought CSS Override
 
-### External Services
+**What people do:** Build the entire UI in LTR, then add RTL-specific CSS overrides and `[dir="rtl"]` selectors.
+**Why it's wrong:** Maintenance nightmare. Every new component needs RTL overrides. Icons, animations, and spacing all break.
+**Do this instead:** Use CSS logical properties from the start (shadcn/ui supports this with `rtl: true` in components.json). Set `dir` attribute on `<html>`. Use `rtl:rotate-180` for directional icons. Test Arabic layout from day one of RTL phase.
 
-| Service | Auth Pattern | Integration Pattern | Notes |
-|---------|-------------|---------------------|-------|
-| Linear API | OAuth 2.0 (refresh tokens mandatory since April 2026) | GraphQL API + Webhooks (HMAC-SHA256) | Use `graphql-request` or direct fetch. Team-scoped access (store teamId in configJson). |
-| Microsoft Teams | Azure AD OAuth 2.0 + Bot Framework | Bot Framework SDK v4 + Adaptive Cards | Requires Azure Bot registration. Proactive messaging needs stored ConversationReference. Admin consent for org install. |
-| Google Workspace | Google OAuth 2.0 (domain admin consent) | Admin SDK Directory API (REST) | Separate from Google Calendar connection. Scope: `admin.directory.user.readonly`. |
-| InPost ShipX | OAuth 2.0 or API key | REST API (tracking + webhooks) | Polish-market courier. Base: `api-shipx-pl.easypack24.net/v1/`. Webhook for status updates. |
-| DPD | API key | REST API (tracking) | Limited webhook support. Polling-based tracking. |
-| UPS | OAuth 2.0 | REST API (tracking) | Tracking API. Webhook via "My Choice" platform. |
-| Stripe | API key (server-side) + Webhooks | Stripe SDK + Billing Meters + Customer Portal | Meters for usage-based pricing. `constructEvent()` for webhook verification. Customer Portal for self-service. |
+## Integration Points: External Services
+
+| Service | Integration Pattern | Notes |
+|---------|---------------------|-------|
+| ZATCA Fatoora Portal | REST API with CSD certificate auth | Sandbox available for testing. CSD cert must be obtained from ZATCA-approved providers (Geotrust, Digicert). NOT Let's Encrypt. |
+| Peppol ASP (UAE) | REST API via chosen ASP provider | Must select an accredited ASP. Options TBD when UAE publishes approved list (expected mid-2026). |
+| ECB Exchange Rates | Daily XML feed from ECB | Free, no auth. `https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml` |
+| KSeF (refactored) | Existing REST API, moves under einvoicing package | No new integration -- architectural refactor only |
 
 ### Internal Boundaries
 
 | Boundary | Communication | Notes |
 |----------|---------------|-------|
-| Billing middleware <-> tRPC routers | Middleware injection in chain | Every protected route checks subscription tier. Cache in Redis with 5-min TTL. Invalidate on Stripe webhook. |
-| Notification service <-> Messaging providers | Service call (fire-and-forget) | `notification-service.ts` dispatches to all connected providers via `getMessagingProviders()`. Existing `void + .catch()` pattern. |
-| Import orchestrator <-> Provider APIs | Credential reuse | Uses existing `IntegrationConnection` credentials. Does NOT create new connections. Reads data, normalizes, previews, batch-creates. |
-| Equipment service <-> Workflow engine | Domain integration | Equipment assignment/return triggers workflow tasks. Uses existing `WorkflowTaskRun` model with new task types. |
-| Courier clients <-> QStash | Cron scheduling | Status polling scheduled via QStash cron. Webhook updates from InPost bypass cron. |
-| Stripe billing <-> OCR service | Usage metering | After successful OCR extraction, fire-and-forget meter event to Stripe. Local UsageRecord for dashboard. |
+| `packages/api` <-> `packages/einvoicing` | Direct import | tRPC routers call einvoicing engine functions directly |
+| `packages/einvoicing` <-> `packages/integrations` | Adapter delegates to profile | ZATCA/Peppol adapters import from einvoicing for XML work |
+| `packages/einvoicing` <-> `packages/db` | Prisma client via import | XML storage, submission status, hash chain lookups |
+| `packages/api` <-> QStash | HTTP (existing pattern) | Government API calls enqueued as QStash jobs |
+| QStash -> Next.js API routes -> `packages/einvoicing` | HTTP callback | Background job handler calls einvoicing engine |
 
-## Build Order Recommendation
+## Suggested Build Order
 
-Based on dependency analysis and risk assessment:
+The build order respects dependency chains: infrastructure first, then features that depend on it.
 
-1. **Linear adapter** -- zero dependencies on other v3.0 features, clean adapter pattern extension, validates that "add a new adapter" is still a smooth 1-2 phase operation. Lowest risk, immediate value.
-2. **Stripe billing** -- infrastructure that all other features may depend on (feature gates determine which integrations are available per tier, credit metering for AI). Better to have billing in place early so subsequent features integrate with gates from the start.
-3. **Teams adapter + Messaging abstraction** -- requires refactoring `notification-service.ts` and extracting `slack-client.ts` into the messaging abstraction. This touches many existing features (approvals, reminders, alerts). Build early to stabilize the refactoring before more features pile on.
-4. **Google Workspace adapter** -- OAuth adapter + directory sync service. Enables the onboarding import feature that comes later.
-5. **Equipment/Shipment tracking** -- new bounded context, fully independent of other v3.0 integrations. Can be built in parallel with Google Workspace if capacity allows.
-6. **Intelligent onboarding import** -- depends on multiple integrations being connected (Linear, Google Workspace, Jira, Slack, Teams). Build last because it orchestrates across already-built integrations.
+| Phase | What | Why This Order | Dependencies |
+|-------|------|----------------|-------------|
+| 1 | Multi-currency schema + exchange rate service | Foundation for all Gulf monetary operations. Invoice, payment, contractor models need currency support before anything else. | None -- additive schema changes |
+| 2 | Multi-tier tax engine (VAT rules DB, WHT calculator) | Tax calculation is needed by e-invoicing XML generation and payment processing. | Phase 1 (currency) |
+| 3 | `packages/einvoicing` core (UBL builder, EN 16931 validator, profile interface) | The abstract engine must exist before any country profile. KSeF refactor validates the architecture. | None (parallel with 1-2 possible) |
+| 4 | KSeF profile refactor | Migrate existing KSeF XML parsing into the new einvoicing engine. Proves the profile pattern works with real production code. | Phase 3 (einvoicing core) |
+| 5 | ZATCA profile + API client | Highest-complexity government integration. ZATCA is mandatory NOW in Saudi. | Phases 2 (tax), 3 (einvoicing core) |
+| 6 | Peppol PINT-AE profile + ASP client | UAE e-invoicing. Depends on ASP provider selection. Can start once core engine exists. | Phase 3 (einvoicing core) |
+| 7 | SWIFT payment export + purpose codes | Gulf payment infrastructure. | Phase 1 (currency) |
+| 8 | Arabic RTL + i18n | Can be built in parallel with backend work. shadcn RTL mode + next-intl Arabic locale. | None (frontend-only) |
+| 9 | Country-specific contractor fields + PDPL consent | UAE/Saudi contractor profiles, freelance permits, data protection consent. | Phase 1 (for currency fields) |
+| 10 | Multi-region infrastructure | Deployment optimization. Least urgent -- Gulf latency is acceptable from Frankfurt. | All above stable |
 
-**Rationale:**
-- Linear first: lowest risk, validates adapter extension pattern, no refactoring
-- Stripe second: infrastructure dependency for feature gates and metering
-- Teams third: messaging abstraction is a refactoring risk that benefits from early stabilization
-- Google Workspace fourth: prerequisite for onboarding import
-- Equipment fifth: independent domain, no integration dependencies
-- Onboarding import last: cross-cutting orchestrator that needs its dependencies already built
+**Critical path:** Phases 1 -> 2 -> 3 -> 5 (multi-currency -> tax -> einvoicing core -> ZATCA)
+
+**Parallelizable:** Phases 7, 8, 9 can run alongside phases 4-6.
 
 ## Sources
 
-- Linear OAuth 2.0: https://linear.app/developers/oauth-2-0-authentication (HIGH confidence)
-- Linear Webhooks: https://linear.app/developers/webhooks (HIGH confidence)
-- Microsoft Teams Bot Framework: https://learn.microsoft.com/en-us/microsoftteams/platform/bots/how-to/authentication/add-authentication (HIGH confidence)
-- Microsoft Teams Adaptive Cards: https://learn.microsoft.com/en-us/adaptive-cards/authoring-cards/universal-action-model (HIGH confidence)
-- Microsoft Teams Proactive Messaging: https://learn.microsoft.com/en-us/samples/officedev/microsoft-teams-samples/officedev-microsoft-teams-samples-bot-proactive-messaging-teamsfx-nodejs/ (HIGH confidence)
-- Google Workspace Admin SDK Directory API: https://developers.google.com/workspace/admin/directory/v1/guides (HIGH confidence)
-- InPost ShipX API: https://dokumentacja-inpost.atlassian.net/wiki/spaces/PL/pages/622754/API+ShipX (MEDIUM confidence)
-- Stripe Billing Meters: https://docs.stripe.com/billing/subscriptions/usage-based/recording-usage-api (HIGH confidence)
-- Stripe Subscriptions Quantities (per-seat): https://docs.stripe.com/billing/subscriptions/quantities (HIGH confidence)
-- Stripe Metered Billing Guide 2026: https://www.buildmvpfast.com/blog/stripe-metered-billing-implementation-guide-saas-2026 (MEDIUM confidence)
-- Existing codebase analysis: `packages/integrations/src/`, `packages/api/src/services/`, `packages/db/prisma/schema/` (HIGH confidence)
+- [ZATCA E-Invoicing Official Portal](https://zatca.gov.sa/en/E-Invoicing/Pages/default.aspx)
+- [ZATCA E-Invoicing Detailed Technical Guidelines (PDF)](https://zatca.gov.sa/en/E-Invoicing/Introduction/Guidelines/Documents/E-invoicing-Detailed-Technical-Guideline.pdf)
+- [ZATCA Roll-out Phases](https://zatca.gov.sa/en/E-Invoicing/Introduction/Pages/Roll-out-phases.aspx)
+- [UAE Electronic Invoicing Guidelines V1.0 (Feb 2026)](https://mof.gov.ae/wp-content/uploads/2026/02/UAE-Electronic-Invoicing-Guidelines_V-1.0-23Feb2026.pdf)
+- [Avalara: UAE e-invoicing mandate 2026 ASP and PINT AE](https://www.avalara.com/blog/en/europe/2026/03/uae-e-invoicing-mandate-2026-readiness-asp-pint-ae.html)
+- [Peppol BIS Billing 3.0 Syntax](https://docs.peppol.eu/poacc/billing/3.0/syntax/ubl-invoice/)
+- [Neon Regions Documentation](https://neon.com/docs/introduction/regions)
+- [shadcn/ui RTL Support (January 2026)](https://ui.shadcn.com/docs/changelog/2026-01-rtl)
+- [shadcn/ui RTL Documentation](https://ui.shadcn.com/docs/rtl)
+- [next-intl RTL Usage](https://next-intl.dev/docs/usage/translations)
+- [EN 16931 Validation Artefacts (GitHub)](https://github.com/ConnectingEurope/eInvoicing-EN16931)
+- [Adyen Currency Codes and Minor Units](https://docs.adyen.com/development-resources/currency-codes)
+- Existing codebase: `packages/integrations/src/adapters/base-adapter.ts`, `ksef-adapter.ts`, `ksef-api-client.ts`, `registry.ts`
+- Existing codebase: `packages/db/prisma/schema/invoice.prisma`, `payment.prisma`, `organization.prisma`, `contractor.prisma`, `integration.prisma`
 
 ---
-*Architecture research for: Contractor Ops v3.0 Enterprise & Monetization*
-*Researched: 2026-04-01*
+*Architecture research for: v4.0 International Foundation & Gulf Expansion*
+*Researched: 2026-04-11*

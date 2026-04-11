@@ -1,278 +1,201 @@
 # Project Research Summary
 
-**Project:** Contractor Ops v3.0 — Enterprise & Monetization
-**Domain:** B2B contractor operations platform — integration expansion, equipment tracking, billing infrastructure
-**Researched:** 2026-04-01
-**Confidence:** HIGH
+**Project:** v4.0 International Foundation & Gulf Expansion
+**Domain:** Pluggable e-invoicing, multi-currency, Arabic RTL, SWIFT payments, multi-region deployment, Gulf government API integrations (ZATCA Fatoorah, Peppol PINT-AE)
+**Researched:** 2026-04-11
+**Confidence:** MEDIUM-HIGH
 
 ## Executive Summary
 
-v3.0 adds five substantial capability areas to an already working platform: Linear bidirectional sync, Microsoft Teams approval flows, Google Workspace directory import, equipment/shipment tracking, and a Stripe subscription paywall with AI credit metering. The existing integration framework (BaseAdapter, OAuth credential store, webhook pipeline, QStash async processing) carries most of the load. Three features — Linear, Teams, and Google Workspace — extend that framework directly. Two features — equipment tracking and Stripe billing — are new bounded contexts with their own schema files, service layers, and dedicated webhook routes that deliberately bypass the integration adapter pipeline.
+This milestone transforms Contractor Ops from a Poland-focused platform into a multi-market contractor operations SaaS by building the technical foundation for Gulf expansion (UAE, Saudi Arabia). The core architectural investment is a pluggable e-invoicing engine built on EN 16931 / UBL 2.1 standards — this one abstraction unlocks ZATCA Fatoorah (Saudi, mandatory now), Peppol PINT-AE (UAE, mandatory July 2026 voluntary / January 2027 for large businesses), and makes all future market entries (Germany XRechnung, France Factur-X, UK Peppol) incremental additions rather than full rewrites. The existing codebase has strong foundations to build on: the BaseAdapter/provider pattern extends naturally to government APIs, the integer minor-unit money pattern works for AED and SAR (both 2-decimal), and QStash already handles async fire-and-forget integration calls.
 
-The recommended approach is to build in three phases of phases: (1) foundation — Stripe subscription infrastructure and the Linear integration, both well-understood patterns or direct clones of existing code; (2) the harder integrations — Teams bot with Adaptive Cards and Google Workspace directory import, which carry real infrastructure complexity; and (3) cross-cutting connection — the intelligent onboarding wizard, additional courier carriers, and full billing enforcement. Equipment tracking runs independently of other v3.0 features and can be parallelized with any phase.
+The recommended approach is sequential by dependency: build the e-invoicing engine core and refactor KSeF into the first country profile, then extend multi-currency to AED/SAR with a proper Money utility, then add the multi-tier VAT and WHT tax engine, then integrate ZATCA (Saudi), then Peppol PINT-AE (UAE), then Arabic localization and RTL, then PDPL compliance (privacy), and finally multi-region infrastructure as a deferred-but-architecturally-prepared layer. Multi-currency, SWIFT payment export, and country-specific contractor fields ship alongside the tax engine phase as they are tightly coupled dependencies. The SWIFT pain.001 format (ISO 20022) is the correct choice over MT101 — the MT message sunset deadline is November 2026.
 
-The dominant risks are all known and preventable. Teams requires Azure Bot Service registration before a single line of adapter code is written; skipping this causes the entire integration to fail silently. Stripe webhooks must be processed with database-level idempotency or billing race conditions become silent revenue bugs. Linear's fast webhook delivery requires per-mutation correlation IDs rather than the 30-second window used by Jira. The Google Workspace directory import must use QStash pagination chaining or it will time out for any organization above roughly 200 users. All four of these risks have explicit prevention strategies documented in PITFALLS.md.
+The most significant risk is the ZATCA cryptographic signing chain: invoices must be processed sequentially per organization, certificates have a two-stage issuance process (Compliance CSID then Production CSID), and a broken hash chain requires ZATCA support to reset. The second major risk is RTL layout corruption across 469K LOC of existing LTR-only components — this requires a surgical codebase-wide migration to CSS logical properties before any Arabic locale is exposed to users. A critical infrastructure constraint discovered in research: Neon has no Middle East region. Frankfurt (`aws-eu-central-1`) is the nearest available region and is acceptable for PDPL compliance via contractual safeguards, matching how most Gulf SaaS companies operate today.
 
 ## Key Findings
 
 ### Recommended Stack
 
-The existing stack is unchanged. v3.0 adds seven packages: `@linear/sdk` (official GraphQL client for Linear), `botbuilder` + `adaptivecards` + `adaptivecards-templating` (Microsoft Bot Framework and card rendering for Teams), `googleapis` (Google Admin SDK, extending existing Google OAuth), `stripe` (server-side billing and webhook handling), and `@stripe/stripe-js` / `@stripe/react-stripe-js` (client-side Checkout Sessions). Courier tracking for InPost, DPD, and UPS uses direct `fetch()` calls with Zod validation — no SDK, because all available npm packages for these carriers are unmaintained (last updated 2019–2022).
+The existing stack requires no replacement — only targeted additions. The e-invoicing engine needs `xmlbuilder2` (type-safe XML construction for UBL 2.1 documents), `xml-crypto` (XML digital signatures for ZATCA XAdES), `@xmldom/xmldom` (required peer dependency for xml-crypto), and `qrcode` (ZATCA TLV QR codes and Peppol identifiers). For ZATCA's X.509 certificate lifecycle, add `@peculiar/x509` and `@peculiar/asn1-schema`. ZATCA-specific library packages (`zatca-xml-js`, `zatca-xml-ts`) are explicitly not recommended — they are unmaintained, only support simplified invoices, and require system OpenSSL, which conflicts with the pluggable engine architecture.
 
-**Core technology additions:**
-- `@linear/sdk ^80.1.0`: Official TypeScript GraphQL client — auto-generated from Linear schema, typed mutations, handles pagination and OAuth refresh
-- `botbuilder ^4.23.3`: Microsoft Bot Framework v4 — mandatory for Teams Adaptive Card `Action.Execute` buttons and proactive messaging; `botbuilder-teams` is deprecated since v4.6
-- `adaptivecards ^3.0.5` + `adaptivecards-templating ^2.3.1`: Teams approval card rendering with data binding
-- `googleapis ^171.4.0`: Official Google API client for Admin SDK Directory API — reuses existing Google OAuth credentials with added directory scopes
-- `stripe ^21.0.1`: Stripe Node.js SDK for subscriptions, Billing Meters API, webhook signature verification; API version 2026-03-25.dahlia
-- `@stripe/stripe-js ^9.0.1` + `@stripe/react-stripe-js ^6.1.0`: Client-side Checkout Session redirects and billing portal
-- Native `fetch()` for InPost ShipX, DPD, and UPS REST APIs
+Multi-currency uses `@dinero.js/dinero.js` v2 (alpha but production-stable) for type-safe money operations, wrapping the existing integer minor-units pattern. Exchange rates come from the Frankfurter API (ECB-sourced, free, no API key, cached daily in Redis). For RTL, shadcn CLI's built-in `migrate rtl` command converts physical CSS to logical properties; `rtl-detect` (1KB) handles programmatic locale direction detection. SWIFT payment generation is a custom implementation using `xmlbuilder2` to produce ISO 20022 `pain.001.001.09` XML — no production-quality JS library exists for SWIFT generation. Peppol network transmission requires partnering with an Accredited Service Provider (ASP) via REST API; the application generates PINT-AE XML but never becomes an Access Point itself.
+
+**Core new dependencies:**
+- `xmlbuilder2` ^4.0.0: UBL 2.1 XML document construction — type-safe chainable API with namespace support
+- `xml-crypto` ^6.0.0: XML digital signatures (XAdES) for ZATCA — battle-tested, 3M+ weekly downloads
+- `@peculiar/x509` ^1.12.0: X.509 certificate parsing, CSR creation for ZATCA onboarding — pure JS, uses native crypto
+- `@dinero.js/dinero.js` ^2.0.0-alpha.14: Type-safe multi-currency arithmetic — enforces currency matching at compile time
+- `rtl-detect` ^2.0.0: Locale-to-direction mapping — tiny (1KB) utility for setting `dir` attribute
+- `qrcode` ^1.5.4: QR code generation for ZATCA TLV encoding — 5M+ weekly downloads
 
 ### Expected Features
 
-**Must have (table stakes) — v3.0 P1:**
-- Stripe subscription tiers (flat + per-seat) with webhook-driven lifecycle sync
-- AI/OCR credit metering via Stripe Billing Meters API
-- Feature gating middleware that checks subscription tier on every protected tRPC route
-- Linear OAuth connect, issue creation from workflows, bidirectional status sync, status mapping config
-- Teams bot registration, approval/rejection via Adaptive Cards with `Action.Execute`, proactive DM reminders
-- Equipment registry (CRUD, assignment, status lifecycle) with manual shipment tracking
-- Free trial period with 7/3/1-day warning notifications
+**Must have (table stakes for Gulf market launch):**
+- Pluggable e-invoicing engine (abstract core): EN 16931/UBL 2.1 abstraction shared by all country profiles — architectural prerequisite for everything else
+- ZATCA Fatoorah Phase 2 integration: Saudi e-invoicing is legally mandatory now for businesses above SAR 375K; includes XML generation, XML DSig, invoice hash chain, QR codes, Fatoora Portal API
+- Peppol PINT-AE integration: UAE e-invoicing mandatory from January 2027; penalty AED 2,500 per non-compliant invoice; requires certified ASP partnership
+- Multi-currency (AED, SAR): Invoice, payment run, and reporting currency fields; AED and SAR are USD-pegged so exchange rate volatility is minimal
+- Multi-tier VAT engine: UAE 5%, Saudi 15% — must be configuration-driven, not code branches; WHT calculator for Saudi cross-border payments (5–20% by service type)
+- SWIFT pain.001 payment export: Gulf B2B payments require SWIFT with purpose codes; ISO 20022 format future-proofs against MT101 sunset (November 2026)
+- Country-specific contractor fields: UAE freelance permit / trade license; Saudi freelance license / commercial registration
+- Arabic locale (translation strings): Saudi requires Arabic; UAE benefits from Arabic for broader market credibility
+- WHT certificates: Saudi clients must deduct and remit withholding tax; certificate generation required
+- PDPL compliance: Saudi PDPL enforceable since September 2024 (48 enforcement actions in first year); UAE Federal Decree-Law 45/2021; consent management and cross-border transfer safeguards required
 
-**Should have (differentiators) — v3.0 P2:**
-- Google Workspace directory import with group-to-role mapping and paginated QStash-orchestrated fetch
-- InPost ShipX API integration with Parcel Locker selection (major differentiator for Polish market)
-- Intelligent onboarding wizard pulling from multiple connected tools with preview and dedup
-- Teams activity alert cards (invoice received, contract expiring, payment completed)
-- Billing portal (Stripe Customer Portal redirect) and usage dashboard
+**Should have (competitive differentiators, add after validation):**
+- Full Arabic RTL layout: Codebase-wide CSS logical properties migration; shadcn/ui RTL audit; chart axis mirroring — signals Gulf-first commitment, most international platforms do this poorly
+- Compliance status dashboard: Consolidated ZATCA clearance, Peppol submission, WHT filing deadline, contractor license expiry per organization
+- ZATCA onboarding wizard: Guided CSR generation → CSID issuance → compliance testing → production certificate flow
+- Multi-region deployment (ME region): Data residency for strict PDPL requirements; deferred until first enterprise customer requires it
+- Live exchange rates for reporting: Frankfurter API integration; display invoices in home currency alongside original
 
-**Defer (v4+):**
-- SCIM provisioning from Google Workspace
-- Multi-carrier rate comparison
-- Stripe Connect for contractor payments (Polish B2B uses bank transfers, not Stripe payouts)
-- Teams as full messaging relay
-- Periodic automated Google Workspace directory sync (one-time import covers initial need)
+**Defer to v5+:**
+- XRechnung / ZUGFeRD (Germany): Engine core makes this incremental when Germany market opens
+- Factur-X / PDP (France): Hardest EU market; defer until Germany is proven
+- IR35 tracking, BACS export, Scheinselbstandigkeit (UK/Germany): Separate market entry phases
 
 ### Architecture Approach
 
-v3.0 spans three architectural patterns: adapter extension (Linear, Teams, Google Workspace extend `BaseAdapter` and register in `register-all.ts`), new bounded contexts (equipment tracking with its own Prisma schema file and `CourierClient` interface; Stripe billing with its own middleware, schema, and dedicated webhook route), and a cross-cutting orchestrator (intelligent onboarding consumes data from all connected integrations via an `ImportOrchestrator` service). The most significant structural change is refactoring `notification-service.ts` to dispatch through a new `MessagingProvider` interface rather than calling Slack functions directly — this unblocks Teams approval delivery without a proliferation of `if/else` branches.
+The architectural centerpiece is a new `packages/einvoicing` package implementing the Strategy pattern via country profiles. Each profile (`KSeFProfile`, `ZatcaProfile`, `PeppolPINTAEProfile`) implements a common `EInvoiceProfile` interface with `generateXml()`, `validate()`, `signXml()`, `generateQrData()`, and `submit()`. The existing KSeF integration is refactored into the first profile rather than being replaced — this proves the abstraction while preserving production behavior. Integration adapters in `packages/integrations` handle connection lifecycle (credentials, health checks, webhooks) and delegate all document generation to `packages/einvoicing`. All government API calls (ZATCA clearance, Peppol submission) flow through QStash for reliability and retry semantics, matching the existing pattern.
 
 **Major components:**
-1. `LinearAdapter` (extends `BaseAdapter`) — OAuth 2.0, HMAC-SHA256 webhooks, GraphQL via `@linear/sdk`; mirrored from `JiraAdapter`
-2. `TeamsAdapter` + `MessagingProvider` abstraction — Azure Bot Service, Bot Framework JWT validation, Adaptive Cards with `Action.Execute`, `ConversationReference` storage in DB for proactive messaging; `notification-service.ts` refactored to dispatch through the abstraction
-3. `GoogleWorkspaceAdapter` + `google-directory-sync.ts` — Admin SDK directory scopes on existing Google OAuth, QStash-chained paginated import, `ImportSession` model for progress tracking
-4. `ImportOrchestrator` + per-provider mappers — reads from connected integrations, normalizes to internal schema, deduplicates by email, shows preview before batch create
-5. `CourierClient` interface + `InPostClient`, `DpdClient`, `UpsClient` — lightweight direct REST clients, NOT adapters; unified `ShipmentStatus` base enum with `providerDetails` JSON for carrier-specific data
-6. Billing service layer (`subscription-service.ts`, `usage-metering.ts`, `feature-gates.ts`, `webhook-handler.ts`) — platform-level infrastructure, dedicated webhook route, tRPC billing middleware in the auth chain
-
-**Schema additions:** `equipment.prisma` (Equipment, Shipment, ShipmentStatusUpdate), `billing.prisma` (Subscription, UsageRecord, BillingEvent), modifications to `organization.prisma`, `integration.prisma`, `notification.prisma`, and `contract.prisma`.
+1. `packages/einvoicing` (NEW): Core UBL 2.1 engine + country profiles (KSeF, ZATCA, Peppol PINT-AE); XML generation, validation, signing, QR code generation
+2. `packages/integrations` (EXTENDED): `ZatcaAdapter`, `PeppolAdapter` extending `BaseAdapter`; connection lifecycle only, delegates XML work to einvoicing
+3. `packages/db` (EXTENDED): New Prisma schema files — `einvoice.prisma`, `currency.prisma`, `tax-rule.prisma`, `consent.prisma`; modifications to `invoice.prisma`, `payment.prisma`, `contractor.prisma`, `organization.prisma`
+4. `packages/validators` (EXTENDED): `Money` value object with `CURRENCY_MINOR_UNITS` lookup; exchange rate Zod schemas; WHT/VAT rule schemas
+5. `packages/api` (EXTENDED): New tRPC routers for `einvoicing`, `currency`, `tax`; modified `payment` router for SWIFT export
+6. `apps/web` (EXTENDED): RTL layout with `dir` attribute set from locale; currency display components; government API status UIs; country-specific contractor form fields
 
 ### Critical Pitfalls
 
-1. **Linear sync loop with Jira timing constants** — Do not copy `LOOP_PREVENTION_WINDOW_MS` (30s) from the Jira handler; Linear webhooks fire sub-second. Use per-mutation Redis correlation IDs with 10-second TTL. Add `correlationId` column to `IntegrationSyncLog`.
+1. **Breaking KSeF while refactoring into pluggable engine** — Write comprehensive KSeF integration tests BEFORE touching any code. Use the Strangler Fig pattern: build the abstract engine alongside KSeF, wrap KSeF as the first adapter, verify all tests pass, then remove direct calls. If the abstract interface exceeds 6–8 methods, it is over-abstracted.
 
-2. **Teams requires Azure Bot Service before coding** — Unlike Slack (simple OAuth + webhooks), Teams requires an Azure AD app registration and Azure Bot resource. JWT token validation on the `/api/messages/teams` endpoint must be in place before the bot can receive any message. Skipping this means all button presses return "Something went wrong." Use separate Azure Bot registrations per environment.
+2. **ZATCA cryptographic signing chain errors** — ZATCA requires sequential per-organization invoice processing to maintain hash chain integrity. Implement the full two-stage onboarding (CSR → Compliance CSID → sandbox certification → Production CSID). Build certificate renewal from day 1. Never parallelize invoice signing within a single organization.
 
-3. **Stripe webhook race conditions on serverless** — Stripe sends 3–5 events per subscription lifecycle change within milliseconds. Create a `StripeEventLog` table with a unique constraint on `eventId`. Process billing-critical events synchronously within Stripe's 20-second timeout; do NOT route them through QStash.
+3. **Multi-currency `* 100` arithmetic breaking for 3-decimal currencies** — Replace all `toMinorUnits()` calls with a `Money` utility that takes a currency parameter and looks up the correct decimal places from ISO 4217. AED and SAR are both 2-decimal (safe for v4.0), but hardcoding `* 100` now creates a painful migration when BHD/KWD are added later.
 
-4. **Google Workspace import timeout** — Paginated imports (up to 500 users/page) must use QStash chain-of-calls pattern, not a single serverless function. Store `nextPageToken` in an `ImportJob` record and show progress in the UI.
+4. **RTL layout corruption across existing LTR-only components** — Do a codebase-wide migration of physical CSS properties (`ml-`, `mr-`, `pl-`, `pr-`, `text-left`, `text-right`) to logical equivalents (`ms-`, `me-`, `ps-`, `pe-`, `text-start`) BEFORE adding any Arabic locale. Test every page with `dir="rtl"` before writing translations. Enforce logical properties in new code via lint rule.
 
-5. **Stripe metered billing usage loss** — Record usage intent in `AiUsageLog` before calling Claude Vision API; report to Stripe via retryable QStash job after. Always use `action: 'increment'`, never `action: 'set'`. Daily reconciliation cron comparing internal counts to Stripe usage summaries is a launch requirement.
-
-6. **Equipment tracking disconnected from offboarding** — Equipment module and contractor lifecycle must be integrated from the start. Add an "Equipment Check" blocking step to the offboarding workflow template. Equipment assigned to a contractor should auto-trigger a return request on offboarding.
-
-7. **Onboarding import vs sync scope creep** — Be explicit in the UI that the import wizard is a one-time snapshot. Do not build continuous sync in v3.0. Offer a "Re-import with diff preview" instead. Store `importSource`, `externalId`, `importedAt` on every imported record.
+5. **Peppol ASP scope creep** — Never attempt to build a Peppol Access Point. Partner with an existing ASP (Storecove, Pagero, EDICOM) before starting development. Budget 2–4 weeks for partnership, API access, and sandbox testing. Keep XML line items as products/services only; never use them as metadata containers.
 
 ## Implications for Roadmap
 
-Based on research, suggested phase structure:
+Based on feature dependencies, architectural patterns, and pitfall phase mappings, the research consistently points to an 8-phase structure ordered by dependency chain.
 
-### Phase 1: Stripe Billing Foundation
+### Phase 1: Pluggable E-Invoicing Engine Core
+**Rationale:** Every other e-invoicing feature (ZATCA, Peppol, future Germany/France) depends on this abstraction. KSeF regression is the highest-risk operation in the milestone — front-loading it with the Strangler Fig pattern protects the production integration while establishing the foundation.
+**Delivers:** `packages/einvoicing` with `EInvoiceProfile` interface; KSeF refactored as first country profile; all existing KSeF integration tests passing green; XML pipeline, validation framework, and signing abstraction in place.
+**Addresses:** Pluggable e-invoicing engine (table stakes), KSeF continuity
+**Avoids:** KSeF regression (Pitfall 1), over-abstracted engine interface
 
-**Rationale:** Stripe billing gates all other v3.0 features via plan tiers. Build the subscription infrastructure early so the paywall can be activated when v3.0 ships, without a separate deployment. It is fully independent — no dependency on any other v3.0 feature. The critical pitfalls (webhook idempotency, metered billing usage loss) are well-documented and must be solved before adding feature gating.
+### Phase 2: Multi-Currency Foundation & SWIFT Payment Export
+**Rationale:** ZATCA and Peppol invoices reference specific currencies. SWIFT export requires currency on payment runs. The `Money` utility must exist before any currency-aware feature is built to prevent the `* 100` anti-pattern from spreading.
+**Delivers:** `Money` value object with `CURRENCY_MINOR_UNITS` lookup; AED and SAR currency support on invoices, payment runs, reports; exchange rate table with Frankfurter API cron via QStash; ISO 20022 `pain.001.001.09` SWIFT export with purpose codes; contractor currency fields.
+**Uses:** `@dinero.js/dinero.js`, `@dinero.js/currencies`, Frankfurter API, `xmlbuilder2` (SWIFT XML)
+**Avoids:** Multi-currency integer arithmetic corruption (Pitfall 2), SWIFT purpose code failures
 
-**Delivers:** Subscription lifecycle (create, update, cancel, trial), AI credit metering infrastructure, Stripe Customer Portal redirect, webhook idempotency layer, billing middleware stub in tRPC chain (permissive until feature gating is activated).
+### Phase 3: Multi-Tier VAT Engine & WHT Calculator
+**Rationale:** ZATCA and Peppol require compliant tax calculations on invoices. VAT and WHT must be configuration-driven before the government API integrations are built; adding them as code branches later is a confirmed anti-pattern from the pitfalls research.
+**Delivers:** `TaxEngine` service with database-backed rate tables (UAE 5%, Saudi 15%, Poland unchanged); WHT calculator for Saudi cross-border payments (5–20% by service type + contractor residency + treaty lookup); WHT certificate PDF generation; country-specific contractor fields (UAE freelance permit, Saudi commercial registration).
+**Avoids:** VAT engine hardcoding (Pitfall 7), incorrect WHT rates creating client tax liability
 
-**Features addressed:** Subscription tiers, free trial period, AI/OCR credit metering, billing portal, webhook-driven billing sync.
+### Phase 4: ZATCA Fatoorah Integration (Saudi Arabia)
+**Rationale:** Saudi e-invoicing is already legally mandatory. This is the highest-value Gulf deliverable. Depends on the e-invoicing engine (Phase 1), currency (Phase 2), and VAT/WHT (Phase 3). The hash chain and certificate lifecycle require the most careful implementation in the milestone.
+**Delivers:** `ZatcaProfile` implementing `EInvoiceProfile`; `ZatcaAdapter` extending `BaseAdapter`; full ZATCA onboarding flow (CSR → CCSID → sandbox → PCSID); XML DSig signing with X.509 certificates; TLV-encoded QR codes; invoice hash chain with sequential per-org processing queue via QStash; ZATCA Fatoora Portal API integration (clearance for B2B, reporting for B2C).
+**Uses:** `xmlbuilder2`, `xml-crypto`, `@xmldom/xmldom`, `@peculiar/x509`, `@peculiar/asn1-schema`, `qrcode`
+**Avoids:** ZATCA crypto signing chain errors (Pitfall 3), CCSID/PCSID certificate lifecycle mistakes
 
-**Avoids:** Stripe webhook race conditions (Pitfall 3), AI credit metered billing usage loss (Pitfall 7). Use Test Clocks to verify full subscription lifecycle before moving on.
+### Phase 5: Peppol PINT-AE Integration (UAE)
+**Rationale:** UAE e-invoicing mandate begins July 2026 (voluntary) and January 2027 (mandatory for large businesses). Depends on e-invoicing engine (Phase 1) and currency (Phase 2). ASP partnership must be secured before development starts — the 5-corner model makes this fundamentally different from KSeF/ZATCA direct integrations.
+**Delivers:** `PeppolPINTAEProfile` implementing `EInvoiceProfile`; PINT-AE UBL 2.1 XML generation; `PeppolAdapter` with ASP REST API integration; Peppol Participant ID registration flow per organization; submission status tracking (ASP delivery confirmation).
+**Uses:** `xmlbuilder2`, Peppol ASP REST API (Storecove, Pagero, or EDICOM)
+**Avoids:** Peppol ASP scope creep (Pitfall 6), attempting to become an Access Point
 
-**Research flag:** Standard patterns — Stripe subscriptions and Billing Meters are well-documented. Skip `research-phase`. Verify Stripe Meters API is on API version 2025-03-31.basil or later.
+### Phase 6: Arabic Localization & RTL Layout
+**Rationale:** RTL layout requires the codebase-wide migration to CSS logical properties to be done as a focused effort, not incrementally. Arabic translations without RTL would leave Saudi users with broken layouts. Arabic is mandatory for Saudi Arabia; RTL is required for both KSA and broader Arabic-speaking market credibility.
+**Delivers:** Arabic (`ar`) as third locale in next-intl routing; full UI translation (professional review required for financial terms); `dir="rtl"` on `<html>` from `rtl-detect`; codebase-wide migration of physical CSS to logical properties via `shadcn migrate rtl`; all ICU messages extended with 6 Arabic plural forms; `DirectionProvider` wrapper; number and currency formatting tested with Western (Latin) numerals in financial contexts.
+**Uses:** `rtl-detect`, `shadcn migrate rtl`, `@radix-ui/react-direction` (already installed)
+**Avoids:** RTL layout corruption (Pitfall 4), next-intl Arabic plural failures (Pitfall 8)
 
----
+### Phase 7: PDPL Compliance
+**Rationale:** Saudi PDPL is actively enforced (48 decisions in first year). Can be done after the core Gulf integrations ship because it does not block API functionality, but must be in place before onboarding real Saudi/UAE organizations.
+**Delivers:** Consent management UI for UAE/Saudi orgs during onboarding; privacy notices per jurisdiction; data processing agreement documentation; cross-border transfer safeguards (contractual SCCs for Frankfurt hosting); data residency configuration per org; "right to erasure" deletion that removes data from the correct regional database.
+**Avoids:** PDPL compliance gaps (AED 5M penalty exposure for UAE, criminal penalties in Saudi)
 
-### Phase 2: Linear Integration
-
-**Rationale:** Linear is a direct clone of the existing Jira adapter. It is the lowest-risk integration in v3.0 and validates that the adapter framework extension works before tackling the harder Teams integration. It delivers immediate value to dev-heavy organizations using Linear instead of Jira.
-
-**Delivers:** `LinearAdapter`, bidirectional issue sync, Linear webhook handler with Redis correlation IDs, status mapping config UI, linked issue display on workflow task views.
-
-**Features addressed:** Linear OAuth connect, issue creation from workflows, bidirectional status sync, status mapping, linked issue display.
-
-**Avoids:** Linear sync loop with Jira timing constants (Pitfall 1). Per-mutation Redis correlation IDs must be built in from the start, not retrofitted.
-
-**Research flag:** Standard patterns — mirrors Jira adapter exactly. Skip `research-phase`. Pin `@linear/sdk` to `^80` as it follows Linear's API version changes.
-
----
-
-### Phase 3: Equipment Tracking (Foundation + Manual)
-
-**Rationale:** Equipment tracking is entirely independent of other v3.0 features. Building the data model and CRUD layer now (with manual shipment tracking number entry) delivers useful functionality without courier API complexity. It also establishes the offboarding integration hook — critical to avoid Pitfall 6 — before the workflow engine is taken for granted.
-
-**Delivers:** Equipment domain schema (Equipment, Shipment, ShipmentStatusUpdate), CRUD routers, contractor profile equipment tab, manual shipment entry, equipment-aware offboarding workflow step.
-
-**Features addressed:** Equipment registry, assign equipment to contractor, manual shipment tracking, equipment display on contractor profile.
-
-**Avoids:** Equipment tracking disconnected from offboarding (Pitfall 6). The blocking "Equipment Check" offboarding step must be added in this phase, not deferred to after courier APIs are integrated.
-
-**Research flag:** Standard patterns — CRUD domain model, no external APIs. Skip `research-phase`.
-
----
-
-### Phase 4: Google Workspace Directory Import
-
-**Rationale:** Google Workspace import extends existing Google OAuth infrastructure (minimal adapter work) and delivers a high-value onboarding capability. It also establishes the `ImportJob` / `ImportSession` pattern and QStash pagination chaining that the intelligent onboarding wizard will reuse.
-
-**Delivers:** `GoogleWorkspaceAdapter`, `google-directory-sync.ts`, Admin SDK paginated import with QStash chaining, import progress UI, group-to-role mapping, `ImportSession` model.
-
-**Features addressed:** Google Workspace OAuth connect, user list/preview, selective import as org members, group-based role mapping.
-
-**Avoids:** Import timeout for large directories (Pitfall 4). Must be tested with mocked 500+ user paginated responses before shipping. Use `readonly` scopes only.
-
-**Research flag:** Needs `research-phase` — QStash pagination chaining pattern for multi-step imports should be validated against the existing QStash version in the project before planning detailed tasks.
-
----
-
-### Phase 5: Teams Integration
-
-**Rationale:** Teams is the most complex integration in v3.0 (estimated 3–4 weeks, HIGH risk). Azure Bot Service registration must happen before any code is written. It requires a new messaging abstraction layer that also refactors existing Slack notification delivery. Doing this after Linear (proven adapter pattern) and Google Workspace (proven QStash patterns) reduces overall risk.
-
-**Delivers:** Azure Bot Service registration, `TeamsAdapter`, `MessagingProvider` interface, `slack-provider.ts` wrapper, `teams-provider.ts` with Adaptive Cards, refactored `notification-service.ts`, `ConversationReference` storage, approve/reject via Teams, Teams activity alerts.
-
-**Features addressed:** Teams bot connect, approve/reject from Teams, approval reminders, activity alerts, Teams channel configuration.
-
-**Avoids:** Azure Bot Service not replicating Slack webhook pattern (Pitfall 2). Separate Azure registrations per environment. `Action.Execute` (not `Action.Submit`) for Universal Actions. 5-second response timeout with async QStash processing.
-
-**Research flag:** Needs `research-phase` — Azure Bot Service setup, Bot Framework JWT validation on Vercel, and Adaptive Card Universal Actions are sufficiently non-standard to warrant explicit step-by-step planning before coding.
-
----
-
-### Phase 6: InPost Courier Integration
-
-**Rationale:** InPost is the primary shipping method for Polish B2B companies and a key differentiator. The `CourierClient` interface was established in Phase 3; Phase 6 implements the first real carrier. InPost has a sandbox environment and reasonable documentation, making it lower risk than DPD.
-
-**Delivers:** `InPostClient`, InPost ShipX OAuth 2.0, shipment creation, Parcel Locker selection UI (InPost Geowidget), automatic status tracking via webhooks and polling, QStash polling cron filtered to active shipments only.
-
-**Features addressed:** InPost ShipX API integration, Parcel Locker selection, tracking status display, workflow integration for equipment shipment.
-
-**Avoids:** Courier abstraction losing InPost-specific data (Pitfall 5). Pickup codes and locker locations must be preserved in `providerDetails` JSON. Sandbox vs production URL misconfiguration must be caught by environment variables, not hardcoded strings.
-
-**Research flag:** Needs `research-phase` — InPost ShipX OAuth 2.0 flow and parcel locker API details need explicit mapping before implementation. Polish-language documentation is the primary source.
-
----
-
-### Phase 7: Intelligent Onboarding Wizard
-
-**Rationale:** The onboarding wizard is a cross-cutting orchestrator that depends on Linear (Phase 2), Google Workspace (Phase 4), and Teams (Phase 5) all existing. Building it last in the feature set lets it genuinely pull from all connected tools. The `ImportOrchestrator` and dedup logic built here is the most complex UI flow in v3.0.
-
-**Delivers:** `ImportOrchestrator`, per-provider data mappers (Linear, Jira, Google Workspace, Slack, Teams), multi-source dedup by email, import preview UI with diff indicators, batch confirm/skip/edit, `ImportMapping` model.
-
-**Features addressed:** Import wizard with source selection, import team members from connected tools, import projects/statuses from PM tools, data preview and conflict resolution, progress tracking with partial retry.
-
-**Avoids:** Import vs sync scope creep (Pitfall 6 variant). UI copy must use "import" not "sync". No continuous sync webhooks. Re-import shows diff preview only.
-
-**Research flag:** Standard patterns — all source integrations exist by this phase. Skip `research-phase`. The orchestrator logic (dedup, preview, batch create) is application code.
-
----
-
-### Phase 8: Feature Gating + DPD/UPS Couriers + Billing Polish
-
-**Rationale:** Final activation of the paywall, additional courier carriers, and billing UX polish. Feature gating middleware was stubbed in Phase 1 (permissive); this phase enforces plan tiers. DPD and UPS follow the `CourierClient` interface established in Phase 3 and proven in Phase 6.
-
-**Delivers:** Active feature gating per subscription tier, upgrade prompts with specific plan information, `DpdClient`, `UpsClient`, equipment return flow via contractor portal, usage dashboard with per-feature breakdown, free trial expiry warnings (7/3/1 days), Stripe Customer Portal activation.
-
-**Features addressed:** Feature gating by plan, upgrade/downgrade flow, DPD integration, UPS integration, equipment return tracking, free trial flow, billing portal and usage dashboard.
-
-**Avoids:** Generic "Upgrade required" messages (show specific feature name and which plan unlocks it). Free trial ending with no warning. Equipment return disconnected from contractor portal.
-
-**Research flag:** Standard patterns for DPD/UPS — follow `CourierClient` interface from Phase 3. Feature gating is config-driven middleware. Skip `research-phase`.
-
----
+### Phase 8: Multi-Region Infrastructure (Deferred, Architecture-Ready)
+**Rationale:** Neon has no Middle East region. Frankfurt is the current nearest region and is acceptable for most PDPL use cases via contractual safeguards. This phase becomes mandatory when an enterprise customer has a hard in-country data residency requirement. Earlier phases must not preclude this by using a Prisma singleton that cannot be made region-aware.
+**Delivers:** Region-aware Prisma client factory (`getPrismaClient(orgRegion)`) replacing singleton; Neon logical replication (EU → ME for shared/global data); per-org region routing at tRPC middleware layer; Vercel Edge Config for region preferences; Neon `always-on` compute for ME region to prevent cold starts; global admin dashboard aggregating across regions without violating data residency.
+**Avoids:** Neon multi-region split-brain (Pitfall 5), cross-region data leaks violating PDPL residency
 
 ### Phase Ordering Rationale
 
-- Stripe is built first because it gates everything and has the most catastrophic failure mode (revenue bugs). Building it early, with enforcement deferred, means it is tested before it matters financially.
-- Linear is second because it is the fastest win (clone of Jira) and proves the adapter extension pattern before Teams complexity.
-- Equipment is third because it is fully independent and establishing the offboarding integration hook early prevents it being forgotten after courier APIs are added.
-- Google Workspace is fourth because it establishes the QStash pagination pattern that the onboarding wizard depends on.
-- Teams is fifth because it is the highest complexity and requires all prerequisite patterns (messaging abstraction, QStash chaining) to be proven first.
-- InPost is sixth because courier clients are independent domain services; InPost is the Polish-market priority.
-- The onboarding wizard is seventh because it requires all source integrations to exist before it can pull from them meaningfully.
-- Feature gating and remaining couriers are last because activating the paywall is the final step before v3.0 launch.
+- Phases 1–3 are pure infrastructure with no external API dependencies. They can be built, tested, and validated without ZATCA sandbox access.
+- Phase 4 (ZATCA) requires sandbox certification and government API access — external dependency that benefits from having stable infrastructure beneath it.
+- Phase 5 (Peppol) requires ASP partnership negotiation — should be initiated concurrently with Phase 4 development to compress the timeline.
+- Phase 6 (RTL) is isolated from government integrations and can run in parallel with Phase 5 if capacity allows, but must complete before Gulf market launch.
+- Phase 7 (PDPL) is a compliance layer that does not break other features when added; sequenced last among functional phases.
+- Phase 8 (Multi-Region) is deferred until an enterprise customer requires it, but architecturally prepared from Phase 1 by avoiding Prisma singletons and designing region-aware data access patterns.
 
 ### Research Flags
 
-Phases needing deeper research during planning:
-- **Phase 4 (Google Workspace):** QStash pagination chaining pattern for multi-step imports — verify against current QStash version in the project
-- **Phase 5 (Teams):** Azure Bot Service setup, Bot Framework JWT validation on Vercel, Adaptive Card Universal Actions pattern — non-standard enough to warrant explicit step-by-step planning before coding
-- **Phase 6 (InPost):** InPost ShipX OAuth 2.0 flow, Parcel Locker selection API, webhook vs polling strategy — Polish-language docs are the primary source
+Phases likely needing deeper research during planning:
+- **Phase 4 (ZATCA):** Certificate lifecycle details (CCSID/PCSID exchange, renewal), TLV QR encoding spec, hash chain database schema, and Fatoora API rate limits all need detailed research during phase planning. ZATCA documentation is official but dense.
+- **Phase 5 (Peppol):** ASP selection and API contract details are unknown until a partner is chosen. Research should cover Storecove vs Pagero vs EDICOM REST API differences, Peppol PINT-AE validation rule specifics, and Participant ID registration process.
+- **Phase 8 (Multi-Region):** Neon logical replication setup between projects, Prisma multi-connection patterns, and Vercel Edge Config routing specifics need hands-on investigation.
 
-Phases with standard patterns (skip `research-phase`):
-- **Phase 1 (Stripe):** Well-documented; Stripe's own AI startup billing guide covers the exact use case
-- **Phase 2 (Linear):** Direct clone of Jira adapter; Linear SDK and webhook docs are comprehensive
-- **Phase 3 (Equipment):** Standard CRUD domain model; no external API dependency in foundation phase
-- **Phase 7 (Onboarding wizard):** All source integrations exist by this phase; orchestrator is application code
-- **Phase 8 (Feature gating + DPD/UPS):** Follows established `CourierClient` interface; feature gating is config-driven middleware
+Phases with standard, well-documented patterns (can skip deep research):
+- **Phase 2 (Multi-Currency):** Dinero.js v2 has complete documentation; Frankfurter API is trivial to integrate; integer minor-unit pattern is already established in the codebase.
+- **Phase 3 (VAT/WHT):** PwC/KPMG rate tables are available; `TaxEngine` is straightforward configuration-driven design; WHT certificate PDF uses existing react-pdf infrastructure.
+- **Phase 6 (RTL):** shadcn `migrate rtl` command is well-documented; Tailwind v4 logical properties are covered in official docs; next-intl Arabic locale setup is documented.
+- **Phase 7 (PDPL):** Consent management UI is standard; legal requirements are documented; implementation is primarily database schema + UI.
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | All package versions verified via `npm view`. Official SDKs with no viable community alternatives. Courier REST API approach validated against npm ecosystem state (all available courier SDKs are unmaintained). |
-| Features | MEDIUM-HIGH | Verified against official APIs and Stripe docs. Linear refresh token mandate (April 2026) confirmed in Linear changelog. Teams complexity estimate based on Microsoft samples, not first-hand implementation experience. |
-| Architecture | HIGH | Built on deep knowledge of existing codebase. New component boundaries follow established patterns (12 existing adapters). Teams messaging abstraction is the one design decision with moderate uncertainty — the MessagingProvider interface is sound but refactoring `notification-service.ts` may surface hidden coupling. |
-| Pitfalls | HIGH | Directly grounded in existing codebase patterns (`LOOP_PREVENTION_WINDOW_MS`, `jira-webhook-handler.ts`). Stripe and Teams pitfalls sourced from official docs and verified community experience. |
+| Stack | HIGH | All libraries verified via npm/GitHub; ZATCA and UAE MoF specs are official government sources; Neon region availability confirmed in docs |
+| Features | MEDIUM-HIGH | Government mandate timelines verified via official portals and KPMG/Avalara analysis; WHT rates verified via PwC Tax Summaries; PDPL enforcement verified via Clyde & Co |
+| Architecture | HIGH | Based on direct codebase inspection; existing BaseAdapter/QStash/Prisma patterns confirmed; EN 16931/UBL 2.1 spec reviewed; government API architecture (2-corner ZATCA, 4-corner Peppol) verified |
+| Pitfalls | HIGH | Most pitfalls derived from codebase analysis of specific files (`ksef-xml-parser.ts`, `ksef-sync-orchestrator.ts`, Prisma schemas) plus ZATCA developer community post-mortems and Peppol error documentation |
 
-**Overall confidence:** HIGH
+**Overall confidence:** MEDIUM-HIGH
 
 ### Gaps to Address
 
-- **Teams ConversationReference storage format:** The `ExternalLink.metadataJson` approach is proposed but not verified against the Bot Framework SDK's exact reference shape. Validate the storage schema during Phase 5 planning.
-- **DPD webhook reliability:** DPD's webhook support is documented as "limited and inconsistent." Polling is the fallback, but the exact DPD webhook contract needs hands-on verification. Flag for Phase 8 planning.
-- **UPS developer account approval time:** UPS requires developer account approval before API access. This may add calendar time to Phase 8. Start the UPS developer account registration during Phase 6 (InPost) so approval arrives before Phase 8 begins.
-- **Azure Bot Service free tier limits:** The F0 (free) tier covers standard Teams channels, but message-per-second limits for proactive messaging (approval reminders) should be validated against expected volume during Phase 5 planning.
-- **Stripe Billing Meters API stability:** The Meters API replaced legacy `usage_records` in the 2025-03-31.basil API version. Validate that `stripe.billing.meterEvents.create()` behaves as documented with Stripe Test Clocks before integrating with the OCR pipeline.
+- **ASP selection for Peppol:** No ASP has been chosen or contacted. Storecove, Pagero (Thomson Reuters), and EDICOM are candidates. API contracts, pricing, and UAE FTA accreditation status need validation before Phase 5 planning begins. Initiate vendor evaluation concurrently with Phase 4 development.
+- **Arabic translation volume and cost:** The codebase has significant UI text. Professional financial translation (required — machine translation is not acceptable for legal/tax terms) requires budget and timeline estimation. Needs scoping before Phase 6 planning.
+- **ZATCA Wave 24 timeline confirmation:** Research notes Wave 24 (businesses > SAR 375K) begins June 2026. Confirm directly with ZATCA portal before committing to a Saudi launch date.
+- **PDPL cross-border transfer mechanism:** Whether Saudi NDMO will accept EU-based hosting (Frankfurt) with contractual protections vs. requiring in-country storage is an evolving legal question. Legal counsel review recommended before onboarding Saudi enterprise clients.
+- **Dinero.js v2 alpha stability:** The library is production-used but remains in alpha. A fallback plan (custom Money utility using the `CURRENCY_MINOR_UNITS` lookup directly) should be identified before Phase 2 starts.
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- [Linear SDK npm](https://www.npmjs.com/package/@linear/sdk) — version 80.1.0 verified
-- [Linear Developers — Webhooks](https://linear.app/developers/webhooks) — HMAC-SHA256 verification, payload structure, timestamp replay protection
-- [Linear API Rate Limits](https://linear.app/docs/api-and-webhooks) — 500 req/hr per OAuth app user
-- [Linear Changelog](https://linear.app/changelog/page/2) — refresh token mandate April 2026
-- [Microsoft Teams — Universal Actions for Adaptive Cards](https://learn.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/universal-actions-for-adaptive-cards/overview) — Action.Execute pattern
-- [Microsoft Teams — Bot Request Approval Sample](https://learn.microsoft.com/en-us/samples/officedev/microsoft-teams-samples/officedev-microsoft-teams-samples-bot-request-approval-nodejs/) — Node.js reference implementation
-- [Microsoft Teams — Proactive Messages](https://learn.microsoft.com/en-us/microsoftteams/platform/bots/how-to/conversations/send-proactive-messages) — ConversationReference pattern
-- [Google Admin SDK Directory API](https://developers.google.com/workspace/admin/directory/v1/guides) — user/group management, rate limits, pagination
-- [stripe npm](https://www.npmjs.com/package/stripe) — version 21.0.1 verified
-- [Stripe Usage-Based Billing](https://docs.stripe.com/billing/subscriptions/usage-based/recording-usage-api) — Meters API
-- [Stripe Billing Credits](https://docs.stripe.com/billing/subscriptions/usage-based/billing-credits) — credit grants for plan allowances
-- [Stripe Build Usage-Based Billing for AI](https://docs.stripe.com/get-started/use-cases/usage-based-billing) — AI startup reference architecture
-- [InPost ShipX API Documentation](https://dokumentacja-inpost.atlassian.net/wiki/spaces/PL/pages/622754/API+ShipX) — REST API with OAuth 2.0, sandbox/production URLs
-- Existing codebase: `packages/integrations/src/adapters/base-adapter.ts`, `jira-webhook-handler.ts`, `jira-issue-sync.ts`
+- [ZATCA E-Invoicing Technical Guidelines v2](https://zatca.gov.sa/en/E-Invoicing/Introduction/Guidelines/Documents/E-invoicing-Detailed-Technical-Guideline.pdf) — XML schema, signing requirements, QR TLV spec, Phase 2 wave schedules
+- [UAE Electronic Invoicing Guidelines V1.0 (MoF, Feb 2026)](https://mof.gov.ae/wp-content/uploads/2026/02/UAE-Electronic-Invoicing-Guidelines_V-1.0-23Feb2026.pdf) — PINT-AE format, ASP requirements, mandate timeline
+- [Neon Regions Documentation](https://neon.com/docs/introduction/regions) — confirmed no Middle East region
+- [shadcn/ui RTL Documentation](https://ui.shadcn.com/docs/rtl) — `migrate rtl` command, logical property conversion
+- [xml-crypto npm](https://www.npmjs.com/package/xml-crypto) — XML digital signature library
+- [xmlbuilder2 npm](https://www.npmjs.com/package/xmlbuilder2) — XML builder v4.0.0
+- [Frankfurter API](https://frankfurter.dev/) — free ECB exchange rate API
+- [@peculiar/x509 GitHub](https://github.com/PeculiarVentures/x509) — X.509 certificate handling
 
 ### Secondary (MEDIUM confidence)
-- [Stripe Webhook Best Practices (Stigg)](https://www.stigg.io/blog-posts/best-practices-i-wish-we-knew-when-integrating-stripe-webhooks) — idempotency, event ordering, 20-second timeout
-- [Stripe Metered Billing Guide 2026 (buildmvpfast)](https://www.buildmvpfast.com/blog/stripe-metered-billing-implementation-guide-saas-2026) — implementation patterns for Meter API
-- [Microsoft Teams Bot Framework](https://learn.microsoft.com/en-us/azure/bot-service/channel-connect-teams?view=azure-bot-service-4.0) — Azure Bot registration, messaging endpoint
-- [DPD API Documentation v1.2.1](https://www.dpd.com/wp-content/uploads/sites/235/2023/04/DPD-API-documentation-v1-2-1.pdf) — REST API specification
-- [UPS Developer Portal](https://developer.ups.com) — OAuth 2.0 migration confirmed
-- [Vercel Function Limits](https://vercel.com/docs/functions/limitations) — timeout constraints
+- [Dinero.js v2 Documentation](https://v2.dinerojs.com/) — multi-currency money library (alpha but production-stable)
+- [Avalara: UAE e-invoicing mandate 2026](https://www.avalara.com/blog/en/europe/2026/03/uae-e-invoicing-mandate-2026-readiness-asp-pint-ae.html) — Peppol PINT-AE architecture overview
+- [PwC: Saudi WHT rates](https://taxsummaries.pwc.com/saudi-arabia/corporate/withholding-taxes) — rate tables and treaty information
+- [ICLG: Saudi Data Protection 2025-2026](https://iclg.com/practice-areas/data-protection-laws-and-regulations/saudi-arabia) — PDPL requirements
+- [Clyde & Co: Saudi PDPL enforcement](https://www.clydeco.com/en/insights/2026/03/enforcement-of-the-saudi-pdp-law) — 48 enforcement decisions in first year
+- [SWIFT ISO 20022 migration](https://www.swift.com/news-events/news/iso-20022-bytes-payments-maintaining-momentum-2025) — pain.001 replacing MT101, November 2026 deadline
+- [10 Most Common Peppol E-Invoicing Errors](https://qvalia.com/10-most-common-e-invoicing-errors-and-mistakes-in-peppol/) — Peppol validation failure patterns
+- [ZATCA Fatoorah Developer Community](https://zatca1.discourse.group/) — certificate lifecycle errors (CCSID vs PCSID)
 
-### Tertiary (LOW confidence — validate during implementation)
-- DPD webhook support reliability — documented as limited; verify before committing to webhook-first strategy
-- Azure Bot Service F0 tier proactive messaging rate limits — confirm against expected approval volume
+### Tertiary (LOW confidence)
+- [KPMG: UAE technical guidance on mandatory e-invoicing fields](https://kpmg.com/us/en/taxnewsflash/news/2026/02/uae-technical-guidance-mandatory-e-invoicing-fields.html) — field requirements (secondary to official MoF guidelines)
+- [SWIFT MT101 Specifications](https://www.paiementor.com/swift-mt101-format-specifications/) — used to confirm pain.001 superiority, not a primary source
+- Internal: `MARKET-EXPANSION-ANALYSIS.md` — per-market requirements (internal document, not externally verifiable)
 
 ---
-*Research completed: 2026-04-01*
+*Research completed: 2026-04-11*
 *Ready for roadmap: yes*

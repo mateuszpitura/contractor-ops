@@ -1,376 +1,359 @@
 # Pitfalls Research
 
-**Domain:** v3.0 Enterprise & Monetization -- Linear, Teams, Google Workspace, intelligent onboarding, equipment/shipment tracking, Stripe billing for multi-tenant contractor operations SaaS
-**Researched:** 2026-04-01
-**Confidence:** HIGH (existing codebase patterns well-understood, API behaviors verified against official docs and community sources)
+**Domain:** v4.0 International Foundation & Gulf Expansion -- pluggable e-invoicing engine, multi-currency, Arabic RTL, multi-region Neon, ZATCA Fatoorah, Peppol PINT-AE, WHT calculator, PDPL compliance for existing contractor operations SaaS
+**Researched:** 2026-04-11
+**Confidence:** HIGH (existing codebase analyzed, government API specs verified, community post-mortems reviewed)
 
 ## Critical Pitfalls
 
-### Pitfall 1: Linear Sync Loop Not Covered by Existing Jira Loop Prevention Constants
+### Pitfall 1: Breaking KSeF While Refactoring Into Pluggable Engine
 
 **What goes wrong:**
-The existing Jira bidirectional sync uses a 30-second `LOOP_PREVENTION_WINDOW_MS` with sync source tracking on `ExternalLink` records and a 5-second `DEDUP_WINDOW_MS` for rapid-fire webhooks. Linear's webhook delivery is significantly faster than Jira's (sub-second vs. 2-5 seconds), so the 30-second suppression window causes legitimate external changes to be dropped. Additionally, Linear uses a GraphQL API (not REST) and returns the updated object inline from mutations, which changes the bounce-back timing characteristics.
+The existing KSeF integration (XML parser, sync orchestrator, duplicate detection, API client) works in production. Refactoring it into an abstract e-invoicing engine introduces regressions -- XML parsing breaks, sync timing changes, duplicate detection hash algorithms drift, or the KSeF adapter loses edge-case handling that was hard-won during v2.0.
 
 **Why it happens:**
-Developers copy the `jira-webhook-handler.ts` structure, reuse the same timing constants, and do not account for Linear's faster webhook pipeline. The existing pattern works for Jira because Jira webhooks are slow enough that a 30-second window safely catches bounce-backs without dropping real changes. Linear is too fast for this approach.
+Developers extract an interface from a single concrete implementation and accidentally generalize away KSeF-specific behavior. The `parseFa3Xml()` function in `ksef-xml-parser.ts` has KSeF-specific logic (FA(3) structure, `FaWiersz` array detection, PLN-specific `toMinorUnits`) that does not generalize cleanly. The sync orchestrator couples KSeF-specific credential decryption, token auth, and date-range querying. Abstracting too aggressively strips these specifics.
 
 **How to avoid:**
-- Use per-mutation correlation IDs stored in Redis (Upstash) with a 10-second TTL instead of a fixed time window. When the app pushes a status change to Linear via GraphQL mutation, store `linear:{issueId}:{newStatusId}` in Redis. When the webhook arrives, check for and consume that key. If present, skip processing.
-- Keep the existing `IntegrationSyncLog` pattern but add a `correlationId` column.
-- Do NOT change the Jira handler's constants -- each provider needs its own loop prevention tuning.
-- Linear rate limit is 500 requests per hour per OAuth app user (vs. Jira's points-based system). Budget for bounce-back mutations eating into this quota during initial implementation.
+1. Write comprehensive integration tests for KSeF BEFORE touching any code -- capture current XML parsing output, sync behavior, and duplicate detection for real FA(3) samples
+2. Use the Strangler Fig pattern: build the abstract engine alongside KSeF, then wrap KSeF as the first adapter, then verify tests still pass, then remove old direct calls
+3. Keep KSeF-specific code in `packages/integrations/src/adapters/ksef-adapter.ts` (already exists) -- the adapter is the right place for format-specific logic
+4. The abstract interface should be minimal: `parseInvoice()`, `submitInvoice()`, `fetchInvoices()`, `validateInvoice()` -- let adapters own all format-specific complexity
 
 **Warning signs:**
-- Status flickers in the UI (task toggles between two states rapidly)
-- `IntegrationSyncLog` shows pairs of APP/EXTERNAL entries within seconds
-- Linear API rate limit (500 req/hr) hit unexpectedly from bounce-back mutations
-- `LOOP_PREVENTION_WINDOW_MS` constant copy-pasted from Jira handler
+- KSeF tests start failing after "refactoring only" changes
+- The abstract interface has more than 6-8 methods (over-abstraction)
+- You find yourself adding `if (provider === 'ksef')` branches in the abstract layer
+- FA(3) XML parsing test fixtures stop matching production invoice samples
 
 **Phase to address:**
-Linear integration phase (first integration phase of v3.0)
+Phase 1 (Pluggable E-Invoicing Engine) -- must be the FIRST phase because ZATCA and Peppol depend on this architecture
 
 ---
 
-### Pitfall 2: Teams Bot Requires Azure Bot Service -- Cannot Replicate Slack's Pure Webhook Pattern
+### Pitfall 2: Multi-Currency Integer Arithmetic With Mixed Decimal Places
 
 **What goes wrong:**
-Unlike Slack (which uses simple webhook URLs, slash commands, and OAuth), Microsoft Teams requires an Azure Bot Service registration with Bot Framework protocol compliance. The bot messaging endpoint must validate JWT tokens from the Bot Framework Service. Developers assume they can replicate the existing Slack adapter pattern (OAuth + webhook URL + `Action.Submit` handler) and discover the bot never receives messages or the Adaptive Card buttons return "Something went wrong."
+The entire system uses `Int` fields with `*Minor` suffix (e.g., `totalMinor`, `subtotalMinor`, `amountMinor`) storing PLN amounts as integer grosze (1/100 PLN). This works perfectly for PLN and EUR (2 decimal places). But some currencies use 3 decimal places (BHD, KWD, OMR -- relevant for Gulf expansion) and JPY uses 0. Adding AED and SAR (both 2 decimal) is safe, but the architecture implicitly assumes `* 100` everywhere -- hardcoded in `toMinorUnits()` in the KSeF parser, in OCR extraction, in payment export, in billing service, and in all frontend formatting.
 
 **Why it happens:**
-The existing `BaseAdapter` interface assumes integrations follow OAuth + webhooks. Teams bots need: (1) Azure AD app registration, (2) Azure Bot resource (free F0 tier exists), (3) a `/api/messages` endpoint that validates Bot Framework JWT tokens (not simple webhook signature verification), and (4) `conversationReference` storage for proactive messaging. This is architecturally different from Slack and does not fit cleanly into `supportsOAuth: true, supportsWebhooks: true`.
+When you only support PLN and EUR, `* 100` is correct everywhere. Developers add AED/SAR (also `* 100`) and everything works. Then someone adds BHD support (3 decimal places, `* 1000`) and half the system silently corrupts amounts by a factor of 10. The `toMinorUnits()` function in `ksef-xml-parser.ts` literally does `Math.round(parseFloat(String(value)) * 100)` with no currency parameter.
 
 **How to avoid:**
-- Accept the Azure Bot Service dependency upfront. The free tier (F0) costs nothing for standard channels including Teams. Budget time for Azure portal setup before writing any adapter code.
-- The messaging endpoint CAN be hosted on Vercel -- it is just an HTTPS POST to `/api/messages`. But it must validate Bot Framework JWT tokens using `botframework-connector` library or manual JWKS verification against `login.botframework.com`.
-- Extend the `BaseAdapter` with a `supportsMessaging` capability flag to distinguish webhook-based integrations from bot-framework-based ones.
-- Store `conversationReference` objects per user per org in the database. These are required for proactive messaging (sending approval requests without the user initiating first).
-- Handle Adaptive Card `Action.Execute` (not the older `Action.Submit`) responses within the 5-second Teams timeout. Return an updated card immediately with "Processing..." status, then process the approval via QStash, then update the card again via `context.updateActivity()`.
-- Separate Azure Bot registrations per environment (dev, staging, production). Shared registrations cause staging messages to appear in production Teams channels.
+1. Create a `Money` value object in `packages/validators/` that encapsulates amount + currency + minor unit factor
+2. Replace ALL `* 100` / `/ 100` with `Money.toMinor(amount, currency)` / `Money.toMajor(minorAmount, currency)` using a currency decimal places lookup table (ISO 4217)
+3. Add the currency code as a required parameter to every function that converts between major and minor units
+4. For v4.0 scope (AED, SAR, GBP -- all 2 decimal), this is technically safe to defer, but building it wrong now means a painful migration when adding BHD/KWD later
+5. Database schema already has `currency` fields on `Invoice`, `PaymentRunItem`, `Project` -- ensure every `*Minor` field has an adjacent `currency` field
 
 **Warning signs:**
-- "Something went wrong. Please try again" error on Adaptive Card button press (response timeout exceeded)
-- Bot appears online in Teams but never receives messages (JWT validation missing or incorrect)
-- Proactive messages fail silently (missing or stale `conversationReference`)
-- Using `Action.Submit` instead of `Action.Execute` (missing Universal Actions support for user-specific views)
+- Any `* 100` or `/ 100` literal in new code (should use the Money utility)
+- Amount formatting functions that don't take a currency parameter
+- Payment runs mixing currencies without explicit conversion tracking
+- Invoice matching comparing `amountMinor` values across different currencies without conversion
 
 **Phase to address:**
-Teams integration phase -- Azure setup must happen before writing adapter code
+Phase 2 (Multi-Currency) -- must come before ZATCA/Peppol phases because invoice amounts need correct currency handling
 
 ---
 
-### Pitfall 3: Stripe Webhook Race Conditions in Serverless Environment
+### Pitfall 3: ZATCA Cryptographic Signing Chain Implementation Errors
 
 **What goes wrong:**
-Stripe sends multiple webhook events for a single subscription lifecycle change (`customer.subscription.updated`, `invoice.payment_succeeded`, `invoice.finalized` all fire within milliseconds of each other). On Vercel, each webhook invocation is a separate serverless function instance with no shared memory. Without database-level idempotency, the same event gets processed multiple times (Stripe retries on non-2xx), or concurrent handlers create duplicate records or inconsistent subscription state. The existing QStash async pattern (used for OCR, calendar sync, etc.) is dangerous for financial state mutations without idempotency guards.
+ZATCA Phase 2 requires XML Digital Signatures (XAdES) with X.509 certificates, invoice hash chains (each invoice references the hash of the previous invoice), and TLV-encoded QR codes. Developers commonly get the certificate lifecycle wrong: using the Compliance CSID instead of the Production CSID, incorrect X509IssuerName format, wrong serial number encoding, or breaking the hash chain by processing invoices out of order or in parallel.
 
 **Why it happens:**
-Developers test with a single event type at a time locally (using Stripe CLI forwarding). They never simulate the burst of 3-5 events that Stripe sends for a real subscription creation or plan change. The existing QStash fire-and-forget pattern works for non-financial operations but lacks the idempotency guarantees billing requires.
+ZATCA has a two-stage certificate process: first you get a Compliance CSID (CCSID) for testing, then exchange it for a Production CSID (PCSID). The Fatoora Developer Community forums are full of "X509Certificate used for signing is not valid" errors from developers who skip this step or use the wrong certificate. The hash chain requirement means invoices must be sequentially processed per organization -- you cannot batch-sign invoices in parallel.
 
 **How to avoid:**
-- Create a `StripeEventLog` table with a unique constraint on `eventId`. Check-and-insert atomically before processing any event. Return 200 to Stripe immediately after storing, then process.
-- Use `event.id` as the idempotency key, NOT `event.type` or a combination.
-- Process billing-critical webhooks (`invoice.payment_succeeded`, `customer.subscription.deleted`, `customer.subscription.updated`) synchronously in the webhook handler within Stripe's 20-second timeout. Only offload non-critical events (usage reporting, analytics) to QStash.
-- Map `stripe_customer_id` to `organizationId` in a dedicated `StripeCustomer` lookup table. Never rely on Stripe metadata alone -- metadata can be lost on plan migrations.
-- Use Stripe Test Clocks to simulate full subscription lifecycles (create, trial, convert, upgrade, downgrade, cancel, payment failure, retry, recovery) before shipping.
-- Set `payment_behavior: 'default_incomplete'` on subscription creation so failed initial payments do not create active subscriptions.
+1. Implement the full ZATCA onboarding flow: CSR generation -> CCSID issuance -> compliance testing -> PCSID issuance -> production signing
+2. Use a per-organization sequential queue for invoice signing (not parallel) to maintain the hash chain
+3. Store the previous invoice hash per organization and validate chain continuity before signing
+4. Use ZATCA's sandbox environment exhaustively before production -- their error messages are specific but cryptic
+5. The XAdES signature must be enveloped (inside the XML), following ETSI EN 319 132-1 -- do not use detached signatures
+6. Build certificate renewal into the system from day 1 -- ZATCA certificates expire and must be renewed
 
 **Warning signs:**
-- Organizations temporarily lose access after successful payment (race between `subscription.updated` and access check)
-- Duplicate subscription records in your database for the same org
-- `customer.subscription.updated` processed before `checkout.session.completed` (out-of-order events)
-- No `StripeEventLog` table or idempotency check in webhook handler
+- "X509Certificate not valid for VAT Registration Number" errors in sandbox
+- Hash chain breaks when two invoices for the same org are processed simultaneously
+- QR code validation failures (TLV encoding order matters: seller name, VAT number, timestamp, total, VAT amount)
+- Certificate expiry causing silent failures in production
 
 **Phase to address:**
-Stripe paywall phase -- must be the most rigorously tested phase in v3.0
+Phase 4 (ZATCA Integration) -- needs the e-invoicing engine from Phase 1 and multi-currency from Phase 2
 
 ---
 
-### Pitfall 4: Google Workspace Directory Import Exceeds Vercel Function Timeout
+### Pitfall 4: RTL Layout Corruption in Existing LTR-Only Components
 
 **What goes wrong:**
-Google Workspace Admin SDK Directory API returns paginated results (default 100 users per page, max 500). For organizations with 200+ users, the import requires multiple paginated API calls plus data transformation and database upserts. On Vercel, serverless functions timeout at 60 seconds (Pro plan with Fluid Compute, up to 800 seconds on Pro but only with explicit configuration). A naive implementation that fetches all pages, transforms, and upserts in a single function invocation times out for mid-size organizations.
+Adding `dir="rtl"` to the HTML root causes cascading layout breakage across 469K LOC of existing components. Physical CSS properties (`ml-4`, `mr-2`, `pl-3`, `pr-3`, `text-left`, `text-right`, `left-0`, `right-0`) all render incorrectly in RTL. Shadcn/ui components, data tables (TanStack Table), Recharts dashboards, the command palette (cmdk), sidebar navigation, and form layouts all break. Arabic text renders 20-25% smaller visually than Latin text at the same font size.
 
 **Why it happens:**
-Developers test with small directories (5-10 users), the import works fine. In production, a customer connects their Google Workspace with 300 users and the function dies mid-import, leaving partial data and a confused admin.
+Tailwind CSS logical properties (`ms-`, `me-`, `ps-`, `pe-`, `text-start`, `text-end`, `start-0`, `end-0`) were available since v3.3 but the existing codebase was built LTR-only. Every `ml-`, `mr-`, `pl-`, `pr-`, `text-left`, `text-right`, `left-`, `right-` in the codebase is a potential RTL bug. The shadcn/ui component library has an open issue (#2759) for RTL support -- not all components handle `dir="rtl"` correctly out of the box.
 
 **How to avoid:**
-- Use QStash to orchestrate paginated imports: first function fetches page 1 and enqueues page 2 via QStash callback URL, each page handler processes its batch and chains to the next.
-- Store import progress in an `ImportJob` table with `status` (pending/in_progress/completed/failed), `processedCount`, `totalCount`, and `nextPageToken`.
-- Show import progress in the UI (poll the `ImportJob` record via tRPC query with short refetch interval).
-- Handle Google's rate limits (Directory API: 2400 queries per minute per customer, 600 per minute per user) with exponential backoff.
-- Implement rollback/resume: if the import fails mid-way, mark the job as failed and allow retry. Use `(organizationId, importSource, externalId)` unique constraint to make re-imports idempotent.
-- For OAuth scopes, use `https://www.googleapis.com/auth/admin.directory.user.readonly` (read-only). Do NOT request write access for an import-only feature.
+1. Do a codebase-wide search-and-replace of physical properties to logical equivalents FIRST, before adding Arabic locale
+2. Use `rtl:` variant prefix in Tailwind for cases that genuinely need direction-specific styling (rare)
+3. Test every page with `dir="rtl"` using a browser extension before writing any Arabic translations
+4. Add `space-x-reverse` to all `space-x-*` usage in navs and lists
+5. Icons and chevrons need manual flipping (`rtl:rotate-180`) -- the calendar component already has this pattern
+6. Recharts and data visualizations need explicit RTL testing -- axis labels, legends, tooltips all need adjustment
+7. Increase Arabic font size by 20-25% using locale-conditional CSS or a font-size multiplier
 
 **Warning signs:**
-- Function timeout errors in Vercel logs during directory import
-- Partial user lists after import (50 out of 200 users imported)
-- Google API 429 errors in production but not in development (different org sizes)
-- No progress indicator in the import UI
+- Sidebar renders on wrong side in Arabic
+- Form labels misaligned from their inputs
+- Table column headers don't match their data columns
+- Numbers in charts appear reversed or misaligned
+- Command palette (cmdk) search results render backwards
 
 **Phase to address:**
-Google Workspace integration phase or intelligent onboarding phase
+Phase 6 (Arabic Localization & RTL) -- should come AFTER core infrastructure phases but BEFORE Gulf market launch
 
 ---
 
-### Pitfall 5: Courier API Inconsistency Creates a Leaky "Unified Tracking" Abstraction
+### Pitfall 5: Neon Multi-Region Split-Brain and Latency Amplification
 
 **What goes wrong:**
-InPost (ShipX API via OAuth 2.0), DPD (API key auth), and UPS (OAuth 2.0 client credentials) each have fundamentally different tracking status taxonomies, authentication methods, webhook support levels, and delivery concepts. Building a unified tracking abstraction that maps all three to a single status enum (`shipped | in_transit | delivered`) loses critical provider-specific information. InPost has parcel lockers with pickup codes. DPD has depot-based routing with "AVIZO" notifications. UPS has international customs clearance states. A lowest-common-denominator enum misrepresents the actual shipment state.
+The current system runs on a single Neon project in one AWS region. Adding a Middle East region for data residency (PDPL compliance) requires either a second Neon project with logical replication, or routing Gulf tenants to a separate database. Both approaches introduce write conflicts, replication lag, and the risk that a Gulf org's data becomes inconsistent with shared reference data (subscription billing, integration credentials, etc.).
 
 **Why it happens:**
-The existing provider adapter pattern encourages thinking about integrations as interchangeable behind an interface. For project management tools (Jira, Linear) this works because they share similar concepts (issues, statuses, projects). Courier APIs do not share similar concepts -- InPost pickup codes, DPD depot IDs, and UPS customs data are provider-specific and operationally important.
+Neon projects are region-locked after creation -- you cannot move an existing project to another region. Logical replication between Neon projects is one-directional (publisher -> subscriber), not bidirectional. If Gulf orgs write to a Middle East database and Polish orgs write to an EU database, shared tables (subscription tiers, feature flags, provider configurations) need a replication strategy. The Prisma client extension for tenant isolation (`organizationId` scoping via AsyncLocalStorage) assumes a single database connection.
 
 **How to avoid:**
-- Define a base `ShipmentStatus` enum for common states (`created`, `label_generated`, `in_transit`, `out_for_delivery`, `delivered`, `returned`, `exception`) but require each courier adapter to populate a `providerDetails` JSON field with provider-specific data.
-- Display provider-specific information in the UI: InPost locker location + pickup code, DPD depot + estimated delivery window, UPS customs clearance status.
-- For couriers without reliable webhooks (DPD has limited webhook support), implement a QStash cron job that polls tracking status every 30 minutes for active shipments only. Filter by `status NOT IN ('delivered', 'returned', 'cancelled')`.
-- Store raw courier API responses alongside normalized status for debugging and audit trail.
-- InPost production URL is `api-shipx-pl.easypack24.net`; sandbox is `sandbox-api-shipx-pl.easypack24.net`. Easy to misconfigure. Use environment variables, never hardcode.
-- UPS OAuth tokens expire and must be re-authenticated (client credentials flow has no refresh token, unlike user OAuth flows). Build explicit re-authentication logic, not just token refresh.
+1. Use tenant-based routing at the application layer: Gulf orgs connect to ME region Neon project, EU orgs to EU region
+2. Keep shared/global data (subscription plans, feature flags, system config) in the EU database and replicate read-only to ME
+3. Per-tenant data (invoices, contractors, payments) lives exclusively in the tenant's region -- no cross-region writes
+4. Use Neon's connection pooling (built-in PgBouncer) on both regions to prevent serverless connection exhaustion
+5. The Prisma client needs a region-aware factory: `getPrismaClient(orgRegion)` instead of a singleton
+6. Accept that cross-region operations (e.g., global admin dashboard showing all orgs) will have latency -- cache aggressively
 
 **Warning signs:**
-- Users complain "tracking shows in transit but I already picked it up from the locker" (InPost pickup state lost in mapping)
-- InPost-specific fields (locker ID, pickup code) missing from the tracking UI
-- Polling cron job running for thousands of delivered shipments (forgot to filter completed ones)
-- UPS tracking silently fails after token expiry (no re-auth logic)
+- Connection pool exhaustion errors in serverless functions (Vercel Edge)
+- Replication lag causing stale reads for Gulf orgs accessing shared data
+- Prisma client instantiated per-request instead of being reused (connection leak)
+- Cold start latency spikes (500ms-2s) when Neon compute scales from zero
 
 **Phase to address:**
-Equipment/shipment tracking phase
+Phase 8 (Multi-Region Infrastructure) -- can be deferred until Gulf orgs actually need data residency, but architecture decisions in earlier phases must not preclude it
 
 ---
 
-### Pitfall 6: Intelligent Onboarding Import Wizard Conflates "Import" with "Sync"
+### Pitfall 6: Peppol ASP Integration Scope Creep
 
 **What goes wrong:**
-The onboarding import wizard is designed as a one-time import from connected tools (Linear projects/teams, Google Workspace users, Teams channels). But users expect that after importing, the data stays in sync. If the import is truly one-time, users discover their contractor list is stale days later. If you build it as ongoing sync, you have built a much more complex feature than planned, with conflict resolution, deletion handling, and reactivation logic.
+Peppol e-invoicing requires transmitting invoices through an Accredited Service Provider (ASP). Developers attempt to build their own Peppol Access Point instead of integrating with an existing ASP, dramatically increasing scope. Even when using an ASP, the Peppol Participant Identifier registration process, document validation rules, and the 4-corner model architecture are more complex than direct API integrations like KSeF or ZATCA.
 
 **Why it happens:**
-The UX of "connect your tool and import your data" implies ongoing connection. Users do not distinguish between "import" (snapshot) and "sync" (continuous). The feature scope creeps from "helpful onboarding" to "full bidirectional directory sync." Stakeholder language reinforces this -- they say "sync" when they mean "import."
+KSeF and ZATCA are 2-corner models (you talk directly to the government). Peppol is a 4-corner model (Sender -> Sender's ASP -> Receiver's ASP -> Receiver). This means you need an ASP partnership, Peppol ID registration per organization, and your XML must pass both your ASP's validation AND the receiving ASP's validation. Developers used to KSeF's direct model underestimate this.
 
 **How to avoid:**
-- Be explicit in the UI: "Import X users from Google Workspace" with a clear callout: "This is a one-time import. Changes in Google Workspace will not be automatically reflected."
-- Offer a "Re-import" button that shows a diff (new users, removed users, changed fields) and lets the admin review before applying. This gives the "sync" feeling without building continuous sync.
-- Do NOT build continuous sync for the onboarding wizard. If continuous directory sync is needed later, it is a separate feature with its own roadmap entry.
-- Store `importSource`, `externalId`, and `importedAt` on imported records so you can identify which records came from which import run and support re-import diff.
-- Unique constraint on `(organizationId, importSource, externalId)` prevents duplicates on re-import.
+1. Partner with an existing Peppol ASP (e.g., Storecove, Unifiedpost, Pagero) -- do NOT build your own Access Point
+2. Budget 2-4 weeks just for ASP partnership, API access, and sandbox testing
+3. Implement Peppol PINT-AE XML generation locally, but delegate transmission to the ASP's API
+4. Each organization needs a Peppol Participant Identifier -- build this into the onboarding flow
+5. Keep invoice line items clean -- do not use lines as containers for metadata (common Peppol validation failure)
+6. File size: keep XML under 10MB even though the limit is technically 100MB -- individual ASPs may have lower limits
 
 **Warning signs:**
-- PM or stakeholders use the word "sync" when describing the import wizard
-- Users file bugs that "imported users don't update when I change them in Google"
-- Import wizard scope grows to include conflict resolution UI, deletion propagation, or real-time webhooks
-- No clear "last imported at" timestamp visible in the UI
+- ASP integration taking longer than ZATCA despite being "simpler"
+- XML validation errors from the receiving ASP that pass your local validation
+- Organizations unable to receive Peppol invoices because their Participant ID isn't registered
+- Attempting to build Peppol transmission infrastructure instead of using an ASP
 
 **Phase to address:**
-Intelligent onboarding phase -- scope must be locked down during planning
+Phase 5 (Peppol PINT-AE) -- requires the e-invoicing engine from Phase 1
 
 ---
 
-### Pitfall 7: Stripe Metered Billing for AI/OCR Credits Loses Usage Events
+### Pitfall 7: VAT Engine Hardcoding That Prevents Multi-Market Expansion
 
 **What goes wrong:**
-AI/OCR credit usage must be reported to Stripe via `stripe.subscriptionItems.createUsageRecord()`. In a serverless environment, if the OCR processing function crashes after consuming Claude API credits but before reporting usage to Stripe, the usage is lost and the customer gets free AI processing. At scale with 100+ orgs using OCR regularly, this leaks meaningful revenue.
+The current system has `vatRate` as a string field on invoices, but VAT calculation logic is likely scattered across frontend display, OCR extraction, invoice matching, and payment calculations. Adding UAE 5%, Saudi 15%, and eventually German 19%/7% requires a proper VAT engine, not per-market if/else branches. Developers add country-specific VAT logic inline and end up with unmaintainable spaghetti.
 
 **Why it happens:**
-The natural flow is: (1) receive OCR request, (2) call Claude Vision API, (3) return results, (4) report usage to Stripe. If step 3 succeeds but step 4 fails (function timeout, Stripe API error, cold start issue), usage goes unreported. The existing fire-and-forget pattern for integrations (`void + .catch()`) is designed for non-financial operations and silently drops failures.
+Poland has a relatively simple VAT structure for B2B contractor invoices (23% standard, some exempt). The system was built with this simplicity in mind. Gulf markets add: UAE exempt supplies (financial services, residential property), Saudi zero-rated exports, reverse charge mechanisms, and withholding tax interactions. Each market's tax rules interact differently.
 
 **How to avoid:**
-- Two-phase approach: record usage intent in your database first (an `AiUsageLog` row with `stripeReported: false`), then call Claude Vision API, then report to Stripe via a separate QStash job that retries until Stripe confirms. The QStash job reads unreported usage from `AiUsageLog` and reports them in batch.
-- Always use `action: 'increment'` for usage records, never `action: 'set'`. In a concurrent environment, `set` causes races where one function's set overwrites another's.
-- Implement a daily reconciliation cron job that compares internal `AiUsageLog` counts against Stripe's usage summary endpoint. Alert on discrepancies.
-- Batch usage record reporting: accumulate in Redis counter, flush to Stripe every 5 minutes via QStash scheduled job. This avoids hitting Stripe's rate limits (100 concurrent API requests per key) during usage spikes.
-- Use Stripe Test Clocks to verify metered billing produces correct invoices at period end.
+1. Build a `TaxEngine` service with a clear interface: `calculateTax(amount, countryCode, serviceType, contractorResidency)` -> `{ vatAmount, vatRate, whtAmount, whtRate, netAmount }`
+2. Tax rules should be configuration/data, not code -- store rate tables in the database with effective dates
+3. Handle the WHT + VAT interaction correctly: Saudi WHT is calculated on the gross amount before VAT in some cases
+4. Support multiple VAT rates per invoice (future: German invoices can have mixed 19%/7% lines)
+5. Include effective date ranges on all tax rules -- rates change (Saudi went from 5% to 15% in 2020)
 
 **Warning signs:**
-- Internal usage counts diverge from Stripe usage records over time
-- Some organizations consistently under-billed relative to their AI feature usage
-- Usage reporting QStash jobs in the dead letter queue
-- No `AiUsageLog` table or equivalent internal usage tracking
+- Hardcoded tax rates in TypeScript code instead of configuration
+- VAT calculation in frontend components instead of server-side
+- No effective date on tax rate configurations
+- WHT and VAT calculated independently without considering their interaction
 
 **Phase to address:**
-Stripe paywall phase -- specifically the metered billing sub-feature
+Phase 3 (Multi-Tier VAT Engine) -- must come before ZATCA/Peppol because compliant invoices require correct tax calculations
 
 ---
 
-### Pitfall 8: Equipment Tracking Not Tied to Contractor Offboarding Lifecycle
+### Pitfall 8: next-intl Arabic Locale Without RTL-Aware Message Formatting
 
 **What goes wrong:**
-Equipment is assigned to contractors (laptops, monitors, access cards, etc.) but the offboarding workflow does not check for outstanding equipment. A contractor is offboarded, their access is revoked, but no one notices the laptop was never returned. The equipment tracking module and the contractor lifecycle module operate independently, creating an operational gap that defeats the purpose of having both in the same platform.
+Adding `"ar"` to the next-intl routing config (`locales: ["en", "pl", "ar"]`) seems trivial but introduces problems beyond translation: Arabic plural rules have 6 forms (zero, one, two, few, many, other) vs. English's 2 (one, other) and Polish's 3 (one, few, many). Number formatting in Arabic uses Eastern Arabic numerals by default in some locales. Date formatting uses the Hijri calendar in some contexts. ICU message format strings written for English/Polish break with Arabic plural rules.
 
 **Why it happens:**
-Equipment tracking and contractor lifecycle are built in different phases, potentially by different implementation passes. The offboarding workflow (from v1.0) was built without equipment awareness. Adding equipment tracking later does not automatically integrate with the existing offboarding flow.
+Developers add the locale, hire a translator, and assume next-intl handles everything. But message strings like `{count, plural, one {# invoice} other {# invoices}}` are incomplete for Arabic, which needs `zero`, `two`, `few`, and `many` forms. Missing plural forms cause runtime fallbacks that look broken to Arabic users.
 
 **How to avoid:**
-- Add an "Equipment Check" step to the offboarding workflow template that blocks offboarding completion until all assigned equipment is marked as returned, in-transit (shipment created), or written off.
-- When a contractor's status changes to `offboarding` or `inactive`, automatically generate a return shipment request (or at minimum, a task) for each assigned equipment item.
-- Show equipment summary on the contractor profile page (existing 8-tab layout) so admins always see assigned equipment in context.
-- Create a "pending returns" dashboard widget showing contractors with outstanding equipment past their offboarding date.
+1. Define all 6 Arabic plural forms in every ICU message that uses `{count, plural, ...}`
+2. Use `Intl.NumberFormat` with explicit locale parameter -- do not assume Arabic users want Eastern Arabic numerals (business context typically uses Western numerals)
+3. Test number and currency formatting: `formatNumber(1234.56, { style: 'currency', currency: 'AED' })` should produce the expected output
+4. Date formatting: use Gregorian calendar explicitly (`calendar: 'gregory'`) unless Hijri is specifically needed
+5. The `NEXT_LOCALE` cookie takes precedence over browser detection -- ensure locale switching updates this cookie
+6. Add `dir` attribute dynamically based on locale in the root layout
 
 **Warning signs:**
-- Equipment module has no foreign key or reference to contractor offboarding status
-- Offboarding workflow template has no equipment-related steps
-- No automated notification when equipment is overdue for return
-- Equipment page and contractor page are completely disconnected in the UI
+- Arabic plural forms showing English fallback text
+- Numbers displaying in Eastern Arabic numerals (unlikely for B2B finance context)
+- Dates appearing in Hijri calendar unexpectedly
+- Locale cookie not updating when user switches language
 
 **Phase to address:**
-Equipment/shipment tracking phase -- must integrate with existing workflow engine
+Phase 6 (Arabic Localization & RTL) -- needs comprehensive translation with proper ICU message format
 
 ---
 
 ## Technical Debt Patterns
 
+Shortcuts that seem reasonable but create long-term problems.
+
 | Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
 |----------|-------------------|----------------|-----------------|
-| Reusing Jira webhook handler constants for Linear | Faster initial development | Linear's faster webhooks cause sync loops or dropped legitimate changes | Never -- each provider needs its own loop prevention tuning |
-| Single Azure Bot registration for all environments | One-time setup | Staging messages appear in production Teams channels; cannot test safely | Never -- separate registrations per environment |
-| Hardcoding Stripe price IDs as constants | Quick implementation | Cannot change plans without code deploy; breaks staging/prod parity | Only if using Stripe's product/price lookup keys instead of raw IDs |
-| Embedding Stripe customer creation in org signup flow | Simpler code | Signup fails if Stripe is down; unnecessary customers for non-paying orgs | Never -- create Stripe customer lazily on first billing interaction |
-| Polling all courier shipments on fixed interval | Simple cron job | Wastes API quota on delivered shipments; scales linearly with shipment count | MVP only -- filter active shipments before production |
-| Processing Stripe webhooks via QStash (async) | Consistent with existing async pattern | Race conditions between subscription state updates; potential double-processing | Never for billing-critical events -- process synchronously within 20s timeout |
-| Storing conversationReference in-memory for Teams bot | Works in development | Lost on serverless cold start; proactive messaging breaks | Never in serverless -- always persist to database |
-| Skipping usage reconciliation for metered billing | Faster to ship | Revenue leakage goes undetected until manual audit | Never -- reconciliation is a launch requirement |
+| Hardcoding `* 100` for minor units | Works for PLN/EUR/AED/SAR | Breaks for BHD (3 decimals), JPY (0 decimals) | Never -- build the Money utility now |
+| Using KSeF adapter directly instead of through engine | Faster, no abstraction overhead | Cannot add ZATCA/Peppol without major refactor | Never -- engine is the whole point of v4.0 |
+| Storing exchange rates as snapshots only | Simple, no external API needed | Cannot recalculate historical invoices at period-end rates | Acceptable for MVP if rates are immutable per-invoice |
+| Single Prisma client for all regions | No routing complexity | Cannot serve Gulf orgs from ME region | Acceptable until first Gulf customer needs data residency |
+| Physical CSS properties (`ml-`, `mr-`) in new code | Familiar, no cognitive overhead | Every new component needs RTL fixing later | Never after v4.0 starts -- enforce logical properties via lint rule |
+| Translating Arabic with machine translation only | Fast, cheap | Financial/legal terms will be wrong, eroding trust | Only for dev/testing -- professional review required before launch |
+| Skipping ZATCA sandbox certification | Faster development | Production certificate issuance will fail | Never -- sandbox is mandatory per ZATCA process |
 
 ## Integration Gotchas
 
+Common mistakes when connecting to external services specific to v4.0.
+
 | Integration | Common Mistake | Correct Approach |
 |-------------|----------------|------------------|
-| Linear | Using unofficial REST API | Use official GraphQL API via `@linear/sdk` npm package -- REST is undocumented and unsupported |
-| Linear | Ignoring `webhookTimestamp` replay protection | Verify webhook timestamp is within 60 seconds of current time (Linear's official recommendation) |
-| Linear | Not handling `archived` issue state | Linear treats `archived` as distinct from any status -- map it explicitly in your task lifecycle |
-| Linear | Assuming issue updates always include all fields | Linear webhooks send partial updates -- only changed fields are included. Merge with existing data, do not overwrite |
-| Teams | Returning slow response to Adaptive Card `Action.Execute` | Return 200 with updated card (showing "Processing...") within 5 seconds; process action async; update card again via Bot Framework API |
-| Teams | Not storing `conversationReference` for proactive messaging | Persist per-user conversation references in database on first interaction; required for sending approval requests without user initiating |
-| Teams | Using `Action.Submit` instead of `Action.Execute` | `Action.Execute` supports Universal Actions (user-specific views, automatic card refresh); `Action.Submit` is legacy and cannot show user-specific views |
-| Teams | Expecting Teams webhook to work like Slack webhook | Teams uses Bot Framework protocol (JWT validation, activity types), not simple HTTP webhooks. Completely different architecture |
-| Google Workspace | Requesting `admin.directory.user` scope (read-write) for import | Use `admin.directory.user.readonly` -- import needs read access only. Requesting write access raises security red flags for customer IT admins |
-| Google Workspace | Not handling suspended/deleted users | Filter by `query: 'isSuspended=false'` or handle explicitly; importing suspended users creates confusion |
-| Google Workspace | Ignoring pagination for large directories | Default page size is 100, max 500. Must handle `nextPageToken` for orgs with 500+ users |
-| Google Workspace | Not distinguishing users from groups | Directory API lists users and groups separately. Import wizard must clarify which entities are being imported |
-| InPost | Using sandbox URL in production | Production: `api-shipx-pl.easypack24.net`; Sandbox: `sandbox-api-shipx-pl.easypack24.net`. Environment variable, never hardcode |
-| InPost | Ignoring parcel locker pickup codes | Pickup code is essential for contractor to retrieve equipment from locker. Must be prominently displayed and included in notifications |
-| DPD | Expecting webhook-driven tracking | DPD webhook support is limited and inconsistent. Plan for polling as primary tracking mechanism |
-| UPS | Not re-authenticating after token expiry | UPS client credentials OAuth has no refresh token. Must re-authenticate (new `POST /security/v1/oauth/token`) when access token expires |
-| UPS | Ignoring country-specific tracking response formats | UPS tracking responses vary by origin/destination country. Parse defensively |
-| Stripe | Using `checkout.session.completed` as sole activation trigger | Also handle `customer.subscription.updated` for plan changes and `invoice.payment_succeeded` for renewals |
-| Stripe | Not handling out-of-order webhook events | `customer.subscription.updated` may arrive before `checkout.session.completed`. Design state machine that handles any event order |
-| Stripe | Using `action: 'set'` for metered billing usage | In concurrent serverless environment, `set` causes races. Always use `action: 'increment'` |
-| Stripe | Hardcoding price IDs | Use `lookup_key` on prices instead. Allows changing prices in Stripe Dashboard without code deploy |
+| ZATCA Fatoorah API | Using Compliance CSID (CCSID) in production instead of Production CSID (PCSID) | Complete full onboarding: CSR -> CCSID -> compliance tests -> PCSID exchange |
+| ZATCA Invoice Signing | Parallel invoice processing breaking hash chain | Sequential per-org queue; store previous hash; validate chain before signing |
+| ZATCA QR Code | Wrong TLV field order or encoding | Strict order: seller name, VAT number, timestamp, total with VAT, VAT amount; use TLV binary encoding |
+| Peppol ASP | Attempting to build own Access Point | Partner with existing ASP (Storecove, Pagero); use their API for transmission |
+| Peppol PINT-AE | Putting metadata in invoice line items | Lines = products/services ONLY; use document-level fields for payment terms, references |
+| Neon Multi-Region | Creating new Prisma client per request in serverless | Singleton per region with connection pooling; reuse across requests |
+| Neon Replication | Expecting bidirectional sync between regions | One-directional logical replication only; design for regional write masters |
+| SWIFT Payments | Missing purpose codes on Gulf transfers | UAE/Saudi Central Banks require purpose codes on all SWIFT transfers; add to payment run export |
+| next-intl Arabic | Assuming 2-form plurals work for Arabic | Arabic has 6 plural forms (zero/one/two/few/many/other); define all in ICU messages |
+| Tailwind RTL | Using `ml-`/`mr-` physical properties | Use `ms-`/`me-` logical properties; add `space-x-reverse` to flex containers |
 
 ## Performance Traps
 
+Patterns that work at small scale but fail as usage grows.
+
 | Trap | Symptoms | Prevention | When It Breaks |
 |------|----------|------------|----------------|
-| Polling all courier shipments on single cron interval | Cron job duration grows, API rate limits hit | Filter: `WHERE status NOT IN ('delivered', 'returned', 'cancelled')`. Increase poll interval for shipments older than 7 days | 500+ active shipments |
-| Loading all Linear/Jira issues for status mapping on each webhook | Webhook processing time grows linearly with linked issues | Index `ExternalLink` by `(providerSlug, externalId)` as covering index; single lookup per webhook | 1000+ linked issues across all orgs |
-| Stripe usage record reporting on every AI request | Stripe API rate limit (100 concurrent), function duration | Batch: accumulate in Redis counter per org, flush to Stripe every 5 minutes via scheduled QStash job | 50+ concurrent AI/OCR requests |
-| Google Workspace import fetching full user profile per user | API quota consumed rapidly, import takes minutes | Use `fields` parameter: `fields=users(primaryEmail,name,suspended,orgUnitPath),nextPageToken`. Reduces payload 10x | 200+ users in directory |
-| Teams bot fetching user profile from Graph API on every message | Graph API rate limits per tenant (10,000 requests per 10 minutes) | Cache Teams user info in database with 24-hour TTL | 100+ active Teams users per org |
-| Stripe subscription status check on every page load | Unnecessary API calls, latency on every page | Cache subscription status in database, update via webhooks only. Add `subscriptionStatus` column to `Organization` table | Any scale -- this is always wrong |
-| Re-importing full Google directory on every "refresh" click | API quota exhaustion, slow operation, UI feels broken | Use re-import diff: fetch current directory, compare with stored records, show changes for review | Second import of 100+ user directory |
+| Sequential ZATCA invoice clearance per org | Payment runs with 50+ invoices take minutes to process | Batch invoices but maintain hash chain order; parallelize across orgs, not within | >20 invoices per payment run |
+| Cross-region Prisma queries for global dashboard | Admin views loading 3-5 seconds | Cache regional aggregates; async refresh; never query ME from EU in real-time | Any Gulf org with >100 invoices |
+| Exchange rate lookups per invoice line | Invoice creation slows linearly with line count | Cache exchange rates per (date, currency pair); batch lookups | >10 multi-currency invoices per batch |
+| RTL layout recalculation on locale switch | Full page re-render, layout shift | Set `dir` on `<html>` via root layout; avoid runtime direction changes in components | Any page with >50 components |
+| Loading all Arabic translation files eagerly | Bundle size increase, slower initial load | Use next-intl's lazy loading; split translations by route/feature | >500 translation keys |
+| Neon cold starts for ME region | First Gulf user request takes 1-3s | Use Neon's `always-on` compute option for ME region; pre-warm with health checks | Any traffic pattern with >5min gaps |
 
 ## Security Mistakes
 
+Domain-specific security issues for international expansion.
+
 | Mistake | Risk | Prevention |
 |---------|------|------------|
-| Storing Stripe API keys in the integration credential store | Billing credentials compromised if any integration credential leaks | Store `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` as environment variables only. Never in database |
-| Not validating Stripe webhook signatures | Attacker can forge subscription events (grant free access, cancel paid accounts) | Always use `stripe.webhooks.constructEvent()` with raw body and webhook secret |
-| Exposing courier tracking numbers without access control | Tracking numbers can redirect shipments or intercept packages | Gate tracking details behind RBAC; only show to org members with equipment management permission |
-| Teams bot accepting commands without org membership verification | Any Teams user who discovers the bot can trigger approvals or view data | Verify `teamsUserId` maps to a known `User` in a connected org before processing any command |
-| Google Workspace admin scope persisting indefinitely after import | Unnecessary long-lived access to customer's entire user directory | Revoke offline access token after import completes; or use minimal scope that expires |
-| Linear webhook secret shared across organizations | One compromised secret affects all orgs' Linear webhooks | Use per-organization webhook secrets (Linear supports per-webhook secrets). Store encrypted per existing credential pattern |
-| Azure Bot credentials (App ID + Password) committed to repo | Full control of the Teams bot, ability to impersonate it | Store in environment variables (`MICROSOFT_APP_ID`, `MICROSOFT_APP_PASSWORD`). Add to `.env.example` without values |
-| Stripe customer portal URL accessible without auth | Anyone with the URL can manage another org's subscription | Generate portal sessions server-side with authenticated user, verify org membership |
-| Equipment assignment allowing cross-org equipment references | Equipment from Org A assigned to contractor in Org B | Enforce `organizationId` scope on all equipment queries, same as existing multi-tenant pattern |
+| Storing ZATCA X.509 private keys in application code or env vars | Key compromise = ability to forge invoices on behalf of the org | Use HSM or secret manager (AWS Secrets Manager / Vault); encrypt at rest with per-org keys |
+| PDPL consent not collected before processing Gulf org data | Regulatory fines; UAE PDPL penalties up to AED 5M | Consent management flow during org onboarding for UAE/Saudi orgs |
+| Cross-region data leak via global search | Gulf org data queried from EU region violating PDPL residency | Ensure search queries route to correct regional database; never aggregate cross-region in search |
+| WHT certificate generation without validation | Incorrect WHT rates applied; tax liability for client company | Validate contractor residency + service type + treaty rate before generating certificate |
+| Exchange rate manipulation in multi-currency invoices | Inflated invoice amounts via favorable rate selection | Lock exchange rate at invoice creation; audit trail for rate source; compare against ECB/SAR reference rates |
+| SWIFT payment file with incorrect purpose codes | Central Bank rejection; payment delays; compliance flags | Validate purpose codes against UAE/Saudi Central Bank published code lists |
 
 ## UX Pitfalls
 
+Common user experience mistakes in internationalization.
+
 | Pitfall | User Impact | Better Approach |
 |---------|-------------|-----------------|
-| Import wizard shows spinner with no progress for large imports | Admin thinks app is broken, refreshes, starts duplicate import | Show progress bar: "Importing 45 of 230 users..." with cancel button. Make imports idempotent so refresh is safe |
-| Courier tracking shows raw API status codes | Admin sees "AVIZO" (InPost) or "M" (DPD) instead of human-readable text | Map every courier status to localized human-readable Polish + English string |
-| Stripe paywall blocks features with generic "Upgrade required" | Admin does not know which plan unlocks which feature, gets frustrated | Show specific feature name, which plan unlocks it, current plan, and one-click upgrade path |
-| Teams approve/reject card does not update after action | Second approver clicks approve without knowing it was already approved | Update Adaptive Card in-place after action: "Approved by [Name] at [Time]" with disabled buttons. Use `Action.Execute` with user-specific views |
-| Equipment tracking page separated from contractor profile | Admin navigates away from contractor context to manage equipment | Add equipment summary as a new tab (9th tab) on contractor profile; link to full tracking detail from there |
-| Free trial ends with no warning | Customer loses access suddenly, angry support ticket | Send warnings at 7, 3, and 1 day before trial ends. Show persistent banner in app during last 3 days. Grace period of 3 days after expiry |
-| Linear integration settings require Linear workspace admin | Non-admin ops user cannot set up the integration themselves | Show clear message about required permissions upfront; offer "Request access" workflow that sends instructions to Linear workspace admin |
-| Onboarding wizard imports everything without preview | Admin discovers unwanted data (suspended users, test projects) imported | Always show preview screen with data to import, allow deselecting specific items before confirming |
-| Stripe billing page shows no usage breakdown | Admin cannot justify AI/OCR costs to finance team | Show per-feature usage breakdown (OCR scans, AI extractions) with daily/weekly/monthly view |
+| Machine-translated Arabic financial terms | Users distrust the platform; incorrect legal/tax terminology | Professional translation with financial domain expertise; glossary review with Gulf finance professionals |
+| Forcing Hijri calendar on all Arabic users | Business users expect Gregorian dates for B2B invoicing | Default to Gregorian (`calendar: 'gregory'`); offer Hijri as option for Saudi government contexts |
+| Eastern Arabic numerals in financial views | Confusion for business users accustomed to Western numerals in finance | Use Western (Latin) numerals for financial data; Eastern Arabic only if user explicitly prefers |
+| Currency symbol placement inconsistent | AED sometimes before, sometimes after amount | Follow CLDR locale data for each currency; test with formatNumber |
+| RTL sidebar pushing content off-screen | Users cannot access navigation | Test sidebar at all breakpoints in RTL; ensure it respects `dir` attribute |
+| No visual indicator of active currency/region | Users unsure which currency their amounts display in | Show currency badge in header; confirm currency on all financial actions |
+| Arabic text truncation in table cells | Data appears cut off because Arabic is wider | Increase column min-widths for Arabic; use `text-ellipsis` with tooltip showing full text |
 
 ## "Looks Done But Isn't" Checklist
 
-- [ ] **Linear integration:** Often missing handling for `archived` issues and Linear's partial webhook updates -- verify all issue states map to internal statuses and partial updates merge correctly
-- [ ] **Linear integration:** Often missing team/workspace context -- verify webhook processing correctly identifies which org the issue belongs to when multiple orgs connect different Linear workspaces
-- [ ] **Teams integration:** Often missing proactive message capability -- verify bot can send approval requests to users who have never interacted with the bot (requires admin consent + stored conversation references)
-- [ ] **Teams integration:** Often missing card refresh after approval -- verify Adaptive Card updates in-place for ALL users viewing the card (Universal Actions), not just the actor
-- [ ] **Google Workspace import:** Often missing pagination -- verify import works with 500+ user directories, not just 5-user test workspaces
-- [ ] **Google Workspace import:** Often missing suspended user filtering -- verify suspended/deleted users are excluded or explicitly handled
-- [ ] **Courier tracking (InPost):** Often missing parcel locker pickup code display -- verify pickup code and locker location are prominently shown in tracking detail and notifications
-- [ ] **Courier tracking (all):** Often missing timezone handling on tracking timestamps -- verify timestamps from InPost (Europe/Warsaw), DPD (depot timezone), UPS (scan location timezone) display correctly
-- [ ] **Stripe paywall:** Often missing grace period after payment failure -- verify 3-day grace period with dunning emails before access revocation
-- [ ] **Stripe paywall:** Often missing proration testing -- verify upgrade/downgrade mid-cycle produces correct invoice amounts (use Stripe Test Clocks)
-- [ ] **Stripe metered billing:** Often missing usage reconciliation -- verify daily cron job compares internal AI usage counts against Stripe usage records
-- [ ] **Stripe paywall:** Often missing free trial to paid conversion edge cases -- verify what happens when trial expires with no payment method, with expired card, with valid card
-- [ ] **Equipment tracking:** Often missing return/offboarding integration -- verify equipment flagged as "assigned" triggers a warning when contractor is offboarded
-- [ ] **Equipment tracking:** Often missing equipment history -- verify full audit trail of equipment assignments (who had it, when, condition at handover)
-- [ ] **Intelligent onboarding:** Often missing duplicate detection during re-import -- verify importing from Google Workspace twice does not create duplicate contractor records
-- [ ] **Intelligent onboarding:** Often missing cross-source deduplication -- verify user imported from Google Workspace and separately from Linear are recognized as the same person (by email match)
+Things that appear complete but are missing critical pieces.
+
+- [ ] **E-invoicing engine:** Often missing error recovery -- verify that a failed ZATCA clearance does not break the hash chain or leave orphaned invoices
+- [ ] **Multi-currency:** Often missing exchange rate locking -- verify that invoice amounts are frozen at creation-time rates, not recalculated on display
+- [ ] **RTL support:** Often missing third-party component testing -- verify shadcn/ui Sheet, Dialog, Popover, DropdownMenu all render correctly in RTL
+- [ ] **Arabic translations:** Often missing plural forms -- verify all ICU messages with `{count, plural, ...}` have all 6 Arabic forms
+- [ ] **ZATCA integration:** Often missing certificate renewal -- verify that PCSID expiry triggers renewal flow, not silent signing failures
+- [ ] **Peppol integration:** Often missing Participant ID lifecycle -- verify that org deactivation also deregisters their Peppol ID
+- [ ] **WHT calculator:** Often missing treaty rate overrides -- verify that tax treaty rates between Saudi and contractor's country are applied when available
+- [ ] **Multi-region:** Often missing global admin views -- verify that platform admin can see aggregated metrics across regions without violating data residency
+- [ ] **SWIFT export:** Often missing purpose code validation -- verify that exports without valid purpose codes are rejected before file generation
+- [ ] **PDPL compliance:** Often missing data deletion -- verify that "right to erasure" actually removes data from the correct regional database, not just soft-deletes
 
 ## Recovery Strategies
 
+When pitfalls occur despite prevention, how to recover.
+
 | Pitfall | Recovery Cost | Recovery Steps |
 |---------|---------------|----------------|
-| Linear sync loop (bouncing statuses) | LOW | Pause Linear webhook processing via feature flag, clear Redis correlation keys, fix timing constants, re-enable. No data loss -- just noise |
-| Teams bot not receiving messages | MEDIUM | Verify Azure Bot registration messaging endpoint URL. Redeploy with JWT validation. Re-register bot in Teams app manifest. No data loss |
-| Stripe duplicate subscription creation | HIGH | Manual reconciliation in Stripe Dashboard + database. Cancel duplicate subscriptions, issue credits. Add unique constraint on `(organizationId)` in `StripeCustomer` table. Audit all affected orgs |
-| Google import timeout with partial data | MEDIUM | Mark failed `ImportJob`, implement "Resume Import" that fetches remaining pages using stored `nextPageToken`. Idempotent upserts prevent duplicates on retry |
-| Courier polling running for delivered shipments | LOW | Add `WHERE status NOT IN ('delivered','returned','cancelled')` filter. No data impact, saves API quota and compute cost |
-| Stripe usage events lost (AI credits) | HIGH | Run reconciliation comparing `AiUsageLog` against Stripe usage summary. Manually report missing usage via API. Implement pre-reporting pattern to prevent recurrence |
-| Onboarding import creates duplicates | MEDIUM | Add unique constraint `(organizationId, importSource, externalId)`. Write migration to merge duplicates by email. Notify affected orgs |
-| Equipment not flagged on offboarding | LOW | Backfill: query all offboarded contractors with assigned equipment, create return tasks. Add equipment check step to offboarding workflow template |
-| Teams Adaptive Card showing stale approval status | LOW | Re-send updated card via Bot Framework API `context.updateActivity()`. Implement card versioning to detect stale state |
+| KSeF broken during refactor | LOW | Revert to pre-refactor adapter; re-run integration test suite; apply Strangler Fig more carefully |
+| Multi-currency `* 100` bugs | MEDIUM | Audit all `*Minor` fields for currency mismatch; write migration to recalculate affected records; add Money utility retroactively |
+| ZATCA hash chain break | HIGH | Contact ZATCA support for chain reset (if possible); re-submit all invoices from break point; implement sequential queue to prevent recurrence |
+| RTL layout corruption | LOW | CSS-only fix; codemod physical to logical properties; does not affect data or business logic |
+| Neon split-brain data | HIGH | Identify divergent records; manual reconciliation; implement conflict resolution strategy; may require downtime |
+| Wrong WHT rates applied | MEDIUM | Recalculate affected invoices; issue corrections; notify affected organizations; add rate validation |
+| Peppol ASP partnership failure | MEDIUM | Switch ASP provider (2-4 week process); XML generation is reusable across ASPs; only transmission API changes |
+| Arabic translation quality issues | LOW | Replace with professional translations; no code changes needed; deploy as translation file update |
 
 ## Pitfall-to-Phase Mapping
 
+How roadmap phases should address these pitfalls.
+
 | Pitfall | Prevention Phase | Verification |
 |---------|------------------|--------------|
-| Linear sync loop timing | Linear integration | Integration tests with mocked sub-second webhook delivery; verify Redis correlation ID pattern prevents loops but passes legitimate changes |
-| Linear partial webhook updates | Linear integration | Unit tests verifying partial update merge logic; test with webhooks containing only `state` field |
-| Teams Azure Bot dependency | Teams integration (pre-coding setup) | Azure Bot registration exists, messaging endpoint responds to health check, before writing adapter code |
-| Teams Adaptive Card timeout | Teams integration | Load test `Action.Execute` handler; verify response within 5 seconds; verify async QStash processing completes |
-| Teams proactive messaging | Teams integration | End-to-end test: create approval, verify Teams notification sent to correct user without prior bot interaction |
-| Google directory import timeout | Google Workspace / Onboarding | Test with mocked 500-user paginated response (3 pages); verify QStash chaining completes; verify progress updates in UI |
-| Google import scope security | Google Workspace | Verify OAuth consent screen requests `readonly` scope only; verify token revocation after import |
-| Courier status mapping quality | Equipment tracking | Review mapping table against real API responses from all three couriers; verify InPost pickup code preserved |
-| Courier polling efficiency | Equipment tracking | Verify cron job query filters completed shipments; load test with 1000 historical shipments (only active ones polled) |
-| Equipment offboarding integration | Equipment tracking | Create offboarding workflow for contractor with assigned equipment; verify warning/blocker before completion |
-| Stripe webhook idempotency | Stripe paywall | Replay same Stripe event 3 times; verify only one database state change. Test with concurrent events |
-| Stripe metered billing accuracy | Stripe paywall | Simulate 100 OCR requests with 5% failure rate; verify all usage eventually reported to Stripe via reconciliation |
-| Stripe payment failure handling | Stripe paywall | Use Test Clock to simulate failed payment; verify grace period, dunning emails, and eventual access revocation |
-| Onboarding import vs sync scope | Onboarding (planning) | UX copy reviewed for import/sync language; re-import shows diff preview; no continuous sync webhook registered |
-| Onboarding duplicate prevention | Onboarding | Import same source twice; verify no duplicate records; verify cross-source dedup by email |
-| Free trial expiry handling | Stripe paywall | Use Test Clock to advance through trial; verify warning emails at 7/3/1 days; verify grace period |
+| KSeF regression during engine refactor | Phase 1 (E-Invoicing Engine) | All existing KSeF integration tests pass green after refactor; sync still works end-to-end |
+| Multi-currency integer arithmetic errors | Phase 2 (Multi-Currency) | Money utility used everywhere; no raw `* 100` in codebase; Zod schema validates currency + amount pairs |
+| VAT engine hardcoding | Phase 3 (VAT Engine) | Tax calculations driven by config, not code; rate changes require no deployment |
+| ZATCA crypto signing errors | Phase 4 (ZATCA Integration) | Sandbox certification passed; hash chain maintained over 100+ sequential invoices in test |
+| Peppol ASP scope creep | Phase 5 (Peppol PINT-AE) | ASP partnership signed before development starts; no custom transmission code |
+| RTL layout breakage | Phase 6 (Arabic & RTL) | Every page screenshot-tested in RTL; no physical CSS properties in new code; lint rule enforced |
+| next-intl Arabic plural failures | Phase 6 (Arabic & RTL) | All ICU messages validated for 6-form Arabic plurals; number formatting tested with AED/SAR |
+| Neon multi-region split-brain | Phase 8 (Multi-Region) | Region-aware Prisma factory in place; replication lag monitored; no cross-region writes |
+| PDPL compliance gaps | Phase 7 (PDPL Compliance) | Consent collected for all Gulf orgs; data residency verified; deletion actually removes regional data |
+| SWIFT purpose code failures | Phase 2 (Multi-Currency) or Phase 4 (ZATCA) | Purpose code validation on all Gulf payment exports; rejected if missing |
 
 ## Sources
 
-- [Linear Webhooks Documentation](https://linear.app/developers/webhooks) -- webhook signature (HMAC-SHA256 via `Linear-Signature` header), timestamp verification, payload structure
-- [Linear API Rate Limits](https://linear.app/docs/api-and-webhooks) -- 500 req/hr per OAuth app user, 250,000 complexity points/hr
-- [Linear Webhooks Guide (InventiveHQ)](https://inventivehq.com/blog/linear-webhooks-guide) -- payload examples, event types, best practices
-- [Microsoft Teams Bot Framework](https://learn.microsoft.com/en-us/azure/bot-service/channel-connect-teams?view=azure-bot-service-4.0) -- Azure Bot registration, messaging endpoint requirements
-- [Teams Adaptive Card Universal Actions](https://learn.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/universal-actions-for-adaptive-cards/up-to-date-views) -- user-specific views, Action.Execute, card refresh
-- [Teams Bot Approval Workflows (Microsoft Q&A)](https://learn.microsoft.com/en-sg/answers/questions/5705984/custom-microsoft-teams-bot-for-approval-workflows) -- proactive messaging, conversation reference storage
-- [Teams Bot Messaging Endpoint Without Azure Hosting](https://learn.microsoft.com/en-us/answers/questions/4370788/how-to-configure-messaging-endpoint-for-a-microsof) -- hosting flexibility, JWT validation requirement
-- [Google Admin SDK Directory API](https://developers.google.com/workspace/admin/directory/v1/guides) -- pagination, field selection, rate limits
-- [Google Admin SDK Common Errors](https://developers.google.com/workspace/admin/reseller/v1/support/directory_api_common_errors) -- 403, 429 error handling
-- [Stripe Webhook Best Practices (Stigg)](https://www.stigg.io/blog-posts/best-practices-i-wish-we-knew-when-integrating-stripe-webhooks) -- idempotency, event ordering, 20-second timeout
-- [Stripe Usage-Based Billing](https://docs.stripe.com/billing/subscriptions/usage-based/manage-billing-setup) -- metered billing, usage record API, increment vs set
-- [Stripe SaaS Integration Guide (DesignRevision)](https://designrevision.com/blog/saas-stripe-integration) -- multi-tenant billing patterns, common mistakes
-- [Stripe Idempotent Requests](https://docs.stripe.com/api/idempotent_requests) -- idempotency key handling, 24-hour key lifetime
-- [Stripe Serverless Webhook Pattern (ScaleToZeroAWS)](https://scaletozeroaws.com/blog/stripe-webhooks-serverless-saas) -- queue-based processing, signature verification
-- [InPost ShipX API Documentation](https://dokumentacja-inpost.atlassian.net/wiki/spaces/PL/pages/622754/API+ShipX) -- OAuth 2.0, endpoint URLs, sandbox vs production
-- [Vercel Function Limits](https://vercel.com/docs/functions/limitations) -- timeout constraints, Fluid Compute durations
-- Existing codebase: `packages/integrations/src/adapters/base-adapter.ts` -- `BaseAdapter` class, `IntegrationProviderAdapter` interface
-- Existing codebase: `jira-webhook-handler.ts` -- `LOOP_PREVENTION_WINDOW_MS` (30s), `DEDUP_WINDOW_MS` (5s), sync source tracking pattern
-- Existing codebase: `jira-issue-sync.ts` -- outbound issue creation, ExternalLink metadata caching
+- [ZATCA Fatoorah Developer Community - X509Certificate errors](https://zatca1.discourse.group/t/x509certificate-used-for-signing-is-not-valid-certificate-ccsid-pcsid-for-this-vat-registration-number/1364)
+- [ZATCA Electronic Invoice Security Features Implementation Standards v1.2](https://zatca.gov.sa/ar/E-Invoicing/SystemsDevelopers/Documents/20230519_ZATCA_Electronic_Invoice_Security_Features_Implementation_Standards_vF.pdf)
+- [ZATCA E-Invoicing Guide 2026](https://noqta.tn/en/blog/zatca-fatoorah-e-invoicing-saudi-guide-2026)
+- [shadcn/ui RTL Support Issue #2759](https://github.com/shadcn-ui/ui/issues/2759)
+- [Tailwind CSS RTL Implementation Guide](https://madrus4u.vercel.app/blog/rtl-implementation-guide)
+- [Tailwind CSS RTL Discussion #1492](https://github.com/tailwindlabs/tailwindcss/discussions/1492)
+- [10 Most Common Peppol E-Invoicing Errors](https://qvalia.com/10-most-common-e-invoicing-errors-and-mistakes-in-peppol/)
+- [Neon Regions Documentation](https://neon.com/docs/introduction/regions)
+- [Neon Cross-Regional Read Replicas Issue #4178](https://github.com/neondatabase/neon/issues/4178)
+- [Prisma Connection Pool Documentation](https://www.prisma.io/docs/orm/prisma-client/setup-and-configuration/databases-connections/connection-pool)
+- [Neon Logical Replication Guide](https://neon.com/docs/guides/logical-replication-neon-to-neon)
+- [next-intl RTL and i18n Documentation](https://next-intl.dev/docs/usage/configuration)
+- Existing codebase analysis: `packages/integrations/src/services/ksef-xml-parser.ts`, `packages/api/src/services/ksef-sync-orchestrator.ts`, `packages/db/prisma/schema/invoice.prisma`, `packages/db/prisma/schema/payment.prisma`, `apps/web/src/i18n/routing.ts`
 
 ---
-*Pitfalls research for: Contractor Ops v3.0 Enterprise & Monetization -- Linear, Teams, Google Workspace, intelligent onboarding, equipment tracking, Stripe billing*
-*Researched: 2026-04-01*
+*Pitfalls research for: v4.0 International Foundation & Gulf Expansion*
+*Researched: 2026-04-11*
