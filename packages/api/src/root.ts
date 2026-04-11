@@ -1,43 +1,44 @@
 import { router } from "./init.js";
-import { organizationRouter } from "./routers/organization.js";
-import { userRouter } from "./routers/user.js";
-import { settingsRouter } from "./routers/settings.js";
-import { contractorRouter } from "./routers/contractor.js";
-import { contractRouter } from "./routers/contract.js";
-import { documentRouter } from "./routers/document.js";
-import { workflowRouter } from "./routers/workflow.js";
-import { invoiceRouter } from "./routers/invoice.js";
 import { approvalRouter } from "./routers/approval.js";
-import { notificationRouter } from "./routers/notification.js";
-import { reminderRouter } from "./routers/reminder.js";
-import { integrationRouter } from "./routers/integration.js";
-import { paymentRouter } from "./routers/payment.js";
-import { dashboardRouter } from "./routers/dashboard.js";
-import { reportRouter } from "./routers/report.js";
 import { auditRouter } from "./routers/audit.js";
-import { importRouter } from "./routers/import.js";
-import { searchRouter } from "./routers/search.js";
-import { portalRouter } from "./routers/portal.js";
-import { esignRouter } from "./routers/esign.js";
-import { ocrRouter } from "./routers/ocr.js";
-import { ksefRouter } from "./routers/ksef.js";
-import { portalTimeRouter } from "./routers/portal-time.js";
-import { timeRouter } from "./routers/time.js";
-import { jiraRouter } from "./routers/jira.js";
-import { linearRouter } from "./routers/linear.js";
-import { docsRouter } from "./routers/docs.js";
-import { calendarRouter } from "./routers/calendar.js";
 import { billingRouter } from "./routers/billing.js";
-import { equipmentRouter } from "./routers/equipment.js";
-import { googleWorkspaceRouter } from "./routers/google-workspace.js";
-import { gdprRouter } from "./routers/gdpr.js";
-import { teamsRouter } from "./routers/teams.js";
-import { onboardingImportRouter } from "./routers/onboarding-import.js";
-import { einvoiceRouter } from "./routers/einvoice.js";
-import { exchangeRateRouter } from "./routers/exchange-rate.js";
+import { calendarRouter } from "./routers/calendar.js";
 import { consentRouter } from "./routers/consent.js";
+import { contractRouter } from "./routers/contract.js";
+import { contractorRouter } from "./routers/contractor.js";
+import { dashboardRouter } from "./routers/dashboard.js";
+import { docsRouter } from "./routers/docs.js";
+import { documentRouter } from "./routers/document.js";
+import { einvoiceRouter } from "./routers/einvoice.js";
+import { equipmentRouter } from "./routers/equipment.js";
+import { esignRouter } from "./routers/esign.js";
+import { exchangeRateRouter } from "./routers/exchange-rate.js";
+import { gdprRouter } from "./routers/gdpr.js";
+import { googleWorkspaceRouter } from "./routers/google-workspace.js";
+import { importRouter } from "./routers/import.js";
+import { integrationRouter } from "./routers/integration.js";
+import { invoiceRouter } from "./routers/invoice.js";
+import { jiraRouter } from "./routers/jira.js";
+import { ksefRouter } from "./routers/ksef.js";
+import { linearRouter } from "./routers/linear.js";
+import { notificationRouter } from "./routers/notification.js";
+import { ocrRouter } from "./routers/ocr.js";
+import { onboardingImportRouter } from "./routers/onboarding-import.js";
+import { organizationRouter } from "./routers/organization.js";
+import { paymentRouter } from "./routers/payment.js";
 import { peppolRouter } from "./routers/peppol.js";
+import { portalRouter } from "./routers/portal.js";
+import { portalTimeRouter } from "./routers/portal-time.js";
+import { reminderRouter } from "./routers/reminder.js";
+import { reportRouter } from "./routers/report.js";
+import { searchRouter } from "./routers/search.js";
+import { settingsRouter } from "./routers/settings.js";
 import { taxRouter } from "./routers/tax.js";
+import { teamsRouter } from "./routers/teams.js";
+import { timeRouter } from "./routers/time.js";
+import { zatcaRouter } from "./routers/zatca.js";
+import { userRouter } from "./routers/user.js";
+import { workflowRouter } from "./routers/workflow.js";
 
 /**
  * Root tRPC router merging all sub-routers.
@@ -107,6 +108,7 @@ export const appRouter = router({
   consent: consentRouter, // consent: PDPL consent management — privacy notices, per-purpose consent, admin audit
   peppol: peppolRouter, // peppol: Peppol network integration — participant registration, transmission tracking, ASP management
   tax: taxRouter, // tax: Tax rate lookup, VAT validation, WHT calculation, WHT certificates, tax summary dashboard
+  zatca: zatcaRouter, // zatca: ZATCA device onboarding — tax details, CSR generation, compliance CSID, compliance checks, production cert
 });
 
 /** Type-safe router type for client consumption */
