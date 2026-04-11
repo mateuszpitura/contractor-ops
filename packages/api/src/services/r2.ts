@@ -1,3 +1,7 @@
+// Legacy single-bucket API — new code should use regional-storage.ts for
+// region-aware bucket selection. These functions fall back to R2_BUCKET_NAME
+// or R2_BUCKET_NAME_EU for backward compatibility.
+
 import {
   S3Client,
   PutObjectCommand,
@@ -25,6 +29,18 @@ export function createR2Client(): S3Client {
     });
   }
   return r2Client;
+}
+
+// ---------------------------------------------------------------------------
+// Bucket resolution (backward compatible)
+// ---------------------------------------------------------------------------
+
+function getDefaultBucket(): string {
+  return (
+    process.env.R2_BUCKET_NAME ??
+    process.env.R2_BUCKET_NAME_EU ??
+    "contractor-ops-documents-eu"
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -59,7 +75,7 @@ export async function createPresignedUploadUrl(
 ): Promise<string> {
   const client = createR2Client();
   const command = new PutObjectCommand({
-    Bucket: process.env.R2_BUCKET_NAME!,
+    Bucket: getDefaultBucket(),
     Key: key,
     ContentType: contentType,
   });
@@ -76,8 +92,9 @@ export async function createPresignedDownloadUrl(
 ): Promise<string> {
   const client = createR2Client();
   const command = new GetObjectCommand({
-    Bucket: process.env.R2_BUCKET_NAME!,
+    Bucket: getDefaultBucket(),
     Key: key,
+    ResponseContentDisposition: "attachment",
   });
   return getSignedUrl(client, command, { expiresIn });
 }
@@ -93,7 +110,7 @@ export async function createPresignedDownloadUrl(
 export async function headObject(key: string) {
   const client = createR2Client();
   const command = new HeadObjectCommand({
-    Bucket: process.env.R2_BUCKET_NAME!,
+    Bucket: getDefaultBucket(),
     Key: key,
   });
   return client.send(command);
@@ -105,7 +122,7 @@ export async function headObject(key: string) {
 export async function deleteObject(key: string) {
   const client = createR2Client();
   const command = new DeleteObjectCommand({
-    Bucket: process.env.R2_BUCKET_NAME!,
+    Bucket: getDefaultBucket(),
     Key: key,
   });
   return client.send(command);
