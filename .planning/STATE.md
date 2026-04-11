@@ -4,14 +4,14 @@ milestone: v4.0
 milestone_name: International Foundation & Gulf Expansion
 status: executing
 stopped_at: Phase 48 planned, execution requires foreground session
-last_updated: "2026-04-11T13:23:58.589Z"
-last_activity: 2026-04-11
+last_updated: "2026-04-11T23:58:56.414Z"
+last_activity: 2026-04-11 -- Phase 49 planning complete
 progress:
   total_phases: 8
-  completed_phases: 6
-  total_plans: 41
-  completed_plans: 35
-  percent: 85
+  completed_phases: 5
+  total_plans: 42
+  completed_plans: 39
+  percent: 93
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-11)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 47 — vat-engine-wht-calculator-country-fields
+**Current focus:** Phase 49 — peppol-pint-ae-integration
 
 ## Current Position
 
-Phase: 48
-Plan: Not started
-Status: Executing Phase 47
-Last activity: 2026-04-11
+Phase: 49 (peppol-pint-ae-integration) — EXECUTING
+Plan: 1 of 4
+Status: Ready to execute
+Last activity: 2026-04-11 -- Phase 49 planning complete
 
 Progress: [░░░░░░░░░░] 0% (v4.0)
 
