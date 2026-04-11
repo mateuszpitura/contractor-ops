@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { api } from "@/trpc/react";
+import { trpc } from "@/trpc/init";
 import { Check, AlertCircle, Clock } from "lucide-react";
 import Link from "next/link";
 
@@ -15,7 +15,7 @@ function formatMoney(minor: number): string {
 }
 
 export function TaxObligationsWidget() {
-  const summaryQuery = api.tax.taxSummary.useQuery();
+  const summaryQuery = trpc.tax.taxSummary.useQuery();
 
   if (summaryQuery.isLoading || !summaryQuery.data) {
     return null;

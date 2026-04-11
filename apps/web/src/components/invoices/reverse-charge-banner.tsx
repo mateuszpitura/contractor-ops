@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Info, ChevronDown } from "lucide-react";
-import { api } from "@/lib/trpc";
+import { trpc } from "@/trpc/init";
 import { toast } from "sonner";
 
 interface ReverseChargeBannerProps {
@@ -23,7 +23,7 @@ export function ReverseChargeBanner({
   isReverseCharge,
   onToggle,
 }: ReverseChargeBannerProps) {
-  const toggleMutation = api.invoice.toggleReverseCharge.useMutation({
+  const toggleMutation = trpc.invoice.toggleReverseCharge.useMutation({
     onSuccess: (_, vars) => {
       toast.success(
         vars.isReverseCharge

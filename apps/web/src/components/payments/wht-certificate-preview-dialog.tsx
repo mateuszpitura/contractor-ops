@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
-import { formatMinorAmount } from "@/lib/format";
+import { formatMinorUnits } from "@/lib/format-currency";
 
 interface WhtCertificatePreviewProps {
   open: boolean;
@@ -82,7 +82,7 @@ export function WhtCertificatePreviewDialog({
               <span className="text-muted-foreground">Gross Amount</span>
               <span className="font-mono font-semibold">
                 {certificate.currency}{" "}
-                {formatMinorAmount(
+                {formatMinorUnits(
                   certificate.grossAmountMinor,
                   certificate.currency,
                 )}
@@ -92,7 +92,7 @@ export function WhtCertificatePreviewDialog({
               <span className="text-muted-foreground">WHT Amount</span>
               <span className="font-mono font-semibold">
                 {certificate.currency}{" "}
-                {formatMinorAmount(
+                {formatMinorUnits(
                   certificate.whtAmountMinor,
                   certificate.currency,
                 )}
@@ -100,7 +100,7 @@ export function WhtCertificatePreviewDialog({
               <span className="text-muted-foreground">Net Paid</span>
               <span className="font-mono font-semibold">
                 {certificate.currency}{" "}
-                {formatMinorAmount(
+                {formatMinorUnits(
                   certificate.netAmountMinor,
                   certificate.currency,
                 )}

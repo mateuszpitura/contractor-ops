@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { api } from "@/trpc/react";
+import { trpc } from "@/trpc/init";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,11 +18,11 @@ interface CountryComplianceSectionProps {
 export function CountryComplianceSection({
   contractorId,
 }: CountryComplianceSectionProps) {
-  const configQuery = api.contractor.getCountryFieldsConfig.useQuery();
-  const fieldsQuery = api.contractor.getCountryFields.useQuery({
+  const configQuery = trpc.contractor.getCountryFieldsConfig.useQuery();
+  const fieldsQuery = trpc.contractor.getCountryFields.useQuery({
     contractorId,
   });
-  const updateMutation = api.contractor.updateCountryFields.useMutation({
+  const updateMutation = trpc.contractor.updateCountryFields.useMutation({
     onSuccess: () => {
       toast.success("Compliance fields saved");
       void fieldsQuery.refetch();

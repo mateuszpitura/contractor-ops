@@ -1,6 +1,6 @@
 "use client";
 
-import { api } from "@/lib/trpc";
+import { trpc } from "@/trpc/init";
 import {
   Select,
   SelectContent,
@@ -19,7 +19,7 @@ interface VatRateSelectorProps {
 }
 
 export function VatRateSelector({ value, onChange, disabled }: VatRateSelectorProps) {
-  const ratesQuery = api.tax.getRates.useQuery();
+  const ratesQuery = trpc.tax.getRates.useQuery();
 
   if (ratesQuery.isLoading) {
     return (

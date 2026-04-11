@@ -4,9 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FileText, Loader2 } from "lucide-react";
-import { api } from "@/lib/trpc";
+import { trpc } from "@/trpc/init";
 import { toast } from "sonner";
-import { formatMinorAmount } from "@/lib/format";
+import { formatMinorUnits } from "@/lib/format-currency";
 
 interface WhtSummaryCardProps {
   paymentRunId: string;
@@ -24,7 +24,7 @@ interface WhtSummaryCardProps {
 export function WhtSummaryCard({ paymentRunId, items }: WhtSummaryCardProps) {
   const whtItems = items.filter((i) => i.whtAmountMinor && i.whtAmountMinor > 0);
 
-  const generateMutation = api.tax.generateWhtCertificate.useMutation({
+  const generateMutation = trpc.tax.generateWhtCertificate.useMutation({
     onSuccess: (data) => {
       toast.success(`Certificate ${data.certificateNumber} generated`);
     },
@@ -65,19 +65,19 @@ export function WhtSummaryCard({ paymentRunId, items }: WhtSummaryCardProps) {
           <div>
             <p className="text-sm text-muted-foreground">Gross Total</p>
             <p className="font-mono text-xl font-semibold">
-              {currency} {formatMinorAmount(totalGross, currency)}
+              {currency} {formatMinorUnits(totalGross, currency)}
             </p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">WHT Withheld</p>
             <p className="font-mono text-xl font-semibold">
-              {currency} {formatMinorAmount(totalWht, currency)}
+              {currency} {formatMinorUnits(totalWht, currency)}
             </p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Net Payable</p>
             <p className="font-mono text-xl font-semibold">
-              {currency} {formatMinorAmount(totalNet, currency)}
+              {currency} {formatMinorUnits(totalNet, currency)}
             </p>
           </div>
         </div>
