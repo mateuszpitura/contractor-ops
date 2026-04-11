@@ -15,12 +15,12 @@ model Invoice {
   servicePeriodEnd    DateTime?          @db.Date
   dueDate             DateTime           @db.Date
   currency            String             @db.Char(3)
-  subtotalGrosze      Int
+  subtotalMinor       Int
   vatRate             String?
-  vatAmountGrosze     Int?
-  totalGrosze         Int
-  withholdingGrosze   Int?
-  amountToPayGrosze   Int
+  vatAmountMinor      Int?
+  totalMinor          Int
+  withholdingMinor    Int?
+  amountToPayMinor    Int
   sellerTaxId         String?            @db.VarChar(50)
   sellerName          String?            @db.VarChar(500)
   sellerBankAccount   String?            @db.VarChar(34)
@@ -64,6 +64,7 @@ model Invoice {
   @@index([organizationId, receivedAt])
   @@unique([organizationId, duplicateCheckHash])
   @@index([organizationId, sellerTaxId])
+  @@index([organizationId, matchStatus])
 }
 
 model InvoiceFile {
@@ -90,11 +91,11 @@ model InvoiceLine {
   description       String
   quantity          Decimal? @db.Decimal(18, 4)
   unit              String?
-  unitPriceGrosze   Int?
-  netAmountGrosze   Int?
+  unitPriceMinor    Int?
+  netAmountMinor    Int?
   vatRate           String?
-  vatAmountGrosze   Int?
-  grossAmountGrosze Int?
+  vatAmountMinor    Int?
+  grossAmountMinor  Int?
   createdAt         DateTime @default(now())
 
   organization      Organization @relation(fields: [organizationId], references: [id])
@@ -111,9 +112,9 @@ model InvoiceMatchResult {
   matchedContractId    String?
   matchedContractorId  String?
   matchScore           Decimal?           @db.Decimal(5, 2)
-  expectedAmountGrosze Int?
+  expectedAmountMinor  Int?
   expectedCurrency     String?            @db.Char(3)
-  amountDeltaGrosze    Int?
+  amountDeltaMinor     Int?
   amountDeltaPercent   Decimal?           @db.Decimal(8, 4)
   matchedBy            MatchBy
   status               InvoiceMatchStatus
@@ -136,6 +137,7 @@ enum InvoiceSource {
   KSEF
   API
   PORTAL
+  PEPPOL
 }
 
 enum InvoiceStatus {

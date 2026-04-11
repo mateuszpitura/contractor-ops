@@ -119,6 +119,7 @@ enum IntegrationProvider {
   OUTLOOK_CALENDAR
   LINEAR
   MICROSOFT_TEAMS
+  PEPPOL
 }
 
 enum IntegrationStatus {

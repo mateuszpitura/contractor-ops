@@ -1,0 +1,62 @@
+// Peppol Participant registration and transmission tracking
+
+model PeppolParticipant {
+  id                String                  @id @default(cuid())
+  organizationId    String
+  participantId     String                  // e.g., "0192:123456789012345"
+  schemeId          String                  // e.g., "0192"
+  identifierValue   String                  // e.g., "123456789012345" (TRN)
+  aspProvider       String                  // "storecove" etc.
+  aspRegistrationId String?                 // External ID from ASP
+  status            PeppolParticipantStatus @default(PENDING)
+  registeredAt      DateTime?
+  createdAt         DateTime                @default(now())
+  updatedAt         DateTime                @updatedAt
+
+  organization      Organization @relation(fields: [organizationId], references: [id])
+  transmissions     PeppolTransmission[]
+
+  @@unique([organizationId, participantId])
+  @@index([organizationId])
+}
+
+model PeppolTransmission {
+  id                  String                    @id @default(cuid())
+  organizationId      String
+  peppolParticipantId String
+  invoiceId           String?
+  direction           SyncDirection             // INBOUND or OUTBOUND
+  aspTransmissionId   String?                   // External ID from ASP
+  documentTypeId      String?
+  status              PeppolTransmissionStatus  @default(PENDING)
+  xmlPayload          String?                   @db.Text
+  errorMessage        String?
+  transmittedAt       DateTime?
+  deliveredAt         DateTime?
+  createdAt           DateTime                  @default(now())
+  updatedAt           DateTime                  @updatedAt
+
+  organization        Organization @relation(fields: [organizationId], references: [id])
+  participant         PeppolParticipant @relation(fields: [peppolParticipantId], references: [id])
+
+  @@index([organizationId])
+  @@index([organizationId, status])
+  @@index([organizationId, invoiceId])
+  @@index([aspTransmissionId])
+}
+
+enum PeppolParticipantStatus {
+  PENDING
+  REGISTERED
+  ACTIVE
+  SUSPENDED
+  DEREGISTERED
+}
+
+enum PeppolTransmissionStatus {
+  PENDING
+  TRANSMITTED
+  DELIVERED
+  FAILED
+  REJECTED
+}

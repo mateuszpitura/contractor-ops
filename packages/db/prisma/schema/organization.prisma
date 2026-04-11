@@ -88,6 +88,8 @@ model Organization {
   courierConfigs       CourierConfig[]
   consentRecords       ConsentRecord[]
   privacyNotices       PrivacyNotice[]
+  peppolParticipants   PeppolParticipant[]
+  peppolTransmissions  PeppolTransmission[]
 }
 
 model Member {
