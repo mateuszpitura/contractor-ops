@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: International Foundation & Gulf Expansion
 status: executing
-stopped_at: Phase 52 context gathered
-last_updated: "2026-04-11T12:31:42.700Z"
-last_activity: 2026-04-11 -- Phase 48 execution started
+stopped_at: Phase 48 planned, execution requires foreground session
+last_updated: "2026-04-11T12:32:47.839Z"
+last_activity: 2026-04-11 -- Phase 47 execution started
 progress:
   total_phases: 8
   completed_phases: 3
   total_plans: 39
-  completed_plans: 19
-  percent: 49
+  completed_plans: 20
+  percent: 51
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-11)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 48 — ZATCA Fatoorah Integration
+**Current focus:** Phase 47 — VAT Engine, WHT Calculator & Country Fields
 
 ## Current Position
 
-Phase: 48 (ZATCA Fatoorah Integration) — EXECUTING
-Plan: 1 of 7
-Status: Executing Phase 48
-Last activity: 2026-04-11 -- Phase 48 execution started
+Phase: 47 (VAT Engine, WHT Calculator & Country Fields) — EXECUTING
+Plan: 1 of 5
+Status: Executing Phase 47
+Last activity: 2026-04-11 -- Phase 47 execution started
 
 Progress: [░░░░░░░░░░] 0% (v4.0)
 
