@@ -47,6 +47,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Link } from "@/i18n/navigation";
 
 import { PaymentRunBadge, PaymentItemBadge } from "./payment-run-badge";
+import { WhtSummaryCard } from "@/components/payments/wht-summary-card";
 import { formatMinorUnits } from "@/lib/format-currency";
 import { formatRelativeDate } from "@/lib/format-relative-date";
 
@@ -248,6 +249,9 @@ export function PaymentRunSidePanel({
             </div>
 
             <Separator />
+
+            {/* WHT Summary (Phase 47) */}
+            <WhtSummaryCard paymentRunId={runId!} items={items} />
 
             {/* Action buttons */}
             <div className="flex flex-wrap gap-2">

@@ -22,6 +22,7 @@ import { KsefSourceBadge } from "@/components/invoices/ksef-badge";
 import { ChainTracker } from "@/components/approvals/chain-tracker";
 import { AuditTimeline } from "@/components/approvals/audit-timeline";
 import { ReconciliationCard } from "@/components/time/reconciliation-card";
+import { ReverseChargeBanner } from "@/components/invoices/reverse-charge-banner";
 
 // ---------------------------------------------------------------------------
 // Status badge config (reuse from columns.tsx pattern)
@@ -306,6 +307,19 @@ export default function InvoiceDetailPage() {
         {/* Time reconciliation card (D-16) */}
         {reconciliation && (
           <ReconciliationCard reconciliation={reconciliation} />
+        )}
+
+        {/* Reverse charge banner (Phase 47) */}
+        {invoice.isReverseCharge && (
+          <ReverseChargeBanner
+            invoiceId={invoice.id}
+            isReverseCharge={invoice.isReverseCharge}
+            onToggle={() => {
+              queryClient.invalidateQueries({
+                queryKey: trpc.invoice.getById.queryKey({ id: invoice.id }),
+              });
+            }}
+          />
         )}
 
         {/* Submit for approval button */}

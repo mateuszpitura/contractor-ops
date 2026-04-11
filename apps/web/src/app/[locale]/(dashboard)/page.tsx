@@ -19,6 +19,7 @@ import { ApprovalQueueWidget } from "@/components/dashboard/approval-queue-widge
 import { ActivityFeed } from "@/components/dashboard/activity-feed";
 import { OnboardingChecklist } from "@/components/onboarding/onboarding-checklist";
 import { EInvoiceComplianceWidget } from "@/components/einvoice/compliance-widget";
+import { TaxObligationsWidget } from "@/components/dashboard/tax-obligations-widget";
 
 // ---------------------------------------------------------------------------
 // Error boundary wrapper for individual widgets
@@ -129,6 +130,9 @@ function DashboardContent() {
           </AnimateIn>
           <AnimateIn delay={4}>
             <EInvoiceComplianceWidget />
+          </AnimateIn>
+          <AnimateIn delay={5}>
+            <TaxObligationsWidget />
           </AnimateIn>
         </div>
       </div>

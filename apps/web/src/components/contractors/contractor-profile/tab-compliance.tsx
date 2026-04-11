@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropZone } from "@/components/documents/drop-zone";
 import { DocumentList } from "@/components/documents/document-list";
+import { CountryComplianceSection } from "@/components/contractors/country-compliance-section";
 
 type ComplianceItem = {
   id: string;
@@ -57,15 +58,20 @@ export function TabCompliance({ contractor }: TabComplianceProps) {
 
   if (contractor.complianceItems.length === 0) {
     return (
-      <div className="flex min-h-[300px] w-full flex-col items-center justify-center gap-3 px-4">
-        <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-muted">
-          <ShieldCheck className="size-6 text-muted-foreground" />
-        </div>
-        <div className="mx-auto w-full max-w-[320px] text-center">
-          <p className="text-sm font-medium">{t("noRequirements")}</p>
-          <p className="mt-1 text-xs text-pretty text-muted-foreground">
-            {t("noRequirementsHint")}
-          </p>
+      <div className="space-y-6">
+        {/* Country-specific compliance fields (Phase 47) */}
+        <CountryComplianceSection contractorId={contractor.id} />
+
+        <div className="flex min-h-[300px] w-full flex-col items-center justify-center gap-3 px-4">
+          <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-muted">
+            <ShieldCheck className="size-6 text-muted-foreground" />
+          </div>
+          <div className="mx-auto w-full max-w-[320px] text-center">
+            <p className="text-sm font-medium">{t("noRequirements")}</p>
+            <p className="mt-1 text-xs text-pretty text-muted-foreground">
+              {t("noRequirementsHint")}
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -73,6 +79,8 @@ export function TabCompliance({ contractor }: TabComplianceProps) {
 
   return (
     <div className="space-y-4">
+      {/* Country-specific compliance fields (Phase 47) */}
+      <CountryComplianceSection contractorId={contractor.id} />
       <h3 className="text-base font-medium">{t("requiredDocuments")}</h3>
 
       <div className="divide-y rounded-xl border bg-card">
