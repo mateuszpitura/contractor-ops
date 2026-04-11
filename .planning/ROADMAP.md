@@ -220,7 +220,7 @@ Phases execute in numeric order: 45 -> 46 -> 47 -> 48 -> 49 -> 50 -> 51 -> 52
 |-------|-----------|----------------|--------|-----------|
 | 45. Pluggable E-Invoicing Engine Core | v4.0 | 5/5 | Complete    | 2026-04-11 |
 | 46. Multi-Currency & SWIFT Payments | v4.0 | 5/5 | Complete    | 2026-04-11 |
-| 47. VAT Engine, WHT & Country Fields | v4.0 | 5/5 | Complete    | 2026-04-11 |
+| 47. VAT Engine, WHT & Country Fields | v4.0 | 5/5 | Complete   | 2026-04-11 |
 | 48. ZATCA Fatoorah Integration | v4.0 | 0/6 | Planned | - |
 | 49. Peppol PINT-AE Integration | v4.0 | 3/4 | In Progress|  |
 | 50. Arabic Localization & RTL Layout | v4.0 | 0/TBD | Not started | - |
