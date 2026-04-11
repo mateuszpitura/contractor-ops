@@ -49,7 +49,7 @@ export function ReverseChargeBanner({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="sm" className="h-7 text-xs">
-              Override <ChevronDown className="ml-1 h-3 w-3" />
+              Override <ChevronDown className="ms-1 h-3 w-3" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>

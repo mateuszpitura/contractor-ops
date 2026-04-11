@@ -84,7 +84,7 @@ export function CountryComplianceSection({
             variant="outline"
             className="border-warning/20 bg-warning/5 text-warning"
           >
-            <AlertCircle className="mr-1 h-3 w-3" />
+            <AlertCircle className="me-1 h-3 w-3" />
             {missingCount} incomplete
           </Badge>
         )}
@@ -112,9 +112,9 @@ export function CountryComplianceSection({
           className="mt-4"
         >
           {updateMutation.isPending ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <Loader2 className="me-2 h-4 w-4 animate-spin" />
           ) : (
-            <Check className="mr-2 h-4 w-4" />
+            <Check className="me-2 h-4 w-4" />
           )}
           Save Compliance Fields
         </Button>

@@ -50,7 +50,7 @@ export function KsefMetadataSection({
             href={ksefUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="ml-auto inline-flex items-center gap-1 text-sm text-primary hover:underline"
+            className="ms-auto inline-flex items-center gap-1 text-sm text-primary hover:underline"
           >
             View in KSeF
             <ExternalLink className="size-3" aria-hidden="true" />
