@@ -1,9 +1,13 @@
 // ---------------------------------------------------------------------------
-// ZatcaXAdESSigner Tests — XAdES-BES enveloped digital signatures
+// ZatcaXAdESSigner Tests -- XAdES-BES enveloped digital signatures
 // ---------------------------------------------------------------------------
 
 import { describe, it, expect, beforeAll } from "vitest";
+import { execSync } from "node:child_process";
 import crypto from "node:crypto";
+import os from "node:os";
+import path from "node:path";
+import fs from "node:fs";
 import { ZatcaXAdESSigner } from "../signer.js";
 import type { CertificateInfo } from "../../../types/profile.js";
 
@@ -12,48 +16,52 @@ import type { CertificateInfo } from "../../../types/profile.js";
 // ---------------------------------------------------------------------------
 
 /**
- * Generate a self-signed ECDSA P-256 test certificate for signing tests.
- * Uses Node.js crypto to create a proper X.509 certificate.
+ * Generate a self-signed ECDSA P-256 test certificate using openssl.
+ * Returns base64-encoded DER certificate and PEM private key.
  */
 function generateTestCertificate(): {
-  certificate: string;
-  privateKey: string;
-  publicKey: string;
+  certificateBase64: string;
+  privateKeyPem: string;
 } {
-  const { privateKey, publicKey } = crypto.generateKeyPairSync("ec", {
-    namedCurve: "prime256v1",
-  });
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "zatca-test-"));
+  const keyPath = path.join(tmpDir, "key.pem");
+  const certPath = path.join(tmpDir, "cert.pem");
+  const certDerPath = path.join(tmpDir, "cert.der");
 
-  // Create a self-signed certificate
-  const cert = crypto.X509Certificate.from(
-    // Self-sign using the private key
-    crypto.createSign("SHA256")
-      ? (() => {
-          // Use openssl-like approach: create a minimal self-signed cert
-          // Node.js doesn't have a direct cert creation API, so we use
-          // the private key PEM and generate a self-signed cert via
-          // a minimal ASN.1 structure
-          return "";
-        })()
-      : "",
-  );
+  try {
+    // Generate ECDSA P-256 key
+    execSync(
+      `openssl ecparam -genkey -name prime256v1 -noout -out "${keyPath}"`,
+      { stdio: "pipe" },
+    );
 
-  const privPem = privateKey
-    .export({ type: "pkcs8", format: "pem" })
-    .toString();
-  const pubPem = publicKey
-    .export({ type: "spki", format: "pem" })
-    .toString();
+    // Generate self-signed certificate
+    execSync(
+      `openssl req -new -x509 -key "${keyPath}" -out "${certPath}" -days 365 -subj "/CN=ZATCA Test/O=Test Org/OU=300075588700003/C=SA"`,
+      { stdio: "pipe" },
+    );
 
-  // For tests, we'll use base64 of the DER-encoded key as cert placeholder
-  const privDer = privateKey.export({ type: "pkcs8", format: "der" });
-  const pubDer = publicKey.export({ type: "spki", format: "der" });
+    // Convert cert to DER for base64 encoding
+    execSync(
+      `openssl x509 -in "${certPath}" -outform DER -out "${certDerPath}"`,
+      { stdio: "pipe" },
+    );
 
-  return {
-    certificate: pubDer.toString("base64"),
-    privateKey: privDer.toString("base64"),
-    publicKey: pubPem,
-  };
+    const certDer = fs.readFileSync(certDerPath);
+    const privateKeyPem = fs.readFileSync(keyPath, "utf-8");
+
+    return {
+      certificateBase64: certDer.toString("base64"),
+      privateKeyPem,
+    };
+  } finally {
+    // Cleanup temp files
+    try {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    } catch {
+      // Best effort cleanup
+    }
+  }
 }
 
 /** Minimal ZATCA UBL 2.1 invoice XML for testing signature operations. */
@@ -106,8 +114,8 @@ describe("ZatcaXAdESSigner", () => {
     signer = new ZatcaXAdESSigner();
     const keys = generateTestCertificate();
     testCert = {
-      certificate: keys.certificate,
-      privateKey: keys.privateKey,
+      certificate: keys.certificateBase64,
+      privateKey: keys.privateKeyPem,
     };
   });
 
@@ -158,6 +166,7 @@ describe("ZatcaXAdESSigner", () => {
     const signedXml = await signer.sign(TEST_INVOICE_XML, testCert);
     const result = await signer.verify(signedXml);
 
+    // No debug needed -- test passes
     expect(result.valid).toBe(true);
     expect(result.signedAt).toBeInstanceOf(Date);
   });
@@ -178,8 +187,23 @@ describe("ZatcaXAdESSigner", () => {
   it("private key does not appear in signed XML output", async () => {
     const signedXml = await signer.sign(TEST_INVOICE_XML, testCert);
 
-    // The private key (base64) should never appear in output
-    expect(signedXml).not.toContain(testCert.privateKey!);
+    // Extract the raw key data (between PEM headers) for checking
+    const keyLines = testCert.privateKey!
+      .split("\n")
+      .filter(
+        (l) =>
+          l.trim() !== "" &&
+          !l.includes("-----BEGIN") &&
+          !l.includes("-----END"),
+      );
+
+    // The private key base64 content should not appear in output
+    for (const line of keyLines) {
+      if (line.trim().length > 20) {
+        // Only check substantial lines
+        expect(signedXml).not.toContain(line.trim());
+      }
+    }
     // Also check for PEM markers
     expect(signedXml).not.toContain("PRIVATE KEY");
   });
