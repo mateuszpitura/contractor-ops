@@ -15,6 +15,7 @@ import { IntegrationsTab } from "@/components/settings/integrations-tab";
 import { EInvoiceComplianceDetail } from "@/components/einvoice/compliance-detail";
 import { AuditLogTab } from "@/components/settings/audit-log-tab";
 import { BillingTab } from "@/components/billing/billing-tab";
+import { ConsentManagementSection } from "@/components/consent/consent-management-section";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { usePermissions } from "@/hooks/use-permissions";
@@ -71,6 +72,7 @@ function SettingsContent() {
               {t("tabs.auditLog")}
             </TabsTrigger>
           )}
+          <TabsTrigger value="privacy">{t("tabs.privacy")}</TabsTrigger>
           <TabsTrigger
             value="members"
             onClick={() => router.push("/settings/members")}
@@ -114,6 +116,10 @@ function SettingsContent() {
             <AuditLogTab />
           </TabsContent>
         )}
+
+        <TabsContent value="privacy" className="mt-6 space-y-6">
+          <ConsentManagementSection />
+        </TabsContent>
       </Tabs>
       </AnimateIn>
     </div>

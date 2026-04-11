@@ -8,6 +8,7 @@ import {
   Users,
   CheckCircle,
   MessageSquare,
+  Shield,
   Check,
   ChevronDown,
   ChevronUp,
@@ -49,6 +50,13 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
     optional: false,
     stepKey: "orgDetails",
     ctaHref: "/settings",
+  },
+  {
+    id: "privacy-consent",
+    icon: Shield,
+    optional: false,
+    stepKey: "privacyConsent",
+    ctaHref: "/settings?tab=privacy",
   },
   {
     id: "invite-team",
