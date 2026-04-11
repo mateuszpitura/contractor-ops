@@ -13,6 +13,7 @@ export const vitestProject = {
   integrations: { name: "integrations", groupOrder: 4 },
   logger: { name: "logger", groupOrder: 5 },
   validators: { name: "validators", groupOrder: 6 },
-  govApi: { name: "gov-api", groupOrder: 7 },
-  testUtils: { name: "test-utils", groupOrder: 8 },
+  einvoice: { name: "einvoice", groupOrder: 7 },
+  govApi: { name: "gov-api", groupOrder: 8 },
+  testUtils: { name: "test-utils", groupOrder: 9 },
 } as const;

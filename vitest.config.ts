@@ -22,6 +22,7 @@ export default defineConfig({
       "packages/integrations",
       "packages/logger",
       "packages/validators",
+      "packages/einvoice",
       "packages/gov-api",
       /** Test-only harness (MSW, fixtures) — not in root coverage; run via `pnpm --filter @contractor-ops/test-utils test` */
     ],
