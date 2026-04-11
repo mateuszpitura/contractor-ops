@@ -37,7 +37,7 @@ export function TaxObligationsWidget() {
               <span className="flex items-center gap-2">
                 <span className="font-mono">{formatMoney(data.vatCollectedMinor)}</span>
                 <Badge variant="outline" className="border-green-500/20 bg-green-500/5 text-green-600 text-xs">
-                  <Check className="mr-1 h-3 w-3" /> Filed
+                  <Check className="me-1 h-3 w-3" /> Filed
                 </Badge>
               </span>
             </div>
@@ -46,7 +46,7 @@ export function TaxObligationsWidget() {
               <span className="flex items-center gap-2">
                 <span className="font-mono">{formatMoney(data.vatOwedMinor)}</span>
                 <Badge variant="outline" className="border-amber-500/20 bg-amber-500/5 text-amber-600 text-xs">
-                  <Clock className="mr-1 h-3 w-3" /> Pending
+                  <Clock className="me-1 h-3 w-3" /> Pending
                 </Badge>
               </span>
             </div>
@@ -65,7 +65,7 @@ export function TaxObligationsWidget() {
               <span className="flex items-center gap-2">
                 <span className="font-mono">{formatMoney(data.whtWithheldMinor)}</span>
                 <Badge variant="outline" className="border-green-500/20 bg-green-500/5 text-green-600 text-xs">
-                  <Check className="mr-1 h-3 w-3" /> {data.whtCertCount} certs
+                  <Check className="me-1 h-3 w-3" /> {data.whtCertCount} certs
                 </Badge>
               </span>
             </div>
@@ -75,7 +75,7 @@ export function TaxObligationsWidget() {
                 <span className="flex items-center gap-2">
                   <span className="font-mono">{formatMoney(data.whtPendingMinor)}</span>
                   <Badge variant="outline" className="border-amber-500/20 bg-amber-500/5 text-amber-600 text-xs">
-                    <AlertCircle className="mr-1 h-3 w-3" /> {data.whtPendingCount} items
+                    <AlertCircle className="me-1 h-3 w-3" /> {data.whtPendingCount} items
                   </Badge>
                 </span>
               </div>
