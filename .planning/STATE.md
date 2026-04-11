@@ -4,14 +4,14 @@ milestone: v4.0
 milestone_name: International Foundation & Gulf Expansion
 status: executing
 stopped_at: Phase 49 Plan 01 complete, Plans 02-04 remain
-last_updated: "2026-04-11T10:53:44.642Z"
-last_activity: 2026-04-11 -- Phase 49 execution started
+last_updated: "2026-04-11T11:01:35.279Z"
+last_activity: 2026-04-11 -- Phase 50 execution started
 progress:
   total_phases: 8
   completed_phases: 2
-  total_plans: 14
+  total_plans: 23
   completed_plans: 11
-  percent: 79
+  percent: 48
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-11)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 49 — Peppol PINT-AE Integration
+**Current focus:** Phase 50 — Arabic Localization & RTL Layout
 
 ## Current Position
 
-Phase: 49 (Peppol PINT-AE Integration) — EXECUTING
-Plan: 1 of 4
-Status: Executing Phase 49
-Last activity: 2026-04-11 -- Phase 49 execution started
+Phase: 50 (Arabic Localization & RTL Layout) — EXECUTING
+Plan: 1 of 5
+Status: Executing Phase 50
+Last activity: 2026-04-11 -- Phase 50 execution started
 
 Progress: [░░░░░░░░░░] 0% (v4.0)
 
@@ -70,9 +70,10 @@ None yet.
 - Arabic translation requires professional financial domain translator — scope and budget before Phase 50
 - Dinero.js v2 is alpha — have fallback plan (custom Money utility) ready for Phase 46
 - Prisma 7 prisma.config.ts fails to parse on Node 24.11.0 — using --schema flag workaround
+- Phase 50 execution blocker: Task subagent tool unavailable in background agent runtime. Phase 50 has 5 plans modifying ~157 files — requires subagent spawning for execution. Plans are ready. Run `/gsd-execute-phase 50` from a foreground Claude Code session.
 
 ## Session Continuity
 
-Last session: 2026-04-11T10:53:44.640Z
-Stopped at: Phase 49 Plan 01 complete, Plans 02-04 remain
-Resume file: .planning/phases/49-peppol-pint-ae-integration/49-02-PLAN.md
+Last session: 2026-04-11T11:05:00.000Z
+Stopped at: Phase 50 planned (5 plans, 2 waves), execution blocked — Task subagent unavailable in background runtime
+Resume file: .planning/phases/50-arabic-localization-rtl-layout/50-01-PLAN.md
