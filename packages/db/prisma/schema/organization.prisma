@@ -91,6 +91,7 @@ model Organization {
   privacyNotices       PrivacyNotice[]
   peppolParticipants   PeppolParticipant[]
   peppolTransmissions  PeppolTransmission[]
+  govApiAuditLogs      GovApiAuditLog[]
 }
 
 model Member {

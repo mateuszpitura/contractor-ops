@@ -1,0 +1,22 @@
+// Government API audit log — tracks all requests/responses to external
+// government APIs (ZATCA, Peppol, future markets) for compliance auditing.
+
+model GovApiAuditLog {
+  id              String   @id @default(cuid())
+  organizationId  String
+  apiName         String
+  endpoint        String
+  method          String   @db.VarChar(10)
+  requestBodyHash String?
+  responseStatus  Int
+  responseTimeMs  Int
+  errorMessage    String?
+  createdAt       DateTime @default(now())
+
+  organization    Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+  @@index([organizationId, apiName])
+  @@index([apiName, createdAt])
+  @@index([createdAt])
+}
