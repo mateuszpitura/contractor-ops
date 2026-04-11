@@ -507,3 +507,20 @@ export type {
   ImportProgressOutput,
   RetryItemInput,
 } from "./onboarding-import.js";
+
+export {
+  zatcaEnvironmentSchema,
+  zatcaTaxDetailsSchema,
+  zatcaConnectionConfigSchema,
+  zatcaOnboardingStepSchema,
+  zatcaCsrAttributesSchema,
+  zatcaInvoiceFieldsSchema,
+} from "./zatca.js";
+export type {
+  ZatcaEnvironment,
+  ZatcaTaxDetails,
+  ZatcaConnectionConfig,
+  ZatcaOnboardingStepType,
+  ZatcaCsrAttributes,
+  ZatcaInvoiceFields,
+} from "./zatca.js";

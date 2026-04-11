@@ -138,6 +138,46 @@ export {
   UAE_TAX_CATEGORIES,
 } from "./profiles/peppol-ae/constants.js";
 
+// ZATCA profile
+import { ZatcaProfile as _ZatcaProfile } from "./profiles/zatca/index.js";
+export { ZatcaProfile } from "./profiles/zatca/index.js";
+export { generateZatcaXml } from "./profiles/zatca/generator.js";
+export { parseZatcaXml } from "./profiles/zatca/parser.js";
+export {
+  computeZatcaComplianceStatus,
+} from "./profiles/zatca/compliance.js";
+export type { ZatcaConnectionData } from "./profiles/zatca/compliance.js";
+
+// ZATCA types
+export type {
+  ZatcaInvoiceType,
+  ZatcaInvoiceTypeCode,
+  ZatcaInvoiceSubtype,
+  ZatcaProfileId,
+  ZatcaOnboardingStep,
+  ZatcaOnboardingState,
+  ZatcaInvoiceExtensions,
+} from "./profiles/zatca/types.js";
+export { ZatcaTlvTag } from "./profiles/zatca/types.js";
+
+// ZATCA schemas
+export {
+  zatcaTaxDetailsSchema,
+  zatcaCsrAttributesSchema,
+  zatcaInvoiceFieldsSchema,
+  zatcaEnvironmentSchema,
+  zatcaOnboardingStepSchema,
+  zatcaConnectionConfigSchema,
+} from "./profiles/zatca/schemas.js";
+export type {
+  ZatcaTaxDetails,
+  ZatcaCsrAttributes,
+  ZatcaInvoiceFields,
+  ZatcaEnvironment,
+  ZatcaOnboardingStepType,
+  ZatcaConnectionConfig,
+} from "./profiles/zatca/schemas.js";
+
 // Convenience: register KSeF profile
 export function registerKsefProfile(
   options?: ConstructorParameters<typeof _KsefProfile>[0],
@@ -151,5 +191,13 @@ export function registerPeppolAEProfile(
   options?: ConstructorParameters<typeof _PeppolAEProfile>[0],
 ): void {
   const profile = new _PeppolAEProfile(options);
+  _registerProfile(profile);
+}
+
+// Convenience: register ZATCA profile
+export function registerZatcaProfile(
+  options?: ConstructorParameters<typeof _ZatcaProfile>[0],
+): void {
+  const profile = new _ZatcaProfile(options);
   _registerProfile(profile);
 }
