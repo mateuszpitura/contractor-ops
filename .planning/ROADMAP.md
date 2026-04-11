@@ -146,7 +146,15 @@ Plans:
   3. Each invoice contains a TLV-encoded QR code with seller name, VAT number, timestamp, total, and VAT amount
   4. The invoice hash chain is maintained -- each new invoice references the hash of the previous invoice for that organization, with sequential processing enforced
   5. B2B tax invoices are submitted to ZATCA Fatoora Portal for clearance, and simplified B2C invoices are submitted for reporting, with status tracked per invoice
-**Plans**: TBD
+**Plans**: 7 plans
+Plans:
+- [ ] 48-01-PLAN.md — ZATCA profile skeleton, UBL 2.1 XML generator, Prisma schema, Zod validators
+- [ ] 48-02-PLAN.md — XAdES-BES enveloped digital signatures with xml-crypto
+- [ ] 48-03-PLAN.md — TLV binary encoding and QR code generation
+- [ ] 48-04-PLAN.md — Submission pipeline: hash chain, Infisical secret store, API client, tRPC router
+- [ ] 48-05-PLAN.md — Device onboarding: CSR generation, compliance checks, certificate exchange
+- [ ] 48-06-PLAN.md — Frontend UI: onboarding wizard, status badges, compliance widget
+- [ ] 48-07-PLAN.md — [BLOCKING] Prisma schema push to database
 **UI hint**: yes
 
 ### Phase 49: Peppol PINT-AE Integration
@@ -162,7 +170,7 @@ Plans:
 Plans:
 - [x] 49-01-PLAN.md — Peppol-AE Profile & ASP Adapter Interface
 - [x] 49-02-PLAN.md — Prisma Models, Enum Extensions & tRPC Router
-- [ ] 49-03-PLAN.md — Storecove ASP Adapter, Outbound Orchestrator & Inbound Processing
+- [x] 49-03-PLAN.md — Storecove ASP Adapter, Outbound Orchestrator & Inbound Processing
 - [ ] 49-04-PLAN.md — Peppol UI — Connection Wizard, Status Views & Compliance Widget
 **UI hint**: yes
 
@@ -214,7 +222,7 @@ Phases execute in numeric order: 45 -> 46 -> 47 -> 48 -> 49 -> 50 -> 51 -> 52
 | 46. Multi-Currency & SWIFT Payments | v4.0 | 5/5 | Complete    | 2026-04-11 |
 | 47. VAT Engine, WHT & Country Fields | v4.0 | 0/TBD | Not started | - |
 | 48. ZATCA Fatoorah Integration | v4.0 | 0/TBD | Not started | - |
-| 49. Peppol PINT-AE Integration | v4.0 | 2/4 | In Progress|  |
+| 49. Peppol PINT-AE Integration | v4.0 | 3/4 | In Progress|  |
 | 50. Arabic Localization & RTL Layout | v4.0 | 0/TBD | Not started | - |
 | 51. PDPL Compliance | v4.0 | 4/4 | Complete    | 2026-04-11 |
-| 52. Multi-Region Infrastructure | v4.0 | 0/TBD | Not started | - |
+| 52. Multi-Region Infrastructure | v4.0 | 2/4 | In Progress|  |
