@@ -2,11 +2,18 @@ import { ThemeProvider } from "next-themes";
 import { Toaster } from "sonner";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
+import { Noto_Sans_Arabic } from "next/font/google";
 import { Providers } from "@/app/providers";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { CookieConsentBanner } from "@/components/layout/cookie-consent-banner";
 import { routing } from "@/i18n/routing";
 import "@/app/globals.css";
+
+const notoSansArabic = Noto_Sans_Arabic({
+  subsets: ["arabic"],
+  variable: "--font-arabic",
+  display: "swap",
+});
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -32,13 +39,19 @@ export default async function LocaleLayout({
   setRequestLocale(locale);
   const messages = await getMessages();
 
-  // Set lang attribute on the html element for screen readers.
+  // Set lang and dir attributes on the html element for screen readers and RTL.
   // Sanitize locale to alphanumeric+hyphen only (defense in depth).
   const safeLang = locale.replace(/[^a-zA-Z0-9-]/g, "");
+  const dir = locale === "ar" ? "rtl" : "ltr";
+  const isArabic = locale === "ar";
 
   return (
     <>
-      <script dangerouslySetInnerHTML={{ __html: `document.documentElement.lang="${safeLang}";` }} />
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `document.documentElement.lang="${safeLang}";document.documentElement.dir="${dir}";`,
+        }}
+      />
       <NextIntlClientProvider messages={messages}>
       <ThemeProvider
         attribute="class"
@@ -48,9 +61,11 @@ export default async function LocaleLayout({
       >
         <Providers>
           <TooltipProvider delay={300}>
-            {children}
+            <div className={isArabic ? notoSansArabic.variable : undefined}>
+              {children}
+            </div>
             <CookieConsentBanner />
-            <Toaster richColors position="bottom-right" />
+            <Toaster richColors position={dir === "rtl" ? "bottom-left" : "bottom-right"} />
           </TooltipProvider>
         </Providers>
       </ThemeProvider>
