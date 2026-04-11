@@ -84,6 +84,11 @@
       "import": "./src/services/ksef-sync-orchestrator.ts",
       "default": "./src/services/ksef-sync-orchestrator.ts"
     },
+    "./services/peppol-orchestrator": {
+      "types": "./src/services/peppol-orchestrator.ts",
+      "import": "./src/services/peppol-orchestrator.ts",
+      "default": "./src/services/peppol-orchestrator.ts"
+    },
     "./services/cron-monitor": {
       "types": "./src/services/cron-monitor.ts",
       "import": "./src/services/cron-monitor.ts",
@@ -105,6 +110,7 @@
     "@contractor-ops/shared": "workspace:*",
     "@contractor-ops/einvoice": "workspace:*",
     "@contractor-ops/integrations": "workspace:*",
+    "@contractor-ops/secrets": "workspace:*",
     "@contractor-ops/logger": "workspace:*",
     "@contractor-ops/validators": "workspace:*",
     "@azure/identity": "^4.7.0",

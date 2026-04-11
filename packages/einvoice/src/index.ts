@@ -100,6 +100,11 @@ export type {
   ASPHealthStatus,
 } from "./asp/types.js";
 
+// Storecove ASP adapter
+export { StorecoveAdapter } from "./asp/storecove/adapter.js";
+export { StorecoveClient, StorecoveApiError } from "./asp/storecove/client.js";
+export type { StorecoveConfig } from "./asp/storecove/types.js";
+
 // Peppol-AE profile
 import { PeppolAEProfile as _PeppolAEProfile } from "./profiles/peppol-ae/index.js";
 export { PeppolAEProfile } from "./profiles/peppol-ae/index.js";
