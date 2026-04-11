@@ -13,8 +13,8 @@ type TierId = (typeof TIER_ORDER)[number];
 const PLANS: Array<{
   id: TierId;
   name: string;
-  basePriceGrosze: number;
-  seatPriceGrosze: number;
+  basePriceMinor: number;
+  seatPriceMinor: number;
   creditAllowance: number;
   features: string[];
   excludedFeatures: string[];
@@ -24,8 +24,8 @@ const PLANS: Array<{
   {
     id: "STARTER",
     name: "Starter",
-    basePriceGrosze: 9_900, // 99 PLN
-    seatPriceGrosze: 1_000, // 10 PLN per contractor
+    basePriceMinor: 9_900, // 99 PLN
+    seatPriceMinor: 1_000, // 10 PLN per contractor
     creditAllowance: 20,
     features: [
       "Contractor management",
@@ -47,8 +47,8 @@ const PLANS: Array<{
   {
     id: "PRO",
     name: "Pro",
-    basePriceGrosze: 29_900, // 299 PLN
-    seatPriceGrosze: 1_500, // 15 PLN per contractor
+    basePriceMinor: 29_900, // 299 PLN
+    seatPriceMinor: 1_500, // 15 PLN per contractor
     creditAllowance: 100,
     features: [
       "Everything in Starter",
@@ -64,8 +64,8 @@ const PLANS: Array<{
   {
     id: "ENTERPRISE",
     name: "Enterprise",
-    basePriceGrosze: 89_900, // 899 PLN
-    seatPriceGrosze: 2_900, // 29 PLN per contractor
+    basePriceMinor: 89_900, // 899 PLN
+    seatPriceMinor: 2_900, // 29 PLN per contractor
     creditAllowance: 500,
     features: [
       "Everything in Pro",

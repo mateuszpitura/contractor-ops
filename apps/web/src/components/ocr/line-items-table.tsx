@@ -22,11 +22,11 @@ interface LineItem {
   description: string
   quantity: number | null
   unit: string | null
-  unitPriceGrosze: number | null
-  netAmountGrosze: number | null
+  unitPriceMinor: number | null
+  netAmountMinor: number | null
   vatRate: string | null
-  vatAmountGrosze: number | null
-  grossAmountGrosze: number | null
+  vatAmountMinor: number | null
+  grossAmountMinor: number | null
   confidence: number
 }
 
@@ -36,12 +36,12 @@ interface LineItemsTableProps {
   readOnly?: boolean
 }
 
-function formatGrosze(grosze: number | null): string {
-  if (grosze == null) return ""
-  return (grosze / 100).toFixed(2)
+function formatMinorUnits(minor: number | null): string {
+  if (minor == null) return ""
+  return (minor / 100).toFixed(2)
 }
 
-function parseToGrosze(display: string): number | null {
+function parseToMinorUnits(display: string): number | null {
   const value = Number.parseFloat(display)
   if (Number.isNaN(value)) return null
   return Math.round(value * 100)
@@ -77,11 +77,11 @@ export function LineItemsTable({
         case "quantity":
           item.quantity = parseNumber(value)
           break
-        case "unitPriceGrosze":
-        case "netAmountGrosze":
-        case "vatAmountGrosze":
-        case "grossAmountGrosze":
-          ;(item[field] as number | null) = parseToGrosze(value)
+        case "unitPriceMinor":
+        case "netAmountMinor":
+        case "vatAmountMinor":
+        case "grossAmountMinor":
+          ;(item[field] as number | null) = parseToMinorUnits(value)
           break
         default:
           break
@@ -107,11 +107,11 @@ export function LineItemsTable({
       description: "",
       quantity: null,
       unit: null,
-      unitPriceGrosze: null,
-      netAmountGrosze: null,
+      unitPriceMinor: null,
+      netAmountMinor: null,
       vatRate: null,
-      vatAmountGrosze: null,
-      grossAmountGrosze: null,
+      vatAmountMinor: null,
+      grossAmountMinor: null,
       confidence: 0,
     }
     onChange([...items, newItem])
@@ -162,7 +162,7 @@ export function LineItemsTable({
                     onChange={(v) => updateItem(index, "quantity", v)}
                     readOnly={readOnly}
                     placeholder="0"
-                    className="text-right"
+                    className="text-end"
                   />
                 </TableCell>
                 <TableCell>
@@ -175,20 +175,20 @@ export function LineItemsTable({
                 </TableCell>
                 <TableCell>
                   <InlineInput
-                    value={formatGrosze(item.unitPriceGrosze)}
-                    onChange={(v) => updateItem(index, "unitPriceGrosze", v)}
+                    value={formatMinorUnits(item.unitPriceMinor)}
+                    onChange={(v) => updateItem(index, "unitPriceMinor", v)}
                     readOnly={readOnly}
                     placeholder="0.00"
-                    className="text-right"
+                    className="text-end"
                   />
                 </TableCell>
                 <TableCell>
                   <InlineInput
-                    value={formatGrosze(item.netAmountGrosze)}
-                    onChange={(v) => updateItem(index, "netAmountGrosze", v)}
+                    value={formatMinorUnits(item.netAmountMinor)}
+                    onChange={(v) => updateItem(index, "netAmountMinor", v)}
                     readOnly={readOnly}
                     placeholder="0.00"
-                    className="text-right"
+                    className="text-end"
                   />
                 </TableCell>
                 <TableCell>
@@ -201,20 +201,20 @@ export function LineItemsTable({
                 </TableCell>
                 <TableCell>
                   <InlineInput
-                    value={formatGrosze(item.vatAmountGrosze)}
-                    onChange={(v) => updateItem(index, "vatAmountGrosze", v)}
+                    value={formatMinorUnits(item.vatAmountMinor)}
+                    onChange={(v) => updateItem(index, "vatAmountMinor", v)}
                     readOnly={readOnly}
                     placeholder="0.00"
-                    className="text-right"
+                    className="text-end"
                   />
                 </TableCell>
                 <TableCell>
                   <InlineInput
-                    value={formatGrosze(item.grossAmountGrosze)}
-                    onChange={(v) => updateItem(index, "grossAmountGrosze", v)}
+                    value={formatMinorUnits(item.grossAmountMinor)}
+                    onChange={(v) => updateItem(index, "grossAmountMinor", v)}
                     readOnly={readOnly}
                     placeholder="0.00"
-                    className="text-right"
+                    className="text-end"
                   />
                 </TableCell>
                 <TableCell>

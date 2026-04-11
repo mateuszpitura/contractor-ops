@@ -204,12 +204,12 @@ export function TemplatePicker({
 
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute start-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder={tp("searchPlaceholder")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="h-9 pl-9"
+            className="h-9 ps-9"
           />
         </div>
 
@@ -259,7 +259,7 @@ export function TemplatePicker({
                 <button
                   key={template.id}
                   type="button"
-                  className={`w-full text-left rounded-lg border p-3 transition-colors hover:bg-accent/50 ${
+                  className={`w-full text-start rounded-lg border p-3 transition-colors hover:bg-accent/50 ${
                     selectedId === template.id
                       ? "ring-2 ring-primary border-primary"
                       : ""

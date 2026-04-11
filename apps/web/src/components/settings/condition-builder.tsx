@@ -160,7 +160,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
 
       {/* Add condition */}
       <Button type="button" variant="outline" size="sm" onClick={handleAdd}>
-        <Plus className="mr-1.5 size-3.5" />
+        <Plus className="me-1.5 size-3.5" />
         {t("approvals.editor.addCondition")}
       </Button>
 

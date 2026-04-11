@@ -59,7 +59,7 @@ export function ProrationPreview({
     );
   }
 
-  const totalPLN = data.totalGrosze / 100;
+  const totalPLN = data.totalMinor / 100;
   const isCredit = totalPLN < 0;
 
   return (
@@ -71,7 +71,7 @@ export function ProrationPreview({
         <ul className="space-y-2">
           {data.lines.map(
             (
-              line: { description: string; amountGrosze: number },
+              line: { description: string; amountMinor: number },
               index: number,
             ) => (
               <li
@@ -82,7 +82,7 @@ export function ProrationPreview({
                   {line.description}
                 </span>
                 <span className="tabular-nums font-medium">
-                  {(line.amountGrosze / 100).toFixed(2)} PLN
+                  {(line.amountMinor / 100).toFixed(2)} PLN
                 </span>
               </li>
             ),

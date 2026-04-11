@@ -15,6 +15,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Link } from "@/i18n/navigation";
 
+import { formatMinorUnits } from "@/lib/format-currency";
 import { SlaBadge } from "../sla-badge";
 
 // ---------------------------------------------------------------------------
@@ -48,7 +49,7 @@ export type ApprovalQueueRow = {
     id: string;
     invoiceNumber: string;
     sellerName: string | null;
-    totalGrosze: number;
+    totalMinor: number;
     currency: string;
     createdAt: string;
     contractor: {
@@ -240,23 +241,18 @@ export function getColumns(
 
     // 4. Amount
     {
-      id: "totalGrosze",
-      accessorFn: (row) => row.invoice?.totalGrosze ?? 0,
+      id: "totalMinor",
+      accessorFn: (row) => row.invoice?.totalMinor ?? 0,
       header: () => (
-        <span className="text-right block">{t("columns.amount")}</span>
+        <span className="text-end block">{t("columns.amount")}</span>
       ),
       cell: ({ row }) => {
         const invoice = row.original.invoice;
         if (!invoice) return <span className="text-muted-foreground">&mdash;</span>;
 
-        const formatted = new Intl.NumberFormat("pl-PL", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        }).format(invoice.totalGrosze / 100);
-
         return (
-          <span className="block text-right font-mono text-sm tabular-nums">
-            {formatted} {invoice.currency}
+          <span className="block text-end font-mono text-sm tabular-nums">
+            {formatMinorUnits(invoice.totalMinor, invoice.currency)}
           </span>
         );
       },

@@ -133,7 +133,7 @@ export function UsageDashboard() {
   const tierConfig = planConfig?.tiers?.find(
     (tier: any) => tier.id === currentTier,
   );
-  const seatPriceGrosze = tierConfig?.seatPriceGrosze ?? 0;
+  const seatPriceMinor = tierConfig?.seatPriceMinor ?? 0;
   const isTrialing = subscription.status === "TRIALING";
   const billingDate = isTrialing
     ? subscription.trialEnd
@@ -166,7 +166,7 @@ export function UsageDashboard() {
         <SeatCountCard
           activeContractors={activeContractors}
           includedSeats={includedSeats}
-          seatPriceGrosze={seatPriceGrosze}
+          seatPriceMinor={seatPriceMinor}
         />
 
         {/* Card 3: OCR Credits */}

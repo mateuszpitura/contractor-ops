@@ -192,7 +192,7 @@ export function NotificationPreferencesSection() {
             <button
               {...props}
               type="button"
-              className="flex min-h-[48px] w-full items-center gap-3 px-4 py-3 text-left outline-none"
+              className="flex min-h-[48px] w-full items-center gap-3 px-4 py-3 text-start outline-none"
             >
               <ChevronDown
                 className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 ${
@@ -241,7 +241,7 @@ export function NotificationPreferencesSection() {
                           aria-label={cat.label}
                         />
                         {cat.locked && (
-                          <p className="mt-1 text-right text-xs text-muted-foreground">
+                          <p className="mt-1 text-end text-xs text-muted-foreground">
                             {t("securityLocked")}
                           </p>
                         )}

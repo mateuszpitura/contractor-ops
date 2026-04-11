@@ -150,7 +150,7 @@ export function SingleEntryForm({
                     !date && "text-muted-foreground",
                   )}
                 >
-                  <CalendarDays className="mr-2 h-4 w-4" />
+                  <CalendarDays className="me-2 h-4 w-4" />
                   {date ? format(date, "MMM d, yyyy") : "Select date"}
                 </Button>
               </PopoverTrigger>
@@ -230,7 +230,7 @@ export function SingleEntryForm({
               <p className="text-sm text-destructive">{errors.description}</p>
             )}
             {description.length > 0 && (
-              <p className="text-xs text-muted-foreground text-right">
+              <p className="text-xs text-muted-foreground text-end">
                 {description.length}/500
               </p>
             )}

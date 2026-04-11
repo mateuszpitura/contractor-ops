@@ -424,7 +424,7 @@ export function ProviderDetailSheet({
                         disabled={syncLogQuery.isFetching}
                       >
                         {syncLogQuery.isFetching && (
-                          <Loader2 className="mr-1.5 size-3.5 animate-spin" />
+                          <Loader2 className="me-1.5 size-3.5 animate-spin" />
                         )}
                         {t("provider.loadMore")}
                       </Button>
@@ -497,7 +497,7 @@ export function ProviderDetailSheet({
                         disabled={webhookLogQuery.isFetching}
                       >
                         {webhookLogQuery.isFetching && (
-                          <Loader2 className="mr-1.5 size-3.5 animate-spin" />
+                          <Loader2 className="me-1.5 size-3.5 animate-spin" />
                         )}
                         {t("provider.loadMore")}
                       </Button>
@@ -536,7 +536,7 @@ export function ProviderDetailSheet({
               onClick={() => disconnectMutation.mutate({ provider })}
             >
               {disconnectMutation.isPending && (
-                <Loader2 className="mr-1.5 size-3.5 animate-spin" />
+                <Loader2 className="me-1.5 size-3.5 animate-spin" />
               )}
               {t("disconnectConfirmGeneric.confirm", {
                 provider: displayName,

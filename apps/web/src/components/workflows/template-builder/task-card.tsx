@@ -234,7 +234,7 @@ export function TaskCard({
               </Badge>
             )}
 
-            <span className="ml-auto shrink-0 text-muted-foreground">
+            <span className="ms-auto shrink-0 text-muted-foreground">
               {isOpen ? (
                 <ChevronUp className="size-4" />
               ) : (
@@ -277,7 +277,7 @@ export function TaskCard({
                     const Icon = TASK_TYPE_ICONS[item.value] ?? ClipboardList;
                     return (
                       <SelectItem key={item.value} value={item.value}>
-                        <Icon className="mr-1.5 inline-block size-3.5" />
+                        <Icon className="me-1.5 inline-block size-3.5" />
                         {item.label}
                       </SelectItem>
                     );

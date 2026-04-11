@@ -169,7 +169,7 @@ export function PortalEquipmentTab() {
         <h1 className="text-xl font-semibold">{t("title")}</h1>
         {canReturn && !hasActiveReturn && (
           <Button onClick={() => setReturnFlowOpen(true)}>
-            <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
+            <RotateCcw className="me-1.5 h-3.5 w-3.5" />
             {t("returnAll")}
           </Button>
         )}
@@ -177,7 +177,7 @@ export function PortalEquipmentTab() {
 
       {/* Return status banner */}
       {returnRequest?.status === "PENDING_APPROVAL" && (
-        <div className="rounded-md border-l-4 border-warning bg-warning/10 p-4">
+        <div className="rounded-md border-s-4 border-warning bg-warning/10 p-4">
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium">{t("pendingApproval")}</p>
             <Button
@@ -192,7 +192,7 @@ export function PortalEquipmentTab() {
       )}
 
       {returnRequest?.status === "SHIPMENT_CREATED" && (
-        <div className="rounded-md border-l-4 border-primary bg-primary/10 p-4">
+        <div className="rounded-md border-s-4 border-primary bg-primary/10 p-4">
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium">{t("returnApproved")}</p>
             <Button
@@ -285,7 +285,7 @@ export function PortalEquipmentTab() {
               disabled={cancelMutation.isPending}
             >
               {cancelMutation.isPending && (
-                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
               )}
               {tReturn("cancelConfirmTitle")}
             </AlertDialogAction>

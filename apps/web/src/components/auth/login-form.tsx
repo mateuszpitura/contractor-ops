@@ -28,7 +28,14 @@ export function LoginForm() {
   const tToast = useTranslations("Auth.toast");
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("redirectTo") ?? "/";
+  const rawRedirectTo = searchParams.get("redirectTo") ?? "/";
+  // Validate redirectTo is a safe relative path to prevent open redirect attacks
+  const redirectTo =
+    rawRedirectTo.startsWith("/") &&
+    !rawRedirectTo.startsWith("//") &&
+    !rawRedirectTo.includes(":")
+      ? rawRedirectTo
+      : "/";
   const [isLoading, setIsLoading] = useState(false);
   const [isMagicLinkSent, setIsMagicLinkSent] = useState(false);
   const [magicLinkLoading, setMagicLinkLoading] = useState(false);
@@ -186,7 +193,7 @@ export function LoginForm() {
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="me-2 h-4 w-4 animate-spin" />
                   {t("signingIn")}
                 </>
               ) : (
@@ -203,7 +210,7 @@ export function LoginForm() {
             >
               {magicLinkLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="me-2 h-4 w-4 animate-spin" />
                   {t("magicLinkSending")}
                 </>
               ) : (

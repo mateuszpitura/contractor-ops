@@ -292,7 +292,7 @@ export function TimesheetGrid({
               {/* Header row */}
               <thead>
                 <tr className="border-b">
-                  <th className="w-[200px] min-w-[200px] px-4 py-3 text-left text-sm font-semibold">
+                  <th className="w-[200px] min-w-[200px] px-4 py-3 text-start text-sm font-semibold">
                     Project
                   </th>
                   {DAY_LABELS.map((day, i) => (
@@ -376,7 +376,7 @@ export function TimesheetGrid({
                                 aria-label={`Hours for ${contract.title} on ${DAY_LABELS[dayIdx]}`}
                               />
                               {source && source !== "MANUAL" && (
-                                <div className="absolute -top-1 -right-1">
+                                <div className="absolute -top-1 -end-1">
                                   <TimeSourceBadge
                                     source={source}
                                     importedAt={

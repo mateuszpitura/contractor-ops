@@ -319,7 +319,7 @@ export function JiraStatusMappingDialog({
             disabled={!hasChanges || saveMutation.isPending || !selectedProjectId}
           >
             {saveMutation.isPending && (
-              <Loader2 className="mr-1.5 size-3.5 animate-spin" />
+              <Loader2 className="me-1.5 size-3.5 animate-spin" />
             )}
             Save Mapping
           </Button>

@@ -69,7 +69,7 @@ export function SendForSignatureButton({
           <TooltipTrigger
             render={(props) => (
               <Button {...props} variant="default" size="sm" disabled>
-                <PenLine className="mr-1.5 size-4" />
+                <PenLine className="me-1.5 size-4" />
                 Send for Signature
               </Button>
             )}
@@ -87,7 +87,7 @@ export function SendForSignatureButton({
         size="sm"
         onClick={() => setDialogOpen(true)}
       >
-        <PenLine className="mr-1.5 size-4" />
+        <PenLine className="me-1.5 size-4" />
         Send for Signature
       </Button>
 

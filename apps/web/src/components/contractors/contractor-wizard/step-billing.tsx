@@ -50,35 +50,35 @@ export function StepBilling({ form }: StepBillingProps) {
   } = form;
 
   // Local state for rate input — prevents cursor jumping during typing.
-  const rateGrosze = watch("rateValueGrosze");
+  const rateMinor = watch("rateValueMinor");
   const [rateLocal, setRateLocal] = React.useState(() =>
-    typeof rateGrosze === "number" && rateGrosze > 0
-      ? (rateGrosze / 100).toString()
+    typeof rateMinor === "number" && rateMinor > 0
+      ? (rateMinor / 100).toString()
       : "",
   );
 
   React.useEffect(() => {
     const fromForm =
-      typeof rateGrosze === "number" && rateGrosze > 0
-        ? (rateGrosze / 100).toString()
+      typeof rateMinor === "number" && rateMinor > 0
+        ? (rateMinor / 100).toString()
         : "";
     setRateLocal((prev) => {
-      const prevGrosze = Math.round(parseFloat(prev || "0") * 100);
-      if (prevGrosze !== rateGrosze) return fromForm;
+      const prevMinor = Math.round(parseFloat(prev || "0") * 100);
+      if (prevMinor !== rateMinor) return fromForm;
       return prev;
     });
-  }, [rateGrosze]);
+  }, [rateMinor]);
 
   const handleRateBlur = () => {
     const value = parseFloat(rateLocal);
     if (!isNaN(value) && value >= 0) {
-      setValue("rateValueGrosze", Math.round(value * 100), {
+      setValue("rateValueMinor", Math.round(value * 100), {
         shouldDirty: true,
         shouldValidate: true,
       });
       setRateLocal(value.toFixed(2));
     } else {
-      setValue("rateValueGrosze", 0, {
+      setValue("rateValueMinor", 0, {
         shouldDirty: true,
         shouldValidate: true,
       });
@@ -149,7 +149,7 @@ export function StepBilling({ form }: StepBillingProps) {
         )}
       </div>
 
-      {/* Default rate (display as zloty, store as grosze) */}
+      {/* Default rate (display as zloty, store as minor units) */}
       <div className="space-y-2">
         <Label htmlFor="rate" className="text-[13px]">
           {t("rate")}
@@ -160,18 +160,18 @@ export function StepBilling({ form }: StepBillingProps) {
             type="number"
             step="0.01"
             min="0"
-            className="font-mono pr-16"
+            className="font-mono pe-16"
             value={rateLocal}
             onChange={(e) => setRateLocal(e.target.value)}
             onBlur={handleRateBlur}
           />
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+          <span className="absolute end-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
             {watch("currency") ?? "PLN"}
           </span>
         </div>
-        {errors.rateValueGrosze && (
+        {errors.rateValueMinor && (
           <p className="text-sm text-destructive">
-            {errors.rateValueGrosze.message}
+            {errors.rateValueMinor.message}
           </p>
         )}
       </div>

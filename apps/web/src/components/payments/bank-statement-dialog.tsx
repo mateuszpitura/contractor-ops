@@ -348,7 +348,7 @@ export function BankStatementDialog({
                 disabled={selectedCount === 0 || confirmMutation.isPending}
               >
                 {confirmMutation.isPending ? (
-                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                  <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
                 ) : null}
                 {t("bankStatement.confirmMatches", { count: selectedCount })}
               </Button>

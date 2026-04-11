@@ -138,7 +138,7 @@ export function StepConfirm({
         {t("confirm.ready", { count: totalToImport, entities: entityLabel })}
       </h3>
 
-      <div className="mt-6 w-full max-w-xs space-y-3 text-left">
+      <div className="mt-6 w-full max-w-xs space-y-3 text-start">
         <div className="flex items-center justify-between rounded-md bg-muted/50 px-4 py-2 text-sm">
           <span>{t("confirm.newRecordsLabel")}</span>
           <span className="font-semibold">{counts.newRecords}</span>

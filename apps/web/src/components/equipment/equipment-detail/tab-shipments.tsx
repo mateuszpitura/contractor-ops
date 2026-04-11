@@ -104,7 +104,7 @@ export function TabShipments({
         )}
         <div className="flex justify-end">
           <Button onClick={onCreateShipment}>
-            <Truck className="mr-1.5 size-3.5" />
+            <Truck className="me-1.5 size-3.5" />
             {t("detail.createShipment")}
           </Button>
         </div>
@@ -128,7 +128,7 @@ export function TabShipments({
       )}
       <div className="flex justify-end">
         <Button onClick={onCreateShipment}>
-          <Truck className="mr-1.5 size-3.5" />
+          <Truck className="me-1.5 size-3.5" />
           {t("detail.createShipment")}
         </Button>
       </div>

@@ -35,7 +35,7 @@ type PaymentItemRow = {
   runNumber: string;
   invoiceId: string;
   invoiceNumber: string;
-  amountGrosze: number;
+  amountMinor: number;
   currency: string;
   status: string;
   paymentReference: string | null;
@@ -89,7 +89,7 @@ export function TabPayments({ contractorId }: TabPaymentsProps) {
         runNumber: item.paymentRun?.runNumber ?? "--",
         invoiceId: item.invoiceId,
         invoiceNumber: item.invoice?.invoiceNumber ?? "--",
-        amountGrosze: item.amountGrosze,
+        amountMinor: item.amountMinor,
         currency: item.currency,
         status: item.status,
         paymentReference: item.paymentReference ?? null,
@@ -103,22 +103,22 @@ export function TabPayments({ contractorId }: TabPaymentsProps) {
   const totalPages = Math.max(1, Math.ceil(allItems.length / pageSize));
   const items = allItems.slice((page - 1) * pageSize, page * pageSize);
 
-  // Total paid calculation (sum of PAID items in grosze)
-  const totalPaidGrosze = useMemo(
+  // Total paid calculation (sum of PAID items in minor units)
+  const totalPaidMinor = useMemo(
     () =>
       allItems
         .filter((item) => item.status === "PAID")
-        .reduce((sum, item) => sum + item.amountGrosze, 0),
+        .reduce((sum, item) => sum + item.amountMinor, 0),
     [allItems],
   );
 
   const totalPaidCurrency = allItems[0]?.currency ?? "PLN";
 
-  const formatAmount = (grosze: number, currency: string) =>
+  const formatAmount = (minor: number, currency: string) =>
     new Intl.NumberFormat("pl-PL", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    }).format(grosze / 100) +
+    }).format(minor / 100) +
     " " +
     currency;
 
@@ -166,11 +166,11 @@ export function TabPayments({ contractorId }: TabPaymentsProps) {
         ),
       },
       {
-        accessorKey: "amountGrosze",
+        accessorKey: "amountMinor",
         header: t("columnAmount"),
         cell: ({ row }) => (
           <span className="font-mono text-sm tabular-nums">
-            {formatAmount(row.original.amountGrosze, row.original.currency)}
+            {formatAmount(row.original.amountMinor, row.original.currency)}
           </span>
         ),
       },
@@ -248,7 +248,7 @@ export function TabPayments({ contractorId }: TabPaymentsProps) {
         <div className="text-sm text-muted-foreground">
           {t("totalPaid")}:{" "}
           <span className="font-mono font-medium tabular-nums text-foreground">
-            {formatAmount(totalPaidGrosze, totalPaidCurrency)}
+            {formatAmount(totalPaidMinor, totalPaidCurrency)}
           </span>
         </div>
       </div>

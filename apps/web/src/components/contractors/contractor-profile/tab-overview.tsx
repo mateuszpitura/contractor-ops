@@ -142,7 +142,7 @@ export function TabOverview({ contractor }: TabOverviewProps) {
   const customFields =
     (contractor.customFieldsJson as Record<string, unknown>) ?? {};
   const billingModel = customFields.billingModel as string | undefined;
-  const rateValueGrosze = customFields.rateValueGrosze as number | undefined;
+  const rateValueMinor = customFields.rateValueMinor as number | undefined;
 
   const defaultBilling = contractor.billingProfiles.find((bp) => bp.isDefault);
   const activeContract = contractor.contracts.find(
@@ -150,8 +150,8 @@ export function TabOverview({ contractor }: TabOverviewProps) {
   );
 
   const formattedRate =
-    rateValueGrosze != null
-      ? `${(rateValueGrosze / 100).toFixed(2)} ${contractor.currency}`
+    rateValueMinor != null
+      ? `${(rateValueMinor / 100).toFixed(2)} ${contractor.currency}`
       : null;
 
   const formattedAddress = [
@@ -279,7 +279,7 @@ export function TabOverview({ contractor }: TabOverviewProps) {
                 key={factor.key}
                 type="button"
                 onClick={() => targetTab && switchTab(targetTab)}
-                className="flex items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-muted"
+                className="flex items-center gap-2 rounded-md px-2 py-1.5 text-start transition-colors hover:bg-muted"
               >
                 <Icon className={`size-4 shrink-0 ${colorClass}`} />
                 <span className="text-sm">

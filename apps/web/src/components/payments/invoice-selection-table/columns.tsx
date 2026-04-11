@@ -128,10 +128,10 @@ export function getColumns(t: TranslateFunction): ColumnDef<ReadyInvoiceRow>[] {
     {
       accessorKey: "amountToPayMinor",
       header: () => (
-        <span className="text-right block">{t("selection.amount")}</span>
+        <span className="text-end block">{t("selection.amount")}</span>
       ),
       cell: ({ row }) => (
-        <span className="font-mono text-sm tabular-nums text-right block">
+        <span className="font-mono text-sm tabular-nums text-end block">
           {formatMinorUnits(row.original.amountToPayMinor)}
         </span>
       ),

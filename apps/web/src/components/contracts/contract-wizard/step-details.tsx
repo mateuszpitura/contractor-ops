@@ -199,7 +199,7 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
                       >
                         <span>{contractor.displayName}</span>
                         {contractor.taxId ? (
-                          <span className="ml-auto text-xs text-muted-foreground font-mono">
+                          <span className="ms-auto text-xs text-muted-foreground font-mono">
                             {showPii ? String(contractor.taxId) : maskTaxId(String(contractor.taxId))}
                           </span>
                         ) : null}
@@ -271,7 +271,7 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
               />
             }
           >
-            <CalendarIcon className="mr-2 h-4 w-4" />
+            <CalendarIcon className="me-2 h-4 w-4" />
             {startDate ? (
               format(new Date(startDate), "PPP")
             ) : (
@@ -307,7 +307,7 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
               />
             }
           >
-            <CalendarIcon className="mr-2 h-4 w-4" />
+            <CalendarIcon className="me-2 h-4 w-4" />
             {endDate ? (
               format(new Date(endDate), "PPP")
             ) : (

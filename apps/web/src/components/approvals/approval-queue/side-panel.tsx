@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   CheckCircle2,
   HelpCircle,
@@ -10,9 +9,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { toast } from "sonner";
-
-import { trpc } from "@/trpc/init";
+import { useApprovalActions } from "@/hooks/use-approval-actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -42,6 +39,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Link } from "@/i18n/navigation";
 
+import { formatAmount } from "@/lib/format-currency";
 import { SlaBadge } from "../sla-badge";
 import type { ApprovalQueueRow } from "./columns";
 
@@ -147,101 +145,42 @@ export function ApprovalSidePanel({
   onOpenChange,
 }: ApprovalSidePanelProps) {
   const t = useTranslations("Approvals");
-  const queryClient = useQueryClient();
 
-  // Approve mutation
-  const approveMutation = useMutation(
-    trpc.approval.approve.mutationOptions({
-      onSuccess: () => {
-        toast.success(t("toast.approved"));
-        onOpenChange(false);
-        void queryClient.invalidateQueries({
-          queryKey: [["approval", "listPending"]],
-        });
-      },
-      onError: () => {
-        toast.error(t("errors.failedToApprove"));
-      },
-    }),
-  );
+  // Approval action mutations (extracted hook)
+  const {
+    approve: approveAction,
+    reject: rejectAction,
+    delegate: delegateAction,
+    requestClarification: clarifyAction,
+    isPending: actionsPending,
+  } = useApprovalActions(step?.id ?? "", () => {
+    setRejectComment("");
+    setRejectOpen(false);
+    setClarifyComment("");
+    setClarifyOpen(false);
+    setDelegateUserId("");
+    setDelegateNote("");
+    setDelegateOpen(false);
+    onOpenChange(false);
+  });
 
-  // Reject state and mutation
+  // Reject UI state
   const [rejectComment, setRejectComment] = useState("");
   const [rejectOpen, setRejectOpen] = useState(false);
 
-  const rejectMutation = useMutation(
-    trpc.approval.reject.mutationOptions({
-      onSuccess: () => {
-        toast.success(t("toast.rejected"));
-        setRejectComment("");
-        setRejectOpen(false);
-        onOpenChange(false);
-        void queryClient.invalidateQueries({
-          queryKey: [["approval", "listPending"]],
-        });
-      },
-      onError: () => {
-        toast.error(t("errors.failedToReject"));
-      },
-    }),
-  );
-
-  // Clarification state and mutation
+  // Clarification UI state
   const [clarifyComment, setClarifyComment] = useState("");
   const [clarifyOpen, setClarifyOpen] = useState(false);
 
-  const clarifyMutation = useMutation(
-    trpc.approval.requestClarification.mutationOptions({
-      onSuccess: () => {
-        toast.success(t("toast.clarificationRequested"));
-        setClarifyComment("");
-        setClarifyOpen(false);
-        onOpenChange(false);
-        void queryClient.invalidateQueries({
-          queryKey: [["approval", "listPending"]],
-        });
-      },
-      onError: () => {
-        toast.error(t("errors.failedToDelegate"));
-      },
-    }),
-  );
-
-  // Delegate state and mutation
+  // Delegate UI state
   const [delegateUserId, setDelegateUserId] = useState("");
   const [delegateNote, setDelegateNote] = useState("");
   const [delegateOpen, setDelegateOpen] = useState(false);
-
-  const delegateMutation = useMutation(
-    trpc.approval.delegate.mutationOptions({
-      onSuccess: () => {
-        toast.success(t("toast.delegated"));
-        setDelegateUserId("");
-        setDelegateNote("");
-        setDelegateOpen(false);
-        onOpenChange(false);
-        void queryClient.invalidateQueries({
-          queryKey: [["approval", "listPending"]],
-        });
-      },
-      onError: () => {
-        toast.error(t("errors.failedToDelegate"));
-      },
-    }),
-  );
 
   if (!step) return null;
 
   const invoice = step.invoice;
   const isPending = step.status === "PENDING";
-
-  const formatAmount = (grosze: number, currency: string) => {
-    const formatted = new Intl.NumberFormat("pl-PL", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(grosze / 100);
-    return `${formatted} ${currency}`;
-  };
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -303,7 +242,7 @@ export function ApprovalSidePanel({
                 {t("sidePanel.amount")}
               </h4>
               <p className="font-mono text-sm tabular-nums">
-                {formatAmount(invoice.totalGrosze, invoice.currency)}
+                {formatAmount(invoice.totalMinor, invoice.currency)}
               </p>
             </div>
           )}
@@ -343,12 +282,10 @@ export function ApprovalSidePanel({
             <div className="flex items-center gap-2">
               <Button
                 className="flex-1"
-                onClick={() =>
-                  approveMutation.mutate({ stepId: step.id })
-                }
-                disabled={approveMutation.isPending}
+                onClick={() => approveAction()}
+                disabled={actionsPending}
               >
-                <CheckCircle2 className="mr-1.5 h-4 w-4" />
+                <CheckCircle2 className="me-1.5 h-4 w-4" />
                 {t("sidePanel.approve")}
               </Button>
 
@@ -361,7 +298,7 @@ export function ApprovalSidePanel({
                       variant="destructive"
                       className="flex-1"
                     >
-                      <XCircle className="mr-1.5 h-4 w-4" />
+                      <XCircle className="me-1.5 h-4 w-4" />
                       {t("sidePanel.reject")}
                     </Button>
                   )}
@@ -404,14 +341,9 @@ export function ApprovalSidePanel({
                         size="sm"
                         disabled={
                           rejectComment.length < 10 ||
-                          rejectMutation.isPending
+                          actionsPending
                         }
-                        onClick={() =>
-                          rejectMutation.mutate({
-                            stepId: step.id,
-                            comment: rejectComment,
-                          })
-                        }
+                        onClick={() => rejectAction(rejectComment)}
                       >
                         {t("rejectPopover.confirm")}
                       </Button>
@@ -431,7 +363,7 @@ export function ApprovalSidePanel({
                     size="sm"
                     className="w-full"
                   >
-                    <MoreHorizontal className="mr-1.5 h-4 w-4" />
+                    <MoreHorizontal className="me-1.5 h-4 w-4" />
                     {t("sidePanel.more")}
                   </Button>
                 )}
@@ -440,13 +372,13 @@ export function ApprovalSidePanel({
                 <DropdownMenuItem
                   onClick={() => setClarifyOpen(true)}
                 >
-                  <HelpCircle className="mr-2 h-4 w-4" />
+                  <HelpCircle className="me-2 h-4 w-4" />
                   {t("sidePanel.requestClarification")}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => setDelegateOpen(true)}
                 >
-                  <UserPlus className="mr-2 h-4 w-4" />
+                  <UserPlus className="me-2 h-4 w-4" />
                   {t("sidePanel.delegateApproval")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -493,14 +425,9 @@ export function ApprovalSidePanel({
               <Button
                 size="sm"
                 disabled={
-                  clarifyComment.length < 1 || clarifyMutation.isPending
+                  clarifyComment.length < 1 || actionsPending
                 }
-                onClick={() =>
-                  clarifyMutation.mutate({
-                    stepId: step.id,
-                    comment: clarifyComment,
-                  })
-                }
+                onClick={() => clarifyAction(clarifyComment)}
               >
                 {t("clarifyPopover.confirm")}
               </Button>
@@ -560,14 +487,10 @@ export function ApprovalSidePanel({
               <Button
                 size="sm"
                 disabled={
-                  !delegateUserId.trim() || delegateMutation.isPending
+                  !delegateUserId.trim() || actionsPending
                 }
                 onClick={() =>
-                  delegateMutation.mutate({
-                    stepId: step.id,
-                    delegateToUserId: delegateUserId,
-                    comment: delegateNote || undefined,
-                  })
+                  delegateAction(delegateUserId, delegateNote)
                 }
               >
                 {t("delegatePopover.confirm")}

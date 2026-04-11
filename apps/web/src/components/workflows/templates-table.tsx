@@ -13,9 +13,9 @@ import {
   Trash2,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { toast } from "sonner";
 
 import { trpc } from "@/trpc/init";
+import { useTemplateMutations } from "@/hooks/use-template-mutations";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -123,18 +123,14 @@ export function TemplatesTable() {
     return result?.total ?? 0;
   }, [templatesQuery.data]);
 
-  // Mutations
-  const updateTemplateMutation = useMutation(
-    trpc.workflow.updateTemplate.mutationOptions(),
-  );
-
-  const deleteTemplateMutation = useMutation(
-    trpc.workflow.deleteTemplate.mutationOptions(),
-  );
-
-  const duplicateTemplateMutation = useMutation(
-    trpc.workflow.duplicateTemplate.mutationOptions(),
-  );
+  // Template CRUD mutations (extracted hook)
+  const {
+    activate: activateTemplate,
+    archive: archiveTemplate,
+    duplicate: duplicateTemplate,
+    deleteTemplate,
+    isPending: isMutating,
+  } = useTemplateMutations(t);
 
   // Seed starter templates on first visit (if org has no templates)
   const seedMutation = useMutation(
@@ -163,71 +159,31 @@ export function TemplatesTable() {
   }, [templatesQuery.isLoading, templates.length, total, seedMutation, queryClient]);
 
   const handleActivate = useCallback(
-    async (template: TemplateRow) => {
-      try {
-        await updateTemplateMutation.mutateAsync({
-          id: template.id,
-          status: "ACTIVE",
-        });
-        toast.success(t("toast.templateActivated"));
-        void queryClient.invalidateQueries({
-          queryKey: [["workflow", "listTemplates"]],
-        });
-      } catch {
-        toast.error(t("errors.failedToSaveTemplate"));
-      }
+    (template: TemplateRow) => {
+      void activateTemplate(template.id);
     },
-    [updateTemplateMutation, queryClient, t],
+    [activateTemplate],
   );
 
   const handleArchive = useCallback(
-    async (template: TemplateRow) => {
-      try {
-        await updateTemplateMutation.mutateAsync({
-          id: template.id,
-          status: "ARCHIVED",
-        });
-        toast.success(t("toast.templateArchived"));
-        void queryClient.invalidateQueries({
-          queryKey: [["workflow", "listTemplates"]],
-        });
-      } catch {
-        toast.error(t("errors.failedToSaveTemplate"));
-      }
+    (template: TemplateRow) => {
+      void archiveTemplate(template.id);
     },
-    [updateTemplateMutation, queryClient, t],
+    [archiveTemplate],
   );
 
   const handleDuplicate = useCallback(
-    async (template: TemplateRow) => {
-      try {
-        await duplicateTemplateMutation.mutateAsync({
-          id: template.id,
-        });
-        toast.success(t("toast.templateDuplicated"));
-        void queryClient.invalidateQueries({
-          queryKey: [["workflow", "listTemplates"]],
-        });
-      } catch {
-        toast.error(t("errors.failedToSaveTemplate"));
-      }
+    (template: TemplateRow) => {
+      void duplicateTemplate(template.id);
     },
-    [duplicateTemplateMutation, queryClient, t],
+    [duplicateTemplate],
   );
 
-  const handleDelete = useCallback(async () => {
+  const handleDelete = useCallback(() => {
     if (!deleteTarget) return;
-    try {
-      await deleteTemplateMutation.mutateAsync({ id: deleteTarget.id });
-      toast.success(t("toast.templateDeleted"));
-      setDeleteTarget(null);
-      void queryClient.invalidateQueries({
-        queryKey: [["workflow", "listTemplates"]],
-      });
-    } catch {
-      toast.error(t("errors.failedToSaveTemplate"));
-    }
-  }, [deleteTarget, deleteTemplateMutation, queryClient, t]);
+    void deleteTemplate(deleteTarget.id);
+    setDeleteTarget(null);
+  }, [deleteTarget, deleteTemplate]);
 
   const isLoading = templatesQuery.isLoading;
 
@@ -384,13 +340,13 @@ export function TemplatesTable() {
                           )
                         }
                       >
-                        <Pencil className="mr-2 h-4 w-4" />
+                        <Pencil className="me-2 h-4 w-4" />
                         {t("templates.actionEdit")}
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onSelect={() => void handleDuplicate(template)}
                       >
-                        <Copy className="mr-2 h-4 w-4" />
+                        <Copy className="me-2 h-4 w-4" />
                         {t("templates.actionDuplicate")}
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
@@ -398,7 +354,7 @@ export function TemplatesTable() {
                         <DropdownMenuItem
                           onSelect={() => void handleActivate(template)}
                         >
-                          <Power className="mr-2 h-4 w-4" />
+                          <Power className="me-2 h-4 w-4" />
                           {t("templates.actionActivate")}
                         </DropdownMenuItem>
                       )}
@@ -406,7 +362,7 @@ export function TemplatesTable() {
                         <DropdownMenuItem
                           onSelect={() => void handleArchive(template)}
                         >
-                          <Archive className="mr-2 h-4 w-4" />
+                          <Archive className="me-2 h-4 w-4" />
                           {t("templates.actionArchive")}
                         </DropdownMenuItem>
                       )}
@@ -417,7 +373,7 @@ export function TemplatesTable() {
                             className="text-destructive focus:text-destructive"
                             onSelect={() => setDeleteTarget(template)}
                           >
-                            <Trash2 className="mr-2 h-4 w-4" />
+                            <Trash2 className="me-2 h-4 w-4" />
                             {t("templates.actionDelete")}
                           </DropdownMenuItem>
                         </>

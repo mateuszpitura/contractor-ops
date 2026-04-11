@@ -185,13 +185,13 @@ export function ChangeRequestDiffCard({
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b bg-muted/30">
-                  <th scope="col" className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <th scope="col" className="px-3 py-2 text-start text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     {t("table.field")}
                   </th>
-                  <th scope="col" className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <th scope="col" className="px-3 py-2 text-start text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     {t("table.currentValue")}
                   </th>
-                  <th scope="col" className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <th scope="col" className="px-3 py-2 text-start text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     {t("table.requestedValue")}
                   </th>
                 </tr>

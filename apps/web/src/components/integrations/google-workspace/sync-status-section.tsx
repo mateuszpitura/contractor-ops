@@ -86,7 +86,7 @@ export function SyncStatusSection({ onImportClick }: SyncStatusSectionProps) {
           >
             {triggerSyncMutation.isPending && (
               <Loader2
-                className="mr-1.5 size-3.5 animate-spin"
+                className="me-1.5 size-3.5 animate-spin"
                 aria-hidden="true"
               />
             )}

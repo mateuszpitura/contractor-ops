@@ -102,7 +102,7 @@ export function TabAssignments({
                       assignment.contractor.legalName}
                   </Link>
                   {isCurrent && (
-                    <Badge variant="success" className="ml-2">
+                    <Badge variant="success" className="ms-2">
                       Current
                     </Badge>
                   )}

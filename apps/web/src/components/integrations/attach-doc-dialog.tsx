@@ -146,12 +146,12 @@ export function AttachDocDialog({
 
         {/* Search input */}
         <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute start-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search Notion and Confluence pages..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="pl-9"
+            className="ps-9"
           />
         </div>
 
@@ -165,7 +165,7 @@ export function AttachDocDialog({
               className="h-7 px-2.5 text-xs"
               onClick={() => setProviderFilter(btn.value)}
             >
-              {btn.icon && <span className="mr-1">{btn.icon}</span>}
+              {btn.icon && <span className="me-1">{btn.icon}</span>}
               {btn.label}
             </Button>
           ))}
@@ -179,7 +179,7 @@ export function AttachDocDialog({
                 <div key={i} className="flex items-center gap-2 p-2">
                   <Skeleton className="h-3.5 w-3.5 rounded-full shrink-0" />
                   <Skeleton className="h-4 w-[60%]" />
-                  <Skeleton className="h-3 w-[30%] ml-auto" />
+                  <Skeleton className="h-3 w-[30%] ms-auto" />
                 </div>
               ))}
             </div>
@@ -197,7 +197,7 @@ export function AttachDocDialog({
                   <button
                     key={`${result.provider}-${result.id}`}
                     type="button"
-                    className="flex w-full items-center gap-2 rounded-md p-2 text-left transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:outline-none"
+                    className="flex w-full items-center gap-2 rounded-md p-2 text-start transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:outline-none"
                     onClick={() => handleSelect(result)}
                     disabled={attachMutation.isPending}
                   >

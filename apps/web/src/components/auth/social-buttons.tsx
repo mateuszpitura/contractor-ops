@@ -48,9 +48,9 @@ export function SocialButtons() {
           className="w-full"
         >
           {loadingProvider === "google" ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <Loader2 className="me-2 h-4 w-4 animate-spin" />
           ) : (
-            <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+            <svg className="me-2 h-4 w-4" viewBox="0 0 24 24">
               <path
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
                 fill="#4285F4"
@@ -80,9 +80,9 @@ export function SocialButtons() {
           className="w-full"
         >
           {loadingProvider === "microsoft" ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <Loader2 className="me-2 h-4 w-4 animate-spin" />
           ) : (
-            <svg className="mr-2 h-4 w-4" viewBox="0 0 21 21">
+            <svg className="me-2 h-4 w-4" viewBox="0 0 21 21">
               <rect x="1" y="1" width="9" height="9" fill="#F25022" />
               <rect x="11" y="1" width="9" height="9" fill="#7FBA00" />
               <rect x="1" y="11" width="9" height="9" fill="#00A4EF" />

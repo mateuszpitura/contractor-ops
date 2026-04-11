@@ -71,7 +71,7 @@ export function DocumentsTab({ contractId, contractParties = [] }: DocumentsTabP
               size="sm"
               onClick={() => handleSendForSignature(doc.id)}
             >
-              <PenLine className="mr-1.5 size-3.5" />
+              <PenLine className="me-1.5 size-3.5" />
               Send for Signature: {doc.originalFileName}
             </Button>
           ))}

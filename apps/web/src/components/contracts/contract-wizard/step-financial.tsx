@@ -58,7 +58,7 @@ interface StepFinancialProps {
 
 /**
  * Step 2: Financial terms.
- * Fields: rate (grosze display), currency, billing model, rate type,
+ * Fields: rate (minor units display), currency, billing model, rate type,
  * payment terms, invoice cycle. Shows pre-fill hint when applicable.
  */
 export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
@@ -86,42 +86,42 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
     formState: { errors },
   } = form;
 
-  const rateValueGrosze = watch("rateValueGrosze");
+  const rateValueMinor = watch("rateValueMinor");
   const currency = watch("currency") ?? "PLN";
 
   // Local state for rate input — prevents cursor jumping during typing.
-  // Syncs to form (grosze) on blur only.
+  // Syncs to form (minor units) on blur only.
   const [rateLocal, setRateLocal] = React.useState(() =>
-    typeof rateValueGrosze === "number" && rateValueGrosze > 0
-      ? (rateValueGrosze / 100).toString()
+    typeof rateValueMinor === "number" && rateValueMinor > 0
+      ? (rateValueMinor / 100).toString()
       : "",
   );
 
   // Sync from form → local when form value changes externally (e.g. pre-fill)
   React.useEffect(() => {
     const fromForm =
-      typeof rateValueGrosze === "number" && rateValueGrosze > 0
-        ? (rateValueGrosze / 100).toString()
+      typeof rateValueMinor === "number" && rateValueMinor > 0
+        ? (rateValueMinor / 100).toString()
         : "";
     setRateLocal((prev) => {
       // Only overwrite if the form value is substantially different
       // (avoids clobbering user mid-typing)
-      const prevGrosze = Math.round(parseFloat(prev || "0") * 100);
-      if (prevGrosze !== rateValueGrosze) return fromForm;
+      const prevMinor = Math.round(parseFloat(prev || "0") * 100);
+      if (prevMinor !== rateValueMinor) return fromForm;
       return prev;
     });
-  }, [rateValueGrosze]);
+  }, [rateValueMinor]);
 
   const handleRateBlur = () => {
     const value = parseFloat(rateLocal);
     if (!isNaN(value) && value >= 0) {
-      setValue("rateValueGrosze", Math.round(value * 100), {
+      setValue("rateValueMinor", Math.round(value * 100), {
         shouldDirty: true,
         shouldValidate: true,
       });
       setRateLocal(value.toFixed(2));
     } else {
-      setValue("rateValueGrosze", 0, {
+      setValue("rateValueMinor", 0, {
         shouldDirty: true,
         shouldValidate: true,
       });
@@ -144,23 +144,23 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
             type="number"
             step="0.01"
             min="0"
-            className="font-mono pr-16"
+            className="font-mono pe-16"
             value={rateLocal}
             onChange={(e) => setRateLocal(e.target.value)}
             onBlur={handleRateBlur}
           />
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+          <span className="absolute end-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
             {currency}
           </span>
         </div>
-        {isPreFilled("rateValueGrosze") && (
+        {isPreFilled("rateValueMinor") && (
           <p className="text-xs text-muted-foreground">
             {t("preFilled")}
           </p>
         )}
-        {errors.rateValueGrosze && (
+        {errors.rateValueMinor && (
           <p className="text-sm text-destructive">
-            {errors.rateValueGrosze.message}
+            {errors.rateValueMinor.message}
           </p>
         )}
       </div>

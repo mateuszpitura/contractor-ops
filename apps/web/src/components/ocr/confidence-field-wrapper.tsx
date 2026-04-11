@@ -12,9 +12,9 @@ interface ConfidenceFieldWrapperProps {
 }
 
 function getBorderColorClass(confidence: number) {
-  if (confidence > 90) return "border-l-green-600 dark:border-l-green-500"
-  if (confidence >= 70) return "border-l-amber-500 dark:border-l-amber-400"
-  return "border-l-destructive dark:border-l-destructive"
+  if (confidence > 90) return "border-s-green-600 dark:border-s-green-500"
+  if (confidence >= 70) return "border-s-amber-500 dark:border-s-amber-400"
+  return "border-s-destructive dark:border-s-destructive"
 }
 
 export function ConfidenceFieldWrapper({
@@ -26,7 +26,7 @@ export function ConfidenceFieldWrapper({
   return (
     <div
       className={cn(
-        "flex flex-col gap-2 border-l-2 pl-3 transition-[border-color] duration-150 ease-in-out",
+        "flex flex-col gap-2 border-s-2 ps-3 transition-[border-color] duration-150 ease-in-out",
         getBorderColorClass(confidence),
         className
       )}

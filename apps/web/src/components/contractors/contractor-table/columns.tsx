@@ -182,17 +182,17 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractorRow>[] {
       header: t("columns.rate"),
       cell: ({ row }) => {
         const custom = row.original.customFieldsJson;
-        const grosze =
+        const minor =
           typeof custom === "object" && custom !== null
-            ? (custom as Record<string, unknown>).rateValueGrosze
+            ? (custom as Record<string, unknown>).rateValueMinor
             : null;
-        if (typeof grosze !== "number")
+        if (typeof minor !== "number")
           return <span className="text-muted-foreground">&mdash;</span>;
 
         const formatted = new Intl.NumberFormat("pl-PL", {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
-        }).format(grosze / 100);
+        }).format(minor / 100);
 
         return (
           <span className="font-mono text-sm tabular-nums">

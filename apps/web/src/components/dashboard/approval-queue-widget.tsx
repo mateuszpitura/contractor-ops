@@ -27,16 +27,16 @@ const currencyFormatter = new Intl.NumberFormat("pl-PL", {
   maximumFractionDigits: 2,
 });
 
-function formatAmount(grosze: number, currency: string): string {
+function formatAmount(minor: number, currency: string): string {
   if (currency !== "PLN") {
     return new Intl.NumberFormat("pl-PL", {
       style: "currency",
       currency,
       minimumFractionDigits: 0,
       maximumFractionDigits: 2,
-    }).format(grosze / 100);
+    }).format(minor / 100);
   }
-  return currencyFormatter.format(grosze / 100);
+  return currencyFormatter.format(minor / 100);
 }
 
 function getSlaVariant(status: string): "success" | "warning" | "destructive" | "secondary" {
@@ -57,14 +57,14 @@ function getSlaVariant(status: string): "success" | "warning" | "destructive" | 
 function getSlaAccent(status: string): string {
   switch (status) {
     case "green":
-      return "border-l-success";
+      return "border-s-success";
     case "yellow":
-      return "border-l-warning";
+      return "border-s-warning";
     case "red":
     case "overdue":
-      return "border-l-destructive";
+      return "border-s-destructive";
     default:
-      return "border-l-muted-foreground/30";
+      return "border-s-muted-foreground/30";
   }
 }
 
@@ -124,7 +124,7 @@ export function ApprovalQueueWidget() {
                 const invoice = item.invoice;
                 const contractorName =
                   invoice?.contractor?.legalName ?? invoice?.sellerName ?? "---";
-                const amount = invoice?.totalGrosze ?? 0;
+                const amount = invoice?.totalMinor ?? 0;
                 const currency = invoice?.currency ?? "PLN";
                 const invoiceId = item.approvalFlow?.resourceId;
                 const slaStatus = item.slaStatus?.status ?? "";
@@ -135,7 +135,7 @@ export function ApprovalQueueWidget() {
                   <Link
                     key={item.id}
                     href={invoiceId ? `/invoices/${invoiceId}` : "/approvals"}
-                    className={`flex items-center gap-3 rounded-lg border-l-2 ${accent} pl-3 pr-2.5 py-2.5 transition-all duration-200 hover:bg-surface-2 hover:pl-3.5`}
+                    className={`flex items-center gap-3 rounded-lg border-s-2 ${accent} ps-3 pe-2.5 py-2.5 transition-all duration-200 hover:bg-surface-2 hover:ps-3.5`}
                   >
                     <span className="min-w-0 flex-1 truncate text-sm font-medium">
                       {contractorName}

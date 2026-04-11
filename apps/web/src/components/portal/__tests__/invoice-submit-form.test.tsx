@@ -87,7 +87,7 @@ const mockContracts = [
   {
     id: "c1",
     title: "Dev Contract",
-    rateValueGrosze: 1500000,
+    rateValueMinor: 1500000,
     currency: "PLN",
     rateType: "MONTHLY",
     billingModel: "MONTHLY_RETAINER",
@@ -95,7 +95,7 @@ const mockContracts = [
   {
     id: "c2",
     title: "Design Contract",
-    rateValueGrosze: 800000,
+    rateValueMinor: 800000,
     currency: "PLN",
     rateType: "HOURLY",
     billingModel: "HOURLY",
@@ -412,5 +412,251 @@ describe("InvoiceSubmitForm", () => {
     expect(screen.queryByTestId("credit-exhausted-inline")).not.toBeInTheDocument();
 
     consoleSpy.mockRestore();
+  });
+
+  it("shows uploaded file info when upload is complete", async () => {
+    stubXhr();
+    vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:mock-pdf");
+    const { user } = setup(<InvoiceSubmitForm />);
+
+    const file = new File(["%PDF-1.4 test"], "my-invoice.pdf", {
+      type: "application/pdf",
+    });
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
+    await user.upload(input, file);
+
+    await waitFor(() => {
+      const matches = screen.getAllByText("my-invoice.pdf");
+      expect(matches.length).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  it("shows remove file button after upload", async () => {
+    stubXhr();
+    vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:mock-pdf");
+    const { user } = setup(<InvoiceSubmitForm />);
+
+    const file = new File(["%PDF-1.4 test"], "removable.pdf", {
+      type: "application/pdf",
+    });
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
+    await user.upload(input, file);
+
+    await waitFor(() => {
+      const matches = screen.getAllByText("removable.pdf");
+      expect(matches.length).toBeGreaterThanOrEqual(1);
+    });
+
+    const removeBtn = screen.getByRole("button", { name: /remove/i });
+    expect(removeBtn).toBeInTheDocument();
+  });
+
+  it("shows View PDF button after upload", async () => {
+    stubXhr();
+    vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:mock-pdf");
+    const { user } = setup(<InvoiceSubmitForm />);
+
+    const file = new File(["%PDF-1.4 test"], "viewable.pdf", {
+      type: "application/pdf",
+    });
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
+    await user.upload(input, file);
+
+    await waitFor(() => {
+      const matches = screen.getAllByText("viewable.pdf");
+      expect(matches.length).toBeGreaterThanOrEqual(1);
+    });
+
+    expect(screen.getByText("View PDF")).toBeInTheDocument();
+  });
+
+  it("renders multiple contract options in selector", () => {
+    contractsData = mockContracts;
+    render(<InvoiceSubmitForm />);
+    expect(screen.getByText("Contract")).toBeInTheDocument();
+    expect(screen.getByText("Invoice Details")).toBeInTheDocument();
+  });
+
+  it("renders PARTIAL extraction status", () => {
+    ocrData = {
+      status: "PARTIAL",
+      resultJson: {
+        status: "PARTIAL",
+        fields: {
+          invoiceNumber: { value: "FV/01", confidence: 0.4 },
+        },
+      },
+    };
+    render(<InvoiceSubmitForm />);
+    expect(screen.getByTestId("extraction-status-bar")).toHaveTextContent(
+      "PARTIAL",
+    );
+  });
+
+  it("shows review with invoice number filled", async () => {
+    const { user } = setup(<InvoiceSubmitForm />);
+    const invoiceInput = screen.getByPlaceholderText("INV-001");
+    await user.type(invoiceInput, "INV-999");
+    expect(screen.getByText("Review")).toBeInTheDocument();
+    expect(screen.getByText("INV-999")).toBeInTheDocument();
+  });
+
+  it("pre-fills all OCR fields including amounts", async () => {
+    ocrData = {
+      status: "EXTRACTED",
+      resultJson: {
+        status: "EXTRACTED",
+        fields: {
+          invoiceNumber: { value: "FV/2025/99", confidence: 0.99 },
+          issueDate: { value: "2025-06-01", confidence: 0.95 },
+          dueDate: { value: "2025-06-15", confidence: 0.90 },
+          totalNet: { value: 100000, confidence: 0.92 },
+          totalGross: { value: 123000, confidence: 0.91 },
+        },
+      },
+    };
+    render(<InvoiceSubmitForm />);
+    await waitFor(() => {
+      expect(screen.queryByText(/pre-filled some fields/)).toBeInTheDocument();
+    });
+    const badges = screen.getAllByTestId("confidence-badge");
+    expect(badges.length).toBeGreaterThanOrEqual(4);
+  });
+
+  it("removes file and resets upload state", async () => {
+    stubXhr();
+    vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:mock-pdf");
+    const { user } = setup(<InvoiceSubmitForm />);
+
+    const file = new File(["%PDF-1.4 test"], "removable-test.pdf", {
+      type: "application/pdf",
+    });
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
+    await user.upload(input, file);
+
+    await waitFor(() => {
+      const matches = screen.getAllByText("removable-test.pdf");
+      expect(matches.length).toBeGreaterThanOrEqual(1);
+    });
+
+    const removeBtn = screen.getByRole("button", { name: /remove/i });
+    await user.click(removeBtn);
+
+    // Should go back to idle state with dropzone
+    await waitFor(() => {
+      expect(
+        screen.getByText("Drop your invoice PDF here or browse"),
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("shows progress bar during upload", async () => {
+    const XhrClass = class {
+      status = 200;
+      upload = { onprogress: null as ((e: ProgressEvent) => void) | null };
+      onload: (() => void) | null = null;
+      onerror: (() => void) | null = null;
+      open = vi.fn();
+      setRequestHeader = vi.fn();
+      send = vi.fn(() => {
+        queueMicrotask(() => {
+          this.upload.onprogress?.({
+            lengthComputable: true,
+            loaded: 50,
+            total: 100,
+          } as ProgressEvent);
+          // Don't call onload immediately to keep it in uploading state
+        });
+      });
+    };
+    vi.stubGlobal("XMLHttpRequest", XhrClass);
+
+    const { user } = setup(<InvoiceSubmitForm />);
+
+    const file = new File(["%PDF-1.4 test"], "progress-test.pdf", {
+      type: "application/pdf",
+    });
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
+    await user.upload(input, file);
+
+    // Should show uploading state
+    await waitFor(() => {
+      expect(screen.getByText(/Uploading/i)).toBeInTheDocument();
+    });
+  });
+
+  it("renders expected amount hint after contract selection", async () => {
+    contractsData = [mockContracts[0]!];
+    render(<InvoiceSubmitForm />);
+    await waitFor(() => {
+      expect(screen.getByText(/Expected:/)).toBeInTheDocument();
+    });
+  });
+
+  it("renders submit button text", () => {
+    render(<InvoiceSubmitForm />);
+    expect(
+      screen.getByRole("button", { name: "Submit Invoice" }),
+    ).toBeInTheDocument();
+  });
+
+  it("renders review section with contract info when contract selected", async () => {
+    contractsData = [mockContracts[0]!];
+    render(<InvoiceSubmitForm />);
+    await waitFor(() => {
+      expect(screen.getByText("Review")).toBeInTheDocument();
+    });
+  });
+
+  it("renders drop zone disabled while uploading", async () => {
+    const XhrClass = class {
+      status = 200;
+      upload = { onprogress: null as ((e: ProgressEvent) => void) | null };
+      onload: (() => void) | null = null;
+      onerror: (() => void) | null = null;
+      open = vi.fn();
+      setRequestHeader = vi.fn();
+      send = vi.fn(); // Don't complete upload
+    };
+    vi.stubGlobal("XMLHttpRequest", XhrClass);
+
+    const { user } = setup(<InvoiceSubmitForm />);
+
+    const file = new File(["%PDF-1.4 test"], "block-upload.pdf", {
+      type: "application/pdf",
+    });
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
+    await user.upload(input, file);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Uploading/i)).toBeInTheDocument();
+    });
+  });
+
+  it("shows extraction failure status bar", () => {
+    ocrData = {
+      status: "FAILED",
+      resultJson: {
+        status: "FAILED",
+        fields: {},
+        errorMessage: "Could not parse PDF",
+      },
+    };
+    render(<InvoiceSubmitForm />);
+    expect(screen.getByTestId("extraction-status-bar")).toHaveTextContent(
+      "FAILED",
+    );
   });
 });

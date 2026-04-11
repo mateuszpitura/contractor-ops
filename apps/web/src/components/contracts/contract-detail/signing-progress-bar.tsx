@@ -209,7 +209,7 @@ export function SigningProgressBar({ envelope }: SigningProgressBarProps) {
                     }
                     disabled={resendMutation.isPending}
                   >
-                    <RefreshCw className="mr-2 size-3.5" />
+                    <RefreshCw className="me-2 size-3.5" />
                     {t("resendTo", { name: r.name })}
                   </DropdownMenuItem>
                 ))}
@@ -217,7 +217,7 @@ export function SigningProgressBar({ envelope }: SigningProgressBarProps) {
                   variant="destructive"
                   onClick={() => setVoidOpen(true)}
                 >
-                  <Ban className="mr-2 size-3.5" />
+                  <Ban className="me-2 size-3.5" />
                   {t("voidEnvelope")}
                 </DropdownMenuItem>
               </DropdownMenuContent>

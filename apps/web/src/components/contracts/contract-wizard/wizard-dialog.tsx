@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 
 import { trpc } from "@/trpc/init";
+import { useWizardSteps } from "@/hooks/use-wizard-steps";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -68,7 +69,7 @@ const contractWizardSchema = z.object({
     "PER_MILESTONE",
     "PER_DELIVERABLE",
   ]),
-  rateValueGrosze: z.number().int().nonnegative().optional(),
+  rateValueMinor: z.number().int().nonnegative().optional(),
   paymentTermsDays: z.number().int().positive().optional(),
   invoiceCycle: z
     .enum(["WEEKLY", "BIWEEKLY", "MONTHLY", "ON_DELIVERABLE", "AD_HOC"])
@@ -199,7 +200,7 @@ export function ContractWizardDialog({
   const t = useTranslations("Contracts.wizard");
   const queryClient = useQueryClient();
 
-  const [currentStep, setCurrentStep] = useState(0);
+  const { currentStep, goNext, goBack, reset: resetSteps } = useWizardSteps(3);
   const [showDiscardDialog, setShowDiscardDialog] = useState(false);
   const [uploadedDocumentIds, setUploadedDocumentIds] = useState<string[]>([]);
   const [preFilledFields, setPreFilledFields] = useState<Set<string>>(
@@ -220,7 +221,7 @@ export function ContractWizardDialog({
       currency: "PLN",
       billingModel: undefined,
       rateType: undefined,
-      rateValueGrosze: 0,
+      rateValueMinor: 0,
       paymentTermsDays: undefined,
       invoiceCycle: undefined,
     },
@@ -251,7 +252,7 @@ export function ContractWizardDialog({
         preFilledSet.add("currency");
       }
 
-      // billingModel and rateValueGrosze stored in customFieldsJson
+      // billingModel and rateValueMinor stored in customFieldsJson
       const customFields = contractor.customFieldsJson as Record<
         string,
         unknown
@@ -268,15 +269,15 @@ export function ContractWizardDialog({
         }
 
         if (
-          typeof customFields.rateValueGrosze === "number" &&
-          customFields.rateValueGrosze > 0
+          typeof customFields.rateValueMinor === "number" &&
+          customFields.rateValueMinor > 0
         ) {
           form.setValue(
-            "rateValueGrosze",
-            customFields.rateValueGrosze as number,
+            "rateValueMinor",
+            customFields.rateValueMinor as number,
             { shouldDirty: false },
           );
-          preFilledSet.add("rateValueGrosze");
+          preFilledSet.add("rateValueMinor");
         }
       }
 
@@ -334,7 +335,7 @@ export function ContractWizardDialog({
       return;
     }
     form.reset();
-    setCurrentStep(0);
+    resetSteps();
     setUploadedDocumentIds([]);
     setPreFilledFields(new Set());
     hasPreFilled.current = false;
@@ -344,7 +345,7 @@ export function ContractWizardDialog({
   const handleDiscard = () => {
     setShowDiscardDialog(false);
     form.reset();
-    setCurrentStep(0);
+    resetSteps();
     setUploadedDocumentIds([]);
     setPreFilledFields(new Set());
     hasPreFilled.current = false;
@@ -379,16 +380,14 @@ export function ContractWizardDialog({
     }
 
     if (currentStep < 2) {
-      setCurrentStep((s) => s + 1);
+      goNext();
     } else {
       submitForm();
     }
   };
 
   const handleBack = () => {
-    if (currentStep > 0) {
-      setCurrentStep((s) => s - 1);
-    }
+    goBack();
   };
 
   const handleSkipDocuments = () => {
@@ -456,7 +455,7 @@ export function ContractWizardDialog({
             >
               {createMutation.isPending ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="me-2 h-4 w-4 animate-spin" />
                   {t("submit")}
                 </>
               ) : (

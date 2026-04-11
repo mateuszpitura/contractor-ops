@@ -241,7 +241,7 @@ export function TemplateForm({ templateId }: TemplateFormProps) {
           <div className="flex shrink-0 flex-wrap gap-2">
               <Button type="submit" disabled={isSaving}>
                 {isDirty && (
-                  <span className="mr-1.5 inline-block size-2 rounded-full bg-current" />
+                  <span className="me-1.5 inline-block size-2 rounded-full bg-current" />
                 )}
                 {t("saveTemplate")}
               </Button>

@@ -360,7 +360,7 @@ export function TaskCardRun({
             <button
               {...props}
               type="button"
-              className="flex w-full items-center gap-3 p-4 text-left hover:bg-muted/50 transition-colors"
+              className="flex w-full items-center gap-3 p-4 text-start hover:bg-muted/50 transition-colors"
             >
               {/* Status icon */}
               <StatusIcon

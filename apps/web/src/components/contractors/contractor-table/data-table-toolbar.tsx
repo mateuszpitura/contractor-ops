@@ -139,15 +139,15 @@ export function DataTableToolbar({
       <div className="flex items-center gap-2">
         {/* Search */}
         <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute start-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder={t("searchPlaceholder")}
             value={localSearch}
             onChange={(e) => handleSearchInput(e.target.value)}
-            className="h-9 pl-9 pr-8"
+            className="h-9 ps-9 pe-8"
           />
           {isSearching && (
-            <Loader2 className="absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+            <Loader2 className="absolute end-2.5 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
           )}
         </div>
 
@@ -161,7 +161,7 @@ export function DataTableToolbar({
                 {hasActiveFilters && (
                   <Badge
                     variant="secondary"
-                    className="ml-1 h-5 w-5 rounded-full p-0 text-[10px]"
+                    className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]"
                   >
                     {activeFilterCount}
                   </Badge>
@@ -278,7 +278,7 @@ export function DataTableToolbar({
           ))}
           <button
             type="button"
-            className="ml-1 text-xs text-muted-foreground hover:text-foreground underline"
+            className="ms-1 text-xs text-muted-foreground hover:text-foreground underline"
             onClick={clearAllFilters}
           >
             {t("clearAll")}
@@ -337,11 +337,11 @@ function FilterBadge({
   const tAria = useTranslations("Common.aria");
 
   return (
-    <Badge variant="secondary" className="gap-1 pl-2 pr-1 py-0.5">
+    <Badge variant="secondary" className="gap-1 ps-2 pe-1 py-0.5">
       <span className="text-xs">{label}</span>
       <button
         type="button"
-        className="ml-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20"
+        className="ms-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20"
         onClick={onRemove}
         aria-label={tAria("removeFilter", { label })}
       >

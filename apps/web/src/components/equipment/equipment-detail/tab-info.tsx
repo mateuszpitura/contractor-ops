@@ -117,7 +117,7 @@ function InfoRow({
   return (
     <div className="flex items-start justify-between gap-4">
       <span className="text-sm text-muted-foreground">{label}</span>
-      <span className={`text-sm text-right ${mono ? "font-mono" : ""}`}>
+      <span className={`text-sm text-end ${mono ? "font-mono" : ""}`}>
         {value ?? <span className="text-muted-foreground">&mdash;</span>}
       </span>
     </div>

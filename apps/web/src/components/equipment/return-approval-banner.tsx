@@ -102,7 +102,7 @@ export function ReturnApprovalBanner({
 
   return (
     <>
-      <div className="rounded-md border-l-4 border-warning bg-warning/10 p-4">
+      <div className="rounded-md border-s-4 border-warning bg-warning/10 p-4">
         <div className="flex items-start gap-3">
           <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-warning" />
           <div className="min-w-0 flex-1">
@@ -124,7 +124,7 @@ export function ReturnApprovalBanner({
               disabled={isPending}
             >
               {rejectMutation.isPending && (
-                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
               )}
               {t("reject")}
             </Button>
@@ -134,7 +134,7 @@ export function ReturnApprovalBanner({
               disabled={isPending}
             >
               {approveMutation.isPending && (
-                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
               )}
               {t("approve")}
             </Button>
@@ -161,7 +161,7 @@ export function ReturnApprovalBanner({
               disabled={rejectMutation.isPending}
             >
               {rejectMutation.isPending && (
-                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
               )}
               {t("reject")}
             </AlertDialogAction>

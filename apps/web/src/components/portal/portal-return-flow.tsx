@@ -198,7 +198,7 @@ export function PortalReturnFlow({
                     <span>
                       {item.name}
                       {item.serialNumber && (
-                        <span className="ml-1 font-mono text-xs text-muted-foreground">
+                        <span className="ms-1 font-mono text-xs text-muted-foreground">
                           ({item.serialNumber})
                         </span>
                       )}
@@ -222,7 +222,7 @@ export function PortalReturnFlow({
                     className="w-full"
                     onClick={() => setPickerOpen(true)}
                   >
-                    <Package className="mr-2 h-4 w-4" />
+                    <Package className="me-2 h-4 w-4" />
                     {t("selectDropOff")}
                   </Button>
                 )}
@@ -249,12 +249,12 @@ export function PortalReturnFlow({
                 <p>
                   <span className="font-medium">{t("itemsToReturn", { count: equipmentItems.length })}</span>
                 </p>
-                <ul className="space-y-1 pl-4">
+                <ul className="space-y-1 ps-4">
                   {equipmentItems.map((item, i) => (
                     <li key={i}>
                       {item.name}
                       {item.serialNumber && (
-                        <span className="ml-1 font-mono text-xs text-muted-foreground">
+                        <span className="ms-1 font-mono text-xs text-muted-foreground">
                           ({item.serialNumber})
                         </span>
                       )}
@@ -285,7 +285,7 @@ export function PortalReturnFlow({
                   disabled={requestMutation.isPending || requestMutation.isSuccess}
                 >
                   {requestMutation.isPending && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="me-2 h-4 w-4 animate-spin" />
                   )}
                   {t("requestReturn")}
                 </Button>

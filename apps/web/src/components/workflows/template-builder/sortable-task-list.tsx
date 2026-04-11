@@ -120,7 +120,7 @@ export function SortableTaskList({
       <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed py-12 text-center">
         <p className="text-sm text-muted-foreground">{t("noTasksYet")}</p>
         <Button type="button" variant="secondary" onClick={onAdd}>
-          <Plus className="mr-1.5 size-4" />
+          <Plus className="me-1.5 size-4" />
           {t("addTask")}
         </Button>
       </div>
@@ -149,7 +149,7 @@ export function SortableTaskList({
       </DndContext>
 
       <Button type="button" variant="secondary" onClick={onAdd}>
-        <Plus className="mr-1.5 size-4" />
+        <Plus className="me-1.5 size-4" />
         {t("addTask")}
       </Button>
     </div>

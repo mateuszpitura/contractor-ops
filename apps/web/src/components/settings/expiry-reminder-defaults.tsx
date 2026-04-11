@@ -107,9 +107,9 @@ export function ExpiryReminderDefaults() {
           disabled={updateMutation.isPending}
         >
           {updateMutation.isPending ? (
-            <Loader2 className="mr-1.5 size-3.5 animate-spin" />
+            <Loader2 className="me-1.5 size-3.5 animate-spin" />
           ) : (
-            <Save className="mr-1.5 size-3.5" />
+            <Save className="me-1.5 size-3.5" />
           )}
           {t("expiryReminders.save")}
         </Button>

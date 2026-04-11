@@ -150,12 +150,12 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
           size="sm"
           onClick={() => toast.info(t("actions.editComingSoon"))}
         >
-          <Pencil className="mr-1.5 size-3.5" />
+          <Pencil className="me-1.5 size-3.5" />
           {t("actions.edit")}
         </Button>
 
         <Button variant="outline" size="sm" onClick={() => setWizardOpen(true)}>
-          <FilePlus className="mr-1.5 size-3.5" />
+          <FilePlus className="me-1.5 size-3.5" />
           {t("actions.addContract")}
         </Button>
 
@@ -168,7 +168,7 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
               setPickerOpen(true);
             }}
           >
-            <Play className="mr-1.5 size-3.5" />
+            <Play className="me-1.5 size-3.5" />
             {t("actions.startOnboarding")}
           </Button>
         )}
@@ -182,7 +182,7 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
               setPickerOpen(true);
             }}
           >
-            <Play className="mr-1.5 size-3.5" />
+            <Play className="me-1.5 size-3.5" />
             {t("actions.startOffboarding")}
           </Button>
         )}

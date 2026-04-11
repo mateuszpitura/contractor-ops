@@ -318,7 +318,7 @@ export function OnboardingChecklist() {
       </CardContent>
       <CardFooter>
         <Button variant="ghost" size="sm" onClick={handleDismiss}>
-          <ChevronUp className="mr-1 h-3.5 w-3.5" />
+          <ChevronUp className="me-1 h-3.5 w-3.5" />
           {t("dismiss")}
         </Button>
       </CardFooter>

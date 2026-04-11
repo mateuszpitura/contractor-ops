@@ -99,7 +99,7 @@ export function DataTableFilters({
               {hasActiveFilters && (
                 <Badge
                   variant="secondary"
-                  className="ml-1 h-5 w-5 rounded-full p-0 text-[10px]"
+                  className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]"
                 >
                   {activeFilterCount}
                 </Badge>
@@ -153,7 +153,7 @@ export function DataTableFilters({
           ))}
           <button
             type="button"
-            className="ml-1 text-xs text-muted-foreground hover:text-foreground underline"
+            className="ms-1 text-xs text-muted-foreground hover:text-foreground underline"
             onClick={clearAllFilters}
           >
             {t("clearAll")}
@@ -212,11 +212,11 @@ function FilterBadge({
   const tAria = useTranslations("Common.aria");
 
   return (
-    <Badge variant="secondary" className="gap-1 pl-2 pr-1 py-0.5">
+    <Badge variant="secondary" className="gap-1 ps-2 pe-1 py-0.5">
       <span className="text-xs">{label}</span>
       <button
         type="button"
-        className="ml-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20"
+        className="ms-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20"
         onClick={onRemove}
         aria-label={tAria("removeFilter", { label })}
       >

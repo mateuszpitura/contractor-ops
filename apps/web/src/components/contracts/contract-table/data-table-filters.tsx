@@ -141,7 +141,7 @@ export function DataTableFilters({
               {hasActiveFilters && (
                 <Badge
                   variant="secondary"
-                  className="ml-1 h-5 w-5 rounded-full p-0 text-[10px]"
+                  className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]"
                 >
                   {activeFilterCount}
                 </Badge>
@@ -221,14 +221,14 @@ export function DataTableFilters({
                     {t("dateFrom")}
                   </label>
                   <div className="relative">
-                    <Calendar className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                    <Calendar className="absolute start-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
                     <Input
                       type="date"
                       value={filters.endDateFrom}
                       onChange={(e) =>
                         onFiltersChange({ endDateFrom: e.target.value })
                       }
-                      className="h-8 pl-7 text-xs"
+                      className="h-8 ps-7 text-xs"
                     />
                   </div>
                 </div>
@@ -237,14 +237,14 @@ export function DataTableFilters({
                     {t("dateTo")}
                   </label>
                   <div className="relative">
-                    <Calendar className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                    <Calendar className="absolute start-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
                     <Input
                       type="date"
                       value={filters.endDateTo}
                       onChange={(e) =>
                         onFiltersChange({ endDateTo: e.target.value })
                       }
-                      className="h-8 pl-7 text-xs"
+                      className="h-8 ps-7 text-xs"
                     />
                   </div>
                 </div>
@@ -311,7 +311,7 @@ export function DataTableFilters({
           )}
           <button
             type="button"
-            className="ml-1 text-xs text-muted-foreground hover:text-foreground underline"
+            className="ms-1 text-xs text-muted-foreground hover:text-foreground underline"
             onClick={clearAllFilters}
           >
             {t("clearAll")}
@@ -370,11 +370,11 @@ function FilterBadge({
   const tAria = useTranslations("Common.aria");
 
   return (
-    <Badge variant="secondary" className="gap-1 pl-2 pr-1 py-0.5">
+    <Badge variant="secondary" className="gap-1 ps-2 pe-1 py-0.5">
       <span className="text-xs">{label}</span>
       <button
         type="button"
-        className="ml-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20"
+        className="ms-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20"
         onClick={onRemove}
         aria-label={tAria("removeFilter", { label })}
       >

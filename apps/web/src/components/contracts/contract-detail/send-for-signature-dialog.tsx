@@ -458,7 +458,7 @@ export function SendForSignatureDialog({
           >
             {sendMutation.isPending ? (
               <>
-                <Loader2 className="mr-1.5 size-4 animate-spin" />
+                <Loader2 className="me-1.5 size-4 animate-spin" />
                 {tSend("sending")}
               </>
             ) : (

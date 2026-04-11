@@ -10,10 +10,10 @@ import { cn } from "@/lib/utils";
 // Types
 // ---------------------------------------------------------------------------
 
-export interface PlanTier {
+interface PlanTier {
   name: string;
-  basePriceGrosze: number;
-  seatPriceGrosze: number;
+  basePriceMinor: number;
+  seatPriceMinor: number;
   creditAllowance: number;
   features: string[];
   excludedFeatures: string[];
@@ -35,8 +35,8 @@ interface PlanCardProps {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function formatPLN(grosze: number): string {
-  return String(grosze / 100);
+function formatPLN(minor: number): string {
+  return String(minor / 100);
 }
 
 const CTA_CONFIG: Record<PlanCtaMode, { label: string; variant: "default" | "outline" }> = {
@@ -94,13 +94,13 @@ export function PlanCard({
         {/* Price display */}
         <div>
           <span className="font-display text-[28px] font-semibold leading-tight tabular-nums">
-            {formatPLN(tier.basePriceGrosze)} PLN
+            {formatPLN(tier.basePriceMinor)} PLN
           </span>
           <span className="text-sm text-muted-foreground">/month</span>
         </div>
 
         <p className="text-sm text-muted-foreground">
-          +{formatPLN(tier.seatPriceGrosze)} PLN per contractor
+          +{formatPLN(tier.seatPriceMinor)} PLN per contractor
         </p>
 
         <p className="text-sm text-muted-foreground">

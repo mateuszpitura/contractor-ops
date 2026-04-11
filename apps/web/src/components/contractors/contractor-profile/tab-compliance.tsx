@@ -135,7 +135,7 @@ export function TabCompliance({ contractor }: TabComplianceProps) {
                       document.getElementById("compliance-upload-zone")?.scrollIntoView({ behavior: "smooth" });
                     }}
                   >
-                    <Upload className="mr-1.5 size-3.5" />
+                    <Upload className="me-1.5 size-3.5" />
                     {t("upload")}
                   </Button>
                 )}

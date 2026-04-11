@@ -683,7 +683,7 @@ export function ReminderRuleEditor({
             </Button>
             <Button type="submit" disabled={isPending}>
               {isPending && (
-                <Loader2 className="mr-1.5 size-3.5 animate-spin" />
+                <Loader2 className="me-1.5 size-3.5 animate-spin" />
               )}
               {t("reminderRules.editor.save")}
             </Button>

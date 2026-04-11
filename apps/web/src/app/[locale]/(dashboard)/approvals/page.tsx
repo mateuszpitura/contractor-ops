@@ -283,7 +283,7 @@ function ApprovalsContent() {
             <TabsTrigger value="profile-changes">
               Profile Changes
               {pendingCount > 0 && (
-                <span className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-medium text-primary-foreground">
+                <span className="ms-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-medium text-primary-foreground">
                   {pendingCount}
                 </span>
               )}

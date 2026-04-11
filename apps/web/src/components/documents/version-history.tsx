@@ -105,11 +105,11 @@ export function VersionHistory({ documentId }: VersionHistoryProps) {
                 <span className="text-xs font-medium">
                   {t("version", { n: versions.length - i })}
                 </span>
-                <span className="ml-2 text-xs text-muted-foreground">
+                <span className="ms-2 text-xs text-muted-foreground">
                   {formatDate(version.createdAt)}
                 </span>
                 {version.status === "SUPERSEDED" && (
-                  <span className="ml-2 text-xs text-muted-foreground/60">
+                  <span className="ms-2 text-xs text-muted-foreground/60">
                     ({t("superseded")})
                   </span>
                 )}

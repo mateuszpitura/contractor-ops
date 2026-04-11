@@ -38,7 +38,7 @@ export function CreditExhaustedInline({
           </p>
         </div>
       </div>
-      <div className="flex gap-2 pl-8">
+      <div className="flex gap-2 ps-8">
         <Button variant="default" size="sm" onClick={onUpgrade}>
           Upgrade plan
         </Button>

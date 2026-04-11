@@ -212,7 +212,7 @@ function TimelineNode({
         <button
           type="button"
           onClick={() => setExpanded(!expanded)}
-          className="flex items-center gap-2 text-left"
+          className="flex items-center gap-2 text-start"
         >
           {expanded ? (
             <ChevronDown className="size-3.5 shrink-0 text-muted-foreground" />
@@ -222,7 +222,7 @@ function TimelineNode({
           <div>
             <p className="text-sm font-medium">
               {amendment.title}
-              <span className="ml-2 text-xs text-muted-foreground">
+              <span className="ms-2 text-xs text-muted-foreground">
                 {amendment.amendmentNumber}
               </span>
             </p>
@@ -235,7 +235,7 @@ function TimelineNode({
         </button>
 
         {expanded && (
-          <div className="mt-3 ml-5 space-y-2 rounded-md border bg-muted/50 p-3">
+          <div className="mt-3 ms-5 space-y-2 rounded-md border bg-muted/50 p-3">
             {amendment.description && (
               <p className="text-sm">{amendment.description}</p>
             )}
@@ -272,7 +272,7 @@ export function AmendmentsTab({ contract }: AmendmentsTabProps) {
       <div className="flex items-center justify-between">
         <h3 className="text-base font-medium">{t("heading")}</h3>
         <Button size="sm" onClick={() => setDialogOpen(true)}>
-          <Plus className="mr-1.5 size-3.5" />
+          <Plus className="me-1.5 size-3.5" />
           {t("addCta")}
         </Button>
       </div>
@@ -289,7 +289,7 @@ export function AmendmentsTab({ contract }: AmendmentsTabProps) {
           </p>
         </div>
       ) : (
-        <div className="ml-1">
+        <div className="ms-1">
           {sorted.map((amendment, i) => (
             <TimelineNode
               key={amendment.id}

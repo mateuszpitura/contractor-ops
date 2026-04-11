@@ -33,7 +33,7 @@ export default function MembersPage() {
 
           {canInvite && (
             <Button onClick={() => setInviteOpen(true)}>
-              <UserPlus className="mr-2 h-4 w-4" />
+              <UserPlus className="me-2 h-4 w-4" />
               {t("inviteCta")}
             </Button>
           )}

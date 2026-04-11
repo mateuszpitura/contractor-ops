@@ -237,7 +237,7 @@ export function WorkflowsTab({ contractorId }: WorkflowsTabProps) {
             {t("contractorNoWorkflowsBody")}
           </p>
           <Button size="sm" onClick={() => setPickerOpen(true)}>
-            <Plus className="mr-1.5 size-3.5" />
+            <Plus className="me-1.5 size-3.5" />
             {t("contractorNoWorkflowsCta")}
           </Button>
         </div>
@@ -261,7 +261,7 @@ export function WorkflowsTab({ contractorId }: WorkflowsTabProps) {
           {t("contractorWorkflowsTab")}
         </h3>
         <Button size="sm" onClick={() => setPickerOpen(true)}>
-          <Plus className="mr-1.5 size-3.5" />
+          <Plus className="me-1.5 size-3.5" />
           {t("contractorStartWorkflow")}
         </Button>
       </div>

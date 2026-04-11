@@ -221,7 +221,7 @@ function TimeTrackingContent() {
             <TabsTrigger value="pending">
               Pending Reviews
               {pendingTimesheets.length > 0 && (
-                <span className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-medium text-primary-foreground">
+                <span className="ms-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-medium text-primary-foreground">
                   {pendingTimesheets.length}
                 </span>
               )}
@@ -289,7 +289,7 @@ function TimeTrackingContent() {
                       <TableRow>
                         <TableHead>Contractor</TableHead>
                         <TableHead>Period</TableHead>
-                        <TableHead className="text-right">
+                        <TableHead className="text-end">
                           Total Hours
                         </TableHead>
                         <TableHead>Status</TableHead>
@@ -304,7 +304,7 @@ function TimeTrackingContent() {
                           <TableCell className="text-sm text-muted-foreground">
                             {formatPeriod(ts.weekStartDate)}
                           </TableCell>
-                          <TableCell className="text-right text-sm font-medium">
+                          <TableCell className="text-end text-sm font-medium">
                             {minutesToDisplay(ts.totalMinutes)}
                           </TableCell>
                           <TableCell>

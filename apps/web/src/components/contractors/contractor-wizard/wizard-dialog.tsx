@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useWizardSteps } from "@/hooks/use-wizard-steps";
 import { z } from "zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Check, Loader2 } from "lucide-react";
@@ -34,19 +35,9 @@ import { StepAssignment } from "./step-assignment";
 
 // ---------------------------------------------------------------------------
 // Wizard form schema (mirrors contractorCreateSchema from validators package)
-// Defined locally to avoid cross-package dependency from web -> validators
 // ---------------------------------------------------------------------------
 
-/** Validates a Polish NIP number using the mod-11 checksum algorithm. */
-const NIP_WEIGHTS = [6, 5, 7, 2, 3, 4, 5, 6, 7] as const;
-function isValidNip(raw: string): boolean {
-  const nip = raw.replace(/[\s-]/g, "");
-  if (!/^\d{10}$/.test(nip)) return false;
-  const digits = nip.split("").map(Number);
-  const checksum =
-    NIP_WEIGHTS.reduce((sum, w, i) => sum + w * digits[i]!, 0) % 11;
-  return checksum === digits[9];
-}
+import { isValidNip } from "@/lib/nip-validator";
 
 const wizardSchema = z.object({
   legalName: z.string().min(1, "Legal name is required").max(255),
@@ -67,7 +58,7 @@ const wizardSchema = z.object({
   city: z.string().transform((v) => v === "" ? undefined : v).pipe(z.string().optional()),
   postalCode: z.string().transform((v) => v === "" ? undefined : v).pipe(z.string().optional()),
   billingModel: z.string().min(1, "Billing model is required"),
-  rateValueGrosze: z.number().int().positive("Rate must be positive"),
+  rateValueMinor: z.number().int().positive("Rate must be positive"),
   bankAccount: z.string().transform((v) => v === "" ? undefined : v).pipe(z.string().optional()),
   paymentTermsDays: z.preprocess(
     (v) => (v === "" || v === undefined || (typeof v === "number" && isNaN(v)) ? undefined : v),
@@ -94,7 +85,7 @@ const stepSchemas = [
   z.object({
     billingModel: z.string().min(1),
     currency: z.string().length(3),
-    rateValueGrosze: z.number().positive(),
+    rateValueMinor: z.number().positive(),
   }),
   // Step 3: Assignment
   z.object({
@@ -179,7 +170,7 @@ export function WizardDialog({ open, onOpenChange }: WizardDialogProps) {
   const t = useTranslations("ContractorWizard");
   const queryClient = useQueryClient();
 
-  const [currentStep, setCurrentStep] = useState(0);
+  const { currentStep, goNext, goBack, reset: resetSteps } = useWizardSteps(3);
   const [showDiscardDialog, setShowDiscardDialog] = useState(false);
 
   const form = useForm<WizardFormValues>({
@@ -200,7 +191,7 @@ export function WizardDialog({ open, onOpenChange }: WizardDialogProps) {
       city: undefined,
       postalCode: undefined,
       billingModel: "",
-      rateValueGrosze: 0,
+      rateValueMinor: 0,
       bankAccount: undefined,
       paymentTermsDays: undefined,
       ownerUserId: "",
@@ -238,14 +229,14 @@ export function WizardDialog({ open, onOpenChange }: WizardDialogProps) {
       return;
     }
     form.reset();
-    setCurrentStep(0);
+    resetSteps();
     onOpenChange(false);
   };
 
   const handleDiscard = () => {
     setShowDiscardDialog(false);
     form.reset();
-    setCurrentStep(0);
+    resetSteps();
     onOpenChange(false);
   };
 
@@ -266,7 +257,7 @@ export function WizardDialog({ open, onOpenChange }: WizardDialogProps) {
       if (currentStep === 0 && !form.getValues("displayName")) {
         form.setValue("displayName", form.getValues("legalName"));
       }
-      setCurrentStep((s) => s + 1);
+      goNext();
     } else {
       // Final step — all steps validated, submit directly
       const data = form.getValues();
@@ -278,9 +269,7 @@ export function WizardDialog({ open, onOpenChange }: WizardDialogProps) {
   };
 
   const handleBack = () => {
-    if (currentStep > 0) {
-      setCurrentStep((s) => s - 1);
-    }
+    goBack();
   };
 
   return (
@@ -339,7 +328,7 @@ export function WizardDialog({ open, onOpenChange }: WizardDialogProps) {
             >
               {createMutation.isPending ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="me-2 h-4 w-4 animate-spin" />
                   {t("submit")}
                 </>
               ) : (

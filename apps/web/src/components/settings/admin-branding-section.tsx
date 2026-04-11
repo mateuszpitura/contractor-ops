@@ -311,7 +311,7 @@ export function AdminBrandingSection() {
         >
           {updateBrandingMutation.isPending ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="me-2 h-4 w-4 animate-spin" />
               {t("saving")}
             </>
           ) : (
@@ -370,7 +370,7 @@ export function AdminBrandingSection() {
           >
             {updatePortalDomainMutation.isPending ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="me-2 h-4 w-4 animate-spin" />
                 {t("saving")}
               </>
             ) : (

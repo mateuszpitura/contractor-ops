@@ -49,9 +49,9 @@ export interface ExtractedInvoiceData {
   issueDate: string;
   dueDate: string;
   currency: string;
-  subtotalGrosze: number;
-  vatAmountGrosze: number;
-  totalGrosze: number;
+  subtotalMinor: number;
+  vatAmountMinor: number;
+  totalMinor: number;
   sellerTaxId: string;
   sellerName: string;
   buyerTaxId: string;
@@ -65,11 +65,11 @@ interface LineItemFormData {
   description: string;
   quantity: number | null;
   unit: string | null;
-  unitPriceGrosze: number | null;
-  netAmountGrosze: number | null;
+  unitPriceMinor: number | null;
+  netAmountMinor: number | null;
   vatRate: string | null;
-  vatAmountGrosze: number | null;
-  grossAmountGrosze: number | null;
+  vatAmountMinor: number | null;
+  grossAmountMinor: number | null;
   confidence: number;
 }
 
@@ -104,7 +104,7 @@ function getFieldConfidence(
   return fields?.[key]?.confidence ?? 0;
 }
 
-function getNumericFieldGrosze(
+function getNumericFieldMinor(
   fields: Record<string, { value: string | number | null }> | undefined,
   key: string,
 ): number {
@@ -114,12 +114,12 @@ function getNumericFieldGrosze(
   return isNaN(num) ? 0 : num;
 }
 
-function formatGrosze(grosze: number): string {
-  if (grosze === 0) return "";
-  return (grosze / 100).toFixed(2);
+function formatMinorUnits(minor: number): string {
+  if (minor === 0) return "";
+  return (minor / 100).toFixed(2);
 }
 
-function parseGrosze(display: string): number {
+function parseMinorUnits(display: string): number {
   const value = parseFloat(display);
   if (isNaN(value)) return 0;
   return Math.round(value * 100);
@@ -131,11 +131,11 @@ function mapLineItems(items: OcrLineItem[]): LineItemFormData[] {
     description: item.description,
     quantity: item.quantity,
     unit: item.unit,
-    unitPriceGrosze: item.unitPriceGrosze,
-    netAmountGrosze: item.netAmountGrosze,
+    unitPriceMinor: item.unitPriceMinor,
+    netAmountMinor: item.netAmountMinor,
     vatRate: item.vatRate,
-    vatAmountGrosze: item.vatAmountGrosze,
-    grossAmountGrosze: item.grossAmountGrosze,
+    vatAmountMinor: item.vatAmountMinor,
+    grossAmountMinor: item.grossAmountMinor,
     confidence: item.confidence,
   }));
 }
@@ -153,9 +153,9 @@ const FIELD_ORDER = [
   "buyerTaxId",
   "sellerName",
   "buyerName",
-  "subtotalGrosze",
-  "vatAmountGrosze",
-  "totalGrosze",
+  "subtotalMinor",
+  "vatAmountMinor",
+  "totalMinor",
   "sellerBankAccount",
 ] as const;
 
@@ -224,9 +224,9 @@ export function OcrReviewPanel({
   const [issueDate, setIssueDate] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [currency, setCurrency] = useState("PLN");
-  const [subtotalGrosze, setSubtotalGrosze] = useState("");
-  const [vatAmountGrosze, setVatAmountGrosze] = useState("");
-  const [totalGrosze, setTotalGrosze] = useState("");
+  const [subtotalMinor, setSubtotalMinor] = useState("");
+  const [vatAmountMinor, setVatAmountMinor] = useState("");
+  const [totalMinor, setTotalMinor] = useState("");
   const [sellerTaxId, setSellerTaxId] = useState("");
   const [sellerName, setSellerName] = useState("");
   const [buyerTaxId, setBuyerTaxId] = useState("");
@@ -249,9 +249,9 @@ export function OcrReviewPanel({
     setIssueDate(getFieldValue(fields, "issueDate"));
     setDueDate(getFieldValue(fields, "dueDate"));
     setCurrency(getFieldValue(fields, "currency") || "PLN");
-    setSubtotalGrosze(formatGrosze(getNumericFieldGrosze(fields, "totalNet")));
-    setVatAmountGrosze(formatGrosze(getNumericFieldGrosze(fields, "totalTax")));
-    setTotalGrosze(formatGrosze(getNumericFieldGrosze(fields, "totalGross")));
+    setSubtotalMinor(formatMinorUnits(getNumericFieldMinor(fields, "totalNet")));
+    setVatAmountMinor(formatMinorUnits(getNumericFieldMinor(fields, "totalTax")));
+    setTotalMinor(formatMinorUnits(getNumericFieldMinor(fields, "totalGross")));
     setSellerTaxId(getFieldValue(fields, "sellerNip"));
     setSellerName(getFieldValue(fields, "sellerName"));
     setBuyerTaxId(getFieldValue(fields, "buyerNip"));
@@ -278,9 +278,9 @@ export function OcrReviewPanel({
       issueDate,
       dueDate,
       currency,
-      subtotalGrosze: parseGrosze(subtotalGrosze),
-      vatAmountGrosze: parseGrosze(vatAmountGrosze),
-      totalGrosze: parseGrosze(totalGrosze),
+      subtotalMinor: parseMinorUnits(subtotalMinor),
+      vatAmountMinor: parseMinorUnits(vatAmountMinor),
+      totalMinor: parseMinorUnits(totalMinor),
       sellerTaxId,
       sellerName,
       buyerTaxId,
@@ -290,7 +290,7 @@ export function OcrReviewPanel({
     });
   }, [
     invoiceNumber, issueDate, dueDate, currency,
-    subtotalGrosze, vatAmountGrosze, totalGrosze,
+    subtotalMinor, vatAmountMinor, totalMinor,
     sellerTaxId, sellerName, buyerTaxId, buyerName,
     sellerBankAccount, lineItems, onAccept,
   ]);
@@ -451,7 +451,7 @@ export function OcrReviewPanel({
 
               {/* Section 3: Amounts */}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <div style={fieldStyle("subtotalGrosze")}>
+                <div style={fieldStyle("subtotalMinor")}>
                   <ConfidenceFieldWrapper
                     confidence={getFieldConfidence(resultJson?.fields, "totalNet")}
                     label="Net Amount"
@@ -459,13 +459,13 @@ export function OcrReviewPanel({
                     <Input
                       type="number"
                       step="0.01"
-                      value={subtotalGrosze}
-                      onChange={(e) => setSubtotalGrosze(e.target.value)}
+                      value={subtotalMinor}
+                      onChange={(e) => setSubtotalMinor(e.target.value)}
                       placeholder="0.00"
                     />
                   </ConfidenceFieldWrapper>
                 </div>
-                <div style={fieldStyle("vatAmountGrosze")}>
+                <div style={fieldStyle("vatAmountMinor")}>
                   <ConfidenceFieldWrapper
                     confidence={getFieldConfidence(resultJson?.fields, "totalTax")}
                     label="VAT Amount"
@@ -473,13 +473,13 @@ export function OcrReviewPanel({
                     <Input
                       type="number"
                       step="0.01"
-                      value={vatAmountGrosze}
-                      onChange={(e) => setVatAmountGrosze(e.target.value)}
+                      value={vatAmountMinor}
+                      onChange={(e) => setVatAmountMinor(e.target.value)}
                       placeholder="0.00"
                     />
                   </ConfidenceFieldWrapper>
                 </div>
-                <div style={fieldStyle("totalGrosze")}>
+                <div style={fieldStyle("totalMinor")}>
                   <ConfidenceFieldWrapper
                     confidence={getFieldConfidence(resultJson?.fields, "totalGross")}
                     label="Total Gross"
@@ -487,8 +487,8 @@ export function OcrReviewPanel({
                     <Input
                       type="number"
                       step="0.01"
-                      value={totalGrosze}
-                      onChange={(e) => setTotalGrosze(e.target.value)}
+                      value={totalMinor}
+                      onChange={(e) => setTotalMinor(e.target.value)}
                       placeholder="0.00"
                     />
                   </ConfidenceFieldWrapper>

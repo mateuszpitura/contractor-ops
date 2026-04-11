@@ -131,7 +131,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
           {t("noConditions")}
         </p>
         <Button type="button" variant="outline" size="sm" onClick={addRule}>
-          <Plus className="mr-1.5 size-3.5" />
+          <Plus className="me-1.5 size-3.5" />
           {t("addCondition")}
         </Button>
       </div>
@@ -250,7 +250,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
 
       {/* Add condition button */}
       <Button type="button" variant="outline" size="sm" onClick={addRule}>
-        <Plus className="mr-1.5 size-3.5" />
+        <Plus className="me-1.5 size-3.5" />
         {t("addCondition")}
       </Button>
     </div>

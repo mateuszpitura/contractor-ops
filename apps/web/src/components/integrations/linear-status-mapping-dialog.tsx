@@ -93,63 +93,27 @@ interface LinearStatusMappingDialogProps {
 }
 
 // ---------------------------------------------------------------------------
-// Smart default algorithm (D-02)
+// Smart default algorithm (D-02) -- delegates core logic to utility
 // ---------------------------------------------------------------------------
 
+import { computeSmartDefaultMappings } from "@/lib/linear-status-mapping";
+
 function computeSmartDefaults(states: LinearState[]): MappingEntry[] {
-  const defaults: MappingEntry[] = [];
-  const used = new Set<string>();
+  const smartMap = computeSmartDefaultMappings(states);
+  const stateByName = new Map(states.map((s) => [s.name, s]));
 
-  // Pass 1: match by name keywords
-  for (const state of states) {
-    const lower = state.name.toLowerCase();
-    let workflowStatus: string | null = null;
-
-    if (lower.includes("block")) {
-      workflowStatus = "BLOCKED";
-    } else if (lower.includes("done") || lower.includes("complete")) {
-      workflowStatus = "DONE";
-    } else if (lower.includes("progress") || lower.includes("review")) {
-      workflowStatus = "IN_PROGRESS";
-    } else if (lower.includes("cancel")) {
-      workflowStatus = "CANCELLED";
-    }
-
-    if (workflowStatus && !used.has(workflowStatus)) {
-      used.add(workflowStatus);
-      defaults.push({
+  return Object.entries(smartMap)
+    .map(([workflowStatus, stateName]) => {
+      const state = stateByName.get(stateName);
+      if (!state) return null;
+      return {
         workflowStatus,
         linearStateId: state.id,
         linearStateName: state.name,
         linearStateType: state.type as LinearStateType,
-      });
-    }
-  }
-
-  // Pass 2: fall back to state.type mapping for unmapped workflow statuses
-  const typeMapping: Record<string, string> = {
-    triage: "TODO",
-    backlog: "TODO",
-    unstarted: "TODO",
-    started: "IN_PROGRESS",
-    completed: "DONE",
-    cancelled: "CANCELLED",
-  };
-
-  for (const state of states) {
-    const workflowStatus = typeMapping[state.type];
-    if (workflowStatus && !used.has(workflowStatus)) {
-      used.add(workflowStatus);
-      defaults.push({
-        workflowStatus,
-        linearStateId: state.id,
-        linearStateName: state.name,
-        linearStateType: state.type as LinearStateType,
-      });
-    }
-  }
-
-  return defaults;
+      };
+    })
+    .filter((e): e is MappingEntry => e !== null);
 }
 
 // ---------------------------------------------------------------------------
@@ -426,7 +390,7 @@ export function LinearStatusMappingDialog({
             }
           >
             {saveMutation.isPending && (
-              <Loader2 className="mr-1.5 size-3.5 animate-spin" />
+              <Loader2 className="me-1.5 size-3.5 animate-spin" />
             )}
             {saveMutation.isPending ? t("saving") : t("save")}
           </Button>

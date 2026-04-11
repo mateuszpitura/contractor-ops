@@ -123,7 +123,7 @@ export function PortalMobileMenu({
                 type="button"
                 onClick={() => handleNavClick(item.href)}
                 className={cn(
-                  "flex items-center gap-3 border-b px-4 py-3 text-base transition-colors text-left",
+                  "flex items-center gap-3 border-b px-4 py-3 text-base transition-colors text-start",
                   active
                     ? "bg-accent/50 text-foreground font-medium"
                     : "text-muted-foreground hover:text-foreground hover:bg-accent/30"
@@ -148,7 +148,7 @@ export function PortalMobileMenu({
             className="w-full"
             onClick={handleLogout}
           >
-            <LogOut className="mr-2 h-4 w-4" />
+            <LogOut className="me-2 h-4 w-4" />
             {t("signOut")}
           </Button>
         </div>

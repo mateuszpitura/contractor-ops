@@ -180,20 +180,20 @@ export function ApprovalQueueToolbar({
             })}
           </div>
           {/* Fade gradient for overflow on narrow screens */}
-          <div className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-background to-transparent xl:hidden" />
+          <div className="pointer-events-none absolute inset-y-0 end-0 w-8 bg-gradient-to-l from-background to-transparent xl:hidden" />
         </div>
 
         {/* Search input */}
         <div className="relative max-w-sm">
-          <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute start-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder={t("searchPlaceholder")}
             value={localSearch}
             onChange={(e) => handleSearchInput(e.target.value)}
-            className="h-9 pl-9 pr-8"
+            className="h-9 ps-9 pe-8"
           />
           {isSearching && (
-            <Loader2 className="absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+            <Loader2 className="absolute end-2.5 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
           )}
         </div>
       </div>
@@ -211,7 +211,7 @@ export function ApprovalQueueToolbar({
               disabled={bulkApproveMutation.isPending}
             >
               {bulkApproveMutation.isPending && (
-                <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />
+                <Loader2 className="me-1 h-3.5 w-3.5 animate-spin" />
               )}
               {t("bulk.approve", { count })}
             </Button>
@@ -274,7 +274,7 @@ export function ApprovalQueueToolbar({
               onClick={handleBulkReject}
             >
               {bulkRejectMutation.isPending && (
-                <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />
+                <Loader2 className="me-1 h-3.5 w-3.5 animate-spin" />
               )}
               {t("bulkRejectDialog.confirm", { count })}
             </Button>

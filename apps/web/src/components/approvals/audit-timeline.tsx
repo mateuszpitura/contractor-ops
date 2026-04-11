@@ -197,7 +197,7 @@ function HumanEntry({ event, t }: { event: AuditEvent; t: TranslateFn }) {
   const Icon = config.icon;
 
   return (
-    <div className="relative flex gap-3 pl-0">
+    <div className="relative flex gap-3 ps-0">
       {/* Avatar */}
       <Avatar className="shrink-0">
         {event.actor.image && <AvatarImage src={event.actor.image} />}
@@ -237,7 +237,7 @@ function HumanEntry({ event, t }: { event: AuditEvent; t: TranslateFn }) {
 
 function SystemEntry({ event, t }: { event: AuditEvent; t: TranslateFn }) {
   return (
-    <div className="relative flex items-start gap-3 pl-0">
+    <div className="relative flex items-start gap-3 ps-0">
       {/* Small circle marker */}
       <div className="mt-1.5 flex h-8 w-8 shrink-0 items-center justify-center">
         <div className="h-2 w-2 rounded-full bg-border" />
@@ -292,7 +292,7 @@ export function AuditTimeline({ invoiceId }: AuditTimelineProps) {
         ) : (
           <div className="relative space-y-4">
             {/* Vertical connector line */}
-            <div className="absolute left-4 top-0 bottom-0 w-[2px] bg-border" />
+            <div className="absolute start-4 top-0 bottom-0 w-[2px] bg-border" />
 
             {events.map((event, idx) => (
               <div key={`${event.label}-${event.timestamp}-${idx}`} className="relative">

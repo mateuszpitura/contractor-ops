@@ -48,7 +48,7 @@ export function DuplicateWarning({
   );
 
   return (
-    <Card className="border-l-[3px] border-l-destructive">
+    <Card className="border-s-[3px] border-s-destructive">
       <CardContent className="flex items-start gap-3 py-4 px-6">
         <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
         <div className="flex-1 space-y-1">
@@ -73,7 +73,7 @@ export function DuplicateWarning({
               disabled={dismissMutation.isPending}
             >
               {dismissMutation.isPending && (
-                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
               )}
               {t("duplicate.notDuplicate")}
             </Button>

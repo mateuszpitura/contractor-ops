@@ -179,7 +179,7 @@ function MobileTimeline({
           </div>
           <span
             className={cn(
-              "ml-3 mt-0.5 text-[13px]",
+              "ms-3 mt-0.5 text-[13px]",
               rejected && i === 1
                 ? "text-destructive font-medium"
                 : i < activeIndex

@@ -16,7 +16,7 @@ import {
 interface SeatCountCardProps {
   activeContractors: number;
   includedSeats: number;
-  seatPriceGrosze: number;
+  seatPriceMinor: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -26,14 +26,14 @@ interface SeatCountCardProps {
 export function SeatCountCard({
   activeContractors,
   includedSeats,
-  seatPriceGrosze,
+  seatPriceMinor,
 }: SeatCountCardProps) {
   const t = useTranslations("Billing.usage");
 
   const overage = Math.max(0, activeContractors - includedSeats);
   const maxSeats = Math.max(includedSeats, activeContractors);
   const fillPercent = maxSeats > 0 ? (activeContractors / maxSeats) * 100 : 0;
-  const pricePerSeat = seatPriceGrosze / 100;
+  const pricePerSeat = seatPriceMinor / 100;
 
   return (
     <Card className="p-4">

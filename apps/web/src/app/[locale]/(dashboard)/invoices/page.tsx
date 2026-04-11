@@ -140,7 +140,7 @@ function InvoicesContent() {
             <button
               type="button"
               onClick={handleCopyEmail}
-              className="inline-flex items-center gap-1 ml-1 font-medium text-primary hover:underline"
+              className="inline-flex items-center gap-1 ms-1 font-medium text-primary hover:underline"
             >
               {invoiceEmail}
               {emailCopied ? (

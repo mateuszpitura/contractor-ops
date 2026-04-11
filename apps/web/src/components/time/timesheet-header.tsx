@@ -123,14 +123,14 @@ export function TimesheetHeader({
         </Button>
 
         {/* Center: Status badge */}
-        <div className="ml-2">
+        <div className="ms-2">
           <TimeEntryStatusBadge status={status} />
         </div>
       </div>
 
       {/* Right: Total + Submit */}
       <div className="flex items-center gap-4">
-        <div className="text-right">
+        <div className="text-end">
           <span className="text-[28px] font-semibold leading-[1.2] text-primary">
             {displayHours}h
           </span>

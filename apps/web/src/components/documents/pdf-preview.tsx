@@ -82,7 +82,7 @@ export function PdfPreview({
               size="sm"
               onClick={() => window.open(pdfUrl, "_blank")}
             >
-              <Download className="mr-1.5 size-3.5" />
+              <Download className="me-1.5 size-3.5" />
               {t("download")}
             </Button>
           )}

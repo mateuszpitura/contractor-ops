@@ -173,7 +173,7 @@ export default function EquipmentDetailPage() {
             size="sm"
             onClick={() => setCarrierShipmentOpen(true)}
           >
-            <Truck className="mr-1.5 size-4" />
+            <Truck className="me-1.5 size-4" />
             {t("carrier.shipViaCarrier")}
           </Button>
         </div>

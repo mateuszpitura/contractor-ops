@@ -71,6 +71,15 @@ export function EmbeddedSigningModal({
   // Listen for postMessage from DocuSign iframe
   const handleMessage = useCallback(
     (event: MessageEvent) => {
+      // Only accept messages from DocuSign origins to prevent spoofing
+      const trustedOrigins = [
+        "https://app.docusign.com",
+        "https://apps-d.docusign.com",
+        "https://demo.docusign.net",
+        "https://app-d.docusign.com",
+      ];
+      if (!trustedOrigins.some((o) => event.origin.startsWith(o))) return;
+
       // DocuSign embedded signing events
       if (typeof event.data === "string") {
         if (
@@ -181,7 +190,7 @@ export function EmbeddedSigningModal({
                   <Button
                     onClick={() => window.open(signingData.url, "_blank")}
                   >
-                    <ExternalLink className="mr-1.5 size-4" />
+                    <ExternalLink className="me-1.5 size-4" />
                     {t("continueToProvider", { provider: provider === "AUTENTI" ? "Autenti" : provider })}
                   </Button>
                   <Button

@@ -149,7 +149,7 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
                     <button
                       key={userId}
                       type="button"
-                      className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-accent"
+                      className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-start text-sm hover:bg-accent"
                       onClick={() =>
                         bulkAssignOwnerMutation.mutate({
                           ids: selectedIds,
@@ -255,7 +255,7 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
               variant="destructive"
             >
               {bulkArchiveMutation.isPending ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="me-2 h-4 w-4 animate-spin" />
               ) : null}
               {ta("ctaBulk", { count })}
             </AlertDialogAction>

@@ -133,7 +133,7 @@ export function StepMapping({
                   </span>
                 </div>
                 {sample && (
-                  <p className="mt-0.5 truncate pl-6 text-xs text-muted-foreground">
+                  <p className="mt-0.5 truncate ps-6 text-xs text-muted-foreground">
                     {sample}
                   </p>
                 )}

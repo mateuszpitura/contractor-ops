@@ -159,7 +159,7 @@ export function ExternalSyncButton({
                   size="sm"
                   className="w-full justify-start font-normal"
                 >
-                  <CalendarDays className="mr-2 h-3.5 w-3.5" />
+                  <CalendarDays className="me-2 h-3.5 w-3.5" />
                   {format(fromDate, "MMM d, yyyy")}
                 </Button>
               </PopoverTrigger>
@@ -187,7 +187,7 @@ export function ExternalSyncButton({
                   size="sm"
                   className="w-full justify-start font-normal"
                 >
-                  <CalendarDays className="mr-2 h-3.5 w-3.5" />
+                  <CalendarDays className="me-2 h-3.5 w-3.5" />
                   {format(toDate, "MMM d, yyyy")}
                 </Button>
               </PopoverTrigger>

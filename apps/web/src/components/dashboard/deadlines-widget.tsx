@@ -44,17 +44,17 @@ const DEADLINE_BADGE_CONFIG: Record<
   CONTRACT_EXPIRING: {
     variant: "warning",
     labelKey: "deadlines.badgeContract",
-    accent: "border-l-warning",
+    accent: "border-s-warning",
   },
   TASK_OVERDUE: {
     variant: "destructive",
     labelKey: "deadlines.badgeTask",
-    accent: "border-l-destructive",
+    accent: "border-s-destructive",
   },
   INVOICE_DUE: {
     variant: "info",
     labelKey: "deadlines.badgeInvoice",
-    accent: "border-l-info",
+    accent: "border-s-info",
   },
 };
 
@@ -109,7 +109,7 @@ export function DeadlinesWidget() {
                 return (
                   <div
                     key={`${item.type}-${item.entityId}`}
-                    className={`flex items-center gap-3 rounded-lg border-l-2 ${badge.accent} pl-3 pr-2.5 py-2.5 transition-all duration-200 hover:bg-surface-2 hover:pl-3.5`}
+                    className={`flex items-center gap-3 rounded-lg border-s-2 ${badge.accent} ps-3 pe-2.5 py-2.5 transition-all duration-200 hover:bg-surface-2 hover:ps-3.5`}
                   >
                     <Badge
                       variant={badge.variant}

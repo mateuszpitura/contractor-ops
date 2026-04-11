@@ -19,7 +19,7 @@ interface ContractCardContract {
   endDate: Date | string | null;
   currency: string;
   rateType: string | null;
-  rateValueGrosze: number | null;
+  rateValueMinor: number | null;
   contractNumber: string | null;
 }
 
@@ -41,15 +41,15 @@ function formatMonthYear(date: Date | string): string {
 }
 
 /**
- * Format grosze amount to display currency (e.g. "12,000 PLN").
+ * Format minor-unit amount to display currency (e.g. "12,000 PLN").
  */
-function formatAmount(grosze: number, currency: string): string {
+function formatAmount(minor: number, currency: string): string {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency,
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
-  }).format(grosze / 100);
+  }).format(minor / 100);
 }
 
 /**
@@ -103,8 +103,8 @@ export function ContractCard({ contract, className }: ContractCardProps) {
   ].join(" - ");
 
   const rate =
-    contract.rateValueGrosze != null && contract.rateType
-      ? `${formatAmount(contract.rateValueGrosze, contract.currency)}${ratePeriodLabel(contract.rateType)}`
+    contract.rateValueMinor != null && contract.rateType
+      ? `${formatAmount(contract.rateValueMinor, contract.currency)}${ratePeriodLabel(contract.rateType)}`
       : null;
 
   return (

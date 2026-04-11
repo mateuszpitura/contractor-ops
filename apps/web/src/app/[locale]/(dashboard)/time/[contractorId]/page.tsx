@@ -136,7 +136,7 @@ function ReviewSkeleton() {
           <Skeleton className="h-6 w-48" />
           <Skeleton className="mt-2 h-4 w-32" />
         </div>
-        <Skeleton className="ml-2 h-6 w-20" />
+        <Skeleton className="ms-2 h-6 w-20" />
       </div>
       <Skeleton className="h-64 w-full rounded-xl" />
       <Skeleton className="h-32 w-full rounded-xl" />

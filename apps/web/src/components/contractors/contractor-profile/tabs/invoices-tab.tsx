@@ -152,7 +152,7 @@ export function InvoicesTab({ contractorId }: InvoicesTabProps) {
             {t("tab.noInvoicesBody")}
           </p>
           <Button size="sm" onClick={() => setUploadOpen(true)}>
-            <Upload className="mr-1.5 size-3.5" />
+            <Upload className="me-1.5 size-3.5" />
             {t("tab.uploadInvoice")}
           </Button>
         </div>
@@ -174,7 +174,7 @@ export function InvoicesTab({ contractorId }: InvoicesTabProps) {
       <div className="flex items-center justify-between">
         <h3 className="text-base font-medium">{t("tab.heading")}</h3>
         <Button size="sm" onClick={() => setUploadOpen(true)}>
-          <Upload className="mr-1.5 size-3.5" />
+          <Upload className="me-1.5 size-3.5" />
           {t("tab.uploadInvoice")}
         </Button>
       </div>

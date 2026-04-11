@@ -36,7 +36,7 @@ type MiniContractRow = {
   status: string;
   startDate: string | null;
   endDate: string | null;
-  rateValueGrosze: number | null;
+  rateValueMinor: number | null;
   currency: string;
 };
 
@@ -143,16 +143,16 @@ export function TabContracts({ contractorId }: TabContractsProps) {
         },
       },
       {
-        accessorKey: "rateValueGrosze",
+        accessorKey: "rateValueMinor",
         header: t("contractorTab.columns.rate" as Parameters<typeof t>[0]),
         cell: ({ row }) => {
-          const grosze = row.original.rateValueGrosze;
-          if (typeof grosze !== "number")
+          const minor = row.original.rateValueMinor;
+          if (typeof minor !== "number")
             return <span className="text-muted-foreground">&mdash;</span>;
           const formatted = new Intl.NumberFormat("pl-PL", {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
-          }).format(grosze / 100);
+          }).format(minor / 100);
           return (
             <span className="font-mono text-sm tabular-nums">
               {formatted} {row.original.currency}
@@ -200,7 +200,7 @@ export function TabContracts({ contractorId }: TabContractsProps) {
             {t("contractorTab.emptyBody")}
           </p>
           <Button size="sm" onClick={() => setWizardOpen(true)}>
-            <Plus className="mr-1.5 size-3.5" />
+            <Plus className="me-1.5 size-3.5" />
             {t("contractorTab.emptyCTA")}
           </Button>
         </div>
@@ -219,7 +219,7 @@ export function TabContracts({ contractorId }: TabContractsProps) {
       <div className="flex items-center justify-between">
         <h3 className="text-base font-medium">{t("contractorTab.heading")}</h3>
         <Button size="sm" onClick={() => setWizardOpen(true)}>
-          <Plus className="mr-1.5 size-3.5" />
+          <Plus className="me-1.5 size-3.5" />
           {t("contractorTab.addCTA")}
         </Button>
       </div>

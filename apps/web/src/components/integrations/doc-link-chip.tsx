@@ -103,7 +103,7 @@ export function DocLinkChip({
           {showRemove && (
             <button
               type="button"
-              className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 text-muted-foreground hover:text-destructive ml-0.5 shrink-0"
+              className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 text-muted-foreground hover:text-destructive ms-0.5 shrink-0"
               aria-label={`Remove link to ${title}`}
               onClick={(e) => {
                 e.preventDefault();
