@@ -293,7 +293,7 @@ export function ChainTracker({ invoiceId }: ChainTrackerProps) {
                     <div
                       className={cn(
                         "lg:hidden",
-                        "ml-[15px] h-6 w-[2px] border-l-2",
+                        "ms-[15px] h-6 w-[2px] border-s-2",
                         getConnectorStyle(
                           steps[idx - 1].status,
                           step.status,
