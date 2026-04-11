@@ -115,59 +115,59 @@ Requirements for International Foundation & Gulf Expansion. Each maps to roadmap
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| EINV-01 | — | Pending |
-| EINV-02 | — | Pending |
-| EINV-03 | — | Pending |
-| EINV-04 | — | Pending |
-| EINV-05 | — | Pending |
-| EINV-06 | — | Pending |
-| ZATCA-01 | — | Pending |
-| ZATCA-02 | — | Pending |
-| ZATCA-03 | — | Pending |
-| ZATCA-04 | — | Pending |
-| ZATCA-05 | — | Pending |
-| ZATCA-06 | — | Pending |
-| ZATCA-07 | — | Pending |
-| PEPPOL-01 | — | Pending |
-| PEPPOL-02 | — | Pending |
-| PEPPOL-03 | — | Pending |
-| PEPPOL-04 | — | Pending |
-| CURR-01 | — | Pending |
-| CURR-02 | — | Pending |
-| CURR-03 | — | Pending |
-| CURR-04 | — | Pending |
-| CURR-05 | — | Pending |
-| TAX-01 | — | Pending |
-| TAX-02 | — | Pending |
-| TAX-03 | — | Pending |
-| TAX-04 | — | Pending |
-| TAX-05 | — | Pending |
-| PAY-01 | — | Pending |
-| PAY-02 | — | Pending |
-| PAY-03 | — | Pending |
-| L10N-01 | — | Pending |
-| L10N-02 | — | Pending |
-| L10N-03 | — | Pending |
-| L10N-04 | — | Pending |
-| L10N-05 | — | Pending |
-| PROF-01 | — | Pending |
-| PROF-02 | — | Pending |
-| PROF-03 | — | Pending |
-| PROF-04 | — | Pending |
-| PDPL-01 | — | Pending |
-| PDPL-02 | — | Pending |
-| PDPL-03 | — | Pending |
-| PDPL-04 | — | Pending |
-| INFRA-01 | — | Pending |
-| INFRA-02 | — | Pending |
-| INFRA-03 | — | Pending |
-| INFRA-04 | — | Pending |
+| EINV-01 | Phase 45 | Pending |
+| EINV-02 | Phase 45 | Pending |
+| EINV-03 | Phase 45 | Pending |
+| EINV-04 | Phase 45 | Pending |
+| EINV-05 | Phase 45 | Pending |
+| EINV-06 | Phase 45 | Pending |
+| ZATCA-01 | Phase 48 | Pending |
+| ZATCA-02 | Phase 48 | Pending |
+| ZATCA-03 | Phase 48 | Pending |
+| ZATCA-04 | Phase 48 | Pending |
+| ZATCA-05 | Phase 48 | Pending |
+| ZATCA-06 | Phase 48 | Pending |
+| ZATCA-07 | Phase 48 | Pending |
+| PEPPOL-01 | Phase 49 | Pending |
+| PEPPOL-02 | Phase 49 | Pending |
+| PEPPOL-03 | Phase 49 | Pending |
+| PEPPOL-04 | Phase 49 | Pending |
+| CURR-01 | Phase 46 | Pending |
+| CURR-02 | Phase 46 | Pending |
+| CURR-03 | Phase 46 | Pending |
+| CURR-04 | Phase 46 | Pending |
+| CURR-05 | Phase 46 | Pending |
+| TAX-01 | Phase 47 | Pending |
+| TAX-02 | Phase 47 | Pending |
+| TAX-03 | Phase 47 | Pending |
+| TAX-04 | Phase 47 | Pending |
+| TAX-05 | Phase 47 | Pending |
+| PAY-01 | Phase 46 | Pending |
+| PAY-02 | Phase 46 | Pending |
+| PAY-03 | Phase 46 | Pending |
+| L10N-01 | Phase 50 | Pending |
+| L10N-02 | Phase 50 | Pending |
+| L10N-03 | Phase 50 | Pending |
+| L10N-04 | Phase 50 | Pending |
+| L10N-05 | Phase 50 | Pending |
+| PROF-01 | Phase 47 | Pending |
+| PROF-02 | Phase 47 | Pending |
+| PROF-03 | Phase 47 | Pending |
+| PROF-04 | Phase 47 | Pending |
+| PDPL-01 | Phase 51 | Pending |
+| PDPL-02 | Phase 51 | Pending |
+| PDPL-03 | Phase 51 | Pending |
+| PDPL-04 | Phase 51 | Pending |
+| INFRA-01 | Phase 52 | Pending |
+| INFRA-02 | Phase 52 | Pending |
+| INFRA-03 | Phase 52 | Pending |
+| INFRA-04 | Phase 52 | Pending |
 
 **Coverage:**
 - v4.0 requirements: 47 total
-- Mapped to phases: 0
-- Unmapped: 47 ⚠️
+- Mapped to phases: 47
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-11*
-*Last updated: 2026-04-11 after initial definition*
+*Last updated: 2026-04-11 after roadmap creation*
