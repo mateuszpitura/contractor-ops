@@ -1,0 +1,47 @@
+// ConsentRecord, PrivacyNotice — PDPL compliance (Phase 51)
+
+model ConsentRecord {
+  id             String         @id @default(cuid())
+  organizationId String
+  userId         String
+  purpose        ConsentPurpose
+  granted        Boolean
+  version        Int            @default(1)
+  grantedAt      DateTime?
+  revokedAt      DateTime?
+  ipAddress      String?
+  userAgent      String?
+  createdAt      DateTime       @default(now())
+
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User           @relation("UserConsentRecords", fields: [userId], references: [id], onDelete: Cascade)
+
+  // Immutable — no updatedAt (per D-02, matches AuditLog pattern)
+  @@index([organizationId])
+  @@index([organizationId, userId, purpose])
+  @@index([organizationId, purpose, createdAt])
+}
+
+model PrivacyNotice {
+  id             String   @id @default(cuid())
+  organizationId String
+  jurisdiction   String   @db.Char(2)
+  version        Int      @default(1)
+  contentJson    Json
+  effectiveFrom  DateTime
+  createdAt      DateTime @default(now())
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, jurisdiction])
+  @@unique([organizationId, jurisdiction, version])
+}
+
+enum ConsentPurpose {
+  CONTRACTOR_DATA_PROCESSING
+  INVOICE_PAYMENT_PROCESSING
+  ANALYTICS_REPORTING
+  CROSS_BORDER_TRANSFER
+  INTEGRATION_DATA_SHARING
+  COMMUNICATION_NOTIFICATIONS
+}
