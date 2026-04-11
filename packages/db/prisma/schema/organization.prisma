@@ -12,6 +12,7 @@ model Organization {
   // Custom fields from db-schema.md
   legalName            String?
   countryCode          String?            @db.Char(2)
+  dataRegion           DataRegion         @default(EU)
   defaultCurrency      String?            @db.Char(3)
   timezone             String?
   language             String?
@@ -208,4 +209,9 @@ enum SimpleStatus {
   ACTIVE
   INACTIVE
   ARCHIVED
+}
+
+enum DataRegion {
+  EU
+  ME
 }

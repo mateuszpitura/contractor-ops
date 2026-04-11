@@ -13,6 +13,12 @@ export function createMissingDatabaseUrlProxy(): PrismaClient {
   ) as PrismaClient;
 }
 
+/** Creates a PrismaClient connected to the given Neon connection string. */
+export function createPrismaClientForUrl(connectionString: string): PrismaClient {
+  const adapter = new PrismaNeon({ connectionString });
+  return new PrismaClient({ adapter });
+}
+
 function createPrismaClient() {
   const connectionString = process.env.DATABASE_URL;
 
@@ -20,8 +26,7 @@ function createPrismaClient() {
     throw new Error("DATABASE_URL environment variable is not set");
   }
 
-  const adapter = new PrismaNeon({ connectionString });
-  return new PrismaClient({ adapter });
+  return createPrismaClientForUrl(connectionString);
 }
 
 const globalForPrisma = globalThis as unknown as {

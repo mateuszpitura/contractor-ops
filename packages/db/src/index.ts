@@ -1,8 +1,10 @@
-export { prisma, PrismaClient } from "./client.js";
+export { prisma, PrismaClient, createPrismaClientForUrl } from "./client.js";
 export { withTenantScope, tenantStore } from "./tenant.js";
 export { withSoftDelete } from "./soft-delete.js";
 export { withRlsSession } from "./rls.js";
 export type { RlsContext } from "./rls.js";
+export { getRegionalClient, preWarmRegionalClients, SUPPORTED_REGIONS } from "./region.js";
+export type { DataRegion } from "./region.js";
 
 export type { Prisma } from "../generated/prisma/client/index.js";
 
