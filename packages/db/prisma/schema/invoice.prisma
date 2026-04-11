@@ -55,6 +55,7 @@ model Invoice {
   lines               InvoiceLine[]
   matchResults        InvoiceMatchResult[]
   paymentRunItems     PaymentRunItem[]
+  zatcaChainEntry     ZatcaInvoiceChain?
 
   @@index([organizationId])
   @@index([organizationId, status])

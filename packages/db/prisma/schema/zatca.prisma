@@ -1,0 +1,35 @@
+// ZATCA (Saudi Arabia) e-invoicing chain tracking
+
+model ZatcaInvoiceChain {
+  id               String                @id @default(cuid())
+  organizationId   String
+  icv              Int
+  invoiceId        String                @unique
+  invoiceHash      String
+  previousHash     String
+  zatcaUuid        String                @unique
+  zatcaStatus      ZatcaSubmissionStatus @default(PENDING)
+  zatcaResponse    Json?
+  submittedAt      DateTime?
+  clearedAt        DateTime?
+  reportedAt       DateTime?
+  rejectedAt       DateTime?
+  rejectionReason  String?
+  createdAt        DateTime              @default(now())
+
+  organization     Organization @relation(fields: [organizationId], references: [id])
+  invoice          Invoice      @relation(fields: [invoiceId], references: [id])
+
+  @@unique([organizationId, icv])
+  @@index([organizationId])
+  @@index([organizationId, zatcaStatus])
+}
+
+enum ZatcaSubmissionStatus {
+  PENDING
+  SUBMITTED
+  CLEARED
+  REPORTED
+  REJECTED
+  WARNING
+}

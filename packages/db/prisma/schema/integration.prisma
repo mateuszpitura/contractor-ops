@@ -120,6 +120,7 @@ enum IntegrationProvider {
   LINEAR
   MICROSOFT_TEAMS
   PEPPOL
+  ZATCA
 }
 
 enum IntegrationStatus {
