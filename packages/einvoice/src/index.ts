@@ -86,10 +86,65 @@ export type {
   KsefSyncParams,
 } from "./profiles/ksef/schemas.js";
 
+// ASP adapter types
+export type {
+  ASPAdapter,
+  RegisterParticipantParams,
+  ParticipantRegistration,
+  ParticipantStatus,
+  TransmitInvoiceParams,
+  TransmissionResult,
+  TransmissionStatus,
+  InboundInvoicePayload,
+  WebhookVerification,
+  ASPHealthStatus,
+} from "./asp/types.js";
+
+// Peppol-AE profile
+import { PeppolAEProfile as _PeppolAEProfile } from "./profiles/peppol-ae/index.js";
+export { PeppolAEProfile } from "./profiles/peppol-ae/index.js";
+export { generatePintAeXml } from "./profiles/peppol-ae/generator.js";
+export { parsePintAeXml } from "./profiles/peppol-ae/parser.js";
+export { validatePintAeXml } from "./profiles/peppol-ae/validator.js";
+export { PeppolAEQRCode } from "./profiles/peppol-ae/qr-code.js";
+export {
+  computePeppolComplianceStatus,
+} from "./profiles/peppol-ae/index.js";
+export type { PeppolConnectionData } from "./profiles/peppol-ae/index.js";
+
+// Peppol-AE schemas
+export {
+  peppolParticipantIdSchema,
+  peppolConnectionConfigSchema,
+  peppolTransmissionStatusSchema,
+} from "./profiles/peppol-ae/schemas.js";
+export type {
+  PeppolConnectionConfig,
+  PeppolTransmissionStatusType,
+} from "./profiles/peppol-ae/schemas.js";
+
+// Peppol-AE constants
+export {
+  PINT_AE_CUSTOMIZATION_ID,
+  PINT_AE_PROFILE_ID,
+  UAE_SCHEME_ID,
+  PINT_AE_DOCUMENT_TYPE_ID,
+  UAE_TAX_SCHEME_ID,
+  UAE_TAX_CATEGORIES,
+} from "./profiles/peppol-ae/constants.js";
+
 // Convenience: register KSeF profile
 export function registerKsefProfile(
   options?: ConstructorParameters<typeof _KsefProfile>[0],
 ): void {
   const profile = new _KsefProfile(options);
+  _registerProfile(profile);
+}
+
+// Convenience: register Peppol-AE profile
+export function registerPeppolAEProfile(
+  options?: ConstructorParameters<typeof _PeppolAEProfile>[0],
+): void {
+  const profile = new _PeppolAEProfile(options);
   _registerProfile(profile);
 }
