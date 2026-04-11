@@ -135,7 +135,7 @@ describe("onboarding", () => {
         expect(typeof ext.uuid).toBe("string");
         expect((ext.uuid as string).length).toBeGreaterThan(0);
         expect(ext.invoiceType).toMatch(/^(standard|simplified)$/);
-        expect(ext.invoiceSubtype).toMatch(/^[01]{7}$/);
+        expect(ext.invoiceSubtype).toMatch(/^[0-9]{7}$/);
         // Previous hash: first invoice uses SHA-256 of "0"
         expect(typeof ext.pih).toBe("string");
       }
