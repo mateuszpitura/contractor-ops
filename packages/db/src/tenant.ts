@@ -3,6 +3,7 @@ import type { Prisma } from "../generated/prisma/client/index.js";
 
 interface TenantContext {
   organizationId: string;
+  region: string;
 }
 
 export const tenantStore = new AsyncLocalStorage<TenantContext>();
@@ -89,7 +90,7 @@ export function withTenantScope<T extends PrismaExtensible>(prisma: T) {
           argsObj.data = { ...data, organizationId: ctx.organizationId };
         }
 
-        if (operation === "createMany") {
+        if (operation === "createMany" || operation === "createManyAndReturn") {
           const data = argsObj.data;
           if (Array.isArray(data)) {
             argsObj.data = data.map((item) => ({
@@ -104,12 +105,22 @@ export function withTenantScope<T extends PrismaExtensible>(prisma: T) {
 
         // Update/delete operations — inject organizationId into where clause
         if (
-          ["update", "updateMany", "delete", "deleteMany", "upsert"].includes(
-            operation
-          )
+          ["update", "updateMany", "delete", "deleteMany"].includes(operation)
         ) {
           const where = (argsObj.where ?? {}) as Record<string, unknown>;
           argsObj.where = { ...where, organizationId: ctx.organizationId };
+        }
+
+        // Upsert — inject organizationId into where, create, and update
+        if (operation === "upsert") {
+          const where = (argsObj.where ?? {}) as Record<string, unknown>;
+          argsObj.where = { ...where, organizationId: ctx.organizationId };
+
+          const create = (argsObj.create ?? {}) as Record<string, unknown>;
+          argsObj.create = { ...create, organizationId: ctx.organizationId };
+
+          const update = (argsObj.update ?? {}) as Record<string, unknown>;
+          argsObj.update = { ...update, organizationId: ctx.organizationId };
         }
 
         return await query(argsObj);
