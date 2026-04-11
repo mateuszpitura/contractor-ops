@@ -416,6 +416,26 @@ export type {
 } from "./linear.js";
 
 export {
+  consentPurposeEnum,
+  REQUIRED_PURPOSES,
+  OPTIONAL_PURPOSES,
+  PDPL_JURISDICTIONS,
+  isPdplJurisdiction,
+  grantConsentSchema,
+  bulkGrantConsentSchema,
+  consentQuerySchema,
+  consentAdminQuerySchema,
+} from "./consent.js";
+export type {
+  ConsentPurpose,
+  PdplJurisdiction,
+  GrantConsentInput,
+  BulkGrantConsentInput,
+  ConsentQueryInput,
+  ConsentAdminQueryInput,
+} from "./consent.js";
+
+export {
   sourceProviderSchema,
   listSourcesOutputSchema,
   fetchPeopleInputSchema,
