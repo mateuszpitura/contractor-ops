@@ -23,6 +23,11 @@ import {
 } from "../services/consent-record.js";
 import { getPrivacyNotice } from "../services/privacy-notice.js";
 import {
+  generateDPA,
+  generateSCC,
+  detectCrossBorderTransfer,
+} from "../services/legal-document-generation.js";
+import {
   grantConsentSchema,
   bulkGrantConsentSchema,
   consentQuerySchema,
@@ -177,4 +182,58 @@ export const consentRouter = router({
         input.purpose,
       );
     }),
+
+  /**
+   * Download Data Processing Agreement for current org.
+   * Returns HTML content for client-side rendering/download.
+   */
+  downloadDPA: tenantProcedure
+    .use(requirePermission({ settings: ["read"] }))
+    .mutation(async ({ ctx }) => {
+      const result = await generateDPA(ctx.organizationId);
+      if (!result) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "DPA not available for this jurisdiction",
+        });
+      }
+      return result;
+    }),
+
+  /**
+   * Download Standard Contractual Clauses for cross-border transfers.
+   * Returns null-equivalent error if no cross-border transfer detected.
+   */
+  downloadSCC: tenantProcedure
+    .use(requirePermission({ settings: ["read"] }))
+    .mutation(async ({ ctx }) => {
+      const result = await generateSCC(ctx.organizationId);
+      if (!result) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message:
+            "No cross-border transfer detected — SCC not required for your jurisdiction",
+        });
+      }
+      return result;
+    }),
+
+  /**
+   * Get cross-border transfer status for the current org.
+   */
+  getCrossBorderStatus: tenantProcedure.query(async ({ ctx }) => {
+    const org = await prisma.organization.findUniqueOrThrow({
+      where: { id: ctx.organizationId },
+      select: { countryCode: true },
+    });
+    if (!org.countryCode) {
+      return { detected: false, orgRegion: null, hostingRegion: null };
+    }
+    const result = detectCrossBorderTransfer(org.countryCode);
+    return {
+      detected: result.isCrossBorder,
+      orgRegion: result.orgRegion,
+      hostingRegion: result.hostingRegion,
+    };
+  }),
 });
