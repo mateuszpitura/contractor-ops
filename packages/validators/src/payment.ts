@@ -25,6 +25,7 @@ export const paymentExportFormatEnum = z.enum([
   "CSV",
   "BANK_FILE",
   "SEPA_XML",
+  "SWIFT_XML",
 ]);
 
 // ---------------------------------------------------------------------------
@@ -88,7 +89,7 @@ export const paymentRunListSchema = z.object({
   cursor: z.string().optional(),
   limit: z.number().int().min(1).max(100).default(20),
   sortBy: z
-    .enum(["createdAt", "runNumber", "totalGrosze"])
+    .enum(["createdAt", "runNumber", "totalMinor"])
     .default("createdAt"),
   sortOrder: z.enum(["asc", "desc"]).default("desc"),
   dateFrom: z.coerce.date().optional(),

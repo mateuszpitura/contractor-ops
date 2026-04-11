@@ -9,7 +9,7 @@ model PaymentRun {
   currency         String?          @db.Char(3)
   createdByUserId  String
   approvedByUserId String?
-  totalGrosze      Int              @default(0)
+  totalMinor       Int              @default(0)
   invoiceCount     Int              @default(0)
   exportFormat     PaymentExportFormat?
   exportedAt       DateTime?
@@ -38,7 +38,7 @@ model PaymentRunItem {
   invoiceId        String
   contractorId     String
   billingProfileId String?
-  amountGrosze     Int
+  amountMinor      Int
   currency         String               @db.Char(3)
   status           PaymentRunItemStatus  @default(PENDING)
   paymentReference String?
@@ -111,6 +111,7 @@ enum PaymentExportFormat {
   CSV
   BANK_FILE
   SEPA_XML
+  SWIFT_XML
   MT940
   XML
   API_PUSH

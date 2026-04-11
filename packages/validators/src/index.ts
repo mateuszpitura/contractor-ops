@@ -231,6 +231,17 @@ export type {
 } from "./payment.js";
 
 export {
+  exchangeRateQuerySchema,
+  exchangeRateLatestSchema,
+  exchangeRateConvertSchema,
+} from "./exchange-rate.js";
+export type {
+  ExchangeRateQuery,
+  ExchangeRateLatest,
+  ExchangeRateConvert,
+} from "./exchange-rate.js";
+
+export {
   ksefAuthMethodEnum,
   ksefEnvironmentEnum,
   ksefConnectionConfigSchema,
