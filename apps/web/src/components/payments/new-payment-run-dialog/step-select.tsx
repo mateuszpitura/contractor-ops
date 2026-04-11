@@ -151,7 +151,7 @@ export function StepSelect({
     const byCurrency: Record<string, number> = {};
     for (const inv of selectedInvoices) {
       byCurrency[inv.currency] =
-        (byCurrency[inv.currency] ?? 0) + inv.amountToPayGrosze;
+        (byCurrency[inv.currency] ?? 0) + inv.amountToPayMinor;
     }
     return byCurrency;
   }, [selectedInvoices]);
@@ -289,7 +289,7 @@ export function StepSelect({
               <Label htmlFor="group-by-currency" className="text-xs">
                 {t("step1.groupByCurrency")}
                 {groupByCurrency && uniqueCurrencies.length > 1 && (
-                  <span className="ml-1 text-muted-foreground">
+                  <span className="ms-1 text-muted-foreground">
                     ({t("step1.willCreateRuns", { count: uniqueCurrencies.length })})
                   </span>
                 )}

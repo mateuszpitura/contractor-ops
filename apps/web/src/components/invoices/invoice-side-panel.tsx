@@ -48,14 +48,14 @@ const matchStatusConfig: Record<string, { dotClass: string; labelKey: string }> 
   };
 
 // ---------------------------------------------------------------------------
-// Currency / grosze formatter
+// Currency / minor-unit formatter
 // ---------------------------------------------------------------------------
 
-function formatGrosze(grosze: number): string {
+function formatMinorUnits(minor: number): string {
   return new Intl.NumberFormat("pl-PL", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(grosze / 100);
+  }).format(minor / 100);
 }
 
 // ---------------------------------------------------------------------------
@@ -133,12 +133,12 @@ export function InvoiceSidePanel({
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <DetailItem
                   label={ts("net")}
-                  value={formatGrosze(invoice.subtotalGrosze)}
+                  value={formatMinorUnits(invoice.subtotalMinor)}
                   mono
                 />
                 <DetailItem
                   label={ts("gross")}
-                  value={formatGrosze(invoice.totalGrosze)}
+                  value={formatMinorUnits(invoice.totalMinor)}
                   mono
                 />
                 <DetailItem

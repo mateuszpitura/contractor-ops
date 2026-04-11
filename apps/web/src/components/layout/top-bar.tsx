@@ -70,8 +70,8 @@ export function TopBar() {
   return (
     <>
       <header className="glass-subtle sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 border-b-0 px-4">
-        <SidebarTrigger className="-ml-1" />
-        <Separator orientation="vertical" className="!self-center mr-2 h-4" />
+        <SidebarTrigger className="-ms-1" />
+        <Separator orientation="vertical" className="!self-center me-2 h-4" />
 
         {/* Unified breadcrumb — single source for all pages */}
         <Breadcrumb>
@@ -167,7 +167,7 @@ export function TopBar() {
           >
             <Search className="h-4 w-4" />
             <span>{t("search")}...</span>
-            <kbd className="ml-auto rounded-md border border-border/60 bg-muted/60 px-1.5 py-0.5 text-[11px] font-mono font-medium text-muted-foreground shadow-[0_1px_0_0] shadow-border/40">
+            <kbd className="ms-auto rounded-md border border-border/60 bg-muted/60 px-1.5 py-0.5 text-[11px] font-mono font-medium text-muted-foreground shadow-[0_1px_0_0] shadow-border/40">
               {"\u2318"}K
             </kbd>
           </button>

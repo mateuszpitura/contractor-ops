@@ -27,8 +27,8 @@ export type InvoiceRow = {
   invoiceNumber: string;
   issueDate: string | null;
   dueDate: string | null;
-  subtotalGrosze: number;
-  totalGrosze: number;
+  subtotalMinor: number;
+  totalMinor: number;
   currency: string;
   status: string;
   matchStatus: string;
@@ -106,14 +106,14 @@ const matchStatusConfig: Record<string, { dotClass: string; label: string }> = {
 };
 
 // ---------------------------------------------------------------------------
-// Currency / grosze formatter
+// Currency / minor-unit formatter
 // ---------------------------------------------------------------------------
 
-function formatGrosze(grosze: number): string {
+function formatMinorUnits(minor: number): string {
   return new Intl.NumberFormat("pl-PL", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(grosze / 100);
+  }).format(minor / 100);
 }
 
 // ---------------------------------------------------------------------------
@@ -246,26 +246,26 @@ export function getColumns(t: TranslateFunction): ColumnDef<InvoiceRow>[] {
 
     // 6. Net amount (right-aligned)
     {
-      accessorKey: "subtotalGrosze",
+      accessorKey: "subtotalMinor",
       header: () => (
-        <span className="text-right block">{t("columns.netAmount")}</span>
+        <span className="text-end block">{t("columns.netAmount")}</span>
       ),
       cell: ({ row }) => (
-        <span className="font-mono text-sm tabular-nums text-right block">
-          {formatGrosze(row.original.subtotalGrosze)}
+        <span className="font-mono text-sm tabular-nums text-end block">
+          {formatMinorUnits(row.original.subtotalMinor)}
         </span>
       ),
     },
 
     // 7. Gross amount (right-aligned)
     {
-      accessorKey: "totalGrosze",
+      accessorKey: "totalMinor",
       header: () => (
-        <span className="text-right block">{t("columns.grossAmount")}</span>
+        <span className="text-end block">{t("columns.grossAmount")}</span>
       ),
       cell: ({ row }) => (
-        <span className="font-mono text-sm tabular-nums text-right block">
-          {formatGrosze(row.original.totalGrosze)}
+        <span className="font-mono text-sm tabular-nums text-end block">
+          {formatMinorUnits(row.original.totalMinor)}
         </span>
       ),
     },

@@ -67,15 +67,15 @@ function getEntityHref(resourceType: string, resourceId: string): string {
 
 /** Color-coded left border accent per resource type */
 const RESOURCE_ACCENT: Record<string, string> = {
-  CONTRACTOR: "border-l-teal-400",
-  CONTRACT: "border-l-info",
-  INVOICE: "border-l-warning",
-  WORKFLOW_TEMPLATE: "border-l-accent-warm",
-  WORKFLOW_RUN: "border-l-accent-warm",
-  DOCUMENT: "border-l-muted-foreground/40",
-  PAYMENT_RUN: "border-l-success",
-  APPROVAL_FLOW: "border-l-primary",
-  APPROVAL_STEP: "border-l-primary",
+  CONTRACTOR: "border-s-teal-400",
+  CONTRACT: "border-s-info",
+  INVOICE: "border-s-warning",
+  WORKFLOW_TEMPLATE: "border-s-accent-warm",
+  WORKFLOW_RUN: "border-s-accent-warm",
+  DOCUMENT: "border-s-muted-foreground/40",
+  PAYMENT_RUN: "border-s-success",
+  APPROVAL_FLOW: "border-s-primary",
+  APPROVAL_STEP: "border-s-primary",
 };
 
 function groupByDay(items: ActivityItem[]): GroupedActivities[] {
@@ -169,11 +169,11 @@ export function ActivityFeed() {
                   </p>
                   <div className="flex flex-col gap-1">
                     {group.items.map((item) => {
-                      const accent = RESOURCE_ACCENT[item.resourceType] ?? "border-l-muted-foreground/20";
+                      const accent = RESOURCE_ACCENT[item.resourceType] ?? "border-s-muted-foreground/20";
                       return (
                         <div
                           key={item.id}
-                          className={`rounded-lg border-l-2 ${accent} pl-3 pr-2.5 py-2 transition-all duration-200 hover:bg-surface-2 hover:pl-3.5`}
+                          className={`rounded-lg border-s-2 ${accent} ps-3 pe-2.5 py-2 transition-all duration-200 hover:bg-surface-2 hover:ps-3.5`}
                         >
                           <p className="text-sm">
                             <span className="text-foreground">

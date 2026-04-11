@@ -135,7 +135,7 @@ export function ProfileSection({
               <button
                 {...props}
                 type="button"
-                className="flex flex-1 items-center gap-3 text-left outline-none"
+                className="flex flex-1 items-center gap-3 text-start outline-none"
               >
                 <ChevronDown
                   className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 ${

@@ -56,11 +56,11 @@ export function ContractSidePanel({
   if (!contract) return null;
 
   const rateDisplay =
-    typeof contract.rateValueGrosze === "number"
+    typeof contract.rateValueMinor === "number"
       ? new Intl.NumberFormat("pl-PL", {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
-        }).format(contract.rateValueGrosze / 100)
+        }).format(contract.rateValueMinor / 100)
       : null;
 
   // Key dates calculation

@@ -11,9 +11,9 @@ const { sampleOcrDataForMock } = vi.hoisted(() => ({
     issueDate: "2026-01-01",
     dueDate: "2026-01-15",
     currency: "PLN",
-    subtotalGrosze: 10000,
-    vatAmountGrosze: 2300,
-    totalGrosze: 12300,
+    subtotalMinor: 10000,
+    vatAmountMinor: 2300,
+    totalMinor: 12300,
     sellerTaxId: "5250000000",
     sellerName: "Seller Sp. z o.o.",
     buyerTaxId: "",
@@ -24,11 +24,11 @@ const { sampleOcrDataForMock } = vi.hoisted(() => ({
       description: string;
       quantity: number | null;
       unit: string | null;
-      unitPriceGrosze: number | null;
-      netAmountGrosze: number | null;
+      unitPriceMinor: number | null;
+      netAmountMinor: number | null;
       vatRate: string | null;
-      vatAmountGrosze: number | null;
-      grossAmountGrosze: number | null;
+      vatAmountMinor: number | null;
+      grossAmountMinor: number | null;
       confidence: number;
     }[],
   },
@@ -387,5 +387,422 @@ describe("InvoiceUploadArea", () => {
 
     await user.click(screen.getByTestId("upgrade-btn"));
     expect(mockRouterPush).toHaveBeenCalledWith("/settings?tab=billing");
+  });
+
+  it("renders drop zone with text and accepted formats", () => {
+    renderWithClient(<InvoiceUploadArea />);
+    expect(
+      screen.getByText(/drag.*drop|drop.*PDF|browse/i),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/PDF files only/i)).toBeInTheDocument();
+  });
+
+  it("renders file list with progress after upload starts", async () => {
+    const { user } = setup(
+      <QueryClientProvider
+        client={
+          new QueryClient({
+            defaultOptions: {
+              queries: { retry: false },
+              mutations: { retry: false },
+            },
+          })
+        }
+      >
+        <InvoiceUploadArea />
+      </QueryClientProvider>,
+    );
+
+    const file = new File(["%PDF-1.4 content"], "progress-test.pdf", {
+      type: "application/pdf",
+    });
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
+    await user.upload(input, file);
+
+    await waitFor(() => {
+      expect(requestUploadMutationFn).toHaveBeenCalled();
+    });
+  });
+
+  it("shows completed file with check icon after full upload", async () => {
+    const { user } = setup(
+      <QueryClientProvider
+        client={
+          new QueryClient({
+            defaultOptions: {
+              queries: { retry: false },
+              mutations: { retry: false },
+            },
+          })
+        }
+      >
+        <InvoiceUploadArea />
+      </QueryClientProvider>,
+    );
+
+    const file = new File(["%PDF-1.4 content"], "complete-test.pdf", {
+      type: "application/pdf",
+    });
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
+    await user.upload(input, file);
+
+    await waitFor(() => {
+      expect(createInvoiceMutationFn).toHaveBeenCalled();
+    });
+  });
+
+  it("shows error state and retry button when upload fails", async () => {
+    requestUploadMutationFn.mockRejectedValueOnce(new Error("Upload failed"));
+
+    const { user } = setup(
+      <QueryClientProvider
+        client={
+          new QueryClient({
+            defaultOptions: {
+              queries: { retry: false },
+              mutations: { retry: false },
+            },
+          })
+        }
+      >
+        <InvoiceUploadArea />
+      </QueryClientProvider>,
+    );
+
+    const file = new File(["%PDF-1.4 content"], "fail-test.pdf", {
+      type: "application/pdf",
+    });
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
+    await user.upload(input, file);
+
+    await waitFor(() => {
+      expect(screen.getByText("Retry")).toBeInTheDocument();
+    });
+  });
+
+  it("shows OCR review panel after successful OCR trigger", async () => {
+    const { user } = setup(
+      <QueryClientProvider
+        client={
+          new QueryClient({
+            defaultOptions: {
+              queries: { retry: false },
+              mutations: { retry: false },
+            },
+          })
+        }
+      >
+        <InvoiceUploadArea />
+      </QueryClientProvider>,
+    );
+
+    const file = new File(["%PDF-1.4 content"], "ocr-test.pdf", {
+      type: "application/pdf",
+    });
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
+    await user.upload(input, file);
+
+    await waitFor(() => {
+      expect(ocrTriggerMutationFn).toHaveBeenCalled();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("ocr-review-panel")).toBeInTheDocument();
+    });
+  });
+
+  it("hides OCR review panel when Discard OCR is clicked", async () => {
+    const { user } = setup(
+      <QueryClientProvider
+        client={
+          new QueryClient({
+            defaultOptions: {
+              queries: { retry: false },
+              mutations: { retry: false },
+            },
+          })
+        }
+      >
+        <InvoiceUploadArea />
+      </QueryClientProvider>,
+    );
+
+    const file = new File(["%PDF-1.4 content"], "discard-test.pdf", {
+      type: "application/pdf",
+    });
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
+    await user.upload(input, file);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("ocr-review-panel")).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByText("Discard OCR"));
+    await waitFor(() => {
+      expect(
+        screen.queryByTestId("ocr-review-panel"),
+      ).not.toBeInTheDocument();
+    });
+  });
+
+  it("calls onOcrAccept when Apply OCR data is clicked", async () => {
+    const onOcrAccept = vi.fn();
+    const { user } = setup(
+      <QueryClientProvider
+        client={
+          new QueryClient({
+            defaultOptions: {
+              queries: { retry: false },
+              mutations: { retry: false },
+            },
+          })
+        }
+      >
+        <InvoiceUploadArea onOcrAccept={onOcrAccept} />
+      </QueryClientProvider>,
+    );
+
+    const file = new File(["%PDF-1.4 content"], "accept-test.pdf", {
+      type: "application/pdf",
+    });
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
+    await user.upload(input, file);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("ocr-review-panel")).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByText("Apply OCR data"));
+    expect(onOcrAccept).toHaveBeenCalled();
+  });
+
+  it("shows toggle PDF button when OCR extraction is active", async () => {
+    const { user } = setup(
+      <QueryClientProvider
+        client={
+          new QueryClient({
+            defaultOptions: {
+              queries: { retry: false },
+              mutations: { retry: false },
+            },
+          })
+        }
+      >
+        <InvoiceUploadArea />
+      </QueryClientProvider>,
+    );
+
+    const file = new File(["%PDF-1.4 content"], "toggle-test.pdf", {
+      type: "application/pdf",
+    });
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
+    await user.upload(input, file);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("ocr-review-panel")).toBeInTheDocument();
+    });
+
+    // Hide PDF button should be visible
+    expect(screen.getByText("Hide PDF")).toBeInTheDocument();
+  });
+
+  it("navigates to billing when Buy credits is clicked", async () => {
+    ocrTriggerMutationFn.mockRejectedValueOnce(
+      new MockTRPCClientError("OCR credits exhausted", "PRECONDITION_FAILED"),
+    );
+
+    const { user } = setup(
+      <QueryClientProvider
+        client={
+          new QueryClient({
+            defaultOptions: {
+              queries: { retry: false },
+              mutations: { retry: false },
+            },
+          })
+        }
+      >
+        <InvoiceUploadArea />
+      </QueryClientProvider>,
+    );
+
+    const file = new File(["%PDF-1.4 test"], "buy-credits.pdf", {
+      type: "application/pdf",
+    });
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
+    await user.upload(input, file);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("credit-exhausted-inline")).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByTestId("buy-credits-btn"));
+    expect(mockRouterPush).toHaveBeenCalledWith("/settings?tab=billing");
+  });
+
+  it("toggles PDF visibility when Hide PDF is clicked", async () => {
+    const { user } = setup(
+      <QueryClientProvider
+        client={
+          new QueryClient({
+            defaultOptions: {
+              queries: { retry: false },
+              mutations: { retry: false },
+            },
+          })
+        }
+      >
+        <InvoiceUploadArea />
+      </QueryClientProvider>,
+    );
+
+    const file = new File(["%PDF-1.4 content"], "toggle-hide-test.pdf", {
+      type: "application/pdf",
+    });
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
+    await user.upload(input, file);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("ocr-review-panel")).toBeInTheDocument();
+    });
+
+    // Click "Hide PDF" to hide the review panel
+    await user.click(screen.getByText("Hide PDF"));
+    await waitFor(() => {
+      expect(screen.queryByTestId("ocr-review-panel")).not.toBeInTheDocument();
+    });
+
+    // Should now show "View PDF" button
+    expect(screen.getByText("View PDF")).toBeInTheDocument();
+
+    // Click "View PDF" to show it again
+    await user.click(screen.getByText("View PDF"));
+    await waitFor(() => {
+      expect(screen.getByTestId("ocr-review-panel")).toBeInTheDocument();
+    });
+  });
+
+  it("shows file name and size in upload list", async () => {
+    const { user } = setup(
+      <QueryClientProvider
+        client={
+          new QueryClient({
+            defaultOptions: {
+              queries: { retry: false },
+              mutations: { retry: false },
+            },
+          })
+        }
+      >
+        <InvoiceUploadArea />
+      </QueryClientProvider>,
+    );
+
+    const file = new File(["%PDF-1.4 content"], "file-info-test.pdf", {
+      type: "application/pdf",
+    });
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
+    await user.upload(input, file);
+
+    await waitFor(() => {
+      expect(requestUploadMutationFn).toHaveBeenCalled();
+    });
+  });
+
+  it("retries upload when retry button is clicked", async () => {
+    requestUploadMutationFn.mockRejectedValueOnce(new Error("Upload failed"));
+
+    const { user } = setup(
+      <QueryClientProvider
+        client={
+          new QueryClient({
+            defaultOptions: {
+              queries: { retry: false },
+              mutations: { retry: false },
+            },
+          })
+        }
+      >
+        <InvoiceUploadArea />
+      </QueryClientProvider>,
+    );
+
+    const file = new File(["%PDF-1.4 content"], "retry-test.pdf", {
+      type: "application/pdf",
+    });
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
+    await user.upload(input, file);
+
+    await waitFor(() => {
+      expect(screen.getByText("Retry")).toBeInTheDocument();
+    });
+
+    // Click retry
+    requestUploadMutationFn.mockImplementation(async () => ({
+      documentId: "doc-retry",
+      uploadUrl: "https://r2.example/put",
+      storageKey: "sk-retry",
+    }));
+    await user.click(screen.getByText("Retry"));
+
+    await waitFor(() => {
+      expect(requestUploadMutationFn).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  it("calls Re-run OCR handler", async () => {
+    const { user } = setup(
+      <QueryClientProvider
+        client={
+          new QueryClient({
+            defaultOptions: {
+              queries: { retry: false },
+              mutations: { retry: false },
+            },
+          })
+        }
+      >
+        <InvoiceUploadArea />
+      </QueryClientProvider>,
+    );
+
+    const file = new File(["%PDF-1.4 content"], "rerun-test.pdf", {
+      type: "application/pdf",
+    });
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
+    await user.upload(input, file);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("ocr-review-panel")).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByText("Re-run OCR"));
+    await waitFor(() => {
+      expect(ocrRetriggerMutationFn).toHaveBeenCalled();
+    });
   });
 });

@@ -102,7 +102,9 @@ export function UserMenu() {
 
   const handleSignOut = async () => {
     await authClient.signOut();
-    router.push("/login");
+    // Full page navigation to /login clears React Query cache, Zustand stores,
+    // and all in-memory state — prevents stale data from the previous session.
+    window.location.href = "/login";
   };
 
   const handleLocaleSwitch = () => {
@@ -127,7 +129,7 @@ export function UserMenu() {
             {initials}
           </AvatarFallback>
         </Avatar>
-        <div className="grid flex-1 text-left text-sm leading-tight">
+        <div className="grid flex-1 text-start text-sm leading-tight">
           <span className="truncate font-semibold">
             {user?.name ?? "User"}
           </span>
@@ -135,7 +137,7 @@ export function UserMenu() {
             {user?.email ?? ""}
           </span>
         </div>
-        <ChevronsUpDown className="ml-auto size-4" />
+        <ChevronsUpDown className="ms-auto size-4" />
       </DropdownMenuTrigger>
       <DropdownMenuContent
         className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
@@ -144,7 +146,7 @@ export function UserMenu() {
         sideOffset={4}
       >
         <DropdownMenuLabel className="p-0 font-normal">
-          <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+          <div className="flex items-center gap-2 px-1 py-1.5 text-start text-sm">
             <Avatar className="h-8 w-8 rounded-lg">
               <AvatarImage
                 src={user?.image ?? undefined}
@@ -154,7 +156,7 @@ export function UserMenu() {
                 {initials}
               </AvatarFallback>
             </Avatar>
-            <div className="grid flex-1 text-left text-sm leading-tight">
+            <div className="grid flex-1 text-start text-sm leading-tight">
               <span className="truncate font-semibold">
                 {user?.name ?? "User"}
               </span>
@@ -168,12 +170,12 @@ export function UserMenu() {
         <DropdownMenuSeparator />
 
         <DropdownMenuItem onClick={() => setNameDialogOpen(true)}>
-          <UserPen className="mr-2 h-4 w-4" />
+          <UserPen className="me-2 h-4 w-4" />
           {t("editName")}
         </DropdownMenuItem>
 
         <DropdownMenuItem onClick={() => router.push("/settings")}>
-          <Settings className="mr-2 h-4 w-4" />
+          <Settings className="me-2 h-4 w-4" />
           {t("settings")}
         </DropdownMenuItem>
 
@@ -230,7 +232,7 @@ export function UserMenu() {
         <DropdownMenuSeparator />
 
         <DropdownMenuItem onClick={handleSignOut}>
-          <LogOut className="mr-2 h-4 w-4" />
+          <LogOut className="me-2 h-4 w-4" />
           {t("signOut")}
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -269,7 +271,7 @@ export function UserMenu() {
               {t("cancel")}
             </Button>
             <Button type="submit" disabled={nameSaving || !nameValue.trim()}>
-              {nameSaving && <Loader2 className="mr-1.5 size-3.5 animate-spin" />}
+              {nameSaving && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
               {t("save")}
             </Button>
           </div>

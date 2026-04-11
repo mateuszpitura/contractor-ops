@@ -117,13 +117,13 @@ function formatFileSize(
   return tc("megabytes", { size: (bytes / (1024 * 1024)).toFixed(1) });
 }
 
-function formatAmount(grosze: number, currency: string): string {
+function formatAmount(minor: number, currency: string): string {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency,
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
-  }).format(grosze / 100);
+  }).format(minor / 100);
 }
 
 function getFieldValue(
@@ -142,7 +142,7 @@ function getFieldConfidence(
   return fields?.[key]?.confidence ?? 0;
 }
 
-function getNumericFieldGrosze(
+function getNumericFieldMinor(
   fields: Record<string, OcrExtractionField> | undefined,
   key: string,
 ): number {
@@ -295,12 +295,12 @@ export function InvoiceSubmitForm() {
     const due = getFieldValue(fields, "dueDate");
     if (due) setValue("dueDate", due, { shouldValidate: true });
 
-    // Amounts: extraction returns grosze, form expects display amounts (e.g. "1234.56")
-    const netGrosze = getNumericFieldGrosze(fields, "totalNet");
-    if (netGrosze > 0) setValue("netAmount", (netGrosze / 100).toFixed(2), { shouldValidate: true });
+    // Amounts: extraction returns minor units, form expects display amounts (e.g. "1234.56")
+    const netMinor = getNumericFieldMinor(fields, "totalNet");
+    if (netMinor > 0) setValue("netAmount", (netMinor / 100).toFixed(2), { shouldValidate: true });
 
-    const grossGrosze = getNumericFieldGrosze(fields, "totalGross");
-    if (grossGrosze > 0) setValue("grossAmount", (grossGrosze / 100).toFixed(2), { shouldValidate: true });
+    const grossMinor = getNumericFieldMinor(fields, "totalGross");
+    if (grossMinor > 0) setValue("grossAmount", (grossMinor / 100).toFixed(2), { shouldValidate: true });
 
     setOcrPopulated(true);
     toast.success("Invoice data extracted -- please review before submitting");
@@ -438,8 +438,8 @@ export function InvoiceSubmitForm() {
         invoiceNumber: values.invoiceNumber,
         issueDate: new Date(values.issueDate),
         dueDate: new Date(values.dueDate),
-        netAmountGrosze: Math.round(parseFloat(values.netAmount) * 100),
-        grossAmountGrosze: Math.round(parseFloat(values.grossAmount) * 100),
+        netAmountMinor: Math.round(parseFloat(values.netAmount) * 100),
+        grossAmountMinor: Math.round(parseFloat(values.grossAmount) * 100),
         documentId: upload.documentId,
         storageKey: upload.storageKey,
         originalFileName: upload.originalFileName,
@@ -456,7 +456,7 @@ export function InvoiceSubmitForm() {
 
   const contractItems = (contracts ?? []).map((contract) => ({
     value: contract.id,
-    label: `${contract.title} (${((contract.rateValueGrosze ?? 0) / 100).toFixed(0)} ${contract.currency}/${contract.rateType?.toLowerCase()})`,
+    label: `${contract.title} (${((contract.rateValueMinor ?? 0) / 100).toFixed(0)} ${contract.currency}/${contract.rateType?.toLowerCase()})`,
   }));
 
   const canSubmit =
@@ -510,7 +510,7 @@ export function InvoiceSubmitForm() {
           {selectedContract && (
             <p className="text-[13px] text-muted-foreground">
               {t("expectedAmount", {
-                amount: ((selectedContract.rateValueGrosze ?? 0) / 100).toFixed(0),
+                amount: ((selectedContract.rateValueMinor ?? 0) / 100).toFixed(0),
                 currency: selectedContract.currency,
                 model: selectedContract.billingModel?.toLowerCase() ?? "",
               })}
@@ -574,7 +574,7 @@ export function InvoiceSubmitForm() {
                   size="sm"
                   onClick={() => window.open(pdfBlobUrl, "_blank")}
                 >
-                  <ExternalLink className="mr-1 h-3.5 w-3.5" />
+                  <ExternalLink className="me-1 h-3.5 w-3.5" />
                   View PDF
                 </Button>
               )}
@@ -883,7 +883,7 @@ export function InvoiceSubmitForm() {
       >
         {submitInvoice.isPending ? (
           <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <Loader2 className="me-2 h-4 w-4 animate-spin" />
             {t("submitting")}
           </>
         ) : (

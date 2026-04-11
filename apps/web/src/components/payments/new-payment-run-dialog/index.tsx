@@ -69,7 +69,7 @@ export function NewPaymentRunDialog({
     fileBase64: string;
     fileName: string;
     invoiceCount: number;
-    totalGrosze: number;
+    totalMinor: number;
     currency: string;
     exportFormat: string;
   } | null>(null);

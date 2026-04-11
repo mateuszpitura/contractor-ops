@@ -198,22 +198,22 @@ export function DetailHeader({ contract }: DetailHeaderProps) {
           <DropdownMenuTrigger
             render={(props) => (
               <Button {...props} variant="outline" size="sm">
-                <MoreHorizontal className="mr-1.5 size-3.5" />
+                <MoreHorizontal className="me-1.5 size-3.5" />
                 {t("actions.label")}
               </Button>
             )}
           />
           <DropdownMenuContent align="end">
             <DropdownMenuItem disabled>
-              <Pencil className="mr-2 size-3.5" />
+              <Pencil className="me-2 size-3.5" />
               {t("actions.edit")}
             </DropdownMenuItem>
             <DropdownMenuItem disabled>
-              <FilePlus className="mr-2 size-3.5" />
+              <FilePlus className="me-2 size-3.5" />
               {t("actions.addAmendment")}
             </DropdownMenuItem>
             <DropdownMenuItem disabled>
-              <Upload className="mr-2 size-3.5" />
+              <Upload className="me-2 size-3.5" />
               {t("actions.uploadDocument")}
             </DropdownMenuItem>
 
@@ -226,7 +226,7 @@ export function DetailHeader({ contract }: DetailHeaderProps) {
                 onSelect={() => setTerminateOpen(true)}
                 disabled={terminateMutation.isPending}
               >
-                <Ban className="mr-2 size-3.5" />
+                <Ban className="me-2 size-3.5" />
                 {t("actions.terminate")}
               </DropdownMenuItem>
             )}
@@ -242,7 +242,7 @@ export function DetailHeader({ contract }: DetailHeaderProps) {
                 }
                 disabled={supersedeMutation.isPending}
               >
-                <Replace className="mr-2 size-3.5" />
+                <Replace className="me-2 size-3.5" />
                 {t("actions.supersede")}
               </DropdownMenuItem>
             )}

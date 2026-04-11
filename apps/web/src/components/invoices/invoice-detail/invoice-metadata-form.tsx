@@ -62,12 +62,12 @@ function createInvoiceMetadataSchema(tv: (key: string) => string) {
     servicePeriodStart: z.string().optional(),
     servicePeriodEnd: z.string().optional(),
     sellerTaxId: z.string().max(50).optional(),
-    subtotalGrosze: z.number().int().min(1, tv("netAmountPositive")),
+    subtotalMinor: z.number().int().min(1, tv("netAmountPositive")),
     vatRate: z.string().optional(),
-    vatAmountGrosze: z.number().int().min(0).optional(),
-    totalGrosze: z.number().int().min(1, tv("grossAmountPositive")),
-    withholdingGrosze: z.number().int().min(0).optional(),
-    amountToPayGrosze: z.number().int().min(0),
+    vatAmountMinor: z.number().int().min(0).optional(),
+    totalMinor: z.number().int().min(1, tv("grossAmountPositive")),
+    withholdingMinor: z.number().int().min(0).optional(),
+    amountToPayMinor: z.number().int().min(0),
     currency: z.string().length(3),
     sellerBankAccount: z.string().max(34).optional(),
   });
@@ -101,18 +101,7 @@ const CURRENCY_OPTIONS = [
 // Helpers
 // ---------------------------------------------------------------------------
 
-/** Convert grosze integer to display PLN string (e.g. 10050 -> "100.50") */
-function groszeToPln(grosze: number | null | undefined): string {
-  if (grosze == null || grosze === 0) return "";
-  return (grosze / 100).toFixed(2);
-}
-
-/** Convert PLN display string to grosze integer (e.g. "100.50" -> 10050) */
-function plnToGrosze(value: string): number {
-  const num = parseFloat(value);
-  if (isNaN(num)) return 0;
-  return Math.round(num * 100);
-}
+import { minorToDisplay, displayToMinor } from "@/lib/currency-conversion";
 
 /** Format a Date to ISO date string (YYYY-MM-DD) */
 function toDateString(date: Date): string {
@@ -132,12 +121,12 @@ type InvoiceMetadataFormProps = {
     servicePeriodStart: string | null;
     servicePeriodEnd: string | null;
     sellerTaxId: string | null;
-    subtotalGrosze: number;
+    subtotalMinor: number;
     vatRate: string | null;
-    vatAmountGrosze: number | null;
-    totalGrosze: number;
-    withholdingGrosze: number | null;
-    amountToPayGrosze: number;
+    vatAmountMinor: number | null;
+    totalMinor: number;
+    withholdingMinor: number | null;
+    amountToPayMinor: number;
     currency: string;
     sellerBankAccount: string | null;
     status: string;
@@ -183,12 +172,12 @@ export function InvoiceMetadataForm({
       servicePeriodStart: invoice.servicePeriodStart ?? undefined,
       servicePeriodEnd: invoice.servicePeriodEnd ?? undefined,
       sellerTaxId: invoice.sellerTaxId ?? undefined,
-      subtotalGrosze: invoice.subtotalGrosze,
+      subtotalMinor: invoice.subtotalMinor,
       vatRate: invoice.vatRate ?? undefined,
-      vatAmountGrosze: invoice.vatAmountGrosze ?? undefined,
-      totalGrosze: invoice.totalGrosze,
-      withholdingGrosze: invoice.withholdingGrosze ?? undefined,
-      amountToPayGrosze: invoice.amountToPayGrosze,
+      vatAmountMinor: invoice.vatAmountMinor ?? undefined,
+      totalMinor: invoice.totalMinor,
+      withholdingMinor: invoice.withholdingMinor ?? undefined,
+      amountToPayMinor: invoice.amountToPayMinor,
       currency: invoice.currency,
       sellerBankAccount: invoice.sellerBankAccount ?? undefined,
     },
@@ -203,12 +192,12 @@ export function InvoiceMetadataForm({
       servicePeriodStart: invoice.servicePeriodStart ?? undefined,
       servicePeriodEnd: invoice.servicePeriodEnd ?? undefined,
       sellerTaxId: invoice.sellerTaxId ?? undefined,
-      subtotalGrosze: invoice.subtotalGrosze,
+      subtotalMinor: invoice.subtotalMinor,
       vatRate: invoice.vatRate ?? undefined,
-      vatAmountGrosze: invoice.vatAmountGrosze ?? undefined,
-      totalGrosze: invoice.totalGrosze,
-      withholdingGrosze: invoice.withholdingGrosze ?? undefined,
-      amountToPayGrosze: invoice.amountToPayGrosze,
+      vatAmountMinor: invoice.vatAmountMinor ?? undefined,
+      totalMinor: invoice.totalMinor,
+      withholdingMinor: invoice.withholdingMinor ?? undefined,
+      amountToPayMinor: invoice.amountToPayMinor,
       currency: invoice.currency,
       sellerBankAccount: invoice.sellerBankAccount ?? undefined,
     });
@@ -278,12 +267,12 @@ export function InvoiceMetadataForm({
         servicePeriodStart: values.servicePeriodStart || undefined,
         servicePeriodEnd: values.servicePeriodEnd || undefined,
         sellerTaxId: values.sellerTaxId || undefined,
-        subtotalGrosze: values.subtotalGrosze,
+        subtotalMinor: values.subtotalMinor,
         vatRate: (values.vatRate as "23" | "8" | "5" | "0" | "ZW" | "NP") || undefined,
-        vatAmountGrosze: values.vatAmountGrosze,
-        totalGrosze: values.totalGrosze,
-        withholdingGrosze: values.withholdingGrosze,
-        amountToPayGrosze: values.amountToPayGrosze,
+        vatAmountMinor: values.vatAmountMinor,
+        totalMinor: values.totalMinor,
+        withholdingMinor: values.withholdingMinor,
+        amountToPayMinor: values.amountToPayMinor,
         currency: values.currency,
         sellerBankAccount: values.sellerBankAccount || undefined,
       },
@@ -302,12 +291,12 @@ export function InvoiceMetadataForm({
           servicePeriodStart: values.servicePeriodStart || undefined,
           servicePeriodEnd: values.servicePeriodEnd || undefined,
           sellerTaxId: values.sellerTaxId || undefined,
-          subtotalGrosze: values.subtotalGrosze,
+          subtotalMinor: values.subtotalMinor,
           vatRate: (values.vatRate as "23" | "8" | "5" | "0" | "ZW" | "NP") || undefined,
-          vatAmountGrosze: values.vatAmountGrosze,
-          totalGrosze: values.totalGrosze,
-          withholdingGrosze: values.withholdingGrosze,
-          amountToPayGrosze: values.amountToPayGrosze,
+          vatAmountMinor: values.vatAmountMinor,
+          totalMinor: values.totalMinor,
+          withholdingMinor: values.withholdingMinor,
+          amountToPayMinor: values.amountToPayMinor,
           currency: values.currency,
           sellerBankAccount: values.sellerBankAccount || undefined,
         },
@@ -421,13 +410,13 @@ export function InvoiceMetadataForm({
                 <Label htmlFor="netAmount">{t("detail.netAmount")}</Label>
                 <CurrencyInput
                   id="netAmount"
-                  value={watch("subtotalGrosze")}
-                  onChange={(grosze) => setValue("subtotalGrosze", grosze)}
+                  value={watch("subtotalMinor")}
+                  onChange={(minor) => setValue("subtotalMinor", minor)}
                   disabled={!isEditable}
                 />
-                {errors.subtotalGrosze && (
+                {errors.subtotalMinor && (
                   <p className="text-xs text-destructive">
-                    {errors.subtotalGrosze.message}
+                    {errors.subtotalMinor.message}
                   </p>
                 )}
               </div>
@@ -459,8 +448,8 @@ export function InvoiceMetadataForm({
                 <Label htmlFor="vatAmount">{t("detail.vatAmount")}</Label>
                 <CurrencyInput
                   id="vatAmount"
-                  value={watch("vatAmountGrosze") ?? 0}
-                  onChange={(grosze) => setValue("vatAmountGrosze", grosze)}
+                  value={watch("vatAmountMinor") ?? 0}
+                  onChange={(minor) => setValue("vatAmountMinor", minor)}
                   disabled={!isEditable}
                 />
               </div>
@@ -468,13 +457,13 @@ export function InvoiceMetadataForm({
                 <Label htmlFor="grossAmount">{t("detail.grossAmount")}</Label>
                 <CurrencyInput
                   id="grossAmount"
-                  value={watch("totalGrosze")}
-                  onChange={(grosze) => setValue("totalGrosze", grosze)}
+                  value={watch("totalMinor")}
+                  onChange={(minor) => setValue("totalMinor", minor)}
                   disabled={!isEditable}
                 />
-                {errors.totalGrosze && (
+                {errors.totalMinor && (
                   <p className="text-xs text-destructive">
-                    {errors.totalGrosze.message}
+                    {errors.totalMinor.message}
                   </p>
                 )}
               </div>
@@ -486,8 +475,8 @@ export function InvoiceMetadataForm({
                 <Label htmlFor="withholding">{t("detail.withholding")}</Label>
                 <CurrencyInput
                   id="withholding"
-                  value={watch("withholdingGrosze") ?? 0}
-                  onChange={(grosze) => setValue("withholdingGrosze", grosze)}
+                  value={watch("withholdingMinor") ?? 0}
+                  onChange={(minor) => setValue("withholdingMinor", minor)}
                   disabled={!isEditable}
                 />
               </div>
@@ -495,8 +484,8 @@ export function InvoiceMetadataForm({
                 <Label htmlFor="amountToPay">{t("detail.amountToPay")}</Label>
                 <CurrencyInput
                   id="amountToPay"
-                  value={watch("amountToPayGrosze")}
-                  onChange={(grosze) => setValue("amountToPayGrosze", grosze)}
+                  value={watch("amountToPayMinor")}
+                  onChange={(minor) => setValue("amountToPayMinor", minor)}
                   disabled={!isEditable}
                 />
               </div>
@@ -547,7 +536,7 @@ export function InvoiceMetadataForm({
                       onClick={handleSubmit(onSaveDraft)}
                     >
                       {saveDraftMutation.isPending && (
-                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                        <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
                       )}
                       {t("detail.saveDraft")}
                     </Button>
@@ -557,7 +546,7 @@ export function InvoiceMetadataForm({
                       onClick={handleSubmit(onSubmitForMatching)}
                     >
                       {submitForMatchingMutation.isPending && (
-                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                        <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
                       )}
                       {t("detail.submitForMatching")}
                     </Button>
@@ -577,7 +566,7 @@ export function InvoiceMetadataForm({
                     className="text-destructive focus:text-destructive"
                     onClick={() => setVoidDialogOpen(true)}
                   >
-                    <AlertTriangle className="mr-1.5 h-3.5 w-3.5" />
+                    <AlertTriangle className="me-1.5 h-3.5 w-3.5" />
                     {t("detail.voidInvoice")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -606,7 +595,7 @@ export function InvoiceMetadataForm({
               }}
             >
               {voidMutation.isPending && (
-                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
               )}
               {t("detail.voidInvoiceCta")}
             </AlertDialogAction>
@@ -641,14 +630,14 @@ function DatePicker({
         render={
           <Button
             variant="outline"
-            className={`w-full justify-start text-left font-normal ${
+            className={`w-full justify-start text-start font-normal ${
               !isValid ? "text-muted-foreground" : ""
             } ${disabled ? "pointer-events-none opacity-50 bg-muted" : ""}`}
             disabled={disabled}
           />
         }
       >
-        <CalendarIcon className="mr-2 h-4 w-4" />
+        <CalendarIcon className="me-2 h-4 w-4" />
         {isValid ? format(parsed, "yyyy-MM-dd") : (pickDateLabel ?? "Pick a date")}
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
@@ -665,7 +654,7 @@ function DatePicker({
 }
 
 // ---------------------------------------------------------------------------
-// CurrencyInput sub-component (grosze <-> PLN display)
+// CurrencyInput sub-component (minor <-> display)
 // ---------------------------------------------------------------------------
 
 function CurrencyInput({
@@ -676,14 +665,14 @@ function CurrencyInput({
 }: {
   id: string;
   value: number;
-  onChange: (grosze: number) => void;
+  onChange: (minor: number) => void;
   disabled?: boolean;
 }) {
-  const [displayValue, setDisplayValue] = useState(groszeToPln(value));
+  const [displayValue, setDisplayValue] = useState(minorToDisplay(value));
 
   // Sync display when external value changes
   useEffect(() => {
-    setDisplayValue(groszeToPln(value));
+    setDisplayValue(minorToDisplay(value));
   }, [value]);
 
   return (
@@ -691,7 +680,7 @@ function CurrencyInput({
       id={id}
       type="text"
       inputMode="decimal"
-      className="font-mono text-[13px] text-right"
+      className="font-mono text-[13px] text-end"
       value={displayValue}
       disabled={disabled}
       onChange={(e) => {
@@ -702,9 +691,9 @@ function CurrencyInput({
         }
       }}
       onBlur={() => {
-        const grosze = plnToGrosze(displayValue.replace(",", "."));
-        onChange(grosze);
-        setDisplayValue(groszeToPln(grosze));
+        const minor = displayToMinor(displayValue.replace(",", "."));
+        onChange(minor);
+        setDisplayValue(minorToDisplay(minor));
       }}
     />
   );

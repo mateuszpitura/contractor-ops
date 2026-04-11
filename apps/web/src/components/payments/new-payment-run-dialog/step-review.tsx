@@ -24,11 +24,11 @@ import { Textarea } from "@/components/ui/textarea";
 // Formatters
 // ---------------------------------------------------------------------------
 
-function formatGrosze(grosze: number): string {
+function formatMinorUnits(minor: number): string {
   return new Intl.NumberFormat("pl-PL", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(grosze / 100);
+  }).format(minor / 100);
 }
 
 // ---------------------------------------------------------------------------
@@ -44,7 +44,7 @@ interface StepReviewProps {
     fileBase64: string;
     fileName: string;
     invoiceCount: number;
-    totalGrosze: number;
+    totalMinor: number;
     currency: string;
     exportFormat: string;
   }) => void;
@@ -88,20 +88,20 @@ export function StepReview({
     const groups: Record<
       string,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      { invoices: any[]; totalGrosze: number }
+      { invoices: any[]; totalMinor: number }
     > = {};
     for (const inv of allInvoices) {
       const curr = inv.currency as string;
-      if (!groups[curr]) groups[curr] = { invoices: [], totalGrosze: 0 };
+      if (!groups[curr]) groups[curr] = { invoices: [], totalMinor: 0 };
       groups[curr].invoices.push(inv);
-      groups[curr].totalGrosze += inv.amountToPayGrosze as number;
+      groups[curr].totalMinor += inv.amountToPayMinor as number;
     }
     return groups;
   }, [allInvoices]);
 
   const currencies = Object.keys(groupedByCurrency);
   const grandTotal = Object.values(groupedByCurrency).reduce(
-    (sum, g) => sum + g.totalGrosze,
+    (sum, g) => sum + g.totalMinor,
     0,
   );
 
@@ -150,7 +150,7 @@ export function StepReview({
         fileBase64: exportResult.fileBase64,
         fileName: exportResult.fileName,
         invoiceCount: allInvoices.length,
-        totalGrosze: grandTotal,
+        totalMinor: grandTotal,
         currency: currencies.join(", "),
         exportFormat,
       });
@@ -222,7 +222,7 @@ export function StepReview({
                   {curr} &mdash; {group.invoices.length} {t("step2.invoices")}
                 </span>
                 <span className="text-[20px] font-semibold tabular-nums">
-                  {formatGrosze(group.totalGrosze)} {curr}
+                  {formatMinorUnits(group.totalMinor)} {curr}
                 </span>
               </div>
               <div className="space-y-1">
@@ -236,7 +236,7 @@ export function StepReview({
                       {inv.contractor?.legalName}
                     </span>
                     <span className="font-mono tabular-nums">
-                      {formatGrosze(inv.amountToPayGrosze)}
+                      {formatMinorUnits(inv.amountToPayMinor)}
                     </span>
                   </div>
                 ))}
@@ -255,10 +255,10 @@ export function StepReview({
       {/* Grand total */}
       <div className="flex items-center justify-between border-t-2 pt-3">
         <span className="text-sm font-medium">{t("step2.grandTotal")}</span>
-        <div className="text-right">
+        <div className="text-end">
           {currencies.map((curr) => (
             <p key={curr} className="text-[20px] font-semibold tabular-nums">
-              {formatGrosze(groupedByCurrency[curr]!.totalGrosze)} {curr}
+              {formatMinorUnits(groupedByCurrency[curr]!.totalMinor)} {curr}
             </p>
           ))}
         </div>
@@ -297,7 +297,7 @@ export function StepReview({
         <Button onClick={handleLockAndExport} disabled={isLocking}>
           {isLocking ? (
             <>
-              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+              <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
               {t("step2.locking")}
             </>
           ) : (

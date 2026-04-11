@@ -10,11 +10,11 @@ import { Button } from "@/components/ui/button";
 // Formatters
 // ---------------------------------------------------------------------------
 
-function formatGrosze(grosze: number): string {
+function formatMinorUnits(minor: number): string {
   return new Intl.NumberFormat("pl-PL", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(grosze / 100);
+  }).format(minor / 100);
 }
 
 // ---------------------------------------------------------------------------
@@ -26,7 +26,7 @@ interface StepConfirmationProps {
   fileBase64: string;
   fileName: string;
   invoiceCount: number;
-  totalGrosze: number;
+  totalMinor: number;
   currency: string;
   exportFormat: string;
   onViewRun: () => void;
@@ -42,7 +42,7 @@ export function StepConfirmation({
   fileBase64,
   fileName,
   invoiceCount,
-  totalGrosze,
+  totalMinor,
   currency,
   exportFormat,
   onViewRun,
@@ -102,7 +102,7 @@ export function StepConfirmation({
           {invoiceCount} {t("step3.invoices")}
         </p>
         <p className="text-sm text-muted-foreground">
-          {t("step3.total")}: {formatGrosze(totalGrosze)} {currency}
+          {t("step3.total")}: {formatMinorUnits(totalMinor)} {currency}
         </p>
         <p className="text-sm text-muted-foreground">
           {t("step3.format")}: {formatLabel}

@@ -24,7 +24,7 @@ export type ContractRow = {
   currency: string;
   billingModel: string;
   rateType: string;
-  rateValueGrosze: number | null;
+  rateValueMinor: number | null;
   complianceRiskLevel: string | null;
   contractor: {
     id: string;
@@ -213,18 +213,18 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractRow>[] {
 
     // 8. Rate
     {
-      accessorKey: "rateValueGrosze",
+      accessorKey: "rateValueMinor",
       header: t("columns.rate"),
       enableSorting: false,
       cell: ({ row }) => {
-        const grosze = row.original.rateValueGrosze;
-        if (typeof grosze !== "number")
+        const minor = row.original.rateValueMinor;
+        if (typeof minor !== "number")
           return <span className="text-muted-foreground">&mdash;</span>;
 
         const formatted = new Intl.NumberFormat("pl-PL", {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
-        }).format(grosze / 100);
+        }).format(minor / 100);
 
         return (
           <span className="font-mono text-sm tabular-nums">

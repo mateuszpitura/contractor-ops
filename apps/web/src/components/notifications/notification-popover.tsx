@@ -140,7 +140,7 @@ export function NotificationPopover() {
           <span
             aria-live="polite"
             aria-atomic="true"
-            className="absolute -right-1 -top-1 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold leading-none text-white"
+            className="absolute -end-1 -top-1 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold leading-none text-white"
           >
             {badgeText}
           </span>

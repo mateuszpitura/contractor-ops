@@ -78,7 +78,7 @@ export function InvoiceDataTable({
           | "invoiceNumber"
           | "issueDate"
           | "dueDate"
-          | "totalGrosze"
+          | "totalMinor"
           | "status") || "receivedAt",
       sortOrder: (filters.sortOrder as "asc" | "desc") || "desc",
       filters: {

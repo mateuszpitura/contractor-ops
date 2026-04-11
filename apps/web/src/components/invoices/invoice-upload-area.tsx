@@ -53,21 +53,7 @@ interface UploadingFile {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
-function truncateName(name: string, maxLen = 40): string {
-  if (name.length <= maxLen) return name;
-  const ext = name.lastIndexOf(".");
-  if (ext > 0) {
-    const extension = name.slice(ext);
-    return name.slice(0, maxLen - extension.length - 3) + "..." + extension;
-  }
-  return name.slice(0, maxLen - 3) + "...";
-}
+import { formatFileSize, truncateFilename as truncateName } from "@/lib/format-file-size";
 
 function isPdfFile(file: File): boolean {
   return (
@@ -212,9 +198,9 @@ export function InvoiceUploadArea({
             .toISOString()
             .split("T")[0]!,
           currency: "PLN",
-          subtotalGrosze: 0,
-          totalGrosze: 0,
-          amountToPayGrosze: 0,
+          subtotalMinor: 0,
+          totalMinor: 0,
+          amountToPayMinor: 0,
           documentIds: [documentId],
         });
 
@@ -362,12 +348,12 @@ export function InvoiceUploadArea({
           >
             {showPdfReview ? (
               <>
-                <EyeOff className="mr-1.5 size-4" />
+                <EyeOff className="me-1.5 size-4" />
                 Hide PDF
               </>
             ) : (
               <>
-                <Eye className="mr-1.5 size-4" />
+                <Eye className="me-1.5 size-4" />
                 View PDF
               </>
             )}
@@ -446,7 +432,7 @@ export function InvoiceUploadArea({
                     className="h-6 px-1.5 text-xs"
                     onClick={() => retryFile(item.id)}
                   >
-                    <RotateCcw className="size-3 mr-1" />
+                    <RotateCcw className="size-3 me-1" />
                     {t("retry")}
                   </Button>
                 </div>

@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Upload, AlertCircle, Loader2 } from "lucide-react";
 
 import { trpc } from "@/trpc/init";
+import { validateBankStatementFile } from "@/lib/file-validation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -33,7 +34,7 @@ import {
 
 interface MatchResult {
   transactionIndex: number;
-  amountGrosze: number;
+  amountMinor: number;
   iban: string;
   matched: boolean;
   itemId?: string;
@@ -120,16 +121,13 @@ export function BankStatementDialog({
       if (!file) return;
 
       // Validate file
-      const validExtensions = [".mt940", ".csv"];
-      const ext = file.name.toLowerCase().slice(file.name.lastIndexOf("."));
-      if (!validExtensions.includes(ext)) {
-        setParseError(t("errors.invalidFileFormat"));
-        setStep("error");
-        return;
-      }
-
-      if (file.size > 10 * 1024 * 1024) {
-        setParseError(t("errors.fileTooLarge"));
+      const validation = validateBankStatementFile(file);
+      if (!validation.valid) {
+        const errorKey =
+          validation.error === "INVALID_FORMAT"
+            ? "errors.invalidFileFormat"
+            : "errors.fileTooLarge";
+        setParseError(t(errorKey));
         setStep("error");
         return;
       }
@@ -312,7 +310,7 @@ export function BankStatementDialog({
                         {new Intl.NumberFormat("pl-PL", {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,
-                        }).format(match.amountGrosze / 100)}
+                        }).format(match.amountMinor / 100)}
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground">
                         ****{match.iban.slice(-4)}

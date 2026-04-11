@@ -1,0 +1,77 @@
+import { render, screen } from "@/test/test-utils";
+import { InvoiceSelectionDataTable } from "../data-table";
+import { getColumns, type ReadyInvoiceRow } from "../columns";
+
+function makeRow(overrides: Partial<ReadyInvoiceRow> = {}): ReadyInvoiceRow {
+  return {
+    id: "inv-1",
+    invoiceNumber: "FV/2026/001",
+    totalMinor: 100000,
+    amountToPayMinor: 100000,
+    currency: "PLN",
+    dueDate: "2026-04-15",
+    paymentStatus: "READY",
+    contractor: { id: "c-1", legalName: "Acme Corp", taxId: "123" },
+    billingProfile: { id: "bp-1", bankAccountMasked: "****1234", preferredCurrency: "PLN" },
+    contract: { id: "ct-1", contractNumber: "CTR-001" },
+    ...overrides,
+  };
+}
+
+describe("InvoiceSelectionDataTable", () => {
+  const t = (key: string) => key;
+  const columns = getColumns(t);
+
+  it("renders skeleton rows when loading", () => {
+    render(
+      <InvoiceSelectionDataTable
+        data={[]}
+        columns={columns}
+        isLoading={true}
+        rowSelection={{}}
+        onRowSelectionChange={vi.fn()}
+      />,
+    );
+
+    // Should render skeleton rows
+    const rows = screen.getAllByRole("row");
+    // Header row + 6 skeleton rows
+    expect(rows.length).toBeGreaterThanOrEqual(7);
+  });
+
+  it("renders data rows when not loading", () => {
+    const data = [makeRow(), makeRow({ id: "inv-2", invoiceNumber: "FV/2026/002" })];
+    render(
+      <InvoiceSelectionDataTable
+        data={data}
+        columns={columns}
+        isLoading={false}
+        rowSelection={{}}
+        onRowSelectionChange={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText("FV/2026/001")).toBeInTheDocument();
+    expect(screen.getByText("FV/2026/002")).toBeInTheDocument();
+  });
+
+  it("disables checkbox for rows in a run", () => {
+    const data = [makeRow({ _inRunNumber: "PR-2026-001" })];
+    render(
+      <InvoiceSelectionDataTable
+        data={data}
+        columns={columns}
+        isLoading={false}
+        rowSelection={{}}
+        onRowSelectionChange={vi.fn()}
+      />,
+    );
+
+    const checkboxes = screen.getAllByRole("checkbox");
+    // The row checkbox should be disabled (aria-disabled)
+    const rowCheckbox = checkboxes.find(
+      (cb) => cb.getAttribute("aria-disabled") === "true" || cb.hasAttribute("disabled"),
+    );
+    expect(rowCheckbox).toBeDefined();
+  });
+});

@@ -97,14 +97,14 @@ export function StatusChipBar({
                 }`}
               >
                 {t(chip.labelKey as Parameters<typeof t>[0])}
-                <span className="ml-1.5 tabular-nums">({count})</span>
+                <span className="ms-1.5 tabular-nums">({count})</span>
               </Badge>
             </button>
           );
         })}
       </div>
       {/* Fade gradient for overflow on narrow screens */}
-      <div className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-background to-transparent xl:hidden" />
+      <div className="pointer-events-none absolute inset-y-0 end-0 w-8 bg-gradient-to-l from-background to-transparent xl:hidden" />
     </div>
   );
 }

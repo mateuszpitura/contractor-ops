@@ -90,12 +90,12 @@ export function OrgSwitcher() {
           <div className="org-logo-gradient flex aspect-square size-8 items-center justify-center rounded-lg text-primary-foreground font-display text-sm font-bold shadow-sm">
             {currentOrg?.name?.charAt(0)?.toUpperCase() ?? "O"}
           </div>
-          <div className="grid flex-1 text-left text-sm leading-tight">
+          <div className="grid flex-1 text-start text-sm leading-tight">
             <span className="truncate font-semibold">
               {currentOrg?.name ?? t("selectOrg")}
             </span>
           </div>
-          <ChevronsUpDown className="ml-auto size-4" />
+          <ChevronsUpDown className="ms-auto size-4" />
         </DropdownMenuTrigger>
         <DropdownMenuContent
           className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"

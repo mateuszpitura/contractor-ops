@@ -36,8 +36,8 @@ type OverviewTabProps = {
     currency: string;
     billingModel: string | null;
     rateType: string | null;
-    rateValueGrosze: number | null;
-    retainerAmountGrosze: number | null;
+    rateValueMinor: number | null;
+    retainerAmountMinor: number | null;
     paymentTermsDays: number | null;
     invoiceCycle: string | null;
     notes: string | null;
@@ -64,8 +64,8 @@ function formatDate(date: string | Date): string {
   });
 }
 
-function formatCurrency(grosze: number, currency: string): string {
-  return `${(grosze / 100).toFixed(2)} ${currency}`;
+function formatCurrency(minor: number, currency: string): string {
+  return `${(minor / 100).toFixed(2)} ${currency}`;
 }
 
 function getDaysRemaining(endDate: string | Date): number {
@@ -267,11 +267,11 @@ export function OverviewTab({ contract }: OverviewTabProps) {
           <CardTitle>{t("financialTerms")}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-3">
-          {contract.rateValueGrosze != null && (
+          {contract.rateValueMinor != null && (
             <FieldRow
               label={t("fields.rate")}
               value={formatCurrency(
-                contract.rateValueGrosze,
+                contract.rateValueMinor,
                 contract.currency
               )}
               mono
@@ -295,11 +295,11 @@ export function OverviewTab({ contract }: OverviewTabProps) {
             label={t("fields.invoiceCycle")}
             value={contract.invoiceCycle ? tEnum(`invoiceCycle.${contract.invoiceCycle}` as Parameters<typeof tEnum>[0]) : null}
           />
-          {contract.retainerAmountGrosze != null && (
+          {contract.retainerAmountMinor != null && (
             <FieldRow
               label={t("fields.retainerAmount")}
               value={formatCurrency(
-                contract.retainerAmountGrosze,
+                contract.retainerAmountMinor,
                 contract.currency
               )}
               mono

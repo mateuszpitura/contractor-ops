@@ -21,7 +21,7 @@ export type PaymentRunRow = {
   status: string;
   createdAt: string;
   invoiceCount: number;
-  totalGrosze: number;
+  totalMinor: number;
   currency: string | null;
   exportFormat: string | null;
   exportedAt: string | null;
@@ -32,11 +32,11 @@ export type PaymentRunRow = {
 // Formatters
 // ---------------------------------------------------------------------------
 
-function formatGrosze(grosze: number, currency?: string | null): string {
+function formatMinorUnits(minor: number, currency?: string | null): string {
   const formatted = new Intl.NumberFormat("pl-PL", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(grosze / 100);
+  }).format(minor / 100);
   return currency ? `${formatted} ${currency}` : formatted;
 }
 
@@ -118,13 +118,13 @@ export function getColumns(
 
     // 5. Total
     {
-      accessorKey: "totalGrosze",
+      accessorKey: "totalMinor",
       header: () => (
-        <span className="text-right block">{t("columns.total")}</span>
+        <span className="text-end block">{t("columns.total")}</span>
       ),
       cell: ({ row }) => (
-        <span className="font-mono text-sm tabular-nums text-right block">
-          {formatGrosze(row.original.totalGrosze, row.original.currency)}
+        <span className="font-mono text-sm tabular-nums text-end block">
+          {formatMinorUnits(row.original.totalMinor, row.original.currency)}
         </span>
       ),
     },
@@ -183,7 +183,7 @@ export function getColumns(
                     actions.onDownloadExport?.(run);
                   }}
                 >
-                  <Download className="mr-2 h-4 w-4" />
+                  <Download className="me-2 h-4 w-4" />
                   {t("actions.downloadExport")}
                 </DropdownMenuItem>
               )}
@@ -194,7 +194,7 @@ export function getColumns(
                     actions.onMarkAllPaid?.(run);
                   }}
                 >
-                  <CheckCircle2 className="mr-2 h-4 w-4" />
+                  <CheckCircle2 className="me-2 h-4 w-4" />
                   {t("actions.markAllPaid")}
                 </DropdownMenuItem>
               )}
@@ -206,7 +206,7 @@ export function getColumns(
                     actions.onCancelRun?.(run);
                   }}
                 >
-                  <XCircle className="mr-2 h-4 w-4" />
+                  <XCircle className="me-2 h-4 w-4" />
                   {t("actions.cancelRun")}
                 </DropdownMenuItem>
               )}

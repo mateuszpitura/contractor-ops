@@ -11,8 +11,8 @@ import { Badge } from "@/components/ui/badge";
 export type ReadyInvoiceRow = {
   id: string;
   invoiceNumber: string;
-  totalGrosze: number;
-  amountToPayGrosze: number;
+  totalMinor: number;
+  amountToPayMinor: number;
   currency: string;
   dueDate: string | null;
   paymentStatus: string;
@@ -38,11 +38,11 @@ export type ReadyInvoiceRow = {
 // Formatters
 // ---------------------------------------------------------------------------
 
-function formatGrosze(grosze: number): string {
+function formatMinorUnits(minor: number): string {
   return new Intl.NumberFormat("pl-PL", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(grosze / 100);
+  }).format(minor / 100);
 }
 
 // ---------------------------------------------------------------------------
@@ -126,13 +126,13 @@ export function getColumns(t: TranslateFunction): ColumnDef<ReadyInvoiceRow>[] {
 
     // 4. Amount
     {
-      accessorKey: "amountToPayGrosze",
+      accessorKey: "amountToPayMinor",
       header: () => (
         <span className="text-right block">{t("selection.amount")}</span>
       ),
       cell: ({ row }) => (
         <span className="font-mono text-sm tabular-nums text-right block">
-          {formatGrosze(row.original.amountToPayGrosze)}
+          {formatMinorUnits(row.original.amountToPayMinor)}
         </span>
       ),
     },

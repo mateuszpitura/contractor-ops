@@ -68,8 +68,8 @@ const currencyFormatter = new Intl.NumberFormat("pl-PL", {
   maximumFractionDigits: 2,
 });
 
-function formatCurrency(grosze: number): string {
-  return currencyFormatter.format(grosze / 100);
+function formatCurrency(minor: number): string {
+  return currencyFormatter.format(minor / 100);
 }
 
 function getTrend(value: number, prevValue: number) {
@@ -209,9 +209,9 @@ export function KpiCards() {
         let value = 0;
         let prevValue = 0;
 
-        if (card.isCurrency && kpiData && "valueGrosze" in kpiData) {
-          value = kpiData.valueGrosze;
-          prevValue = kpiData.prevValueGrosze;
+        if (card.isCurrency && kpiData && "valueMinor" in kpiData) {
+          value = kpiData.valueMinor;
+          prevValue = kpiData.prevValueMinor;
         } else if (kpiData && "value" in kpiData) {
           value = kpiData.value;
           prevValue = "prevValue" in kpiData ? kpiData.prevValue : 0;
@@ -245,7 +245,7 @@ export function KpiCards() {
             <Link href={card.href} className="group/kpi block h-full">
               <Card className="card-interactive neon-card atelier-shimmer h-full min-w-0 cursor-pointer transition-all duration-200 hover:ring-1 hover:ring-primary/40">
                 <CardContent className="relative pt-0">
-                  <ArrowUpRight className="absolute top-0 right-0 h-3.5 w-3.5 text-muted-foreground/0 transition-all group-hover/kpi:text-primary/60 group-hover/kpi:translate-x-0.5 group-hover/kpi:-translate-y-0.5" />
+                  <ArrowUpRight className="absolute top-0 end-0 h-3.5 w-3.5 text-muted-foreground/0 transition-all group-hover/kpi:text-primary/60 group-hover/kpi:translate-x-0.5 group-hover/kpi:-translate-y-0.5" />
                   <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                     {t(card.labelKey as Parameters<typeof t>[0])}
                   </p>

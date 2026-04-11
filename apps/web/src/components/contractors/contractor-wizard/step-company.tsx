@@ -112,7 +112,7 @@ export function StepCompany({ form }: StepCompanyProps) {
           >
             {isGusLoading ? (
               <>
-                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
                 {t("nipFetching")}
               </>
             ) : (

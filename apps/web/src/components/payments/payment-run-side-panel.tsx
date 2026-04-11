@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 
 import { trpc } from "@/trpc/init";
+import { useDoubleConfirmation } from "@/hooks/use-double-confirmation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -46,29 +47,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Link } from "@/i18n/navigation";
 
 import { PaymentRunBadge, PaymentItemBadge } from "./payment-run-badge";
-
-// ---------------------------------------------------------------------------
-// Formatters
-// ---------------------------------------------------------------------------
-
-function formatGrosze(grosze: number, currency?: string | null): string {
-  const formatted = new Intl.NumberFormat("pl-PL", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(grosze / 100);
-  return currency ? `${formatted} ${currency}` : formatted;
-}
-
-function formatRelativeDate(dateStr: string): string {
-  const date = new Date(dateStr);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffDays = Math.floor(diffMs / 86400000);
-  if (diffDays < 1) return "today";
-  if (diffDays === 1) return "yesterday";
-  if (diffDays < 30) return `${diffDays}d ago`;
-  return date.toLocaleDateString("pl-PL");
-}
+import { formatMinorUnits } from "@/lib/format-currency";
+import { formatRelativeDate } from "@/lib/format-relative-date";
 
 // ---------------------------------------------------------------------------
 // Props
@@ -169,23 +149,16 @@ export function PaymentRunSidePanel({
   // Mark all paid confirmation state
   // ---------------------------------------------------------------------------
 
-  const [confirmMarkAll, setConfirmMarkAll] = useState(false);
-  const confirmTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
-
-  const handleMarkAllPaid = useCallback(() => {
-    if (!confirmMarkAll) {
-      setConfirmMarkAll(true);
-      clearTimeout(confirmTimerRef.current);
-      confirmTimerRef.current = setTimeout(() => {
-        setConfirmMarkAll(false);
-      }, 3000);
-      return;
-    }
-    if (runId) {
-      markAllPaidMutation.mutate({ runId });
-      setConfirmMarkAll(false);
-    }
-  }, [confirmMarkAll, runId, markAllPaidMutation]);
+  const {
+    isConfirming: confirmMarkAll,
+    handleClick: handleMarkAllPaid,
+  } = useDoubleConfirmation(
+    useCallback(() => {
+      if (runId) {
+        markAllPaidMutation.mutate({ runId });
+      }
+    }, [runId, markAllPaidMutation]),
+  );
 
   // ---------------------------------------------------------------------------
   // Download export
@@ -221,7 +194,7 @@ export function PaymentRunSidePanel({
   const items = (run.items ?? []) as Array<{
     id: string;
     invoiceId: string;
-    amountGrosze: number;
+    amountMinor: number;
     currency: string;
     status: string;
     paymentReference: string | null;
@@ -263,7 +236,7 @@ export function PaymentRunSidePanel({
               />
               <DetailItem
                 label={t("sidePanel.total")}
-                value={formatGrosze(run.totalGrosze, run.currency)}
+                value={formatMinorUnits(run.totalMinor, run.currency)}
                 mono
               />
               {run.completedAt && (
@@ -296,7 +269,7 @@ export function PaymentRunSidePanel({
                     size="sm"
                     onClick={handleDownloadExport}
                   >
-                    <Download className="mr-1.5 h-3.5 w-3.5" />
+                    <Download className="me-1.5 h-3.5 w-3.5" />
                     {t("sidePanel.downloadExport")}
                   </Button>
                   {status === "EXPORTED" && (
@@ -306,7 +279,7 @@ export function PaymentRunSidePanel({
                         onClick={handleMarkAllPaid}
                         disabled={markAllPaidMutation.isPending}
                       >
-                        <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
+                        <CheckCircle2 className="me-1.5 h-3.5 w-3.5" />
                         {confirmMarkAll
                           ? t("sidePanel.confirmMarkAllPaid")
                           : t("sidePanel.markAllPaid")}
@@ -316,7 +289,7 @@ export function PaymentRunSidePanel({
                         size="sm"
                         onClick={() => onImportStatement?.(runId!)}
                       >
-                        <FileUp className="mr-1.5 h-3.5 w-3.5" />
+                        <FileUp className="me-1.5 h-3.5 w-3.5" />
                         {t("sidePanel.importStatement")}
                       </Button>
                     </>
@@ -337,7 +310,7 @@ export function PaymentRunSidePanel({
                   size="sm"
                   onClick={handleDownloadExport}
                 >
-                  <Download className="mr-1.5 h-3.5 w-3.5" />
+                  <Download className="me-1.5 h-3.5 w-3.5" />
                   {t("sidePanel.downloadExport")}
                 </Button>
               )}
@@ -406,7 +379,7 @@ function CancelRunButton({
           <Button variant="outline" size="sm" className="text-destructive" />
         }
       >
-        <XCircle className="mr-1.5 h-3.5 w-3.5" />
+        <XCircle className="me-1.5 h-3.5 w-3.5" />
         {t("sidePanel.cancelRun")}
       </AlertDialogTrigger>
       <AlertDialogContent>
@@ -452,7 +425,7 @@ function PaymentRunItemRow({
   item: {
     id: string;
     invoiceId: string;
-    amountGrosze: number;
+    amountMinor: number;
     currency: string;
     status: string;
     paymentReference: string | null;
@@ -504,7 +477,7 @@ function PaymentRunItemRow({
           )}
         </div>
         <span className="font-mono text-xs tabular-nums whitespace-nowrap">
-          {formatGrosze(item.amountGrosze, item.currency)}
+          {formatMinorUnits(item.amountMinor, item.currency)}
         </span>
 
         {/* Per-item actions */}
@@ -532,14 +505,14 @@ function PaymentRunItemRow({
                   <DropdownMenuItem
                     onClick={() => setActiveAction("paid")}
                   >
-                    <CheckCircle2 className="mr-2 h-4 w-4" />
+                    <CheckCircle2 className="me-2 h-4 w-4" />
                     {t("sidePanel.markPaid")}
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     className="text-destructive"
                     onClick={() => setActiveAction("failed")}
                   >
-                    <XCircle className="mr-2 h-4 w-4" />
+                    <XCircle className="me-2 h-4 w-4" />
                     {t("sidePanel.markFailed")}
                   </DropdownMenuItem>
                 </>
@@ -549,7 +522,7 @@ function PaymentRunItemRow({
                   className="text-destructive"
                   onClick={() => setActiveAction("remove")}
                 >
-                  <Trash2 className="mr-2 h-4 w-4" />
+                  <Trash2 className="me-2 h-4 w-4" />
                   {t("sidePanel.removeFromRun")}
                 </DropdownMenuItem>
               )}

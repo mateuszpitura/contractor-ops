@@ -47,8 +47,8 @@ import { maskTaxId, canViewSensitivePii } from "@/lib/mask-pii";
 
 type MatchResult = {
   matchScore: number | null;
-  expectedAmountGrosze: number | null;
-  amountDeltaGrosze: number | null;
+  expectedAmountMinor: number | null;
+  amountDeltaMinor: number | null;
   amountDeltaPercent: number | null;
   explanationJson: {
     flags?: string[];
@@ -63,7 +63,7 @@ type MatchCardProps = {
     matchStatus: string;
     contractorId: string | null;
     contractId: string | null;
-    totalGrosze: number;
+    totalMinor: number;
     currency: string;
     flagsJson: string[] | null;
     contractor: {
@@ -76,7 +76,7 @@ type MatchCardProps = {
       title: string;
       type: string;
       status: string;
-      rateValueGrosze: number | null;
+      rateValueMinor: number | null;
       currency: string;
     } | null;
     matchResults: MatchResult[];
@@ -88,11 +88,11 @@ type MatchCardProps = {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function formatGrosze(grosze: number): string {
+function formatMinorUnits(minor: number): string {
   return new Intl.NumberFormat("pl-PL", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(grosze / 100);
+  }).format(minor / 100);
 }
 
 // ---------------------------------------------------------------------------
@@ -236,7 +236,7 @@ export function MatchCard({ invoice, onMatchConfirmed }: MatchCardProps) {
         )}
 
         {/* Deviation display */}
-        {latestResult?.expectedAmountGrosze != null &&
+        {latestResult?.expectedAmountMinor != null &&
           latestResult.amountDeltaPercent != null && (
             <div className="space-y-1 rounded-md border bg-background p-3">
               <div className="flex justify-between text-[13px]">
@@ -244,7 +244,7 @@ export function MatchCard({ invoice, onMatchConfirmed }: MatchCardProps) {
                   {t("match.expected")}
                 </span>
                 <span className="font-mono">
-                  {formatGrosze(latestResult.expectedAmountGrosze)}{" "}
+                  {formatMinorUnits(latestResult.expectedAmountMinor)}{" "}
                   {invoice.currency}
                 </span>
               </div>
@@ -253,7 +253,7 @@ export function MatchCard({ invoice, onMatchConfirmed }: MatchCardProps) {
                   {t("match.actual")}
                 </span>
                 <span className="font-mono">
-                  {formatGrosze(invoice.totalGrosze)} {invoice.currency}
+                  {formatMinorUnits(invoice.totalMinor)} {invoice.currency}
                 </span>
               </div>
               <div className="flex justify-between text-[13px]">
@@ -270,7 +270,7 @@ export function MatchCard({ invoice, onMatchConfirmed }: MatchCardProps) {
                   {latestResult.amountDeltaPercent > 0 ? "+" : ""}
                   {latestResult.amountDeltaPercent.toFixed(1)}%
                   {Math.abs(latestResult.amountDeltaPercent) > 10 && (
-                    <AlertTriangle className="ml-1 inline h-3 w-3" />
+                    <AlertTriangle className="ms-1 inline h-3 w-3" />
                   )}
                 </span>
               </div>
@@ -397,7 +397,7 @@ function UnmatchedCard({
               render={
                 <Button
                   variant="outline"
-                  className="w-full justify-start text-left font-normal"
+                  className="w-full justify-start text-start font-normal"
                 />
               }
             >
@@ -519,7 +519,7 @@ function UnmatchedCard({
           className="w-full"
         >
           {manualMatchMutation.isPending && (
-            <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+            <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
           )}
           {t("match.confirmMatch")}
         </Button>

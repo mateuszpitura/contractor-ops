@@ -142,7 +142,7 @@ export function NotificationItem({
       type="button"
       onClick={onClick}
       className={cn(
-        "flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-accent",
+        "flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-start transition-colors hover:bg-accent",
         isUnread ? "bg-muted" : "bg-transparent",
         compact && "px-3 py-2",
       )}

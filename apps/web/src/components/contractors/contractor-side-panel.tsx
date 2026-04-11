@@ -60,16 +60,16 @@ export function ContractorSidePanel({
   const billingModel = custom?.billingModel
     ? String(custom.billingModel)
     : null;
-  const rateGrosze = typeof custom?.rateValueGrosze === "number"
-    ? custom.rateValueGrosze
+  const rateMinor = typeof custom?.rateValueMinor === "number"
+    ? custom.rateValueMinor
     : null;
 
   const rateDisplay =
-    rateGrosze !== null
+    rateMinor !== null
       ? new Intl.NumberFormat("pl-PL", {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
-        }).format(rateGrosze / 100)
+        }).format(rateMinor / 100)
       : null;
 
   return (
