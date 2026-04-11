@@ -88,7 +88,7 @@ export function CalendarTaskConfig({ taskTemplateId }: CalendarTaskConfigProps) 
       <div className="flex items-center gap-3">
         <Skeleton className="h-5 w-9" />
         <Skeleton className="h-4 w-[40%]" />
-        <Skeleton className="ml-auto h-8 w-20" />
+        <Skeleton className="ms-auto h-8 w-20" />
       </div>
     );
   }

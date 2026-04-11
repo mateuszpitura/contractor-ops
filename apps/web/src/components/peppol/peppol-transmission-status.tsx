@@ -180,7 +180,7 @@ export function PeppolTransmissionStatus({
                 }
                 disabled={retryMutation.isPending}
               >
-                <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
+                <RefreshCw className="me-1.5 h-3.5 w-3.5" />
                 {retryMutation.isPending
                   ? "Retrying..."
                   : "Retry Transmission"}

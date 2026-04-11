@@ -97,7 +97,7 @@ export function OrgPicker({ orgs, email, onSelect, loading }: OrgPickerProps) {
                 )}
                 <span className="text-sm font-semibold">{org.orgName}</span>
                 {isSelected && loading && (
-                  <Loader2 className="ml-auto h-4 w-4 animate-spin text-muted-foreground" />
+                  <Loader2 className="ms-auto h-4 w-4 animate-spin text-muted-foreground" />
                 )}
               </CardContent>
             </Card>

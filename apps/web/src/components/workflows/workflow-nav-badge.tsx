@@ -23,7 +23,7 @@ export function WorkflowNavBadge() {
 
   return (
     <span
-      className="absolute -right-1 -top-1 flex size-[18px] items-center justify-center rounded-full bg-destructive text-[10px] font-medium leading-none text-destructive-foreground"
+      className="absolute -end-1 -top-1 flex size-[18px] items-center justify-center rounded-full bg-destructive text-[10px] font-medium leading-none text-destructive-foreground"
       aria-label={tAria("overdueTasks", { count })}
     >
       {count > 9 ? "9+" : count}

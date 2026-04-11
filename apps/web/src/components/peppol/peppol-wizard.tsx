@@ -246,7 +246,7 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="absolute right-1 top-1/2 -translate-y-1/2 h-7 px-2 text-xs"
+                    className="absolute end-1 top-1/2 -translate-y-1/2 h-7 px-2 text-xs"
                     onClick={() => setShowApiKey(!showApiKey)}
                   >
                     {showApiKey ? "Hide" : "Show"}
@@ -339,7 +339,7 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
                   network.
                 </p>
               </div>
-              <div className="rounded-lg border p-4 text-left w-full max-w-sm space-y-2">
+              <div className="rounded-lg border p-4 text-start w-full max-w-sm space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Participant ID</span>
                   <span className="font-mono">{participantId}</span>
@@ -369,12 +369,12 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
             </Button>
           )}
           {step === 5 ? (
-            <Button className="ml-auto" onClick={resetAndClose}>
+            <Button className="ms-auto" onClick={resetAndClose}>
               Done
             </Button>
           ) : step < 4 ? (
             <Button
-              className="ml-auto"
+              className="ms-auto"
               onClick={handleNext}
               disabled={!canGoNext}
             >

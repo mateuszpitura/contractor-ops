@@ -232,9 +232,9 @@ export function ConsentManagementSection() {
                 className="w-full"
               >
                 {downloadDPAMutation.isPending ? (
-                  <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                  <Loader2 className="me-2 h-3 w-3 animate-spin" />
                 ) : (
-                  <Download className="mr-2 h-3 w-3" />
+                  <Download className="me-2 h-3 w-3" />
                 )}
                 {t("settings.downloadDPA")}
               </Button>
@@ -259,9 +259,9 @@ export function ConsentManagementSection() {
                 className="w-full"
               >
                 {downloadSCCMutation.isPending ? (
-                  <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                  <Loader2 className="me-2 h-3 w-3 animate-spin" />
                 ) : (
-                  <Download className="mr-2 h-3 w-3" />
+                  <Download className="me-2 h-3 w-3" />
                 )}
                 {t("settings.downloadSCC")}
               </Button>

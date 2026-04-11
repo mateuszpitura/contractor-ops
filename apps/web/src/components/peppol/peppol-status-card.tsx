@@ -181,14 +181,14 @@ export function PeppolStatusCard() {
         {/* Actions */}
         <div className="flex gap-2 pt-2">
           <Button variant="outline" size="sm">
-            <Settings className="mr-1.5 h-3.5 w-3.5" />
+            <Settings className="me-1.5 h-3.5 w-3.5" />
             Settings
           </Button>
           <AlertDialog>
             <AlertDialogTrigger
               render={
                 <Button variant="ghost" size="sm" className="text-destructive">
-                  <Unplug className="mr-1.5 h-3.5 w-3.5" />
+                  <Unplug className="me-1.5 h-3.5 w-3.5" />
                   Disconnect
                 </Button>
               }

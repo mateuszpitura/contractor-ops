@@ -200,7 +200,7 @@ export function SlackUserMapping() {
             <div key={i} className="flex items-center gap-4 py-3">
               <Skeleton className="size-8 rounded-full" />
               <Skeleton className="h-4 w-32" />
-              <Skeleton className="ml-auto h-4 w-24" />
+              <Skeleton className="ms-auto h-4 w-24" />
             </div>
           ))}
         </div>

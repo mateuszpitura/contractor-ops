@@ -86,7 +86,7 @@ export function KsefSyncHistory({ connectionId }: KsefSyncHistoryProps) {
         <History className="size-4" aria-hidden="true" />
         <span>{t("syncHistoryTitle")}</span>
         <ChevronDown
-          className={`ml-auto size-4 transition-transform duration-200 ${
+          className={`ms-auto size-4 transition-transform duration-200 ${
             isOpen ? "rotate-180" : ""
           }`}
           aria-hidden="true"
@@ -100,7 +100,7 @@ export function KsefSyncHistory({ connectionId }: KsefSyncHistoryProps) {
               <div key={i} className="flex items-center gap-3">
                 <Skeleton className="h-4 w-20" />
                 <Skeleton className="h-5 w-12" />
-                <Skeleton className="ml-auto h-5 w-16" />
+                <Skeleton className="ms-auto h-5 w-16" />
               </div>
             ))}
           </div>
@@ -146,7 +146,7 @@ export function KsefSyncHistory({ connectionId }: KsefSyncHistoryProps) {
                   {/* Status badge */}
                   <Badge
                     variant="secondary"
-                    className={`ml-auto text-xs ${
+                    className={`ms-auto text-xs ${
                       isNoNew
                         ? "bg-muted text-muted-foreground"
                         : statusStyle.className
