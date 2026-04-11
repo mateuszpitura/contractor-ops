@@ -29,7 +29,7 @@ interface Contract {
   id: string;
   title: string;
   rateType?: string | null;
-  rateValueGrosze?: number | null;
+  rateValueMinor?: number | null;
 }
 
 interface TimesheetGridProps {

@@ -212,7 +212,7 @@ export function ReminderRulesSection() {
             {t("reminderRules.emptyBody")}
           </p>
           <Button className="mt-4" onClick={handleCreate}>
-            <Plus className="mr-1.5 size-4" />
+            <Plus className="me-1.5 size-4" />
             {t("reminderRules.emptyCta")}
           </Button>
         </div>
@@ -240,7 +240,7 @@ export function ReminderRulesSection() {
             </p>
           </div>
           <Button onClick={handleCreate}>
-            <Plus className="mr-1.5 size-4" />
+            <Plus className="me-1.5 size-4" />
             {t("reminderRules.createRule")}
           </Button>
         </div>
@@ -289,7 +289,7 @@ export function ReminderRulesSection() {
                   size="sm"
                   onClick={() => handleEdit(rule)}
                 >
-                  <Pencil className="mr-1.5 size-3.5" />
+                  <Pencil className="me-1.5 size-3.5" />
                   {t("reminderRules.edit")}
                 </Button>
                 <Button
@@ -298,7 +298,7 @@ export function ReminderRulesSection() {
                   className="text-destructive hover:text-destructive"
                   onClick={() => setDeletingRuleId(rule.id)}
                 >
-                  <Trash2 className="mr-1.5 size-3.5" />
+                  <Trash2 className="me-1.5 size-3.5" />
                   {t("reminderRules.delete")}
                 </Button>
               </CardFooter>

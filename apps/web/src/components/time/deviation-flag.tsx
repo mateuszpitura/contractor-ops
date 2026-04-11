@@ -15,9 +15,9 @@ import {
 interface DeviationFlagProps {
   deviationPercent: number;
   thresholdPercent: number;
-  expectedAmountGrosze: number;
-  invoicedAmountGrosze: number;
-  rateValueGrosze: number;
+  expectedAmountMinor: number;
+  invoicedAmountMinor: number;
+  rateValueMinor: number;
   approvedMinutes: number;
 }
 
@@ -25,11 +25,11 @@ interface DeviationFlagProps {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function formatGrosze(grosze: number): string {
+function formatMinorUnits(minor: number): string {
   return new Intl.NumberFormat("pl-PL", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(grosze / 100);
+  }).format(minor / 100);
 }
 
 function formatHours(minutes: number): string {
@@ -37,8 +37,8 @@ function formatHours(minutes: number): string {
   return hours % 1 === 0 ? `${hours}` : hours.toFixed(1);
 }
 
-function formatRate(grosze: number): string {
-  return formatGrosze(grosze);
+function formatRate(minor: number): string {
+  return formatMinorUnits(minor);
 }
 
 // ---------------------------------------------------------------------------
@@ -60,17 +60,17 @@ function formatRate(grosze: number): string {
 export function DeviationFlag({
   deviationPercent,
   thresholdPercent,
-  expectedAmountGrosze,
-  invoicedAmountGrosze,
-  rateValueGrosze,
+  expectedAmountMinor,
+  invoicedAmountMinor,
+  rateValueMinor,
   approvedMinutes,
 }: DeviationFlagProps) {
   const hours = formatHours(approvedMinutes);
-  const rate = formatRate(rateValueGrosze);
-  const expected = formatGrosze(expectedAmountGrosze);
-  const actual = formatGrosze(invoicedAmountGrosze);
-  const delta = formatGrosze(
-    Math.abs(invoicedAmountGrosze - expectedAmountGrosze),
+  const rate = formatRate(rateValueMinor);
+  const expected = formatMinorUnits(expectedAmountMinor);
+  const actual = formatMinorUnits(invoicedAmountMinor);
+  const delta = formatMinorUnits(
+    Math.abs(invoicedAmountMinor - expectedAmountMinor),
   );
 
   const tooltipText = `Expected: ${rate}/h x ${hours}h = ${expected}. Invoiced: ${actual}. Difference: ${delta}.`;
@@ -105,13 +105,3 @@ export function DeviationFlag({
   );
 }
 
-/**
- * Variant for when no time data is available.
- */
-export function DeviationFlagNoData() {
-  return (
-    <Badge variant="secondary" className="cursor-default">
-      No time data
-    </Badge>
-  );
-}

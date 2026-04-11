@@ -99,7 +99,7 @@ function ChartTooltip({
   return (
     <div className="glass-medium relative overflow-hidden rounded-xl border border-border/40 p-3 shadow-lg">
       {/* Top accent line */}
-      <div className="accent-line absolute top-0 right-0 left-0 rounded-t-xl" />
+      <div className="accent-line absolute top-0 end-0 start-0 rounded-t-xl" />
       <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/60">
         {label}
       </p>
@@ -110,7 +110,7 @@ function ChartTooltip({
             style={{ backgroundColor: entry.color }}
           />
           <span className="text-xs text-muted-foreground">{entry.name}</span>
-          <span className="ml-auto font-display text-sm font-bold tabular-nums" style={{ color: entry.color }}>
+          <span className="ms-auto font-display text-sm font-bold tabular-nums" style={{ color: entry.color }}>
             {currencyFormatter.format(entry.value / 100)}
           </span>
         </div>
@@ -151,9 +151,9 @@ export function SpendChart() {
       const label = formatMonthLabel(row.month);
       const existing = monthMap.get(label) ?? { month: label, PLN: 0, EUR: 0 };
       if (row.currency === "PLN") {
-        existing.PLN = row.totalGrosze;
+        existing.PLN = row.totalMinor;
       } else if (row.currency === "EUR") {
-        existing.EUR = row.totalGrosze;
+        existing.EUR = row.totalMinor;
       }
       monthMap.set(label, existing);
     }

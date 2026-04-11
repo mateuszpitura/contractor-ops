@@ -68,11 +68,11 @@ function PasswordField({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="pr-10"
+          className="pe-10"
         />
         <button
           type="button"
-          className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+          className="absolute end-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
           onClick={() => setVisible(!visible)}
           aria-label={visible ? "Hide" : "Show"}
         >
@@ -270,13 +270,13 @@ export function CarrierCredentialForm({
             disabled={isPending}
           >
             {testMutation.isPending && (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="me-2 h-4 w-4 animate-spin" />
             )}
             {t("testConnection")}
           </Button>
           <Button size="sm" onClick={handleSave} disabled={isPending}>
             {saveMutation.isPending && (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="me-2 h-4 w-4 animate-spin" />
             )}
             {t("saveCredentials")}
           </Button>

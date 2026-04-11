@@ -147,13 +147,13 @@ export function EquipmentDetailHeader({
 
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={onEdit}>
-            <Pencil className="mr-1.5 size-3.5" />
+            <Pencil className="me-1.5 size-3.5" />
             {t("detail.edit")}
           </Button>
 
           {!isRetired && !isAssigned && (
             <Button variant="outline" size="sm" onClick={onAssign}>
-              <UserPlus className="mr-1.5 size-3.5" />
+              <UserPlus className="me-1.5 size-3.5" />
               {t("detail.assignToContractor")}
             </Button>
           )}
@@ -164,14 +164,14 @@ export function EquipmentDetailHeader({
               size="sm"
               onClick={() => setUnassignDialogOpen(true)}
             >
-              <UserMinus className="mr-1.5 size-3.5" />
+              <UserMinus className="me-1.5 size-3.5" />
               {t("detail.unassignEquipment")}
             </Button>
           )}
 
           {!isRetired && (
             <Button variant="outline" size="sm" onClick={onCreateShipment}>
-              <Truck className="mr-1.5 size-3.5" />
+              <Truck className="me-1.5 size-3.5" />
               {t("detail.createShipment")}
             </Button>
           )}
@@ -191,7 +191,7 @@ export function EquipmentDetailHeader({
                   variant="destructive"
                   onSelect={() => setRetireDialogOpen(true)}
                 >
-                  <Archive className="mr-2 h-3.5 w-3.5" />
+                  <Archive className="me-2 h-3.5 w-3.5" />
                   {t("detail.retire")}
                 </DropdownMenuItem>
               )}

@@ -11,12 +11,12 @@ import { DeviationFlag } from "@/components/time/deviation-flag";
 
 interface TimeReconciliation {
   approvedMinutes: number;
-  rateValueGrosze: number;
+  rateValueMinor: number;
   rateType: string;
   hoursPerDay: number;
-  expectedAmountGrosze: number;
-  invoicedAmountGrosze: number;
-  deviationGrosze: number;
+  expectedAmountMinor: number;
+  invoicedAmountMinor: number;
+  deviationMinor: number;
   deviationPercent: number;
   withinThreshold: boolean;
   thresholdPercent: number;
@@ -30,13 +30,13 @@ interface ReconciliationCardProps {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function formatGrosze(grosze: number): string {
+function formatMinorUnits(minor: number): string {
   return new Intl.NumberFormat("pl-PL", {
     style: "currency",
     currency: "PLN",
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(grosze / 100);
+  }).format(minor / 100);
 }
 
 function formatHours(minutes: number): string {
@@ -44,11 +44,11 @@ function formatHours(minutes: number): string {
   return hours % 1 === 0 ? `${hours}` : hours.toFixed(1);
 }
 
-function formatRate(grosze: number): string {
+function formatRate(minor: number): string {
   return new Intl.NumberFormat("pl-PL", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(grosze / 100);
+  }).format(minor / 100);
 }
 
 // ---------------------------------------------------------------------------
@@ -60,12 +60,12 @@ function getBorderColor(
   thresholdPercent: number,
 ): string {
   if (deviationPercent <= thresholdPercent) {
-    return "border-l-green-600 dark:border-l-green-500";
+    return "border-s-green-600 dark:border-s-green-500";
   }
   if (deviationPercent <= 2 * thresholdPercent) {
-    return "border-l-amber-500 dark:border-l-amber-400";
+    return "border-s-amber-500 dark:border-s-amber-400";
   }
-  return "border-l-destructive";
+  return "border-s-destructive";
 }
 
 // ---------------------------------------------------------------------------
@@ -82,27 +82,27 @@ function getBorderColor(
 export function ReconciliationCard({ reconciliation }: ReconciliationCardProps) {
   const {
     approvedMinutes,
-    rateValueGrosze,
-    expectedAmountGrosze,
-    invoicedAmountGrosze,
+    rateValueMinor,
+    expectedAmountMinor,
+    invoicedAmountMinor,
     deviationPercent,
     thresholdPercent,
   } = reconciliation;
 
   const borderColor = getBorderColor(deviationPercent, thresholdPercent);
   const hours = formatHours(approvedMinutes);
-  const rate = formatRate(rateValueGrosze);
+  const rate = formatRate(rateValueMinor);
 
   // Visual comparison bar: ratio of expected to actual
-  const maxAmount = Math.max(expectedAmountGrosze, invoicedAmountGrosze);
+  const maxAmount = Math.max(expectedAmountMinor, invoicedAmountMinor);
   const expectedRatio =
-    maxAmount > 0 ? (expectedAmountGrosze / maxAmount) * 100 : 0;
+    maxAmount > 0 ? (expectedAmountMinor / maxAmount) * 100 : 0;
   const invoicedRatio =
-    maxAmount > 0 ? (invoicedAmountGrosze / maxAmount) * 100 : 0;
-  const hasOverflow = invoicedAmountGrosze > expectedAmountGrosze;
+    maxAmount > 0 ? (invoicedAmountMinor / maxAmount) * 100 : 0;
+  const hasOverflow = invoicedAmountMinor > expectedAmountMinor;
 
   return (
-    <Card className={`border-l-4 ${borderColor}`}>
+    <Card className={`border-s-4 ${borderColor}`}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -112,9 +112,9 @@ export function ReconciliationCard({ reconciliation }: ReconciliationCardProps) 
           <DeviationFlag
             deviationPercent={deviationPercent}
             thresholdPercent={thresholdPercent}
-            expectedAmountGrosze={expectedAmountGrosze}
-            invoicedAmountGrosze={invoicedAmountGrosze}
-            rateValueGrosze={rateValueGrosze}
+            expectedAmountMinor={expectedAmountMinor}
+            invoicedAmountMinor={invoicedAmountMinor}
+            rateValueMinor={rateValueMinor}
             approvedMinutes={approvedMinutes}
           />
         </div>
@@ -139,7 +139,7 @@ export function ReconciliationCard({ reconciliation }: ReconciliationCardProps) 
               Expected Amount
             </span>
             <p className="text-lg font-semibold tabular-nums">
-              {formatGrosze(expectedAmountGrosze)}
+              {formatMinorUnits(expectedAmountMinor)}
             </p>
             <p className="text-xs text-muted-foreground">
               based on approved hours
@@ -152,7 +152,7 @@ export function ReconciliationCard({ reconciliation }: ReconciliationCardProps) 
               Invoiced Amount
             </span>
             <p className="text-lg font-semibold tabular-nums">
-              {formatGrosze(invoicedAmountGrosze)}
+              {formatMinorUnits(invoicedAmountMinor)}
             </p>
             <p className="text-xs text-muted-foreground">
               from invoice
@@ -169,20 +169,20 @@ export function ReconciliationCard({ reconciliation }: ReconciliationCardProps) 
           <div className="relative h-2 w-full overflow-hidden rounded-full bg-muted">
             {/* Expected portion */}
             <div
-              className="absolute inset-y-0 left-0 rounded-full bg-primary/60 transition-all duration-300 ease-out"
+              className="absolute inset-y-0 start-0 rounded-full bg-primary/60 transition-all duration-300 ease-out"
               style={{ width: `${expectedRatio}%` }}
             />
             {/* Invoiced overflow (only when actual > expected) */}
             {hasOverflow && (
               <div
-                className="absolute inset-y-0 left-0 rounded-full bg-destructive/40 transition-all duration-300 ease-out"
+                className="absolute inset-y-0 start-0 rounded-full bg-destructive/40 transition-all duration-300 ease-out"
                 style={{ width: `${invoicedRatio}%` }}
               />
             )}
             {/* Expected overlay on top when there's overflow */}
             {hasOverflow && (
               <div
-                className="absolute inset-y-0 left-0 rounded-full bg-primary/60 transition-all duration-300 ease-out"
+                className="absolute inset-y-0 start-0 rounded-full bg-primary/60 transition-all duration-300 ease-out"
                 style={{ width: `${expectedRatio}%` }}
               />
             )}

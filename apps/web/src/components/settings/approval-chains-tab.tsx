@@ -178,7 +178,7 @@ export function ApprovalChainsTab() {
             {t("approvals.empty.body")}
           </p>
           <Button className="mt-4" onClick={handleCreate}>
-            <Plus className="mr-1.5 size-4" />
+            <Plus className="me-1.5 size-4" />
             {t("approvals.empty.cta")}
           </Button>
         </div>
@@ -204,7 +204,7 @@ export function ApprovalChainsTab() {
             </p>
           </div>
           <Button onClick={handleCreate}>
-            <Plus className="mr-1.5 size-4" />
+            <Plus className="me-1.5 size-4" />
             {t("approvals.createChain")}
           </Button>
         </div>
@@ -243,7 +243,7 @@ export function ApprovalChainsTab() {
                 size="sm"
                 onClick={() => handleEdit(chain)}
               >
-                <Pencil className="mr-1.5 size-3.5" />
+                <Pencil className="me-1.5 size-3.5" />
                 {t("approvals.edit")}
               </Button>
               <Button
@@ -252,7 +252,7 @@ export function ApprovalChainsTab() {
                 className="text-destructive hover:text-destructive"
                 onClick={() => setDeletingChainId(chain.id)}
               >
-                <Trash2 className="mr-1.5 size-3.5" />
+                <Trash2 className="me-1.5 size-3.5" />
                 {t("approvals.delete")}
               </Button>
             </CardFooter>

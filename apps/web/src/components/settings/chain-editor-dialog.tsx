@@ -227,7 +227,7 @@ function UserPicker({
                       {user.email}
                     </span>
                   </div>
-                  <Badge variant="secondary" className="ml-auto">
+                  <Badge variant="secondary" className="ms-auto">
                     {ROLE_LABELS[user.role] ?? user.role}
                   </Badge>
                 </CommandItem>
@@ -597,7 +597,7 @@ export function ChainEditorDialog({
                     />
                   }
                 >
-                  <Plus className="mr-1.5 size-3.5" />
+                  <Plus className="me-1.5 size-3.5" />
                   {t("approvals.editor.addLevel")}
                 </TooltipTrigger>
                 <TooltipContent>{t("approvals.editor.maxLevels")}</TooltipContent>
@@ -609,7 +609,7 @@ export function ChainEditorDialog({
                 size="sm"
                 onClick={() => append({ ...DEFAULT_STEP })}
               >
-                <Plus className="mr-1.5 size-3.5" />
+                <Plus className="me-1.5 size-3.5" />
                 {t("approvals.editor.addLevel")}
               </Button>
             )}
@@ -642,7 +642,7 @@ export function ChainEditorDialog({
             </Button>
             <Button type="submit" disabled={isPending}>
               {isPending && (
-                <Loader2 className="mr-1.5 size-3.5 animate-spin" />
+                <Loader2 className="me-1.5 size-3.5 animate-spin" />
               )}
               {t("approvals.editor.save")}
             </Button>

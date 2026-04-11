@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 
 import { trpc } from "@/trpc/init";
+import { isCarrierFormValid } from "@/lib/carrier-validation";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -191,29 +192,11 @@ export function CarrierShipmentForm({
     upsMutation.isPending;
 
   // Validate required fields per carrier
-  const isFormValid = (() => {
-    if (!selectedCarrier) return false;
-
-    switch (selectedCarrier) {
-      case "inpost":
-        return !!selectedPoint;
-      case "dpd":
-        return !!(
-          address.street.trim() &&
-          address.city.trim() &&
-          address.postalCode.trim()
-        );
-      case "ups":
-        return !!(
-          address.street.trim() &&
-          address.city.trim() &&
-          address.postalCode.trim() &&
-          serviceCode
-        );
-      default:
-        return false;
-    }
-  })();
+  const isFormValid = isCarrierFormValid(selectedCarrier ?? "", {
+    selectedPoint,
+    address,
+    serviceCode,
+  });
 
   const handleSubmit = useCallback(() => {
     if (!selectedCarrier || !isFormValid) return;
@@ -345,7 +328,7 @@ export function CarrierShipmentForm({
                       className="w-full"
                       onClick={() => setPickerOpen(true)}
                     >
-                      <Package className="mr-2 h-4 w-4" />
+                      <Package className="me-2 h-4 w-4" />
                       {tInpost("selectPaczkomat")}
                     </Button>
                   )}
@@ -411,7 +394,7 @@ export function CarrierShipmentForm({
               disabled={!isFormValid || isPending}
             >
               {isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="me-2 h-4 w-4 animate-spin" />
               )}
               {t("createShipment")}
             </Button>

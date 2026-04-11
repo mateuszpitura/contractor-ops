@@ -28,7 +28,7 @@ interface ReconciliationItem {
     id: string;
     invoiceNumber: string;
     issueDate: string | Date;
-    totalGrosze: number;
+    totalMinor: number;
     currency: string;
     servicePeriodStart: string | Date | null;
     servicePeriodEnd: string | Date | null;
@@ -39,12 +39,12 @@ interface ReconciliationItem {
   } | null;
   reconciliation: {
     approvedMinutes: number;
-    rateValueGrosze: number;
+    rateValueMinor: number;
     rateType: string;
     hoursPerDay: number;
-    expectedAmountGrosze: number;
-    invoicedAmountGrosze: number;
-    deviationGrosze: number;
+    expectedAmountMinor: number;
+    invoicedAmountMinor: number;
+    deviationMinor: number;
     deviationPercent: number;
     withinThreshold: boolean;
     thresholdPercent: number;
@@ -55,11 +55,11 @@ interface ReconciliationItem {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function formatGrosze(grosze: number): string {
+function formatMinorUnits(minor: number): string {
   return new Intl.NumberFormat("pl-PL", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(grosze / 100);
+  }).format(minor / 100);
 }
 
 function formatHours(minutes: number): string {
@@ -147,9 +147,9 @@ export function ReconciliationTable() {
           <TableRow>
             <TableHead>Contractor</TableHead>
             <TableHead>Period</TableHead>
-            <TableHead className="text-right">Approved Hours</TableHead>
-            <TableHead className="text-right">Expected Amount</TableHead>
-            <TableHead className="text-right">Invoiced Amount</TableHead>
+            <TableHead className="text-end">Approved Hours</TableHead>
+            <TableHead className="text-end">Expected Amount</TableHead>
+            <TableHead className="text-end">Invoiced Amount</TableHead>
             <TableHead>Deviation</TableHead>
             <TableHead className="w-10" />
           </TableRow>
@@ -163,17 +163,17 @@ export function ReconciliationTable() {
               <TableCell className="text-sm text-muted-foreground">
                 {formatPeriod(item)}
               </TableCell>
-              <TableCell className="text-right text-sm font-medium tabular-nums">
+              <TableCell className="text-end text-sm font-medium tabular-nums">
                 {formatHours(item.reconciliation.approvedMinutes)}
               </TableCell>
-              <TableCell className="text-right text-sm tabular-nums">
-                {formatGrosze(item.reconciliation.expectedAmountGrosze)}{" "}
+              <TableCell className="text-end text-sm tabular-nums">
+                {formatMinorUnits(item.reconciliation.expectedAmountMinor)}{" "}
                 <span className="text-muted-foreground">
                   {item.invoice.currency}
                 </span>
               </TableCell>
-              <TableCell className="text-right text-sm tabular-nums">
-                {formatGrosze(item.reconciliation.invoicedAmountGrosze)}{" "}
+              <TableCell className="text-end text-sm tabular-nums">
+                {formatMinorUnits(item.reconciliation.invoicedAmountMinor)}{" "}
                 <span className="text-muted-foreground">
                   {item.invoice.currency}
                 </span>
@@ -182,13 +182,13 @@ export function ReconciliationTable() {
                 <DeviationFlag
                   deviationPercent={item.reconciliation.deviationPercent}
                   thresholdPercent={item.reconciliation.thresholdPercent}
-                  expectedAmountGrosze={
-                    item.reconciliation.expectedAmountGrosze
+                  expectedAmountMinor={
+                    item.reconciliation.expectedAmountMinor
                   }
-                  invoicedAmountGrosze={
-                    item.reconciliation.invoicedAmountGrosze
+                  invoicedAmountMinor={
+                    item.reconciliation.invoicedAmountMinor
                   }
-                  rateValueGrosze={item.reconciliation.rateValueGrosze}
+                  rateValueMinor={item.reconciliation.rateValueMinor}
                   approvedMinutes={item.reconciliation.approvedMinutes}
                 />
               </TableCell>

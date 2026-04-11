@@ -160,7 +160,7 @@ export function ShipmentTimeline({
             disabled={!newStatus || addEventMutation.isPending}
           >
             {addEventMutation.isPending && (
-              <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+              <Loader2 className="me-1 h-3 w-3 animate-spin" />
             )}
             Add
           </Button>
@@ -168,7 +168,7 @@ export function ShipmentTimeline({
       )}
 
       {/* Timeline */}
-      <div role="list" className="relative space-y-0 pl-4">
+      <div role="list" className="relative space-y-0 ps-4">
         {SHIPMENT_STATUS_ORDER.map((status, index) => {
           const event = eventByStatus.get(status);
           const isCompleted = index < currentIndex;
@@ -184,10 +184,10 @@ export function ShipmentTimeline({
               {index < SHIPMENT_STATUS_ORDER.length - 1 && (
                 <div
                   className={cn(
-                    "absolute left-[5px] top-[18px] h-full w-0.5",
+                    "absolute start-[5px] top-[18px] h-full w-0.5",
                     isCompleted || isCurrent
                       ? "bg-border"
-                      : "border-l-2 border-dashed border-border/40",
+                      : "border-s-2 border-dashed border-border/40",
                   )}
                 />
               )}

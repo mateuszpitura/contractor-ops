@@ -151,7 +151,7 @@ export function ContractorTimesheetReview({
           </div>
           <TimeEntryStatusBadge status={timesheet.status} />
         </div>
-        <div className="text-right">
+        <div className="text-end">
           <p className="text-2xl font-semibold text-primary">
             {minutesToHours(timesheet.totalMinutes) || "0"}h
           </p>
@@ -166,7 +166,7 @@ export function ContractorTimesheetReview({
             <table className="w-full border-collapse">
               <thead>
                 <tr className="border-b">
-                  <th className="w-[200px] min-w-[200px] px-4 py-3 text-left text-sm font-semibold">
+                  <th className="w-[200px] min-w-[200px] px-4 py-3 text-start text-sm font-semibold">
                     Project
                   </th>
                   {DAY_LABELS.map((day, i) => (
@@ -215,7 +215,7 @@ export function ContractorTimesheetReview({
                                 {mins > 0 ? minutesToHours(mins) : "-"}
                               </span>
                               {entry && entry.source !== "MANUAL" && (
-                                <div className="absolute -top-2 -right-3">
+                                <div className="absolute -top-2 -end-3">
                                   <TimeSourceBadge
                                     source={entry.source}
                                     importedAt={entry.createdAt}
@@ -299,7 +299,7 @@ export function ContractorTimesheetReview({
       <div className="sticky bottom-0 z-40 -mx-1 border-t bg-background px-1 py-4">
         <div className="flex items-center justify-between">
           <Button variant="ghost" onClick={onBack}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
+            <ArrowLeft className="me-2 h-4 w-4" />
             Back to Queue
           </Button>
           <div className="flex items-center gap-2">
@@ -310,11 +310,11 @@ export function ContractorTimesheetReview({
                   className="text-destructive hover:bg-destructive/10"
                   onClick={() => setRejectDialogOpen(true)}
                 >
-                  <XCircle className="mr-2 h-4 w-4" />
+                  <XCircle className="me-2 h-4 w-4" />
                   Reject
                 </Button>
                 <Button onClick={onApprove} disabled={isApproving}>
-                  <CheckCircle className="mr-2 h-4 w-4" />
+                  <CheckCircle className="me-2 h-4 w-4" />
                   Approve Timesheet
                 </Button>
               </>

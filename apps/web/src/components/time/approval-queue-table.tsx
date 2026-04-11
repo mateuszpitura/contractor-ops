@@ -190,10 +190,10 @@ export function ApprovalQueueTable({
               </TableHead>
               <TableHead>Contractor</TableHead>
               <TableHead>Period</TableHead>
-              <TableHead className="text-right">Total Hours</TableHead>
+              <TableHead className="text-end">Total Hours</TableHead>
               <TableHead>Entries</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="text-end">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -229,7 +229,7 @@ export function ApprovalQueueTable({
                 <TableCell className="text-sm text-muted-foreground">
                   {formatPeriod(ts.weekStartDate)}
                 </TableCell>
-                <TableCell className="text-right text-sm font-medium">
+                <TableCell className="text-end text-sm font-medium">
                   {minutesToDisplay(ts.totalMinutes)}
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground">
@@ -245,7 +245,7 @@ export function ApprovalQueueTable({
                       variant="default"
                       onClick={() => onApprove(ts.id)}
                     >
-                      <CheckCircle className="mr-1.5 h-3.5 w-3.5" />
+                      <CheckCircle className="me-1.5 h-3.5 w-3.5" />
                       Approve
                     </Button>
                     <Button
@@ -254,7 +254,7 @@ export function ApprovalQueueTable({
                       className="text-destructive hover:bg-destructive/10"
                       onClick={() => setRejectingId(ts.id)}
                     >
-                      <XCircle className="mr-1.5 h-3.5 w-3.5" />
+                      <XCircle className="me-1.5 h-3.5 w-3.5" />
                       Reject
                     </Button>
                   </div>

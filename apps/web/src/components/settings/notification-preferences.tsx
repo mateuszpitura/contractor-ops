@@ -201,7 +201,7 @@ export function NotificationPreferences() {
             <div key={i} className="flex items-center gap-4 py-3">
               <Skeleton className="size-8 rounded-full" />
               <Skeleton className="h-4 w-32" />
-              <div className="ml-auto flex gap-8">
+              <div className="ms-auto flex gap-8">
                 <Skeleton className="h-5 w-10" />
                 <Skeleton className="h-5 w-10" />
                 <Skeleton className="h-5 w-10" />
@@ -367,7 +367,7 @@ export function NotificationPreferences() {
             disabled={!form.formState.isDirty || updateMutation.isPending}
           >
             {updateMutation.isPending && (
-              <Loader2 className="mr-1.5 size-3.5 animate-spin" />
+              <Loader2 className="me-1.5 size-3.5 animate-spin" />
             )}
             {t("notifications.savePreferences")}
           </Button>

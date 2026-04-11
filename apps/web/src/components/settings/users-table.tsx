@@ -141,7 +141,7 @@ export function UsersTable() {
               <TableHead>{t("columns.role")}</TableHead>
               <TableHead>{t("columns.status")}</TableHead>
               {(canManageMembers || canDeleteMembers) && (
-                <TableHead className="text-right">{t("columns.actions")}</TableHead>
+                <TableHead className="text-end">{t("columns.actions")}</TableHead>
               )}
             </TableRow>
           </TableHeader>
@@ -153,7 +153,7 @@ export function UsersTable() {
                 <TableCell><Skeleton className="h-5 w-20" /></TableCell>
                 <TableCell><Skeleton className="h-5 w-16" /></TableCell>
                 {(canManageMembers || canDeleteMembers) && (
-                  <TableCell><Skeleton className="h-8 w-20 ml-auto" /></TableCell>
+                  <TableCell><Skeleton className="h-8 w-20 ms-auto" /></TableCell>
                 )}
               </TableRow>
             ))}
@@ -191,7 +191,7 @@ export function UsersTable() {
               <TableHead>{t("columns.role")}</TableHead>
               <TableHead>{t("columns.status")}</TableHead>
               {(canManageMembers || canDeleteMembers) && (
-                <TableHead className="text-right">{t("columns.actions")}</TableHead>
+                <TableHead className="text-end">{t("columns.actions")}</TableHead>
               )}
             </TableRow>
           </TableHeader>
@@ -260,7 +260,7 @@ export function UsersTable() {
                     </Badge>
                   </TableCell>
                   {(canManageMembers || canDeleteMembers) && (
-                    <TableCell className="text-right">
+                    <TableCell className="text-end">
                       {isDisabled && canManageMembers ? (
                         <Button
                           variant="outline"

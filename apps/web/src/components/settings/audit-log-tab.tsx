@@ -303,12 +303,12 @@ export function AuditLogTab() {
       {/* Search + Export */}
       <div className="flex items-center gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={localSearch}
             onChange={(e) => setLocalSearch(e.target.value)}
             placeholder={t("searchPlaceholder")}
-            className="pl-9"
+            className="ps-9"
           />
         </div>
         <Button
@@ -317,9 +317,9 @@ export function AuditLogTab() {
           disabled={exportMutation.isPending || totalCount === 0}
         >
           {exportMutation.isPending ? (
-            <Loader2 className="mr-2 size-4 animate-spin" />
+            <Loader2 className="me-2 size-4 animate-spin" />
           ) : (
-            <Download className="mr-2 size-4" />
+            <Download className="me-2 size-4" />
           )}
           {t("exportCta")}
         </Button>

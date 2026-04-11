@@ -160,18 +160,18 @@ export function getEquipmentColumns(
             />
             <DropdownMenuContent align="end">
               <DropdownMenuItem onSelect={() => actions.onEdit(equipment)}>
-                <Pencil className="mr-2 h-3.5 w-3.5" />
+                <Pencil className="me-2 h-3.5 w-3.5" />
                 {t("detail.edit")}
               </DropdownMenuItem>
               {!isRetired && !isAssigned && (
                 <DropdownMenuItem onSelect={() => actions.onAssign(equipment)}>
-                  <UserPlus className="mr-2 h-3.5 w-3.5" />
+                  <UserPlus className="me-2 h-3.5 w-3.5" />
                   {t("detail.assignToContractor")}
                 </DropdownMenuItem>
               )}
               {isAssigned && (
                 <DropdownMenuItem onSelect={() => actions.onUnassign(equipment)}>
-                  <UserMinus className="mr-2 h-3.5 w-3.5" />
+                  <UserMinus className="me-2 h-3.5 w-3.5" />
                   {t("detail.unassignEquipment")}
                 </DropdownMenuItem>
               )}
@@ -179,7 +179,7 @@ export function getEquipmentColumns(
                 <DropdownMenuItem
                   onSelect={() => actions.onCreateShipment(equipment)}
                 >
-                  <Truck className="mr-2 h-3.5 w-3.5" />
+                  <Truck className="me-2 h-3.5 w-3.5" />
                   {t("detail.createShipment")}
                 </DropdownMenuItem>
               )}
@@ -190,7 +190,7 @@ export function getEquipmentColumns(
                     variant="destructive"
                     onSelect={() => actions.onRetire(equipment)}
                   >
-                    <Archive className="mr-2 h-3.5 w-3.5" />
+                    <Archive className="me-2 h-3.5 w-3.5" />
                     {t("detail.retire")}
                   </DropdownMenuItem>
                 </>
