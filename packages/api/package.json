@@ -102,6 +102,7 @@
   "dependencies": {
     "@contractor-ops/auth": "workspace:*",
     "@contractor-ops/db": "workspace:*",
+    "@contractor-ops/shared": "workspace:*",
     "@contractor-ops/einvoice": "workspace:*",
     "@contractor-ops/integrations": "workspace:*",
     "@contractor-ops/logger": "workspace:*",

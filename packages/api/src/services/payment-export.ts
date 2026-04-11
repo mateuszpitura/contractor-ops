@@ -1,7 +1,11 @@
 /**
  * Pure-function export generators for payment run files.
- * Supports CSV (via xlsx), Polish Elixir flat file, and SEPA XML pain.001.001.03.
+ * Supports CSV (via xlsx), Polish Elixir flat file, SEPA XML pain.001.001.03,
+ * and SWIFT XML pain.001.001.09 (Phase 46).
  */
+
+import { minorToDecimalStr } from "@contractor-ops/shared";
+import { getPurposeCode } from "./purpose-codes.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -10,7 +14,7 @@
 export type ExportItem = {
   contractorName: string;
   iban: string;
-  amountGrosze: number;
+  amountMinor: number;
   currency: string;
   invoiceNumber: string;
   taxId: string | null;
@@ -18,6 +22,10 @@ export type ExportItem = {
   swiftBic: string | null;
   dueDate: Date;
   transferTitle: string;
+  // SWIFT-specific (added in Phase 46)
+  serviceCategory?: string;
+  purposeCodeOverride?: string;
+  creditorCountry?: string;
 };
 
 export type OrgBankInfo = {
@@ -54,10 +62,12 @@ export function stripDiacritics(s: string): string {
     "\u0179": "Z",
     "\u017b": "Z",
   };
-  return s.replace(
-    /[\u0105\u0107\u0119\u0142\u0144\u00f3\u015b\u017a\u017c\u0104\u0106\u0118\u0141\u0143\u00d3\u015a\u0179\u017b]/g,
-    (ch) => map[ch] ?? ch,
-  );
+  return s
+    .replace(
+      /[\u0105\u0107\u0119\u0142\u0144\u00f3\u015b\u017a\u017c\u0104\u0106\u0118\u0141\u0143\u00d3\u015a\u0179\u017b]/g,
+      (ch) => map[ch] ?? ch,
+    )
+    .replace(/[^\x20-\x7E]/g, ""); // Strip any remaining non-ASCII characters
 }
 
 /**
@@ -78,6 +88,14 @@ export function formatMultiline(
   }
 
   return lines.join("|");
+}
+
+/**
+ * Convert a minor-unit integer to a decimal string using ISO 4217 exponent.
+ * Delegates to Dinero.js for currency-aware precision (per D-02).
+ */
+function minorToDecimal(minor: number, currency: string = "PLN"): string {
+  return minorToDecimalStr(minor, currency);
 }
 
 /**
@@ -128,7 +146,7 @@ export async function generateCsv(items: ExportItem[]): Promise<Buffer> {
   const rows = items.map((item) => ({
     "Contractor name": item.contractorName,
     IBAN: item.iban,
-    Amount: (item.amountGrosze / 100).toFixed(2),
+    Amount: minorToDecimal(item.amountMinor, item.currency),
     Currency: item.currency,
     "Invoice number": item.invoiceNumber,
     NIP: item.taxId ?? "",
@@ -167,17 +185,24 @@ export function generateElixir(
 ): Buffer {
   const lines = items.map((item) => {
     const date = formatDateYYYYMMDD(item.dueDate);
-    const amountGrosze = String(item.amountGrosze);
+    const amountMinor = String(item.amountMinor);
     // Strip "PL" prefix from IBANs — sender and recipient
     const senderAccount = stripCountryPrefix(sender.iban);
     const recipientAccount = stripCountryPrefix(item.iban);
     const senderSort = senderAccount.substring(0, 8);
     const recipientSort = recipientAccount.substring(0, 8);
 
+    const taxId = item.taxId ?? "";
+    if (!taxId) {
+      console.warn(
+        `[payment-export] Missing taxId (NIP) for contractor "${item.contractorName}" in Elixir export — using empty value`,
+      );
+    }
+
     return [
       "110",
       date,
-      amountGrosze,
+      amountMinor,
       senderSort,
       "0",
       `"${senderAccount}"`,
@@ -189,8 +214,8 @@ export function generateElixir(
       `"${formatMultiline(item.transferTitle, 4, 35)}"`,
       '""',
       '""',
-      `"${item.taxId ? "1" : ""}"`,
-      `"${stripDiacritics(item.taxId ?? "")}"`,
+      `"${taxId ? "1" : ""}"`,
+      `"${stripDiacritics(taxId)}"`,
     ].join(",");
   });
 
@@ -213,7 +238,7 @@ export function generateSepaXml(
     .replace(/[^a-zA-Z0-9-]/g, "")
     .substring(0, 35);
   const now = new Date().toISOString();
-  const totalAmount = items.reduce((sum, i) => sum + i.amountGrosze, 0);
+  const totalAmount = items.reduce((sum, i) => sum + i.amountMinor, 0);
   const requestedDate =
     items[0]?.dueDate.toISOString().slice(0, 10) ??
     new Date().toISOString().slice(0, 10);
@@ -225,7 +250,7 @@ export function generateSepaXml(
 
       return `      <CdtTrfTxInf>
         <PmtId><EndToEndId>${endToEndId}</EndToEndId></PmtId>
-        <Amt><InstdAmt Ccy="${escapeXml(item.currency)}">${(item.amountGrosze / 100).toFixed(2)}</InstdAmt></Amt>
+        <Amt><InstdAmt Ccy="${escapeXml(item.currency)}">${minorToDecimal(item.amountMinor, item.currency)}</InstdAmt></Amt>
         <CdtrAgt><FinInstnId><BIC>${escapeXml(bic)}</BIC></FinInstnId></CdtrAgt>
         <Cdtr><Nm>${escapeXml(item.contractorName)}</Nm></Cdtr>
         <CdtrAcct><Id><IBAN>${escapeXml(item.iban)}</IBAN></Id></CdtrAcct>
@@ -242,20 +267,98 @@ export function generateSepaXml(
       <MsgId>${msgId}</MsgId>
       <CreDtTm>${now}</CreDtTm>
       <NbOfTxs>${items.length}</NbOfTxs>
-      <CtrlSum>${(totalAmount / 100).toFixed(2)}</CtrlSum>
+      <CtrlSum>${minorToDecimal(totalAmount, "EUR")}</CtrlSum>
       <InitgPty><Nm>${escapeXml(org.name)}</Nm></InitgPty>
     </GrpHdr>
     <PmtInf>
-      <PmtInfId>${msgId}-001</PmtInfId>
+      <PmtInfId>${msgId.slice(0, 31)}-001</PmtInfId>
       <PmtMtd>TRF</PmtMtd>
       <NbOfTxs>${items.length}</NbOfTxs>
-      <CtrlSum>${(totalAmount / 100).toFixed(2)}</CtrlSum>
+      <CtrlSum>${minorToDecimal(totalAmount, "EUR")}</CtrlSum>
       <PmtTpInf><SvcLvl><Cd>SEPA</Cd></SvcLvl></PmtTpInf>
       <ReqdExctnDt>${requestedDate}</ReqdExctnDt>
       <Dbtr><Nm>${escapeXml(org.name)}</Nm></Dbtr>
       <DbtrAcct><Id><IBAN>${escapeXml(org.iban)}</IBAN></Id></DbtrAcct>
       <DbtrAgt><FinInstnId><BIC>${escapeXml(org.bic)}</BIC></FinInstnId></DbtrAgt>
       <ChrgBr>SLEV</ChrgBr>
+${transactions}
+    </PmtInf>
+  </CstmrCdtTrfInitn>
+</Document>`;
+
+  return Buffer.from(xml, "utf-8");
+}
+
+// ---------------------------------------------------------------------------
+// SWIFT XML pain.001.001.09 Export (Phase 46)
+// ---------------------------------------------------------------------------
+
+/**
+ * Generate a SWIFT XML pain.001.001.09 credit transfer initiation document.
+ * Used for international (non-SEPA) transfers — AED, SAR, GBP, and other non-EUR currencies.
+ * Per D-03: sits alongside generateSepaXml, format chosen by payment run.
+ */
+export function generateSwiftXml(
+  items: ExportItem[],
+  org: OrgBankInfo,
+  runNumber: string,
+): Buffer {
+  const msgId = runNumber
+    .replace(/[^a-zA-Z0-9-]/g, "")
+    .substring(0, 35);
+  const now = new Date().toISOString();
+  const currency = items[0]?.currency ?? "USD";
+  const totalAmount = items.reduce((sum, i) => sum + i.amountMinor, 0);
+  const requestedDate =
+    items[0]?.dueDate.toISOString().slice(0, 10) ??
+    new Date().toISOString().slice(0, 10);
+
+  const transactions = items
+    .map((item, i) => {
+      const endToEndId = `${msgId}-${String(i + 1).padStart(4, "0")}`;
+      const bic = item.swiftBic ?? "NOTPROVIDED";
+      const purposeCode = getPurposeCode(
+        item.serviceCategory ?? "",
+        item.purposeCodeOverride,
+      );
+      const country = item.creditorCountry ?? "";
+
+      return `      <CdtTrfTxInf>
+        <PmtId><EndToEndId>${endToEndId}</EndToEndId></PmtId>
+        <Amt><InstdAmt Ccy="${escapeXml(item.currency)}">${minorToDecimal(item.amountMinor, item.currency)}</InstdAmt></Amt>
+        <CdtrAgt><FinInstnId><BICFI>${escapeXml(bic)}</BICFI></FinInstnId></CdtrAgt>
+        <Cdtr>
+          <Nm>${escapeXml(item.contractorName)}</Nm>${country ? `
+          <PstlAdr><Ctry>${escapeXml(country)}</Ctry></PstlAdr>` : ""}
+        </Cdtr>
+        <CdtrAcct><Id><IBAN>${escapeXml(item.iban)}</IBAN></Id></CdtrAcct>
+        <Purp><Cd>${purposeCode}</Cd></Purp>
+        <RmtInf><Ustrd>${escapeXml(item.transferTitle)}</Ustrd></RmtInf>
+      </CdtTrfTxInf>`;
+    })
+    .join("\n");
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.001.001.09"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <CstmrCdtTrfInitn>
+    <GrpHdr>
+      <MsgId>${msgId}</MsgId>
+      <CreDtTm>${now}</CreDtTm>
+      <NbOfTxs>${items.length}</NbOfTxs>
+      <CtrlSum>${minorToDecimal(totalAmount, currency)}</CtrlSum>
+      <InitgPty><Nm>${escapeXml(org.name)}</Nm></InitgPty>
+    </GrpHdr>
+    <PmtInf>
+      <PmtInfId>${msgId.slice(0, 31)}-001</PmtInfId>
+      <PmtMtd>TRF</PmtMtd>
+      <NbOfTxs>${items.length}</NbOfTxs>
+      <CtrlSum>${minorToDecimal(totalAmount, currency)}</CtrlSum>
+      <ReqdExctnDt><Dt>${requestedDate}</Dt></ReqdExctnDt>
+      <Dbtr><Nm>${escapeXml(org.name)}</Nm></Dbtr>
+      <DbtrAcct><Id><IBAN>${escapeXml(org.iban)}</IBAN></Id></DbtrAcct>
+      <DbtrAgt><FinInstnId><BICFI>${escapeXml(org.bic)}</BICFI></FinInstnId></DbtrAgt>
+      <ChrgBr>SHAR</ChrgBr>
 ${transactions}
     </PmtInf>
   </CstmrCdtTrfInitn>
