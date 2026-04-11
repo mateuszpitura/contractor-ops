@@ -83,7 +83,7 @@ Full details: `.planning/milestones/v3.0-ROADMAP.md`
 
 - [x] **Phase 45: Pluggable E-Invoicing Engine Core** - Abstract UBL 2.1 engine with KSeF refactored as first country profile (completed 2026-04-11)
 - [x] **Phase 46: Multi-Currency Foundation & SWIFT Payment Export** - AED/SAR/GBP currencies with Money utility, exchange rates, and ISO 20022 SWIFT export (completed 2026-04-11)
-- [x] **Phase 47: VAT Engine, WHT Calculator & Country Fields** - Configuration-driven multi-tier VAT, Saudi WHT with certificate generation, and country-specific contractor profiles (5 plans) (completed 2026-04-11)
+- [ ] **Phase 47: VAT Engine, WHT Calculator & Country Fields** - Configuration-driven multi-tier VAT, Saudi WHT with certificate generation, and country-specific contractor profiles (7 plans, gap closure in progress)
 - [ ] **Phase 48: ZATCA Fatoorah Integration** - Saudi e-invoicing with XML DSig, hash chain, QR codes, and Fatoora Portal API clearance (6 plans)
 - [ ] **Phase 49: Peppol PINT-AE Integration** - UAE e-invoicing via certified ASP with inbound invoice parsing
 - [x] **Phase 50: Arabic Localization & RTL Layout** - Full Arabic translation with codebase-wide RTL migration to CSS logical properties (completed 2026-04-11)
@@ -127,13 +127,15 @@ Full details: `.planning/milestones/v3.0-ROADMAP.md`
   3. Saudi organizations see WHT deduction calculated on cross-border contractor payments based on residency, service type, and treaty rates
   4. A downloadable WHT certificate PDF is generated for each Saudi cross-border payment with correct withholding details
   5. UAE contractor profiles show freelance permit and trade license fields; Saudi profiles show Freelance.sa license and commercial registration fields, activated by the organization's country setting
-**Plans**: 5 plans
+**Plans**: 7 plans
 Plans:
 - [x] 47-01-PLAN.md — TaxRate & WithholdingTaxRate Models, Seed Data, and VAT Rate Service
 - [x] 47-02-PLAN.md — Reverse Charge Detection Service and Invoice Integration
 - [x] 47-03-PLAN.md — WHT Certificate PDF Generation and Payment Run Integration
 - [x] 47-04-PLAN.md — Country-Specific Contractor Profile Fields and TIN Validation
 - [x] 47-05-PLAN.md — VAT Rate Selector UI, Reverse Charge Banner, WHT Payment View, and Compliance Dashboard Tax Widget
+- [ ] 47-06-PLAN.md — [GAP] Wire reverse charge auto-detection into matching flow, remove duplicate files
+- [ ] 47-07-PLAN.md — [GAP] Fix component imports and wire UI components into pages
 **UI hint**: yes
 
 ### Phase 48: ZATCA Fatoorah Integration
@@ -148,7 +150,7 @@ Plans:
   5. B2B tax invoices are submitted to ZATCA Fatoora Portal for clearance, and simplified B2C invoices are submitted for reporting, with status tracked per invoice
 **Plans**: 6 plans
 Plans:
-- [ ] 48-01-PLAN.md — ZATCA profile, UBL 2.1 XML generator, Prisma schema, Zod validators
+- [x] 48-01-PLAN.md — ZATCA profile, UBL 2.1 XML generator, Prisma schema, Zod validators
 - [ ] 48-02-PLAN.md — XAdES-BES enveloped digital signatures with xml-crypto
 - [ ] 48-03-PLAN.md — TLV-encoded QR code generation
 - [ ] 48-04-PLAN.md — Hash chain, Infisical secret store, submission pipeline, tRPC router
@@ -220,8 +222,8 @@ Phases execute in numeric order: 45 -> 46 -> 47 -> 48 -> 49 -> 50 -> 51 -> 52
 |-------|-----------|----------------|--------|-----------|
 | 45. Pluggable E-Invoicing Engine Core | v4.0 | 5/5 | Complete    | 2026-04-11 |
 | 46. Multi-Currency & SWIFT Payments | v4.0 | 5/5 | Complete    | 2026-04-11 |
-| 47. VAT Engine, WHT & Country Fields | v4.0 | 5/5 | Complete   | 2026-04-11 |
-| 48. ZATCA Fatoorah Integration | v4.0 | 0/6 | Planned | - |
+| 47. VAT Engine, WHT & Country Fields | v4.0 | 5/7 | Gap Closure |  |
+| 48. ZATCA Fatoorah Integration | v4.0 | 1/6 | In Progress|  |
 | 49. Peppol PINT-AE Integration | v4.0 | 3/4 | In Progress|  |
 | 50. Arabic Localization & RTL Layout | v4.0 | 5/5 | Complete   | 2026-04-11 |
 | 51. PDPL Compliance | v4.0 | 4/4 | Complete    | 2026-04-11 |
