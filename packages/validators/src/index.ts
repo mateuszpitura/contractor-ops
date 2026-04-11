@@ -436,6 +436,21 @@ export type {
 } from "./consent.js";
 
 export {
+  peppolParticipantIdSchema,
+  connectPeppolSchema,
+  transmitInvoiceSchema,
+  getTransmissionsSchema,
+  retryTransmissionSchema,
+} from "./peppol.js";
+export type {
+  PeppolParticipantId,
+  ConnectPeppolInput,
+  TransmitInvoiceInput,
+  GetTransmissionsInput,
+  RetryTransmissionInput,
+} from "./peppol.js";
+
+export {
   sourceProviderSchema,
   listSourcesOutputSchema,
   fetchPeopleInputSchema,
