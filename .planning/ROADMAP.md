@@ -83,7 +83,7 @@ Full details: `.planning/milestones/v3.0-ROADMAP.md`
 
 - [x] **Phase 45: Pluggable E-Invoicing Engine Core** - Abstract UBL 2.1 engine with KSeF refactored as first country profile (completed 2026-04-11)
 - [x] **Phase 46: Multi-Currency Foundation & SWIFT Payment Export** - AED/SAR/GBP currencies with Money utility, exchange rates, and ISO 20022 SWIFT export (completed 2026-04-11)
-- [ ] **Phase 47: VAT Engine, WHT Calculator & Country Fields** - Configuration-driven multi-tier VAT, Saudi WHT with certificate generation, and country-specific contractor profiles (7 plans, gap closure in progress)
+- [x] **Phase 47: VAT Engine, WHT Calculator & Country Fields** - Configuration-driven multi-tier VAT, Saudi WHT with certificate generation, and country-specific contractor profiles (7 plans, gap closure in progress) (completed 2026-04-11)
 - [ ] **Phase 48: ZATCA Fatoorah Integration** - Saudi e-invoicing with XML DSig, hash chain, QR codes, and Fatoora Portal API clearance (6 plans)
 - [ ] **Phase 49: Peppol PINT-AE Integration** - UAE e-invoicing via certified ASP with inbound invoice parsing
 - [x] **Phase 50: Arabic Localization & RTL Layout** - Full Arabic translation with codebase-wide RTL migration to CSS logical properties (completed 2026-04-11)
@@ -134,8 +134,8 @@ Plans:
 - [x] 47-03-PLAN.md — WHT Certificate PDF Generation and Payment Run Integration
 - [x] 47-04-PLAN.md — Country-Specific Contractor Profile Fields and TIN Validation
 - [x] 47-05-PLAN.md — VAT Rate Selector UI, Reverse Charge Banner, WHT Payment View, and Compliance Dashboard Tax Widget
-- [ ] 47-06-PLAN.md — [GAP] Wire reverse charge auto-detection into matching flow, remove duplicate files
-- [ ] 47-07-PLAN.md — [GAP] Fix component imports and wire UI components into pages
+- [x] 47-06-PLAN.md — [GAP] Wire reverse charge auto-detection into matching flow, remove duplicate files
+- [x] 47-07-PLAN.md — [GAP] Fix component imports and wire UI components into pages
 **UI hint**: yes
 
 ### Phase 48: ZATCA Fatoorah Integration
@@ -222,7 +222,7 @@ Phases execute in numeric order: 45 -> 46 -> 47 -> 48 -> 49 -> 50 -> 51 -> 52
 |-------|-----------|----------------|--------|-----------|
 | 45. Pluggable E-Invoicing Engine Core | v4.0 | 5/5 | Complete    | 2026-04-11 |
 | 46. Multi-Currency & SWIFT Payments | v4.0 | 5/5 | Complete    | 2026-04-11 |
-| 47. VAT Engine, WHT & Country Fields | v4.0 | 5/7 | Gap Closure |  |
+| 47. VAT Engine, WHT & Country Fields | v4.0 | 7/7 | Complete    | 2026-04-11 |
 | 48. ZATCA Fatoorah Integration | v4.0 | 1/6 | In Progress|  |
 | 49. Peppol PINT-AE Integration | v4.0 | 3/4 | In Progress|  |
 | 50. Arabic Localization & RTL Layout | v4.0 | 5/5 | Complete   | 2026-04-11 |
