@@ -12,6 +12,7 @@ import { ApprovalChainsTab } from "@/components/settings/approval-chains-tab";
 import { NotificationPreferences } from "@/components/settings/notification-preferences";
 import { ReminderRulesSection } from "@/components/settings/reminder-rules-section";
 import { IntegrationsTab } from "@/components/settings/integrations-tab";
+import { EInvoiceComplianceDetail } from "@/components/einvoice/compliance-detail";
 import { AuditLogTab } from "@/components/settings/audit-log-tab";
 import { BillingTab } from "@/components/billing/billing-tab";
 import { useTranslations } from "next-intl";
@@ -97,6 +98,7 @@ function SettingsContent() {
 
         {canManageIntegrations && (
           <TabsContent value="integrations" className="mt-6 space-y-8">
+            <EInvoiceComplianceDetail />
             <IntegrationsTab />
           </TabsContent>
         )}

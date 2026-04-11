@@ -33,6 +33,7 @@ import { googleWorkspaceRouter } from "./routers/google-workspace.js";
 import { gdprRouter } from "./routers/gdpr.js";
 import { teamsRouter } from "./routers/teams.js";
 import { onboardingImportRouter } from "./routers/onboarding-import.js";
+import { einvoiceRouter } from "./routers/einvoice.js";
 
 /**
  * Root tRPC router merging all sub-routers.
@@ -97,6 +98,7 @@ export const appRouter = router({
   gdpr: gdprRouter, // GDPR: right to erasure (Art. 17), data portability/export (Art. 20)
   teams: teamsRouter, // Microsoft Teams integration -- channel discovery, channel mapping, connection status
   onboardingImport: onboardingImportRouter, // onboardingImport: Cross-tool import wizard -- source discovery, user merge, project import, async progress
+  einvoice: einvoiceRouter, // einvoice: E-invoicing compliance statuses per country profile
 });
 
 /** Type-safe router type for client consumption */

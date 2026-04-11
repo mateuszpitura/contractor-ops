@@ -18,6 +18,7 @@ import { DeadlinesWidget } from "@/components/dashboard/deadlines-widget";
 import { ApprovalQueueWidget } from "@/components/dashboard/approval-queue-widget";
 import { ActivityFeed } from "@/components/dashboard/activity-feed";
 import { OnboardingChecklist } from "@/components/onboarding/onboarding-checklist";
+import { EInvoiceComplianceWidget } from "@/components/einvoice/compliance-widget";
 
 // ---------------------------------------------------------------------------
 // Error boundary wrapper for individual widgets
@@ -78,7 +79,7 @@ function DashboardContent() {
     kpis &&
     kpis.activeContractors.value === 0 &&
     kpis.pendingApprovals.value === 0 &&
-    kpis.readyToPayTotal.valueGrosze === 0 &&
+    kpis.readyToPayTotal.valueMinor === 0 &&
     kpis.expiringContracts.value === 0 &&
     kpis.openTasks.value === 0;
 
@@ -125,6 +126,9 @@ function DashboardContent() {
           </AnimateIn>
           <AnimateIn delay={3}>
             <ActivityFeed />
+          </AnimateIn>
+          <AnimateIn delay={4}>
+            <EInvoiceComplianceWidget />
           </AnimateIn>
         </div>
       </div>
