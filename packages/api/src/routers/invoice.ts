@@ -571,6 +571,17 @@ export const invoiceRouter = router({
         deviationThreshold,
       );
 
+      // Auto-detect reverse charge when matched to a contractor
+      let reverseChargeUpdate: { isReverseCharge: boolean } | undefined;
+      if (matchResult.contractorId) {
+        const rcResult = await applyReverseCharge({
+          organizationId: ctx.organizationId,
+          contractorId: matchResult.contractorId,
+          reverseChargeOverride: invoice.reverseChargeOverride,
+        });
+        reverseChargeUpdate = { isReverseCharge: rcResult.isReverseCharge };
+      }
+
       // Create match result record and update invoice in a transaction
       const updated = await prisma.$transaction(async (tx) => {
         await tx.invoiceMatchResult.create({
@@ -601,6 +612,7 @@ export const invoiceRouter = router({
             matchStatus: matchResult.matchStatus,
             status: "UNDER_REVIEW",
             flagsJson: matchResult.flags.length > 0 ? matchResult.flags : undefined,
+            ...reverseChargeUpdate,
           },
         });
 
@@ -669,6 +681,12 @@ export const invoiceRouter = router({
         }
       }
 
+      // Auto-detect reverse charge for manual match
+      const rcResult = await applyReverseCharge({
+        organizationId: ctx.organizationId,
+        contractorId: input.contractorId,
+      });
+
       const updated = await prisma.$transaction(async (tx) => {
         // Create manual match result
         await tx.invoiceMatchResult.create({
@@ -690,6 +708,7 @@ export const invoiceRouter = router({
             contractorId: input.contractorId,
             contractId: input.contractId ?? null,
             matchStatus: "MANUALLY_CONFIRMED",
+            isReverseCharge: rcResult.isReverseCharge,
           },
         });
 
