@@ -2,11 +2,11 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { prisma } from "@contractor-ops/db";
 import {
-  encryptCredentials,
   KsefApiClient,
-} from "@contractor-ops/integrations";
+  ksefConnectionConfigSchema,
+} from "@contractor-ops/einvoice";
+import { encryptCredentials } from "@contractor-ops/integrations";
 import { getQStashClient } from "@contractor-ops/integrations/services/qstash-client";
-import { ksefConnectionConfigSchema } from "@contractor-ops/validators";
 import { router } from "../init.js";
 import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";

@@ -3,9 +3,9 @@ import {
   KsefApiClient,
   parseFa3Xml,
   mapKsefToInvoiceFields,
-  decryptCredentials,
-} from "@contractor-ops/integrations";
-import { ksefConnectionConfigSchema } from "@contractor-ops/validators";
+  ksefConnectionConfigSchema,
+} from "@contractor-ops/einvoice";
+import { decryptCredentials } from "@contractor-ops/integrations";
 import {
   computeDuplicateCheckHash,
   runAutoMatch,
@@ -167,7 +167,7 @@ export async function processKsefSync(params: {
         const hash = computeDuplicateCheckHash(
           fields.invoiceNumber,
           fields.sellerTaxId!,
-          fields.totalGrosze,
+          fields.totalMinor,
         );
 
         // Check cross-source duplicate (per D-11)
@@ -218,9 +218,10 @@ export async function processKsefSync(params: {
         await runAutoMatch(prisma, params.organizationId, {
           id: invoice.id,
           sellerTaxId: fields.sellerTaxId,
-          totalGrosze: fields.totalGrosze,
+          totalMinor: fields.totalMinor,
           currency: fields.currency,
           duplicateCheckHash: hash,
+          issueDate: fields.issueDate,
         });
       } catch (error) {
         const msg =
@@ -235,14 +236,13 @@ export async function processKsefSync(params: {
     // Step 7: Update connection status
     // -----------------------------------------------------------------------
 
-    const newStatus =
-      errors.length > 0 && invoicesCreated === 0 ? "ERROR" : "CONNECTED";
+    const newStatus = errors.length > 0 ? "ERROR" : "CONNECTED";
 
     await prisma.integrationConnection.update({
       where: { id: params.connectionId },
       data: {
         lastSyncAt: new Date(),
-        lastSuccessAt: new Date(),
+        ...(errors.length === 0 ? { lastSuccessAt: new Date() } : {}),
         status: newStatus,
         ...(errors.length > 0
           ? {
@@ -287,20 +287,27 @@ export async function processKsefSync(params: {
       const recipientUserIds = members.map((m) => m.userId);
 
       if (recipientUserIds.length > 0) {
-        await dispatch({
-          organizationId: params.organizationId,
-          type: "KSEF_SYNC_COMPLETE",
-          title: "KSeF Sync Complete",
-          body: `${invoicesCreated} new invoice${invoicesCreated === 1 ? "" : "s"} fetched from KSeF`,
-          entityType: "INVOICE",
-          entityId: params.connectionId,
-          recipientUserIds,
-          metadata: {
-            invoicesCreated,
-            duplicatesFound,
-            link: "/invoices?source=KSEF",
-          },
-        });
+        try {
+          await dispatch({
+            organizationId: params.organizationId,
+            type: "KSEF_SYNC_COMPLETE",
+            title: "KSeF Sync Complete",
+            body: `${invoicesCreated} new invoice${invoicesCreated === 1 ? "" : "s"} fetched from KSeF`,
+            entityType: "INVOICE",
+            entityId: params.connectionId,
+            recipientUserIds,
+            metadata: {
+              invoicesCreated,
+              duplicatesFound,
+              link: "/invoices?source=KSEF",
+            },
+          });
+        } catch (notificationError) {
+          console.error(
+            `[ksef-sync] Notification dispatch failed for org=${params.organizationId}:`,
+            notificationError,
+          );
+        }
       }
     }
 

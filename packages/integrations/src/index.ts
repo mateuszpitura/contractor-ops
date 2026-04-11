@@ -84,12 +84,13 @@ export { DocuSignAdapter } from "./adapters/docusign-adapter.js";
 export { AutentiAdapter } from "./adapters/autenti-adapter.js";
 export { registerAllAdapters } from "./adapters/register-all.js";
 
-// KSeF
-export { KsefApiClient } from "./services/ksef-api-client.js";
+// KSeF — backward compatibility re-exports from @contractor-ops/einvoice
+// TODO: Remove after all consumers switch to @contractor-ops/einvoice
+export { KsefApiClient } from "@contractor-ops/einvoice";
 export type {
   KsefSession,
   KsefInvoiceMetadata,
   KsefQueryResult,
-} from "./services/ksef-api-client.js";
-export { parseFa3Xml, mapKsefToInvoiceFields } from "./services/ksef-xml-parser.js";
+} from "@contractor-ops/einvoice";
+export { parseFa3Xml, mapKsefToInvoiceFields } from "@contractor-ops/einvoice";
 export { KsefAdapter } from "./adapters/ksef-adapter.js";

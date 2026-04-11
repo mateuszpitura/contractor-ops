@@ -20,6 +20,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@contractor-ops/einvoice": "workspace:*",
     "ibantools": "^4.5.1",
     "validate-polish": "^2.1.40",
     "zod": "^3.23.0"
