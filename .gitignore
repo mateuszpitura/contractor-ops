@@ -21,9 +21,10 @@ dist
 # Test coverage
 coverage
 
-# Playwright perf (auth state + reports)
+# Playwright (auth state, reports, test results)
 apps/web/e2e/perf/.auth/
 apps/web/e2e/perf/results/
+test-results
 
 # TypeScript
 *.tsbuildinfo
