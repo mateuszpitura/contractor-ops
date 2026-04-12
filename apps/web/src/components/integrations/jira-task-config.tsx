@@ -1,13 +1,12 @@
 "use client";
 
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-
-import { trpc } from "@/trpc/init";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { trpc } from "@/trpc/init";
 import { JiraProjectMappingDialog } from "./jira-project-mapping-dialog";
 
 // ---------------------------------------------------------------------------
@@ -79,9 +78,7 @@ export function JiraTaskConfig({ taskTemplateId }: JiraTaskConfigProps) {
   // Don't render if Jira is not connected
   if (!connection) return null;
 
-  const hasMappingConfigured = !!(
-    config?.jiraProjectId && config?.jiraIssueTypeId
-  );
+  const hasMappingConfigured = !!(config?.jiraProjectId && config?.jiraIssueTypeId);
   const mappingSummary =
     hasMappingConfigured && config?.jiraProjectName && config?.jiraIssueTypeName
       ? `${config.jiraProjectName} / ${config.jiraIssueTypeName}`
@@ -114,27 +111,18 @@ export function JiraTaskConfig({ taskTemplateId }: JiraTaskConfigProps) {
             onCheckedChange={handleToggle}
             disabled={!hasMappingConfigured || saveMutation.isPending}
           />
-          <Label
-            htmlFor={`jira-toggle-${taskTemplateId}`}
-            className="cursor-pointer text-sm"
-          >
+          <Label htmlFor={`jira-toggle-${taskTemplateId}`} className="cursor-pointer text-sm">
             Create Jira issue when task activates
           </Label>
         </div>
 
         {/* Mapping summary */}
-        <span
-          className={`flex-1 text-sm ${hasMappingConfigured ? "" : "text-muted-foreground"}`}
-        >
+        <span className={`flex-1 text-sm ${hasMappingConfigured ? "" : "text-muted-foreground"}`}>
           {mappingSummary}
         </span>
 
         {/* Configure button */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setDialogOpen(true)}
-        >
+        <Button variant="ghost" size="sm" onClick={() => setDialogOpen(true)}>
           Configure Jira
         </Button>
       </div>

@@ -1,29 +1,29 @@
 "use client";
 
-import { useCallback } from "react";
-import { useTranslations } from "next-intl";
+import type { DragEndEvent } from "@dnd-kit/core";
 import {
-  DndContext,
   closestCenter,
-  type DragEndEvent,
-  PointerSensor,
+  DndContext,
   KeyboardSensor,
+  PointerSensor,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
 import {
   SortableContext,
-  verticalListSortingStrategy,
-  useSortable,
   sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Plus } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useCallback } from "react";
 import type { UseFormReturn } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
 import { TaskCard } from "./task-card";
-import type { TemplateFormValues, TaskFormValues } from "./use-template-form";
+import type { TaskFormValues, TemplateFormValues } from "./use-template-form";
 
 // ---------------------------------------------------------------------------
 // Sortable wrapper
@@ -38,14 +38,9 @@ interface SortableItemProps {
 }
 
 function SortableItem({ id, index, allTasks, form, onRemove }: SortableItemProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id,
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -61,7 +56,10 @@ function SortableItem({ id, index, allTasks, form, onRemove }: SortableItemProps
         allTasks={allTasks}
         form={form}
         onRemove={onRemove}
-        dragHandleProps={{ attributes: attributes as unknown as Record<string, unknown>, listeners: (listeners ?? {}) as Record<string, unknown> }}
+        dragHandleProps={{
+          attributes: attributes as unknown as Record<string, unknown>,
+          listeners: (listeners ?? {}) as Record<string, unknown>,
+        }}
       />
     </div>
   );
@@ -129,11 +127,7 @@ export function SortableTaskList({
 
   return (
     <div className="space-y-3">
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-      >
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
           {fields.map((field, index) => (
             <SortableItem

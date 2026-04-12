@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { fireEvent } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { render, screen, setup, act } from "@/test/test-utils";
+import { act, render, screen, setup } from "@/test/test-utils";
 
 import { DataTableToolbar } from "../data-table-toolbar";
 
@@ -20,9 +20,7 @@ describe("DataTableToolbar", () => {
       />,
     );
 
-    await user.click(
-      screen.getByRole("button", { name: /upload invoices/i }),
-    );
+    await user.click(screen.getByRole("button", { name: /upload invoices/i }));
     expect(onUpload).toHaveBeenCalledTimes(1);
   });
 

@@ -1,11 +1,10 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
 import { FileText } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
+import { useTranslations } from "next-intl";
 import { Skeleton } from "@/components/ui/skeleton";
+import { trpc } from "@/trpc/init";
 import { DocumentCard } from "./document-card";
 
 // ---------------------------------------------------------------------------
@@ -30,7 +29,7 @@ export function DocumentList({ entityType, entityId }: DocumentListProps) {
       entityId,
       page: 1,
       pageSize: 50,
-    })
+    }),
   );
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -56,12 +55,8 @@ export function DocumentList({ entityType, entityId }: DocumentListProps) {
     return (
       <div className="flex min-h-[200px] flex-col items-center justify-center gap-2 text-center">
         <FileText className="size-8 text-muted-foreground/50" />
-        <h4 className="text-sm font-medium text-muted-foreground">
-          {t("empty.title")}
-        </h4>
-        <p className="max-w-sm text-sm text-muted-foreground">
-          {t("empty.description")}
-        </p>
+        <h4 className="text-sm font-medium text-muted-foreground">{t("empty.title")}</h4>
+        <p className="max-w-sm text-sm text-muted-foreground">{t("empty.description")}</p>
       </div>
     );
   }
@@ -70,11 +65,7 @@ export function DocumentList({ entityType, entityId }: DocumentListProps) {
     <div className="space-y-3">
       {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
       {documents.map((doc: any, i: number) => (
-        <DocumentCard
-          key={doc.id}
-          document={doc}
-          versionNumber={documents.length - i}
-        />
+        <DocumentCard key={doc.id} document={doc} versionNumber={documents.length - i} />
       ))}
     </div>
   );

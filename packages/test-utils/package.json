@@ -1,0 +1,49 @@
+{
+  "name": "@contractor-ops/test-utils",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./msw/server": {
+      "types": "./dist/msw/server.d.ts",
+      "import": "./dist/msw/server.js",
+      "default": "./dist/msw/server.js"
+    },
+    "./msw/handlers": {
+      "types": "./dist/msw/handlers/index.d.ts",
+      "import": "./dist/msw/handlers/index.js",
+      "default": "./dist/msw/handlers/index.js"
+    },
+    "./msw/scenarios": {
+      "types": "./dist/msw/scenarios/index.d.ts",
+      "import": "./dist/msw/scenarios/index.js",
+      "default": "./dist/msw/scenarios/index.js"
+    },
+    "./msw/fixtures": {
+      "types": "./dist/msw/fixtures/index.d.ts",
+      "import": "./dist/msw/fixtures/index.js",
+      "default": "./dist/msw/fixtures/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "msw": "^2.7.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "vitest": "^4.1.2"
+  }
+}

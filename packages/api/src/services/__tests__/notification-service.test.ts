@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Mocks — use vi.hoisted to avoid TDZ issues with vi.mock hoisting
@@ -64,19 +64,14 @@ vi.mock("../slack-client.js", () => ({
   sendReminderDM: vi.fn().mockResolvedValue(undefined),
 }));
 
-import {
-  dispatch,
-  getOrCreatePreferences,
-  type NotificationEvent,
-} from "../notification-service.js";
+import type { NotificationEvent } from "../notification-service.js";
+import { dispatch, getOrCreatePreferences } from "../notification-service.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-function makeEvent(
-  overrides: Partial<NotificationEvent> = {},
-): NotificationEvent {
+function makeEvent(overrides: Partial<NotificationEvent> = {}): NotificationEvent {
   return {
     organizationId: "org_1",
     type: "INVOICE_APPROVED",
@@ -122,11 +117,7 @@ describe("getOrCreatePreferences", () => {
     const existing = { ...defaultPrefs, channelEmail: false };
     mockPrefFindFirst.mockResolvedValueOnce(existing);
 
-    const result = await getOrCreatePreferences(
-      "user_1",
-      "org_1",
-      "INVOICE_APPROVED",
-    );
+    const result = await getOrCreatePreferences("user_1", "org_1", "INVOICE_APPROVED");
 
     expect(result).toBe(existing);
     expect(mockPrefCreate).not.toHaveBeenCalled();
@@ -239,10 +230,9 @@ describe("dispatch", () => {
     const { TeamsMessagingProvider } = await import(
       "../../services/messaging/teams-messaging-provider.js"
     );
-    vi.spyOn(
-      TeamsMessagingProvider.prototype,
-      "sendChannelAlert",
-    ).mockImplementation(mockSendChannelAlert);
+    vi.spyOn(TeamsMessagingProvider.prototype, "sendChannelAlert").mockImplementation(
+      mockSendChannelAlert,
+    );
 
     mockConnectionFindFirst.mockResolvedValueOnce({
       configJson: { channelMapping: { invoices: "C-CHANNEL-123" } },
@@ -291,10 +281,9 @@ describe("dispatch", () => {
     const { TeamsMessagingProvider } = await import(
       "../../services/messaging/teams-messaging-provider.js"
     );
-    vi.spyOn(
-      TeamsMessagingProvider.prototype,
-      "sendChannelAlert",
-    ).mockImplementation(mockSendChannelAlert);
+    vi.spyOn(TeamsMessagingProvider.prototype, "sendChannelAlert").mockImplementation(
+      mockSendChannelAlert,
+    );
 
     mockConnectionFindFirst.mockResolvedValueOnce({
       configJson: {},
@@ -312,9 +301,7 @@ describe("dispatch", () => {
 
   it("channel alert failure does not throw", async () => {
     mockPrefFindFirst.mockResolvedValue(defaultPrefs);
-    const consoleSpy = vi
-      .spyOn(console, "error")
-      .mockImplementation(() => {});
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
     mockConnectionFindMany
       .mockResolvedValueOnce([]) // per-recipient
@@ -323,10 +310,9 @@ describe("dispatch", () => {
     const { TeamsMessagingProvider } = await import(
       "../../services/messaging/teams-messaging-provider.js"
     );
-    vi.spyOn(
-      TeamsMessagingProvider.prototype,
-      "sendChannelAlert",
-    ).mockRejectedValue(new Error("Teams API unavailable"));
+    vi.spyOn(TeamsMessagingProvider.prototype, "sendChannelAlert").mockRejectedValue(
+      new Error("Teams API unavailable"),
+    );
 
     mockConnectionFindFirst.mockResolvedValueOnce({
       configJson: { channelMapping: { invoices: "C-CHANNEL-123" } },

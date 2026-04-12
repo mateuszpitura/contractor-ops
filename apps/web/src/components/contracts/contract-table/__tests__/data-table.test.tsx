@@ -1,7 +1,7 @@
-import { render, screen, setup } from "@/test/test-utils";
 import { useQuery } from "@tanstack/react-query";
-import { ContractDataTable } from "../data-table";
+import { render, screen, setup } from "@/test/test-utils";
 import type { ContractRow } from "../columns";
+import { ContractDataTable } from "../data-table";
 
 vi.mock("@tanstack/react-query", () => ({
   useQuery: vi.fn(() => ({
@@ -59,23 +59,13 @@ vi.mock("date-fns", () => ({
 
 describe("ContractDataTable", () => {
   it("renders toolbar and table", () => {
-    render(
-      <ContractDataTable
-        onRowClick={vi.fn()}
-        onNewContract={vi.fn()}
-      />,
-    );
+    render(<ContractDataTable onRowClick={vi.fn()} onNewContract={vi.fn()} />);
     expect(screen.getByRole("textbox")).toBeInTheDocument();
     expect(screen.getByRole("table")).toBeInTheDocument();
   });
 
   it("shows empty state when no data", () => {
-    render(
-      <ContractDataTable
-        onRowClick={vi.fn()}
-        onNewContract={vi.fn()}
-      />,
-    );
+    render(<ContractDataTable onRowClick={vi.fn()} onNewContract={vi.fn()} />);
     const buttons = screen.getAllByRole("button");
     expect(buttons.length).toBeGreaterThan(0);
   });
@@ -104,12 +94,7 @@ describe("ContractDataTable", () => {
       isPending: false,
     } as any);
 
-    render(
-      <ContractDataTable
-        onRowClick={vi.fn()}
-        onNewContract={vi.fn()}
-      />,
-    );
+    render(<ContractDataTable onRowClick={vi.fn()} onNewContract={vi.fn()} />);
     expect(screen.getByText("Service Agreement")).toBeInTheDocument();
   });
 
@@ -138,9 +123,7 @@ describe("ContractDataTable", () => {
     } as any);
 
     const onRowClick = vi.fn();
-    const { user } = setup(
-      <ContractDataTable onRowClick={onRowClick} onNewContract={vi.fn()} />,
-    );
+    const { user } = setup(<ContractDataTable onRowClick={onRowClick} onNewContract={vi.fn()} />);
 
     const cell = screen.getByText("Click Me Contract");
     const row = cell.closest("tr");
@@ -156,9 +139,7 @@ describe("ContractDataTable", () => {
       isPending: true,
     } as any);
 
-    render(
-      <ContractDataTable onRowClick={vi.fn()} onNewContract={vi.fn()} />,
-    );
+    render(<ContractDataTable onRowClick={vi.fn()} onNewContract={vi.fn()} />);
     const skeletons = document.querySelectorAll("[data-slot='skeleton']");
     expect(skeletons.length).toBeGreaterThan(0);
   });
@@ -171,9 +152,7 @@ describe("ContractDataTable", () => {
       isPending: false,
     } as any);
 
-    render(
-      <ContractDataTable onRowClick={vi.fn()} onNewContract={vi.fn()} />,
-    );
+    render(<ContractDataTable onRowClick={vi.fn()} onNewContract={vi.fn()} />);
     const spinner = document.querySelector(".animate-spin");
     expect(spinner).toBeInTheDocument();
   });

@@ -12,8 +12,7 @@ import type { PrismaClient } from "@contractor-ops/db";
 // Constants
 // ---------------------------------------------------------------------------
 
-const ECB_DAILY_URL =
-  "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml";
+const ECB_DAILY_URL = "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml";
 
 /** AED is pegged to USD at 3.6725 AED per 1 USD. */
 const AED_USD_PEG = 3.6725;
@@ -33,8 +32,7 @@ export function parseEcbXml(xml: string): Map<string, number> {
   const rates = new Map<string, number>();
 
   // ECB uses both single and double quotes — match both variants
-  const pattern =
-    /currency=['"]([A-Z]{3})['"]\s+rate=['"]([\d.]+)['"]/g;
+  const pattern = /currency=['"]([A-Z]{3})['"]\s+rate=['"]([\d.]+)['"]/g;
 
   for (const match of xml.matchAll(pattern)) {
     const code = match[1];
@@ -55,9 +53,7 @@ export function parseEcbXml(xml: string): Map<string, number> {
  * Derive AED/EUR rate from USD/EUR rate using the USD peg (3.6725 AED = 1 USD).
  * Returns null if USD rate is not available.
  */
-export function deriveAedRate(
-  usdPerEur: number | undefined,
-): number | null {
+export function deriveAedRate(usdPerEur: number | undefined): number | null {
   if (usdPerEur === undefined || usdPerEur <= 0) return null;
   return usdPerEur * AED_USD_PEG;
 }
@@ -66,9 +62,7 @@ export function deriveAedRate(
  * Derive SAR/EUR rate from USD/EUR rate using the USD peg (3.75 SAR = 1 USD).
  * Returns null if USD rate is not available.
  */
-export function deriveSarRate(
-  usdPerEur: number | undefined,
-): number | null {
+export function deriveSarRate(usdPerEur: number | undefined): number | null {
   if (usdPerEur === undefined || usdPerEur <= 0) return null;
   return usdPerEur * SAR_USD_PEG;
 }
@@ -93,8 +87,7 @@ export async function fetchAndStoreRates(
 
   try {
     const response = await fetchFn(ECB_DAILY_URL);
-    if (!response.ok)
-      throw new Error(`ECB returned ${response.status}`);
+    if (!response.ok) throw new Error(`ECB returned ${response.status}`);
     const xml = await response.text();
     ecbRates = parseEcbXml(xml);
 
@@ -102,9 +95,7 @@ export async function fetchAndStoreRates(
       throw new Error("ECB XML parsed but no rates found");
     }
   } catch (err) {
-    errors.push(
-      `ECB fetch failed: ${err instanceof Error ? err.message : String(err)}`,
-    );
+    errors.push(`ECB fetch failed: ${err instanceof Error ? err.message : String(err)}`);
 
     // Fallback: copy previous day's rates
     const yesterday = new Date(today);
@@ -135,9 +126,7 @@ export async function fetchAndStoreRates(
           }),
         ),
       );
-      errors.push(
-        `Used ${stored.length} rates from previous day as fallback`,
-      );
+      errors.push(`Used ${stored.length} rates from previous day as fallback`);
       return { stored: stored.length, errors };
     }
 
@@ -195,9 +184,7 @@ export async function fetchAndStoreRates(
       }),
     );
   } else {
-    errors.push(
-      "Could not derive AED rate — USD rate missing from ECB feed",
-    );
+    errors.push("Could not derive AED rate — USD rate missing from ECB feed");
   }
 
   if (sarRate !== null) {
@@ -221,9 +208,7 @@ export async function fetchAndStoreRates(
       }),
     );
   } else {
-    errors.push(
-      "Could not derive SAR rate — USD rate missing from ECB feed",
-    );
+    errors.push("Could not derive SAR rate — USD rate missing from ECB feed");
   }
 
   await Promise.all(upserts);

@@ -1,34 +1,27 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { LucideIcon } from "lucide-react";
 import {
   Building2,
-  UserPlus,
-  Users,
-  CheckCircle,
-  MessageSquare,
-  Shield,
   Check,
+  CheckCircle,
   ChevronDown,
   ChevronUp,
+  MessageSquare,
+  Shield,
+  UserPlus,
+  Users,
 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
-import { usePermissions } from "@/hooks/use-permissions";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { usePermissions } from "@/hooks/use-permissions";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Step definitions
@@ -92,13 +85,7 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
 // Step item component
 // ---------------------------------------------------------------------------
 
-function StepIndicator({
-  completed,
-  current,
-}: {
-  completed: boolean;
-  current: boolean;
-}) {
+function StepIndicator({ completed, current }: { completed: boolean; current: boolean }) {
   if (completed) {
     return (
       <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary">
@@ -108,14 +95,10 @@ function StepIndicator({
   }
 
   if (current) {
-    return (
-      <div className="step-current-ring h-6 w-6 shrink-0 rounded-full ring-2 ring-primary" />
-    );
+    return <div className="step-current-ring h-6 w-6 shrink-0 rounded-full ring-2 ring-primary" />;
   }
 
-  return (
-    <div className="h-6 w-6 shrink-0 rounded-full ring-2 ring-border" />
-  );
+  return <div className="h-6 w-6 shrink-0 rounded-full ring-2 ring-border" />;
 }
 
 function StepItem({
@@ -157,14 +140,8 @@ function StepItem({
         </div>
         {current && (
           <div className="mt-1.5">
-            <p className="text-sm text-muted-foreground">
-              {description}
-            </p>
-            <Button
-              size="sm"
-              className="mt-2"
-              render={<Link href={step.ctaHref} />}
-            >
+            <p className="text-sm text-muted-foreground">{description}</p>
+            <Button size="sm" className="mt-2" render={<Link href={step.ctaHref} />}>
               {cta}
             </Button>
           </div>
@@ -218,9 +195,7 @@ export function OnboardingChecklist() {
   const queryClient = useQueryClient();
 
   // Fetch settings for onboarding state
-  const { data: settings, isLoading: settingsLoading } = useQuery(
-    trpc.settings.get.queryOptions(),
-  );
+  const { data: settings, isLoading: settingsLoading } = useQuery(trpc.settings.get.queryOptions());
 
   // Local UI state for collapse toggle
   const [localDismissed, setLocalDismissed] = useState<boolean | null>(null);
@@ -286,17 +261,13 @@ export function OnboardingChecklist() {
   }
 
   // Determine current step (first non-completed)
-  const currentStepId = ONBOARDING_STEPS.find(
-    (s) => !completedSteps.includes(s.id),
-  )?.id;
+  const currentStepId = ONBOARDING_STEPS.find((s) => !completedSteps.includes(s.id))?.id;
 
   return (
     <Card className="iridescent neon-card">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="gradient-text text-[20px] font-bold">
-            {t("widgetTitle")}
-          </CardTitle>
+          <CardTitle className="gradient-text text-[20px] font-bold">{t("widgetTitle")}</CardTitle>
           <span className="text-xs font-semibold text-primary">
             {t("progress", { completed: completedCount, total: totalCount })}
           </span>

@@ -1,21 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-import { toast } from "sonner";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Save } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
+import { useTranslations } from "next-intl";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Default fallback values (displayed when not configured)
@@ -32,14 +25,10 @@ export function ExpiryReminderDefaults() {
   const tToast = useTranslations("Settings.toast");
   const queryClient = useQueryClient();
 
-  const defaultsQuery = useQuery(
-    trpc.settings.getExpiryReminderDefaults.queryOptions()
-  );
+  const defaultsQuery = useQuery(trpc.settings.getExpiryReminderDefaults.queryOptions());
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const serverDefaults = (defaultsQuery.data as any)?.reminderDaysBefore as
-    | number[]
-    | undefined;
+  const serverDefaults = (defaultsQuery.data as any)?.reminderDaysBefore as number[] | undefined;
 
   const [inputValue, setInputValue] = useState("");
 
@@ -63,7 +52,7 @@ export function ExpiryReminderDefaults() {
       onError: () => {
         toast.error(tToast("reminderDefaultsFailed"));
       },
-    })
+    }),
   );
 
   function handleSave() {
@@ -97,15 +86,9 @@ export function ExpiryReminderDefaults() {
             onChange={(e) => setInputValue(e.target.value)}
             placeholder={t("expiryReminders.placeholder")}
           />
-          <p className="text-xs text-muted-foreground">
-            {t("expiryReminders.description")}
-          </p>
+          <p className="text-xs text-muted-foreground">{t("expiryReminders.description")}</p>
         </div>
-        <Button
-          size="sm"
-          onClick={handleSave}
-          disabled={updateMutation.isPending}
-        >
+        <Button size="sm" onClick={handleSave} disabled={updateMutation.isPending}>
           {updateMutation.isPending ? (
             <Loader2 className="me-1.5 size-3.5 animate-spin" />
           ) : (

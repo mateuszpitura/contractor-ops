@@ -3,7 +3,12 @@ import { GroupRoleMappingStep } from "../group-role-mapping-step";
 
 describe("GroupRoleMappingStep", () => {
   const groups = [
-    { id: "g1", email: "eng@test.com", name: "Engineering", memberEmails: ["a@test.com", "b@test.com"] },
+    {
+      id: "g1",
+      email: "eng@test.com",
+      name: "Engineering",
+      memberEmails: ["a@test.com", "b@test.com"],
+    },
     { id: "g2", email: "hr@test.com", name: "HR", memberEmails: ["c@test.com"] },
   ];
 

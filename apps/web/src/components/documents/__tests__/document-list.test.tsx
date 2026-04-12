@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@/test/test-utils";
 import { DocumentList } from "../document-list";
 
@@ -39,9 +39,7 @@ describe("DocumentList", () => {
       data: undefined,
       isLoading: true,
     });
-    const { container } = render(
-      <DocumentList entityType="CONTRACT" entityId="c-1" />,
-    );
+    const { container } = render(<DocumentList entityType="CONTRACT" entityId="c-1" />);
     // 3 skeleton groups rendered
     const borders = container.querySelectorAll(".rounded-lg.border");
     expect(borders.length).toBeGreaterThanOrEqual(3);
@@ -55,9 +53,7 @@ describe("DocumentList", () => {
     render(<DocumentList entityType="CONTRACT" entityId="c-1" />);
     expect(screen.getByText("No documents yet")).toBeInTheDocument();
     expect(
-      screen.getByText(
-        "Upload contract documents to keep them organized.",
-      ),
+      screen.getByText("Upload contract documents to keep them organized."),
     ).toBeInTheDocument();
   });
 

@@ -34,51 +34,37 @@ describe("TimesheetHeader", () => {
 
   it("renders submit button", () => {
     render(<TimesheetHeader {...defaultProps} />);
-    expect(
-      screen.getByRole("button", { name: "Submit Timesheet" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Submit Timesheet" })).toBeInTheDocument();
   });
 
   it("disables submit when status is SUBMITTED", () => {
     render(<TimesheetHeader {...defaultProps} status="SUBMITTED" />);
-    expect(
-      screen.getByRole("button", { name: "Submit Timesheet" }),
-    ).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Submit Timesheet" })).toBeDisabled();
   });
 
   it("disables submit when status is APPROVED", () => {
     render(<TimesheetHeader {...defaultProps} status="APPROVED" />);
-    expect(
-      screen.getByRole("button", { name: "Submit Timesheet" }),
-    ).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Submit Timesheet" })).toBeDisabled();
   });
 
   it("enables submit when status is REJECTED with minutes > 0", () => {
     render(<TimesheetHeader {...defaultProps} status="REJECTED" />);
-    expect(
-      screen.getByRole("button", { name: "Submit Timesheet" }),
-    ).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Submit Timesheet" })).toBeEnabled();
   });
 
   it("disables submit when totalMinutes is 0", () => {
     render(<TimesheetHeader {...defaultProps} totalMinutes={0} />);
-    expect(
-      screen.getByRole("button", { name: "Submit Timesheet" }),
-    ).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Submit Timesheet" })).toBeDisabled();
   });
 
   it("shows submitting text when isSubmitting is true", () => {
     render(<TimesheetHeader {...defaultProps} isSubmitting />);
-    expect(
-      screen.getByRole("button", { name: "Submitting..." }),
-    ).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Submitting..." })).toBeDisabled();
   });
 
   it("calls onWeekChange with previous week on prev click", async () => {
     const onWeekChange = vi.fn();
-    const { user } = setup(
-      <TimesheetHeader {...defaultProps} onWeekChange={onWeekChange} />,
-    );
+    const { user } = setup(<TimesheetHeader {...defaultProps} onWeekChange={onWeekChange} />);
     await user.click(screen.getByRole("button", { name: "Previous week" }));
     expect(onWeekChange).toHaveBeenCalledTimes(1);
     const arg = onWeekChange.mock.calls[0][0] as Date;
@@ -87,9 +73,7 @@ describe("TimesheetHeader", () => {
 
   it("calls onWeekChange with next week on next click", async () => {
     const onWeekChange = vi.fn();
-    const { user } = setup(
-      <TimesheetHeader {...defaultProps} onWeekChange={onWeekChange} />,
-    );
+    const { user } = setup(<TimesheetHeader {...defaultProps} onWeekChange={onWeekChange} />);
     await user.click(screen.getByRole("button", { name: "Next week" }));
     expect(onWeekChange).toHaveBeenCalledTimes(1);
     const arg = onWeekChange.mock.calls[0][0] as Date;

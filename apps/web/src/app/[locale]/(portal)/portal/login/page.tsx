@@ -1,19 +1,18 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
+import { Loader2, Mail } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Loader2, Mail } from "lucide-react";
-import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Schema factory
@@ -59,9 +58,7 @@ export default function PortalLoginPage() {
     defaultValues: { email: "" },
   });
 
-  const requestMagicLink = useMutation(
-    trpc.portal.requestMagicLink.mutationOptions(),
-  );
+  const requestMagicLink = useMutation(trpc.portal.requestMagicLink.mutationOptions());
 
   const onSubmit = async (values: LoginValues) => {
     try {
@@ -85,14 +82,8 @@ export default function PortalLoginPage() {
             <p className="mt-2 text-sm text-muted-foreground">
               {t("login.linkSentTo", { email: getValues("email") })}
             </p>
-            <p className="mt-4 text-sm text-muted-foreground">
-              {t("login.didntReceive")}
-            </p>
-            <Button
-              variant="ghost"
-              className="mt-4"
-              onClick={() => setSent(false)}
-            >
+            <p className="mt-4 text-sm text-muted-foreground">{t("login.didntReceive")}</p>
+            <Button variant="ghost" className="mt-4" onClick={() => setSent(false)}>
               {t("login.tryAnother")}
             </Button>
           </CardContent>
@@ -109,9 +100,7 @@ export default function PortalLoginPage() {
           <h1 className="text-[28px] font-semibold leading-[1.2] tracking-tight">
             {t("login.title")}
           </h1>
-          <p className="text-sm text-muted-foreground">
-            {t("login.subtitle")}
-          </p>
+          <p className="text-sm text-muted-foreground">{t("login.subtitle")}</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -127,18 +116,10 @@ export default function PortalLoginPage() {
                 disabled={requestMagicLink.isPending}
                 {...register("email")}
               />
-              {errors.email && (
-                <p className="text-sm text-destructive">
-                  {errors.email.message}
-                </p>
-              )}
+              {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
             </div>
 
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={requestMagicLink.isPending}
-            >
+            <Button type="submit" className="w-full" disabled={requestMagicLink.isPending}>
               {requestMagicLink.isPending ? (
                 <>
                   <Loader2 className="me-2 h-4 w-4 animate-spin" />

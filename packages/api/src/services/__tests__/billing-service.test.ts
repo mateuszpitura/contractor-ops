@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@contractor-ops/db", () => ({
   prisma: {
@@ -21,25 +21,23 @@ vi.mock("../stripe-client.js", () => ({
 }));
 
 vi.mock("../cache.js", () => ({
-  cached: vi.fn(
-    async (_k: string, _t: number, fn: () => Promise<unknown>) => fn(),
-  ),
+  cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
   CacheKeys: { subscription: (id: string) => `sub:${id}` },
   CacheTTL: { SUBSCRIPTION: 900 },
 }));
 
 import { prisma } from "@contractor-ops/db";
-import { stripe } from "../stripe-client.js";
 import {
-  getSubscription,
   createCheckoutSession,
-  getProrationPreview,
   createPortalSession,
   createTopUpCheckoutSession,
-  updateSubscriptionSeatCount,
-  syncSeatCountForOrg,
   ensureStripeCustomer,
+  getProrationPreview,
+  getSubscription,
+  syncSeatCountForOrg,
+  updateSubscriptionSeatCount,
 } from "../billing-service.js";
+import { stripe } from "../stripe-client.js";
 
 const mockPrisma = prisma as unknown as {
   subscription: {
@@ -135,9 +133,7 @@ describe("createCheckoutSession", () => {
 
   it("includes organizationId in subscription_data.metadata", async () => {
     stubSessionUrl();
-    await createCheckoutSession(
-      makeCheckoutParams({ organizationId: "org_meta" }),
-    );
+    await createCheckoutSession(makeCheckoutParams({ organizationId: "org_meta" }));
 
     const args = mockStripe.checkout.sessions.create.mock.calls[0][0];
     expect(args.subscription_data.metadata.organizationId).toBe("org_meta");
@@ -145,9 +141,7 @@ describe("createCheckoutSession", () => {
 
   it("forwards stripeCustomerId as customer", async () => {
     stubSessionUrl();
-    await createCheckoutSession(
-      makeCheckoutParams({ stripeCustomerId: "cus_xyz" }),
-    );
+    await createCheckoutSession(makeCheckoutParams({ stripeCustomerId: "cus_xyz" }));
 
     expect(mockStripe.checkout.sessions.create).toHaveBeenCalledWith(
       expect.objectContaining({ customer: "cus_xyz" }),
@@ -180,9 +174,9 @@ describe("createCheckoutSession", () => {
   });
 
   it("throws for quantity less than 1", async () => {
-    await expect(
-      createCheckoutSession(makeCheckoutParams({ quantity: 0 })),
-    ).rejects.toThrow("[billing-service] quantity must be at least 1");
+    await expect(createCheckoutSession(makeCheckoutParams({ quantity: 0 }))).rejects.toThrow(
+      "[billing-service] quantity must be at least 1",
+    );
   });
 });
 
@@ -271,9 +265,7 @@ describe("getProrationPreview", () => {
     await getProrationPreview(prorationParams);
 
     const args = mockStripe.invoices.createPreview.mock.calls[0][0];
-    expect(args.subscription_details.items).toEqual([
-      { id: "si_456", price: "price_pro" },
-    ]);
+    expect(args.subscription_details.items).toEqual([{ id: "si_456", price: "price_pro" }]);
   });
 
   it("sets proration_behavior to 'create_prorations'", async () => {
@@ -285,9 +277,7 @@ describe("getProrationPreview", () => {
     await getProrationPreview(prorationParams);
 
     const args = mockStripe.invoices.createPreview.mock.calls[0][0];
-    expect(args.subscription_details.proration_behavior).toBe(
-      "create_prorations",
-    );
+    expect(args.subscription_details.proration_behavior).toBe("create_prorations");
   });
 
   it("forwards customer and subscription to Stripe", async () => {
@@ -584,9 +574,7 @@ describe("syncSeatCountForOrg", () => {
   it("does not throw when Stripe update fails (fire-and-forget)", async () => {
     stubActiveSub(5);
     mockPrisma.contractor.count.mockResolvedValue(7);
-    mockStripe.subscriptions.update.mockRejectedValue(
-      new Error("Stripe is down"),
-    );
+    mockStripe.subscriptions.update.mockRejectedValue(new Error("Stripe is down"));
 
     await expect(syncSeatCountForOrg("org_123")).resolves.toBeUndefined();
   });
@@ -658,15 +646,15 @@ describe("getSubscription", () => {
 
 describe("input validation", () => {
   it("createCheckoutSession throws for empty organizationId", async () => {
-    await expect(
-      createCheckoutSession(makeCheckoutParams({ organizationId: "" })),
-    ).rejects.toThrow("[billing-service] organizationId must not be empty");
+    await expect(createCheckoutSession(makeCheckoutParams({ organizationId: "" }))).rejects.toThrow(
+      "[billing-service] organizationId must not be empty",
+    );
   });
 
   it("createCheckoutSession throws for empty priceId", async () => {
-    await expect(
-      createCheckoutSession(makeCheckoutParams({ priceId: "" })),
-    ).rejects.toThrow("[billing-service] priceId must not be empty");
+    await expect(createCheckoutSession(makeCheckoutParams({ priceId: "" }))).rejects.toThrow(
+      "[billing-service] priceId must not be empty",
+    );
   });
 
   it("createCheckoutSession throws for empty stripeCustomerId", async () => {
@@ -676,15 +664,15 @@ describe("input validation", () => {
   });
 
   it("createCheckoutSession throws for empty successUrl", async () => {
-    await expect(
-      createCheckoutSession(makeCheckoutParams({ successUrl: "" })),
-    ).rejects.toThrow("[billing-service] successUrl must not be empty");
+    await expect(createCheckoutSession(makeCheckoutParams({ successUrl: "" }))).rejects.toThrow(
+      "[billing-service] successUrl must not be empty",
+    );
   });
 
   it("createCheckoutSession throws for empty cancelUrl", async () => {
-    await expect(
-      createCheckoutSession(makeCheckoutParams({ cancelUrl: "" })),
-    ).rejects.toThrow("[billing-service] cancelUrl must not be empty");
+    await expect(createCheckoutSession(makeCheckoutParams({ cancelUrl: "" }))).rejects.toThrow(
+      "[billing-service] cancelUrl must not be empty",
+    );
   });
 
   it("getProrationPreview throws for empty stripeCustomerId", async () => {
@@ -706,9 +694,7 @@ describe("input validation", () => {
         stripeSubscriptionItemId: "si_456",
         newPriceId: "price_pro",
       }),
-    ).rejects.toThrow(
-      "[billing-service] stripeSubscriptionId must not be empty",
-    );
+    ).rejects.toThrow("[billing-service] stripeSubscriptionId must not be empty");
   });
 
   it("getProrationPreview throws for empty newPriceId", async () => {
@@ -777,9 +763,7 @@ describe("input validation", () => {
         stripeSubscriptionItemId: "si_456",
         newQuantity: 5,
       }),
-    ).rejects.toThrow(
-      "[billing-service] stripeSubscriptionId must not be empty",
-    );
+    ).rejects.toThrow("[billing-service] stripeSubscriptionId must not be empty");
   });
 
   it("getSubscription throws for empty organizationId", async () => {

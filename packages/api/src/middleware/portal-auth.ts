@@ -1,6 +1,6 @@
-import { TRPCError } from "@trpc/server";
 import { tenantStore } from "@contractor-ops/db";
-import { t, publicProcedure } from "../init.js";
+import { TRPCError } from "@trpc/server";
+import { publicProcedure, t } from "../init.js";
 import { validatePortalSession } from "../services/portal-session.js";
 
 // ---------------------------------------------------------------------------
@@ -59,8 +59,7 @@ const portalAuthMiddleware = t.middleware(async ({ ctx, next }) => {
   // Read subdomain header set by Next.js middleware (supplementary context)
   // Session.organizationId remains authoritative for tenantStore scoping.
   // The subdomain is passed as context metadata for logging/audit/rate-limiting.
-  const portalSubdomain =
-    ctx.headers.get("x-portal-org-subdomain") ?? null;
+  const portalSubdomain = ctx.headers.get("x-portal-org-subdomain") ?? null;
 
   return tenantStore.run({ organizationId: session.organizationId }, () =>
     next({

@@ -10,9 +10,8 @@ vi.mock("next-intl", async (importOriginal) => {
 });
 
 vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
-    "@tanstack/react-query",
-  );
+  const actual =
+    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
   return {
     ...actual,
     useQuery: () => ({ isLoading: false, data: { status: "DISCONNECTED" } }),
@@ -33,7 +32,10 @@ vi.mock("@/trpc/init", () => ({
         queryOptions: vi.fn(() => ({ queryKey: ["integration", "getSlackStatus"] })),
       },
       getOAuthUrlGeneric: {
-        queryOptions: vi.fn(() => ({ queryKey: ["integration", "getOAuthUrlGeneric"], enabled: false })),
+        queryOptions: vi.fn(() => ({
+          queryKey: ["integration", "getOAuthUrlGeneric"],
+          enabled: false,
+        })),
       },
       disconnectGeneric: { mutationOptions: vi.fn((o: object) => o) },
     },
@@ -82,7 +84,11 @@ vi.mock("@/trpc/init", () => ({
 
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock("@/i18n/navigation", () => ({
-  Link: ({ children, href, ...props }: any) => <a href={href} {...props}>{children}</a>,
+  Link: ({ children, href, ...props }: any) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
 }));
 vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
@@ -122,6 +128,10 @@ vi.mock("@/components/settings/ups-provider-section", () => ({
 }));
 vi.mock("@/components/settings/org-calendar-section", () => ({
   OrgCalendarSection: () => <div data-testid="org-calendar" />,
+}));
+
+vi.mock("@/components/peppol/peppol-status-card", () => ({
+  PeppolStatusCard: () => <div data-testid="peppol-status" />,
 }));
 
 describe("IntegrationsTab", () => {

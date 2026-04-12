@@ -1,10 +1,10 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRightLeft, ExternalLink } from "lucide-react";
 import { format } from "date-fns";
-
-import { trpc } from "@/trpc/init";
+import { ArrowRightLeft, ExternalLink } from "lucide-react";
+import { EmptyState } from "@/components/shared/empty-state";
+import { DeviationFlag } from "@/components/time/deviation-flag";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -15,9 +15,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { EmptyState } from "@/components/shared/empty-state";
 import { Link } from "@/i18n/navigation";
-import { DeviationFlag } from "@/components/time/deviation-flag";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Types (mirrors API response)
@@ -90,10 +89,7 @@ function ReconciliationSkeleton() {
   return (
     <div className="space-y-3">
       {Array.from({ length: 5 }).map((_, i) => (
-        <div
-          key={i}
-          className="flex items-center gap-4 rounded-lg border px-4 py-3"
-        >
+        <div key={i} className="flex items-center gap-4 rounded-lg border px-4 py-3">
           <Skeleton className="h-4 w-28" />
           <Skeleton className="h-4 w-24" />
           <Skeleton className="h-4 w-12" />
@@ -121,9 +117,7 @@ function ReconciliationSkeleton() {
 export function ReconciliationTable() {
   const query = useQuery(trpc.time.listReconciliations.queryOptions({}));
 
-  const data = query.data as
-    | { items: ReconciliationItem[]; nextCursor?: string }
-    | undefined;
+  const data = query.data as { items: ReconciliationItem[]; nextCursor?: string } | undefined;
   const items = data?.items ?? [];
 
   if (query.isLoading) {
@@ -160,34 +154,24 @@ export function ReconciliationTable() {
               <TableCell className="text-sm font-medium">
                 {item.contractor?.legalName ?? "Unknown"}
               </TableCell>
-              <TableCell className="text-sm text-muted-foreground">
-                {formatPeriod(item)}
-              </TableCell>
+              <TableCell className="text-sm text-muted-foreground">{formatPeriod(item)}</TableCell>
               <TableCell className="text-end text-sm font-medium tabular-nums">
                 {formatHours(item.reconciliation.approvedMinutes)}
               </TableCell>
               <TableCell className="text-end text-sm tabular-nums">
                 {formatMinorUnits(item.reconciliation.expectedAmountMinor)}{" "}
-                <span className="text-muted-foreground">
-                  {item.invoice.currency}
-                </span>
+                <span className="text-muted-foreground">{item.invoice.currency}</span>
               </TableCell>
               <TableCell className="text-end text-sm tabular-nums">
                 {formatMinorUnits(item.reconciliation.invoicedAmountMinor)}{" "}
-                <span className="text-muted-foreground">
-                  {item.invoice.currency}
-                </span>
+                <span className="text-muted-foreground">{item.invoice.currency}</span>
               </TableCell>
               <TableCell>
                 <DeviationFlag
                   deviationPercent={item.reconciliation.deviationPercent}
                   thresholdPercent={item.reconciliation.thresholdPercent}
-                  expectedAmountMinor={
-                    item.reconciliation.expectedAmountMinor
-                  }
-                  invoicedAmountMinor={
-                    item.reconciliation.invoicedAmountMinor
-                  }
+                  expectedAmountMinor={item.reconciliation.expectedAmountMinor}
+                  invoicedAmountMinor={item.reconciliation.invoicedAmountMinor}
                   rateValueMinor={item.reconciliation.rateValueMinor}
                   approvedMinutes={item.reconciliation.approvedMinutes}
                 />

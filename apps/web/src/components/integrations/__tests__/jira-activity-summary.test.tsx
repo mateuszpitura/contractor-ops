@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@/test/test-utils";
 import { JiraActivitySummary } from "../jira-activity-summary";
 
@@ -63,9 +63,8 @@ let activityData: unknown[] = [];
 let activityLoading = false;
 
 vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
-    "@tanstack/react-query",
-  );
+  const actual =
+    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
   return {
     ...actual,
     useQuery: () => ({
@@ -99,9 +98,7 @@ describe("JiraActivitySummary", () => {
   });
 
   it("renders nothing when no items and not loading", () => {
-    const { container } = render(
-      <JiraActivitySummary contractorId="c-1" />,
-    );
+    const { container } = render(<JiraActivitySummary contractorId="c-1" />);
     expect(container.innerHTML).toBe("");
   });
 

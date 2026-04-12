@@ -74,8 +74,7 @@ export class ResendAdapter extends BaseAdapter {
       });
 
       // Extract event type
-      const eventType =
-        (event as { type?: string }).type ?? "unknown";
+      const eventType = (event as { type?: string }).type ?? "unknown";
 
       // Attempt to resolve organizationId from recipient email domain
       let organizationId: string | undefined;

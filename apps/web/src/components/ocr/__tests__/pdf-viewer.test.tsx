@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { render, screen, setup } from "@/test/test-utils";
 import { PdfViewer } from "../pdf-viewer";
 
@@ -28,29 +28,19 @@ vi.mock("react-pdf", () => {
 describe("PdfViewer", () => {
   it("renders toolbar with page navigation buttons", () => {
     render(<PdfViewer url="https://example.com/test.pdf" />);
-    expect(
-      screen.getByRole("button", { name: /Previous page/i }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /Next page/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Previous page/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Next page/i })).toBeInTheDocument();
   });
 
   it("renders zoom controls", () => {
     render(<PdfViewer url="https://example.com/test.pdf" />);
-    expect(
-      screen.getByRole("button", { name: /Zoom in/i }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /Zoom out/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Zoom in/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Zoom out/i })).toBeInTheDocument();
   });
 
   it("renders fit width button", () => {
     render(<PdfViewer url="https://example.com/test.pdf" />);
-    expect(
-      screen.getByText(/Fit width/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Fit width/i)).toBeInTheDocument();
   });
 
   it("renders pdf document component", () => {
@@ -77,9 +67,7 @@ describe("PdfViewer", () => {
 
   it("previous page button is disabled on page 1", () => {
     render(<PdfViewer url="https://example.com/test.pdf" />);
-    expect(
-      screen.getByRole("button", { name: /Previous page/i }),
-    ).toBeDisabled();
+    expect(screen.getByRole("button", { name: /Previous page/i })).toBeDisabled();
   });
 
   it("applies custom className", () => {

@@ -53,9 +53,7 @@ vi.mock("./portal-return-flow", () => ({
   PortalReturnFlow: () => null,
 }));
 
-const { useQuery: mockedUseQuery } = vi.mocked(
-  await import("@tanstack/react-query"),
-);
+const { useQuery: mockedUseQuery } = vi.mocked(await import("@tanstack/react-query"));
 
 const MOCK_EQUIPMENT = [
   {
@@ -226,10 +224,12 @@ describe("PortalEquipmentTab", () => {
   });
 
   it("renders equipment without serial number", () => {
-    const noSerialEquipment = [{
-      ...MOCK_EQUIPMENT[0],
-      equipment: { ...MOCK_EQUIPMENT[0].equipment, serialNumber: null },
-    }];
+    const noSerialEquipment = [
+      {
+        ...MOCK_EQUIPMENT[0],
+        equipment: { ...MOCK_EQUIPMENT[0].equipment, serialNumber: null },
+      },
+    ];
     mockedUseQuery.mockImplementation((opts: any) => {
       if (opts?.queryKey?.[0] === "portal.listEquipment") {
         return { data: noSerialEquipment, isPending: false } as any;
@@ -241,10 +241,12 @@ describe("PortalEquipmentTab", () => {
   });
 
   it("renders equipment without delivery date", () => {
-    const noDeliveryEquipment = [{
-      ...MOCK_EQUIPMENT[0],
-      latestShipment: null,
-    }];
+    const noDeliveryEquipment = [
+      {
+        ...MOCK_EQUIPMENT[0],
+        latestShipment: null,
+      },
+    ];
     mockedUseQuery.mockImplementation((opts: any) => {
       if (opts?.queryKey?.[0] === "portal.listEquipment") {
         return { data: noDeliveryEquipment, isPending: false } as any;
@@ -261,10 +263,12 @@ describe("PortalEquipmentTab", () => {
   });
 
   it("hides return button when no returnable equipment", () => {
-    const returnedEquipment = [{
-      ...MOCK_EQUIPMENT[0],
-      equipment: { ...MOCK_EQUIPMENT[0].equipment, status: "RETURNED" },
-    }];
+    const returnedEquipment = [
+      {
+        ...MOCK_EQUIPMENT[0],
+        equipment: { ...MOCK_EQUIPMENT[0].equipment, status: "RETURNED" },
+      },
+    ];
     mockedUseQuery.mockImplementation((opts: any) => {
       if (opts?.queryKey?.[0] === "portal.listEquipment") {
         return { data: returnedEquipment, isPending: false } as any;

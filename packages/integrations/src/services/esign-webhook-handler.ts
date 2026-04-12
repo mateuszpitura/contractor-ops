@@ -109,8 +109,7 @@ export async function handleSigningWebhook(params: {
 
     // Update recipient status if event has recipientEmail
     if (event.recipientEmail && event.recipientStatus) {
-      const recipientStatus =
-        RECIPIENT_STATUS_MAP[event.recipientStatus] ?? event.recipientStatus;
+      const recipientStatus = RECIPIENT_STATUS_MAP[event.recipientStatus] ?? event.recipientStatus;
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const recipientUpdate: Record<string, any> = {
@@ -145,8 +144,7 @@ export async function handleSigningWebhook(params: {
 
     // Update envelope status if event has envelopeStatus
     if (event.envelopeStatus) {
-      const envelopeStatus =
-        ENVELOPE_STATUS_MAP[event.envelopeStatus] ?? event.envelopeStatus;
+      const envelopeStatus = ENVELOPE_STATUS_MAP[event.envelopeStatus] ?? event.envelopeStatus;
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const envelopeUpdate: Record<string, any> = {

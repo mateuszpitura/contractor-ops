@@ -1,25 +1,25 @@
-import { z } from "zod";
-import { TRPCError } from "@trpc/server";
 import { prisma } from "@contractor-ops/db";
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 import { router } from "../init.js";
 import { adminProcedure } from "../middleware/rbac.js";
 import { tenantProcedure } from "../middleware/tenant.js";
 import {
-  getSubscription,
+  KNOWN_SUBSCRIPTION_PRICE_IDS,
+  KNOWN_TOPUP_PRICE_IDS,
+  TIER_CREDIT_ALLOWANCE,
+  TRIAL_CREDIT_ALLOWANCE,
+} from "../services/billing-constants.js";
+import {
   createCheckoutSession,
-  createTopUpCheckoutSession,
-  getProrationPreview,
   createPortalSession,
+  createTopUpCheckoutSession,
   ensureStripeCustomer,
+  getProrationPreview,
+  getSubscription,
   updateSubscriptionSeatCount,
 } from "../services/billing-service.js";
 import { getCreditBalance } from "../services/credit-service.js";
-import {
-  TIER_CREDIT_ALLOWANCE,
-  TRIAL_CREDIT_ALLOWANCE,
-  KNOWN_SUBSCRIPTION_PRICE_IDS,
-  KNOWN_TOPUP_PRICE_IDS,
-} from "../services/billing-constants.js";
 
 // ---------------------------------------------------------------------------
 // Static plan configuration (D-01 through D-06)
@@ -63,10 +63,7 @@ const PLAN_CONFIG = {
         "Advanced workflows",
         "E-signatures",
       ],
-      excludedFeatures: [
-        "Audit log export",
-        "API access",
-      ],
+      excludedFeatures: ["Audit log export", "API access"],
     },
     {
       id: "ENTERPRISE" as const,
@@ -150,8 +147,7 @@ export const billingRouter = router({
       });
       const quantity = Math.max(1, contractorCount);
 
-      const baseUrl =
-        process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
       return createCheckoutSession({
         organizationId: ctx.organizationId,
@@ -255,8 +251,7 @@ export const billingRouter = router({
         });
       }
 
-      const baseUrl =
-        process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
       return createTopUpCheckoutSession({
         organizationId: ctx.organizationId,

@@ -36,12 +36,7 @@ const PURPOSE_CODE_MAP: PurposeCodeEntry[] = [
   {
     code: "COMC",
     description: "Commercial",
-    serviceCategories: [
-      "CONSULTING",
-      "ADVISORY",
-      "MANAGEMENT_CONSULTING",
-      "STRATEGY",
-    ],
+    serviceCategories: ["CONSULTING", "ADVISORY", "MANAGEMENT_CONSULTING", "STRATEGY"],
   },
   {
     code: "LGAS",
@@ -51,24 +46,12 @@ const PURPOSE_CODE_MAP: PurposeCodeEntry[] = [
   {
     code: "ACCT",
     description: "Account Management",
-    serviceCategories: [
-      "ACCOUNTING",
-      "BOOKKEEPING",
-      "AUDIT",
-      "FINANCE",
-      "TAX",
-    ],
+    serviceCategories: ["ACCOUNTING", "BOOKKEEPING", "AUDIT", "FINANCE", "TAX"],
   },
   {
     code: "ADVE",
     description: "Advertising",
-    serviceCategories: [
-      "MARKETING",
-      "ADVERTISING",
-      "PR",
-      "COMMUNICATIONS",
-      "MEDIA",
-    ],
+    serviceCategories: ["MARKETING", "ADVERTISING", "PR", "COMMUNICATIONS", "MEDIA"],
   },
   {
     code: "EDUC",
@@ -78,23 +61,12 @@ const PURPOSE_CODE_MAP: PurposeCodeEntry[] = [
   {
     code: "BLDG",
     description: "Building Maintenance",
-    serviceCategories: [
-      "CONSTRUCTION",
-      "FACILITIES",
-      "MAINTENANCE",
-      "REAL_ESTATE",
-    ],
+    serviceCategories: ["CONSTRUCTION", "FACILITIES", "MAINTENANCE", "REAL_ESTATE"],
   },
   {
     code: "OTHR",
     description: "Other",
-    serviceCategories: [
-      "DESIGN",
-      "CREATIVE",
-      "GRAPHIC_DESIGN",
-      "UX",
-      "UI",
-    ],
+    serviceCategories: ["DESIGN", "CREATIVE", "GRAPHIC_DESIGN", "UX", "UI"],
   },
   {
     code: "SUPP",
@@ -125,10 +97,7 @@ const VALID_CODES = new Set(PURPOSE_CODE_MAP.map((e) => e.code));
  * If override is provided and valid, returns the override value.
  * Falls back to "SUPP" for unknown categories.
  */
-export function getPurposeCode(
-  serviceCategory: string,
-  override?: string | null,
-): string {
+export function getPurposeCode(serviceCategory: string, override?: string | null): string {
   if (override && VALID_CODES.has(override)) {
     return override;
   }

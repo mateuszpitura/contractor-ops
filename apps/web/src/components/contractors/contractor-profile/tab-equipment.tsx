@@ -3,10 +3,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { Package } from "lucide-react";
 import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
+import { EquipmentStatusBadge } from "@/components/equipment/equipment-status-badge";
+import { EquipmentTypeIcon } from "@/components/equipment/equipment-type-icon";
+import { ShipmentCondensed } from "@/components/equipment/shipment-condensed";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Link } from "@/i18n/navigation";
 import {
   Table,
   TableBody,
@@ -15,9 +15,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { EquipmentTypeIcon } from "@/components/equipment/equipment-type-icon";
-import { EquipmentStatusBadge } from "@/components/equipment/equipment-status-badge";
-import { ShipmentCondensed } from "@/components/equipment/shipment-condensed";
+import { Link } from "@/i18n/navigation";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -56,9 +55,7 @@ type EquipmentItem = {
 export function TabEquipment({ contractorId }: TabEquipmentProps) {
   const t = useTranslations("Equipment");
 
-  const query = useQuery(
-    trpc.equipment.listByContractor.queryOptions({ contractorId }),
-  );
+  const query = useQuery(trpc.equipment.listByContractor.queryOptions({ contractorId }));
 
   const items = (query.data ?? []) as unknown as EquipmentItem[];
 
@@ -83,9 +80,7 @@ export function TabEquipment({ contractorId }: TabEquipmentProps) {
     return (
       <div className="flex min-h-[300px] flex-col items-center justify-center text-center">
         <Package className="h-10 w-10 text-muted-foreground/50" />
-        <h3 className="mt-3 text-[16px] font-medium">
-          {t("contractorTab.emptyTitle")}
-        </h3>
+        <h3 className="mt-3 text-[16px] font-medium">{t("contractorTab.emptyTitle")}</h3>
         <p className="mt-1 max-w-[420px] text-sm text-muted-foreground">
           {t("contractorTab.emptyDescription")}
         </p>
@@ -120,9 +115,7 @@ export function TabEquipment({ contractorId }: TabEquipmentProps) {
               </TableCell>
               <TableCell>
                 {item.equipment.serialNumber ? (
-                  <span className="font-mono text-xs">
-                    {item.equipment.serialNumber}
-                  </span>
+                  <span className="font-mono text-xs">{item.equipment.serialNumber}</span>
                 ) : (
                   <span className="text-muted-foreground">&mdash;</span>
                 )}

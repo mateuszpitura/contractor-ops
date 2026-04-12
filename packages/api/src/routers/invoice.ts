@@ -1,24 +1,21 @@
-import { z } from "zod";
-import { TRPCError } from "@trpc/server";
 import { prisma } from "@contractor-ops/db";
 import {
   invoiceCreateSchema,
-  invoiceUpdateSchema,
   invoiceListSchema,
   invoiceManualMatchSchema,
+  invoiceUpdateSchema,
 } from "@contractor-ops/validators";
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 import * as E from "../errors.js";
 import { router } from "../init.js";
-import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
-import {
-  computeDuplicateCheckHash,
-  runAutoMatch,
-} from "../services/invoice-matching.js";
-import { applyReverseCharge } from "../services/reverse-charge.service.js";
-import { dispatch } from "../services/notification-service.js";
+import { tenantProcedure } from "../middleware/tenant.js";
+import { CacheKeys, invalidateByPrefix } from "../services/cache.js";
 import { deleteCalendarEvent } from "../services/calendar-event-service.js";
-import { invalidateByPrefix, CacheKeys } from "../services/cache.js";
+import { computeDuplicateCheckHash, runAutoMatch } from "../services/invoice-matching.js";
+import { dispatch } from "../services/notification-service.js";
+import { applyReverseCharge } from "../services/reverse-charge.service.js";
 import { sanitizeStrings } from "../services/sanitize.js";
 
 // ---------------------------------------------------------------------------
@@ -172,9 +169,7 @@ export const invoiceRouter = router({
             amount: (invoiceData.totalMinor / 100).toFixed(2),
             currency: invoiceData.currency,
           },
-        }).catch((err) =>
-          console.error("[invoice] dispatch INVOICE_RECEIVED failed:", err),
-        );
+        }).catch((err) => console.error("[invoice] dispatch INVOICE_RECEIVED failed:", err));
       }
 
       void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
@@ -285,32 +280,21 @@ export const invoiceRouter = router({
         updateData.dueDate = new Date(updateData.dueDate as string);
       }
       if (updateData.servicePeriodStart) {
-        updateData.servicePeriodStart = new Date(
-          updateData.servicePeriodStart as string,
-        );
+        updateData.servicePeriodStart = new Date(updateData.servicePeriodStart as string);
       }
       if (updateData.servicePeriodEnd) {
-        updateData.servicePeriodEnd = new Date(
-          updateData.servicePeriodEnd as string,
-        );
+        updateData.servicePeriodEnd = new Date(updateData.servicePeriodEnd as string);
       }
 
       // Validate service period: end must be >= start (merge with existing values)
       const effectiveStart =
-        (updateData.servicePeriodStart as Date | undefined) ??
-        existing.servicePeriodStart;
+        (updateData.servicePeriodStart as Date | undefined) ?? existing.servicePeriodStart;
       const effectiveEnd =
-        (updateData.servicePeriodEnd as Date | undefined) ??
-        existing.servicePeriodEnd;
-      if (
-        effectiveStart &&
-        effectiveEnd &&
-        effectiveEnd < effectiveStart
-      ) {
+        (updateData.servicePeriodEnd as Date | undefined) ?? existing.servicePeriodEnd;
+      if (effectiveStart && effectiveEnd && effectiveEnd < effectiveStart) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message:
-            "Service period end date must be on or after the start date.",
+          message: "Service period end date must be on or after the start date.",
         });
       }
 
@@ -323,26 +307,15 @@ export const invoiceRouter = router({
         updateData.amountToPayMinor !== undefined
       ) {
         const effective = {
-          subtotalMinor:
-            (updateData.subtotalMinor as number) ?? existing.subtotalMinor,
-          vatAmountMinor:
-            (updateData.vatAmountMinor as number) ??
-            existing.vatAmountMinor ??
-            0,
-          totalMinor:
-            (updateData.totalMinor as number) ?? existing.totalMinor,
+          subtotalMinor: (updateData.subtotalMinor as number) ?? existing.subtotalMinor,
+          vatAmountMinor: (updateData.vatAmountMinor as number) ?? existing.vatAmountMinor ?? 0,
+          totalMinor: (updateData.totalMinor as number) ?? existing.totalMinor,
           withholdingMinor:
-            (updateData.withholdingMinor as number) ??
-            existing.withholdingMinor ??
-            0,
-          amountToPayMinor:
-            (updateData.amountToPayMinor as number) ??
-            existing.amountToPayMinor,
+            (updateData.withholdingMinor as number) ?? existing.withholdingMinor ?? 0,
+          amountToPayMinor: (updateData.amountToPayMinor as number) ?? existing.amountToPayMinor,
         };
         const expectedTotal =
-          effective.subtotalMinor +
-          effective.vatAmountMinor -
-          effective.withholdingMinor;
+          effective.subtotalMinor + effective.vatAmountMinor - effective.withholdingMinor;
         if (effective.totalMinor !== expectedTotal) {
           throw new TRPCError({
             code: "BAD_REQUEST",
@@ -363,12 +336,9 @@ export const invoiceRouter = router({
         updateData.sellerTaxId ||
         updateData.totalMinor !== undefined
       ) {
-        const effectiveNumber =
-          (updateData.invoiceNumber as string) ?? existing.invoiceNumber;
-        const effectiveTaxId =
-          (updateData.sellerTaxId as string) ?? existing.sellerTaxId;
-        const effectiveTotal =
-          (updateData.totalMinor as number) ?? existing.totalMinor;
+        const effectiveNumber = (updateData.invoiceNumber as string) ?? existing.invoiceNumber;
+        const effectiveTaxId = (updateData.sellerTaxId as string) ?? existing.sellerTaxId;
+        const effectiveTotal = (updateData.totalMinor as number) ?? existing.totalMinor;
 
         if (effectiveNumber && effectiveTaxId) {
           updateData.duplicateCheckHash = computeDuplicateCheckHash(
@@ -551,8 +521,7 @@ export const invoiceRouter = router({
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const settings = (org?.settingsJson as Record<string, any>) ?? {};
-      const deviationThreshold =
-        (settings.invoiceDeviationThresholdPercent as number) ?? 10;
+      const deviationThreshold = (settings.invoiceDeviationThresholdPercent as number) ?? 10;
 
       // Run auto-match
       const matchResult = await runAutoMatch(
@@ -750,9 +719,7 @@ export const invoiceRouter = router({
         organizationId: ctx.organizationId,
         entityType: "INVOICE",
         entityId: input.id,
-      }).catch((err) =>
-        console.error("[invoice] calendar event cleanup on void failed:", err),
-      );
+      }).catch((err) => console.error("[invoice] calendar event cleanup on void failed:", err));
 
       void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
 
@@ -782,12 +749,8 @@ export const invoiceRouter = router({
         });
       }
 
-      const currentFlags = Array.isArray(invoice.flagsJson)
-        ? (invoice.flagsJson as string[])
-        : [];
-      const updatedFlags = currentFlags.filter(
-        (f) => f !== "DUPLICATE_SUSPECTED",
-      );
+      const currentFlags = Array.isArray(invoice.flagsJson) ? (invoice.flagsJson as string[]) : [];
+      const updatedFlags = currentFlags.filter((f) => f !== "DUPLICATE_SUSPECTED");
 
       const updated = await prisma.invoice.update({
         where: { id: input.id },
@@ -865,10 +828,12 @@ export const invoiceRouter = router({
    */
   toggleReverseCharge: tenantProcedure
     .use(requirePermission({ invoice: ["update"] }))
-    .input(z.object({
-      invoiceId: z.string(),
-      isReverseCharge: z.boolean(),
-    }))
+    .input(
+      z.object({
+        invoiceId: z.string(),
+        isReverseCharge: z.boolean(),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
       const invoice = await prisma.invoice.update({
         where: {

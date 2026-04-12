@@ -12,14 +12,7 @@ export const ALLOWED_MIMES = new Set([
   "image/jpeg",
 ]);
 
-export const ALLOWED_EXTENSIONS = new Set([
-  "pdf",
-  "docx",
-  "xlsx",
-  "png",
-  "jpg",
-  "jpeg",
-]);
+export const ALLOWED_EXTENSIONS = new Set(["pdf", "docx", "xlsx", "png", "jpg", "jpeg"]);
 
 /** Maximum allowed file size: 25 MB */
 export const MAX_FILE_SIZE_BYTES = 25 * 1024 * 1024;

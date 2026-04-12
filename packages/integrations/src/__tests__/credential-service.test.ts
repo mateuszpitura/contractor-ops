@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { randomBytes } from "node:crypto";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
-  encryptCredentials,
   decryptCredentials,
+  encryptCredentials,
   getProviderEncryptionKey,
 } from "../services/credential-service.js";
 import type { CredentialBlob } from "../types/credentials.js";
@@ -85,9 +85,7 @@ describe("credential-service", () => {
     });
 
     it("should throw on empty string", () => {
-      expect(() => decryptCredentials("", "slack")).toThrow(
-        "Invalid encrypted credentials format",
-      );
+      expect(() => decryptCredentials("", "slack")).toThrow("Invalid encrypted credentials format");
     });
 
     it("should throw on corrupted ciphertext", () => {

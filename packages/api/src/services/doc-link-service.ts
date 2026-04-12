@@ -1,8 +1,8 @@
-import { TRPCError } from "@trpc/server";
-import { decryptCredentials } from "@contractor-ops/integrations/services/credential-service";
-import { NotionAdapter } from "@contractor-ops/integrations/adapters/notion-adapter";
 import { ConfluenceAdapter } from "@contractor-ops/integrations/adapters/confluence-adapter";
+import { NotionAdapter } from "@contractor-ops/integrations/adapters/notion-adapter";
+import { decryptCredentials } from "@contractor-ops/integrations/services/credential-service";
 import type { DocSearchResult } from "@contractor-ops/validators";
+import { TRPCError } from "@trpc/server";
 
 // Use loosely typed prisma client for parallel execution compatibility
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -79,10 +79,7 @@ interface ConnectionConfig {
  * @param input - Attach parameters including org scoping and doc metadata
  * @returns The created ExternalLink record
  */
-export async function attachDocLink(
-  prisma: PrismaClient,
-  input: AttachDocLinkInput,
-) {
+export async function attachDocLink(prisma: PrismaClient, input: AttachDocLinkInput) {
   const externalLink = await prisma.externalLink.create({
     data: {
       organizationId: input.organizationId,
@@ -149,10 +146,7 @@ export async function detachDocLink(
  * @param input - Query parameters with org scoping
  * @returns Array of ExternalLink records for the task run
  */
-export async function getDocLinks(
-  prisma: PrismaClient,
-  input: GetDocLinksInput,
-) {
+export async function getDocLinks(prisma: PrismaClient, input: GetDocLinksInput) {
   const links = await prisma.externalLink.findMany({
     where: {
       entityType: "WORKFLOW_TASK_RUN",
@@ -183,9 +177,7 @@ export async function getDocLinks(
  * @param input - Search parameters including query, provider filter, and org scoping
  * @returns Merged array of DocSearchResult from all matching providers
  */
-export async function searchDocs(
-  input: SearchDocsInput,
-): Promise<DocSearchResult[]> {
+export async function searchDocs(input: SearchDocsInput): Promise<DocSearchResult[]> {
   const { organizationId, query, provider, prisma } = input;
   const results: DocSearchResult[] = [];
 
@@ -197,11 +189,7 @@ export async function searchDocs(
 
   // Search Confluence
   if (provider === "confluence" || provider === "all") {
-    const confluenceResults = await searchConfluencePages(
-      prisma,
-      organizationId,
-      query,
-    );
+    const confluenceResults = await searchConfluencePages(prisma, organizationId, query);
     results.push(...confluenceResults);
   }
 
@@ -229,21 +217,28 @@ async function searchNotionPages(
 
   try {
     const credentials = decryptCredentials(connection.credentialsRef, "notion");
-    const pages = await notionAdapter.searchPages(
-      credentials.accessToken,
-      query,
-    );
+    const pages = await notionAdapter.searchPages(credentials.accessToken, query);
 
-    return pages.slice(0, MAX_RESULTS_PER_PROVIDER).map((page: { id: string; title: string; icon: string | null; lastEditedTime: string; url: string }) => ({
-      id: page.id,
-      title: page.title,
-      icon: page.icon,
-      subtitle: credentials.extra
-        ? (credentials.extra as Record<string, string>).workspaceName ?? "Notion"
-        : "Notion",
-      url: page.url,
-      provider: "notion" as const,
-    }));
+    return pages
+      .slice(0, MAX_RESULTS_PER_PROVIDER)
+      .map(
+        (page: {
+          id: string;
+          title: string;
+          icon: string | null;
+          lastEditedTime: string;
+          url: string;
+        }) => ({
+          id: page.id,
+          title: page.title,
+          icon: page.icon,
+          subtitle: credentials.extra
+            ? ((credentials.extra as Record<string, string>).workspaceName ?? "Notion")
+            : "Notion",
+          url: page.url,
+          provider: "notion" as const,
+        }),
+      );
   } catch (error) {
     console.error("[doc-link-service] Notion search failed:", error);
     return [];
@@ -269,31 +264,32 @@ async function searchConfluencePages(
   const cloudId = config?.cloudId;
 
   if (!cloudId) {
-    console.error(
-      "[doc-link-service] Confluence connection missing cloudId",
-    );
+    console.error("[doc-link-service] Confluence connection missing cloudId");
     return [];
   }
 
   try {
-    const credentials = decryptCredentials(
-      connection.credentialsRef,
-      "confluence",
-    );
-    const pages = await confluenceAdapter.searchPages(
-      credentials.accessToken,
-      cloudId,
-      query,
-    );
+    const credentials = decryptCredentials(connection.credentialsRef, "confluence");
+    const pages = await confluenceAdapter.searchPages(credentials.accessToken, cloudId, query);
 
-    return pages.slice(0, MAX_RESULTS_PER_PROVIDER).map((page: { id: string; title: string; spaceKey: string; spaceName: string; url: string }) => ({
-      id: page.id,
-      title: page.title,
-      icon: null,
-      subtitle: page.spaceName || page.spaceKey,
-      url: page.url,
-      provider: "confluence" as const,
-    }));
+    return pages
+      .slice(0, MAX_RESULTS_PER_PROVIDER)
+      .map(
+        (page: {
+          id: string;
+          title: string;
+          spaceKey: string;
+          spaceName: string;
+          url: string;
+        }) => ({
+          id: page.id,
+          title: page.title,
+          icon: null,
+          subtitle: page.spaceName || page.spaceKey,
+          url: page.url,
+          provider: "confluence" as const,
+        }),
+      );
   } catch (error) {
     console.error("[doc-link-service] Confluence search failed:", error);
     return [];
@@ -367,21 +363,15 @@ export async function refreshDocMetadata(
 
   try {
     if (link.externalType === "NOTION_PAGE") {
-      const credentials = decryptCredentials(
-        connection.credentialsRef,
-        "notion",
-      );
+      const credentials = decryptCredentials(connection.credentialsRef, "notion");
 
       // Re-fetch the page via Notion API
-      const response = await fetch(
-        `https://api.notion.com/v1/pages/${link.externalId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${credentials.accessToken}`,
-            "Notion-Version": "2022-06-28",
-          },
+      const response = await fetch(`https://api.notion.com/v1/pages/${link.externalId}`, {
+        headers: {
+          Authorization: `Bearer ${credentials.accessToken}`,
+          "Notion-Version": "2022-06-28",
         },
-      );
+      });
 
       if (response.ok) {
         const page = (await response.json()) as {
@@ -421,10 +411,7 @@ export async function refreshDocMetadata(
         return updated;
       }
     } else if (link.externalType === "CONFLUENCE_PAGE") {
-      const credentials = decryptCredentials(
-        connection.credentialsRef,
-        "confluence",
-      );
+      const credentials = decryptCredentials(connection.credentialsRef, "confluence");
       const config = connection.configJson as ConnectionConfig | null;
       const cloudId = config?.cloudId;
 

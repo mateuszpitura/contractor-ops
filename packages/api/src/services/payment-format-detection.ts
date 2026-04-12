@@ -17,11 +17,37 @@ import type { ExportItem } from "./payment-export.js";
  */
 export const EU_IBAN_COUNTRIES = new Set([
   // EU-27
-  "AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR",
-  "DE", "GR", "HU", "IE", "IT", "LV", "LT", "LU", "MT", "NL",
-  "PL", "PT", "RO", "SK", "SI", "ES", "SE",
+  "AT",
+  "BE",
+  "BG",
+  "HR",
+  "CY",
+  "CZ",
+  "DK",
+  "EE",
+  "FI",
+  "FR",
+  "DE",
+  "GR",
+  "HU",
+  "IE",
+  "IT",
+  "LV",
+  "LT",
+  "LU",
+  "MT",
+  "NL",
+  "PL",
+  "PT",
+  "RO",
+  "SK",
+  "SI",
+  "ES",
+  "SE",
   // EEA
-  "IS", "LI", "NO",
+  "IS",
+  "LI",
+  "NO",
 ]);
 
 // ---------------------------------------------------------------------------
@@ -42,10 +68,7 @@ type ExportFormat = "SEPA_XML" | "SWIFT_XML" | "BANK_FILE" | "CSV";
  * 2. EUR + EU/EEA IBAN -> SEPA_XML
  * 3. Everything else -> SWIFT_XML (international)
  */
-export function detectFormat(
-  currency: string,
-  iban: string,
-): ExportFormat {
+export function detectFormat(currency: string, iban: string): ExportFormat {
   const ibanCountry = iban.replace(/\s/g, "").substring(0, 2).toUpperCase();
 
   // Polish domestic: PLN + PL IBAN
@@ -70,9 +93,7 @@ export function detectFormat(
  * Group payment items by their detected export format.
  * Returns a map of format -> items for batch generation.
  */
-export function groupItemsByFormat(
-  items: ExportItem[],
-): Map<ExportFormat, ExportItem[]> {
+export function groupItemsByFormat(items: ExportItem[]): Map<ExportFormat, ExportItem[]> {
   const groups = new Map<ExportFormat, ExportItem[]>();
 
   for (const item of items) {

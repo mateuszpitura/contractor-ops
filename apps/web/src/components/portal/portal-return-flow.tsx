@@ -1,12 +1,14 @@
 "use client";
 
-import { useCallback, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Package } from "lucide-react";
-import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
+import { useCallback, useState } from "react";
+import { toast } from "sonner";
+import { PaczkomatDisplay } from "@/components/equipment/paczkomat-display";
+import type { PaczkomatPoint } from "@/components/equipment/paczkomat-picker";
+import { PaczkomatPicker } from "@/components/equipment/paczkomat-picker";
+import { LabelDisplay } from "@/components/equipment/shipment-label-view";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,14 +17,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  PaczkomatPicker,
-  type PaczkomatPoint,
-} from "@/components/equipment/paczkomat-picker";
-import { PaczkomatDisplay } from "@/components/equipment/paczkomat-display";
-import { LabelDisplay } from "@/components/equipment/shipment-label-view";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -48,13 +45,7 @@ interface PortalReturnFlowProps {
 // Step indicator
 // ---------------------------------------------------------------------------
 
-function StepIndicator({
-  currentStep,
-  totalSteps,
-}: {
-  currentStep: number;
-  totalSteps: number;
-}) {
+function StepIndicator({ currentStep, totalSteps }: { currentStep: number; totalSteps: number }) {
   return (
     <div className="flex items-center justify-center gap-2" aria-hidden="true">
       {Array.from({ length: totalSteps }).map((_, i) => (
@@ -98,9 +89,7 @@ export function PortalReturnFlow({
   };
 
   const [step, setStep] = useState(getInitialStep);
-  const [selectedPoint, setSelectedPoint] = useState<PaczkomatPoint | null>(
-    null,
-  );
+  const [selectedPoint, setSelectedPoint] = useState<PaczkomatPoint | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
 
   // Reset on open
@@ -158,18 +147,14 @@ export function PortalReturnFlow({
     enabled: step === 3 && !!returnRequest?.id,
   });
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const labelData = labelQuery.data as
-    | { data: string; contentType: string }
-    | undefined;
+  const labelData = labelQuery.data as { data: string; contentType: string } | undefined;
 
   // -------------------------------------------------------------------------
   // Geowidget token
   // -------------------------------------------------------------------------
 
   const geowidgetToken =
-    typeof window !== "undefined"
-      ? (process.env.NEXT_PUBLIC_INPOST_GEOWIDGET_TOKEN ?? "")
-      : "";
+    typeof window !== "undefined" ? (process.env.NEXT_PUBLIC_INPOST_GEOWIDGET_TOKEN ?? "") : "";
 
   // -------------------------------------------------------------------------
   // Render
@@ -217,11 +202,7 @@ export function PortalReturnFlow({
                     onChangeClick={() => setPickerOpen(true)}
                   />
                 ) : (
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => setPickerOpen(true)}
-                  >
+                  <Button variant="outline" className="w-full" onClick={() => setPickerOpen(true)}>
                     <Package className="me-2 h-4 w-4" />
                     {t("selectDropOff")}
                   </Button>
@@ -232,10 +213,7 @@ export function PortalReturnFlow({
                 <Button variant="outline" onClick={() => onOpenChange(false)}>
                   {t("cancel")}
                 </Button>
-                <Button
-                  onClick={() => setStep(2)}
-                  disabled={!selectedPoint}
-                >
+                <Button onClick={() => setStep(2)} disabled={!selectedPoint}>
                   {t("next")}
                 </Button>
               </DialogFooter>
@@ -247,7 +225,9 @@ export function PortalReturnFlow({
             <div className="space-y-4">
               <div className="space-y-2 text-sm">
                 <p>
-                  <span className="font-medium">{t("itemsToReturn", { count: equipmentItems.length })}</span>
+                  <span className="font-medium">
+                    {t("itemsToReturn", { count: equipmentItems.length })}
+                  </span>
                 </p>
                 <ul className="space-y-1 ps-4">
                   {equipmentItems.map((item, i) => (
@@ -271,9 +251,7 @@ export function PortalReturnFlow({
               </div>
 
               <div className="rounded-md border bg-muted/50 p-3">
-                <p className="text-sm text-muted-foreground">
-                  {t("approvalNotice")}
-                </p>
+                <p className="text-sm text-muted-foreground">{t("approvalNotice")}</p>
               </div>
 
               <DialogFooter>
@@ -284,9 +262,7 @@ export function PortalReturnFlow({
                   onClick={handleRequestReturn}
                   disabled={requestMutation.isPending || requestMutation.isSuccess}
                 >
-                  {requestMutation.isPending && (
-                    <Loader2 className="me-2 h-4 w-4 animate-spin" />
-                  )}
+                  {requestMutation.isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
                   {t("requestReturn")}
                 </Button>
               </DialogFooter>
@@ -296,9 +272,7 @@ export function PortalReturnFlow({
           {/* Step 3: Label view (after approval) */}
           {step === 3 && (
             <div className="space-y-4">
-              <p className="text-center text-lg font-semibold">
-                {t("step3Title")}
-              </p>
+              <p className="text-center text-lg font-semibold">{t("step3Title")}</p>
 
               {labelQuery.isPending ? (
                 <div className="space-y-3">
@@ -306,10 +280,7 @@ export function PortalReturnFlow({
                   <Skeleton className="mx-auto h-4 w-32" />
                 </div>
               ) : labelData ? (
-                <LabelDisplay
-                  labelData={labelData.data}
-                  contentType={labelData.contentType}
-                />
+                <LabelDisplay labelData={labelData.data} contentType={labelData.contentType} />
               ) : (
                 <div className="py-8 text-center text-sm text-muted-foreground">
                   {t("approvalNotice")}
@@ -323,9 +294,7 @@ export function PortalReturnFlow({
               )}
 
               <DialogFooter>
-                <Button onClick={() => onOpenChange(false)}>
-                  {t("cancel")}
-                </Button>
+                <Button onClick={() => onOpenChange(false)}>{t("cancel")}</Button>
               </DialogFooter>
             </div>
           )}

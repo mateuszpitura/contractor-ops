@@ -1,14 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { format, addDays, startOfISOWeek } from "date-fns";
+import { addDays, format, startOfISOWeek } from "date-fns";
 import { ArrowLeft, CheckCircle, XCircle } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { RejectionReasonDialog } from "./rejection-reason-dialog";
 import { TimeEntryStatusBadge } from "./time-entry-status-badge";
 import { TimeSourceBadge } from "./time-source-badge";
-import { RejectionReasonDialog } from "./rejection-reason-dialog";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -96,10 +96,7 @@ export function ContractorTimesheetReview({
 
   // Group entries by contract for the grid
   const contractMap = useMemo(() => {
-    const map = new Map<
-      string,
-      { title: string; entries: Map<number, TimeEntry> }
-    >();
+    const map = new Map<string, { title: string; entries: Map<number, TimeEntry> }>();
     for (const entry of timesheet.entries) {
       const contractId = entry.contractId;
       const title = entry.contract?.title ?? "Unknown Project";
@@ -117,17 +114,11 @@ export function ContractorTimesheetReview({
     return map;
   }, [timesheet.entries, weekStart]);
 
-  const contracts = useMemo(
-    () => Array.from(contractMap.entries()),
-    [contractMap],
-  );
+  const contracts = useMemo(() => Array.from(contractMap.entries()), [contractMap]);
 
   // Entries with descriptions for the detail list
   const entriesWithDescriptions = useMemo(
-    () =>
-      timesheet.entries.filter(
-        (e) => e.description && e.description.trim().length > 0,
-      ),
+    () => timesheet.entries.filter((e) => e.description && e.description.trim().length > 0),
     [timesheet.entries],
   );
 
@@ -144,9 +135,7 @@ export function ContractorTimesheetReview({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div>
-            <h2 className="font-display text-xl font-semibold">
-              {timesheet.contractor.legalName}
-            </h2>
+            <h2 className="font-display text-xl font-semibold">{timesheet.contractor.legalName}</h2>
             <p className="text-sm text-muted-foreground">{periodLabel}</p>
           </div>
           <TimeEntryStatusBadge status={timesheet.status} />
@@ -189,15 +178,9 @@ export function ContractorTimesheetReview({
                 {contracts.map(([contractId, { title, entries }]) => {
                   let rowTotal = 0;
                   return (
-                    <tr
-                      key={contractId}
-                      className="border-b last:border-b-0"
-                    >
+                    <tr key={contractId} className="border-b last:border-b-0">
                       <td className="px-4 py-2">
-                        <span
-                          className="block max-w-[200px] truncate text-sm"
-                          title={title}
-                        >
+                        <span className="block max-w-[200px] truncate text-sm" title={title}>
                           {title}
                         </span>
                       </td>
@@ -206,10 +189,7 @@ export function ContractorTimesheetReview({
                         const mins = entry?.minutes ?? 0;
                         rowTotal += mins;
                         return (
-                          <td
-                            key={dayIdx}
-                            className="px-1 py-2 text-center text-sm"
-                          >
+                          <td key={dayIdx} className="px-1 py-2 text-center text-sm">
                             <div className="relative inline-flex items-center justify-center">
                               <span className={mins > 0 ? "font-medium" : "text-muted-foreground"}>
                                 {mins > 0 ? minutesToHours(mins) : "-"}
@@ -242,10 +222,7 @@ export function ContractorTimesheetReview({
                       colTotal += entries.get(dayIdx)?.minutes ?? 0;
                     }
                     return (
-                      <td
-                        key={dayIdx}
-                        className="px-1 py-3 text-center text-sm font-semibold"
-                      >
+                      <td key={dayIdx} className="px-1 py-3 text-center text-sm font-semibold">
                         {minutesToHours(colTotal) || "0"}
                       </td>
                     );
@@ -266,10 +243,7 @@ export function ContractorTimesheetReview({
         <Card>
           <CardContent className="divide-y p-0">
             {entriesWithDescriptions.map((entry) => (
-              <div
-                key={entry.id}
-                className="flex items-start gap-3 px-4 py-3"
-              >
+              <div key={entry.id} className="flex items-start gap-3 px-4 py-3">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <span>
@@ -282,10 +256,7 @@ export function ContractorTimesheetReview({
                     </span>
                     <span>&middot;</span>
                     <span>{minutesToHours(entry.minutes)}h</span>
-                    <TimeSourceBadge
-                      source={entry.source}
-                      importedAt={entry.createdAt}
-                    />
+                    <TimeSourceBadge source={entry.source} importedAt={entry.createdAt} />
                   </div>
                   <p className="mt-1 text-sm">{entry.description}</p>
                 </div>

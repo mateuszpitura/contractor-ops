@@ -45,8 +45,7 @@ const SLA_STYLES: Record<SlaLevel, string> = {
   green: "bg-green-500/10 text-green-600 dark:text-green-400",
   yellow: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
   red: "bg-destructive/10 text-destructive",
-  overdue:
-    "bg-destructive/[0.15] text-destructive border border-destructive/30",
+  overdue: "bg-destructive/[0.15] text-destructive border border-destructive/30",
 };
 
 // ---------------------------------------------------------------------------

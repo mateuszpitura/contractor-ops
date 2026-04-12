@@ -1,19 +1,18 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { type ColumnDef } from "@tanstack/react-table";
-import { useTranslations } from "next-intl";
-import { toast } from "sonner";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import type { ColumnDef } from "@tanstack/react-table";
 import { ShieldAlert } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
-import { useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { useRouter } from "@/i18n/navigation";
+import { trpc } from "@/trpc/init";
+import { DrillDownBreadcrumb } from "./drill-down-breadcrumb";
+import { downloadBase64File, ExportButtons } from "./export-buttons";
 import { ReportChart } from "./report-chart";
 import { ReportTable } from "./report-table";
-import { DrillDownBreadcrumb } from "./drill-down-breadcrumb";
-import { ExportButtons, downloadBase64File } from "./export-buttons";
 
 interface ComplianceGapsReportProps {
   dateFrom: string;
@@ -79,9 +78,7 @@ export function ComplianceGapsReport({
   );
 
   const tableData = useMemo(() => {
-    const result = tableQuery.data as
-      | { items: ComplianceRow[]; totalCount: number }
-      | undefined;
+    const result = tableQuery.data as { items: ComplianceRow[]; totalCount: number } | undefined;
     let items = result?.items ?? [];
 
     // Client-side filter by health when drilled down
@@ -100,16 +97,12 @@ export function ComplianceGapsReport({
 
   const totalCount = useMemo(() => {
     if (drillDownHealth) return tableData.length;
-    const result = tableQuery.data as
-      | { items: ComplianceRow[]; totalCount: number }
-      | undefined;
+    const result = tableQuery.data as { items: ComplianceRow[]; totalCount: number } | undefined;
     return result?.totalCount ?? 0;
   }, [tableQuery.data, drillDownHealth, tableData.length]);
 
   const chartData = useMemo(() => {
-    const data = chartQuery.data as
-      | { critical: number; warning: number; ok: number }
-      | undefined;
+    const data = chartQuery.data as { critical: number; warning: number; ok: number } | undefined;
     if (!data) return [];
     return [data];
   }, [chartQuery.data]);
@@ -139,9 +132,7 @@ export function ComplianceGapsReport({
       {
         accessorKey: "contractStatus",
         header: t("contractStatus"),
-        cell: ({ getValue }) => (
-          <Badge variant="secondary">{getValue<string>()}</Badge>
-        ),
+        cell: ({ getValue }) => <Badge variant="secondary">{getValue<string>()}</Badge>,
       },
       {
         accessorKey: "overdueTasks",
@@ -155,9 +146,7 @@ export function ComplianceGapsReport({
           const health = getValue<string>();
           const config = HEALTH_BADGE[health] ?? HEALTH_BADGE.green;
           return (
-            <Badge variant={config.variant}>
-              {t(config.labelKey as Parameters<typeof t>[0])}
-            </Badge>
+            <Badge variant={config.variant}>{t(config.labelKey as Parameters<typeof t>[0])}</Badge>
           );
         },
       },
@@ -196,9 +185,7 @@ export function ComplianceGapsReport({
       <DrillDownBreadcrumb
         segments={[
           { label: t("all") },
-          ...(drillDownLabel
-            ? [{ label: drillDownLabel, id: drillDownHealth! }]
-            : []),
+          ...(drillDownLabel ? [{ label: drillDownLabel, id: drillDownHealth! }] : []),
         ]}
         onClear={handleClearDrillDown}
       />
@@ -215,9 +202,7 @@ export function ComplianceGapsReport({
         sortOrder={sortOrder}
         onRowClick={(row) => router.push(`/contractors/${row.contractorId}`)}
         isLoading={tableQuery.isLoading}
-        emptyIcon={
-          <ShieldAlert className="mx-auto h-10 w-10 text-muted-foreground/50" />
-        }
+        emptyIcon={<ShieldAlert className="mx-auto h-10 w-10 text-muted-foreground/50" />}
         emptyTitle={t("emptyComplianceGaps")}
         emptyDescription={t("emptyComplianceGapsBody")}
       />

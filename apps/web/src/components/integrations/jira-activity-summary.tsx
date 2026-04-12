@@ -1,11 +1,10 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-
-import { trpc } from "@/trpc/init";
 import { Skeleton } from "@/components/ui/skeleton";
-import { JiraLogo } from "./jira-logo";
+import { trpc } from "@/trpc/init";
 import { JiraIssueChip } from "./jira-issue-chip";
+import { JiraLogo } from "./jira-logo";
 
 // ---------------------------------------------------------------------------
 // Relative time helper
@@ -60,12 +59,8 @@ interface JiraActivitySummaryProps {
 // Component
 // ---------------------------------------------------------------------------
 
-export function JiraActivitySummary({
-  contractorId,
-}: JiraActivitySummaryProps) {
-  const activityQuery = useQuery(
-    trpc.jira.recentActivity.queryOptions({ contractorId, limit: 5 }),
-  );
+export function JiraActivitySummary({ contractorId }: JiraActivitySummaryProps) {
+  const activityQuery = useQuery(trpc.jira.recentActivity.queryOptions({ contractorId, limit: 5 }));
 
   const items = (activityQuery.data ?? []) as unknown as RecentActivityItem[];
 

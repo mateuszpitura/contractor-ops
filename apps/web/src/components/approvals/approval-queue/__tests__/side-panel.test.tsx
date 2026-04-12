@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, setup, waitFor } from "@/test/test-utils";
-import { ApprovalSidePanel } from "../side-panel";
 import type { ApprovalQueueRow } from "../columns";
+import { ApprovalSidePanel } from "../side-panel";
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -18,17 +18,14 @@ vi.mock("@/i18n/navigation", () => ({
 }));
 
 vi.mock("../../sla-badge", () => ({
-  SlaBadge: () => (
-    <span data-testid="sla-badge">SLA</span>
-  ),
+  SlaBadge: () => <span data-testid="sla-badge">SLA</span>,
 }));
 
 const mockMutate = vi.fn();
 
 vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
-    "@tanstack/react-query",
-  );
+  const actual =
+    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
   return {
     ...actual,
     useMutation: (opts: Record<string, unknown>) => ({
@@ -118,83 +115,61 @@ describe("ApprovalSidePanel", () => {
   });
 
   it("renders invoice number as title", () => {
-    render(
-      <ApprovalSidePanel step={baseStep} open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<ApprovalSidePanel step={baseStep} open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText("FV/2025/001")).toBeInTheDocument();
   });
 
   it("renders status badge", () => {
-    render(
-      <ApprovalSidePanel step={baseStep} open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<ApprovalSidePanel step={baseStep} open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText("PENDING")).toBeInTheDocument();
   });
 
   it("renders SLA badge", () => {
-    render(
-      <ApprovalSidePanel step={baseStep} open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<ApprovalSidePanel step={baseStep} open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByTestId("sla-badge")).toBeInTheDocument();
   });
 
   it("renders contractor name as link", () => {
-    render(
-      <ApprovalSidePanel step={baseStep} open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<ApprovalSidePanel step={baseStep} open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText("Acme Corp")).toBeInTheDocument();
   });
 
   it("renders formatted amount", () => {
-    render(
-      <ApprovalSidePanel step={baseStep} open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<ApprovalSidePanel step={baseStep} open={true} onOpenChange={onOpenChange} />);
     // 500000 minor / 100 = 5000.00 PLN
     expect(screen.getByText(/5[\s\u00a0]?000,00 PLN/)).toBeInTheDocument();
   });
 
   it("renders approver name", () => {
-    render(
-      <ApprovalSidePanel step={baseStep} open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<ApprovalSidePanel step={baseStep} open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText("John Doe")).toBeInTheDocument();
   });
 
   it("shows approve and reject buttons for PENDING status", () => {
-    render(
-      <ApprovalSidePanel step={baseStep} open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<ApprovalSidePanel step={baseStep} open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText("Approve invoice")).toBeInTheDocument();
     expect(screen.getByText("Reject invoice")).toBeInTheDocument();
   });
 
   it("shows more button with clarification and delegate options", () => {
-    render(
-      <ApprovalSidePanel step={baseStep} open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<ApprovalSidePanel step={baseStep} open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText("More")).toBeInTheDocument();
   });
 
   it("does not show action buttons for non-PENDING status", () => {
     const approvedStep = { ...baseStep, status: "APPROVED" };
-    render(
-      <ApprovalSidePanel step={approvedStep} open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<ApprovalSidePanel step={approvedStep} open={true} onOpenChange={onOpenChange} />);
     expect(screen.queryByText("Approve invoice")).not.toBeInTheDocument();
     expect(screen.queryByText("Reject invoice")).not.toBeInTheDocument();
   });
 
   it("renders mini chain tracker", () => {
-    render(
-      <ApprovalSidePanel step={baseStep} open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<ApprovalSidePanel step={baseStep} open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText("Approval chain")).toBeInTheDocument();
   });
 
   it("renders submitted date", () => {
-    render(
-      <ApprovalSidePanel step={baseStep} open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<ApprovalSidePanel step={baseStep} open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText("Submitted")).toBeInTheDocument();
   });
 
@@ -203,9 +178,7 @@ describe("ApprovalSidePanel", () => {
       ...baseStep,
       approver: { id: "user-1", name: null, email: "john@test.com", image: null },
     };
-    render(
-      <ApprovalSidePanel step={stepNoName} open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<ApprovalSidePanel step={stepNoName} open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText("john@test.com")).toBeInTheDocument();
   });
 
@@ -218,17 +191,13 @@ describe("ApprovalSidePanel", () => {
   });
 
   it("renders reject button as destructive variant for PENDING step", () => {
-    render(
-      <ApprovalSidePanel step={baseStep} open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<ApprovalSidePanel step={baseStep} open={true} onOpenChange={onOpenChange} />);
     const rejectBtn = screen.getByText("Reject invoice");
     expect(rejectBtn.closest("button")).toBeInTheDocument();
   });
 
   it("shows chain tracker with step order", () => {
-    render(
-      <ApprovalSidePanel step={baseStep} open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<ApprovalSidePanel step={baseStep} open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText("Approval chain")).toBeInTheDocument();
     // Step 1 should render in the chain tracker
     expect(screen.getByText("1")).toBeInTheDocument();
@@ -236,56 +205,42 @@ describe("ApprovalSidePanel", () => {
 
   it("shows APPROVED status without action buttons", () => {
     const approvedStep = { ...baseStep, status: "APPROVED" };
-    render(
-      <ApprovalSidePanel step={approvedStep} open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<ApprovalSidePanel step={approvedStep} open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText("APPROVED")).toBeInTheDocument();
     expect(screen.queryByText("Approve invoice")).not.toBeInTheDocument();
   });
 
   it("shows REJECTED status without action buttons", () => {
     const rejectedStep = { ...baseStep, status: "REJECTED" };
-    render(
-      <ApprovalSidePanel step={rejectedStep} open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<ApprovalSidePanel step={rejectedStep} open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText("REJECTED")).toBeInTheDocument();
     expect(screen.queryByText("Approve invoice")).not.toBeInTheDocument();
     expect(screen.queryByText("Reject invoice")).not.toBeInTheDocument();
   });
 
   it("renders contractor link with correct href", () => {
-    render(
-      <ApprovalSidePanel step={baseStep} open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<ApprovalSidePanel step={baseStep} open={true} onOpenChange={onOpenChange} />);
     const link = screen.getByText("Acme Corp");
     expect(link.closest("a")?.getAttribute("href")).toBe("/contractors/ct-1");
   });
 
   it("renders amount section header", () => {
-    render(
-      <ApprovalSidePanel step={baseStep} open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<ApprovalSidePanel step={baseStep} open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText("Amount")).toBeInTheDocument();
   });
 
   it("renders approver section header", () => {
-    render(
-      <ApprovalSidePanel step={baseStep} open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<ApprovalSidePanel step={baseStep} open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText("Approver")).toBeInTheDocument();
   });
 
   it("renders contractor section header", () => {
-    render(
-      <ApprovalSidePanel step={baseStep} open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<ApprovalSidePanel step={baseStep} open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText("Contractor")).toBeInTheDocument();
   });
 
   it("reject button is rendered as destructive variant", () => {
-    render(
-      <ApprovalSidePanel step={baseStep} open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<ApprovalSidePanel step={baseStep} open={true} onOpenChange={onOpenChange} />);
     const rejectBtn = screen.getByText("Reject invoice").closest("button");
     expect(rejectBtn).toBeInTheDocument();
   });
@@ -300,17 +255,13 @@ describe("ApprovalSidePanel", () => {
 
   it("does not show More button for non-PENDING status", () => {
     const approvedStep = { ...baseStep, status: "APPROVED" };
-    render(
-      <ApprovalSidePanel step={approvedStep} open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<ApprovalSidePanel step={approvedStep} open={true} onOpenChange={onOpenChange} />);
     expect(screen.queryByText("More")).not.toBeInTheDocument();
   });
 
   it("renders CANCELLED status without action buttons", () => {
     const cancelledStep = { ...baseStep, status: "CANCELLED" };
-    render(
-      <ApprovalSidePanel step={cancelledStep} open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<ApprovalSidePanel step={cancelledStep} open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText("CANCELLED")).toBeInTheDocument();
     expect(screen.queryByText("Approve invoice")).not.toBeInTheDocument();
     expect(screen.queryByText("Reject invoice")).not.toBeInTheDocument();
@@ -319,25 +270,19 @@ describe("ApprovalSidePanel", () => {
 
   it("renders NOT_STARTED status without action buttons", () => {
     const notStartedStep = { ...baseStep, status: "NOT_STARTED" };
-    render(
-      <ApprovalSidePanel step={notStartedStep} open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<ApprovalSidePanel step={notStartedStep} open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText("NOT_STARTED")).toBeInTheDocument();
     expect(screen.queryByText("Approve invoice")).not.toBeInTheDocument();
   });
 
   it("renders invoice link to correct invoice page", () => {
-    render(
-      <ApprovalSidePanel step={baseStep} open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<ApprovalSidePanel step={baseStep} open={true} onOpenChange={onOpenChange} />);
     const invoiceEl = screen.getByText("FV/2025/001");
     expect(invoiceEl).toBeInTheDocument();
   });
 
   it("renders step name in panel", () => {
-    render(
-      <ApprovalSidePanel step={baseStep} open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<ApprovalSidePanel step={baseStep} open={true} onOpenChange={onOpenChange} />);
     // Step name is used in chain tracker tooltip which may or may not render
     // But step data includes Manager Review
     expect(screen.getByText("Approval chain")).toBeInTheDocument();
@@ -395,9 +340,7 @@ describe("ApprovalSidePanel", () => {
   });
 
   it("renders invoice link href correctly", () => {
-    render(
-      <ApprovalSidePanel step={baseStep} open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<ApprovalSidePanel step={baseStep} open={true} onOpenChange={onOpenChange} />);
     const contractorLink = screen.getByText("Acme Corp").closest("a");
     expect(contractorLink?.getAttribute("href")).toBe("/contractors/ct-1");
   });
@@ -513,9 +456,7 @@ describe("ApprovalSidePanel", () => {
 
   it("renders chain tracker with multiple steps for higher stepOrder", () => {
     const multiStep = { ...baseStep, stepOrder: 3 };
-    render(
-      <ApprovalSidePanel step={multiStep} open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<ApprovalSidePanel step={multiStep} open={true} onOpenChange={onOpenChange} />);
     // Should show step circles for orders 1, 2, 3
     expect(screen.getByText("Approval chain")).toBeInTheDocument();
   });
@@ -656,9 +597,7 @@ describe("ApprovalSidePanel", () => {
       ...baseStep,
       invoice: { ...baseStep.invoice!, contractor: null },
     };
-    render(
-      <ApprovalSidePanel step={stepNoContractor} open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<ApprovalSidePanel step={stepNoContractor} open={true} onOpenChange={onOpenChange} />);
     expect(screen.queryByText("Acme Corp")).not.toBeInTheDocument();
   });
 

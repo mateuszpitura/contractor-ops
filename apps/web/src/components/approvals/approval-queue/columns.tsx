@@ -1,17 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { CheckCircle2, XCircle } from "lucide-react";
+import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { Link } from "@/i18n/navigation";
 
@@ -106,11 +102,7 @@ function RejectPopover({
           </Button>
         )}
       />
-      <PopoverContent
-        className="w-80 p-4"
-        align="end"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <PopoverContent className="w-80 p-4" align="end" onClick={(e) => e.stopPropagation()}>
         <div className="space-y-3">
           <h4 className="font-medium text-sm">{t("rejectPopover.heading")}</h4>
           <div className="space-y-1.5">
@@ -124,9 +116,7 @@ function RejectPopover({
               className="min-h-[80px]"
             />
             {comment.length > 0 && comment.length < 10 && (
-              <p className="text-[12px] text-destructive">
-                {t("rejectPopover.minChars")}
-              </p>
+              <p className="text-[12px] text-destructive">{t("rejectPopover.minChars")}</p>
             )}
           </div>
           <div className="flex items-center gap-2 justify-end">
@@ -181,13 +171,8 @@ export function getColumns(
       header: ({ table }) => (
         <Checkbox
           checked={table.getIsAllPageRowsSelected()}
-          indeterminate={
-            table.getIsSomePageRowsSelected() &&
-            !table.getIsAllPageRowsSelected()
-          }
-          onCheckedChange={(value) =>
-            table.toggleAllPageRowsSelected(!!value)
-          }
+          indeterminate={table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()}
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
           aria-label={t("columns.selectAll")}
         />
       ),
@@ -228,13 +213,11 @@ export function getColumns(
     // 3. Contractor
     {
       id: "contractorName",
-      accessorFn: (row) =>
-        row.invoice?.contractor?.legalName ?? row.invoice?.sellerName ?? "",
+      accessorFn: (row) => row.invoice?.contractor?.legalName ?? row.invoice?.sellerName ?? "",
       header: t("columns.contractor"),
       cell: ({ row }) => {
         const invoice = row.original.invoice;
-        const name =
-          invoice?.contractor?.legalName ?? invoice?.sellerName ?? "";
+        const name = invoice?.contractor?.legalName ?? invoice?.sellerName ?? "";
         return <span className="text-sm">{name}</span>;
       },
     },
@@ -243,9 +226,7 @@ export function getColumns(
     {
       id: "totalMinor",
       accessorFn: (row) => row.invoice?.totalMinor ?? 0,
-      header: () => (
-        <span className="text-end block">{t("columns.amount")}</span>
-      ),
+      header: () => <span className="text-end block">{t("columns.amount")}</span>,
       cell: ({ row }) => {
         const invoice = row.original.invoice;
         if (!invoice) return <span className="text-muted-foreground">&mdash;</span>;
@@ -265,8 +246,7 @@ export function getColumns(
       header: t("columns.submitted"),
       cell: ({ row }) => {
         const startedAt = row.original.approvalFlow.startedAt;
-        if (!startedAt)
-          return <span className="text-muted-foreground">&mdash;</span>;
+        if (!startedAt) return <span className="text-muted-foreground">&mdash;</span>;
 
         try {
           const date = new Date(startedAt);
@@ -299,18 +279,9 @@ export function getColumns(
       header: t("columns.sla"),
       cell: ({ row }) => {
         const step = row.original;
-        const slaHours =
-          step.slaStatus?.hoursRemaining != null
-            ? undefined
-            : undefined;
+        const slaHours = step.slaStatus?.hoursRemaining != null ? undefined : undefined;
 
-        return (
-          <SlaBadge
-            slaDeadline={step.slaDeadline}
-            status={step.status}
-            slaHours={slaHours}
-          />
-        );
+        return <SlaBadge slaDeadline={step.slaDeadline} status={step.status} slaHours={slaHours} />;
       },
     },
 
@@ -339,10 +310,7 @@ export function getColumns(
               <CheckCircle2 className="h-3.5 w-3.5" />
               {t("actions.approve")}
             </Button>
-            <RejectPopover
-              onReject={(comment) => callbacks.onReject(step.id, comment)}
-              t={t}
-            />
+            <RejectPopover onReject={(comment) => callbacks.onReject(step.id, comment)} t={t} />
           </div>
         );
       },

@@ -1,5 +1,5 @@
 import { createHmac } from "node:crypto";
-import { describe, it, expect, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { JiraAdapter } from "../adapters/jira-adapter.js";
 
 describe("jira-adapter-webhooks", () => {

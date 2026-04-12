@@ -1,26 +1,26 @@
 import { createHmac } from "node:crypto";
-import { TRPCError } from "@trpc/server";
 import { prisma } from "@contractor-ops/db";
 import {
-  slackUserLinkSchema,
-  slackUserUnlinkSchema,
-  providerSlugSchema,
+  generateOAuthState,
+  getAdapter,
+  getAllProviderHealth,
+  getProviderHealth,
+  registerAllAdapters,
+} from "@contractor-ops/integrations";
+import {
   disconnectProviderSchema,
   getSyncLogSchema,
   getWebhookLogSchema,
+  providerSlugSchema,
+  slackUserLinkSchema,
+  slackUserUnlinkSchema,
 } from "@contractor-ops/validators";
-import {
-  getProviderHealth,
-  getAllProviderHealth,
-  getAdapter,
-  generateOAuthState,
-  registerAllAdapters,
-} from "@contractor-ops/integrations";
-import { router } from "../init.js";
-import { tenantProcedure } from "../middleware/tenant.js";
-import { requirePermission } from "../middleware/rbac.js";
-import { syncWorkspaceUsers } from "../services/slack-client.js";
+import { TRPCError } from "@trpc/server";
 import * as E from "../errors.js";
+import { router } from "../init.js";
+import { requirePermission } from "../middleware/rbac.js";
+import { tenantProcedure } from "../middleware/tenant.js";
+import { syncWorkspaceUsers } from "../services/slack-client.js";
 
 // Ensure all provider adapters are registered before any procedure runs
 registerAllAdapters();
@@ -39,11 +39,7 @@ function plain<T>(data: T): T {
  * Per research pitfall 6: HMAC-signed state prevents CSRF attacks.
  * @deprecated Use generateOAuthState from @contractor-ops/integrations for new providers.
  */
-function generateSlackOAuthState(
-  orgId: string,
-  userId: string,
-  secret: string,
-): string {
+function generateSlackOAuthState(orgId: string, userId: string, secret: string): string {
   const payload = `${orgId}:${userId}:${Date.now()}`;
   const hmac = createHmac("sha256", secret);
   hmac.update(payload);
@@ -95,8 +91,7 @@ export const integrationRouter = router({
     .query(async ({ ctx }) => {
       const clientId = process.env.SLACK_CLIENT_ID;
       const redirectUri = process.env.SLACK_REDIRECT_URI;
-      const signingSecret =
-        process.env.SLACK_SIGNING_SECRET ?? process.env.SLACK_CLIENT_SECRET;
+      const signingSecret = process.env.SLACK_SIGNING_SECRET ?? process.env.SLACK_CLIENT_SECRET;
 
       if (!clientId || !redirectUri || !signingSecret) {
         throw new TRPCError({
@@ -105,18 +100,9 @@ export const integrationRouter = router({
         });
       }
 
-      const state = generateSlackOAuthState(
-        ctx.organizationId,
-        ctx.user!.id,
-        signingSecret,
-      );
+      const state = generateSlackOAuthState(ctx.organizationId, ctx.user!.id, signingSecret);
 
-      const scopes = [
-        "chat:write",
-        "users:read",
-        "users:read.email",
-        "im:write",
-      ].join(",");
+      const scopes = ["chat:write", "users:read", "users:read.email", "im:write"].join(",");
 
       const params = new URLSearchParams({
         client_id: clientId,
@@ -200,9 +186,7 @@ export const integrationRouter = router({
     });
 
     // Build mapping with matched/unmatched status
-    const linksByUserId = new Map(
-      externalLinks.map((link) => [link.entityId, link]),
-    );
+    const linksByUserId = new Map(externalLinks.map((link) => [link.entityId, link]));
 
     const mappings = members.map((member) => {
       const link = linksByUserId.get(member.userId);
@@ -325,15 +309,10 @@ export const integrationRouter = router({
    * Get health status for a single provider.
    * Used for individual card refresh with 30-second polling.
    */
-  getHealth: tenantProcedure
-    .input(providerSlugSchema)
-    .query(async ({ ctx, input }) => {
-      const result = await getProviderHealth(
-        ctx.organizationId,
-        input.provider,
-      );
-      return plain(result);
-    }),
+  getHealth: tenantProcedure.input(providerSlugSchema).query(async ({ ctx, input }) => {
+    const result = await getProviderHealth(ctx.organizationId, input.provider);
+    return plain(result);
+  }),
 
   /**
    * Generate an OAuth authorization URL for any registered provider.
@@ -427,77 +406,73 @@ export const integrationRouter = router({
    * Get paginated sync log for a provider connection.
    * Cursor-based pagination for the detail sheet.
    */
-  getSyncLog: tenantProcedure
-    .input(getSyncLogSchema)
-    .query(async ({ ctx, input }) => {
-      const connection = await prisma.integrationConnection.findFirst({
-        where: {
-          organizationId: ctx.organizationId,
-          provider: input.provider.toUpperCase() as "SLACK",
-        },
-        select: { id: true },
-      });
+  getSyncLog: tenantProcedure.input(getSyncLogSchema).query(async ({ ctx, input }) => {
+    const connection = await prisma.integrationConnection.findFirst({
+      where: {
+        organizationId: ctx.organizationId,
+        provider: input.provider.toUpperCase() as "SLACK",
+      },
+      select: { id: true },
+    });
 
-      if (!connection) {
-        return { items: [], nextCursor: null };
-      }
+    if (!connection) {
+      return { items: [], nextCursor: null };
+    }
 
-      const items = await prisma.integrationSyncLog.findMany({
-        where: { integrationConnectionId: connection.id },
-        orderBy: { startedAt: "desc" },
-        take: input.limit + 1,
-        ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
-        select: {
-          id: true,
-          syncType: true,
-          status: true,
-          direction: true,
-          errorMessage: true,
-          startedAt: true,
-          completedAt: true,
-        },
-      });
+    const items = await prisma.integrationSyncLog.findMany({
+      where: { integrationConnectionId: connection.id },
+      orderBy: { startedAt: "desc" },
+      take: input.limit + 1,
+      ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
+      select: {
+        id: true,
+        syncType: true,
+        status: true,
+        direction: true,
+        errorMessage: true,
+        startedAt: true,
+        completedAt: true,
+      },
+    });
 
-      let nextCursor: string | null = null;
-      if (items.length > input.limit) {
-        const lastItem = items.pop()!;
-        nextCursor = lastItem.id;
-      }
+    let nextCursor: string | null = null;
+    if (items.length > input.limit) {
+      const lastItem = items.pop()!;
+      nextCursor = lastItem.id;
+    }
 
-      return plain({ items, nextCursor });
-    }),
+    return plain({ items, nextCursor });
+  }),
 
   /**
    * Get paginated webhook delivery log for a provider.
    * Cursor-based pagination for the detail sheet.
    */
-  getWebhookLog: tenantProcedure
-    .input(getWebhookLogSchema)
-    .query(async ({ ctx, input }) => {
-      const items = await prisma.webhookDelivery.findMany({
-        where: {
-          organizationId: ctx.organizationId,
-          provider: input.provider.toUpperCase() as "SLACK",
-        },
-        orderBy: { receivedAt: "desc" },
-        take: input.limit + 1,
-        ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
-        select: {
-          id: true,
-          eventType: true,
-          deliveryStatus: true,
-          receivedAt: true,
-          processedAt: true,
-          errorMessage: true,
-        },
-      });
+  getWebhookLog: tenantProcedure.input(getWebhookLogSchema).query(async ({ ctx, input }) => {
+    const items = await prisma.webhookDelivery.findMany({
+      where: {
+        organizationId: ctx.organizationId,
+        provider: input.provider.toUpperCase() as "SLACK",
+      },
+      orderBy: { receivedAt: "desc" },
+      take: input.limit + 1,
+      ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
+      select: {
+        id: true,
+        eventType: true,
+        deliveryStatus: true,
+        receivedAt: true,
+        processedAt: true,
+        errorMessage: true,
+      },
+    });
 
-      let nextCursor: string | null = null;
-      if (items.length > input.limit) {
-        const lastItem = items.pop()!;
-        nextCursor = lastItem.id;
-      }
+    let nextCursor: string | null = null;
+    if (items.length > input.limit) {
+      const lastItem = items.pop()!;
+      nextCursor = lastItem.id;
+    }
 
-      return plain({ items, nextCursor });
-    }),
+    return plain({ items, nextCursor });
+  }),
 });

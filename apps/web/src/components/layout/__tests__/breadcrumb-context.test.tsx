@@ -1,5 +1,9 @@
-import { renderHook, act } from "@testing-library/react";
-import { BreadcrumbProvider, useBreadcrumbContext, useBreadcrumbOverride } from "../breadcrumb-context";
+import { act, renderHook } from "@testing-library/react";
+import {
+  BreadcrumbProvider,
+  useBreadcrumbContext,
+  useBreadcrumbOverride,
+} from "../breadcrumb-context";
 
 describe("BreadcrumbProvider", () => {
   it("provides default empty overrides", () => {

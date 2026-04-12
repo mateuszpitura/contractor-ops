@@ -190,12 +190,7 @@ export async function bulkGrantConsent(
     }> = [];
 
     for (const consent of consents) {
-      const version = await getNextVersionTx(
-        tx,
-        organizationId,
-        userId,
-        consent.purpose,
-      );
+      const version = await getNextVersionTx(tx, organizationId, userId, consent.purpose);
 
       const record = await tx.consentRecord.create({
         data: {

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -27,10 +27,10 @@ vi.mock("../services/qstash-client.js", () => ({
 // Imports (after mocks)
 // ---------------------------------------------------------------------------
 
-import { getAdapter } from "../registry.js";
 import { prisma } from "@contractor-ops/db";
-import { getQStashClient } from "../services/qstash-client.js";
 import type { Client } from "@upstash/qstash";
+import { getAdapter } from "../registry.js";
+import { getQStashClient } from "../services/qstash-client.js";
 import {
   dispatchWebhook,
   logWebhookDelivery,
@@ -88,9 +88,9 @@ describe("webhook-dispatcher", () => {
     it("should throw when adapter not found", () => {
       mockGetAdapter.mockReturnValue(undefined);
 
-      expect(() =>
-        dispatchWebhook("unknown", "body", {}),
-      ).toThrow("No adapter registered for provider: unknown");
+      expect(() => dispatchWebhook("unknown", "body", {})).toThrow(
+        "No adapter registered for provider: unknown",
+      );
     });
 
     it("should throw when adapter does not support webhook verification", () => {
@@ -103,9 +103,9 @@ describe("webhook-dispatcher", () => {
 
       mockGetAdapter.mockReturnValue(mockAdapter);
 
-      expect(() =>
-        dispatchWebhook("test", "body", {}),
-      ).toThrow('Adapter "test" does not support webhook signature verification');
+      expect(() => dispatchWebhook("test", "body", {})).toThrow(
+        'Adapter "test" does not support webhook signature verification',
+      );
     });
   });
 

@@ -6,33 +6,33 @@
  * to authenticated user. Admin endpoints require settings:read permission.
  */
 
-import { z } from "zod";
-import { TRPCError } from "@trpc/server";
 import { prisma } from "@contractor-ops/db";
+import {
+  bulkGrantConsentSchema,
+  consentPurposeEnum,
+  consentQuerySchema,
+  grantConsentSchema,
+} from "@contractor-ops/validators";
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 import { router } from "../init.js";
-import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
 import { sensitiveActionProcedure } from "../middleware/sensitive.js";
+import { tenantProcedure } from "../middleware/tenant.js";
 import {
-  grantConsent,
-  revokeConsent,
-  getCurrentConsent,
-  getConsentHistory,
-  hasRequiredConsents,
   bulkGrantConsent,
+  getConsentHistory,
+  getCurrentConsent,
+  grantConsent,
+  hasRequiredConsents,
+  revokeConsent,
 } from "../services/consent-record.js";
-import { getPrivacyNotice } from "../services/privacy-notice.js";
 import {
+  detectCrossBorderTransfer,
   generateDPA,
   generateSCC,
-  detectCrossBorderTransfer,
 } from "../services/legal-document-generation.js";
-import {
-  grantConsentSchema,
-  bulkGrantConsentSchema,
-  consentQuerySchema,
-  consentPurposeEnum,
-} from "@contractor-ops/validators";
+import { getPrivacyNotice } from "../services/privacy-notice.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -44,9 +44,7 @@ function extractClientInfo(headers: Headers): {
 } {
   return {
     ipAddress:
-      headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-      headers.get("x-real-ip") ??
-      null,
+      headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? headers.get("x-real-ip") ?? null,
     userAgent: headers.get("user-agent") ?? null,
   };
 }
@@ -74,10 +72,7 @@ export const consentRouter = router({
    * Returns a map of purpose -> { granted, version, lastUpdated }.
    */
   getCurrentConsent: tenantProcedure.query(async ({ ctx }) => {
-    const consentMap = await getCurrentConsent(
-      ctx.organizationId,
-      ctx.user.id,
-    );
+    const consentMap = await getCurrentConsent(ctx.organizationId, ctx.user.id);
     // Convert Map to plain object for serialization
     return Object.fromEntries(consentMap);
   }),
@@ -85,15 +80,9 @@ export const consentRouter = router({
   /**
    * Get consent history for the authenticated user, optionally filtered by purpose.
    */
-  getConsentHistory: tenantProcedure
-    .input(consentQuerySchema)
-    .query(async ({ ctx, input }) => {
-      return getConsentHistory(
-        ctx.organizationId,
-        ctx.user.id,
-        input.purpose,
-      );
-    }),
+  getConsentHistory: tenantProcedure.input(consentQuerySchema).query(async ({ ctx, input }) => {
+    return getConsentHistory(ctx.organizationId, ctx.user.id, input.purpose);
+  }),
 
   /**
    * Check if the authenticated user has granted all required consents.
@@ -106,29 +95,15 @@ export const consentRouter = router({
    * Grant or revoke consent for a single purpose.
    * Sensitive action: requires re-authentication if session > 5 minutes old.
    */
-  grant: sensitiveActionProcedure
-    .input(grantConsentSchema)
-    .mutation(async ({ ctx, input }) => {
-      const { ipAddress, userAgent } = extractClientInfo(ctx.headers);
+  grant: sensitiveActionProcedure.input(grantConsentSchema).mutation(async ({ ctx, input }) => {
+    const { ipAddress, userAgent } = extractClientInfo(ctx.headers);
 
-      if (input.granted) {
-        return grantConsent(
-          ctx.organizationId,
-          ctx.user.id,
-          input.purpose,
-          ipAddress,
-          userAgent,
-        );
-      } else {
-        return revokeConsent(
-          ctx.organizationId,
-          ctx.user.id,
-          input.purpose,
-          ipAddress,
-          userAgent,
-        );
-      }
-    }),
+    if (input.granted) {
+      return grantConsent(ctx.organizationId, ctx.user.id, input.purpose, ipAddress, userAgent);
+    } else {
+      return revokeConsent(ctx.organizationId, ctx.user.id, input.purpose, ipAddress, userAgent);
+    }
+  }),
 
   /**
    * Bulk grant consents — used during onboarding to accept multiple purposes.
@@ -156,10 +131,7 @@ export const consentRouter = router({
     .use(requirePermission({ settings: ["read"] }))
     .input(z.object({ userId: z.string().min(1) }))
     .query(async ({ ctx, input }) => {
-      const consentMap = await getCurrentConsent(
-        ctx.organizationId,
-        input.userId,
-      );
+      const consentMap = await getCurrentConsent(ctx.organizationId, input.userId);
       return Object.fromEntries(consentMap);
     }),
 
@@ -176,11 +148,7 @@ export const consentRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      return getConsentHistory(
-        ctx.organizationId,
-        input.userId,
-        input.purpose,
-      );
+      return getConsentHistory(ctx.organizationId, input.userId, input.purpose);
     }),
 
   /**
@@ -211,8 +179,7 @@ export const consentRouter = router({
       if (!result) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message:
-            "No cross-border transfer detected — SCC not required for your jurisdiction",
+          message: "No cross-border transfer detected — SCC not required for your jurisdiction",
         });
       }
       return result;

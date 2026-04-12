@@ -1,28 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { Archive, MoreHorizontal, Pencil, Truck, UserMinus, UserPlus } from "lucide-react";
 import { useTranslations } from "next-intl";
-import {
-  MoreHorizontal,
-  Pencil,
-  UserPlus,
-  UserMinus,
-  Truck,
-  Archive,
-} from "lucide-react";
-
-import { trpc } from "@/trpc/init";
+import { useState } from "react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Dialog,
   DialogContent,
@@ -31,8 +15,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { EquipmentTypeIcon } from "../equipment-type-icon";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { trpc } from "@/trpc/init";
 import { EquipmentStatusBadge } from "../equipment-status-badge";
+import { EquipmentTypeIcon } from "../equipment-type-icon";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -159,11 +151,7 @@ export function EquipmentDetailHeader({
           )}
 
           {isAssigned && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setUnassignDialogOpen(true)}
-            >
+            <Button variant="outline" size="sm" onClick={() => setUnassignDialogOpen(true)}>
               <UserMinus className="me-1.5 size-3.5" />
               {t("detail.unassignEquipment")}
             </Button>
@@ -181,16 +169,15 @@ export function EquipmentDetailHeader({
               render={(props) => (
                 <Button {...props} variant="outline" size="icon-sm">
                   <MoreHorizontal className="size-4" />
-                  <span className="sr-only">{tCommon("srOnly.moreActions" as Parameters<typeof tCommon>[0])}</span>
+                  <span className="sr-only">
+                    {tCommon("srOnly.moreActions" as Parameters<typeof tCommon>[0])}
+                  </span>
                 </Button>
               )}
             />
             <DropdownMenuContent align="end">
               {!isRetired && !isAssigned && (
-                <DropdownMenuItem
-                  variant="destructive"
-                  onSelect={() => setRetireDialogOpen(true)}
-                >
+                <DropdownMenuItem variant="destructive" onSelect={() => setRetireDialogOpen(true)}>
                   <Archive className="me-2 h-3.5 w-3.5" />
                   {t("detail.retire")}
                 </DropdownMenuItem>
@@ -205,9 +192,7 @@ export function EquipmentDetailHeader({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t("detail.retireConfirmTitle")}</DialogTitle>
-            <DialogDescription>
-              {t("detail.retireConfirmDescription")}
-            </DialogDescription>
+            <DialogDescription>{t("detail.retireConfirmDescription")}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button
@@ -249,9 +234,7 @@ export function EquipmentDetailHeader({
             </Button>
             <Button
               variant="destructive"
-              onClick={() =>
-                unassignMutation.mutate({ equipmentId: equipment.id })
-              }
+              onClick={() => unassignMutation.mutate({ equipmentId: equipment.id })}
               disabled={unassignMutation.isPending}
             >
               {t("detail.unassignEquipment")}

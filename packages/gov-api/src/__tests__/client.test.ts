@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GovApiClient } from "../client.js";
-import type { GovApiConfig, GovApiAuditEntry } from "../types.js";
+import type { GovApiAuditEntry, GovApiConfig } from "../types.js";
 
 // ---------------------------------------------------------------------------
 // Test implementation
@@ -61,21 +61,15 @@ describe("GovApiClient", () => {
 
   describe("getBaseUrl", () => {
     it("returns sandbox URL for sandbox environment", () => {
-      expect(client.getBaseUrl("sandbox")).toBe(
-        "https://sandbox.gov.example.com/api",
-      );
+      expect(client.getBaseUrl("sandbox")).toBe("https://sandbox.gov.example.com/api");
     });
 
     it("returns production URL for production environment", () => {
-      expect(client.getBaseUrl("production")).toBe(
-        "https://prod.gov.example.com/api",
-      );
+      expect(client.getBaseUrl("production")).toBe("https://prod.gov.example.com/api");
     });
 
     it("uses current environment when no override given", () => {
-      expect(client.getBaseUrl()).toBe(
-        "https://sandbox.gov.example.com/api",
-      );
+      expect(client.getBaseUrl()).toBe("https://sandbox.gov.example.com/api");
     });
   });
 
@@ -95,9 +89,7 @@ describe("GovApiClient", () => {
     });
 
     it("sets Content-Type to application/json by default", async () => {
-      vi.mocked(globalThis.fetch).mockResolvedValue(
-        new Response("", { status: 200 }),
-      );
+      vi.mocked(globalThis.fetch).mockResolvedValue(new Response("", { status: 200 }));
 
       await client.doFetch("/endpoint");
       const callArgs = vi.mocked(globalThis.fetch).mock.calls[0];
@@ -137,9 +129,7 @@ describe("GovApiClient", () => {
     });
 
     it("does NOT retry on 400 status", async () => {
-      vi.mocked(globalThis.fetch).mockResolvedValueOnce(
-        new Response("", { status: 400 }),
-      );
+      vi.mocked(globalThis.fetch).mockResolvedValueOnce(new Response("", { status: 400 }));
 
       const response = await client.doFetch("/endpoint");
       expect(response.status).toBe(400);
@@ -147,9 +137,7 @@ describe("GovApiClient", () => {
     });
 
     it("does NOT retry on 401 status", async () => {
-      vi.mocked(globalThis.fetch).mockResolvedValueOnce(
-        new Response("", { status: 401 }),
-      );
+      vi.mocked(globalThis.fetch).mockResolvedValueOnce(new Response("", { status: 401 }));
 
       const response = await client.doFetch("/endpoint");
       expect(response.status).toBe(401);
@@ -157,9 +145,7 @@ describe("GovApiClient", () => {
     });
 
     it("does NOT retry on 403 status", async () => {
-      vi.mocked(globalThis.fetch).mockResolvedValueOnce(
-        new Response("", { status: 403 }),
-      );
+      vi.mocked(globalThis.fetch).mockResolvedValueOnce(new Response("", { status: 403 }));
 
       const response = await client.doFetch("/endpoint");
       expect(response.status).toBe(403);
@@ -167,9 +153,7 @@ describe("GovApiClient", () => {
     });
 
     it("does NOT retry on 404 status", async () => {
-      vi.mocked(globalThis.fetch).mockResolvedValueOnce(
-        new Response("", { status: 404 }),
-      );
+      vi.mocked(globalThis.fetch).mockResolvedValueOnce(new Response("", { status: 404 }));
 
       const response = await client.doFetch("/endpoint");
       expect(response.status).toBe(404);
@@ -198,9 +182,7 @@ describe("GovApiClient", () => {
       client.setSecretStore(mockStore);
       await client.doLoadCertificate();
 
-      vi.mocked(globalThis.fetch).mockResolvedValue(
-        new Response("", { status: 200 }),
-      );
+      vi.mocked(globalThis.fetch).mockResolvedValue(new Response("", { status: 200 }));
 
       await client.doFetch("/endpoint");
       const callArgs = vi.mocked(globalThis.fetch).mock.calls[0];
@@ -211,9 +193,7 @@ describe("GovApiClient", () => {
 
   describe("fetch — audit logging", () => {
     it("emits audit entry when organizationId is provided", async () => {
-      vi.mocked(globalThis.fetch).mockResolvedValue(
-        new Response("", { status: 200 }),
-      );
+      vi.mocked(globalThis.fetch).mockResolvedValue(new Response("", { status: 200 }));
 
       await client.doFetch("/endpoint", {}, { organizationId: "org-1" });
       expect(client.auditEntries).toHaveLength(1);
@@ -227,15 +207,9 @@ describe("GovApiClient", () => {
     });
 
     it("does not emit audit entry when skipAudit is true", async () => {
-      vi.mocked(globalThis.fetch).mockResolvedValue(
-        new Response("", { status: 200 }),
-      );
+      vi.mocked(globalThis.fetch).mockResolvedValue(new Response("", { status: 200 }));
 
-      await client.doFetch(
-        "/endpoint",
-        {},
-        { organizationId: "org-1", skipAudit: true },
-      );
+      await client.doFetch("/endpoint", {}, { organizationId: "org-1", skipAudit: true });
       expect(client.auditEntries).toHaveLength(0);
     });
   });
@@ -268,9 +242,7 @@ describe("GovApiClient", () => {
     });
 
     it("throws when no secret store is set", async () => {
-      await expect(client.doLoadCertificate()).rejects.toThrow(
-        "SecretStore not set",
-      );
+      await expect(client.doLoadCertificate()).rejects.toThrow("SecretStore not set");
     });
 
     it("throws when certificate not found", async () => {
@@ -281,9 +253,7 @@ describe("GovApiClient", () => {
       };
       client.setSecretStore(mockStore);
 
-      await expect(client.doLoadCertificate()).rejects.toThrow(
-        "Certificate not found",
-      );
+      await expect(client.doLoadCertificate()).rejects.toThrow("Certificate not found");
     });
   });
 });

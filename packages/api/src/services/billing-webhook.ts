@@ -1,18 +1,18 @@
-import type Stripe from "stripe";
 import { prisma } from "@contractor-ops/db";
 import { createLogger } from "@contractor-ops/logger";
 import { metrics } from "@contractor-ops/logger/metrics";
-import { stripe } from "./stripe-client.js";
+import { Resend } from "resend";
+import type Stripe from "stripe";
 import {
-  TIER_CREDIT_ALLOWANCE,
-  TRIAL_CREDIT_ALLOWANCE,
   resolveTierFromPriceId,
   resolveTopUpCredits,
+  TIER_CREDIT_ALLOWANCE,
+  TRIAL_CREDIT_ALLOWANCE,
 } from "./billing-constants.js";
+import { CacheKeys, invalidate } from "./cache.js";
 import { allocateTopUpCredits } from "./credit-service.js";
 import { dispatch } from "./notification-service.js";
-import { Resend } from "resend";
-import { invalidate, CacheKeys } from "./cache.js";
+import { stripe } from "./stripe-client.js";
 
 const log = createLogger({ service: "billing-webhook" });
 
@@ -96,9 +96,7 @@ async function sendBillingEmail(params: {
 // Helpers to extract subscription ID from invoice
 // ---------------------------------------------------------------------------
 
-function getSubscriptionIdFromInvoice(
-  invoice: Stripe.Invoice,
-): string | null {
+function getSubscriptionIdFromInvoice(invoice: Stripe.Invoice): string | null {
   // In newer Stripe API versions, subscription is under parent.subscription_details
   const parentSub = invoice.parent?.subscription_details?.subscription;
   if (parentSub) {
@@ -115,10 +113,7 @@ function getSubscriptionIdFromInvoice(
  * Routes a verified Stripe event to the appropriate handler.
  * Called within a Prisma transaction from the webhook route.
  */
-export async function routeStripeEvent(
-  event: Stripe.Event,
-  tx: TxClient,
-): Promise<void> {
+export async function routeStripeEvent(event: Stripe.Event, tx: TxClient): Promise<void> {
   log.info({ eventId: event.id, eventType: event.type }, "routing stripe event");
   metrics.increment("billing.event", 1, { eventType: event.type });
 
@@ -127,10 +122,7 @@ export async function routeStripeEvent(
       const session = event.data.object as Stripe.Checkout.Session;
       if (session.mode === "subscription" && session.subscription) {
         await handleCheckoutCompleted(session, tx);
-      } else if (
-        session.mode === "payment" &&
-        session.metadata?.type === "top_up"
-      ) {
+      } else if (session.mode === "payment" && session.metadata?.type === "top_up") {
         await handleTopUpCompleted(session, tx);
       }
       break;
@@ -138,8 +130,7 @@ export async function routeStripeEvent(
 
     case "customer.subscription.created":
     case "customer.subscription.updated": {
-      const subscription = event.data
-        .object as unknown as SubscriptionWithPeriod;
+      const subscription = event.data.object as unknown as SubscriptionWithPeriod;
       await handleSubscriptionUpdated(subscription, tx);
       break;
     }
@@ -181,8 +172,7 @@ export async function routeStripeEvent(
     }
 
     case "customer.subscription.resumed": {
-      const subscription = event.data
-        .object as unknown as SubscriptionWithPeriod;
+      const subscription = event.data.object as unknown as SubscriptionWithPeriod;
       await handleSubscriptionUpdated(subscription, tx);
       break;
     }
@@ -213,22 +203,16 @@ async function handleCheckoutCompleted(
   tx: TxClient,
 ): Promise<void> {
   const subscriptionId =
-    typeof session.subscription === "string"
-      ? session.subscription
-      : session.subscription?.id;
+    typeof session.subscription === "string" ? session.subscription : session.subscription?.id;
 
   if (!subscriptionId) {
-    console.error(
-      "[stripe-webhook] checkout.session.completed missing subscription ID",
-    );
+    console.error("[stripe-webhook] checkout.session.completed missing subscription ID");
     return;
   }
 
-  const subscriptionResponse =
-    await stripe.subscriptions.retrieve(subscriptionId);
+  const subscriptionResponse = await stripe.subscriptions.retrieve(subscriptionId);
   // Cast to include period fields available in webhook payload
-  const subscription =
-    subscriptionResponse as unknown as SubscriptionWithPeriod;
+  const subscription = subscriptionResponse as unknown as SubscriptionWithPeriod;
   await handleSubscriptionUpdated(subscription, tx);
 
   // Per D-08: Create initial trial credit ledger for trialing subscriptions
@@ -249,10 +233,7 @@ async function handleCheckoutCompleted(
     });
 
     if (existingTrial) {
-      log.info(
-        { subscriptionId, organizationId },
-        "trial credits already allocated, skipping",
-      );
+      log.info({ subscriptionId, organizationId }, "trial credits already allocated, skipping");
       return;
     }
 
@@ -274,10 +255,7 @@ async function handleCheckoutCompleted(
       },
     });
 
-    log.info(
-      { organizationId, credits: TRIAL_CREDIT_ALLOWANCE },
-      "trial credits allocated",
-    );
+    log.info({ organizationId, credits: TRIAL_CREDIT_ALLOWANCE }, "trial credits allocated");
   }
 }
 
@@ -285,10 +263,7 @@ async function handleCheckoutCompleted(
  * Handles checkout.session.completed for one-time top-up payments.
  * Resolves credits from the price ID and allocates them via the credit service.
  */
-async function handleTopUpCompleted(
-  session: Stripe.Checkout.Session,
-  tx: TxClient,
-): Promise<void> {
+async function handleTopUpCompleted(session: Stripe.Checkout.Session, tx: TxClient): Promise<void> {
   const organizationId = session.metadata?.organizationId;
   const priceId = session.metadata?.priceId;
 
@@ -302,10 +277,7 @@ async function handleTopUpCompleted(
 
   const credits = resolveTopUpCredits(priceId);
   if (!credits) {
-    log.error(
-      { priceId, sessionId: session.id },
-      "handleTopUpCompleted: unknown top-up price ID",
-    );
+    log.error({ priceId, sessionId: session.id }, "handleTopUpCompleted: unknown top-up price ID");
     return;
   }
 
@@ -328,10 +300,7 @@ async function handleTopUpCompleted(
   });
 
   if (!subscription) {
-    log.error(
-      { organizationId },
-      "handleTopUpCompleted: no subscription found for org",
-    );
+    log.error({ organizationId }, "handleTopUpCompleted: no subscription found for org");
     return;
   }
 
@@ -349,10 +318,7 @@ async function handleTopUpCompleted(
   // Invalidate credit cache
   void invalidate(CacheKeys.creditBalance(organizationId));
 
-  log.info(
-    { organizationId, credits, sessionId: session.id },
-    "top-up credits allocated",
-  );
+  log.info({ organizationId, credits, sessionId: session.id }, "top-up credits allocated");
 }
 
 /**
@@ -364,9 +330,7 @@ async function handleSubscriptionUpdated(
 ): Promise<void> {
   const organizationId = subscription.metadata?.organizationId;
   if (!organizationId) {
-    console.error(
-      "[stripe-webhook] handleSubscriptionUpdated: missing organizationId in metadata",
-    );
+    console.error("[stripe-webhook] handleSubscriptionUpdated: missing organizationId in metadata");
     return;
   }
 
@@ -399,18 +363,14 @@ async function handleSubscriptionUpdated(
   const data = {
     organizationId,
     stripeCustomerId:
-      typeof subscription.customer === "string"
-        ? subscription.customer
-        : subscription.customer.id,
+      typeof subscription.customer === "string" ? subscription.customer : subscription.customer.id,
     stripeSubscriptionItemId: subscription.items.data[0]?.id ?? null,
     stripePriceId: priceId ?? null,
     tier,
     status,
     currentPeriodStart,
     currentPeriodEnd,
-    trialEnd: subscription.trial_end
-      ? new Date(subscription.trial_end * 1000)
-      : null,
+    trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
     cancelAtPeriodEnd: subscription.cancel_at_period_end,
     seatCount: subscription.items.data[0]?.quantity ?? 1,
   };
@@ -432,10 +392,7 @@ async function handleSubscriptionUpdated(
   });
 
   // Invalidate billing caches after subscription state change
-  void invalidate(
-    CacheKeys.subscription(organizationId),
-    CacheKeys.creditBalance(organizationId),
-  );
+  void invalidate(CacheKeys.subscription(organizationId), CacheKeys.creditBalance(organizationId));
 
   // Notify admins when subscription tier changes
   if (tierChanged && previousSub) {
@@ -448,9 +405,7 @@ async function handleSubscriptionUpdated(
       select: { userId: true },
     });
 
-    const adminUserIds = adminMembers.map(
-      (m: { userId: string }) => m.userId,
-    );
+    const adminUserIds = adminMembers.map((m: { userId: string }) => m.userId);
 
     if (adminUserIds.length > 0) {
       void dispatch({
@@ -462,10 +417,7 @@ async function handleSubscriptionUpdated(
         entityType: "ORGANIZATION",
         entityId: organizationId,
       }).catch((error: unknown) =>
-        console.error(
-          "[stripe-webhook] Subscription change notification failed:",
-          error,
-        ),
+        console.error("[stripe-webhook] Subscription change notification failed:", error),
       );
     }
   }
@@ -506,19 +458,14 @@ async function handleSubscriptionDeleted(
  * Stripe sends trial_will_end 3 days before trial expires.
  * Per D-10: Send both in-app notification AND email to billingEmail.
  */
-async function handleTrialWillEnd(
-  subscription: Stripe.Subscription,
-  tx: TxClient,
-): Promise<void> {
+async function handleTrialWillEnd(subscription: Stripe.Subscription, tx: TxClient): Promise<void> {
   const sub = await tx.subscription.findUnique({
     where: { stripeSubscriptionId: subscription.id },
     include: { organization: { select: { billingEmail: true, id: true } } },
   });
 
   if (!sub?.organization) {
-    console.error(
-      "[stripe-webhook] handleTrialWillEnd: subscription not found in DB",
-    );
+    console.error("[stripe-webhook] handleTrialWillEnd: subscription not found in DB");
     return;
   }
 
@@ -531,9 +478,7 @@ async function handleTrialWillEnd(
     select: { userId: true },
   });
 
-  const adminUserIds = adminMembers.map(
-    (m: { userId: string }) => m.userId,
-  );
+  const adminUserIds = adminMembers.map((m: { userId: string }) => m.userId);
 
   if (adminUserIds.length > 0) {
     // In-app notification via dispatch
@@ -546,10 +491,7 @@ async function handleTrialWillEnd(
       entityType: "ORGANIZATION",
       entityId: sub.organization.id,
     }).catch((error: unknown) =>
-      console.error(
-        "[stripe-webhook] Trial notification dispatch failed:",
-        error,
-      ),
+      console.error("[stripe-webhook] Trial notification dispatch failed:", error),
     );
   }
 
@@ -568,10 +510,7 @@ async function handleTrialWillEnd(
  * Uses TIER_CREDIT_ALLOWANCE from billing-constants (D-06).
  * Skips the first invoice (credits are allocated via checkout.session.completed).
  */
-async function handleInvoicePaid(
-  invoice: Stripe.Invoice,
-  tx: TxClient,
-): Promise<void> {
+async function handleInvoicePaid(invoice: Stripe.Invoice, tx: TxClient): Promise<void> {
   // Skip non-subscription invoices and first invoices (trial start)
   const subscriptionId = getSubscriptionIdFromInvoice(invoice);
 
@@ -610,14 +549,11 @@ async function handleInvoicePaid(
   try {
     tier = resolveTierFromPriceId(sub.stripePriceId);
   } catch {
-    console.warn(
-      `[stripe-webhook] handleInvoicePaid: unknown price ${sub.stripePriceId}`,
-    );
+    console.warn(`[stripe-webhook] handleInvoicePaid: unknown price ${sub.stripePriceId}`);
     return;
   }
 
-  const credits =
-    TIER_CREDIT_ALLOWANCE[tier as keyof typeof TIER_CREDIT_ALLOWANCE];
+  const credits = TIER_CREDIT_ALLOWANCE[tier as keyof typeof TIER_CREDIT_ALLOWANCE];
 
   console.log(
     `[stripe-webhook] Allocating ${credits} credits for org ${sub.organizationId} (tier: ${tier}, invoice: ${invoice.id})`,
@@ -638,10 +574,7 @@ async function handleInvoicePaid(
 /**
  * Updates subscription to PAST_DUE and notifies billing admins.
  */
-async function handlePaymentFailed(
-  invoice: Stripe.Invoice,
-  tx: TxClient,
-): Promise<void> {
+async function handlePaymentFailed(invoice: Stripe.Invoice, tx: TxClient): Promise<void> {
   const subscriptionId = getSubscriptionIdFromInvoice(invoice);
 
   if (!subscriptionId) return;
@@ -673,9 +606,7 @@ async function handlePaymentFailed(
     select: { userId: true },
   });
 
-  const adminUserIds = adminMembers.map(
-    (m: { userId: string }) => m.userId,
-  );
+  const adminUserIds = adminMembers.map((m: { userId: string }) => m.userId);
 
   if (adminUserIds.length > 0) {
     void dispatch({
@@ -687,10 +618,7 @@ async function handlePaymentFailed(
       entityType: "ORGANIZATION",
       entityId: sub.organizationId,
     }).catch((error: unknown) =>
-      console.error(
-        "[stripe-webhook] Payment failed notification dispatch failed:",
-        error,
-      ),
+      console.error("[stripe-webhook] Payment failed notification dispatch failed:", error),
     );
   }
 
@@ -708,10 +636,7 @@ async function handlePaymentFailed(
  * Handles invoice.payment_action_required (3D Secure / SCA).
  * Notifies admins that payment verification is needed.
  */
-async function handlePaymentActionRequired(
-  invoice: Stripe.Invoice,
-  tx: TxClient,
-): Promise<void> {
+async function handlePaymentActionRequired(invoice: Stripe.Invoice, tx: TxClient): Promise<void> {
   const subscriptionId = getSubscriptionIdFromInvoice(invoice);
   if (!subscriptionId) return;
 
@@ -730,9 +655,7 @@ async function handlePaymentActionRequired(
     select: { userId: true },
   });
 
-  const adminUserIds = adminMembers.map(
-    (m: { userId: string }) => m.userId,
-  );
+  const adminUserIds = adminMembers.map((m: { userId: string }) => m.userId);
 
   if (adminUserIds.length > 0) {
     void dispatch({
@@ -744,10 +667,7 @@ async function handlePaymentActionRequired(
       entityType: "ORGANIZATION",
       entityId: sub.organizationId,
     }).catch((error: unknown) =>
-      console.error(
-        "[stripe-webhook] Payment action required notification failed:",
-        error,
-      ),
+      console.error("[stripe-webhook] Payment action required notification failed:", error),
     );
   }
 
@@ -801,14 +721,8 @@ async function handleSubscriptionPaused(
  * Logs the refund for audit trail. Does NOT auto-revoke credits because
  * partial refunds and credit reversal are complex — flag for manual review.
  */
-async function handleChargeRefunded(
-  charge: Stripe.Charge,
-  tx: TxClient,
-): Promise<void> {
-  const customerId =
-    typeof charge.customer === "string"
-      ? charge.customer
-      : charge.customer?.id;
+async function handleChargeRefunded(charge: Stripe.Charge, tx: TxClient): Promise<void> {
+  const customerId = typeof charge.customer === "string" ? charge.customer : charge.customer?.id;
 
   log.warn(
     {
@@ -870,7 +784,7 @@ async function handleChargeRefunded(
       paymentIntentId:
         typeof charge.payment_intent === "string"
           ? charge.payment_intent
-          : charge.payment_intent?.id ?? null,
+          : (charge.payment_intent?.id ?? null),
     },
     "REFUND AUDIT: manual credit reversal may be needed - verify against ledger",
   );

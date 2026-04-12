@@ -2,19 +2,12 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardAction,
-} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "@/i18n/navigation";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -94,14 +87,9 @@ export function ApprovalQueueWidget() {
   return (
     <Card className="neon-card">
       <CardHeader>
-        <CardTitle className="font-display text-lg font-semibold">
-          {t("approvals.title")}
-        </CardTitle>
+        <CardTitle className="font-display text-lg font-semibold">{t("approvals.title")}</CardTitle>
         <CardAction>
-          <Link
-            href="/approvals"
-            className="text-sm text-primary hover:underline"
-          >
+          <Link href="/approvals" className="text-sm text-primary hover:underline">
             {t("approvals.seeAll")}
           </Link>
         </CardAction>
@@ -114,9 +102,7 @@ export function ApprovalQueueWidget() {
             ))}
           </div>
         ) : items.length === 0 ? (
-          <p className="py-8 text-center text-sm text-muted-foreground">
-            {t("approvals.empty")}
-          </p>
+          <p className="py-8 text-center text-sm text-muted-foreground">{t("approvals.empty")}</p>
         ) : (
           <ScrollArea className="scroll-fade-bottom max-h-[280px]">
             <div className="flex flex-col gap-2">

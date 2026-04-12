@@ -1,17 +1,11 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
-import {
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-  type ColumnDef,
-} from "@tanstack/react-table";
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import type { ColumnDef } from "@tanstack/react-table";
+import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp, ArrowUpDown, FileText, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
+import { useCallback, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -22,10 +16,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-import { getColumns, type InvoiceRow } from "./columns";
-import { DataTableToolbar } from "./data-table-toolbar";
+import { trpc } from "@/trpc/init";
+import type { InvoiceRow } from "./columns";
+import { getColumns } from "./columns";
 import { DataTablePagination } from "./data-table-pagination";
+import { DataTableToolbar } from "./data-table-toolbar";
 import { useInvoiceFilters } from "./use-invoice-filters";
 
 // ---------------------------------------------------------------------------
@@ -53,10 +48,7 @@ interface InvoiceDataTableProps {
  * Uses server-side pagination, sorting, and filtering via tRPC.
  * URL state is managed by nuqs for shareable filtered views.
  */
-export function InvoiceDataTable({
-  onRowClick,
-  onUpload,
-}: InvoiceDataTableProps) {
+export function InvoiceDataTable({ onRowClick, onUpload }: InvoiceDataTableProps) {
   const t = useTranslations("Invoices");
   const tAria = useTranslations("Common.aria");
 
@@ -97,17 +89,11 @@ export function InvoiceDataTable({
           : undefined,
         matchStatus: filters.matchStatus
           ? ([filters.matchStatus] as Array<
-              | "UNMATCHED"
-              | "PARTIAL"
-              | "MATCHED"
-              | "DISCREPANCY"
-              | "MANUALLY_CONFIRMED"
+              "UNMATCHED" | "PARTIAL" | "MATCHED" | "DISCREPANCY" | "MANUALLY_CONFIRMED"
             >)
           : undefined,
         source: filters.source.length
-          ? (filters.source as Array<
-              "MANUAL_UPLOAD" | "EMAIL_INTAKE" | "KSEF" | "API"
-            >)
+          ? (filters.source as Array<"MANUAL_UPLOAD" | "EMAIL_INTAKE" | "KSEF" | "API">)
           : undefined,
         contractorId: filters.contractorId || undefined,
       },
@@ -122,16 +108,12 @@ export function InvoiceDataTable({
   });
 
   const data = useMemo(() => {
-    const result = invoicesQuery.data as
-      | { items: InvoiceRow[]; totalCount: number }
-      | undefined;
+    const result = invoicesQuery.data as { items: InvoiceRow[]; totalCount: number } | undefined;
     return result?.items ?? [];
   }, [invoicesQuery.data]);
 
   const totalRows = useMemo(() => {
-    const result = invoicesQuery.data as
-      | { items: unknown[]; totalCount: number }
-      | undefined;
+    const result = invoicesQuery.data as { items: unknown[]; totalCount: number } | undefined;
     return result?.totalCount ?? 0;
   }, [invoicesQuery.data]);
 
@@ -159,9 +141,7 @@ export function InvoiceDataTable({
     onSortingChange: (updater) => {
       const next =
         typeof updater === "function"
-          ? updater([
-              { id: filters.sortBy, desc: filters.sortOrder === "desc" },
-            ])
+          ? updater([{ id: filters.sortBy, desc: filters.sortOrder === "desc" }])
           : updater;
       if (next.length > 0) {
         void setFilters({
@@ -287,12 +267,14 @@ export function InvoiceDataTable({
                         type="button"
                         className="flex items-center gap-1 uppercase hover:text-foreground"
                         onClick={header.column.getToggleSortingHandler()}
-                        aria-label={tAria("sortBy", { column: typeof header.column.columnDef.header === "string" ? header.column.columnDef.header : header.id })}
+                        aria-label={tAria("sortBy", {
+                          column:
+                            typeof header.column.columnDef.header === "string"
+                              ? header.column.columnDef.header
+                              : header.id,
+                        })}
                       >
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
+                        {flexRender(header.column.columnDef.header, header.getContext())}
                         {header.column.getIsSorted() === "asc" ? (
                           <ArrowUp className="h-3 w-3" />
                         ) : header.column.getIsSorted() === "desc" ? (
@@ -302,10 +284,7 @@ export function InvoiceDataTable({
                         )}
                       </button>
                     ) : (
-                      flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )
+                      flexRender(header.column.columnDef.header, header.getContext())
                     )}
                   </TableHead>
                 ))}
@@ -317,13 +296,11 @@ export function InvoiceDataTable({
               // Skeleton loading rows
               Array.from({ length: 8 }).map((_, i) => (
                 <TableRow key={`skeleton-${i}`}>
-                  {table
-                    .getVisibleLeafColumns()
-                    .map((col) => (
-                      <TableCell key={col.id}>
-                        <Skeleton className="h-4 w-full max-w-[120px]" />
-                      </TableCell>
-                    ))}
+                  {table.getVisibleLeafColumns().map((col) => (
+                    <TableCell key={col.id}>
+                      <Skeleton className="h-4 w-full max-w-[120px]" />
+                    </TableCell>
+                  ))}
                 </TableRow>
               ))
             ) : table.getRowModel().rows.length > 0 ? (
@@ -338,10 +315,7 @@ export function InvoiceDataTable({
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
                 </TableRow>
@@ -353,17 +327,9 @@ export function InvoiceDataTable({
                   colSpan={table.getVisibleLeafColumns().length}
                   className="py-16 text-center"
                 >
-                  <h3 className="text-[16px] font-medium">
-                    {t("noResults.heading")}
-                  </h3>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {t("noResults.body")}
-                  </p>
-                  <Button
-                    variant="outline"
-                    className="mt-4"
-                    onClick={clearFilters}
-                  >
+                  <h3 className="text-[16px] font-medium">{t("noResults.heading")}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">{t("noResults.body")}</p>
+                  <Button variant="outline" className="mt-4" onClick={clearFilters}>
                     {t("noResults.cta")}
                   </Button>
                 </TableCell>
@@ -376,12 +342,8 @@ export function InvoiceDataTable({
                   className="py-16 text-center"
                 >
                   <FileText className="mx-auto h-10 w-10 text-muted-foreground/50" />
-                  <h3 className="mt-3 text-[16px] font-medium">
-                    {t("empty.heading")}
-                  </h3>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {t("empty.body")}
-                  </p>
+                  <h3 className="mt-3 text-[16px] font-medium">{t("empty.heading")}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">{t("empty.body")}</p>
                   <Button className="mt-4" onClick={onUpload}>
                     {t("empty.cta")}
                   </Button>

@@ -1,18 +1,18 @@
+import type { LucideIcon } from "lucide-react";
 import {
-  LayoutDashboard,
-  Users,
-  FileText,
-  GitBranch,
-  Receipt,
-  CheckCircle,
-  Clock,
   Banknote,
   BarChart3,
   Bell,
-  Plug,
-  Settings,
+  CheckCircle,
+  Clock,
+  FileText,
+  GitBranch,
+  LayoutDashboard,
   Package,
-  type LucideIcon,
+  Plug,
+  Receipt,
+  Settings,
+  Users,
 } from "lucide-react";
 
 /**
@@ -154,6 +154,4 @@ export const navigationGroups: NavGroup[] = [
 /**
  * Flat list of all navigation items (for backward compatibility).
  */
-export const navigationItems: NavItem[] = navigationGroups.flatMap(
-  (group) => group.items,
-);
+export const navigationItems: NavItem[] = navigationGroups.flatMap((group) => group.items);

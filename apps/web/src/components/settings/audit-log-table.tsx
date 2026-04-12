@@ -1,24 +1,14 @@
 "use client";
 
-import { useMemo } from "react";
-import {
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-  type ColumnDef,
-} from "@tanstack/react-table";
-import { formatDistanceToNow, format } from "date-fns";
+import type { ColumnDef } from "@tanstack/react-table";
+import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
+import { format, formatDistanceToNow } from "date-fns";
 import { ArrowDown, ArrowUp, ArrowUpDown, ChevronRight, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-
-import { Button } from "@/components/ui/button";
+import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import {
   Table,
   TableBody,
@@ -27,6 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Link } from "@/i18n/navigation";
 import { AuditLogDiffViewer } from "./audit-log-diff-viewer";
 
@@ -113,9 +104,7 @@ export function AuditLogTable({
           <button
             type="button"
             className="flex items-center gap-1 uppercase hover:text-foreground"
-            onClick={() =>
-              onSortOrderChange(sortOrder === "desc" ? "asc" : "desc")
-            }
+            onClick={() => onSortOrderChange(sortOrder === "desc" ? "asc" : "desc")}
           >
             {t("columns.timestamp")}
             {sortOrder === "asc" ? (
@@ -135,9 +124,7 @@ export function AuditLogTable({
           return (
             <Tooltip>
               <TooltipTrigger>
-                <span className="text-sm text-muted-foreground">
-                  {relative}
-                </span>
+                <span className="text-sm text-muted-foreground">{relative}</span>
               </TooltipTrigger>
               <TooltipContent>{absolute}</TooltipContent>
             </Tooltip>
@@ -150,14 +137,10 @@ export function AuditLogTable({
         size: 180,
         cell: ({ row }) => {
           const { actorName, metadataJson } = row.original;
-          const role = (metadataJson as Record<string, unknown> | null)?.role as
-            | string
-            | undefined;
+          const role = (metadataJson as Record<string, unknown> | null)?.role as string | undefined;
           return (
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">
-                {actorName ?? t("unknownActor")}
-              </span>
+              <span className="text-sm font-medium">{actorName ?? t("unknownActor")}</span>
               {role && (
                 <Badge variant="secondary" className="text-[11px]">
                   {role}
@@ -189,9 +172,7 @@ export function AuditLogTable({
           return (
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="text-[11px]">
-                {t(
-                  `resources.${resourceType}` as Parameters<typeof t>[0],
-                )}
+                {t(`resources.${resourceType}` as Parameters<typeof t>[0])}
               </Badge>
               {href ? (
                 <Link
@@ -202,9 +183,7 @@ export function AuditLogTable({
                   {resourceName ?? resourceId}
                 </Link>
               ) : (
-                <span className="text-sm">
-                  {resourceName ?? resourceId}
-                </span>
+                <span className="text-sm">{resourceName ?? resourceId}</span>
               )}
             </div>
           );
@@ -227,9 +206,7 @@ export function AuditLogTable({
               aria-label={isExpanded ? t("collapse") : t("expand")}
             >
               <ChevronRight
-                className={`size-4 transition-transform ${
-                  isExpanded ? "rotate-90" : ""
-                }`}
+                className={`size-4 transition-transform ${isExpanded ? "rotate-90" : ""}`}
               />
             </button>
           );
@@ -254,12 +231,8 @@ export function AuditLogTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead style={{ width: 140 }}>
-                {t("columns.timestamp")}
-              </TableHead>
-              <TableHead style={{ width: 180 }}>
-                {t("columns.actor")}
-              </TableHead>
+              <TableHead style={{ width: 140 }}>{t("columns.timestamp")}</TableHead>
+              <TableHead style={{ width: 180 }}>{t("columns.actor")}</TableHead>
               <TableHead>{t("columns.action")}</TableHead>
               <TableHead>{t("columns.resource")}</TableHead>
               <TableHead style={{ width: 40 }} />
@@ -307,17 +280,12 @@ export function AuditLogTable({
                 <TableHead
                   key={header.id}
                   style={
-                    header.column.getSize() !== 150
-                      ? { width: header.column.getSize() }
-                      : undefined
+                    header.column.getSize() !== 150 ? { width: header.column.getSize() } : undefined
                   }
                 >
                   {header.isPlaceholder
                     ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )}
+                    : flexRender(header.column.columnDef.header, header.getContext())}
                 </TableHead>
               ))}
             </TableRow>
@@ -326,16 +294,9 @@ export function AuditLogTable({
         <TableBody>
           {table.getRowModel().rows.length === 0 ? (
             <TableRow>
-              <TableCell
-                colSpan={columns.length}
-                className="py-16 text-center"
-              >
-                <h3 className="text-[16px] font-medium">
-                  {t("empty.heading")}
-                </h3>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {t("empty.body")}
-                </p>
+              <TableCell colSpan={columns.length} className="py-16 text-center">
+                <h3 className="text-[16px] font-medium">{t("empty.heading")}</h3>
+                <p className="mt-1 text-sm text-muted-foreground">{t("empty.body")}</p>
               </TableCell>
             </TableRow>
           ) : (
@@ -343,16 +304,10 @@ export function AuditLogTable({
               const isExpanded = !!expandedRows[row.original.id];
               return (
                 <span key={row.id} className="contents">
-                  <TableRow
-                    className="cursor-pointer"
-                    onClick={() => onToggleRow(row.original.id)}
-                  >
+                  <TableRow className="cursor-pointer" onClick={() => onToggleRow(row.original.id)}>
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </TableCell>
                     ))}
                   </TableRow>
@@ -360,18 +315,8 @@ export function AuditLogTable({
                     <TableRow>
                       <TableCell colSpan={columns.length} className="p-0">
                         <AuditLogDiffViewer
-                          oldValues={
-                            row.original.oldValuesJson as Record<
-                              string,
-                              unknown
-                            > | null
-                          }
-                          newValues={
-                            row.original.newValuesJson as Record<
-                              string,
-                              unknown
-                            > | null
-                          }
+                          oldValues={row.original.oldValuesJson as Record<string, unknown> | null}
+                          newValues={row.original.newValuesJson as Record<string, unknown> | null}
                         />
                       </TableCell>
                     </TableRow>

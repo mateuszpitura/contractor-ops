@@ -5,7 +5,11 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": ["dist", "prisma/schema", "generated"],
+  "files": [
+    "dist",
+    "prisma/schema",
+    "generated"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

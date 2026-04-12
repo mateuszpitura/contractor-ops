@@ -1,7 +1,7 @@
-import { TRPCError } from "@trpc/server";
 import { decryptCredentials } from "@contractor-ops/integrations/services/credential-service";
 import type { JiraIssueMetadata } from "@contractor-ops/validators";
 import { jiraWebhookPayloadSchema } from "@contractor-ops/validators";
+import { TRPCError } from "@trpc/server";
 import { lookupWorkflowStatus } from "./jira-status-mapping.js";
 
 // Use loosely typed prisma client for parallel execution compatibility
@@ -110,9 +110,7 @@ export async function processJiraWebhook(
   const webhookPayload = parsed.data;
 
   // 2. Extract status change from changelog
-  const statusChange = webhookPayload.changelog.items.find(
-    (item) => item.field === "status",
-  );
+  const statusChange = webhookPayload.changelog.items.find((item) => item.field === "status");
 
   if (!statusChange) {
     // Not a status change — ignore
@@ -152,8 +150,7 @@ export async function processJiraWebhook(
   }
 
   // 4. Loop prevention (D-08): Check if this is a bounce-back from our own outbound sync
-  const metadata =
-    (externalLink.metadataJson as Record<string, unknown>) ?? {};
+  const metadata = (externalLink.metadataJson as Record<string, unknown>) ?? {};
   const lastSyncOrigin = metadata.lastSyncOrigin as string | undefined;
   const lastSyncAt = metadata.lastSyncAt as string | undefined;
 
@@ -198,8 +195,7 @@ export async function processJiraWebhook(
   });
 
   if (recentDuplicate) {
-    const recentPayload =
-      recentDuplicate.responsePayloadJson as Record<string, unknown> | null;
+    const recentPayload = recentDuplicate.responsePayloadJson as Record<string, unknown> | null;
     if (recentPayload?.newStatus === newJiraStatusName) {
       // Duplicate webhook — skip
       return;
@@ -294,8 +290,7 @@ export async function processJiraWebhook(
           issueKey,
           newStatus: newJiraStatusName,
           mappedWorkflowStatus,
-          statusCategory:
-            webhookPayload.issue.fields.status.statusCategory.key,
+          statusCategory: webhookPayload.issue.fields.status.statusCategory.key,
         },
       },
     });
@@ -305,8 +300,7 @@ export async function processJiraWebhook(
       data: {
         status: "FAILED",
         completedAt: new Date(),
-        errorMessage:
-          error instanceof Error ? error.message : "Unknown error",
+        errorMessage: error instanceof Error ? error.message : "Unknown error",
       },
     });
 
@@ -398,11 +392,8 @@ export async function registerJiraWebhooks(
   };
 
   // Store webhook IDs in connection config
-  const config =
-    (connection.configJson as JiraConnectionConfig) ?? {};
-  const webhookIds = result.webhookRegistrationResult.map(
-    (r) => r.createdWebhookId,
-  );
+  const config = (connection.configJson as JiraConnectionConfig) ?? {};
+  const webhookIds = result.webhookRegistrationResult.map((r) => r.createdWebhookId);
 
   await prisma.integrationConnection.update({
     where: { id: connectionId },
@@ -435,8 +426,7 @@ export async function deregisterJiraWebhooks(
 
   if (!connection) return;
 
-  const config =
-    (connection.configJson as JiraConnectionConfig) ?? {};
+  const config = (connection.configJson as JiraConnectionConfig) ?? {};
   const webhookIds = config.webhookIds ?? [];
 
   if (webhookIds.length === 0) return;
@@ -445,10 +435,7 @@ export async function deregisterJiraWebhooks(
   let authHeaders: Record<string, string>;
 
   try {
-    const ctx = buildJiraApiContext(
-      connection.configJson,
-      connection.credentialsRef,
-    );
+    const ctx = buildJiraApiContext(connection.configJson, connection.credentialsRef);
     baseUrl = ctx.baseUrl;
     authHeaders = ctx.authHeaders;
   } catch {
@@ -501,8 +488,7 @@ export async function refreshJiraWebhooks(
 
   if (!connection || connection.status !== "CONNECTED") return;
 
-  const config =
-    (connection.configJson as JiraConnectionConfig) ?? {};
+  const config = (connection.configJson as JiraConnectionConfig) ?? {};
   const webhookIds = config.webhookIds ?? [];
 
   if (webhookIds.length === 0) return;

@@ -1,30 +1,30 @@
-import { z } from "zod";
-import { TRPCError } from "@trpc/server";
 import { prisma } from "@contractor-ops/db";
 import {
-  templateCreateSchema,
-  templateUpdateSchema,
-  templateListSchema,
-  startRunSchema,
-  workflowRunListSchema,
-  cancelRunSchema,
-  taskActionSchema,
-  skipTaskSchema,
-  reassignTaskSchema,
   addCommentSchema,
-  myTasksListSchema,
-  jiraTaskConfigSchema,
   calendarTaskConfigSchema,
-  linearTaskConfigSchema,
+  cancelRunSchema,
   equipmentTaskConfigSchema,
+  jiraTaskConfigSchema,
+  linearTaskConfigSchema,
+  myTasksListSchema,
+  reassignTaskSchema,
+  skipTaskSchema,
+  startRunSchema,
+  taskActionSchema,
+  templateCreateSchema,
+  templateListSchema,
+  templateUpdateSchema,
+  workflowRunListSchema,
 } from "@contractor-ops/validators";
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 import * as E from "../errors.js";
 import { router } from "../init.js";
-import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
-import { dispatch } from "../services/notification-service.js";
+import { tenantProcedure } from "../middleware/tenant.js";
+import { CacheKeys, invalidateByPrefix } from "../services/cache.js";
 import { handleEquipmentTaskStart } from "../services/equipment-workflow.js";
-import { invalidateByPrefix, CacheKeys } from "../services/cache.js";
+import { dispatch } from "../services/notification-service.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -95,10 +95,7 @@ export function evaluateCondition(
   }
 
   const results = condition.rules.map((rule) => {
-    const fieldValue = getNestedValue(
-      context as unknown as Record<string, unknown>,
-      rule.field,
-    );
+    const fieldValue = getNestedValue(context as unknown as Record<string, unknown>, rule.field);
     const strValue = String(fieldValue ?? "");
 
     switch (rule.operator) {
@@ -115,9 +112,7 @@ export function evaluateCondition(
     }
   });
 
-  return condition.combinator === "AND"
-    ? results.every(Boolean)
-    : results.some(Boolean);
+  return condition.combinator === "AND" ? results.every(Boolean) : results.some(Boolean);
 }
 
 // ---------------------------------------------------------------------------
@@ -179,17 +174,14 @@ export function calculateProgress(
   const activeTasks = tasks.filter((t) => {
     if (
       t.status === "SKIPPED" &&
-      (t.resultJson as Record<string, unknown>)?.skipReason ===
-        "condition_not_met"
+      (t.resultJson as Record<string, unknown>)?.skipReason === "condition_not_met"
     ) {
       return false;
     }
     return true;
   });
 
-  const done = activeTasks.filter(
-    (t) => t.status === "DONE" || t.status === "SKIPPED",
-  ).length;
+  const done = activeTasks.filter((t) => t.status === "DONE" || t.status === "SKIPPED").length;
   const total = activeTasks.length;
 
   return {
@@ -305,8 +297,7 @@ export const workflowRouter = router({
         const updateData: Record<string, any> = {};
         if (input.name !== undefined) updateData.name = input.name;
         if (input.type !== undefined) updateData.type = input.type;
-        if (input.description !== undefined)
-          updateData.description = input.description;
+        if (input.description !== undefined) updateData.description = input.description;
         if (input.status !== undefined) updateData.status = input.status;
 
         await tx.workflowTemplate.update({
@@ -335,8 +326,7 @@ export const workflowRouter = router({
                 assigneeUserId: task.assigneeUserId ?? null,
                 dueOffsetDays: task.dueOffsetDays ?? null,
                 dueOffsetHours: task.dueOffsetHours ?? null,
-                dependsOnTaskTemplateId:
-                  task.dependsOnTaskTemplateId ?? null,
+                dependsOnTaskTemplateId: task.dependsOnTaskTemplateId ?? null,
                 externalUrl: task.externalUrl || null,
                 configJson: task.conditions ?? undefined,
               })),
@@ -441,16 +431,14 @@ export const workflowRouter = router({
       if (template.status !== "DRAFT") {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message:
-            "Only draft templates can be deleted. Archive the template instead.",
+          message: "Only draft templates can be deleted. Archive the template instead.",
         });
       }
 
       if (template._count.runs > 0) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message:
-            "Cannot delete a template that has existing runs. Archive it instead.",
+          message: "Cannot delete a template that has existing runs. Archive it instead.",
         });
       }
 
@@ -646,13 +634,7 @@ export const workflowRouter = router({
           });
 
           const assigneeUserId = conditionMet
-            ? await resolveAssignee(
-                taskTemplate,
-                contractor,
-                contract,
-                ctx.organizationId,
-                tx,
-              )
+            ? await resolveAssignee(taskTemplate, contractor, contract, ctx.organizationId, tx)
             : null;
 
           let dueAt: Date | null = null;
@@ -666,7 +648,7 @@ export const workflowRouter = router({
           }
 
           const dependsOnRunId = taskTemplate.dependsOnTaskTemplateId
-            ? taskIdMap.get(taskTemplate.dependsOnTaskTemplateId) ?? null
+            ? (taskIdMap.get(taskTemplate.dependsOnTaskTemplateId) ?? null)
             : null;
 
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -738,7 +720,11 @@ export const workflowRouter = router({
         const linearEligibleTaskRuns = new Map<string, { teamId: string; teamKey: string }>();
         for (const taskTemplate of template.tasks) {
           const linearParsed = linearTaskConfigSchema.safeParse(taskTemplate.configJson);
-          if (linearParsed.success && linearParsed.data.linearEnabled && linearParsed.data.linearTeamId) {
+          if (
+            linearParsed.success &&
+            linearParsed.data.linearEnabled &&
+            linearParsed.data.linearTeamId
+          ) {
             const runId = taskIdMap.get(taskTemplate.id);
             if (runId) {
               linearEligibleTaskRuns.set(runId, {
@@ -750,7 +736,10 @@ export const workflowRouter = router({
         }
 
         // Build map of task run IDs to their calendar config for calendar event creation
-        const calendarConfigMap = new Map<string, import("@contractor-ops/validators").CalendarTaskConfig>();
+        const calendarConfigMap = new Map<
+          string,
+          import("@contractor-ops/validators").CalendarTaskConfig
+        >();
         for (const taskTemplate of template.tasks) {
           const parsed = calendarTaskConfigSchema.safeParse(taskTemplate.configJson);
           if (parsed.success && parsed.data.calendarEnabled) {
@@ -789,9 +778,7 @@ export const workflowRouter = router({
       });
 
       // Fire-and-forget: dispatch TASK_ASSIGNED to each task assignee
-      const activeTasks = run.run.tasks.filter(
-        (t) => t.status !== "SKIPPED" && t.assigneeUserId,
-      );
+      const activeTasks = run.run.tasks.filter((t) => t.status !== "SKIPPED" && t.assigneeUserId);
       for (const task of activeTasks) {
         dispatch({
           organizationId: ctx.organizationId,
@@ -806,9 +793,7 @@ export const workflowRouter = router({
             workflowName: run.run.workflowTemplate.name,
             contractorName: run.contractorName,
           },
-        }).catch((err) =>
-          console.error("[workflow] dispatch TASK_ASSIGNED failed:", err),
-        );
+        }).catch((err) => console.error("[workflow] dispatch TASK_ASSIGNED failed:", err));
       }
 
       // Fire-and-forget: create Jira issues for jira-enabled tasks (non-blocking)
@@ -818,26 +803,18 @@ export const workflowRouter = router({
       if (todoJiraTasks.length > 0) {
         void (async () => {
           try {
-            const { createJiraIssue } = await import(
-              "../services/jira-issue-sync.js"
-            );
-            const connection =
-              await prisma.integrationConnection.findFirst({
-                where: {
-                  organizationId: ctx.organizationId,
-                  provider: "JIRA",
-                  status: "CONNECTED",
-                },
-                select: { id: true },
-              });
+            const { createJiraIssue } = await import("../services/jira-issue-sync.js");
+            const connection = await prisma.integrationConnection.findFirst({
+              where: {
+                organizationId: ctx.organizationId,
+                provider: "JIRA",
+                status: "CONNECTED",
+              },
+              select: { id: true },
+            });
             if (connection) {
               for (const task of todoJiraTasks) {
-                createJiraIssue(
-                  prisma,
-                  ctx.organizationId,
-                  connection.id,
-                  task.id,
-                ).catch((err) =>
+                createJiraIssue(prisma, ctx.organizationId, connection.id, task.id).catch((err) =>
                   console.error(
                     `[workflow/startRun] Jira issue creation failed for task ${task.id}:`,
                     err,
@@ -846,10 +823,7 @@ export const workflowRouter = router({
               }
             }
           } catch (err) {
-            console.error(
-              "[workflow/startRun] Jira issue creation setup failed:",
-              err,
-            );
+            console.error("[workflow/startRun] Jira issue creation setup failed:", err);
           }
         })();
       }
@@ -861,18 +835,15 @@ export const workflowRouter = router({
       if (todoLinearTasks.length > 0) {
         void (async () => {
           try {
-            const { createLinearIssue } = await import(
-              "../services/linear-issue-sync.js"
-            );
-            const linearConnection =
-              await prisma.integrationConnection.findFirst({
-                where: {
-                  organizationId: ctx.organizationId,
-                  provider: "LINEAR",
-                  status: "CONNECTED",
-                },
-                select: { id: true },
-              });
+            const { createLinearIssue } = await import("../services/linear-issue-sync.js");
+            const linearConnection = await prisma.integrationConnection.findFirst({
+              where: {
+                organizationId: ctx.organizationId,
+                provider: "LINEAR",
+                status: "CONNECTED",
+              },
+              select: { id: true },
+            });
             if (linearConnection) {
               for (const task of todoLinearTasks) {
                 const linearConfig = run.linearEligibleTaskRuns.get(task.id);
@@ -896,10 +867,7 @@ export const workflowRouter = router({
               }
             }
           } catch (err) {
-            console.error(
-              "[workflow/startRun] Linear issue creation setup failed:",
-              err,
-            );
+            console.error("[workflow/startRun] Linear issue creation setup failed:", err);
           }
         })();
       }
@@ -934,10 +902,7 @@ export const workflowRouter = router({
                 );
               }
             } catch (err) {
-              console.error(
-                "[workflow/startRun] Calendar event creation setup failed:",
-                err,
-              );
+              console.error("[workflow/startRun] Calendar event creation setup failed:", err);
             }
           })();
         }
@@ -945,9 +910,7 @@ export const workflowRouter = router({
 
       // Fire-and-forget: handle EQUIPMENT task integration hooks (Phase 30)
       const equipmentTasks = run.run.tasks.filter(
-        (t) =>
-          t.status !== "SKIPPED" &&
-          run.equipmentEligibleTaskRunIds.has(t.id),
+        (t) => t.status !== "SKIPPED" && run.equipmentEligibleTaskRunIds.has(t.id),
       );
       for (const eqTask of equipmentTasks) {
         void (async () => {
@@ -986,10 +949,7 @@ export const workflowRouter = router({
           });
         }
 
-        if (
-          existing.status === "COMPLETED" ||
-          existing.status === "CANCELLED"
-        ) {
+        if (existing.status === "COMPLETED" || existing.status === "CANCELLED") {
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: E.WORKFLOW_RUN_ALREADY_CANCELLED,
@@ -1022,27 +982,22 @@ export const workflowRouter = router({
 
       // Fire-and-forget outbound sync for cancelled tasks with external links
       // Per D-09/D-10: Linear and Jira always reflect real task state
-      const cancelledTasks = run.tasks.filter(
-        (t) => t.status === "CANCELLED",
-      );
+      const cancelledTasks = run.tasks.filter((t) => t.status === "CANCELLED");
 
       for (const task of cancelledTasks) {
         // Outbound Jira transition (same pattern as completeTask/skipTask)
         if (task.externalRefType === "JIRA_ISSUE" && task.externalRefId) {
           void (async () => {
             try {
-              const { transitionJiraIssue } = await import(
-                "../services/jira-issue-sync.js"
-              );
-              const connection =
-                await prisma.integrationConnection.findFirst({
-                  where: {
-                    organizationId: ctx.organizationId,
-                    provider: "JIRA",
-                    status: "CONNECTED",
-                  },
-                  select: { id: true },
-                });
+              const { transitionJiraIssue } = await import("../services/jira-issue-sync.js");
+              const connection = await prisma.integrationConnection.findFirst({
+                where: {
+                  organizationId: ctx.organizationId,
+                  provider: "JIRA",
+                  status: "CONNECTED",
+                },
+                select: { id: true },
+              });
               if (connection) {
                 await transitionJiraIssue(
                   prisma,
@@ -1053,10 +1008,7 @@ export const workflowRouter = router({
                 );
               }
             } catch (err) {
-              console.error(
-                "[workflow/cancelRun] Outbound Jira transition failed:",
-                err,
-              );
+              console.error("[workflow/cancelRun] Outbound Jira transition failed:", err);
             }
           })();
         }
@@ -1065,15 +1017,10 @@ export const workflowRouter = router({
         if (task.externalRefType === "LINEAR_ISSUE" && task.externalRefId) {
           void (async () => {
             try {
-              const { syncTaskStatusToLinear } = await import(
-                "../services/linear-issue-sync.js"
-              );
+              const { syncTaskStatusToLinear } = await import("../services/linear-issue-sync.js");
               await syncTaskStatusToLinear(prisma, task.id, "CANCELLED");
             } catch (err) {
-              console.error(
-                "[workflow/cancelRun] Outbound Linear sync failed:",
-                err,
-              );
+              console.error("[workflow/cancelRun] Outbound Linear sync failed:", err);
             }
           })();
         }
@@ -1145,8 +1092,7 @@ export const workflowRouter = router({
     .use(requirePermission({ workflow: ["read"] }))
     .input(workflowRunListSchema)
     .query(async ({ ctx, input }) => {
-      const { page, pageSize, search, sortBy, sortOrder, contractorId, filters } =
-        input;
+      const { page, pageSize, search, sortBy, sortOrder, contractorId, filters } = input;
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const where: Record<string, any> = {
@@ -1349,9 +1295,7 @@ export const workflowRouter = router({
           where: { id: task.workflowRun.id },
           data: {
             progressPercent: progress.percent,
-            ...(isComplete
-              ? { status: "COMPLETED", completedAt: now }
-              : {}),
+            ...(isComplete ? { status: "COMPLETED", completedAt: now } : {}),
           },
         });
 
@@ -1362,18 +1306,15 @@ export const workflowRouter = router({
       if (result.externalRefType === "JIRA_ISSUE" && result.externalRefId) {
         void (async () => {
           try {
-            const { transitionJiraIssue } = await import(
-              "../services/jira-issue-sync.js"
-            );
-            const connection =
-              await prisma.integrationConnection.findFirst({
-                where: {
-                  organizationId: ctx.organizationId,
-                  provider: "JIRA",
-                  status: "CONNECTED",
-                },
-                select: { id: true },
-              });
+            const { transitionJiraIssue } = await import("../services/jira-issue-sync.js");
+            const connection = await prisma.integrationConnection.findFirst({
+              where: {
+                organizationId: ctx.organizationId,
+                provider: "JIRA",
+                status: "CONNECTED",
+              },
+              select: { id: true },
+            });
             if (connection) {
               await transitionJiraIssue(
                 prisma,
@@ -1384,10 +1325,7 @@ export const workflowRouter = router({
               );
             }
           } catch (err) {
-            console.error(
-              "[workflow/completeTask] Outbound Jira transition failed:",
-              err,
-            );
+            console.error("[workflow/completeTask] Outbound Jira transition failed:", err);
           }
         })();
       }
@@ -1395,15 +1333,10 @@ export const workflowRouter = router({
       // Fire-and-forget outbound Linear sync (non-blocking)
       void (async () => {
         try {
-          const { syncTaskStatusToLinear } = await import(
-            "../services/linear-issue-sync.js"
-          );
+          const { syncTaskStatusToLinear } = await import("../services/linear-issue-sync.js");
           await syncTaskStatusToLinear(prisma, result.id, "DONE");
         } catch (err) {
-          console.error(
-            "[workflow/completeTask] Outbound Linear sync failed:",
-            err,
-          );
+          console.error("[workflow/completeTask] Outbound Linear sync failed:", err);
         }
       })();
 
@@ -1473,9 +1406,7 @@ export const workflowRouter = router({
           where: { id: task.workflowRun.id },
           data: {
             progressPercent: progress.percent,
-            ...(isComplete
-              ? { status: "COMPLETED", completedAt: new Date() }
-              : {}),
+            ...(isComplete ? { status: "COMPLETED", completedAt: new Date() } : {}),
           },
         });
 
@@ -1486,18 +1417,15 @@ export const workflowRouter = router({
       if (result.externalRefType === "JIRA_ISSUE" && result.externalRefId) {
         void (async () => {
           try {
-            const { transitionJiraIssue } = await import(
-              "../services/jira-issue-sync.js"
-            );
-            const connection =
-              await prisma.integrationConnection.findFirst({
-                where: {
-                  organizationId: ctx.organizationId,
-                  provider: "JIRA",
-                  status: "CONNECTED",
-                },
-                select: { id: true },
-              });
+            const { transitionJiraIssue } = await import("../services/jira-issue-sync.js");
+            const connection = await prisma.integrationConnection.findFirst({
+              where: {
+                organizationId: ctx.organizationId,
+                provider: "JIRA",
+                status: "CONNECTED",
+              },
+              select: { id: true },
+            });
             if (connection) {
               await transitionJiraIssue(
                 prisma,
@@ -1508,10 +1436,7 @@ export const workflowRouter = router({
               );
             }
           } catch (err) {
-            console.error(
-              "[workflow/skipTask] Outbound Jira transition failed:",
-              err,
-            );
+            console.error("[workflow/skipTask] Outbound Jira transition failed:", err);
           }
         })();
       }
@@ -1519,15 +1444,10 @@ export const workflowRouter = router({
       // Fire-and-forget outbound Linear sync (non-blocking)
       void (async () => {
         try {
-          const { syncTaskStatusToLinear } = await import(
-            "../services/linear-issue-sync.js"
-          );
+          const { syncTaskStatusToLinear } = await import("../services/linear-issue-sync.js");
           await syncTaskStatusToLinear(prisma, result.id, "SKIPPED");
         } catch (err) {
-          console.error(
-            "[workflow/skipTask] Outbound Linear sync failed:",
-            err,
-          );
+          console.error("[workflow/skipTask] Outbound Linear sync failed:", err);
         }
       })();
 
@@ -1583,11 +1503,12 @@ export const workflowRouter = router({
         metadata: {
           taskTitle: updated.title,
           workflowName: updated.workflowRun.workflowTemplate.name,
-          contractorName: updated.workflowRun.contractor?.legalName ?? updated.workflowRun.contractor?.displayName ?? "Unknown",
+          contractorName:
+            updated.workflowRun.contractor?.legalName ??
+            updated.workflowRun.contractor?.displayName ??
+            "Unknown",
         },
-      }).catch((err) =>
-        console.error("[workflow] dispatch TASK_ASSIGNED (reassign) failed:", err),
-      );
+      }).catch((err) => console.error("[workflow] dispatch TASK_ASSIGNED (reassign) failed:", err));
 
       return plain(updated);
     }),

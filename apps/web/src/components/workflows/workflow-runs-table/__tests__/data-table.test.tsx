@@ -1,5 +1,5 @@
-import { render, screen } from "@/test/test-utils";
 import { useQuery } from "@tanstack/react-query";
+import { render, screen } from "@/test/test-utils";
 import { WorkflowRunsDataTable } from "../data-table";
 
 vi.mock("@tanstack/react-query", async () => {
@@ -21,12 +21,25 @@ vi.mock("@/trpc/init", () => ({
 }));
 
 vi.mock("@/i18n/navigation", () => ({
-  Link: ({ children, href, ...props }: any) => <a href={href} {...props}>{children}</a>,
+  Link: ({ children, href, ...props }: any) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
 }));
 
 vi.mock("../use-workflow-filters", () => ({
   useWorkflowFilters: () => [
-    { page: 1, pageSize: 25, search: "", sortBy: "dueAt", sortOrder: "asc", status: [], templateId: [], overdueOnly: false },
+    {
+      page: 1,
+      pageSize: 25,
+      search: "",
+      sortBy: "dueAt",
+      sortOrder: "asc",
+      status: [],
+      templateId: [],
+      overdueOnly: false,
+    },
     vi.fn(),
   ],
 }));
@@ -41,9 +54,7 @@ describe("WorkflowRunsDataTable", () => {
       isPending: false,
       isFetching: false,
     } as any);
-    render(
-      <WorkflowRunsDataTable onRowClick={vi.fn()} onStartWorkflow={vi.fn()} />,
-    );
+    render(<WorkflowRunsDataTable onRowClick={vi.fn()} onStartWorkflow={vi.fn()} />);
     expect(screen.getAllByText("Start workflow").length).toBeGreaterThan(0);
   });
 
@@ -54,9 +65,7 @@ describe("WorkflowRunsDataTable", () => {
       isPending: false,
       isFetching: false,
     } as any);
-    render(
-      <WorkflowRunsDataTable onRowClick={vi.fn()} onStartWorkflow={vi.fn()} />,
-    );
+    render(<WorkflowRunsDataTable onRowClick={vi.fn()} onStartWorkflow={vi.fn()} />);
     expect(screen.getByText("No active workflows")).toBeInTheDocument();
   });
 
@@ -80,9 +89,7 @@ describe("WorkflowRunsDataTable", () => {
       isPending: false,
       isFetching: false,
     } as any);
-    render(
-      <WorkflowRunsDataTable onRowClick={vi.fn()} onStartWorkflow={vi.fn()} />,
-    );
+    render(<WorkflowRunsDataTable onRowClick={vi.fn()} onStartWorkflow={vi.fn()} />);
     expect(screen.getByText("Filters")).toBeInTheDocument();
   });
 });

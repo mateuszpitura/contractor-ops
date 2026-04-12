@@ -1,17 +1,13 @@
 "use client";
 
-import { useCallback } from "react";
 import { Filter, X } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useCallback } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -52,10 +48,7 @@ const INVOICE_SOURCES = ["MANUAL_UPLOAD", "EMAIL_INTAKE"] as const;
 /**
  * Filter popover and active filter badges for the invoice data table.
  */
-export function DataTableFilters({
-  filters,
-  onFiltersChange,
-}: DataTableFiltersProps) {
+export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersProps) {
   const t = useTranslations("Invoices");
 
   // Active filter count for badge
@@ -97,10 +90,7 @@ export function DataTableFilters({
               <Filter className="h-3.5 w-3.5" />
               {t("filters")}
               {hasActiveFilters && (
-                <Badge
-                  variant="secondary"
-                  className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]"
-                >
+                <Badge variant="secondary" className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]">
                   {activeFilterCount}
                 </Badge>
               )}
@@ -202,13 +192,7 @@ function FilterSection({
   );
 }
 
-function FilterBadge({
-  label,
-  onRemove,
-}: {
-  label: string;
-  onRemove: () => void;
-}) {
+function FilterBadge({ label, onRemove }: { label: string; onRemove: () => void }) {
   const tAria = useTranslations("Common.aria");
 
   return (

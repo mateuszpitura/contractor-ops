@@ -1,20 +1,35 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-import { toast } from "sonner";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
+import { useTranslations } from "next-intl";
+import { useCallback, useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
+import type { ReminderRule } from "@/components/settings/reminder-rules-section";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -22,29 +37,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Command,
-  CommandInput,
-  CommandList,
-  CommandEmpty,
-  CommandGroup,
-  CommandItem,
-} from "@/components/ui/command";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogFooter,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-
-import type { ReminderRule } from "@/components/settings/reminder-rules-section";
+import { Switch } from "@/components/ui/switch";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -211,9 +205,7 @@ function RuleUserPicker({
             {selectedUser.name} ({selectedUser.email})
           </span>
         ) : (
-          <span className="text-muted-foreground">
-            {t("reminderRules.editor.userPlaceholder")}
-          </span>
+          <span className="text-muted-foreground">{t("reminderRules.editor.userPlaceholder")}</span>
         )}
       </PopoverTrigger>
       <PopoverContent className="w-[320px] p-0" align="start">
@@ -224,9 +216,7 @@ function RuleUserPicker({
             onValueChange={setSearch}
           />
           <CommandList>
-            <CommandEmpty>
-              {t("reminderRules.editor.noUsersFound")}
-            </CommandEmpty>
+            <CommandEmpty>{t("reminderRules.editor.noUsersFound")}</CommandEmpty>
             <CommandGroup>
               {filteredUsers.map((user) => (
                 <CommandItem
@@ -241,9 +231,7 @@ function RuleUserPicker({
                 >
                   <div className="flex flex-col">
                     <span className="text-sm font-medium">{user.name}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {user.email}
-                    </span>
+                    <span className="text-xs text-muted-foreground">{user.email}</span>
                   </div>
                 </CommandItem>
               ))}
@@ -284,19 +272,13 @@ function useSelectorItems(t: ReturnType<typeof useTranslations<"Settings">>) {
   return { triggerItems, entityItems, channelItems, recipientItems };
 }
 
-export function ReminderRuleEditor({
-  open,
-  onOpenChange,
-  rule,
-}: ReminderRuleEditorProps) {
+export function ReminderRuleEditor({ open, onOpenChange, rule }: ReminderRuleEditorProps) {
   const t = useTranslations("Settings");
   const { triggerItems, entityItems, channelItems, recipientItems } = useSelectorItems(t);
   const queryClient = useQueryClient();
   const isEditMode = !!rule;
 
-  const slackStatusQuery = useQuery(
-    trpc.integration.getSlackStatus.queryOptions(),
-  );
+  const slackStatusQuery = useQuery(trpc.integration.getSlackStatus.queryOptions());
   const isSlackConnected = slackStatusQuery.data?.connected === true;
 
   const form = useForm<ReminderRuleFormValues>({
@@ -397,11 +379,7 @@ export function ReminderRuleEditor({
 
       const payload = {
         name: data.name,
-        entityType: data.entityType as
-          | "CONTRACT"
-          | "INVOICE"
-          | "WORKFLOW_TASK_RUN"
-          | "DOCUMENT",
+        entityType: data.entityType as "CONTRACT" | "INVOICE" | "WORKFLOW_TASK_RUN" | "DOCUMENT",
         triggerType: data.triggerType as
           | "BEFORE_DUE_DATE"
           | "ON_DUE_DATE"
@@ -449,18 +427,14 @@ export function ReminderRuleEditor({
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           {/* 1. Rule name */}
           <div className="space-y-2">
-            <Label htmlFor="rule-name">
-              {t("reminderRules.editor.ruleName")}
-            </Label>
+            <Label htmlFor="rule-name">{t("reminderRules.editor.ruleName")}</Label>
             <Input
               id="rule-name"
               placeholder={t("reminderRules.editor.ruleNamePlaceholder")}
               {...form.register("name")}
             />
             {form.formState.errors.name && (
-              <p className="text-xs text-destructive">
-                {form.formState.errors.name.message}
-              </p>
+              <p className="text-xs text-destructive">{form.formState.errors.name.message}</p>
             )}
           </div>
 
@@ -473,9 +447,7 @@ export function ReminderRuleEditor({
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange} items={triggerItems}>
                   <SelectTrigger className="w-full">
-                    <SelectValue
-                      placeholder={t("reminderRules.editor.triggerType")}
-                    />
+                    <SelectValue placeholder={t("reminderRules.editor.triggerType")} />
                   </SelectTrigger>
                   <SelectContent>
                     {triggerItems.map((item) => (
@@ -497,9 +469,7 @@ export function ReminderRuleEditor({
           {/* 3. Offset (conditional) */}
           {showOffset && (
             <div className="space-y-2">
-              <Label htmlFor="rule-offset">
-                {t("reminderRules.editor.offset")}
-              </Label>
+              <Label htmlFor="rule-offset">{t("reminderRules.editor.offset")}</Label>
               <div className="flex items-center gap-2">
                 <Input
                   id="rule-offset"
@@ -571,9 +541,7 @@ export function ReminderRuleEditor({
               )}
             />
             {form.formState.errors.channel && (
-              <p className="text-xs text-destructive">
-                {form.formState.errors.channel.message}
-              </p>
+              <p className="text-xs text-destructive">{form.formState.errors.channel.message}</p>
             )}
           </div>
 
@@ -612,10 +580,7 @@ export function ReminderRuleEditor({
                 control={form.control}
                 name="configUserId"
                 render={({ field }) => (
-                  <RuleUserPicker
-                    value={field.value}
-                    onChange={field.onChange}
-                  />
+                  <RuleUserPicker value={field.value} onChange={field.onChange} />
                 )}
               />
             </div>
@@ -634,11 +599,7 @@ export function ReminderRuleEditor({
                     items={ROLE_OPTIONS.map((r) => ({ value: r, label: ROLE_LABELS[r] ?? r }))}
                   >
                     <SelectTrigger className="w-full">
-                      <SelectValue
-                        placeholder={t(
-                          "reminderRules.editor.rolePlaceholder",
-                        )}
-                      />
+                      <SelectValue placeholder={t("reminderRules.editor.rolePlaceholder")} />
                     </SelectTrigger>
                     <SelectContent>
                       {ROLE_OPTIONS.map((role) => (
@@ -655,18 +616,12 @@ export function ReminderRuleEditor({
 
           {/* 8. Active toggle */}
           <div className="flex items-center justify-between">
-            <Label htmlFor="rule-active">
-              {t("reminderRules.editor.activeToggle")}
-            </Label>
+            <Label htmlFor="rule-active">{t("reminderRules.editor.activeToggle")}</Label>
             <Controller
               control={form.control}
               name="active"
               render={({ field }) => (
-                <Switch
-                  id="rule-active"
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
+                <Switch id="rule-active" checked={field.value} onCheckedChange={field.onChange} />
               )}
             />
           </div>
@@ -682,9 +637,7 @@ export function ReminderRuleEditor({
               {t("reminderRules.editor.discard")}
             </Button>
             <Button type="submit" disabled={isPending}>
-              {isPending && (
-                <Loader2 className="me-1.5 size-3.5 animate-spin" />
-              )}
+              {isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
               {t("reminderRules.editor.save")}
             </Button>
           </DialogFooter>

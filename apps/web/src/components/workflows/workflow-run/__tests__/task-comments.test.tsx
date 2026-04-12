@@ -1,5 +1,5 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { render, screen, setup } from "@/test/test-utils";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { TaskComments } from "../task-comments";
 
 vi.mock("@tanstack/react-query", async () => {
@@ -133,8 +133,18 @@ describe("TaskComments", () => {
   it("renders multiple comments", () => {
     mockedUseQuery.mockReturnValue({
       data: [
-        { id: "c1", body: "Comment one", createdAt: new Date().toISOString(), author: { name: "Alice", email: "a@test.com", image: null } },
-        { id: "c2", body: "Comment two", createdAt: new Date().toISOString(), author: { name: "Bob", email: "b@test.com", image: null } },
+        {
+          id: "c1",
+          body: "Comment one",
+          createdAt: new Date().toISOString(),
+          author: { name: "Alice", email: "a@test.com", image: null },
+        },
+        {
+          id: "c2",
+          body: "Comment two",
+          createdAt: new Date().toISOString(),
+          author: { name: "Bob", email: "b@test.com", image: null },
+        },
       ],
       isLoading: false,
     } as any);

@@ -1,14 +1,7 @@
 "use client";
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from "react";
+import type { ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -88,31 +81,21 @@ export function SearchProvider({ children }: { children: ReactNode }) {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  const addRecentItem = useCallback(
-    (item: Omit<RecentItem, "viewedAt">) => {
-      setRecentItems((prev) => {
-        const deduped = prev.filter(
-          (r) => !(r.type === item.type && r.id === item.id),
-        );
-        const next = [
-          { ...item, viewedAt: Date.now() },
-          ...deduped,
-        ].slice(0, MAX_RECENT);
-        writeRecent(next);
-        return next;
-      });
-    },
-    [],
-  );
+  const addRecentItem = useCallback((item: Omit<RecentItem, "viewedAt">) => {
+    setRecentItems((prev) => {
+      const deduped = prev.filter((r) => !(r.type === item.type && r.id === item.id));
+      const next = [{ ...item, viewedAt: Date.now() }, ...deduped].slice(0, MAX_RECENT);
+      writeRecent(next);
+      return next;
+    });
+  }, []);
 
   const value = useMemo(
     () => ({ open, setOpen, recentItems, addRecentItem }),
     [open, recentItems, addRecentItem],
   );
 
-  return (
-    <SearchContext.Provider value={value}>{children}</SearchContext.Provider>
-  );
+  return <SearchContext.Provider value={value}>{children}</SearchContext.Provider>;
 }
 
 // ---------------------------------------------------------------------------

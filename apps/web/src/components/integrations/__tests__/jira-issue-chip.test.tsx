@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@/test/test-utils";
 import { JiraIssueChip } from "../jira-issue-chip";
 
@@ -17,11 +17,7 @@ vi.mock("@/components/ui/tooltip", () => ({
   }) => {
     if (renderProp) {
       const { props } = renderProp as React.ReactElement<Record<string, unknown>>;
-      return (
-        <a {...(props as React.AnchorHTMLAttributes<HTMLAnchorElement>)}>
-          {children}
-        </a>
-      );
+      return <a {...(props as React.AnchorHTMLAttributes<HTMLAnchorElement>)}>{children}</a>;
     }
     return <div>{children}</div>;
   },
@@ -56,10 +52,7 @@ describe("JiraIssueChip", () => {
   it("renders a link to the issue url", () => {
     render(<JiraIssueChip {...baseProps} />);
     const link = screen.getByLabelText("Open Jira issue ENG-42 in new tab");
-    expect(link).toHaveAttribute(
-      "href",
-      "https://jira.example.com/browse/ENG-42",
-    );
+    expect(link).toHaveAttribute("href", "https://jira.example.com/browse/ENG-42");
     expect(link).toHaveAttribute("target", "_blank");
     expect(link).toHaveAttribute("rel", "noopener noreferrer");
   });
@@ -82,17 +75,13 @@ describe("JiraIssueChip", () => {
   });
 
   it("uses bg-success for done statusCategory", () => {
-    const { container } = render(
-      <JiraIssueChip {...baseProps} statusCategory="done" />,
-    );
+    const { container } = render(<JiraIssueChip {...baseProps} statusCategory="done" />);
     const dot = container.querySelector(".rounded-full");
     expect(dot?.className).toContain("bg-success");
   });
 
   it("uses bg-muted-foreground for new statusCategory", () => {
-    const { container } = render(
-      <JiraIssueChip {...baseProps} statusCategory="new" />,
-    );
+    const { container } = render(<JiraIssueChip {...baseProps} statusCategory="new" />);
     const dot = container.querySelector(".rounded-full");
     expect(dot?.className).toContain("bg-muted-foreground");
   });

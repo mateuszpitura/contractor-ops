@@ -2,9 +2,8 @@ import { render, screen } from "@/test/test-utils";
 import { SyncStatusSection } from "../sync-status-section";
 
 vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
-    "@tanstack/react-query",
-  );
+  const actual =
+    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
   return {
     ...actual,
     useQuery: () => ({

@@ -1,18 +1,18 @@
-import { z } from "zod";
-import { TRPCError } from "@trpc/server";
-import { router } from "../init.js";
-import { tenantProcedure } from "../middleware/tenant.js";
-import { requirePermission } from "../middleware/rbac.js";
-import { requireTier } from "../middleware/tier.js";
-import { portalProcedure } from "../middleware/portal-auth.js";
-import {
-  triggerOcrExtraction,
-  processOcrExtraction,
-  getExtractionResult,
-  getExtractionByDocument,
-} from "../services/ocr-extraction.js";
 import { prisma } from "@contractor-ops/db";
 import { getQStashClient } from "@contractor-ops/integrations/services/qstash-client";
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
+import { router } from "../init.js";
+import { portalProcedure } from "../middleware/portal-auth.js";
+import { requirePermission } from "../middleware/rbac.js";
+import { tenantProcedure } from "../middleware/tenant.js";
+import { requireTier } from "../middleware/tier.js";
+import {
+  getExtractionByDocument,
+  getExtractionResult,
+  processOcrExtraction,
+  triggerOcrExtraction,
+} from "../services/ocr-extraction.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -86,30 +86,26 @@ export const ocrRouter = router({
   /**
    * Get OCR extraction result by extraction ID.
    */
-  getResult: tenantProcedure
-    .input(getResultInput)
-    .query(async ({ ctx, input }) => {
-      const extraction = await getExtractionResult({
-        organizationId: ctx.organizationId,
-        extractionId: input.extractionId,
-      });
+  getResult: tenantProcedure.input(getResultInput).query(async ({ ctx, input }) => {
+    const extraction = await getExtractionResult({
+      organizationId: ctx.organizationId,
+      extractionId: input.extractionId,
+    });
 
-      return extraction ? plain(extraction) : null;
-    }),
+    return extraction ? plain(extraction) : null;
+  }),
 
   /**
    * Get the latest OCR extraction for a document.
    */
-  getByDocument: tenantProcedure
-    .input(getByDocumentInput)
-    .query(async ({ ctx, input }) => {
-      const extraction = await getExtractionByDocument({
-        organizationId: ctx.organizationId,
-        documentId: input.documentId,
-      });
+  getByDocument: tenantProcedure.input(getByDocumentInput).query(async ({ ctx, input }) => {
+    const extraction = await getExtractionByDocument({
+      organizationId: ctx.organizationId,
+      documentId: input.documentId,
+    });
 
-      return extraction ? plain(extraction) : null;
-    }),
+    return extraction ? plain(extraction) : null;
+  }),
 
   /**
    * Retrigger OCR extraction for a previously processed document.
@@ -179,55 +175,47 @@ export const ocrRouter = router({
   /**
    * Trigger OCR extraction from the portal (contractor-initiated).
    */
-  portalTrigger: portalProcedure
-    .input(triggerInput)
-    .mutation(async ({ ctx, input }) => {
-      const result = await triggerOcrExtraction({
-        organizationId: ctx.organizationId,
-        documentId: input.documentId,
-        storageKey: input.storageKey,
-        invoiceId: input.invoiceId,
+  portalTrigger: portalProcedure.input(triggerInput).mutation(async ({ ctx, input }) => {
+    const result = await triggerOcrExtraction({
+      organizationId: ctx.organizationId,
+      documentId: input.documentId,
+      storageKey: input.storageKey,
+      invoiceId: input.invoiceId,
+    });
+
+    if ("error" in result) {
+      throw new TRPCError({
+        code: "PRECONDITION_FAILED",
+        message:
+          result.error === "credits_exhausted" ? "OCR credits exhausted" : "No active subscription",
+        cause: { reason: result.error, remaining: result.remaining },
       });
+    }
 
-      if ("error" in result) {
-        throw new TRPCError({
-          code: "PRECONDITION_FAILED",
-          message:
-            result.error === "credits_exhausted"
-              ? "OCR credits exhausted"
-              : "No active subscription",
-          cause: { reason: result.error, remaining: result.remaining },
-        });
-      }
-
-      return result;
-    }),
+    return result;
+  }),
 
   /**
    * Get OCR extraction result from the portal.
    */
-  portalGetResult: portalProcedure
-    .input(getResultInput)
-    .query(async ({ ctx, input }) => {
-      const extraction = await getExtractionResult({
-        organizationId: ctx.organizationId,
-        extractionId: input.extractionId,
-      });
+  portalGetResult: portalProcedure.input(getResultInput).query(async ({ ctx, input }) => {
+    const extraction = await getExtractionResult({
+      organizationId: ctx.organizationId,
+      extractionId: input.extractionId,
+    });
 
-      return extraction ? plain(extraction) : null;
-    }),
+    return extraction ? plain(extraction) : null;
+  }),
 
   /**
    * Get latest OCR extraction for a document from the portal.
    */
-  portalGetByDocument: portalProcedure
-    .input(getByDocumentInput)
-    .query(async ({ ctx, input }) => {
-      const extraction = await getExtractionByDocument({
-        organizationId: ctx.organizationId,
-        documentId: input.documentId,
-      });
+  portalGetByDocument: portalProcedure.input(getByDocumentInput).query(async ({ ctx, input }) => {
+    const extraction = await getExtractionByDocument({
+      organizationId: ctx.organizationId,
+      documentId: input.documentId,
+    });
 
-      return extraction ? plain(extraction) : null;
-    }),
+    return extraction ? plain(extraction) : null;
+  }),
 });

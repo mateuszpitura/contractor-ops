@@ -1,20 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Filter, Loader2, Search, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -43,13 +38,7 @@ interface DataTableToolbarProps {
 // Filter option sets
 // ---------------------------------------------------------------------------
 
-const LIFECYCLE_STAGES = [
-  "DRAFT",
-  "ONBOARDING",
-  "ACTIVE",
-  "OFFBOARDING",
-  "ENDED",
-] as const;
+const LIFECYCLE_STAGES = ["DRAFT", "ONBOARDING", "ACTIVE", "OFFBOARDING", "ENDED"] as const;
 
 const BILLING_MODELS = ["FIXED", "HOURLY", "PROJECT", "MILESTONE"] as const;
 
@@ -118,14 +107,9 @@ export function DataTableToolbar({
     });
   };
 
-  const toggleFilterValue = (
-    key: keyof FilterState,
-    value: string,
-  ) => {
+  const toggleFilterValue = (key: keyof FilterState, value: string) => {
     const current = filters[key];
-    const next = current.includes(value)
-      ? current.filter((v) => v !== value)
-      : [...current, value];
+    const next = current.includes(value) ? current.filter((v) => v !== value) : [...current, value];
     onFiltersChange({ [key]: next });
   };
 
@@ -159,10 +143,7 @@ export function DataTableToolbar({
                 <Filter className="h-3.5 w-3.5" />
                 {t("filters")}
                 {hasActiveFilters && (
-                  <Badge
-                    variant="secondary"
-                    className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]"
-                  >
+                  <Badge variant="secondary" className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]">
                     {activeFilterCount}
                   </Badge>
                 )}
@@ -179,20 +160,23 @@ export function DataTableToolbar({
                   label: t(`lifecycle.${stage}`),
                 }))}
                 selected={filters.lifecycleStage}
-                onToggle={(value) =>
-                  toggleFilterValue("lifecycleStage", value)
-                }
+                onToggle={(value) => toggleFilterValue("lifecycleStage", value)}
               />
 
               {/* Owner */}
               <FilterSection
                 title={t("columns.owner")}
-                options={(users as Array<{ id?: string; userId?: string; name?: string | null; email?: string | null }>).map(
-                  (user) => ({
-                    value: user.id ?? user.userId ?? "",
-                    label: user.name ?? user.email ?? "Unknown",
-                  }),
-                )}
+                options={(
+                  users as Array<{
+                    id?: string;
+                    userId?: string;
+                    name?: string | null;
+                    email?: string | null;
+                  }>
+                ).map((user) => ({
+                  value: user.id ?? user.userId ?? "",
+                  label: user.name ?? user.email ?? "Unknown",
+                }))}
                 selected={filters.owner}
                 onToggle={(value) => toggleFilterValue("owner", value)}
               />
@@ -205,9 +189,7 @@ export function DataTableToolbar({
                   label: t(`billingModel.${model}`),
                 }))}
                 selected={filters.billingModel}
-                onToggle={(value) =>
-                  toggleFilterValue("billingModel", value)
-                }
+                onToggle={(value) => toggleFilterValue("billingModel", value)}
               />
 
               {/* Compliance health */}
@@ -251,9 +233,14 @@ export function DataTableToolbar({
             />
           ))}
           {filters.owner.map((ownerId) => {
-            const user = (users as Array<{ id?: string; userId?: string; name?: string | null; email?: string | null }>).find(
-              (u) => (u.id ?? u.userId) === ownerId,
-            );
+            const user = (
+              users as Array<{
+                id?: string;
+                userId?: string;
+                name?: string | null;
+                email?: string | null;
+              }>
+            ).find((u) => (u.id ?? u.userId) === ownerId);
             return (
               <FilterBadge
                 key={`owner-${ownerId}`}
@@ -327,13 +314,7 @@ function FilterSection({
   );
 }
 
-function FilterBadge({
-  label,
-  onRemove,
-}: {
-  label: string;
-  onRemove: () => void;
-}) {
+function FilterBadge({ label, onRemove }: { label: string; onRemove: () => void }) {
   const tAria = useTranslations("Common.aria");
 
   return (

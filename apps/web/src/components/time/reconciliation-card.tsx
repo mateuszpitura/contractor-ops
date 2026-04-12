@@ -1,9 +1,8 @@
 "use client";
 
 import { Clock } from "lucide-react";
-
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { DeviationFlag } from "@/components/time/deviation-flag";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -55,10 +54,7 @@ function formatRate(minor: number): string {
 // Border color by severity
 // ---------------------------------------------------------------------------
 
-function getBorderColor(
-  deviationPercent: number,
-  thresholdPercent: number,
-): string {
+function getBorderColor(deviationPercent: number, thresholdPercent: number): string {
   if (deviationPercent <= thresholdPercent) {
     return "border-s-green-600 dark:border-s-green-500";
   }
@@ -95,10 +91,8 @@ export function ReconciliationCard({ reconciliation }: ReconciliationCardProps) 
 
   // Visual comparison bar: ratio of expected to actual
   const maxAmount = Math.max(expectedAmountMinor, invoicedAmountMinor);
-  const expectedRatio =
-    maxAmount > 0 ? (expectedAmountMinor / maxAmount) * 100 : 0;
-  const invoicedRatio =
-    maxAmount > 0 ? (invoicedAmountMinor / maxAmount) * 100 : 0;
+  const expectedRatio = maxAmount > 0 ? (expectedAmountMinor / maxAmount) * 100 : 0;
+  const invoicedRatio = maxAmount > 0 ? (invoicedAmountMinor / maxAmount) * 100 : 0;
   const hasOverflow = invoicedAmountMinor > expectedAmountMinor;
 
   return (
@@ -124,39 +118,27 @@ export function ReconciliationCard({ reconciliation }: ReconciliationCardProps) 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           {/* Approved Hours */}
           <div className="space-y-0.5">
-            <span className="text-[13px] text-muted-foreground">
-              Approved Hours
-            </span>
+            <span className="text-[13px] text-muted-foreground">Approved Hours</span>
             <p className="text-lg font-semibold tabular-nums">{hours}h</p>
-            <p className="text-xs text-muted-foreground">
-              at {rate}/h
-            </p>
+            <p className="text-xs text-muted-foreground">at {rate}/h</p>
           </div>
 
           {/* Expected Amount */}
           <div className="space-y-0.5">
-            <span className="text-[13px] text-muted-foreground">
-              Expected Amount
-            </span>
+            <span className="text-[13px] text-muted-foreground">Expected Amount</span>
             <p className="text-lg font-semibold tabular-nums">
               {formatMinorUnits(expectedAmountMinor)}
             </p>
-            <p className="text-xs text-muted-foreground">
-              based on approved hours
-            </p>
+            <p className="text-xs text-muted-foreground">based on approved hours</p>
           </div>
 
           {/* Invoiced Amount */}
           <div className="space-y-0.5">
-            <span className="text-[13px] text-muted-foreground">
-              Invoiced Amount
-            </span>
+            <span className="text-[13px] text-muted-foreground">Invoiced Amount</span>
             <p className="text-lg font-semibold tabular-nums">
               {formatMinorUnits(invoicedAmountMinor)}
             </p>
-            <p className="text-xs text-muted-foreground">
-              from invoice
-            </p>
+            <p className="text-xs text-muted-foreground">from invoice</p>
           </div>
         </div>
 

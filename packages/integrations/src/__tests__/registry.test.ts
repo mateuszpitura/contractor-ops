@@ -1,10 +1,5 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import {
-  registerAdapter,
-  getAdapter,
-  getAllAdapters,
-  clearAdapters,
-} from "../registry.js";
+import { beforeEach, describe, expect, it } from "vitest";
+import { clearAdapters, getAdapter, getAllAdapters, registerAdapter } from "../registry.js";
 import type { IntegrationProviderAdapter } from "../types/provider.js";
 
 function createMockAdapter(

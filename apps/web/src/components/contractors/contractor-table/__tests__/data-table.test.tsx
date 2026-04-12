@@ -1,7 +1,7 @@
-import { render, screen, setup } from "@/test/test-utils";
 import { useQuery } from "@tanstack/react-query";
-import { ContractorDataTable } from "../data-table";
+import { render, screen, setup } from "@/test/test-utils";
 import type { ContractorRow } from "../columns";
+import { ContractorDataTable } from "../data-table";
 
 vi.mock("@tanstack/react-query", () => ({
   useQuery: vi.fn(() => ({
@@ -54,7 +54,9 @@ vi.mock("../use-contractor-filters", () => ({
 
 vi.mock("@/i18n/navigation", () => ({
   Link: ({ children, href, ...props }: any) => (
-    <a href={href} {...props}>{children}</a>
+    <a href={href} {...props}>
+      {children}
+    </a>
   ),
 }));
 
@@ -68,12 +70,7 @@ vi.mock("date-fns", () => ({
 
 describe("ContractorDataTable", () => {
   it("renders toolbar and table structure", () => {
-    render(
-      <ContractorDataTable
-        onRowClick={vi.fn()}
-        onAddContractor={vi.fn()}
-      />,
-    );
+    render(<ContractorDataTable onRowClick={vi.fn()} onAddContractor={vi.fn()} />);
     // Should have search input
     expect(screen.getByRole("textbox")).toBeInTheDocument();
     // Should have a table
@@ -81,12 +78,7 @@ describe("ContractorDataTable", () => {
   });
 
   it("shows empty state when no data", () => {
-    render(
-      <ContractorDataTable
-        onRowClick={vi.fn()}
-        onAddContractor={vi.fn()}
-      />,
-    );
+    render(<ContractorDataTable onRowClick={vi.fn()} onAddContractor={vi.fn()} />);
     // Empty state should have a CTA button
     const buttons = screen.getAllByRole("button");
     expect(buttons.length).toBeGreaterThan(0);
@@ -119,12 +111,7 @@ describe("ContractorDataTable", () => {
       isPending: false,
     } as any);
 
-    render(
-      <ContractorDataTable
-        onRowClick={vi.fn()}
-        onAddContractor={vi.fn()}
-      />,
-    );
+    render(<ContractorDataTable onRowClick={vi.fn()} onAddContractor={vi.fn()} />);
     expect(screen.getByText("ACME")).toBeInTheDocument();
   });
 
@@ -157,10 +144,7 @@ describe("ContractorDataTable", () => {
 
     const onRowClick = vi.fn();
     const { user } = setup(
-      <ContractorDataTable
-        onRowClick={onRowClick}
-        onAddContractor={vi.fn()}
-      />,
+      <ContractorDataTable onRowClick={onRowClick} onAddContractor={vi.fn()} />,
     );
 
     // Click on a table row (the one containing "ACME")
@@ -178,12 +162,7 @@ describe("ContractorDataTable", () => {
       isPending: true,
     } as any);
 
-    render(
-      <ContractorDataTable
-        onRowClick={vi.fn()}
-        onAddContractor={vi.fn()}
-      />,
-    );
+    render(<ContractorDataTable onRowClick={vi.fn()} onAddContractor={vi.fn()} />);
     // Skeleton rows produce Skeleton components
     const skeletons = document.querySelectorAll("[data-slot='skeleton']");
     expect(skeletons.length).toBeGreaterThan(0);
@@ -197,12 +176,7 @@ describe("ContractorDataTable", () => {
       isPending: false,
     } as any);
 
-    render(
-      <ContractorDataTable
-        onRowClick={vi.fn()}
-        onAddContractor={vi.fn()}
-      />,
-    );
+    render(<ContractorDataTable onRowClick={vi.fn()} onAddContractor={vi.fn()} />);
     // Refetch overlay has a spinner
     const spinner = document.querySelector(".animate-spin");
     expect(spinner).toBeInTheDocument();

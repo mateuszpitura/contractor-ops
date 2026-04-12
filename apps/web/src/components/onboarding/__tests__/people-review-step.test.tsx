@@ -1,7 +1,7 @@
-import { render, screen, setup } from "@/test/test-utils";
 import { useQuery } from "@tanstack/react-query";
-import { PeopleReviewStep } from "../people-review-step";
+import { render, screen, setup } from "@/test/test-utils";
 import type { PersonSelection } from "../import-wizard";
+import { PeopleReviewStep } from "../people-review-step";
 
 vi.mock("@tanstack/react-query", async () => {
   const actual = await vi.importActual("@tanstack/react-query");
@@ -145,7 +145,20 @@ describe("PeopleReviewStep", () => {
     mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as any);
     const people = [
       makePerson({ email: "a@t.com", name: "A", status: "new" }),
-      makePerson({ email: "b@t.com", name: "B", status: "conflict", conflicts: [{ field: "name", values: [{ source: "JIRA", value: "B1" }, { source: "LINEAR", value: "B2" }] }] }),
+      makePerson({
+        email: "b@t.com",
+        name: "B",
+        status: "conflict",
+        conflicts: [
+          {
+            field: "name",
+            values: [
+              { source: "JIRA", value: "B1" },
+              { source: "LINEAR", value: "B2" },
+            ],
+          },
+        ],
+      }),
       makePerson({ email: "c@t.com", name: "C", status: "exists" }),
     ];
     render(
@@ -204,7 +217,9 @@ describe("PeopleReviewStep", () => {
 
   it("renders 'Exists' badge for existing people", () => {
     mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as any);
-    const people = [makePerson({ email: "existing@t.com", name: "Existing User", status: "exists" })];
+    const people = [
+      makePerson({ email: "existing@t.com", name: "Existing User", status: "exists" }),
+    ];
     render(
       <PeopleReviewStep
         selectedSources={["JIRA"]}
@@ -250,7 +265,12 @@ describe("PeopleReviewStep", () => {
   it("renders source badges", () => {
     mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as any);
     const people = [
-      makePerson({ sources: [{ source: "JIRA", name: "J" }, { source: "LINEAR", name: "L" }] }),
+      makePerson({
+        sources: [
+          { source: "JIRA", name: "J" },
+          { source: "LINEAR", name: "L" },
+        ],
+      }),
     ];
     render(
       <PeopleReviewStep

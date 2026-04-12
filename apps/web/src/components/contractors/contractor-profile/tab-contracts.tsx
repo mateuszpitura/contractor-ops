@@ -1,17 +1,12 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import {
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-  type ColumnDef,
-} from "@tanstack/react-table";
 import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
+import type { ColumnDef } from "@tanstack/react-table";
+import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { FileText, Plus } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
+import { useTranslations } from "next-intl";
+import { useMemo, useState } from "react";
+import { ContractWizardDialog } from "@/components/contracts/contract-wizard/wizard-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -24,7 +19,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Link } from "@/i18n/navigation";
-import { ContractWizardDialog } from "@/components/contracts/contract-wizard/wizard-dialog";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Row type (subset of full ContractRow for the mini table)
@@ -80,7 +75,7 @@ export function TabContracts({ contractorId }: TabContractsProps) {
       pageSize,
       sortBy: "startDate",
       sortOrder: "desc",
-    })
+    }),
   );
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -94,18 +89,13 @@ export function TabContracts({ contractorId }: TabContractsProps) {
       {
         accessorKey: "title",
         header: t("contractorTab.columns.title" as Parameters<typeof t>[0]),
-        cell: ({ row }) => (
-          <span className="font-medium">{row.original.title}</span>
-        ),
+        cell: ({ row }) => <span className="font-medium">{row.original.title}</span>,
       },
       {
         accessorKey: "status",
         header: t("contractorTab.columns.status" as Parameters<typeof t>[0]),
         cell: ({ row }) => (
-          <Badge
-            variant="secondary"
-            className={statusBadgeColors[row.original.status] ?? ""}
-          >
+          <Badge variant="secondary" className={statusBadgeColors[row.original.status] ?? ""}>
             {t(`status.${row.original.status}` as Parameters<typeof t>[0])}
           </Badge>
         ),
@@ -114,7 +104,8 @@ export function TabContracts({ contractorId }: TabContractsProps) {
         accessorKey: "startDate",
         header: t("contractorTab.columns.startDate" as Parameters<typeof t>[0]),
         cell: ({ row }) => {
-          if (!row.original.startDate) return <span className="text-muted-foreground">&mdash;</span>;
+          if (!row.original.startDate)
+            return <span className="text-muted-foreground">&mdash;</span>;
           try {
             return (
               <span className="text-sm">
@@ -161,7 +152,7 @@ export function TabContracts({ contractorId }: TabContractsProps) {
         },
       },
     ],
-    [t]
+    [t],
   );
 
   const table = useReactTable({
@@ -196,9 +187,7 @@ export function TabContracts({ contractorId }: TabContractsProps) {
         <div className="flex min-h-[300px] flex-col items-center justify-center gap-3 text-center">
           <FileText className="size-10 text-muted-foreground/50" />
           <h4 className="text-sm font-medium">{t("contractorTab.emptyHeading")}</h4>
-          <p className="max-w-sm text-sm text-muted-foreground">
-            {t("contractorTab.emptyBody")}
-          </p>
+          <p className="max-w-sm text-sm text-muted-foreground">{t("contractorTab.emptyBody")}</p>
           <Button size="sm" onClick={() => setWizardOpen(true)}>
             <Plus className="me-1.5 size-3.5" />
             {t("contractorTab.emptyCTA")}
@@ -242,10 +231,7 @@ export function TabContracts({ contractorId }: TabContractsProps) {
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows.map((row) => (
-              <TableRow
-                key={row.id}
-                className="cursor-pointer hover:bg-muted/50"
-              >
+              <TableRow key={row.id} className="cursor-pointer hover:bg-muted/50">
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>
                     <Link href={`/contracts/${row.original.id}`} className="contents">

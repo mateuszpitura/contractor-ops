@@ -1,11 +1,9 @@
 "use client";
 
-import { use } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Download } from "lucide-react";
 import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
+import { use } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -19,6 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Link } from "@/i18n/navigation";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -67,11 +66,7 @@ function statusBadgeVariant(status: string) {
  * - Rate periods table (if any)
  * - Documents section with download buttons
  */
-export default function PortalContractDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default function PortalContractDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const t = useTranslations("Portal");
   const { id } = use(params);
   const contractQuery = useQuery(trpc.portal.getContract.queryOptions({ id }));
@@ -164,11 +159,7 @@ export default function PortalContractDetailPage({
   return (
     <div>
       {/* Back button */}
-      <Button
-        variant="ghost"
-        size="sm"
-        render={<Link href="/portal/contracts" />}
-      >
+      <Button variant="ghost" size="sm" render={<Link href="/portal/contracts" />}>
         <ArrowLeft className="me-1 h-4 w-4" />
         {t("contracts.backToContracts")}
       </Button>
@@ -184,7 +175,10 @@ export default function PortalContractDetailPage({
       {/* Details grid */}
       <Card className="mt-6">
         <CardContent className="grid gap-4 p-6 sm:grid-cols-2">
-          <DetailField label={t("contracts.contractNumber")} value={contract.contractNumber ?? t("time.na")} />
+          <DetailField
+            label={t("contracts.contractNumber")}
+            value={contract.contractNumber ?? t("time.na")}
+          />
           <DetailField label={t("contracts.type")} value={formatContractType(contract.type)} />
           <DetailField label={t("contracts.startDate")} value={formatDate(contract.startDate)} />
           <DetailField label={t("contracts.endDate")} value={formatDate(contract.endDate)} />
@@ -232,9 +226,7 @@ export default function PortalContractDetailPage({
             <TableBody>
               {contract.ratePeriods.map((period, i) => (
                 <TableRow key={i}>
-                  <TableCell>
-                    {formatAmount(period.rateValueMinor, period.currency)}
-                  </TableCell>
+                  <TableCell>{formatAmount(period.rateValueMinor, period.currency)}</TableCell>
                   <TableCell>{formatContractType(period.rateType)}</TableCell>
                   <TableCell>{formatDate(period.validFrom)}</TableCell>
                   <TableCell>{formatDate(period.validTo)}</TableCell>
@@ -251,10 +243,7 @@ export default function PortalContractDetailPage({
         {contract.documents && contract.documents.length > 0 ? (
           <div className="mt-4 space-y-2">
             {contract.documents.map((doc) => (
-              <div
-                key={doc.id}
-                className="flex items-center justify-between rounded-lg border p-3"
-              >
+              <div key={doc.id} className="flex items-center justify-between rounded-lg border p-3">
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium">{doc.name}</p>
                   <div className="flex items-center gap-2 mt-0.5">
@@ -278,9 +267,7 @@ export default function PortalContractDetailPage({
             ))}
           </div>
         ) : (
-          <p className="mt-4 text-sm text-muted-foreground">
-            {t("contracts.noDocuments")}
-          </p>
+          <p className="mt-4 text-sm text-muted-foreground">{t("contracts.noDocuments")}</p>
         )}
       </div>
     </div>

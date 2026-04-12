@@ -4,11 +4,7 @@ import { TimeSummaryStats } from "../time-summary-stats";
 describe("TimeSummaryStats", () => {
   it("renders three summary cards", () => {
     render(
-      <TimeSummaryStats
-        currentWeekMinutes={480}
-        pendingCount={2}
-        approvedMonthMinutes={3600}
-      />,
+      <TimeSummaryStats currentWeekMinutes={480} pendingCount={2} approvedMonthMinutes={3600} />,
     );
     expect(screen.getByText("This Week")).toBeInTheDocument();
     expect(screen.getByText("Pending Review")).toBeInTheDocument();
@@ -17,11 +13,7 @@ describe("TimeSummaryStats", () => {
 
   it("formats whole hours without decimal", () => {
     render(
-      <TimeSummaryStats
-        currentWeekMinutes={480}
-        pendingCount={0}
-        approvedMonthMinutes={3600}
-      />,
+      <TimeSummaryStats currentWeekMinutes={480} pendingCount={0} approvedMonthMinutes={3600} />,
     );
     expect(screen.getByText("8h")).toBeInTheDocument();
     expect(screen.getByText("60h")).toBeInTheDocument();
@@ -29,24 +21,14 @@ describe("TimeSummaryStats", () => {
 
   it("formats fractional hours with one decimal", () => {
     render(
-      <TimeSummaryStats
-        currentWeekMinutes={90}
-        pendingCount={0}
-        approvedMonthMinutes={150}
-      />,
+      <TimeSummaryStats currentWeekMinutes={90} pendingCount={0} approvedMonthMinutes={150} />,
     );
     expect(screen.getByText("1.5h")).toBeInTheDocument();
     expect(screen.getByText("2.5h")).toBeInTheDocument();
   });
 
   it("renders pending count as number", () => {
-    render(
-      <TimeSummaryStats
-        currentWeekMinutes={0}
-        pendingCount={5}
-        approvedMonthMinutes={0}
-      />,
-    );
+    render(<TimeSummaryStats currentWeekMinutes={0} pendingCount={5} approvedMonthMinutes={0} />);
     expect(screen.getByText("5")).toBeInTheDocument();
   });
 

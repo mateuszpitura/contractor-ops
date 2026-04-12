@@ -1,15 +1,15 @@
-import { z } from "zod";
-import { TRPCError } from "@trpc/server";
 import { prisma } from "@contractor-ops/db";
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 import { router } from "../init.js";
-import { tenantProcedure } from "../middleware/tenant.js";
-import { requirePermission } from "../middleware/rbac.js";
 import { portalProcedure } from "../middleware/portal-auth.js";
+import { requirePermission } from "../middleware/rbac.js";
+import { tenantProcedure } from "../middleware/tenant.js";
 import {
-  sendForSignature,
   getSigningUrl,
-  voidEnvelope,
   resendToRecipient,
+  sendForSignature,
+  voidEnvelope,
 } from "../services/esign-orchestrator.js";
 
 // ---------------------------------------------------------------------------
@@ -123,61 +123,55 @@ export const esignRouter = router({
    * Get an embedded signing URL for a recipient.
    * Generated on-demand — never cache (DocuSign URLs expire in 5 min).
    */
-  getSigningUrl: tenantProcedure
-    .input(getSigningUrlInput)
-    .query(async ({ ctx, input }) => {
-      const result = await getSigningUrl({
-        organizationId: ctx.organizationId,
-        envelopeId: input.envelopeId,
-        recipientEmail: input.recipientEmail,
-        returnUrl: input.returnUrl,
-      });
+  getSigningUrl: tenantProcedure.input(getSigningUrlInput).query(async ({ ctx, input }) => {
+    const result = await getSigningUrl({
+      organizationId: ctx.organizationId,
+      envelopeId: input.envelopeId,
+      recipientEmail: input.recipientEmail,
+      returnUrl: input.returnUrl,
+    });
 
-      return result;
-    }),
+    return result;
+  }),
 
   /**
    * Get an embedded signing URL for a portal contractor.
    * Verifies the contractor is a recipient of the envelope before
    * delegating to the shared getSigningUrl orchestrator.
    */
-  getPortalSigningUrl: portalProcedure
-    .input(getSigningUrlInput)
-    .query(async ({ ctx, input }) => {
-      const envelope = await prisma.signingEnvelope.findFirst({
-        where: {
-          id: input.envelopeId,
-          organizationId: ctx.organizationId,
-        },
-        include: {
-          recipients: { select: { email: true } },
-        },
-      });
-
-      if (!envelope) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Envelope not found" });
-      }
-
-      const contractorEmail = ctx.contractor?.email?.toLowerCase();
-      if (!contractorEmail) {
-        throw new TRPCError({ code: "FORBIDDEN", message: "Not a recipient of this envelope" });
-      }
-
-      const isRecipient = envelope.recipients.some(
-        (r) => r.email.toLowerCase() === contractorEmail,
-      );
-
-      if (!isRecipient) {
-        throw new TRPCError({ code: "FORBIDDEN", message: "Not a recipient of this envelope" });
-      }
-
-      return getSigningUrl({
+  getPortalSigningUrl: portalProcedure.input(getSigningUrlInput).query(async ({ ctx, input }) => {
+    const envelope = await prisma.signingEnvelope.findFirst({
+      where: {
+        id: input.envelopeId,
         organizationId: ctx.organizationId,
-        envelopeId: input.envelopeId,
-        recipientEmail: input.recipientEmail,
-        returnUrl: input.returnUrl,
-      });
-    }),
+      },
+      include: {
+        recipients: { select: { email: true } },
+      },
+    });
+
+    if (!envelope) {
+      throw new TRPCError({ code: "NOT_FOUND", message: "Envelope not found" });
+    }
+
+    const contractorEmail = ctx.contractor?.email?.toLowerCase();
+    if (!contractorEmail) {
+      throw new TRPCError({ code: "FORBIDDEN", message: "Not a recipient of this envelope" });
+    }
+
+    const isRecipient = envelope.recipients.some((r) => r.email.toLowerCase() === contractorEmail);
+
+    if (!isRecipient) {
+      throw new TRPCError({ code: "FORBIDDEN", message: "Not a recipient of this envelope" });
+    }
+
+    return getSigningUrl({
+      organizationId: ctx.organizationId,
+      envelopeId: input.envelopeId,
+      recipientEmail: input.recipientEmail,
+      returnUrl: input.returnUrl,
+    });
+  }),
 
   /**
    * Void (cancel) a signing envelope.
@@ -217,73 +211,67 @@ export const esignRouter = router({
    * Get detailed information about a signing envelope.
    * Includes recipients and events (ordered by occurredAt desc).
    */
-  getEnvelopeDetail: tenantProcedure
-    .input(getEnvelopeDetailInput)
-    .query(async ({ ctx, input }) => {
-      const envelope = await prisma.signingEnvelope.findFirst({
-        where: {
-          id: input.envelopeId,
-          organizationId: ctx.organizationId,
+  getEnvelopeDetail: tenantProcedure.input(getEnvelopeDetailInput).query(async ({ ctx, input }) => {
+    const envelope = await prisma.signingEnvelope.findFirst({
+      where: {
+        id: input.envelopeId,
+        organizationId: ctx.organizationId,
+      },
+      include: {
+        recipients: {
+          orderBy: { routingOrder: "asc" },
         },
-        include: {
-          recipients: {
-            orderBy: { routingOrder: "asc" },
-          },
-          events: {
-            orderBy: { occurredAt: "desc" },
-          },
-          sentBy: {
-            select: { id: true, name: true, email: true },
-          },
+        events: {
+          orderBy: { occurredAt: "desc" },
         },
-      });
+        sentBy: {
+          select: { id: true, name: true, email: true },
+        },
+      },
+    });
 
-      if (!envelope) {
-        return null;
-      }
+    if (!envelope) {
+      return null;
+    }
 
-      return plain(envelope);
-    }),
+    return plain(envelope);
+  }),
 
   /**
    * List all signing envelopes for a contract.
    * Ordered by createdAt desc with recipient summary.
    */
-  listEnvelopes: tenantProcedure
-    .input(listEnvelopesInput)
-    .query(async ({ ctx, input }) => {
-      const envelopes = await prisma.signingEnvelope.findMany({
-        where: {
-          contractId: input.contractId,
-          organizationId: ctx.organizationId,
+  listEnvelopes: tenantProcedure.input(listEnvelopesInput).query(async ({ ctx, input }) => {
+    const envelopes = await prisma.signingEnvelope.findMany({
+      where: {
+        contractId: input.contractId,
+        organizationId: ctx.organizationId,
+      },
+      orderBy: { createdAt: "desc" },
+      include: {
+        recipients: {
+          select: { id: true, name: true, email: true, status: true },
         },
-        orderBy: { createdAt: "desc" },
-        include: {
-          recipients: {
-            select: { id: true, name: true, email: true, status: true },
-          },
-          sentBy: {
-            select: { id: true, name: true },
-          },
+        sentBy: {
+          select: { id: true, name: true },
         },
-      });
+      },
+    });
 
-      // Add recipient summary (signed/total count)
-      const items = envelopes.map((env) => {
-        const signedCount = env.recipients.filter(
-          (r) => r.status === "SIGNED",
-        ).length;
-        return {
-          ...env,
-          recipientSummary: {
-            signed: signedCount,
-            total: env.recipients.length,
-          },
-        };
-      });
+    // Add recipient summary (signed/total count)
+    const items = envelopes.map((env) => {
+      const signedCount = env.recipients.filter((r) => r.status === "SIGNED").length;
+      return {
+        ...env,
+        recipientSummary: {
+          signed: signedCount,
+          total: env.recipients.length,
+        },
+      };
+    });
 
-      return plain(items);
-    }),
+    return plain(items);
+  }),
 
   /**
    * List pending signing envelopes for the current contractor (portal).

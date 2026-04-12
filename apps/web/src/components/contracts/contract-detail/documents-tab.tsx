@@ -1,14 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
 import { PenLine, Upload } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
-import { Button } from "@/components/ui/button";
-import { DropZone } from "@/components/documents/drop-zone";
+import { useTranslations } from "next-intl";
+import { useState } from "react";
 import { DocumentList } from "@/components/documents/document-list";
+import { DropZone } from "@/components/documents/drop-zone";
+import { Button } from "@/components/ui/button";
+import { trpc } from "@/trpc/init";
 import { SendForSignatureDialog } from "./send-for-signature-dialog";
 
 type DocumentsTabProps = {
@@ -27,9 +26,7 @@ export function DocumentsTab({ contractId, contractParties = [] }: DocumentsTabP
   const [selectedDocId, setSelectedDocId] = useState("");
 
   // Check if at least one e-sign provider is connected
-  const connectionsQuery = useQuery(
-    trpc.esign.listConnections.queryOptions()
-  );
+  const connectionsQuery = useQuery(trpc.esign.listConnections.queryOptions());
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const hasProvider = ((connectionsQuery.data ?? []) as any[]).length > 0;
 
@@ -40,7 +37,7 @@ export function DocumentsTab({ contractId, contractParties = [] }: DocumentsTabP
       entityId: contractId,
       page: 1,
       pageSize: 50,
-    })
+    }),
   );
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const documents = ((documentsQuery.data as any)?.items ?? []) as Array<{
@@ -56,10 +53,7 @@ export function DocumentsTab({ contractId, contractParties = [] }: DocumentsTabP
   return (
     <div className="space-y-6">
       {/* Upload area */}
-      <DropZone
-        entityType="CONTRACT"
-        entityId={contractId}
-      />
+      <DropZone entityType="CONTRACT" entityId={contractId} />
 
       {/* Per-document send for signature actions */}
       {hasProvider && documents.length > 0 && (
@@ -92,4 +86,3 @@ export function DocumentsTab({ contractId, contractParties = [] }: DocumentsTabP
     </div>
   );
 }
-

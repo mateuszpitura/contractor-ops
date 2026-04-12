@@ -9,9 +9,7 @@ const optionalUrl = z.string().url().optional();
 // ── Core ────────────────────────────────────────────────────────────────────
 
 const coreSchema = z.object({
-  NODE_ENV: z
-    .enum(["development", "production", "test"])
-    .default("development"),
+  NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
   NEXT_PUBLIC_APP_URL: z.string().url().default("http://localhost:3000"),
   APP_URL: z.string().url().default("http://localhost:3000"),
 });
@@ -44,9 +42,15 @@ const stripeSchema = z.object({
   STRIPE_PRICE_STARTER: z.string().startsWith("price_", "Must be a valid Stripe price ID"),
   STRIPE_PRICE_PRO: z.string().startsWith("price_", "Must be a valid Stripe price ID"),
   STRIPE_PRICE_ENTERPRISE: z.string().startsWith("price_", "Must be a valid Stripe price ID"),
-  NEXT_PUBLIC_STRIPE_PRICE_TOPUP_10: z.string().startsWith("price_", "Must be a valid Stripe price ID"),
-  NEXT_PUBLIC_STRIPE_PRICE_TOPUP_25: z.string().startsWith("price_", "Must be a valid Stripe price ID"),
-  NEXT_PUBLIC_STRIPE_PRICE_TOPUP_50: z.string().startsWith("price_", "Must be a valid Stripe price ID"),
+  NEXT_PUBLIC_STRIPE_PRICE_TOPUP_10: z
+    .string()
+    .startsWith("price_", "Must be a valid Stripe price ID"),
+  NEXT_PUBLIC_STRIPE_PRICE_TOPUP_25: z
+    .string()
+    .startsWith("price_", "Must be a valid Stripe price ID"),
+  NEXT_PUBLIC_STRIPE_PRICE_TOPUP_50: z
+    .string()
+    .startsWith("price_", "Must be a valid Stripe price ID"),
 });
 
 // ── Email (Resend) ──────────────────────────────────────────────────────────
@@ -176,7 +180,6 @@ const portalSchema = z.object({
   PORTAL_BASE_DOMAIN: z.string().default("portal.localhost:3000"),
 });
 
-
 // ── Observability ──────────────────────────────────────────────────────────
 
 const observabilitySchema = z.object({
@@ -186,9 +189,7 @@ const observabilitySchema = z.object({
   SENTRY_AUTH_TOKEN: z.string().optional(),
   AXIOM_TOKEN: z.string().optional(),
   AXIOM_DATASET: z.string().default("contractor-ops"),
-  LOG_LEVEL: z
-    .enum(["trace", "debug", "info", "warn", "error", "fatal"])
-    .optional(),
+  LOG_LEVEL: z.enum(["trace", "debug", "info", "warn", "error", "fatal"]).optional(),
 });
 
 // ── Full server env (all variables) ─────────────────────────────────────────
@@ -239,9 +240,7 @@ export function validateServerEnv(
 ): ServerEnv {
   const result = serverEnvSchema.safeParse(env);
   if (!result.success) {
-    const errors = result.error.issues
-      .map((i) => `  ${i.path.join(".")}: ${i.message}`)
-      .join("\n");
+    const errors = result.error.issues.map((i) => `  ${i.path.join(".")}: ${i.message}`).join("\n");
     throw new Error(`Environment validation failed:\n${errors}`);
   }
   return result.data;
@@ -255,9 +254,7 @@ export function validateClientEnv(
 ): ClientEnv {
   const result = clientEnvSchema.safeParse(env);
   if (!result.success) {
-    const errors = result.error.issues
-      .map((i) => `  ${i.path.join(".")}: ${i.message}`)
-      .join("\n");
+    const errors = result.error.issues.map((i) => `  ${i.path.join(".")}: ${i.message}`).join("\n");
     throw new Error(`Client environment validation failed:\n${errors}`);
   }
   return result.data;

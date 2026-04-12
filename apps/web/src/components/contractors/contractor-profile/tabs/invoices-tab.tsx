@@ -1,25 +1,17 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
-import {
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-  type ColumnDef,
-} from "@tanstack/react-table";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import type { ColumnDef } from "@tanstack/react-table";
+import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { FileText, Upload } from "lucide-react";
 import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
+import { useCallback, useMemo, useState } from "react";
+import type { InvoiceRow } from "@/components/invoices/invoice-table/columns";
+import { getColumns } from "@/components/invoices/invoice-table/columns";
+import { InvoiceUploadArea } from "@/components/invoices/invoice-upload-area";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -28,12 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-import { InvoiceUploadArea } from "@/components/invoices/invoice-upload-area";
-import {
-  getColumns,
-  type InvoiceRow,
-} from "@/components/invoices/invoice-table/columns";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Overdue row detection
@@ -84,24 +71,18 @@ export function InvoicesTab({ contractorId }: InvoicesTabProps) {
   );
 
   const data = useMemo(() => {
-    const result = invoicesQuery.data as
-      | { items: InvoiceRow[]; totalCount: number }
-      | undefined;
+    const result = invoicesQuery.data as { items: InvoiceRow[]; totalCount: number } | undefined;
     return result?.items ?? [];
   }, [invoicesQuery.data]);
 
   const totalRows = useMemo(() => {
-    const result = invoicesQuery.data as
-      | { items: unknown[]; totalCount: number }
-      | undefined;
+    const result = invoicesQuery.data as { items: unknown[]; totalCount: number } | undefined;
     return result?.totalCount ?? 0;
   }, [invoicesQuery.data]);
 
   // Column definitions - filter out contractor column since we're scoped
   const columns: ColumnDef<InvoiceRow>[] = useMemo(() => {
-    const allColumns = getColumns((key: string) =>
-      t(key as Parameters<typeof t>[0]),
-    );
+    const allColumns = getColumns((key: string) => t(key as Parameters<typeof t>[0]));
     return allColumns.filter((col) => col.id !== "contractor");
   }, [t]);
 
@@ -148,9 +129,7 @@ export function InvoicesTab({ contractorId }: InvoicesTabProps) {
         <div className="flex min-h-[300px] flex-col items-center justify-center gap-3 text-center">
           <FileText className="size-10 text-muted-foreground/50" />
           <h4 className="text-sm font-medium">{t("tab.noInvoicesHeading")}</h4>
-          <p className="max-w-sm text-sm text-muted-foreground">
-            {t("tab.noInvoicesBody")}
-          </p>
+          <p className="max-w-sm text-sm text-muted-foreground">{t("tab.noInvoicesBody")}</p>
           <Button size="sm" onClick={() => setUploadOpen(true)}>
             <Upload className="me-1.5 size-3.5" />
             {t("tab.uploadInvoice")}
@@ -186,15 +165,10 @@ export function InvoicesTab({ contractorId }: InvoicesTabProps) {
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <TableHead
-                    key={header.id}
-                  >
+                  <TableHead key={header.id}>
                     {header.isPlaceholder
                       ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
+                      : flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 ))}
               </TableRow>
@@ -204,16 +178,11 @@ export function InvoicesTab({ contractorId }: InvoicesTabProps) {
             {table.getRowModel().rows.map((row) => (
               <TableRow
                 key={row.id}
-                className={`${
-                  isRowOverdue(row.original) ? "bg-destructive/5" : ""
-                }`}
+                className={`${isRowOverdue(row.original) ? "bg-destructive/5" : ""}`}
               >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>
-                    {flexRender(
-                      cell.column.columnDef.cell,
-                      cell.getContext(),
-                    )}
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
                 ))}
               </TableRow>

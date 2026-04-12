@@ -1,18 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-  type ColumnDef,
-  type VisibilityState,
-} from "@tanstack/react-table";
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import type { ColumnDef, VisibilityState } from "@tanstack/react-table";
+import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp, ArrowUpDown, FileText, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -23,12 +16,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-import { getColumns, type ContractRow } from "./columns";
-import { DataTableToolbar } from "./data-table-toolbar";
-import { DataTablePagination } from "./data-table-pagination";
-import { DataTableColumnToggle } from "./data-table-column-toggle";
+import { trpc } from "@/trpc/init";
+import type { ContractRow } from "./columns";
+import { getColumns } from "./columns";
 import { DataTableBulkActions } from "./data-table-bulk-actions";
+import { DataTableColumnToggle } from "./data-table-column-toggle";
+import { DataTablePagination } from "./data-table-pagination";
+import { DataTableToolbar } from "./data-table-toolbar";
 import { useContractFilters } from "./use-contract-filters";
 
 const STORAGE_KEY = "contract-table-columns";
@@ -44,11 +38,7 @@ interface ContractDataTableProps {
  * Uses server-side pagination, sorting, and filtering via tRPC.
  * URL state is managed by nuqs for shareable filtered views.
  */
-export function ContractDataTable({
-  onRowClick,
-  onNewContract,
-  onImport,
-}: ContractDataTableProps) {
+export function ContractDataTable({ onRowClick, onNewContract, onImport }: ContractDataTableProps) {
   const t = useTranslations("Contracts");
   const tAria = useTranslations("Common.aria");
 
@@ -56,17 +46,15 @@ export function ContractDataTable({
   const [filters, setFilters] = useContractFilters();
 
   // Column visibility from localStorage
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
-    () => {
-      if (typeof window === "undefined") return {};
-      try {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        return stored ? (JSON.parse(stored) as VisibilityState) : {};
-      } catch {
-        return {};
-      }
-    },
-  );
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(() => {
+    if (typeof window === "undefined") return {};
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      return stored ? (JSON.parse(stored) as VisibilityState) : {};
+    } catch {
+      return {};
+    }
+  });
 
   // Persist column visibility
   useEffect(() => {
@@ -86,27 +74,36 @@ export function ContractDataTable({
       page: filters.page,
       pageSize: filters.pageSize,
       search: filters.search || undefined,
-      sortBy: (filters.sortBy as "createdAt" | "title" | "status" | "endDate" | "startDate" | "type") || "endDate",
+      sortBy:
+        (filters.sortBy as "createdAt" | "title" | "status" | "endDate" | "startDate" | "type") ||
+        "endDate",
       sortOrder: (filters.sortOrder as "asc" | "desc") || "asc",
       filters: {
         status: filters.status.length
-          ? (filters.status as Array<"DRAFT" | "PENDING_SIGNATURE" | "ACTIVE" | "EXPIRING" | "EXPIRED" | "TERMINATED" | "SUPERSEDED" | "ARCHIVED">)
+          ? (filters.status as Array<
+              | "DRAFT"
+              | "PENDING_SIGNATURE"
+              | "ACTIVE"
+              | "EXPIRING"
+              | "EXPIRED"
+              | "TERMINATED"
+              | "SUPERSEDED"
+              | "ARCHIVED"
+            >)
           : undefined,
         type: filters.type.length
-          ? (filters.type as Array<"B2B_MASTER_SERVICE" | "STATEMENT_OF_WORK" | "NDA" | "IP_ASSIGNMENT" | "DPA" | "OTHER">)
+          ? (filters.type as Array<
+              "B2B_MASTER_SERVICE" | "STATEMENT_OF_WORK" | "NDA" | "IP_ASSIGNMENT" | "DPA" | "OTHER"
+            >)
           : undefined,
         billingModel: filters.billingModel.length
-          ? (filters.billingModel as Array<"MONTHLY_RETAINER" | "HOURLY" | "DAILY" | "MILESTONE" | "DELIVERABLE_BASED" | "MIXED">)
+          ? (filters.billingModel as Array<
+              "MONTHLY_RETAINER" | "HOURLY" | "DAILY" | "MILESTONE" | "DELIVERABLE_BASED" | "MIXED"
+            >)
           : undefined,
-        ownerUserId: filters.ownerUserId.length
-          ? filters.ownerUserId
-          : undefined,
-        endDateFrom: filters.endDateFrom
-          ? new Date(filters.endDateFrom).toISOString()
-          : undefined,
-        endDateTo: filters.endDateTo
-          ? new Date(filters.endDateTo).toISOString()
-          : undefined,
+        ownerUserId: filters.ownerUserId.length ? filters.ownerUserId : undefined,
+        endDateFrom: filters.endDateFrom ? new Date(filters.endDateFrom).toISOString() : undefined,
+        endDateTo: filters.endDateTo ? new Date(filters.endDateTo).toISOString() : undefined,
         complianceRiskLevel: filters.complianceRiskLevel.length
           ? (filters.complianceRiskLevel as Array<"LOW" | "MEDIUM" | "HIGH">)
           : undefined,
@@ -122,22 +119,21 @@ export function ContractDataTable({
   });
 
   const data = useMemo(() => {
-    const result = contractsQuery.data as
-      | { items: ContractRow[]; totalCount: number }
-      | undefined;
+    const result = contractsQuery.data as { items: ContractRow[]; totalCount: number } | undefined;
     return result?.items ?? [];
   }, [contractsQuery.data]);
 
   const totalRows = useMemo(() => {
-    const result = contractsQuery.data as
-      | { items: unknown[]; totalCount: number }
-      | undefined;
+    const result = contractsQuery.data as { items: unknown[]; totalCount: number } | undefined;
     return result?.totalCount ?? 0;
   }, [contractsQuery.data]);
 
   // Column definitions
   const columns: ColumnDef<ContractRow>[] = useMemo(
-    () => getColumns((key: string, params?: Record<string, string | number>) => t(key as Parameters<typeof t>[0], params)),
+    () =>
+      getColumns((key: string, params?: Record<string, string | number>) =>
+        t(key as Parameters<typeof t>[0], params),
+      ),
     [t],
   );
 
@@ -161,9 +157,7 @@ export function ContractDataTable({
     onSortingChange: (updater) => {
       const next =
         typeof updater === "function"
-          ? updater([
-              { id: filters.sortBy, desc: filters.sortOrder === "desc" },
-            ])
+          ? updater([{ id: filters.sortBy, desc: filters.sortOrder === "desc" }])
           : updater;
       if (next.length > 0) {
         void setFilters({
@@ -187,15 +181,17 @@ export function ContractDataTable({
 
   // Filter change handler
   const handleFiltersChange = useCallback(
-    (partial: Partial<{
-      status: string[];
-      type: string[];
-      billingModel: string[];
-      ownerUserId: string[];
-      endDateFrom: string;
-      endDateTo: string;
-      complianceRiskLevel: string[];
-    }>) => {
+    (
+      partial: Partial<{
+        status: string[];
+        type: string[];
+        billingModel: string[];
+        ownerUserId: string[];
+        endDateFrom: string;
+        endDateTo: string;
+        complianceRiskLevel: string[];
+      }>,
+    ) => {
       void setFilters({ ...partial, page: 1 });
     },
     [setFilters],
@@ -310,12 +306,14 @@ export function ContractDataTable({
                         type="button"
                         className="flex items-center gap-1 uppercase hover:text-foreground"
                         onClick={header.column.getToggleSortingHandler()}
-                        aria-label={tAria("sortBy", { column: typeof header.column.columnDef.header === "string" ? header.column.columnDef.header : header.id })}
+                        aria-label={tAria("sortBy", {
+                          column:
+                            typeof header.column.columnDef.header === "string"
+                              ? header.column.columnDef.header
+                              : header.id,
+                        })}
                       >
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
+                        {flexRender(header.column.columnDef.header, header.getContext())}
                         {header.column.getIsSorted() === "asc" ? (
                           <ArrowUp className="h-3 w-3" />
                         ) : header.column.getIsSorted() === "desc" ? (
@@ -325,10 +323,7 @@ export function ContractDataTable({
                         )}
                       </button>
                     ) : (
-                      flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )
+                      flexRender(header.column.columnDef.header, header.getContext())
                     )}
                   </TableHead>
                 ))}
@@ -340,13 +335,11 @@ export function ContractDataTable({
               // Skeleton loading rows
               Array.from({ length: 8 }).map((_, i) => (
                 <TableRow key={`skeleton-${i}`}>
-                  {table
-                    .getVisibleLeafColumns()
-                    .map((col) => (
-                      <TableCell key={col.id}>
-                        <Skeleton className="h-4 w-full max-w-[120px]" />
-                      </TableCell>
-                    ))}
+                  {table.getVisibleLeafColumns().map((col) => (
+                    <TableCell key={col.id}>
+                      <Skeleton className="h-4 w-full max-w-[120px]" />
+                    </TableCell>
+                  ))}
                 </TableRow>
               ))
             ) : table.getRowModel().rows.length > 0 ? (
@@ -359,10 +352,7 @@ export function ContractDataTable({
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
                 </TableRow>
@@ -374,17 +364,9 @@ export function ContractDataTable({
                   colSpan={table.getVisibleLeafColumns().length}
                   className="py-16 text-center"
                 >
-                  <h3 className="text-[16px] font-medium">
-                    {t("noResults.heading")}
-                  </h3>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {t("noResults.body")}
-                  </p>
-                  <Button
-                    variant="outline"
-                    className="mt-4"
-                    onClick={clearFilters}
-                  >
+                  <h3 className="text-[16px] font-medium">{t("noResults.heading")}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">{t("noResults.body")}</p>
+                  <Button variant="outline" className="mt-4" onClick={clearFilters}>
                     {t("noResults.cta")}
                   </Button>
                 </TableCell>
@@ -397,12 +379,8 @@ export function ContractDataTable({
                   className="py-16 text-center"
                 >
                   <FileText className="mx-auto h-10 w-10 text-muted-foreground/50" />
-                  <h3 className="mt-3 text-[16px] font-medium">
-                    {t("empty.heading")}
-                  </h3>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {t("empty.body")}
-                  </p>
+                  <h3 className="mt-3 text-[16px] font-medium">{t("empty.heading")}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">{t("empty.body")}</p>
                   <Button className="mt-4" onClick={onNewContract}>
                     {t("empty.cta")}
                   </Button>

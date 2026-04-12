@@ -1,26 +1,24 @@
 "use client";
 
-import { Suspense, useState } from "react";
-import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
 import { Truck } from "lucide-react";
+import { useParams } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { Suspense, useState } from "react";
+import { AssignmentDialog } from "@/components/equipment/assignment-dialog";
+import { CarrierShipmentForm } from "@/components/equipment/carrier-shipment-form";
+import { EquipmentDetailHeader } from "@/components/equipment/equipment-detail/equipment-detail-header";
+import { EquipmentDetailTabs } from "@/components/equipment/equipment-detail/equipment-detail-tabs";
+import { TabAssignments } from "@/components/equipment/equipment-detail/tab-assignments";
+import { TabInfo } from "@/components/equipment/equipment-detail/tab-info";
+import { TabShipments } from "@/components/equipment/equipment-detail/tab-shipments";
+import { EquipmentForm } from "@/components/equipment/equipment-form";
+import { ShipmentForm } from "@/components/equipment/shipment-form";
+import { useBreadcrumbOverride } from "@/components/layout/breadcrumb-context";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "@/i18n/navigation";
-import { useBreadcrumbOverride } from "@/components/layout/breadcrumb-context";
-
-import { EquipmentDetailHeader } from "@/components/equipment/equipment-detail/equipment-detail-header";
-import { EquipmentDetailTabs } from "@/components/equipment/equipment-detail/equipment-detail-tabs";
-import { TabInfo } from "@/components/equipment/equipment-detail/tab-info";
-import { TabAssignments } from "@/components/equipment/equipment-detail/tab-assignments";
-import { TabShipments } from "@/components/equipment/equipment-detail/tab-shipments";
-import { EquipmentForm } from "@/components/equipment/equipment-form";
-import { AssignmentDialog } from "@/components/equipment/assignment-dialog";
-import { ShipmentForm } from "@/components/equipment/shipment-form";
-import { CarrierShipmentForm } from "@/components/equipment/carrier-shipment-form";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Skeleton
@@ -67,9 +65,7 @@ export default function EquipmentDetailPage() {
   const [shipmentOpen, setShipmentOpen] = useState(false);
   const [carrierShipmentOpen, setCarrierShipmentOpen] = useState(false);
 
-  const equipmentQuery = useQuery(
-    trpc.equipment.getById.queryOptions({ id: params.id }),
-  );
+  const equipmentQuery = useQuery(trpc.equipment.getById.queryOptions({ id: params.id }));
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const equipment = equipmentQuery.data as any;
@@ -98,9 +94,7 @@ export default function EquipmentDetailPage() {
 
   // Find pending return for current contractor
   const pendingReturn = equipment?.currentAssignment
-    ? returnRequests.find(
-        (r) => r.contractorId === equipment.currentAssignment?.contractorId,
-      )
+    ? returnRequests.find((r) => r.contractorId === equipment.currentAssignment?.contractorId)
     : null;
 
   const pendingReturnData = pendingReturn
@@ -125,8 +119,7 @@ export default function EquipmentDetailPage() {
   if (equipmentQuery.isError) {
     const isNotFound =
       equipmentQuery.error?.message?.includes("NOT_FOUND") ||
-      (equipmentQuery.error as { data?: { code?: string } })?.data?.code ===
-        "NOT_FOUND";
+      (equipmentQuery.error as { data?: { code?: string } })?.data?.code === "NOT_FOUND";
 
     if (isNotFound) {
       return (
@@ -142,10 +135,7 @@ export default function EquipmentDetailPage() {
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center gap-3 text-center">
         <h2 className="text-lg font-medium">{t("error.loadFailed")}</h2>
-        <Button
-          variant="outline"
-          onClick={() => equipmentQuery.refetch()}
-        >
+        <Button variant="outline" onClick={() => equipmentQuery.refetch()}>
           Retry
         </Button>
       </div>
@@ -168,11 +158,7 @@ export default function EquipmentDetailPage() {
 
       {configuredCarriers.length > 0 && !equipment.status?.includes("RETIRED") && (
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCarrierShipmentOpen(true)}
-          >
+          <Button variant="outline" size="sm" onClick={() => setCarrierShipmentOpen(true)}>
             <Truck className="me-1.5 size-4" />
             {t("carrier.shipViaCarrier")}
           </Button>
@@ -181,9 +167,7 @@ export default function EquipmentDetailPage() {
 
       <Suspense fallback={<DetailSkeleton />}>
         <EquipmentDetailTabs
-          infoContent={
-            <TabInfo equipment={equipment} onEdit={() => setFormOpen(true)} />
-          }
+          infoContent={<TabInfo equipment={equipment} onEdit={() => setFormOpen(true)} />}
           assignmentsContent={
             <TabAssignments
               assignments={equipment.assignments ?? []}
@@ -202,11 +186,7 @@ export default function EquipmentDetailPage() {
       </Suspense>
 
       {/* Dialogs */}
-      <EquipmentForm
-        open={formOpen}
-        onOpenChange={setFormOpen}
-        equipment={equipment}
-      />
+      <EquipmentForm open={formOpen} onOpenChange={setFormOpen} equipment={equipment} />
 
       <AssignmentDialog
         open={assignOpen}

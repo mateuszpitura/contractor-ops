@@ -1,23 +1,14 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import {
-  FileText,
-  Clock,
-  Banknote,
-  CalendarDays,
-} from "lucide-react";
+import { Banknote, CalendarDays, Clock, FileText } from "lucide-react";
 import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
+import { PortalPendingSignatures } from "@/components/portal/portal-pending-signatures";
+import { SummaryCard, SummaryCardSkeleton } from "@/components/portal/summary-card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "@/i18n/navigation";
-import {
-  SummaryCard,
-  SummaryCardSkeleton,
-} from "@/components/portal/summary-card";
-import { PortalPendingSignatures } from "@/components/portal/portal-pending-signatures";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Helpers

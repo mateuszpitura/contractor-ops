@@ -43,10 +43,7 @@ export function SoftBlockModal({ isOpen, onSelectPlan }: SoftBlockModalProps) {
         </DialogHeader>
 
         <div className="mt-4">
-          <PlanComparisonGrid
-            compact={true}
-            onSelectPlan={onSelectPlan}
-          />
+          <PlanComparisonGrid compact={true} onSelectPlan={onSelectPlan} />
         </div>
       </DialogContent>
     </Dialog>

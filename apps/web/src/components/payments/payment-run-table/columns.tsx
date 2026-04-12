@@ -1,14 +1,14 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
+import { CheckCircle2, Download, MoreHorizontal, XCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Download, CheckCircle2, XCircle } from "lucide-react";
 import { PaymentRunBadge } from "../payment-run-badge";
 
 // ---------------------------------------------------------------------------
@@ -110,18 +110,14 @@ export function getColumns(
     {
       accessorKey: "invoiceCount",
       header: t("columns.invoices"),
-      cell: ({ row }) => (
-        <span className="text-sm">{row.original.invoiceCount}</span>
-      ),
+      cell: ({ row }) => <span className="text-sm">{row.original.invoiceCount}</span>,
       enableSorting: false,
     },
 
     // 5. Total
     {
       accessorKey: "totalMinor",
-      header: () => (
-        <span className="text-end block">{t("columns.total")}</span>
-      ),
+      header: () => <span className="text-end block">{t("columns.total")}</span>,
       cell: ({ row }) => (
         <span className="font-mono text-sm tabular-nums text-end block">
           {formatMinorUnits(row.original.totalMinor, row.original.currency)}
@@ -150,9 +146,7 @@ export function getColumns(
         const showDownload = !!run.exportedAt;
         const showMarkPaid = run.status === "EXPORTED";
         const showCancel =
-          run.status === "DRAFT" ||
-          run.status === "LOCKED" ||
-          run.status === "EXPORTED";
+          run.status === "DRAFT" || run.status === "LOCKED" || run.status === "EXPORTED";
 
         if (!showDownload && !showMarkPaid && !showCancel) return null;
 

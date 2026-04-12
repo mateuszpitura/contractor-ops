@@ -1,5 +1,5 @@
 import { createHmac } from "node:crypto";
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockFindUnique = vi.fn();
 
@@ -146,14 +146,11 @@ describe("DocuSignAdapter", () => {
   it("exchangeCodeForTokens throws on non-ok response", async () => {
     process.env.DOCUSIGN_CLIENT_ID = "id";
     process.env.DOCUSIGN_CLIENT_SECRET = "secret";
-    vi.stubGlobal(
-      "fetch",
-      mockFetch(false, "bad", 401),
-    );
+    vi.stubGlobal("fetch", mockFetch(false, "bad", 401));
 
-    await expect(
-      adapter.exchangeCodeForTokens("code", "http://localhost/cb"),
-    ).rejects.toThrow(/DocuSign OAuth exchange failed/);
+    await expect(adapter.exchangeCodeForTokens("code", "http://localhost/cb")).rejects.toThrow(
+      /DocuSign OAuth exchange failed/,
+    );
   });
 
   it("refreshToken posts refresh_token grant", async () => {

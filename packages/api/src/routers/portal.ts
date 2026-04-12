@@ -1,34 +1,28 @@
 import { randomUUID } from "node:crypto";
-import { z } from "zod";
-import { TRPCError } from "@trpc/server";
 import { prisma } from "@contractor-ops/db";
 import { returnRequestCreateSchema } from "@contractor-ops/validators";
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
+import * as E from "../errors.js";
 import { router } from "../init.js";
-import {
-  portalProcedure,
-  portalPublicProcedure,
-} from "../middleware/portal-auth.js";
+import { portalProcedure, portalPublicProcedure } from "../middleware/portal-auth.js";
+import { encryptBankAccount } from "../services/bank-account-crypto.js";
+import type { InPostClientConfig } from "../services/courier/inpost-client.js";
+import { InPostClient } from "../services/courier/inpost-client.js";
+import { dispatch } from "../services/notification-service.js";
+import { createChangeRequest } from "../services/portal-change-request.js";
 import {
   createMagicLinkToken,
-  verifyMagicLinkToken,
   findContractorsByEmail,
   sendPortalMagicLink,
+  verifyMagicLinkToken,
 } from "../services/portal-magic-link.js";
-import {
-  createPortalSession,
-  deletePortalSession,
-} from "../services/portal-session.js";
+import { createPortalSession, deletePortalSession } from "../services/portal-session.js";
 import {
   createPresignedDownloadUrl,
   createPresignedUploadUrl,
   generateStorageKey,
 } from "../services/r2.js";
-import { createChangeRequest } from "../services/portal-change-request.js";
-import { encryptBankAccount } from "../services/bank-account-crypto.js";
-import { InPostClient } from "../services/courier/inpost-client.js";
-import type { InPostClientConfig } from "../services/courier/inpost-client.js";
-import { dispatch } from "../services/notification-service.js";
-import * as E from "../errors.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -140,8 +134,7 @@ export const portalRouter = router({
       // Single org -- auto-create session
       if (contractors.length === 1) {
         const c = contractors[0]!;
-        const ipAddress =
-          ctx.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? undefined;
+        const ipAddress = ctx.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? undefined;
         const userAgent = ctx.headers.get("user-agent") ?? undefined;
 
         const session = await createPortalSession({
@@ -220,8 +213,7 @@ export const portalRouter = router({
         });
       }
 
-      const ipAddress =
-        ctx.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? undefined;
+      const ipAddress = ctx.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? undefined;
       const userAgent = ctx.headers.get("user-agent") ?? undefined;
 
       const session = await createPortalSession({
@@ -288,12 +280,8 @@ export const portalRouter = router({
       select: { totalGrosze: true, currency: true },
     });
 
-    const recentPaymentsGrosze = recentPaidInvoices.reduce(
-      (sum, inv) => sum + inv.totalGrosze,
-      0,
-    );
-    const recentPaymentsCurrency =
-      recentPaidInvoices[0]?.currency ?? "PLN";
+    const recentPaymentsGrosze = recentPaidInvoices.reduce((sum, inv) => sum + inv.totalGrosze, 0);
+    const recentPaymentsCurrency = recentPaidInvoices[0]?.currency ?? "PLN";
 
     // Upcoming deadline: earliest due date from unpaid invoices or earliest end date from expiring contracts
     const nextUnpaidInvoice = await prisma.invoice.findFirst({
@@ -319,12 +307,9 @@ export const portalRouter = router({
     let upcomingDeadline: Date | null = null;
     const candidates: Date[] = [];
     if (nextUnpaidInvoice?.dueDate) candidates.push(nextUnpaidInvoice.dueDate);
-    if (nextExpiringContract?.endDate)
-      candidates.push(nextExpiringContract.endDate);
+    if (nextExpiringContract?.endDate) candidates.push(nextExpiringContract.endDate);
     if (candidates.length > 0) {
-      upcomingDeadline = candidates.sort(
-        (a, b) => a.getTime() - b.getTime(),
-      )[0]!;
+      upcomingDeadline = candidates.sort((a, b) => a.getTime() - b.getTime())[0]!;
     }
 
     // Recent activity: last 5 invoices with their status-derived events
@@ -357,7 +342,10 @@ export const portalRouter = router({
           detail: inv.rejectionReason,
         });
       if (inv.approvedAt)
-        events.push({ ts: inv.approvedAt, event: `Invoice ${inv.invoiceNumber} - Invoice approved` });
+        events.push({
+          ts: inv.approvedAt,
+          event: `Invoice ${inv.invoiceNumber} - Invoice approved`,
+        });
       if (inv.reviewedAt)
         events.push({ ts: inv.reviewedAt, event: `Invoice ${inv.invoiceNumber} - Under review` });
       if (inv.receivedAt)
@@ -421,77 +409,73 @@ export const portalRouter = router({
    * Get contract detail with attached documents and download URLs.
    * Excludes internal fields. Generates presigned download URLs for documents.
    */
-  getContract: portalProcedure
-    .input(z.object({ id: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const contract = await prisma.contract.findFirst({
-        where: { id: input.id, contractorId: ctx.contractorId },
-        select: {
-          id: true,
-          contractNumber: true,
-          title: true,
-          type: true,
-          status: true,
-          startDate: true,
-          endDate: true,
-          currency: true,
-          billingModel: true,
-          rateType: true,
-          rateValueGrosze: true,
-          paymentTermsDays: true,
-          autoRenewal: true,
-          noticePeriodDays: true,
-          ratePeriods: {
-            select: {
-              rateType: true,
-              rateValueGrosze: true,
-              currency: true,
-              validFrom: true,
-              validTo: true,
-            },
+  getContract: portalProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
+    const contract = await prisma.contract.findFirst({
+      where: { id: input.id, contractorId: ctx.contractorId },
+      select: {
+        id: true,
+        contractNumber: true,
+        title: true,
+        type: true,
+        status: true,
+        startDate: true,
+        endDate: true,
+        currency: true,
+        billingModel: true,
+        rateType: true,
+        rateValueGrosze: true,
+        paymentTermsDays: true,
+        autoRenewal: true,
+        noticePeriodDays: true,
+        ratePeriods: {
+          select: {
+            rateType: true,
+            rateValueGrosze: true,
+            currency: true,
+            validFrom: true,
+            validTo: true,
           },
         },
-      });
+      },
+    });
 
-      if (!contract) {
-        throw new TRPCError({ code: "NOT_FOUND" });
-      }
+    if (!contract) {
+      throw new TRPCError({ code: "NOT_FOUND" });
+    }
 
-      // Fetch attached documents via DocumentLink
-      const docLinks = await prisma.documentLink.findMany({
-        where: { entityType: "CONTRACT", entityId: input.id },
-        include: {
-          document: {
-            select: {
-              id: true,
-              originalFileName: true,
-              mimeType: true,
-              fileSizeBytes: true,
-              documentType: true,
-              storageKey: true,
-            },
+    // Fetch attached documents via DocumentLink
+    const docLinks = await prisma.documentLink.findMany({
+      where: { entityType: "CONTRACT", entityId: input.id },
+      include: {
+        document: {
+          select: {
+            id: true,
+            originalFileName: true,
+            mimeType: true,
+            fileSizeBytes: true,
+            documentType: true,
+            storageKey: true,
           },
         },
-      });
+      },
+    });
 
-      const documents = await Promise.all(
-        docLinks.map(async (link) => {
-          const downloadUrl = await createPresignedDownloadUrl(
-            link.document.storageKey,
-          );
-          return {
-            id: link.document.id,
-            name: link.document.originalFileName,
-            type: link.document.documentType,
-            mimeType: link.document.mimeType,
-            sizeBytes: Number(link.document.fileSizeBytes),
-            downloadUrl,
-          };
-        }),
-      );
+    const documents = await Promise.all(
+      docLinks.map(async (link) => {
+        const downloadUrl = await createPresignedDownloadUrl(link.document.storageKey);
+        return {
+          id: link.document.id,
+          name: link.document.originalFileName,
+          type: link.document.documentType,
+          mimeType: link.document.mimeType,
+          sizeBytes: Number(link.document.fileSizeBytes),
+          downloadUrl,
+        };
+      }),
+    );
 
-      return plain({ ...contract, documents });
-    }),
+    return plain({ ...contract, documents });
+  }),
 
   /**
    * List contractor's invoices with status info.
@@ -524,138 +508,132 @@ export const portalRouter = router({
    * Get invoice detail with timeline, attached files, and payment info.
    * Excludes internal data (batch IDs, reviewer names, cost centers) per D-11/D-12.
    */
-  getInvoice: portalProcedure
-    .input(z.object({ id: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const invoice = await prisma.invoice.findFirst({
-        where: { id: input.id, contractorId: ctx.contractorId, deletedAt: null },
-        select: {
-          id: true,
-          invoiceNumber: true,
-          issueDate: true,
-          dueDate: true,
-          subtotalGrosze: true,
-          totalGrosze: true,
-          currency: true,
-          status: true,
-          approvalStatus: true,
-          paymentStatus: true,
-          receivedAt: true,
-          reviewedAt: true,
-          approvedAt: true,
-          paidAt: true,
-          rejectedAt: true,
-          rejectionReason: true,
-          contract: { select: { id: true, title: true } },
-          files: {
-            include: {
-              document: {
-                select: { id: true, originalFileName: true, storageKey: true },
-              },
+  getInvoice: portalProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
+    const invoice = await prisma.invoice.findFirst({
+      where: { id: input.id, contractorId: ctx.contractorId, deletedAt: null },
+      select: {
+        id: true,
+        invoiceNumber: true,
+        issueDate: true,
+        dueDate: true,
+        subtotalGrosze: true,
+        totalGrosze: true,
+        currency: true,
+        status: true,
+        approvalStatus: true,
+        paymentStatus: true,
+        receivedAt: true,
+        reviewedAt: true,
+        approvedAt: true,
+        paidAt: true,
+        rejectedAt: true,
+        rejectionReason: true,
+        contract: { select: { id: true, title: true } },
+        files: {
+          include: {
+            document: {
+              select: { id: true, originalFileName: true, storageKey: true },
             },
           },
         },
+      },
+    });
+
+    if (!invoice) {
+      throw new TRPCError({ code: "NOT_FOUND" });
+    }
+
+    // Generate download URLs for attached files
+    const files = await Promise.all(
+      invoice.files.map(async (f) => {
+        const downloadUrl = await createPresignedDownloadUrl(f.document.storageKey);
+        return {
+          id: f.document.id,
+          name: f.document.originalFileName,
+          downloadUrl,
+        };
+      }),
+    );
+
+    // Payment info (date + amount only, no batch IDs per D-12)
+    const paymentItem = await prisma.paymentRunItem.findFirst({
+      where: {
+        invoiceId: input.id,
+        contractorId: ctx.contractorId,
+        status: "PAID",
+      },
+      select: {
+        markedPaidAt: true,
+        amountGrosze: true,
+        currency: true,
+      },
+    });
+
+    const payment = paymentItem
+      ? {
+          paidAt: paymentItem.markedPaidAt,
+          amountGrosze: paymentItem.amountGrosze,
+          currency: paymentItem.currency,
+        }
+      : null;
+
+    // Build activity log from timestamps (contractor-visible events only)
+    const activityLog: ActivityEntry[] = [];
+
+    if (invoice.receivedAt) {
+      activityLog.push({
+        timestamp: invoice.receivedAt,
+        event: "Invoice submitted",
       });
-
-      if (!invoice) {
-        throw new TRPCError({ code: "NOT_FOUND" });
-      }
-
-      // Generate download URLs for attached files
-      const files = await Promise.all(
-        invoice.files.map(async (f) => {
-          const downloadUrl = await createPresignedDownloadUrl(
-            f.document.storageKey,
-          );
-          return {
-            id: f.document.id,
-            name: f.document.originalFileName,
-            downloadUrl,
-          };
-        }),
-      );
-
-      // Payment info (date + amount only, no batch IDs per D-12)
-      const paymentItem = await prisma.paymentRunItem.findFirst({
-        where: {
-          invoiceId: input.id,
-          contractorId: ctx.contractorId,
-          status: "PAID",
-        },
-        select: {
-          markedPaidAt: true,
-          amountGrosze: true,
-          currency: true,
-        },
+    }
+    if (invoice.reviewedAt) {
+      activityLog.push({
+        timestamp: invoice.reviewedAt,
+        event: "Under review",
       });
-
-      const payment = paymentItem
-        ? {
-            paidAt: paymentItem.markedPaidAt,
-            amountGrosze: paymentItem.amountGrosze,
-            currency: paymentItem.currency,
-          }
-        : null;
-
-      // Build activity log from timestamps (contractor-visible events only)
-      const activityLog: ActivityEntry[] = [];
-
-      if (invoice.receivedAt) {
-        activityLog.push({
-          timestamp: invoice.receivedAt,
-          event: "Invoice submitted",
-        });
-      }
-      if (invoice.reviewedAt) {
-        activityLog.push({
-          timestamp: invoice.reviewedAt,
-          event: "Under review",
-        });
-      }
-      if (invoice.approvedAt) {
-        activityLog.push({
-          timestamp: invoice.approvedAt,
-          event: "Invoice approved",
-        });
-      }
-      if (invoice.rejectedAt) {
-        activityLog.push({
-          timestamp: invoice.rejectedAt,
-          event: "Invoice rejected",
-          detail: invoice.rejectionReason,
-        });
-      }
-      if (invoice.paidAt) {
-        activityLog.push({
-          timestamp: invoice.paidAt,
-          event: "Payment completed",
-        });
-      }
-
-      // Sort chronologically
-      activityLog.sort(
-        (a, b) => a.timestamp.getTime() - b.timestamp.getTime(),
-      );
-
-      // Exclude internal data from response
-      const {
-        files: _files,
-        receivedAt: _receivedAt,
-        reviewedAt: _reviewedAt,
-        approvedAt: _approvedAt,
-        paidAt: _paidAt,
-        rejectedAt: _rejectedAt,
-        rejectionReason: _rejectionReason,
-        ...invoiceData
-      } = invoice;
-
-      return plain({
-        ...invoiceData,
-        files,
-        payment,
-        activityLog,
+    }
+    if (invoice.approvedAt) {
+      activityLog.push({
+        timestamp: invoice.approvedAt,
+        event: "Invoice approved",
       });
-    }),
+    }
+    if (invoice.rejectedAt) {
+      activityLog.push({
+        timestamp: invoice.rejectedAt,
+        event: "Invoice rejected",
+        detail: invoice.rejectionReason,
+      });
+    }
+    if (invoice.paidAt) {
+      activityLog.push({
+        timestamp: invoice.paidAt,
+        event: "Payment completed",
+      });
+    }
+
+    // Sort chronologically
+    activityLog.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+
+    // Exclude internal data from response
+    const {
+      files: _files,
+      receivedAt: _receivedAt,
+      reviewedAt: _reviewedAt,
+      approvedAt: _approvedAt,
+      paidAt: _paidAt,
+      rejectedAt: _rejectedAt,
+      rejectionReason: _rejectionReason,
+      ...invoiceData
+    } = invoice;
+
+    return plain({
+      ...invoiceData,
+      files,
+      payment,
+      activityLog,
+    });
+  }),
 
   /**
    * List documents linked to this contractor and their contracts.
@@ -725,9 +703,7 @@ export const portalRouter = router({
           return true;
         })
         .map(async (link) => {
-          const downloadUrl = await createPresignedDownloadUrl(
-            link.document.storageKey,
-          );
+          const downloadUrl = await createPresignedDownloadUrl(link.document.storageKey);
           return {
             id: link.document.id,
             name: link.document.originalFileName,
@@ -787,9 +763,7 @@ export const portalRouter = router({
     .input(
       z.object({
         filename: z.string(),
-        contentType: z
-          .string()
-          .refine((ct) => ct === "application/pdf", "Only PDF files"),
+        contentType: z.string().refine((ct) => ct === "application/pdf", "Only PDF files"),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -982,19 +956,18 @@ export const portalRouter = router({
     });
 
     // Check for pending change request
-    const pendingChangeRequest =
-      await prisma.contractorChangeRequest.findFirst({
-        where: {
-          contractorId: ctx.contractorId,
-          organizationId: ctx.organizationId,
-          status: "PENDING",
-        },
-        select: {
-          id: true,
-          requestedChanges: true,
-          createdAt: true,
-        },
-      });
+    const pendingChangeRequest = await prisma.contractorChangeRequest.findFirst({
+      where: {
+        contractorId: ctx.contractorId,
+        organizationId: ctx.organizationId,
+        status: "PENDING",
+      },
+      select: {
+        id: true,
+        requestedChanges: true,
+        createdAt: true,
+      },
+    });
 
     return plain({
       ...contractor,
@@ -1061,20 +1034,19 @@ export const portalRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       // Read current billing profile values for previousValues snapshot
-      const currentProfile =
-        await prisma.contractorBillingProfile.findFirst({
-          where: {
-            contractorId: ctx.contractorId,
-            organizationId: ctx.organizationId,
-            isDefault: true,
-          },
-          select: {
-            bankAccountMasked: true,
-            bankName: true,
-            swiftBic: true,
-            taxId: true,
-          },
-        });
+      const currentProfile = await prisma.contractorBillingProfile.findFirst({
+        where: {
+          contractorId: ctx.contractorId,
+          organizationId: ctx.organizationId,
+          isDefault: true,
+        },
+        select: {
+          bankAccountMasked: true,
+          bankName: true,
+          swiftBic: true,
+          taxId: true,
+        },
+      });
 
       const previousValues: Record<string, unknown> = {
         bankAccountMasked: currentProfile?.bankAccountMasked ?? null,
@@ -1135,21 +1107,18 @@ export const portalRouter = router({
       "SECURITY_ALERTS",
     ] as const;
 
-    const existing =
-      await prisma.contractorNotificationPreference.findMany({
-        where: {
-          contractorId: ctx.contractorId,
-          organizationId: ctx.organizationId,
-        },
-        select: {
-          category: true,
-          emailEnabled: true,
-        },
-      });
+    const existing = await prisma.contractorNotificationPreference.findMany({
+      where: {
+        contractorId: ctx.contractorId,
+        organizationId: ctx.organizationId,
+      },
+      select: {
+        category: true,
+        emailEnabled: true,
+      },
+    });
 
-    const existingMap = new Map(
-      existing.map((p) => [p.category, p.emailEnabled]),
-    );
+    const existingMap = new Map(existing.map((p) => [p.category, p.emailEnabled]));
 
     // Return all 5 categories, defaulting to true for missing rows
     const preferences = CATEGORIES.map((category) => ({
@@ -1186,28 +1155,27 @@ export const portalRouter = router({
         });
       }
 
-      const preference =
-        await prisma.contractorNotificationPreference.upsert({
-          where: {
-            contractorId_category: {
-              contractorId: ctx.contractorId,
-              category: input.category,
-            },
-          },
-          create: {
+      const preference = await prisma.contractorNotificationPreference.upsert({
+        where: {
+          contractorId_category: {
             contractorId: ctx.contractorId,
-            organizationId: ctx.organizationId,
             category: input.category,
-            emailEnabled: input.emailEnabled,
           },
-          update: {
-            emailEnabled: input.emailEnabled,
-          },
-          select: {
-            category: true,
-            emailEnabled: true,
-          },
-        });
+        },
+        create: {
+          contractorId: ctx.contractorId,
+          organizationId: ctx.organizationId,
+          category: input.category,
+          emailEnabled: input.emailEnabled,
+        },
+        update: {
+          emailEnabled: input.emailEnabled,
+        },
+        select: {
+          category: true,
+          emailEnabled: true,
+        },
+      });
 
       return plain(preference);
     }),

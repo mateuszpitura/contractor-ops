@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, setup } from "@/test/test-utils";
 import { MatchCard } from "../match-card";
 
@@ -221,8 +221,7 @@ describe("MatchCard", () => {
     expect(screen.getByText("Deviation")).toBeInTheDocument();
     // formatMinorUnits(500000) with pl-PL => "5 000,00" (narrow no-break space)
     const amounts = screen.getAllByText(
-      (_content, el) =>
-        !!el?.textContent?.includes("5") && !!el?.textContent?.includes("PLN"),
+      (_content, el) => !!el?.textContent?.includes("5") && !!el?.textContent?.includes("PLN"),
     );
     expect(amounts.length).toBeGreaterThan(0);
   });
@@ -262,9 +261,7 @@ describe("MatchCard", () => {
     });
     const { container } = render(<MatchCard invoice={invoice} />);
 
-    const greenEl = container.querySelector(
-      '[class*="text-green-600"], [class*="text-green-400"]',
-    );
+    const greenEl = container.querySelector('[class*="text-green-600"], [class*="text-green-400"]');
     expect(greenEl).toBeInTheDocument();
     expect(greenEl?.textContent).toContain("5.0%");
   });
@@ -277,9 +274,7 @@ describe("MatchCard", () => {
     });
     render(<MatchCard invoice={invoice} />);
 
-    expect(
-      screen.getByText("No active contract found"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("No active contract found")).toBeInTheDocument();
   });
 
   it("filters out DUPLICATE_SUSPECTED flag", () => {
@@ -288,9 +283,7 @@ describe("MatchCard", () => {
     });
     render(<MatchCard invoice={invoice} />);
 
-    expect(
-      screen.getByText("No active contract found"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("No active contract found")).toBeInTheDocument();
     // DUPLICATE_SUSPECTED has no entry in FLAG_CONFIG so it would not render anyway,
     // but we verify it does not appear.
     expect(screen.queryByText("DUPLICATE_SUSPECTED")).not.toBeInTheDocument();
@@ -426,9 +419,7 @@ describe("MatchCard", () => {
     });
     const { container } = render(<MatchCard invoice={invoice} />);
 
-    const greenEl = container.querySelector(
-      '[class*="text-green-600"], [class*="text-green-400"]',
-    );
+    const greenEl = container.querySelector('[class*="text-green-600"], [class*="text-green-400"]');
     expect(greenEl?.textContent).toContain("-5.0%");
   });
 
@@ -540,7 +531,9 @@ describe("MatchCard", () => {
     const { container } = render(<MatchCard invoice={invoice} />);
 
     const deviationEls = container.querySelectorAll(".font-mono.font-medium");
-    const deviationText = Array.from(deviationEls).map(el => el.textContent).join("");
+    const deviationText = Array.from(deviationEls)
+      .map((el) => el.textContent)
+      .join("");
     expect(deviationText).toContain("+10.0%");
   });
 

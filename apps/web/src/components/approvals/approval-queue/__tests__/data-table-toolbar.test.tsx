@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { screen, setup } from "@/test/test-utils";
 
 vi.mock("next-intl", async (importOriginal) => {
@@ -67,9 +67,7 @@ describe("ApprovalQueueToolbar", () => {
 
   it("renders search input with placeholder", () => {
     setup(<ApprovalQueueToolbar {...defaultProps} />);
-    expect(
-      screen.getByPlaceholderText("searchPlaceholder"),
-    ).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("searchPlaceholder")).toBeInTheDocument();
   });
 
   it("does not show bulk toolbar when no items selected", () => {
@@ -78,12 +76,7 @@ describe("ApprovalQueueToolbar", () => {
   });
 
   it("shows bulk toolbar when items are selected", () => {
-    setup(
-      <ApprovalQueueToolbar
-        {...defaultProps}
-        selectedIds={["a", "b"]}
-      />,
-    );
+    setup(<ApprovalQueueToolbar {...defaultProps} selectedIds={["a", "b"]} />);
     expect(screen.getByText("bulk.selectedCount(2)")).toBeInTheDocument();
     expect(screen.getByText("bulk.approve(2)")).toBeInTheDocument();
     expect(screen.getByText("bulk.reject(2)")).toBeInTheDocument();
@@ -104,18 +97,14 @@ describe("ApprovalQueueToolbar", () => {
 
   // ---- Search input interaction ----
   it("updates local search on input", async () => {
-    const { user } = setup(
-      <ApprovalQueueToolbar {...defaultProps} />,
-    );
+    const { user } = setup(<ApprovalQueueToolbar {...defaultProps} />);
     const input = screen.getByPlaceholderText("searchPlaceholder");
     await user.type(input, "abc");
     expect(input).toHaveValue("abc");
   });
 
   it("renders search input with initial value", () => {
-    setup(
-      <ApprovalQueueToolbar {...defaultProps} search="existing query" />,
-    );
+    setup(<ApprovalQueueToolbar {...defaultProps} search="existing query" />);
     expect(screen.getByPlaceholderText("searchPlaceholder")).toHaveValue("existing query");
   });
 
@@ -162,12 +151,7 @@ describe("ApprovalQueueToolbar", () => {
 
   // ---- Bulk toolbar with multiple items ----
   it("shows correct count for 5 selected items", () => {
-    setup(
-      <ApprovalQueueToolbar
-        {...defaultProps}
-        selectedIds={["a", "b", "c", "d", "e"]}
-      />,
-    );
+    setup(<ApprovalQueueToolbar {...defaultProps} selectedIds={["a", "b", "c", "d", "e"]} />);
     expect(screen.getByText("bulk.selectedCount(5)")).toBeInTheDocument();
     expect(screen.getByText("bulk.approve(5)")).toBeInTheDocument();
     expect(screen.getByText("bulk.reject(5)")).toBeInTheDocument();
@@ -175,24 +159,14 @@ describe("ApprovalQueueToolbar", () => {
 
   // ---- Bulk reject opens dialog ----
   it("opens reject dialog when reject button is clicked", async () => {
-    const { user } = setup(
-      <ApprovalQueueToolbar
-        {...defaultProps}
-        selectedIds={["a", "b"]}
-      />,
-    );
+    const { user } = setup(<ApprovalQueueToolbar {...defaultProps} selectedIds={["a", "b"]} />);
     await user.click(screen.getByText("bulk.reject(2)"));
     // Dialog should open
     expect(screen.getByText("bulkRejectDialog.heading(2)")).toBeInTheDocument();
   });
 
   it("renders comment textarea in reject dialog", async () => {
-    const { user } = setup(
-      <ApprovalQueueToolbar
-        {...defaultProps}
-        selectedIds={["a"]}
-      />,
-    );
+    const { user } = setup(<ApprovalQueueToolbar {...defaultProps} selectedIds={["a"]} />);
     await user.click(screen.getByText("bulk.reject(1)"));
     expect(screen.getByPlaceholderText("bulkRejectDialog.commentPlaceholder")).toBeInTheDocument();
   });

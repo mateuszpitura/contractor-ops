@@ -6,14 +6,27 @@ vi.mock("@/hooks/use-permissions", () => ({
 }));
 
 const mockMembers = [
-  { id: "u1", userId: "u1", name: "Alice Smith", email: "alice@test.com", role: "admin", status: "active" },
-  { id: "u2", userId: "u2", name: "Bob Jones", email: "bob@test.com", role: "readonly", status: "invited" },
+  {
+    id: "u1",
+    userId: "u1",
+    name: "Alice Smith",
+    email: "alice@test.com",
+    role: "admin",
+    status: "active",
+  },
+  {
+    id: "u2",
+    userId: "u2",
+    name: "Bob Jones",
+    email: "bob@test.com",
+    role: "readonly",
+    status: "invited",
+  },
 ];
 
 vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
-    "@tanstack/react-query",
-  );
+  const actual =
+    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
   return {
     ...actual,
     useQuery: () => ({ isLoading: false, data: mockMembers }),

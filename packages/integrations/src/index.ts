@@ -40,6 +40,12 @@ export {
   resendSigningNotification,
   voidSigningEnvelope,
 } from "./services/esign-service.js";
+// Health Service
+export {
+  getAllProviderHealth,
+  getProviderHealth,
+} from "./services/health-service.js";
+export type { InfisicalConfig, ZatcaSecretName } from "./services/infisical-client.js";
 // Infisical Secret Store (ZATCA certificate management)
 export {
   createZatcaSecretStore,
@@ -47,12 +53,6 @@ export {
   SecretStoreError,
   ZATCA_SECRET_NAMES,
 } from "./services/infisical-client.js";
-export type { InfisicalConfig, ZatcaSecretName } from "./services/infisical-client.js";
-// Health Service
-export {
-  getAllProviderHealth,
-  getProviderHealth,
-} from "./services/health-service.js";
 export type { OAuthStatePayload } from "./services/oauth-state.js";
 // OAuth State (CSRF protection)
 export {

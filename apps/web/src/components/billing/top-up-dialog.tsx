@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { trpc } from "@/trpc/init";
+import { Loader2 } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -11,7 +13,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -19,8 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Credit bundles
@@ -80,8 +80,7 @@ export function TopUpDialog({ open, onOpenChange }: TopUpDialogProps) {
         <DialogHeader>
           <DialogTitle>Buy OCR Credits</DialogTitle>
           <DialogDescription>
-            Select a credit bundle. You will be redirected to Stripe to
-            complete the purchase.
+            Select a credit bundle. You will be redirected to Stripe to complete the purchase.
           </DialogDescription>
         </DialogHeader>
 
@@ -112,13 +111,8 @@ export function TopUpDialog({ open, onOpenChange }: TopUpDialogProps) {
           >
             Cancel
           </Button>
-          <Button
-            onClick={handleConfirm}
-            disabled={checkoutMutation.isPending}
-          >
-            {checkoutMutation.isPending && (
-              <Loader2 className="animate-spin" aria-hidden="true" />
-            )}
+          <Button onClick={handleConfirm} disabled={checkoutMutation.isPending}>
+            {checkoutMutation.isPending && <Loader2 className="animate-spin" aria-hidden="true" />}
             Continue to checkout
           </Button>
         </DialogFooter>

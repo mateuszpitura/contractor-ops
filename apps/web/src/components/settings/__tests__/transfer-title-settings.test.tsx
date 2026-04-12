@@ -2,9 +2,8 @@ import { render, screen } from "@/test/test-utils";
 import { TransferTitleSettings } from "../transfer-title-settings";
 
 vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
-    "@tanstack/react-query",
-  );
+  const actual =
+    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
   return {
     ...actual,
     useQuery: () => ({
@@ -34,7 +33,9 @@ describe("TransferTitleSettings", () => {
   it("renders heading and description", () => {
     render(<TransferTitleSettings />);
     expect(screen.getByText("Payment transfer title")).toBeInTheDocument();
-    expect(screen.getByText("Configure the default transfer title used in bank export files.")).toBeInTheDocument();
+    expect(
+      screen.getByText("Configure the default transfer title used in bank export files."),
+    ).toBeInTheDocument();
   });
 
   it("renders template input field", () => {

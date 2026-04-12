@@ -1,8 +1,8 @@
-import { describe, it, expect, vi } from "vitest";
-import { render, screen, setup } from "@/test/test-utils";
-import { ApprovalQueueTable } from "../data-table";
-import type { ApprovalQueueRow } from "../columns";
 import type { ColumnDef } from "@tanstack/react-table";
+import { describe, expect, it, vi } from "vitest";
+import { render, screen, setup } from "@/test/test-utils";
+import type { ApprovalQueueRow } from "../columns";
+import { ApprovalQueueTable } from "../data-table";
 
 vi.mock("next-intl", async (importOriginal) => {
   const actual = await importOriginal<typeof import("next-intl")>();
@@ -10,10 +10,7 @@ vi.mock("next-intl", async (importOriginal) => {
     ...actual,
     useTranslations: () => (key: string, params?: any) => {
       if (params) {
-        return Object.entries(params).reduce(
-          (s, [k, v]) => s.replace(`{${k}}`, String(v)),
-          key,
-        );
+        return Object.entries(params).reduce((s, [k, v]) => s.replace(`{${k}}`, String(v)), key);
       }
       return key;
     },
@@ -62,41 +59,21 @@ const defaultProps = {
 
 describe("ApprovalQueueTable", () => {
   it("renders table rows from data", () => {
-    render(
-      <ApprovalQueueTable
-        {...defaultProps}
-        data={[makeRow("r1"), makeRow("r2")]}
-      />,
-    );
+    render(<ApprovalQueueTable {...defaultProps} data={[makeRow("r1"), makeRow("r2")]} />);
     expect(screen.getByText("r1")).toBeInTheDocument();
     expect(screen.getByText("r2")).toBeInTheDocument();
   });
 
   it("shows skeleton rows when loading", () => {
-    const { container } = render(
-      <ApprovalQueueTable
-        {...defaultProps}
-        data={[]}
-        isLoading
-      />,
-    );
+    const { container } = render(<ApprovalQueueTable {...defaultProps} data={[]} isLoading />);
     // 8 skeleton rows per the component spec
     const skeletonRows = container.querySelectorAll("tr[class]");
     expect(skeletonRows.length).toBeGreaterThanOrEqual(8);
   });
 
   it("renders pagination controls", () => {
-    render(
-      <ApprovalQueueTable
-        {...defaultProps}
-        data={[makeRow("r1")]}
-        pageCount={3}
-        page={2}
-      />,
-    );
-    expect(
-      screen.getByText("pagination.previous"),
-    ).toBeInTheDocument();
+    render(<ApprovalQueueTable {...defaultProps} data={[makeRow("r1")]} pageCount={3} page={2} />);
+    expect(screen.getByText("pagination.previous")).toBeInTheDocument();
     expect(screen.getByText("pagination.next")).toBeInTheDocument();
   });
 
@@ -116,13 +93,7 @@ describe("ApprovalQueueTable", () => {
   });
 
   it("disables previous on first page", () => {
-    render(
-      <ApprovalQueueTable
-        {...defaultProps}
-        data={[makeRow("r1")]}
-        page={1}
-      />,
-    );
+    render(<ApprovalQueueTable {...defaultProps} data={[makeRow("r1")]} page={1} />);
     expect(screen.getByText("pagination.previous")).toBeDisabled();
   });
 
@@ -130,27 +101,16 @@ describe("ApprovalQueueTable", () => {
     const onRowClick = vi.fn();
     const row = makeRow("r1");
     const { user } = setup(
-      <ApprovalQueueTable
-        {...defaultProps}
-        data={[row]}
-        onRowClick={onRowClick}
-      />,
+      <ApprovalQueueTable {...defaultProps} data={[row]} onRowClick={onRowClick} />,
     );
     await user.click(screen.getByText("r1"));
-    expect(onRowClick).toHaveBeenCalledWith(
-      expect.objectContaining({ id: "r1" }),
-    );
+    expect(onRowClick).toHaveBeenCalledWith(expect.objectContaining({ id: "r1" }));
   });
 
   it("highlights overdue rows", () => {
     const overdueRow = makeRow("r1");
     overdueRow.slaDeadline = "2020-01-01T00:00:00Z"; // past deadline
-    const { container } = render(
-      <ApprovalQueueTable
-        {...defaultProps}
-        data={[overdueRow]}
-      />,
-    );
+    const { container } = render(<ApprovalQueueTable {...defaultProps} data={[overdueRow]} />);
     const row = container.querySelector("tr.group");
     expect(row?.className).toContain("bg-destructive");
   });

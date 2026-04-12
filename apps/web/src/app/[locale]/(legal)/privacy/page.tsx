@@ -1,5 +1,5 @@
-import { useTranslations } from "next-intl";
 import type { Metadata } from "next";
+import { useTranslations } from "next-intl";
 
 export const metadata: Metadata = {
   title: "Privacy Policy — Contractor Ops",

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { render, screen, setup } from "@/test/test-utils";
 import { PlanCard } from "../plan-card";
 
@@ -15,14 +15,7 @@ const tier = {
 describe("PlanCard", () => {
   it("renders tier name and CTA for choose mode", () => {
     const onSelect = vi.fn();
-    render(
-      <PlanCard
-        tier={tier}
-        ctaMode="choose"
-        isRecommended={false}
-        onSelect={onSelect}
-      />,
-    );
+    render(<PlanCard tier={tier} ctaMode="choose" isRecommended={false} onSelect={onSelect} />);
     expect(screen.getByText("Pro")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /choose a plan/i })).toBeInTheDocument();
   });
@@ -30,12 +23,7 @@ describe("PlanCard", () => {
   it("invokes onSelect when CTA is clicked", async () => {
     const onSelect = vi.fn();
     const { user } = setup(
-      <PlanCard
-        tier={tier}
-        ctaMode="upgrade"
-        isRecommended
-        onSelect={onSelect}
-      />,
+      <PlanCard tier={tier} ctaMode="upgrade" isRecommended onSelect={onSelect} />,
     );
     await user.click(screen.getByRole("button", { name: /upgrade plan/i }));
     expect(onSelect).toHaveBeenCalledTimes(1);

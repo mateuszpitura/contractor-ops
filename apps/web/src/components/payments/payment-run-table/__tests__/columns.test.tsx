@@ -1,5 +1,6 @@
 import { render, screen } from "@/test/test-utils";
-import { getColumns, type PaymentRunRow } from "../columns";
+import type { PaymentRunRow } from "../columns";
+import { getColumns } from "../columns";
 
 vi.mock("@/components/payments/payment-run-badge", () => ({
   PaymentRunBadge: ({ status }: any) => <span data-testid="run-badge">{status}</span>,
@@ -53,17 +54,13 @@ describe("getColumns", () => {
 
   it("runNumber column disables hiding", () => {
     const columns = getColumns(t, actions);
-    const col = columns.find(
-      (c) => "accessorKey" in c && c.accessorKey === "runNumber",
-    );
+    const col = columns.find((c) => "accessorKey" in c && c.accessorKey === "runNumber");
     expect(col?.enableHiding).toBe(false);
   });
 
   it("status column disables sorting", () => {
     const columns = getColumns(t, actions);
-    const col = columns.find(
-      (c) => "accessorKey" in c && c.accessorKey === "status",
-    );
+    const col = columns.find((c) => "accessorKey" in c && c.accessorKey === "status");
     expect(col?.enableSorting).toBe(false);
   });
 
@@ -117,10 +114,13 @@ describe("getColumns cell renderers (payment runs)", () => {
   });
 
   it("actions cell returns null when no actions are available", () => {
-    const result = renderCell("actions", makeRow({
-      status: "COMPLETED",
-      exportedAt: null,
-    }));
+    const result = renderCell(
+      "actions",
+      makeRow({
+        status: "COMPLETED",
+        exportedAt: null,
+      }),
+    );
     expect(result).toBeNull();
   });
 
@@ -130,10 +130,13 @@ describe("getColumns cell renderers (payment runs)", () => {
   });
 
   it("actions cell renders dropdown when run is EXPORTED with exportedAt (download available)", () => {
-    const container = renderCell("actions", makeRow({
-      status: "EXPORTED",
-      exportedAt: "2026-01-01T00:00:00Z",
-    }));
+    const container = renderCell(
+      "actions",
+      makeRow({
+        status: "EXPORTED",
+        exportedAt: "2026-01-01T00:00:00Z",
+      }),
+    );
     expect(container).not.toBeNull();
   });
 });

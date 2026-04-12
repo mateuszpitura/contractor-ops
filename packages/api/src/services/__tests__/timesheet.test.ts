@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getOrCreateTimesheet, submitTimesheet } from "../time-entry.js";
 
 const mockPrisma = {
@@ -77,9 +77,9 @@ describe("getOrCreateTimesheet", () => {
   it("throws BAD_REQUEST when weekStartDate is a Tuesday", async () => {
     const tuesday = new Date("2025-01-07T00:00:00.000Z");
 
-    await expect(
-      getOrCreateTimesheet(mockPrisma, ORG_ID, CONTRACTOR_ID, tuesday),
-    ).rejects.toThrow("weekStartDate must be a Monday");
+    await expect(getOrCreateTimesheet(mockPrisma, ORG_ID, CONTRACTOR_ID, tuesday)).rejects.toThrow(
+      "weekStartDate must be a Monday",
+    );
 
     expect(mockPrisma.timesheet.upsert).not.toHaveBeenCalled();
   });
@@ -87,9 +87,9 @@ describe("getOrCreateTimesheet", () => {
   it("throws BAD_REQUEST when weekStartDate is a Sunday", async () => {
     const sunday = new Date("2025-01-05T00:00:00.000Z");
 
-    await expect(
-      getOrCreateTimesheet(mockPrisma, ORG_ID, CONTRACTOR_ID, sunday),
-    ).rejects.toThrow("weekStartDate must be a Monday");
+    await expect(getOrCreateTimesheet(mockPrisma, ORG_ID, CONTRACTOR_ID, sunday)).rejects.toThrow(
+      "weekStartDate must be a Monday",
+    );
 
     expect(mockPrisma.timesheet.upsert).not.toHaveBeenCalled();
   });
@@ -97,9 +97,9 @@ describe("getOrCreateTimesheet", () => {
   it("throws BAD_REQUEST when weekStartDate is a Saturday", async () => {
     const saturday = new Date("2025-01-04T00:00:00.000Z");
 
-    await expect(
-      getOrCreateTimesheet(mockPrisma, ORG_ID, CONTRACTOR_ID, saturday),
-    ).rejects.toThrow("weekStartDate must be a Monday");
+    await expect(getOrCreateTimesheet(mockPrisma, ORG_ID, CONTRACTOR_ID, saturday)).rejects.toThrow(
+      "weekStartDate must be a Monday",
+    );
   });
 
   it("accepts a valid Monday date and does NOT throw", async () => {
@@ -218,12 +218,7 @@ describe("submitTimesheet", () => {
     };
     mockPrisma.timesheet.findUniqueOrThrow.mockResolvedValue(returnedTimesheet);
 
-    const result = await submitTimesheet(
-      mockPrisma,
-      ORG_ID,
-      CONTRACTOR_ID,
-      TIMESHEET_ID,
-    );
+    const result = await submitTimesheet(mockPrisma, ORG_ID, CONTRACTOR_ID, TIMESHEET_ID);
 
     expect(result).toBe(returnedTimesheet);
     expect(mockPrisma.timesheet.findUniqueOrThrow).toHaveBeenCalledWith({
@@ -235,9 +230,9 @@ describe("submitTimesheet", () => {
   it("throws PRECONDITION_FAILED when updateMany returns count: 0 (wrong status)", async () => {
     mockPrisma.timesheet.updateMany.mockResolvedValue({ count: 0 });
 
-    await expect(
-      submitTimesheet(mockPrisma, ORG_ID, CONTRACTOR_ID, TIMESHEET_ID),
-    ).rejects.toThrow("Timesheet cannot be submitted");
+    await expect(submitTimesheet(mockPrisma, ORG_ID, CONTRACTOR_ID, TIMESHEET_ID)).rejects.toThrow(
+      "Timesheet cannot be submitted",
+    );
 
     // findUniqueOrThrow should NOT be called when update fails
     expect(mockPrisma.timesheet.findUniqueOrThrow).not.toHaveBeenCalled();

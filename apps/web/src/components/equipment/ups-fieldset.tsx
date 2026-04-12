@@ -106,14 +106,9 @@ export function UpsFieldset({
           className="flex gap-4"
         >
           {(["small", "medium", "large"] as const).map((size) => (
-            <label
-              key={size}
-              className="flex cursor-pointer items-center gap-2"
-            >
+            <label key={size} className="flex cursor-pointer items-center gap-2">
               <RadioGroupItem value={size} />
-              <span className="text-sm">
-                {tCarrier(size)}
-              </span>
+              <span className="text-sm">{tCarrier(size)}</span>
             </label>
           ))}
         </RadioGroup>
@@ -124,9 +119,7 @@ export function UpsFieldset({
         <Label>{t("serviceType")}</Label>
         <Select
           value={serviceCode}
-          onValueChange={(val) =>
-            val && onServiceCodeChange(val as UpsServiceCode)
-          }
+          onValueChange={(val) => val && onServiceCodeChange(val as UpsServiceCode)}
         >
           <SelectTrigger className="w-full">
             <SelectValue />

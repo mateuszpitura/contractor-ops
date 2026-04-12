@@ -1,7 +1,7 @@
-import { describe, it, expect } from "vitest";
-import { generateSwiftXml } from "../payment-export.js";
+import { describe, expect, it } from "vitest";
 import type { ExportItem, OrgBankInfo } from "../payment-export.js";
-import { getPurposeCode, isValidPurposeCode, getAllPurposeCodes } from "../purpose-codes.js";
+import { generateSwiftXml } from "../payment-export.js";
+import { getAllPurposeCodes, getPurposeCode, isValidPurposeCode } from "../purpose-codes.js";
 
 // ---------------------------------------------------------------------------
 // Purpose Code Tests
@@ -164,7 +164,7 @@ describe("generateSwiftXml", () => {
     const itemWithSpecial: ExportItem[] = [
       {
         ...sampleItems[0],
-        contractorName: "M&M <Corp> \"Partners\"",
+        contractorName: 'M&M <Corp> "Partners"',
       },
     ];
     const specialXml = generateSwiftXml(itemWithSpecial, sampleOrg, "PR-TEST").toString("utf-8");

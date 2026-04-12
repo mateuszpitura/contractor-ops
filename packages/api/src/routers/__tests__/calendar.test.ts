@@ -2,7 +2,7 @@
  * Calendar router tests — connections, disconnect, events count, task template config.
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const ORG_ID = "clxxxxxxxxxxxxxxxxxxxxxxxxx";
 const USER_ID = "clyyyyyyyyyyyyyyyyyyyyyyyy";
@@ -98,7 +98,10 @@ vi.mock("../../services/notification-service.js", () => ({
 }));
 
 vi.mock("../../services/r2.js", () => ({
-  createPresignedUploadUrl: vi.fn(async () => ({ url: "https://r2.example.com/upload", key: "mock-key" })),
+  createPresignedUploadUrl: vi.fn(async () => ({
+    url: "https://r2.example.com/upload",
+    key: "mock-key",
+  })),
   createPresignedDownloadUrl: vi.fn(async () => "https://r2.example.com/download"),
   generateStorageKey: vi.fn(() => "mock-storage-key"),
   headObject: vi.fn(async () => ({ ContentLength: 1024 })),
@@ -483,10 +486,7 @@ describe("calendar router", () => {
       const fs = await import("node:fs");
       const path = await import("node:path");
       const sourceDir = path.resolve(import.meta.dirname, "../../routers");
-      const source = fs.readFileSync(
-        path.join(sourceDir, "calendar.ts"),
-        "utf-8",
-      );
+      const source = fs.readFileSync(path.join(sourceDir, "calendar.ts"), "utf-8");
 
       expect(source).toContain('import { requireTier } from "../middleware/tier.js"');
       expect(source).toContain('requireTier("PRO")');
@@ -499,13 +499,18 @@ describe("calendar router", () => {
       const fs = await import("node:fs");
       const path = await import("node:path");
       const sourceDir = path.resolve(import.meta.dirname, "../../routers");
-      const source = fs.readFileSync(
-        path.join(sourceDir, "calendar.ts"),
-        "utf-8",
-      );
+      const source = fs.readFileSync(path.join(sourceDir, "calendar.ts"), "utf-8");
 
-      for (const proc of ["listConnections", "listPersonalConnections", "listEvents", "getTaskConfig"]) {
-        const procRegex = new RegExp(`${proc}:\\s*tenantProcedure[\\s\\S]*?(?=\\w+:\\s*tenantProcedure|\\}\\);$)`, "m");
+      for (const proc of [
+        "listConnections",
+        "listPersonalConnections",
+        "listEvents",
+        "getTaskConfig",
+      ]) {
+        const procRegex = new RegExp(
+          `${proc}:\\s*tenantProcedure[\\s\\S]*?(?=\\w+:\\s*tenantProcedure|\\}\\);$)`,
+          "m",
+        );
         const match = source.match(procRegex);
         if (match) {
           expect(match[0]).not.toContain("requireTier");

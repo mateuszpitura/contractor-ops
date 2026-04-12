@@ -1,16 +1,16 @@
 "use client";
 
+import type { LucideIcon } from "lucide-react";
 import {
-  ClipboardCheck,
   CheckCircle2,
-  UserCheck,
+  ClipboardCheck,
   Clock,
-  FileWarning,
   FileText,
-  type LucideIcon,
+  FileWarning,
+  UserCheck,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { Bdi } from "@/components/ui/bdi";
+import { cn } from "@/lib/utils";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -87,10 +87,7 @@ const DEFAULT_STYLE: TypeStyle = {
 // Entity URL helper
 // ---------------------------------------------------------------------------
 
-export function getEntityUrl(
-  entityType: string | null,
-  entityId: string | null,
-): string {
+export function getEntityUrl(entityType: string | null, entityId: string | null): string {
   if (!entityType || !entityId) return "/notifications";
 
   const routes: Record<string, string> = {
@@ -129,11 +126,7 @@ function relativeTime(date: string | Date): string {
 // NotificationItem component
 // ---------------------------------------------------------------------------
 
-export function NotificationItem({
-  notification,
-  onClick,
-  compact,
-}: NotificationItemProps) {
+export function NotificationItem({ notification, onClick, compact }: NotificationItemProps) {
   const isUnread = notification.readAt === null;
   const style = TYPE_STYLES[notification.type] ?? DEFAULT_STYLE;
   const Icon = style.icon;
@@ -151,9 +144,7 @@ export function NotificationItem({
     >
       {/* Unread dot */}
       <div className="flex w-2 shrink-0 items-center justify-center">
-        {isUnread && (
-          <span className="block h-1.5 w-1.5 rounded-full bg-primary" />
-        )}
+        {isUnread && <span className="block h-1.5 w-1.5 rounded-full bg-primary" />}
       </div>
 
       {/* Icon circle */}
@@ -171,9 +162,7 @@ export function NotificationItem({
         <span className="truncate text-sm font-semibold">
           <Bdi>{notification.title}</Bdi>
         </span>
-        <span className="truncate text-sm text-muted-foreground">
-          {notification.body}
-        </span>
+        <span className="truncate text-sm text-muted-foreground">{notification.body}</span>
       </div>
 
       {/* Timestamp */}

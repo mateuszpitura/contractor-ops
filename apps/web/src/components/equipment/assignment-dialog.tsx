@@ -1,12 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Search } from "lucide-react";
-import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
+import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -24,6 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -64,18 +63,17 @@ export function AssignmentDialog({
     }),
   );
 
-  const contractors = (
-    contractorsQuery.data as
-      | { items: Array<{ id: string; displayName: string | null; legalName: string }> }
-      | undefined
-  )?.items ?? [];
+  const contractors =
+    (
+      contractorsQuery.data as
+        | { items: Array<{ id: string; displayName: string | null; legalName: string }> }
+        | undefined
+    )?.items ?? [];
 
   const assignMutation = useMutation(
     trpc.equipment.assign.mutationOptions({
       onSuccess: () => {
-        toast.success(
-          t("toast.assigned", { name: selectedContractorName }),
-        );
+        toast.success(t("toast.assigned", { name: selectedContractorName }));
         queryClient.invalidateQueries({
           queryKey: trpc.equipment.list.queryKey(),
         });
@@ -116,9 +114,7 @@ export function AssignmentDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{t("detail.assignToContractor")}</DialogTitle>
-          <DialogDescription>
-            {equipmentName}
-          </DialogDescription>
+          <DialogDescription>{equipmentName}</DialogDescription>
         </DialogHeader>
 
         <Command shouldFilter={false} className="rounded-lg border">
@@ -144,15 +140,9 @@ export function AssignmentDialog({
                   value={contractor.id}
                   onSelect={() => {
                     setSelectedContractorId(contractor.id);
-                    setSelectedContractorName(
-                      contractor.displayName ?? contractor.legalName,
-                    );
+                    setSelectedContractorName(contractor.displayName ?? contractor.legalName);
                   }}
-                  className={
-                    selectedContractorId === contractor.id
-                      ? "bg-accent"
-                      : ""
-                  }
+                  className={selectedContractorId === contractor.id ? "bg-accent" : ""}
                 >
                   <span>{contractor.displayName ?? contractor.legalName}</span>
                 </CommandItem>
@@ -174,9 +164,7 @@ export function AssignmentDialog({
             onClick={handleAssign}
             disabled={!selectedContractorId || assignMutation.isPending}
           >
-            {assignMutation.isPending && (
-              <Loader2 className="me-2 h-4 w-4 animate-spin" />
-            )}
+            {assignMutation.isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
             {t("detail.assignToContractor")}
           </Button>
         </DialogFooter>

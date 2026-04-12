@@ -33,9 +33,7 @@ vi.mock("@hookform/resolvers/zod", () => ({
 
 describe("EquipmentForm", () => {
   it("shows create title when no equipment is provided", () => {
-    render(
-      <EquipmentForm open={true} onOpenChange={vi.fn()} />,
-    );
+    render(<EquipmentForm open={true} onOpenChange={vi.fn()} />);
 
     expect(screen.getAllByText("Add equipment")).toHaveLength(2);
   });
@@ -61,17 +59,13 @@ describe("EquipmentForm", () => {
   });
 
   it("does not render when open is false", () => {
-    render(
-      <EquipmentForm open={false} onOpenChange={vi.fn()} />,
-    );
+    render(<EquipmentForm open={false} onOpenChange={vi.fn()} />);
 
     expect(screen.queryByText(/create/i)).not.toBeInTheDocument();
   });
 
   it("renders name, serial, and notes fields", () => {
-    render(
-      <EquipmentForm open={true} onOpenChange={vi.fn()} />,
-    );
+    render(<EquipmentForm open={true} onOpenChange={vi.fn()} />);
 
     expect(screen.getByLabelText(/name/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/serial/i)).toBeInTheDocument();
@@ -79,26 +73,20 @@ describe("EquipmentForm", () => {
   });
 
   it("renders cancel and save buttons", () => {
-    render(
-      <EquipmentForm open={true} onOpenChange={vi.fn()} />,
-    );
+    render(<EquipmentForm open={true} onOpenChange={vi.fn()} />);
 
     expect(screen.getByRole("button", { name: /cancel/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /save/i })).toBeInTheDocument();
   });
 
   it("renders type selector", () => {
-    render(
-      <EquipmentForm open={true} onOpenChange={vi.fn()} />,
-    );
+    render(<EquipmentForm open={true} onOpenChange={vi.fn()} />);
 
     expect(screen.getByText(/type/i)).toBeInTheDocument();
   });
 
   it("renders purchase date field", () => {
-    render(
-      <EquipmentForm open={true} onOpenChange={vi.fn()} />,
-    );
+    render(<EquipmentForm open={true} onOpenChange={vi.fn()} />);
 
     expect(screen.getByLabelText(/purchase date/i)).toBeInTheDocument();
   });
@@ -128,9 +116,7 @@ describe("EquipmentForm", () => {
 
   it("calls onOpenChange when cancel is clicked", async () => {
     const onOpenChange = vi.fn();
-    const { user } = setup(
-      <EquipmentForm open={true} onOpenChange={onOpenChange} />,
-    );
+    const { user } = setup(<EquipmentForm open={true} onOpenChange={onOpenChange} />);
 
     await user.click(screen.getByRole("button", { name: /cancel/i }));
     expect(onOpenChange).toHaveBeenCalledWith(false);

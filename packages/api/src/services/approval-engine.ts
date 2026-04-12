@@ -1,5 +1,5 @@
-import { TRPCError } from "@trpc/server";
 import type { PrismaClient } from "@contractor-ops/db";
+import { TRPCError } from "@trpc/server";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -77,9 +77,7 @@ export function evaluateConditions(
   return conditions.every((condition) => {
     if (condition.field === "amount") {
       const thresholdGrosze =
-        typeof condition.value === "number"
-          ? condition.value * 100
-          : Number(condition.value) * 100;
+        typeof condition.value === "number" ? condition.value * 100 : Number(condition.value) * 100;
 
       switch (condition.operator) {
         case "gt":
@@ -164,9 +162,7 @@ export async function createApprovalFlow(
     createdByUserId: string;
   },
 ) {
-  const steps = JSON.parse(
-    JSON.stringify(params.chainConfig.stepsJson),
-  ) as StepConfig[];
+  const steps = JSON.parse(JSON.stringify(params.chainConfig.stepsJson)) as StepConfig[];
 
   // Resolve role-based approvers
   for (const step of steps) {
@@ -220,8 +216,7 @@ export async function createApprovalFlow(
             | null,
           status: index === 0 ? "PENDING" : "NOT_STARTED",
           required: step.required,
-          slaDeadline:
-            index === 0 ? addHours(now, step.slaHours) : null,
+          slaDeadline: index === 0 ? addHours(now, step.slaHours) : null,
         })),
       },
     },
@@ -243,10 +238,7 @@ export async function createApprovalFlow(
  *
  * @returns Whether the flow is completed and the next step order (if any).
  */
-export async function advanceFlow(
-  tx: TxClient,
-  flowId: string,
-): Promise<AdvanceFlowResult> {
+export async function advanceFlow(tx: TxClient, flowId: string): Promise<AdvanceFlowResult> {
   const flow = await tx.approvalFlow.findUniqueOrThrow({
     where: { id: flowId },
     include: {
@@ -267,9 +259,7 @@ export async function advanceFlow(
   }
 
   const currentOrder = flow.currentStepOrder ?? 0;
-  const nextStep = flow.steps.find(
-    (s) => s.status === "NOT_STARTED" && s.stepOrder > currentOrder,
-  );
+  const nextStep = flow.steps.find((s) => s.status === "NOT_STARTED" && s.stepOrder > currentOrder);
 
   if (!nextStep) {
     // All steps complete — mark flow as APPROVED

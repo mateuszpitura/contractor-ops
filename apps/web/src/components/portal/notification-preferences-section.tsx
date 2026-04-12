@@ -1,32 +1,16 @@
 "use client";
 
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
-import { toast } from "sonner";
-import {
-  Receipt,
-  Banknote,
-  FileText,
-  FolderOpen,
-  Shield,
-  ChevronDown,
-} from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { LucideIcon } from "lucide-react";
-import { useState } from "react";
+import { Banknote, ChevronDown, FileText, FolderOpen, Receipt, Shield } from "lucide-react";
 import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
-import { Switch } from "@/components/ui/switch";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useState } from "react";
+import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
-import {
-  Collapsible,
-  CollapsibleTrigger,
-  CollapsibleContent,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Category config
@@ -91,10 +75,7 @@ function PreferencesSkeleton() {
   return (
     <div className="space-y-1">
       {Array.from({ length: 5 }).map((_, i) => (
-        <div
-          key={i}
-          className="flex min-h-[48px] items-center justify-between px-4 py-3"
-        >
+        <div key={i} className="flex min-h-[48px] items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
             <Skeleton className="h-5 w-5 rounded" />
             <div className="space-y-1">
@@ -127,14 +108,11 @@ export function NotificationPreferencesSection() {
 
   const CATEGORIES = getCategories(t);
 
-  const prefsQuery = useQuery(
-    trpc.portal.getNotificationPreferences.queryOptions(),
-  );
+  const prefsQuery = useQuery(trpc.portal.getNotificationPreferences.queryOptions());
 
   type PreferenceItem = { category: NotificationCategory; emailEnabled: boolean };
 
-  const queryKey =
-    trpc.portal.getNotificationPreferences.queryOptions().queryKey;
+  const queryKey = trpc.portal.getNotificationPreferences.queryOptions().queryKey;
 
   const updatePrefBase = trpc.portal.updateNotificationPreference.mutationOptions();
 
@@ -149,9 +127,7 @@ export function NotificationPreferencesSection() {
         queryKey,
         (old) =>
           old?.map((p) =>
-            p.category === newPref.category
-              ? { ...p, emailEnabled: newPref.emailEnabled }
-              : p,
+            p.category === newPref.category ? { ...p, emailEnabled: newPref.emailEnabled } : p,
           ) ?? [],
       );
 
@@ -199,9 +175,7 @@ export function NotificationPreferencesSection() {
                   isOpen ? "rotate-180" : ""
                 }`}
               />
-              <span className="text-sm font-semibold">
-                {t("title")}
-              </span>
+              <span className="text-sm font-semibold">{t("title")}</span>
             </button>
           )}
         />
@@ -226,17 +200,13 @@ export function NotificationPreferencesSection() {
                         <Icon className="h-5 w-5 shrink-0 text-muted-foreground" />
                         <div>
                           <p className="text-sm">{cat.label}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {cat.description}
-                          </p>
+                          <p className="text-sm text-muted-foreground">{cat.description}</p>
                         </div>
                       </div>
                       <div className="shrink-0">
                         <Switch
                           checked={checked}
-                          onCheckedChange={(val) =>
-                            handleToggle(cat.category, val)
-                          }
+                          onCheckedChange={(val) => handleToggle(cat.category, val)}
                           disabled={cat.locked}
                           aria-label={cat.label}
                         />

@@ -1,5 +1,6 @@
 import { render, screen, setup } from "@/test/test-utils";
-import { DirectoryPreviewTable, type DirectoryUser } from "../directory-preview-table";
+import type { DirectoryUser } from "../directory-preview-table";
+import { DirectoryPreviewTable } from "../directory-preview-table";
 
 const mockUsers: DirectoryUser[] = [
   {
@@ -62,11 +63,7 @@ describe("DirectoryPreviewTable", () => {
 
   it("renders empty state when no users", () => {
     render(
-      <DirectoryPreviewTable
-        users={[]}
-        selectedEmails={new Set()}
-        onSelectionChange={vi.fn()}
-      />,
+      <DirectoryPreviewTable users={[]} selectedEmails={new Set()} onSelectionChange={vi.fn()} />,
     );
     expect(screen.getByText("No users found")).toBeInTheDocument();
   });

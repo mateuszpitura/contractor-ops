@@ -1,10 +1,10 @@
-import { Loader2 } from "lucide-react"
+import { Loader2 } from "lucide-react";
 
-import { Progress } from "@/components/ui/progress"
-import { Skeleton } from "@/components/ui/skeleton"
+import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface OcrProcessingOverlayProps {
-  progress?: number
+  progress?: number;
 }
 
 export function OcrProcessingOverlay({ progress }: OcrProcessingOverlayProps) {
@@ -21,9 +21,7 @@ export function OcrProcessingOverlay({ progress }: OcrProcessingOverlayProps) {
           )}
           <div className="text-center">
             <p className="text-sm font-semibold">Analyzing invoice...</p>
-            <p className="text-sm text-muted-foreground">
-              This usually takes a few seconds
-            </p>
+            <p className="text-sm text-muted-foreground">This usually takes a few seconds</p>
           </div>
         </div>
       </div>
@@ -38,5 +36,5 @@ export function OcrProcessingOverlay({ progress }: OcrProcessingOverlayProps) {
         ))}
       </div>
     </div>
-  )
+  );
 }

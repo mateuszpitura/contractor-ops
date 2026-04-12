@@ -2,9 +2,33 @@ import { prisma } from "@contractor-ops/db";
 
 // EU member states for reverse charge mechanism
 const EU_MEMBER_STATES = new Set([
-  "AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR",
-  "DE", "GR", "HU", "IE", "IT", "LV", "LT", "LU", "MT", "NL",
-  "PL", "PT", "RO", "SK", "SI", "ES", "SE",
+  "AT",
+  "BE",
+  "BG",
+  "HR",
+  "CY",
+  "CZ",
+  "DK",
+  "EE",
+  "FI",
+  "FR",
+  "DE",
+  "GR",
+  "HU",
+  "IE",
+  "IT",
+  "LV",
+  "LT",
+  "LU",
+  "MT",
+  "NL",
+  "PL",
+  "PT",
+  "RO",
+  "SK",
+  "SI",
+  "ES",
+  "SE",
 ]);
 
 // GCC member states (for future GCC reverse charge rules)
@@ -40,15 +64,15 @@ export function detectReverseCharge(params: {
 
   // Rule 2: Not B2B - no reverse charge
   if (!isB2B) {
-    return { shouldApply: false, reason: "B2C transaction - reverse charge only for B2B", rule: "not_applicable" };
+    return {
+      shouldApply: false,
+      reason: "B2C transaction - reverse charge only for B2B",
+      rule: "not_applicable",
+    };
   }
 
   // Rule 3: EU cross-border B2B with valid VAT ID
-  if (
-    EU_MEMBER_STATES.has(sellerCountry) &&
-    EU_MEMBER_STATES.has(buyerCountry) &&
-    buyerHasVatId
-  ) {
+  if (EU_MEMBER_STATES.has(sellerCountry) && EU_MEMBER_STATES.has(buyerCountry) && buyerHasVatId) {
     return {
       shouldApply: true,
       reason: `EU cross-border B2B: ${sellerCountry} -> ${buyerCountry} with valid buyer VAT ID`,
@@ -57,11 +81,7 @@ export function detectReverseCharge(params: {
   }
 
   // Rule 4: EU cross-border but no buyer VAT ID
-  if (
-    EU_MEMBER_STATES.has(sellerCountry) &&
-    EU_MEMBER_STATES.has(buyerCountry) &&
-    !buyerHasVatId
-  ) {
+  if (EU_MEMBER_STATES.has(sellerCountry) && EU_MEMBER_STATES.has(buyerCountry) && !buyerHasVatId) {
     return {
       shouldApply: false,
       reason: "EU cross-border but buyer has no VAT ID - standard VAT applies",
@@ -79,7 +99,11 @@ export function detectReverseCharge(params: {
   }
 
   // Default: no reverse charge
-  return { shouldApply: false, reason: "No applicable reverse charge rule", rule: "not_applicable" };
+  return {
+    shouldApply: false,
+    reason: "No applicable reverse charge rule",
+    rule: "not_applicable",
+  };
 }
 
 /**

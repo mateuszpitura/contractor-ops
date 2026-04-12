@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { randomBytes } from "node:crypto";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { CredentialBlob } from "../types/credentials.js";
 import type { IntegrationProviderAdapter } from "../types/provider.js";
 
@@ -61,9 +61,7 @@ vi.mock("../services/credential-service.js", () => ({
 // Import after mocks
 // ---------------------------------------------------------------------------
 
-const { refreshExpiring, lazyRefresh } = await import(
-  "../services/token-refresh.js"
-);
+const { refreshExpiring, lazyRefresh } = await import("../services/token-refresh.js");
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -208,9 +206,7 @@ describe("token-refresh", () => {
     });
 
     it("should return false when connection has no tokenExpiresAt", async () => {
-      mockFindUnique.mockResolvedValue(
-        makeConnection({ tokenExpiresAt: null }),
-      );
+      mockFindUnique.mockResolvedValue(makeConnection({ tokenExpiresAt: null }));
 
       const result = await lazyRefresh("conn-1");
 

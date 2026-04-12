@@ -76,8 +76,7 @@ const PLANS: Array<{
     ],
     excludedFeatures: [],
     description: "Full platform access with audit and API",
-    priceId:
-      process.env.NEXT_PUBLIC_STRIPE_PRICE_ENTERPRISE ?? "",
+    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ENTERPRISE ?? "",
   },
 ];
 
@@ -95,10 +94,7 @@ interface PlanComparisonGridProps {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function getCtaMode(
-  planTier: TierId,
-  currentTier: TierId | undefined,
-): PlanCtaMode {
+function getCtaMode(planTier: TierId, currentTier: TierId | undefined): PlanCtaMode {
   if (!currentTier) return "choose";
   if (planTier === currentTier) return "current";
 
@@ -124,12 +120,7 @@ export function PlanComparisonGrid({
       className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
     >
       {PLANS.map((plan, index) => (
-        <div
-          key={plan.id}
-          className={
-            index === 2 ? "md:col-span-2 lg:col-span-1" : undefined
-          }
-        >
+        <div key={plan.id} className={index === 2 ? "md:col-span-2 lg:col-span-1" : undefined}>
           <PlanCard
             tier={plan}
             ctaMode={getCtaMode(plan.id, currentTier)}
@@ -144,5 +135,5 @@ export function PlanComparisonGrid({
   );
 }
 
-export { PLANS, TIER_ORDER };
 export type { TierId };
+export { PLANS, TIER_ORDER };

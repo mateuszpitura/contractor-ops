@@ -1,7 +1,7 @@
 import { prisma } from "@contractor-ops/db";
 import { getAdapter } from "../registry.js";
-import { getQStashClient } from "./qstash-client.js";
 import type { WebhookVerificationResult } from "../types/webhook.js";
+import { getQStashClient } from "./qstash-client.js";
 
 // ---------------------------------------------------------------------------
 // Webhook Dispatcher Service
@@ -29,9 +29,7 @@ export function dispatchWebhook(
   }
 
   if (!adapter.verifyWebhookSignature) {
-    throw new Error(
-      `Adapter "${provider}" does not support webhook signature verification`,
-    );
+    throw new Error(`Adapter "${provider}" does not support webhook signature verification`);
   }
 
   return adapter.verifyWebhookSignature(rawBody, headers);
@@ -69,10 +67,7 @@ export async function logWebhookDelivery(params: {
  * @param deliveryId - The WebhookDelivery record ID
  * @param provider - The provider slug
  */
-export async function queueWebhookProcessing(
-  deliveryId: string,
-  provider: string,
-): Promise<void> {
+export async function queueWebhookProcessing(deliveryId: string, provider: string): Promise<void> {
   const qstash = getQStashClient();
 
   await qstash.publishJSON({

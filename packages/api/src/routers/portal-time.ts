@@ -1,23 +1,19 @@
-import { z } from "zod";
-import { TRPCError } from "@trpc/server";
 import { prisma } from "@contractor-ops/db";
-import { router } from "../init.js";
-import { portalProcedure } from "../middleware/portal-auth.js";
 import {
-  getTimesheetSchema,
-  saveDraftEntriesSchema,
   createSingleEntrySchema,
-  submitTimesheetSchema,
+  getTimesheetSchema,
   listTimesheetsSchema,
+  saveDraftEntriesSchema,
+  submitTimesheetSchema,
   syncExternalEntriesSchema,
 } from "@contractor-ops/validators";
-import {
-  getOrCreateTimesheet,
-  saveDraftEntries,
-  submitTimesheet,
-} from "../services/time-entry.js";
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
+import { router } from "../init.js";
+import { portalProcedure } from "../middleware/portal-auth.js";
 import { syncClockifyEntries } from "../services/clockify-sync.js";
 import { syncJiraWorklogs } from "../services/jira-worklog-sync.js";
+import { getOrCreateTimesheet, saveDraftEntries, submitTimesheet } from "../services/time-entry.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -60,34 +56,32 @@ export const portalTimeRouter = router({
   // -------------------------------------------------------------------------
   // getTimesheet — fetch or create timesheet for a given week
   // -------------------------------------------------------------------------
-  getTimesheet: portalProcedure
-    .input(getTimesheetSchema)
-    .query(async ({ ctx, input }) => {
-      const weekStart = new Date(input.weekStartDate + "T00:00:00Z");
+  getTimesheet: portalProcedure.input(getTimesheetSchema).query(async ({ ctx, input }) => {
+    const weekStart = new Date(input.weekStartDate + "T00:00:00Z");
 
-      const timesheet = await getOrCreateTimesheet(
-        prisma,
-        ctx.organizationId,
-        ctx.contractorId,
-        weekStart,
-      );
+    const timesheet = await getOrCreateTimesheet(
+      prisma,
+      ctx.organizationId,
+      ctx.contractorId,
+      weekStart,
+    );
 
-      // Fetch entries with contract info
-      const entries = await prisma.timeEntry.findMany({
-        where: {
-          timesheetId: timesheet.id,
-          organizationId: ctx.organizationId,
+    // Fetch entries with contract info
+    const entries = await prisma.timeEntry.findMany({
+      where: {
+        timesheetId: timesheet.id,
+        organizationId: ctx.organizationId,
+      },
+      include: {
+        contract: {
+          select: { id: true, title: true },
         },
-        include: {
-          contract: {
-            select: { id: true, title: true },
-          },
-        },
-        orderBy: { entryDate: "asc" },
-      });
+      },
+      orderBy: { entryDate: "asc" },
+    });
 
-      return plain({ ...timesheet, entries });
-    }),
+    return plain({ ...timesheet, entries });
+  }),
 
   // -------------------------------------------------------------------------
   // getActiveContracts — contractor's active contracts for project picker
@@ -166,71 +160,67 @@ export const portalTimeRouter = router({
   // -------------------------------------------------------------------------
   // submitTimesheet — submit for manager review
   // -------------------------------------------------------------------------
-  submitTimesheet: portalProcedure
-    .input(submitTimesheetSchema)
-    .mutation(async ({ ctx, input }) => {
-      const result = await submitTimesheet(
-        prisma,
-        ctx.organizationId,
-        ctx.contractorId,
-        input.timesheetId,
-      );
+  submitTimesheet: portalProcedure.input(submitTimesheetSchema).mutation(async ({ ctx, input }) => {
+    const result = await submitTimesheet(
+      prisma,
+      ctx.organizationId,
+      ctx.contractorId,
+      input.timesheetId,
+    );
 
-      return plain(result);
-    }),
+    return plain(result);
+  }),
 
   // -------------------------------------------------------------------------
   // listTimesheets — past timesheets with cursor pagination
   // -------------------------------------------------------------------------
-  listTimesheets: portalProcedure
-    .input(listTimesheetsSchema)
-    .query(async ({ ctx, input }) => {
-      const where: Record<string, unknown> = {
-        organizationId: ctx.organizationId,
-        contractorId: ctx.contractorId,
+  listTimesheets: portalProcedure.input(listTimesheetsSchema).query(async ({ ctx, input }) => {
+    const where: Record<string, unknown> = {
+      organizationId: ctx.organizationId,
+      contractorId: ctx.contractorId,
+    };
+
+    if (input.status) {
+      where.status = input.status;
+    }
+    if (input.from) {
+      where.weekStartDate = {
+        ...(where.weekStartDate as Record<string, unknown> | undefined),
+        gte: new Date(input.from + "T00:00:00Z"),
       };
+    }
+    if (input.to) {
+      where.weekStartDate = {
+        ...(where.weekStartDate as Record<string, unknown> | undefined),
+        lte: new Date(input.to + "T00:00:00Z"),
+      };
+    }
+    if (input.cursor) {
+      where.id = { lt: input.cursor };
+    }
 
-      if (input.status) {
-        where.status = input.status;
-      }
-      if (input.from) {
-        where.weekStartDate = {
-          ...(where.weekStartDate as Record<string, unknown> | undefined),
-          gte: new Date(input.from + "T00:00:00Z"),
-        };
-      }
-      if (input.to) {
-        where.weekStartDate = {
-          ...(where.weekStartDate as Record<string, unknown> | undefined),
-          lte: new Date(input.to + "T00:00:00Z"),
-        };
-      }
-      if (input.cursor) {
-        where.id = { lt: input.cursor };
-      }
+    const timesheets = await prisma.timesheet.findMany({
+      where,
+      orderBy: { weekStartDate: "desc" },
+      take: input.limit + 1,
+      select: {
+        id: true,
+        weekStartDate: true,
+        status: true,
+        totalMinutes: true,
+        submittedAt: true,
+        reviewedAt: true,
+      },
+    });
 
-      const timesheets = await prisma.timesheet.findMany({
-        where,
-        orderBy: { weekStartDate: "desc" },
-        take: input.limit + 1,
-        select: {
-          id: true,
-          weekStartDate: true,
-          status: true,
-          totalMinutes: true,
-          submittedAt: true,
-          reviewedAt: true,
-        },
-      });
+    let nextCursor: string | undefined;
+    if (timesheets.length > input.limit) {
+      const next = timesheets.pop();
+      nextCursor = next?.id;
+    }
 
-      let nextCursor: string | undefined;
-      if (timesheets.length > input.limit) {
-        const next = timesheets.pop();
-        nextCursor = next?.id;
-      }
-
-      return plain({ items: timesheets, nextCursor });
-    }),
+    return plain({ items: timesheets, nextCursor });
+  }),
 
   // -------------------------------------------------------------------------
   // syncExternal — trigger Clockify or Jira sync
@@ -277,8 +267,7 @@ export const portalTimeRouter = router({
       if (!contract) {
         throw new TRPCError({
           code: "PRECONDITION_FAILED",
-          message:
-            "No active contract found. You need an active contract to import time entries.",
+          message: "No active contract found. You need an active contract to import time entries.",
         });
       }
 

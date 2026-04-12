@@ -3,7 +3,7 @@
  * Uses `googleWorkspaceRouter` in isolation with mocked `@contractor-ops/integrations` + auth + QStash.
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const ORG_ID = "clorg00000000000000000001";
 const USER_ID = "cluser0000000000000000001";
@@ -23,7 +23,14 @@ const sampleGoogleUser = {
   isAdmin: false,
 };
 
-const { mockPrisma, mockAdapter, mockListUsers, mockListUserGroups, mockPublishJSON, mockGetSubscription } = vi.hoisted(() => {
+const {
+  mockPrisma,
+  mockAdapter,
+  mockListUsers,
+  mockListUserGroups,
+  mockPublishJSON,
+  mockGetSubscription,
+} = vi.hoisted(() => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mockPrisma: Record<string, any> = {
     integrationConnection: {
@@ -55,7 +62,14 @@ const { mockPrisma, mockAdapter, mockListUsers, mockListUserGroups, mockPublishJ
     tier: "PRO",
   }));
 
-  return { mockPrisma, mockAdapter, mockListUsers, mockListUserGroups, mockPublishJSON, mockGetSubscription };
+  return {
+    mockPrisma,
+    mockAdapter,
+    mockListUsers,
+    mockListUserGroups,
+    mockPublishJSON,
+    mockGetSubscription,
+  };
 });
 
 vi.mock("@contractor-ops/integrations", () => ({
@@ -335,13 +349,13 @@ describe("googleWorkspaceRouter", () => {
     });
 
     it("listUserGroups rejects STARTER tier with TIER_REQUIRED error", async () => {
-      await expect(
-        caller.listUserGroups({ userEmails: ["a@example.com"] }),
-      ).rejects.toMatchObject({ code: "FORBIDDEN" });
+      await expect(caller.listUserGroups({ userEmails: ["a@example.com"] })).rejects.toMatchObject({
+        code: "FORBIDDEN",
+      });
 
-      await expect(
-        caller.listUserGroups({ userEmails: ["a@example.com"] }),
-      ).rejects.toThrow(/TIER_REQUIRED/);
+      await expect(caller.listUserGroups({ userEmails: ["a@example.com"] })).rejects.toThrow(
+        /TIER_REQUIRED/,
+      );
     });
 
     it("bulkImport rejects STARTER tier with TIER_REQUIRED error", async () => {

@@ -52,7 +52,7 @@ export function withTenantScope<T extends PrismaExtensible>(prisma: T) {
 
         if (!ctx) {
           throw new Error(
-            "Tenant context not initialized. Wrap your code in tenantStore.run({ organizationId }, callback)."
+            "Tenant context not initialized. Wrap your code in tenantStore.run({ organizationId }, callback).",
           );
         }
 
@@ -104,9 +104,7 @@ export function withTenantScope<T extends PrismaExtensible>(prisma: T) {
         }
 
         // Update/delete operations — inject organizationId into where clause
-        if (
-          ["update", "updateMany", "delete", "deleteMany"].includes(operation)
-        ) {
+        if (["update", "updateMany", "delete", "deleteMany"].includes(operation)) {
           const where = (argsObj.where ?? {}) as Record<string, unknown>;
           argsObj.where = { ...where, organizationId: ctx.organizationId };
         }

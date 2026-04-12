@@ -1,18 +1,17 @@
 "use client";
 
-import { Suspense, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
+import { Suspense, useState } from "react";
 import { toast } from "sonner";
-
-import { trpc } from "@/trpc/init";
-import { Skeleton } from "@/components/ui/skeleton";
-import { PageHeader } from "@/components/shared/page-header";
-import { AnimateIn } from "@/components/shared/animate-in";
-import { EquipmentTable } from "@/components/equipment/equipment-table/equipment-table";
-import { EquipmentForm } from "@/components/equipment/equipment-form";
 import { AssignmentDialog } from "@/components/equipment/assignment-dialog";
+import { EquipmentForm } from "@/components/equipment/equipment-form";
+import type { EquipmentRow } from "@/components/equipment/equipment-table/equipment-columns";
+import { EquipmentTable } from "@/components/equipment/equipment-table/equipment-table";
 import { ShipmentForm } from "@/components/equipment/shipment-form";
+import { AnimateIn } from "@/components/shared/animate-in";
+import { PageHeader } from "@/components/shared/page-header";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -21,8 +20,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import type { EquipmentRow } from "@/components/equipment/equipment-table/equipment-columns";
+import { Skeleton } from "@/components/ui/skeleton";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Content
@@ -128,16 +127,11 @@ function EquipmentContent() {
       )}
 
       {/* Retire confirmation */}
-      <Dialog
-        open={!!retireTarget}
-        onOpenChange={(v) => !v && setRetireTarget(null)}
-      >
+      <Dialog open={!!retireTarget} onOpenChange={(v) => !v && setRetireTarget(null)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t("detail.retireConfirmTitle")}</DialogTitle>
-            <DialogDescription>
-              {t("detail.retireConfirmDescription")}
-            </DialogDescription>
+            <DialogDescription>{t("detail.retireConfirmDescription")}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button
@@ -149,9 +143,7 @@ function EquipmentContent() {
             </Button>
             <Button
               variant="destructive"
-              onClick={() =>
-                retireTarget && retireMutation.mutate({ id: retireTarget.id })
-              }
+              onClick={() => retireTarget && retireMutation.mutate({ id: retireTarget.id })}
               disabled={retireMutation.isPending}
             >
               {t("detail.retire")}
@@ -161,17 +153,13 @@ function EquipmentContent() {
       </Dialog>
 
       {/* Unassign confirmation */}
-      <Dialog
-        open={!!unassignTarget}
-        onOpenChange={(v) => !v && setUnassignTarget(null)}
-      >
+      <Dialog open={!!unassignTarget} onOpenChange={(v) => !v && setUnassignTarget(null)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t("detail.unassignConfirmTitle")}</DialogTitle>
             <DialogDescription>
               {t("detail.unassignConfirmDescription", {
-                contractorName:
-                  unassignTarget?.currentAssignment?.contractorName ?? "",
+                contractorName: unassignTarget?.currentAssignment?.contractorName ?? "",
               })}
             </DialogDescription>
           </DialogHeader>
@@ -186,8 +174,7 @@ function EquipmentContent() {
             <Button
               variant="destructive"
               onClick={() =>
-                unassignTarget &&
-                unassignMutation.mutate({ equipmentId: unassignTarget.id })
+                unassignTarget && unassignMutation.mutate({ equipmentId: unassignTarget.id })
               }
               disabled={unassignMutation.isPending}
             >
@@ -215,10 +202,7 @@ function EquipmentLoading() {
         </div>
         <div className="rounded-xl border bg-background">
           {Array.from({ length: 8 }).map((_, i) => (
-            <div
-              key={i}
-              className="flex items-center gap-4 px-4 py-3 border-b last:border-b-0"
-            >
+            <div key={i} className="flex items-center gap-4 px-4 py-3 border-b last:border-b-0">
               <Skeleton className="h-4 w-4" />
               <Skeleton className="h-4 w-40" />
               <Skeleton className="h-4 w-20" />

@@ -33,12 +33,7 @@ describe("DataTablePagination (contracts)", () => {
 
   it("calls onPageChange on next click", async () => {
     const onPageChange = vi.fn();
-    const { user } = setup(
-      <DataTablePagination
-        {...defaultProps}
-        onPageChange={onPageChange}
-      />,
-    );
+    const { user } = setup(<DataTablePagination {...defaultProps} onPageChange={onPageChange} />);
     const buttons = screen.getAllByRole("button");
     await user.click(buttons[buttons.length - 1]!);
     expect(onPageChange).toHaveBeenCalledWith(2);

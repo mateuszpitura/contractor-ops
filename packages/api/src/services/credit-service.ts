@@ -1,17 +1,9 @@
 import { prisma } from "@contractor-ops/db";
 import { metrics } from "@contractor-ops/logger/metrics";
-import {
-  TIER_CREDIT_ALLOWANCE,
-  TRIAL_CREDIT_ALLOWANCE,
-} from "./billing-constants.js";
-import { stripe } from "./stripe-client.js";
+import { TIER_CREDIT_ALLOWANCE, TRIAL_CREDIT_ALLOWANCE } from "./billing-constants.js";
+import { CacheKeys, CacheTTL, cached, invalidate } from "./cache.js";
 import { dispatch } from "./notification-service.js";
-import {
-  cached,
-  invalidate,
-  CacheKeys,
-  CacheTTL,
-} from "./cache.js";
+import { stripe } from "./stripe-client.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -46,27 +38,18 @@ export interface TopUpResult {
  * - Per D-06: uses TIER_CREDIT_ALLOWANCE for active subscriptions
  * - Aggregates OcrCreditLedger entries within the current billing period
  */
-export async function getCreditBalance(
-  organizationId: string,
-): Promise<CreditBalance> {
-  return cached(
-    CacheKeys.creditBalance(organizationId),
-    CacheTTL.CREDIT_BALANCE,
-    () => fetchCreditBalance(organizationId),
+export async function getCreditBalance(organizationId: string): Promise<CreditBalance> {
+  return cached(CacheKeys.creditBalance(organizationId), CacheTTL.CREDIT_BALANCE, () =>
+    fetchCreditBalance(organizationId),
   );
 }
 
-async function fetchCreditBalance(
-  organizationId: string,
-): Promise<CreditBalance> {
+async function fetchCreditBalance(organizationId: string): Promise<CreditBalance> {
   const subscription = await prisma.subscription.findUnique({
     where: { organizationId },
   });
 
-  if (
-    !subscription ||
-    (subscription.status !== "ACTIVE" && subscription.status !== "TRIALING")
-  ) {
+  if (!subscription || (subscription.status !== "ACTIVE" && subscription.status !== "TRIALING")) {
     return { balance: 0, allowance: 0, used: 0, tier: null };
   }
 
@@ -74,9 +57,7 @@ async function fetchCreditBalance(
   const allowance =
     subscription.status === "TRIALING"
       ? TRIAL_CREDIT_ALLOWANCE
-      : TIER_CREDIT_ALLOWANCE[
-          subscription.tier as keyof typeof TIER_CREDIT_ALLOWANCE
-        ];
+      : TIER_CREDIT_ALLOWANCE[subscription.tier as keyof typeof TIER_CREDIT_ALLOWANCE];
 
   const aggregation = await prisma.ocrCreditLedger.aggregate({
     where: {
@@ -124,9 +105,7 @@ async function fetchCreditBalance(
  *
  * @returns Whether the deduction was allowed, remaining credits, and reason if denied
  */
-export async function checkAndDeductCredit(
-  organizationId: string,
-): Promise<CreditDeductionResult> {
+export async function checkAndDeductCredit(organizationId: string): Promise<CreditDeductionResult> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const result = await prisma.$transaction(
     async (tx: any) => {
@@ -136,8 +115,7 @@ export async function checkAndDeductCredit(
 
       if (
         !subscription ||
-        (subscription.status !== "ACTIVE" &&
-          subscription.status !== "TRIALING")
+        (subscription.status !== "ACTIVE" && subscription.status !== "TRIALING")
       ) {
         return {
           allowed: false as const,
@@ -151,9 +129,7 @@ export async function checkAndDeductCredit(
       const allowance =
         subscription.status === "TRIALING"
           ? TRIAL_CREDIT_ALLOWANCE
-          : TIER_CREDIT_ALLOWANCE[
-              subscription.tier as keyof typeof TIER_CREDIT_ALLOWANCE
-            ];
+          : TIER_CREDIT_ALLOWANCE[subscription.tier as keyof typeof TIER_CREDIT_ALLOWANCE];
 
       // Aggregate negative credits (usage) for the current billing period
       const usageAgg = await tx.ocrCreditLedger.aggregate({
@@ -226,9 +202,7 @@ export async function checkAndDeductCredit(
           value: "1",
         },
       })
-      .catch((err: unknown) =>
-        console.error("[billing] Meter event failed:", err),
-      );
+      .catch((err: unknown) => console.error("[billing] Meter event failed:", err));
   }
 
   // Strip internal stripeCustomerId from the return type
@@ -257,9 +231,7 @@ export async function allocateTopUpCredits(params: {
   stripeEventId?: string;
 }): Promise<TopUpResult> {
   if (params.credits <= 0) {
-    throw new Error(
-      `[billing] Credits must be positive, got ${params.credits}`,
-    );
+    throw new Error(`[billing] Credits must be positive, got ${params.credits}`);
   }
 
   const subscription = await prisma.subscription.findUnique({
@@ -267,9 +239,7 @@ export async function allocateTopUpCredits(params: {
   });
 
   if (!subscription) {
-    throw new Error(
-      `[billing] No subscription found for organization ${params.organizationId}`,
-    );
+    throw new Error(`[billing] No subscription found for organization ${params.organizationId}`);
   }
 
   await prisma.ocrCreditLedger.create({
@@ -303,9 +273,7 @@ export async function allocateTopUpCredits(params: {
 // Credit Exhaustion Notification
 // ---------------------------------------------------------------------------
 
-async function notifyCreditExhausted(
-  organizationId: string,
-): Promise<void> {
+async function notifyCreditExhausted(organizationId: string): Promise<void> {
   try {
     const adminMembers = await prisma.member.findMany({
       where: {

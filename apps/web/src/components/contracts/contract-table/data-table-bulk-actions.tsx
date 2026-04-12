@@ -1,20 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import type { Table } from "@tanstack/react-table";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { Table } from "@tanstack/react-table";
 import { Download, Loader2, XCircle } from "lucide-react";
-import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { useState } from "react";
+import { toast } from "sonner";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,6 +16,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { trpc } from "@/trpc/init";
 import type { ContractRow } from "./columns";
 
 interface DataTableBulkActionsProps {
@@ -56,9 +55,7 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
     trpc.contract.bulkTransition.mutationOptions({
       onSuccess: (data) => {
         const result = data as { updated: number; failed: string[] };
-        toast.success(
-          tc("terminated", { count: result.updated }),
-        );
+        toast.success(tc("terminated", { count: result.updated }));
         invalidateAndDeselect();
         setShowTerminateDialog(false);
       },
@@ -73,9 +70,7 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
   return (
     <>
       <div className="flex items-center gap-2 rounded-lg border bg-muted/50 px-3 py-2">
-        <span className="text-sm font-medium">
-          {t("selected", { count })}
-        </span>
+        <span className="text-sm font-medium">{t("selected", { count })}</span>
 
         {/* Export — placeholder for now, actual export router is not yet implemented */}
         <DropdownMenu>
@@ -121,12 +116,8 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
       <AlertDialog open={showTerminateDialog} onOpenChange={setShowTerminateDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              {td("titleBulk", { count })}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {td("bodyBulk")}
-            </AlertDialogDescription>
+            <AlertDialogTitle>{td("titleBulk", { count })}</AlertDialogTitle>
+            <AlertDialogDescription>{td("bodyBulk")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{tc("cancel")}</AlertDialogCancel>

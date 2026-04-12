@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { createHmac } from "node:crypto";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { StorecoveAdapter } from "../asp/storecove/adapter.js";
 
 // ---------------------------------------------------------------------------
@@ -70,9 +70,7 @@ describe("StorecoveAdapter", () => {
     expect(url).toContain("/legal_entities");
     const body = JSON.parse(options.body as string);
     expect(body.party_name).toBe("Test Corp");
-    expect(body.peppol_identifiers[0].superscheme).toBe(
-      "iso6523-actorid-upis",
-    );
+    expect(body.peppol_identifiers[0].superscheme).toBe("iso6523-actorid-upis");
   });
 
   // -----------------------------------------------------------------------
@@ -104,9 +102,7 @@ describe("StorecoveAdapter", () => {
     mockFetch.mockResolvedValueOnce(
       new Response(
         JSON.stringify({
-          errors: [
-            { code: "INVALID_DOCUMENT", message: "Missing required field" },
-          ],
+          errors: [{ code: "INVALID_DOCUMENT", message: "Missing required field" }],
         }),
         { status: 422, headers: { "Content-Type": "application/json" } },
       ),
@@ -166,9 +162,7 @@ describe("StorecoveAdapter", () => {
 
   it("verifyWebhookSignature accepts valid HMAC", () => {
     const body = JSON.stringify({ guid: "wh-001", event: "document_received" });
-    const signature = createHmac("sha256", TEST_CONFIG.webhookSecret!)
-      .update(body)
-      .digest("hex");
+    const signature = createHmac("sha256", TEST_CONFIG.webhookSecret!).update(body).digest("hex");
 
     const result = adapter.verifyWebhookSignature(body, {
       "storecove-signature": signature,
@@ -224,9 +218,7 @@ describe("StorecoveAdapter", () => {
       ]),
     );
 
-    const results = await adapter.pollInboundInvoices(
-      new Date("2026-04-11T08:00:00Z"),
-    );
+    const results = await adapter.pollInboundInvoices(new Date("2026-04-11T08:00:00Z"));
 
     expect(results).toHaveLength(2);
     expect(results[0]!.senderParticipantId).toBe("0192:111111111111111");

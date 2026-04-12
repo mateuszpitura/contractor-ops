@@ -2,10 +2,10 @@
 // E-Invoice Engine
 // ---------------------------------------------------------------------------
 
+import { getProfile, listProfiles } from "../registry.js";
+import type { ComplianceStatus } from "../types/compliance.js";
 import type { EInvoice } from "../types/invoice.js";
 import type { ValidationResult } from "../types/validation.js";
-import type { ComplianceStatus } from "../types/compliance.js";
-import { getProfile, listProfiles } from "../registry.js";
 
 /**
  * E-Invoice Engine — orchestrates country profiles for invoice operations.
@@ -37,10 +37,7 @@ export class EInvoiceEngine {
   /**
    * Validate XML against a country profile's rules.
    */
-  async validate(
-    profileId: string,
-    xml: string,
-  ): Promise<ValidationResult> {
+  async validate(profileId: string, xml: string): Promise<ValidationResult> {
     const profile = getProfile(profileId);
     return profile.validate(xml);
   }
@@ -48,10 +45,7 @@ export class EInvoiceEngine {
   /**
    * Get compliance status for a single profile within an organization.
    */
-  async getComplianceStatus(
-    profileId: string,
-    organizationId: string,
-  ): Promise<ComplianceStatus> {
+  async getComplianceStatus(profileId: string, organizationId: string): Promise<ComplianceStatus> {
     const profile = getProfile(profileId);
     return profile.getComplianceStatus(organizationId);
   }
@@ -59,12 +53,8 @@ export class EInvoiceEngine {
   /**
    * Get compliance statuses for all registered profiles within an organization.
    */
-  async getComplianceStatuses(
-    organizationId: string,
-  ): Promise<ComplianceStatus[]> {
+  async getComplianceStatuses(organizationId: string): Promise<ComplianceStatus[]> {
     const profiles = listProfiles();
-    return Promise.all(
-      profiles.map((p) => p.getComplianceStatus(organizationId)),
-    );
+    return Promise.all(profiles.map((p) => p.getComplianceStatus(organizationId)));
   }
 }

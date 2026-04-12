@@ -1,12 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -15,6 +12,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -22,6 +21,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+
 // Inline type to avoid cross-package build dependency in parallel execution
 interface CalendarTaskConfig {
   calendarEnabled: boolean;
@@ -63,13 +64,9 @@ export function CalendarEventConfigDialog({
   const t = useTranslations("CalendarSettings");
 
   // Local form state (same pattern as OcrReviewPanel)
-  const [titleTemplate, setTitleTemplate] = useState(
-    config.titleTemplate ?? "",
-  );
+  const [titleTemplate, setTitleTemplate] = useState(config.titleTemplate ?? "");
   const [duration, setDuration] = useState<string>(config.duration ?? "1h");
-  const [attendeesText, setAttendeesText] = useState(
-    (config.attendees ?? []).join(", "),
-  );
+  const [attendeesText, setAttendeesText] = useState((config.attendees ?? []).join(", "));
 
   // Reset form state when dialog opens with fresh config
   function handleOpenChange(newOpen: boolean) {
@@ -103,17 +100,13 @@ export function CalendarEventConfigDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{t("calendarEventTitle")}</DialogTitle>
-          <DialogDescription>
-            {t("calendarEventDescription")}
-          </DialogDescription>
+          <DialogDescription>{t("calendarEventDescription")}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           {/* Event Title */}
           <div className="space-y-2">
-            <Label htmlFor="calendar-event-title">
-              {t("eventTitleLabel")}
-            </Label>
+            <Label htmlFor="calendar-event-title">{t("eventTitleLabel")}</Label>
             <Input
               id="calendar-event-title"
               value={titleTemplate}
@@ -121,16 +114,12 @@ export function CalendarEventConfigDialog({
               placeholder={t("eventTitlePlaceholder")}
               maxLength={200}
             />
-            <p className="text-xs text-muted-foreground">
-              {t("eventTitleHint")}
-            </p>
+            <p className="text-xs text-muted-foreground">{t("eventTitleHint")}</p>
           </div>
 
           {/* Duration */}
           <div className="space-y-2">
-            <Label htmlFor="calendar-event-duration">
-              {t("durationLabel")}
-            </Label>
+            <Label htmlFor="calendar-event-duration">{t("durationLabel")}</Label>
             <Select value={duration} onValueChange={(val) => setDuration(val ?? "1h")}>
               <SelectTrigger id="calendar-event-duration">
                 <SelectValue />
@@ -147,9 +136,7 @@ export function CalendarEventConfigDialog({
 
           {/* Attendees */}
           <div className="space-y-2">
-            <Label htmlFor="calendar-event-attendees">
-              {t("attendeesLabel")}
-            </Label>
+            <Label htmlFor="calendar-event-attendees">{t("attendeesLabel")}</Label>
             <Textarea
               id="calendar-event-attendees"
               value={attendeesText}
@@ -157,9 +144,7 @@ export function CalendarEventConfigDialog({
               placeholder={t("attendeesPlaceholder")}
               rows={3}
             />
-            <p className="text-xs text-muted-foreground">
-              {t("attendeesHint")}
-            </p>
+            <p className="text-xs text-muted-foreground">{t("attendeesHint")}</p>
           </div>
         </div>
 

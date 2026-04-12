@@ -1,7 +1,6 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
-
-import { DPDClient } from "../dpd-client";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { DPDShipmentParams } from "../courier-client";
+import { DPDClient } from "../dpd-client";
 
 // ---------------------------------------------------------------------------
 // DPD Client Tests
@@ -29,8 +28,7 @@ function mockFetchResponse(body: unknown, status = 200) {
     status,
     json: () => Promise.resolve(body),
     text: () => Promise.resolve(JSON.stringify(body)),
-    arrayBuffer: () =>
-      Promise.resolve(new TextEncoder().encode("PDF_CONTENT").buffer),
+    arrayBuffer: () => Promise.resolve(new TextEncoder().encode("PDF_CONTENT").buffer),
   });
 }
 

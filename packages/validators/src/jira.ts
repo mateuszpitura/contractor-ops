@@ -74,9 +74,7 @@ export const jiraStatusMappingSchema = z.record(
   z.array(jiraStatusMappingEntrySchema),
 );
 
-export type JiraStatusMappingEntry = z.infer<
-  typeof jiraStatusMappingEntrySchema
->;
+export type JiraStatusMappingEntry = z.infer<typeof jiraStatusMappingEntrySchema>;
 export type JiraStatusMapping = z.infer<typeof jiraStatusMappingSchema>;
 
 // ---------------------------------------------------------------------------

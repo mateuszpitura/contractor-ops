@@ -4,9 +4,8 @@ import { DeactivateDialog } from "../deactivate-dialog";
 const mockMutate = vi.fn();
 
 vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
-    "@tanstack/react-query",
-  );
+  const actual =
+    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
   return {
     ...actual,
     useMutation: () => ({ mutate: mockMutate, isPending: false }),
@@ -32,25 +31,19 @@ describe("DeactivateDialog", () => {
 
   it("renders title and body when open", () => {
     render(
-      <DeactivateDialog
-        open={true}
-        onOpenChange={onOpenChange}
-        userId="u1"
-        userName="John"
-      />,
+      <DeactivateDialog open={true} onOpenChange={onOpenChange} userId="u1" userName="John" />,
     );
     expect(screen.getByText(/Deactivate John/)).toBeInTheDocument();
-    expect(screen.getByText("This will immediately revoke their access. They will be logged out of all sessions. This action can be reversed.")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "This will immediately revoke their access. They will be logged out of all sessions. This action can be reversed.",
+      ),
+    ).toBeInTheDocument();
   });
 
   it("renders CTA and cancel buttons", () => {
     render(
-      <DeactivateDialog
-        open={true}
-        onOpenChange={onOpenChange}
-        userId="u1"
-        userName="John"
-      />,
+      <DeactivateDialog open={true} onOpenChange={onOpenChange} userId="u1" userName="John" />,
     );
     expect(screen.getByText("Deactivate member")).toBeInTheDocument();
     expect(screen.getByText("Cancel")).toBeInTheDocument();
@@ -58,13 +51,12 @@ describe("DeactivateDialog", () => {
 
   it("does not render content when closed", () => {
     render(
-      <DeactivateDialog
-        open={false}
-        onOpenChange={onOpenChange}
-        userId="u1"
-        userName="John"
-      />,
+      <DeactivateDialog open={false} onOpenChange={onOpenChange} userId="u1" userName="John" />,
     );
-    expect(screen.queryByText("This will immediately revoke their access. They will be logged out of all sessions. This action can be reversed.")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(
+        "This will immediately revoke their access. They will be logged out of all sessions. This action can be reversed.",
+      ),
+    ).not.toBeInTheDocument();
   });
 });

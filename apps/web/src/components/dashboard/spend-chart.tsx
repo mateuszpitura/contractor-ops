@@ -1,24 +1,22 @@
 "use client";
 
-import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { parseAsString, useQueryState } from "nuqs";
+import { useMemo } from "react";
 import {
-  AreaChart,
   Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
 } from "recharts";
-
-import { useLocale } from "next-intl";
-import { trpc } from "@/trpc/init";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useRtlChartConfig } from "@/hooks/use-rtl-chart-config";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -105,7 +103,10 @@ function ChartTooltip({
             style={{ backgroundColor: entry.color }}
           />
           <span className="text-xs text-muted-foreground">{entry.name}</span>
-          <span className="ms-auto font-display text-sm font-bold tabular-nums" style={{ color: entry.color }}>
+          <span
+            className="ms-auto font-display text-sm font-bold tabular-nums"
+            style={{ color: entry.color }}
+          >
             {currencyFormatter.format(entry.value / 100)}
           </span>
         </div>
@@ -142,10 +143,7 @@ export function SpendChart() {
     [locale],
   );
 
-  const [spendRange, setSpendRange] = useQueryState(
-    "spend",
-    parseAsString.withDefault("6"),
-  );
+  const [spendRange, setSpendRange] = useQueryState("spend", parseAsString.withDefault("6"));
 
   const { data, isLoading } = useQuery(
     trpc.dashboard.spendTrend.queryOptions({
@@ -178,9 +176,7 @@ export function SpendChart() {
   return (
     <Card className="iridescent neon-card">
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle className="font-display text-lg font-semibold">
-          {t("spend.title")}
-        </CardTitle>
+        <CardTitle className="font-display text-lg font-semibold">{t("spend.title")}</CardTitle>
         <RangeToggle value={spendRange} onChange={setSpendRange} t={t} />
       </CardHeader>
       <CardContent>
@@ -200,8 +196,8 @@ export function SpendChart() {
                   <stop offset="100%" stopColor="oklch(0.55 0.15 178)" stopOpacity={0.02} />
                 </linearGradient>
                 <linearGradient id="gradEUR" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="oklch(0.72 0.14 65)" stopOpacity={0.30} />
-                  <stop offset="50%" stopColor="oklch(0.72 0.14 65)" stopOpacity={0.10} />
+                  <stop offset="0%" stopColor="oklch(0.72 0.14 65)" stopOpacity={0.3} />
+                  <stop offset="50%" stopColor="oklch(0.72 0.14 65)" stopOpacity={0.1} />
                   <stop offset="100%" stopColor="oklch(0.72 0.14 65)" stopOpacity={0.02} />
                 </linearGradient>
                 {/* Glow filter for stroke lines */}
@@ -228,9 +224,7 @@ export function SpendChart() {
                 tickLine={false}
                 axisLine={false}
                 tick={{ fill: "var(--color-muted-foreground)" }}
-                tickFormatter={(val: number) =>
-                  currencyFormatter.format(val / 100)
-                }
+                tickFormatter={(val: number) => currencyFormatter.format(val / 100)}
                 width={70}
                 {...yAxisProps}
               />

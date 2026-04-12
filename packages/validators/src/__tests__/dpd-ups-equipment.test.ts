@@ -1,11 +1,11 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import {
-  dpdShipmentCreateSchema,
-  dpdConfigSchema,
   deliveryAddressSchema,
-  upsShipmentCreateSchema,
+  dpdConfigSchema,
+  dpdShipmentCreateSchema,
   upsConfigSchema,
+  upsShipmentCreateSchema,
 } from "../equipment";
 
 // ---------------------------------------------------------------------------

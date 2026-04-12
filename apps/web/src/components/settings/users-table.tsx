@@ -1,15 +1,19 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
-import { usePermissions } from "@/hooks/use-permissions";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
+import { DeactivateDialog } from "@/components/settings/deactivate-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -18,13 +22,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { DeactivateDialog } from "@/components/settings/deactivate-dialog";
+import { usePermissions } from "@/hooks/use-permissions";
+import { trpc } from "@/trpc/init";
 
 type Member = {
   id?: string;
@@ -41,7 +40,8 @@ const roleBadgeColors: Record<string, string> = {
   finance_admin: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300",
   ops_manager: "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300",
   team_manager: "bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-300",
-  legal_compliance_viewer: "bg-violet-100 text-violet-800 dark:bg-violet-900/40 dark:text-violet-300",
+  legal_compliance_viewer:
+    "bg-violet-100 text-violet-800 dark:bg-violet-900/40 dark:text-violet-300",
   it_admin: "bg-slate-100 text-slate-800 dark:bg-slate-900/40 dark:text-slate-300",
   external_accountant: "bg-teal-100 text-teal-800 dark:bg-teal-900/40 dark:text-teal-300",
   readonly: "bg-gray-100 text-gray-800 dark:bg-gray-900/40 dark:text-gray-300",
@@ -148,12 +148,22 @@ export function UsersTable() {
           <TableBody>
             {Array.from({ length: 5 }).map((_, i) => (
               <TableRow key={i}>
-                <TableCell><Skeleton className="h-4 w-28" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-40" /></TableCell>
-                <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-                <TableCell><Skeleton className="h-5 w-16" /></TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-28" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-40" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-5 w-20" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-5 w-16" />
+                </TableCell>
                 {(canManageMembers || canDeleteMembers) && (
-                  <TableCell><Skeleton className="h-8 w-20 ms-auto" /></TableCell>
+                  <TableCell>
+                    <Skeleton className="h-8 w-20 ms-auto" />
+                  </TableCell>
                 )}
               </TableRow>
             ))}
@@ -167,15 +177,12 @@ export function UsersTable() {
     return (
       <div className="rounded-xl border bg-background py-16 text-center">
         <h3 className="text-[16px] font-medium">{t("emptyState.heading")}</h3>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {t("emptyState.body")}
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground">{t("emptyState.body")}</p>
       </div>
     );
   }
 
-  const roleLabel = (role: string) =>
-    t(`roles.${role}` as Parameters<typeof t>[0]) ?? role;
+  const roleLabel = (role: string) => t(`roles.${role}` as Parameters<typeof t>[0]) ?? role;
 
   const statusLabel = (status: string) =>
     t(`status.${status}` as Parameters<typeof t>[0]) ?? status;
@@ -203,12 +210,8 @@ export function UsersTable() {
 
               return (
                 <TableRow key={memberId || String(idx)}>
-                  <TableCell className="font-medium">
-                    {displayName(m)}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {m.email ?? "\u2014"}
-                  </TableCell>
+                  <TableCell className="font-medium">{displayName(m)}</TableCell>
+                  <TableCell className="text-muted-foreground">{m.email ?? "\u2014"}</TableCell>
                   <TableCell>
                     {canManageMembers ? (
                       <DropdownMenu>
@@ -243,19 +246,13 @@ export function UsersTable() {
                         </DropdownMenuContent>
                       </DropdownMenu>
                     ) : (
-                      <Badge
-                        variant="secondary"
-                        className={roleBadgeColors[m.role ?? ""] ?? ""}
-                      >
+                      <Badge variant="secondary" className={roleBadgeColors[m.role ?? ""] ?? ""}>
                         {roleLabel(m.role ?? "")}
                       </Badge>
                     )}
                   </TableCell>
                   <TableCell>
-                    <Badge
-                      variant="secondary"
-                      className={statusColors[status] ?? ""}
-                    >
+                    <Badge variant="secondary" className={statusColors[status] ?? ""}>
                       {statusLabel(status)}
                     </Badge>
                   </TableCell>
@@ -265,9 +262,7 @@ export function UsersTable() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() =>
-                            reactivateMutation.mutate({ userId: memberId })
-                          }
+                          onClick={() => reactivateMutation.mutate({ userId: memberId })}
                           disabled={reactivateMutation.isPending}
                         >
                           {t("actions.reactivate")}

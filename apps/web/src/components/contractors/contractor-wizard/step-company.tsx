@@ -1,17 +1,16 @@
 "use client";
 
-import { useState } from "react";
-import type { UseFormReturn } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
+import { useState } from "react";
+import type { UseFormReturn } from "react-hook-form";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { trpc } from "@/trpc/init";
 
 import type { WizardFormValues } from "./wizard-dialog";
 
@@ -19,12 +18,7 @@ interface StepCompanyProps {
   form: UseFormReturn<WizardFormValues>;
 }
 
-const CONTRACTOR_TYPES = [
-  "SOLE_TRADER",
-  "COMPANY",
-  "INDIVIDUAL_FREELANCER",
-  "OTHER",
-] as const;
+const CONTRACTOR_TYPES = ["SOLE_TRADER", "COMPANY", "INDIVIDUAL_FREELANCER", "OTHER"] as const;
 
 /**
  * Step 1: Company details with GUS NIP autofill.
@@ -56,9 +50,9 @@ export function StepCompany({ form }: StepCompanyProps) {
     setIsGusLoading(true);
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const data = await queryClient.fetchQuery(
+      const data = (await queryClient.fetchQuery(
         trpc.contractor.gusLookup.queryOptions({ nip: cleanNip }),
-      ) as Record<string, any>;
+      )) as Record<string, any>;
 
       if (data?.found) {
         if (data.legalName) {
@@ -120,9 +114,7 @@ export function StepCompany({ form }: StepCompanyProps) {
             )}
           </Button>
         </div>
-        {errors.taxId && (
-          <p className="text-sm text-destructive">{errors.taxId.message}</p>
-        )}
+        {errors.taxId && <p className="text-sm text-destructive">{errors.taxId.message}</p>}
       </div>
 
       {/* Legal name */}
@@ -131,11 +123,7 @@ export function StepCompany({ form }: StepCompanyProps) {
           {t("legalName")}
         </Label>
         <Input id="legalName" {...register("legalName")} />
-        {errors.legalName && (
-          <p className="text-sm text-destructive">
-            {errors.legalName.message}
-          </p>
-        )}
+        {errors.legalName && <p className="text-sm text-destructive">{errors.legalName.message}</p>}
       </div>
 
       {/* Contractor type */}
@@ -160,9 +148,7 @@ export function StepCompany({ form }: StepCompanyProps) {
             </label>
           ))}
         </RadioGroup>
-        {errors.type && (
-          <p className="text-sm text-destructive">{errors.type.message}</p>
-        )}
+        {errors.type && <p className="text-sm text-destructive">{errors.type.message}</p>}
       </div>
 
       {/* Contact email */}
@@ -171,9 +157,7 @@ export function StepCompany({ form }: StepCompanyProps) {
           {t("email")}
         </Label>
         <Input id="email" type="email" {...register("email")} />
-        {errors.email && (
-          <p className="text-sm text-destructive">{errors.email.message}</p>
-        )}
+        {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
       </div>
 
       {/* VAT-EU (optional) */}
@@ -188,20 +172,11 @@ export function StepCompany({ form }: StepCompanyProps) {
       <div className="space-y-2">
         <Label className="text-[13px]">{t("address")}</Label>
         <div className="space-y-2">
-          <Input
-            placeholder={t("addressLine1")}
-            {...register("addressLine1")}
-          />
-          <Input
-            placeholder={t("addressLine2")}
-            {...register("addressLine2")}
-          />
+          <Input placeholder={t("addressLine1")} {...register("addressLine1")} />
+          <Input placeholder={t("addressLine2")} {...register("addressLine2")} />
           <div className="grid grid-cols-2 gap-2">
             <Input placeholder={t("city")} {...register("city")} />
-            <Input
-              placeholder={t("postalCode")}
-              {...register("postalCode")}
-            />
+            <Input placeholder={t("postalCode")} {...register("postalCode")} />
           </div>
         </div>
       </div>

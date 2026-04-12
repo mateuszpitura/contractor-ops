@@ -1,16 +1,16 @@
 "use client";
 
+import { ChevronDown, Info } from "lucide-react";
+import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { Info, ChevronDown } from "lucide-react";
 import { trpc } from "@/trpc/init";
-import { toast } from "sonner";
 
 interface ReverseChargeBannerProps {
   invoiceId: string;
@@ -25,11 +25,7 @@ export function ReverseChargeBanner({
 }: ReverseChargeBannerProps) {
   const toggleMutation = trpc.invoice.toggleReverseCharge.useMutation({
     onSuccess: (_, vars) => {
-      toast.success(
-        vars.isReverseCharge
-          ? "Reverse charge applied"
-          : "Reverse charge removed",
-      );
+      toast.success(vars.isReverseCharge ? "Reverse charge applied" : "Reverse charge removed");
       onToggle?.(vars.isReverseCharge);
     },
   });
@@ -39,9 +35,7 @@ export function ReverseChargeBanner({
   return (
     <Alert className="border-info/20 bg-info/5">
       <Info className="h-4 w-4 text-info" />
-      <AlertTitle className="text-sm font-medium">
-        Reverse charge applied
-      </AlertTitle>
+      <AlertTitle className="text-sm font-medium">Reverse charge applied</AlertTitle>
       <AlertDescription className="text-sm text-muted-foreground">
         Cross-border B2B transaction. VAT to be accounted by the buyer.
       </AlertDescription>

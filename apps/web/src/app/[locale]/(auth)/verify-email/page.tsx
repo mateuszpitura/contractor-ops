@@ -1,6 +1,6 @@
 import { useTranslations } from "next-intl";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "@/i18n/navigation";
 
 /**
@@ -31,12 +31,8 @@ export default function VerifyEmailPage() {
             </svg>
           </div>
           <h2 className="text-[20px] font-semibold">{t("title")}</h2>
-          <p className="text-sm text-muted-foreground">
-            {t("message")}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            {t("redirect")}
-          </p>
+          <p className="text-sm text-muted-foreground">{t("message")}</p>
+          <p className="text-xs text-muted-foreground">{t("redirect")}</p>
         </div>
         <div className="mt-6">
           <Button variant="ghost" render={<Link href="/login" />}>

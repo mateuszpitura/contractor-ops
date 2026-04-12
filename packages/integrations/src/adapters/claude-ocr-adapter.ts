@@ -1,9 +1,9 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type {
   OcrAdapter,
+  OcrExtractionField,
   OcrExtractionRequest,
   OcrExtractionResult,
-  OcrExtractionField,
   OcrLineItem,
 } from "../types/ocr.js";
 import { adjustConfidences } from "../types/ocr.js";
@@ -178,14 +178,7 @@ const INVOICE_EXTRACTION_TOOL: Anthropic.Tool = {
         },
       },
     },
-    required: [
-      "invoiceNumber",
-      "issueDate",
-      "totalNet",
-      "totalGross",
-      "currency",
-      "lineItems",
-    ],
+    required: ["invoiceNumber", "issueDate", "totalNet", "totalGross", "currency", "lineItems"],
   },
 };
 
@@ -230,9 +223,7 @@ export class ClaudeOcrAdapter implements OcrAdapter {
     this.modelId = params?.modelId ?? "claude-sonnet-4-5-20250514";
   }
 
-  async extractInvoice(
-    request: OcrExtractionRequest,
-  ): Promise<OcrExtractionResult> {
+  async extractInvoice(request: OcrExtractionRequest): Promise<OcrExtractionResult> {
     const startTime = Date.now();
 
     // Check PDF size before sending
@@ -296,12 +287,7 @@ export class ClaudeOcrAdapter implements OcrAdapter {
       const rawData = toolUseBlock.input as Record<string, unknown>;
       const processingTimeMs = Date.now() - startTime;
 
-      return this.parseExtractionResponse(
-        rawData,
-        processingTimeMs,
-        request.pageCount,
-        response,
-      );
+      return this.parseExtractionResponse(rawData, processingTimeMs, request.pageCount, response);
     } catch (error) {
       return {
         status: "FAILED",
@@ -310,8 +296,7 @@ export class ClaudeOcrAdapter implements OcrAdapter {
         processingTimeMs: Date.now() - startTime,
         pageCount: 0,
         overallConfidence: 0,
-        errorMessage:
-          error instanceof Error ? error.message : "Unknown extraction error",
+        errorMessage: error instanceof Error ? error.message : "Unknown extraction error",
       };
     }
   }
@@ -342,9 +327,7 @@ export class ClaudeOcrAdapter implements OcrAdapter {
     ] as const;
 
     for (const key of scalarFieldKeys) {
-      const raw = rawData[key] as
-        | { value: string | null; confidence: number }
-        | undefined;
+      const raw = rawData[key] as { value: string | null; confidence: number } | undefined;
       if (raw) {
         fields[key] = {
           key,
@@ -358,9 +341,7 @@ export class ClaudeOcrAdapter implements OcrAdapter {
     const amountFieldKeys = ["totalNet", "totalTax", "totalGross"] as const;
 
     for (const key of amountFieldKeys) {
-      const raw = rawData[key] as
-        | { value: number | null; confidence: number }
-        | undefined;
+      const raw = rawData[key] as { value: number | null; confidence: number } | undefined;
       if (raw) {
         fields[key] = {
           key,
@@ -387,15 +368,11 @@ export class ClaudeOcrAdapter implements OcrAdapter {
       description: item.description,
       quantity: item.quantity ?? null,
       unit: item.unit ?? null,
-      unitPriceGrosze:
-        item.unitPrice != null ? Math.round(item.unitPrice * 100) : null,
-      netAmountGrosze:
-        item.netAmount != null ? Math.round(item.netAmount * 100) : null,
+      unitPriceGrosze: item.unitPrice != null ? Math.round(item.unitPrice * 100) : null,
+      netAmountGrosze: item.netAmount != null ? Math.round(item.netAmount * 100) : null,
       vatRate: item.vatRate ?? null,
-      vatAmountGrosze:
-        item.vatAmount != null ? Math.round(item.vatAmount * 100) : null,
-      grossAmountGrosze:
-        item.grossAmount != null ? Math.round(item.grossAmount * 100) : null,
+      vatAmountGrosze: item.vatAmount != null ? Math.round(item.vatAmount * 100) : null,
+      grossAmountGrosze: item.grossAmount != null ? Math.round(item.grossAmount * 100) : null,
       confidence: item.confidence ?? 0,
     }));
 
@@ -425,10 +402,7 @@ export class ClaudeOcrAdapter implements OcrAdapter {
 
     const overallConfidence =
       allConfidences.length > 0
-        ? Math.round(
-            allConfidences.reduce((sum, c) => sum + c, 0) /
-              allConfidences.length,
-          )
+        ? Math.round(allConfidences.reduce((sum, c) => sum + c, 0) / allConfidences.length)
         : 0;
 
     const result: OcrExtractionResult = {

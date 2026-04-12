@@ -1,5 +1,6 @@
 "use client";
 
+import type { DirectoryRole } from "@contractor-ops/validators";
 import { useTranslations } from "next-intl";
 import {
   Select,
@@ -8,7 +9,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { DirectoryRole } from "@contractor-ops/validators";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -75,4 +75,4 @@ export function RoleAssignmentControls({
   );
 }
 
-export { ROLE_OPTIONS, ROLE_LABELS };
+export { ROLE_LABELS, ROLE_OPTIONS };

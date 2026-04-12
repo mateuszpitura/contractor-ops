@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { render, screen } from "@/test/test-utils";
 import { ConfidenceFieldWrapper } from "../confidence-field-wrapper";
 
@@ -28,7 +28,7 @@ describe("ConfidenceFieldWrapper", () => {
       </ConfidenceFieldWrapper>,
     );
     const wrapper = container.firstChild as HTMLElement;
-    expect(wrapper.className).toContain("border-l-green");
+    expect(wrapper.className).toContain("border-s-green");
   });
 
   it("applies amber border class for confidence 70-90", () => {
@@ -38,7 +38,7 @@ describe("ConfidenceFieldWrapper", () => {
       </ConfidenceFieldWrapper>,
     );
     const wrapper = container.firstChild as HTMLElement;
-    expect(wrapper.className).toContain("border-l-amber");
+    expect(wrapper.className).toContain("border-s-amber");
   });
 
   it("applies destructive border class for confidence < 70", () => {
@@ -48,16 +48,12 @@ describe("ConfidenceFieldWrapper", () => {
       </ConfidenceFieldWrapper>,
     );
     const wrapper = container.firstChild as HTMLElement;
-    expect(wrapper.className).toContain("border-l-destructive");
+    expect(wrapper.className).toContain("border-s-destructive");
   });
 
   it("applies custom className", () => {
     const { container } = render(
-      <ConfidenceFieldWrapper
-        confidence={95}
-        label="Test"
-        className="custom-class"
-      >
+      <ConfidenceFieldWrapper confidence={95} label="Test" className="custom-class">
         <input />
       </ConfidenceFieldWrapper>,
     );
@@ -72,7 +68,7 @@ describe("ConfidenceFieldWrapper", () => {
       </ConfidenceFieldWrapper>,
     );
     const wrapper = container.firstChild as HTMLElement;
-    expect(wrapper.className).toContain("border-l-amber");
+    expect(wrapper.className).toContain("border-s-amber");
   });
 
   it("applies amber for boundary confidence = 90", () => {
@@ -82,6 +78,6 @@ describe("ConfidenceFieldWrapper", () => {
       </ConfidenceFieldWrapper>,
     );
     const wrapper = container.firstChild as HTMLElement;
-    expect(wrapper.className).toContain("border-l-amber");
+    expect(wrapper.className).toContain("border-s-amber");
   });
 });

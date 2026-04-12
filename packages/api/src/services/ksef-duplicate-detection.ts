@@ -80,10 +80,8 @@ export async function linkDuplicateInvoices(
     }),
   ]);
 
-  const ksefFlags =
-    (ksefInvoice.flagsJson as Record<string, unknown> | null) ?? {};
-  const manualFlags =
-    (manualInvoice.flagsJson as Record<string, unknown> | null) ?? {};
+  const ksefFlags = (ksefInvoice.flagsJson as Record<string, unknown> | null) ?? {};
+  const manualFlags = (manualInvoice.flagsJson as Record<string, unknown> | null) ?? {};
 
   // Update both invoices with cross-references
   await Promise.all([

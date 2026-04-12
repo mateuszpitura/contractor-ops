@@ -1,10 +1,10 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import { verifySignatureAppRouter } from "@upstash/qstash/nextjs";
-import { prisma } from "@contractor-ops/db";
-import { getCredentials } from "@contractor-ops/integrations";
-import { StorecoveAdapter } from "@contractor-ops/einvoice";
 import { PeppolOrchestrator } from "@contractor-ops/api/services/peppol-orchestrator";
+import { prisma } from "@contractor-ops/db";
+import { StorecoveAdapter } from "@contractor-ops/einvoice";
+import { getCredentials } from "@contractor-ops/integrations";
+import { verifySignatureAppRouter } from "@upstash/qstash/nextjs";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 // ---------------------------------------------------------------------------
 // POST /api/peppol/poll
@@ -48,12 +48,8 @@ async function handler(request: NextRequest) {
 
         if (!connection) continue;
 
-        const credentials = await getCredentials(
-          connection.credentialsRef,
-          "peppol",
-        );
-        const config =
-          (connection.configJson as Record<string, unknown>) ?? {};
+        const credentials = await getCredentials(connection.credentialsRef, "peppol");
+        const config = (connection.configJson as Record<string, unknown>) ?? {};
         const environment = config.environment as string;
 
         const adapter = new StorecoveAdapter({
@@ -65,9 +61,7 @@ async function handler(request: NextRequest) {
         });
 
         const orchestrator = new PeppolOrchestrator(adapter);
-        const processed = await orchestrator.pollAndProcessInbound(
-          participant.organizationId,
-        );
+        const processed = await orchestrator.pollAndProcessInbound(participant.organizationId);
 
         // Update last sync time
         await prisma.integrationConnection.update({
@@ -83,10 +77,7 @@ async function handler(request: NextRequest) {
           processed,
         });
       } catch (error) {
-        console.error(
-          `[peppol/poll] Failed for org ${participant.organizationId}:`,
-          error,
-        );
+        console.error(`[peppol/poll] Failed for org ${participant.organizationId}:`, error);
 
         // Update error state but continue with other orgs
         const connection = await prisma.integrationConnection.findFirst({
@@ -103,8 +94,7 @@ async function handler(request: NextRequest) {
               data: {
                 lastSyncAt: new Date(),
                 lastErrorAt: new Date(),
-                lastErrorMessage:
-                  error instanceof Error ? error.message : "Poll failed",
+                lastErrorMessage: error instanceof Error ? error.message : "Poll failed",
               },
             })
             .catch(() => {});
@@ -118,10 +108,7 @@ async function handler(request: NextRequest) {
     });
   } catch (error) {
     console.error("[peppol/poll] Global poll failure:", error);
-    return NextResponse.json(
-      { error: "Poll failed" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Poll failed" }, { status: 500 });
   }
 }
 

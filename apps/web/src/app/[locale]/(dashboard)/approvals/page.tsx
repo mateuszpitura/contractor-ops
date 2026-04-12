@@ -1,28 +1,24 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckSquare, ClipboardCheck } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { parseAsString, parseAsInteger, useQueryState } from "nuqs";
+import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-
-import { trpc } from "@/trpc/init";
-import { usePermissions } from "@/hooks/use-permissions";
-import { Skeleton } from "@/components/ui/skeleton";
-import { EmptyState } from "@/components/shared/empty-state";
-import { PageHeader } from "@/components/shared/page-header";
-import { AnimateIn } from "@/components/shared/animate-in";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-import {
-  getColumns,
-  type ApprovalQueueRow,
-} from "@/components/approvals/approval-queue/columns";
+import type { ApprovalQueueRow } from "@/components/approvals/approval-queue/columns";
+import { getColumns } from "@/components/approvals/approval-queue/columns";
 import { ApprovalQueueTable } from "@/components/approvals/approval-queue/data-table";
 import { ApprovalQueueToolbar } from "@/components/approvals/approval-queue/data-table-toolbar";
 import { ApprovalSidePanel } from "@/components/approvals/approval-queue/side-panel";
 import { ChangeRequestDiffCard } from "@/components/settings/change-request-diff-card";
+import { AnimateIn } from "@/components/shared/animate-in";
+import { EmptyState } from "@/components/shared/empty-state";
+import { PageHeader } from "@/components/shared/page-header";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { usePermissions } from "@/hooks/use-permissions";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Inner content (uses nuqs, needs Suspense boundary)
@@ -35,31 +31,14 @@ function ApprovalsContent() {
   const queryClient = useQueryClient();
 
   // URL state via nuqs
-  const [tab, setTab] = useQueryState(
-    "tab",
-    parseAsString.withDefault("my"),
-  );
-  const [status, setStatus] = useQueryState(
-    "status",
-    parseAsString.withDefault("all"),
-  );
-  const [search, setSearch] = useQueryState(
-    "search",
-    parseAsString.withDefault(""),
-  );
-  const [page, setPage] = useQueryState(
-    "page",
-    parseAsInteger.withDefault(1),
-  );
-  const [pageSize, setPageSize] = useQueryState(
-    "pageSize",
-    parseAsInteger.withDefault(10),
-  );
+  const [tab, setTab] = useQueryState("tab", parseAsString.withDefault("my"));
+  const [status, setStatus] = useQueryState("status", parseAsString.withDefault("all"));
+  const [search, setSearch] = useQueryState("search", parseAsString.withDefault(""));
+  const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
+  const [pageSize, setPageSize] = useQueryState("pageSize", parseAsInteger.withDefault(10));
 
   // Side panel state
-  const [selectedStep, setSelectedStep] = useState<ApprovalQueueRow | null>(
-    null,
-  );
+  const [selectedStep, setSelectedStep] = useState<ApprovalQueueRow | null>(null);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
 
   // Admin-only "All" tab visibility
@@ -75,17 +54,15 @@ function ApprovalsContent() {
     refetchInterval: 30000,
   });
 
-  const changeRequests = (
-    (changeRequestsQuery.data ?? []) as unknown as Array<{
-      id: string;
-      contractorName: string;
-      contractorEmail: string;
-      requestedChanges: Record<string, unknown>;
-      previousValues: Record<string, unknown>;
-      createdAt: string;
-      status: "PENDING" | "APPROVED" | "REJECTED";
-    }>
-  );
+  const changeRequests = (changeRequestsQuery.data ?? []) as unknown as Array<{
+    id: string;
+    contractorName: string;
+    contractorEmail: string;
+    requestedChanges: Record<string, unknown>;
+    previousValues: Record<string, unknown>;
+    createdAt: string;
+    status: "PENDING" | "APPROVED" | "REJECTED";
+  }>;
 
   const pendingCount = changeRequests.length;
 
@@ -117,9 +94,7 @@ function ApprovalsContent() {
   }, [queueQuery.data]);
 
   const totalRows = useMemo(() => {
-    const result = queueQuery.data as
-      | { items: unknown[]; total: number }
-      | undefined;
+    const result = queueQuery.data as { items: unknown[]; total: number } | undefined;
     return result?.total ?? 0;
   }, [queueQuery.data]);
 
@@ -158,14 +133,10 @@ function ApprovalsContent() {
   // Column definitions with action callbacks
   const columns = useMemo(
     () =>
-      getColumns(
-        (key: string) => t(key as Parameters<typeof t>[0]),
-        {
-          onApprove: (stepId) => approveMutation.mutate({ stepId }),
-          onReject: (stepId, comment) =>
-            rejectMutation.mutate({ stepId, comment }),
-        },
-      ),
+      getColumns((key: string) => t(key as Parameters<typeof t>[0]), {
+        onApprove: (stepId) => approveMutation.mutate({ stepId }),
+        onReject: (stepId, comment) => rejectMutation.mutate({ stepId, comment }),
+      }),
     [t, approveMutation, rejectMutation],
   );
 
@@ -176,10 +147,7 @@ function ApprovalsContent() {
   }, []);
 
   // Pagination handlers
-  const handlePageChange = useCallback(
-    (newPage: number) => void setPage(newPage),
-    [setPage],
-  );
+  const handlePageChange = useCallback((newPage: number) => void setPage(newPage), [setPage]);
 
   const handlePageSizeChange = useCallback(
     (newSize: number) => {
@@ -267,77 +235,75 @@ function ApprovalsContent() {
 
       {/* Tabs */}
       <AnimateIn delay={1}>
-      <Tabs
-        value={tab}
-        onValueChange={(value) => {
-          void setTab(value);
-          void setPage(1);
-        }}
-      >
-        <TabsList>
-          <TabsTrigger value="my">{t("tabMy")}</TabsTrigger>
-          {isAdmin && (
-            <TabsTrigger value="all">{t("tabAll")}</TabsTrigger>
-          )}
-          {isAdmin && (
-            <TabsTrigger value="profile-changes">
-              Profile Changes
-              {pendingCount > 0 && (
-                <span className="ms-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-medium text-primary-foreground">
-                  {pendingCount}
-                </span>
-              )}
-            </TabsTrigger>
-          )}
-        </TabsList>
+        <Tabs
+          value={tab}
+          onValueChange={(value) => {
+            void setTab(value);
+            void setPage(1);
+          }}
+        >
+          <TabsList>
+            <TabsTrigger value="my">{t("tabMy")}</TabsTrigger>
+            {isAdmin && <TabsTrigger value="all">{t("tabAll")}</TabsTrigger>}
+            {isAdmin && (
+              <TabsTrigger value="profile-changes">
+                Profile Changes
+                {pendingCount > 0 && (
+                  <span className="ms-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-medium text-primary-foreground">
+                    {pendingCount}
+                  </span>
+                )}
+              </TabsTrigger>
+            )}
+          </TabsList>
 
-        <TabsContent value="my" className="mt-4">
-          {renderQueue()}
-        </TabsContent>
-
-        {isAdmin && (
-          <TabsContent value="all" className="mt-4">
+          <TabsContent value="my" className="mt-4">
             {renderQueue()}
           </TabsContent>
-        )}
 
-        {isAdmin && (
-          <TabsContent value="profile-changes" className="mt-4">
-            {changeRequestsQuery.isLoading ? (
-              <div className="space-y-4">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <Skeleton key={i} className="h-48 w-full rounded-xl" />
-                ))}
-              </div>
-            ) : changeRequests.length === 0 ? (
-              <EmptyState
-                icon={ClipboardCheck}
-                heading="No Pending Change Requests"
-                body="Profile change requests from contractors will appear here when submitted."
-              />
-            ) : (
-              <div className="space-y-4">
-                {changeRequests.map((req) => (
-                  <ChangeRequestDiffCard
-                    key={req.id}
-                    request={req}
-                    onApproved={() => {
-                      void queryClient.invalidateQueries({
-                        queryKey: trpc.settings.listChangeRequests.queryKey(),
-                      });
-                    }}
-                    onRejected={() => {
-                      void queryClient.invalidateQueries({
-                        queryKey: trpc.settings.listChangeRequests.queryKey(),
-                      });
-                    }}
-                  />
-                ))}
-              </div>
-            )}
-          </TabsContent>
-        )}
-      </Tabs>
+          {isAdmin && (
+            <TabsContent value="all" className="mt-4">
+              {renderQueue()}
+            </TabsContent>
+          )}
+
+          {isAdmin && (
+            <TabsContent value="profile-changes" className="mt-4">
+              {changeRequestsQuery.isLoading ? (
+                <div className="space-y-4">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <Skeleton key={i} className="h-48 w-full rounded-xl" />
+                  ))}
+                </div>
+              ) : changeRequests.length === 0 ? (
+                <EmptyState
+                  icon={ClipboardCheck}
+                  heading="No Pending Change Requests"
+                  body="Profile change requests from contractors will appear here when submitted."
+                />
+              ) : (
+                <div className="space-y-4">
+                  {changeRequests.map((req) => (
+                    <ChangeRequestDiffCard
+                      key={req.id}
+                      request={req}
+                      onApproved={() => {
+                        void queryClient.invalidateQueries({
+                          queryKey: trpc.settings.listChangeRequests.queryKey(),
+                        });
+                      }}
+                      onRejected={() => {
+                        void queryClient.invalidateQueries({
+                          queryKey: trpc.settings.listChangeRequests.queryKey(),
+                        });
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+          )}
+        </Tabs>
       </AnimateIn>
 
       {/* Side panel */}
@@ -370,10 +336,7 @@ function ApprovalsLoading() {
       <Skeleton className="h-9 w-80" />
       <div className="rounded-xl border bg-background">
         {Array.from({ length: 8 }).map((_, i) => (
-          <div
-            key={i}
-            className="flex items-center gap-4 px-4 py-3 border-b last:border-b-0"
-          >
+          <div key={i} className="flex items-center gap-4 px-4 py-3 border-b last:border-b-0">
             <Skeleton className="h-4 w-4" />
             <Skeleton className="h-4 w-24" />
             <Skeleton className="h-4 w-32" />

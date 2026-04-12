@@ -1,18 +1,13 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { RefreshCw } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -95,9 +90,7 @@ function TimelineStep({
 // Component
 // ---------------------------------------------------------------------------
 
-export function PeppolTransmissionStatus({
-  transmission,
-}: PeppolTransmissionStatusProps) {
+export function PeppolTransmissionStatus({ transmission }: PeppolTransmissionStatusProps) {
   const queryClient = useQueryClient();
 
   const retryMutation = useMutation(
@@ -114,18 +107,14 @@ export function PeppolTransmissionStatus({
     }),
   );
 
-  const statusInfo =
-    TX_STATUS[transmission.status] ?? TX_STATUS.PENDING!;
-  const isFailed =
-    transmission.status === "FAILED" || transmission.status === "REJECTED";
+  const statusInfo = TX_STATUS[transmission.status] ?? TX_STATUS.PENDING!;
+  const isFailed = transmission.status === "FAILED" || transmission.status === "REJECTED";
 
   return (
     <Collapsible>
       <Card>
         <CollapsibleTrigger className="flex w-full cursor-pointer items-center justify-between p-4">
-          <CardTitle className="text-base font-semibold">
-            Peppol Transmission
-          </CardTitle>
+          <CardTitle className="text-base font-semibold">Peppol Transmission</CardTitle>
           <Badge variant="outline" className={statusInfo.className}>
             {statusInfo.label}
           </Badge>
@@ -134,18 +123,11 @@ export function PeppolTransmissionStatus({
           <CardContent className="space-y-4 px-4 pb-4 pt-0">
             {/* Timeline */}
             <div className="space-y-3">
-              <TimelineStep
-                label="Created"
-                timestamp={transmission.createdAt}
-                done={true}
-              />
+              <TimelineStep label="Created" timestamp={transmission.createdAt} done={true} />
               <TimelineStep
                 label="Transmitted"
                 timestamp={transmission.transmittedAt}
-                done={
-                  transmission.status === "TRANSMITTED" ||
-                  transmission.status === "DELIVERED"
-                }
+                done={transmission.status === "TRANSMITTED" || transmission.status === "DELIVERED"}
               />
               <TimelineStep
                 label="Delivered"
@@ -156,9 +138,7 @@ export function PeppolTransmissionStatus({
 
             {/* Error message */}
             {isFailed && transmission.errorMessage && (
-              <p className="text-sm text-destructive">
-                {transmission.errorMessage}
-              </p>
+              <p className="text-sm text-destructive">{transmission.errorMessage}</p>
             )}
 
             {/* ASP Reference */}
@@ -181,9 +161,7 @@ export function PeppolTransmissionStatus({
                 disabled={retryMutation.isPending}
               >
                 <RefreshCw className="me-1.5 h-3.5 w-3.5" />
-                {retryMutation.isPending
-                  ? "Retrying..."
-                  : "Retry Transmission"}
+                {retryMutation.isPending ? "Retrying..." : "Retry Transmission"}
               </Button>
             )}
           </CardContent>

@@ -6,7 +6,7 @@
  * scope joining, and extra auth params.
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -227,7 +227,10 @@ describe("integration.getOAuthUrlGeneric", () => {
         clientSecretEnvVar: "GOOGLE_CLIENT_SECRET",
         authorizationUrl: "https://accounts.google.com/o/oauth2/v2/auth",
         redirectPath: "/api/integrations/google-calendar/callback",
-        scopes: ["https://www.googleapis.com/auth/calendar", "https://www.googleapis.com/auth/calendar.events"],
+        scopes: [
+          "https://www.googleapis.com/auth/calendar",
+          "https://www.googleapis.com/auth/calendar.events",
+        ],
         extraAuthParams: { access_type: "offline", prompt: "consent" },
       }),
     });

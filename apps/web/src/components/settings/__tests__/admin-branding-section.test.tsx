@@ -1,4 +1,4 @@
-import { render, screen, setup, waitFor, act } from "@/test/test-utils";
+import { act, render, screen, setup, waitFor } from "@/test/test-utils";
 import { AdminBrandingSection } from "../admin-branding-section";
 
 // ---------------------------------------------------------------------------
@@ -71,9 +71,7 @@ vi.mock("../brand-color-picker", () => ({
 }));
 
 vi.mock("../brand-preview-strip", () => ({
-  BrandPreviewStrip: ({ color }: any) => (
-    <div data-testid="preview-strip">Preview: {color}</div>
-  ),
+  BrandPreviewStrip: ({ color }: any) => <div data-testid="preview-strip">Preview: {color}</div>,
 }));
 
 // ---------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 import { createHmac } from "node:crypto";
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LinearAdapter } from "../linear-adapter.js";
 
 // ---------------------------------------------------------------------------
@@ -11,7 +11,10 @@ function mockFetch(response: { ok: boolean; status?: number; body: unknown }) {
     ok: response.ok,
     status: response.status ?? (response.ok ? 200 : 400),
     json: () => Promise.resolve(response.body),
-    text: () => Promise.resolve(typeof response.body === "string" ? response.body : JSON.stringify(response.body)),
+    text: () =>
+      Promise.resolve(
+        typeof response.body === "string" ? response.body : JSON.stringify(response.body),
+      ),
   });
 }
 
@@ -267,9 +270,7 @@ describe("LinearAdapter", () => {
 
     it("validates correct HMAC-SHA256 signature", () => {
       const body = JSON.stringify({ type: "Issue", action: "create", data: {} });
-      const signature = createHmac("sha256", webhookSecret)
-        .update(body)
-        .digest("hex");
+      const signature = createHmac("sha256", webhookSecret).update(body).digest("hex");
 
       const result = adapter.verifyWebhookSignature(body, {
         "linear-signature": signature,
@@ -281,9 +282,7 @@ describe("LinearAdapter", () => {
 
     it("rejects invalid signature", () => {
       const body = JSON.stringify({ type: "Issue", action: "update" });
-      const wrongSignature = createHmac("sha256", "wrong-secret")
-        .update(body)
-        .digest("hex");
+      const wrongSignature = createHmac("sha256", "wrong-secret").update(body).digest("hex");
 
       const result = adapter.verifyWebhookSignature(body, {
         "linear-signature": wrongSignature,
@@ -295,9 +294,7 @@ describe("LinearAdapter", () => {
 
     it("extracts eventType as type.action from payload", () => {
       const body = JSON.stringify({ type: "Issue", action: "create", data: {} });
-      const signature = createHmac("sha256", webhookSecret)
-        .update(body)
-        .digest("hex");
+      const signature = createHmac("sha256", webhookSecret).update(body).digest("hex");
 
       const result = adapter.verifyWebhookSignature(body, {
         "linear-signature": signature,
@@ -352,7 +349,13 @@ describe("LinearAdapter", () => {
                   states: {
                     nodes: [
                       { id: "s1", name: "Todo", type: "unstarted", color: "#aaa", position: 0 },
-                      { id: "s2", name: "In Progress", type: "started", color: "#0f0", position: 1 },
+                      {
+                        id: "s2",
+                        name: "In Progress",
+                        type: "started",
+                        color: "#0f0",
+                        position: 1,
+                      },
                     ],
                   },
                 },

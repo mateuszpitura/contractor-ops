@@ -5,7 +5,7 @@
  * Mocks: prisma, auth, linearGraphQL, global.fetch (Jira + Slack API).
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const ORG_ID = "clorg00000000000000000001";
 const USER_ID = "cluser0000000000000000001";
@@ -47,9 +47,7 @@ const {
   const mockLinearGraphQL = vi.fn();
   const mockCreateInvitation = vi.fn(async () => ({ id: "inv-1" }));
   const mockGetFullOrganization = vi.fn(async () => ({
-    members: [
-      { user: { email: "existing@example.com" } },
-    ],
+    members: [{ user: { email: "existing@example.com" } }],
   }));
   const mockFetch = vi.fn();
 
@@ -185,9 +183,9 @@ vi.mock("../../services/billing-constants.js", () => ({
 // ---------------------------------------------------------------------------
 
 import { createCallerFactory } from "../../init.js";
-import { onboardingImportRouter } from "../onboarding-import.js";
-import { mergeByEmail } from "../../services/onboarding-import-service.js";
 import type { SourcePerson } from "../../services/onboarding-import-service.js";
+import { mergeByEmail } from "../../services/onboarding-import-service.js";
+import { onboardingImportRouter } from "../onboarding-import.js";
 
 const createCaller = createCallerFactory(onboardingImportRouter);
 
@@ -281,14 +279,13 @@ describe("onboardingImport", () => {
 
   it("fetchPeople with mixed sources returns merged persons with email dedup (lowercase normalization)", async () => {
     // Jira connected
-    mockPrisma.integrationConnection.findFirst
-      .mockResolvedValueOnce({
-        id: "conn-j",
-        provider: "JIRA",
-        status: "CONNECTED",
-        credentialsRef: "enc-j",
-        configJson: { cloudId: "cloud-1" },
-      });
+    mockPrisma.integrationConnection.findFirst.mockResolvedValueOnce({
+      id: "conn-j",
+      provider: "JIRA",
+      status: "CONNECTED",
+      credentialsRef: "enc-j",
+      configJson: { cloudId: "cloud-1" },
+    });
 
     // Jira API returns 2 users, one with uppercase email
     mockFetch.mockResolvedValue({
@@ -373,17 +370,53 @@ describe("onboardingImport", () => {
         ok: true,
         members: [
           // Real user
-          { id: "U1", deleted: false, is_bot: false, is_app_user: false, profile: { email: "real@example.com", real_name: "Real User" } },
+          {
+            id: "U1",
+            deleted: false,
+            is_bot: false,
+            is_app_user: false,
+            profile: { email: "real@example.com", real_name: "Real User" },
+          },
           // Bot user - should be filtered
-          { id: "U2", deleted: false, is_bot: true, is_app_user: false, profile: { email: "bot@example.com", real_name: "Bot" } },
+          {
+            id: "U2",
+            deleted: false,
+            is_bot: true,
+            is_app_user: false,
+            profile: { email: "bot@example.com", real_name: "Bot" },
+          },
           // Deleted user - should be filtered
-          { id: "U3", deleted: true, is_bot: false, is_app_user: false, profile: { email: "deleted@example.com", real_name: "Deleted" } },
+          {
+            id: "U3",
+            deleted: true,
+            is_bot: false,
+            is_app_user: false,
+            profile: { email: "deleted@example.com", real_name: "Deleted" },
+          },
           // App user - should be filtered
-          { id: "U4", deleted: false, is_bot: false, is_app_user: true, profile: { email: "app@example.com", real_name: "App" } },
+          {
+            id: "U4",
+            deleted: false,
+            is_bot: false,
+            is_app_user: true,
+            profile: { email: "app@example.com", real_name: "App" },
+          },
           // Slackbot - should be filtered
-          { id: "USLACKBOT", deleted: false, is_bot: false, is_app_user: false, profile: { email: "slackbot@example.com", real_name: "Slackbot" } },
+          {
+            id: "USLACKBOT",
+            deleted: false,
+            is_bot: false,
+            is_app_user: false,
+            profile: { email: "slackbot@example.com", real_name: "Slackbot" },
+          },
           // No email - should be filtered
-          { id: "U5", deleted: false, is_bot: false, is_app_user: false, profile: { real_name: "No Email" } },
+          {
+            id: "U5",
+            deleted: false,
+            is_bot: false,
+            is_app_user: false,
+            profile: { real_name: "No Email" },
+          },
         ],
         response_metadata: {},
       }),
@@ -425,9 +458,7 @@ describe("onboardingImport", () => {
     mockFetch
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => [
-          { id: "10001", key: "PRJ", name: "Project Alpha" },
-        ],
+        json: async () => [{ id: "10001", key: "PRJ", name: "Project Alpha" }],
       })
       // Jira project statuses
       .mockResolvedValueOnce({
@@ -471,7 +502,9 @@ describe("onboardingImport", () => {
     expect(jiraProject!.name).toBe("Project Alpha");
     expect(jiraProject!.statuses.length).toBeGreaterThanOrEqual(1);
 
-    const linearTeam = result.find((p: { sourceProvider: string }) => p.sourceProvider === "LINEAR");
+    const linearTeam = result.find(
+      (p: { sourceProvider: string }) => p.sourceProvider === "LINEAR",
+    );
     expect(linearTeam).toBeDefined();
     expect(linearTeam!.name).toBe("Engineering");
     expect(linearTeam!.statuses.length).toBeGreaterThanOrEqual(1);
@@ -574,9 +607,7 @@ describe("onboardingImport", () => {
     mockPrisma.organization.findFirst.mockResolvedValue({ id: ORG_ID, settingsJson: {} });
 
     const importResult = await caller.startImport({
-      people: [
-        { email: "alice@example.com", name: "Alice", role: "admin", skip: false },
-      ],
+      people: [{ email: "alice@example.com", name: "Alice", role: "admin", skip: false }],
       projects: [],
     });
 
@@ -715,15 +746,15 @@ describe("onboardingImport", () => {
     });
 
     it("fetchPeople rejects STARTER tier with TIER_REQUIRED error", async () => {
-      await expect(
-        caller.fetchPeople({ sources: ["JIRA"] }),
-      ).rejects.toMatchObject({ code: "FORBIDDEN" });
+      await expect(caller.fetchPeople({ sources: ["JIRA"] })).rejects.toMatchObject({
+        code: "FORBIDDEN",
+      });
     });
 
     it("getProgress rejects STARTER tier with TIER_REQUIRED error", async () => {
-      await expect(
-        caller.getProgress({ jobId: "job-1" }),
-      ).rejects.toMatchObject({ code: "FORBIDDEN" });
+      await expect(caller.getProgress({ jobId: "job-1" })).rejects.toMatchObject({
+        code: "FORBIDDEN",
+      });
     });
   });
 });

@@ -1,19 +1,13 @@
 import { prisma } from "@contractor-ops/db";
 import {
   KsefApiClient,
-  parseFa3Xml,
-  mapKsefToInvoiceFields,
   ksefConnectionConfigSchema,
+  mapKsefToInvoiceFields,
+  parseFa3Xml,
 } from "@contractor-ops/einvoice";
 import { decryptCredentials } from "@contractor-ops/integrations";
-import {
-  computeDuplicateCheckHash,
-  runAutoMatch,
-} from "./invoice-matching.js";
-import {
-  checkCrossSourceDuplicate,
-  linkDuplicateInvoices,
-} from "./ksef-duplicate-detection.js";
+import { computeDuplicateCheckHash, runAutoMatch } from "./invoice-matching.js";
+import { checkCrossSourceDuplicate, linkDuplicateInvoices } from "./ksef-duplicate-detection.js";
 import { dispatch } from "./notification-service.js";
 
 // ---------------------------------------------------------------------------
@@ -64,21 +58,15 @@ export async function processKsefSync(params: {
     // Step 1: Load connection and decrypt credentials
     // -----------------------------------------------------------------------
 
-    const connection =
-      await prisma.integrationConnection.findUniqueOrThrow({
-        where: { id: params.connectionId },
-      });
+    const connection = await prisma.integrationConnection.findUniqueOrThrow({
+      where: { id: params.connectionId },
+    });
 
     if (connection.organizationId !== params.organizationId) {
-      throw new Error(
-        "Connection does not belong to the specified organization",
-      );
+      throw new Error("Connection does not belong to the specified organization");
     }
 
-    const credentials = decryptCredentials(
-      connection.credentialsRef,
-      "ksef",
-    );
+    const credentials = decryptCredentials(connection.credentialsRef, "ksef");
     const config = ksefConnectionConfigSchema.parse(connection.configJson);
 
     // -----------------------------------------------------------------------
@@ -88,14 +76,11 @@ export async function processKsefSync(params: {
     const org = await prisma.organization.findUniqueOrThrow({
       where: { id: params.organizationId },
     });
-    const settingsJson =
-      (org.settingsJson as Record<string, unknown> | null) ?? {};
+    const settingsJson = (org.settingsJson as Record<string, unknown> | null) ?? {};
     const nip = settingsJson.taxId as string | undefined;
 
     if (!nip) {
-      throw new Error(
-        "Organization NIP not configured. Set it in Organization Settings.",
-      );
+      throw new Error("Organization NIP not configured. Set it in Organization Settings.");
     }
 
     // -----------------------------------------------------------------------
@@ -120,9 +105,7 @@ export async function processKsefSync(params: {
 
     const dateFrom = connection.lastSuccessAt
       ? connection.lastSuccessAt.toISOString().split("T")[0]!
-      : new Date(Date.now() - 90 * 24 * 3600 * 1000)
-          .toISOString()
-          .split("T")[0]!;
+      : new Date(Date.now() - 90 * 24 * 3600 * 1000).toISOString().split("T")[0]!;
     const dateTo = new Date().toISOString().split("T")[0]!;
 
     // -----------------------------------------------------------------------
@@ -153,9 +136,7 @@ export async function processKsefSync(params: {
         }
 
         // Download XML
-        const xml = await client.downloadInvoiceXml(
-          metadata.ksefReferenceNumber,
-        );
+        const xml = await client.downloadInvoiceXml(metadata.ksefReferenceNumber);
 
         // Parse FA(3) XML
         const parsed = parseFa3Xml(xml, metadata.ksefReferenceNumber);
@@ -206,11 +187,7 @@ export async function processKsefSync(params: {
 
         // Link duplicates bidirectionally (per D-12)
         if (dup.isDuplicate && dup.existingInvoiceId) {
-          await linkDuplicateInvoices(
-            prisma,
-            invoice.id,
-            dup.existingInvoiceId,
-          );
+          await linkDuplicateInvoices(prisma, invoice.id, dup.existingInvoiceId);
           duplicatesFound++;
         }
 
@@ -224,11 +201,8 @@ export async function processKsefSync(params: {
           issueDate: fields.issueDate,
         });
       } catch (error) {
-        const msg =
-          error instanceof Error ? error.message : String(error);
-        errors.push(
-          `Failed to process invoice ${metadata.ksefReferenceNumber}: ${msg}`,
-        );
+        const msg = error instanceof Error ? error.message : String(error);
+        errors.push(`Failed to process invoice ${metadata.ksefReferenceNumber}: ${msg}`);
       }
     }
 
@@ -319,8 +293,7 @@ export async function processKsefSync(params: {
       data: {
         status: "FAILED",
         completedAt: new Date(),
-        errorMessage:
-          error instanceof Error ? error.message : String(error),
+        errorMessage: error instanceof Error ? error.message : String(error),
       },
     });
 
@@ -330,8 +303,7 @@ export async function processKsefSync(params: {
       data: {
         lastSyncAt: new Date(),
         lastErrorAt: new Date(),
-        lastErrorMessage:
-          error instanceof Error ? error.message : String(error),
+        lastErrorMessage: error instanceof Error ? error.message : String(error),
         status: "ERROR",
       },
     });

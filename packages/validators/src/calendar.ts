@@ -20,16 +20,10 @@ export const calendarEventMetadataSchema = z.object({
   etag: z.string().optional(), // Google Calendar etag for concurrency (Pitfall 4)
   provider: z.enum(["google_calendar", "outlook_calendar"]),
 });
-export type CalendarEventMetadata = z.infer<
-  typeof calendarEventMetadataSchema
->;
+export type CalendarEventMetadata = z.infer<typeof calendarEventMetadataSchema>;
 
 // Deadline event types (D-08)
-export const deadlineTypeSchema = z.enum([
-  "CONTRACT_EXPIRY",
-  "APPROVAL_SLA",
-  "PAYMENT_DUE",
-]);
+export const deadlineTypeSchema = z.enum(["CONTRACT_EXPIRY", "APPROVAL_SLA", "PAYMENT_DUE"]);
 export type DeadlineType = z.infer<typeof deadlineTypeSchema>;
 
 // Calendar event creation input
@@ -40,6 +34,4 @@ export const createCalendarEventInputSchema = z.object({
   endDateTime: z.string(),
   attendees: z.array(z.string().email()).optional(),
 });
-export type CreateCalendarEventInput = z.infer<
-  typeof createCalendarEventInputSchema
->;
+export type CreateCalendarEventInput = z.infer<typeof createCalendarEventInputSchema>;

@@ -10,10 +10,7 @@
  * Contains a required multiline text input for the rejection reason
  * and a submit button.
  */
-export function buildRejectModalCard(
-  invoiceId: string,
-  flowId: string,
-): Record<string, unknown> {
+export function buildRejectModalCard(invoiceId: string, flowId: string): Record<string, unknown> {
   return {
     type: "AdaptiveCard",
     $schema: "http://adaptivecards.io/schemas/adaptive-card.json",

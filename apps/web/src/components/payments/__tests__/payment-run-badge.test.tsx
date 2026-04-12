@@ -1,5 +1,5 @@
 import { render, screen } from "@/test/test-utils";
-import { PaymentRunBadge, PaymentItemBadge } from "../payment-run-badge";
+import { PaymentItemBadge, PaymentRunBadge } from "../payment-run-badge";
 
 describe("PaymentRunBadge", () => {
   const KNOWN_STATUSES = ["DRAFT", "LOCKED", "EXPORTED", "COMPLETED", "CANCELLED"];

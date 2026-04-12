@@ -1,12 +1,7 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -69,9 +64,7 @@ export function DeviationFlag({
   const rate = formatRate(rateValueMinor);
   const expected = formatMinorUnits(expectedAmountMinor);
   const actual = formatMinorUnits(invoicedAmountMinor);
-  const delta = formatMinorUnits(
-    Math.abs(invoicedAmountMinor - expectedAmountMinor),
-  );
+  const delta = formatMinorUnits(Math.abs(invoicedAmountMinor - expectedAmountMinor));
 
   const tooltipText = `Expected: ${rate}/h x ${hours}h = ${expected}. Invoiced: ${actual}. Difference: ${delta}.`;
 
@@ -104,4 +97,3 @@ export function DeviationFlag({
     </TooltipProvider>
   );
 }
-

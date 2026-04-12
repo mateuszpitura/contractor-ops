@@ -1,26 +1,25 @@
-import { z } from "zod";
-import { TRPCError } from "@trpc/server";
-import { prisma, type Prisma } from "@contractor-ops/db";
+import { randomUUID } from "node:crypto";
 import { auth } from "@contractor-ops/auth";
-import {
-  decryptCredentials,
-} from "@contractor-ops/integrations";
+import type { Prisma } from "@contractor-ops/db";
+import { prisma } from "@contractor-ops/db";
+import { decryptCredentials } from "@contractor-ops/integrations";
 import {
   fetchPeopleInputSchema,
+  retryItemInputSchema,
   sourceProviderSchema,
   startImportInputSchema,
-  retryItemInputSchema,
 } from "@contractor-ops/validators";
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 import { router } from "../init.js";
 import { tenantProcedure } from "../middleware/tenant.js";
 import { requireTier } from "../middleware/tier.js";
+import { linearGraphQL } from "../services/linear-issue-sync.js";
 import {
+  createWorkflowTemplatesFromProjects,
   fetchUsersFromSource,
   mergeByEmail,
-  createWorkflowTemplatesFromProjects,
 } from "../services/onboarding-import-service.js";
-import { linearGraphQL } from "../services/linear-issue-sync.js";
-import { randomUUID } from "node:crypto";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -105,9 +104,7 @@ export const onboardingImportRouter = router({
       select: { provider: true, status: true, credentialsRef: true },
     });
 
-    const connMap = new Map(
-      connections.map((c) => [c.provider, c]),
-    );
+    const connMap = new Map(connections.map((c) => [c.provider, c]));
 
     return ALL_PROVIDERS.map((provider) => {
       const conn = connMap.get(provider);
@@ -152,11 +149,7 @@ export const onboardingImportRouter = router({
             connection.provider.toLowerCase(),
           );
 
-          return fetchUsersFromSource(
-            source,
-            credentials.accessToken,
-            connection.configJson,
-          );
+          return fetchUsersFromSource(source, credentials.accessToken, connection.configJson);
         }),
       );
 
@@ -175,9 +168,7 @@ export const onboardingImportRouter = router({
       const existingEmails = new Set(
         (org?.members ?? []).map(
           (m: Record<string, unknown>) =>
-            (
-              (m.user as Record<string, unknown>)?.email as string
-            )?.toLowerCase() ?? "",
+            ((m.user as Record<string, unknown>)?.email as string)?.toLowerCase() ?? "",
         ),
       );
 
@@ -236,10 +227,9 @@ export const onboardingImportRouter = router({
 
           // Fetch statuses per project
           for (const proj of jiraProjects) {
-            const statusResponse = await fetch(
-              `${baseUrl}/project/${proj.id}/statuses`,
-              { headers },
-            );
+            const statusResponse = await fetch(`${baseUrl}/project/${proj.id}/statuses`, {
+              headers,
+            });
 
             if (!statusResponse.ok) continue;
 
@@ -253,10 +243,7 @@ export const onboardingImportRouter = router({
             }>;
 
             // Flatten and deduplicate statuses across issue types
-            const statusMap = new Map<
-              string,
-              { id: string; name: string; color?: string }
-            >();
+            const statusMap = new Map<string, { id: string; name: string; color?: string }>();
 
             for (const issueType of statusData) {
               for (const status of issueType.statuses) {
@@ -357,14 +344,22 @@ export const onboardingImportRouter = router({
             headers: ctx.headers,
             body: {
               email: person.email,
-              role: person.role as "admin" | "owner" | "finance_admin" | "ops_manager" | "team_manager" | "legal_compliance_viewer" | "it_admin" | "external_accountant" | "readonly",
+              role: person.role as
+                | "admin"
+                | "owner"
+                | "finance_admin"
+                | "ops_manager"
+                | "team_manager"
+                | "legal_compliance_viewer"
+                | "it_admin"
+                | "external_accountant"
+                | "readonly",
               organizationId: ctx.organizationId,
             },
           });
           job.completedItems++;
         } catch (error) {
-          const message =
-            error instanceof Error ? error.message : "Unknown error";
+          const message = error instanceof Error ? error.message : "Unknown error";
           job.failedItems.push({ email: person.email, error: message, role: person.role });
         }
       }
@@ -381,8 +376,7 @@ export const onboardingImportRouter = router({
         } catch (error) {
           // Count project failures individually
           for (const proj of nonSkippedProjects) {
-            const message =
-              error instanceof Error ? error.message : "Unknown error";
+            const message = error instanceof Error ? error.message : "Unknown error";
             job.failedItems.push({
               email: `project:${proj.externalId}`,
               error: message,
@@ -400,9 +394,7 @@ export const onboardingImportRouter = router({
       }
 
       // Re-read settings to avoid overwriting concurrent changes
-      const { settings: freshSettings } = await getOrgSettings(
-        ctx.organizationId,
-      );
+      const { settings: freshSettings } = await getOrgSettings(ctx.organizationId);
       await updateImportJob(ctx.organizationId, freshSettings, job);
 
       return { jobId };
@@ -446,9 +438,7 @@ export const onboardingImportRouter = router({
         });
       }
 
-      const failedIndex = job.failedItems.findIndex(
-        (item) => item.email === input.email,
-      );
+      const failedIndex = job.failedItems.findIndex((item) => item.email === input.email);
 
       if (failedIndex === -1) {
         throw new TRPCError({
@@ -464,7 +454,16 @@ export const onboardingImportRouter = router({
           headers: ctx.headers,
           body: {
             email: input.email,
-            role: (failedItem.role || "readonly") as "admin" | "owner" | "finance_admin" | "ops_manager" | "team_manager" | "legal_compliance_viewer" | "it_admin" | "external_accountant" | "readonly",
+            role: (failedItem.role || "readonly") as
+              | "admin"
+              | "owner"
+              | "finance_admin"
+              | "ops_manager"
+              | "team_manager"
+              | "legal_compliance_viewer"
+              | "it_admin"
+              | "external_accountant"
+              | "readonly",
             organizationId: ctx.organizationId,
           },
         });
@@ -477,8 +476,7 @@ export const onboardingImportRouter = router({
 
         return { success: true };
       } catch (error) {
-        const message =
-          error instanceof Error ? error.message : "Unknown error";
+        const message = error instanceof Error ? error.message : "Unknown error";
 
         // Update the error message
         job.failedItems[failedIndex]!.error = message;

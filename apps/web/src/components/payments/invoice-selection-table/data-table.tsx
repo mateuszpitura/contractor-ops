@@ -1,13 +1,8 @@
 "use client";
 
+import type { ColumnDef, RowSelectionState } from "@tanstack/react-table";
+import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { useEffect, useMemo } from "react";
-import {
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-  type ColumnDef,
-  type RowSelectionState,
-} from "@tanstack/react-table";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -50,18 +45,14 @@ export function InvoiceSelectionDataTable({
     getCoreRowModel: getCoreRowModel(),
     state: { rowSelection },
     onRowSelectionChange: (updater) => {
-      const next =
-        typeof updater === "function" ? updater(rowSelection) : updater;
+      const next = typeof updater === "function" ? updater(rowSelection) : updater;
       onRowSelectionChange(next);
     },
     enableRowSelection: (row) => !row.original._inRunNumber,
     getRowId: (row) => row.id,
   });
 
-  const visibleColumns = useMemo(
-    () => table.getVisibleLeafColumns(),
-    [table],
-  );
+  const visibleColumns = useMemo(() => table.getVisibleLeafColumns(), [table]);
 
   return (
     <div className="rounded-xl border bg-background min-h-[320px]">
@@ -73,17 +64,12 @@ export function InvoiceSelectionDataTable({
                 <TableHead
                   key={header.id}
                   style={
-                    header.column.getSize() !== 150
-                      ? { width: header.column.getSize() }
-                      : undefined
+                    header.column.getSize() !== 150 ? { width: header.column.getSize() } : undefined
                   }
                 >
                   {header.isPlaceholder
                     ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )}
+                    : flexRender(header.column.columnDef.header, header.getContext())}
                 </TableHead>
               ))}
             </TableRow>
@@ -111,10 +97,7 @@ export function InvoiceSelectionDataTable({
                     >
                       {row.getVisibleCells().map((cell) => (
                         <TableCell key={cell.id}>
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext(),
-                          )}
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
                         </TableCell>
                       ))}
                     </TableRow>

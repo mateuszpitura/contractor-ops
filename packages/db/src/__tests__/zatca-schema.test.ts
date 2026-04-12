@@ -1,11 +1,8 @@
-import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { describe, expect, it } from "vitest";
 
-const SCHEMA_DIR = resolve(
-  import.meta.dirname,
-  "../../prisma/schema",
-);
+const SCHEMA_DIR = resolve(import.meta.dirname, "../../prisma/schema");
 
 function readSchema(name: string): string {
   return readFileSync(resolve(SCHEMA_DIR, name), "utf8");

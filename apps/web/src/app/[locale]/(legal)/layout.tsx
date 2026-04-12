@@ -1,10 +1,6 @@
 import { Link } from "@/i18n/navigation";
 
-export default function LegalLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function LegalLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b">
@@ -14,9 +10,7 @@ export default function LegalLayout({
           </Link>
         </div>
       </header>
-      <main className="container mx-auto max-w-3xl px-6 py-12">
-        {children}
-      </main>
+      <main className="container mx-auto max-w-3xl px-6 py-12">{children}</main>
       <footer className="border-t py-8">
         <div className="container mx-auto flex gap-6 px-6 text-sm text-muted-foreground">
           <Link href="/privacy" className="hover:underline">

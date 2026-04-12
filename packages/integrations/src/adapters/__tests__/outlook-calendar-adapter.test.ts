@@ -1,19 +1,13 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { OutlookCalendarAdapter } from "../outlook-calendar-adapter.js";
 
-function mockFetch(response: {
-  ok: boolean;
-  status?: number;
-  body: unknown;
-}) {
+function mockFetch(response: { ok: boolean; status?: number; body: unknown }) {
   return vi.fn().mockResolvedValue({
     ok: response.ok,
     status: response.status ?? (response.ok ? 200 : 400),
     text: () =>
       Promise.resolve(
-        typeof response.body === "string"
-          ? response.body
-          : JSON.stringify(response.body),
+        typeof response.body === "string" ? response.body : JSON.stringify(response.body),
       ),
     json: () => Promise.resolve(response.body),
   });
@@ -42,9 +36,7 @@ describe("OutlookCalendarAdapter", () => {
   });
 
   it("throws when OAuth env vars are missing for exchangeCodeForTokens", async () => {
-    await expect(
-      adapter.exchangeCodeForTokens("code", "http://localhost/cb"),
-    ).rejects.toThrow(
+    await expect(adapter.exchangeCodeForTokens("code", "http://localhost/cb")).rejects.toThrow(
       /OUTLOOK_CLIENT_ID and OUTLOOK_CLIENT_SECRET environment variables are required/,
     );
   });
@@ -87,9 +79,9 @@ describe("OutlookCalendarAdapter", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
 
-    await expect(
-      adapter.exchangeCodeForTokens("bad", "http://localhost/cb"),
-    ).rejects.toThrow(/Outlook Calendar OAuth exchange failed: invalid_grant/);
+    await expect(adapter.exchangeCodeForTokens("bad", "http://localhost/cb")).rejects.toThrow(
+      /Outlook Calendar OAuth exchange failed: invalid_grant/,
+    );
   });
 
   it("throws when refreshToken is called without env credentials", async () => {
@@ -290,9 +282,9 @@ describe("OutlookCalendarAdapter", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
 
-    await expect(
-      adapter.updateEvent("tok", "bad-id", { subject: "X" }),
-    ).rejects.toThrow(/Outlook Calendar update event failed: BadRequest/);
+    await expect(adapter.updateEvent("tok", "bad-id", { subject: "X" })).rejects.toThrow(
+      /Outlook Calendar update event failed: BadRequest/,
+    );
   });
 
   it("deleteEvent sends DELETE to MS Graph event endpoint", async () => {
@@ -302,9 +294,7 @@ describe("OutlookCalendarAdapter", () => {
     await adapter.deleteEvent("tok", "evt-to-delete");
 
     const [url, init] = fetchMock.mock.calls[0]!;
-    expect(url).toBe(
-      "https://graph.microsoft.com/v1.0/me/calendar/events/evt-to-delete",
-    );
+    expect(url).toBe("https://graph.microsoft.com/v1.0/me/calendar/events/evt-to-delete");
     expect((init as RequestInit).method).toBe("DELETE");
   });
 

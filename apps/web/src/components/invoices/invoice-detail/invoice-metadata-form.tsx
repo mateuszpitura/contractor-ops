@@ -1,42 +1,15 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { AlertTriangle, CalendarIcon, Loader2, MoreHorizontal } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { format } from "date-fns";
 import { toast } from "sonner";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-import {
-  CalendarIcon,
-  Loader2,
-  MoreHorizontal,
-  AlertTriangle,
-} from "lucide-react";
-
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { z } from "zod";
+import { VatRateSelector } from "@/components/invoices/vat-rate-selector";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -47,9 +20,26 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { trpc } from "@/trpc/init";
-import { VatRateSelector } from "@/components/invoices/vat-rate-selector";
 
 // ---------------------------------------------------------------------------
 // Local Zod schema (mirrors invoiceUpdateSchema to avoid cross-package dep)
@@ -91,7 +81,7 @@ const CURRENCY_OPTIONS = [
 // Helpers
 // ---------------------------------------------------------------------------
 
-import { minorToDisplay, displayToMinor } from "@/lib/currency-conversion";
+import { displayToMinor, minorToDisplay } from "@/lib/currency-conversion";
 
 /** Format a Date to ISO date string (YYYY-MM-DD) */
 function toDateString(date: Date): string {
@@ -128,18 +118,15 @@ type InvoiceMetadataFormProps = {
 // Component
 // ---------------------------------------------------------------------------
 
-export function InvoiceMetadataForm({
-  invoice,
-  onSubmittedForMatching,
-}: InvoiceMetadataFormProps) {
+export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: InvoiceMetadataFormProps) {
   const t = useTranslations("Invoices");
   const tMeta = useTranslations("Invoices.metadata");
   const tv = useTranslations("Validation.invoice");
   const queryClient = useQueryClient();
   const isEditable = invoice.status === "RECEIVED";
 
-  const invoiceMetadataSchema = createInvoiceMetadataSchema(
-    (key: string) => tv(key as Parameters<typeof tv>[0])
+  const invoiceMetadataSchema = createInvoiceMetadataSchema((key: string) =>
+    tv(key as Parameters<typeof tv>[0]),
   );
   const [voidDialogOpen, setVoidDialogOpen] = useState(false);
 
@@ -210,7 +197,7 @@ export function InvoiceMetadataForm({
       onError: () => {
         toast.error(t("detail.saveError"));
       },
-    })
+    }),
   );
 
   // Submit for matching mutation
@@ -226,7 +213,7 @@ export function InvoiceMetadataForm({
       onError: () => {
         toast.error(t("detail.submitError"));
       },
-    })
+    }),
   );
 
   // Void invoice mutation
@@ -241,7 +228,7 @@ export function InvoiceMetadataForm({
       onError: () => {
         toast.error(t("detail.voidError"));
       },
-    })
+    }),
   );
 
   function onSaveDraft(values: InvoiceMetadataValues) {
@@ -292,12 +279,11 @@ export function InvoiceMetadataForm({
         onSuccess: () => {
           submitForMatchingMutation.mutate({ id: invoice.id });
         },
-      }
+      },
     );
   }
 
-  const isSubmitting =
-    saveDraftMutation.isPending || submitForMatchingMutation.isPending;
+  const isSubmitting = saveDraftMutation.isPending || submitForMatchingMutation.isPending;
 
   return (
     <>
@@ -315,9 +301,7 @@ export function InvoiceMetadataForm({
                 {...register("invoiceNumber")}
               />
               {errors.invoiceNumber && (
-                <p className="text-xs text-destructive">
-                  {errors.invoiceNumber.message}
-                </p>
+                <p className="text-xs text-destructive">{errors.invoiceNumber.message}</p>
               )}
             </div>
 
@@ -332,9 +316,7 @@ export function InvoiceMetadataForm({
                   pickDateLabel={tMeta("pickDate")}
                 />
                 {errors.issueDate && (
-                  <p className="text-xs text-destructive">
-                    {errors.issueDate.message}
-                  </p>
+                  <p className="text-xs text-destructive">{errors.issueDate.message}</p>
                 )}
               </div>
               <div className="space-y-1.5">
@@ -346,9 +328,7 @@ export function InvoiceMetadataForm({
                   pickDateLabel={tMeta("pickDate")}
                 />
                 {errors.dueDate && (
-                  <p className="text-xs text-destructive">
-                    {errors.dueDate.message}
-                  </p>
+                  <p className="text-xs text-destructive">{errors.dueDate.message}</p>
                 )}
               </div>
             </div>
@@ -359,9 +339,7 @@ export function InvoiceMetadataForm({
                 <Label>{t("detail.servicePeriodStart")}</Label>
                 <DatePicker
                   value={servicePeriodStartValue ?? ""}
-                  onChange={(date) =>
-                    setValue("servicePeriodStart", date || undefined)
-                  }
+                  onChange={(date) => setValue("servicePeriodStart", date || undefined)}
                   disabled={!isEditable}
                   pickDateLabel={tMeta("pickDate")}
                 />
@@ -370,9 +348,7 @@ export function InvoiceMetadataForm({
                 <Label>{t("detail.servicePeriodEnd")}</Label>
                 <DatePicker
                   value={servicePeriodEndValue ?? ""}
-                  onChange={(date) =>
-                    setValue("servicePeriodEnd", date || undefined)
-                  }
+                  onChange={(date) => setValue("servicePeriodEnd", date || undefined)}
                   disabled={!isEditable}
                   pickDateLabel={tMeta("pickDate")}
                 />
@@ -402,9 +378,7 @@ export function InvoiceMetadataForm({
                   disabled={!isEditable}
                 />
                 {errors.subtotalMinor && (
-                  <p className="text-xs text-destructive">
-                    {errors.subtotalMinor.message}
-                  </p>
+                  <p className="text-xs text-destructive">{errors.subtotalMinor.message}</p>
                 )}
               </div>
               <div className="space-y-1.5">
@@ -437,9 +411,7 @@ export function InvoiceMetadataForm({
                   disabled={!isEditable}
                 />
                 {errors.totalMinor && (
-                  <p className="text-xs text-destructive">
-                    {errors.totalMinor.message}
-                  </p>
+                  <p className="text-xs text-destructive">{errors.totalMinor.message}</p>
                 )}
               </div>
             </div>
@@ -472,7 +444,9 @@ export function InvoiceMetadataForm({
                 <Label>{t("detail.currency")}</Label>
                 <Select
                   value={currencyValue}
-                  onValueChange={(val) => { if (val) setValue("currency", val); }}
+                  onValueChange={(val) => {
+                    if (val) setValue("currency", val);
+                  }}
                   disabled={!isEditable}
                 >
                   <SelectTrigger>
@@ -530,9 +504,7 @@ export function InvoiceMetadataForm({
               </div>
 
               <DropdownMenu>
-                <DropdownMenuTrigger
-                  render={<Button variant="ghost" size="icon" />}
-                >
+                <DropdownMenuTrigger render={<Button variant="ghost" size="icon" />}>
                   <MoreHorizontal className="h-4 w-4" />
                   <span className="sr-only">More actions</span>
                 </DropdownMenuTrigger>
@@ -556,9 +528,7 @@ export function InvoiceMetadataForm({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t("detail.voidConfirmTitle")}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("detail.voidConfirmBody")}
-            </AlertDialogDescription>
+            <AlertDialogDescription>{t("detail.voidConfirmBody")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t("detail.cancel")}</AlertDialogCancel>
@@ -569,9 +539,7 @@ export function InvoiceMetadataForm({
                 setVoidDialogOpen(false);
               }}
             >
-              {voidMutation.isPending && (
-                <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
-              )}
+              {voidMutation.isPending && <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />}
               {t("detail.voidInvoiceCta")}
             </AlertDialogAction>
           </AlertDialogFooter>

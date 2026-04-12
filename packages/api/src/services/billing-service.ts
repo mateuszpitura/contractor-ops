@@ -1,10 +1,6 @@
 import { prisma } from "@contractor-ops/db";
+import { CacheKeys, CacheTTL, cached } from "./cache.js";
 import { stripe } from "./stripe-client.js";
-import {
-  cached,
-  CacheKeys,
-  CacheTTL,
-} from "./cache.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -62,10 +58,8 @@ function assertNonEmpty(value: string, name: string): void {
 export async function getSubscription(organizationId: string) {
   assertNonEmpty(organizationId, "organizationId");
 
-  return cached(
-    CacheKeys.subscription(organizationId),
-    CacheTTL.SUBSCRIPTION,
-    () => prisma.subscription.findUnique({ where: { organizationId } }),
+  return cached(CacheKeys.subscription(organizationId), CacheTTL.SUBSCRIPTION, () =>
+    prisma.subscription.findUnique({ where: { organizationId } }),
   );
 }
 
@@ -123,9 +117,7 @@ export async function createCheckoutSession(
  * Preview proration costs for a plan change.
  * Returns line items with amounts in grosze (PLN smallest unit).
  */
-export async function getProrationPreview(
-  params: ProrationPreviewParams,
-): Promise<{
+export async function getProrationPreview(params: ProrationPreviewParams): Promise<{
   lines: Array<{ description: string; amountGrosze: number }>;
   totalGrosze: number;
 }> {
@@ -226,10 +218,7 @@ export async function createTopUpCheckoutSession(
 
     return { sessionUrl: session.url };
   } catch (error) {
-    console.error(
-      "[billing-service] createTopUpCheckoutSession failed:",
-      error,
-    );
+    console.error("[billing-service] createTopUpCheckoutSession failed:", error);
     throw error;
   }
 }
@@ -279,9 +268,7 @@ export async function updateSubscriptionSeatCount(params: {
  * Fire-and-forget: logs errors but does not throw, so contractor mutations
  * are not blocked by billing failures.
  */
-export async function syncSeatCountForOrg(
-  organizationId: string,
-): Promise<void> {
+export async function syncSeatCountForOrg(organizationId: string): Promise<void> {
   try {
     const sub = await prisma.subscription.findUnique({
       where: { organizationId },
@@ -293,10 +280,7 @@ export async function syncSeatCountForOrg(
       },
     });
 
-    if (
-      !sub?.stripeSubscriptionItemId ||
-      (sub.status !== "ACTIVE" && sub.status !== "TRIALING")
-    ) {
+    if (!sub?.stripeSubscriptionItemId || (sub.status !== "ACTIVE" && sub.status !== "TRIALING")) {
       return;
     }
 
@@ -327,10 +311,7 @@ export async function syncSeatCountForOrg(
       `[billing] Seat count synced for org ${organizationId}: ${sub.seatCount} -> ${newQuantity}`,
     );
   } catch (error) {
-    console.error(
-      `[billing] Failed to sync seat count for org ${organizationId}:`,
-      error,
-    );
+    console.error(`[billing] Failed to sync seat count for org ${organizationId}:`, error);
   }
 }
 
@@ -339,9 +320,7 @@ export async function syncSeatCountForOrg(
  * If the org already has a subscription with a stripeCustomerId, returns it.
  * Otherwise, creates a new Stripe customer.
  */
-export async function ensureStripeCustomer(
-  params: EnsureStripeCustomerParams,
-): Promise<string> {
+export async function ensureStripeCustomer(params: EnsureStripeCustomerParams): Promise<string> {
   assertNonEmpty(params.organizationId, "organizationId");
   assertNonEmpty(params.email, "email");
   assertNonEmpty(params.name, "name");

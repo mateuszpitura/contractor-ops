@@ -2,7 +2,11 @@ import { render, screen, setup } from "@/test/test-utils";
 import { ConditionBuilder, getConditionSummary } from "../condition-builder";
 
 vi.mock("@/i18n/navigation", () => ({
-  Link: ({ children, href, ...props }: any) => <a href={href} {...props}>{children}</a>,
+  Link: ({ children, href, ...props }: any) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
 }));
 
 describe("ConditionBuilder", () => {
@@ -25,9 +29,7 @@ describe("ConditionBuilder", () => {
   it("renders existing rules with remove buttons", () => {
     const value = {
       combinator: "AND" as const,
-      rules: [
-        { field: "contractor.type", operator: "equals" as const, value: "COMPANY" },
-      ],
+      rules: [{ field: "contractor.type", operator: "equals" as const, value: "COMPANY" }],
     };
     render(<ConditionBuilder value={value} onChange={vi.fn()} />);
     expect(screen.getByText("Remove")).toBeInTheDocument();
@@ -71,7 +73,10 @@ describe("getConditionSummary", () => {
 
   it("returns single rule summary", () => {
     const result = getConditionSummary(
-      { combinator: "AND", rules: [{ field: "contractor.type", operator: "equals", value: "COMPANY" }] },
+      {
+        combinator: "AND",
+        rules: [{ field: "contractor.type", operator: "equals", value: "COMPANY" }],
+      },
       t,
     );
     expect(result).toContain("conditionBadge");

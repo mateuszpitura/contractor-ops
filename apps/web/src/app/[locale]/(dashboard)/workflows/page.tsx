@@ -1,27 +1,25 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { GitBranch } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { parseAsString, useQueryState } from "nuqs";
-
-import { trpc } from "@/trpc/init";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Suspense, useEffect, useState } from "react";
+import { AnimateIn } from "@/components/shared/animate-in";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
-import { AnimateIn } from "@/components/shared/animate-in";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MyTasksList } from "@/components/workflows/my-tasks-list";
+import { TemplatePicker } from "@/components/workflows/template-picker-dialog";
+import { TemplatesTable } from "@/components/workflows/templates-table";
+import type { WorkflowRunRow } from "@/components/workflows/workflow-runs-table/columns";
+import { WorkflowRunsDataTable } from "@/components/workflows/workflow-runs-table/data-table";
+import { WorkflowSidePanel } from "@/components/workflows/workflow-side-panel";
 import { usePermissions } from "@/hooks/use-permissions";
 import { Link } from "@/i18n/navigation";
-
-import { WorkflowRunsDataTable } from "@/components/workflows/workflow-runs-table/data-table";
-import type { WorkflowRunRow } from "@/components/workflows/workflow-runs-table/columns";
-import { WorkflowSidePanel } from "@/components/workflows/workflow-side-panel";
-import { MyTasksList } from "@/components/workflows/my-tasks-list";
-import { TemplatesTable } from "@/components/workflows/templates-table";
-import { TemplatePicker } from "@/components/workflows/template-picker-dialog";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Inner content (uses nuqs, needs Suspense)
@@ -33,10 +31,7 @@ function WorkflowsContent() {
   const { can } = usePermissions();
 
   // Tab state synced to URL
-  const [tab, setTab] = useQueryState(
-    "tab",
-    parseAsString.withDefault("runs"),
-  );
+  const [tab, setTab] = useQueryState("tab", parseAsString.withDefault("runs"));
 
   // Side panel state
   const [selectedRun, setSelectedRun] = useState<WorkflowRunRow | null>(null);
@@ -65,9 +60,7 @@ function WorkflowsContent() {
   };
 
   // Count queries for empty state detection
-  const runsCountQuery = useQuery(
-    trpc.workflow.listRuns.queryOptions({ page: 1, pageSize: 10 }),
-  );
+  const runsCountQuery = useQuery(trpc.workflow.listRuns.queryOptions({ page: 1, pageSize: 10 }));
   const contractorCountQuery = useQuery(
     trpc.contractor.list.queryOptions({ page: 1, pageSize: 10 }),
   );
@@ -102,10 +95,7 @@ function WorkflowsContent() {
           prerequisiteMissing={contractorCount === 0}
           prerequisiteAction={{ label: te("prerequisite.cta"), href: "/contractors" }}
         />
-        <TemplatePicker
-          open={templatePickerOpen}
-          onOpenChange={setTemplatePickerOpen}
-        />
+        <TemplatePicker open={templatePickerOpen} onOpenChange={setTemplatePickerOpen} />
       </div>
     );
   }
@@ -127,43 +117,35 @@ function WorkflowsContent() {
 
       {/* Tabs */}
       <AnimateIn delay={1}>
-      <Tabs
-        value={tab}
-        onValueChange={(value) => void setTab(value)}
-      >
-        <TabsList>
-          <TabsTrigger value="runs">{t("tabRuns")}</TabsTrigger>
-          <TabsTrigger value="tasks">{t("tabMyTasks")}</TabsTrigger>
-          {canManageTemplates && (
-            <TabsTrigger value="templates">{t("tabTemplates")}</TabsTrigger>
-          )}
-        </TabsList>
+        <Tabs value={tab} onValueChange={(value) => void setTab(value)}>
+          <TabsList>
+            <TabsTrigger value="runs">{t("tabRuns")}</TabsTrigger>
+            <TabsTrigger value="tasks">{t("tabMyTasks")}</TabsTrigger>
+            {canManageTemplates && <TabsTrigger value="templates">{t("tabTemplates")}</TabsTrigger>}
+          </TabsList>
 
-        <TabsContent value="runs" className="mt-4">
-          <WorkflowRunsDataTable
-            onRowClick={handleRowClick}
-            onStartWorkflow={handleStartWorkflow}
-          />
-        </TabsContent>
-
-        <TabsContent value="tasks" className="mt-4">
-          <MyTasksList />
-        </TabsContent>
-
-        {canManageTemplates && (
-          <TabsContent value="templates" className="mt-4">
-            <div className="flex items-center justify-end mb-4">
-              <Button
-                size="sm"
-                render={<Link href="/workflows/templates/new" />}
-              >
-                {t("templates.newTemplate")}
-              </Button>
-            </div>
-            <TemplatesTable />
+          <TabsContent value="runs" className="mt-4">
+            <WorkflowRunsDataTable
+              onRowClick={handleRowClick}
+              onStartWorkflow={handleStartWorkflow}
+            />
           </TabsContent>
-        )}
-      </Tabs>
+
+          <TabsContent value="tasks" className="mt-4">
+            <MyTasksList />
+          </TabsContent>
+
+          {canManageTemplates && (
+            <TabsContent value="templates" className="mt-4">
+              <div className="flex items-center justify-end mb-4">
+                <Button size="sm" render={<Link href="/workflows/templates/new" />}>
+                  {t("templates.newTemplate")}
+                </Button>
+              </div>
+              <TemplatesTable />
+            </TabsContent>
+          )}
+        </Tabs>
       </AnimateIn>
 
       {/* Side panel */}
@@ -176,10 +158,7 @@ function WorkflowsContent() {
       />
 
       {/* Template picker dialog */}
-      <TemplatePicker
-        open={templatePickerOpen}
-        onOpenChange={setTemplatePickerOpen}
-      />
+      <TemplatePicker open={templatePickerOpen} onOpenChange={setTemplatePickerOpen} />
     </div>
   );
 }
@@ -203,10 +182,7 @@ function WorkflowsLoading() {
         </div>
         <div className="rounded-xl border bg-background">
           {Array.from({ length: 8 }).map((_, i) => (
-            <div
-              key={i}
-              className="flex items-center gap-4 px-4 py-3 border-b last:border-b-0"
-            >
+            <div key={i} className="flex items-center gap-4 px-4 py-3 border-b last:border-b-0">
               <Skeleton className="h-4 w-4" />
               <Skeleton className="h-4 w-40" />
               <Skeleton className="h-4 w-24" />

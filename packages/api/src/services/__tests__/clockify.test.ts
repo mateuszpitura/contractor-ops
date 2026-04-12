@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Mocks (must be declared before imports)
@@ -16,8 +16,8 @@ vi.mock("@contractor-ops/integrations/adapters/clockify-adapter", () => ({
   },
 }));
 
-import { parseDurationToMinutes, syncClockifyEntries } from "../clockify-sync.js";
 import { decryptCredentials } from "@contractor-ops/integrations/services/credential-service";
+import { parseDurationToMinutes, syncClockifyEntries } from "../clockify-sync.js";
 
 // ---------------------------------------------------------------------------
 // Prisma mock builder
@@ -171,7 +171,14 @@ describe("clockify", () => {
       vi.stubGlobal("fetch", fetchSpy);
 
       await syncClockifyEntries(
-        mockPrisma, "org_1", "c_1", "ct_1", "ts_1", "conn_1", "2024-06-01", "2024-06-30",
+        mockPrisma,
+        "org_1",
+        "c_1",
+        "ct_1",
+        "ts_1",
+        "conn_1",
+        "2024-06-01",
+        "2024-06-30",
       );
 
       const calledUrl = fetchSpy.mock.calls[0][0] as string;
@@ -180,20 +187,21 @@ describe("clockify", () => {
 
     it("paginates with page-size=100", async () => {
       // First page: 100 entries (triggers next page fetch)
-      const page1 = Array.from({ length: 100 }, (_, i) =>
-        makeClockifyEntry(`e${i}`, "PT1H"),
-      );
+      const page1 = Array.from({ length: 100 }, (_, i) => makeClockifyEntry(`e${i}`, "PT1H"));
       // Second page: fewer than 100 (last page)
       const page2 = [makeClockifyEntry("e100", "PT30M")];
 
-      const fetchSpy = vi.fn()
+      const fetchSpy = vi
+        .fn()
         .mockResolvedValueOnce({
-          ok: true, status: 200,
+          ok: true,
+          status: 200,
           json: () => Promise.resolve(page1),
           headers: { get: () => null },
         })
         .mockResolvedValueOnce({
-          ok: true, status: 200,
+          ok: true,
+          status: 200,
           json: () => Promise.resolve(page2),
           headers: { get: () => null },
         });
@@ -201,7 +209,14 @@ describe("clockify", () => {
       vi.stubGlobal("fetch", fetchSpy);
 
       const result = await syncClockifyEntries(
-        mockPrisma, "org_1", "c_1", "ct_1", "ts_1", "conn_1", "2024-06-01", "2024-06-30",
+        mockPrisma,
+        "org_1",
+        "c_1",
+        "ct_1",
+        "ts_1",
+        "conn_1",
+        "2024-06-01",
+        "2024-06-30",
       );
 
       expect(fetchSpy).toHaveBeenCalledTimes(2);
@@ -223,7 +238,14 @@ describe("clockify", () => {
       vi.stubGlobal("fetch", mockFetchResponse(entries));
 
       await syncClockifyEntries(
-        mockPrisma, "org_1", "c_1", "ct_1", "ts_1", "conn_1", "2024-06-01", "2024-06-30",
+        mockPrisma,
+        "org_1",
+        "c_1",
+        "ct_1",
+        "ts_1",
+        "conn_1",
+        "2024-06-01",
+        "2024-06-30",
       );
 
       expect(mockPrisma.timeEntry.create).toHaveBeenCalledWith({
@@ -247,7 +269,14 @@ describe("clockify", () => {
       vi.stubGlobal("fetch", mockFetchResponse(entries));
 
       const result = await syncClockifyEntries(
-        mockPrisma, "org_1", "c_1", "ct_1", "ts_1", "conn_1", "2024-06-01", "2024-06-30",
+        mockPrisma,
+        "org_1",
+        "c_1",
+        "ct_1",
+        "ts_1",
+        "conn_1",
+        "2024-06-01",
+        "2024-06-30",
       );
 
       expect(mockPrisma.timeEntry.create).not.toHaveBeenCalled();
@@ -269,7 +298,14 @@ describe("clockify", () => {
       });
 
       await syncClockifyEntries(
-        mockPrisma, "org_1", "c_1", "ct_1", "ts_1", "conn_1", "2024-06-01", "2024-06-30",
+        mockPrisma,
+        "org_1",
+        "c_1",
+        "ct_1",
+        "ts_1",
+        "conn_1",
+        "2024-06-01",
+        "2024-06-30",
       );
 
       expect(mockPrisma.timeEntry.aggregate).toHaveBeenCalledWith({
@@ -287,7 +323,14 @@ describe("clockify", () => {
 
       await expect(
         syncClockifyEntries(
-          mockPrisma, "org_1", "c_1", "ct_1", "ts_1", "conn_1", "2024-06-01", "2024-06-30",
+          mockPrisma,
+          "org_1",
+          "c_1",
+          "ct_1",
+          "ts_1",
+          "conn_1",
+          "2024-06-01",
+          "2024-06-30",
         ),
       ).rejects.toThrow(/invalid or expired/i);
 
@@ -304,7 +347,14 @@ describe("clockify", () => {
 
       await expect(
         syncClockifyEntries(
-          mockPrisma, "org_1", "c_1", "ct_1", "ts_1", "conn_1", "2024-06-01", "2024-06-30",
+          mockPrisma,
+          "org_1",
+          "c_1",
+          "ct_1",
+          "ts_1",
+          "conn_1",
+          "2024-06-01",
+          "2024-06-30",
         ),
       ).rejects.toThrow(/not found/i);
     });
@@ -319,7 +369,14 @@ describe("clockify", () => {
 
       await expect(
         syncClockifyEntries(
-          mockPrisma, "org_1", "c_1", "ct_1", "ts_1", "conn_1", "2024-06-01", "2024-06-30",
+          mockPrisma,
+          "org_1",
+          "c_1",
+          "ct_1",
+          "ts_1",
+          "conn_1",
+          "2024-06-01",
+          "2024-06-30",
         ),
       ).rejects.toThrow(/not active/i);
     });
@@ -332,7 +389,14 @@ describe("clockify", () => {
       vi.stubGlobal("fetch", mockFetchResponse(entries));
 
       const result = await syncClockifyEntries(
-        mockPrisma, "org_1", "c_1", "ct_1", "ts_1", "conn_1", "2024-06-01", "2024-06-30",
+        mockPrisma,
+        "org_1",
+        "c_1",
+        "ct_1",
+        "ts_1",
+        "conn_1",
+        "2024-06-01",
+        "2024-06-30",
       );
 
       expect(result.imported).toBe(1);
@@ -344,7 +408,14 @@ describe("clockify", () => {
       vi.stubGlobal("fetch", mockFetchResponse([]));
 
       await syncClockifyEntries(
-        mockPrisma, "org_1", "c_1", "ct_1", "ts_1", "conn_1", "2024-06-01", "2024-06-30",
+        mockPrisma,
+        "org_1",
+        "c_1",
+        "ct_1",
+        "ts_1",
+        "conn_1",
+        "2024-06-01",
+        "2024-06-30",
       );
 
       const fetchCall = vi.mocked(fetch).mock.calls[0];

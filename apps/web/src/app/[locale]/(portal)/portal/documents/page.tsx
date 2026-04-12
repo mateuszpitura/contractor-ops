@@ -3,8 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Download, FileText } from "lucide-react";
 import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
+import { EmptyState } from "@/components/shared/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -16,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { EmptyState } from "@/components/shared/empty-state";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -80,10 +79,18 @@ export default function PortalDocumentsPage() {
             <TableBody>
               {Array.from({ length: 3 }).map((_, i) => (
                 <TableRow key={i}>
-                  <TableCell><Skeleton className="h-4 w-48" /></TableCell>
-                  <TableCell><Skeleton className="h-5 w-20 rounded-full" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-28" /></TableCell>
-                  <TableCell className="text-end"><Skeleton className="ms-auto h-7 w-24" /></TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-48" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-5 w-20 rounded-full" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-28" />
+                  </TableCell>
+                  <TableCell className="text-end">
+                    <Skeleton className="ms-auto h-7 w-24" />
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -116,9 +123,7 @@ export default function PortalDocumentsPage() {
                       {formatDocType(doc.type ?? t("documents.documentFallback"))}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-sm">
-                    {formatDate(doc.addedAt)}
-                  </TableCell>
+                  <TableCell className="text-sm">{formatDate(doc.addedAt)}</TableCell>
                   <TableCell className="text-end">
                     <Button
                       variant="outline"

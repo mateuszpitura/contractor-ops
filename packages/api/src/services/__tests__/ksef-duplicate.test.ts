@@ -1,8 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import {
-  checkCrossSourceDuplicate,
-  linkDuplicateInvoices,
-} from "../ksef-duplicate-detection.js";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { checkCrossSourceDuplicate, linkDuplicateInvoices } from "../ksef-duplicate-detection.js";
 
 const mockPrisma = {
   invoice: {
@@ -25,12 +22,7 @@ describe("checkCrossSourceDuplicate", () => {
       source: "MANUAL",
     });
 
-    const result = await checkCrossSourceDuplicate(
-      mockPrisma,
-      ORG_ID,
-      "FV/2026/001",
-      "1234567890",
-    );
+    const result = await checkCrossSourceDuplicate(mockPrisma, ORG_ID, "FV/2026/001", "1234567890");
 
     expect(result.isDuplicate).toBe(true);
     expect(result.existingInvoiceId).toBe("inv-existing");
@@ -40,12 +32,7 @@ describe("checkCrossSourceDuplicate", () => {
   it("returns no duplicate when none exists", async () => {
     mockPrisma.invoice.findFirst.mockResolvedValue(null);
 
-    const result = await checkCrossSourceDuplicate(
-      mockPrisma,
-      ORG_ID,
-      "FV/2026/999",
-      "9999999999",
-    );
+    const result = await checkCrossSourceDuplicate(mockPrisma, ORG_ID, "FV/2026/999", "9999999999");
 
     expect(result.isDuplicate).toBe(false);
     expect(result.existingInvoiceId).toBeNull();
@@ -55,13 +42,7 @@ describe("checkCrossSourceDuplicate", () => {
   it("excludes specified invoice ID from search", async () => {
     mockPrisma.invoice.findFirst.mockResolvedValue(null);
 
-    await checkCrossSourceDuplicate(
-      mockPrisma,
-      ORG_ID,
-      "FV/2026/001",
-      "1234567890",
-      "inv-self",
-    );
+    await checkCrossSourceDuplicate(mockPrisma, ORG_ID, "FV/2026/001", "1234567890", "inv-self");
 
     const whereArg = mockPrisma.invoice.findFirst.mock.calls[0][0].where;
     expect(whereArg.id).toEqual({ not: "inv-self" });
@@ -73,12 +54,7 @@ describe("checkCrossSourceDuplicate", () => {
       source: "KSEF",
     });
 
-    const result = await checkCrossSourceDuplicate(
-      mockPrisma,
-      ORG_ID,
-      "FV/2026/002",
-      "5555555555",
-    );
+    const result = await checkCrossSourceDuplicate(mockPrisma, ORG_ID, "FV/2026/002", "5555555555");
 
     expect(result.existingSource).toBe("KSEF");
   });
@@ -86,12 +62,7 @@ describe("checkCrossSourceDuplicate", () => {
   it("excludes soft-deleted invoices via deletedAt: null", async () => {
     mockPrisma.invoice.findFirst.mockResolvedValue(null);
 
-    await checkCrossSourceDuplicate(
-      mockPrisma,
-      ORG_ID,
-      "FV/2026/003",
-      "1111111111",
-    );
+    await checkCrossSourceDuplicate(mockPrisma, ORG_ID, "FV/2026/003", "1111111111");
 
     const whereArg = mockPrisma.invoice.findFirst.mock.calls[0][0].where;
     expect(whereArg.deletedAt).toBeNull();
@@ -100,12 +71,7 @@ describe("checkCrossSourceDuplicate", () => {
   it("uses case-insensitive match on invoiceNumber", async () => {
     mockPrisma.invoice.findFirst.mockResolvedValue(null);
 
-    await checkCrossSourceDuplicate(
-      mockPrisma,
-      ORG_ID,
-      "FV/2026/004",
-      "2222222222",
-    );
+    await checkCrossSourceDuplicate(mockPrisma, ORG_ID, "FV/2026/004", "2222222222");
 
     const whereArg = mockPrisma.invoice.findFirst.mock.calls[0][0].where;
     expect(whereArg.invoiceNumber).toEqual({

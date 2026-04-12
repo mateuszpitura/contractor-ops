@@ -1,5 +1,5 @@
 import { createHmac } from "node:crypto";
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockFindUnique = vi.fn();
 
@@ -90,9 +90,9 @@ describe("AutentiAdapter", () => {
     process.env.AUTENTI_CLIENT_SECRET = "secret";
     vi.stubGlobal("fetch", mockFetch(false, "err", 400));
 
-    await expect(
-      adapter.exchangeCodeForTokens("code", "http://localhost/cb"),
-    ).rejects.toThrow(/Autenti OAuth exchange failed/);
+    await expect(adapter.exchangeCodeForTokens("code", "http://localhost/cb")).rejects.toThrow(
+      /Autenti OAuth exchange failed/,
+    );
   });
 
   it("refreshToken sends refresh_token grant", async () => {
@@ -119,9 +119,9 @@ describe("AutentiAdapter", () => {
   });
 
   it("getEmbeddedSigningUrl throws with Autenti-specific message", async () => {
-    await expect(
-      adapter.getEmbeddedSigningUrl("c", "e", "a@b.com", "http://x"),
-    ).rejects.toThrow(/does not support embedded signing/);
+    await expect(adapter.getEmbeddedSigningUrl("c", "e", "a@b.com", "http://x")).rejects.toThrow(
+      /does not support embedded signing/,
+    );
   });
 
   it("getSignedDocument fetches file list then binary content", async () => {
@@ -186,10 +186,7 @@ describe("AutentiAdapter", () => {
       process.env.AUTENTI_WEBHOOK_SECRET = "sec";
       const raw = "{}";
       const sig = createHmac("sha256", "sec").update(raw).digest("hex");
-      expect(
-        adapter.verifyWebhookSignature(raw, { "x-webhook-signature": sig })
-          .valid,
-      ).toBe(true);
+      expect(adapter.verifyWebhookSignature(raw, { "x-webhook-signature": sig }).valid).toBe(true);
     });
 
     it("returns invalid without secret", () => {

@@ -1,26 +1,22 @@
 "use client";
 
-import { useMemo, useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bell, BellOff } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { parseAsString, parseAsInteger, useQueryState } from "nuqs";
+import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
+import { useCallback, useMemo } from "react";
 import { toast } from "sonner";
-
-import { trpc } from "@/trpc/init";
-import { useRouter } from "@/i18n/navigation";
 import { AnimateIn } from "@/components/shared/animate-in";
+import { EmptyState } from "@/components/shared/empty-state";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
+import { useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
-import { EmptyState } from "@/components/shared/empty-state";
-import {
-  NotificationItem,
-  getEntityUrl,
-  type NotificationData,
-} from "./notification-item";
+import { trpc } from "@/trpc/init";
+import type { NotificationData } from "./notification-item";
+import { getEntityUrl, NotificationItem } from "./notification-item";
 
 // ---------------------------------------------------------------------------
 // Type filter mapping: UI chip value -> notification type(s)
@@ -54,18 +50,9 @@ export function NotificationCenter() {
   const queryClient = useQueryClient();
 
   // URL state via nuqs
-  const [typeFilter, setTypeFilter] = useQueryState(
-    "type",
-    parseAsString.withDefault("all"),
-  );
-  const [unreadOnly, setUnreadOnly] = useQueryState(
-    "unread",
-    parseAsString.withDefault(""),
-  );
-  const [page, setPage] = useQueryState(
-    "page",
-    parseAsInteger.withDefault(1),
-  );
+  const [typeFilter, setTypeFilter] = useQueryState("type", parseAsString.withDefault("all"));
+  const [unreadOnly, setUnreadOnly] = useQueryState("unread", parseAsString.withDefault(""));
+  const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
 
   // Build query input
   const queryInput = useMemo(() => {
@@ -73,8 +60,7 @@ export function NotificationCenter() {
     // The API accepts a single type enum value, not an array.
     // For multi-type filters (e.g. approvals = 2 types), we pass undefined and let
     // the API return all. For single-type filters, we pass the specific type.
-    const type: NotificationType | undefined =
-      types && types.length === 1 ? types[0] : undefined;
+    const type: NotificationType | undefined = types && types.length === 1 ? types[0] : undefined;
 
     return {
       type,
@@ -165,7 +151,9 @@ export function NotificationCenter() {
       {/* Page header */}
       <AnimateIn delay={0}>
         <div className="flex items-center justify-between">
-          <h1 className="font-display text-[22px] font-semibold leading-tight tracking-tight">{t("title")}</h1>
+          <h1 className="font-display text-[22px] font-semibold leading-tight tracking-tight">
+            {t("title")}
+          </h1>
           <Button
             variant="outline"
             size="sm"
@@ -216,10 +204,7 @@ export function NotificationCenter() {
       {isLoading ? (
         <div className="flex flex-col rounded-lg border">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div
-              key={i}
-              className="flex items-center gap-3 border-b px-4 py-3 last:border-b-0"
-            >
+            <div key={i} className="flex items-center gap-3 border-b px-4 py-3 last:border-b-0">
               <Skeleton className="h-8 w-8 rounded-full" />
               <div className="flex flex-1 flex-col gap-1">
                 <Skeleton className="h-3.5 w-40" />
@@ -240,14 +225,8 @@ export function NotificationCenter() {
         <>
           <div className="flex flex-col rounded-lg border">
             {notifications.map((n) => (
-              <div
-                key={n.id}
-                className="border-b last:border-b-0"
-              >
-                <NotificationItem
-                  notification={n}
-                  onClick={() => handleItemClick(n)}
-                />
+              <div key={n.id} className="border-b last:border-b-0">
+                <NotificationItem notification={n} onClick={() => handleItemClick(n)} />
               </div>
             ))}
           </div>

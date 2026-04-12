@@ -34,13 +34,7 @@ describe("SigningAuditTrail", () => {
   });
 
   it("renders empty state when no events", () => {
-    render(
-      <SigningAuditTrail
-        envelopeId="env1"
-        open={true}
-        onOpenChange={vi.fn()}
-      />,
-    );
+    render(<SigningAuditTrail envelopeId="env1" open={true} onOpenChange={vi.fn()} />);
     expect(screen.getByText("No Signing History")).toBeInTheDocument();
   });
 
@@ -61,16 +55,8 @@ describe("SigningAuditTrail", () => {
       isLoading: false,
     });
 
-    render(
-      <SigningAuditTrail
-        envelopeId="env1"
-        open={true}
-        onOpenChange={vi.fn()}
-      />,
-    );
-    expect(
-      screen.getByText("Envelope sent to signer"),
-    ).toBeInTheDocument();
+    render(<SigningAuditTrail envelopeId="env1" open={true} onOpenChange={vi.fn()} />);
+    expect(screen.getByText("Envelope sent to signer")).toBeInTheDocument();
     expect(screen.getByText("Jan")).toBeInTheDocument();
   });
 });

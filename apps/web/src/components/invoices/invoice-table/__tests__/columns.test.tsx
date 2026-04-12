@@ -1,16 +1,12 @@
+import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
+import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 import { useMemo } from "react";
-import { describe, it, expect, vi } from "vitest";
-import {
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
-import { useTranslations } from "next-intl";
+import { describe, expect, it, vi } from "vitest";
 
 import { render, screen } from "@/test/test-utils";
-
-import { getColumns, type InvoiceRow } from "../columns";
+import type { InvoiceRow } from "../columns";
+import { getColumns } from "../columns";
 
 vi.mock("@/i18n/navigation", () => ({
   Link: ({ children, href }: { children: ReactNode; href: string }) => (
@@ -34,10 +30,7 @@ const sampleRow: InvoiceRow = {
 
 function RowTable({ row }: { row: InvoiceRow }) {
   const t = useTranslations("Invoices");
-  const columns = useMemo(
-    () => getColumns((key) => t(key as Parameters<typeof t>[0])),
-    [t],
-  );
+  const columns = useMemo(() => getColumns((key) => t(key as Parameters<typeof t>[0])), [t]);
   const table = useReactTable({
     data: [row],
     columns,

@@ -29,9 +29,7 @@ export const UPS_STATUS_MAP: Record<string, string> = {
 export function mapUpsStatus(typeCode: string): string | null {
   const mapped = UPS_STATUS_MAP[typeCode];
   if (!mapped) {
-    console.warn(
-      `[ups-status-mapper] Unknown UPS status type code: "${typeCode}" — skipping`,
-    );
+    console.warn(`[ups-status-mapper] Unknown UPS status type code: "${typeCode}" — skipping`);
     return null;
   }
   return mapped;
@@ -41,8 +39,4 @@ export function mapUpsStatus(typeCode: string): string | null {
  * Statuses that should trigger user notifications.
  * Intermediate statuses update silently; only terminal/critical events notify.
  */
-export const UPS_NOTIFICATION_STATUSES = [
-  "DELIVERED",
-  "FAILED",
-  "RETURNED",
-] as const;
+export const UPS_NOTIFICATION_STATUSES = ["DELIVERED", "FAILED", "RETURNED"] as const;

@@ -2,8 +2,8 @@
 
 import { Check, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -38,11 +38,7 @@ function getActiveStep(props: StatusTimelineProps): number {
   if (props.paymentStatus === "PAID") return 4;
   if (props.paymentStatus === "IN_RUN") return 3;
   if (props.approvalStatus === "APPROVED") return 2;
-  if (
-    props.status === "UNDER_REVIEW" ||
-    props.status === "APPROVAL_PENDING"
-  )
-    return 1;
+  if (props.status === "UNDER_REVIEW" || props.status === "APPROVAL_PENDING") return 1;
   return 0; // RECEIVED = submitted
 }
 
@@ -126,7 +122,7 @@ function DesktopTimeline({
                     ? "text-green-700 dark:text-green-400"
                     : i === activeIndex && !rejected
                       ? "text-primary font-medium"
-                      : "text-muted-foreground"
+                      : "text-muted-foreground",
               )}
             >
               {step.label}
@@ -137,7 +133,7 @@ function DesktopTimeline({
             <div
               className={cn(
                 "mx-2 h-0.5 w-12 flex-1 min-w-8",
-                i < activeIndex ? "bg-green-600" : "bg-border"
+                i < activeIndex ? "bg-green-600" : "bg-border",
               )}
             />
           )}
@@ -170,10 +166,7 @@ function MobileTimeline({
             {/* Vertical connector line */}
             {i < steps.length - 1 && (
               <div
-                className={cn(
-                  "my-1 w-0.5 h-6",
-                  i < activeIndex ? "bg-green-600" : "bg-border"
-                )}
+                className={cn("my-1 w-0.5 h-6", i < activeIndex ? "bg-green-600" : "bg-border")}
               />
             )}
           </div>
@@ -186,7 +179,7 @@ function MobileTimeline({
                   ? "text-green-700 dark:text-green-400"
                   : i === activeIndex && !rejected
                     ? "text-primary font-medium"
-                    : "text-muted-foreground"
+                    : "text-muted-foreground",
             )}
           >
             {step.label}

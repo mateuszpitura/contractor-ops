@@ -1,5 +1,5 @@
-import { render, screen, setup } from "@/test/test-utils";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { render, screen, setup } from "@/test/test-utils";
 
 vi.mock("@/trpc/init", () => ({
   trpc: {
@@ -28,9 +28,7 @@ function renderWithQuery(ui: React.ReactElement) {
   const qc = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
-  return setup(
-    <QueryClientProvider client={qc}>{ui}</QueryClientProvider>,
-  );
+  return setup(<QueryClientProvider client={qc}>{ui}</QueryClientProvider>);
 }
 
 const returnRequest = {
@@ -49,12 +47,8 @@ describe("ReturnApprovalBanner", () => {
 
   it("renders approve and reject buttons", () => {
     renderWithQuery(<ReturnApprovalBanner returnRequest={returnRequest} />);
-    expect(
-      screen.getByRole("button", { name: /Approve return/i }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /Reject return/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Approve return/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Reject return/i })).toBeInTheDocument();
   });
 
   it("renders drop-off point name", () => {
@@ -63,14 +57,10 @@ describe("ReturnApprovalBanner", () => {
   });
 
   it("opens reject confirmation dialog on reject click", async () => {
-    const { user } = renderWithQuery(
-      <ReturnApprovalBanner returnRequest={returnRequest} />,
-    );
+    const { user } = renderWithQuery(<ReturnApprovalBanner returnRequest={returnRequest} />);
     await user.click(screen.getByRole("button", { name: /Reject return/i }));
     // The dialog has a title "Reject return" -- use role to disambiguate
     expect(screen.getByRole("alertdialog")).toBeInTheDocument();
-    expect(
-      screen.getByText(/decline the contractor's return request/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/decline the contractor's return request/i)).toBeInTheDocument();
   });
 });

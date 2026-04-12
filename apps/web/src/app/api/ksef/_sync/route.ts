@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import { verifySignatureAppRouter } from "@upstash/qstash/nextjs";
-import { registerAllAdapters } from "@contractor-ops/integrations/adapters/register-all";
 import { processKsefSync } from "@contractor-ops/api/services/ksef-sync-orchestrator";
+import { registerAllAdapters } from "@contractor-ops/integrations/adapters/register-all";
+import { verifySignatureAppRouter } from "@upstash/qstash/nextjs";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 // ---------------------------------------------------------------------------
 // Ensure adapters are registered
@@ -38,24 +38,15 @@ async function handler(request: NextRequest) {
   };
 
   if (!organizationId || !connectionId) {
-    return NextResponse.json(
-      { error: "Missing organizationId or connectionId" },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "Missing organizationId or connectionId" }, { status: 400 });
   }
 
   try {
     const result = await processKsefSync({ organizationId, connectionId });
     return NextResponse.json({ processed: true, ...result });
   } catch (error) {
-    console.error(
-      `[ksef/_sync] Failed to sync KSeF for org ${organizationId}:`,
-      error,
-    );
-    return NextResponse.json(
-      { error: "KSeF sync failed" },
-      { status: 500 },
-    );
+    console.error(`[ksef/_sync] Failed to sync KSeF for org ${organizationId}:`, error);
+    return NextResponse.json({ error: "KSeF sync failed" }, { status: 500 });
   }
 }
 

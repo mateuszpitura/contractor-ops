@@ -1,8 +1,8 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import React from "react";
 import type { UseFormReturn } from "react-hook-form";
-import { useTranslations } from "next-intl";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -52,16 +52,12 @@ export function StepBilling({ form }: StepBillingProps) {
   // Local state for rate input — prevents cursor jumping during typing.
   const rateMinor = watch("rateValueMinor");
   const [rateLocal, setRateLocal] = React.useState(() =>
-    typeof rateMinor === "number" && rateMinor > 0
-      ? (rateMinor / 100).toString()
-      : "",
+    typeof rateMinor === "number" && rateMinor > 0 ? (rateMinor / 100).toString() : "",
   );
 
   React.useEffect(() => {
     const fromForm =
-      typeof rateMinor === "number" && rateMinor > 0
-        ? (rateMinor / 100).toString()
-        : "";
+      typeof rateMinor === "number" && rateMinor > 0 ? (rateMinor / 100).toString() : "";
     setRateLocal((prev) => {
       const prevMinor = Math.round(parseFloat(prev || "0") * 100);
       if (prevMinor !== rateMinor) return fromForm;
@@ -113,9 +109,7 @@ export function StepBilling({ form }: StepBillingProps) {
           </SelectContent>
         </Select>
         {errors.billingModel && (
-          <p className="text-sm text-destructive">
-            {errors.billingModel.message}
-          </p>
+          <p className="text-sm text-destructive">{errors.billingModel.message}</p>
         )}
       </div>
 
@@ -142,11 +136,7 @@ export function StepBilling({ form }: StepBillingProps) {
             ))}
           </SelectContent>
         </Select>
-        {errors.currency && (
-          <p className="text-sm text-destructive">
-            {errors.currency.message}
-          </p>
-        )}
+        {errors.currency && <p className="text-sm text-destructive">{errors.currency.message}</p>}
       </div>
 
       {/* Default rate (display as zloty, store as minor units) */}
@@ -170,9 +160,7 @@ export function StepBilling({ form }: StepBillingProps) {
           </span>
         </div>
         {errors.rateValueMinor && (
-          <p className="text-sm text-destructive">
-            {errors.rateValueMinor.message}
-          </p>
+          <p className="text-sm text-destructive">{errors.rateValueMinor.message}</p>
         )}
       </div>
 
@@ -188,9 +176,7 @@ export function StepBilling({ form }: StepBillingProps) {
           {...register("bankAccount")}
         />
         {errors.bankAccount && (
-          <p className="text-sm text-destructive">
-            {errors.bankAccount.message}
-          </p>
+          <p className="text-sm text-destructive">{errors.bankAccount.message}</p>
         )}
       </div>
 

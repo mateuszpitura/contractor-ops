@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { screen, setup } from "@/test/test-utils";
 import { SingleEntryForm } from "../single-entry-form";
 
@@ -44,16 +44,12 @@ describe("SingleEntryForm", () => {
     const { user } = setup(<SingleEntryForm {...defaultProps} />);
     await user.click(screen.getByText("Add Entry"));
     expect(screen.getByText("Project is required")).toBeInTheDocument();
-    expect(
-      screen.getByText("Hours must be between 0.25 and 24"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Hours must be between 0.25 and 24")).toBeInTheDocument();
   });
 
   it("calls onOpenChange(false) on discard", async () => {
     const onOpenChange = vi.fn();
-    const { user } = setup(
-      <SingleEntryForm {...defaultProps} onOpenChange={onOpenChange} />,
-    );
+    const { user } = setup(<SingleEntryForm {...defaultProps} onOpenChange={onOpenChange} />);
     await user.click(screen.getByText("Discard Entry"));
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });

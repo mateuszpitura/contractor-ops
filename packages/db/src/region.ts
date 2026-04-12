@@ -1,5 +1,5 @@
-import { createPrismaClientForUrl } from "./client.js";
 import type { PrismaClient } from "../generated/prisma/client/index.js";
+import { createPrismaClientForUrl } from "./client.js";
 
 // ---------------------------------------------------------------------------
 // Supported Regions
@@ -54,9 +54,7 @@ export function getRegionalClient(region: string): PrismaClient {
   const envVar = REGION_ENV_MAP[typedRegion];
   const connectionString = process.env[envVar];
   if (!connectionString) {
-    throw new Error(
-      `${envVar} environment variable is not set for region ${typedRegion}`,
-    );
+    throw new Error(`${envVar} environment variable is not set for region ${typedRegion}`);
   }
 
   const client = createPrismaClientForUrl(connectionString);

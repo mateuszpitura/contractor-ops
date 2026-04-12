@@ -4,9 +4,9 @@
  * Phase 46: Added home-currency conversion for multi-currency reports.
  */
 
-import { convertAmount } from "./exchange-rate.js";
 import type { PrismaClient } from "@contractor-ops/db";
 import { minorToDecimalStr } from "@contractor-ops/shared";
+import { convertAmount } from "./exchange-rate.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -105,10 +105,7 @@ export async function generateAuditCsv(
       item.newValuesJson && typeof item.newValuesJson === "object"
         ? (item.newValuesJson as Record<string, unknown>)
         : {};
-    const allKeys = new Set([
-      ...Object.keys(oldVals),
-      ...Object.keys(newVals),
-    ]);
+    const allKeys = new Set([...Object.keys(oldVals), ...Object.keys(newVals)]);
     const changedKeys: string[] = [];
     for (const key of allKeys) {
       if (JSON.stringify(oldVals[key]) !== JSON.stringify(newVals[key])) {
@@ -269,13 +266,7 @@ export async function convertToHomeCurrency(
   if (fromCurrency === homeCurrency) {
     return { amountMinor, rate: 1 };
   }
-  const result = await convertAmount(
-    prisma,
-    amountMinor,
-    fromCurrency,
-    homeCurrency,
-    date,
-  );
+  const result = await convertAmount(prisma, amountMinor, fromCurrency, homeCurrency, date);
   if (!result) return null;
   return { amountMinor: result.amountMinor, rate: result.rate };
 }

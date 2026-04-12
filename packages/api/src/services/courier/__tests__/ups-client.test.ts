@@ -1,7 +1,6 @@
-import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-
-import { UPSClient } from "../ups-client";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { UPSShipmentParams } from "../courier-client";
+import { UPSClient } from "../ups-client";
 
 // ---------------------------------------------------------------------------
 // UPS Client Tests
@@ -33,8 +32,7 @@ function mockFetchSequence(responses: Array<{ body: unknown; status?: number }>)
       status,
       json: () => Promise.resolve(resp.body),
       text: () => Promise.resolve(JSON.stringify(resp.body)),
-      arrayBuffer: () =>
-        Promise.resolve(new TextEncoder().encode("PDF_CONTENT").buffer),
+      arrayBuffer: () => Promise.resolve(new TextEncoder().encode("PDF_CONTENT").buffer),
     });
   });
 }

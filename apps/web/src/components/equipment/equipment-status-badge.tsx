@@ -35,10 +35,7 @@ interface EquipmentStatusBadgeProps {
 /**
  * Badge displaying equipment status with appropriate color variant.
  */
-export function EquipmentStatusBadge({
-  status,
-  className,
-}: EquipmentStatusBadgeProps) {
+export function EquipmentStatusBadge({ status, className }: EquipmentStatusBadgeProps) {
   const t = useTranslations("Equipment.status");
   const variant = STATUS_VARIANT_MAP[status as EquipmentStatus] ?? "secondary";
   const label = t(status as Parameters<typeof t>[0]);

@@ -1,19 +1,18 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
 import { GitBranch, Plus } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Link } from "@/i18n/navigation";
-import { TemplatePicker } from "@/components/workflows/template-picker-dialog";
+import { useTranslations } from "next-intl";
+import { useMemo, useState } from "react";
 import { JiraActivitySummary } from "@/components/integrations/jira-activity-summary";
 import { JiraIssueChip } from "@/components/integrations/jira-issue-chip";
 import { LinearIssueChip } from "@/components/integrations/linear-issue-chip";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { TemplatePicker } from "@/components/workflows/template-picker-dialog";
+import { Link } from "@/i18n/navigation";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Run status badge styling (matching UI-SPEC)
@@ -201,10 +200,7 @@ export function WorkflowsTab({ contractorId }: WorkflowsTabProps) {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const queryData = runsQuery.data as any;
-  const items: WorkflowRunRow[] = useMemo(
-    () => queryData?.items ?? [],
-    [queryData],
-  );
+  const items: WorkflowRunRow[] = useMemo(() => queryData?.items ?? [], [queryData]);
   const totalCount: number = queryData?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
@@ -230,12 +226,8 @@ export function WorkflowsTab({ contractorId }: WorkflowsTabProps) {
       <>
         <div className="flex min-h-[300px] flex-col items-center justify-center gap-3 text-center">
           <GitBranch className="size-10 text-muted-foreground/50" />
-          <h4 className="text-sm font-medium">
-            {t("contractorNoWorkflows")}
-          </h4>
-          <p className="max-w-sm text-sm text-muted-foreground">
-            {t("contractorNoWorkflowsBody")}
-          </p>
+          <h4 className="text-sm font-medium">{t("contractorNoWorkflows")}</h4>
+          <p className="max-w-sm text-sm text-muted-foreground">{t("contractorNoWorkflowsBody")}</p>
           <Button size="sm" onClick={() => setPickerOpen(true)}>
             <Plus className="me-1.5 size-3.5" />
             {t("contractorNoWorkflowsCta")}
@@ -257,9 +249,7 @@ export function WorkflowsTab({ contractorId }: WorkflowsTabProps) {
 
       {/* Header with CTA */}
       <div className="flex items-center justify-between">
-        <h3 className="text-base font-medium">
-          {t("contractorWorkflowsTab")}
-        </h3>
+        <h3 className="text-base font-medium">{t("contractorWorkflowsTab")}</h3>
         <Button size="sm" onClick={() => setPickerOpen(true)}>
           <Plus className="me-1.5 size-3.5" />
           {t("contractorStartWorkflow")}
@@ -279,13 +269,8 @@ export function WorkflowsTab({ contractorId }: WorkflowsTabProps) {
                 {run.workflowTemplate?.name ?? "Workflow"}
               </p>
             </div>
-            <Badge
-              variant="secondary"
-              className={runStatusBadgeColors[run.status] ?? ""}
-            >
-              {t(
-                `runStatus.${run.status}` as Parameters<typeof t>[0],
-              )}
+            <Badge variant="secondary" className={runStatusBadgeColors[run.status] ?? ""}>
+              {t(`runStatus.${run.status}` as Parameters<typeof t>[0])}
             </Badge>
             <RunJiraChips runId={run.id} />
             <RunLinearChips runId={run.id} />
@@ -327,11 +312,7 @@ export function WorkflowsTab({ contractorId }: WorkflowsTabProps) {
       )}
 
       {/* Template picker dialog */}
-      <TemplatePicker
-        open={pickerOpen}
-        onOpenChange={setPickerOpen}
-        contractorId={contractorId}
-      />
+      <TemplatePicker open={pickerOpen} onOpenChange={setPickerOpen} contractorId={contractorId} />
     </div>
   );
 }

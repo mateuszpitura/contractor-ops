@@ -1,20 +1,15 @@
 "use client";
 
-import { useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Calendar, Filter, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
+import { useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -77,10 +72,7 @@ const RISK_LEVELS = ["LOW", "MEDIUM", "HIGH"] as const;
 /**
  * Filter popover and active filter badges for the contract data table.
  */
-export function DataTableFilters({
-  filters,
-  onFiltersChange,
-}: DataTableFiltersProps) {
+export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersProps) {
   const t = useTranslations("Contracts");
 
   // Fetch users for owner filter
@@ -112,7 +104,10 @@ export function DataTableFilters({
   }, [onFiltersChange]);
 
   const toggleFilterValue = useCallback(
-    (key: "status" | "type" | "billingModel" | "ownerUserId" | "complianceRiskLevel", value: string) => {
+    (
+      key: "status" | "type" | "billingModel" | "ownerUserId" | "complianceRiskLevel",
+      value: string,
+    ) => {
       const current = filters[key];
       const next = current.includes(value)
         ? current.filter((v) => v !== value)
@@ -123,7 +118,10 @@ export function DataTableFilters({
   );
 
   const removeFilter = useCallback(
-    (key: "status" | "type" | "billingModel" | "ownerUserId" | "complianceRiskLevel", value: string) => {
+    (
+      key: "status" | "type" | "billingModel" | "ownerUserId" | "complianceRiskLevel",
+      value: string,
+    ) => {
       onFiltersChange({ [key]: filters[key].filter((v) => v !== value) });
     },
     [filters, onFiltersChange],
@@ -139,10 +137,7 @@ export function DataTableFilters({
               <Filter className="h-3.5 w-3.5" />
               {t("filters")}
               {hasActiveFilters && (
-                <Badge
-                  variant="secondary"
-                  className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]"
-                >
+                <Badge variant="secondary" className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]">
                   {activeFilterCount}
                 </Badge>
               )}
@@ -187,12 +182,17 @@ export function DataTableFilters({
             {/* Owner */}
             <FilterSection
               title={t("columns.owner")}
-              options={(users as Array<{ id?: string; userId?: string; name?: string | null; email?: string | null }>).map(
-                (user) => ({
-                  value: user.id ?? user.userId ?? "",
-                  label: user.name ?? user.email ?? "Unknown",
-                }),
-              )}
+              options={(
+                users as Array<{
+                  id?: string;
+                  userId?: string;
+                  name?: string | null;
+                  email?: string | null;
+                }>
+              ).map((user) => ({
+                value: user.id ?? user.userId ?? "",
+                label: user.name ?? user.email ?? "Unknown",
+              }))}
               selected={filters.ownerUserId}
               onToggle={(value) => toggleFilterValue("ownerUserId", value)}
             />
@@ -205,45 +205,33 @@ export function DataTableFilters({
                 label: t(`risk.${rl}`),
               }))}
               selected={filters.complianceRiskLevel}
-              onToggle={(value) =>
-                toggleFilterValue("complianceRiskLevel", value)
-              }
+              onToggle={(value) => toggleFilterValue("complianceRiskLevel", value)}
             />
 
             {/* End date range */}
             <div className="space-y-2">
-              <h4 className="text-[13px] font-medium text-foreground">
-                {t("columns.endDate")}
-              </h4>
+              <h4 className="text-[13px] font-medium text-foreground">{t("columns.endDate")}</h4>
               <div className="grid grid-cols-2 gap-2">
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground">
-                    {t("dateFrom")}
-                  </label>
+                  <label className="text-xs text-muted-foreground">{t("dateFrom")}</label>
                   <div className="relative">
                     <Calendar className="absolute start-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
                     <Input
                       type="date"
                       value={filters.endDateFrom}
-                      onChange={(e) =>
-                        onFiltersChange({ endDateFrom: e.target.value })
-                      }
+                      onChange={(e) => onFiltersChange({ endDateFrom: e.target.value })}
                       className="h-8 ps-7 text-xs"
                     />
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground">
-                    {t("dateTo")}
-                  </label>
+                  <label className="text-xs text-muted-foreground">{t("dateTo")}</label>
                   <div className="relative">
                     <Calendar className="absolute start-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
                     <Input
                       type="date"
                       value={filters.endDateTo}
-                      onChange={(e) =>
-                        onFiltersChange({ endDateTo: e.target.value })
-                      }
+                      onChange={(e) => onFiltersChange({ endDateTo: e.target.value })}
                       className="h-8 ps-7 text-xs"
                     />
                   </div>
@@ -279,9 +267,14 @@ export function DataTableFilters({
             />
           ))}
           {filters.ownerUserId.map((ownerId) => {
-            const user = (users as Array<{ id?: string; userId?: string; name?: string | null; email?: string | null }>).find(
-              (u) => (u.id ?? u.userId) === ownerId,
-            );
+            const user = (
+              users as Array<{
+                id?: string;
+                userId?: string;
+                name?: string | null;
+                email?: string | null;
+              }>
+            ).find((u) => (u.id ?? u.userId) === ownerId);
             return (
               <FilterBadge
                 key={`owner-${ownerId}`}
@@ -360,13 +353,7 @@ function FilterSection({
   );
 }
 
-function FilterBadge({
-  label,
-  onRemove,
-}: {
-  label: string;
-  onRemove: () => void;
-}) {
+function FilterBadge({ label, onRemove }: { label: string; onRemove: () => void }) {
   const tAria = useTranslations("Common.aria");
 
   return (

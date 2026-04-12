@@ -39,9 +39,7 @@ export function parseMt940(content: string): ParsedTransaction[] {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { Parser } = require("mt940js") as {
     Parser: new () => {
-      parse: (
-        data: string,
-      ) => Array<{
+      parse: (data: string) => Array<{
         currency?: string;
         transactions: Array<{
           amount: number;
@@ -91,23 +89,22 @@ export function parseCsvStatement(content: string): ParsedTransaction[] {
   const headerLine = lines[0]!;
   const delimiter = headerLine.includes(";") ? ";" : ",";
 
-  const headers = headerLine
-    .split(delimiter)
-    .map((h) => h.replace(/^["']|["']$/g, "").trim().toLowerCase());
+  const headers = headerLine.split(delimiter).map((h) =>
+    h
+      .replace(/^["']|["']$/g, "")
+      .trim()
+      .toLowerCase(),
+  );
 
   // Find column indices by common header names
-  const amountIdx = headers.findIndex((h) =>
-    ["amount", "kwota", "value", "suma"].includes(h),
-  );
+  const amountIdx = headers.findIndex((h) => ["amount", "kwota", "value", "suma"].includes(h));
   const ibanIdx = headers.findIndex((h) =>
     ["iban", "account", "konto", "rachunek", "account number"].includes(h),
   );
   const dateIdx = headers.findIndex((h) =>
     ["date", "data", "booking date", "data operacji"].includes(h),
   );
-  const refIdx = headers.findIndex((h) =>
-    ["reference", "referencja", "ref"].includes(h),
-  );
+  const refIdx = headers.findIndex((h) => ["reference", "referencja", "ref"].includes(h));
   const descIdx = headers.findIndex((h) =>
     ["description", "opis", "tytul", "title", "details"].includes(h),
   );
@@ -121,29 +118,15 @@ export function parseCsvStatement(content: string): ParsedTransaction[] {
 
     const rawAmount = cells[amountIdx]?.replace(/["']/g, "").trim() ?? "0";
     // Handle comma decimal separator (Polish format: "1 234,56")
-    const normalizedAmount = rawAmount
-      .replace(/\s/g, "")
-      .replace(",", ".");
+    const normalizedAmount = rawAmount.replace(/\s/g, "").replace(",", ".");
     const amount = Math.round(Math.abs(parseFloat(normalizedAmount)) * 100);
 
     if (isNaN(amount) || amount === 0) continue;
 
-    const iban =
-      ibanIdx >= 0
-        ? cells[ibanIdx]?.replace(/["'\s]/g, "").trim()
-        : undefined;
-    const dateStr =
-      dateIdx >= 0
-        ? cells[dateIdx]?.replace(/["']/g, "").trim()
-        : undefined;
-    const reference =
-      refIdx >= 0
-        ? cells[refIdx]?.replace(/["']/g, "").trim()
-        : undefined;
-    const description =
-      descIdx >= 0
-        ? cells[descIdx]?.replace(/["']/g, "").trim() ?? ""
-        : "";
+    const iban = ibanIdx >= 0 ? cells[ibanIdx]?.replace(/["'\s]/g, "").trim() : undefined;
+    const dateStr = dateIdx >= 0 ? cells[dateIdx]?.replace(/["']/g, "").trim() : undefined;
+    const reference = refIdx >= 0 ? cells[refIdx]?.replace(/["']/g, "").trim() : undefined;
+    const description = descIdx >= 0 ? (cells[descIdx]?.replace(/["']/g, "").trim() ?? "") : "";
 
     transactions.push({
       amount,
@@ -166,10 +149,7 @@ export function parseCsvStatement(content: string): ParsedTransaction[] {
  * Parse a bank statement by detecting format from filename extension.
  * Supports .mt940 and .csv files.
  */
-export function parseBankStatement(
-  content: string,
-  filename: string,
-): ParsedTransaction[] {
+export function parseBankStatement(content: string, filename: string): ParsedTransaction[] {
   const ext = filename.split(".").pop()?.toLowerCase();
 
   switch (ext) {
@@ -219,9 +199,7 @@ export function matchStatementToRun(
 
       const itemIban = normalizeIban(item.iban);
       const ibanMatched =
-        txIban.length >= 10 &&
-        itemIban.length >= 10 &&
-        txIban.slice(-20) === itemIban.slice(-20);
+        txIban.length >= 10 && itemIban.length >= 10 && txIban.slice(-20) === itemIban.slice(-20);
 
       const exactAmount = tx.amount === item.amountGrosze;
       const closeAmount = Math.abs(tx.amount - item.amountGrosze) <= 1;

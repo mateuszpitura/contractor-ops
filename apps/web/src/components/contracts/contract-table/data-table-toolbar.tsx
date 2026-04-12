@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
 import { Loader2, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -89,10 +89,7 @@ export function DataTableToolbar({
         </div>
 
         {/* Filters */}
-        <DataTableFilters
-          filters={filters}
-          onFiltersChange={onFiltersChange}
-        />
+        <DataTableFilters filters={filters} onFiltersChange={onFiltersChange} />
 
         {/* Spacer */}
         <div className="flex-1" />

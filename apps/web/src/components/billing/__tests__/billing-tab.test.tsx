@@ -74,25 +74,19 @@ describe("BillingTab", () => {
   it("does not show manage billing button when no subscription", () => {
     subscriptionData = null;
     render(<BillingTab />);
-    expect(
-      screen.queryByRole("button", { name: /manage billing/i }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /manage billing/i })).not.toBeInTheDocument();
   });
 
   it("shows manage billing button when subscription exists", () => {
     subscriptionData = { tier: "PRO", status: "ACTIVE" };
     render(<BillingTab />);
-    expect(
-      screen.getByRole("button", { name: /manage billing/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /manage billing/i })).toBeInTheDocument();
   });
 
   it("calls portal mutation when manage billing is clicked", async () => {
     subscriptionData = { tier: "PRO", status: "ACTIVE" };
     const { user } = setup(<BillingTab />);
-    await user.click(
-      screen.getByRole("button", { name: /manage billing/i }),
-    );
+    await user.click(screen.getByRole("button", { name: /manage billing/i }));
     expect(mockPortalMutate).toHaveBeenCalledTimes(1);
   });
 
@@ -110,9 +104,7 @@ describe("BillingTab", () => {
   it("manage billing button is not rendered without subscription even with null tier", () => {
     subscriptionData = null;
     render(<BillingTab />);
-    expect(
-      screen.queryByRole("button", { name: /manage billing/i }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /manage billing/i })).not.toBeInTheDocument();
   });
 
   it("renders separator between sections", () => {
@@ -130,25 +122,19 @@ describe("BillingTab", () => {
   it("shows manage billing for STARTER subscription", () => {
     subscriptionData = { tier: "STARTER", status: "ACTIVE" };
     render(<BillingTab />);
-    expect(
-      screen.getByRole("button", { name: /manage billing/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /manage billing/i })).toBeInTheDocument();
   });
 
   it("renders manage billing button for TRIALING subscription", () => {
     subscriptionData = { tier: "PRO", status: "TRIALING" };
     render(<BillingTab />);
-    expect(
-      screen.getByRole("button", { name: /manage billing/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /manage billing/i })).toBeInTheDocument();
   });
 
   it("renders manage billing button for PAST_DUE subscription", () => {
     subscriptionData = { tier: "PRO", status: "PAST_DUE" };
     render(<BillingTab />);
-    expect(
-      screen.getByRole("button", { name: /manage billing/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /manage billing/i })).toBeInTheDocument();
   });
 
   // ---- Multiple manage billing clicks ----
@@ -175,8 +161,6 @@ describe("BillingTab", () => {
     subscriptionData = { tier: "PRO", status: "CANCELED" };
     render(<BillingTab />);
     expect(screen.getByTestId("usage-dashboard")).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /manage billing/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /manage billing/i })).toBeInTheDocument();
   });
 });

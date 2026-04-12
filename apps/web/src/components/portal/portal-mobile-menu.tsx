@@ -1,28 +1,28 @@
 "use client";
 
 import {
-  LayoutDashboard,
-  FileText,
-  Receipt,
-  FolderOpen,
-  Clock,
   Banknote,
-  Package,
-  Settings,
+  Clock,
+  FileText,
+  FolderOpen,
+  LayoutDashboard,
   LogOut,
+  Package,
+  Receipt,
+  Settings,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
-  SheetDescription,
 } from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
 
 // ---------------------------------------------------------------------------
 // Navigation items (same as top bar)
@@ -108,9 +108,7 @@ export function PortalMobileMenu({
       <SheetContent side="right" className="flex flex-col">
         <SheetHeader>
           <SheetTitle>{orgName}</SheetTitle>
-          <SheetDescription className="sr-only">
-            {t("menuDescription")}
-          </SheetDescription>
+          <SheetDescription className="sr-only">{t("menuDescription")}</SheetDescription>
         </SheetHeader>
 
         {/* Navigation links */}
@@ -126,7 +124,7 @@ export function PortalMobileMenu({
                   "flex items-center gap-3 border-b px-4 py-3 text-base transition-colors text-start",
                   active
                     ? "bg-accent/50 text-foreground font-medium"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent/30"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent/30",
                 )}
               >
                 <item.icon className="h-5 w-5 shrink-0" />
@@ -143,11 +141,7 @@ export function PortalMobileMenu({
             <p className="text-sm font-medium">{contractorName}</p>
             <p className="text-xs text-muted-foreground">{contractorEmail}</p>
           </div>
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={handleLogout}
-          >
+          <Button variant="outline" className="w-full" onClick={handleLogout}>
             <LogOut className="me-2 h-4 w-4" />
             {t("signOut")}
           </Button>

@@ -1,19 +1,13 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ConfluenceAdapter } from "../confluence-adapter.js";
 
-function mockFetch(response: {
-  ok: boolean;
-  status?: number;
-  body: unknown;
-}) {
+function mockFetch(response: { ok: boolean; status?: number; body: unknown }) {
   return vi.fn().mockResolvedValue({
     ok: response.ok,
     status: response.status ?? (response.ok ? 200 : 400),
     text: () =>
       Promise.resolve(
-        typeof response.body === "string"
-          ? response.body
-          : JSON.stringify(response.body),
+        typeof response.body === "string" ? response.body : JSON.stringify(response.body),
       ),
     json: () => Promise.resolve(response.body),
   });
@@ -41,9 +35,9 @@ describe("ConfluenceAdapter", () => {
   });
 
   it("throws when exchangeCodeForTokens is called without client env vars", async () => {
-    await expect(
-      adapter.exchangeCodeForTokens("code", "http://localhost/cb"),
-    ).rejects.toThrow(/CONFLUENCE_CLIENT_ID and CONFLUENCE_CLIENT_SECRET/);
+    await expect(adapter.exchangeCodeForTokens("code", "http://localhost/cb")).rejects.toThrow(
+      /CONFLUENCE_CLIENT_ID and CONFLUENCE_CLIENT_SECRET/,
+    );
   });
 
   it("exchanges code for tokens using JSON body with client credentials", async () => {
@@ -83,9 +77,9 @@ describe("ConfluenceAdapter", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
 
-    await expect(
-      adapter.exchangeCodeForTokens("bad", "http://localhost/cb"),
-    ).rejects.toThrow(/Confluence OAuth exchange failed: invalid_client/);
+    await expect(adapter.exchangeCodeForTokens("bad", "http://localhost/cb")).rejects.toThrow(
+      /Confluence OAuth exchange failed: invalid_client/,
+    );
   });
 
   it("throws when refreshToken is called without env credentials", async () => {

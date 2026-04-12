@@ -53,27 +53,19 @@ describe("DocumentCard", () => {
   // -------------------------------------------------------------------------
 
   it("formats file size in bytes", () => {
-    render(
-      <DocumentCard document={makeDocument({ fileSizeBytes: 512 })} />,
-    );
+    render(<DocumentCard document={makeDocument({ fileSizeBytes: 512 })} />);
 
     expect(screen.getByText("512 B")).toBeInTheDocument();
   });
 
   it("formats file size in KB", () => {
-    render(
-      <DocumentCard document={makeDocument({ fileSizeBytes: 5120 })} />,
-    );
+    render(<DocumentCard document={makeDocument({ fileSizeBytes: 5120 })} />);
 
     expect(screen.getByText("5.0 KB")).toBeInTheDocument();
   });
 
   it("formats file size in MB", () => {
-    render(
-      <DocumentCard
-        document={makeDocument({ fileSizeBytes: 2_621_440 })}
-      />,
-    );
+    render(<DocumentCard document={makeDocument({ fileSizeBytes: 2_621_440 })} />);
 
     expect(screen.getByText("2.5 MB")).toBeInTheDocument();
   });
@@ -99,21 +91,13 @@ describe("DocumentCard", () => {
   // -------------------------------------------------------------------------
 
   it("shows scan status for PENDING", () => {
-    render(
-      <DocumentCard
-        document={makeDocument({ virusScanStatus: "PENDING" })}
-      />,
-    );
+    render(<DocumentCard document={makeDocument({ virusScanStatus: "PENDING" })} />);
 
     expect(screen.getByText("Scanning for threats...")).toBeInTheDocument();
   });
 
   it("shows scan status for CLEAN", () => {
-    render(
-      <DocumentCard
-        document={makeDocument({ virusScanStatus: "CLEAN" })}
-      />,
-    );
+    render(<DocumentCard document={makeDocument({ virusScanStatus: "CLEAN" })} />);
 
     expect(screen.getByText("Scan passed")).toBeInTheDocument();
   });
@@ -129,21 +113,13 @@ describe("DocumentCard", () => {
   });
 
   it("does NOT show preview button for non-PDF", () => {
-    render(
-      <DocumentCard
-        document={makeDocument({ mimeType: "image/png" })}
-      />,
-    );
+    render(<DocumentCard document={makeDocument({ mimeType: "image/png" })} />);
 
     expect(screen.queryByText("Preview")).not.toBeInTheDocument();
   });
 
   it("does NOT show preview button for infected PDF", () => {
-    render(
-      <DocumentCard
-        document={makeDocument({ virusScanStatus: "INFECTED" })}
-      />,
-    );
+    render(<DocumentCard document={makeDocument({ virusScanStatus: "INFECTED" })} />);
 
     expect(screen.queryByText("Preview")).not.toBeInTheDocument();
   });
@@ -153,11 +129,7 @@ describe("DocumentCard", () => {
   // -------------------------------------------------------------------------
 
   it("disables download when infected", () => {
-    render(
-      <DocumentCard
-        document={makeDocument({ virusScanStatus: "INFECTED" })}
-      />,
-    );
+    render(<DocumentCard document={makeDocument({ virusScanStatus: "INFECTED" })} />);
 
     const downloadButton = screen.getByText("Download").closest("button");
     expect(downloadButton).toBeDisabled();
@@ -175,12 +147,7 @@ describe("DocumentCard", () => {
   // -------------------------------------------------------------------------
 
   it("shows upload button when onUploadNewVersion provided and status is ACTIVE", () => {
-    render(
-      <DocumentCard
-        document={makeDocument()}
-        onUploadNewVersion={vi.fn()}
-      />,
-    );
+    render(<DocumentCard document={makeDocument()} onUploadNewVersion={vi.fn()} />);
 
     expect(screen.getByText("Upload new version")).toBeInTheDocument();
   });

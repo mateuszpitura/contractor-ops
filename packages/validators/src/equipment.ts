@@ -75,9 +75,7 @@ export const equipmentListSchema = z.object({
   status: z.array(equipmentStatusEnum).optional(),
   type: z.array(equipmentTypeEnum).optional(),
   assignedContractorId: z.string().optional(),
-  sortBy: z
-    .enum(["name", "type", "status", "createdAt"])
-    .default("createdAt"),
+  sortBy: z.enum(["name", "type", "status", "createdAt"]).default("createdAt"),
   sortOrder: z.enum(["asc", "desc"]).default("desc"),
 });
 
@@ -137,9 +135,7 @@ export const shipmentEventCreateSchema = z.object({
   notes: z.string().max(2000).optional(),
 });
 
-export type ShipmentEventCreateInput = z.infer<
-  typeof shipmentEventCreateSchema
->;
+export type ShipmentEventCreateInput = z.infer<typeof shipmentEventCreateSchema>;
 
 // ---------------------------------------------------------------------------
 // Workflow task config schema
@@ -178,9 +174,7 @@ export const returnRequestCreateSchema = z.object({
   targetPointAddress: z.string().min(1),
 });
 
-export type ReturnRequestCreateInput = z.infer<
-  typeof returnRequestCreateSchema
->;
+export type ReturnRequestCreateInput = z.infer<typeof returnRequestCreateSchema>;
 
 /**
  * Schema for approving a return request (admin action).
@@ -190,9 +184,7 @@ export const returnRequestApproveSchema = z.object({
   parcelSize: z.enum(["small", "medium", "large"]).default("large"),
 });
 
-export type ReturnRequestApproveInput = z.infer<
-  typeof returnRequestApproveSchema
->;
+export type ReturnRequestApproveInput = z.infer<typeof returnRequestApproveSchema>;
 
 /**
  * Schema for rejecting a return request (admin action).
@@ -202,9 +194,7 @@ export const returnRequestRejectSchema = z.object({
   reason: z.string().max(2000).optional(),
 });
 
-export type ReturnRequestRejectInput = z.infer<
-  typeof returnRequestRejectSchema
->;
+export type ReturnRequestRejectInput = z.infer<typeof returnRequestRejectSchema>;
 
 // ---------------------------------------------------------------------------
 // InPost / Courier schemas
@@ -224,9 +214,7 @@ export const inpostShipmentCreateSchema = z.object({
   notes: z.string().max(2000).optional(),
 });
 
-export type InpostShipmentCreateInput = z.infer<
-  typeof inpostShipmentCreateSchema
->;
+export type InpostShipmentCreateInput = z.infer<typeof inpostShipmentCreateSchema>;
 
 /**
  * Schema for courier configuration (stored encrypted per org).
@@ -251,10 +239,7 @@ export const deliveryAddressSchema = z.object({
   street: z.string().min(1, "Street is required").max(200),
   city: z.string().min(1, "City is required").max(100),
   postalCode: z.string().min(1, "Postal code is required").max(20),
-  countryCode: z
-    .string()
-    .length(2, "Country code must be 2 characters")
-    .default("PL"),
+  countryCode: z.string().length(2, "Country code must be 2 characters").default("PL"),
 });
 
 export type DeliveryAddressInput = z.infer<typeof deliveryAddressSchema>;
@@ -325,6 +310,4 @@ export const inpostWebhookPayloadSchema = z.object({
   created_at: z.string().optional(),
 });
 
-export type InpostWebhookPayload = z.infer<
-  typeof inpostWebhookPayloadSchema
->;
+export type InpostWebhookPayload = z.infer<typeof inpostWebhookPayloadSchema>;

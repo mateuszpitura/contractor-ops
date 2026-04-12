@@ -1,19 +1,18 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { type ColumnDef } from "@tanstack/react-table";
-import { useTranslations } from "next-intl";
-import { toast } from "sonner";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import type { ColumnDef } from "@tanstack/react-table";
 import { FileWarning } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
-import { useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "@/i18n/navigation";
+import { trpc } from "@/trpc/init";
+import { downloadBase64File, ExportButtons } from "./export-buttons";
 import { ReportChart } from "./report-chart";
 import { ReportTable } from "./report-table";
-import { ExportButtons, downloadBase64File } from "./export-buttons";
 
 function formatDate(iso: string): string {
   return new Intl.DateTimeFormat("pl-PL", {
@@ -60,9 +59,7 @@ export function ExpiringContractsReport({
     }),
   );
 
-  const chartQuery = useQuery(
-    trpc.report.expiringContractsChart.queryOptions({ days }),
-  );
+  const chartQuery = useQuery(trpc.report.expiringContractsChart.queryOptions({ days }));
 
   const exportMutation = useMutation(
     trpc.report.exportExpiringContracts.mutationOptions({
@@ -82,16 +79,12 @@ export function ExpiringContractsReport({
   );
 
   const tableData = useMemo(() => {
-    const result = tableQuery.data as
-      | { items: ExpiringRow[]; totalCount: number }
-      | undefined;
+    const result = tableQuery.data as { items: ExpiringRow[]; totalCount: number } | undefined;
     return result?.items ?? [];
   }, [tableQuery.data]);
 
   const totalCount = useMemo(() => {
-    const result = tableQuery.data as
-      | { items: ExpiringRow[]; totalCount: number }
-      | undefined;
+    const result = tableQuery.data as { items: ExpiringRow[]; totalCount: number } | undefined;
     return result?.totalCount ?? 0;
   }, [tableQuery.data]);
 
@@ -146,11 +139,7 @@ export function ExpiringContractsReport({
         cell: ({ getValue }) => {
           const status = getValue<string>();
           return (
-            <Badge
-              variant={status === "EXPIRING" ? "destructive" : "secondary"}
-            >
-              {status}
-            </Badge>
+            <Badge variant={status === "EXPIRING" ? "destructive" : "secondary"}>{status}</Badge>
           );
         },
       },
@@ -205,9 +194,7 @@ export function ExpiringContractsReport({
         sortOrder={sortOrder}
         onRowClick={(row) => router.push(`/contracts/${row.contractId}`)}
         isLoading={tableQuery.isLoading}
-        emptyIcon={
-          <FileWarning className="mx-auto h-10 w-10 text-muted-foreground/50" />
-        }
+        emptyIcon={<FileWarning className="mx-auto h-10 w-10 text-muted-foreground/50" />}
         emptyTitle={t("emptyExpiringContracts")}
         emptyDescription={t("emptyExpiringContractsBody")}
       />

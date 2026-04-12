@@ -2,7 +2,7 @@
  * Jira router — connection status and tenant scoping.
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const {
   ORG_ID,
@@ -87,9 +87,7 @@ vi.mock("@contractor-ops/db", () => ({
 vi.mock("@sentry/nextjs", () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
-    startSpan: vi.fn(
-      (_o: unknown, fn: (span: typeof mockSpan) => unknown) => fn(mockSpan),
-    ),
+    startSpan: vi.fn((_o: unknown, fn: (span: typeof mockSpan) => unknown) => fn(mockSpan)),
     captureException: vi.fn(),
   };
 });
@@ -233,9 +231,9 @@ describe("jiraRouter", () => {
 
   it("listProjects throws PRECONDITION_FAILED when connection is missing", async () => {
     mockPrisma.integrationConnection.findFirst.mockResolvedValue(null);
-    await expect(
-      caller.listProjects({ connectionId: "missing" }),
-    ).rejects.toMatchObject({ code: "PRECONDITION_FAILED" });
+    await expect(caller.listProjects({ connectionId: "missing" })).rejects.toMatchObject({
+      code: "PRECONDITION_FAILED",
+    });
   });
 
   it("listProjects throws BAD_REQUEST when cloudId is missing from config", async () => {
@@ -245,9 +243,9 @@ describe("jiraRouter", () => {
       configJson: {},
       credentialsRef: "ref",
     });
-    await expect(
-      caller.listProjects({ connectionId: "conn-1" }),
-    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    await expect(caller.listProjects({ connectionId: "conn-1" })).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+    });
   });
 
   it("listProjects maps Jira project API response", async () => {
@@ -377,11 +375,7 @@ describe("jiraRouter", () => {
       projectId: "p1",
     });
     expect(result).toEqual([statusMappingEntry]);
-    expect(mockGetStatusMapping).toHaveBeenCalledWith(
-      mockPrisma,
-      "conn-1",
-      "p1",
-    );
+    expect(mockGetStatusMapping).toHaveBeenCalledWith(mockPrisma, "conn-1", "p1");
   });
 
   it("getTaskConfig returns jiraEnabled false when template missing", async () => {
@@ -430,9 +424,7 @@ describe("jiraRouter", () => {
       entityId: "tr-1",
     });
 
-    expect(result).toEqual(
-      JSON.parse(JSON.stringify(links)) as typeof links,
-    );
+    expect(result).toEqual(JSON.parse(JSON.stringify(links)) as typeof links);
     expect(mockPrisma.externalLink.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
@@ -445,10 +437,7 @@ describe("jiraRouter", () => {
 
   it("linkedIssues aggregates links for WORKFLOW_RUN via task runs", async () => {
     mockPrisma.workflowRun.findMany.mockResolvedValue([{ id: "wr-1" }]);
-    mockPrisma.workflowTaskRun.findMany.mockResolvedValue([
-      { id: "tr-a" },
-      { id: "tr-b" },
-    ]);
+    mockPrisma.workflowTaskRun.findMany.mockResolvedValue([{ id: "tr-a" }, { id: "tr-b" }]);
     mockPrisma.externalLink.findMany.mockResolvedValue([]);
 
     const result = await caller.linkedIssues({
@@ -502,9 +491,7 @@ describe("jiraRouter", () => {
     });
 
     expect(result).toHaveLength(1);
-    expect((result[0] as { updatedAt: string }).updatedAt).toBe(
-      updatedAt.toISOString(),
-    );
+    expect((result[0] as { updatedAt: string }).updatedAt).toBe(updatedAt.toISOString());
     expect(mockPrisma.externalLink.findMany).toHaveBeenCalledWith(
       expect.objectContaining({ take: 3 }),
     );
@@ -522,17 +509,10 @@ describe("jiraRouter", () => {
       mappings: [statusMappingEntry],
     });
 
-    expect(mockSaveStatusMappingSvc).toHaveBeenCalledWith(
-      mockPrisma,
-      "conn-1",
-      "10000",
-      [statusMappingEntry],
-    );
-    expect(mockRegisterJiraWebhooks).toHaveBeenCalledWith(
-      mockPrisma,
-      "conn-1",
-      ["10000"],
-    );
+    expect(mockSaveStatusMappingSvc).toHaveBeenCalledWith(mockPrisma, "conn-1", "10000", [
+      statusMappingEntry,
+    ]);
+    expect(mockRegisterJiraWebhooks).toHaveBeenCalledWith(mockPrisma, "conn-1", ["10000"]);
   });
 
   it("saveTaskConfig throws NOT_FOUND when template missing", async () => {
@@ -570,9 +550,9 @@ describe("jiraRouter", () => {
 
   it("disconnect throws NOT_FOUND when Jira connection missing", async () => {
     mockPrisma.integrationConnection.findFirst.mockResolvedValue(null);
-    await expect(
-      caller.disconnect({ connectionId: "nope" }),
-    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+    await expect(caller.disconnect({ connectionId: "nope" })).rejects.toMatchObject({
+      code: "NOT_FOUND",
+    });
   });
 
   it("disconnect deregisters webhooks and sets DISCONNECTED", async () => {
@@ -585,10 +565,7 @@ describe("jiraRouter", () => {
     const result = await caller.disconnect({ connectionId: "conn-1" });
 
     expect(result).toEqual({ success: true });
-    expect(mockDeregisterJiraWebhooks).toHaveBeenCalledWith(
-      mockPrisma,
-      "conn-1",
-    );
+    expect(mockDeregisterJiraWebhooks).toHaveBeenCalledWith(mockPrisma, "conn-1");
     expect(mockPrisma.integrationConnection.update).toHaveBeenCalledWith({
       where: { id: "conn-1" },
       data: { status: "DISCONNECTED" },
@@ -600,10 +577,7 @@ describe("jiraRouter", () => {
       const fs = await import("node:fs");
       const path = await import("node:path");
       const sourceDir = path.resolve(import.meta.dirname, "../../routers");
-      const source = fs.readFileSync(
-        path.join(sourceDir, "jira.ts"),
-        "utf-8",
-      );
+      const source = fs.readFileSync(path.join(sourceDir, "jira.ts"), "utf-8");
 
       expect(source).toContain('import { requireTier } from "../middleware/tier.js"');
       expect(source).toContain('requireTier("PRO")');
@@ -616,13 +590,22 @@ describe("jiraRouter", () => {
       const fs = await import("node:fs");
       const path = await import("node:path");
       const sourceDir = path.resolve(import.meta.dirname, "../../routers");
-      const source = fs.readFileSync(
-        path.join(sourceDir, "jira.ts"),
-        "utf-8",
-      );
+      const source = fs.readFileSync(path.join(sourceDir, "jira.ts"), "utf-8");
 
-      for (const proc of ["connectionStatus", "listProjects", "listIssueTypes", "listProjectStatuses", "getStatusMapping", "getTaskConfig", "linkedIssues", "recentActivity"]) {
-        const procRegex = new RegExp(`${proc}:\\s*tenantProcedure[\\s\\S]*?(?=\\w+:\\s*tenantProcedure|\\}\\);$)`, "m");
+      for (const proc of [
+        "connectionStatus",
+        "listProjects",
+        "listIssueTypes",
+        "listProjectStatuses",
+        "getStatusMapping",
+        "getTaskConfig",
+        "linkedIssues",
+        "recentActivity",
+      ]) {
+        const procRegex = new RegExp(
+          `${proc}:\\s*tenantProcedure[\\s\\S]*?(?=\\w+:\\s*tenantProcedure|\\}\\);$)`,
+          "m",
+        );
         const match = source.match(procRegex);
         if (match) {
           expect(match[0]).not.toContain("requireTier");

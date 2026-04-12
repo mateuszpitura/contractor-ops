@@ -1,10 +1,5 @@
+import { createTenantClientFrom, getRegionalClient, prisma, tenantStore } from "@contractor-ops/db";
 import { TRPCError } from "@trpc/server";
-import {
-  prisma,
-  tenantStore,
-  getRegionalClient,
-  createTenantClientFrom,
-} from "@contractor-ops/db";
 import { t } from "../init.js";
 import { authedProcedure } from "./auth.js";
 

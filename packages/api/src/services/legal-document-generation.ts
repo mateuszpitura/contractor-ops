@@ -63,9 +63,7 @@ export interface CrossBorderResult {
   hostingRegion: string;
 }
 
-export function detectCrossBorderTransfer(
-  orgCountryCode: string,
-): CrossBorderResult {
+export function detectCrossBorderTransfer(orgCountryCode: string): CrossBorderResult {
   const orgRegion = COUNTRY_TO_REGION[orgCountryCode] ?? "OTHER";
   return {
     isCrossBorder: orgRegion !== DATA_HOSTING_REGION,
@@ -89,9 +87,7 @@ export interface LegalDocumentResult {
  * Generate a Data Processing Agreement for an organization.
  * Returns HTML content (can be rendered to PDF by client or server-side renderer).
  */
-export async function generateDPA(
-  organizationId: string,
-): Promise<LegalDocumentResult | null> {
+export async function generateDPA(organizationId: string): Promise<LegalDocumentResult | null> {
   const org = await prisma.organization.findUniqueOrThrow({
     where: { id: organizationId },
     select: {
@@ -228,9 +224,7 @@ export async function generateDPA(
  * Generate Standard Contractual Clauses for cross-border transfers.
  * Returns null if no cross-border transfer is detected.
  */
-export async function generateSCC(
-  organizationId: string,
-): Promise<LegalDocumentResult | null> {
+export async function generateSCC(organizationId: string): Promise<LegalDocumentResult | null> {
   const org = await prisma.organization.findUniqueOrThrow({
     where: { id: organizationId },
     select: { name: true, countryCode: true },
@@ -356,9 +350,7 @@ function formatPurpose(purpose: string): string {
   return labels[purpose] ?? purpose;
 }
 
-async function getOrgConsentSummary(
-  organizationId: string,
-): Promise<string[]> {
+async function getOrgConsentSummary(organizationId: string): Promise<string[]> {
   // Get consent from org members — use first admin as representative
   const member = await prisma.member.findFirst({
     where: { organizationId, role: "owner" },

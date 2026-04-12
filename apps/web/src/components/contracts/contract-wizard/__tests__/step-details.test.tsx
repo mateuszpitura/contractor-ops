@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import { useForm } from "react-hook-form";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@/test/test-utils";
 import { StepDetails } from "../step-details";
 import type { ContractWizardFormValues } from "../wizard-dialog";
@@ -18,9 +18,8 @@ vi.mock("@/trpc/init", () => ({
 }));
 
 vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
-    "@tanstack/react-query",
-  );
+  const actual =
+    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
   return {
     ...actual,
     useQuery: () => ({

@@ -1,10 +1,12 @@
-import { render, screen, setup, waitFor } from "@/test/test-utils";
 import { useQuery } from "@tanstack/react-query";
+import { render, screen, setup, waitFor } from "@/test/test-utils";
 import { EquipmentTable } from "../equipment-table";
 
 vi.mock("@/i18n/navigation", () => ({
   Link: ({ children, href, ...props }: any) => (
-    <a href={href} {...props}>{children}</a>
+    <a href={href} {...props}>
+      {children}
+    </a>
   ),
 }));
 
@@ -61,9 +63,7 @@ describe("EquipmentTable", () => {
 
   it("calls onAddEquipment when add equipment button is clicked", async () => {
     const onAddEquipment = vi.fn();
-    const { user } = setup(
-      <EquipmentTable {...defaultProps} onAddEquipment={onAddEquipment} />,
-    );
+    const { user } = setup(<EquipmentTable {...defaultProps} onAddEquipment={onAddEquipment} />);
     const addBtn = screen.getAllByRole("button", { name: /add equipment/i })[0];
     await user.click(addBtn);
     expect(onAddEquipment).toHaveBeenCalled();
@@ -117,9 +117,7 @@ describe("EquipmentTable", () => {
 
   it("multiple calls to onAddEquipment work correctly", async () => {
     const onAddEquipment = vi.fn();
-    const { user } = setup(
-      <EquipmentTable {...defaultProps} onAddEquipment={onAddEquipment} />,
-    );
+    const { user } = setup(<EquipmentTable {...defaultProps} onAddEquipment={onAddEquipment} />);
     const addBtn = screen.getAllByRole("button", { name: /add equipment/i })[0]!;
     await user.click(addBtn);
     await user.click(addBtn);
@@ -134,7 +132,13 @@ describe("EquipmentTable", () => {
     mockedUseQuery.mockReturnValue({
       data: {
         items: [
-          { id: "eq-1", name: "Laptop 1", type: "LAPTOP", status: "AVAILABLE", createdAt: "2025-01-01" },
+          {
+            id: "eq-1",
+            name: "Laptop 1",
+            type: "LAPTOP",
+            status: "AVAILABLE",
+            createdAt: "2025-01-01",
+          },
         ],
         total: 30,
       },
@@ -162,8 +166,20 @@ describe("EquipmentTable", () => {
     mockedUseQuery.mockReturnValue({
       data: {
         items: [
-          { id: "eq-1", name: "MacBook Pro", type: "LAPTOP", status: "AVAILABLE", createdAt: "2025-01-01" },
-          { id: "eq-2", name: "Monitor", type: "MONITOR", status: "ASSIGNED", createdAt: "2025-01-02" },
+          {
+            id: "eq-1",
+            name: "MacBook Pro",
+            type: "LAPTOP",
+            status: "AVAILABLE",
+            createdAt: "2025-01-01",
+          },
+          {
+            id: "eq-2",
+            name: "Monitor",
+            type: "MONITOR",
+            status: "ASSIGNED",
+            createdAt: "2025-01-02",
+          },
         ],
         total: 2,
       },
@@ -180,7 +196,15 @@ describe("EquipmentTable", () => {
   it("disables previous button on first page", () => {
     mockedUseQuery.mockReturnValue({
       data: {
-        items: [{ id: "eq-1", name: "Test", type: "LAPTOP", status: "AVAILABLE", createdAt: "2025-01-01" }],
+        items: [
+          {
+            id: "eq-1",
+            name: "Test",
+            type: "LAPTOP",
+            status: "AVAILABLE",
+            createdAt: "2025-01-01",
+          },
+        ],
         total: 30,
       },
       isPending: false,
@@ -201,7 +225,15 @@ describe("EquipmentTable", () => {
   it("shows 1 item text for single item", () => {
     mockedUseQuery.mockReturnValue({
       data: {
-        items: [{ id: "eq-1", name: "Test", type: "LAPTOP", status: "AVAILABLE", createdAt: "2025-01-01" }],
+        items: [
+          {
+            id: "eq-1",
+            name: "Test",
+            type: "LAPTOP",
+            status: "AVAILABLE",
+            createdAt: "2025-01-01",
+          },
+        ],
         total: 1,
       },
       isPending: false,
@@ -214,7 +246,15 @@ describe("EquipmentTable", () => {
   it("shows refetching overlay when isFetching with existing data", () => {
     mockedUseQuery.mockReturnValue({
       data: {
-        items: [{ id: "eq-1", name: "Test", type: "LAPTOP", status: "AVAILABLE", createdAt: "2025-01-01" }],
+        items: [
+          {
+            id: "eq-1",
+            name: "Test",
+            type: "LAPTOP",
+            status: "AVAILABLE",
+            createdAt: "2025-01-01",
+          },
+        ],
         total: 1,
       },
       isPending: false,
@@ -252,7 +292,15 @@ describe("EquipmentTable", () => {
   it("disables next button on last page", () => {
     mockedUseQuery.mockReturnValue({
       data: {
-        items: [{ id: "eq-1", name: "Test", type: "LAPTOP", status: "AVAILABLE", createdAt: "2025-01-01" }],
+        items: [
+          {
+            id: "eq-1",
+            name: "Test",
+            type: "LAPTOP",
+            status: "AVAILABLE",
+            createdAt: "2025-01-01",
+          },
+        ],
         total: 5,
       },
       isPending: false,
@@ -266,7 +314,15 @@ describe("EquipmentTable", () => {
   it("shows page numbers in pagination", () => {
     mockedUseQuery.mockReturnValue({
       data: {
-        items: [{ id: "eq-1", name: "Test", type: "LAPTOP", status: "AVAILABLE", createdAt: "2025-01-01" }],
+        items: [
+          {
+            id: "eq-1",
+            name: "Test",
+            type: "LAPTOP",
+            status: "AVAILABLE",
+            createdAt: "2025-01-01",
+          },
+        ],
         total: 50,
       },
       isPending: false,
@@ -279,7 +335,15 @@ describe("EquipmentTable", () => {
   it("shows 50 items text for 50 items total", () => {
     mockedUseQuery.mockReturnValue({
       data: {
-        items: [{ id: "eq-1", name: "Test", type: "LAPTOP", status: "AVAILABLE", createdAt: "2025-01-01" }],
+        items: [
+          {
+            id: "eq-1",
+            name: "Test",
+            type: "LAPTOP",
+            status: "AVAILABLE",
+            createdAt: "2025-01-01",
+          },
+        ],
         total: 50,
       },
       isPending: false,
@@ -315,7 +379,15 @@ describe("EquipmentTable", () => {
   it("renders column headers for equipment table", () => {
     mockedUseQuery.mockReturnValue({
       data: {
-        items: [{ id: "eq-1", name: "Test", type: "LAPTOP", status: "AVAILABLE", createdAt: "2025-01-01" }],
+        items: [
+          {
+            id: "eq-1",
+            name: "Test",
+            type: "LAPTOP",
+            status: "AVAILABLE",
+            createdAt: "2025-01-01",
+          },
+        ],
         total: 1,
       },
       isPending: false,
@@ -330,7 +402,15 @@ describe("EquipmentTable", () => {
   it("renders sort buttons in sortable column headers", () => {
     mockedUseQuery.mockReturnValue({
       data: {
-        items: [{ id: "eq-1", name: "Test", type: "LAPTOP", status: "AVAILABLE", createdAt: "2025-01-01" }],
+        items: [
+          {
+            id: "eq-1",
+            name: "Test",
+            type: "LAPTOP",
+            status: "AVAILABLE",
+            createdAt: "2025-01-01",
+          },
+        ],
         total: 1,
       },
       isPending: false,
@@ -345,7 +425,15 @@ describe("EquipmentTable", () => {
   it("clicking sort header updates sort indicator", async () => {
     mockedUseQuery.mockReturnValue({
       data: {
-        items: [{ id: "eq-1", name: "Test", type: "LAPTOP", status: "AVAILABLE", createdAt: "2025-01-01" }],
+        items: [
+          {
+            id: "eq-1",
+            name: "Test",
+            type: "LAPTOP",
+            status: "AVAILABLE",
+            createdAt: "2025-01-01",
+          },
+        ],
         total: 1,
       },
       isPending: false,

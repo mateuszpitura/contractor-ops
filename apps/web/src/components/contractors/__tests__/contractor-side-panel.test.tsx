@@ -40,46 +40,24 @@ const baseContractor = {
 describe("ContractorSidePanel", () => {
   it("returns null when contractor is null", () => {
     const { container } = render(
-      <ContractorSidePanel
-        contractor={null}
-        open={true}
-        onOpenChange={vi.fn()}
-      />,
+      <ContractorSidePanel contractor={null} open={true} onOpenChange={vi.fn()} />,
     );
     expect(container.innerHTML).toBe("");
   });
 
   it("renders contractor display name and badges", () => {
-    render(
-      <ContractorSidePanel
-        contractor={baseContractor}
-        open={true}
-        onOpenChange={vi.fn()}
-      />,
-    );
+    render(<ContractorSidePanel contractor={baseContractor} open={true} onOpenChange={vi.fn()} />);
     expect(screen.getByText("ACME")).toBeInTheDocument();
   });
 
   it("renders rate display when rateValueMinor is present", () => {
-    render(
-      <ContractorSidePanel
-        contractor={baseContractor}
-        open={true}
-        onOpenChange={vi.fn()}
-      />,
-    );
+    render(<ContractorSidePanel contractor={baseContractor} open={true} onOpenChange={vi.fn()} />);
     // 15000 minor = 150.00 PLN
     expect(screen.getByText(/150,00/)).toBeInTheDocument();
   });
 
   it("renders full profile button", () => {
-    render(
-      <ContractorSidePanel
-        contractor={baseContractor}
-        open={true}
-        onOpenChange={vi.fn()}
-      />,
-    );
+    render(<ContractorSidePanel contractor={baseContractor} open={true} onOpenChange={vi.fn()} />);
     // The "Open full profile" CTA is rendered
     const container = document.querySelector("div");
     expect(container).toBeInTheDocument();
@@ -97,47 +75,23 @@ describe("ContractorSidePanel", () => {
   });
 
   it("renders tax ID when canViewSensitivePii is true", () => {
-    render(
-      <ContractorSidePanel
-        contractor={baseContractor}
-        open={true}
-        onOpenChange={vi.fn()}
-      />,
-    );
+    render(<ContractorSidePanel contractor={baseContractor} open={true} onOpenChange={vi.fn()} />);
     // canViewSensitivePii returns true, so raw taxId is shown
     expect(screen.getByText("1234567890")).toBeInTheDocument();
   });
 
   it("renders email when present", () => {
-    render(
-      <ContractorSidePanel
-        contractor={baseContractor}
-        open={true}
-        onOpenChange={vi.fn()}
-      />,
-    );
+    render(<ContractorSidePanel contractor={baseContractor} open={true} onOpenChange={vi.fn()} />);
     expect(screen.getByText("test@acme.pl")).toBeInTheDocument();
   });
 
   it("renders owner name when present", () => {
-    render(
-      <ContractorSidePanel
-        contractor={baseContractor}
-        open={true}
-        onOpenChange={vi.fn()}
-      />,
-    );
+    render(<ContractorSidePanel contractor={baseContractor} open={true} onOpenChange={vi.fn()} />);
     expect(screen.getByText("Jan")).toBeInTheDocument();
   });
 
   it("renders team name when present", () => {
-    render(
-      <ContractorSidePanel
-        contractor={baseContractor}
-        open={true}
-        onOpenChange={vi.fn()}
-      />,
-    );
+    render(<ContractorSidePanel contractor={baseContractor} open={true} onOpenChange={vi.fn()} />);
     expect(screen.getByText("Engineering")).toBeInTheDocument();
   });
 
@@ -180,25 +134,13 @@ describe("ContractorSidePanel", () => {
   });
 
   it("renders link to contractor profile page", () => {
-    render(
-      <ContractorSidePanel
-        contractor={baseContractor}
-        open={true}
-        onOpenChange={vi.fn()}
-      />,
-    );
+    render(<ContractorSidePanel contractor={baseContractor} open={true} onOpenChange={vi.fn()} />);
     const link = document.querySelector('a[href="/contractors/c1"]');
     expect(link).toBeInTheDocument();
   });
 
   it("does not render when open is false", () => {
-    render(
-      <ContractorSidePanel
-        contractor={baseContractor}
-        open={false}
-        onOpenChange={vi.fn()}
-      />,
-    );
+    render(<ContractorSidePanel contractor={baseContractor} open={false} onOpenChange={vi.fn()} />);
     // Sheet should not show content when closed
     expect(screen.queryByText("ACME")).not.toBeInTheDocument();
   });

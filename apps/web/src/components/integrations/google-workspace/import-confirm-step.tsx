@@ -1,7 +1,7 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -31,9 +31,7 @@ export function ImportConfirmStep({
     <div className="space-y-4">
       <Card>
         <CardContent className="space-y-4 py-4">
-          <h3 className="text-lg font-semibold">
-            {t("readyToImport", { count: userCount })}
-          </h3>
+          <h3 className="text-lg font-semibold">{t("readyToImport", { count: userCount })}</h3>
 
           <div className="space-y-2">
             <p className="text-sm font-medium">{t("roleBreakdown")}</p>
@@ -41,17 +39,13 @@ export function ImportConfirmStep({
               {roleBreakdown.map((item) => (
                 <li key={`${item.role}-${item.source}`}>
                   {t("roleCount", { count: item.count, role: item.role })}{" "}
-                  <span className="text-xs">
-                    {t("roleSource", { source: item.source })}
-                  </span>
+                  <span className="text-xs">{t("roleSource", { source: item.source })}</span>
                 </li>
               ))}
             </ul>
           </div>
 
-          <p className="text-sm text-muted-foreground">
-            {t("inviteNotice")}
-          </p>
+          <p className="text-sm text-muted-foreground">{t("inviteNotice")}</p>
         </CardContent>
       </Card>
 
@@ -60,15 +54,8 @@ export function ImportConfirmStep({
           {t("back")}
         </Button>
         <Button onClick={onConfirm} disabled={isImporting}>
-          {isImporting && (
-            <Loader2
-              className="me-1.5 size-3.5 animate-spin"
-              aria-hidden="true"
-            />
-          )}
-          {isImporting
-            ? t("importing")
-            : t("importCta", { count: userCount })}
+          {isImporting && <Loader2 className="me-1.5 size-3.5 animate-spin" aria-hidden="true" />}
+          {isImporting ? t("importing") : t("importCta", { count: userCount })}
         </Button>
       </div>
     </div>

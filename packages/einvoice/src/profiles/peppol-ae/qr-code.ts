@@ -3,8 +3,8 @@
 // ---------------------------------------------------------------------------
 
 import QRCode from "qrcode";
-import type { QRCodeable } from "../../types/profile.js";
 import type { EInvoice } from "../../types/invoice.js";
+import type { QRCodeable } from "../../types/profile.js";
 
 /**
  * UAE FTA QR code implementation for Peppol PINT-AE invoices.
@@ -19,10 +19,7 @@ export class PeppolAEQRCode implements QRCodeable {
    * Data format: sellerName|TRN|issueDate|totalInclVAT|vatAmount
    */
   async generateQR(invoice: EInvoice): Promise<Buffer> {
-    const vatAmount = invoice.taxBreakdown.reduce(
-      (sum, t) => sum + t.taxAmountMinor,
-      0,
-    );
+    const vatAmount = invoice.taxBreakdown.reduce((sum, t) => sum + t.taxAmountMinor, 0);
 
     const qrData = [
       invoice.supplier.name,
@@ -63,15 +60,11 @@ export class PeppolAEQRCode implements QRCodeable {
         name: sellerName ?? "",
       },
       issueDate: issueDate ?? "",
-      taxInclusiveAmount: Math.round(
-        parseFloat(totalStr ?? "0") * 100,
-      ),
+      taxInclusiveAmount: Math.round(parseFloat(totalStr ?? "0") * 100),
       taxBreakdown: [
         {
           taxableAmountMinor: 0,
-          taxAmountMinor: Math.round(
-            parseFloat(vatStr ?? "0") * 100,
-          ),
+          taxAmountMinor: Math.round(parseFloat(vatStr ?? "0") * 100),
           taxCategory: "S",
         },
       ],

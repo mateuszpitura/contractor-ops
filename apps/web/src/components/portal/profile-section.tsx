@@ -1,23 +1,18 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { toast } from "sonner";
-import { ChevronDown, Pencil, Lock, Info } from "lucide-react";
+import { ChevronDown, Info, Lock, Pencil } from "lucide-react";
 import { useTranslations } from "next-intl";
-
+import { useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import {
-  Collapsible,
-  CollapsibleTrigger,
-  CollapsibleContent,
-} from "@/components/ui/collapsible";
 import { PendingChangeBanner } from "./pending-change-banner";
 
 // ---------------------------------------------------------------------------
@@ -72,10 +67,7 @@ export function ProfileSection({
   const [saving, setSaving] = useState(false);
 
   // Build Zod schema dynamically from editable fields
-  const editableFields = useMemo(
-    () => fields.filter((f) => !f.readOnly),
-    [fields],
-  );
+  const editableFields = useMemo(() => fields.filter((f) => !f.readOnly), [fields]);
 
   const schema = useMemo(() => {
     const shape: Record<string, z.ZodTypeAny> = {};
@@ -143,9 +135,7 @@ export function ProfileSection({
                   }`}
                 />
                 <span className="text-sm font-semibold">{title}</span>
-                {requiresApproval && (
-                  <Badge variant="info">{t("requiresApproval")}</Badge>
-                )}
+                {requiresApproval && <Badge variant="info">{t("requiresApproval")}</Badge>}
               </button>
             )}
           />
@@ -168,9 +158,7 @@ export function ProfileSection({
             {/* Pending change banner for financial section */}
             {pendingChangeRequest && (
               <div className="mb-4">
-                <PendingChangeBanner
-                  pendingChangeRequest={pendingChangeRequest}
-                />
+                <PendingChangeBanner pendingChangeRequest={pendingChangeRequest} />
               </div>
             )}
 
@@ -182,17 +170,13 @@ export function ProfileSection({
                     if (field.readOnly) {
                       return (
                         <div key={field.key} className="space-y-1">
-                          <Label className="text-sm text-muted-foreground">
-                            {field.label}
-                          </Label>
+                          <Label className="text-sm text-muted-foreground">{field.label}</Label>
                           <div className="flex items-center gap-2 text-sm">
                             <Lock className="h-3.5 w-3.5 text-muted-foreground" />
                             <span>{field.value || t("fallbackValue")}</span>
                           </div>
                           {field.readOnlyCaption && (
-                            <p className="text-xs text-muted-foreground">
-                              {field.readOnlyCaption}
-                            </p>
+                            <p className="text-xs text-muted-foreground">{field.readOnlyCaption}</p>
                           )}
                         </div>
                       );
@@ -244,19 +228,13 @@ export function ProfileSection({
               <div className="space-y-4">
                 {fields.map((field) => (
                   <div key={field.key} className="space-y-1">
-                    <dt className="text-sm text-muted-foreground">
-                      {field.label}
-                    </dt>
+                    <dt className="text-sm text-muted-foreground">{field.label}</dt>
                     <dd className="flex items-center gap-2 text-sm">
-                      {field.readOnly && (
-                        <Lock className="h-3.5 w-3.5 text-muted-foreground" />
-                      )}
+                      {field.readOnly && <Lock className="h-3.5 w-3.5 text-muted-foreground" />}
                       <span>{field.value || t("fallbackValue")}</span>
                     </dd>
                     {field.readOnly && field.readOnlyCaption && (
-                      <p className="text-xs text-muted-foreground">
-                        {field.readOnlyCaption}
-                      </p>
+                      <p className="text-xs text-muted-foreground">{field.readOnlyCaption}</p>
                     )}
                   </div>
                 ))}

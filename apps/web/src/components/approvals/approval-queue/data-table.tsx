@@ -1,14 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import {
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-  type ColumnDef,
-  type RowSelectionState,
-} from "@tanstack/react-table";
+import type { ColumnDef, RowSelectionState } from "@tanstack/react-table";
+import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
+import { useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -124,49 +119,43 @@ export function ApprovalQueueTable({
                   >
                     {header.isPlaceholder
                       ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
+                      : flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 ))}
               </TableRow>
             ))}
           </TableHeader>
           <TableBody>
-            {isLoading ? (
-              // 8 skeleton loading rows per UI-SPEC
-              Array.from({ length: 8 }).map((_, i) => (
-                <TableRow key={`skeleton-${i}`}>
-                  {columns.map((_, colIdx) => (
-                    <TableCell key={colIdx}>
-                      <Skeleton className="h-4 w-full max-w-[120px]" />
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : table.getRowModel().rows.length > 0 ? (
-              table.getRowModel().rows.map((row) => {
-                const overdue = isOverdue(row.original);
-                return (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() ? "selected" : undefined}
-                    className={`group cursor-pointer ${overdue ? "bg-destructive/5" : ""}`}
-                    onClick={() => onRowClick(row.original)}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
+            {isLoading
+              ? // 8 skeleton loading rows per UI-SPEC
+                Array.from({ length: 8 }).map((_, i) => (
+                  <TableRow key={`skeleton-${i}`}>
+                    {columns.map((_, colIdx) => (
+                      <TableCell key={colIdx}>
+                        <Skeleton className="h-4 w-full max-w-[120px]" />
                       </TableCell>
                     ))}
                   </TableRow>
-                );
-              })
-            ) : null}
+                ))
+              : table.getRowModel().rows.length > 0
+                ? table.getRowModel().rows.map((row) => {
+                    const overdue = isOverdue(row.original);
+                    return (
+                      <TableRow
+                        key={row.id}
+                        data-state={row.getIsSelected() ? "selected" : undefined}
+                        className={`group cursor-pointer ${overdue ? "bg-destructive/5" : ""}`}
+                        onClick={() => onRowClick(row.original)}
+                      >
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell key={cell.id}>
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    );
+                  })
+                : null}
           </TableBody>
         </Table>
       </div>
@@ -175,9 +164,7 @@ export function ApprovalQueueTable({
       {!isLoading && totalPages > 0 && (
         <div className="flex items-center justify-between px-2 py-4">
           <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">
-              {t("pagination.rowsPerPage")}
-            </span>
+            <span className="text-sm text-muted-foreground">{t("pagination.rowsPerPage")}</span>
             <select
               value={pageSize}
               onChange={(e) => onPageSizeChange(Number(e.target.value))}

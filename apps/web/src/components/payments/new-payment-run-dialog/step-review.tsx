@@ -1,16 +1,13 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
 import { Loader2 } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
+import { useTranslations } from "next-intl";
+import { useCallback, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import {
   Select,
   SelectContent,
@@ -18,7 +15,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Formatters
@@ -69,9 +68,7 @@ export function StepReview({
   const [isLocking, setIsLocking] = useState(false);
 
   // Fetch selected invoices for display
-  const invoicesQuery = useQuery(
-    trpc.payment.readyForPayment.queryOptions({ limit: 100 }),
-  );
+  const invoicesQuery = useQuery(trpc.payment.readyForPayment.queryOptions({ limit: 100 }));
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const allInvoices = useMemo(() => {
@@ -100,24 +97,17 @@ export function StepReview({
   }, [allInvoices]);
 
   const currencies = Object.keys(groupedByCurrency);
-  const grandTotal = Object.values(groupedByCurrency).reduce(
-    (sum, g) => sum + g.totalMinor,
-    0,
-  );
+  const grandTotal = Object.values(groupedByCurrency).reduce((sum, g) => sum + g.totalMinor, 0);
 
   // Check which formats are available
   const hasPLN = currencies.includes("PLN");
   const hasEUR = currencies.includes("EUR");
 
   // Create mutation
-  const createMutation = useMutation(
-    trpc.payment.create.mutationOptions({}),
-  );
+  const createMutation = useMutation(trpc.payment.create.mutationOptions({}));
 
   // Lock and export mutation
-  const lockAndExportMutation = useMutation(
-    trpc.payment.lockAndExport.mutationOptions({}),
-  );
+  const lockAndExportMutation = useMutation(trpc.payment.lockAndExport.mutationOptions({}));
 
   const handleLockAndExport = useCallback(async () => {
     if (isLocking) return;
@@ -177,12 +167,8 @@ export function StepReview({
     <div className="flex flex-col gap-4">
       {/* Run number placeholder */}
       <div className="text-center">
-        <p className="text-[20px] font-semibold">
-          PR-{new Date().getFullYear()}-XXX
-        </p>
-        <p className="text-xs text-muted-foreground">
-          {t("step2.runNumberLabel")}
-        </p>
+        <p className="text-[20px] font-semibold">PR-{new Date().getFullYear()}-XXX</p>
+        <p className="text-xs text-muted-foreground">{t("step2.runNumberLabel")}</p>
       </div>
 
       {/* Optional name/description */}
@@ -227,14 +213,9 @@ export function StepReview({
               </div>
               <div className="space-y-1">
                 {group.invoices.slice(0, 10).map((inv) => (
-                  <div
-                    key={inv.id}
-                    className="flex items-center justify-between py-1 px-2 text-xs"
-                  >
+                  <div key={inv.id} className="flex items-center justify-between py-1 px-2 text-xs">
                     <span className="font-medium">{inv.invoiceNumber}</span>
-                    <span className="text-muted-foreground">
-                      {inv.contractor?.legalName}
-                    </span>
+                    <span className="text-muted-foreground">{inv.contractor?.legalName}</span>
                     <span className="font-mono tabular-nums">
                       {formatMinorUnits(inv.amountToPayMinor)}
                     </span>
@@ -275,16 +256,8 @@ export function StepReview({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="CSV">{t("step2.formatCsv")}</SelectItem>
-            {hasPLN && (
-              <SelectItem value="BANK_FILE">
-                {t("step2.formatElixir")}
-              </SelectItem>
-            )}
-            {hasEUR && (
-              <SelectItem value="SEPA_XML">
-                {t("step2.formatSepa")}
-              </SelectItem>
-            )}
+            {hasPLN && <SelectItem value="BANK_FILE">{t("step2.formatElixir")}</SelectItem>}
+            {hasEUR && <SelectItem value="SEPA_XML">{t("step2.formatSepa")}</SelectItem>}
           </SelectContent>
         </Select>
       </div>

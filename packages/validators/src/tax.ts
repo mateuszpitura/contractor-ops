@@ -4,7 +4,10 @@ import { z } from "zod";
 // Tax Rate schemas
 // ---------------------------------------------------------------------------
 
-export const taxRateCodeSchema = z.string().max(10).regex(/^[A-Z0-9-]+$/i, "Invalid tax rate code format");
+export const taxRateCodeSchema = z
+  .string()
+  .max(10)
+  .regex(/^[A-Z0-9-]+$/i, "Invalid tax rate code format");
 
 export const taxRateResponseSchema = z.object({
   id: z.string(),

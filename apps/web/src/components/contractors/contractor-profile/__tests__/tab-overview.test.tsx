@@ -75,10 +75,7 @@ describe("TabOverview", () => {
   it("renders email as a link", () => {
     render(<TabOverview contractor={baseContractor} />);
     const emailLink = screen.getByText("contact@acme.pl");
-    expect(emailLink.closest("a")).toHaveAttribute(
-      "href",
-      "mailto:contact@acme.pl",
-    );
+    expect(emailLink.closest("a")).toHaveAttribute("href", "mailto:contact@acme.pl");
   });
 
   it("renders active contract info", () => {

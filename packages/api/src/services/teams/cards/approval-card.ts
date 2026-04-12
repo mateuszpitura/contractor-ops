@@ -23,9 +23,7 @@ export interface ApprovalCardParams {
  * - Approve button (Action.Submit, style: positive)
  * - Reject button (Action.Submit, style: destructive, with msteams task/fetch)
  */
-export function buildApprovalCard(
-  params: ApprovalCardParams,
-): Record<string, unknown> {
+export function buildApprovalCard(params: ApprovalCardParams): Record<string, unknown> {
   return {
     type: "AdaptiveCard",
     $schema: "http://adaptivecards.io/schemas/adaptive-card.json",

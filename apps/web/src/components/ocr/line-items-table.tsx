@@ -1,12 +1,11 @@
-"use client"
+"use client";
 
-import { useCallback } from "react"
-import { Plus, Trash2 } from "lucide-react"
-
-import { cn } from "@/lib/utils"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Plus, Trash2 } from "lucide-react";
+import { useCallback } from "react";
+import { ConfidenceBadge } from "@/components/ocr/confidence-badge";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -14,92 +13,88 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { ConfidenceBadge } from "@/components/ocr/confidence-badge"
+} from "@/components/ui/table";
+import { cn } from "@/lib/utils";
 
 interface LineItem {
-  id: string
-  description: string
-  quantity: number | null
-  unit: string | null
-  unitPriceMinor: number | null
-  netAmountMinor: number | null
-  vatRate: string | null
-  vatAmountMinor: number | null
-  grossAmountMinor: number | null
-  confidence: number
+  id: string;
+  description: string;
+  quantity: number | null;
+  unit: string | null;
+  unitPriceMinor: number | null;
+  netAmountMinor: number | null;
+  vatRate: string | null;
+  vatAmountMinor: number | null;
+  grossAmountMinor: number | null;
+  confidence: number;
 }
 
 interface LineItemsTableProps {
-  items: LineItem[]
-  onChange: (items: LineItem[]) => void
-  readOnly?: boolean
+  items: LineItem[];
+  onChange: (items: LineItem[]) => void;
+  readOnly?: boolean;
 }
 
 function formatMinorUnits(minor: number | null): string {
-  if (minor == null) return ""
-  return (minor / 100).toFixed(2)
+  if (minor == null) return "";
+  return (minor / 100).toFixed(2);
 }
 
 function parseToMinorUnits(display: string): number | null {
-  const value = Number.parseFloat(display)
-  if (Number.isNaN(value)) return null
-  return Math.round(value * 100)
+  const value = Number.parseFloat(display);
+  if (Number.isNaN(value)) return null;
+  return Math.round(value * 100);
 }
 
 function formatNumber(value: number | null): string {
-  if (value == null) return ""
-  return String(value)
+  if (value == null) return "";
+  return String(value);
 }
 
 function parseNumber(display: string): number | null {
-  const value = Number.parseFloat(display)
-  if (Number.isNaN(value)) return null
-  return value
+  const value = Number.parseFloat(display);
+  if (Number.isNaN(value)) return null;
+  return value;
 }
 
-export function LineItemsTable({
-  items,
-  onChange,
-  readOnly = false,
-}: LineItemsTableProps) {
+export function LineItemsTable({ items, onChange, readOnly = false }: LineItemsTableProps) {
   const updateItem = useCallback(
     (index: number, field: keyof LineItem, value: string) => {
-      const updated = [...items]
-      const item = { ...updated[index] }
+      const updated = [...items];
+      const item = { ...updated[index] };
 
       switch (field) {
         case "description":
         case "unit":
         case "vatRate":
-          ;(item[field] as string | null) = value || null
-          break
+          (item[field] as string | null) = value || null;
+          break;
         case "quantity":
-          item.quantity = parseNumber(value)
-          break
+          item.quantity = parseNumber(value);
+          break;
         case "unitPriceMinor":
         case "netAmountMinor":
         case "vatAmountMinor":
         case "grossAmountMinor":
-          ;(item[field] as number | null) = parseToMinorUnits(value)
-          break
+          (item[field] as number | null) = parseToMinorUnits(value);
+          break;
         default:
-          break
+          break;
       }
 
-      updated[index] = item
-      onChange(updated)
+      updated[index] = item;
+      onChange(updated);
     },
-    [items, onChange]
-  )
+    [items, onChange],
+  );
 
   const removeItem = useCallback(
     (index: number) => {
-      const updated = items.filter((_, i) => i !== index)
-      onChange(updated)
+      const updated = items.filter((_, i) => i !== index);
+      onChange(updated);
     },
-    [items, onChange]
-  )
+    [items, onChange],
+  );
 
   const addItem = useCallback(() => {
     const newItem: LineItem = {
@@ -113,9 +108,9 @@ export function LineItemsTable({
       vatAmountMinor: null,
       grossAmountMinor: null,
       confidence: 0,
-    }
-    onChange([...items, newItem])
-  }, [items, onChange])
+    };
+    onChange([...items, newItem]);
+  }, [items, onChange]);
 
   return (
     <div className="flex flex-col gap-3">
@@ -144,10 +139,7 @@ export function LineItemsTable({
           </TableHeader>
           <TableBody>
             {items.map((item, index) => (
-              <TableRow
-                key={item.id}
-                className="animate-in fade-in-0 duration-200"
-              >
+              <TableRow key={item.id} className="animate-in fade-in-0 duration-200">
                 <TableCell>
                   <InlineInput
                     value={item.description}
@@ -218,10 +210,7 @@ export function LineItemsTable({
                   />
                 </TableCell>
                 <TableCell>
-                  <ConfidenceBadge
-                    confidence={item.confidence}
-                    showPercentage={false}
-                  />
+                  <ConfidenceBadge confidence={item.confidence} showPercentage={false} />
                 </TableCell>
                 {!readOnly && (
                   <TableCell>
@@ -249,7 +238,7 @@ export function LineItemsTable({
         </Button>
       )}
     </div>
-  )
+  );
 }
 
 function InlineInput({
@@ -259,18 +248,18 @@ function InlineInput({
   placeholder,
   className,
 }: {
-  value: string
-  onChange: (value: string) => void
-  readOnly: boolean
-  placeholder?: string
-  className?: string
+  value: string;
+  onChange: (value: string) => void;
+  readOnly: boolean;
+  placeholder?: string;
+  className?: string;
 }) {
   if (readOnly) {
     return (
       <span className={cn("text-sm", className)}>
         {value || <span className="text-muted-foreground">&mdash;</span>}
       </span>
-    )
+    );
   }
 
   return (
@@ -280,8 +269,8 @@ function InlineInput({
       placeholder={placeholder}
       className={cn(
         "h-7 border-transparent bg-transparent text-sm shadow-none hover:border-input focus-visible:border-input",
-        className
+        className,
       )}
     />
-  )
+  );
 }

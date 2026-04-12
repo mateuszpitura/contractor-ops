@@ -1,29 +1,28 @@
-import { describe, it, expect, vi } from "vitest";
-
+import { describe, expect, it, vi } from "vitest";
+import type { ParsedTransaction } from "../bank-statement.js";
 import {
-  stripDiacritics,
-  formatMultiline,
+  matchStatementToRun,
+  parseBankStatement,
+  parseCsvStatement,
+  parseMt940,
+} from "../bank-statement.js";
+import type { ExportItem, OrgBankInfo } from "../payment-export.js";
+import {
   escapeXml,
-  resolveTransferTitle,
+  formatMultiline,
   generateCsv,
   generateElixir,
   generateSepaXml,
-  type ExportItem,
-  type OrgBankInfo,
+  resolveTransferTitle,
+  stripDiacritics,
 } from "../payment-export.js";
-
-import {
-  parseCsvStatement,
-  parseBankStatement,
-  matchStatementToRun,
-  parseMt940,
-  type ParsedTransaction,
-} from "../bank-statement.js";
 
 // The source uses require("mt940js") which bypasses vi.mock ESM interception.
 // We spy on the real Parser prototype instead.
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const mt940js = require("mt940js") as { Parser: { prototype: { parse: (data: string) => unknown } } };
+const mt940js = require("mt940js") as {
+  Parser: { prototype: { parse: (data: string) => unknown } };
+};
 
 // ---------------------------------------------------------------------------
 // Shared test fixtures
@@ -96,10 +95,7 @@ describe("payment-export", () => {
     });
 
     it("formats amounts as decimal strings", async () => {
-      const items = [
-        makeItem({ amountGrosze: 150000 }),
-        makeItem({ amountGrosze: 99 }),
-      ];
+      const items = [makeItem({ amountGrosze: 150000 }), makeItem({ amountGrosze: 99 })];
       const buf = await generateCsv(items);
       const csv = buf.toString("utf-8");
       expect(csv).toContain("1500.00");
@@ -137,8 +133,7 @@ describe("payment-export", () => {
 
     it("formats multiline fields with pipe delimiters", () => {
       // Name longer than 35 chars should be split with pipe
-      const longName =
-        "Przedsiebiorstwo Budowlane SuperDlugie Nazwa Firmy Sp z oo";
+      const longName = "Przedsiebiorstwo Budowlane SuperDlugie Nazwa Firmy Sp z oo";
       const items = [makeItem({ contractorName: longName })];
       const buf = generateElixir(items, makeOrg());
       const text = buf.toString("utf-8");
@@ -201,16 +196,11 @@ describe("payment-export", () => {
       expect(xml).toContain("Smith &amp; Jones &lt;&quot;Partners&quot;&gt;");
       expect(xml).toContain("Payment for invoice #1 &amp; #2");
       // Should not contain unescaped characters in data
-      expect(xml).not.toContain(
-        "<Nm>Smith & Jones",
-      );
+      expect(xml).not.toContain("<Nm>Smith & Jones");
     });
 
     it("formats amounts with 2 decimal places", () => {
-      const items = [
-        makeItem({ amountGrosze: 150000 }),
-        makeItem({ amountGrosze: 1 }),
-      ];
+      const items = [makeItem({ amountGrosze: 150000 }), makeItem({ amountGrosze: 1 })];
       const buf = generateSepaXml(items, makeOrg(), "RUN-001");
       const xml = buf.toString("utf-8");
 
@@ -221,8 +211,7 @@ describe("payment-export", () => {
     });
 
     it("limits MsgId to 35 characters", () => {
-      const longRunNumber =
-        "RUN-2026-REALLY-LONG-RUN-NUMBER-THAT-EXCEEDS-LIMIT-12345";
+      const longRunNumber = "RUN-2026-REALLY-LONG-RUN-NUMBER-THAT-EXCEEDS-LIMIT-12345";
       const items = [makeItem()];
       const buf = generateSepaXml(items, makeOrg(), longRunNumber);
       const xml = buf.toString("utf-8");
@@ -257,10 +246,10 @@ describe("payment-export", () => {
 
   describe("resolveTransferTitle", () => {
     it("replaces {invoice_number} placeholder", () => {
-      const result = resolveTransferTitle(
-        "Zaplata za {invoice_number}",
-        { invoiceNumber: "FV/2026/03/001", contractorName: "Jan Kowalski" },
-      );
+      const result = resolveTransferTitle("Zaplata za {invoice_number}", {
+        invoiceNumber: "FV/2026/03/001",
+        contractorName: "Jan Kowalski",
+      });
       expect(result).toBe("Zaplata za FV/2026/03/001");
     });
 
@@ -278,18 +267,18 @@ describe("payment-export", () => {
     });
 
     it("trims whitespace from result", () => {
-      const result = resolveTransferTitle(
-        "  {invoice_number}  ",
-        { invoiceNumber: "FV/001", contractorName: "Jan" },
-      );
+      const result = resolveTransferTitle("  {invoice_number}  ", {
+        invoiceNumber: "FV/001",
+        contractorName: "Jan",
+      });
       expect(result).toBe("FV/001");
     });
 
     it("replaces missing optional placeholders with empty string", () => {
-      const result = resolveTransferTitle(
-        "{invoice_number} {billing_period} {contract_number}",
-        { invoiceNumber: "FV/001", contractorName: "Jan" },
-      );
+      const result = resolveTransferTitle("{invoice_number} {billing_period} {contract_number}", {
+        invoiceNumber: "FV/001",
+        contractorName: "Jan",
+      });
       // billingPeriod and contractNumber are undefined, replaced with ""
       expect(result).toBe("FV/001");
     });
@@ -328,8 +317,7 @@ describe("payment-export", () => {
 
   describe("escapeXml", () => {
     it("escapes all XML special characters", () => {
-      expect(escapeXml('&<>"\''))
-        .toBe("&amp;&lt;&gt;&quot;&apos;");
+      expect(escapeXml("&<>\"'")).toBe("&amp;&lt;&gt;&quot;&apos;");
     });
 
     it("leaves normal text unchanged", () => {
@@ -437,10 +425,7 @@ describe("bank-statement", () => {
     });
 
     it("returns empty array when amount column is not found", () => {
-      const csv = [
-        "name,value_wrong,iban",
-        "Jan,100,PL123",
-      ].join("\n");
+      const csv = ["name,value_wrong,iban", "Jan,100,PL123"].join("\n");
 
       const result = parseCsvStatement(csv);
       expect(result).toHaveLength(0);
@@ -462,7 +447,8 @@ describe("bank-statement", () => {
 
   describe("parseBankStatement", () => {
     it("routes .mt940 files to parseMt940", () => {
-      const parseSpy = vi.spyOn(mt940js.Parser.prototype, "parse")
+      const parseSpy = vi
+        .spyOn(mt940js.Parser.prototype, "parse")
         .mockReturnValue([{ currency: "PLN", transactions: [] }]);
 
       const result = parseBankStatement("", "statement.mt940");
@@ -472,7 +458,8 @@ describe("bank-statement", () => {
     });
 
     it("routes .sta files to parseMt940", () => {
-      const parseSpy = vi.spyOn(mt940js.Parser.prototype, "parse")
+      const parseSpy = vi
+        .spyOn(mt940js.Parser.prototype, "parse")
         .mockReturnValue([{ currency: "PLN", transactions: [] }]);
 
       const result = parseBankStatement("", "statement.sta");
@@ -496,9 +483,7 @@ describe("bank-statement", () => {
     });
 
     it("throws for unrecognized file extensions", () => {
-      expect(() => parseBankStatement("", "file.pdf")).toThrow(
-        "Unsupported bank statement format",
-      );
+      expect(() => parseBankStatement("", "file.pdf")).toThrow("Unsupported bank statement format");
       expect(() => parseBankStatement("", "file.xlsx")).toThrow(
         "Unsupported bank statement format",
       );

@@ -5,7 +5,7 @@
  * Uses the full tRPC caller with mocked Prisma, auth, and service dependencies.
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -227,7 +227,9 @@ describe("portal.getProfile", () => {
     // The select clause should never include bankAccountEncrypted
     const selectArg = mockPrisma.contractorBillingProfile.findFirst.mock.calls[0][0].select;
     expect(selectArg).not.toHaveProperty("bankAccountEncrypted");
-    expect((result.billingProfile as Record<string, unknown>)?.bankAccountEncrypted).toBeUndefined();
+    expect(
+      (result.billingProfile as Record<string, unknown>)?.bankAccountEncrypted,
+    ).toBeUndefined();
   });
 
   it("includes pendingChangeRequest when one exists with status PENDING", async () => {
@@ -465,9 +467,9 @@ describe("portal.submitFinancialChangeRequest", () => {
   it("throws BAD_REQUEST when no changes are provided", async () => {
     mockPrisma.contractorBillingProfile.findFirst.mockResolvedValue(null);
 
-    await expect(
-      caller.portal.submitFinancialChangeRequest({}),
-    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    await expect(caller.portal.submitFinancialChangeRequest({})).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+    });
   });
 
   it("propagates CONFLICT when createChangeRequest rejects with pending duplicate", async () => {

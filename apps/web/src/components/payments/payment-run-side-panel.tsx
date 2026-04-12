@@ -1,31 +1,11 @@
 "use client";
 
-import { useCallback, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { CheckCircle2, Download, FileUp, MoreHorizontal, Trash2, XCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import {
-  Download,
-  CheckCircle2,
-  FileUp,
-  XCircle,
-  MoreHorizontal,
-  Trash2,
-} from "lucide-react";
-
-import { trpc } from "@/trpc/init";
-import { useDoubleConfirmation } from "@/hooks/use-double-confirmation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { WhtSummaryCard } from "@/components/payments/wht-summary-card";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,20 +17,26 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Bdi } from "@/components/ui/bdi";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
+import { useDoubleConfirmation } from "@/hooks/use-double-confirmation";
 import { Link } from "@/i18n/navigation";
-
-import { Bdi } from "@/components/ui/bdi";
-import { PaymentRunBadge, PaymentItemBadge } from "./payment-run-badge";
-import { WhtSummaryCard } from "@/components/payments/wht-summary-card";
 import { formatMinorUnits } from "@/lib/format-currency";
 import { formatRelativeDate } from "@/lib/format-relative-date";
+import { trpc } from "@/trpc/init";
+import { PaymentItemBadge, PaymentRunBadge } from "./payment-run-badge";
 
 // ---------------------------------------------------------------------------
 // Props
@@ -151,10 +137,7 @@ export function PaymentRunSidePanel({
   // Mark all paid confirmation state
   // ---------------------------------------------------------------------------
 
-  const {
-    isConfirming: confirmMarkAll,
-    handleClick: handleMarkAllPaid,
-  } = useDoubleConfirmation(
+  const { isConfirming: confirmMarkAll, handleClick: handleMarkAllPaid } = useDoubleConfirmation(
     useCallback(() => {
       if (runId) {
         markAllPaidMutation.mutate({ runId });
@@ -181,10 +164,7 @@ export function PaymentRunSidePanel({
         <SheetContent className="w-[400px] p-0">
           <div className="p-6 space-y-4">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div
-                key={i}
-                className="h-4 bg-muted animate-pulse rounded w-full"
-              />
+              <div key={i} className="h-4 bg-muted animate-pulse rounded w-full" />
             ))}
           </div>
         </SheetContent>
@@ -232,10 +212,7 @@ export function PaymentRunSidePanel({
                 label={t("sidePanel.exportFormat")}
                 value={run.exportFormat ?? "\u2014"}
               />
-              <DetailItem
-                label={t("sidePanel.invoices")}
-                value={String(run.invoiceCount)}
-              />
+              <DetailItem label={t("sidePanel.invoices")} value={String(run.invoiceCount)} />
               <DetailItem
                 label={t("sidePanel.total")}
                 value={formatMinorUnits(run.totalMinor, run.currency)}
@@ -269,11 +246,7 @@ export function PaymentRunSidePanel({
               {/* EXPORTED actions */}
               {(status === "EXPORTED" || status === "LOCKED") && (
                 <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleDownloadExport}
-                  >
+                  <Button variant="outline" size="sm" onClick={handleDownloadExport}>
                     <Download className="me-1.5 h-3.5 w-3.5" />
                     {t("sidePanel.downloadExport")}
                   </Button>
@@ -310,11 +283,7 @@ export function PaymentRunSidePanel({
 
               {/* COMPLETED actions */}
               {status === "COMPLETED" && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleDownloadExport}
-                >
+                <Button variant="outline" size="sm" onClick={handleDownloadExport}>
                   <Download className="me-1.5 h-3.5 w-3.5" />
                   {t("sidePanel.downloadExport")}
                 </Button>
@@ -380,9 +349,7 @@ function CancelRunButton({
   return (
     <AlertDialog>
       <AlertDialogTrigger
-        render={
-          <Button variant="outline" size="sm" className="text-destructive" />
-        }
+        render={<Button variant="outline" size="sm" className="text-destructive" />}
       >
         <XCircle className="me-1.5 h-3.5 w-3.5" />
         {t("sidePanel.cancelRun")}
@@ -390,23 +357,15 @@ function CancelRunButton({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>
-            {isExported
-              ? t("cancelDialog.exportedTitle")
-              : t("cancelDialog.title")}
+            {isExported ? t("cancelDialog.exportedTitle") : t("cancelDialog.title")}
           </AlertDialogTitle>
           <AlertDialogDescription>
-            {isExported
-              ? t("cancelDialog.exportedBody")
-              : t("cancelDialog.body")}
+            {isExported ? t("cancelDialog.exportedBody") : t("cancelDialog.body")}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>{t("cancelDialog.cancel")}</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={onConfirm}
-            disabled={isLoading}
-            variant="destructive"
-          >
+          <AlertDialogAction onClick={onConfirm} disabled={isLoading} variant="destructive">
             {t("cancelDialog.confirm")}
           </AlertDialogAction>
         </AlertDialogFooter>
@@ -452,9 +411,7 @@ function PaymentRunItemRow({
   const isDraft = runStatus === "DRAFT";
 
   // Inline form state for mark paid/failed
-  const [activeAction, setActiveAction] = useState<
-    "paid" | "failed" | "remove" | null
-  >(null);
+  const [activeAction, setActiveAction] = useState<"paid" | "failed" | "remove" | null>(null);
   const [reference, setReference] = useState("");
   const [failureReason, setFailureReason] = useState("");
 
@@ -476,9 +433,7 @@ function PaymentRunItemRow({
             <Bdi>{item.contractor.legalName}</Bdi>
           </p>
           {item.paymentReference && (
-            <p className="text-[12px] text-muted-foreground">
-              Ref: {item.paymentReference}
-            </p>
+            <p className="text-[12px] text-muted-foreground">Ref: {item.paymentReference}</p>
           )}
         </div>
         <span className="font-mono text-xs tabular-nums whitespace-nowrap">
@@ -507,9 +462,7 @@ function PaymentRunItemRow({
             <DropdownMenuContent align="end">
               {!isTerminal && (
                 <>
-                  <DropdownMenuItem
-                    onClick={() => setActiveAction("paid")}
-                  >
+                  <DropdownMenuItem onClick={() => setActiveAction("paid")}>
                     <CheckCircle2 className="me-2 h-4 w-4" />
                     {t("sidePanel.markPaid")}
                   </DropdownMenuItem>
@@ -590,12 +543,7 @@ function PaymentRunItemRow({
               className="h-6 text-xs flex-1"
               onClick={() => {
                 if (failureReason.trim()) {
-                  onUpdateStatus(
-                    item.id,
-                    "FAILED",
-                    undefined,
-                    failureReason.trim(),
-                  );
+                  onUpdateStatus(item.id, "FAILED", undefined, failureReason.trim());
                   setActiveAction(null);
                   setFailureReason("");
                 }
@@ -622,9 +570,7 @@ function PaymentRunItemRow({
       {/* Inline confirm for remove from run */}
       {activeAction === "remove" && (
         <div className="mt-2 p-2 rounded border bg-destructive/5 space-y-2">
-          <p className="text-xs text-muted-foreground">
-            {t("sidePanel.removeFromRunConfirm")}
-          </p>
+          <p className="text-xs text-muted-foreground">{t("sidePanel.removeFromRunConfirm")}</p>
           <div className="flex gap-1.5">
             <Button
               size="sm"

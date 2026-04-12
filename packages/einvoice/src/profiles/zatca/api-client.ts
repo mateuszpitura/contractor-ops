@@ -14,12 +14,10 @@
 // ---------------------------------------------------------------------------
 
 /** ZATCA Developer Portal (sandbox) base URL */
-export const ZATCA_SANDBOX_URL =
-  "https://gw-fatoora.zatca.gov.sa/e-invoicing/developer-portal";
+export const ZATCA_SANDBOX_URL = "https://gw-fatoora.zatca.gov.sa/e-invoicing/developer-portal";
 
 /** ZATCA Production base URL */
-export const ZATCA_PRODUCTION_URL =
-  "https://gw-fatoora.zatca.gov.sa/e-invoicing/core";
+export const ZATCA_PRODUCTION_URL = "https://gw-fatoora.zatca.gov.sa/e-invoicing/core";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -161,9 +159,7 @@ export class ZatcaApiClient {
    * Submit a compliance check invoice during onboarding.
    * Uses compliance credentials (not production).
    */
-  async submitComplianceInvoice(
-    payload: ZatcaSubmissionPayload,
-  ): Promise<ZatcaComplianceResponse> {
+  async submitComplianceInvoice(payload: ZatcaSubmissionPayload): Promise<ZatcaComplianceResponse> {
     return this.post<ZatcaComplianceResponse>("/compliance/invoices", payload);
   }
 
@@ -187,7 +183,10 @@ export class ZatcaApiClient {
   // Internal
   // -------------------------------------------------------------------------
 
-  private async post<T>(path: string, body: Record<string, unknown> | ZatcaSubmissionPayload): Promise<T> {
+  private async post<T>(
+    path: string,
+    body: Record<string, unknown> | ZatcaSubmissionPayload,
+  ): Promise<T> {
     const response = await fetch(`${this.baseUrl}${path}`, {
       method: "POST",
       headers: {

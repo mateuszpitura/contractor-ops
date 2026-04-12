@@ -1,15 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { PenLine } from "lucide-react";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-  TooltipProvider,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { SendForSignatureDialog } from "./send-for-signature-dialog";
 
 // ---------------------------------------------------------------------------
@@ -82,11 +77,7 @@ export function SendForSignatureButton({
 
   return (
     <>
-      <Button
-        variant="default"
-        size="sm"
-        onClick={() => setDialogOpen(true)}
-      >
+      <Button variant="default" size="sm" onClick={() => setDialogOpen(true)}>
         <PenLine className="me-1.5 size-4" />
         Send for Signature
       </Button>

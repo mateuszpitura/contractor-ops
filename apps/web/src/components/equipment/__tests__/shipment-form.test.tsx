@@ -89,9 +89,7 @@ describe("ShipmentForm", () => {
 
     // Find submit button (not the cancel button)
     const buttons = screen.getAllByRole("button");
-    const submitBtn = buttons.find(
-      (b) => b.textContent && !(/cancel/i.test(b.textContent))
-    );
+    const submitBtn = buttons.find((b) => b.textContent && !/cancel/i.test(b.textContent));
     if (submitBtn) {
       await user.click(submitBtn);
     }

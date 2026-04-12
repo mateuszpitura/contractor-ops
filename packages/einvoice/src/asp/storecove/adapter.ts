@@ -1,17 +1,17 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import type {
   ASPAdapter,
-  RegisterParticipantParams,
+  ASPHealthStatus,
+  InboundInvoicePayload,
   ParticipantRegistration,
   ParticipantStatus,
-  TransmitInvoiceParams,
+  RegisterParticipantParams,
   TransmissionResult,
   TransmissionStatus,
-  InboundInvoicePayload,
+  TransmitInvoiceParams,
   WebhookVerification,
-  ASPHealthStatus,
 } from "../types.js";
-import { StorecoveClient, StorecoveApiError } from "./client.js";
+import { StorecoveApiError, StorecoveClient } from "./client.js";
 import { storecoveWebhookPayloadSchema } from "./schemas.js";
 import type { StorecoveConfig } from "./types.js";
 
@@ -37,9 +37,7 @@ export class StorecoveAdapter implements ASPAdapter {
     this.webhookSecret = config.webhookSecret;
   }
 
-  async registerParticipant(
-    params: RegisterParticipantParams,
-  ): Promise<ParticipantRegistration> {
+  async registerParticipant(params: RegisterParticipantParams): Promise<ParticipantRegistration> {
     const entity = await this.client.createLegalEntity({
       partyName: params.organizationName,
       identifier: params.identifierValue,
@@ -54,9 +52,7 @@ export class StorecoveAdapter implements ASPAdapter {
     };
   }
 
-  async getParticipantStatus(
-    participantId: string,
-  ): Promise<ParticipantStatus> {
+  async getParticipantStatus(participantId: string): Promise<ParticipantStatus> {
     // Storecove doesn't have a direct "participant status" endpoint;
     // we check if the legal entity exists and has identifiers.
     // The participantId is used as a lookup key on the caller side.
@@ -66,12 +62,9 @@ export class StorecoveAdapter implements ASPAdapter {
     };
   }
 
-  async transmitInvoice(
-    params: TransmitInvoiceParams,
-  ): Promise<TransmissionResult> {
+  async transmitInvoice(params: TransmitInvoiceParams): Promise<TransmissionResult> {
     // Parse receiver participant ID "scheme:identifier"
-    const [receiverScheme, receiverIdentifier] =
-      params.receiverParticipantId.split(":");
+    const [receiverScheme, receiverIdentifier] = params.receiverParticipantId.split(":");
 
     try {
       const submission = await this.client.submitDocument({
@@ -96,9 +89,7 @@ export class StorecoveAdapter implements ASPAdapter {
             ? parsed.errors
             : [{ code: "VALIDATION_ERROR", message: error.responseBody }];
         } catch {
-          errors = [
-            { code: "VALIDATION_ERROR", message: error.responseBody },
-          ];
+          errors = [{ code: "VALIDATION_ERROR", message: error.responseBody }];
         }
 
         return {
@@ -112,9 +103,7 @@ export class StorecoveAdapter implements ASPAdapter {
     }
   }
 
-  async getTransmissionStatus(
-    transmissionId: string,
-  ): Promise<TransmissionStatus> {
+  async getTransmissionStatus(transmissionId: string): Promise<TransmissionStatus> {
     const submission = await this.client.getSubmission(transmissionId);
 
     const statusMap: Record<string, TransmissionStatus["status"]> = {
@@ -127,10 +116,7 @@ export class StorecoveAdapter implements ASPAdapter {
     return {
       transmissionId: submission.guid,
       status: statusMap[submission.status] ?? "pending",
-      deliveredAt:
-        submission.status === "delivered"
-          ? new Date(submission.created_at)
-          : undefined,
+      deliveredAt: submission.status === "delivered" ? new Date(submission.created_at) : undefined,
       failureReason:
         submission.status === "error" || submission.status === "failed"
           ? `Storecove status: ${submission.status}`
@@ -138,10 +124,7 @@ export class StorecoveAdapter implements ASPAdapter {
     };
   }
 
-  verifyWebhookSignature(
-    rawBody: string,
-    headers: Record<string, string>,
-  ): WebhookVerification {
+  verifyWebhookSignature(rawBody: string, headers: Record<string, string>): WebhookVerification {
     if (!this.webhookSecret) {
       return { valid: false };
     }
@@ -151,14 +134,9 @@ export class StorecoveAdapter implements ASPAdapter {
       return { valid: false };
     }
 
-    const computed = createHmac("sha256", this.webhookSecret)
-      .update(rawBody)
-      .digest("hex");
+    const computed = createHmac("sha256", this.webhookSecret).update(rawBody).digest("hex");
 
-    const valid = timingSafeEqual(
-      Buffer.from(computed, "hex"),
-      Buffer.from(signature, "hex"),
-    );
+    const valid = timingSafeEqual(Buffer.from(computed, "hex"), Buffer.from(signature, "hex"));
 
     if (!valid) {
       return { valid: false };
@@ -166,9 +144,7 @@ export class StorecoveAdapter implements ASPAdapter {
 
     // Parse event type from payload
     try {
-      const parsed = storecoveWebhookPayloadSchema.parse(
-        JSON.parse(rawBody),
-      );
+      const parsed = storecoveWebhookPayloadSchema.parse(JSON.parse(rawBody));
       return {
         valid: true,
         eventType: parsed.event,
@@ -182,9 +158,7 @@ export class StorecoveAdapter implements ASPAdapter {
     rawBody: string,
     _headers: Record<string, string>,
   ): Promise<InboundInvoicePayload> {
-    const parsed = storecoveWebhookPayloadSchema.parse(
-      JSON.parse(rawBody),
-    );
+    const parsed = storecoveWebhookPayloadSchema.parse(JSON.parse(rawBody));
 
     return {
       documentId: parsed.document_guid ?? parsed.guid,
@@ -199,9 +173,7 @@ export class StorecoveAdapter implements ASPAdapter {
     };
   }
 
-  async pollInboundInvoices(
-    since: Date,
-  ): Promise<InboundInvoicePayload[]> {
+  async pollInboundInvoices(since: Date): Promise<InboundInvoicePayload[]> {
     const documents = await this.client.getReceivedDocuments(since);
 
     return documents.map((doc) => ({
@@ -232,9 +204,7 @@ export class StorecoveAdapter implements ASPAdapter {
     } catch (error) {
       if (
         error instanceof StorecoveApiError &&
-        (error.statusCode === 401 ||
-          error.statusCode === 403 ||
-          error.statusCode === 404)
+        (error.statusCode === 401 || error.statusCode === 403 || error.statusCode === 404)
       ) {
         // API responded — it's healthy
         return {

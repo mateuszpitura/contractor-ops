@@ -342,7 +342,12 @@ describe("DataTableToolbar", () => {
       <DataTableToolbar
         search=""
         onSearchChange={vi.fn()}
-        filters={{ ...defaultFilters, lifecycleStage: ["ACTIVE"], billingModel: ["FIXED"], health: ["red"] }}
+        filters={{
+          ...defaultFilters,
+          lifecycleStage: ["ACTIVE"],
+          billingModel: ["FIXED"],
+          health: ["red"],
+        }}
         onFiltersChange={vi.fn()}
         onAddContractor={vi.fn()}
       />,

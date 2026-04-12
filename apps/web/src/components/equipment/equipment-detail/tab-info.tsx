@@ -1,14 +1,9 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { format } from "date-fns";
+import { useTranslations } from "next-intl";
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EquipmentTypeIcon } from "../equipment-type-icon";
 
 // ---------------------------------------------------------------------------
@@ -48,11 +43,7 @@ export function TabInfo({ equipment, onEdit }: TabInfoProps) {
         </CardHeader>
         <CardContent className="space-y-3">
           <InfoRow label={t("form.name")} value={equipment.name} />
-          <InfoRow
-            label={t("form.serialNumber")}
-            value={equipment.serialNumber}
-            mono
-          />
+          <InfoRow label={t("form.serialNumber")} value={equipment.serialNumber} mono />
           <InfoRow
             label={t("form.type")}
             value={

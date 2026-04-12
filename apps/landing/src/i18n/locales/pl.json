@@ -1,0 +1,158 @@
+{
+  "meta": {
+    "title": "Contractor Ops — Zarządzanie kontraktorami B2B dla firm z EU",
+    "description": "Umowy, onboarding, faktury, akceptacje, płatności i offboarding — wszystko w jednym miejscu. Dla firm z 5-50 kontraktorami B2B.",
+    "ogTitle": "Contractor Ops — Zarządzanie kontraktorami B2B",
+    "ogDescription": "Koniec z Excelem, Slackiem, mailem i ręcznymi przelewami. Jeden system na cały cykl życia kontraktora."
+  },
+  "nav": {
+    "features": "Funkcje",
+    "howItWorks": "Jak działa",
+    "pricing": "Cennik",
+    "login": "Zaloguj się",
+    "getStarted": "Rozpocznij"
+  },
+  "hero": {
+    "badge": "Gotowy na KSeF od kwietnia 2026",
+    "headline": "Przestań zarządzać kontraktorami w",
+    "headlineHighlight": "arkuszach kalkulacyjnych",
+    "subheadline": "Umowy, faktury, akceptacje i płatności dla Twoich kontraktorów B2B — jeden system, zero chaosu. Stworzony dla firm z EU.",
+    "ctaPrimary": "Zacznij za darmo",
+    "ctaSecondary": "Zobacz jak działa",
+    "metricSaved": "oszczędności tygodniowo",
+    "metricAccuracy": "dokładność faktur",
+    "metricOnboarding": "czas onboardingu"
+  },
+  "logoBar": {
+    "title": "Zaufały nam zespoły z całej EU"
+  },
+  "problem": {
+    "label": "Problem",
+    "headline": "Twoje operacje z kontraktorami żyją w",
+    "headlineHighlight": "sześciu różnych narzędziach",
+    "description": "Każda firma z 5-50 kontraktorami B2B zna ten ból. Łatasz narzędzia, które nigdy nie były zaprojektowane do współpracy.",
+    "tools": {
+      "excel": "Excel / Sheets",
+      "email": "Email / Slack",
+      "slack": "Slack DM",
+      "drive": "Google Drive",
+      "bank": "Przelewy bankowe",
+      "nowhere": "Nigdzie"
+    },
+    "pains": {
+      "excel": "Lista kontraktorów i stawek rozrzucona po arkuszach, którymi nikt nie zarządza",
+      "email": "Faktury pogrzebane w skrzynkach — zgubione, zduplikowane, niesparowane tygodniami",
+      "slack": "\"Kto to miał zatwierdzić?\" — brak ownershipu, brak śladu audytowego",
+      "drive": "Umowy, NDA i dokumenty IP rozrzucone — nic nie powiązane, nic nie egzekwowane",
+      "bank": "Ręczne płatności — przegapione terminy, podwójne przelewy, zero rekoncyliacji",
+      "nowhere": "Offboarding nie istnieje — dostępy otwarte, dokumenty IP nigdy nie podpisane"
+    }
+  },
+  "features": {
+    "label": "Funkcje",
+    "headline": "Jeden system na cały",
+    "headlineHighlight": "cykl życia kontraktora",
+    "description": "Od pierwszego podpisu umowy po ostatnią checklistę offboardingową. Każdy krok śledzony, każda akceptacja audytowana, każda płatność zrekoncylowana.",
+    "items": {
+      "contracts": {
+        "title": "Umowy i dokumenty",
+        "description": "Szablony umów z e-podpisem, śledzeniem wersji i automatycznymi alertami o odnowieniu. Każdy dokument powiązany z profilem kontraktora."
+      },
+      "onboarding": {
+        "title": "Automatyczny onboarding",
+        "description": "Konfigurowalne checklisty z ownershipem, deadlinami i bramkami compliance. Kontraktorzy self-serve. Ty tylko zatwierdzasz."
+      },
+      "invoices": {
+        "title": "Matching faktur z KSeF",
+        "description": "Auto-pobieranie faktur z KSeF, dopasowanie do umów i stawek, flagowanie niezgodności. Koniec z szukaniem w mailu."
+      },
+      "approvals": {
+        "title": "Workflow akceptacji",
+        "description": "Wieloetapowe łańcuchy akceptacji z jasnym ownershipem, śledzeniem SLA i pełnym audit trail."
+      },
+      "payments": {
+        "title": "Płatności batch",
+        "description": "Eksport zatwierdzonych faktur jako pliki płatności. Automatyczna rekoncyliacja. Jeden klik, wszyscy kontraktorzy opłaceni."
+      },
+      "offboarding": {
+        "title": "Czysty offboarding",
+        "description": "Ustrukturyzowany flow wyjścia — podpis NDA, transfer IP, checklisty odwołania dostępów."
+      },
+      "compliance": {
+        "title": "Compliance i audyt",
+        "description": "Każda akcja z timestampem i atrybucją. Pełny audit trail na potrzeby przeglądów, inspekcji i wymogów prawnych."
+      },
+      "analytics": {
+        "title": "Analityka wydatków",
+        "description": "Dashboardy real-time z wydatkami na kontraktorów, burn rate budżetu i podziałem kosztów per zespół, projekt i okres."
+      }
+    }
+  },
+  "howItWorks": {
+    "label": "Jak działa",
+    "headline": "Pięć kroków od",
+    "headlineHighlight": "chaosu do kontroli",
+    "description": "Zamień sześć rozłącznych narzędzi na jeden unified flow. Każdy krok zasila kolejny — zero copy-paste, zero zgubionych spraw.",
+    "steps": {
+      "onboard": {
+        "title": "Onboarduj",
+        "description": "Dodaj kontraktora, przypisz checklistę. Self-service danych, upload dokumentów, podpis umów via e-sign."
+      },
+      "contract": {
+        "title": "Kontraktuj",
+        "description": "Generuj umowy z szablonów. Automatyczne śledzenie odnowień, historia zmian, kontrola wersji."
+      },
+      "invoice": {
+        "title": "Fakturuj",
+        "description": "Faktury pobierane automatycznie z KSeF. Dopasowane do umów i kart stawek. Niezgodności flagowane natychmiast."
+      },
+      "approve": {
+        "title": "Zatwierdzaj",
+        "description": "Kieruj faktury przez łańcuch akceptacji. Każda akcja logowana z timestampem i tożsamością zatwierdzającego."
+      },
+      "pay": {
+        "title": "Płać",
+        "description": "Batch-eksport zatwierdzonych faktur do płatności. Automatyczna rekoncyliacja po zaksięgowaniu. Gotowe."
+      }
+    }
+  },
+  "socialProof": {
+    "label": "Zaufały nam zespoły",
+    "headline": "Zespoły, które przeszły",
+    "headlineHighlight": "nigdy nie wróciły",
+    "stats": {
+      "processing": { "value": "92%", "label": "mniej czasu na przetwarzanie faktur" },
+      "auditTrail": { "value": "100%", "label": "pokrycie audit trail" },
+      "approvalTime": { "value": "< 2min", "label": "średni czas akceptacji" },
+      "offboarding": { "value": "0", "label": "pominiętych kroków offboardingu" }
+    }
+  },
+  "pricing": {
+    "label": "Cennik",
+    "headline": "Prosty cennik,",
+    "headlineHighlight": "poważna wartość",
+    "description": "Zacznij za darmo do 5 kontraktorów. Skaluj w miarę wzrostu. Bez ukrytych opłat, bez niespodzianek.",
+    "perContractor": "za kontraktora / miesiąc",
+    "upTo5": "do 5 kontraktorów",
+    "startFree": "Zacznij za darmo",
+    "startTrial": "Rozpocznij 14-dniowy trial",
+    "talkToSales": "Porozmawiaj ze sprzedażą",
+    "detailedLink": "Zobacz szczegółowy cennik, kredyty i opcje pay-as-you-go"
+  },
+  "cta": {
+    "headline": "Gotowy przejąć",
+    "headlineHighlight": "kontrolę",
+    "description": "Dołącz do firm, które zamieniły chaos Exceli na jeden system do zarządzania cyklem życia kontraktorów. Za darmo do 5 kontraktorów.",
+    "ctaPrimary": "Zacznij darmowy trial",
+    "ctaSecondary": "Umów demo",
+    "trust": "Bez karty kredytowej \u00b7 14-dniowy trial Pro \u00b7 Anuluj kiedy chcesz"
+  },
+  "footer": {
+    "description": "Zarządzanie kontraktorami B2B stworzone dla firm z EU. Umowy, faktury, akceptacje, płatności — jeden system.",
+    "product": "Produkt",
+    "company": "Firma",
+    "legal": "Prawne",
+    "copyright": "\u00a9 2026 Contractor Ops. Wszelkie prawa zastrzeżone.",
+    "madeIn": "Stworzone w Polsce dla globalnego biznesu"
+  }
+}

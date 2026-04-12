@@ -38,9 +38,7 @@ export function PaczkomatDisplay({
         <MapPin className="h-5 w-5 shrink-0 text-primary" />
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold">{pointName}</p>
-          <p className="truncate text-xs text-muted-foreground">
-            {pointAddress}
-          </p>
+          <p className="truncate text-xs text-muted-foreground">{pointAddress}</p>
         </div>
         <Button variant="outline" size="sm" onClick={onChangeClick}>
           {t("change")}

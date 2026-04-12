@@ -1,8 +1,5 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
-import {
-  generateOAuthState,
-  verifyOAuthState,
-} from "../services/oauth-state.js";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { generateOAuthState, verifyOAuthState } from "../services/oauth-state.js";
 
 const TEST_SECRET = "test-signing-secret-for-oauth-state";
 
@@ -74,9 +71,7 @@ describe("oauth-state", () => {
       const state = generateOAuthState("slack", "org-123", "user-456", TEST_SECRET);
 
       // Decode, tamper, re-encode
-      const decoded = JSON.parse(
-        Buffer.from(state, "base64url").toString("utf-8"),
-      );
+      const decoded = JSON.parse(Buffer.from(state, "base64url").toString("utf-8"));
       decoded.orgId = "org-HACKED";
       const tampered = Buffer.from(JSON.stringify(decoded)).toString("base64url");
 

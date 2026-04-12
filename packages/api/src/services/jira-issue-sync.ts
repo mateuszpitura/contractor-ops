@@ -1,7 +1,7 @@
-import { TRPCError } from "@trpc/server";
 import { decryptCredentials } from "@contractor-ops/integrations/services/credential-service";
-import type { JiraTaskConfig, JiraIssueMetadata } from "@contractor-ops/validators";
+import type { JiraIssueMetadata, JiraTaskConfig } from "@contractor-ops/validators";
 import { jiraTaskConfigSchema } from "@contractor-ops/validators";
+import { TRPCError } from "@trpc/server";
 import { lookupJiraTransitionId } from "./jira-status-mapping.js";
 
 // Use loosely typed prisma client for parallel execution compatibility
@@ -42,8 +42,7 @@ function buildJiraApiContext(
   if (!config?.cloudId) {
     throw new TRPCError({
       code: "BAD_REQUEST",
-      message:
-        "Jira connection is missing cloudId. Please reconnect your Jira integration.",
+      message: "Jira connection is missing cloudId. Please reconnect your Jira integration.",
     });
   }
 
@@ -148,8 +147,8 @@ export async function createJiraIssue(
   // siteUrl is set during OAuth discovery (discoverCloudId returns { cloudId, siteName, siteUrl }).
   // Fall back to cloudId-based browsable URL if siteUrl/siteName missing (e.g., Phase 18 connections).
   const config = connection.configJson as JiraConnectionConfig;
-  const siteUrl = config.siteUrl
-    ?? (config.siteName ? `https://${config.siteName}.atlassian.net` : null);
+  const siteUrl =
+    config.siteUrl ?? (config.siteName ? `https://${config.siteName}.atlassian.net` : null);
 
   // 3. Create sync log
   const syncLog = await prisma.integrationSyncLog.create({
@@ -194,16 +193,13 @@ export async function createJiraIssue(
     if (response.status === 401) {
       throw new TRPCError({
         code: "UNAUTHORIZED",
-        message:
-          "Jira access token is invalid or expired. Please reconnect your Jira integration.",
+        message: "Jira access token is invalid or expired. Please reconnect your Jira integration.",
       });
     }
 
     if (!response.ok) {
       const text = await response.text();
-      throw new Error(
-        `Jira issue creation failed (${response.status}): ${text}`,
-      );
+      throw new Error(`Jira issue creation failed (${response.status}): ${text}`);
     }
 
     const created = (await response.json()) as JiraCreateIssueResponse;
@@ -264,8 +260,7 @@ export async function createJiraIssue(
       data: {
         status: "FAILED",
         completedAt: new Date(),
-        errorMessage:
-          error instanceof Error ? error.message : "Unknown error",
+        errorMessage: error instanceof Error ? error.message : "Unknown error",
       },
     });
 
@@ -365,12 +360,7 @@ export async function transitionJiraIssue(
   }
 
   // 3. Look up the Jira transition ID for the new workflow status
-  const mapping = await lookupJiraTransitionId(
-    prisma,
-    connectionId,
-    projectId,
-    newWorkflowStatus,
-  );
+  const mapping = await lookupJiraTransitionId(prisma, connectionId, projectId, newWorkflowStatus);
 
   if (!mapping) {
     // No mapping configured — log and return
@@ -409,8 +399,7 @@ export async function transitionJiraIssue(
   );
 
   // 5. Set lastSyncOrigin="APP" BEFORE transition (loop prevention per D-08)
-  const existingMetadata =
-    (externalLink.metadataJson as Record<string, unknown>) ?? {};
+  const existingMetadata = (externalLink.metadataJson as Record<string, unknown>) ?? {};
   await prisma.externalLink.update({
     where: { id: externalLink.id },
     data: {
@@ -443,30 +432,24 @@ export async function transitionJiraIssue(
 
   try {
     // 7. POST transition to Jira
-    const response = await fetch(
-      `${baseUrl}/issue/${issueKey}/transitions`,
-      {
-        method: "POST",
-        headers: authHeaders,
-        body: JSON.stringify({
-          transition: { id: mapping.transitionId },
-        }),
-      },
-    );
+    const response = await fetch(`${baseUrl}/issue/${issueKey}/transitions`, {
+      method: "POST",
+      headers: authHeaders,
+      body: JSON.stringify({
+        transition: { id: mapping.transitionId },
+      }),
+    });
 
     if (response.status === 401) {
       throw new TRPCError({
         code: "UNAUTHORIZED",
-        message:
-          "Jira access token is invalid or expired. Please reconnect your Jira integration.",
+        message: "Jira access token is invalid or expired. Please reconnect your Jira integration.",
       });
     }
 
     if (!response.ok) {
       const text = await response.text();
-      throw new Error(
-        `Jira transition failed (${response.status}): ${text}`,
-      );
+      throw new Error(`Jira transition failed (${response.status}): ${text}`);
     }
 
     // 8. Update ExternalLink metadata with new status
@@ -502,8 +485,7 @@ export async function transitionJiraIssue(
       data: {
         status: "FAILED",
         completedAt: new Date(),
-        errorMessage:
-          error instanceof Error ? error.message : "Unknown error",
+        errorMessage: error instanceof Error ? error.message : "Unknown error",
       },
     });
 
@@ -511,8 +493,7 @@ export async function transitionJiraIssue(
       where: { id: connectionId },
       data: {
         lastErrorAt: new Date(),
-        lastErrorMessage:
-          error instanceof Error ? error.message : "Unknown error",
+        lastErrorMessage: error instanceof Error ? error.message : "Unknown error",
       },
     });
 

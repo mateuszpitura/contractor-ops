@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@/test/test-utils";
 
 vi.mock("next-intl", async (importOriginal) => {
@@ -26,8 +26,7 @@ vi.mock("@/trpc/init", () => ({
 }));
 
 vi.mock("@/lib/avatar-initials", () => ({
-  getAvatarInitials: (name: string | null, email: string) =>
-    name ? name[0] : email[0],
+  getAvatarInitials: (name: string | null, email: string) => (name ? name[0] : email[0]),
 }));
 
 import { useQuery } from "@tanstack/react-query";
@@ -103,9 +102,7 @@ describe("AuditTimeline", () => {
     } as any);
     render(<AuditTimeline invoiceId="inv-1" />);
     expect(screen.getByText("Jan Kowalski")).toBeInTheDocument();
-    expect(
-      screen.getByText("auditTrail.decisionApproved"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("auditTrail.decisionApproved")).toBeInTheDocument();
   });
 
   it("renders decision comment when present", () => {

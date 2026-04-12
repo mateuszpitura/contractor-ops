@@ -1,12 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { format } from "date-fns";
 import { CalendarDays } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Dialog,
@@ -16,11 +13,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -28,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 // ---------------------------------------------------------------------------
@@ -166,9 +162,7 @@ export function SingleEntryForm({
                 />
               </PopoverContent>
             </Popover>
-            {errors.date && (
-              <p className="text-sm text-destructive">{errors.date}</p>
-            )}
+            {errors.date && <p className="text-sm text-destructive">{errors.date}</p>}
           </div>
 
           {/* Project select */}
@@ -186,9 +180,7 @@ export function SingleEntryForm({
                 ))}
               </SelectContent>
             </Select>
-            {errors.contractId && (
-              <p className="text-sm text-destructive">{errors.contractId}</p>
-            )}
+            {errors.contractId && <p className="text-sm text-destructive">{errors.contractId}</p>}
           </div>
 
           {/* Hours input */}
@@ -205,18 +197,13 @@ export function SingleEntryForm({
               onChange={(e) => setHours(e.target.value)}
               className="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             />
-            {errors.hours && (
-              <p className="text-sm text-destructive">{errors.hours}</p>
-            )}
+            {errors.hours && <p className="text-sm text-destructive">{errors.hours}</p>}
           </div>
 
           {/* Description textarea */}
           <div className="space-y-2">
             <Label htmlFor="entry-description">
-              Description{" "}
-              <span className="font-normal text-muted-foreground">
-                (optional)
-              </span>
+              Description <span className="font-normal text-muted-foreground">(optional)</span>
             </Label>
             <Textarea
               id="entry-description"
@@ -226,13 +213,9 @@ export function SingleEntryForm({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
-            {errors.description && (
-              <p className="text-sm text-destructive">{errors.description}</p>
-            )}
+            {errors.description && <p className="text-sm text-destructive">{errors.description}</p>}
             {description.length > 0 && (
-              <p className="text-xs text-muted-foreground text-end">
-                {description.length}/500
-              </p>
+              <p className="text-xs text-muted-foreground text-end">{description.length}/500</p>
             )}
           </div>
         </div>

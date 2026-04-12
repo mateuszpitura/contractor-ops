@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, setup } from "@/test/test-utils";
 import { DataTableFilters } from "../data-table-filters";
 
@@ -36,12 +36,7 @@ describe("DataTableFilters (contracts)", () => {
 
   // ---- Filter button ----
   it("renders filter button", () => {
-    render(
-      <DataTableFilters
-        filters={emptyFilters}
-        onFiltersChange={vi.fn()}
-      />,
-    );
+    render(<DataTableFilters filters={emptyFilters} onFiltersChange={vi.fn()} />);
     const button = screen.getByRole("button");
     expect(button).toBeInTheDocument();
   });
@@ -58,12 +53,7 @@ describe("DataTableFilters (contracts)", () => {
   });
 
   it("does not show badge when no filters are active", () => {
-    render(
-      <DataTableFilters
-        filters={emptyFilters}
-        onFiltersChange={vi.fn()}
-      />,
-    );
+    render(<DataTableFilters filters={emptyFilters} onFiltersChange={vi.fn()} />);
     // No count badge
     expect(screen.queryByText("0")).not.toBeInTheDocument();
   });
@@ -156,12 +146,7 @@ describe("DataTableFilters (contracts)", () => {
   });
 
   it("does not show clear all when no filters", () => {
-    render(
-      <DataTableFilters
-        filters={emptyFilters}
-        onFiltersChange={vi.fn()}
-      />,
-    );
+    render(<DataTableFilters filters={emptyFilters} onFiltersChange={vi.fn()} />);
     expect(screen.queryByText("Clear all")).not.toBeInTheDocument();
   });
 

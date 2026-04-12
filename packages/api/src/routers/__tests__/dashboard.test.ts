@@ -6,7 +6,7 @@
  * correct WHERE clauses and returns the expected shape.
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Constants (vi.hoisted so mock factories can reference them)
@@ -126,7 +126,10 @@ vi.mock("../../services/billing-webhook.js", () => ({
 }));
 
 vi.mock("../../services/r2.js", () => ({
-  createPresignedUploadUrl: vi.fn(async () => ({ url: "https://r2.example.com/upload", key: "mock-key" })),
+  createPresignedUploadUrl: vi.fn(async () => ({
+    url: "https://r2.example.com/upload",
+    key: "mock-key",
+  })),
   createPresignedDownloadUrl: vi.fn(async () => "https://r2.example.com/download"),
   generateStorageKey: vi.fn(() => "mock-storage-key"),
   headObject: vi.fn(async () => ({ ContentLength: 1024 })),
@@ -477,9 +480,7 @@ describe("dashboard router", () => {
 
       const result = await caller.dashboard.deadlines();
 
-      const taskItems = result.filter(
-        (item: { type: string }) => item.type === "TASK_OVERDUE",
-      );
+      const taskItems = result.filter((item: { type: string }) => item.type === "TASK_OVERDUE");
       expect(taskItems).toHaveLength(1);
       expect(taskItems[0]).toHaveProperty("entityId", "task-1");
       expect(taskItems[0]).toHaveProperty("daysOverdue");
@@ -493,9 +494,7 @@ describe("dashboard router", () => {
 
       const result = await caller.dashboard.deadlines();
 
-      const invoiceItems = result.filter(
-        (item: { type: string }) => item.type === "INVOICE_DUE",
-      );
+      const invoiceItems = result.filter((item: { type: string }) => item.type === "INVOICE_DUE");
       expect(invoiceItems).toHaveLength(1);
       expect(invoiceItems[0]).toHaveProperty("entityId", "inv-1");
       expect(invoiceItems[0]).toHaveProperty("entityName", "FV/2025/100");

@@ -1,9 +1,5 @@
 import { prisma } from "@contractor-ops/db";
-import {
-  decryptCredentials,
-  encryptCredentials,
-  getAdapter,
-} from "@contractor-ops/integrations";
+import { decryptCredentials, encryptCredentials, getAdapter } from "@contractor-ops/integrations";
 import type { GoogleWorkspaceAdapter } from "@contractor-ops/integrations/adapters/google-workspace-adapter";
 import { dispatch } from "./notification-service.js";
 
@@ -63,25 +59,18 @@ export async function processDirectorySync(params: {
     });
 
     if (connection.organizationId !== organizationId) {
-      throw new Error(
-        "Connection does not belong to the specified organization",
-      );
+      throw new Error("Connection does not belong to the specified organization");
     }
 
     if (connection.status !== "CONNECTED") {
-      throw new Error(
-        `Connection is not active (status: ${connection.status})`,
-      );
+      throw new Error(`Connection is not active (status: ${connection.status})`);
     }
 
     // -----------------------------------------------------------------------
     // Step 3: Decrypt credentials and refresh token if expired
     // -----------------------------------------------------------------------
 
-    let credentials = decryptCredentials(
-      connection.credentialsRef,
-      "google_workspace",
-    );
+    let credentials = decryptCredentials(connection.credentialsRef, "google_workspace");
 
     const adapter = getAdapter("google_workspace") as GoogleWorkspaceAdapter;
 
@@ -94,17 +83,12 @@ export async function processDirectorySync(params: {
       credentials = await adapter.refreshToken(credentials);
 
       // Persist refreshed credentials
-      const encryptedCreds = encryptCredentials(
-        credentials,
-        "google_workspace",
-      );
+      const encryptedCreds = encryptCredentials(credentials, "google_workspace");
       await prisma.integrationConnection.update({
         where: { id: connectionId },
         data: {
           credentialsRef: encryptedCreds,
-          tokenExpiresAt: credentials.expiresAt
-            ? new Date(credentials.expiresAt)
-            : null,
+          tokenExpiresAt: credentials.expiresAt ? new Date(credentials.expiresAt) : null,
         },
       });
     }
@@ -113,14 +97,10 @@ export async function processDirectorySync(params: {
     // Step 4: Fetch current Google Workspace directory
     // -----------------------------------------------------------------------
 
-    const googleUsers = await adapter.listAllDirectoryUsers(
-      credentials.accessToken,
-    );
+    const googleUsers = await adapter.listAllDirectoryUsers(credentials.accessToken);
 
     // Build email -> GoogleDirectoryUser map (lowercase for case-insensitive compare)
-    const googleEmailMap = new Map(
-      googleUsers.map((u) => [u.primaryEmail.toLowerCase(), u]),
-    );
+    const googleEmailMap = new Map(googleUsers.map((u) => [u.primaryEmail.toLowerCase(), u]));
 
     // -----------------------------------------------------------------------
     // Step 5: Fetch current org members
@@ -132,17 +112,14 @@ export async function processDirectorySync(params: {
     });
 
     const memberEmailSet = new Set(
-      orgMembers
-        .map((m) => m.user.email?.toLowerCase())
-        .filter((e): e is string => !!e),
+      orgMembers.map((m) => m.user.email?.toLowerCase()).filter((e): e is string => !!e),
     );
 
     // -----------------------------------------------------------------------
     // Step 6: Load previously synced emails from configJson
     // -----------------------------------------------------------------------
 
-    const configJson =
-      (connection.configJson as Record<string, unknown> | null) ?? {};
+    const configJson = (connection.configJson as Record<string, unknown> | null) ?? {};
     const previouslySyncedEmails = new Set<string>(
       Array.isArray(configJson.syncedEmails)
         ? (configJson.syncedEmails as string[]).map((e) => e.toLowerCase())
@@ -196,9 +173,7 @@ export async function processDirectorySync(params: {
         departureCount++;
 
         // Find the member name for the notification
-        const member = orgMembers.find(
-          (m) => m.user.email?.toLowerCase() === email,
-        );
+        const member = orgMembers.find((m) => m.user.email?.toLowerCase() === email);
         const memberName = member?.user.name ?? email;
 
         if (adminUserIds.length > 0) {
@@ -260,8 +235,7 @@ export async function processDirectorySync(params: {
     // Error handling: update sync log and connection status
     // -----------------------------------------------------------------------
 
-    const errorMessage =
-      error instanceof Error ? error.message : String(error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
 
     await prisma.integrationSyncLog.update({
       where: { id: syncLog.id },
@@ -294,9 +268,7 @@ export async function processDirectorySync(params: {
 /**
  * Returns user IDs of org admins and owners for notification dispatch.
  */
-async function getOrgAdminUserIds(
-  organizationId: string,
-): Promise<string[]> {
+async function getOrgAdminUserIds(organizationId: string): Promise<string[]> {
   const admins = await prisma.member.findMany({
     where: {
       organizationId,

@@ -1,28 +1,20 @@
 "use client";
 
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-import { ChevronDown, History } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-
-import { trpc } from "@/trpc/init";
+import { ChevronDown, History } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Sync status styling
 // ---------------------------------------------------------------------------
 
-const SYNC_STATUS_STYLES: Record<
-  string,
-  { className: string; labelKey: string }
-> = {
+const SYNC_STATUS_STYLES: Record<string, { className: string; labelKey: string }> = {
   SUCCESS: {
     className: "bg-emerald-500/10 text-emerald-500",
     labelKey: "syncStatusSuccess",
@@ -69,15 +61,10 @@ export function KsefSyncHistory({ connectionId }: KsefSyncHistoryProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   const syncHistoryQuery = useQuery(
-    trpc.ksef.syncHistory.queryOptions(
-      { limit: 10 },
-      { enabled: !!connectionId },
-    ),
+    trpc.ksef.syncHistory.queryOptions({ limit: 10 }, { enabled: !!connectionId }),
   );
 
-  const rawData = syncHistoryQuery.data as
-    | { logs: SyncLogEntry[] }
-    | undefined;
+  const rawData = syncHistoryQuery.data as { logs: SyncLogEntry[] } | undefined;
   const logs = rawData?.logs ?? [];
 
   return (
@@ -105,30 +92,19 @@ export function KsefSyncHistory({ connectionId }: KsefSyncHistoryProps) {
             ))}
           </div>
         ) : logs.length === 0 ? (
-          <p className="py-4 text-center text-sm text-muted-foreground">
-            {t("syncHistoryEmpty")}
-          </p>
+          <p className="py-4 text-center text-sm text-muted-foreground">{t("syncHistoryEmpty")}</p>
         ) : (
           <div className="divide-y">
             {logs.map((log) => {
-              const statusStyle = SYNC_STATUS_STYLES[log.status] ??
-                SYNC_STATUS_STYLES.STARTED!;
+              const statusStyle = SYNC_STATUS_STYLES[log.status] ?? SYNC_STATUS_STYLES.STARTED!;
 
-              const payload = log.responsePayloadJson as Record<
-                string,
-                unknown
-              > | null;
-              const invoicesCreated =
-                (payload?.invoicesCreated as number) ?? 0;
+              const payload = log.responsePayloadJson as Record<string, unknown> | null;
+              const invoicesCreated = (payload?.invoicesCreated as number) ?? 0;
 
-              const isNoNew =
-                log.status === "SUCCESS" && invoicesCreated === 0;
+              const isNoNew = log.status === "SUCCESS" && invoicesCreated === 0;
 
               return (
-                <div
-                  key={log.id}
-                  className="flex items-center gap-3 py-2 text-sm"
-                >
+                <div key={log.id} className="flex items-center gap-3 py-2 text-sm">
                   {/* Timestamp */}
                   <span className="text-muted-foreground">
                     {formatDistanceToNow(new Date(log.startedAt), {
@@ -147,16 +123,12 @@ export function KsefSyncHistory({ connectionId }: KsefSyncHistoryProps) {
                   <Badge
                     variant="secondary"
                     className={`ms-auto text-xs ${
-                      isNoNew
-                        ? "bg-muted text-muted-foreground"
-                        : statusStyle.className
+                      isNoNew ? "bg-muted text-muted-foreground" : statusStyle.className
                     }`}
                   >
                     {isNoNew
                       ? t("syncStatusNoNew")
-                      : t(
-                          statusStyle.labelKey as Parameters<typeof t>[0],
-                        )}
+                      : t(statusStyle.labelKey as Parameters<typeof t>[0])}
                   </Badge>
                 </div>
               );

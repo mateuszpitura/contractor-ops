@@ -9,21 +9,20 @@
 // All invoke payloads are validated with Zod before processing.
 // ---------------------------------------------------------------------------
 
-import {
-  TeamsActivityHandler,
-  TurnContext,
-  CardFactory,
-  type AdaptiveCardInvokeValue,
-  type AdaptiveCardInvokeResponse,
-  type ConversationReference,
-  type TaskModuleRequest,
-  type TaskModuleResponse,
+import type { Prisma } from "@contractor-ops/db";
+import { prisma } from "@contractor-ops/db";
+import type {
+  AdaptiveCardInvokeResponse,
+  AdaptiveCardInvokeValue,
+  ConversationReference,
+  TaskModuleRequest,
+  TaskModuleResponse,
 } from "botbuilder";
+import { CardFactory, TeamsActivityHandler, TurnContext } from "botbuilder";
 import { z } from "zod";
-import { prisma, type Prisma } from "@contractor-ops/db";
+import { advanceFlow } from "../approval-engine.js";
 import { buildApprovalResultCard } from "./cards/approval-result-card.js";
 import { buildRejectModalCard } from "./cards/reject-modal-card.js";
-import { advanceFlow } from "../approval-engine.js";
 
 // ---------------------------------------------------------------------------
 // Zod schemas for invoke payload validation (per CLAUDE.md: validate all
@@ -92,9 +91,7 @@ export async function storeConversationReference(
   });
 
   if (!connection) {
-    console.warn(
-      `[Teams] No MICROSOFT_TEAMS connection for org ${organizationId}`,
-    );
+    console.warn(`[Teams] No MICROSOFT_TEAMS connection for org ${organizationId}`);
     return;
   }
 
@@ -108,10 +105,7 @@ export async function storeConversationReference(
   // so sendChannelAlert can look up by params.channelId
   const teamConversationReferences = config.teamConversationReferences ?? {};
   const channelId = ref.conversation?.id;
-  if (
-    channelId &&
-    ref.conversation?.conversationType === "channel"
-  ) {
+  if (channelId && ref.conversation?.conversationType === "channel") {
     teamConversationReferences[channelId] = ref as ConversationReference;
   }
 
@@ -185,10 +179,7 @@ async function resolveTeamsUser(
 // Error Helpers
 // ---------------------------------------------------------------------------
 
-function errorInvokeResponse(
-  statusCode: number,
-  message: string,
-): AdaptiveCardInvokeResponse {
+function errorInvokeResponse(statusCode: number, message: string): AdaptiveCardInvokeResponse {
   return {
     statusCode,
     type: "application/vnd.microsoft.error",
@@ -196,9 +187,7 @@ function errorInvokeResponse(
   };
 }
 
-function cardInvokeResponse(
-  card: Record<string, unknown>,
-): AdaptiveCardInvokeResponse {
+function cardInvokeResponse(card: Record<string, unknown>): AdaptiveCardInvokeResponse {
   return {
     statusCode: 200,
     type: "application/vnd.microsoft.card.adaptive",
@@ -211,7 +200,6 @@ function cardInvokeResponse(
 // ---------------------------------------------------------------------------
 
 export class TeamsBotHandler extends TeamsActivityHandler {
-
   // -------------------------------------------------------------------------
   // Adaptive Card Actions (approve / reject from card buttons)
   // -------------------------------------------------------------------------
@@ -267,9 +255,7 @@ export class TeamsBotHandler extends TeamsActivityHandler {
         type: "continue",
         value: {
           title: "Reject Invoice",
-          card: CardFactory.adaptiveCard(
-            buildRejectModalCard(invoiceId, flowId),
-          ),
+          card: CardFactory.adaptiveCard(buildRejectModalCard(invoiceId, flowId)),
           width: "medium",
           height: "small",
         },
@@ -286,8 +272,7 @@ export class TeamsBotHandler extends TeamsActivityHandler {
       return {
         task: {
           type: "message",
-          value:
-            parsed.error.issues[0]?.message ?? "Invalid data. Please try again.",
+          value: parsed.error.issues[0]?.message ?? "Invalid data. Please try again.",
         },
       };
     }
@@ -359,8 +344,7 @@ export class TeamsBotHandler extends TeamsActivityHandler {
         }
       }
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Failed to reject invoice";
+      const message = error instanceof Error ? error.message : "Failed to reject invoice";
       return { task: { type: "message", value: message } };
     }
 
@@ -390,10 +374,7 @@ export class TeamsBotHandler extends TeamsActivityHandler {
 
     const user = await resolveTeamsUser(aadObjectId);
     if (!user) {
-      return errorInvokeResponse(
-        403,
-        "Your Teams account is not linked to Contractor Ops.",
-      );
+      return errorInvokeResponse(403, "Your Teams account is not linked to Contractor Ops.");
     }
 
     try {
@@ -424,10 +405,7 @@ export class TeamsBotHandler extends TeamsActivityHandler {
           );
         }
         if (error.message === "APPROVAL_NOT_ASSIGNED") {
-          return errorInvokeResponse(
-            403,
-            "You don't have permission to approve this invoice.",
-          );
+          return errorInvokeResponse(403, "You don't have permission to approve this invoice.");
         }
       }
       return errorInvokeResponse(500, "Failed to process approval");
@@ -450,9 +428,7 @@ export class TeamsBotHandler extends TeamsActivityHandler {
     return cardInvokeResponse({
       type: "AdaptiveCard",
       version: "1.5",
-      body: [
-        { type: "TextBlock", text: "Opening rejection form...", wrap: true },
-      ],
+      body: [{ type: "TextBlock", text: "Opening rejection form...", wrap: true }],
     });
   }
 
@@ -561,11 +537,7 @@ export class TeamsBotHandler extends TeamsActivityHandler {
   // Private: Process rejection via Prisma transaction
   // -------------------------------------------------------------------------
 
-  private async processRejection(
-    flowId: string,
-    userId: string,
-    comment: string,
-  ): Promise<void> {
+  private async processRejection(flowId: string, userId: string, comment: string): Promise<void> {
     await prisma.$transaction(async (tx) => {
       const step = await tx.approvalStep.findFirst({
         where: {
@@ -636,15 +608,11 @@ export class TeamsBotHandler extends TeamsActivityHandler {
    * Called when the bot is installed in a personal scope or team.
    * Captures the ConversationReference for future proactive messaging.
    */
-  protected async onInstallationUpdateAddActivity(
-    context: TurnContext,
-  ): Promise<void> {
+  protected async onInstallationUpdateAddActivity(context: TurnContext): Promise<void> {
     await this.captureConversationReference(context);
   }
 
-  private async captureConversationReference(
-    context: TurnContext,
-  ): Promise<void> {
+  private async captureConversationReference(context: TurnContext): Promise<void> {
     try {
       const ref = TurnContext.getConversationReference(context.activity);
 

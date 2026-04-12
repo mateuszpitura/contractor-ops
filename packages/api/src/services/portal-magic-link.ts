@@ -1,4 +1,4 @@
-import { randomBytes, createHash } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 import { prisma } from "@contractor-ops/db";
 import { Resend } from "resend";
 
@@ -53,9 +53,7 @@ export async function createMagicLinkToken(
  * Marks the token as used (sets `usedAt`) to enforce single-use semantics.
  * Returns null for invalid, expired, or already-used tokens.
  */
-export async function verifyMagicLinkToken(
-  rawToken: string,
-): Promise<{ email: string } | null> {
+export async function verifyMagicLinkToken(rawToken: string): Promise<{ email: string } | null> {
   const hashedToken = createHash("sha256").update(rawToken).digest("hex");
 
   // Atomic find-and-mark-used to prevent race conditions (two concurrent
@@ -142,8 +140,6 @@ export async function sendPortalMagicLink(opts: {
       `.trim(),
     });
   } else {
-    console.log(
-      `[DEV] Portal magic link for ${opts.email}: ${magicLinkUrl}`,
-    );
+    console.log(`[DEV] Portal magic link for ${opts.email}: ${magicLinkUrl}`);
   }
 }

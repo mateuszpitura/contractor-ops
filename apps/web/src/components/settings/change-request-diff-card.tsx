@@ -1,15 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { useTranslations } from "next-intl";
-
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -18,6 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
@@ -141,9 +140,7 @@ export function ChangeRequestDiffCard({
 
   const changedFields = Object.keys(request.requestedChanges);
   const createdAt =
-    typeof request.createdAt === "string"
-      ? new Date(request.createdAt)
-      : request.createdAt;
+    typeof request.createdAt === "string" ? new Date(request.createdAt) : request.createdAt;
   const statusVariant = STATUS_BADGE_VARIANTS[request.status];
 
   function getFieldLabel(key: string): string {
@@ -164,9 +161,7 @@ export function ChangeRequestDiffCard({
         <CardHeader>
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h4 className="text-sm font-semibold">
-                {t("title")}
-              </h4>
+              <h4 className="text-sm font-semibold">{t("title")}</h4>
               <p className="text-sm text-muted-foreground">
                 {request.contractorName} &middot; {request.contractorEmail}
               </p>
@@ -185,13 +180,22 @@ export function ChangeRequestDiffCard({
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b bg-muted/30">
-                  <th scope="col" className="px-3 py-2 text-start text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <th
+                    scope="col"
+                    className="px-3 py-2 text-start text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                  >
                     {t("table.field")}
                   </th>
-                  <th scope="col" className="px-3 py-2 text-start text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <th
+                    scope="col"
+                    className="px-3 py-2 text-start text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                  >
                     {t("table.currentValue")}
                   </th>
-                  <th scope="col" className="px-3 py-2 text-start text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <th
+                    scope="col"
+                    className="px-3 py-2 text-start text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                  >
                     {t("table.requestedValue")}
                   </th>
                 </tr>
@@ -199,12 +203,8 @@ export function ChangeRequestDiffCard({
               <tbody>
                 {changedFields.map((key) => (
                   <tr key={key} className="border-b last:border-b-0 bg-muted">
-                    <td className="px-3 py-2 text-muted-foreground">
-                      {getFieldLabel(key)}
-                    </td>
-                    <td className="px-3 py-2">
-                      {String(request.previousValues[key] ?? "-")}
-                    </td>
+                    <td className="px-3 py-2 text-muted-foreground">{getFieldLabel(key)}</td>
+                    <td className="px-3 py-2">{String(request.previousValues[key] ?? "-")}</td>
                     <td className="px-3 py-2 font-semibold">
                       {String(request.requestedChanges[key] ?? "-")}
                     </td>
@@ -219,9 +219,7 @@ export function ChangeRequestDiffCard({
             <div className="flex items-center gap-2">
               <Button
                 onClick={handleApprove}
-                disabled={
-                  approveMutation.isPending || rejectMutation.isPending
-                }
+                disabled={approveMutation.isPending || rejectMutation.isPending}
               >
                 {approveMutation.isPending ? t("approving") : t("approveChanges")}
               </Button>
@@ -229,9 +227,7 @@ export function ChangeRequestDiffCard({
                 variant="outline"
                 className="text-destructive hover:text-destructive"
                 onClick={() => setRejectDialogOpen(true)}
-                disabled={
-                  approveMutation.isPending || rejectMutation.isPending
-                }
+                disabled={approveMutation.isPending || rejectMutation.isPending}
               >
                 {t("rejectChanges")}
               </Button>
@@ -241,16 +237,11 @@ export function ChangeRequestDiffCard({
       </Card>
 
       {/* Reject confirmation dialog */}
-      <Dialog
-        open={rejectDialogOpen}
-        onOpenChange={setRejectDialogOpen}
-      >
+      <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t("rejectTitle")}</DialogTitle>
-            <DialogDescription>
-              {t("rejectDescription")}
-            </DialogDescription>
+            <DialogDescription>{t("rejectDescription")}</DialogDescription>
           </DialogHeader>
           <Textarea
             placeholder={t("rejectPlaceholder")}
@@ -264,9 +255,7 @@ export function ChangeRequestDiffCard({
               onClick={handleRejectConfirm}
               disabled={rejectMutation.isPending}
             >
-              {rejectMutation.isPending
-                ? t("rejecting")
-                : t("confirmRejection")}
+              {rejectMutation.isPending ? t("rejecting") : t("confirmRejection")}
             </Button>
           </DialogFooter>
         </DialogContent>

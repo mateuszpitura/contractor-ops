@@ -1,13 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { format, formatDistanceToNow } from "date-fns";
 import { Loader2 } from "lucide-react";
-import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { formatDistanceToNow, format } from "date-fns";
-
-import { trpc } from "@/trpc/init";
+import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -17,8 +15,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ShipmentStatusBadge } from "./shipment-status-badge";
 import { cn } from "@/lib/utils";
+import { trpc } from "@/trpc/init";
+import { ShipmentStatusBadge } from "./shipment-status-badge";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -100,7 +99,7 @@ export function ShipmentTimeline({
     if (!newStatus) return;
     addEventMutation.mutate({
       shipmentId,
-      status: newStatus as typeof UPDATABLE_STATUSES[number],
+      status: newStatus as (typeof UPDATABLE_STATUSES)[number],
       notes: newNotes || undefined,
     });
   };
@@ -113,14 +112,12 @@ export function ShipmentTimeline({
 
   // Determine which statuses are completed, current, or pending
   const currentIndex = SHIPMENT_STATUS_ORDER.indexOf(
-    currentStatus as typeof SHIPMENT_STATUS_ORDER[number],
+    currentStatus as (typeof SHIPMENT_STATUS_ORDER)[number],
   );
 
   // Terminal statuses
   const isTerminal =
-    currentStatus === "DELIVERED" ||
-    currentStatus === "FAILED" ||
-    currentStatus === "RETURNED";
+    currentStatus === "DELIVERED" || currentStatus === "FAILED" || currentStatus === "RETURNED";
 
   return (
     <div className="space-y-4">
@@ -159,9 +156,7 @@ export function ShipmentTimeline({
             onClick={handleAddEvent}
             disabled={!newStatus || addEventMutation.isPending}
           >
-            {addEventMutation.isPending && (
-              <Loader2 className="me-1 h-3 w-3 animate-spin" />
-            )}
+            {addEventMutation.isPending && <Loader2 className="me-1 h-3 w-3 animate-spin" />}
             Add
           </Button>
         </div>
@@ -225,9 +220,7 @@ export function ShipmentTimeline({
                       {t(`shipment.status.${status}`)}
                     </span>
                     {event?.notes && (
-                      <p className="mt-0.5 text-xs text-muted-foreground">
-                        {event.notes}
-                      </p>
+                      <p className="mt-0.5 text-xs text-muted-foreground">{event.notes}</p>
                     )}
                   </div>
 
@@ -238,9 +231,7 @@ export function ShipmentTimeline({
                   )}
 
                   {isPending && !event && (
-                    <span className="shrink-0 text-xs text-muted-foreground/40">
-                      (pending)
-                    </span>
+                    <span className="shrink-0 text-xs text-muted-foreground/40">(pending)</span>
                   )}
                 </div>
               </div>
@@ -266,10 +257,7 @@ export function ShipmentTimeline({
                     )}
                   </div>
                   <span className="shrink-0 text-xs text-muted-foreground">
-                    {format(
-                      new Date(eventByStatus.get(currentStatus)!.occurredAt),
-                      "MMM d, HH:mm",
-                    )}
+                    {format(new Date(eventByStatus.get(currentStatus)!.occurredAt), "MMM d, HH:mm")}
                   </span>
                 </div>
               </div>

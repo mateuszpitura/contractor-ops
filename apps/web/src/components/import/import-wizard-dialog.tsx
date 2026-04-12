@@ -1,19 +1,10 @@
 "use client";
 
-import { useState, useCallback } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Check, Loader2 } from "lucide-react";
-import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { useCallback, useState } from "react";
+import { toast } from "sonner";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,12 +15,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-
-import { StepUpload } from "./step-upload";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { trpc } from "@/trpc/init";
+import { StepConfirm } from "./step-confirm";
+import { StepDuplicates } from "./step-duplicates";
 import { StepMapping } from "./step-mapping";
 import { StepPreview } from "./step-preview";
-import { StepDuplicates } from "./step-duplicates";
-import { StepConfirm } from "./step-confirm";
+import { StepUpload } from "./step-upload";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -67,7 +60,7 @@ interface CommitResult {
   failed: number;
 }
 
-export type { ImportRow, ParseResult, ImportResult, CommitResult, EntityType };
+export type { CommitResult, EntityType, ImportResult, ImportRow, ParseResult };
 
 // ---------------------------------------------------------------------------
 // Step indicator
@@ -83,18 +76,25 @@ function StepIndicator({
   const tAria = useTranslations("Common.aria");
   const visibleSteps = steps.filter((s) => s.visible);
   const visibleIndex = visibleSteps.findIndex(
-    (s) => s === steps.filter((_, i) => i <= currentStep).findLast((s2) => s2.visible)
+    (s) => s === steps.filter((_, i) => i <= currentStep).findLast((s2) => s2.visible),
   );
 
   return (
-    <nav aria-label={tAria("wizardProgress")} className="flex items-center justify-center gap-0 py-3">
+    <nav
+      aria-label={tAria("wizardProgress")}
+      className="flex items-center justify-center gap-0 py-3"
+    >
       {visibleSteps.map((step, index) => {
         const isCompleted = index < visibleIndex;
         const isCurrent = index === visibleIndex;
         const status = isCompleted ? "completed" : isCurrent ? "current" : "upcoming";
 
         return (
-          <div key={step.label} className="flex items-center" aria-current={isCurrent ? "step" : undefined}>
+          <div
+            key={step.label}
+            className="flex items-center"
+            aria-current={isCurrent ? "step" : undefined}
+          >
             {index > 0 && (
               <div
                 aria-hidden="true"
@@ -103,7 +103,11 @@ function StepIndicator({
                 }`}
               />
             )}
-            <div className="flex items-center gap-1.5" role="listitem" aria-label={tAria("wizardStep", { step: index + 1, label: step.label, status })}>
+            <div
+              className="flex items-center gap-1.5"
+              role="listitem"
+              aria-label={tAria("wizardStep", { step: index + 1, label: step.label, status })}
+            >
               <div
                 aria-hidden="true"
                 className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold transition-colors ${
@@ -114,17 +118,11 @@ function StepIndicator({
                       : "bg-muted text-muted-foreground ring-1 ring-border"
                 }`}
               >
-                {isCompleted ? (
-                  <Check className="h-3 w-3" />
-                ) : (
-                  index + 1
-                )}
+                {isCompleted ? <Check className="h-3 w-3" /> : index + 1}
               </div>
               <span
                 className={`hidden whitespace-nowrap text-[13px] sm:inline ${
-                  isCurrent
-                    ? "font-medium text-foreground"
-                    : "text-muted-foreground"
+                  isCurrent ? "font-medium text-foreground" : "text-muted-foreground"
                 }`}
               >
                 {step.label}
@@ -184,7 +182,7 @@ export function ImportWizardDialog({
       onError: () => {
         toast.error(t("parseError"));
       },
-    })
+    }),
   );
 
   const validateMutation = useMutation(
@@ -197,7 +195,7 @@ export function ImportWizardDialog({
       onError: () => {
         toast.error(t("validateError"));
       },
-    })
+    }),
   );
 
   const commitMutation = useMutation(
@@ -212,13 +210,11 @@ export function ImportWizardDialog({
       onError: () => {
         toast.error(t("importError"));
       },
-    })
+    }),
   );
 
   const isProcessing =
-    parseMutation.isPending ||
-    validateMutation.isPending ||
-    commitMutation.isPending;
+    parseMutation.isPending || validateMutation.isPending || commitMutation.isPending;
 
   const hasDuplicates = (validateResult?.duplicateRows?.length ?? 0) > 0;
 
@@ -226,13 +222,10 @@ export function ImportWizardDialog({
   // Handlers
   // -----------------------------------------------------------------------
 
-  const handleFileSelected = useCallback(
-    (base64: string, name: string) => {
-      setFileBase64(base64);
-      setFileName(name);
-    },
-    []
-  );
+  const handleFileSelected = useCallback((base64: string, name: string) => {
+    setFileBase64(base64);
+    setFileName(name);
+  }, []);
 
   const resetWizard = useCallback(() => {
     setCurrentStep(0);
@@ -257,7 +250,7 @@ export function ImportWizardDialog({
       resetWizard();
       onOpenChange(false);
     },
-    [fileBase64, parseResult, resetWizard, onOpenChange]
+    [fileBase64, parseResult, resetWizard, onOpenChange],
   );
 
   const handleDiscard = useCallback(() => {
@@ -297,7 +290,7 @@ export function ImportWizardDialog({
         // Duplicates -> confirm
         setCurrentStep(4);
         break;
-      case 4:
+      case 4: {
         // Confirm -> commit
         if (!validateResult) return;
         // Remap duplicateActions from rowNumber keys to taxId keys
@@ -306,25 +299,22 @@ export function ImportWizardDialog({
         for (const row of validateResult.duplicateRows) {
           const action = duplicateActions[String(row.rowNumber)];
           if (action) {
-            const taxId = String(
-              row.data.taxId ?? row.data.contractorTaxId ?? "",
-            );
+            const taxId = String(row.data.taxId ?? row.data.contractorTaxId ?? "");
             if (taxId) taxIdActions[taxId] = action;
           }
         }
         commitMutation.mutate({
           entityType,
           rows: [
-            ...(validateResult.validRows).map((r) => r.data),
-            ...(validateResult.duplicateRows)
-              .filter(
-                (r) => duplicateActions[String(r.rowNumber)] !== "skip",
-              )
+            ...validateResult.validRows.map((r) => r.data),
+            ...validateResult.duplicateRows
+              .filter((r) => duplicateActions[String(r.rowNumber)] !== "skip")
               .map((r) => r.data),
           ],
           duplicateActions: taxIdActions,
         });
         break;
+      }
     }
   }, [
     currentStep,
@@ -471,21 +461,13 @@ export function ImportWizardDialog({
                     {t("actions.back")}
                   </Button>
                 ) : (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => handleClose()}
-                  >
+                  <Button type="button" variant="ghost" onClick={() => handleClose()}>
                     {fileBase64 ? t("actions.discard") : t("actions.close")}
                   </Button>
                 )}
               </div>
               {currentStep < 4 && (
-                <Button
-                  type="button"
-                  onClick={handleNext}
-                  disabled={!canProceed || isProcessing}
-                >
+                <Button type="button" onClick={handleNext} disabled={!canProceed || isProcessing}>
                   {isProcessing ? (
                     <>
                       <Loader2 className="me-2 h-4 w-4 animate-spin" />
@@ -502,23 +484,15 @@ export function ImportWizardDialog({
       </Dialog>
 
       {/* Discard confirmation */}
-      <AlertDialog
-        open={showDiscardDialog}
-        onOpenChange={setShowDiscardDialog}
-      >
+      <AlertDialog open={showDiscardDialog} onOpenChange={setShowDiscardDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t("discard.title")}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("discard.description")}
-            </AlertDialogDescription>
+            <AlertDialogDescription>{t("discard.description")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t("discard.keep")}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDiscard}
-              variant="destructive"
-            >
+            <AlertDialogAction onClick={handleDiscard} variant="destructive">
               {t("discard.discard")}
             </AlertDialogAction>
           </AlertDialogFooter>

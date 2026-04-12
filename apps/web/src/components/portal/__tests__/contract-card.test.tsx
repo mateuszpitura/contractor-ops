@@ -41,9 +41,7 @@ describe("ContractCard", () => {
   it("renders contract title", () => {
     render(<ContractCard contract={makeContract()} />);
 
-    expect(
-      screen.getByText("Software Development Agreement"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Software Development Agreement")).toBeInTheDocument();
   });
 
   it("renders contract number when provided", () => {
@@ -53,9 +51,7 @@ describe("ContractCard", () => {
   });
 
   it("does NOT render contract number when null", () => {
-    render(
-      <ContractCard contract={makeContract({ contractNumber: null })} />,
-    );
+    render(<ContractCard contract={makeContract({ contractNumber: null })} />);
 
     expect(screen.queryByText("CTR-2026-001")).not.toBeInTheDocument();
   });
@@ -71,9 +67,7 @@ describe("ContractCard", () => {
   });
 
   it('shows "Ongoing" when endDate is null', () => {
-    render(
-      <ContractCard contract={makeContract({ endDate: null })} />,
-    );
+    render(<ContractCard contract={makeContract({ endDate: null })} />);
 
     expect(screen.getByText(/Ongoing/)).toBeInTheDocument();
   });
@@ -89,11 +83,7 @@ describe("ContractCard", () => {
   });
 
   it("does not show rate when rateValueMinor is null", () => {
-    render(
-      <ContractCard
-        contract={makeContract({ rateValueMinor: null, rateType: null })}
-      />,
-    );
+    render(<ContractCard contract={makeContract({ rateValueMinor: null, rateType: null })} />);
 
     expect(screen.queryByText(/\/mo/)).not.toBeInTheDocument();
   });

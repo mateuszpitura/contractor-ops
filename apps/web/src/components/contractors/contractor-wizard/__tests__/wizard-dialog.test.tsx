@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, setup, waitFor } from "@/test/test-utils";
 import { WizardDialog } from "../wizard-dialog";
 
@@ -11,15 +11,11 @@ vi.mock("sonner", () => ({
 }));
 
 vi.mock("../step-company", () => ({
-  StepCompany: ({ form }: { form: unknown }) => (
-    <div data-testid="step-company">Step Company</div>
-  ),
+  StepCompany: ({ form }: { form: unknown }) => <div data-testid="step-company">Step Company</div>,
 }));
 
 vi.mock("../step-billing", () => ({
-  StepBilling: ({ form }: { form: unknown }) => (
-    <div data-testid="step-billing">Step Billing</div>
-  ),
+  StepBilling: ({ form }: { form: unknown }) => <div data-testid="step-billing">Step Billing</div>,
 }));
 
 vi.mock("../step-assignment", () => ({
@@ -31,9 +27,8 @@ vi.mock("../step-assignment", () => ({
 const mockMutate = vi.fn();
 
 vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
-    "@tanstack/react-query",
-  );
+  const actual =
+    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
   return {
     ...actual,
     useMutation: (opts: Record<string, unknown>) => ({

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { mockNotionSearchPages, mockConfluenceSearchPages } = vi.hoisted(() => {
   return {
@@ -29,12 +29,7 @@ vi.mock("@contractor-ops/integrations/adapters/confluence-adapter", () => {
   };
 });
 
-import {
-  attachDocLink,
-  detachDocLink,
-  getDocLinks,
-  searchDocs,
-} from "../doc-link-service.js";
+import { attachDocLink, detachDocLink, getDocLinks, searchDocs } from "../doc-link-service.js";
 
 const mockPrisma = {
   externalLink: {
@@ -466,10 +461,22 @@ describe("searchDocs", () => {
       });
 
     mockNotionSearchPages.mockResolvedValue([
-      { id: "n1", title: "Notion Page", icon: null, lastEditedTime: "", url: "https://notion.so/n1" },
+      {
+        id: "n1",
+        title: "Notion Page",
+        icon: null,
+        lastEditedTime: "",
+        url: "https://notion.so/n1",
+      },
     ]);
     mockConfluenceSearchPages.mockResolvedValue([
-      { id: "c1", title: "Confluence Page", spaceKey: "DEV", spaceName: "Dev", url: "https://site.atlassian.net/c1" },
+      {
+        id: "c1",
+        title: "Confluence Page",
+        spaceKey: "DEV",
+        spaceName: "Dev",
+        url: "https://site.atlassian.net/c1",
+      },
     ]);
 
     const results = await searchDocs({

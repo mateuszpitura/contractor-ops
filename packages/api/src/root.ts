@@ -36,9 +36,9 @@ import { settingsRouter } from "./routers/settings.js";
 import { taxRouter } from "./routers/tax.js";
 import { teamsRouter } from "./routers/teams.js";
 import { timeRouter } from "./routers/time.js";
-import { zatcaRouter } from "./routers/zatca.js";
 import { userRouter } from "./routers/user.js";
 import { workflowRouter } from "./routers/workflow.js";
+import { zatcaRouter } from "./routers/zatca.js";
 
 /**
  * Root tRPC router merging all sub-routers.

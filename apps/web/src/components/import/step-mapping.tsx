@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo } from "react";
-import { CheckCircle2, AlertCircle } from "lucide-react";
+import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useMemo } from "react";
 
 import {
   Select,
@@ -68,8 +68,7 @@ export function StepMapping({
   const t = useTranslations("Import");
   const tAria = useTranslations("Common.aria");
 
-  const targetFields =
-    entityType === "contractor" ? CONTRACTOR_FIELDS : CONTRACT_FIELDS;
+  const targetFields = entityType === "contractor" ? CONTRACTOR_FIELDS : CONTRACT_FIELDS;
 
   // Track which target fields are already mapped
   const usedTargets = useMemo(() => {
@@ -100,9 +99,7 @@ export function StepMapping({
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-muted-foreground">
-        {t("mapping.description")}
-      </p>
+      <p className="text-sm text-muted-foreground">{t("mapping.description")}</p>
 
       {/* Mapping grid */}
       <div className="space-y-2">
@@ -128,14 +125,10 @@ export function StepMapping({
                   ) : (
                     <AlertCircle aria-hidden="true" className="size-4 shrink-0 text-amber-500" />
                   )}
-                  <span className="truncate text-sm font-medium">
-                    {header}
-                  </span>
+                  <span className="truncate text-sm font-medium">{header}</span>
                 </div>
                 {sample && (
-                  <p className="mt-0.5 truncate ps-6 text-xs text-muted-foreground">
-                    {sample}
-                  </p>
+                  <p className="mt-0.5 truncate ps-6 text-xs text-muted-foreground">{sample}</p>
                 )}
               </div>
 
@@ -149,20 +142,12 @@ export function StepMapping({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="__skip__">
-                    {t("mapping.skip")}
-                  </SelectItem>
+                  <SelectItem value="__skip__">{t("mapping.skip")}</SelectItem>
                   {targetFields.map((field) => {
-                    const isUsedByOther =
-                      usedTargets.has(field.key) &&
-                      currentTarget !== field.key;
+                    const isUsedByOther = usedTargets.has(field.key) && currentTarget !== field.key;
 
                     return (
-                      <SelectItem
-                        key={field.key}
-                        value={field.key}
-                        disabled={isUsedByOther}
-                      >
+                      <SelectItem key={field.key} value={field.key} disabled={isUsedByOther}>
                         {field.label}
                         {field.required ? " *" : ""}
                       </SelectItem>

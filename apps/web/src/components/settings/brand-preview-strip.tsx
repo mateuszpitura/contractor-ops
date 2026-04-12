@@ -22,17 +22,11 @@ export function BrandPreviewStrip({ color }: BrandPreviewStripProps) {
         {t("previewButton")}
       </span>
 
-      <span
-        className="text-sm underline underline-offset-2"
-        style={{ color }}
-      >
+      <span className="text-sm underline underline-offset-2" style={{ color }}>
         {t("previewLink")}
       </span>
 
-      <div
-        className="h-0.5 w-12 rounded-full"
-        style={{ backgroundColor: color }}
-      />
+      <div className="h-0.5 w-12 rounded-full" style={{ backgroundColor: color }} />
     </div>
   );
 }

@@ -25,9 +25,7 @@ describe("ActivityLog", () => {
   it("renders detail when provided", () => {
     render(
       <ActivityLog
-        entries={[
-          { event: "Invoice reviewed", detail: "Needs revision", timestamp: new Date() },
-        ]}
+        entries={[{ event: "Invoice reviewed", detail: "Needs revision", timestamp: new Date() }]}
       />,
     );
 
@@ -35,13 +33,7 @@ describe("ActivityLog", () => {
   });
 
   it("renders relative time for recent events", () => {
-    render(
-      <ActivityLog
-        entries={[
-          { event: "Just happened", timestamp: new Date() },
-        ]}
-      />,
-    );
+    render(<ActivityLog entries={[{ event: "Just happened", timestamp: new Date() }]} />);
 
     expect(screen.getByText("Just now")).toBeInTheDocument();
   });

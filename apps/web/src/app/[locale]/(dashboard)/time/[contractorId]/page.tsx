@@ -1,16 +1,15 @@
 "use client";
 
-import { Suspense, useCallback, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Clock } from "lucide-react";
 import { useParams, useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useMemo } from "react";
 import { toast } from "sonner";
-
-import { trpc } from "@/trpc/init";
-import { useRouter } from "@/i18n/navigation";
-import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/shared/empty-state";
 import { ContractorTimesheetReview } from "@/components/time/contractor-timesheet-review";
-import { Clock } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useRouter } from "@/i18n/navigation";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Inner content
@@ -36,9 +35,7 @@ function ContractorReviewContent() {
   });
 
   const timesheetId = useMemo(() => {
-    const data = listQuery.data as
-      | { items: Array<{ id: string }> }
-      | undefined;
+    const data = listQuery.data as { items: Array<{ id: string }> } | undefined;
     return data?.items?.[0]?.id;
   }, [listQuery.data]);
 

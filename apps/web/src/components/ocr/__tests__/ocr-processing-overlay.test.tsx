@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { render, screen } from "@/test/test-utils";
 import { OcrProcessingOverlay } from "../ocr-processing-overlay";
 
@@ -6,9 +6,7 @@ describe("OcrProcessingOverlay", () => {
   it("renders the analyzing text", () => {
     render(<OcrProcessingOverlay />);
     expect(screen.getByText("Analyzing invoice...")).toBeInTheDocument();
-    expect(
-      screen.getByText("This usually takes a few seconds"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("This usually takes a few seconds")).toBeInTheDocument();
   });
 
   it("renders skeleton fields underneath the overlay", () => {

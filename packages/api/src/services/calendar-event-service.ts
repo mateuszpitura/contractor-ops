@@ -1,6 +1,6 @@
-import { decryptCredentials } from "@contractor-ops/integrations/services/credential-service";
 import { GoogleCalendarAdapter } from "@contractor-ops/integrations/adapters/google-calendar-adapter";
 import { OutlookCalendarAdapter } from "@contractor-ops/integrations/adapters/outlook-calendar-adapter";
+import { decryptCredentials } from "@contractor-ops/integrations/services/credential-service";
 import type { CalendarEventMetadata } from "@contractor-ops/validators";
 
 // Use loosely typed prisma client for parallel execution compatibility
@@ -93,16 +93,9 @@ async function findCalendarConnections(
   });
 
   return connections.map(
-    (conn: {
-      id: string;
-      provider: string;
-      credentialsRef: string;
-      organizationId: string;
-    }) => {
+    (conn: { id: string; provider: string; credentialsRef: string; organizationId: string }) => {
       const providerSlug =
-        conn.provider === "GOOGLE_CALENDAR"
-          ? "google-calendar"
-          : "outlook-calendar";
+        conn.provider === "GOOGLE_CALENDAR" ? "google-calendar" : "outlook-calendar";
       const credentials = decryptCredentials(conn.credentialsRef, providerSlug);
 
       return {
@@ -133,18 +126,13 @@ export async function createCalendarEvent(
   input: CreateCalendarEventInput,
 ): Promise<void> {
   try {
-    const connections = await findCalendarConnections(
-      prisma,
-      input.organizationId,
-      input.userId,
-    );
+    const connections = await findCalendarConnections(prisma, input.organizationId, input.userId);
 
     if (connections.length === 0) return;
 
     const results = await Promise.allSettled(
       connections.map(async (conn) => {
-        const externalType =
-          EXTERNAL_TYPE_MAP[conn.provider];
+        const externalType = EXTERNAL_TYPE_MAP[conn.provider];
 
         if (conn.provider === "GOOGLE_CALENDAR") {
           const result = await googleAdapter.createEvent(conn.accessToken, {
@@ -214,17 +202,11 @@ export async function createCalendarEvent(
     // Log rejected results for observability
     for (const result of results) {
       if (result.status === "rejected") {
-        console.error(
-          "[calendar-event-service] Failed to create calendar event:",
-          result.reason,
-        );
+        console.error("[calendar-event-service] Failed to create calendar event:", result.reason);
       }
     }
   } catch (error) {
-    console.error(
-      "[calendar-event-service] Unexpected error in createCalendarEvent:",
-      error,
-    );
+    console.error("[calendar-event-service] Unexpected error in createCalendarEvent:", error);
   }
 }
 
@@ -280,13 +262,8 @@ export async function updateCalendarEvent(
           if (conn.status !== "CONNECTED") return;
 
           const providerSlug =
-            conn.provider === "GOOGLE_CALENDAR"
-              ? "google-calendar"
-              : "outlook-calendar";
-          const credentials = decryptCredentials(
-            conn.credentialsRef,
-            providerSlug,
-          );
+            conn.provider === "GOOGLE_CALENDAR" ? "google-calendar" : "outlook-calendar";
+          const credentials = decryptCredentials(conn.credentialsRef, providerSlug);
 
           const existingMetadata =
             (link.metadataJson as CalendarEventMetadata) ?? ({} as CalendarEventMetadata);
@@ -308,9 +285,7 @@ export async function updateCalendarEvent(
             const updatedMetadata: CalendarEventMetadata = {
               ...existingMetadata,
               ...(input.summary ? { title: input.summary } : {}),
-              ...(input.startDateTime
-                ? { startTime: input.startDateTime }
-                : {}),
+              ...(input.startDateTime ? { startTime: input.startDateTime } : {}),
               ...(input.endDateTime ? { endTime: input.endDateTime } : {}),
               etag: result.etag,
               link: result.htmlLink,
@@ -339,9 +314,7 @@ export async function updateCalendarEvent(
             const updatedMetadata: CalendarEventMetadata = {
               ...existingMetadata,
               ...(input.summary ? { title: input.summary } : {}),
-              ...(input.startDateTime
-                ? { startTime: input.startDateTime }
-                : {}),
+              ...(input.startDateTime ? { startTime: input.startDateTime } : {}),
               ...(input.endDateTime ? { endTime: input.endDateTime } : {}),
               link: result.webLink,
               provider: "outlook_calendar",
@@ -361,17 +334,11 @@ export async function updateCalendarEvent(
 
     for (const result of results) {
       if (result.status === "rejected") {
-        console.error(
-          "[calendar-event-service] Failed to update calendar event:",
-          result.reason,
-        );
+        console.error("[calendar-event-service] Failed to update calendar event:", result.reason);
       }
     }
   } catch (error) {
-    console.error(
-      "[calendar-event-service] Unexpected error in updateCalendarEvent:",
-      error,
-    );
+    console.error("[calendar-event-service] Unexpected error in updateCalendarEvent:", error);
   }
 }
 
@@ -428,31 +395,17 @@ export async function deleteCalendarEvent(
           try {
             if (conn.status === "CONNECTED") {
               const providerSlug =
-                conn.provider === "GOOGLE_CALENDAR"
-                  ? "google-calendar"
-                  : "outlook-calendar";
-              const credentials = decryptCredentials(
-                conn.credentialsRef,
-                providerSlug,
-              );
+                conn.provider === "GOOGLE_CALENDAR" ? "google-calendar" : "outlook-calendar";
+              const credentials = decryptCredentials(conn.credentialsRef, providerSlug);
 
               if (conn.provider === "GOOGLE_CALENDAR") {
-                await googleAdapter.deleteEvent(
-                  credentials.accessToken,
-                  link.externalId,
-                );
+                await googleAdapter.deleteEvent(credentials.accessToken, link.externalId);
               } else {
-                await outlookAdapter.deleteEvent(
-                  credentials.accessToken,
-                  link.externalId,
-                );
+                await outlookAdapter.deleteEvent(credentials.accessToken, link.externalId);
               }
             }
           } catch (deleteError) {
-            console.error(
-              "[calendar-event-service] Failed to delete provider event:",
-              deleteError,
-            );
+            console.error("[calendar-event-service] Failed to delete provider event:", deleteError);
           }
 
           // Always clean up the ExternalLink
@@ -465,16 +418,10 @@ export async function deleteCalendarEvent(
 
     for (const result of results) {
       if (result.status === "rejected") {
-        console.error(
-          "[calendar-event-service] Failed to delete calendar event:",
-          result.reason,
-        );
+        console.error("[calendar-event-service] Failed to delete calendar event:", result.reason);
       }
     }
   } catch (error) {
-    console.error(
-      "[calendar-event-service] Unexpected error in deleteCalendarEvent:",
-      error,
-    );
+    console.error("[calendar-event-service] Unexpected error in deleteCalendarEvent:", error);
   }
 }

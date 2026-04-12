@@ -1,23 +1,23 @@
-import { z } from "zod";
-import { TRPCError } from "@trpc/server";
 import { prisma } from "@contractor-ops/db";
 import {
   contractorCreateSchema,
-  contractorUpdateSchema,
-  contractorListSchema,
   contractorLifecycleTransitionSchema,
-  gusLookupSchema,
+  contractorListSchema,
+  contractorUpdateSchema,
   countryFieldsSchemaMap,
+  gusLookupSchema,
   validateTin,
 } from "@contractor-ops/validators";
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 import * as E from "../errors.js";
 import { router } from "../init.js";
-import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
+import { tenantProcedure } from "../middleware/tenant.js";
 import { encryptBankAccount } from "../services/bank-account-crypto.js";
-import { sanitizeStrings } from "../services/sanitize.js";
 import { syncSeatCountForOrg } from "../services/billing-service.js";
-import { invalidateByPrefix, CacheKeys } from "../services/cache.js";
+import { CacheKeys, invalidateByPrefix } from "../services/cache.js";
+import { sanitizeStrings } from "../services/sanitize.js";
 
 // ---------------------------------------------------------------------------
 // Lifecycle transition map
@@ -57,9 +57,7 @@ function computeComplianceHealth(params: {
   const factors: HealthFactor[] = [];
 
   // Documents
-  const hasMissing = params.complianceItems.some(
-    (i) => i.status === "MISSING",
-  );
+  const hasMissing = params.complianceItems.some((i) => i.status === "MISSING");
   const hasExpiredOrPending = params.complianceItems.some(
     (i) => i.status === "EXPIRED" || i.status === "PENDING",
   );
@@ -260,9 +258,7 @@ export const contractorRouter = router({
             })
           : [];
 
-      const pendingMap = new Map(
-        pendingCounts.map((p) => [p.contractorId, p._count]),
-      );
+      const pendingMap = new Map(pendingCounts.map((p) => [p.contractorId, p._count]));
 
       const items = contractors.map((c) => ({
         ...plain(c),
@@ -296,9 +292,7 @@ export const contractorRouter = router({
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
       const now = new Date();
-      const thirtyDaysFromNow = new Date(
-        now.getTime() + 30 * 24 * 60 * 60 * 1000,
-      );
+      const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
       const contractor = await prisma.contractor.findFirst({
         where: {
@@ -369,15 +363,10 @@ export const contractorRouter = router({
       }
 
       // Count active and expiring contracts
-      const activeContractCount = contractor.contracts.filter(
-        (c) => c.status === "ACTIVE",
-      ).length;
+      const activeContractCount = contractor.contracts.filter((c) => c.status === "ACTIVE").length;
       const expiringContractCount = contractor.contracts.filter(
         (c) =>
-          c.status === "ACTIVE" &&
-          c.endDate &&
-          c.endDate <= thirtyDaysFromNow &&
-          c.endDate >= now,
+          c.status === "ACTIVE" && c.endDate && c.endDate <= thirtyDaysFromNow && c.endDate >= now,
       ).length;
 
       const health = computeComplianceHealth({
@@ -446,9 +435,7 @@ export const contractorRouter = router({
         });
 
         // Create default billing profile
-        const maskedIban = bankAccount
-          ? `****${bankAccount.replace(/\s/g, "").slice(-4)}`
-          : null;
+        const maskedIban = bankAccount ? `****${bankAccount.replace(/\s/g, "").slice(-4)}` : null;
 
         await tx.contractorBillingProfile.create({
           data: {
@@ -519,19 +506,15 @@ export const contractorRouter = router({
         ...companyFields,
       };
 
-      if (ownerUserId !== undefined)
-        updateData.ownerUserId = ownerUserId ?? null;
-      if (primaryTeamId !== undefined)
-        updateData.primaryTeamId = primaryTeamId ?? null;
-      if (primaryProjectId !== undefined)
-        updateData.primaryProjectId = primaryProjectId ?? null;
+      if (ownerUserId !== undefined) updateData.ownerUserId = ownerUserId ?? null;
+      if (primaryTeamId !== undefined) updateData.primaryTeamId = primaryTeamId ?? null;
+      if (primaryProjectId !== undefined) updateData.primaryProjectId = primaryProjectId ?? null;
       if (defaultCostCenterId !== undefined)
         updateData.defaultCostCenterId = defaultCostCenterId ?? null;
 
       // Update customFieldsJson for billing fields
       if (billingModel !== undefined || rateValueMinor !== undefined) {
-        const currentCustom =
-          (existing.customFieldsJson as Record<string, unknown>) ?? {};
+        const currentCustom = (existing.customFieldsJson as Record<string, unknown>) ?? {};
         updateData.customFieldsJson = {
           ...currentCustom,
           ...(billingModel !== undefined ? { billingModel } : {}),
@@ -546,28 +529,21 @@ export const contractorRouter = router({
 
       // Update default billing profile if billing fields changed
       if (bankAccount !== undefined || paymentTermsDays !== undefined) {
-        const defaultProfile =
-          await prisma.contractorBillingProfile.findFirst({
-            where: {
-              contractorId: id,
-              organizationId: ctx.organizationId,
-              isDefault: true,
-            },
-          });
+        const defaultProfile = await prisma.contractorBillingProfile.findFirst({
+          where: {
+            contractorId: id,
+            organizationId: ctx.organizationId,
+            isDefault: true,
+          },
+        });
 
         if (defaultProfile) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const profileUpdate: Record<string, any> = {};
           if (bankAccount !== undefined) {
-            const cleaned = bankAccount
-              ? bankAccount.replace(/\s/g, "")
-              : null;
-            profileUpdate.bankAccountEncrypted = cleaned
-              ? encryptBankAccount(cleaned)
-              : null;
-            profileUpdate.bankAccountMasked = cleaned
-              ? `****${cleaned.slice(-4)}`
-              : null;
+            const cleaned = bankAccount ? bankAccount.replace(/\s/g, "") : null;
+            profileUpdate.bankAccountEncrypted = cleaned ? encryptBankAccount(cleaned) : null;
+            profileUpdate.bankAccountMasked = cleaned ? `****${cleaned.slice(-4)}` : null;
           }
           if (paymentTermsDays !== undefined) {
             profileUpdate.paymentTermsDays = paymentTermsDays ?? null;
@@ -604,8 +580,7 @@ export const contractorRouter = router({
         });
       }
 
-      const allowedTargets =
-        LEGAL_TRANSITIONS[contractor.lifecycleStage] ?? [];
+      const allowedTargets = LEGAL_TRANSITIONS[contractor.lifecycleStage] ?? [];
       if (!allowedTargets.includes(input.stage)) {
         throw new TRPCError({
           code: "BAD_REQUEST",
@@ -640,10 +615,7 @@ export const contractorRouter = router({
       // Side-effects based on target stage
       if (input.stage === "ENDED") {
         updateData.status = "INACTIVE";
-      } else if (
-        input.stage === "ACTIVE" &&
-        contractor.status === "INACTIVE"
-      ) {
+      } else if (input.stage === "ACTIVE" && contractor.status === "INACTIVE") {
         updateData.status = "ACTIVE";
       }
 
@@ -777,7 +749,9 @@ export const contractorRouter = router({
         },
       });
 
-      const blockedByUnpaid = new Set(contractorsWithUnpaid.map((i) => i.contractorId).filter(Boolean));
+      const blockedByUnpaid = new Set(
+        contractorsWithUnpaid.map((i) => i.contractorId).filter(Boolean),
+      );
 
       // Block archival for contractors with active contracts
       const contractorsWithActiveContracts = await prisma.contract.groupBy({
@@ -790,16 +764,19 @@ export const contractorRouter = router({
         },
       });
 
-      const blockedByContracts = new Set(contractorsWithActiveContracts.map((c) => c.contractorId).filter(Boolean));
+      const blockedByContracts = new Set(
+        contractorsWithActiveContracts.map((c) => c.contractorId).filter(Boolean),
+      );
       const blockedIds = new Set([...blockedByUnpaid, ...blockedByContracts]);
       const archivableIds = input.ids.filter((id) => !blockedIds.has(id));
 
       if (archivableIds.length === 0 && blockedIds.size > 0) {
         throw new TRPCError({
           code: "PRECONDITION_FAILED",
-          message: blockedByContracts.size > 0
-            ? E.CONTRACTOR_HAS_ACTIVE_CONTRACTS
-            : E.CONTRACTOR_HAS_UNPAID_INVOICES,
+          message:
+            blockedByContracts.size > 0
+              ? E.CONTRACTOR_HAS_ACTIVE_CONTRACTS
+              : E.CONTRACTOR_HAS_UNPAID_INVOICES,
         });
       }
 
@@ -898,8 +875,7 @@ export const contractorRouter = router({
         "Lifecycle Stage": c.lifecycleStage,
         City: c.city ?? "",
         "Postal Code": c.postalCode ?? "",
-        "Payment Terms (days)":
-          c.billingProfiles[0]?.paymentTermsDays ?? "",
+        "Payment Terms (days)": c.billingProfiles[0]?.paymentTermsDays ?? "",
       }));
 
       const worksheet = XLSX.utils.json_to_sheet(rows);
@@ -943,13 +919,8 @@ export const contractorRouter = router({
         if (err instanceof Error) {
           const code = (err as NodeJS.ErrnoException).code;
           if (code && NETWORK_ERROR_CODES.has(code)) return true;
-          if (err.name === "FetchError" || err.name === "AbortError")
-            return true;
-          if (
-            err.message.includes("fetch failed") ||
-            err.message.includes("network")
-          )
-            return true;
+          if (err.name === "FetchError" || err.name === "AbortError") return true;
+          if (err.message.includes("fetch failed") || err.message.includes("network")) return true;
         }
         return false;
       };
@@ -976,16 +947,12 @@ export const contractorRouter = router({
 
           return {
             found: true as const,
-            legalName:
-              (entity as Record<string, string>).Nazwa ?? "",
-            regon:
-              (entity as Record<string, string>).Regon ?? "",
+            legalName: (entity as Record<string, string>).Nazwa ?? "",
+            regon: (entity as Record<string, string>).Regon ?? "",
             addressLine1:
               `${(entity as Record<string, string>).Ulica ?? ""} ${(entity as Record<string, string>).NrNieruchomosci ?? ""}`.trim(),
-            city:
-              (entity as Record<string, string>).Miejscowosc ?? "",
-            postalCode:
-              (entity as Record<string, string>).KodPocztowy ?? "",
+            city: (entity as Record<string, string>).Miejscowosc ?? "",
+            postalCode: (entity as Record<string, string>).KodPocztowy ?? "",
           };
         } finally {
           await bir.logout().catch(() => {
@@ -1015,20 +982,20 @@ export const contractorRouter = router({
   // ---------------------------------------------------------------------------
 
   /** Get country-specific field configuration for the org's country */
-  getCountryFieldsConfig: tenantProcedure
-    .query(async ({ ctx }) => {
-      const org = await prisma.organization.findUniqueOrThrow({
-        where: { id: ctx.organizationId },
-        select: { countryCode: true },
-      });
-      if (!org.countryCode || !countryFieldsSchemaMap[org.countryCode]) {
-        return { hasCountryFields: false, countryCode: org.countryCode };
-      }
-      const fields = org.countryCode === "AE"
+  getCountryFieldsConfig: tenantProcedure.query(async ({ ctx }) => {
+    const org = await prisma.organization.findUniqueOrThrow({
+      where: { id: ctx.organizationId },
+      select: { countryCode: true },
+    });
+    if (!org.countryCode || !countryFieldsSchemaMap[org.countryCode]) {
+      return { hasCountryFields: false, countryCode: org.countryCode };
+    }
+    const fields =
+      org.countryCode === "AE"
         ? ["freelancePermitNumber", "tradeLicenseNumber", "freeZone", "tradeLicenseExpiry"]
         : ["freelanceSaLicense", "commercialRegistration", "commercialRegistrationExpiry"];
-      return { hasCountryFields: true, countryCode: org.countryCode, fields };
-    }),
+    return { hasCountryFields: true, countryCode: org.countryCode, fields };
+  }),
 
   /** Get country fields for a specific contractor */
   getCountryFields: tenantProcedure
@@ -1045,11 +1012,13 @@ export const contractorRouter = router({
   /** Update country fields for a contractor (validated per org country) */
   updateCountryFields: tenantProcedure
     .use(requirePermission({ contractor: ["update"] }))
-    .input(z.object({
-      contractorId: z.string(),
-      countryCode: z.string().length(2),
-      fields: z.record(z.unknown()),
-    }))
+    .input(
+      z.object({
+        contractorId: z.string(),
+        countryCode: z.string().length(2),
+        fields: z.record(z.unknown()),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
       const org = await prisma.organization.findUniqueOrThrow({
         where: { id: ctx.organizationId },
@@ -1080,10 +1049,12 @@ export const contractorRouter = router({
 
   /** Validate a TIN for a given country */
   validateTin: tenantProcedure
-    .input(z.object({
-      countryCode: z.string().length(2),
-      tin: z.string().min(1),
-    }))
+    .input(
+      z.object({
+        countryCode: z.string().length(2),
+        tin: z.string().min(1),
+      }),
+    )
     .query(({ input }) => {
       const valid = validateTin(input.countryCode, input.tin);
       return { valid };

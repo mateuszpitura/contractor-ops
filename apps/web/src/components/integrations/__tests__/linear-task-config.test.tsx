@@ -1,10 +1,9 @@
-import { render, screen } from "@/test/test-utils";
 import { useQuery } from "@tanstack/react-query";
+import { render, screen } from "@/test/test-utils";
 import { LinearTaskConfig } from "../linear-task-config";
 
 vi.mock("next-intl", async () => {
-  const actual =
-    await vi.importActual<typeof import("next-intl")>("next-intl");
+  const actual = await vi.importActual<typeof import("next-intl")>("next-intl");
   return {
     ...actual,
     useTranslations: () => (key: string) => key,
@@ -12,9 +11,8 @@ vi.mock("next-intl", async () => {
 });
 
 vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
-    "@tanstack/react-query",
-  );
+  const actual =
+    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
   return {
     ...actual,
     useQuery: vi.fn().mockImplementation((opts: any) => {
@@ -138,9 +136,7 @@ describe("LinearTaskConfig", () => {
       if (key?.[0] === "linear" && key?.[1] === "teams") {
         return {
           isLoading: false,
-          data: [
-            { id: "t1", name: "Engineering", key: "ENG" },
-          ],
+          data: [{ id: "t1", name: "Engineering", key: "ENG" }],
         } as any;
       }
       if (key?.[0] === "jira" && key?.[1] === "getTaskConfig") {

@@ -1,13 +1,7 @@
 "use client";
 
-import {
-  createContext,
-  useContext,
-  useState,
-  useCallback,
-  useEffect,
-  type ReactNode,
-} from "react";
+import type { ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 
 type BreadcrumbOverride = {
   /** The raw pathname segment to replace (e.g. the CUID) */
@@ -27,9 +21,7 @@ const BreadcrumbContext = createContext<BreadcrumbContextValue>({
 });
 
 export function BreadcrumbProvider({ children }: { children: ReactNode }) {
-  const [overrides, setOverrides] = useState<Map<string, BreadcrumbOverride>>(
-    new Map(),
-  );
+  const [overrides, setOverrides] = useState<Map<string, BreadcrumbOverride>>(new Map());
 
   const setOverride = useCallback((override: BreadcrumbOverride) => {
     setOverrides((prev) => {

@@ -1,20 +1,21 @@
-import { z } from "zod";
-import { TRPCError } from "@trpc/server";
-import { prisma, type Prisma } from "@contractor-ops/db";
 import { auth } from "@contractor-ops/auth";
+import type { Prisma } from "@contractor-ops/db";
+import { prisma } from "@contractor-ops/db";
 import {
-  getAdapter,
-  registerAllAdapters,
   decryptCredentials,
   encryptCredentials,
+  getAdapter,
+  registerAllAdapters,
 } from "@contractor-ops/integrations";
-import { getQStashClient } from "@contractor-ops/integrations/services/qstash-client";
-import { directoryImportInputSchema } from "@contractor-ops/validators";
-import type { DirectoryRole } from "@contractor-ops/validators";
 import type { GoogleWorkspaceAdapter } from "@contractor-ops/integrations/adapters/google-workspace-adapter";
+import { getQStashClient } from "@contractor-ops/integrations/services/qstash-client";
+import type { DirectoryRole } from "@contractor-ops/validators";
+import { directoryImportInputSchema } from "@contractor-ops/validators";
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 import { router } from "../init.js";
-import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
+import { tenantProcedure } from "../middleware/tenant.js";
 import { requireTier } from "../middleware/tier.js";
 
 // Ensure adapters are registered before any procedure runs
@@ -52,25 +53,17 @@ async function getGoogleWorkspaceConnection(organizationId: string) {
     });
   }
 
-  let credentials = decryptCredentials(
-    connection.credentialsRef,
-    "google_workspace",
-  );
+  let credentials = decryptCredentials(connection.credentialsRef, "google_workspace");
 
   // Refresh token if expired
-  if (
-    credentials.expiresAt &&
-    new Date(credentials.expiresAt) < new Date()
-  ) {
+  if (credentials.expiresAt && new Date(credentials.expiresAt) < new Date()) {
     credentials = await adapter.refreshToken(credentials);
     const encrypted = encryptCredentials(credentials, "google_workspace");
     await prisma.integrationConnection.update({
       where: { id: connection.id },
       data: {
         credentialsRef: encrypted,
-        tokenExpiresAt: credentials.expiresAt
-          ? new Date(credentials.expiresAt)
-          : null,
+        tokenExpiresAt: credentials.expiresAt ? new Date(credentials.expiresAt) : null,
       },
     });
   }
@@ -82,10 +75,7 @@ async function getGoogleWorkspaceConnection(organizationId: string) {
  * Creates a QStash cron schedule for daily directory sync at 2 AM.
  * Idempotent: skips if schedule already exists in connection config.
  */
-async function ensureSyncCronSchedule(
-  connectionId: string,
-  organizationId: string,
-) {
+async function ensureSyncCronSchedule(connectionId: string, organizationId: string) {
   const connection = await prisma.integrationConnection.findUnique({
     where: { id: connectionId },
     select: { configJson: true },
@@ -114,10 +104,7 @@ async function ensureSyncCronSchedule(
       },
     });
   } catch (error) {
-    console.error(
-      "[google-workspace] Failed to create sync cron schedule:",
-      error,
-    );
+    console.error("[google-workspace] Failed to create sync cron schedule:", error);
     // Don't fail the operation — schedule can be retried
   }
 }
@@ -168,13 +155,9 @@ export const googleWorkspaceRouter = router({
   listDirectory: tenantProcedure
     .use(requirePermission({ member: ["read"] }))
     .query(async ({ ctx }) => {
-      const { credentials, adapter } = await getGoogleWorkspaceConnection(
-        ctx.organizationId,
-      );
+      const { credentials, adapter } = await getGoogleWorkspaceConnection(ctx.organizationId);
 
-      const googleUsers = await adapter.listAllDirectoryUsers(
-        credentials.accessToken,
-      );
+      const googleUsers = await adapter.listAllDirectoryUsers(credentials.accessToken);
 
       // Get existing org members to mark already-imported users
       const org = await auth.api.getFullOrganization({
@@ -232,9 +215,7 @@ export const googleWorkspaceRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { credentials, adapter } = await getGoogleWorkspaceConnection(
-        ctx.organizationId,
-      );
+      const { credentials, adapter } = await getGoogleWorkspaceConnection(ctx.organizationId);
 
       const groupMap = new Map<
         string,
@@ -248,10 +229,7 @@ export const googleWorkspaceRouter = router({
       >();
 
       for (const email of input.userEmails) {
-        const groups = await adapter.listUserGroups(
-          credentials.accessToken,
-          email,
-        );
+        const groups = await adapter.listUserGroups(credentials.accessToken, email);
 
         for (const group of groups) {
           const existing = groupMap.get(group.id);
@@ -283,16 +261,14 @@ export const googleWorkspaceRouter = router({
     .use(requireTier("PRO"))
     .input(directoryImportInputSchema)
     .mutation(async ({ ctx, input }) => {
-      const { connection, credentials, adapter } =
-        await getGoogleWorkspaceConnection(ctx.organizationId);
+      const { connection, credentials, adapter } = await getGoogleWorkspaceConnection(
+        ctx.organizationId,
+      );
 
       // Re-fetch group memberships server-side (NEVER trust client-supplied group data for RBAC)
       const serverGroupMemberships: Record<string, string[]> = {};
       for (const user of input.users) {
-        const groups = await adapter.listUserGroups(
-          credentials.accessToken,
-          user.email,
-        );
+        const groups = await adapter.listUserGroups(credentials.accessToken, user.email);
         serverGroupMemberships[user.email] = groups.map((g) => g.email);
       }
 
@@ -320,15 +296,13 @@ export const googleWorkspaceRouter = router({
 
           succeeded.push({ email: user.email, role });
         } catch (error) {
-          const message =
-            error instanceof Error ? error.message : "Unknown error";
+          const message = error instanceof Error ? error.message : "Unknown error";
           failed.push({ email: user.email, error: message });
         }
       }
 
       // Store import metadata
-      const currentConfig =
-        (connection.configJson as Record<string, unknown>) ?? {};
+      const currentConfig = (connection.configJson as Record<string, unknown>) ?? {};
       await prisma.integrationConnection.update({
         where: { id: connection.id },
         data: {
@@ -354,9 +328,7 @@ export const googleWorkspaceRouter = router({
     .use(requirePermission({ member: ["read"] }))
     .use(requireTier("PRO"))
     .mutation(async ({ ctx }) => {
-      const { connection } = await getGoogleWorkspaceConnection(
-        ctx.organizationId,
-      );
+      const { connection } = await getGoogleWorkspaceConnection(ctx.organizationId);
 
       // Ensure cron schedule exists
       await ensureSyncCronSchedule(connection.id, ctx.organizationId);

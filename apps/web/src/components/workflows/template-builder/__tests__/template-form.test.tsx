@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, setup, waitFor } from "@/test/test-utils";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { TemplateForm } from "../template-form";
 
 vi.mock("@tanstack/react-query", async () => {
@@ -46,20 +46,16 @@ vi.mock("next/navigation", () => ({
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 vi.mock("@/components/workflows/template-builder/sortable-task-list", () => ({
-  SortableTaskList: () => (
-    <div data-testid="sortable-task-list">SortableTaskList</div>
-  ),
+  SortableTaskList: () => <div data-testid="sortable-task-list">SortableTaskList</div>,
 }));
 
 vi.mock("@/components/workflows/template-builder/use-template-form", () => ({
   useTemplateForm: () => ({
     form: {
-      handleSubmit:
-        (fn: any) =>
-        (e: any) => {
-          e?.preventDefault();
-          fn({ name: "Test", type: "ONBOARDING", description: "", tasks: [] });
-        },
+      handleSubmit: (fn: any) => (e: any) => {
+        e?.preventDefault();
+        fn({ name: "Test", type: "ONBOARDING", description: "", tasks: [] });
+      },
       register: () => ({
         name: "test",
         onChange: vi.fn(),

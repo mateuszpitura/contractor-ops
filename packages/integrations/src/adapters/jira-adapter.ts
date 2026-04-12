@@ -1,8 +1,9 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
-import type { OAuthConfig } from "../types/provider.js";
+import { prisma } from "@contractor-ops/db";
 import type { CredentialBlob } from "../types/credentials.js";
-import type { WebhookVerificationResult } from "../types/webhook.js";
 import type { ProviderHealthStatus } from "../types/health.js";
+import type { OAuthConfig } from "../types/provider.js";
+import type { WebhookVerificationResult } from "../types/webhook.js";
 import { BaseAdapter } from "./base-adapter.js";
 
 // ---------------------------------------------------------------------------
@@ -70,17 +71,12 @@ export class JiraAdapter extends BaseAdapter {
     return JIRA_OAUTH_CONFIG;
   }
 
-  async exchangeCodeForTokens(
-    code: string,
-    redirectUri: string,
-  ): Promise<CredentialBlob> {
+  async exchangeCodeForTokens(code: string, redirectUri: string): Promise<CredentialBlob> {
     const clientId = process.env.JIRA_CLIENT_ID;
     const clientSecret = process.env.JIRA_CLIENT_SECRET;
 
     if (!clientId || !clientSecret) {
-      throw new Error(
-        "JIRA_CLIENT_ID and JIRA_CLIENT_SECRET environment variables are required",
-      );
+      throw new Error("JIRA_CLIENT_ID and JIRA_CLIENT_SECRET environment variables are required");
     }
 
     const response = await fetch("https://auth.atlassian.com/oauth/token", {
@@ -115,9 +111,7 @@ export class JiraAdapter extends BaseAdapter {
       refreshToken: data.refresh_token,
       tokenType: data.token_type,
       scope: data.scope,
-      expiresAt: new Date(
-        Date.now() + data.expires_in * 1000,
-      ).toISOString(),
+      expiresAt: new Date(Date.now() + data.expires_in * 1000).toISOString(),
     };
   }
 
@@ -126,9 +120,7 @@ export class JiraAdapter extends BaseAdapter {
     const clientSecret = process.env.JIRA_CLIENT_SECRET;
 
     if (!clientId || !clientSecret) {
-      throw new Error(
-        "JIRA_CLIENT_ID and JIRA_CLIENT_SECRET environment variables are required",
-      );
+      throw new Error("JIRA_CLIENT_ID and JIRA_CLIENT_SECRET environment variables are required");
     }
 
     if (!credentials.refreshToken) {
@@ -166,9 +158,7 @@ export class JiraAdapter extends BaseAdapter {
       refreshToken: data.refresh_token ?? credentials.refreshToken,
       tokenType: data.token_type,
       scope: data.scope,
-      expiresAt: new Date(
-        Date.now() + data.expires_in * 1000,
-      ).toISOString(),
+      expiresAt: new Date(Date.now() + data.expires_in * 1000).toISOString(),
     };
   }
 
@@ -191,10 +181,8 @@ export class JiraAdapter extends BaseAdapter {
     rawBody: string,
     headers: Record<string, string>,
   ): WebhookVerificationResult {
-    const signatureHeader =
-      headers["x-hub-signature"] ?? headers["X-Hub-Signature"];
-    const secret =
-      headers["x-webhook-secret"] ?? headers["X-Webhook-Secret"];
+    const signatureHeader = headers["x-hub-signature"] ?? headers["X-Hub-Signature"];
+    const secret = headers["x-webhook-secret"] ?? headers["X-Webhook-Secret"];
 
     // If no secret is configured, allow through (3LO dynamic webhooks
     // may not support custom secrets — see RESEARCH.md open question #2).
@@ -219,16 +207,11 @@ export class JiraAdapter extends BaseAdapter {
       return { valid: false };
     }
 
-    const expected = createHmac("sha256", secret)
-      .update(rawBody)
-      .digest("hex");
+    const expected = createHmac("sha256", secret).update(rawBody).digest("hex");
 
     let valid: boolean;
     try {
-      valid = timingSafeEqual(
-        Buffer.from(signature, "hex"),
-        Buffer.from(expected, "hex"),
-      );
+      valid = timingSafeEqual(Buffer.from(signature, "hex"), Buffer.from(expected, "hex"));
     } catch {
       // Buffer length mismatch — invalid signature
       valid = false;
@@ -295,15 +278,12 @@ export class JiraAdapter extends BaseAdapter {
   async discoverCloudId(
     accessToken: string,
   ): Promise<{ cloudId: string; siteName: string; siteUrl: string }> {
-    const response = await fetch(
-      "https://api.atlassian.com/oauth/token/accessible-resources",
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          Accept: "application/json",
-        },
+    const response = await fetch("https://api.atlassian.com/oauth/token/accessible-resources", {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: "application/json",
       },
-    );
+    });
 
     if (!response.ok) {
       const text = await response.text();
@@ -336,8 +316,6 @@ export class JiraAdapter extends BaseAdapter {
   // -------------------------------------------------------------------------
 
   async getHealthStatus(connectionId: string): Promise<ProviderHealthStatus> {
-    const { prisma } = await import("@contractor-ops/db");
-
     const connection = await prisma.integrationConnection.findUnique({
       where: { id: connectionId },
       select: {
@@ -393,15 +371,9 @@ export class JiraAdapter extends BaseAdapter {
       status = "DISCONNECTED";
     } else if (connection.lastErrorAt && !connection.lastSuccessAt) {
       status = "ERROR";
-    } else if (
-      connection.tokenExpiresAt &&
-      connection.tokenExpiresAt < new Date()
-    ) {
+    } else if (connection.tokenExpiresAt && connection.tokenExpiresAt < new Date()) {
       status = "REAUTH_REQUIRED";
-    } else if (
-      recentSyncs.length > 0 &&
-      recentSyncs[0]!.status === "FAILED"
-    ) {
+    } else if (recentSyncs.length > 0 && recentSyncs[0]!.status === "FAILED") {
       status = "ERROR";
     } else {
       status = "CONNECTED";

@@ -1,14 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { X } from "lucide-react";
-
-import { cn } from "@/lib/utils";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,7 +12,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { NotionIcon, ConfluenceIcon } from "./provider-icons";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
+import { ConfluenceIcon, NotionIcon } from "./provider-icons";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -97,9 +92,7 @@ export function DocLinkChip({
           }
         >
           <ProviderIcon className="h-3.5 w-3.5 shrink-0" />
-          <span className="text-xs font-medium text-foreground truncate">
-            {title}
-          </span>
+          <span className="text-xs font-medium text-foreground truncate">{title}</span>
           {showRemove && (
             <button
               type="button"
@@ -124,8 +117,8 @@ export function DocLinkChip({
             <AlertDialogHeader>
               <AlertDialogTitle>Remove Document Link</AlertDialogTitle>
               <AlertDialogDescription>
-                This will remove the link to &ldquo;{title}&rdquo; from this
-                step. The original page will not be affected.
+                This will remove the link to &ldquo;{title}&rdquo; from this step. The original page
+                will not be affected.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

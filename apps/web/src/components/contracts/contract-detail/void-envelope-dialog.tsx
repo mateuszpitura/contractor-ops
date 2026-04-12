@@ -1,24 +1,23 @@
 "use client";
 
-import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-
 import { useTranslations } from "next-intl";
-import { trpc } from "@/trpc/init";
+import { useState } from "react";
+import { toast } from "sonner";
 import {
   AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
   AlertDialogAction,
   AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -60,7 +59,7 @@ export function VoidEnvelopeDialog({
       onError: () => {
         toast.error(tToast("voidFailed"));
       },
-    })
+    }),
   );
 
   function handleConfirm() {
@@ -75,9 +74,7 @@ export function VoidEnvelopeDialog({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{t("title")}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {t("description")}
-          </AlertDialogDescription>
+          <AlertDialogDescription>{t("description")}</AlertDialogDescription>
         </AlertDialogHeader>
 
         <div className="space-y-2 py-2">

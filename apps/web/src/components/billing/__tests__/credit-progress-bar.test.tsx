@@ -10,18 +10,14 @@ describe("CreditProgressBar", () => {
   it("renders exhausted text when all credits are used", () => {
     render(<CreditProgressBar used={100} total={100} />);
     expect(
-      screen.getByText(
-        "No credits remaining -- purchase more to continue OCR processing",
-      ),
+      screen.getByText("No credits remaining -- purchase more to continue OCR processing"),
     ).toBeInTheDocument();
   });
 
   it("renders exhausted text when used exceeds total", () => {
     render(<CreditProgressBar used={120} total={100} />);
     expect(
-      screen.getByText(
-        "No credits remaining -- purchase more to continue OCR processing",
-      ),
+      screen.getByText("No credits remaining -- purchase more to continue OCR processing"),
     ).toBeInTheDocument();
   });
 

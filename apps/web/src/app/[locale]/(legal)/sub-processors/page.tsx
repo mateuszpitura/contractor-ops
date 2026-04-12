@@ -1,5 +1,5 @@
-import { useTranslations } from "next-intl";
 import type { Metadata } from "next";
+import { useTranslations } from "next-intl";
 
 export const metadata: Metadata = {
   title: "Sub-processors — Contractor Ops",
@@ -28,7 +28,21 @@ export default function SubProcessorsPage() {
             </tr>
           </thead>
           <tbody className="divide-y">
-            {(["vercel", "neon", "cloudflare", "stripe", "resend", "sentry", "axiom", "upstash", "cronitor", "uptimerobot", "qstash"] as const).map((key) => (
+            {(
+              [
+                "vercel",
+                "neon",
+                "cloudflare",
+                "stripe",
+                "resend",
+                "sentry",
+                "axiom",
+                "upstash",
+                "cronitor",
+                "uptimerobot",
+                "qstash",
+              ] as const
+            ).map((key) => (
               <tr key={key}>
                 <td className="py-2 pe-4 font-medium">{t(`processors.${key}.name`)}</td>
                 <td className="py-2 pe-4">{t(`processors.${key}.purpose`)}</td>

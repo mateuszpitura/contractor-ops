@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { render, screen, setup } from "@/test/test-utils";
 import { TimesheetGrid } from "../timesheet-grid";
 
@@ -81,9 +81,7 @@ describe("TimesheetGrid", () => {
     const inputs = screen.getAllByRole("spinbutton");
     // Find the CLOCKIFY cell (Tue = index 1 for Project Alpha)
     const clockifyInput = inputs.find(
-      (i) =>
-        (i as HTMLInputElement).value === "6" &&
-        (i as HTMLInputElement).disabled,
+      (i) => (i as HTMLInputElement).value === "6" && (i as HTMLInputElement).disabled,
     );
     expect(clockifyInput).toBeDefined();
   });
@@ -102,28 +100,17 @@ describe("TimesheetGrid", () => {
   });
 
   it("renders rejection banner when rejectionReason is provided", () => {
-    render(
-      <TimesheetGrid
-        {...defaultProps}
-        rejectionReason="Hours don't match records"
-      />,
-    );
-    expect(
-      screen.getByText(/Hours don't match records/),
-    ).toBeInTheDocument();
+    render(<TimesheetGrid {...defaultProps} rejectionReason="Hours don't match records" />);
+    expect(screen.getByText(/Hours don't match records/)).toBeInTheDocument();
   });
 
   it("calls onSave on cell blur with changed value", async () => {
     const onSave = vi.fn();
-    const { user } = setup(
-      <TimesheetGrid {...defaultProps} onSave={onSave} />,
-    );
+    const { user } = setup(<TimesheetGrid {...defaultProps} onSave={onSave} />);
     // Find an empty cell and type a value
     const inputs = screen.getAllByRole("spinbutton");
     const emptyInput = inputs.find(
-      (i) =>
-        (i as HTMLInputElement).value === "" &&
-        !(i as HTMLInputElement).disabled,
+      (i) => (i as HTMLInputElement).value === "" && !(i as HTMLInputElement).disabled,
     );
     if (emptyInput) {
       await user.clear(emptyInput);
@@ -135,22 +122,16 @@ describe("TimesheetGrid", () => {
 
   it("renders aria-label for each cell", () => {
     render(<TimesheetGrid {...defaultProps} />);
-    expect(
-      screen.getByLabelText("Hours for Project Alpha on Mon"),
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Hours for Project Alpha on Mon")).toBeInTheDocument();
   });
 
   // ---- Cell editing ----
   it("allows editing an empty cell", async () => {
     const onSave = vi.fn();
-    const { user } = setup(
-      <TimesheetGrid {...defaultProps} onSave={onSave} />,
-    );
+    const { user } = setup(<TimesheetGrid {...defaultProps} onSave={onSave} />);
     const inputs = screen.getAllByRole("spinbutton");
     const emptyInput = inputs.find(
-      (i) =>
-        (i as HTMLInputElement).value === "" &&
-        !(i as HTMLInputElement).disabled,
+      (i) => (i as HTMLInputElement).value === "" && !(i as HTMLInputElement).disabled,
     );
     if (emptyInput) {
       await user.type(emptyInput, "3");
@@ -161,14 +142,10 @@ describe("TimesheetGrid", () => {
   // ---- Blur save for existing entry ----
   it("does not call onSave when value has not changed", async () => {
     const onSave = vi.fn();
-    const { user } = setup(
-      <TimesheetGrid {...defaultProps} onSave={onSave} />,
-    );
+    const { user } = setup(<TimesheetGrid {...defaultProps} onSave={onSave} />);
     const inputs = screen.getAllByRole("spinbutton");
     // Find the cell with value "8" (which is already set)
-    const filledInput = inputs.find(
-      (i) => (i as HTMLInputElement).value === "8",
-    );
+    const filledInput = inputs.find((i) => (i as HTMLInputElement).value === "8");
     if (filledInput) {
       await user.click(filledInput);
       await user.tab(); // blur without change
@@ -219,9 +196,7 @@ describe("TimesheetGrid", () => {
   // ---- Cell editing with clear and retype ----
   it("allows clearing a filled cell and retyping", async () => {
     const onSave = vi.fn();
-    const { user } = setup(
-      <TimesheetGrid {...defaultProps} onSave={onSave} />,
-    );
+    const { user } = setup(<TimesheetGrid {...defaultProps} onSave={onSave} />);
     const inputs = screen.getAllByRole("spinbutton");
     const filledInput = inputs.find(
       (i) => (i as HTMLInputElement).value === "8" && !(i as HTMLInputElement).disabled,
@@ -243,20 +218,12 @@ describe("TimesheetGrid", () => {
   // ---- Aria labels for multiple contracts ----
   it("renders aria-label for Project Beta cells", () => {
     render(<TimesheetGrid {...defaultProps} />);
-    expect(
-      screen.getByLabelText("Hours for Project Beta on Mon"),
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Hours for Project Beta on Mon")).toBeInTheDocument();
   });
 
   // ---- Disabled with rejection reason ----
   it("renders rejection banner alongside disabled cells", () => {
-    render(
-      <TimesheetGrid
-        {...defaultProps}
-        disabled
-        rejectionReason="Incorrect totals"
-      />,
-    );
+    render(<TimesheetGrid {...defaultProps} disabled rejectionReason="Incorrect totals" />);
     expect(screen.getByText(/Incorrect totals/)).toBeInTheDocument();
     const inputs = screen.getAllByRole("spinbutton");
     inputs.forEach((input) => {
@@ -274,9 +241,7 @@ describe("TimesheetGrid", () => {
   // ---- Cell blur: saves changed value ----
   it("calls onSave with correct data on cell blur after edit", async () => {
     const onSave = vi.fn();
-    const { user } = setup(
-      <TimesheetGrid {...defaultProps} onSave={onSave} />,
-    );
+    const { user } = setup(<TimesheetGrid {...defaultProps} onSave={onSave} />);
     // Find an empty non-disabled cell for Project Beta Mon
     const input = screen.getByLabelText("Hours for Project Beta on Mon");
     await user.type(input, "2");
@@ -294,9 +259,7 @@ describe("TimesheetGrid", () => {
   // ---- Cell blur: does not save when value unchanged on existing entry ----
   it("does not call onSave when existing cell is focused and blurred without change", async () => {
     const onSave = vi.fn();
-    const { user } = setup(
-      <TimesheetGrid {...defaultProps} onSave={onSave} />,
-    );
+    const { user } = setup(<TimesheetGrid {...defaultProps} onSave={onSave} />);
     const input = screen.getByLabelText("Hours for Project Alpha on Mon");
     // Just click and tab without changing
     await user.click(input);
@@ -307,9 +270,7 @@ describe("TimesheetGrid", () => {
   // ---- Cell edit: clear and type new value ----
   it("saves updated value when existing cell is cleared and retyped", async () => {
     const onSave = vi.fn();
-    const { user } = setup(
-      <TimesheetGrid {...defaultProps} onSave={onSave} />,
-    );
+    const { user } = setup(<TimesheetGrid {...defaultProps} onSave={onSave} />);
     const input = screen.getByLabelText("Hours for Project Alpha on Mon") as HTMLInputElement;
     expect(input.value).toBe("8");
     await user.clear(input);
@@ -346,10 +307,7 @@ describe("TimesheetGrid", () => {
 
   // ---- Three contracts ----
   it("renders three project rows when three contracts are provided", () => {
-    const threeContracts = [
-      ...contracts,
-      { id: "c-3", title: "Project Gamma" },
-    ];
+    const threeContracts = [...contracts, { id: "c-3", title: "Project Gamma" }];
     render(<TimesheetGrid {...defaultProps} contracts={threeContracts} />);
     expect(screen.getByText("Project Gamma")).toBeInTheDocument();
   });
@@ -357,9 +315,7 @@ describe("TimesheetGrid", () => {
   // ---- Tab/Enter key navigation triggers save ----
   it("saves on Enter key press in cell", async () => {
     const onSave = vi.fn();
-    const { user } = setup(
-      <TimesheetGrid {...defaultProps} onSave={onSave} />,
-    );
+    const { user } = setup(<TimesheetGrid {...defaultProps} onSave={onSave} />);
     const input = screen.getByLabelText("Hours for Project Beta on Mon");
     await user.type(input, "5");
     await user.keyboard("{Enter}");
@@ -369,9 +325,7 @@ describe("TimesheetGrid", () => {
   // ---- Cell with 0 hours ----
   it("saves zero value correctly when cell is cleared", async () => {
     const onSave = vi.fn();
-    const { user } = setup(
-      <TimesheetGrid {...defaultProps} onSave={onSave} />,
-    );
+    const { user } = setup(<TimesheetGrid {...defaultProps} onSave={onSave} />);
     const input = screen.getByLabelText("Hours for Project Alpha on Mon") as HTMLInputElement;
     expect(input.value).toBe("8");
     await user.clear(input);
@@ -390,8 +344,22 @@ describe("TimesheetGrid", () => {
   // ---- Multiple entries for same contract same day ----
   it("renders correctly with entries on multiple days for same contract", () => {
     const multiDayEntries = [
-      { id: "e-1", contractId: "c-1", entryDate: "2026-01-05", minutes: 480, description: "Mon", source: "MANUAL" as const },
-      { id: "e-3", contractId: "c-1", entryDate: "2026-01-07", minutes: 240, description: "Wed", source: "MANUAL" as const },
+      {
+        id: "e-1",
+        contractId: "c-1",
+        entryDate: "2026-01-05",
+        minutes: 480,
+        description: "Mon",
+        source: "MANUAL" as const,
+      },
+      {
+        id: "e-3",
+        contractId: "c-1",
+        entryDate: "2026-01-07",
+        minutes: 240,
+        description: "Wed",
+        source: "MANUAL" as const,
+      },
     ];
     render(<TimesheetGrid {...defaultProps} entries={multiDayEntries} />);
     const inputs = screen.getAllByRole("spinbutton");
@@ -416,9 +384,7 @@ describe("TimesheetGrid", () => {
     render(<TimesheetGrid {...defaultProps} disabled={false} />);
     const inputs = screen.getAllByRole("spinbutton");
     const clockifyInput = inputs.find(
-      (i) =>
-        (i as HTMLInputElement).value === "6" &&
-        (i as HTMLInputElement).disabled,
+      (i) => (i as HTMLInputElement).value === "6" && (i as HTMLInputElement).disabled,
     );
     expect(clockifyInput).toBeDefined();
   });

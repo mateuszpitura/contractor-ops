@@ -1,5 +1,6 @@
 import { render, screen } from "@/test/test-utils";
-import { getColumns, type ContractRow } from "../columns";
+import type { ContractRow } from "../columns";
+import { getColumns } from "../columns";
 
 vi.mock("date-fns", () => ({
   formatDistanceToNow: () => "2 days ago",
@@ -87,30 +88,44 @@ describe("getColumns cell renderers (contracts)", () => {
   });
 
   it("contractor cell shows displayName when present", () => {
-    renderCell("contractor", makeRow({
-      contractor: { id: "c-1", legalName: "ACME Sp. z o.o.", displayName: "ACME" },
-    }));
+    renderCell(
+      "contractor",
+      makeRow({
+        contractor: { id: "c-1", legalName: "ACME Sp. z o.o.", displayName: "ACME" },
+      }),
+    );
     expect(screen.getByText("ACME")).toBeInTheDocument();
   });
 
   it("contractor cell falls back to legalName when displayName is null", () => {
-    renderCell("contractor", makeRow({
-      contractor: { id: "c-1", legalName: "ACME Sp. z o.o.", displayName: null },
-    }));
+    renderCell(
+      "contractor",
+      makeRow({
+        contractor: { id: "c-1", legalName: "ACME Sp. z o.o.", displayName: null },
+      }),
+    );
     expect(screen.getByText("ACME Sp. z o.o.")).toBeInTheDocument();
   });
 
   it("status cell renders badge with translated status", () => {
     for (const status of ["DRAFT", "ACTIVE", "EXPIRED", "TERMINATED"]) {
-      const { unmount } = render(<>{(() => {
-        const t = (key: string) => key;
-        const cols = getColumns(t);
-        const col = cols.find((c) => (c as any).accessorKey === "status");
-        return (col!.cell as any)({
-          row: { original: makeRow({ status }), getIsSelected: () => false, toggleSelected: vi.fn() },
-          getValue: () => status,
-        });
-      })()}</>);
+      const { unmount } = render(
+        <>
+          {(() => {
+            const t = (key: string) => key;
+            const cols = getColumns(t);
+            const col = cols.find((c) => (c as any).accessorKey === "status");
+            return (col!.cell as any)({
+              row: {
+                original: makeRow({ status }),
+                getIsSelected: () => false,
+                toggleSelected: vi.fn(),
+              },
+              getValue: () => status,
+            });
+          })()}
+        </>,
+      );
       expect(screen.getByText(`status.${status}`)).toBeInTheDocument();
       unmount();
     }
@@ -169,15 +184,23 @@ describe("getColumns cell renderers (contracts)", () => {
 
   it("complianceRisk cell renders risk badge when present", () => {
     for (const risk of ["LOW", "MEDIUM", "HIGH"]) {
-      const { unmount } = render(<>{(() => {
-        const t = (key: string) => key;
-        const cols = getColumns(t);
-        const col = cols.find((c) => (c as any).accessorKey === "complianceRiskLevel");
-        return (col!.cell as any)({
-          row: { original: makeRow({ complianceRiskLevel: risk }), getIsSelected: () => false, toggleSelected: vi.fn() },
-          getValue: () => risk,
-        });
-      })()}</>);
+      const { unmount } = render(
+        <>
+          {(() => {
+            const t = (key: string) => key;
+            const cols = getColumns(t);
+            const col = cols.find((c) => (c as any).accessorKey === "complianceRiskLevel");
+            return (col!.cell as any)({
+              row: {
+                original: makeRow({ complianceRiskLevel: risk }),
+                getIsSelected: () => false,
+                toggleSelected: vi.fn(),
+              },
+              getValue: () => risk,
+            });
+          })()}
+        </>,
+      );
       expect(screen.getByText(`risk.${risk}`)).toBeInTheDocument();
       unmount();
     }

@@ -5,8 +5,8 @@
 import crypto from "node:crypto";
 import { describe, expect, it } from "vitest";
 import type { EInvoice } from "../../../types/invoice.js";
-import type { ZatcaCsrAttributes, ZatcaTaxDetails } from "../schemas.js";
 import { buildComplianceTestInvoices, generateZatcaCsr } from "../onboarding.js";
+import type { ZatcaCsrAttributes, ZatcaTaxDetails } from "../schemas.js";
 
 // ---------------------------------------------------------------------------
 // Fixtures

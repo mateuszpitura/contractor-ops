@@ -1,14 +1,10 @@
 "use client";
 
-import { useMemo } from "react";
-import {
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-  type ColumnDef,
-} from "@tanstack/react-table";
+import type { ColumnDef } from "@tanstack/react-table";
+import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp, ArrowUpDown, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useMemo } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -63,10 +59,7 @@ export function ReportTable<TData>({
   const tAria = useTranslations("Common.aria");
   const pageCount = Math.ceil(totalCount / pageSize);
 
-  const sorting = useMemo(
-    () => [{ id: sortBy, desc: sortOrder === "desc" }],
-    [sortBy, sortOrder],
-  );
+  const sorting = useMemo(() => [{ id: sortBy, desc: sortOrder === "desc" }], [sortBy, sortOrder]);
 
   const table = useReactTable({
     data,
@@ -74,8 +67,7 @@ export function ReportTable<TData>({
     pageCount,
     state: { sorting },
     onSortingChange: (updater) => {
-      const next =
-        typeof updater === "function" ? updater(sorting) : updater;
+      const next = typeof updater === "function" ? updater(sorting) : updater;
       if (next.length > 0) {
         onSortChange(next[0]!.id, next[0]!.desc ? "desc" : "asc");
       }
@@ -113,12 +105,14 @@ export function ReportTable<TData>({
                       type="button"
                       className="flex items-center gap-1 uppercase hover:text-foreground"
                       onClick={header.column.getToggleSortingHandler()}
-                      aria-label={tAria("sortBy", { column: typeof header.column.columnDef.header === "string" ? header.column.columnDef.header : header.id })}
+                      aria-label={tAria("sortBy", {
+                        column:
+                          typeof header.column.columnDef.header === "string"
+                            ? header.column.columnDef.header
+                            : header.id,
+                      })}
                     >
-                      {flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )}
+                      {flexRender(header.column.columnDef.header, header.getContext())}
                       {header.column.getIsSorted() === "asc" ? (
                         <ArrowUp className="h-3 w-3" />
                       ) : header.column.getIsSorted() === "desc" ? (
@@ -128,10 +122,7 @@ export function ReportTable<TData>({
                       )}
                     </button>
                   ) : (
-                    flexRender(
-                      header.column.columnDef.header,
-                      header.getContext(),
-                    )
+                    flexRender(header.column.columnDef.header, header.getContext())
                   )}
                 </TableHead>
               ))}
@@ -159,42 +150,27 @@ export function ReportTable<TData>({
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
                 </TableRow>
               ))}
               {grandTotalLabel && grandTotalValue && (
                 <TableRow className="border-t-2">
-                  <TableCell
-                    colSpan={columns.length - 1}
-                    className="text-[14px] font-semibold"
-                  >
+                  <TableCell colSpan={columns.length - 1} className="text-[14px] font-semibold">
                     {grandTotalLabel}
                   </TableCell>
-                  <TableCell className="text-[14px] font-semibold">
-                    {grandTotalValue}
-                  </TableCell>
+                  <TableCell className="text-[14px] font-semibold">{grandTotalValue}</TableCell>
                 </TableRow>
               )}
             </>
           ) : (
             <TableRow>
-              <TableCell
-                colSpan={columns.length}
-                className="py-16 text-center"
-              >
+              <TableCell colSpan={columns.length} className="py-16 text-center">
                 {emptyIcon}
-                <h3 className="mt-3 text-[16px] font-medium">
-                  {emptyTitle ?? "No data"}
-                </h3>
+                <h3 className="mt-3 text-[16px] font-medium">{emptyTitle ?? "No data"}</h3>
                 {emptyDescription && (
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {emptyDescription}
-                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">{emptyDescription}</p>
                 )}
               </TableCell>
             </TableRow>

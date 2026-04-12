@@ -1,20 +1,19 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ChevronDown, ChevronRight, FileText, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Plus, FileText, ChevronDown, ChevronRight } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
+import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -94,7 +93,7 @@ function AddAmendmentDialog({
             : "";
         toast.error(message || t("addError"));
       },
-    })
+    }),
   );
 
   function handleSubmit(e: React.FormEvent) {
@@ -118,9 +117,7 @@ function AddAmendmentDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium">
-              {t("fields.title")}
-            </label>
+            <label className="text-sm font-medium">{t("fields.title")}</label>
             <input
               type="text"
               value={title}
@@ -131,9 +128,7 @@ function AddAmendmentDialog({
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium">
-              {t("fields.effectiveDate")}
-            </label>
+            <label className="text-sm font-medium">{t("fields.effectiveDate")}</label>
             <input
               type="date"
               value={effectiveDate}
@@ -143,9 +138,7 @@ function AddAmendmentDialog({
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium">
-              {t("fields.description")}
-            </label>
+            <label className="text-sm font-medium">{t("fields.description")}</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -155,11 +148,7 @@ function AddAmendmentDialog({
             />
           </div>
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               {t("cancel")}
             </Button>
             <Button
@@ -197,14 +186,10 @@ function TimelineNode({
       <div className="flex flex-col items-center">
         <div
           className={`shrink-0 rounded-full ${
-            isFirst
-              ? "size-3 bg-primary"
-              : "size-2 bg-muted-foreground/40"
+            isFirst ? "size-3 bg-primary" : "size-2 bg-muted-foreground/40"
           }`}
         />
-        {!isLast && (
-          <div className="mt-1 w-0.5 flex-1 bg-border" />
-        )}
+        {!isLast && <div className="mt-1 w-0.5 flex-1 bg-border" />}
       </div>
 
       {/* Content */}
@@ -236,9 +221,7 @@ function TimelineNode({
 
         {expanded && (
           <div className="mt-3 ms-5 space-y-2 rounded-md border bg-muted/50 p-3">
-            {amendment.description && (
-              <p className="text-sm">{amendment.description}</p>
-            )}
+            {amendment.description && <p className="text-sm">{amendment.description}</p>}
             <p className="text-xs text-muted-foreground">
               {t("created", { date: formatDate(amendment.createdAt) })}
             </p>
@@ -281,12 +264,8 @@ export function AmendmentsTab({ contract }: AmendmentsTabProps) {
       {sorted.length === 0 ? (
         <div className="flex min-h-[200px] flex-col items-center justify-center gap-2 text-center">
           <FileText className="size-8 text-muted-foreground/50" />
-          <h4 className="text-sm font-medium text-muted-foreground">
-            {t("empty.title")}
-          </h4>
-          <p className="max-w-sm text-sm text-muted-foreground">
-            {t("empty.description")}
-          </p>
+          <h4 className="text-sm font-medium text-muted-foreground">{t("empty.title")}</h4>
+          <p className="max-w-sm text-sm text-muted-foreground">{t("empty.description")}</p>
         </div>
       ) : (
         <div className="ms-1">
@@ -304,13 +283,9 @@ export function AmendmentsTab({ contract }: AmendmentsTabProps) {
               <div className="size-2 shrink-0 rounded-full bg-muted-foreground/30" />
             </div>
             <div className="min-w-0 flex-1 pb-2">
-              <p className="text-sm text-muted-foreground">
-                {t("originalContract")}
-              </p>
+              <p className="text-sm text-muted-foreground">{t("originalContract")}</p>
               {contract.startDate && (
-                <p className="text-xs text-muted-foreground/70">
-                  {formatDate(contract.startDate)}
-                </p>
+                <p className="text-xs text-muted-foreground/70">{formatDate(contract.startDate)}</p>
               )}
             </div>
           </div>
@@ -318,11 +293,7 @@ export function AmendmentsTab({ contract }: AmendmentsTabProps) {
       )}
 
       {/* Add amendment dialog */}
-      <AddAmendmentDialog
-        contractId={contract.id}
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-      />
+      <AddAmendmentDialog contractId={contract.id} open={dialogOpen} onOpenChange={setDialogOpen} />
     </div>
   );
 }

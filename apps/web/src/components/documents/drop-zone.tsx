@@ -1,14 +1,14 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { useDropzone } from "react-dropzone";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
 import { UploadCloud } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
+import { useTranslations } from "next-intl";
+import { useCallback, useState } from "react";
+import { useDropzone } from "react-dropzone";
 import { Button } from "@/components/ui/button";
-import { UploadProgress, type UploadingFile } from "./upload-progress";
+import { trpc } from "@/trpc/init";
+import type { UploadingFile } from "./upload-progress";
+import { UploadProgress } from "./upload-progress";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -16,12 +16,8 @@ import { UploadProgress, type UploadingFile } from "./upload-progress";
 
 export const ACCEPTED_TYPES: Record<string, string[]> = {
   "application/pdf": [".pdf"],
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [
-    ".docx",
-  ],
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [
-    ".xlsx",
-  ],
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"],
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"],
   "image/png": [".png"],
   "image/jpeg": [".jpg", ".jpeg"],
 };
@@ -57,13 +53,9 @@ export function DropZone({
   const queryClient = useQueryClient();
   const [files, setFiles] = useState<UploadingFile[]>([]);
 
-  const requestUploadMutation = useMutation(
-    trpc.document.requestUpload.mutationOptions({})
-  );
+  const requestUploadMutation = useMutation(trpc.document.requestUpload.mutationOptions({}));
 
-  const confirmUploadMutation = useMutation(
-    trpc.document.confirmUpload.mutationOptions({})
-  );
+  const confirmUploadMutation = useMutation(trpc.document.confirmUpload.mutationOptions({}));
 
   const uploadFile = useCallback(
     async (file: File) => {
@@ -95,9 +87,7 @@ export function DropZone({
         const uploadUrl = result.uploadUrl as string;
 
         setFiles((prev) =>
-          prev.map((f) =>
-            f.id === fileId ? { ...f, documentId, progress: 10 } : f
-          )
+          prev.map((f) => (f.id === fileId ? { ...f, documentId, progress: 10 } : f)),
         );
 
         // Step 2: Upload directly to R2 via presigned URL with progress
@@ -108,13 +98,9 @@ export function DropZone({
 
           xhr.upload.onprogress = (event) => {
             if (event.lengthComputable) {
-              const percent = Math.round(
-                10 + (event.loaded / event.total) * 80
-              );
+              const percent = Math.round(10 + (event.loaded / event.total) * 80);
               setFiles((prev) =>
-                prev.map((f) =>
-                  f.id === fileId ? { ...f, progress: percent } : f
-                )
+                prev.map((f) => (f.id === fileId ? { ...f, progress: percent } : f)),
               );
             }
           };
@@ -133,10 +119,8 @@ export function DropZone({
         // Step 3: Confirm upload
         setFiles((prev) =>
           prev.map((f) =>
-            f.id === fileId
-              ? { ...f, status: "confirming" as const, progress: 95 }
-              : f
-          )
+            f.id === fileId ? { ...f, status: "confirming" as const, progress: 95 } : f,
+          ),
         );
 
         await confirmUploadMutation.mutateAsync({
@@ -146,10 +130,8 @@ export function DropZone({
         // Upload confirmed, scan running async
         setFiles((prev) =>
           prev.map((f) =>
-            f.id === fileId
-              ? { ...f, status: "scanning" as const, progress: 100 }
-              : f
-          )
+            f.id === fileId ? { ...f, status: "scanning" as const, progress: 100 } : f,
+          ),
         );
 
         // Refresh document list
@@ -158,21 +140,11 @@ export function DropZone({
         });
       } catch {
         setFiles((prev) =>
-          prev.map((f) =>
-            f.id === fileId
-              ? { ...f, status: "error" as const, progress: 0 }
-              : f
-          )
+          prev.map((f) => (f.id === fileId ? { ...f, status: "error" as const, progress: 0 } : f)),
         );
       }
     },
-    [
-      requestUploadMutation,
-      confirmUploadMutation,
-      entityType,
-      entityId,
-      queryClient,
-    ]
+    [requestUploadMutation, confirmUploadMutation, entityType, entityId, queryClient],
   );
 
   const onDrop = useCallback(
@@ -185,7 +157,7 @@ export function DropZone({
         void uploadFile(file);
       }
     },
-    [uploadFile, onFilesAccepted, onFileRejected]
+    [uploadFile, onFilesAccepted, onFileRejected],
   );
 
   const removeFile = (fileId: string) => {
@@ -221,24 +193,16 @@ export function DropZone({
         />
         <p className="text-center text-sm text-muted-foreground">
           {t("dropZone.body")}{" "}
-          <span className="cursor-pointer font-medium text-primary">
-            {t("dropZone.browse")}
-          </span>
+          <span className="cursor-pointer font-medium text-primary">{t("dropZone.browse")}</span>
         </p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          {t("dropZone.accepted")}
-        </p>
+        <p className="mt-1 text-xs text-muted-foreground">{t("dropZone.accepted")}</p>
       </div>
 
       {/* Upload progress list */}
       {files.length > 0 && (
         <div className="space-y-2">
           {files.map((item) => (
-            <UploadProgress
-              key={item.id}
-              file={item}
-              onRemove={() => removeFile(item.id)}
-            />
+            <UploadProgress key={item.id} file={item} onRemove={() => removeFile(item.id)} />
           ))}
         </div>
       )}

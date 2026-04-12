@@ -16,9 +16,7 @@ const profiles = new Map<string, EInvoiceProfile>();
  */
 export function registerProfile(profile: EInvoiceProfile): void {
   if (profiles.has(profile.profileId)) {
-    throw new Error(
-      `E-invoicing profile already registered: ${profile.profileId}`,
-    );
+    throw new Error(`E-invoicing profile already registered: ${profile.profileId}`);
   }
   profiles.set(profile.profileId, profile);
 }

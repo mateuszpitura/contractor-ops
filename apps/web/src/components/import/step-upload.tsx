@@ -1,10 +1,10 @@
 "use client";
 
+import { FileSpreadsheet, Upload, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useCallback } from "react";
 import { useDropzone } from "react-dropzone";
-import { Upload, FileSpreadsheet, X } from "lucide-react";
 import { toast } from "sonner";
-import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -83,28 +83,27 @@ export function StepUpload({
         toast.error(t("upload.conversionError"));
       }
     },
-    [onFileSelected, t]
+    [onFileSelected, t],
   );
 
-  const { getRootProps, getInputProps, isDragActive, fileRejections } =
-    useDropzone({
-      onDrop,
-      accept: ACCEPTED_TYPES,
-      maxSize: MAX_FILE_SIZE,
-      multiple: false,
-      onDropRejected: (rejections) => {
-        const rejection = rejections[0];
-        if (!rejection) return;
-        const error = rejection.errors[0];
-        if (error?.code === "file-too-large") {
-          toast.error(t("upload.tooLarge"));
-        } else if (error?.code === "file-invalid-type") {
-          toast.error(t("upload.invalidType"));
-        } else {
-          toast.error(t("upload.genericError"));
-        }
-      },
-    });
+  const { getRootProps, getInputProps, isDragActive, fileRejections } = useDropzone({
+    onDrop,
+    accept: ACCEPTED_TYPES,
+    maxSize: MAX_FILE_SIZE,
+    multiple: false,
+    onDropRejected: (rejections) => {
+      const rejection = rejections[0];
+      if (!rejection) return;
+      const error = rejection.errors[0];
+      if (error?.code === "file-too-large") {
+        toast.error(t("upload.tooLarge"));
+      } else if (error?.code === "file-invalid-type") {
+        toast.error(t("upload.invalidType"));
+      } else {
+        toast.error(t("upload.genericError"));
+      }
+    },
+  });
 
   return (
     <div className="space-y-6">
@@ -148,9 +147,7 @@ export function StepUpload({
             }`}
           />
           <p className="text-sm font-medium">{t("upload.dropHeading")}</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            {t("upload.dropBody")}
-          </p>
+          <p className="mt-1 text-xs text-muted-foreground">{t("upload.dropBody")}</p>
           <Button variant="secondary" size="sm" className="mt-4" type="button">
             {t("upload.browse")}
           </Button>

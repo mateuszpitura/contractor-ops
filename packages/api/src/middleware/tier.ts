@@ -1,8 +1,8 @@
-import { TRPCError } from "@trpc/server";
 import type { SubscriptionTier } from "@contractor-ops/db/generated/prisma/client";
+import { TRPCError } from "@trpc/server";
 import { t } from "../init.js";
-import { tenantProcedure } from "./tenant.js";
 import { getSubscription } from "../services/billing-service.js";
+import { tenantProcedure } from "./tenant.js";
 
 // ---------------------------------------------------------------------------
 // Tier ranking for comparison
@@ -47,9 +47,7 @@ export function requireTier(minimumTier: SubscriptionTier) {
     }
 
     // Tier rank insufficient
-    if (
-      TIER_RANK[sub.tier as SubscriptionTier] < TIER_RANK[minimumTier]
-    ) {
+    if (TIER_RANK[sub.tier as SubscriptionTier] < TIER_RANK[minimumTier]) {
       throw new TRPCError({
         code: "FORBIDDEN",
         message: JSON.stringify({
@@ -80,6 +78,4 @@ export const proProcedure = tenantProcedure.use(requireTier("PRO"));
  * Procedure requiring ENTERPRISE subscription tier.
  * Chain: auth -> tenant -> requireTier(ENTERPRISE) -> handler
  */
-export const enterpriseProcedure = tenantProcedure.use(
-  requireTier("ENTERPRISE"),
-);
+export const enterpriseProcedure = tenantProcedure.use(requireTier("ENTERPRISE"));

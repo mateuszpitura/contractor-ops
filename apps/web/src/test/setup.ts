@@ -9,11 +9,7 @@ import { vi } from "vitest";
  * async updates. Real ScrollArea is tested in scroll-area.test.tsx via vi.unmock.
  */
 vi.mock("@/components/ui/scroll-area", () => ({
-  ScrollArea: ({
-    children,
-    className,
-    ...props
-  }: React.ComponentProps<"div">) =>
+  ScrollArea: ({ children, className, ...props }: React.ComponentProps<"div">) =>
     React.createElement(
       "div",
       {

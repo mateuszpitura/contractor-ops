@@ -10,9 +10,8 @@ vi.mock("next-intl", async (importOriginal) => {
 });
 
 vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
-    "@tanstack/react-query",
-  );
+  const actual =
+    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
   return {
     ...actual,
     useQuery: (opts: { queryKey?: unknown }) => {
@@ -95,7 +94,9 @@ describe("ReminderRuleEditor", () => {
 
   it("renders trigger type selector", () => {
     render(<ReminderRuleEditor open={true} onOpenChange={vi.fn()} />);
-    expect(screen.getAllByText("reminderRules.editor.triggerType").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("reminderRules.editor.triggerType").length).toBeGreaterThanOrEqual(
+      1,
+    );
   });
 
   it("renders entity type selector", () => {
@@ -110,7 +111,9 @@ describe("ReminderRuleEditor", () => {
 
   it("renders recipient mode selector", () => {
     render(<ReminderRuleEditor open={true} onOpenChange={vi.fn()} />);
-    expect(screen.getAllByText("reminderRules.editor.recipientMode").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("reminderRules.editor.recipientMode").length).toBeGreaterThanOrEqual(
+      1,
+    );
   });
 
   it("renders active toggle", () => {
@@ -123,17 +126,13 @@ describe("ReminderRuleEditor", () => {
   // -------------------------------------------------------------------------
 
   it("renders edit title when rule is provided", () => {
-    render(
-      <ReminderRuleEditor open={true} onOpenChange={vi.fn()} rule={makeRule()} />,
-    );
+    render(<ReminderRuleEditor open={true} onOpenChange={vi.fn()} rule={makeRule()} />);
     const matches = screen.getAllByText("reminderRules.editor.editTitle");
     expect(matches.length).toBeGreaterThanOrEqual(1);
   });
 
   it("populates rule name in edit mode", () => {
-    render(
-      <ReminderRuleEditor open={true} onOpenChange={vi.fn()} rule={makeRule()} />,
-    );
+    render(<ReminderRuleEditor open={true} onOpenChange={vi.fn()} rule={makeRule()} />);
     const input = screen.getByLabelText("reminderRules.editor.ruleName") as HTMLInputElement;
     expect(input.value).toBe("Test Rule");
   });
@@ -171,9 +170,7 @@ describe("ReminderRuleEditor", () => {
 
   it("calls onOpenChange when discard is clicked", async () => {
     const onOpenChange = vi.fn();
-    const { user } = setup(
-      <ReminderRuleEditor open={true} onOpenChange={onOpenChange} />,
-    );
+    const { user } = setup(<ReminderRuleEditor open={true} onOpenChange={onOpenChange} />);
     await user.click(screen.getByText("reminderRules.editor.discard"));
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
@@ -184,9 +181,7 @@ describe("ReminderRuleEditor", () => {
 
   it("does not render when closed", () => {
     render(<ReminderRuleEditor open={false} onOpenChange={vi.fn()} />);
-    expect(
-      screen.queryByText("reminderRules.editor.createTitle"),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText("reminderRules.editor.createTitle")).not.toBeInTheDocument();
   });
 
   // -------------------------------------------------------------------------
@@ -219,9 +214,7 @@ describe("ReminderRuleEditor", () => {
       channel: "EMAIL",
       recipientMode: "FINANCE_TEAM",
     });
-    render(
-      <ReminderRuleEditor open={true} onOpenChange={vi.fn()} rule={rule} />,
-    );
+    render(<ReminderRuleEditor open={true} onOpenChange={vi.fn()} rule={rule} />);
     const nameInput = screen.getByLabelText("reminderRules.editor.ruleName") as HTMLInputElement;
     expect(nameInput.value).toBe("Test Rule");
   });
@@ -288,9 +281,7 @@ describe("ReminderRuleEditor", () => {
       recipientMode: "SPECIFIC_USER",
       configJson: { userId: "u123" },
     });
-    render(
-      <ReminderRuleEditor open={true} onOpenChange={vi.fn()} rule={rule} />,
-    );
+    render(<ReminderRuleEditor open={true} onOpenChange={vi.fn()} rule={rule} />);
     // The user picker should be rendered
     expect(screen.getByText("reminderRules.editor.ruleName")).toBeInTheDocument();
   });
@@ -300,9 +291,7 @@ describe("ReminderRuleEditor", () => {
       recipientMode: "ROLE",
       configJson: { role: "OPS_MANAGER" },
     });
-    render(
-      <ReminderRuleEditor open={true} onOpenChange={vi.fn()} rule={rule} />,
-    );
+    render(<ReminderRuleEditor open={true} onOpenChange={vi.fn()} rule={rule} />);
     expect(screen.getByText("reminderRules.editor.ruleName")).toBeInTheDocument();
   });
 
@@ -362,11 +351,7 @@ describe("ReminderRuleEditor", () => {
 
   it("renders with inactive rule correctly", () => {
     render(
-      <ReminderRuleEditor
-        open={true}
-        onOpenChange={vi.fn()}
-        rule={makeRule({ active: false })}
-      />,
+      <ReminderRuleEditor open={true} onOpenChange={vi.fn()} rule={makeRule({ active: false })} />,
     );
     const switchEl = screen.getByRole("switch");
     expect(switchEl).toBeInTheDocument();
@@ -385,9 +370,7 @@ describe("ReminderRuleEditor", () => {
 
   // ---- Active toggle interaction ----
   it("toggles active switch when clicked", async () => {
-    const { user } = setup(
-      <ReminderRuleEditor open={true} onOpenChange={vi.fn()} />,
-    );
+    const { user } = setup(<ReminderRuleEditor open={true} onOpenChange={vi.fn()} />);
     const switchEl = screen.getByRole("switch");
     await user.click(switchEl);
     // Switch should toggle (checked state changes)
@@ -395,9 +378,7 @@ describe("ReminderRuleEditor", () => {
 
   // ---- Form submit: fill name and click save ----
   it("submit button triggers form submission", async () => {
-    const { user } = setup(
-      <ReminderRuleEditor open={true} onOpenChange={vi.fn()} />,
-    );
+    const { user } = setup(<ReminderRuleEditor open={true} onOpenChange={vi.fn()} />);
     const nameInput = screen.getByLabelText("reminderRules.editor.ruleName");
     await user.type(nameInput, "My Rule");
     const saveBtn = screen.getByText("reminderRules.editor.save").closest("button")!;
@@ -446,9 +427,7 @@ describe("ReminderRuleEditor", () => {
       recipientMode: "ROLE",
       configJson: { role: "OPS_MANAGER" },
     });
-    render(
-      <ReminderRuleEditor open={true} onOpenChange={vi.fn()} rule={rule} />,
-    );
+    render(<ReminderRuleEditor open={true} onOpenChange={vi.fn()} rule={rule} />);
     // Role picker should be rendered (has combobox elements)
     const comboboxes = screen.getAllByRole("combobox");
     expect(comboboxes.length).toBeGreaterThanOrEqual(1);
@@ -460,9 +439,7 @@ describe("ReminderRuleEditor", () => {
       recipientMode: "SPECIFIC_USER",
       configJson: { userId: "u123" },
     });
-    render(
-      <ReminderRuleEditor open={true} onOpenChange={vi.fn()} rule={rule} />,
-    );
+    render(<ReminderRuleEditor open={true} onOpenChange={vi.fn()} rule={rule} />);
     // User picker renders a button for selecting user
     const buttons = screen.getAllByRole("button");
     expect(buttons.length).toBeGreaterThanOrEqual(1);
@@ -476,9 +453,7 @@ describe("ReminderRuleEditor", () => {
       triggerType: "BEFORE_DUE_DATE",
       offsetDays: 7,
     });
-    const { user } = setup(
-      <ReminderRuleEditor open={true} onOpenChange={vi.fn()} rule={rule} />,
-    );
+    const { user } = setup(<ReminderRuleEditor open={true} onOpenChange={vi.fn()} rule={rule} />);
     const saveBtn = screen.getByText("reminderRules.editor.save").closest("button")!;
     await user.click(saveBtn);
   });
@@ -491,18 +466,14 @@ describe("ReminderRuleEditor", () => {
       triggerType: "BEFORE_CONTRACT_END",
       offsetDays: 30,
     });
-    const { user } = setup(
-      <ReminderRuleEditor open={true} onOpenChange={vi.fn()} rule={rule} />,
-    );
+    const { user } = setup(<ReminderRuleEditor open={true} onOpenChange={vi.fn()} rule={rule} />);
     const saveBtn = screen.getByText("reminderRules.editor.save").closest("button")!;
     await user.click(saveBtn);
   });
 
   // ---- Create mode submission (no rule) triggers createMutation ----
   it("submits create form with valid data", async () => {
-    const { user } = setup(
-      <ReminderRuleEditor open={true} onOpenChange={vi.fn()} />,
-    );
+    const { user } = setup(<ReminderRuleEditor open={true} onOpenChange={vi.fn()} />);
     const nameInput = screen.getByLabelText("reminderRules.editor.ruleName");
     await user.type(nameInput, "New Reminder Rule");
     const saveBtn = screen.getByText("reminderRules.editor.save").closest("button")!;
@@ -515,9 +486,7 @@ describe("ReminderRuleEditor", () => {
       triggerType: "BEFORE_DUE_DATE",
       offsetDays: 14,
     });
-    const { user } = setup(
-      <ReminderRuleEditor open={true} onOpenChange={vi.fn()} rule={rule} />,
-    );
+    const { user } = setup(<ReminderRuleEditor open={true} onOpenChange={vi.fn()} rule={rule} />);
     const nameInput = screen.getByLabelText("reminderRules.editor.ruleName") as HTMLInputElement;
     await user.clear(nameInput);
     await user.type(nameInput, "Updated Rule Name");
@@ -531,9 +500,7 @@ describe("ReminderRuleEditor", () => {
       triggerType: "ON_LIFECYCLE_CHANGE",
       offsetDays: null,
     });
-    const { user } = setup(
-      <ReminderRuleEditor open={true} onOpenChange={vi.fn()} rule={rule} />,
-    );
+    const { user } = setup(<ReminderRuleEditor open={true} onOpenChange={vi.fn()} rule={rule} />);
     const saveBtn = screen.getByText("reminderRules.editor.save").closest("button")!;
     await user.click(saveBtn);
   });
@@ -544,9 +511,7 @@ describe("ReminderRuleEditor", () => {
       <ReminderRuleEditor open={true} onOpenChange={vi.fn()} rule={makeRule()} />,
     );
     // Reopen without rule
-    rerender(
-      <ReminderRuleEditor open={true} onOpenChange={vi.fn()} />,
-    );
+    rerender(<ReminderRuleEditor open={true} onOpenChange={vi.fn()} />);
     const nameInput = screen.getByLabelText("reminderRules.editor.ruleName") as HTMLInputElement;
     expect(nameInput.value).toBe("");
   });

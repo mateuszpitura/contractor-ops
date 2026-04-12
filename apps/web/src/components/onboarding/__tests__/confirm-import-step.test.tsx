@@ -1,5 +1,5 @@
-import { render, screen } from "@/test/test-utils";
 import { useMutation } from "@tanstack/react-query";
+import { render, screen } from "@/test/test-utils";
 import { ConfirmImportStep } from "../confirm-import-step";
 
 vi.mock("@tanstack/react-query", async () => {
@@ -38,9 +38,18 @@ describe("ConfirmImportStep", () => {
     render(
       <ConfirmImportStep
         mergedPeople={people}
-        personSelections={new Map([["a@test.com", { role: "member", skip: false, resolvedConflicts: {} }]])}
+        personSelections={
+          new Map([["a@test.com", { role: "member", skip: false, resolvedConflicts: {} }]])
+        }
         projects={projects}
-        projectSelections={new Map([["JIRA-p1", { skip: false, name: "Project A", steps: [{ name: "Todo", sortOrder: 0 }] }]])}
+        projectSelections={
+          new Map([
+            [
+              "JIRA-p1",
+              { skip: false, name: "Project A", steps: [{ name: "Todo", sortOrder: 0 }] },
+            ],
+          ])
+        }
         jobId={null}
         onJobIdChange={vi.fn()}
       />,
@@ -54,7 +63,9 @@ describe("ConfirmImportStep", () => {
     render(
       <ConfirmImportStep
         mergedPeople={people}
-        personSelections={new Map([["a@test.com", { role: "member", skip: false, resolvedConflicts: {} }]])}
+        personSelections={
+          new Map([["a@test.com", { role: "member", skip: false, resolvedConflicts: {} }]])
+        }
         projects={[]}
         projectSelections={new Map()}
         jobId={null}

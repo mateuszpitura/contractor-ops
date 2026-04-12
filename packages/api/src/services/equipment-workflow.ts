@@ -1,5 +1,5 @@
-import { InPostClient } from "./courier/inpost-client.js";
 import type { InPostClientConfig } from "./courier/inpost-client.js";
+import { InPostClient } from "./courier/inpost-client.js";
 
 // Loosely typed PrismaClient for parallel execution compatibility (precedent: Phase 16, 18)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -67,9 +67,7 @@ export async function handleEquipmentTaskStart(
         },
       });
 
-      const equipmentIds = assignments.map(
-        (a: { equipment: { id: string } }) => a.equipment.id,
-      );
+      const equipmentIds = assignments.map((a: { equipment: { id: string } }) => a.equipment.id);
 
       // Determine direction based on workflow template type
       const direction: "OUTBOUND" | "RETURN" =
@@ -180,8 +178,7 @@ export async function checkShipmentTaskCompletion(
     if (!shipment.workflowTaskRunId) return;
 
     // Determine target status based on shipment direction
-    const targetStatus =
-      shipment.direction === "OUTBOUND" ? "DELIVERED" : "RETURNED";
+    const targetStatus = shipment.direction === "OUTBOUND" ? "DELIVERED" : "RETURNED";
 
     // Quick check: if this shipment hasn't reached target, no point checking others
     if (shipment.currentStatus !== targetStatus) return;
@@ -283,13 +280,7 @@ async function autoCreateInPostReturnShipment(
   },
 ): Promise<void> {
   try {
-    const {
-      organizationId,
-      contractorId,
-      equipmentIds,
-      taskRunId,
-      workflowRunId,
-    } = params;
+    const { organizationId, contractorId, equipmentIds, taskRunId, workflowRunId } = params;
 
     // Check if org has InPost courier config
     const courierConfig = await tx.courierConfig.findUnique({
@@ -441,10 +432,7 @@ async function autoCreateInPostReturnShipment(
 /**
  * Recompute workflow run progress and auto-complete if all required tasks done.
  */
-async function recomputeWorkflowProgress(
-  tx: PrismaClient,
-  workflowRunId: string,
-): Promise<void> {
+async function recomputeWorkflowProgress(tx: PrismaClient, workflowRunId: string): Promise<void> {
   const allTasks = await tx.workflowTaskRun.findMany({
     where: { workflowRunId },
     select: { status: true, required: true },
@@ -461,9 +449,7 @@ async function recomputeWorkflowProgress(
   const progressPercent = Math.round((doneTasks.length / total) * 100);
 
   // Check if all required tasks are DONE
-  const requiredTasks = allTasks.filter(
-    (t: { required: boolean }) => t.required,
-  );
+  const requiredTasks = allTasks.filter((t: { required: boolean }) => t.required);
   const allRequiredDone = requiredTasks.every(
     (t: { status: string }) =>
       t.status === "DONE" || t.status === "SKIPPED" || t.status === "CANCELLED",

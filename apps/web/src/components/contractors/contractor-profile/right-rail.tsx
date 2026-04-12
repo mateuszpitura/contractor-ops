@@ -1,14 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { Clock, RefreshCw, UserPlus } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Clock, UserPlus, RefreshCw } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
+import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { trpc } from "@/trpc/init";
 
 type RightRailProps = {
   contractor: {
@@ -53,12 +52,9 @@ export function ActivityTimeline({
 }) {
   const t = useTranslations("ContractorProfile.rightRail");
 
-  const created =
-    typeof createdAt === "string" ? new Date(createdAt) : createdAt;
-  const updated =
-    typeof updatedAt === "string" ? new Date(updatedAt) : updatedAt;
-  const hasUpdate =
-    Math.abs(updated.getTime() - created.getTime()) > 60000;
+  const created = typeof createdAt === "string" ? new Date(createdAt) : createdAt;
+  const updated = typeof updatedAt === "string" ? new Date(updatedAt) : updatedAt;
+  const hasUpdate = Math.abs(updated.getTime() - created.getTime()) > 60000;
 
   const events: Array<{
     icon: typeof UserPlus;
@@ -89,9 +85,7 @@ export function ActivityTimeline({
   events.sort((a, b) => b.time.getTime() - a.time.getTime());
 
   if (events.length === 0) {
-    return (
-      <p className="text-sm text-muted-foreground">{t("noActivity")}</p>
-    );
+    return <p className="text-sm text-muted-foreground">{t("noActivity")}</p>;
   }
 
   return (
@@ -108,9 +102,7 @@ export function ActivityTimeline({
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm">{event.text}</p>
-              <p className="text-xs text-muted-foreground">
-                {formatRelativeTime(event.time)}
-              </p>
+              <p className="text-xs text-muted-foreground">{formatRelativeTime(event.time)}</p>
             </div>
           </div>
         );
@@ -143,7 +135,7 @@ export function RightRail({ contractor }: RightRailProps) {
             : "";
         toast.error(message || tToast("noteFailed"));
       },
-    })
+    }),
   );
 
   function handleSaveNotes() {

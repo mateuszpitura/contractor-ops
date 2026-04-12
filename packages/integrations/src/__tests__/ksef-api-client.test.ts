@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach, beforeAll } from "vitest";
 import { generateKeyPairSync } from "node:crypto";
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { KsefApiClient } from "../services/ksef-api-client.js";
 
 // ---------------------------------------------------------------------------
@@ -57,9 +57,7 @@ describe("KsefApiClient", () => {
   function mockAuthFlow() {
     fetchMock
       // Step 1: GET /auth/public-key
-      .mockResolvedValueOnce(
-        jsonResponse({ publicKey: TEST_PUBLIC_KEY_PEM }),
-      )
+      .mockResolvedValueOnce(jsonResponse({ publicKey: TEST_PUBLIC_KEY_PEM }))
       // Step 2: POST /auth/challenge
       .mockResolvedValueOnce(
         jsonResponse({ challenge: "test-challenge-123", timestampMs: Date.now() }),
@@ -72,9 +70,7 @@ describe("KsefApiClient", () => {
         }),
       )
       // Step 4: GET /auth/{referenceNumber} — session ready
-      .mockResolvedValueOnce(
-        jsonResponse({ status: "READY", processingCode: 200 }),
-      );
+      .mockResolvedValueOnce(jsonResponse({ status: "READY", processingCode: 200 }));
   }
 
   describe("authenticate", () => {
@@ -99,14 +95,12 @@ describe("KsefApiClient", () => {
     it("throws on invalid credentials", async () => {
       fetchMock
         .mockResolvedValueOnce(jsonResponse({ publicKey: TEST_PUBLIC_KEY_PEM }))
-        .mockResolvedValueOnce(
-          textResponse("Unauthorized", 401),
-        );
+        .mockResolvedValueOnce(textResponse("Unauthorized", 401));
 
       const client = new KsefApiClient("test");
-      await expect(
-        client.authenticate("bad-token", "5261040828"),
-      ).rejects.toThrow("KSeF API error 401");
+      await expect(client.authenticate("bad-token", "5261040828")).rejects.toThrow(
+        "KSeF API error 401",
+      );
     });
   });
 
@@ -124,9 +118,7 @@ describe("KsefApiClient", () => {
       ];
 
       // Query start
-      fetchMock.mockResolvedValueOnce(
-        jsonResponse({ queryId: "query-123" }),
-      );
+      fetchMock.mockResolvedValueOnce(jsonResponse({ queryId: "query-123" }));
       // Query poll — completed
       fetchMock.mockResolvedValueOnce(
         jsonResponse({
@@ -139,25 +131,19 @@ describe("KsefApiClient", () => {
 
       const client = new KsefApiClient("test");
       await client.authenticate("test-token", "5261040828");
-      const result = await client.queryInvoices(
-        "5261040828",
-        "2026-03-01",
-        "2026-03-31",
-      );
+      const result = await client.queryInvoices("5261040828", "2026-03-01", "2026-03-31");
 
       expect(result.invoiceMetadataList).toHaveLength(1);
-      expect(result.invoiceMetadataList[0]!.ksefReferenceNumber).toBe(
-        "KSEF-INV-001",
-      );
+      expect(result.invoiceMetadataList[0]!.ksefReferenceNumber).toBe("KSEF-INV-001");
       expect(result.hasMore).toBe(false);
     });
 
     it("throws when not authenticated", async () => {
       const client = new KsefApiClient("test");
 
-      await expect(
-        client.queryInvoices("5261040828", "2026-03-01", "2026-03-31"),
-      ).rejects.toThrow("KSeF session not established");
+      await expect(client.queryInvoices("5261040828", "2026-03-01", "2026-03-31")).rejects.toThrow(
+        "KSeF session not established",
+      );
     });
   });
 
@@ -168,10 +154,7 @@ describe("KsefApiClient", () => {
       fetchMock.mockResolvedValueOnce(jsonResponse({ ok: true }));
 
       const client = new KsefApiClient("test");
-      const result = await client.verifyCredentials(
-        "test-token",
-        "5261040828",
-      );
+      const result = await client.verifyCredentials("test-token", "5261040828");
 
       expect(result).toBe(true);
     });
@@ -182,10 +165,7 @@ describe("KsefApiClient", () => {
         .mockResolvedValueOnce(textResponse("Unauthorized", 401));
 
       const client = new KsefApiClient("test");
-      const result = await client.verifyCredentials(
-        "bad-token",
-        "5261040828",
-      );
+      const result = await client.verifyCredentials("bad-token", "5261040828");
 
       expect(result).toBe(false);
     });
@@ -205,9 +185,7 @@ describe("KsefApiClient", () => {
 
       fetchMock
         // Step 1: GET /auth/public-key
-        .mockResolvedValueOnce(
-          jsonResponse({ publicKey: TEST_PUBLIC_KEY_PEM }),
-        )
+        .mockResolvedValueOnce(jsonResponse({ publicKey: TEST_PUBLIC_KEY_PEM }))
         // Step 2: POST /auth/challenge
         .mockResolvedValueOnce(
           jsonResponse({ challenge: "test-challenge-123", timestampMs: Date.now() }),
@@ -222,9 +200,7 @@ describe("KsefApiClient", () => {
 
       // Step 4: All 30 session status polls return PENDING (never READY)
       for (let i = 0; i < 30; i++) {
-        fetchMock.mockResolvedValueOnce(
-          jsonResponse({ status: "PENDING", processingCode: 100 }),
-        );
+        fetchMock.mockResolvedValueOnce(jsonResponse({ status: "PENDING", processingCode: 100 }));
       }
 
       const client = new KsefApiClient("test");

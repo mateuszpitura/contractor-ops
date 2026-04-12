@@ -56,9 +56,7 @@ export interface OcrExtractionResult {
  * Implemented by ClaudeOcrAdapter (and future providers).
  */
 export interface OcrAdapter {
-  extractInvoice(
-    request: OcrExtractionRequest,
-  ): Promise<OcrExtractionResult>;
+  extractInvoice(request: OcrExtractionRequest): Promise<OcrExtractionResult>;
   readonly providerName: string;
   readonly supportedDocumentTypes: string[];
 }
@@ -74,9 +72,7 @@ export interface OcrAdapter {
  * Strips dashes and spaces before validation.
  * A remainder of 10 means the NIP is invalid.
  */
-export function validateNip(
-  nip: string,
-): { valid: boolean; formatted: string } {
+export function validateNip(nip: string): { valid: boolean; formatted: string } {
   const digits = nip.replace(/[\s-]/g, "");
 
   if (!/^\d{10}$/.test(digits)) {
@@ -84,10 +80,7 @@ export function validateNip(
   }
 
   const weights = [6, 5, 7, 2, 3, 4, 5, 6, 7];
-  const sum = weights.reduce(
-    (acc, w, i) => acc + w * parseInt(digits[i]!, 10),
-    0,
-  );
+  const sum = weights.reduce((acc, w, i) => acc + w * parseInt(digits[i]!, 10), 0);
   const checkDigit = sum % 11;
 
   // Remainder of 10 means invalid NIP
@@ -110,9 +103,7 @@ export function validateNip(
  * - net + tax should equal gross (cap amount confidences to 60 if mismatch > 0.01)
  * - NIP checksums must be valid (cap NIP confidence to 40 if invalid)
  */
-export function adjustConfidences(
-  result: OcrExtractionResult,
-): OcrExtractionResult {
+export function adjustConfidences(result: OcrExtractionResult): OcrExtractionResult {
   const fields = { ...result.fields };
 
   // Cross-validate: net + tax should equal gross

@@ -1,5 +1,6 @@
 import { render, screen, setup } from "@/test/test-utils";
-import { ProfileSection, type ProfileField } from "../profile-section";
+import type { ProfileField } from "../profile-section";
+import { ProfileSection } from "../profile-section";
 
 vi.mock("@/components/portal/pending-change-banner", () => ({
   PendingChangeBanner: () => <div data-testid="pending-banner" />,
@@ -16,12 +17,7 @@ function makeFields(): ProfileField[] {
 describe("ProfileSection", () => {
   it("renders title and field labels in view mode", () => {
     render(
-      <ProfileSection
-        title="Personal Info"
-        fields={makeFields()}
-        onSave={vi.fn()}
-        defaultOpen
-      />,
+      <ProfileSection title="Personal Info" fields={makeFields()} onSave={vi.fn()} defaultOpen />,
     );
 
     expect(screen.getByText("Personal Info")).toBeInTheDocument();
@@ -31,12 +27,7 @@ describe("ProfileSection", () => {
 
   it("shows field values in view mode", () => {
     render(
-      <ProfileSection
-        title="Personal Info"
-        fields={makeFields()}
-        onSave={vi.fn()}
-        defaultOpen
-      />,
+      <ProfileSection title="Personal Info" fields={makeFields()} onSave={vi.fn()} defaultOpen />,
     );
 
     expect(screen.getByText("jan@example.com")).toBeInTheDocument();
@@ -45,12 +36,7 @@ describe("ProfileSection", () => {
 
   it("shows edit button", () => {
     render(
-      <ProfileSection
-        title="Personal Info"
-        fields={makeFields()}
-        onSave={vi.fn()}
-        defaultOpen
-      />,
+      <ProfileSection title="Personal Info" fields={makeFields()} onSave={vi.fn()} defaultOpen />,
     );
 
     expect(screen.getByRole("button", { name: /edit/i })).toBeInTheDocument();
@@ -58,12 +44,7 @@ describe("ProfileSection", () => {
 
   it("switches to edit mode when edit is clicked", async () => {
     const { user } = setup(
-      <ProfileSection
-        title="Personal Info"
-        fields={makeFields()}
-        onSave={vi.fn()}
-        defaultOpen
-      />,
+      <ProfileSection title="Personal Info" fields={makeFields()} onSave={vi.fn()} defaultOpen />,
     );
 
     await user.click(screen.getByRole("button", { name: /edit/i }));
@@ -106,12 +87,7 @@ describe("ProfileSection", () => {
 
   it("shows read-only field with lock icon in edit mode", async () => {
     const { user } = setup(
-      <ProfileSection
-        title="Personal Info"
-        fields={makeFields()}
-        onSave={vi.fn()}
-        defaultOpen
-      />,
+      <ProfileSection title="Personal Info" fields={makeFields()} onSave={vi.fn()} defaultOpen />,
     );
 
     await user.click(screen.getByRole("button", { name: /edit/i }));
@@ -121,12 +97,7 @@ describe("ProfileSection", () => {
 
   it("discards changes and returns to view mode when discard is clicked", async () => {
     const { user } = setup(
-      <ProfileSection
-        title="Personal Info"
-        fields={makeFields()}
-        onSave={vi.fn()}
-        defaultOpen
-      />,
+      <ProfileSection title="Personal Info" fields={makeFields()} onSave={vi.fn()} defaultOpen />,
     );
 
     await user.click(screen.getByRole("button", { name: /edit/i }));
@@ -138,12 +109,7 @@ describe("ProfileSection", () => {
 
   it("renders editable inputs in edit mode for non-readOnly fields", async () => {
     const { user } = setup(
-      <ProfileSection
-        title="Personal Info"
-        fields={makeFields()}
-        onSave={vi.fn()}
-        defaultOpen
-      />,
+      <ProfileSection title="Personal Info" fields={makeFields()} onSave={vi.fn()} defaultOpen />,
     );
 
     await user.click(screen.getByRole("button", { name: /edit/i }));
@@ -155,12 +121,7 @@ describe("ProfileSection", () => {
   it("calls onSave with form values when save is clicked", async () => {
     const onSave = vi.fn().mockResolvedValue(undefined);
     const { user } = setup(
-      <ProfileSection
-        title="Personal Info"
-        fields={makeFields()}
-        onSave={onSave}
-        defaultOpen
-      />,
+      <ProfileSection title="Personal Info" fields={makeFields()} onSave={onSave} defaultOpen />,
     );
 
     await user.click(screen.getByRole("button", { name: /edit/i }));
@@ -184,41 +145,22 @@ describe("ProfileSection", () => {
   });
 
   it("shows fallback value for fields with null value", () => {
-    const fields = [
-      { key: "address", label: "Address", value: null },
-    ];
-    render(
-      <ProfileSection
-        title="Info"
-        fields={fields}
-        onSave={vi.fn()}
-        defaultOpen
-      />,
-    );
+    const fields = [{ key: "address", label: "Address", value: null }];
+    render(<ProfileSection title="Info" fields={fields} onSave={vi.fn()} defaultOpen />);
     // The fallback is t("fallbackValue") which should render some placeholder text
     expect(screen.getByText("Address")).toBeInTheDocument();
   });
 
   it("does not show requires approval badge when requiresApproval is false", () => {
     render(
-      <ProfileSection
-        title="Personal Info"
-        fields={makeFields()}
-        onSave={vi.fn()}
-        defaultOpen
-      />,
+      <ProfileSection title="Personal Info" fields={makeFields()} onSave={vi.fn()} defaultOpen />,
     );
     expect(screen.queryByText(/requires approval/i)).not.toBeInTheDocument();
   });
 
   it("does not show pending banner when no pendingChangeRequest", () => {
     render(
-      <ProfileSection
-        title="Personal Info"
-        fields={makeFields()}
-        onSave={vi.fn()}
-        defaultOpen
-      />,
+      <ProfileSection title="Personal Info" fields={makeFields()} onSave={vi.fn()} defaultOpen />,
     );
     expect(screen.queryByTestId("pending-banner")).not.toBeInTheDocument();
   });
@@ -230,12 +172,7 @@ describe("ProfileSection", () => {
       { key: "swift", label: "SWIFT", value: "BPKOPLPW" },
     ];
     render(
-      <ProfileSection
-        title="Bank Details"
-        fields={bankFields}
-        onSave={vi.fn()}
-        defaultOpen
-      />,
+      <ProfileSection title="Bank Details" fields={bankFields} onSave={vi.fn()} defaultOpen />,
     );
     expect(screen.getByText("PKO BP")).toBeInTheDocument();
     expect(screen.getByText("PL12345678")).toBeInTheDocument();
@@ -248,12 +185,7 @@ describe("ProfileSection", () => {
       { key: "swift", label: "SWIFT", value: "BPKOPLPW" },
     ];
     const { user } = setup(
-      <ProfileSection
-        title="Bank Details"
-        fields={bankFields}
-        onSave={vi.fn()}
-        defaultOpen
-      />,
+      <ProfileSection title="Bank Details" fields={bankFields} onSave={vi.fn()} defaultOpen />,
     );
     await user.click(screen.getByRole("button", { name: /edit/i }));
     expect(screen.getByLabelText("Bank Name")).toBeInTheDocument();
@@ -262,16 +194,9 @@ describe("ProfileSection", () => {
 
   it("saves updated bank field values", async () => {
     const onSave = vi.fn().mockResolvedValue(undefined);
-    const bankFields = [
-      { key: "bankName", label: "Bank Name", value: "PKO BP" },
-    ];
+    const bankFields = [{ key: "bankName", label: "Bank Name", value: "PKO BP" }];
     const { user } = setup(
-      <ProfileSection
-        title="Bank Details"
-        fields={bankFields}
-        onSave={onSave}
-        defaultOpen
-      />,
+      <ProfileSection title="Bank Details" fields={bankFields} onSave={onSave} defaultOpen />,
     );
     await user.click(screen.getByRole("button", { name: /edit/i }));
     const input = screen.getByLabelText("Bank Name");

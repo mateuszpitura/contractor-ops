@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GovApiAuditLogger } from "../audit-logger.js";
 import type { GovApiAuditEntry } from "../types.js";
 
@@ -67,9 +67,7 @@ describe("GovApiAuditLogger", () => {
   });
 
   it("catches and swallows write errors", async () => {
-    const consoleSpy = vi
-      .spyOn(console, "error")
-      .mockImplementation(() => {});
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     mockCreate.mockRejectedValue(new Error("DB connection failed"));
 
     const logger = new GovApiAuditLogger(mockPrisma);

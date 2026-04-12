@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Integration Tests: Shipment Task Completion
@@ -16,8 +16,8 @@ vi.mock("../inpost-client", () => ({
   },
 }));
 
-import { handleInPostWebhook } from "../inpost-webhook-handler";
 import { pollInPostShipmentStatuses } from "../inpost-polling-service";
+import { handleInPostWebhook } from "../inpost-webhook-handler";
 
 /**
  * Create a mock DB with state tracking for integration tests.
@@ -55,9 +55,7 @@ function createIntegrationMockDb(opts: {
       update: vi.fn(async (args: any) => {
         const updated = { ...opts.shipment, ...args.data };
         // Reflect status change in allLinkedShipments
-        const linked = opts.allLinkedShipments.find(
-          (s) => s.id === opts.shipment.id,
-        );
+        const linked = opts.allLinkedShipments.find((s) => s.id === opts.shipment.id);
         if (linked && args.data?.currentStatus) {
           linked.currentStatus = args.data.currentStatus;
         }
@@ -125,9 +123,7 @@ describe("Shipment Task Completion Integration", () => {
         equipmentId: "equip-1",
         organizationId: "org-1",
       },
-      allLinkedShipments: [
-        { id: "ship-1", direction: "OUTBOUND", currentStatus: "IN_TRANSIT" },
-      ],
+      allLinkedShipments: [{ id: "ship-1", direction: "OUTBOUND", currentStatus: "IN_TRANSIT" }],
     });
 
     const webhookPayload = {
@@ -168,9 +164,7 @@ describe("Shipment Task Completion Integration", () => {
         equipmentId: "equip-1",
         organizationId: "org-1",
       },
-      allLinkedShipments: [
-        { id: "ship-1", direction: "OUTBOUND", currentStatus: "IN_TRANSIT" },
-      ],
+      allLinkedShipments: [{ id: "ship-1", direction: "OUTBOUND", currentStatus: "IN_TRANSIT" }],
     });
 
     mockInPostGetStatus.mockResolvedValue({
@@ -209,9 +203,7 @@ describe("Shipment Task Completion Integration", () => {
         equipmentId: "equip-1",
         organizationId: "org-1",
       },
-      allLinkedShipments: [
-        { id: "ship-1", direction: "RETURN", currentStatus: "IN_TRANSIT" },
-      ],
+      allLinkedShipments: [{ id: "ship-1", direction: "RETURN", currentStatus: "IN_TRANSIT" }],
     });
 
     // "returned_to_sender" maps to RETURNED via mapInPostStatus

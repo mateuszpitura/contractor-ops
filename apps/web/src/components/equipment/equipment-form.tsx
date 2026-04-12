@@ -1,26 +1,15 @@
 "use client";
 
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import type { EquipmentCreateInput } from "@contractor-ops/validators";
+import { equipmentCreateSchema } from "@contractor-ops/validators";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { equipmentCreateSchema, type EquipmentCreateInput } from "@contractor-ops/validators";
-
-import { trpc } from "@/trpc/init";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -29,6 +18,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { trpc } from "@/trpc/init";
 import { EquipmentTypeIcon } from "./equipment-type-icon";
 
 // ---------------------------------------------------------------------------
@@ -64,11 +64,7 @@ interface EquipmentFormProps {
 // Component
 // ---------------------------------------------------------------------------
 
-export function EquipmentForm({
-  open,
-  onOpenChange,
-  equipment,
-}: EquipmentFormProps) {
+export function EquipmentForm({ open, onOpenChange, equipment }: EquipmentFormProps) {
   const t = useTranslations("Equipment");
   const queryClient = useQueryClient();
   const isEdit = !!equipment;
@@ -94,9 +90,7 @@ export function EquipmentForm({
         type: equipment.type as EquipmentCreateInput["type"],
         customType: equipment.customType ?? "",
         notes: equipment.notes ?? "",
-        purchaseDate: equipment.purchaseDate
-          ? new Date(equipment.purchaseDate)
-          : undefined,
+        purchaseDate: equipment.purchaseDate ? new Date(equipment.purchaseDate) : undefined,
       });
     } else if (open && !equipment) {
       form.reset({
@@ -159,13 +153,9 @@ export function EquipmentForm({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>
-            {isEdit ? t("form.editTitle") : t("form.createTitle")}
-          </DialogTitle>
+          <DialogTitle>{isEdit ? t("form.editTitle") : t("form.createTitle")}</DialogTitle>
           <DialogDescription>
-            {isEdit
-              ? t("form.editTitle")
-              : t("form.createTitle")}
+            {isEdit ? t("form.editTitle") : t("form.createTitle")}
           </DialogDescription>
         </DialogHeader>
 
@@ -180,9 +170,7 @@ export function EquipmentForm({
               aria-invalid={!!form.formState.errors.name}
             />
             {form.formState.errors.name && (
-              <p className="text-xs text-destructive">
-                {form.formState.errors.name.message}
-              </p>
+              <p className="text-xs text-destructive">{form.formState.errors.name.message}</p>
             )}
           </div>
 
@@ -249,11 +237,7 @@ export function EquipmentForm({
           {/* Notes */}
           <div className="space-y-2">
             <Label htmlFor="eq-notes">{t("form.notes")}</Label>
-            <Textarea
-              id="eq-notes"
-              rows={3}
-              {...form.register("notes")}
-            />
+            <Textarea id="eq-notes" rows={3} {...form.register("notes")} />
           </div>
 
           <DialogFooter>

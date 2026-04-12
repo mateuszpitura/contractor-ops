@@ -5,7 +5,7 @@
  * and verifies the offboarding auto-shipment integration path.
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -403,9 +403,7 @@ describe("portal.cancelReturn", () => {
     });
 
     const caller = portalCaller();
-    await expect(
-      caller.portal.cancelReturn({ id: "rr-1" }),
-    ).rejects.toThrow();
+    await expect(caller.portal.cancelReturn({ id: "rr-1" })).rejects.toThrow();
   });
 });
 
@@ -464,9 +462,7 @@ describe("portal.getReturnLabel", () => {
     });
 
     const caller = portalCaller();
-    await expect(
-      caller.portal.getReturnLabel({ returnRequestId: "rr-1" }),
-    ).rejects.toThrow();
+    await expect(caller.portal.getReturnLabel({ returnRequestId: "rr-1" })).rejects.toThrow();
   });
 });
 
@@ -481,9 +477,7 @@ describe("Offboarding return skips approval", () => {
 
   it("creates ReturnRequest with SHIPMENT_CREATED status when org has InPost config", async () => {
     // Import the workflow service to test directly
-    const { handleEquipmentTaskStart } = await import(
-      "../../services/equipment-workflow.js"
-    );
+    const { handleEquipmentTaskStart } = await import("../../services/equipment-workflow.js");
 
     // Mock: assignments with equipment
     mockPrisma.equipmentAssignment.findMany.mockResolvedValueOnce([

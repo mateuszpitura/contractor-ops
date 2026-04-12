@@ -1,8 +1,8 @@
 "use client";
 
-import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { Suspense } from "react";
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -10,17 +10,13 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import {
-  navigationGroups,
-  type NavItem,
-} from "@/lib/navigation";
+import { WorkflowNavBadge } from "@/components/workflows/workflow-nav-badge";
 import { usePermissions } from "@/hooks/use-permissions";
 import { Link, usePathname } from "@/i18n/navigation";
-import { WorkflowNavBadge } from "@/components/workflows/workflow-nav-badge";
+import type { NavItem } from "@/lib/navigation";
+import { navigationGroups } from "@/lib/navigation";
 
-function settingsTabFromSearch(
-  searchParams: ReturnType<typeof useSearchParams>,
-): string {
+function settingsTabFromSearch(searchParams: ReturnType<typeof useSearchParams>): string {
   return searchParams.get("tab") ?? "general";
 }
 
@@ -34,9 +30,7 @@ function isNavItemActive(
   item: NavItem,
 ): boolean {
   const [basePath, queryPart] = item.href.split("?");
-  const tabFromHref = queryPart
-    ? new URLSearchParams(queryPart).get("tab")
-    : null;
+  const tabFromHref = queryPart ? new URLSearchParams(queryPart).get("tab") : null;
 
   if (tabFromHref && basePath === "/settings") {
     if (pathname !== "/settings") return false;
@@ -44,10 +38,7 @@ function isNavItemActive(
   }
 
   if (item.key === "notifications") {
-    if (
-      pathname === "/notifications" ||
-      pathname.startsWith("/notifications/")
-    ) {
+    if (pathname === "/notifications" || pathname.startsWith("/notifications/")) {
       return true;
     }
     if (pathname === "/settings") {
@@ -57,8 +48,7 @@ function isNavItemActive(
   }
 
   if (item.key === "settings") {
-    const pathMatches =
-      pathname === "/settings" || pathname.startsWith("/settings/");
+    const pathMatches = pathname === "/settings" || pathname.startsWith("/settings/");
     if (!pathMatches) return false;
     if (pathname === "/settings") {
       const tab = settingsTabFromSearch(searchParams);
@@ -67,9 +57,7 @@ function isNavItemActive(
     return true;
   }
 
-  return (
-    pathname === basePath || pathname.startsWith(`${basePath}/`)
-  );
+  return pathname === basePath || pathname.startsWith(`${basePath}/`);
 }
 
 /**
@@ -114,7 +102,9 @@ function NavItemsContent() {
                 return (
                   <SidebarMenuItem key={item.key} className="relative">
                     <SidebarMenuButton
-                      render={<Link href={item.href} aria-current={isActive ? "page" : undefined} />}
+                      render={
+                        <Link href={item.href} aria-current={isActive ? "page" : undefined} />
+                      }
                       isActive={isActive}
                       tooltip={label}
                     >

@@ -1,9 +1,9 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
-  linearWebhookPayloadSchema,
-  linearTaskConfigSchema,
-  linearStatusMappingSchema,
   linearIssueMetadataSchema,
+  linearStatusMappingSchema,
+  linearTaskConfigSchema,
+  linearWebhookPayloadSchema,
 } from "../linear.js";
 
 // ---------------------------------------------------------------------------
@@ -43,7 +43,7 @@ describe("linearWebhookPayloadSchema", () => {
     const actionResult = linearWebhookPayloadSchema.safeParse(noAction);
     expect(actionResult.success).toBe(false);
     if (!actionResult.success) {
-      const paths = actionResult.error.issues.map((i) => i.path).flat();
+      const paths = actionResult.error.issues.flatMap((i) => i.path);
       expect(paths).toContain("action");
     }
 
@@ -51,7 +51,7 @@ describe("linearWebhookPayloadSchema", () => {
     const dataResult = linearWebhookPayloadSchema.safeParse(noData);
     expect(dataResult.success).toBe(false);
     if (!dataResult.success) {
-      const paths = dataResult.error.issues.map((i) => i.path).flat();
+      const paths = dataResult.error.issues.flatMap((i) => i.path);
       expect(paths).toContain("data");
     }
 
@@ -59,7 +59,7 @@ describe("linearWebhookPayloadSchema", () => {
     const orgResult = linearWebhookPayloadSchema.safeParse(noOrg);
     expect(orgResult.success).toBe(false);
     if (!orgResult.success) {
-      const paths = orgResult.error.issues.map((i) => i.path).flat();
+      const paths = orgResult.error.issues.flatMap((i) => i.path);
       expect(paths).toContain("organizationId");
     }
   });
@@ -138,7 +138,7 @@ describe("linearStatusMappingSchema", () => {
     });
     expect(result.success).toBe(false);
     if (!result.success) {
-      const paths = result.error.issues.map((i) => i.path).flat();
+      const paths = result.error.issues.flatMap((i) => i.path);
       expect(paths).toContain("linearStateType");
     }
   });
@@ -170,9 +170,7 @@ describe("linearIssueMetadataSchema", () => {
     });
     expect(result.success).toBe(false);
     if (!result.success) {
-      const issue = result.error.issues.find((i) =>
-        i.path.includes("statusType"),
-      );
+      const issue = result.error.issues.find((i) => i.path.includes("statusType"));
       expect(issue).toBeDefined();
     }
   });

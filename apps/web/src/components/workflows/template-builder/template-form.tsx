@@ -1,23 +1,10 @@
 "use client";
 
-import { useCallback } from "react";
-import { useTranslations } from "next-intl";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useCallback } from "react";
 import { toast } from "sonner";
-
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,10 +16,23 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 
 import { trpc } from "@/trpc/init";
 import { SortableTaskList } from "./sortable-task-list";
-import { useTemplateForm, type TemplateFormValues } from "./use-template-form";
+import type { TemplateFormValues } from "./use-template-form";
+import { useTemplateForm } from "./use-template-form";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -68,10 +68,7 @@ export function TemplateForm({ templateId }: TemplateFormProps) {
 
   // Fetch existing template when editing
   const templateQuery = useQuery(
-    trpc.workflow.getTemplate.queryOptions(
-      { id: templateId! },
-      { enabled: isEditing },
-    ),
+    trpc.workflow.getTemplate.queryOptions({ id: templateId! }, { enabled: isEditing }),
   );
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -79,35 +76,33 @@ export function TemplateForm({ templateId }: TemplateFormProps) {
   const templateStatus: string = templateData?.status ?? "DRAFT";
 
   // Initialize form
-  const { form, fields, isDirty, addTask, removeTask, reorderTasks } =
-    useTemplateForm(
-      isEditing && templateData
-        ? {
-            name: templateData.name,
-            type: templateData.type,
-            description: templateData.description ?? "",
-            tasks:
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              templateData.tasks?.map((task: any) => ({
-                id: task.id,
-                title: task.title,
-                taskType: task.taskType,
-                description: task.description ?? "",
-                sortOrder: task.sortOrder,
-                required: task.required,
-                assigneeMode: task.assigneeMode,
-                assigneeRole: task.assigneeRole ?? undefined,
-                assigneeUserId: task.assigneeUserId ?? undefined,
-                dueOffsetDays: task.dueOffsetDays ?? undefined,
-                dueOffsetHours: task.dueOffsetHours ?? undefined,
-                dependsOnTaskTemplateId:
-                  task.dependsOnTaskTemplateId ?? undefined,
-                externalUrl: task.externalUrl ?? "",
-                conditions: task.configJson ?? null,
-              })) ?? [],
-          }
-        : undefined,
-    );
+  const { form, fields, isDirty, addTask, removeTask, reorderTasks } = useTemplateForm(
+    isEditing && templateData
+      ? {
+          name: templateData.name,
+          type: templateData.type,
+          description: templateData.description ?? "",
+          tasks:
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            templateData.tasks?.map((task: any) => ({
+              id: task.id,
+              title: task.title,
+              taskType: task.taskType,
+              description: task.description ?? "",
+              sortOrder: task.sortOrder,
+              required: task.required,
+              assigneeMode: task.assigneeMode,
+              assigneeRole: task.assigneeRole ?? undefined,
+              assigneeUserId: task.assigneeUserId ?? undefined,
+              dueOffsetDays: task.dueOffsetDays ?? undefined,
+              dueOffsetHours: task.dueOffsetHours ?? undefined,
+              dependsOnTaskTemplateId: task.dependsOnTaskTemplateId ?? undefined,
+              externalUrl: task.externalUrl ?? "",
+              conditions: task.configJson ?? null,
+            })) ?? [],
+        }
+      : undefined,
+  );
 
   const tasks = form.watch("tasks");
 
@@ -178,8 +173,7 @@ export function TemplateForm({ templateId }: TemplateFormProps) {
           assigneeUserId: task.assigneeUserId || undefined,
           dueOffsetDays: task.dueOffsetDays || undefined,
           dueOffsetHours: task.dueOffsetHours || undefined,
-          dependsOnTaskTemplateId:
-            task.dependsOnTaskTemplateId || undefined,
+          dependsOnTaskTemplateId: task.dependsOnTaskTemplateId || undefined,
           externalUrl: task.externalUrl || undefined,
           conditions: task.conditions ?? undefined,
         })),
@@ -223,10 +217,7 @@ export function TemplateForm({ templateId }: TemplateFormProps) {
   const isSaving = createMutation.isPending || updateMutation.isPending;
 
   return (
-    <form
-      onSubmit={form.handleSubmit(handleSave)}
-      className="space-y-4"
-    >
+    <form onSubmit={form.handleSubmit(handleSave)} className="space-y-4">
       {/* Name + actions */}
       <div className="space-y-1.5">
         <Label htmlFor="template-name">{t("templateName")}</Label>
@@ -239,80 +230,72 @@ export function TemplateForm({ templateId }: TemplateFormProps) {
             {...form.register("name")}
           />
           <div className="flex shrink-0 flex-wrap gap-2">
-              <Button type="submit" disabled={isSaving}>
-                {isDirty && (
-                  <span className="me-1.5 inline-block size-2 rounded-full bg-current" />
-                )}
-                {t("saveTemplate")}
+            <Button type="submit" disabled={isSaving}>
+              {isDirty && <span className="me-1.5 inline-block size-2 rounded-full bg-current" />}
+              {t("saveTemplate")}
+            </Button>
+            {isEditing && templateStatus === "DRAFT" && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleActivate}
+                disabled={updateMutation.isPending}
+              >
+                {t("activate")}
               </Button>
-              {isEditing && templateStatus === "DRAFT" && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleActivate}
-                  disabled={updateMutation.isPending}
-                >
-                  {t("activate")}
-                </Button>
-              )}
-              {isEditing && templateStatus === "ACTIVE" && (
-                <AlertDialog>
-                  <AlertDialogTrigger render={<Button type="button" variant="outline" />}>
-                    {t("archive")}
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>
-                        {t("archiveConfirmTitle", { name: form.watch("name") })}
-                      </AlertDialogTitle>
-                      <AlertDialogDescription>
-                        {t("archiveConfirmBody")}
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleArchive}>
-                        {t("archiveConfirmCta")}
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              )}
-              {isEditing && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleDuplicate}
-                  disabled={duplicateMutation.isPending}
-                >
-                  {t("duplicate")}
-                </Button>
-              )}
-              {isEditing && templateStatus === "DRAFT" && (
-                <AlertDialog>
-                  <AlertDialogTrigger
-                    render={<Button type="button" variant="destructive" />}
-                  >
-                    {t("deleteTemplate")}
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>
-                        {t("deleteConfirmTitle", { name: form.watch("name") })}
-                      </AlertDialogTitle>
-                      <AlertDialogDescription>
-                        {t("deleteConfirmBody")}
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleDelete}>
-                        {t("deleteConfirmCta")}
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              )}
+            )}
+            {isEditing && templateStatus === "ACTIVE" && (
+              <AlertDialog>
+                <AlertDialogTrigger render={<Button type="button" variant="outline" />}>
+                  {t("archive")}
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      {t("archiveConfirmTitle", { name: form.watch("name") })}
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>{t("archiveConfirmBody")}</AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleArchive}>
+                      {t("archiveConfirmCta")}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+            {isEditing && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleDuplicate}
+                disabled={duplicateMutation.isPending}
+              >
+                {t("duplicate")}
+              </Button>
+            )}
+            {isEditing && templateStatus === "DRAFT" && (
+              <AlertDialog>
+                <AlertDialogTrigger render={<Button type="button" variant="destructive" />}>
+                  {t("deleteTemplate")}
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      {t("deleteConfirmTitle", { name: form.watch("name") })}
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>{t("deleteConfirmBody")}</AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDelete}>
+                      {t("deleteConfirmCta")}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
           </div>
         </div>
         {form.formState.errors.name?.message && (
@@ -349,14 +332,9 @@ export function TemplateForm({ templateId }: TemplateFormProps) {
         </div>
         {isEditing && (
           <div className="shrink-0 space-y-1.5 sm:max-w-[200px]">
-            <p className="text-sm font-medium leading-none">
-              {t("columns.status")}
-            </p>
+            <p className="text-sm font-medium leading-none">{t("columns.status")}</p>
             <div className="flex min-h-8 items-center">
-              <Badge
-                className={STATUS_BADGE_STYLES[templateStatus] ?? ""}
-                variant="secondary"
-              >
+              <Badge className={STATUS_BADGE_STYLES[templateStatus] ?? ""} variant="secondary">
                 {templateStatus}
               </Badge>
             </div>

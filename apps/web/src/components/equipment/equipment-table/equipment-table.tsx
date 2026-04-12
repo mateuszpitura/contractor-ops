@@ -1,16 +1,10 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
-import {
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import { Package, ArrowUp, ArrowDown, ArrowUpDown, Loader2 } from "lucide-react";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
+import { ArrowDown, ArrowUp, ArrowUpDown, Loader2, Package } from "lucide-react";
 import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
+import { useCallback, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -21,8 +15,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-import { getEquipmentColumns, type EquipmentRow } from "./equipment-columns";
+import { trpc } from "@/trpc/init";
+import type { EquipmentRow } from "./equipment-columns";
+import { getEquipmentColumns } from "./equipment-columns";
 import { EquipmentToolbar } from "./equipment-toolbar";
 
 // ---------------------------------------------------------------------------
@@ -101,16 +96,12 @@ export function EquipmentTable({
   });
 
   const data = useMemo(() => {
-    const result = equipmentQuery.data as
-      | { items: EquipmentRow[]; total: number }
-      | undefined;
+    const result = equipmentQuery.data as { items: EquipmentRow[]; total: number } | undefined;
     return result?.items ?? [];
   }, [equipmentQuery.data]);
 
   const totalRows = useMemo(() => {
-    const result = equipmentQuery.data as
-      | { items: unknown[]; total: number }
-      | undefined;
+    const result = equipmentQuery.data as { items: unknown[]; total: number } | undefined;
     return result?.total ?? 0;
   }, [equipmentQuery.data]);
 
@@ -180,8 +171,7 @@ export function EquipmentTable({
 
   const isLoading = equipmentQuery.isPending && !equipmentQuery.data;
   const isRefetching = equipmentQuery.isFetching && !isLoading;
-  const hasFiltersOrSearch =
-    search.length > 0 || typeFilter.length > 0 || statusFilter.length > 0;
+  const hasFiltersOrSearch = search.length > 0 || typeFilter.length > 0 || statusFilter.length > 0;
 
   const totalPages = Math.ceil(totalRows / perPage);
 
@@ -229,10 +219,7 @@ export function EquipmentTable({
                         className="flex items-center gap-1 uppercase hover:text-foreground"
                         onClick={header.column.getToggleSortingHandler()}
                       >
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
+                        {flexRender(header.column.columnDef.header, header.getContext())}
                         {header.column.getIsSorted() === "asc" ? (
                           <ArrowUp className="h-3 w-3" />
                         ) : header.column.getIsSorted() === "desc" ? (
@@ -242,10 +229,7 @@ export function EquipmentTable({
                         )}
                       </button>
                     ) : (
-                      flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )
+                      flexRender(header.column.columnDef.header, header.getContext())
                     )}
                   </TableHead>
                 ))}
@@ -256,13 +240,11 @@ export function EquipmentTable({
             {isLoading ? (
               Array.from({ length: 8 }).map((_, i) => (
                 <TableRow key={`skeleton-${i}`}>
-                  {table
-                    .getVisibleLeafColumns()
-                    .map((col) => (
-                      <TableCell key={col.id}>
-                        <Skeleton className="h-4 w-full max-w-[120px]" />
-                      </TableCell>
-                    ))}
+                  {table.getVisibleLeafColumns().map((col) => (
+                    <TableCell key={col.id}>
+                      <Skeleton className="h-4 w-full max-w-[120px]" />
+                    </TableCell>
+                  ))}
                 </TableRow>
               ))
             ) : table.getRowModel().rows.length > 0 ? (
@@ -270,10 +252,7 @@ export function EquipmentTable({
                 <TableRow key={row.id}>
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
                 </TableRow>
@@ -288,11 +267,7 @@ export function EquipmentTable({
                   <p className="mt-1 text-sm text-muted-foreground">
                     Try adjusting your search or filters.
                   </p>
-                  <Button
-                    variant="outline"
-                    className="mt-4"
-                    onClick={clearFilters}
-                  >
+                  <Button variant="outline" className="mt-4" onClick={clearFilters}>
                     Clear filters
                   </Button>
                 </TableCell>
@@ -304,12 +279,8 @@ export function EquipmentTable({
                   className="py-16 text-center"
                 >
                   <Package className="mx-auto h-10 w-10 text-muted-foreground/50" />
-                  <h3 className="mt-3 text-[16px] font-medium">
-                    {t("list.emptyTitle")}
-                  </h3>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {t("list.emptyDescription")}
-                  </p>
+                  <h3 className="mt-3 text-[16px] font-medium">{t("list.emptyTitle")}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">{t("list.emptyDescription")}</p>
                   <Button className="mt-4" onClick={onAddEquipment}>
                     {t("addEquipment")}
                   </Button>

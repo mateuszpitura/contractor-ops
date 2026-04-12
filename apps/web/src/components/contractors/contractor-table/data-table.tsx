@@ -1,18 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-  type ColumnDef,
-  type VisibilityState,
-} from "@tanstack/react-table";
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import { Users, ArrowUp, ArrowDown, ArrowUpDown, Loader2 } from "lucide-react";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import type { ColumnDef, VisibilityState } from "@tanstack/react-table";
+import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
+import { ArrowDown, ArrowUp, ArrowUpDown, Loader2, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -23,12 +16,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-import { getColumns, type ContractorRow } from "./columns";
-import { DataTableToolbar } from "./data-table-toolbar";
-import { DataTablePagination } from "./data-table-pagination";
-import { DataTableColumnToggle } from "./data-table-column-toggle";
+import { trpc } from "@/trpc/init";
+import type { ContractorRow } from "./columns";
+import { getColumns } from "./columns";
 import { DataTableBulkActions } from "./data-table-bulk-actions";
+import { DataTableColumnToggle } from "./data-table-column-toggle";
+import { DataTablePagination } from "./data-table-pagination";
+import { DataTableToolbar } from "./data-table-toolbar";
 import { useContractorFilters } from "./use-contractor-filters";
 
 const STORAGE_KEY = "contractor-table-columns";
@@ -93,17 +87,19 @@ export function ContractorDataTable({
       page: filters.page,
       pageSize: filters.pageSize,
       search: filters.search || undefined,
-      sortBy: (filters.sortBy as "createdAt" | "legalName" | "status" | "lifecycleStage" | "type") || "createdAt",
+      sortBy:
+        (filters.sortBy as "createdAt" | "legalName" | "status" | "lifecycleStage" | "type") ||
+        "createdAt",
       sortOrder: (filters.sortOrder as "asc" | "desc") || "desc",
       filters: {
         lifecycleStage: filters.lifecycleStage.length
-          ? (filters.lifecycleStage as Array<"DRAFT" | "ONBOARDING" | "ACTIVE" | "OFFBOARDING" | "ENDED">)
+          ? (filters.lifecycleStage as Array<
+              "DRAFT" | "ONBOARDING" | "ACTIVE" | "OFFBOARDING" | "ENDED"
+            >)
           : undefined,
         ownerUserId: filters.owner.length ? filters.owner : undefined,
         primaryTeamId: filters.team.length ? filters.team : undefined,
-        billingModel: filters.billingModel.length
-          ? filters.billingModel
-          : undefined,
+        billingModel: filters.billingModel.length ? filters.billingModel : undefined,
         complianceHealth: filters.health.length
           ? (filters.health as Array<"green" | "yellow" | "red">)
           : undefined,
@@ -119,16 +115,12 @@ export function ContractorDataTable({
   });
 
   const data = useMemo(() => {
-    const result = contractorsQuery.data as
-      | { items: ContractorRow[]; total: number }
-      | undefined;
+    const result = contractorsQuery.data as { items: ContractorRow[]; total: number } | undefined;
     return result?.items ?? [];
   }, [contractorsQuery.data]);
 
   const totalRows = useMemo(() => {
-    const result = contractorsQuery.data as
-      | { items: unknown[]; total: number }
-      | undefined;
+    const result = contractorsQuery.data as { items: unknown[]; total: number } | undefined;
     return result?.total ?? 0;
   }, [contractorsQuery.data]);
 
@@ -158,9 +150,7 @@ export function ContractorDataTable({
     onSortingChange: (updater) => {
       const next =
         typeof updater === "function"
-          ? updater([
-              { id: filters.sortBy, desc: filters.sortOrder === "desc" },
-            ])
+          ? updater([{ id: filters.sortBy, desc: filters.sortOrder === "desc" }])
           : updater;
       if (next.length > 0) {
         void setFilters({
@@ -184,14 +174,16 @@ export function ContractorDataTable({
 
   // Filter change handler
   const handleFiltersChange = useCallback(
-    (partial: Partial<{
-      status: string[];
-      lifecycleStage: string[];
-      owner: string[];
-      team: string[];
-      billingModel: string[];
-      health: string[];
-    }>) => {
+    (
+      partial: Partial<{
+        status: string[];
+        lifecycleStage: string[];
+        owner: string[];
+        team: string[];
+        billingModel: string[];
+        health: string[];
+      }>,
+    ) => {
       void setFilters({ ...partial, page: 1 });
     },
     [setFilters],
@@ -303,12 +295,14 @@ export function ContractorDataTable({
                         type="button"
                         className="flex items-center gap-1 uppercase hover:text-foreground"
                         onClick={header.column.getToggleSortingHandler()}
-                        aria-label={tAria("sortBy", { column: typeof header.column.columnDef.header === "string" ? header.column.columnDef.header : header.id })}
+                        aria-label={tAria("sortBy", {
+                          column:
+                            typeof header.column.columnDef.header === "string"
+                              ? header.column.columnDef.header
+                              : header.id,
+                        })}
                       >
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
+                        {flexRender(header.column.columnDef.header, header.getContext())}
                         {header.column.getIsSorted() === "asc" ? (
                           <ArrowUp className="h-3 w-3" />
                         ) : header.column.getIsSorted() === "desc" ? (
@@ -318,10 +312,7 @@ export function ContractorDataTable({
                         )}
                       </button>
                     ) : (
-                      flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )
+                      flexRender(header.column.columnDef.header, header.getContext())
                     )}
                   </TableHead>
                 ))}
@@ -333,13 +324,11 @@ export function ContractorDataTable({
               // Skeleton loading rows
               Array.from({ length: 8 }).map((_, i) => (
                 <TableRow key={`skeleton-${i}`}>
-                  {table
-                    .getVisibleLeafColumns()
-                    .map((col) => (
-                      <TableCell key={col.id}>
-                        <Skeleton className="h-4 w-full max-w-[120px]" />
-                      </TableCell>
-                    ))}
+                  {table.getVisibleLeafColumns().map((col) => (
+                    <TableCell key={col.id}>
+                      <Skeleton className="h-4 w-full max-w-[120px]" />
+                    </TableCell>
+                  ))}
                 </TableRow>
               ))
             ) : table.getRowModel().rows.length > 0 ? (
@@ -352,10 +341,7 @@ export function ContractorDataTable({
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
                 </TableRow>
@@ -367,17 +353,9 @@ export function ContractorDataTable({
                   colSpan={table.getVisibleLeafColumns().length}
                   className="py-16 text-center"
                 >
-                  <h3 className="text-[16px] font-medium">
-                    {t("noResults.heading")}
-                  </h3>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {t("noResults.body")}
-                  </p>
-                  <Button
-                    variant="outline"
-                    className="mt-4"
-                    onClick={clearFilters}
-                  >
+                  <h3 className="text-[16px] font-medium">{t("noResults.heading")}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">{t("noResults.body")}</p>
+                  <Button variant="outline" className="mt-4" onClick={clearFilters}>
                     {t("noResults.cta")}
                   </Button>
                 </TableCell>
@@ -390,12 +368,8 @@ export function ContractorDataTable({
                   className="py-16 text-center"
                 >
                   <Users className="mx-auto h-10 w-10 text-muted-foreground/50" />
-                  <h3 className="mt-3 text-[16px] font-medium">
-                    {t("empty.heading")}
-                  </h3>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {t("empty.body")}
-                  </p>
+                  <h3 className="mt-3 text-[16px] font-medium">{t("empty.heading")}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">{t("empty.body")}</p>
                   <Button className="mt-4" onClick={onAddContractor}>
                     {t("empty.cta")}
                   </Button>

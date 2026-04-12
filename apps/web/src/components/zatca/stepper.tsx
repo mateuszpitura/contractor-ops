@@ -1,7 +1,7 @@
 "use client";
 
-import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -53,10 +53,7 @@ export function Stepper({ steps, currentStep, onStepClick, className }: StepperP
     <div
       role="tablist"
       aria-label="Onboarding progress"
-      className={cn(
-        "flex flex-col gap-2 md:flex-row md:items-center md:gap-0",
-        className,
-      )}
+      className={cn("flex flex-col gap-2 md:flex-row md:items-center md:gap-0", className)}
       onKeyDown={handleKeyDown}
     >
       {steps.map((step, index) => {
@@ -66,10 +63,7 @@ export function Stepper({ steps, currentStep, onStepClick, className }: StepperP
         const isClickable = isCompleted && onStepClick;
 
         return (
-          <div
-            key={step.id}
-            className="flex items-center gap-0 md:flex-1"
-          >
+          <div key={step.id} className="flex items-center gap-0 md:flex-1">
             {/* Step indicator */}
             <button
               type="button"
@@ -95,11 +89,7 @@ export function Stepper({ steps, currentStep, onStepClick, className }: StepperP
                   isFuture && "border-2 border-muted-foreground/30 text-muted-foreground",
                 )}
               >
-                {isCompleted ? (
-                  <Check className="h-4 w-4" aria-hidden="true" />
-                ) : (
-                  index + 1
-                )}
+                {isCompleted ? <Check className="h-4 w-4" aria-hidden="true" /> : index + 1}
               </span>
 
               {/* Label — hidden on tablet, shown on desktop/mobile */}

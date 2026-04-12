@@ -1,6 +1,6 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
-import type { OAuthConfig } from "../types/provider.js";
 import type { CredentialBlob } from "../types/credentials.js";
+import type { OAuthConfig } from "../types/provider.js";
 import type { WebhookVerificationResult } from "../types/webhook.js";
 import { BaseAdapter } from "./base-adapter.js";
 
@@ -36,27 +36,17 @@ export class SlackAdapter extends BaseAdapter {
       clientSecretEnvVar: "SLACK_CLIENT_SECRET",
       authorizationUrl: "https://slack.com/oauth/v2/authorize",
       tokenUrl: "https://slack.com/api/oauth.v2.access",
-      scopes: [
-        "chat:write",
-        "users:read",
-        "users:read.email",
-        "im:write",
-      ],
+      scopes: ["chat:write", "users:read", "users:read.email", "im:write"],
       redirectPath: "/api/oauth/slack/callback",
     };
   }
 
-  async exchangeCodeForTokens(
-    code: string,
-    redirectUri: string,
-  ): Promise<CredentialBlob> {
+  async exchangeCodeForTokens(code: string, redirectUri: string): Promise<CredentialBlob> {
     const clientId = process.env.SLACK_CLIENT_ID;
     const clientSecret = process.env.SLACK_CLIENT_SECRET;
 
     if (!clientId || !clientSecret) {
-      throw new Error(
-        "SLACK_CLIENT_ID and SLACK_CLIENT_SECRET environment variables are required",
-      );
+      throw new Error("SLACK_CLIENT_ID and SLACK_CLIENT_SECRET environment variables are required");
     }
 
     const response = await fetch("https://slack.com/api/oauth.v2.access", {
@@ -78,9 +68,7 @@ export class SlackAdapter extends BaseAdapter {
     };
 
     if (!data.ok || !data.access_token) {
-      throw new Error(
-        `Slack OAuth exchange failed: ${data.error ?? "unknown error"}`,
-      );
+      throw new Error(`Slack OAuth exchange failed: ${data.error ?? "unknown error"}`);
     }
 
     return {

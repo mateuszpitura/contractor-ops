@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GoogleWorkspaceAdapter } from "../adapters/google-workspace-adapter.js";
 
 function mockFetchSequential(
@@ -19,10 +19,7 @@ function mockFetchSequential(
     return Promise.resolve({
       ok: r.ok,
       status: r.status,
-      text: () =>
-        Promise.resolve(
-          typeof r.body === "string" ? r.body : JSON.stringify(r.body),
-        ),
+      text: () => Promise.resolve(typeof r.body === "string" ? r.body : JSON.stringify(r.body)),
       json: () => Promise.resolve(r.body),
     });
   });
@@ -128,9 +125,7 @@ describe("GoogleWorkspaceAdapter — Directory API", () => {
                 primaryEmail: "dev@example.com",
                 name: { givenName: "D", familyName: "V", fullName: "D V" },
                 suspended: false,
-                organizations: [
-                  { department: "Engineering", primary: true, title: "IC" },
-                ],
+                organizations: [{ department: "Engineering", primary: true, title: "IC" }],
               },
             ],
           },
@@ -144,9 +139,7 @@ describe("GoogleWorkspaceAdapter — Directory API", () => {
     });
 
     it("returns empty array when directory has no users", async () => {
-      const fetchMock = mockFetchSequential([
-        { ok: true, status: 200, body: {} },
-      ]);
+      const fetchMock = mockFetchSequential([{ ok: true, status: 200, body: {} }]);
       vi.stubGlobal("fetch", fetchMock);
 
       const users = await adapter.listAllDirectoryUsers("token");
@@ -165,14 +158,10 @@ describe("GoogleWorkspaceAdapter — Directory API", () => {
     });
 
     it("throws on other non-ok responses with status code", async () => {
-      const fetchMock = mockFetchSequential([
-        { ok: false, status: 500, body: "Internal" },
-      ]);
+      const fetchMock = mockFetchSequential([{ ok: false, status: 500, body: "Internal" }]);
       vi.stubGlobal("fetch", fetchMock);
 
-      await expect(adapter.listAllDirectoryUsers("token")).rejects.toThrow(
-        /\(500\)/,
-      );
+      await expect(adapter.listAllDirectoryUsers("token")).rejects.toThrow(/\(500\)/);
     });
   });
 
@@ -249,9 +238,9 @@ describe("GoogleWorkspaceAdapter — Directory API", () => {
       });
       vi.stubGlobal("fetch", fetchMock);
 
-      await expect(
-        adapter.listUserGroups("token", "u@example.com"),
-      ).rejects.toThrow(/Google Workspace Groups API failed \(503\)/);
+      await expect(adapter.listUserGroups("token", "u@example.com")).rejects.toThrow(
+        /Google Workspace Groups API failed \(503\)/,
+      );
     });
   });
 });

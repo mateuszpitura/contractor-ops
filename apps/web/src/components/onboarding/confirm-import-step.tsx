@@ -1,20 +1,15 @@
 "use client";
 
-import { useMemo, useCallback } from "react";
+import type { FetchProjectsOutput, MergedPerson } from "@contractor-ops/validators";
 import { useMutation } from "@tanstack/react-query";
+import { FolderKanban, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Users, FolderKanban } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { trpc } from "@/trpc/init";
 import { ImportProgressTracker } from "./import-progress-tracker";
 import type { PersonSelection, ProjectSelection } from "./import-wizard";
-import type {
-  MergedPerson,
-  FetchProjectsOutput,
-} from "@contractor-ops/validators";
 
 // ---------------------------------------------------------------------------
 // Props
@@ -120,13 +115,7 @@ export function ConfirmImportStep({
       people,
       projects: projectsPayload,
     });
-  }, [
-    peopleToImport,
-    personSelections,
-    projectsToImport,
-    projectSelections,
-    startImportMutation,
-  ]);
+  }, [peopleToImport, personSelections, projectsToImport, projectSelections, startImportMutation]);
 
   // If import has started, show progress tracker
   if (jobId) {
@@ -137,9 +126,7 @@ export function ConfirmImportStep({
     <div className="space-y-6">
       {/* Heading */}
       <div>
-        <h2 className="font-display text-xl font-semibold leading-[1.2]">
-          {t("heading")}
-        </h2>
+        <h2 className="font-display text-xl font-semibold leading-[1.2]">{t("heading")}</h2>
         <p className="mt-1 text-sm text-muted-foreground">{t("subtitle")}</p>
       </div>
 
@@ -158,10 +145,7 @@ export function ConfirmImportStep({
             {roleBreakdown.length > 0 && (
               <ul className="mt-2 space-y-1">
                 {roleBreakdown.map(({ role, count }) => (
-                  <li
-                    key={role}
-                    className="text-sm text-muted-foreground"
-                  >
+                  <li key={role} className="text-sm text-muted-foreground">
                     {count} x {role}
                   </li>
                 ))}
@@ -174,18 +158,13 @@ export function ConfirmImportStep({
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
-              <FolderKanban
-                className="size-5 text-primary"
-                aria-hidden="true"
-              />
+              <FolderKanban className="size-5 text-primary" aria-hidden="true" />
               <CardTitle>{t("projectsCard")}</CardTitle>
             </div>
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">{projectsToImport.length}</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {totalSteps} total steps
-            </p>
+            <p className="mt-1 text-sm text-muted-foreground">{totalSteps} total steps</p>
           </CardContent>
         </Card>
       </div>
@@ -200,9 +179,7 @@ export function ConfirmImportStep({
             (peopleToImport.length === 0 && projectsToImport.length === 0)
           }
         >
-          {startImportMutation.isPending
-            ? "Starting..."
-            : t("startImport")}
+          {startImportMutation.isPending ? "Starting..." : t("startImport")}
         </Button>
       </div>
     </div>

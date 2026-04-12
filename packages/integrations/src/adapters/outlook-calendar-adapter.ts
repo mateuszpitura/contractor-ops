@@ -1,6 +1,7 @@
-import type { OAuthConfig } from "../types/provider.js";
+import { prisma } from "@contractor-ops/db";
 import type { CredentialBlob } from "../types/credentials.js";
 import type { ProviderHealthStatus } from "../types/health.js";
+import type { OAuthConfig } from "../types/provider.js";
 import { BaseAdapter } from "./base-adapter.js";
 
 // ---------------------------------------------------------------------------
@@ -26,10 +27,8 @@ import { BaseAdapter } from "./base-adapter.js";
 const OUTLOOK_OAUTH_CONFIG: OAuthConfig = {
   clientIdEnvVar: "OUTLOOK_CLIENT_ID",
   clientSecretEnvVar: "OUTLOOK_CLIENT_SECRET",
-  authorizationUrl:
-    "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
-  tokenUrl:
-    "https://login.microsoftonline.com/common/oauth2/v2.0/token",
+  authorizationUrl: "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
+  tokenUrl: "https://login.microsoftonline.com/common/oauth2/v2.0/token",
   scopes: ["Calendars.ReadWrite", "offline_access"],
   redirectPath: "/api/oauth/outlook/callback",
 };
@@ -52,10 +51,7 @@ export class OutlookCalendarAdapter extends BaseAdapter {
     return OUTLOOK_OAUTH_CONFIG;
   }
 
-  async exchangeCodeForTokens(
-    code: string,
-    redirectUri: string,
-  ): Promise<CredentialBlob> {
+  async exchangeCodeForTokens(code: string, redirectUri: string): Promise<CredentialBlob> {
     const clientId = process.env.OUTLOOK_CLIENT_ID;
     const clientSecret = process.env.OUTLOOK_CLIENT_SECRET;
 
@@ -65,23 +61,20 @@ export class OutlookCalendarAdapter extends BaseAdapter {
       );
     }
 
-    const response = await fetch(
-      "https://login.microsoftonline.com/common/oauth2/v2.0/token",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: new URLSearchParams({
-          grant_type: "authorization_code",
-          client_id: clientId,
-          client_secret: clientSecret,
-          code,
-          redirect_uri: redirectUri,
-          scope: OUTLOOK_OAUTH_CONFIG.scopes.join(" "),
-        }),
+    const response = await fetch("https://login.microsoftonline.com/common/oauth2/v2.0/token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
       },
-    );
+      body: new URLSearchParams({
+        grant_type: "authorization_code",
+        client_id: clientId,
+        client_secret: clientSecret,
+        code,
+        redirect_uri: redirectUri,
+        scope: OUTLOOK_OAUTH_CONFIG.scopes.join(" "),
+      }),
+    });
 
     if (!response.ok) {
       const text = await response.text();
@@ -101,9 +94,7 @@ export class OutlookCalendarAdapter extends BaseAdapter {
       refreshToken: data.refresh_token,
       tokenType: data.token_type,
       scope: data.scope,
-      expiresAt: new Date(
-        Date.now() + data.expires_in * 1000,
-      ).toISOString(),
+      expiresAt: new Date(Date.now() + data.expires_in * 1000).toISOString(),
     };
   }
 
@@ -121,22 +112,19 @@ export class OutlookCalendarAdapter extends BaseAdapter {
       throw new Error("No refresh token available for Outlook Calendar");
     }
 
-    const response = await fetch(
-      "https://login.microsoftonline.com/common/oauth2/v2.0/token",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: new URLSearchParams({
-          grant_type: "refresh_token",
-          client_id: clientId,
-          client_secret: clientSecret,
-          refresh_token: credentials.refreshToken,
-          scope: OUTLOOK_OAUTH_CONFIG.scopes.join(" "),
-        }),
+    const response = await fetch("https://login.microsoftonline.com/common/oauth2/v2.0/token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
       },
-    );
+      body: new URLSearchParams({
+        grant_type: "refresh_token",
+        client_id: clientId,
+        client_secret: clientSecret,
+        refresh_token: credentials.refreshToken,
+        scope: OUTLOOK_OAUTH_CONFIG.scopes.join(" "),
+      }),
+    });
 
     if (!response.ok) {
       const text = await response.text();
@@ -156,9 +144,7 @@ export class OutlookCalendarAdapter extends BaseAdapter {
       refreshToken: data.refresh_token ?? credentials.refreshToken,
       tokenType: data.token_type,
       scope: data.scope,
-      expiresAt: new Date(
-        Date.now() + data.expires_in * 1000,
-      ).toISOString(),
+      expiresAt: new Date(Date.now() + data.expires_in * 1000).toISOString(),
     };
   }
 
@@ -212,17 +198,14 @@ export class OutlookCalendarAdapter extends BaseAdapter {
       }));
     }
 
-    const response = await fetch(
-      "https://graph.microsoft.com/v1.0/me/calendar/events",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
+    const response = await fetch("https://graph.microsoft.com/v1.0/me/calendar/events", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify(body),
+    });
 
     if (!response.ok) {
       const text = await response.text();
@@ -287,17 +270,14 @@ export class OutlookCalendarAdapter extends BaseAdapter {
       }));
     }
 
-    const response = await fetch(
-      `https://graph.microsoft.com/v1.0/me/calendar/events/${eventId}`,
-      {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
+    const response = await fetch(`https://graph.microsoft.com/v1.0/me/calendar/events/${eventId}`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify(body),
+    });
 
     if (!response.ok) {
       const text = await response.text();
@@ -321,19 +301,13 @@ export class OutlookCalendarAdapter extends BaseAdapter {
    * @param accessToken - The OAuth access token
    * @param eventId - The event ID to delete
    */
-  async deleteEvent(
-    accessToken: string,
-    eventId: string,
-  ): Promise<void> {
-    const response = await fetch(
-      `https://graph.microsoft.com/v1.0/me/calendar/events/${eventId}`,
-      {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+  async deleteEvent(accessToken: string, eventId: string): Promise<void> {
+    const response = await fetch(`https://graph.microsoft.com/v1.0/me/calendar/events/${eventId}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
       },
-    );
+    });
 
     if (!response.ok) {
       const text = await response.text();
@@ -346,8 +320,6 @@ export class OutlookCalendarAdapter extends BaseAdapter {
   // -------------------------------------------------------------------------
 
   async getHealthStatus(connectionId: string): Promise<ProviderHealthStatus> {
-    const { prisma } = await import("@contractor-ops/db");
-
     const connection = await prisma.integrationConnection.findUnique({
       where: { id: connectionId },
       select: {
@@ -400,15 +372,9 @@ export class OutlookCalendarAdapter extends BaseAdapter {
       status = "DISCONNECTED";
     } else if (connection.lastErrorAt && !connection.lastSuccessAt) {
       status = "ERROR";
-    } else if (
-      connection.tokenExpiresAt &&
-      connection.tokenExpiresAt < new Date()
-    ) {
+    } else if (connection.tokenExpiresAt && connection.tokenExpiresAt < new Date()) {
       status = "REAUTH_REQUIRED";
-    } else if (
-      recentSyncs.length > 0 &&
-      recentSyncs[0]!.status === "FAILED"
-    ) {
+    } else if (recentSyncs.length > 0 && recentSyncs[0]!.status === "FAILED") {
       status = "ERROR";
     } else {
       status = "CONNECTED";

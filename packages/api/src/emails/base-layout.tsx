@@ -1,5 +1,6 @@
 import {
   Body,
+  Button,
   Container,
   Head,
   Hr,
@@ -7,7 +8,6 @@ import {
   Link,
   Section,
   Text,
-  Button,
 } from "@react-email/components";
 import type { ReactNode } from "react";
 
@@ -117,9 +117,7 @@ export function BaseLayout({
                 Unsubscribe
               </Link>
             </Text>
-            <Text style={footer}>
-              Contractor Ops - Contractor operations platform
-            </Text>
+            <Text style={footer}>Contractor Ops - Contractor operations platform</Text>
           </Section>
         </Container>
       </Body>

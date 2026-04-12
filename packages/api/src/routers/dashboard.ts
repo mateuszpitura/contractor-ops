@@ -1,13 +1,9 @@
-import { z } from "zod";
 import { prisma } from "@contractor-ops/db";
+import { z } from "zod";
 import { router } from "../init.js";
-import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
-import {
-  cached,
-  CacheKeys,
-  CacheTTL,
-} from "../services/cache.js";
+import { tenantProcedure } from "../middleware/tenant.js";
+import { CacheKeys, CacheTTL, cached } from "../services/cache.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -25,19 +21,9 @@ const reportRead = requirePermission({ report: ["read"] });
 
 async function fetchKpis(organizationId: string) {
   const now = new Date();
-  const startOfCurrentMonth = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    1,
-  );
-  const startOfPreviousMonth = new Date(
-    now.getFullYear(),
-    now.getMonth() - 1,
-    1,
-  );
-  const thirtyDaysFromNow = new Date(
-    now.getTime() + 30 * 24 * 60 * 60 * 1000,
-  );
+  const startOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const startOfPreviousMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
   const [
     activeContractors,
@@ -132,11 +118,7 @@ async function fetchSpendTrend(organizationId: string, months: string) {
     startDate = new Date(now.getFullYear(), 0, 1);
   } else {
     const monthsBack = parseInt(months, 10);
-    startDate = new Date(
-      now.getFullYear(),
-      now.getMonth() - monthsBack,
-      1,
-    );
+    startDate = new Date(now.getFullYear(), now.getMonth() - monthsBack, 1);
   }
 
   const rows = await prisma.$queryRaw<
@@ -164,12 +146,8 @@ async function fetchSpendTrend(organizationId: string, months: string) {
 
 async function fetchDeadlines(organizationId: string) {
   const now = new Date();
-  const ninetyDaysFromNow = new Date(
-    now.getTime() + 90 * 24 * 60 * 60 * 1000,
-  );
-  const thirtyDaysFromNow = new Date(
-    now.getTime() + 30 * 24 * 60 * 60 * 1000,
-  );
+  const ninetyDaysFromNow = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
+  const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
   const [expiringContracts, overdueTasks, dueInvoices] = await Promise.all([
     prisma.contract.findMany({
@@ -222,9 +200,7 @@ async function fetchDeadlines(organizationId: string) {
 
   for (const c of expiringContracts) {
     if (!c.endDate) continue;
-    const daysRemaining = Math.ceil(
-      (c.endDate.getTime() - now.getTime()) / msPerDay,
-    );
+    const daysRemaining = Math.ceil((c.endDate.getTime() - now.getTime()) / msPerDay);
     items.push({
       type: "CONTRACT_EXPIRING",
       entityId: c.id,
@@ -237,9 +213,7 @@ async function fetchDeadlines(organizationId: string) {
 
   for (const t of overdueTasks) {
     if (!t.dueAt) continue;
-    const daysOverdue = Math.ceil(
-      (now.getTime() - t.dueAt.getTime()) / msPerDay,
-    );
+    const daysOverdue = Math.ceil((now.getTime() - t.dueAt.getTime()) / msPerDay);
     items.push({
       type: "TASK_OVERDUE",
       entityId: t.id,
@@ -251,9 +225,7 @@ async function fetchDeadlines(organizationId: string) {
   }
 
   for (const inv of dueInvoices) {
-    const daysRemaining = Math.ceil(
-      (inv.dueDate.getTime() - now.getTime()) / msPerDay,
-    );
+    const daysRemaining = Math.ceil((inv.dueDate.getTime() - now.getTime()) / msPerDay);
     items.push({
       type: "INVOICE_DUE",
       entityId: inv.id,
@@ -300,15 +272,11 @@ export const dashboardRouter = router({
    * Returns 5 KPI values with trend data (current vs previous month).
    * Cached for 5 minutes per organization.
    */
-  kpis: tenantProcedure
-    .use(reportRead)
-    .query(async ({ ctx }) => {
-      return cached(
-        CacheKeys.dashboardKpis(ctx.organizationId),
-        CacheTTL.DASHBOARD_KPIS,
-        () => fetchKpis(ctx.organizationId),
-      );
-    }),
+  kpis: tenantProcedure.use(reportRead).query(async ({ ctx }) => {
+    return cached(CacheKeys.dashboardKpis(ctx.organizationId), CacheTTL.DASHBOARD_KPIS, () =>
+      fetchKpis(ctx.organizationId),
+    );
+  }),
 
   /**
    * Monthly spend trend aggregated by currency.
@@ -333,27 +301,23 @@ export const dashboardRouter = router({
    * Upcoming deadlines combining contract expirations, overdue tasks, and due invoices.
    * Cached for 3 minutes per organization.
    */
-  deadlines: tenantProcedure
-    .use(reportRead)
-    .query(async ({ ctx }) => {
-      return cached(
-        CacheKeys.dashboardDeadlines(ctx.organizationId),
-        CacheTTL.DASHBOARD_DEADLINES,
-        () => fetchDeadlines(ctx.organizationId),
-      );
-    }),
+  deadlines: tenantProcedure.use(reportRead).query(async ({ ctx }) => {
+    return cached(
+      CacheKeys.dashboardDeadlines(ctx.organizationId),
+      CacheTTL.DASHBOARD_DEADLINES,
+      () => fetchDeadlines(ctx.organizationId),
+    );
+  }),
 
   /**
    * Recent activity feed from audit log. Last 20 entries.
    * Cached for 2 minutes per organization.
    */
-  activity: tenantProcedure
-    .use(reportRead)
-    .query(async ({ ctx }) => {
-      return cached(
-        CacheKeys.dashboardActivity(ctx.organizationId),
-        CacheTTL.DASHBOARD_ACTIVITY,
-        () => fetchActivity(ctx.organizationId),
-      );
-    }),
+  activity: tenantProcedure.use(reportRead).query(async ({ ctx }) => {
+    return cached(
+      CacheKeys.dashboardActivity(ctx.organizationId),
+      CacheTTL.DASHBOARD_ACTIVITY,
+      () => fetchActivity(ctx.organizationId),
+    );
+  }),
 });

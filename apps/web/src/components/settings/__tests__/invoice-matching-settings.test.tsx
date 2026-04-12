@@ -10,9 +10,8 @@ vi.mock("next-intl", async (importOriginal) => {
 });
 
 vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
-    "@tanstack/react-query",
-  );
+  const actual =
+    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
   return {
     ...actual,
     useQuery: vi.fn().mockImplementation((opts: { queryKey: string[] }) => {

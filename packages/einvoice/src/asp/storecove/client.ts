@@ -1,14 +1,14 @@
+import {
+  storecoveLegalEntitySchema,
+  storecoveReceivedDocumentSchema,
+  storecoveSubmissionResponseSchema,
+} from "./schemas.js";
 import type {
   StorecoveConfig,
   StorecoveDocumentSubmission,
   StorecoveLegalEntity,
   StorecoveReceivedDocument,
 } from "./types.js";
-import {
-  storecoveSubmissionResponseSchema,
-  storecoveLegalEntitySchema,
-  storecoveReceivedDocumentSchema,
-} from "./schemas.js";
 
 // ---------------------------------------------------------------------------
 // Storecove REST Client
@@ -42,30 +42,27 @@ export class StorecoveClient {
     receiverScheme: string;
     documentType: string;
   }): Promise<StorecoveDocumentSubmission> {
-    const response = await fetch(
-      `${this.baseUrl}/document_submissions`,
-      {
-        method: "POST",
-        headers: this.headers,
-        body: JSON.stringify({
-          legal_entity_id: params.senderLegalEntityId,
-          document: {
-            document_type: params.documentType,
-            raw_document: params.xml,
-            parse: false,
-          },
-          routing: {
-            eIdentifiers: [
-              {
-                identifier: params.receiverIdentifier,
-                scheme: params.receiverScheme,
-              },
-            ],
-          },
-        }),
-        signal: AbortSignal.timeout(30_000),
-      },
-    );
+    const response = await fetch(`${this.baseUrl}/document_submissions`, {
+      method: "POST",
+      headers: this.headers,
+      body: JSON.stringify({
+        legal_entity_id: params.senderLegalEntityId,
+        document: {
+          document_type: params.documentType,
+          raw_document: params.xml,
+          parse: false,
+        },
+        routing: {
+          eIdentifiers: [
+            {
+              identifier: params.receiverIdentifier,
+              scheme: params.receiverScheme,
+            },
+          ],
+        },
+      }),
+      signal: AbortSignal.timeout(30_000),
+    });
 
     const json = await this.parseResponse(response);
     return storecoveSubmissionResponseSchema.parse(json);
@@ -75,14 +72,11 @@ export class StorecoveClient {
    * Get status of a previously submitted document.
    */
   async getSubmission(guid: string): Promise<StorecoveDocumentSubmission> {
-    const response = await fetch(
-      `${this.baseUrl}/document_submissions/${guid}`,
-      {
-        method: "GET",
-        headers: this.headers,
-        signal: AbortSignal.timeout(30_000),
-      },
-    );
+    const response = await fetch(`${this.baseUrl}/document_submissions/${guid}`, {
+      method: "GET",
+      headers: this.headers,
+      signal: AbortSignal.timeout(30_000),
+    });
 
     const json = await this.parseResponse(response);
     return storecoveSubmissionResponseSchema.parse(json);
@@ -96,24 +90,21 @@ export class StorecoveClient {
     identifier: string;
     scheme: string;
   }): Promise<StorecoveLegalEntity> {
-    const response = await fetch(
-      `${this.baseUrl}/legal_entities`,
-      {
-        method: "POST",
-        headers: this.headers,
-        body: JSON.stringify({
-          party_name: params.partyName,
-          peppol_identifiers: [
-            {
-              identifier: params.identifier,
-              scheme: params.scheme,
-              superscheme: "iso6523-actorid-upis",
-            },
-          ],
-        }),
-        signal: AbortSignal.timeout(30_000),
-      },
-    );
+    const response = await fetch(`${this.baseUrl}/legal_entities`, {
+      method: "POST",
+      headers: this.headers,
+      body: JSON.stringify({
+        party_name: params.partyName,
+        peppol_identifiers: [
+          {
+            identifier: params.identifier,
+            scheme: params.scheme,
+            superscheme: "iso6523-actorid-upis",
+          },
+        ],
+      }),
+      signal: AbortSignal.timeout(30_000),
+    });
 
     const json = await this.parseResponse(response);
     return storecoveLegalEntitySchema.parse(json);
@@ -123,14 +114,11 @@ export class StorecoveClient {
    * Get a legal entity by ID.
    */
   async getLegalEntity(id: number): Promise<StorecoveLegalEntity> {
-    const response = await fetch(
-      `${this.baseUrl}/legal_entities/${id}`,
-      {
-        method: "GET",
-        headers: this.headers,
-        signal: AbortSignal.timeout(30_000),
-      },
-    );
+    const response = await fetch(`${this.baseUrl}/legal_entities/${id}`, {
+      method: "GET",
+      headers: this.headers,
+      signal: AbortSignal.timeout(30_000),
+    });
 
     const json = await this.parseResponse(response);
     return storecoveLegalEntitySchema.parse(json);
@@ -139,9 +127,7 @@ export class StorecoveClient {
   /**
    * Get received documents (inbound invoices) since a given date.
    */
-  async getReceivedDocuments(
-    since: Date,
-  ): Promise<StorecoveReceivedDocument[]> {
+  async getReceivedDocuments(since: Date): Promise<StorecoveReceivedDocument[]> {
     const response = await fetch(
       `${this.baseUrl}/received_documents?since=${since.toISOString()}`,
       {
@@ -153,9 +139,7 @@ export class StorecoveClient {
 
     const json = await this.parseResponse(response);
     const items = Array.isArray(json) ? json : [];
-    return items.map((item: unknown) =>
-      storecoveReceivedDocumentSchema.parse(item),
-    );
+    return items.map((item: unknown) => storecoveReceivedDocumentSchema.parse(item));
   }
 
   /**
@@ -175,11 +159,7 @@ export class StorecoveClient {
     try {
       return JSON.parse(body);
     } catch {
-      throw new StorecoveApiError(
-        "Storecove API returned invalid JSON",
-        response.status,
-        body,
-      );
+      throw new StorecoveApiError("Storecove API returned invalid JSON", response.status, body);
     }
   }
 }

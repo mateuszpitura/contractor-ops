@@ -1,10 +1,10 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import { verifySignatureAppRouter } from "@upstash/qstash/nextjs";
-import { prisma } from "@contractor-ops/db";
-import { getCredentials } from "@contractor-ops/integrations";
-import { StorecoveAdapter } from "@contractor-ops/einvoice";
 import { PeppolOrchestrator } from "@contractor-ops/api/services/peppol-orchestrator";
+import { prisma } from "@contractor-ops/db";
+import { StorecoveAdapter } from "@contractor-ops/einvoice";
+import { getCredentials } from "@contractor-ops/integrations";
+import { verifySignatureAppRouter } from "@upstash/qstash/nextjs";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 // ---------------------------------------------------------------------------
 // POST /api/peppol/inbound
@@ -24,10 +24,7 @@ async function handler(request: NextRequest) {
   };
 
   if (!deliveryId || !organizationId) {
-    return NextResponse.json(
-      { error: "Missing deliveryId or organizationId" },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "Missing deliveryId or organizationId" }, { status: 400 });
   }
 
   try {
@@ -46,18 +43,12 @@ async function handler(request: NextRequest) {
     });
 
     if (!connection) {
-      console.error(
-        `[peppol/inbound] No active Peppol connection for org ${organizationId}`,
-      );
+      console.error(`[peppol/inbound] No active Peppol connection for org ${organizationId}`);
       return NextResponse.json({ error: "No Peppol connection" });
     }
 
-    const credentials = await getCredentials(
-      connection.credentialsRef,
-      "peppol",
-    );
-    const config =
-      (connection.configJson as Record<string, unknown>) ?? {};
+    const credentials = await getCredentials(connection.credentialsRef, "peppol");
+    const config = (connection.configJson as Record<string, unknown>) ?? {};
     const environment = config.environment as string;
 
     const adapter = new StorecoveAdapter({
@@ -70,10 +61,7 @@ async function handler(request: NextRequest) {
     });
 
     // Parse webhook payload via adapter
-    const payload = await adapter.parseWebhookPayload(
-      JSON.stringify(delivery.payloadJson),
-      {},
-    );
+    const payload = await adapter.parseWebhookPayload(JSON.stringify(delivery.payloadJson), {});
 
     const orchestrator = new PeppolOrchestrator(adapter);
     const result = await orchestrator.processInboundInvoice({
@@ -96,10 +84,7 @@ async function handler(request: NextRequest) {
       skipped: result === null,
     });
   } catch (error) {
-    console.error(
-      `[peppol/inbound] Failed for delivery ${deliveryId}:`,
-      error,
-    );
+    console.error(`[peppol/inbound] Failed for delivery ${deliveryId}:`, error);
 
     // Mark delivery as failed
     await prisma.webhookDelivery
@@ -107,16 +92,12 @@ async function handler(request: NextRequest) {
         where: { id: deliveryId },
         data: {
           deliveryStatus: "FAILED",
-          errorMessage:
-            error instanceof Error ? error.message : "Inbound processing failed",
+          errorMessage: error instanceof Error ? error.message : "Inbound processing failed",
         },
       })
       .catch(() => {});
 
-    return NextResponse.json(
-      { error: "Inbound processing failed" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Inbound processing failed" }, { status: 500 });
   }
 }
 

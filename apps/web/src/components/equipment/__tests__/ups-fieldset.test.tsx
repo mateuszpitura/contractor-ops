@@ -1,6 +1,7 @@
 import { render, screen, setup } from "@/test/test-utils";
-import { UpsFieldset, type UpsServiceCode } from "../ups-fieldset";
 import type { DpdAddress, ParcelSize } from "../dpd-fieldset";
+import type { UpsServiceCode } from "../ups-fieldset";
+import { UpsFieldset } from "../ups-fieldset";
 
 function makeProps(overrides: Partial<Parameters<typeof UpsFieldset>[0]> = {}) {
   return {
@@ -31,16 +32,12 @@ describe("UpsFieldset", () => {
     const cityInput = screen.getByRole("textbox", { name: /city/i });
     await user.type(cityInput, "K");
 
-    expect(onAddressChange).toHaveBeenCalledWith(
-      expect.objectContaining({ city: "K" }),
-    );
+    expect(onAddressChange).toHaveBeenCalledWith(expect.objectContaining({ city: "K" }));
   });
 
   it("calls onParcelSizeChange when radio is selected", async () => {
     const onParcelSizeChange = vi.fn();
-    const { user } = setup(
-      <UpsFieldset {...makeProps({ onParcelSizeChange })} />,
-    );
+    const { user } = setup(<UpsFieldset {...makeProps({ onParcelSizeChange })} />);
 
     await user.click(screen.getByRole("radio", { name: /large/i }));
     expect(onParcelSizeChange).toHaveBeenCalledWith("large");

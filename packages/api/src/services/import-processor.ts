@@ -39,22 +39,10 @@ const MAX_IMPORT_ROWS = 5000;
 // ---------------------------------------------------------------------------
 
 export const CONTRACTOR_FIELD_ALIASES: Record<string, string[]> = {
-  legalName: [
-    "legalname",
-    "companyname",
-    "company",
-    "name",
-    "nazwa",
-    "nazwafirmy",
-  ],
+  legalName: ["legalname", "companyname", "company", "name", "nazwa", "nazwafirmy"],
   taxId: ["taxid", "nip", "nipnumber", "taxnumber"],
   email: ["email", "emailaddress", "mail", "kontakt"],
-  displayName: [
-    "displayname",
-    "shortname",
-    "tradingname",
-    "nazwahandlowa",
-  ],
+  displayName: ["displayname", "shortname", "tradingname", "nazwahandlowa"],
   type: ["type", "contractortype", "typkontrahenta", "rodzaj"],
   vatId: ["vatid", "vateu", "euvatid", "nrvat"],
   phone: ["phone", "phonenumber", "telefon"],
@@ -67,12 +55,7 @@ export const CONTRACT_FIELD_ALIASES: Record<string, string[]> = {
   type: ["type", "contracttype", "rodzaj"],
   startDate: ["startdate", "start", "datapoczatku", "od"],
   endDate: ["enddate", "end", "datakonca", "do"],
-  contractorTaxId: [
-    "contractortaxid",
-    "nip",
-    "nipkontrahenta",
-    "taxid",
-  ],
+  contractorTaxId: ["contractortaxid", "nip", "nipkontrahenta", "taxid"],
 };
 
 // ---------------------------------------------------------------------------
@@ -98,10 +81,7 @@ export function autoMapColumns(
   sourceHeaders: string[],
   entityType: "contractor" | "contract",
 ): Record<string, string | null> {
-  const aliases =
-    entityType === "contractor"
-      ? CONTRACTOR_FIELD_ALIASES
-      : CONTRACT_FIELD_ALIASES;
+  const aliases = entityType === "contractor" ? CONTRACTOR_FIELD_ALIASES : CONTRACT_FIELD_ALIASES;
 
   const normalizedSources = sourceHeaders.map((h) => ({
     original: h,
@@ -111,9 +91,7 @@ export function autoMapColumns(
   const mapping: Record<string, string | null> = {};
 
   for (const [field, fieldAliases] of Object.entries(aliases)) {
-    const match = normalizedSources.find((src) =>
-      fieldAliases.includes(src.normalized),
-    );
+    const match = normalizedSources.find((src) => fieldAliases.includes(src.normalized));
     mapping[field] = match?.original ?? null;
   }
 
@@ -164,12 +142,7 @@ export function validateContractorRow(row: Record<string, unknown>): {
   }
 
   // Validate type enum
-  const validTypes = [
-    "SOLE_TRADER",
-    "COMPANY",
-    "INDIVIDUAL_FREELANCER",
-    "OTHER",
-  ];
+  const validTypes = ["SOLE_TRADER", "COMPANY", "INDIVIDUAL_FREELANCER", "OTHER"];
   if (row.type && !validTypes.includes(String(row.type).toUpperCase())) {
     errors.push({
       field: "type",
@@ -256,9 +229,7 @@ export function validateContractRow(row: Record<string, unknown>): {
  * Uses xlsx library with cellDates: true to handle Excel date serials.
  * Enforces a max row limit.
  */
-export async function parseImportFile(
-  buffer: Buffer,
-): Promise<Record<string, string>[]> {
+export async function parseImportFile(buffer: Buffer): Promise<Record<string, string>[]> {
   const { default: XLSX } = await import("xlsx");
 
   const workbook = XLSX.read(buffer, { type: "buffer", cellDates: true });
@@ -274,9 +245,7 @@ export async function parseImportFile(
   });
 
   if (rows.length > MAX_IMPORT_ROWS) {
-    throw new Error(
-      `File exceeds maximum of ${MAX_IMPORT_ROWS} rows (found ${rows.length})`,
-    );
+    throw new Error(`File exceeds maximum of ${MAX_IMPORT_ROWS} rows (found ${rows.length})`);
   }
 
   return rows;
@@ -307,8 +276,8 @@ export async function processImportFile(
   }
 
   // Transform raw rows using column mapping
-  const mappedRows: Array<{ rowNumber: number; data: Record<string, unknown> }> =
-    rawRows.map((raw, idx) => {
+  const mappedRows: Array<{ rowNumber: number; data: Record<string, unknown> }> = rawRows.map(
+    (raw, idx) => {
       const mapped: Record<string, unknown> = {};
       for (const [sourceHeader, value] of Object.entries(raw)) {
         const targetField = reverseMapping[sourceHeader];
@@ -317,15 +286,15 @@ export async function processImportFile(
         }
       }
       return { rowNumber: idx + 1, data: mapped };
-    });
+    },
+  );
 
   const validRows: ImportRow[] = [];
   const invalidRows: ImportRow[] = [];
   const duplicateRows: ImportRow[] = [];
 
   // Validate each row
-  const validator =
-    entityType === "contractor" ? validateContractorRow : validateContractRow;
+  const validator = entityType === "contractor" ? validateContractorRow : validateContractRow;
 
   for (const { rowNumber, data } of mappedRows) {
     const { valid, errors } = validator({ ...data });
@@ -339,9 +308,7 @@ export async function processImportFile(
   // Duplicate detection
   if (entityType === "contractor") {
     // Batch query existing contractors by taxId
-    const taxIds = validRows
-      .map((r) => String(r.data.taxId ?? "").trim())
-      .filter(Boolean);
+    const taxIds = validRows.map((r) => String(r.data.taxId ?? "").trim()).filter(Boolean);
 
     if (taxIds.length > 0) {
       const existing = await prisma.contractor.findMany({
@@ -353,9 +320,7 @@ export async function processImportFile(
         select: { id: true, taxId: true },
       });
 
-      const existingByTaxId = new Map(
-        existing.map((c) => [c.taxId, c.id]),
-      );
+      const existingByTaxId = new Map(existing.map((c) => [c.taxId, c.id]));
 
       // Move duplicates from validRows to duplicateRows
       const stillValid: ImportRow[] = [];
@@ -391,9 +356,7 @@ export async function processImportFile(
         select: { id: true, taxId: true },
       });
 
-      const contractorByTaxId = new Map(
-        contractors.map((c) => [c.taxId, c.id]),
-      );
+      const contractorByTaxId = new Map(contractors.map((c) => [c.taxId, c.id]));
 
       // Attach resolved contractorId or mark as invalid
       const stillValid: ImportRow[] = [];

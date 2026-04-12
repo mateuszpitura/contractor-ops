@@ -2,9 +2,8 @@ import { render, screen } from "@/test/test-utils";
 import { InviteDialog } from "../invite-dialog";
 
 vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
-    "@tanstack/react-query",
-  );
+  const actual =
+    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
   return {
     ...actual,
     useMutation: () => ({ mutate: vi.fn(), isPending: false }),

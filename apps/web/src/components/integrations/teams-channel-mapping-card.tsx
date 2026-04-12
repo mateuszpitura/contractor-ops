@@ -1,12 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-import { toast } from "sonner";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, RefreshCw } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
+import { useTranslations } from "next-intl";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { FeatureGate } from "@/components/billing/feature-gate";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -18,11 +16,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -69,9 +64,7 @@ export function TeamsChannelMappingCard() {
   const queryClient = useQueryClient();
 
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
-  const [localMapping, setLocalMapping] = useState<
-    Record<string, string>
-  >({});
+  const [localMapping, setLocalMapping] = useState<Record<string, string>>({});
 
   // ---- Fetch joined teams ----
   const teamsQuery = useQuery(trpc.teams.getTeams.queryOptions());
@@ -121,7 +114,9 @@ export function TeamsChannelMappingCard() {
   }
 
   function handleSave() {
-    (saveMutation.mutate as unknown as (input: { mapping: Record<string, string> }) => void)({ mapping: localMapping });
+    (saveMutation.mutate as unknown as (input: { mapping: Record<string, string> }) => void)({
+      mapping: localMapping,
+    });
   }
 
   function handleRefresh() {
@@ -137,143 +132,126 @@ export function TeamsChannelMappingCard() {
     });
   }
 
-  const isLoadingChannels =
-    channelsQuery.isLoading || channelsQuery.isFetching;
+  const isLoadingChannels = channelsQuery.isLoading || channelsQuery.isFetching;
   const isChannelError = channelsQuery.isError;
 
   return (
     <FeatureGate requiredTier="Pro" featureName="Teams channel mapping">
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <h4 className="text-lg font-semibold">
-              {t("channelMappingHeading")}
-            </h4>
-            <p className="text-sm text-muted-foreground">
-              {t("channelMappingDescription")}
-            </p>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <h4 className="text-lg font-semibold">{t("channelMappingHeading")}</h4>
+              <p className="text-sm text-muted-foreground">{t("channelMappingDescription")}</p>
+            </div>
+            <Tooltip>
+              <TooltipTrigger render={<div className="inline-flex" />}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleRefresh}
+                  disabled={isLoadingChannels}
+                  aria-label={t("refreshChannels")}
+                >
+                  {isLoadingChannels ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="size-4" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{t("refreshChannels")}</TooltipContent>
+            </Tooltip>
           </div>
-          <Tooltip>
-            <TooltipTrigger render={<div className="inline-flex" />}>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleRefresh}
-                disabled={isLoadingChannels}
-                aria-label={t("refreshChannels")}
-              >
-                {isLoadingChannels ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <RefreshCw className="size-4" />
-                )}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>{t("refreshChannels")}</TooltipContent>
-          </Tooltip>
-        </div>
-      </CardHeader>
+        </CardHeader>
 
-      <CardContent className="space-y-4">
-        {/* Team selector (only if multiple teams) */}
-        {teams.length > 1 && (
-          <Select
-            value={selectedTeamId ?? undefined}
-            onValueChange={(v) => v && setSelectedTeamId(v)}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder={t("selectChannel")} />
-            </SelectTrigger>
-            <SelectContent>
-              {teams.map((team) => (
-                <SelectItem key={team.id} value={team.id}>
-                  {team.displayName}
-                </SelectItem>
+        <CardContent className="space-y-4">
+          {/* Team selector (only if multiple teams) */}
+          {teams.length > 1 && (
+            <Select
+              value={selectedTeamId ?? undefined}
+              onValueChange={(v) => v && setSelectedTeamId(v)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder={t("selectChannel")} />
+              </SelectTrigger>
+              <SelectContent>
+                {teams.map((team) => (
+                  <SelectItem key={team.id} value={team.id}>
+                    {team.displayName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+
+          {/* Error state */}
+          {isChannelError && <p className="text-sm text-destructive">{t("channelFetchError")}</p>}
+
+          {/* Loading state */}
+          {isLoadingChannels && !isChannelError && (
+            <div className="space-y-3">
+              {NOTIFICATION_CATEGORIES.map((cat) => (
+                <div
+                  key={cat}
+                  className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-9 w-full sm:w-64" />
+                </div>
               ))}
-            </SelectContent>
-          </Select>
-        )}
+            </div>
+          )}
 
-        {/* Error state */}
-        {isChannelError && (
-          <p className="text-sm text-destructive">{t("channelFetchError")}</p>
-        )}
-
-        {/* Loading state */}
-        {isLoadingChannels && !isChannelError && (
-          <div className="space-y-3">
-            {NOTIFICATION_CATEGORIES.map((cat) => (
-              <div
-                key={cat}
-                className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-9 w-full sm:w-64" />
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Empty state */}
-        {!isLoadingChannels &&
-          !isChannelError &&
-          selectedTeamId &&
-          channels.length === 0 && (
+          {/* Empty state */}
+          {!isLoadingChannels && !isChannelError && selectedTeamId && channels.length === 0 && (
             <p className="text-sm text-muted-foreground">{t("noChannels")}</p>
           )}
 
-        {/* Channel mapping rows */}
-        {!isLoadingChannels &&
-          !isChannelError &&
-          channels.length > 0 &&
-          NOTIFICATION_CATEGORIES.map((category) => (
-            <div
-              key={category}
-              className="flex flex-col gap-2 py-2 sm:flex-row sm:items-center sm:justify-between"
-            >
-              <span className="text-sm font-semibold">
-                {t(
-                  CATEGORY_LABEL_KEYS[category] as Parameters<typeof t>[0],
-                )}
-              </span>
-              <Select
-                value={localMapping[category] ?? undefined}
-                onValueChange={(v) => v && handleChannelSelect(category, v)}
+          {/* Channel mapping rows */}
+          {!isLoadingChannels &&
+            !isChannelError &&
+            channels.length > 0 &&
+            NOTIFICATION_CATEGORIES.map((category) => (
+              <div
+                key={category}
+                className="flex flex-col gap-2 py-2 sm:flex-row sm:items-center sm:justify-between"
               >
-                <SelectTrigger
-                  className="w-full sm:w-64"
-                  aria-label={`${t(CATEGORY_LABEL_KEYS[category] as Parameters<typeof t>[0])} notification channel`}
+                <span className="text-sm font-semibold">
+                  {t(CATEGORY_LABEL_KEYS[category] as Parameters<typeof t>[0])}
+                </span>
+                <Select
+                  value={localMapping[category] ?? undefined}
+                  onValueChange={(v) => v && handleChannelSelect(category, v)}
                 >
-                  <SelectValue placeholder={t("selectChannel")} />
-                </SelectTrigger>
-                <SelectContent>
-                  {channels.map((ch) => (
-                    <SelectItem key={ch.id} value={ch.id}>
-                      {ch.displayName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          ))}
+                  <SelectTrigger
+                    className="w-full sm:w-64"
+                    aria-label={`${t(CATEGORY_LABEL_KEYS[category] as Parameters<typeof t>[0])} notification channel`}
+                  >
+                    <SelectValue placeholder={t("selectChannel")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {channels.map((ch) => (
+                      <SelectItem key={ch.id} value={ch.id}>
+                        {ch.displayName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            ))}
 
-        {/* Save button */}
-        {!isLoadingChannels && !isChannelError && channels.length > 0 && (
-          <div className="flex justify-end pt-2">
-            <Button
-              onClick={handleSave}
-              disabled={saveMutation.isPending}
-            >
-              {saveMutation.isPending && (
-                <Loader2 className="me-1.5 size-3.5 animate-spin" />
-              )}
-              {t("saveMapping")}
-            </Button>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+          {/* Save button */}
+          {!isLoadingChannels && !isChannelError && channels.length > 0 && (
+            <div className="flex justify-end pt-2">
+              <Button onClick={handleSave} disabled={saveMutation.isPending}>
+                {saveMutation.isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
+                {t("saveMapping")}
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </FeatureGate>
   );
 }

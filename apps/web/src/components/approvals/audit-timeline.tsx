@@ -1,27 +1,16 @@
 "use client";
 
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import {
-  CheckCircle2,
-  XCircle,
-  HelpCircle,
-  ArrowRightLeft,
-} from "lucide-react";
+import { ArrowRightLeft, CheckCircle2, HelpCircle, XCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
-import { cn } from "@/lib/utils";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from "@/components/ui/card";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { getAvatarInitials } from "@/lib/avatar-initials";
+import { useState } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getAvatarInitials } from "@/lib/avatar-initials";
+import { cn } from "@/lib/utils";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -159,14 +148,7 @@ function CommentText({ text, t }: { text: string; t: TranslateFn }) {
 
   return (
     <div>
-      <p
-        className={cn(
-          "text-sm text-foreground",
-          !expanded && "line-clamp-3",
-        )}
-      >
-        {text}
-      </p>
+      <p className={cn("text-sm text-foreground", !expanded && "line-clamp-3")}>{text}</p>
       {/* Show toggle if text is likely to overflow 3 lines (~150 chars heuristic) */}
       {text.length > 150 && (
         <button
@@ -201,21 +183,14 @@ function HumanEntry({ event, t }: { event: AuditEvent; t: TranslateFn }) {
       {/* Avatar */}
       <Avatar className="shrink-0">
         {event.actor.image && <AvatarImage src={event.actor.image} />}
-        <AvatarFallback>
-          {getAvatarInitials(event.actor.name, event.actor.email)}
-        </AvatarFallback>
+        <AvatarFallback>{getAvatarInitials(event.actor.name, event.actor.email)}</AvatarFallback>
       </Avatar>
 
       {/* Content */}
       <div className="flex-1 space-y-1">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm font-semibold">
-            {event.actor.name ?? event.actor.email}
-          </span>
-          <Badge
-            variant="secondary"
-            className={cn("gap-1", config.className)}
-          >
+          <span className="text-sm font-semibold">{event.actor.name ?? event.actor.email}</span>
+          <Badge variant="secondary" className={cn("gap-1", config.className)}>
             <Icon className="h-3 w-3" />
             {t(config.labelKey)}
           </Badge>
@@ -223,9 +198,7 @@ function HumanEntry({ event, t }: { event: AuditEvent; t: TranslateFn }) {
 
         {event.comment && <CommentText text={event.comment} t={t} />}
 
-        <p className="text-[12px] text-muted-foreground">
-          {getRelativeTime(event.timestamp)}
-        </p>
+        <p className="text-[12px] text-muted-foreground">{getRelativeTime(event.timestamp)}</p>
       </div>
     </div>
   );
@@ -245,12 +218,8 @@ function SystemEntry({ event, t }: { event: AuditEvent; t: TranslateFn }) {
 
       {/* Content */}
       <div className="flex flex-col gap-0.5">
-        <p className="text-[12px] text-muted-foreground">
-          {getSystemEventLabel(event, t)}
-        </p>
-        <p className="text-[12px] text-muted-foreground/70">
-          {getRelativeTime(event.timestamp)}
-        </p>
+        <p className="text-[12px] text-muted-foreground">{getSystemEventLabel(event, t)}</p>
+        <p className="text-[12px] text-muted-foreground/70">{getRelativeTime(event.timestamp)}</p>
       </div>
     </div>
   );
@@ -266,9 +235,7 @@ interface AuditTimelineProps {
 
 export function AuditTimeline({ invoiceId }: AuditTimelineProps) {
   const t = useTranslations("Approvals");
-  const { data, isLoading } = useQuery(
-    trpc.approval.getAuditTrail.queryOptions({ invoiceId }),
-  );
+  const { data, isLoading } = useQuery(trpc.approval.getAuditTrail.queryOptions({ invoiceId }));
 
   if (isLoading) return <AuditTimelineSkeleton />;
 
@@ -286,9 +253,7 @@ export function AuditTimeline({ invoiceId }: AuditTimelineProps) {
       </CardHeader>
       <CardContent>
         {events.length === 0 ? (
-          <p className="py-4 text-center text-sm text-muted-foreground">
-            {t("auditTrail.empty")}
-          </p>
+          <p className="py-4 text-center text-sm text-muted-foreground">{t("auditTrail.empty")}</p>
         ) : (
           <div className="relative space-y-4">
             {/* Vertical connector line */}

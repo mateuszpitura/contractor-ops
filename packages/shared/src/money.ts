@@ -8,9 +8,9 @@
  * @module money
  */
 
-import { dinero, add, subtract, multiply, allocate, toSnapshot, toDecimal } from "dinero.js";
-import { USD, EUR, GBP, PLN, AED, SAR } from "dinero.js/currencies";
 import type { Dinero, DineroCurrency } from "dinero.js";
+import { add, allocate, dinero, multiply, subtract, toDecimal, toSnapshot } from "dinero.js";
+import { AED, EUR, GBP, PLN, SAR, USD } from "dinero.js/currencies";
 
 // ---------------------------------------------------------------------------
 // Currency Registry
@@ -130,5 +130,5 @@ export function minorToDecimalStr(amount: number, currencyCode: string): string 
 // Re-exports
 // ---------------------------------------------------------------------------
 
-export { toSnapshot, toDecimal };
 export type { Dinero, DineroCurrency };
+export { toDecimal, toSnapshot };

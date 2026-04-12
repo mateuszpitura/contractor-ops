@@ -1,13 +1,10 @@
 "use client";
 
+import type { ColumnDef } from "@tanstack/react-table";
+import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useMemo } from "react";
-import {
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-  type ColumnDef,
-} from "@tanstack/react-table";
-
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -17,8 +14,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import type { PaymentRunRow } from "./columns";
 
@@ -59,10 +54,7 @@ export function PaymentRunDataTable({
     getRowId: (row) => row.id,
   });
 
-  const visibleColumns = useMemo(
-    () => table.getVisibleLeafColumns(),
-    [table],
-  );
+  const visibleColumns = useMemo(() => table.getVisibleLeafColumns(), [table]);
 
   return (
     <div className="space-y-4">
@@ -72,15 +64,10 @@ export function PaymentRunDataTable({
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <TableHead
-                    key={header.id}
-                  >
+                  <TableHead key={header.id}>
                     {header.isPlaceholder
                       ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
+                      : flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 ))}
               </TableRow>
@@ -106,10 +93,7 @@ export function PaymentRunDataTable({
                     >
                       {row.getVisibleCells().map((cell) => (
                         <TableCell key={cell.id}>
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext(),
-                          )}
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
                         </TableCell>
                       ))}
                     </TableRow>
@@ -122,21 +106,11 @@ export function PaymentRunDataTable({
       {/* Pagination */}
       {!isLoading && (hasPreviousPage || hasNextPage) && (
         <div className="flex items-center justify-end gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onPreviousPage}
-            disabled={!hasPreviousPage}
-          >
+          <Button variant="outline" size="sm" onClick={onPreviousPage} disabled={!hasPreviousPage}>
             <ChevronLeft className="h-4 w-4" />
             Previous
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onNextPage}
-            disabled={!hasNextPage}
-          >
+          <Button variant="outline" size="sm" onClick={onNextPage} disabled={!hasNextPage}>
             Next
             <ChevronRight className="h-4 w-4" />
           </Button>

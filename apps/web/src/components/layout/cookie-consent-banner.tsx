@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
-import { Button } from "@/components/ui/button";
 import { Cookie } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Link } from "@/i18n/navigation";
 
 const COOKIE_CONSENT_KEY = "cookie-consent-acknowledged";
 
@@ -43,11 +43,7 @@ export function CookieConsentBanner() {
             {t("learnMore")}
           </Link>
         </p>
-        <Button
-          size="sm"
-          onClick={handleAccept}
-          className="shrink-0"
-        >
+        <Button size="sm" onClick={handleAccept} className="shrink-0">
           {t("accept")}
         </Button>
       </div>

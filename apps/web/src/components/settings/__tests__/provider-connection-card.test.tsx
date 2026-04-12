@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, setup } from "@/test/test-utils";
 import { ProviderConnectionCard } from "../provider-connection-card";
 
@@ -9,9 +9,8 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
-    "@tanstack/react-query",
-  );
+  const actual =
+    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
   return {
     ...actual,
     useQuery: () => ({
@@ -121,9 +120,7 @@ describe("ProviderConnectionCard", () => {
   it("shows description when disconnected", () => {
     mockHealthData = { status: "DISCONNECTED" };
     render(<ProviderConnectionCard {...defaultProps} />);
-    expect(
-      screen.getByText("Connect Slack for notifications"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Connect Slack for notifications")).toBeInTheDocument();
   });
 
   it("does not show manage or disconnect buttons when disconnected", () => {
@@ -170,13 +167,9 @@ describe("ProviderConnectionCard", () => {
       connectedAt: "2026-01-01",
       tokenExpiresAt: null,
     };
-    const { user } = setup(
-      <ProviderConnectionCard {...defaultProps} />,
-    );
+    const { user } = setup(<ProviderConnectionCard {...defaultProps} />);
     await user.click(screen.getByText("Disconnect Slack"));
-    expect(
-      await screen.findByRole("alertdialog"),
-    ).toBeInTheDocument();
+    expect(await screen.findByRole("alertdialog")).toBeInTheDocument();
   });
 
   // ---- Status badges ----
@@ -206,9 +199,7 @@ describe("ProviderConnectionCard", () => {
       connectedAt: "2026-01-01",
       tokenExpiresAt: null,
     };
-    const { user } = setup(
-      <ProviderConnectionCard {...defaultProps} />,
-    );
+    const { user } = setup(<ProviderConnectionCard {...defaultProps} />);
     await user.click(screen.getByText("Manage"));
     // Should not throw
   });
@@ -216,9 +207,7 @@ describe("ProviderConnectionCard", () => {
   // ---- Reconnect button for REAUTH ----
   it("reconnect button is clickable when reauth required", async () => {
     mockHealthData = { status: "REAUTH_REQUIRED" };
-    const { user } = setup(
-      <ProviderConnectionCard {...defaultProps} />,
-    );
+    const { user } = setup(<ProviderConnectionCard {...defaultProps} />);
     await user.click(screen.getByText("Reconnect"));
     // Should redirect (mocked refetch returns url)
   });
@@ -226,9 +215,7 @@ describe("ProviderConnectionCard", () => {
   // ---- Connect button for disconnected ----
   it("connect button is clickable when disconnected", async () => {
     mockHealthData = { status: "DISCONNECTED" };
-    const { user } = setup(
-      <ProviderConnectionCard {...defaultProps} />,
-    );
+    const { user } = setup(<ProviderConnectionCard {...defaultProps} />);
     await user.click(screen.getByText("Connect Slack"));
     // Should not throw
   });
@@ -254,9 +241,7 @@ describe("ProviderConnectionCard", () => {
       connectedAt: "2026-01-01",
       tokenExpiresAt: null,
     };
-    const { user } = setup(
-      <ProviderConnectionCard {...defaultProps} />,
-    );
+    const { user } = setup(<ProviderConnectionCard {...defaultProps} />);
     await user.click(screen.getByText("Disconnect Slack"));
     const dialog = await screen.findByRole("alertdialog");
     expect(dialog).toBeInTheDocument();
@@ -287,9 +272,7 @@ describe("ProviderConnectionCard", () => {
       connectedAt: "2026-01-01",
       tokenExpiresAt: null,
     };
-    const { user } = setup(
-      <ProviderConnectionCard {...defaultProps} />,
-    );
+    const { user } = setup(<ProviderConnectionCard {...defaultProps} />);
     await user.click(screen.getByText("Disconnect Slack"));
     await screen.findByRole("alertdialog");
     await user.click(screen.getByText("Cancel"));
@@ -307,9 +290,7 @@ describe("ProviderConnectionCard", () => {
       connectedAt: "2026-01-01",
       tokenExpiresAt: null,
     };
-    const { user } = setup(
-      <ProviderConnectionCard {...defaultProps} />,
-    );
+    const { user } = setup(<ProviderConnectionCard {...defaultProps} />);
     await user.click(screen.getByText("Disconnect Slack"));
     await screen.findByRole("alertdialog");
     // Find the destructive confirm button

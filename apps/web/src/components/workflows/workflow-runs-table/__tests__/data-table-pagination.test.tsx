@@ -1,11 +1,12 @@
 import { render, screen, setup } from "@/test/test-utils";
 import { DataTablePagination } from "../data-table-pagination";
 
-const createMockTable = (selectedCount = 0) => ({
-  getFilteredSelectedRowModel: () => ({
-    rows: Array.from({ length: selectedCount }),
-  }),
-}) as any;
+const createMockTable = (selectedCount = 0) =>
+  ({
+    getFilteredSelectedRowModel: () => ({
+      rows: Array.from({ length: selectedCount }),
+    }),
+  }) as any;
 
 describe("DataTablePagination", () => {
   it("renders page indicator", () => {

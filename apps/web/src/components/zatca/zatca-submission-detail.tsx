@@ -1,16 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ChevronDown, Copy, FileCode, Loader2, RefreshCw } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   Dialog,
   DialogContent,
@@ -18,7 +14,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { ZatcaStatusBadge, type ZatcaBadgeStatus } from "./zatca-status-badge";
+import type { ZatcaBadgeStatus } from "./zatca-status-badge";
+import { ZatcaStatusBadge } from "./zatca-status-badge";
 import { zatcaTrpc } from "./zatca-trpc";
 
 // ---------------------------------------------------------------------------
@@ -128,9 +125,14 @@ export function ZatcaSubmissionDetail({
           <div className="space-y-4">
             {/* Core fields */}
             <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
-              <dt className="text-muted-foreground" aria-label="Invoice UUID">UUID</dt>
+              <dt className="text-muted-foreground" aria-label="Invoice UUID">
+                UUID
+              </dt>
               <dd className="flex items-center gap-1.5">
-                <span className="font-mono text-xs break-all" aria-label={`Invoice UUID: ${submission.zatcaUuid}`}>
+                <span
+                  className="font-mono text-xs break-all"
+                  aria-label={`Invoice UUID: ${submission.zatcaUuid}`}
+                >
                   {submission.zatcaUuid}
                 </span>
                 <button
@@ -170,9 +172,15 @@ export function ZatcaSubmissionDetail({
                 <div className="space-y-1 text-sm">
                   {submission.previousHash && (
                     <div className="flex items-center gap-2">
-                      <span className="text-muted-foreground" aria-label="Previous hash">Previous Hash:</span>
-                      <span className="font-mono text-xs hidden md:inline">{submission.previousHash}</span>
-                      <span className="font-mono text-xs md:hidden">{truncateHash(submission.previousHash)}</span>
+                      <span className="text-muted-foreground" aria-label="Previous hash">
+                        Previous Hash:
+                      </span>
+                      <span className="font-mono text-xs hidden md:inline">
+                        {submission.previousHash}
+                      </span>
+                      <span className="font-mono text-xs md:hidden">
+                        {truncateHash(submission.previousHash)}
+                      </span>
                       <button
                         type="button"
                         onClick={() => copyToClipboard(submission.previousHash!, "Previous hash")}
@@ -185,9 +193,15 @@ export function ZatcaSubmissionDetail({
                   )}
                   {submission.invoiceHash && (
                     <div className="flex items-center gap-2">
-                      <span className="text-muted-foreground" aria-label="Invoice hash">Invoice Hash:</span>
-                      <span className="font-mono text-xs hidden md:inline">{submission.invoiceHash}</span>
-                      <span className="font-mono text-xs md:hidden">{truncateHash(submission.invoiceHash)}</span>
+                      <span className="text-muted-foreground" aria-label="Invoice hash">
+                        Invoice Hash:
+                      </span>
+                      <span className="font-mono text-xs hidden md:inline">
+                        {submission.invoiceHash}
+                      </span>
+                      <span className="font-mono text-xs md:hidden">
+                        {truncateHash(submission.invoiceHash)}
+                      </span>
                       <button
                         type="button"
                         onClick={() => copyToClipboard(submission.invoiceHash!, "Invoice hash")}

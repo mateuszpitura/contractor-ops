@@ -1,19 +1,17 @@
 "use client";
 
-import { Suspense } from "react";
-import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
+import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
+import { Suspense } from "react";
+import { ContractDetailTabs } from "@/components/contracts/contract-detail/contract-detail-tabs";
+import { DetailHeader } from "@/components/contracts/contract-detail/detail-header";
+import { SigningProgressBar } from "@/components/contracts/contract-detail/signing-progress-bar";
+import { useBreadcrumbOverride } from "@/components/layout/breadcrumb-context";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "@/i18n/navigation";
-import { useBreadcrumbOverride } from "@/components/layout/breadcrumb-context";
-
-import { DetailHeader } from "@/components/contracts/contract-detail/detail-header";
-import { ContractDetailTabs } from "@/components/contracts/contract-detail/contract-detail-tabs";
-import { SigningProgressBar } from "@/components/contracts/contract-detail/signing-progress-bar";
+import { trpc } from "@/trpc/init";
 
 function HeaderSkeleton() {
   return (
@@ -58,9 +56,7 @@ export default function ContractDetailPage() {
   const params = useParams<{ id: string }>();
   const t = useTranslations("ContractDetail");
 
-  const contractQuery = useQuery(
-    trpc.contract.getById.queryOptions({ id: params.id })
-  );
+  const contractQuery = useQuery(trpc.contract.getById.queryOptions({ id: params.id }));
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const contract = contractQuery.data as any;
@@ -69,30 +65,24 @@ export default function ContractDetailPage() {
   useBreadcrumbOverride(params.id, contract?.title);
 
   // E-sign: check for connected providers
-  const connectionsQuery = useQuery(
-    trpc.esign.listConnections.queryOptions()
-  );
+  const connectionsQuery = useQuery(trpc.esign.listConnections.queryOptions());
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const esignConnections = (connectionsQuery.data ?? []) as any[];
 
   // E-sign: fetch signing envelopes for this contract
   const envelopesQuery = useQuery(
-    trpc.esign.listEnvelopes.queryOptions(
-      { contractId: params.id },
-      { enabled: !!params.id }
-    )
+    trpc.esign.listEnvelopes.queryOptions({ contractId: params.id }, { enabled: !!params.id }),
   );
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const envelopes = (envelopesQuery.data ?? []) as any[];
   const activeEnvelope = envelopes.find((e: { status: string }) =>
-    ["SENT", "DELIVERED", "CREATED"].includes(e.status)
+    ["SENT", "DELIVERED", "CREATED"].includes(e.status),
   );
 
   if (contractQuery.isError) {
     const isNotFound =
       contractQuery.error?.message?.includes("not found") ||
-      (contractQuery.error as { data?: { code?: string } })?.data?.code ===
-        "NOT_FOUND";
+      (contractQuery.error as { data?: { code?: string } })?.data?.code === "NOT_FOUND";
 
     if (isNotFound) {
       return (
@@ -141,9 +131,7 @@ export default function ContractDetailPage() {
       )}
 
       {/* Signing progress (between header and tabs) */}
-      {activeEnvelope && (
-        <SigningProgressBar envelope={activeEnvelope} />
-      )}
+      {activeEnvelope && <SigningProgressBar envelope={activeEnvelope} />}
 
       {/* Tabs */}
       {contractQuery.isLoading || !contract ? (

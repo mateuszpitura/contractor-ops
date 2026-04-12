@@ -1,33 +1,27 @@
-"use client"
+"use client";
 
-import { Loader2 } from "lucide-react"
+import { Loader2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
-import { cn } from "@/lib/utils"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-
-type ExtractionStatus =
-  | "PENDING"
-  | "PROCESSING"
-  | "EXTRACTED"
-  | "PARTIAL"
-  | "FAILED"
+type ExtractionStatus = "PENDING" | "PROCESSING" | "EXTRACTED" | "PARTIAL" | "FAILED";
 
 interface ExtractionStatusBarProps {
-  status: ExtractionStatus
-  fieldCount?: number
-  totalFields?: number
-  errorMessage?: string
-  onRetry?: () => void
+  status: ExtractionStatus;
+  fieldCount?: number;
+  totalFields?: number;
+  errorMessage?: string;
+  onRetry?: () => void;
 }
 
 const STATUS_CONFIG: Record<
   Exclude<ExtractionStatus, "PENDING">,
   {
-    variant: "info" | "success" | "warning" | "destructive"
-    label: string
-    borderClass: string
+    variant: "info" | "success" | "warning" | "destructive";
+    label: string;
+    borderClass: string;
   }
 > = {
   PROCESSING: {
@@ -50,7 +44,7 @@ const STATUS_CONFIG: Record<
     label: "Failed",
     borderClass: "border-destructive/30",
   },
-}
+};
 
 export function ExtractionStatusBar({
   status,
@@ -60,16 +54,16 @@ export function ExtractionStatusBar({
   onRetry,
 }: ExtractionStatusBarProps) {
   if (status === "PENDING") {
-    return null
+    return null;
   }
 
-  const config = STATUS_CONFIG[status]
+  const config = STATUS_CONFIG[status];
 
   return (
     <Card
       className={cn(
         "animate-in slide-in-from-top-2 fade-in-0 border duration-200 ease-out",
-        config.borderClass
+        config.borderClass,
       )}
       size="sm"
     >
@@ -79,9 +73,7 @@ export function ExtractionStatusBar({
         {status === "PROCESSING" && (
           <div className="flex items-center gap-2">
             <Loader2 className="size-4 animate-spin text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">
-              Extracting invoice data...
-            </span>
+            <span className="text-sm text-muted-foreground">Extracting invoice data...</span>
           </div>
         )}
 
@@ -93,8 +85,8 @@ export function ExtractionStatusBar({
 
         {status === "PARTIAL" && (
           <span className="text-sm text-muted-foreground">
-            Partial extraction &mdash; {fieldCount} of {totalFields} fields
-            extracted. Please fill in the remaining fields.
+            Partial extraction &mdash; {fieldCount} of {totalFields} fields extracted. Please fill
+            in the remaining fields.
           </span>
         )}
 
@@ -113,5 +105,5 @@ export function ExtractionStatusBar({
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

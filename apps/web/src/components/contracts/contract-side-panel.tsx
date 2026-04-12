@@ -1,18 +1,13 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { differenceInDays, isPast } from "date-fns";
+import { useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Link } from "@/i18n/navigation";
 import type { ContractRow } from "./contract-table/columns";
 
@@ -45,11 +40,7 @@ interface ContractSidePanelProps {
  * Slide-out side panel showing contract summary.
  * Opens from right on row click. 480px on desktop, 400px on tablet.
  */
-export function ContractSidePanel({
-  contract,
-  open,
-  onOpenChange,
-}: ContractSidePanelProps) {
+export function ContractSidePanel({ contract, open, onOpenChange }: ContractSidePanelProps) {
   const t = useTranslations("Contracts");
   const ts = useTranslations("Contracts.sidePanel");
 
@@ -79,10 +70,7 @@ export function ContractSidePanel({
                 {contract.title}
               </SheetTitle>
               <div className="flex items-center gap-2 flex-wrap">
-                <Badge
-                  variant="secondary"
-                  className={statusBadgeColors[contract.status] ?? ""}
-                >
+                <Badge variant="secondary" className={statusBadgeColors[contract.status] ?? ""}>
                   {t(`status.${contract.status}` as Parameters<typeof t>[0])}
                 </Badge>
                 <Link
@@ -90,8 +78,7 @@ export function ContractSidePanel({
                   className="text-sm text-primary hover:underline"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  {contract.contractor.displayName ??
-                    contract.contractor.legalName}
+                  {contract.contractor.displayName ?? contract.contractor.legalName}
                 </Link>
               </div>
             </SheetHeader>
@@ -119,36 +106,20 @@ export function ContractSidePanel({
                 <DetailItem
                   label={t("columns.endDate")}
                   value={
-                    contract.endDate
-                      ? new Date(contract.endDate).toLocaleDateString("pl-PL")
-                      : null
+                    contract.endDate ? new Date(contract.endDate).toLocaleDateString("pl-PL") : null
                   }
                 />
                 <DetailItem
                   label={t("columns.rate")}
-                  value={
-                    rateDisplay
-                      ? `${rateDisplay} ${contract.currency}`
-                      : null
-                  }
+                  value={rateDisplay ? `${rateDisplay} ${contract.currency}` : null}
                   mono
                 />
-                <DetailItem
-                  label={t("columns.currency")}
-                  value={contract.currency}
-                />
+                <DetailItem label={t("columns.currency")} value={contract.currency} />
                 <DetailItem
                   label={t("columns.billingCycle")}
-                  value={t(
-                    `billingModel.${contract.billingModel}` as Parameters<
-                      typeof t
-                    >[0],
-                  )}
+                  value={t(`billingModel.${contract.billingModel}` as Parameters<typeof t>[0])}
                 />
-                <DetailItem
-                  label={t("columns.owner")}
-                  value={contract.internalOwner?.name}
-                />
+                <DetailItem label={t("columns.owner")} value={contract.internalOwner?.name} />
               </div>
             </div>
 
@@ -183,12 +154,7 @@ export function ContractSidePanel({
             )}
 
             {/* Open full contract CTA */}
-            <Button
-              render={
-                <Link href={`/contracts/${contract.id}`} />
-              }
-              className="w-full"
-            >
+            <Button render={<Link href={`/contracts/${contract.id}`} />} className="w-full">
               {ts("openContract")}
             </Button>
           </div>

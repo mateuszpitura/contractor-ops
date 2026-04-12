@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { optionalString, optionalFk } from "./helpers.js";
+import { optionalFk, optionalString } from "./helpers.js";
 
 // ---------------------------------------------------------------------------
 // Prisma enum mirrors (string unions — validators package has no Prisma dep)
@@ -13,11 +13,7 @@ export const workflowTemplateTypeEnum = z.enum([
   "CUSTOM",
 ]);
 
-export const workflowTemplateStatusEnum = z.enum([
-  "DRAFT",
-  "ACTIVE",
-  "ARCHIVED",
-]);
+export const workflowTemplateStatusEnum = z.enum(["DRAFT", "ACTIVE", "ARCHIVED"]);
 
 export const workflowTaskTypeEnum = z.enum([
   "DOCUMENT_COLLECTION",
@@ -124,9 +120,7 @@ export const templateUpdateSchema = z.object({
   type: workflowTemplateTypeEnum.optional(),
   description: z.string().nullable().optional(),
   status: workflowTemplateStatusEnum.optional(),
-  tasks: z
-    .array(taskTemplateInputSchema.extend({ id: z.string().optional() }))
-    .optional(),
+  tasks: z.array(taskTemplateInputSchema.extend({ id: z.string().optional() })).optional(),
 });
 
 export type TemplateUpdateInput = z.infer<typeof templateUpdateSchema>;
@@ -156,9 +150,7 @@ export const workflowRunListSchema = z.object({
   page: z.number().min(1).default(1),
   pageSize: z.number().min(10).max(50).default(25),
   search: z.string().optional(),
-  sortBy: z
-    .enum(["createdAt", "dueAt", "status", "startedAt"])
-    .default("dueAt"),
+  sortBy: z.enum(["createdAt", "dueAt", "status", "startedAt"]).default("dueAt"),
   sortOrder: z.enum(["asc", "desc"]).default("asc"),
   contractorId: z.string().optional(),
   filters: z

@@ -73,5 +73,4 @@ describe("PortalSettingsPage", () => {
 
     expect(screen.getByText(/manage/i)).toBeInTheDocument();
   });
-
 });

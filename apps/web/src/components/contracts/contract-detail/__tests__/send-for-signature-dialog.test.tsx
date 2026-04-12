@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, setup } from "@/test/test-utils";
 import { useQuery } from "@tanstack/react-query";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { render, screen, setup } from "@/test/test-utils";
 import { SendForSignatureDialog } from "../send-for-signature-dialog";
 
 const mockedUseQuery = vi.fn();
@@ -61,9 +61,7 @@ const defaultProps = {
   onOpenChange: vi.fn(),
   contractId: "ct1",
   documentId: "doc1",
-  contractParties: [
-    { name: "Jan Kowalski", email: "jan@test.com", role: "signer" as const },
-  ],
+  contractParties: [{ name: "Jan Kowalski", email: "jan@test.com", role: "signer" as const }],
 };
 
 describe("SendForSignatureDialog", () => {
@@ -132,9 +130,7 @@ describe("SendForSignatureDialog", () => {
   });
 
   it("renders no signers text when contractParties is empty", () => {
-    render(
-      <SendForSignatureDialog {...defaultProps} contractParties={[]} />,
-    );
+    render(<SendForSignatureDialog {...defaultProps} contractParties={[]} />);
     expect(screen.getByText(/no signers/i)).toBeInTheDocument();
   });
 
@@ -170,9 +166,7 @@ describe("SendForSignatureDialog", () => {
   // ---- Provider selection ----
   it("renders provider label when connections are loaded", () => {
     mockedUseQuery.mockReturnValue({
-      data: [
-        { id: "conn1", provider: "DOCUSIGN", status: "ACTIVE", displayName: null },
-      ],
+      data: [{ id: "conn1", provider: "DOCUSIGN", status: "ACTIVE", displayName: null }],
       isPending: false,
       isLoading: false,
     });
@@ -200,9 +194,7 @@ describe("SendForSignatureDialog", () => {
   });
 
   it("send button is disabled when no signers", () => {
-    render(
-      <SendForSignatureDialog {...defaultProps} contractParties={[]} />,
-    );
+    render(<SendForSignatureDialog {...defaultProps} contractParties={[]} />);
     const buttons = screen.getAllByRole("button");
     const sendBtn = buttons.find((b) => b.textContent?.includes("Send"));
     expect(sendBtn).toBeDisabled();
@@ -250,18 +242,19 @@ describe("SendForSignatureDialog", () => {
       />,
     );
     // Should have remove buttons for signers
-    const removeButtons = screen.getAllByRole("button").filter(
-      (b) => b.getAttribute("aria-label")?.includes("Remove") || b.textContent?.includes("Remove"),
-    );
+    const removeButtons = screen
+      .getAllByRole("button")
+      .filter(
+        (b) =>
+          b.getAttribute("aria-label")?.includes("Remove") || b.textContent?.includes("Remove"),
+      );
     expect(removeButtons.length).toBeGreaterThanOrEqual(0);
   });
 
   // ---- Provider connection rendering ----
   it("renders provider select with single connection", () => {
     mockedUseQuery.mockReturnValue({
-      data: [
-        { id: "conn1", provider: "DOCUSIGN", status: "ACTIVE", displayName: "DocuSign" },
-      ],
+      data: [{ id: "conn1", provider: "DOCUSIGN", status: "ACTIVE", displayName: "DocuSign" }],
       isPending: false,
       isLoading: false,
     });
@@ -309,9 +302,7 @@ describe("SendForSignatureDialog", () => {
 
   // ---- Document ID display ----
   it("displays the document ID in the dialog", () => {
-    render(
-      <SendForSignatureDialog {...defaultProps} documentId="doc-xyz" />,
-    );
+    render(<SendForSignatureDialog {...defaultProps} documentId="doc-xyz" />);
     expect(screen.getByText("doc-xyz")).toBeInTheDocument();
   });
 
@@ -341,13 +332,7 @@ describe("SendForSignatureDialog", () => {
 
   // ---- Contract ID ----
   it("renders contract and document IDs", () => {
-    render(
-      <SendForSignatureDialog
-        {...defaultProps}
-        contractId="ct-abc"
-        documentId="doc-123"
-      />,
-    );
+    render(<SendForSignatureDialog {...defaultProps} contractId="ct-abc" documentId="doc-123" />);
     expect(screen.getByText("doc-123")).toBeInTheDocument();
   });
 
@@ -372,9 +357,7 @@ describe("SendForSignatureDialog", () => {
   // ---- Multiple provider connections ----
   it("renders AUTENTI provider option", () => {
     mockedUseQuery.mockReturnValue({
-      data: [
-        { id: "conn1", provider: "AUTENTI", status: "ACTIVE", displayName: "Autenti" },
-      ],
+      data: [{ id: "conn1", provider: "AUTENTI", status: "ACTIVE", displayName: "Autenti" }],
       isPending: false,
       isLoading: false,
     });

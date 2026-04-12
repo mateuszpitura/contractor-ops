@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, setup } from "@/test/test-utils";
 import { JiraTaskConfig } from "../jira-task-config";
 
@@ -18,19 +18,17 @@ vi.mock("../jira-project-mapping-dialog", () => ({
     onOpenChange: (v: boolean) => void;
     taskTemplateId: string;
     connectionId: string;
-  }) =>
-    open ? <div data-testid="jira-mapping-dialog">MappingDialog</div> : null,
+  }) => (open ? <div data-testid="jira-mapping-dialog">MappingDialog</div> : null),
 }));
 
 let connectionData: unknown = { id: "conn-1", status: "CONNECTED" };
-let configData: unknown = undefined;
+let configData: unknown;
 
 const mockMutate = vi.fn();
 
 vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
-    "@tanstack/react-query",
-  );
+  const actual =
+    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
   return {
     ...actual,
     useQuery: (opts: { queryKey?: unknown }) => {
@@ -80,17 +78,13 @@ describe("JiraTaskConfig", () => {
 
   it("renders nothing when Jira is not connected", () => {
     connectionData = null;
-    const { container } = render(
-      <JiraTaskConfig taskTemplateId="tt-1" />,
-    );
+    const { container } = render(<JiraTaskConfig taskTemplateId="tt-1" />);
     expect(container.innerHTML).toBe("");
   });
 
   it("renders toggle label when connected", () => {
     render(<JiraTaskConfig taskTemplateId="tt-1" />);
-    expect(
-      screen.getByText("Create Jira issue when task activates"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Create Jira issue when task activates")).toBeInTheDocument();
   });
 
   it("renders switch element", () => {
@@ -105,9 +99,7 @@ describe("JiraTaskConfig", () => {
 
   it("renders Configure Jira button", () => {
     render(<JiraTaskConfig taskTemplateId="tt-1" />);
-    expect(
-      screen.getByRole("button", { name: "Configure Jira" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Configure Jira" })).toBeInTheDocument();
   });
 
   it("switch is disabled when no mapping is configured", () => {
@@ -144,9 +136,7 @@ describe("JiraTaskConfig", () => {
   });
 
   it("opens mapping dialog when Configure Jira clicked", async () => {
-    const { user } = setup(
-      <JiraTaskConfig taskTemplateId="tt-1" />,
-    );
+    const { user } = setup(<JiraTaskConfig taskTemplateId="tt-1" />);
     await user.click(screen.getByText("Configure Jira"));
     expect(screen.getByTestId("jira-mapping-dialog")).toBeInTheDocument();
   });
@@ -160,9 +150,7 @@ describe("JiraTaskConfig", () => {
       jiraIssueTypeId: "it-1",
       jiraIssueTypeName: "Task",
     };
-    const { user } = setup(
-      <JiraTaskConfig taskTemplateId="tt-1" />,
-    );
+    const { user } = setup(<JiraTaskConfig taskTemplateId="tt-1" />);
     await user.click(screen.getByRole("switch"));
     expect(mockMutate).toHaveBeenCalledWith(
       expect.objectContaining({

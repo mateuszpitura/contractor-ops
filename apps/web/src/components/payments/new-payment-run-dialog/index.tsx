@@ -1,19 +1,13 @@
 "use client";
 
-import { useCallback, useState } from "react";
-import { useTranslations } from "next-intl";
 import { useQueryClient } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
+import { useCallback, useState } from "react";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-
-import { StepSelect } from "./step-select";
-import { StepReview } from "./step-review";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { StepConfirmation } from "./step-confirmation";
+import { StepReview } from "./step-review";
+import { StepSelect } from "./step-select";
 
 // ---------------------------------------------------------------------------
 // Step indicator
@@ -48,11 +42,7 @@ interface NewPaymentRunDialogProps {
 // Component
 // ---------------------------------------------------------------------------
 
-export function NewPaymentRunDialog({
-  open,
-  onOpenChange,
-  onViewRun,
-}: NewPaymentRunDialogProps) {
+export function NewPaymentRunDialog({ open, onOpenChange, onViewRun }: NewPaymentRunDialogProps) {
   const t = useTranslations("Payments");
   const queryClient = useQueryClient();
 

@@ -33,9 +33,7 @@ export async function dispatchShipmentNotification(
       select: { userId: true },
     });
 
-    const adminUserIds = adminMembers.map(
-      (m: { userId: string }) => m.userId,
-    );
+    const adminUserIds = adminMembers.map((m: { userId: string }) => m.userId);
 
     if (adminUserIds.length === 0) {
       return;
@@ -59,9 +57,6 @@ export async function dispatchShipmentNotification(
       },
     });
   } catch (err) {
-    console.error(
-      `[${carrier.toLowerCase()}-notification] Failed to dispatch notification:`,
-      err,
-    );
+    console.error(`[${carrier.toLowerCase()}-notification] Failed to dispatch notification:`, err);
   }
 }

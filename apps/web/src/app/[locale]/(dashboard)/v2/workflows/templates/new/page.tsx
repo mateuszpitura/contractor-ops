@@ -1,83 +1,97 @@
 "use client";
 
+import type { DragEndEvent } from "@dnd-kit/core";
 import {
-  useState,
-  useCallback,
-  useRef,
-  type ReactNode,
-  type MouseEvent as RME,
-} from "react";
-import { useTranslations } from "next-intl";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import {
-  Plus,
-  GripVertical,
-  Trash2,
-  ChevronDown,
-  ChevronUp,
-  FileText,
-  CheckCircle,
-  KeyRound,
-  Banknote,
-  Monitor,
-  BookOpen,
-  Calendar,
-  ClipboardList,
-  Bell,
-  GitBranch,
-  Clock,
-  UserCircle,
-  Shield,
-  Workflow,
-  Sparkles,
-  ArrowRight,
-  Save,
-  Zap,
-} from "lucide-react";
-import {
-  DndContext,
   closestCenter,
-  type DragEndEvent,
-  PointerSensor,
+  DndContext,
   KeyboardSensor,
+  PointerSensor,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
 import {
   SortableContext,
-  verticalListSortingStrategy,
-  useSortable,
   sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-
-import { trpc } from "@/trpc/init";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  ArrowRight,
+  Banknote,
+  Bell,
+  BookOpen,
+  Calendar,
+  CheckCircle,
+  ChevronDown,
+  ChevronUp,
+  ClipboardList,
+  Clock,
+  FileText,
+  GitBranch,
+  GripVertical,
+  KeyRound,
+  Monitor,
+  Plus,
+  Save,
+  Shield,
+  Sparkles,
+  Trash2,
+  UserCircle,
+  Workflow,
+  Zap,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import type { ReactNode, MouseEvent as RME } from "react";
+import { useCallback, useRef, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  useTemplateForm,
-  type TemplateFormValues,
-  type TaskFormValues,
+import { Switch } from "@/components/ui/switch";
+import type {
+  TaskFormValues,
+  TemplateFormValues,
 } from "@/components/workflows/template-builder/use-template-form";
+import { useTemplateForm } from "@/components/workflows/template-builder/use-template-form";
+import { trpc } from "@/trpc/init";
 
 // =============================================================================
 // TASK TYPE CONFIG
 // =============================================================================
 
 const TASK_TYPES = [
-  { value: "DOCUMENT_COLLECTION", icon: FileText, label: "Document Collection", color: "var(--color-info)" },
+  {
+    value: "DOCUMENT_COLLECTION",
+    icon: FileText,
+    label: "Document Collection",
+    color: "var(--color-info)",
+  },
   { value: "APPROVAL", icon: CheckCircle, label: "Approval", color: "var(--color-success)" },
   { value: "ACCESS_GRANT", icon: KeyRound, label: "Access Grant", color: "var(--color-chart-1)" },
-  { value: "ACCESS_REVOKE", icon: KeyRound, label: "Access Revoke", color: "var(--color-destructive)" },
+  {
+    value: "ACCESS_REVOKE",
+    icon: KeyRound,
+    label: "Access Revoke",
+    color: "var(--color-destructive)",
+  },
   { value: "FINANCE_SETUP", icon: Banknote, label: "Finance Setup", color: "var(--color-warning)" },
   { value: "EQUIPMENT", icon: Monitor, label: "Equipment", color: "var(--color-chart-2)" },
-  { value: "KNOWLEDGE_TRANSFER", icon: BookOpen, label: "Knowledge Transfer", color: "var(--color-chart-3)" },
+  {
+    value: "KNOWLEDGE_TRANSFER",
+    icon: BookOpen,
+    label: "Knowledge Transfer",
+    color: "var(--color-chart-3)",
+  },
   { value: "MEETING", icon: Calendar, label: "Meeting", color: "var(--color-accent-warm)" },
-  { value: "MANUAL", icon: ClipboardList, label: "Manual Task", color: "var(--color-muted-foreground)" },
+  {
+    value: "MANUAL",
+    icon: ClipboardList,
+    label: "Manual Task",
+    color: "var(--color-muted-foreground)",
+  },
   { value: "NOTIFICATION", icon: Bell, label: "Notification", color: "var(--color-chart-4)" },
 ] as const;
 
@@ -86,8 +100,18 @@ const TASK_TYPE_MAP = Object.fromEntries(TASK_TYPES.map((t) => [t.value, t]));
 const TEMPLATE_TYPES = [
   { value: "ONBOARDING", label: "Onboarding", icon: Sparkles, color: "var(--color-success)" },
   { value: "OFFBOARDING", label: "Offboarding", icon: ArrowRight, color: "var(--color-warning)" },
-  { value: "DOCUMENT_COLLECTION", label: "Document Collection", icon: FileText, color: "var(--color-info)" },
-  { value: "COMPLIANCE_REVIEW", label: "Compliance Review", icon: Shield, color: "var(--color-destructive)" },
+  {
+    value: "DOCUMENT_COLLECTION",
+    label: "Document Collection",
+    icon: FileText,
+    color: "var(--color-info)",
+  },
+  {
+    value: "COMPLIANCE_REVIEW",
+    label: "Compliance Review",
+    icon: Shield,
+    color: "var(--color-destructive)",
+  },
   { value: "CUSTOM", label: "Custom", icon: Zap, color: "var(--color-chart-1)" },
 ] as const;
 
@@ -100,8 +124,14 @@ const ASSIGNEE_MODES = [
 ] as const;
 
 const ROLES = [
-  "ORG_ADMIN", "FINANCE_ADMIN", "OPS_MANAGER", "TEAM_MANAGER",
-  "LEGAL_VIEWER", "IT_ADMIN", "ACCOUNTANT", "READ_ONLY",
+  "ORG_ADMIN",
+  "FINANCE_ADMIN",
+  "OPS_MANAGER",
+  "TEAM_MANAGER",
+  "LEGAL_VIEWER",
+  "IT_ADMIN",
+  "ACCOUNTANT",
+  "READ_ONLY",
 ] as const;
 
 // =============================================================================
@@ -111,10 +141,38 @@ const ROLES = [
 function AtelierBg() {
   return (
     <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-      <div className="absolute inset-0" style={{ background: "linear-gradient(170deg, color-mix(in oklch, var(--color-primary) 4%, transparent) 0%, transparent 50%)" }} />
-      <div className="absolute -start-[10%] -top-[10%] h-[600px] w-[600px] rounded-full" style={{ background: "radial-gradient(circle, color-mix(in oklch, var(--color-primary) 15%, transparent) 0%, transparent 65%)", animation: "drift-1 28s ease-in-out infinite", filter: "blur(80px)" }} />
-      <div className="absolute -end-[5%] bottom-[10%] h-[400px] w-[400px] rounded-full" style={{ background: "radial-gradient(circle, color-mix(in oklch, oklch(0.6 0.15 270) 10%, transparent) 0%, transparent 65%)", animation: "drift-3 24s ease-in-out infinite", filter: "blur(90px)" }} />
-      <div className="absolute inset-0 opacity-[0.025] dark:opacity-[0.05] mix-blend-overlay" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`, backgroundSize: "256px" }} />
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(170deg, color-mix(in oklch, var(--color-primary) 4%, transparent) 0%, transparent 50%)",
+        }}
+      />
+      <div
+        className="absolute -start-[10%] -top-[10%] h-[600px] w-[600px] rounded-full"
+        style={{
+          background:
+            "radial-gradient(circle, color-mix(in oklch, var(--color-primary) 15%, transparent) 0%, transparent 65%)",
+          animation: "drift-1 28s ease-in-out infinite",
+          filter: "blur(80px)",
+        }}
+      />
+      <div
+        className="absolute -end-[5%] bottom-[10%] h-[400px] w-[400px] rounded-full"
+        style={{
+          background:
+            "radial-gradient(circle, color-mix(in oklch, oklch(0.6 0.15 270) 10%, transparent) 0%, transparent 65%)",
+          animation: "drift-3 24s ease-in-out infinite",
+          filter: "blur(90px)",
+        }}
+      />
+      <div
+        className="absolute inset-0 opacity-[0.025] dark:opacity-[0.05] mix-blend-overlay"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
+          backgroundSize: "256px",
+        }}
+      />
     </div>
   );
 }
@@ -123,14 +181,25 @@ function AtelierBg() {
 // TILT CARD
 // =============================================================================
 
-function TiltCard({ children, className = "", delay = 0 }: { children: ReactNode; className?: string; delay?: number }) {
+function TiltCard({
+  children,
+  className = "",
+  delay = 0,
+}: {
+  children: ReactNode;
+  className?: string;
+  delay?: number;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const onMove = useCallback((e: RME<HTMLDivElement>) => {
-    const el = ref.current; if (!el) return;
+    const el = ref.current;
+    if (!el) return;
     const r = el.getBoundingClientRect();
     el.style.transform = `perspective(1000px) rotateY(${((e.clientX - r.left) / r.width - 0.5) * 2}deg) rotateX(${((e.clientY - r.top) / r.height - 0.5) * -2}deg)`;
   }, []);
-  const onLeave = useCallback(() => { ref.current && (ref.current.style.transform = "perspective(1000px) rotateY(0) rotateX(0)"); }, []);
+  const onLeave = useCallback(() => {
+    ref.current && (ref.current.style.transform = "perspective(1000px) rotateY(0) rotateX(0)");
+  }, []);
 
   return (
     <div
@@ -155,7 +224,8 @@ function PipelineConnector() {
       <div
         className="absolute start-0 h-full w-[2px] rounded-full"
         style={{
-          background: "linear-gradient(to bottom, var(--color-primary), color-mix(in oklch, var(--color-primary) 30%, transparent))",
+          background:
+            "linear-gradient(to bottom, var(--color-primary), color-mix(in oklch, var(--color-primary) 30%, transparent))",
           boxShadow: "0 0 6px color-mix(in oklch, var(--color-primary) 20%, transparent)",
         }}
       />
@@ -183,7 +253,9 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
   const Icon = cfg.icon;
 
   const { data: users } = useQuery(
-    trpc.user.list.queryOptions(undefined, { enabled: expanded && form.watch(`tasks.${index}.assigneeMode`) === "FIXED_USER" }),
+    trpc.user.list.queryOptions(undefined, {
+      enabled: expanded && form.watch(`tasks.${index}.assigneeMode`) === "FIXED_USER",
+    }),
   );
 
   return (
@@ -249,7 +321,9 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
           {/* Row 1: Title + Type */}
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
-              <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/50">Title</label>
+              <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/50">
+                Title
+              </label>
               <Input
                 className="h-9 text-[13px]"
                 placeholder="e.g. Collect NDA..."
@@ -257,7 +331,9 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
               />
             </div>
             <div>
-              <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/50">Task Type</label>
+              <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/50">
+                Task Type
+              </label>
               <div className="grid grid-cols-5 gap-1">
                 {TASK_TYPES.map((tt) => {
                   const TTIcon = tt.icon;
@@ -267,7 +343,9 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
                       key={tt.value}
                       type="button"
                       title={tt.label}
-                      onClick={() => form.setValue(`tasks.${index}.taskType`, tt.value, { shouldDirty: true })}
+                      onClick={() =>
+                        form.setValue(`tasks.${index}.taskType`, tt.value, { shouldDirty: true })
+                      }
                       className={`flex h-8 items-center justify-center rounded-lg border text-xs transition-all ${
                         active
                           ? "border-primary/40 bg-primary/8 text-primary shadow-sm"
@@ -284,7 +362,9 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
 
           {/* Row 2: Description */}
           <div>
-            <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/50">Description</label>
+            <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/50">
+              Description
+            </label>
             <textarea
               className="h-16 w-full resize-none rounded-lg border border-border/40 bg-transparent px-3 py-2 text-[12px] text-foreground placeholder:text-muted-foreground/30 focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/10"
               placeholder="Optional description..."
@@ -302,10 +382,18 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
               <select
                 className="h-9 w-full rounded-lg border border-border/40 bg-transparent px-2 text-[12px] focus:border-primary/40 focus:outline-none"
                 value={task.assigneeMode}
-                onChange={(e) => form.setValue(`tasks.${index}.assigneeMode`, e.target.value as TaskFormValues["assigneeMode"], { shouldDirty: true })}
+                onChange={(e) =>
+                  form.setValue(
+                    `tasks.${index}.assigneeMode`,
+                    e.target.value as TaskFormValues["assigneeMode"],
+                    { shouldDirty: true },
+                  )
+                }
               >
                 {ASSIGNEE_MODES.map((m) => (
-                  <option key={m.value} value={m.value}>{m.label}</option>
+                  <option key={m.value} value={m.value}>
+                    {m.label}
+                  </option>
                 ))}
               </select>
 
@@ -314,11 +402,19 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
                 <select
                   className="mt-1.5 h-8 w-full rounded-lg border border-border/30 bg-transparent px-2 text-[11px] focus:border-primary/40 focus:outline-none"
                   value={task.assigneeRole ?? ""}
-                  onChange={(e) => form.setValue(`tasks.${index}.assigneeRole`, e.target.value as TaskFormValues["assigneeRole"], { shouldDirty: true })}
+                  onChange={(e) =>
+                    form.setValue(
+                      `tasks.${index}.assigneeRole`,
+                      e.target.value as TaskFormValues["assigneeRole"],
+                      { shouldDirty: true },
+                    )
+                  }
                 >
                   <option value="">Select role...</option>
                   {ROLES.map((r) => (
-                    <option key={r} value={r}>{r.replace(/_/g, " ")}</option>
+                    <option key={r} value={r}>
+                      {r.replace(/_/g, " ")}
+                    </option>
                   ))}
                 </select>
               )}
@@ -328,11 +424,17 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
                 <select
                   className="mt-1.5 h-8 w-full rounded-lg border border-border/30 bg-transparent px-2 text-[11px] focus:border-primary/40 focus:outline-none"
                   value={task.assigneeUserId ?? ""}
-                  onChange={(e) => form.setValue(`tasks.${index}.assigneeUserId`, e.target.value, { shouldDirty: true })}
+                  onChange={(e) =>
+                    form.setValue(`tasks.${index}.assigneeUserId`, e.target.value, {
+                      shouldDirty: true,
+                    })
+                  }
                 >
                   <option value="">Select user...</option>
                   {(users as Array<{ id: string; name: string | null }> | undefined)?.map((u) => (
-                    <option key={u.id} value={u.id}>{u.name ?? u.id}</option>
+                    <option key={u.id} value={u.id}>
+                      {u.name ?? u.id}
+                    </option>
                   ))}
                 </select>
               )}
@@ -352,7 +454,9 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
                     placeholder="0"
                     {...form.register(`tasks.${index}.dueOffsetDays`, { valueAsNumber: true })}
                   />
-                  <span className="absolute end-2.5 top-1/2 -translate-y-1/2 text-[9px] text-muted-foreground/40">days</span>
+                  <span className="absolute end-2.5 top-1/2 -translate-y-1/2 text-[9px] text-muted-foreground/40">
+                    days
+                  </span>
                 </div>
                 <div className="relative flex-1">
                   <Input
@@ -362,7 +466,9 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
                     placeholder="0"
                     {...form.register(`tasks.${index}.dueOffsetHours`, { valueAsNumber: true })}
                   />
-                  <span className="absolute end-2.5 top-1/2 -translate-y-1/2 text-[9px] text-muted-foreground/40">hrs</span>
+                  <span className="absolute end-2.5 top-1/2 -translate-y-1/2 text-[9px] text-muted-foreground/40">
+                    hrs
+                  </span>
                 </div>
               </div>
             </div>
@@ -370,13 +476,19 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
             {/* Required + Dependency */}
             <div className="space-y-2">
               <div>
-                <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/50">Required</label>
+                <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/50">
+                  Required
+                </label>
                 <div className="flex h-9 items-center">
                   <Switch
                     checked={task.required}
-                    onCheckedChange={(v) => form.setValue(`tasks.${index}.required`, !!v, { shouldDirty: true })}
+                    onCheckedChange={(v) =>
+                      form.setValue(`tasks.${index}.required`, !!v, { shouldDirty: true })
+                    }
                   />
-                  <span className="ms-2 text-[11px] text-muted-foreground/60">{task.required ? "Yes" : "No"}</span>
+                  <span className="ms-2 text-[11px] text-muted-foreground/60">
+                    {task.required ? "Yes" : "No"}
+                  </span>
                 </div>
               </div>
               {index > 0 && (
@@ -387,7 +499,13 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
                   <select
                     className="h-8 w-full rounded-lg border border-border/30 bg-transparent px-2 text-[11px] focus:border-primary/40 focus:outline-none"
                     value={task.dependsOnTaskTemplateId ?? ""}
-                    onChange={(e) => form.setValue(`tasks.${index}.dependsOnTaskTemplateId`, e.target.value || undefined, { shouldDirty: true })}
+                    onChange={(e) =>
+                      form.setValue(
+                        `tasks.${index}.dependsOnTaskTemplateId`,
+                        e.target.value || undefined,
+                        { shouldDirty: true },
+                      )
+                    }
                   >
                     <option value="">None</option>
                     {allTasks.slice(0, index).map((t, ti) => (
@@ -422,15 +540,25 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
 // =============================================================================
 
 function SortableTask(props: TaskCardV2Props & { id: string }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: props.id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: props.id,
+  });
   return (
     <div
       ref={setNodeRef}
-      style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1, zIndex: isDragging ? 50 : undefined }}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.5 : 1,
+        zIndex: isDragging ? 50 : undefined,
+      }}
     >
       <TaskCardV2
         {...props}
-        dragHandleProps={{ attributes: attributes as unknown as Record<string, unknown>, listeners: (listeners ?? {}) as Record<string, unknown> }}
+        dragHandleProps={{
+          attributes: attributes as unknown as Record<string, unknown>,
+          listeners: (listeners ?? {}) as Record<string, unknown>,
+        }}
       />
     </div>
   );
@@ -526,7 +654,9 @@ export default function NewWorkflowTemplatePage() {
                   {...form.register("name")}
                 />
                 {form.formState.errors.name && (
-                  <p className="text-[11px] text-destructive">{t("validationTemplateNameRequired")}</p>
+                  <p className="text-[11px] text-destructive">
+                    {t("validationTemplateNameRequired")}
+                  </p>
                 )}
 
                 {/* Type selector — visual pills */}
@@ -586,7 +716,9 @@ export default function NewWorkflowTemplatePage() {
                 </div>
                 <div>
                   <p className="text-[13px] font-semibold">No steps yet</p>
-                  <p className="mt-0.5 text-[11px] text-muted-foreground/50">Add your first task to start building the pipeline</p>
+                  <p className="mt-0.5 text-[11px] text-muted-foreground/50">
+                    Add your first task to start building the pipeline
+                  </p>
                 </div>
                 <Button type="button" size="sm" onClick={addTask} className="text-xs">
                   <Plus className="me-1 h-3.5 w-3.5" /> Add first step
@@ -594,8 +726,15 @@ export default function NewWorkflowTemplatePage() {
               </div>
             ) : (
               <div>
-                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                  <SortableContext items={fields.map((f) => f.id)} strategy={verticalListSortingStrategy}>
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleDragEnd}
+                >
+                  <SortableContext
+                    items={fields.map((f) => f.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
                     {fields.map((field, i) => (
                       <div key={field.id}>
                         {i > 0 && <PipelineConnector />}
@@ -632,7 +771,9 @@ export default function NewWorkflowTemplatePage() {
             <div className="atelier-glass flex items-center justify-between rounded-2xl px-5 py-3 shadow-xl">
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2">
-                  <div className={`h-2 w-2 rounded-full transition-colors ${isDirty ? "bg-amber-500" : "bg-emerald-500"}`} />
+                  <div
+                    className={`h-2 w-2 rounded-full transition-colors ${isDirty ? "bg-amber-500" : "bg-emerald-500"}`}
+                  />
                   <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/50">
                     {isDirty ? "Unsaved changes" : "Saved"}
                   </span>
@@ -657,7 +798,9 @@ export default function NewWorkflowTemplatePage() {
                   className="text-xs"
                   disabled={createMutation.isPending}
                 >
-                  {isDirty && <span className="me-1.5 inline-block h-1.5 w-1.5 rounded-full bg-current" />}
+                  {isDirty && (
+                    <span className="me-1.5 inline-block h-1.5 w-1.5 rounded-full bg-current" />
+                  )}
                   <Save className="me-1 h-3.5 w-3.5" />
                   {createMutation.isPending ? "Saving..." : "Save Template"}
                 </Button>

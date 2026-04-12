@@ -27,12 +27,7 @@ export interface ParticipantRegistration {
  */
 export interface ParticipantStatus {
   participantId: string;
-  status:
-    | "pending"
-    | "registered"
-    | "active"
-    | "suspended"
-    | "deregistered";
+  status: "pending" | "registered" | "active" | "suspended" | "deregistered";
 }
 
 /**
@@ -106,24 +101,16 @@ export interface ASPAdapter {
   readonly displayName: string;
 
   /** Register a participant on the Peppol network */
-  registerParticipant(
-    params: RegisterParticipantParams,
-  ): Promise<ParticipantRegistration>;
+  registerParticipant(params: RegisterParticipantParams): Promise<ParticipantRegistration>;
 
   /** Get current status of a registered participant */
-  getParticipantStatus(
-    participantId: string,
-  ): Promise<ParticipantStatus>;
+  getParticipantStatus(participantId: string): Promise<ParticipantStatus>;
 
   /** Transmit an invoice to a receiver via the Peppol network */
-  transmitInvoice(
-    params: TransmitInvoiceParams,
-  ): Promise<TransmissionResult>;
+  transmitInvoice(params: TransmitInvoiceParams): Promise<TransmissionResult>;
 
   /** Get current transmission status */
-  getTransmissionStatus(
-    transmissionId: string,
-  ): Promise<TransmissionStatus>;
+  getTransmissionStatus(transmissionId: string): Promise<TransmissionStatus>;
 
   /** Parse a webhook payload from the ASP */
   parseWebhookPayload(
@@ -132,15 +119,10 @@ export interface ASPAdapter {
   ): Promise<InboundInvoicePayload>;
 
   /** Verify webhook signature authenticity */
-  verifyWebhookSignature(
-    rawBody: string,
-    headers: Record<string, string>,
-  ): WebhookVerification;
+  verifyWebhookSignature(rawBody: string, headers: Record<string, string>): WebhookVerification;
 
   /** Poll for inbound invoices since a given timestamp */
-  pollInboundInvoices(
-    since: Date,
-  ): Promise<InboundInvoicePayload[]>;
+  pollInboundInvoices(since: Date): Promise<InboundInvoicePayload[]>;
 
   /** Check ASP API health */
   checkHealth(): Promise<ASPHealthStatus>;

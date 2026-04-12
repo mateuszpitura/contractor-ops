@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, setup } from "@/test/test-utils";
 import { DocLinksSection } from "../doc-links-section";
 
@@ -61,9 +61,8 @@ let listLoading = false;
 const mockMutate = vi.fn();
 
 vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
-    "@tanstack/react-query",
-  );
+  const actual =
+    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
   return {
     ...actual,
     useQuery: () => ({
@@ -109,16 +108,12 @@ describe("DocLinksSection", () => {
 
   it("renders Attach Document button when not readOnly", () => {
     render(<DocLinksSection workflowTaskRunId="wtr-1" />);
-    expect(
-      screen.getByRole("button", { name: "Attach Document" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Attach Document" })).toBeInTheDocument();
   });
 
   it("does not render Attach Document button in readOnly mode", () => {
     render(<DocLinksSection workflowTaskRunId="wtr-1" readOnly={true} />);
-    expect(
-      screen.queryByRole("button", { name: "Attach Document" }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Attach Document" })).not.toBeInTheDocument();
   });
 
   it("shows empty state when no docs attached", () => {
@@ -141,9 +136,7 @@ describe("DocLinksSection", () => {
   });
 
   it("opens attach dialog when button clicked", async () => {
-    const { user } = setup(
-      <DocLinksSection workflowTaskRunId="wtr-1" />,
-    );
+    const { user } = setup(<DocLinksSection workflowTaskRunId="wtr-1" />);
     await user.click(screen.getByText("Attach Document"));
     expect(screen.getByTestId("attach-dialog")).toBeInTheDocument();
   });
@@ -151,8 +144,6 @@ describe("DocLinksSection", () => {
   it("does not show empty message when docs exist", () => {
     listData = mockDocLinks;
     render(<DocLinksSection workflowTaskRunId="wtr-1" />);
-    expect(
-      screen.queryByText("No documents attached."),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText("No documents attached.")).not.toBeInTheDocument();
   });
 });

@@ -2,9 +2,8 @@ import { render, screen } from "@/test/test-utils";
 import { NotificationPreferences } from "../notification-preferences";
 
 vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
-    "@tanstack/react-query",
-  );
+  const actual =
+    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
   return {
     ...actual,
     useQuery: vi.fn().mockReturnValue({
@@ -42,7 +41,11 @@ describe("NotificationPreferences", () => {
   it("renders heading and description", () => {
     render(<NotificationPreferences />);
     expect(screen.getByText("Notification preferences")).toBeInTheDocument();
-    expect(screen.getByText("Choose how you want to be notified for each event type. In-app notifications are always enabled.")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Choose how you want to be notified for each event type. In-app notifications are always enabled.",
+      ),
+    ).toBeInTheDocument();
   });
 
   it("renders table column headers", () => {

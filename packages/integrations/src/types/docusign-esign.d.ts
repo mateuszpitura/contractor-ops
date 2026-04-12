@@ -19,11 +19,7 @@ declare module "docusign-esign" {
       envelopeId: string,
       opts: { recipientViewRequest: unknown },
     ): Promise<{ url: string }>;
-    getDocument(
-      accountId: string,
-      envelopeId: string,
-      documentId: string,
-    ): Promise<Buffer>;
+    getDocument(accountId: string, envelopeId: string, documentId: string): Promise<Buffer>;
     getEnvelope(
       accountId: string,
       envelopeId: string,
@@ -39,11 +35,7 @@ declare module "docusign-esign" {
         status: string;
       }>;
     }>;
-    update(
-      accountId: string,
-      envelopeId: string,
-      opts: { envelope: unknown },
-    ): Promise<void>;
+    update(accountId: string, envelopeId: string, opts: { envelope: unknown }): Promise<void>;
     updateRecipients(
       accountId: string,
       envelopeId: string,

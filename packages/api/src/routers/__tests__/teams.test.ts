@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -123,9 +123,7 @@ describe("teamsRouter", () => {
         contracts: "ch-contracts",
       });
       // Preserves existing config
-      expect(
-        updateArgs.data.configJson.conversationReferences,
-      ).toEqual({ "aad-1": {} });
+      expect(updateArgs.data.configJson.conversationReferences).toEqual({ "aad-1": {} });
     });
   });
 
@@ -232,9 +230,9 @@ describe("teamsRouter", () => {
         ctx: { organizationId: string };
       }) => Promise<unknown>;
 
-      await expect(
-        handler({ ctx: { organizationId: "org-1" } }),
-      ).rejects.toMatchObject({ code: "NOT_FOUND" });
+      await expect(handler({ ctx: { organizationId: "org-1" } })).rejects.toMatchObject({
+        code: "NOT_FOUND",
+      });
     });
 
     it("returns joined teams when connection exists", async () => {
@@ -304,10 +302,7 @@ describe("teamsRouter", () => {
       const fs = await import("node:fs");
       const path = await import("node:path");
       const sourceDir = path.resolve(import.meta.dirname, "../../routers");
-      const source = fs.readFileSync(
-        path.join(sourceDir, "teams.ts"),
-        "utf-8",
-      );
+      const source = fs.readFileSync(path.join(sourceDir, "teams.ts"), "utf-8");
 
       // Verify import exists
       expect(source).toContain('import { requireTier } from "../middleware/tier.js"');
@@ -324,14 +319,14 @@ describe("teamsRouter", () => {
       const fs = await import("node:fs");
       const path = await import("node:path");
       const sourceDir = path.resolve(import.meta.dirname, "../../routers");
-      const source = fs.readFileSync(
-        path.join(sourceDir, "teams.ts"),
-        "utf-8",
-      );
+      const source = fs.readFileSync(path.join(sourceDir, "teams.ts"), "utf-8");
 
       // Extract each read-only procedure block and verify no requireTier
       for (const proc of ["connectionStatus", "getTeams", "getChannels", "getChannelMapping"]) {
-        const procRegex = new RegExp(`${proc}:\\s*tenantProcedure[\\s\\S]*?(?=\\w+:\\s*tenantProcedure|\\}\\);$)`, "m");
+        const procRegex = new RegExp(
+          `${proc}:\\s*tenantProcedure[\\s\\S]*?(?=\\w+:\\s*tenantProcedure|\\}\\);$)`,
+          "m",
+        );
         const match = source.match(procRegex);
         if (match) {
           expect(match[0]).not.toContain("requireTier");

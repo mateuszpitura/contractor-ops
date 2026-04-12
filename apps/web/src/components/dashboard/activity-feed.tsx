@@ -1,23 +1,16 @@
 "use client";
 
-import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
 import { formatDistanceToNow } from "date-fns";
-
-import { trpc } from "@/trpc/init";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardAction,
-} from "@/components/ui/card";
+import { useTranslations } from "next-intl";
+import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Link } from "@/i18n/navigation";
 import { Bdi } from "@/components/ui/bdi";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Link } from "@/i18n/navigation";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -106,10 +99,8 @@ function groupByDay(items: ActivityItem[]): GroupedActivities[] {
 
   const result: GroupedActivities[] = [];
   if (groups.today.length > 0) result.push({ label: "today", items: groups.today });
-  if (groups.yesterday.length > 0)
-    result.push({ label: "yesterday", items: groups.yesterday });
-  if (groups.earlier.length > 0)
-    result.push({ label: "earlier", items: groups.earlier });
+  if (groups.yesterday.length > 0) result.push({ label: "yesterday", items: groups.yesterday });
+  if (groups.earlier.length > 0) result.push({ label: "earlier", items: groups.earlier });
 
   return result;
 }
@@ -125,26 +116,16 @@ function groupByDay(items: ActivityItem[]): GroupedActivities[] {
  */
 export function ActivityFeed() {
   const t = useTranslations("Dashboard");
-  const { data, isLoading } = useQuery(
-    trpc.dashboard.activity.queryOptions(),
-  );
+  const { data, isLoading } = useQuery(trpc.dashboard.activity.queryOptions());
 
-  const grouped = useMemo(
-    () => groupByDay(data?.items ?? []),
-    [data?.items],
-  );
+  const grouped = useMemo(() => groupByDay(data?.items ?? []), [data?.items]);
 
   return (
     <Card className="neon-card">
       <CardHeader>
-        <CardTitle className="font-display text-lg font-semibold">
-          {t("activity.title")}
-        </CardTitle>
+        <CardTitle className="font-display text-lg font-semibold">{t("activity.title")}</CardTitle>
         <CardAction>
-          <Link
-            href="/settings?tab=audit-log"
-            className="text-sm text-primary hover:underline"
-          >
+          <Link href="/settings?tab=audit-log" className="text-sm text-primary hover:underline">
             {t("activity.seeAll")}
           </Link>
         </CardAction>
@@ -157,9 +138,7 @@ export function ActivityFeed() {
             ))}
           </div>
         ) : grouped.length === 0 ? (
-          <p className="py-8 text-center text-sm text-muted-foreground">
-            {t("activity.empty")}
-          </p>
+          <p className="py-8 text-center text-sm text-muted-foreground">{t("activity.empty")}</p>
         ) : (
           <ScrollArea className="scroll-fade-bottom max-h-[400px]">
             <div className="flex flex-col gap-4">
@@ -170,7 +149,8 @@ export function ActivityFeed() {
                   </p>
                   <div className="flex flex-col gap-1">
                     {group.items.map((item) => {
-                      const accent = RESOURCE_ACCENT[item.resourceType] ?? "border-s-muted-foreground/20";
+                      const accent =
+                        RESOURCE_ACCENT[item.resourceType] ?? "border-s-muted-foreground/20";
                       return (
                         <div
                           key={item.id}
@@ -186,13 +166,14 @@ export function ActivityFeed() {
                           </p>
                           <div className="mt-0.5 flex items-center gap-2">
                             <Badge variant="secondary" className="text-[10px]">
-                              {t(`activity.resources.${item.resourceType}` as Parameters<typeof t>[0])}
+                              {t(
+                                `activity.resources.${item.resourceType}` as Parameters<
+                                  typeof t
+                                >[0],
+                              )}
                             </Badge>
                             <Link
-                              href={getEntityHref(
-                                item.resourceType,
-                                item.resourceId,
-                              )}
+                              href={getEntityHref(item.resourceType, item.resourceId)}
                               className="min-w-0 truncate text-xs text-foreground hover:underline"
                             >
                               <Bdi>{item.resourceName ?? item.resourceId}</Bdi>

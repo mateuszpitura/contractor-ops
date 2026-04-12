@@ -25,12 +25,7 @@ export const invoiceMatchStatusEnum = z.enum([
   "MANUALLY_CONFIRMED",
 ]);
 
-export const invoiceSourceEnum = z.enum([
-  "MANUAL_UPLOAD",
-  "EMAIL_INTAKE",
-  "KSEF",
-  "API",
-]);
+export const invoiceSourceEnum = z.enum(["MANUAL_UPLOAD", "EMAIL_INTAKE", "KSEF", "API"]);
 
 export const invoiceFileRoleEnum = z.enum([
   "SOURCE_ORIGINAL",
@@ -79,10 +74,10 @@ export const invoiceCreateSchema = invoiceCreateBaseSchema
     },
     { message: "Issue date cannot be in the future", path: ["issueDate"] },
   )
-  .refine(
-    (d) => new Date(d.dueDate) >= new Date(d.issueDate),
-    { message: "Due date must be on or after issue date", path: ["dueDate"] },
-  )
+  .refine((d) => new Date(d.dueDate) >= new Date(d.issueDate), {
+    message: "Due date must be on or after issue date",
+    path: ["dueDate"],
+  })
   .refine(
     (d) => {
       if (!d.servicePeriodStart || !d.servicePeriodEnd) return true;
@@ -94,9 +89,7 @@ export const invoiceCreateSchema = invoiceCreateBaseSchema
     },
   )
   .refine(
-    (d) =>
-      d.totalMinor ===
-      d.subtotalMinor + (d.vatAmountMinor ?? 0) - (d.withholdingMinor ?? 0),
+    (d) => d.totalMinor === d.subtotalMinor + (d.vatAmountMinor ?? 0) - (d.withholdingMinor ?? 0),
     {
       message: "INVOICE_AMOUNT_MISMATCH",
       path: ["totalMinor"],
@@ -124,14 +117,7 @@ export const invoiceListSchema = z.object({
   pageSize: z.number().int().min(10).max(100).default(25),
   search: z.string().optional(),
   sortBy: z
-    .enum([
-      "receivedAt",
-      "invoiceNumber",
-      "issueDate",
-      "dueDate",
-      "totalMinor",
-      "status",
-    ])
+    .enum(["receivedAt", "invoiceNumber", "issueDate", "dueDate", "totalMinor", "status"])
     .default("receivedAt"),
   sortOrder: z.enum(["asc", "desc"]).default("desc"),
   filters: z

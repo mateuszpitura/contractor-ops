@@ -48,9 +48,7 @@ describe("ActivityTab", () => {
           status: "ACTIVE",
           createdAt: twoDaysAgo,
           updatedAt: twoDaysAgo,
-          amendments: [
-            { id: "a1", title: "Rate Increase", createdAt: oneHourAgo },
-          ],
+          amendments: [{ id: "a1", title: "Rate Increase", createdAt: oneHourAgo }],
         }}
       />,
     );

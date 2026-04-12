@@ -1,5 +1,6 @@
 import { render, screen, setup } from "@/test/test-utils";
-import { DpdFieldset, type DpdAddress, type ParcelSize } from "../dpd-fieldset";
+import type { DpdAddress, ParcelSize } from "../dpd-fieldset";
+import { DpdFieldset } from "../dpd-fieldset";
 
 function makeProps(overrides: Partial<Parameters<typeof DpdFieldset>[0]> = {}) {
   return {
@@ -42,16 +43,12 @@ describe("DpdFieldset", () => {
     const streetInput = screen.getByRole("textbox", { name: /street/i });
     await user.type(streetInput, "A");
 
-    expect(onAddressChange).toHaveBeenCalledWith(
-      expect.objectContaining({ street: "A" }),
-    );
+    expect(onAddressChange).toHaveBeenCalledWith(expect.objectContaining({ street: "A" }));
   });
 
   it("calls onParcelSizeChange when a radio is clicked", async () => {
     const onParcelSizeChange = vi.fn();
-    const { user } = setup(
-      <DpdFieldset {...makeProps({ onParcelSizeChange })} />,
-    );
+    const { user } = setup(<DpdFieldset {...makeProps({ onParcelSizeChange })} />);
 
     const smallRadio = screen.getByRole("radio", { name: /small/i });
     await user.click(smallRadio);

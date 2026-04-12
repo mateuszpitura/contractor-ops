@@ -96,9 +96,7 @@ describe("DocumentsTab", () => {
     render(
       <DocumentsTab
         contractId="ct1"
-        contractParties={[
-          { name: "Jan", email: "jan@test.com", role: "signer" },
-        ]}
+        contractParties={[{ name: "Jan", email: "jan@test.com", role: "signer" }]}
       />,
     );
     expect(screen.getByTestId("drop-zone")).toBeInTheDocument();

@@ -1,17 +1,14 @@
 "use client";
 
-import { useState, useCallback, useMemo, useEffect } from "react";
+import type { MergedPerson } from "@contractor-ops/validators";
 import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
 import { Users } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
-import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { useTranslations } from "next-intl";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -19,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -27,10 +25,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { trpc } from "@/trpc/init";
 import { ConflictResolutionPopover } from "./conflict-resolution-popover";
 import type { PersonSelection } from "./import-wizard";
-import type { MergedPerson } from "@contractor-ops/validators";
 
 // ---------------------------------------------------------------------------
 // Role options
@@ -142,12 +140,9 @@ export function PeopleReviewStep({
   );
 
   const allSelected =
-    selectableFiltered.length > 0 &&
-    selectableFiltered.every((p) => checkedEmails.has(p.email));
+    selectableFiltered.length > 0 && selectableFiltered.every((p) => checkedEmails.has(p.email));
 
-  const someSelected =
-    !allSelected &&
-    selectableFiltered.some((p) => checkedEmails.has(p.email));
+  const someSelected = !allSelected && selectableFiltered.some((p) => checkedEmails.has(p.email));
 
   const handleSelectAll = useCallback(() => {
     const next = new Set(checkedEmails);
@@ -259,9 +254,7 @@ export function PeopleReviewStep({
       <div className="flex flex-col items-center gap-4 py-16">
         <Users className="size-12 text-muted-foreground" aria-hidden="true" />
         <h3 className="text-lg font-semibold">{t("emptyHeading")}</h3>
-        <p className="max-w-md text-center text-sm text-muted-foreground">
-          {t("emptyBody")}
-        </p>
+        <p className="max-w-md text-center text-sm text-muted-foreground">{t("emptyBody")}</p>
       </div>
     );
   }
@@ -270,9 +263,7 @@ export function PeopleReviewStep({
     <div className="space-y-6">
       {/* Heading */}
       <div>
-        <h2 className="font-display text-xl font-semibold leading-[1.2]">
-          {t("heading")}
-        </h2>
+        <h2 className="font-display text-xl font-semibold leading-[1.2]">{t("heading")}</h2>
         <p className="mt-1 text-sm text-muted-foreground">{t("subtitle")}</p>
       </div>
 
@@ -284,23 +275,27 @@ export function PeopleReviewStep({
           aria-live="polite"
         >
           <span className="text-sm">
-            <span className="font-semibold text-green-600">{counts.new}</span>{" "}
-            {t("summaryNew")}
+            <span className="font-semibold text-green-600">{counts.new}</span> {t("summaryNew")}
           </span>
-          <span className="text-muted-foreground" aria-hidden="true">|</span>
+          <span className="text-muted-foreground" aria-hidden="true">
+            |
+          </span>
           <span className="text-sm">
             <span className="font-semibold text-amber-600">{counts.conflict}</span>{" "}
             {t("summaryConflicts")}
           </span>
-          <span className="text-muted-foreground" aria-hidden="true">|</span>
+          <span className="text-muted-foreground" aria-hidden="true">
+            |
+          </span>
           <span className="text-sm">
             <span className="font-semibold text-blue-600">{counts.exists}</span>{" "}
             {t("summaryExisting")}
           </span>
-          <span className="text-muted-foreground" aria-hidden="true">|</span>
+          <span className="text-muted-foreground" aria-hidden="true">
+            |
+          </span>
           <span className="text-sm">
-            <span className="font-semibold">{counts.total}</span>{" "}
-            {t("summaryTotal")}
+            <span className="font-semibold">{counts.total}</span> {t("summaryTotal")}
           </span>
         </CardContent>
       </Card>
@@ -320,9 +315,7 @@ export function PeopleReviewStep({
             className="flex flex-wrap items-center gap-2 rounded-lg bg-muted/50 px-3 py-2"
             aria-live="polite"
           >
-            <span className="text-sm font-medium">
-              {checkedEmails.size} selected
-            </span>
+            <span className="text-sm font-medium">{checkedEmails.size} selected</span>
             <Button size="sm" onClick={handleBatchImport}>
               {t("batchImport")}
             </Button>
@@ -360,9 +353,7 @@ export function PeopleReviewStep({
                   </TableHead>
                   <TableHead>{t("columnName")}</TableHead>
                   <TableHead>{t("columnEmail")}</TableHead>
-                  <TableHead className="hidden md:table-cell">
-                    {t("columnSources")}
-                  </TableHead>
+                  <TableHead className="hidden md:table-cell">{t("columnSources")}</TableHead>
                   <TableHead>{t("columnStatus")}</TableHead>
                   <TableHead>{t("columnRole")}</TableHead>
                   <TableHead>{t("columnAction")}</TableHead>
@@ -371,10 +362,7 @@ export function PeopleReviewStep({
               <TableBody>
                 {filteredPeople.length === 0 ? (
                   <TableRow>
-                    <TableCell
-                      colSpan={7}
-                      className="h-24 text-center text-muted-foreground"
-                    >
+                    <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
                       {t("emptyHeading")}
                     </TableCell>
                   </TableRow>
@@ -387,24 +375,16 @@ export function PeopleReviewStep({
                     return (
                       <TableRow
                         key={person.email}
-                        className={
-                          isSkipped || isExisting ? "opacity-50" : ""
-                        }
+                        className={isSkipped || isExisting ? "opacity-50" : ""}
                       >
                         {/* Checkbox */}
                         <TableCell>
                           {isExisting ? (
-                            <Checkbox
-                              checked={false}
-                              disabled
-                              aria-hidden="true"
-                            />
+                            <Checkbox checked={false} disabled aria-hidden="true" />
                           ) : (
                             <Checkbox
                               checked={checkedEmails.has(person.email)}
-                              onCheckedChange={() =>
-                                handleRowCheck(person.email)
-                              }
+                              onCheckedChange={() => handleRowCheck(person.email)}
                               aria-label={`Select ${person.name}`}
                             />
                           )}
@@ -413,9 +393,7 @@ export function PeopleReviewStep({
                         {/* Name */}
                         <TableCell>
                           <span
-                            className={`text-sm font-medium ${
-                              isSkipped ? "line-through" : ""
-                            }`}
+                            className={`text-sm font-medium ${isSkipped ? "line-through" : ""}`}
                           >
                             {person.name}
                           </span>
@@ -423,9 +401,7 @@ export function PeopleReviewStep({
 
                         {/* Email */}
                         <TableCell>
-                          <span className="text-sm text-muted-foreground">
-                            {person.email}
-                          </span>
+                          <span className="text-sm text-muted-foreground">{person.email}</span>
                         </TableCell>
 
                         {/* Sources (hidden on mobile) */}
@@ -445,27 +421,17 @@ export function PeopleReviewStep({
 
                         {/* Status */}
                         <TableCell>
-                          {person.status === "new" && (
-                            <Badge variant="success">New</Badge>
-                          )}
+                          {person.status === "new" && <Badge variant="success">New</Badge>}
                           {person.status === "conflict" && (
                             <ConflictResolutionPopover
                               conflicts={person.conflicts ?? []}
-                              resolvedConflicts={
-                                sel?.resolvedConflicts ?? {}
-                              }
+                              resolvedConflicts={sel?.resolvedConflicts ?? {}}
                               onResolve={(field, value) =>
-                                handleResolveConflict(
-                                  person.email,
-                                  field,
-                                  value,
-                                )
+                                handleResolveConflict(person.email, field, value)
                               }
                             />
                           )}
-                          {person.status === "exists" && (
-                            <Badge variant="info">Exists</Badge>
-                          )}
+                          {person.status === "exists" && <Badge variant="info">Exists</Badge>}
                         </TableCell>
 
                         {/* Role */}

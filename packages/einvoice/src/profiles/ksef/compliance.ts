@@ -1,7 +1,4 @@
-import type {
-  ComplianceStatus,
-  ComplianceState,
-} from "../../types/compliance.js";
+import type { ComplianceState, ComplianceStatus } from "../../types/compliance.js";
 
 // ---------------------------------------------------------------------------
 // KSeF Compliance Status
@@ -52,22 +49,15 @@ export function computeKsefComplianceStatus(
 
   let state: ComplianceState;
 
-  if (
-    connection.status === "DISCONNECTED"
-  ) {
+  if (connection.status === "DISCONNECTED") {
     state = "suspended";
-  } else if (
-    connection.status === "ERROR" ||
-    connection.status === "REAUTH_REQUIRED"
-  ) {
+  } else if (connection.status === "ERROR" || connection.status === "REAUTH_REQUIRED") {
     state = "error";
   } else if (isSandbox) {
     state = "sandbox";
   } else {
     // CONNECTED status — check recent sync health
-    const hasRecentErrors = connection.recentSyncStatuses.some(
-      (s) => s === "FAILED",
-    );
+    const hasRecentErrors = connection.recentSyncStatuses.some((s) => s === "FAILED");
     const allFailed =
       connection.recentSyncStatuses.length > 0 &&
       connection.recentSyncStatuses.every((s) => s === "FAILED");
@@ -82,12 +72,9 @@ export function computeKsefComplianceStatus(
   }
 
   // Health score: percentage of recent syncs that succeeded
-  const successCount = connection.recentSyncStatuses.filter(
-    (s) => s === "SUCCESS",
-  ).length;
+  const successCount = connection.recentSyncStatuses.filter((s) => s === "SUCCESS").length;
   const totalSyncs = connection.recentSyncStatuses.length;
-  const healthScore =
-    totalSyncs > 0 ? Math.round((successCount / totalSyncs) * 100) : 0;
+  const healthScore = totalSyncs > 0 ? Math.round((successCount / totalSyncs) * 100) : 0;
 
   return {
     profileId: "ksef",

@@ -1,12 +1,12 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
-  fromMinor,
-  toMinor,
   addMoney,
-  subtractMoney,
-  formatMoney,
   currencyOf,
+  formatMoney,
+  fromMinor,
   minorToDecimalStr,
+  subtractMoney,
+  toMinor,
   toSnapshot,
 } from "../money.js";
 

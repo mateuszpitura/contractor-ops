@@ -106,9 +106,7 @@ describe("OnboardingConsentStep", () => {
   });
 
   it("renders consent toggles for AE org", () => {
-    render(
-      <OnboardingConsentStep orgCountryCode="AE" onComplete={onComplete} />,
-    );
+    render(<OnboardingConsentStep orgCountryCode="AE" onComplete={onComplete} />);
 
     // 3 required + 3 optional = 6 toggles
     expect(screen.getByTestId("toggle-CONTRACTOR_DATA_PROCESSING")).toBeInTheDocument();
@@ -120,34 +118,26 @@ describe("OnboardingConsentStep", () => {
   });
 
   it("renders consent toggles for SA org", () => {
-    render(
-      <OnboardingConsentStep orgCountryCode="SA" onComplete={onComplete} />,
-    );
+    render(<OnboardingConsentStep orgCountryCode="SA" onComplete={onComplete} />);
 
     expect(screen.getByTestId("toggle-CONTRACTOR_DATA_PROCESSING")).toBeInTheDocument();
   });
 
   it("renders privacy notice display for PDPL jurisdiction", () => {
-    render(
-      <OnboardingConsentStep orgCountryCode="AE" onComplete={onComplete} />,
-    );
+    render(<OnboardingConsentStep orgCountryCode="AE" onComplete={onComplete} />);
 
     expect(screen.getByTestId("privacy-notice")).toBeInTheDocument();
   });
 
   it("accept button is disabled when required purposes not granted", () => {
-    render(
-      <OnboardingConsentStep orgCountryCode="AE" onComplete={onComplete} />,
-    );
+    render(<OnboardingConsentStep orgCountryCode="AE" onComplete={onComplete} />);
 
     const acceptBtn = screen.getByRole("button", { name: /acceptAndContinue/i });
     expect(acceptBtn).toBeDisabled();
   });
 
   it("accept button is enabled when all required purposes granted", async () => {
-    const { user } = setup(
-      <OnboardingConsentStep orgCountryCode="AE" onComplete={onComplete} />,
-    );
+    const { user } = setup(<OnboardingConsentStep orgCountryCode="AE" onComplete={onComplete} />);
 
     // Toggle all 3 required purposes
     await user.click(screen.getByTestId("switch-CONTRACTOR_DATA_PROCESSING"));
@@ -159,9 +149,7 @@ describe("OnboardingConsentStep", () => {
   });
 
   it("calls bulkGrant mutation with granted consents on accept", async () => {
-    const { user } = setup(
-      <OnboardingConsentStep orgCountryCode="AE" onComplete={onComplete} />,
-    );
+    const { user } = setup(<OnboardingConsentStep orgCountryCode="AE" onComplete={onComplete} />);
 
     // Toggle all 3 required purposes
     await user.click(screen.getByTestId("switch-CONTRACTOR_DATA_PROCESSING"));
@@ -183,9 +171,7 @@ describe("OnboardingConsentStep", () => {
   });
 
   it("calls onComplete after successful bulkGrant", async () => {
-    const { user } = setup(
-      <OnboardingConsentStep orgCountryCode="AE" onComplete={onComplete} />,
-    );
+    const { user } = setup(<OnboardingConsentStep orgCountryCode="AE" onComplete={onComplete} />);
 
     await user.click(screen.getByTestId("switch-CONTRACTOR_DATA_PROCESSING"));
     await user.click(screen.getByTestId("switch-INVOICE_PAYMENT_PROCESSING"));

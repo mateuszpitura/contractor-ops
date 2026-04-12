@@ -1,5 +1,6 @@
 import { render, screen } from "@/test/test-utils";
-import { getColumns, type ReadyInvoiceRow } from "../columns";
+import type { ReadyInvoiceRow } from "../columns";
+import { getColumns } from "../columns";
 
 function makeRow(overrides: Partial<ReadyInvoiceRow> = {}): ReadyInvoiceRow {
   return {
@@ -50,9 +51,7 @@ describe("getColumns", () => {
 
   it("invoiceNumber column disables hiding", () => {
     const columns = getColumns(t);
-    const invCol = columns.find(
-      (c) => "accessorKey" in c && c.accessorKey === "invoiceNumber",
-    );
+    const invCol = columns.find((c) => "accessorKey" in c && c.accessorKey === "invoiceNumber");
     expect(invCol?.enableHiding).toBe(false);
   });
 
@@ -70,9 +69,12 @@ describe("getColumns cell renderers (invoice selection)", () => {
   });
 
   it("contractor cell renders legalName", () => {
-    renderCell("contractor", makeRow({
-      contractor: { id: "c-1", legalName: "Test Corp", taxId: "123" },
-    }));
+    renderCell(
+      "contractor",
+      makeRow({
+        contractor: { id: "c-1", legalName: "Test Corp", taxId: "123" },
+      }),
+    );
     expect(screen.getByText("Test Corp")).toBeInTheDocument();
   });
 
@@ -82,16 +84,22 @@ describe("getColumns cell renderers (invoice selection)", () => {
   });
 
   it("contractor cell shows Missing IBAN badge when bankAccountMasked is null", () => {
-    renderCell("contractor", makeRow({
-      billingProfile: { id: "bp-1", bankAccountMasked: null, preferredCurrency: "PLN" },
-    }));
+    renderCell(
+      "contractor",
+      makeRow({
+        billingProfile: { id: "bp-1", bankAccountMasked: null, preferredCurrency: "PLN" },
+      }),
+    );
     expect(screen.getByText("Missing IBAN")).toBeInTheDocument();
   });
 
   it("contractor cell does NOT show Missing IBAN when bankAccountMasked is present", () => {
-    renderCell("contractor", makeRow({
-      billingProfile: { id: "bp-1", bankAccountMasked: "****1234", preferredCurrency: "PLN" },
-    }));
+    renderCell(
+      "contractor",
+      makeRow({
+        billingProfile: { id: "bp-1", bankAccountMasked: "****1234", preferredCurrency: "PLN" },
+      }),
+    );
     expect(screen.queryByText("Missing IBAN")).not.toBeInTheDocument();
   });
 

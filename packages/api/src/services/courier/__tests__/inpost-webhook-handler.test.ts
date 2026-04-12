@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { mockCheckShipmentTaskCompletion } = vi.hoisted(() => ({
   mockCheckShipmentTaskCompletion: vi.fn().mockResolvedValue(undefined),
@@ -7,10 +7,7 @@ vi.mock("../../equipment-workflow", () => ({
   checkShipmentTaskCompletion: mockCheckShipmentTaskCompletion,
 }));
 
-import {
-  handleInPostWebhook,
-  verifyInPostSignature,
-} from "../inpost-webhook-handler";
+import { handleInPostWebhook, verifyInPostSignature } from "../inpost-webhook-handler";
 
 // ---------------------------------------------------------------------------
 // InPost Webhook Handler Tests
@@ -38,14 +35,15 @@ describe("verifyInPostSignature", () => {
     const crypto = require("crypto");
     const secret = "test-secret-123";
     const rawBody = '{"shipment_id":"12345","status":"delivered"}';
-    const expectedSignature = crypto
-      .createHmac("sha256", secret)
-      .update(rawBody)
-      .digest("hex");
+    const expectedSignature = crypto.createHmac("sha256", secret).update(rawBody).digest("hex");
 
-    const result = verifyInPostSignature(rawBody, {
-      "x-inpost-signature": expectedSignature,
-    }, secret);
+    const result = verifyInPostSignature(
+      rawBody,
+      {
+        "x-inpost-signature": expectedSignature,
+      },
+      secret,
+    );
 
     expect(result).toBe(true);
   });

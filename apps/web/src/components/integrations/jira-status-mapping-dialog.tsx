@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, Loader2 } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -14,6 +13,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
   SelectContent,
@@ -29,15 +30,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -80,9 +74,7 @@ export function JiraStatusMappingDialog({
   connectionId,
 }: JiraStatusMappingDialogProps) {
   const queryClient = useQueryClient();
-  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
-    null,
-  );
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [mappings, setMappings] = useState<MappingEntry[]>([]);
   const [initialMappings, setInitialMappings] = useState<MappingEntry[]>([]);
 
@@ -171,18 +163,13 @@ export function JiraStatusMappingDialog({
     if (!jiraStatus) return;
 
     setMappings((prev) => {
-      const existing = prev.findIndex(
-        (m) => m.workflowStatus === workflowStatus,
-      );
+      const existing = prev.findIndex((m) => m.workflowStatus === workflowStatus);
       const entry: MappingEntry = {
         workflowStatus,
         jiraTransitionId: jiraStatus.id,
         jiraTransitionName: jiraStatus.name,
         jiraTargetStatusName: jiraStatus.name,
-        jiraTargetStatusCategory: jiraStatus.statusCategory.key as
-          | "new"
-          | "indeterminate"
-          | "done",
+        jiraTargetStatusCategory: jiraStatus.statusCategory.key as "new" | "indeterminate" | "done",
       };
       if (existing >= 0) {
         const next = [...prev];
@@ -203,8 +190,7 @@ export function JiraStatusMappingDialog({
   }
 
   function getMappedJiraStatusId(workflowStatus: string): string | undefined {
-    return mappings.find((m) => m.workflowStatus === workflowStatus)
-      ?.jiraTransitionId;
+    return mappings.find((m) => m.workflowStatus === workflowStatus)?.jiraTransitionId;
   }
 
   return (
@@ -227,9 +213,7 @@ export function JiraStatusMappingDialog({
           >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Select a project">
-                {projectsQuery.isLoading && (
-                  <Loader2 className="size-3.5 animate-spin" />
-                )}
+                {projectsQuery.isLoading && <Loader2 className="size-3.5 animate-spin" />}
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
@@ -261,9 +245,7 @@ export function JiraStatusMappingDialog({
                     <TableRow key={ws.value}>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium">
-                            {ws.label}
-                          </span>
+                          <span className="text-sm font-medium">{ws.label}</span>
                           {isUnmapped && (
                             <TooltipProvider>
                               <Tooltip>
@@ -271,8 +253,7 @@ export function JiraStatusMappingDialog({
                                   <AlertTriangle className="size-3.5 text-warning" />
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                  Not mapped — status changes for this state
-                                  will be ignored
+                                  Not mapped — status changes for this state will be ignored
                                 </TooltipContent>
                               </Tooltip>
                             </TooltipProvider>
@@ -285,9 +266,7 @@ export function JiraStatusMappingDialog({
                         ) : (
                           <Select
                             value={mappedId ?? undefined}
-                            onValueChange={(v) =>
-                              handleStatusSelect(ws.value, v as string)
-                            }
+                            onValueChange={(v) => handleStatusSelect(ws.value, v as string)}
                           >
                             <SelectTrigger className="w-full">
                               <SelectValue placeholder="Not mapped" />
@@ -318,9 +297,7 @@ export function JiraStatusMappingDialog({
             onClick={handleSave}
             disabled={!hasChanges || saveMutation.isPending || !selectedProjectId}
           >
-            {saveMutation.isPending && (
-              <Loader2 className="me-1.5 size-3.5 animate-spin" />
-            )}
+            {saveMutation.isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
             Save Mapping
           </Button>
         </DialogFooter>

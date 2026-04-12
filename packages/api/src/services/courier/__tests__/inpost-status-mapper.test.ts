@@ -1,10 +1,6 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
-import {
-  INPOST_STATUS_MAP,
-  mapInPostStatus,
-  NOTIFICATION_STATUSES,
-} from "../inpost-status-mapper";
+import { INPOST_STATUS_MAP, mapInPostStatus, NOTIFICATION_STATUSES } from "../inpost-status-mapper";
 
 // ---------------------------------------------------------------------------
 // InPost Status Mapper Tests
@@ -52,12 +48,9 @@ describe("INPOST_STATUS_MAP", () => {
     ["not_delivered", "FAILED"],
   ];
 
-  it.each(expectedMappings)(
-    "maps %s to %s",
-    (shipxStatus, expected) => {
-      expect(INPOST_STATUS_MAP[shipxStatus]).toBe(expected);
-    },
-  );
+  it.each(expectedMappings)("maps %s to %s", (shipxStatus, expected) => {
+    expect(INPOST_STATUS_MAP[shipxStatus]).toBe(expected);
+  });
 });
 
 describe("mapInPostStatus", () => {
@@ -72,9 +65,7 @@ describe("mapInPostStatus", () => {
     const result = mapInPostStatus("some_unknown_status");
 
     expect(result).toBeNull();
-    expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining("some_unknown_status"),
-    );
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("some_unknown_status"));
 
     warnSpy.mockRestore();
   });

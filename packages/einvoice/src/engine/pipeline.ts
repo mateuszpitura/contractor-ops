@@ -3,7 +3,7 @@
 // ---------------------------------------------------------------------------
 
 import type { EInvoice } from "../types/invoice.js";
-import type { EInvoiceProfile, CertificateInfo } from "../types/profile.js";
+import type { CertificateInfo, EInvoiceProfile } from "../types/profile.js";
 import type { ValidationResult } from "../types/validation.js";
 
 /**
@@ -93,8 +93,7 @@ export async function runPipeline(
     if (!options?.certificate) {
       validation.warnings.push({
         code: "SIGN_SKIPPED",
-        message:
-          "Profile supports signing but no certificate provided",
+        message: "Profile supports signing but no certificate provided",
         severity: "warning",
       });
     } else {

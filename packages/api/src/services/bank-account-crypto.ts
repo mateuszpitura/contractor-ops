@@ -1,8 +1,4 @@
-import {
-  createCipheriv,
-  createDecipheriv,
-  randomBytes,
-} from "node:crypto";
+import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 
 // ---------------------------------------------------------------------------
 // AES-256-GCM Bank Account Number Encryption
@@ -47,9 +43,7 @@ export function encryptBankAccount(accountNumber: string): string {
 export function decryptBankAccount(encrypted: string): string {
   const parts = encrypted.split(":");
   if (parts.length !== 3) {
-    throw new Error(
-      "Invalid encrypted bank account format. Expected iv:authTag:ciphertext",
-    );
+    throw new Error("Invalid encrypted bank account format. Expected iv:authTag:ciphertext");
   }
 
   const [ivHex, authTagHex, ciphertext] = parts as [string, string, string];

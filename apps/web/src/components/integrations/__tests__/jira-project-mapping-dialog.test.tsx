@@ -1,37 +1,32 @@
-import { render, screen, setup } from "@/test/test-utils";
 import { useQuery } from "@tanstack/react-query";
+import { render, screen, setup } from "@/test/test-utils";
 import { JiraProjectMappingDialog } from "../jira-project-mapping-dialog";
 
 vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
-    "@tanstack/react-query",
-  );
+  const actual =
+    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
   const emptyList: never[] = [];
   return {
     ...actual,
-    useQuery: vi.fn().mockImplementation(
-      (opts: { queryKey?: unknown[]; enabled?: boolean }) => {
-        if (opts?.enabled === false) {
-          return { isLoading: false, data: undefined };
-        }
-        const qk = opts?.queryKey;
-        const procedure =
-          Array.isArray(qk) && qk[0] === "jira" && typeof qk[1] === "string"
-            ? qk[1]
-            : undefined;
-        if (procedure === "getTaskConfig") {
-          return { isLoading: false, data: undefined };
-        }
-        if (
-          procedure === "listProjects" ||
-          procedure === "listIssueTypes" ||
-          procedure === "listProjectStatuses"
-        ) {
-          return { isLoading: false, data: emptyList };
-        }
+    useQuery: vi.fn().mockImplementation((opts: { queryKey?: unknown[]; enabled?: boolean }) => {
+      if (opts?.enabled === false) {
         return { isLoading: false, data: undefined };
-      },
-    ),
+      }
+      const qk = opts?.queryKey;
+      const procedure =
+        Array.isArray(qk) && qk[0] === "jira" && typeof qk[1] === "string" ? qk[1] : undefined;
+      if (procedure === "getTaskConfig") {
+        return { isLoading: false, data: undefined };
+      }
+      if (
+        procedure === "listProjects" ||
+        procedure === "listIssueTypes" ||
+        procedure === "listProjectStatuses"
+      ) {
+        return { isLoading: false, data: emptyList };
+      }
+      return { isLoading: false, data: undefined };
+    }),
     useMutation: () => ({ mutate: vi.fn(), isPending: false }),
     useQueryClient: () => ({ invalidateQueries: vi.fn() }),
   };
@@ -45,7 +40,9 @@ vi.mock("@/trpc/init", () => ({
         queryKey: vi.fn(() => ["jira", "getTaskConfig"]),
       },
       listProjects: { queryOptions: vi.fn(() => ({ queryKey: ["jira", "listProjects"] })) },
-      listIssueTypes: { queryOptions: vi.fn(() => ({ queryKey: ["jira", "listIssueTypes"], enabled: false })) },
+      listIssueTypes: {
+        queryOptions: vi.fn(() => ({ queryKey: ["jira", "listIssueTypes"], enabled: false })),
+      },
       saveTaskConfig: { mutationOptions: vi.fn(() => ({})) },
     },
   },
@@ -72,9 +69,7 @@ function setupWithProjects() {
     }
     const qk = opts?.queryKey;
     const procedure =
-      Array.isArray(qk) && qk[0] === "jira" && typeof qk[1] === "string"
-        ? qk[1]
-        : undefined;
+      Array.isArray(qk) && qk[0] === "jira" && typeof qk[1] === "string" ? qk[1] : undefined;
     if (procedure === "getTaskConfig") {
       return { isLoading: false, data: undefined } as any;
     }
@@ -122,9 +117,7 @@ describe("JiraProjectMappingDialog", () => {
         connectionId="conn-1"
       />,
     );
-    expect(
-      screen.getByText("Map this task to a Jira project and issue type."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Map this task to a Jira project and issue type.")).toBeInTheDocument();
   });
 
   it("renders save and discard buttons", () => {
@@ -194,9 +187,7 @@ describe("JiraProjectMappingDialog", () => {
       />,
     );
     const triggers = screen.getAllByRole("combobox");
-    const issueTypeTrigger = triggers.find((t) =>
-      t.textContent?.includes("Select an issue type"),
-    );
+    const issueTypeTrigger = triggers.find((t) => t.textContent?.includes("Select an issue type"));
     if (issueTypeTrigger) {
       expect(issueTypeTrigger).toBeDisabled();
     }
@@ -215,9 +206,7 @@ describe("JiraProjectMappingDialog", () => {
         connectionId="conn-1"
       />,
     );
-    expect(
-      screen.getByText("Create Jira issue when task activates"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Create Jira issue when task activates")).toBeInTheDocument();
   });
 
   it("renders switch for auto-create", () => {
@@ -344,9 +333,7 @@ describe("JiraProjectMappingDialog", () => {
       />,
     );
     expect(screen.getByText("Configure Jira Integration")).toBeInTheDocument();
-    expect(
-      screen.getByText("Map this task to a Jira project and issue type."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Map this task to a Jira project and issue type.")).toBeInTheDocument();
   });
 
   it("does not render any form elements when closed", () => {
@@ -425,9 +412,7 @@ describe("JiraProjectMappingDialog", () => {
     mockedUseQuery.mockImplementation((opts: any) => {
       const qk = opts?.queryKey;
       const procedure =
-        Array.isArray(qk) && qk[0] === "jira" && typeof qk[1] === "string"
-          ? qk[1]
-          : undefined;
+        Array.isArray(qk) && qk[0] === "jira" && typeof qk[1] === "string" ? qk[1] : undefined;
       if (procedure === "getTaskConfig") {
         return { isLoading: false, data: existingConfig } as any;
       }

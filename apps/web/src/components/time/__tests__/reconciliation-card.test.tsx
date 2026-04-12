@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { render, screen } from "@/test/test-utils";
 import { ReconciliationCard } from "../reconciliation-card";
 
@@ -46,9 +46,7 @@ describe("ReconciliationCard", () => {
   });
 
   it("applies green border for within-threshold deviation", () => {
-    const { container } = render(
-      <ReconciliationCard reconciliation={baseReconciliation} />,
-    );
+    const { container } = render(<ReconciliationCard reconciliation={baseReconciliation} />);
     const card = container.querySelector("[data-slot='card']") ?? container.firstElementChild;
     expect(card?.className).toContain("green");
   });

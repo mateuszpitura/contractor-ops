@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -44,17 +44,13 @@ vi.mock("@contractor-ops/integrations", () => {
       },
       lines: [{ description: "Service", netGrosze: 8130, vatGrosze: 1870 }],
     }),
-    decryptCredentials: vi
-      .fn()
-      .mockReturnValue({ accessToken: "token" }),
+    decryptCredentials: vi.fn().mockReturnValue({ accessToken: "token" }),
   };
 });
 
 vi.mock("@contractor-ops/validators", () => ({
   ksefConnectionConfigSchema: {
-    parse: vi
-      .fn()
-      .mockReturnValue({ environment: "prod", authMethod: "token" }),
+    parse: vi.fn().mockReturnValue({ environment: "prod", authMethod: "token" }),
   },
 }));
 
@@ -64,9 +60,7 @@ vi.mock("../invoice-matching.js", () => ({
 }));
 
 vi.mock("../ksef-duplicate-detection.js", () => ({
-  checkCrossSourceDuplicate: vi
-    .fn()
-    .mockResolvedValue({ isDuplicate: false }),
+  checkCrossSourceDuplicate: vi.fn().mockResolvedValue({ isDuplicate: false }),
   linkDuplicateInvoices: vi.fn(),
 }));
 
@@ -77,8 +71,8 @@ vi.mock("../notification-service.js", () => ({ dispatch: vi.fn() }));
 // ---------------------------------------------------------------------------
 
 import { prisma } from "@contractor-ops/db";
-import { dispatch } from "../notification-service.js";
 import { processKsefSync } from "../ksef-sync-orchestrator.js";
+import { dispatch } from "../notification-service.js";
 
 // ---------------------------------------------------------------------------
 // Typed mock handles
@@ -137,11 +131,13 @@ function invoiceMetadata(ref: string) {
   return { ksefReferenceNumber: ref };
 }
 
-function setupSuccessfulSync(overrides: {
-  connection?: Record<string, unknown>;
-  invoiceRefs?: string[];
-  alreadyExists?: boolean;
-} = {}) {
+function setupSuccessfulSync(
+  overrides: {
+    connection?: Record<string, unknown>;
+    invoiceRefs?: string[];
+    alreadyExists?: boolean;
+  } = {},
+) {
   const conn = makeConnection(overrides.connection);
   const refs = overrides.invoiceRefs ?? ["ref-001"];
 
@@ -152,9 +148,7 @@ function setupSuccessfulSync(overrides: {
     invoiceMetadataList: refs.map(invoiceMetadata),
   });
   mockKsefClient.downloadInvoiceXml.mockResolvedValue("<xml/>");
-  db.invoice.findFirst.mockResolvedValue(
-    overrides.alreadyExists ? { id: "existing-inv" } : null,
-  );
+  db.invoice.findFirst.mockResolvedValue(overrides.alreadyExists ? { id: "existing-inv" } : null);
   db.invoice.create.mockResolvedValue({ id: "inv-1" });
   db.integrationConnection.update.mockResolvedValue({});
   db.integrationSyncLog.update.mockResolvedValue({});
@@ -218,9 +212,7 @@ describe("processKsefSync", () => {
     await processKsefSync({ organizationId: ORG_ID, connectionId: CONN_ID });
 
     // downloadInvoiceXml is called with the ksefReferenceNumber
-    expect(mockKsefClient.downloadInvoiceXml).toHaveBeenCalledWith(
-      "KSEF-UPO-456",
-    );
+    expect(mockKsefClient.downloadInvoiceXml).toHaveBeenCalledWith("KSEF-UPO-456");
   });
 
   it("dispatches KSEF_SYNC_COMPLETE notification when invoices found", async () => {
@@ -301,17 +293,13 @@ describe("processKsefSync", () => {
 
     const updateCall = db.integrationConnection.update.mock.calls[0]![0];
     expect(updateCall.data.status).toBe("ERROR");
-    expect(updateCall.data.lastErrorMessage).toContain(
-      "DB constraint violation",
-    );
+    expect(updateCall.data.lastErrorMessage).toContain("DB constraint violation");
   });
 
   it("terminates KSeF session in finally block even on error", async () => {
     setupSuccessfulSync();
     // Throw AFTER the client is constructed and authenticated (step 5: queryInvoices)
-    mockKsefClient.queryInvoices.mockRejectedValue(
-      new Error("KSeF API unavailable"),
-    );
+    mockKsefClient.queryInvoices.mockRejectedValue(new Error("KSeF API unavailable"));
 
     await expect(
       processKsefSync({ organizationId: ORG_ID, connectionId: CONN_ID }),
@@ -323,9 +311,7 @@ describe("processKsefSync", () => {
 
   it("updates sync log to FAILED on unhandled error", async () => {
     setupSuccessfulSync();
-    db.organization.findUniqueOrThrow.mockRejectedValue(
-      new Error("unexpected failure"),
-    );
+    db.organization.findUniqueOrThrow.mockRejectedValue(new Error("unexpected failure"));
 
     await expect(
       processKsefSync({ organizationId: ORG_ID, connectionId: CONN_ID }),

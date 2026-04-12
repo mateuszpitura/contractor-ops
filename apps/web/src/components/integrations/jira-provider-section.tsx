@@ -1,15 +1,14 @@
 "use client";
 
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
+import { useState } from "react";
 import { FeatureGate } from "@/components/billing/feature-gate";
 import { ProviderConnectionCard } from "@/components/settings/provider-connection-card";
+import { Button } from "@/components/ui/button";
+import { trpc } from "@/trpc/init";
 import { JiraLogo } from "./jira-logo";
 import { JiraStatusMappingDialog } from "./jira-status-mapping-dialog";
-import { Button } from "@/components/ui/button";
 
 // ---------------------------------------------------------------------------
 // JiraProviderSection
@@ -44,18 +43,13 @@ export function JiraProviderSection() {
           <div className="flex items-center gap-2 rounded-md border border-warning/50 bg-warning/10 p-3">
             <AlertTriangle className="size-4 text-warning" />
             <span className="text-sm text-warning">
-              Re-auth required — new scopes needed for issue creation and
-              webhooks.
+              Re-auth required — new scopes needed for issue creation and webhooks.
             </span>
           </div>
         )}
 
         {isConnected && !connection?.scopeExpansionNeeded && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setMappingDialogOpen(true)}
-          >
+          <Button variant="outline" size="sm" onClick={() => setMappingDialogOpen(true)}>
             Configure Status Mapping
           </Button>
         )}

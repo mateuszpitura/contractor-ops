@@ -1,9 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { Cloud, TestTube } from "lucide-react";
-
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,6 +12,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -100,20 +99,14 @@ export function EnvironmentToggle({
           {/* Production */}
           <label
             className={`relative flex items-start gap-3 rounded-lg border-2 p-4 transition-all ${
-              !productionReady
-                ? "cursor-not-allowed opacity-60"
-                : "cursor-pointer"
+              !productionReady ? "cursor-not-allowed opacity-60" : "cursor-pointer"
             } ${
               value === "production"
                 ? "border-primary ring-2 ring-primary/20"
                 : "border-border hover:border-muted-foreground/30"
             }`}
           >
-            <RadioGroupItem
-              value="production"
-              className="mt-0.5"
-              disabled={!productionReady}
-            />
+            <RadioGroupItem value="production" className="mt-0.5" disabled={!productionReady} />
             <div className="space-y-1">
               <div className="flex items-center gap-1.5">
                 <Cloud className="h-4 w-4 text-green-600" aria-hidden="true" />
@@ -138,8 +131,8 @@ export function EnvironmentToggle({
           <AlertDialogHeader>
             <AlertDialogTitle>Switch to Sandbox</AlertDialogTitle>
             <AlertDialogDescription>
-              Switch to Sandbox: Production submissions will pause. Pending
-              invoices will remain queued. Continue?
+              Switch to Sandbox: Production submissions will pause. Pending invoices will remain
+              queued. Continue?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

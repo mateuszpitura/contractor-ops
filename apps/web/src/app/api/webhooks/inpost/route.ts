@@ -1,10 +1,10 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import { prisma } from "@contractor-ops/db";
 import {
   handleInPostWebhook,
   verifyInPostSignature,
 } from "@contractor-ops/api/services/courier/inpost-webhook-handler";
+import { prisma } from "@contractor-ops/db";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 // ---------------------------------------------------------------------------
 // POST /api/webhooks/inpost
@@ -76,10 +76,7 @@ export async function POST(request: NextRequest) {
     try {
       payload = JSON.parse(rawBody);
     } catch {
-      return NextResponse.json(
-        { error: "Invalid JSON body" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
     }
 
     // Try to match shipment by externalId or trackingNumber
@@ -110,10 +107,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!matchedOrgId) {
-      return NextResponse.json(
-        { error: "Invalid signature" },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }
   }
 
@@ -122,18 +116,12 @@ export async function POST(request: NextRequest) {
   try {
     payload = JSON.parse(rawBody);
   } catch {
-    return NextResponse.json(
-      { error: "Invalid JSON body" },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
   // Fire-and-forget: process webhook event
   void handleInPostWebhook(prisma, matchedOrgId, payload).catch((err) =>
-    console.error(
-      `[inpost-webhook] Processing failed for org=${matchedOrgId}:`,
-      err,
-    ),
+    console.error(`[inpost-webhook] Processing failed for org=${matchedOrgId}:`, err),
   );
 
   return NextResponse.json({ received: true });

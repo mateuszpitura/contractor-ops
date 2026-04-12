@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, setup } from "@/test/test-utils";
 import { VersionHistory } from "../version-history";
 
@@ -32,17 +32,13 @@ describe("VersionHistory", () => {
 
   it("renders collapsed toggle button initially", () => {
     render(<VersionHistory documentId="doc-1" />);
-    expect(
-      screen.getByText("View version history"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("View version history")).toBeInTheDocument();
   });
 
   it("expands on click and shows no other versions", async () => {
     const { user } = setup(<VersionHistory documentId="doc-1" />);
     await user.click(screen.getByText("View version history"));
-    expect(
-      screen.getByText("No other versions"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("No other versions")).toBeInTheDocument();
   });
 
   it("shows loading text when fetching history", async () => {
@@ -83,8 +79,6 @@ describe("VersionHistory", () => {
     await user.click(screen.getByText("View version history"));
     expect(screen.getByText("No other versions")).toBeInTheDocument();
     await user.click(screen.getByText("View version history"));
-    expect(
-      screen.queryByText("No other versions"),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText("No other versions")).not.toBeInTheDocument();
   });
 });

@@ -1,5 +1,5 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { render, screen, setup } from "@/test/test-utils";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ExpiryReminderDefaults } from "../expiry-reminder-defaults";
 
 // ---------------------------------------------------------------------------
@@ -19,9 +19,8 @@ vi.mock("next-intl", async (importOriginal) => {
 });
 
 vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
-    "@tanstack/react-query",
-  );
+  const actual =
+    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
   return {
     ...actual,
     useQuery: vi.fn(),

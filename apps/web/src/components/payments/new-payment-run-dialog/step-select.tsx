@@ -1,15 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
 import type { RowSelectionState } from "@tanstack/react-table";
-import { FileSearch } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
+import { CalendarIcon, FileSearch } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -18,18 +18,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
-
-import {
-  getColumns,
-  type ReadyInvoiceRow,
-} from "../invoice-selection-table/columns";
+import { trpc } from "@/trpc/init";
+import type { ReadyInvoiceRow } from "../invoice-selection-table/columns";
+import { getColumns } from "../invoice-selection-table/columns";
 import { InvoiceSelectionDataTable } from "../invoice-selection-table/data-table";
 
 // ---------------------------------------------------------------------------
@@ -87,9 +78,7 @@ export function StepSelect({
     [currency, dueDateFrom, dueDateTo],
   );
 
-  const invoicesQuery = useQuery(
-    trpc.payment.readyForPayment.queryOptions(queryInput),
-  );
+  const invoicesQuery = useQuery(trpc.payment.readyForPayment.queryOptions(queryInput));
 
   const allInvoices = useMemo(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -102,8 +91,7 @@ export function StepSelect({
     if (!debouncedSearch) return allInvoices;
     const lower = debouncedSearch.toLowerCase();
     return allInvoices.filter(
-      (inv) =>
-        inv.contractor?.legalName?.toLowerCase().includes(lower) ?? false,
+      (inv) => inv.contractor?.legalName?.toLowerCase().includes(lower) ?? false,
     );
   }, [allInvoices, debouncedSearch]);
 
@@ -129,9 +117,7 @@ export function StepSelect({
 
   // Select all matching
   const handleSelectAllMatching = useCallback(() => {
-    const ids = filteredInvoices
-      .filter((inv) => !inv._inRunNumber)
-      .map((inv) => inv.id);
+    const ids = filteredInvoices.filter((inv) => !inv._inRunNumber).map((inv) => inv.id);
     onSelectionChange(ids);
   }, [filteredInvoices, onSelectionChange]);
 
@@ -150,8 +136,7 @@ export function StepSelect({
   const selectionSummary = useMemo(() => {
     const byCurrency: Record<string, number> = {};
     for (const inv of selectedInvoices) {
-      byCurrency[inv.currency] =
-        (byCurrency[inv.currency] ?? 0) + inv.amountToPayMinor;
+      byCurrency[inv.currency] = (byCurrency[inv.currency] ?? 0) + inv.amountToPayMinor;
     }
     return byCurrency;
   }, [selectedInvoices]);
@@ -177,11 +162,7 @@ export function StepSelect({
         </Select>
 
         <Popover>
-          <PopoverTrigger
-            render={
-              <Button variant="outline" size="sm" className="h-8 gap-1.5" />
-            }
-          >
+          <PopoverTrigger render={<Button variant="outline" size="sm" className="h-8 gap-1.5" />}>
             <CalendarIcon className="h-3.5 w-3.5" />
             <span className="text-xs">
               {dueDateFrom
@@ -192,9 +173,7 @@ export function StepSelect({
           <PopoverContent className="w-auto p-0" align="start">
             <div className="flex gap-2 p-3">
               <div>
-                <p className="text-xs font-medium mb-2 text-muted-foreground">
-                  From
-                </p>
+                <p className="text-xs font-medium mb-2 text-muted-foreground">From</p>
                 <Calendar
                   mode="single"
                   selected={dueDateFrom}
@@ -203,14 +182,8 @@ export function StepSelect({
                 />
               </div>
               <div>
-                <p className="text-xs font-medium mb-2 text-muted-foreground">
-                  To
-                </p>
-                <Calendar
-                  mode="single"
-                  selected={dueDateTo}
-                  onSelect={setDueDateTo}
-                />
+                <p className="text-xs font-medium mb-2 text-muted-foreground">To</p>
+                <Calendar mode="single" selected={dueDateTo} onSelect={setDueDateTo} />
               </div>
             </div>
           </PopoverContent>
@@ -232,7 +205,8 @@ export function StepSelect({
             className="text-xs text-primary hover:underline"
             onClick={handleSelectAllMatching}
           >
-            {t("step1.selectAllMatching")} ({filteredInvoices.filter((i) => !i._inRunNumber).length})
+            {t("step1.selectAllMatching")} ({filteredInvoices.filter((i) => !i._inRunNumber).length}
+            )
           </button>
         </div>
       )}
@@ -241,9 +215,7 @@ export function StepSelect({
       {isEmpty ? (
         <div className="flex flex-col items-center justify-center py-12">
           <FileSearch className="h-12 w-12 text-muted-foreground/50" />
-          <h3 className="mt-4 text-[16px] font-medium">
-            {t("step1.noInvoicesHeading")}
-          </h3>
+          <h3 className="mt-4 text-[16px] font-medium">{t("step1.noInvoicesHeading")}</h3>
           <p className="mt-1 max-w-sm text-center text-sm text-muted-foreground">
             {t("step1.noInvoicesBody")}
           </p>
@@ -302,10 +274,7 @@ export function StepSelect({
           <Button variant="ghost" onClick={onCancel}>
             {t("step1.cancel")}
           </Button>
-          <Button
-            onClick={onNext}
-            disabled={selectedInvoiceIds.length === 0}
-          >
+          <Button onClick={onNext} disabled={selectedInvoiceIds.length === 0}>
             {t("step1.reviewSelection")}
           </Button>
         </div>

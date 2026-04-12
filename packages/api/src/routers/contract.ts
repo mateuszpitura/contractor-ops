@@ -1,18 +1,18 @@
-import { z } from "zod";
-import { TRPCError } from "@trpc/server";
 import { prisma } from "@contractor-ops/db";
 import {
+  amendmentCreateSchema,
   contractCreateSchema,
-  contractUpdateSchema,
+  contractExpiryReminderSchema,
   contractListSchema,
   contractStatusTransitionSchema,
-  amendmentCreateSchema,
-  contractExpiryReminderSchema,
+  contractUpdateSchema,
 } from "@contractor-ops/validators";
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 import * as E from "../errors.js";
 import { router } from "../init.js";
-import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
+import { tenantProcedure } from "../middleware/tenant.js";
 import { syncContractExpiryDeadline } from "../services/calendar-deadline-sync.js";
 import { deleteCalendarEvent } from "../services/calendar-event-service.js";
 
@@ -96,9 +96,7 @@ export const contractRouter = router({
           contractorName: contract.contractor?.displayName ?? "Unknown",
           expiryDate: contract.endDate,
           userId: ctx.user!.id,
-        }).catch((err) =>
-          console.error("[contract] calendar sync on create failed:", err),
-        );
+        }).catch((err) => console.error("[contract] calendar sync on create failed:", err));
       }
 
       return plain(contract);
@@ -215,18 +213,14 @@ export const contractRouter = router({
           contractorName: contractor?.displayName ?? "Unknown",
           expiryDate: updated.endDate,
           userId: ctx.user!.id,
-        }).catch((err) =>
-          console.error("[contract] calendar sync on update failed:", err),
-        );
+        }).catch((err) => console.error("[contract] calendar sync on update failed:", err));
       } else if (!updated.endDate && existing.endDate) {
         // endDate was cleared -- delete calendar event (D-08)
         void deleteCalendarEvent(prisma, {
           organizationId: ctx.organizationId,
           entityType: "CONTRACT",
           entityId: updated.id,
-        }).catch((err) =>
-          console.error("[contract] calendar event cleanup failed:", err),
-        );
+        }).catch((err) => console.error("[contract] calendar event cleanup failed:", err));
       }
 
       return plain(updated);
@@ -239,8 +233,7 @@ export const contractRouter = router({
     .use(requirePermission({ contract: ["read"] }))
     .input(contractListSchema)
     .query(async ({ ctx, input }) => {
-      const { page, pageSize, search, sortBy, sortOrder, contractorId, filters } =
-        input;
+      const { page, pageSize, search, sortBy, sortOrder, contractorId, filters } = input;
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const where: Record<string, any> = {
@@ -466,8 +459,7 @@ export const contractRouter = router({
         });
       }
 
-      const currentMetadata =
-        (contract.metadataJson as Record<string, unknown>) ?? {};
+      const currentMetadata = (contract.metadataJson as Record<string, unknown>) ?? {};
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const newMetadata: any = {
@@ -510,8 +502,7 @@ export const contractRouter = router({
       if (contract.status !== "DRAFT") {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message:
-            "Only draft contracts can be deleted. Use status transitions instead.",
+          message: "Only draft contracts can be deleted. Use status transitions instead.",
         });
       }
 
@@ -525,9 +516,7 @@ export const contractRouter = router({
         organizationId: ctx.organizationId,
         entityType: "CONTRACT",
         entityId: input.id,
-      }).catch((err) =>
-        console.error("[contract] calendar event cleanup on delete failed:", err),
-      );
+      }).catch((err) => console.error("[contract] calendar event cleanup on delete failed:", err));
 
       return { success: true };
     }),

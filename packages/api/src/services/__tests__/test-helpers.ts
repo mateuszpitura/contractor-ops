@@ -3,10 +3,7 @@ import type Stripe from "stripe";
 /**
  * Creates a mock Stripe event for testing webhook handlers.
  */
-export function createMockStripeEvent(
-  type: string,
-  data: Record<string, unknown>,
-): Stripe.Event {
+export function createMockStripeEvent(type: string, data: Record<string, unknown>): Stripe.Event {
   return {
     id: `evt_test_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
     object: "event",
@@ -61,9 +58,7 @@ export function createMockSubscription(
 /**
  * Creates a mock Stripe invoice object with sensible defaults.
  */
-export function createMockInvoice(
-  overrides?: Partial<Record<string, unknown>>,
-): Stripe.Invoice {
+export function createMockInvoice(overrides?: Partial<Record<string, unknown>>): Stripe.Invoice {
   return {
     id: `in_test_${Date.now()}`,
     object: "invoice",

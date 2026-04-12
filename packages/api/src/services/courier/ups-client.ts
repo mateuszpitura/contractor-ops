@@ -87,9 +87,7 @@ const upsTrackingResponseSchema = z.object({
               type: z.string(),
               description: z.string().optional(),
             }),
-            deliveryDate: z
-              .array(z.object({ date: z.string() }))
-              .optional(),
+            deliveryDate: z.array(z.object({ date: z.string() })).optional(),
           }),
         ),
       }),
@@ -128,30 +126,22 @@ export class UPSClient implements CourierClient {
    * Refreshes if the token is within a 5-minute expiry buffer.
    */
   private async getToken(): Promise<string> {
-    if (
-      this.tokenCache &&
-      Date.now() < this.tokenCache.expiresAt - 5 * 60_000
-    ) {
+    if (this.tokenCache && Date.now() < this.tokenCache.expiresAt - 5 * 60_000) {
       return this.tokenCache.token;
     }
 
-    const res = await globalThis.fetch(
-      `${this.baseUrl}/security/v1/oauth/token`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Basic ${Buffer.from(`${this.clientId}:${this.clientSecret}`).toString("base64")}`,
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: "grant_type=client_credentials",
+    const res = await globalThis.fetch(`${this.baseUrl}/security/v1/oauth/token`, {
+      method: "POST",
+      headers: {
+        Authorization: `Basic ${Buffer.from(`${this.clientId}:${this.clientSecret}`).toString("base64")}`,
+        "Content-Type": "application/x-www-form-urlencoded",
       },
-    );
+      body: "grant_type=client_credentials",
+    });
 
     if (!res.ok) {
       const errorBody = await res.text().catch(() => "unknown");
-      throw new Error(
-        `[ups-client] OAuth failed: HTTP ${res.status} — ${errorBody}`,
-      );
+      throw new Error(`[ups-client] OAuth failed: HTTP ${res.status} — ${errorBody}`);
     }
 
     const json = await res.json();
@@ -178,9 +168,7 @@ export class UPSClient implements CourierClient {
    *
    * POST /api/shipments/v2409/ship
    */
-  async createShipment(
-    params: ShipmentParams,
-  ): Promise<CourierShipmentResult> {
+  async createShipment(params: ShipmentParams): Promise<CourierShipmentResult> {
     if (!("deliveryAddress" in params) || !("serviceCode" in params)) {
       throw new Error(
         "[ups-client] createShipment requires deliveryAddress and serviceCode for UPS shipments",
@@ -248,9 +236,7 @@ export class UPSClient implements CourierClient {
 
     if (!response.ok) {
       const errorBody = await response.text().catch(() => "unknown");
-      throw new Error(
-        `[ups-client] createShipment failed: HTTP ${response.status} — ${errorBody}`,
-      );
+      throw new Error(`[ups-client] createShipment failed: HTTP ${response.status} — ${errorBody}`);
     }
 
     const json = await response.json();
@@ -272,10 +258,7 @@ export class UPSClient implements CourierClient {
    * For UPS, labels are returned in createShipment response as base64.
    * This method re-fetches via the tracking/label endpoint.
    */
-  async getLabel(
-    shipmentExternalId: string,
-    _format: LabelFormat = "pdf",
-  ): Promise<Buffer> {
+  async getLabel(shipmentExternalId: string, _format: LabelFormat = "pdf"): Promise<Buffer> {
     const url = `${this.baseUrl}/api/shipments/v2409/label/${shipmentExternalId}`;
     const headers = await this.authHeaders();
 
@@ -286,9 +269,7 @@ export class UPSClient implements CourierClient {
 
     if (!response.ok) {
       const errorBody = await response.text().catch(() => "unknown");
-      throw new Error(
-        `[ups-client] getLabel failed: HTTP ${response.status} — ${errorBody}`,
-      );
+      throw new Error(`[ups-client] getLabel failed: HTTP ${response.status} — ${errorBody}`);
     }
 
     const arrayBuffer = await response.arrayBuffer();
@@ -311,9 +292,7 @@ export class UPSClient implements CourierClient {
 
     if (!response.ok) {
       const errorBody = await response.text().catch(() => "unknown");
-      throw new Error(
-        `[ups-client] getStatus failed: HTTP ${response.status} — ${errorBody}`,
-      );
+      throw new Error(`[ups-client] getStatus failed: HTTP ${response.status} — ${errorBody}`);
     }
 
     const json = await response.json();
@@ -344,9 +323,7 @@ export class UPSClient implements CourierClient {
 
     if (!response.ok) {
       const errorBody = await response.text().catch(() => "unknown");
-      throw new Error(
-        `[ups-client] cancelShipment failed: HTTP ${response.status} — ${errorBody}`,
-      );
+      throw new Error(`[ups-client] cancelShipment failed: HTTP ${response.status} — ${errorBody}`);
     }
   }
 }

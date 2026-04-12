@@ -82,9 +82,7 @@ describe("UsageDashboard", () => {
   it("shows error state with retry button", async () => {
     isError = true;
     const { user } = setup(<UsageDashboard />);
-    expect(
-      screen.getByText("Failed to load billing data"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Failed to load billing data")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /retry/i }));
     expect(mockRefetch).toHaveBeenCalledOnce();
   });
@@ -98,9 +96,7 @@ describe("UsageDashboard", () => {
       planConfig: { tiers: [] },
     };
     render(<UsageDashboard />);
-    expect(
-      screen.getByText("No active subscription"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("No active subscription")).toBeInTheDocument();
     expect(screen.getByText("Choose a plan")).toBeInTheDocument();
   });
 

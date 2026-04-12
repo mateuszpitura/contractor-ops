@@ -1,6 +1,7 @@
-import type { OAuthConfig } from "../types/provider.js";
+import { prisma } from "@contractor-ops/db";
 import type { CredentialBlob } from "../types/credentials.js";
 import type { ProviderHealthStatus } from "../types/health.js";
+import type { OAuthConfig } from "../types/provider.js";
 import { BaseAdapter } from "./base-adapter.js";
 
 // ---------------------------------------------------------------------------
@@ -57,10 +58,7 @@ export class NotionAdapter extends BaseAdapter {
    * `Authorization: Basic base64(clientId:clientSecret)` (Pitfall 1).
    * Putting credentials in the JSON body will fail.
    */
-  async exchangeCodeForTokens(
-    code: string,
-    redirectUri: string,
-  ): Promise<CredentialBlob> {
+  async exchangeCodeForTokens(code: string, redirectUri: string): Promise<CredentialBlob> {
     const clientId = process.env.NOTION_CLIENT_ID;
     const clientSecret = process.env.NOTION_CLIENT_SECRET;
 
@@ -244,8 +242,6 @@ export class NotionAdapter extends BaseAdapter {
   // -------------------------------------------------------------------------
 
   async getHealthStatus(connectionId: string): Promise<ProviderHealthStatus> {
-    const { prisma } = await import("@contractor-ops/db");
-
     const connection = await prisma.integrationConnection.findUnique({
       where: { id: connectionId },
       select: {
@@ -298,15 +294,9 @@ export class NotionAdapter extends BaseAdapter {
       status = "DISCONNECTED";
     } else if (connection.lastErrorAt && !connection.lastSuccessAt) {
       status = "ERROR";
-    } else if (
-      connection.tokenExpiresAt &&
-      connection.tokenExpiresAt < new Date()
-    ) {
+    } else if (connection.tokenExpiresAt && connection.tokenExpiresAt < new Date()) {
       status = "REAUTH_REQUIRED";
-    } else if (
-      recentSyncs.length > 0 &&
-      recentSyncs[0]!.status === "FAILED"
-    ) {
+    } else if (recentSyncs.length > 0 && recentSyncs[0]!.status === "FAILED") {
       status = "ERROR";
     } else {
       status = "CONNECTED";

@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
 import { deletePortalSession } from "@contractor-ops/api/services/portal-session";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 // ---------------------------------------------------------------------------
 // Route handler

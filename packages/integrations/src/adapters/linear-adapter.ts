@@ -1,8 +1,9 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
-import type { OAuthConfig } from "../types/provider.js";
+import { prisma } from "@contractor-ops/db";
 import type { CredentialBlob } from "../types/credentials.js";
-import type { WebhookVerificationResult } from "../types/webhook.js";
 import type { ProviderHealthStatus } from "../types/health.js";
+import type { OAuthConfig } from "../types/provider.js";
+import type { WebhookVerificationResult } from "../types/webhook.js";
 import { BaseAdapter } from "./base-adapter.js";
 
 // ---------------------------------------------------------------------------
@@ -59,10 +60,7 @@ export class LinearAdapter extends BaseAdapter {
     return LINEAR_OAUTH_CONFIG;
   }
 
-  async exchangeCodeForTokens(
-    code: string,
-    redirectUri: string,
-  ): Promise<CredentialBlob> {
+  async exchangeCodeForTokens(code: string, redirectUri: string): Promise<CredentialBlob> {
     const clientId = process.env.LINEAR_CLIENT_ID;
     const clientSecret = process.env.LINEAR_CLIENT_SECRET;
 
@@ -102,18 +100,14 @@ export class LinearAdapter extends BaseAdapter {
     };
 
     // Linear returns scope as an array of strings — join with comma for storage
-    const scope = Array.isArray(data.scope)
-      ? data.scope.join(",")
-      : data.scope;
+    const scope = Array.isArray(data.scope) ? data.scope.join(",") : data.scope;
 
     return {
       accessToken: data.access_token,
       refreshToken: data.refresh_token,
       tokenType: data.token_type,
       scope,
-      expiresAt: new Date(
-        Date.now() + data.expires_in * 1000,
-      ).toISOString(),
+      expiresAt: new Date(Date.now() + data.expires_in * 1000).toISOString(),
     };
   }
 
@@ -159,18 +153,14 @@ export class LinearAdapter extends BaseAdapter {
       scope: string[] | string;
     };
 
-    const scope = Array.isArray(data.scope)
-      ? data.scope.join(",")
-      : data.scope;
+    const scope = Array.isArray(data.scope) ? data.scope.join(",") : data.scope;
 
     return {
       accessToken: data.access_token,
       refreshToken: data.refresh_token ?? credentials.refreshToken,
       tokenType: data.token_type,
       scope,
-      expiresAt: new Date(
-        Date.now() + data.expires_in * 1000,
-      ).toISOString(),
+      expiresAt: new Date(Date.now() + data.expires_in * 1000).toISOString(),
     };
   }
 
@@ -194,8 +184,7 @@ export class LinearAdapter extends BaseAdapter {
     rawBody: string,
     headers: Record<string, string>,
   ): WebhookVerificationResult {
-    const signatureHeader =
-      headers["linear-signature"] ?? headers["Linear-Signature"];
+    const signatureHeader = headers["linear-signature"] ?? headers["Linear-Signature"];
     const secret =
       headers["x-webhook-secret"] ??
       headers["X-Webhook-Secret"] ??
@@ -210,16 +199,11 @@ export class LinearAdapter extends BaseAdapter {
       return { valid: false };
     }
 
-    const expected = createHmac("sha256", secret)
-      .update(rawBody)
-      .digest("hex");
+    const expected = createHmac("sha256", secret).update(rawBody).digest("hex");
 
     let valid: boolean;
     try {
-      valid = timingSafeEqual(
-        Buffer.from(signatureHeader, "hex"),
-        Buffer.from(expected, "hex"),
-      );
+      valid = timingSafeEqual(Buffer.from(signatureHeader, "hex"), Buffer.from(expected, "hex"));
     } catch {
       // Buffer length mismatch — invalid signature
       valid = false;
@@ -388,8 +372,6 @@ export class LinearAdapter extends BaseAdapter {
   // -------------------------------------------------------------------------
 
   async getHealthStatus(connectionId: string): Promise<ProviderHealthStatus> {
-    const { prisma } = await import("@contractor-ops/db");
-
     const connection = await prisma.integrationConnection.findUnique({
       where: { id: connectionId },
       select: {
@@ -441,22 +423,13 @@ export class LinearAdapter extends BaseAdapter {
 
     // Determine status
     let status: ProviderHealthStatus["status"];
-    if (
-      connection.status !== "CONNECTED" &&
-      connection.status !== "PENDING_MAPPING"
-    ) {
+    if (connection.status !== "CONNECTED" && connection.status !== "PENDING_MAPPING") {
       status = "DISCONNECTED";
     } else if (connection.lastErrorAt && !connection.lastSuccessAt) {
       status = "ERROR";
-    } else if (
-      connection.tokenExpiresAt &&
-      connection.tokenExpiresAt < new Date()
-    ) {
+    } else if (connection.tokenExpiresAt && connection.tokenExpiresAt < new Date()) {
       status = "REAUTH_REQUIRED";
-    } else if (
-      recentSyncs.length > 0 &&
-      recentSyncs[0]!.status === "FAILED"
-    ) {
+    } else if (recentSyncs.length > 0 && recentSyncs[0]!.status === "FAILED") {
       status = "ERROR";
     } else {
       status = "CONNECTED";

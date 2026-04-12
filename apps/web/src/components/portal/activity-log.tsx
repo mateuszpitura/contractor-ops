@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  Circle,
-  Eye,
-  CheckCircle2,
-  XCircle,
-  Banknote,
-} from "lucide-react";
+import { Banknote, CheckCircle2, Circle, Eye, XCircle } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 
@@ -44,8 +38,7 @@ function getIcon(event: string) {
   if (lower.includes("review")) return EVENT_ICONS.review!;
   if (lower.includes("approved")) return EVENT_ICONS.approved!;
   if (lower.includes("rejected")) return EVENT_ICONS.rejected!;
-  if (lower.includes("paid") || lower.includes("payment"))
-    return EVENT_ICONS.paid!;
+  if (lower.includes("paid") || lower.includes("payment")) return EVENT_ICONS.paid!;
   return Circle;
 }
 
@@ -61,13 +54,10 @@ function formatRelativeTime(date: Date | string): string {
   const diffMonth = Math.floor(diffDay / 30);
 
   if (diffSec < 60) return "Just now";
-  if (diffMin < 60)
-    return `${diffMin} minute${diffMin !== 1 ? "s" : ""} ago`;
-  if (diffHour < 24)
-    return `${diffHour} hour${diffHour !== 1 ? "s" : ""} ago`;
+  if (diffMin < 60) return `${diffMin} minute${diffMin !== 1 ? "s" : ""} ago`;
+  if (diffHour < 24) return `${diffHour} hour${diffHour !== 1 ? "s" : ""} ago`;
   if (diffDay < 7) return `${diffDay} day${diffDay !== 1 ? "s" : ""} ago`;
-  if (diffWeek < 5)
-    return `${diffWeek} week${diffWeek !== 1 ? "s" : ""} ago`;
+  if (diffWeek < 5) return `${diffWeek} week${diffWeek !== 1 ? "s" : ""} ago`;
   return `${diffMonth} month${diffMonth !== 1 ? "s" : ""} ago`;
 }
 
@@ -77,11 +67,7 @@ function formatRelativeTime(date: Date | string): string {
 
 export function ActivityLog({ entries, maxHeight = "300px" }: ActivityLogProps) {
   if (entries.length === 0) {
-    return (
-      <p className="py-6 text-center text-sm text-muted-foreground">
-        No activity yet.
-      </p>
-    );
+    return <p className="py-6 text-center text-sm text-muted-foreground">No activity yet.</p>;
   }
 
   return (
@@ -96,9 +82,7 @@ export function ActivityLog({ entries, maxHeight = "300px" }: ActivityLogProps) 
                 <div className="min-w-0 flex-1">
                   <p className="text-sm">{entry.event}</p>
                   {entry.detail && (
-                    <p className="mt-0.5 text-sm text-muted-foreground">
-                      {entry.detail}
-                    </p>
+                    <p className="mt-0.5 text-sm text-muted-foreground">{entry.detail}</p>
                   )}
                   <p className="mt-0.5 text-[13px] text-muted-foreground">
                     {formatRelativeTime(entry.timestamp)}

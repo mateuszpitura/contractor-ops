@@ -62,11 +62,7 @@ class EcdsaSha256Algorithm {
     );
   }
 
-  verifySignature(
-    material: string,
-    key: crypto.KeyLike | string,
-    signatureValue: string,
-  ): boolean {
+  verifySignature(material: string, key: crypto.KeyLike | string, signatureValue: string): boolean {
     const verifier = crypto.createVerify("SHA256");
     verifier.update(material);
     return verifier.verify(

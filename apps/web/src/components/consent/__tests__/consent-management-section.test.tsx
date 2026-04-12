@@ -88,7 +88,10 @@ vi.mock("@/trpc/init", () => ({
         }),
       },
       downloadDPA: {
-        useMutation: (opts?: { onSuccess?: (data: any) => void; onError?: (e: Error) => void }) => ({
+        useMutation: (opts?: {
+          onSuccess?: (data: any) => void;
+          onError?: (e: Error) => void;
+        }) => ({
           mutate: () => {
             mockDownloadDPAMutate();
             opts?.onSuccess?.({ content: "<html>DPA</html>", filename: "DPA.html" });
@@ -97,7 +100,10 @@ vi.mock("@/trpc/init", () => ({
         }),
       },
       downloadSCC: {
-        useMutation: (opts?: { onSuccess?: (data: any) => void; onError?: (e: Error) => void }) => ({
+        useMutation: (opts?: {
+          onSuccess?: (data: any) => void;
+          onError?: (e: Error) => void;
+        }) => ({
           mutate: () => {
             mockDownloadSCCMutate();
             opts?.onSuccess?.({ content: "<html>SCC</html>", filename: "SCC.html" });
@@ -193,9 +199,15 @@ describe("ConsentManagementSection", () => {
     render(<ConsentManagementSection />);
 
     // Required purposes should have "(required/locked)" text
-    expect(screen.getByTestId("switch-CONTRACTOR_DATA_PROCESSING")).toHaveTextContent("(required/locked)");
-    expect(screen.getByTestId("switch-INVOICE_PAYMENT_PROCESSING")).toHaveTextContent("(required/locked)");
-    expect(screen.getByTestId("switch-COMMUNICATION_NOTIFICATIONS")).toHaveTextContent("(required/locked)");
+    expect(screen.getByTestId("switch-CONTRACTOR_DATA_PROCESSING")).toHaveTextContent(
+      "(required/locked)",
+    );
+    expect(screen.getByTestId("switch-INVOICE_PAYMENT_PROCESSING")).toHaveTextContent(
+      "(required/locked)",
+    );
+    expect(screen.getByTestId("switch-COMMUNICATION_NOTIFICATIONS")).toHaveTextContent(
+      "(required/locked)",
+    );
 
     // Optional purposes should have "(optional)" text
     expect(screen.getByTestId("switch-ANALYTICS_REPORTING")).toHaveTextContent("(optional)");

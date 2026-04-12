@@ -1,13 +1,12 @@
 "use client";
 
+import { ShieldCheck, Upload } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Upload, ShieldCheck } from "lucide-react";
-
+import { CountryComplianceSection } from "@/components/contractors/country-compliance-section";
+import { DocumentList } from "@/components/documents/document-list";
+import { DropZone } from "@/components/documents/drop-zone";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { DropZone } from "@/components/documents/drop-zone";
-import { DocumentList } from "@/components/documents/document-list";
-import { CountryComplianceSection } from "@/components/contractors/country-compliance-section";
 
 type ComplianceItem = {
   id: string;
@@ -38,9 +37,7 @@ const statusBadgeStyles: Record<string, string> = {
 function isExpiringSoon(expiresAt: string | Date | null): boolean {
   if (!expiresAt) return false;
   const d = typeof expiresAt === "string" ? new Date(expiresAt) : expiresAt;
-  const thirtyDaysFromNow = new Date(
-    Date.now() + 30 * 24 * 60 * 60 * 1000
-  );
+  const thirtyDaysFromNow = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
   return d <= thirtyDaysFromNow && d >= new Date();
 }
 
@@ -100,9 +97,7 @@ export function TabCompliance({ contractor }: TabComplianceProps) {
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">{item.name}</span>
                   {item.documentType && (
-                    <span className="text-xs text-muted-foreground">
-                      ({item.documentType})
-                    </span>
+                    <span className="text-xs text-muted-foreground">({item.documentType})</span>
                   )}
                 </div>
                 {item.expiresAt && (
@@ -120,17 +115,14 @@ export function TabCompliance({ contractor }: TabComplianceProps) {
               </div>
 
               <div className="flex items-center gap-3">
-                <Badge
-                  variant="secondary"
-                  className={statusBadgeStyles[statusKey] ?? ""}
-                >
+                <Badge variant="secondary" className={statusBadgeStyles[statusKey] ?? ""}>
                   {t(
                     `status.${statusKey}` as
                       | "status.SATISFIED"
                       | "status.MISSING"
                       | "status.EXPIRED"
                       | "status.PENDING"
-                      | "status.WAIVED"
+                      | "status.WAIVED",
                   )}
                 </Badge>
 
@@ -140,7 +132,9 @@ export function TabCompliance({ contractor }: TabComplianceProps) {
                     size="sm"
                     onClick={() => {
                       // Scroll to the upload section at bottom
-                      document.getElementById("compliance-upload-zone")?.scrollIntoView({ behavior: "smooth" });
+                      document
+                        .getElementById("compliance-upload-zone")
+                        ?.scrollIntoView({ behavior: "smooth" });
                     }}
                   >
                     <Upload className="me-1.5 size-3.5" />
@@ -158,17 +152,11 @@ export function TabCompliance({ contractor }: TabComplianceProps) {
         <h3 className="text-base font-medium">
           {t("uploadCompliance" as Parameters<typeof t>[0])}
         </h3>
-        <DropZone
-          entityType="CONTRACTOR"
-          entityId={contractor.id}
-        />
+        <DropZone entityType="CONTRACTOR" entityId={contractor.id} />
       </div>
 
       {/* Uploaded compliance documents */}
-      <DocumentList
-        entityType="CONTRACTOR"
-        entityId={contractor.id}
-      />
+      <DocumentList entityType="CONTRACTOR" entityId={contractor.id} />
     </div>
   );
 }

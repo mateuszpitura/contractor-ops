@@ -1,15 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FileText } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
-
-import { trpc } from "@/trpc/init";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { DocLinkChip } from "./doc-link-chip";
+import { trpc } from "@/trpc/init";
 import { AttachDocDialog } from "./attach-doc-dialog";
+import { DocLinkChip } from "./doc-link-chip";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -39,10 +38,7 @@ interface DocLinksSectionProps {
 // Component
 // ---------------------------------------------------------------------------
 
-export function DocLinksSection({
-  workflowTaskRunId,
-  readOnly,
-}: DocLinksSectionProps) {
+export function DocLinksSection({ workflowTaskRunId, readOnly }: DocLinksSectionProps) {
   const [attachOpen, setAttachOpen] = useState(false);
   const queryClient = useQueryClient();
 
@@ -80,11 +76,7 @@ export function DocLinksSection({
           <span className="text-sm font-semibold">Documents</span>
         </div>
         {!readOnly && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setAttachOpen(true)}
-          >
+          <Button variant="ghost" size="sm" onClick={() => setAttachOpen(true)}>
             Attach Document
           </Button>
         )}
@@ -97,15 +89,12 @@ export function DocLinksSection({
           <Skeleton className="h-6 w-[140px] rounded-md" />
         </div>
       ) : docLinks.length === 0 ? (
-        <p className="text-xs text-muted-foreground">
-          No documents attached.
-        </p>
+        <p className="text-xs text-muted-foreground">No documents attached.</p>
       ) : (
         <div className="flex flex-wrap gap-2">
           {docLinks.map((link) => {
             const metadata = link.metadataJson ?? {};
-            const provider =
-              link.externalType === "NOTION_PAGE" ? "notion" : "confluence";
+            const provider = link.externalType === "NOTION_PAGE" ? "notion" : "confluence";
 
             return (
               <DocLinkChip

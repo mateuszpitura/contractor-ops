@@ -1,10 +1,6 @@
 import { prisma } from "@contractor-ops/db";
-import {
-  PeppolAEProfile,
-  PINT_AE_DOCUMENT_TYPE_ID,
-  type ASPAdapter,
-  type InboundInvoicePayload,
-} from "@contractor-ops/einvoice";
+import type { ASPAdapter, InboundInvoicePayload } from "@contractor-ops/einvoice";
+import { PeppolAEProfile, PINT_AE_DOCUMENT_TYPE_ID } from "@contractor-ops/einvoice";
 import { computeDuplicateCheckHash } from "./invoice-matching.js";
 
 // ---------------------------------------------------------------------------
@@ -59,9 +55,7 @@ export class PeppolOrchestrator {
     });
 
     if (!participant) {
-      throw new Error(
-        "No active Peppol participant found for this organization",
-      );
+      throw new Error("No active Peppol participant found for this organization");
     }
 
     // Generate PINT-AE XML using canonical EInvoice type
@@ -135,9 +129,7 @@ export class PeppolOrchestrator {
           where: { id: transmission.id },
           data: {
             status: "REJECTED",
-            errorMessage: result.errors
-              ?.map((e) => `${e.code}: ${e.message}`)
-              .join("; "),
+            errorMessage: result.errors?.map((e) => `${e.code}: ${e.message}`).join("; "),
           },
         });
       }
@@ -155,8 +147,7 @@ export class PeppolOrchestrator {
         where: { id: transmission.id },
         data: {
           status: "FAILED",
-          errorMessage:
-            error instanceof Error ? error.message : "Transmission failed",
+          errorMessage: error instanceof Error ? error.message : "Transmission failed",
         },
       });
     }
@@ -167,10 +158,7 @@ export class PeppolOrchestrator {
    *
    * Idempotent: skips if aspTransmissionId already exists.
    */
-  async processInboundInvoice(params: {
-    payload: InboundInvoicePayload;
-    organizationId: string;
-  }) {
+  async processInboundInvoice(params: { payload: InboundInvoicePayload; organizationId: string }) {
     // Idempotent — check for duplicate by ASP document ID
     const existing = await prisma.peppolTransmission.findFirst({
       where: { aspTransmissionId: params.payload.documentId },
@@ -243,18 +231,15 @@ export class PeppolOrchestrator {
    * Update the status of an outbound transmission by querying the ASP.
    */
   async updateTransmissionStatus(transmissionId: string) {
-    const transmission =
-      await prisma.peppolTransmission.findUniqueOrThrow({
-        where: { id: transmissionId },
-      });
+    const transmission = await prisma.peppolTransmission.findUniqueOrThrow({
+      where: { id: transmissionId },
+    });
 
     if (!transmission.aspTransmissionId) {
       return transmission;
     }
 
-    const aspStatus = await this.aspAdapter.getTransmissionStatus(
-      transmission.aspTransmissionId,
-    );
+    const aspStatus = await this.aspAdapter.getTransmissionStatus(transmission.aspTransmissionId);
 
     const statusMap: Record<string, string> = {
       transmitted: "TRANSMITTED",

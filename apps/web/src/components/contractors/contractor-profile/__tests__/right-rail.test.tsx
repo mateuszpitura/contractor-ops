@@ -22,11 +22,7 @@ describe("ActivityTimeline", () => {
 
   it("renders created event", () => {
     render(
-      <ActivityTimeline
-        createdAt={twoDaysAgo}
-        updatedAt={twoDaysAgo}
-        lifecycleStage="ACTIVE"
-      />,
+      <ActivityTimeline createdAt={twoDaysAgo} updatedAt={twoDaysAgo} lifecycleStage="ACTIVE" />,
     );
     // Should show at least lifecycle stage event
     expect(screen.getAllByRole("generic").length).toBeGreaterThan(0);
@@ -34,11 +30,7 @@ describe("ActivityTimeline", () => {
 
   it("shows profile updated when update differs from creation", () => {
     render(
-      <ActivityTimeline
-        createdAt={twoDaysAgo}
-        updatedAt={oneHourAgo}
-        lifecycleStage="ACTIVE"
-      />,
+      <ActivityTimeline createdAt={twoDaysAgo} updatedAt={oneHourAgo} lifecycleStage="ACTIVE" />,
     );
     // Multiple events when updated differs from created
     const paragraphs = screen.getAllByText(/.+/);

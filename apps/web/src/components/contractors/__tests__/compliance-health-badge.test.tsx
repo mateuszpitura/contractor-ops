@@ -73,9 +73,7 @@ describe("ComplianceHealthBadge", () => {
   });
 
   it("renders md size when specified", () => {
-    const { container } = render(
-      <ComplianceHealthBadge health="green" size="md" />,
-    );
+    const { container } = render(<ComplianceHealthBadge health="green" size="md" />);
     const badge = container.querySelector("span");
     expect(badge?.className).toContain("text-sm");
   });

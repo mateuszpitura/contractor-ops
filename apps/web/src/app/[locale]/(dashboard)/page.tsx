@@ -1,25 +1,24 @@
 "use client";
 
-import { Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
 import { LayoutDashboard } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
-import { usePermissions } from "@/hooks/use-permissions";
-import { Button } from "@/components/ui/button";
-import { Link } from "@/i18n/navigation";
-import { Skeleton } from "@/components/ui/skeleton";
-import { AnimateIn } from "@/components/shared/animate-in";
+import { useTranslations } from "next-intl";
+import { Suspense } from "react";
+import { ActivityFeed } from "@/components/dashboard/activity-feed";
+import { ApprovalQueueWidget } from "@/components/dashboard/approval-queue-widget";
 import { DashboardGreeting } from "@/components/dashboard/dashboard-greeting";
+import { DeadlinesWidget } from "@/components/dashboard/deadlines-widget";
 import { KpiCards } from "@/components/dashboard/kpi-cards";
 import { SpendChart } from "@/components/dashboard/spend-chart";
-import { DeadlinesWidget } from "@/components/dashboard/deadlines-widget";
-import { ApprovalQueueWidget } from "@/components/dashboard/approval-queue-widget";
-import { ActivityFeed } from "@/components/dashboard/activity-feed";
-import { OnboardingChecklist } from "@/components/onboarding/onboarding-checklist";
-import { EInvoiceComplianceWidget } from "@/components/einvoice/compliance-widget";
 import { TaxObligationsWidget } from "@/components/dashboard/tax-obligations-widget";
+import { EInvoiceComplianceWidget } from "@/components/einvoice/compliance-widget";
+import { OnboardingChecklist } from "@/components/onboarding/onboarding-checklist";
+import { AnimateIn } from "@/components/shared/animate-in";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { usePermissions } from "@/hooks/use-permissions";
+import { Link } from "@/i18n/navigation";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Error boundary wrapper for individual widgets
@@ -29,9 +28,7 @@ function WidgetErrorFallback({ name }: { name: string }) {
   const t = useTranslations("Dashboard");
   return (
     <div className="flex h-[200px] flex-col items-center justify-center rounded-xl border border-border/40 bg-surface-1 p-6 text-center shadow-sm">
-      <p className="text-sm text-destructive">
-        {t("errors.widgetFailed", { name })}
-      </p>
+      <p className="text-sm text-destructive">{t("errors.widgetFailed", { name })}</p>
     </div>
   );
 }
@@ -50,9 +47,7 @@ function DashboardEmptyState() {
           <LayoutDashboard className="h-8 w-8 text-primary" />
         </div>
         <h2 className="mt-6 font-display text-2xl font-semibold tracking-tight">{t("heading")}</h2>
-        <p className="mt-2 max-w-md text-sm text-muted-foreground">
-          {t("body")}
-        </p>
+        <p className="mt-2 max-w-md text-sm text-muted-foreground">{t("body")}</p>
         <Button render={<Link href="/contractors?action=new" />} className="mt-8">
           {t("cta")}
         </Button>
@@ -70,9 +65,7 @@ function DashboardContent() {
   const hasReportAccess = can("report", ["read"]);
 
   // Fetch KPIs to check for empty state
-  const { data: kpis, isLoading: kpisLoading } = useQuery(
-    trpc.dashboard.kpis.queryOptions(),
-  );
+  const { data: kpis, isLoading: kpisLoading } = useQuery(trpc.dashboard.kpis.queryOptions());
 
   // Check if everything is zero (empty org)
   const isEmpty =

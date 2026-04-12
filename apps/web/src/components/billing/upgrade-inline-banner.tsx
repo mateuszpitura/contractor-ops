@@ -18,10 +18,7 @@ interface UpgradeInlineBannerProps {
 // Component
 // ---------------------------------------------------------------------------
 
-export function UpgradeInlineBanner({
-  featureName,
-  requiredTier,
-}: UpgradeInlineBannerProps) {
+export function UpgradeInlineBanner({ featureName, requiredTier }: UpgradeInlineBannerProps) {
   const t = useTranslations("Billing.gate");
 
   return (
@@ -34,11 +31,7 @@ export function UpgradeInlineBanner({
       <p className="text-sm flex-1">
         {t("requiresTier", { feature: featureName, tier: requiredTier })}
       </p>
-      <Button
-        variant="default"
-        size="sm"
-        render={<Link href="/settings?tab=billing" />}
-      >
+      <Button variant="default" size="sm" render={<Link href="/settings?tab=billing" />}>
         {t("upgradePlan")}
       </Button>
     </div>

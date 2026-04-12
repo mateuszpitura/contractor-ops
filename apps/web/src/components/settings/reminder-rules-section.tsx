@@ -1,22 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Pencil, Plus, Timer, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useState } from "react";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Timer } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Card,
-  CardHeader,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
+import { ReminderRuleEditor } from "@/components/settings/reminder-rule-editor";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,7 +16,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ReminderRuleEditor } from "@/components/settings/reminder-rule-editor";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -150,22 +144,13 @@ export function ReminderRulesSection() {
   }
 
   function getRuleDescription(rule: ReminderRule): string {
-    const triggerKey =
-      TRIGGER_LABEL_KEYS[rule.triggerType] ?? rule.triggerType;
-    const recipientKey =
-      RECIPIENT_LABEL_KEYS[rule.recipientMode] ?? rule.recipientMode;
-    const channelKey =
-      CHANNEL_LABEL_KEYS[rule.channel] ?? rule.channel;
+    const triggerKey = TRIGGER_LABEL_KEYS[rule.triggerType] ?? rule.triggerType;
+    const recipientKey = RECIPIENT_LABEL_KEYS[rule.recipientMode] ?? rule.recipientMode;
+    const channelKey = CHANNEL_LABEL_KEYS[rule.channel] ?? rule.channel;
 
-    const triggerLabel = t(
-      `reminderRules.editor.${triggerKey}` as Parameters<typeof t>[0],
-    );
-    const recipientLabel = t(
-      `reminderRules.editor.${recipientKey}` as Parameters<typeof t>[0],
-    );
-    const channelLabel = t(
-      `reminderRules.editor.${channelKey}` as Parameters<typeof t>[0],
-    );
+    const triggerLabel = t(`reminderRules.editor.${triggerKey}` as Parameters<typeof t>[0]);
+    const recipientLabel = t(`reminderRules.editor.${recipientKey}` as Parameters<typeof t>[0]);
+    const channelLabel = t(`reminderRules.editor.${channelKey}` as Parameters<typeof t>[0]);
 
     if (rule.offsetDays) {
       return `${rule.offsetDays} ${t("reminderRules.editor.offsetDaysPlaceholder")} ${triggerLabel.toLowerCase()}, ${recipientLabel} ${channelLabel}`;
@@ -205,9 +190,7 @@ export function ReminderRulesSection() {
       <>
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <Timer className="size-12 text-muted-foreground" />
-          <h3 className="mt-4 text-base font-semibold">
-            {t("reminderRules.emptyHeading")}
-          </h3>
+          <h3 className="mt-4 text-base font-semibold">{t("reminderRules.emptyHeading")}</h3>
           <p className="mt-1 max-w-sm text-sm text-muted-foreground">
             {t("reminderRules.emptyBody")}
           </p>
@@ -232,12 +215,8 @@ export function ReminderRulesSection() {
         {/* Header */}
         <div className="flex items-start justify-between">
           <div>
-            <h3 className="text-base font-semibold">
-              {t("reminderRules.heading")}
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              {t("reminderRules.description")}
-            </p>
+            <h3 className="text-base font-semibold">{t("reminderRules.heading")}</h3>
+            <p className="text-sm text-muted-foreground">{t("reminderRules.description")}</p>
           </div>
           <Button onClick={handleCreate}>
             <Plus className="me-1.5 size-4" />
@@ -248,8 +227,7 @@ export function ReminderRulesSection() {
         {/* Rule cards */}
         {rules.map((rule) => {
           const channelBadgeClass =
-            CHANNEL_BADGE_VARIANT[rule.channel] ??
-            "bg-muted text-muted-foreground";
+            CHANNEL_BADGE_VARIANT[rule.channel] ?? "bg-muted text-muted-foreground";
 
           return (
             <Card key={rule.id}>
@@ -264,31 +242,26 @@ export function ReminderRulesSection() {
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  {getRuleDescription(rule)}
-                </p>
+                <p className="text-sm text-muted-foreground">{getRuleDescription(rule)}</p>
                 <div className="mt-2 flex items-center gap-2">
-                  <Badge
-                    variant="secondary"
-                    className={channelBadgeClass}
-                  >
+                  <Badge variant="secondary" className={channelBadgeClass}>
                     {t(
-                      `reminderRules.editor.${CHANNEL_LABEL_KEYS[rule.channel] ?? "channelInApp"}` as Parameters<typeof t>[0],
+                      `reminderRules.editor.${CHANNEL_LABEL_KEYS[rule.channel] ?? "channelInApp"}` as Parameters<
+                        typeof t
+                      >[0],
                     )}
                   </Badge>
                   <Badge variant="secondary">
                     {t(
-                      `reminderRules.editor.${RECIPIENT_LABEL_KEYS[rule.recipientMode] ?? "recipientEntityOwner"}` as Parameters<typeof t>[0],
+                      `reminderRules.editor.${RECIPIENT_LABEL_KEYS[rule.recipientMode] ?? "recipientEntityOwner"}` as Parameters<
+                        typeof t
+                      >[0],
                     )}
                   </Badge>
                 </div>
               </CardContent>
               <CardFooter className="gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleEdit(rule)}
-                >
+                <Button variant="ghost" size="sm" onClick={() => handleEdit(rule)}>
                   <Pencil className="me-1.5 size-3.5" />
                   {t("reminderRules.edit")}
                 </Button>
@@ -323,17 +296,11 @@ export function ReminderRulesSection() {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              {t("reminderRules.deleteConfirm.title")}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("reminderRules.deleteConfirm.body")}
-            </AlertDialogDescription>
+            <AlertDialogTitle>{t("reminderRules.deleteConfirm.title")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("reminderRules.deleteConfirm.body")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>
-              {t("reminderRules.deleteConfirm.cancel")}
-            </AlertDialogCancel>
+            <AlertDialogCancel>{t("reminderRules.deleteConfirm.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
               disabled={deleteMutation.isPending}

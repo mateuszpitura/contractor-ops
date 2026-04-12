@@ -33,9 +33,7 @@ describe("DataTablePagination", () => {
   });
 
   it("disables next button on last page", () => {
-    render(
-      <DataTablePagination {...defaultProps} currentPage={4} />,
-    );
+    render(<DataTablePagination {...defaultProps} currentPage={4} />);
     const buttons = screen.getAllByRole("button");
     const nextButton = buttons[buttons.length - 1]!;
     expect(nextButton).toBeDisabled();
@@ -43,12 +41,7 @@ describe("DataTablePagination", () => {
 
   it("calls onPageChange when clicking next", async () => {
     const onPageChange = vi.fn();
-    const { user } = setup(
-      <DataTablePagination
-        {...defaultProps}
-        onPageChange={onPageChange}
-      />,
-    );
+    const { user } = setup(<DataTablePagination {...defaultProps} onPageChange={onPageChange} />);
     const buttons = screen.getAllByRole("button");
     const nextButton = buttons[buttons.length - 1]!;
     await user.click(nextButton);

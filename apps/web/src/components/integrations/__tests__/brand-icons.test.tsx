@@ -1,13 +1,13 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { render, screen } from "@/test/test-utils";
 import {
-  SlackBrandIcon,
+  ConfluenceBrandIcon,
+  GoogleCalendarBrandIcon,
   JiraBrandIcon,
   LinearBrandIcon,
-  GoogleCalendarBrandIcon,
   NotionBrandIcon,
-  ConfluenceBrandIcon,
   OutlookCalendarBrandIcon,
+  SlackBrandIcon,
 } from "../brand-icons";
 
 describe("BrandIcons", () => {

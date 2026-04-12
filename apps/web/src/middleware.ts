@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
-import createMiddleware from "next-intl/middleware";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+import createMiddleware from "next-intl/middleware";
 import { routing } from "@/i18n/routing";
 
 const intlMiddleware = createMiddleware(routing);
@@ -24,20 +25,17 @@ function createLimiter(maxRequests: number, window: Parameters<typeof Ratelimit.
 }
 
 // Per-IP limiters
-const authLimiter = createLimiter(10, "1m");     // 10 auth requests per minute per IP
-const portalLimiter = createLimiter(10, "1m");    // 10 portal requests per minute per IP
-const apiLimiter = createLimiter(60, "1m");       // 60 API requests per minute per IP
+const authLimiter = createLimiter(10, "1m"); // 10 auth requests per minute per IP
+const portalLimiter = createLimiter(10, "1m"); // 10 portal requests per minute per IP
+const apiLimiter = createLimiter(60, "1m"); // 60 API requests per minute per IP
 // Per-org limiter
-const orgLimiter = createLimiter(500, "1m");      // 500 requests per minute per org
+const orgLimiter = createLimiter(500, "1m"); // 500 requests per minute per org
 
 // In-memory fallback when Redis is unavailable (dev / single-instance)
 const fallbackMap = new Map<string, { count: number; resetAt: number }>();
 const FALLBACK_WINDOW_MS = 60_000;
 
-function fallbackRateLimit(
-  key: string,
-  max: number,
-): { allowed: boolean; remaining: number } {
+function fallbackRateLimit(key: string, max: number): { allowed: boolean; remaining: number } {
   const now = Date.now();
   const entry = fallbackMap.get(key);
 
@@ -123,8 +121,7 @@ function shouldSkipTrpcRateLimitForLoadTest(request: NextRequest): boolean {
  * Pattern: {slug}.{PORTAL_BASE_DOMAIN} -> resolves to org's portal.
  * Example: acme.portal.localhost:3000 or acme.portal.contractorops.com
  */
-const PORTAL_BASE_DOMAIN =
-  process.env.PORTAL_BASE_DOMAIN ?? "portal.localhost:3000";
+const PORTAL_BASE_DOMAIN = process.env.PORTAL_BASE_DOMAIN ?? "portal.localhost:3000";
 
 /**
  * Auth route patterns (locale-prefixed).
@@ -217,10 +214,7 @@ export default async function middleware(request: NextRequest) {
 
   // ── Portal subdomain routing ──────────────────────────────────────────
 
-  if (
-    hostname.endsWith(PORTAL_BASE_DOMAIN) &&
-    hostname !== PORTAL_BASE_DOMAIN
-  ) {
+  if (hostname.endsWith(PORTAL_BASE_DOMAIN) && hostname !== PORTAL_BASE_DOMAIN) {
     const subdomain = hostname.replace(`.${PORTAL_BASE_DOMAIN}`, "");
 
     if (subdomain && !subdomain.includes(".")) {
@@ -278,8 +272,5 @@ export default async function middleware(request: NextRequest) {
 export const config = {
   // Match all pathnames except static files and internal Next.js paths.
   // API routes are included for rate limiting.
-  matcher: [
-    "/((?!monitoring|_next|_vercel|.*\\..*).*)",
-    "/api/:path*",
-  ],
+  matcher: ["/((?!monitoring|_next|_vercel|.*\\..*).*)", "/api/:path*"],
 };

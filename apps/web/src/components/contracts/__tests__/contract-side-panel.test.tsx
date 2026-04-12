@@ -3,7 +3,9 @@ import { ContractSidePanel } from "../contract-side-panel";
 
 vi.mock("@/i18n/navigation", () => ({
   Link: ({ children, href, ...props }: any) => (
-    <a href={href} {...props}>{children}</a>
+    <a href={href} {...props}>
+      {children}
+    </a>
   ),
 }));
 
@@ -35,57 +37,29 @@ const baseContract = {
 describe("ContractSidePanel", () => {
   it("returns null when contract is null", () => {
     const { container } = render(
-      <ContractSidePanel
-        contract={null}
-        open={true}
-        onOpenChange={vi.fn()}
-      />,
+      <ContractSidePanel contract={null} open={true} onOpenChange={vi.fn()} />,
     );
     expect(container.innerHTML).toBe("");
   });
 
   it("renders contract title", () => {
-    render(
-      <ContractSidePanel
-        contract={baseContract}
-        open={true}
-        onOpenChange={vi.fn()}
-      />,
-    );
+    render(<ContractSidePanel contract={baseContract} open={true} onOpenChange={vi.fn()} />);
     expect(screen.getByText("B2B Agreement")).toBeInTheDocument();
   });
 
   it("renders contractor name as link", () => {
-    render(
-      <ContractSidePanel
-        contract={baseContract}
-        open={true}
-        onOpenChange={vi.fn()}
-      />,
-    );
+    render(<ContractSidePanel contract={baseContract} open={true} onOpenChange={vi.fn()} />);
     const link = screen.getByText("ACME");
     expect(link.closest("a")).toHaveAttribute("href", "/contractors/c1");
   });
 
   it("renders rate display", () => {
-    render(
-      <ContractSidePanel
-        contract={baseContract}
-        open={true}
-        onOpenChange={vi.fn()}
-      />,
-    );
+    render(<ContractSidePanel contract={baseContract} open={true} onOpenChange={vi.fn()} />);
     expect(screen.getByText(/150,00/)).toBeInTheDocument();
   });
 
   it("renders open contract button", () => {
-    render(
-      <ContractSidePanel
-        contract={baseContract}
-        open={true}
-        onOpenChange={vi.fn()}
-      />,
-    );
+    render(<ContractSidePanel contract={baseContract} open={true} onOpenChange={vi.fn()} />);
     const buttons = screen.getAllByRole("button");
     expect(buttons.length).toBeGreaterThan(0);
   });
@@ -105,13 +79,7 @@ describe("ContractSidePanel", () => {
   });
 
   it("renders owner name when present", () => {
-    render(
-      <ContractSidePanel
-        contract={baseContract}
-        open={true}
-        onOpenChange={vi.fn()}
-      />,
-    );
+    render(<ContractSidePanel contract={baseContract} open={true} onOpenChange={vi.fn()} />);
     expect(screen.getByText("Jan Kowalski")).toBeInTheDocument();
   });
 
@@ -140,13 +108,7 @@ describe("ContractSidePanel", () => {
   });
 
   it("renders start and end dates", () => {
-    render(
-      <ContractSidePanel
-        contract={baseContract}
-        open={true}
-        onOpenChange={vi.fn()}
-      />,
-    );
+    render(<ContractSidePanel contract={baseContract} open={true} onOpenChange={vi.fn()} />);
     // startDate and endDate should be formatted as pl-PL
     const container = document.body;
     expect(container.textContent).toContain("2024");
@@ -166,13 +128,7 @@ describe("ContractSidePanel", () => {
   });
 
   it("renders key dates section when endDate exists", () => {
-    render(
-      <ContractSidePanel
-        contract={baseContract}
-        open={true}
-        onOpenChange={vi.fn()}
-      />,
-    );
+    render(<ContractSidePanel contract={baseContract} open={true} onOpenChange={vi.fn()} />);
     // Key dates section should be rendered since endDate is set
     const body = document.body.textContent ?? "";
     // differenceInDays mock returns 45, isPast returns false, so daysRemaining branch
@@ -193,25 +149,13 @@ describe("ContractSidePanel", () => {
   });
 
   it("renders link to full contract page", () => {
-    render(
-      <ContractSidePanel
-        contract={baseContract}
-        open={true}
-        onOpenChange={vi.fn()}
-      />,
-    );
+    render(<ContractSidePanel contract={baseContract} open={true} onOpenChange={vi.fn()} />);
     const link = document.querySelector('a[href="/contracts/ct1"]');
     expect(link).toBeInTheDocument();
   });
 
   it("does not render content when open is false", () => {
-    render(
-      <ContractSidePanel
-        contract={baseContract}
-        open={false}
-        onOpenChange={vi.fn()}
-      />,
-    );
+    render(<ContractSidePanel contract={baseContract} open={false} onOpenChange={vi.fn()} />);
     expect(screen.queryByText("B2B Agreement")).not.toBeInTheDocument();
   });
 });

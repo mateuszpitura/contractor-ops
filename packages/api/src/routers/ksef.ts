@@ -1,17 +1,14 @@
-import { z } from "zod";
-import { TRPCError } from "@trpc/server";
 import { prisma } from "@contractor-ops/db";
-import {
-  KsefApiClient,
-  ksefConnectionConfigSchema,
-} from "@contractor-ops/einvoice";
+import { KsefApiClient, ksefConnectionConfigSchema } from "@contractor-ops/einvoice";
 import { encryptCredentials } from "@contractor-ops/integrations";
 import { getQStashClient } from "@contractor-ops/integrations/services/qstash-client";
-import { router } from "../init.js";
-import { tenantProcedure } from "../middleware/tenant.js";
-import { requirePermission } from "../middleware/rbac.js";
-import { processKsefSync } from "../services/ksef-sync-orchestrator.js";
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 import * as E from "../errors.js";
+import { router } from "../init.js";
+import { requirePermission } from "../middleware/rbac.js";
+import { tenantProcedure } from "../middleware/tenant.js";
+import { processKsefSync } from "../services/ksef-sync-orchestrator.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -55,15 +52,13 @@ export const ksefRouter = router({
       const org = await prisma.organization.findUniqueOrThrow({
         where: { id: ctx.organizationId },
       });
-      const settingsJson =
-        (org.settingsJson as Record<string, unknown> | null) ?? {};
+      const settingsJson = (org.settingsJson as Record<string, unknown> | null) ?? {};
       const nip = settingsJson.taxId as string | undefined;
 
       if (!nip) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message:
-            "Organization NIP must be set in settings before connecting KSeF.",
+          message: "Organization NIP must be set in settings before connecting KSeF.",
         });
       }
 
@@ -155,8 +150,7 @@ export const ksefRouter = router({
         });
 
         // Store schedule ID in configJson
-        const currentConfig =
-          (connection.configJson as Record<string, unknown>) ?? {};
+        const currentConfig = (connection.configJson as Record<string, unknown>) ?? {};
         await prisma.integrationConnection.update({
           where: { id: connection.id },
           data: {
@@ -167,10 +161,7 @@ export const ksefRouter = router({
           },
         });
       } catch (error) {
-        console.error(
-          "[ksef.connect] Failed to create QStash schedule:",
-          error,
-        );
+        console.error("[ksef.connect] Failed to create QStash schedule:", error);
         // Don't fail the connection — schedule can be retried
       }
 
@@ -199,8 +190,7 @@ export const ksefRouter = router({
       }
 
       // Delete QStash schedule if it exists
-      const configJson =
-        (connection.configJson as Record<string, unknown>) ?? {};
+      const configJson = (connection.configJson as Record<string, unknown>) ?? {};
       const scheduleId = configJson.qstashScheduleId as string | undefined;
 
       if (scheduleId) {
@@ -208,10 +198,7 @@ export const ksefRouter = router({
           const qstash = getQStashClient();
           await qstash.schedules.delete(scheduleId);
         } catch (error) {
-          console.error(
-            "[ksef.disconnect] Failed to delete QStash schedule:",
-            error,
-          );
+          console.error("[ksef.disconnect] Failed to delete QStash schedule:", error);
         }
       }
 

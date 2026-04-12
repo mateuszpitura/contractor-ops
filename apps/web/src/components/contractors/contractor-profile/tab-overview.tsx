@@ -1,20 +1,13 @@
 "use client";
 
-import { useCallback } from "react";
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { AlertTriangle, CheckCircle2, XCircle } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { CheckCircle2, AlertTriangle, XCircle } from "lucide-react";
-
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardAction,
-} from "@/components/ui/card";
+import { useCallback } from "react";
 import { ComplianceHealthBadge } from "@/components/contractors/compliance-health-badge";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { usePermissions } from "@/hooks/use-permissions";
-import { maskTaxId, canViewSensitivePii } from "@/lib/mask-pii";
+import { canViewSensitivePii, maskTaxId } from "@/lib/mask-pii";
 
 type HealthFactor = {
   key: "documents" | "contract" | "tasks" | "invoices";
@@ -105,9 +98,7 @@ function FieldRow({
   return (
     <div className="flex flex-col gap-0.5">
       <span className="text-xs text-muted-foreground">{label}</span>
-      <span className={`text-sm ${mono ? "font-mono text-[13px]" : ""}`}>
-        {value}
-      </span>
+      <span className={`text-sm ${mono ? "font-mono text-[13px]" : ""}`}>{value}</span>
     </div>
   );
 }
@@ -136,23 +127,18 @@ export function TabOverview({ contractor }: TabOverviewProps) {
       params.set("tab", tab);
       router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     },
-    [searchParams, router, pathname]
+    [searchParams, router, pathname],
   );
 
-  const customFields =
-    (contractor.customFieldsJson as Record<string, unknown>) ?? {};
+  const customFields = (contractor.customFieldsJson as Record<string, unknown>) ?? {};
   const billingModel = customFields.billingModel as string | undefined;
   const rateValueMinor = customFields.rateValueMinor as number | undefined;
 
   const defaultBilling = contractor.billingProfiles.find((bp) => bp.isDefault);
-  const activeContract = contractor.contracts.find(
-    (c) => c.status === "ACTIVE"
-  );
+  const activeContract = contractor.contracts.find((c) => c.status === "ACTIVE");
 
   const formattedRate =
-    rateValueMinor != null
-      ? `${(rateValueMinor / 100).toFixed(2)} ${contractor.currency}`
-      : null;
+    rateValueMinor != null ? `${(rateValueMinor / 100).toFixed(2)} ${contractor.currency}` : null;
 
   const formattedAddress = [
     contractor.addressLine1,
@@ -171,23 +157,21 @@ export function TabOverview({ contractor }: TabOverviewProps) {
         </CardHeader>
         <CardContent className="grid gap-3">
           <FieldRow label={t("fields.legalName")} value={contractor.legalName} />
+          <FieldRow label={t("fields.displayName")} value={contractor.displayName} />
           <FieldRow
-            label={t("fields.displayName")}
-            value={contractor.displayName}
+            label={t("fields.type")}
+            value={tc(`type.${contractor.type}` as Parameters<typeof tc>[0])}
           />
-          <FieldRow label={t("fields.type")} value={tc(`type.${contractor.type}` as Parameters<typeof tc>[0])} />
-          <FieldRow label={t("fields.nip")} value={showPii ? contractor.taxId : maskTaxId(contractor.taxId)} mono />
-          <FieldRow label={t("fields.vatEu")} value={contractor.vatId} mono />
           <FieldRow
-            label={t("fields.regon")}
-            value={contractor.registrationNumber}
+            label={t("fields.nip")}
+            value={showPii ? contractor.taxId : maskTaxId(contractor.taxId)}
             mono
           />
+          <FieldRow label={t("fields.vatEu")} value={contractor.vatId} mono />
+          <FieldRow label={t("fields.regon")} value={contractor.registrationNumber} mono />
           {contractor.email && (
             <div className="flex flex-col gap-0.5">
-              <span className="text-xs text-muted-foreground">
-                {t("fields.email")}
-              </span>
+              <span className="text-xs text-muted-foreground">{t("fields.email")}</span>
               <a
                 href={`mailto:${contractor.email}`}
                 className="text-sm text-primary hover:underline"
@@ -246,16 +230,12 @@ export function TabOverview({ contractor }: TabOverviewProps) {
               {activeContract.startDate && (
                 <span className="text-xs text-muted-foreground">
                   {formatDate(activeContract.startDate)}
-                  {activeContract.endDate
-                    ? ` - ${formatDate(activeContract.endDate)}`
-                    : ""}
+                  {activeContract.endDate ? ` - ${formatDate(activeContract.endDate)}` : ""}
                 </span>
               )}
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">
-              {t("noActiveContract")}
-            </p>
+            <p className="text-sm text-muted-foreground">{t("noActiveContract")}</p>
           )}
         </CardContent>
       </Card>
@@ -288,7 +268,7 @@ export function TabOverview({ contractor }: TabOverviewProps) {
                       | "healthChecks.documents"
                       | "healthChecks.contract"
                       | "healthChecks.tasks"
-                      | "healthChecks.invoices"
+                      | "healthChecks.invoices",
                   )}
                 </span>
               </button>
@@ -303,21 +283,11 @@ export function TabOverview({ contractor }: TabOverviewProps) {
           <CardTitle>{t("keyDates")}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <FieldRow
-            label={t("createdAt")}
-            value={formatDate(contractor.createdAt)}
-          />
-          <FieldRow
-            label={t("updatedAt")}
-            value={formatDate(contractor.updatedAt)}
-          />
+          <FieldRow label={t("createdAt")} value={formatDate(contractor.createdAt)} />
+          <FieldRow label={t("updatedAt")} value={formatDate(contractor.updatedAt)} />
           <FieldRow
             label={t("contractEndDate")}
-            value={
-              activeContract?.endDate
-                ? formatDate(activeContract.endDate)
-                : "\u2014"
-            }
+            value={activeContract?.endDate ? formatDate(activeContract.endDate) : "\u2014"}
           />
           <FieldRow label={t("nextInvoice")} value={"\u2014"} />
         </CardContent>

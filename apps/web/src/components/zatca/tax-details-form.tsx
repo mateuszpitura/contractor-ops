@@ -1,15 +1,15 @@
 "use client";
 
-import { useForm, Controller } from "react-hook-form";
+import type { ZatcaTaxDetails } from "@contractor-ops/einvoice";
+import { zatcaTaxDetailsSchema } from "@contractor-ops/einvoice";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
+import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
-
-import { zatcaTaxDetailsSchema, type ZatcaTaxDetails } from "@contractor-ops/einvoice";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { zatcaTrpc } from "./zatca-trpc";
 
@@ -124,36 +124,20 @@ export function TaxDetailsForm({ defaultValues, onSuccess, onCancel }: TaxDetail
 
         <div className="space-y-2">
           <Label htmlFor="street">Street</Label>
-          <Input
-            id="street"
-            {...register("street")}
-            aria-invalid={!!errors.street}
-          />
-          {errors.street && (
-            <p className="text-xs text-destructive">{errors.street.message}</p>
-          )}
+          <Input id="street" {...register("street")} aria-invalid={!!errors.street} />
+          {errors.street && <p className="text-xs text-destructive">{errors.street.message}</p>}
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="city">City</Label>
-            <Input
-              id="city"
-              {...register("city")}
-              aria-invalid={!!errors.city}
-            />
-            {errors.city && (
-              <p className="text-xs text-destructive">{errors.city.message}</p>
-            )}
+            <Input id="city" {...register("city")} aria-invalid={!!errors.city} />
+            {errors.city && <p className="text-xs text-destructive">{errors.city.message}</p>}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="district">District</Label>
-            <Input
-              id="district"
-              {...register("district")}
-              aria-invalid={!!errors.district}
-            />
+            <Input id="district" {...register("district")} aria-invalid={!!errors.district} />
             {errors.district && (
               <p className="text-xs text-destructive">{errors.district.message}</p>
             )}
@@ -190,9 +174,7 @@ export function TaxDetailsForm({ defaultValues, onSuccess, onCancel }: TaxDetail
                   onCheckedChange={(checked) => {
                     const current = field.value ?? [];
                     field.onChange(
-                      checked
-                        ? [...current, "standard"]
-                        : current.filter((t) => t !== "standard"),
+                      checked ? [...current, "standard"] : current.filter((t) => t !== "standard"),
                     );
                   }}
                 />

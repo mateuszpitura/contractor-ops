@@ -1,6 +1,6 @@
+import type { AppRouter } from "@contractor-ops/api";
 import { createTRPCClient, httpBatchLink, httpLink } from "@trpc/client";
 import { createTRPCOptionsProxy } from "@trpc/tanstack-react-query";
-import type { AppRouter } from "@contractor-ops/api";
 import superjson from "superjson";
 import { makeQueryClient } from "./query-client";
 
@@ -46,12 +46,12 @@ const fetchWithTimeout: typeof fetch = (input, init) => {
  */
 export const trpc: ReturnType<typeof createTRPCOptionsProxy<AppRouter>> =
   createTRPCOptionsProxy<AppRouter>({
-  client: createTRPCClient<AppRouter>({
-    links: [
-      isDev
-        ? httpLink({ url, transformer: superjson, fetch: fetchWithTimeout })
-        : httpBatchLink({ url, transformer: superjson, fetch: fetchWithTimeout }),
-    ],
-  }),
-  queryClient: makeQueryClient(),
-});
+    client: createTRPCClient<AppRouter>({
+      links: [
+        isDev
+          ? httpLink({ url, transformer: superjson, fetch: fetchWithTimeout })
+          : httpBatchLink({ url, transformer: superjson, fetch: fetchWithTimeout }),
+      ],
+    }),
+    queryClient: makeQueryClient(),
+  });

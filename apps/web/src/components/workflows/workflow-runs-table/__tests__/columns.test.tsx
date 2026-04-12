@@ -1,5 +1,6 @@
 import { render, screen } from "@/test/test-utils";
-import { getColumns, type WorkflowRunRow } from "../columns";
+import type { WorkflowRunRow } from "../columns";
+import { getColumns } from "../columns";
 
 function makeRow(overrides: Partial<WorkflowRunRow> = {}): WorkflowRunRow {
   return {
@@ -71,21 +72,30 @@ describe("getColumns", () => {
 
 describe("getColumns cell renderers (workflow runs)", () => {
   it("workflowName cell renders template name", () => {
-    renderCell("workflowName", makeRow({ workflowTemplate: { name: "Offboarding", type: "OFFBOARDING" } }));
+    renderCell(
+      "workflowName",
+      makeRow({ workflowTemplate: { name: "Offboarding", type: "OFFBOARDING" } }),
+    );
     expect(screen.getByText("Offboarding")).toBeInTheDocument();
   });
 
   it("contractor cell shows displayName when present", () => {
-    renderCell("contractor", makeRow({
-      contractor: { id: "c-1", legalName: "ACME Corp", displayName: "ACME" },
-    }));
+    renderCell(
+      "contractor",
+      makeRow({
+        contractor: { id: "c-1", legalName: "ACME Corp", displayName: "ACME" },
+      }),
+    );
     expect(screen.getByText("ACME")).toBeInTheDocument();
   });
 
   it("contractor cell falls back to legalName when displayName is null", () => {
-    renderCell("contractor", makeRow({
-      contractor: { id: "c-1", legalName: "ACME Corp", displayName: null },
-    }));
+    renderCell(
+      "contractor",
+      makeRow({
+        contractor: { id: "c-1", legalName: "ACME Corp", displayName: null },
+      }),
+    );
     expect(screen.getByText("ACME Corp")).toBeInTheDocument();
   });
 
@@ -95,16 +105,31 @@ describe("getColumns cell renderers (workflow runs)", () => {
   });
 
   it("status cell renders badge for each status", () => {
-    for (const status of ["NOT_STARTED", "IN_PROGRESS", "COMPLETED", "CANCELLED", "BLOCKED", "OVERDUE"]) {
-      const { unmount } = render(<>{(() => {
-        const t = (key: string) => key;
-        const cols = getColumns(t);
-        const col = cols.find((c) => (c as any).accessorKey === "status");
-        return (col!.cell as any)({
-          row: { original: makeRow({ status }), getIsSelected: () => false, toggleSelected: vi.fn() },
-          getValue: () => status,
-        });
-      })()}</>);
+    for (const status of [
+      "NOT_STARTED",
+      "IN_PROGRESS",
+      "COMPLETED",
+      "CANCELLED",
+      "BLOCKED",
+      "OVERDUE",
+    ]) {
+      const { unmount } = render(
+        <>
+          {(() => {
+            const t = (key: string) => key;
+            const cols = getColumns(t);
+            const col = cols.find((c) => (c as any).accessorKey === "status");
+            return (col!.cell as any)({
+              row: {
+                original: makeRow({ status }),
+                getIsSelected: () => false,
+                toggleSelected: vi.fn(),
+              },
+              getValue: () => status,
+            });
+          })()}
+        </>,
+      );
       expect(screen.getByText(`runStatus.${status}`)).toBeInTheDocument();
       unmount();
     }
@@ -136,19 +161,25 @@ describe("getColumns cell renderers (workflow runs)", () => {
   });
 
   it("dueAt cell applies destructive style when overdue and not completed", () => {
-    const container = renderCell("dueAt", makeRow({
-      dueAt: "2020-01-01",
-      status: "IN_PROGRESS",
-    }));
+    const container = renderCell(
+      "dueAt",
+      makeRow({
+        dueAt: "2020-01-01",
+        status: "IN_PROGRESS",
+      }),
+    );
     const span = container.querySelector("span");
     expect(span?.className).toContain("text-destructive");
   });
 
   it("dueAt cell does NOT apply destructive style when overdue but completed", () => {
-    const container = renderCell("dueAt", makeRow({
-      dueAt: "2020-01-01",
-      status: "COMPLETED",
-    }));
+    const container = renderCell(
+      "dueAt",
+      makeRow({
+        dueAt: "2020-01-01",
+        status: "COMPLETED",
+      }),
+    );
     const span = container.querySelector("span");
     expect(span?.className).not.toContain("text-destructive");
   });

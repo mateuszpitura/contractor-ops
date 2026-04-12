@@ -15,21 +15,20 @@
 // ---------------------------------------------------------------------------
 
 import nodeCrypto from "node:crypto";
-import { prisma } from "@contractor-ops/db";
 import type { Prisma } from "@contractor-ops/db";
+import { prisma } from "@contractor-ops/db";
+import type {
+  ZatcaConnectionConfig,
+  ZatcaOnboardingState,
+  ZatcaTaxDetails,
+} from "@contractor-ops/einvoice";
 import {
   buildComplianceTestInvoices,
   generateZatcaCsr,
   generateZatcaXml,
   zatcaTaxDetailsSchema,
-  type ZatcaConnectionConfig,
-  type ZatcaOnboardingState,
-  type ZatcaTaxDetails,
 } from "@contractor-ops/einvoice";
-import {
-  createZatcaSecretStore,
-  ZATCA_SECRET_NAMES,
-} from "@contractor-ops/integrations";
+import { createZatcaSecretStore, ZATCA_SECRET_NAMES } from "@contractor-ops/integrations";
 import { TRPCError } from "@trpc/server";
 
 // ---------------------------------------------------------------------------
@@ -77,14 +76,14 @@ interface ZatcaApiClientLike {
  * Uses dynamic import because the api-client module is created by Plan 04
  * (running in parallel). At merge time, this resolves correctly.
  */
-async function loadZatcaApiClient(
-  options: Record<string, unknown>,
-): Promise<ZatcaApiClientLike> {
+async function loadZatcaApiClient(options: Record<string, unknown>): Promise<ZatcaApiClientLike> {
   try {
     // The api-client.ts is created by Plan 04 and exports ZatcaApiClient
     const mod = await import("@contractor-ops/einvoice");
     const ClientClass = (mod as Record<string, unknown>).ZatcaApiClient as
-      | (new (opts: Record<string, unknown>) => ZatcaApiClientLike)
+      | (new (
+          opts: Record<string, unknown>,
+        ) => ZatcaApiClientLike)
       | undefined;
 
     if (!ClientClass) {
@@ -104,10 +103,7 @@ async function loadZatcaApiClient(
  * Load or create ZATCA IntegrationConnection for an organization.
  * Returns the connection record with parsed config.
  */
-async function getOrCreateConnection(
-  organizationId: string,
-  userId?: string,
-) {
+async function getOrCreateConnection(organizationId: string, userId?: string) {
   let connection = await prisma.integrationConnection.findFirst({
     where: {
       organizationId,
@@ -203,9 +199,7 @@ export async function saveTaxDetails(
  * @param organizationId - Organization performing onboarding
  * @returns CSR in PEM format for display/preview
  */
-export async function generateAndStoreCsr(
-  organizationId: string,
-): Promise<{ csrPem: string }> {
+export async function generateAndStoreCsr(organizationId: string): Promise<{ csrPem: string }> {
   const connection = await getOrCreateConnection(organizationId);
   const config = connection.configJson as Record<string, unknown> | null;
   const taxDetails = config?.taxDetails as ZatcaTaxDetails | undefined;
@@ -364,10 +358,7 @@ export async function runComplianceChecks(
       const xml = await generateZatcaXml(invoice);
 
       // Compute hash
-      const hash = nodeCrypto
-        .createHash("sha256")
-        .update(xml, "utf-8")
-        .digest("base64");
+      const hash = nodeCrypto.createHash("sha256").update(xml, "utf-8").digest("base64");
 
       const uuid = ext.uuid as string;
 
@@ -394,9 +385,7 @@ export async function runComplianceChecks(
   }
 
   // Check if all passed
-  const allPassed = results.every(
-    (r) => r.status === "CLEARED" || r.status === "REPORTED",
-  );
+  const allPassed = results.every((r) => r.status === "CLEARED" || r.status === "REPORTED");
 
   if (allPassed) {
     await updateConnectionConfig(connection.id, {
@@ -417,9 +406,7 @@ export async function runComplianceChecks(
  *
  * @param organizationId - Organization performing onboarding
  */
-export async function exchangeProductionCertificate(
-  organizationId: string,
-): Promise<void> {
+export async function exchangeProductionCertificate(organizationId: string): Promise<void> {
   const connection = await getOrCreateConnection(organizationId);
   const config = connection.configJson as Record<string, unknown> | null;
 
@@ -485,9 +472,7 @@ export async function exchangeProductionCertificate(
  * @param organizationId - Organization to query
  * @returns Current onboarding step and progress flags
  */
-export async function getOnboardingState(
-  organizationId: string,
-): Promise<ZatcaOnboardingState> {
+export async function getOnboardingState(organizationId: string): Promise<ZatcaOnboardingState> {
   const connection = await prisma.integrationConnection.findFirst({
     where: {
       organizationId,

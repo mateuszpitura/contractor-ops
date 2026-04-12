@@ -1,12 +1,10 @@
-import { z } from "zod";
-import { TRPCError } from "@trpc/server";
 import { prisma } from "@contractor-ops/db";
-import {
-  calendarTaskConfigSchema,
-} from "@contractor-ops/validators";
+import { calendarTaskConfigSchema } from "@contractor-ops/validators";
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 import { router } from "../init.js";
-import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
+import { tenantProcedure } from "../middleware/tenant.js";
 import { requireTier } from "../middleware/tier.js";
 
 // ---------------------------------------------------------------------------
@@ -14,10 +12,7 @@ import { requireTier } from "../middleware/tier.js";
 // ---------------------------------------------------------------------------
 
 const CALENDAR_PROVIDERS = ["GOOGLE_CALENDAR", "OUTLOOK_CALENDAR"] as const;
-const CALENDAR_EVENT_TYPES = [
-  "GOOGLE_CALENDAR_EVENT",
-  "OUTLOOK_CALENDAR_EVENT",
-] as const;
+const CALENDAR_EVENT_TYPES = ["GOOGLE_CALENDAR_EVENT", "OUTLOOK_CALENDAR_EVENT"] as const;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -209,8 +204,7 @@ export const calendarRouter = router({
       }
 
       // Merge: preserve existing fields (e.g., Jira config) while updating calendar fields
-      const existingConfig =
-        (template.configJson as Record<string, unknown>) ?? {};
+      const existingConfig = (template.configJson as Record<string, unknown>) ?? {};
 
       await prisma.workflowTaskTemplate.update({
         where: { id: input.taskTemplateId },

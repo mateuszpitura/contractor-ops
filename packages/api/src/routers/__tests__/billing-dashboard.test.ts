@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockGetSubscription = vi.fn();
 const mockGetCreditBalance = vi.fn();
@@ -37,9 +37,7 @@ vi.mock("@sentry/nextjs", () => {
     end: vi.fn(),
   };
   return {
-    startSpan: vi.fn(
-      (_o: unknown, fn: (span: typeof mockSpan) => unknown) => fn(mockSpan),
-    ),
+    startSpan: vi.fn((_o: unknown, fn: (span: typeof mockSpan) => unknown) => fn(mockSpan)),
     captureException: vi.fn(),
   };
 });
@@ -111,9 +109,7 @@ function makeSub(tier: string) {
   };
 }
 
-const createCaller = t.createCallerFactory(
-  t.router({ billing: billingRouter }),
-);
+const createCaller = t.createCallerFactory(t.router({ billing: billingRouter }));
 
 describe("getUsageDashboard", () => {
   beforeEach(() => {

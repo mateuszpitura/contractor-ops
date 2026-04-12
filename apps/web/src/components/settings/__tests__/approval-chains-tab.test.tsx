@@ -14,9 +14,8 @@ let mockChains: any[] = [
 let mockIsLoading = false;
 
 vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
-    "@tanstack/react-query",
-  );
+  const actual =
+    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
   return {
     ...actual,
     useQuery: () => ({ isLoading: mockIsLoading, data: mockChains }),
@@ -165,7 +164,15 @@ describe("ApprovalChainsTab", () => {
         isDefault: false,
         isActive: true,
         conditionsJson: [{ field: "amount", operator: "gt", value: 5000 }],
-        stepsJson: [{ name: "L1", approverUserId: null, approverRole: "ORG_ADMIN", slaHours: 24, required: true }],
+        stepsJson: [
+          {
+            name: "L1",
+            approverUserId: null,
+            approverRole: "ORG_ADMIN",
+            slaHours: 24,
+            required: true,
+          },
+        ],
       },
     ];
     render(<ApprovalChainsTab />);

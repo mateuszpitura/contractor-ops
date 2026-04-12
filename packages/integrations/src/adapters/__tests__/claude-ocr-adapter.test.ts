@@ -1,8 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { OcrExtractionRequest, OcrExtractionResult } from "../../types/ocr.js";
+import { adjustConfidences, validateNip } from "../../types/ocr.js";
 import { ClaudeOcrAdapter } from "../claude-ocr-adapter.js";
-import type { OcrExtractionRequest } from "../../types/ocr.js";
-import { validateNip, adjustConfidences } from "../../types/ocr.js";
-import type { OcrExtractionResult } from "../../types/ocr.js";
 
 // ---------------------------------------------------------------------------
 // Mock the Anthropic SDK
@@ -80,9 +79,7 @@ describe("ClaudeOcrAdapter", () => {
   });
 
   it("extracts fields from mock PDF response", async () => {
-    mockCreate.mockResolvedValueOnce(
-      makeMockToolResponse(FULL_EXTRACTION_RESPONSE),
-    );
+    mockCreate.mockResolvedValueOnce(makeMockToolResponse(FULL_EXTRACTION_RESPONSE));
 
     const result = await adapter.extractInvoice(BASE_REQUEST);
 
@@ -97,9 +94,7 @@ describe("ClaudeOcrAdapter", () => {
   });
 
   it("normalizes amounts to grosze correctly", async () => {
-    mockCreate.mockResolvedValueOnce(
-      makeMockToolResponse(FULL_EXTRACTION_RESPONSE),
-    );
+    mockCreate.mockResolvedValueOnce(makeMockToolResponse(FULL_EXTRACTION_RESPONSE));
 
     const result = await adapter.extractInvoice(BASE_REQUEST);
 
@@ -123,9 +118,7 @@ describe("ClaudeOcrAdapter", () => {
       sellerNip: { value: "1234567890", confidence: 90 }, // invalid: remainder 10
     };
 
-    mockCreate.mockResolvedValueOnce(
-      makeMockToolResponse(responseWithInvalidNip),
-    );
+    mockCreate.mockResolvedValueOnce(makeMockToolResponse(responseWithInvalidNip));
 
     const result = await adapter.extractInvoice(BASE_REQUEST);
 

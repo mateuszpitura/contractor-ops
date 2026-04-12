@@ -32,9 +32,7 @@ export const DPD_STATUS_MAP: Record<string, string> = {
 export function mapDpdStatus(rawStatus: string): string | null {
   const mapped = DPD_STATUS_MAP[rawStatus];
   if (!mapped) {
-    console.warn(
-      `[dpd-status-mapper] Unknown DPD status: "${rawStatus}" — skipping`,
-    );
+    console.warn(`[dpd-status-mapper] Unknown DPD status: "${rawStatus}" — skipping`);
     return null;
   }
   return mapped;
@@ -44,8 +42,4 @@ export function mapDpdStatus(rawStatus: string): string | null {
  * Statuses that should trigger user notifications.
  * Intermediate statuses update silently; only terminal/critical events notify.
  */
-export const DPD_NOTIFICATION_STATUSES = [
-  "DELIVERED",
-  "FAILED",
-  "RETURNED",
-] as const;
+export const DPD_NOTIFICATION_STATUSES = ["DELIVERED", "FAILED", "RETURNED"] as const;

@@ -1,11 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import {
-  Progress,
-  ProgressIndicator,
-  ProgressTrack,
-} from "@/components/ui/progress";
+import { Progress, ProgressIndicator, ProgressTrack } from "@/components/ui/progress";
 
 // ---------------------------------------------------------------------------
 // Types

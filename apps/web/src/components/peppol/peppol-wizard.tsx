@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { CheckCircle2, Globe, Loader2 } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -14,11 +14,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Progress } from "@/components/ui/progress";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Props
@@ -55,18 +54,10 @@ function StepIndicator({ current }: { current: number }) {
                   : "bg-muted text-muted-foreground"
             }`}
           >
-            {step.number < current ? (
-              <CheckCircle2 className="h-4 w-4" />
-            ) : (
-              step.number
-            )}
+            {step.number < current ? <CheckCircle2 className="h-4 w-4" /> : step.number}
           </div>
           {i < STEPS.length - 1 && (
-            <div
-              className={`h-px w-6 ${
-                step.number < current ? "bg-primary" : "bg-muted"
-              }`}
-            />
+            <div className={`h-px w-6 ${step.number < current ? "bg-primary" : "bg-muted"}`} />
           )}
         </div>
       ))}
@@ -87,12 +78,8 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
   const [aspProvider] = useState<"storecove">("storecove");
   const [apiKey, setApiKey] = useState("");
   const [showApiKey, setShowApiKey] = useState(false);
-  const [environment, setEnvironment] = useState<"sandbox" | "production">(
-    "sandbox",
-  );
-  const [registrationError, setRegistrationError] = useState<string | null>(
-    null,
-  );
+  const [environment, setEnvironment] = useState<"sandbox" | "production">("sandbox");
+  const [registrationError, setRegistrationError] = useState<string | null>(null);
 
   // Connect mutation
   const connectMutation = useMutation(
@@ -150,8 +137,8 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
             Connect to Peppol Network
           </DialogTitle>
           <DialogDescription>
-            Register your organization on the Peppol network to send and
-            receive e-invoices with UAE trading partners.
+            Register your organization on the Peppol network to send and receive e-invoices with UAE
+            trading partners.
           </DialogDescription>
         </DialogHeader>
 
@@ -163,9 +150,7 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
           {/* Step 1: TRN Entry */}
           {step === 1 && (
             <div className="space-y-4">
-              <h3 className="text-base font-semibold">
-                Step 1: Tax Registration Number
-              </h3>
+              <h3 className="text-base font-semibold">Step 1: Tax Registration Number</h3>
               <div className="space-y-2">
                 <Label htmlFor="trn">Tax Registration Number (TRN)</Label>
                 <Input
@@ -180,18 +165,12 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
                   maxLength={15}
                   inputMode="numeric"
                 />
-                <p className="text-sm text-muted-foreground">
-                  15-digit UAE TRN
-                </p>
+                <p className="text-sm text-muted-foreground">15-digit UAE TRN</p>
               </div>
               {participantId && (
                 <div className="rounded-lg bg-muted/50 p-3">
-                  <p className="text-sm text-muted-foreground">
-                    Peppol Participant ID will be:
-                  </p>
-                  <p className="font-mono text-sm font-medium">
-                    {participantId}
-                  </p>
+                  <p className="text-sm text-muted-foreground">Peppol Participant ID will be:</p>
+                  <p className="font-mono text-sm font-medium">{participantId}</p>
                 </div>
               )}
             </div>
@@ -200,13 +179,8 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
           {/* Step 2: ASP Selection */}
           {step === 2 && (
             <div className="space-y-4">
-              <h3 className="text-base font-semibold">
-                Step 2: Select ASP Provider
-              </h3>
-              <RadioGroup
-                value={aspProvider}
-                className="space-y-3"
-              >
+              <h3 className="text-base font-semibold">Step 2: Select ASP Provider</h3>
+              <RadioGroup value={aspProvider} className="space-y-3">
                 <label
                   htmlFor="storecove"
                   className="flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition-colors hover:bg-muted/50 has-[:checked]:border-primary has-[:checked]:bg-primary/5"
@@ -220,18 +194,14 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
                   </div>
                 </label>
               </RadioGroup>
-              <p className="text-sm text-muted-foreground">
-                More providers coming soon.
-              </p>
+              <p className="text-sm text-muted-foreground">More providers coming soon.</p>
             </div>
           )}
 
           {/* Step 3: API Credentials */}
           {step === 3 && (
             <div className="space-y-4">
-              <h3 className="text-base font-semibold">
-                Step 3: API Credentials
-              </h3>
+              <h3 className="text-base font-semibold">Step 3: API Credentials</h3>
               <div className="space-y-2">
                 <Label htmlFor="apiKey">Storecove API Key</Label>
                 <div className="relative">
@@ -252,17 +222,13 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
                     {showApiKey ? "Hide" : "Show"}
                   </Button>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  Obtain from Storecove dashboard
-                </p>
+                <p className="text-sm text-muted-foreground">Obtain from Storecove dashboard</p>
               </div>
               <div className="space-y-2">
                 <Label>Environment</Label>
                 <RadioGroup
                   value={environment}
-                  onValueChange={(val) =>
-                    setEnvironment(val as "sandbox" | "production")
-                  }
+                  onValueChange={(val) => setEnvironment(val as "sandbox" | "production")}
                   className="flex gap-4"
                 >
                   <label className="flex cursor-pointer items-center gap-2">
@@ -281,9 +247,7 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
           {/* Step 4: Register Participant */}
           {step === 4 && (
             <div className="space-y-4">
-              <h3 className="text-base font-semibold">
-                Step 4: Register Participant
-              </h3>
+              <h3 className="text-base font-semibold">Step 4: Register Participant</h3>
               <div className="rounded-lg border p-4 space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Participant ID</span>
@@ -313,12 +277,7 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
                 <Alert variant="destructive">
                   <AlertTitle>Registration Failed</AlertTitle>
                   <AlertDescription>{registrationError}</AlertDescription>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="mt-3"
-                    onClick={handleRetry}
-                  >
+                  <Button variant="outline" size="sm" className="mt-3" onClick={handleRetry}>
                     Retry
                   </Button>
                 </Alert>
@@ -331,12 +290,9 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
             <div className="flex flex-col items-center gap-4 py-6 text-center">
               <CheckCircle2 className="h-12 w-12 text-success" />
               <div className="space-y-1">
-                <h3 className="text-base font-semibold">
-                  Connected to Peppol Network
-                </h3>
+                <h3 className="text-base font-semibold">Connected to Peppol Network</h3>
                 <p className="text-sm text-muted-foreground">
-                  You can now send and receive e-invoices through the Peppol
-                  network.
+                  You can now send and receive e-invoices through the Peppol network.
                 </p>
               </div>
               <div className="rounded-lg border p-4 text-start w-full max-w-sm space-y-2">
@@ -373,11 +329,7 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
               Done
             </Button>
           ) : step < 4 ? (
-            <Button
-              className="ms-auto"
-              onClick={handleNext}
-              disabled={!canGoNext}
-            >
+            <Button className="ms-auto" onClick={handleNext} disabled={!canGoNext}>
               Next
             </Button>
           ) : null}

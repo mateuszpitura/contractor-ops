@@ -32,9 +32,7 @@ describe("TabInfo", () => {
   });
 
   it("shows 'No notes' when notes is null", () => {
-    render(
-      <TabInfo equipment={makeEquipment({ notes: null })} onEdit={vi.fn()} />,
-    );
+    render(<TabInfo equipment={makeEquipment({ notes: null })} onEdit={vi.fn()} />);
 
     expect(screen.getByText("No notes")).toBeInTheDocument();
   });

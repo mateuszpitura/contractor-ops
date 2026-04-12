@@ -39,9 +39,7 @@ export function DirectorySummaryBar({
         </span>
 
         <span className="text-sm text-muted-foreground">
-          <span className="font-semibold text-foreground">
-            {alreadyImported}
-          </span>{" "}
+          <span className="font-semibold text-foreground">{alreadyImported}</span>{" "}
           {t("summaryExisting", { count: alreadyImported })}
         </span>
 
@@ -56,10 +54,7 @@ export function DirectorySummaryBar({
 
         {selected > 0 && (
           <>
-            <span
-              className="text-sm text-muted-foreground"
-              aria-hidden="true"
-            >
+            <span className="text-sm text-muted-foreground" aria-hidden="true">
               |
             </span>
             <span className="text-sm text-primary font-semibold">

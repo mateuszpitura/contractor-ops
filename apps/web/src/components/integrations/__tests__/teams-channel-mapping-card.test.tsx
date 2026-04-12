@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, setup } from "@/test/test-utils";
 import { TeamsChannelMappingCard } from "../teams-channel-mapping-card";
 
@@ -8,9 +8,13 @@ import { TeamsChannelMappingCard } from "../teams-channel-mapping-card";
 
 vi.mock("@/components/ui/tooltip", () => ({
   Tooltip: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  TooltipTrigger: ({ children, render: renderProp }: { children?: React.ReactNode; render?: React.ReactNode }) => (
-    <div>{renderProp ?? children}</div>
-  ),
+  TooltipTrigger: ({
+    children,
+    render: renderProp,
+  }: {
+    children?: React.ReactNode;
+    render?: React.ReactNode;
+  }) => <div>{renderProp ?? children}</div>,
   TooltipContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   TooltipProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
@@ -18,15 +22,15 @@ vi.mock("@/components/ui/tooltip", () => ({
 vi.mock("@/components/ui/select", () => ({
   Select: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   SelectTrigger: ({ children, ...props }: { children: React.ReactNode; "aria-label"?: string }) => (
-    <div data-testid="select-trigger" aria-label={props["aria-label"]}>{children}</div>
+    <div data-testid="select-trigger" aria-label={props["aria-label"]}>
+      {children}
+    </div>
   ),
   SelectContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   SelectItem: ({ children, value }: { children: React.ReactNode; value: string }) => (
     <div data-value={value}>{children}</div>
   ),
-  SelectValue: ({ placeholder }: { placeholder?: string }) => (
-    <span>{placeholder}</span>
-  ),
+  SelectValue: ({ placeholder }: { placeholder?: string }) => <span>{placeholder}</span>,
 }));
 
 vi.mock("sonner", () => ({
@@ -56,9 +60,8 @@ let mappingData: Record<string, string> = {};
 const mockMutate = vi.fn();
 
 vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
-    "@tanstack/react-query",
-  );
+  const actual =
+    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
   return {
     ...actual,
     useQuery: (opts: { queryKey?: unknown }) => {
@@ -136,18 +139,14 @@ describe("TeamsChannelMappingCard", () => {
 
   it("renders refresh button text in tooltip", () => {
     render(<TeamsChannelMappingCard />);
-    expect(
-      screen.getByText("Refresh channel list"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Refresh channel list")).toBeInTheDocument();
   });
 
   it("shows error message on channel fetch error", () => {
     teamsData = [mockTeams[0]];
     channelsError = true;
     render(<TeamsChannelMappingCard />);
-    expect(
-      screen.getByText(/Could not load Teams channels/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Could not load Teams channels/)).toBeInTheDocument();
   });
 
   it("shows no channels message when empty and team selected", () => {
@@ -156,9 +155,7 @@ describe("TeamsChannelMappingCard", () => {
     channelsLoading = false;
     channelsError = false;
     render(<TeamsChannelMappingCard />);
-    expect(
-      screen.getByText(/No channels available/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/No channels available/)).toBeInTheDocument();
   });
 
   it("renders category labels when channels are available", () => {
@@ -190,11 +187,7 @@ describe("TeamsChannelMappingCard", () => {
     teamsData = [mockTeams[0]];
     channelsData = mockChannels;
     render(<TeamsChannelMappingCard />);
-    expect(
-      screen.getByLabelText("Approvals notification channel"),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByLabelText("Invoices notification channel"),
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Approvals notification channel")).toBeInTheDocument();
+    expect(screen.getByLabelText("Invoices notification channel")).toBeInTheDocument();
   });
 });

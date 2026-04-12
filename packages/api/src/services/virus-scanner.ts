@@ -4,9 +4,7 @@ import NodeClam from "clamscan";
 // ClamAV virus scanner singleton
 // ---------------------------------------------------------------------------
 
-let clamInstance: Awaited<
-  ReturnType<InstanceType<typeof NodeClam>["init"]>
-> | null = null;
+let clamInstance: Awaited<ReturnType<InstanceType<typeof NodeClam>["init"]>> | null = null;
 
 async function getClamInstance() {
   if (!clamInstance) {

@@ -4,9 +4,9 @@
  * full-text search for a global search / command palette experience.
  */
 
-import { z } from "zod";
-import { Prisma } from "@contractor-ops/db/generated/prisma/client";
 import { prisma } from "@contractor-ops/db";
+import { Prisma } from "@contractor-ops/db/generated/prisma/client";
+import { z } from "zod";
 import { router } from "../init.js";
 import { tenantProcedure } from "../middleware/tenant.js";
 

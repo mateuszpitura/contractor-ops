@@ -1,40 +1,35 @@
 "use client";
 
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Inbox, Mail, Upload } from "lucide-react";
 import { useParams } from "next/navigation";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-import { Inbox, Upload, Mail } from "lucide-react";
 import { toast } from "sonner";
-
-import { trpc } from "@/trpc/init";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useBreadcrumbOverride } from "@/components/layout/breadcrumb-context";
-
+import { AuditTimeline } from "@/components/approvals/audit-timeline";
+import { ChainTracker } from "@/components/approvals/chain-tracker";
+import { DuplicateWarning } from "@/components/invoices/invoice-detail/duplicate-warning";
 import { InvoiceDetailLayout } from "@/components/invoices/invoice-detail/invoice-detail-layout";
 import { InvoiceMetadataForm } from "@/components/invoices/invoice-detail/invoice-metadata-form";
 import { MatchCard } from "@/components/invoices/invoice-detail/match-card";
-import { DuplicateWarning } from "@/components/invoices/invoice-detail/duplicate-warning";
-import { KsefMetadataSection } from "@/components/invoices/ksef-metadata-section";
-import { KsefDuplicateBanner } from "@/components/invoices/ksef-duplicate-banner";
 import { KsefSourceBadge } from "@/components/invoices/ksef-badge";
-import { ChainTracker } from "@/components/approvals/chain-tracker";
-import { AuditTimeline } from "@/components/approvals/audit-timeline";
-import { ReconciliationCard } from "@/components/time/reconciliation-card";
+import { KsefDuplicateBanner } from "@/components/invoices/ksef-duplicate-banner";
+import { KsefMetadataSection } from "@/components/invoices/ksef-metadata-section";
 import { ReverseChargeBanner } from "@/components/invoices/reverse-charge-banner";
+import { useBreadcrumbOverride } from "@/components/layout/breadcrumb-context";
 import { PeppolInboundBanner } from "@/components/peppol/peppol-inbound-banner";
 import { PeppolQRDisplay } from "@/components/peppol/peppol-qr-display";
 import { PeppolTransmissionStatus } from "@/components/peppol/peppol-transmission-status";
+import { ReconciliationCard } from "@/components/time/reconciliation-card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Status badge config (reuse from columns.tsx pattern)
 // ---------------------------------------------------------------------------
 
-const statusBadgeConfig: Record<
-  string,
-  { className: string; label: string }
-> = {
+const statusBadgeConfig: Record<string, { className: string; label: string }> = {
   RECEIVED: { className: "bg-muted text-muted-foreground", label: "RECEIVED" },
   UNDER_REVIEW: {
     className: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
@@ -122,9 +117,7 @@ export default function InvoiceDetailPage() {
   const queryClient = useQueryClient();
 
   // Fetch invoice data
-  const invoiceQuery = useQuery(
-    trpc.invoice.getById.queryOptions({ id: params.id })
-  );
+  const invoiceQuery = useQuery(trpc.invoice.getById.queryOptions({ id: params.id }));
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const invoice = invoiceQuery.data as any;
@@ -134,7 +127,7 @@ export default function InvoiceDetailPage() {
   // Fetch PDF download URL for the first SOURCE_ORIGINAL file
   const sourceFile = invoice?.files?.find(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (f: any) => f.role === "SOURCE_ORIGINAL"
+    (f: any) => f.role === "SOURCE_ORIGINAL",
   );
   const documentId = sourceFile?.document?.id ?? sourceFile?.documentId;
 
@@ -210,9 +203,7 @@ export default function InvoiceDetailPage() {
   const SourceIcon = sourceIconMap[invoice.source] ?? Inbox;
 
   // Check for duplicate flag
-  const flags: string[] = Array.isArray(invoice.flagsJson)
-    ? invoice.flagsJson
-    : [];
+  const flags: string[] = Array.isArray(invoice.flagsJson) ? invoice.flagsJson : [];
   const hasDuplicateFlag = flags.includes("DUPLICATE_SUSPECTED");
 
   // Get duplicate invoice ID from latest match result
@@ -248,8 +239,7 @@ export default function InvoiceDetailPage() {
     invoice.status === "REJECTED";
 
   const canSubmitForApproval =
-    (invoice.matchStatus === "MATCHED" ||
-      invoice.matchStatus === "MANUALLY_CONFIRMED") &&
+    (invoice.matchStatus === "MATCHED" || invoice.matchStatus === "MANUALLY_CONFIRMED") &&
     invoice.status !== "APPROVAL_PENDING" &&
     invoice.status !== "APPROVED" &&
     invoice.status !== "REJECTED" &&
@@ -260,14 +250,9 @@ export default function InvoiceDetailPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <h1 className="text-xl font-semibold font-mono">
-          {invoice.invoiceNumber}
-        </h1>
+        <h1 className="text-xl font-semibold font-mono">{invoice.invoiceNumber}</h1>
         {statusConfig && (
-          <Badge
-            variant="secondary"
-            className={`gap-1 ${statusConfig.className}`}
-          >
+          <Badge variant="secondary" className={`gap-1 ${statusConfig.className}`}>
             {t(`status.${statusConfig.label}`)}
           </Badge>
         )}
@@ -347,9 +332,7 @@ export default function InvoiceDetailPage() {
         />
 
         {/* Time reconciliation card (D-16) */}
-        {reconciliation && (
-          <ReconciliationCard reconciliation={reconciliation} />
-        )}
+        {reconciliation && <ReconciliationCard reconciliation={reconciliation} />}
 
         {/* Reverse charge banner (Phase 47) */}
         {invoice.isReverseCharge && (
@@ -368,9 +351,7 @@ export default function InvoiceDetailPage() {
         {canSubmitForApproval && (
           <div className="flex justify-end">
             <Button
-              onClick={() =>
-                submitForApproval.mutate({ invoiceId: invoice.id })
-              }
+              onClick={() => submitForApproval.mutate({ invoiceId: invoice.id })}
               disabled={submitForApproval.isPending}
             >
               {submitForApproval.isPending

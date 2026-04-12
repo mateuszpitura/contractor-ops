@@ -1,7 +1,7 @@
-import { fireEvent, screen } from "@testing-library/react";
 import { useQuery } from "@tanstack/react-query";
-import { SpendChart } from "../spend-chart";
+import { fireEvent, screen } from "@testing-library/react";
 import { render as renderWithProviders } from "@/test/test-utils";
+import { SpendChart } from "../spend-chart";
 
 const { mockSetSpendRange } = vi.hoisted(() => ({
   mockSetSpendRange: vi.fn(),
@@ -112,9 +112,7 @@ describe("SpendChart", () => {
 
   it("does not render EUR area when no EUR data", () => {
     mockedUseQuery.mockReturnValue({
-      data: [
-        { month: "2026-01-01", currency: "PLN", totalMinor: 500000 },
-      ],
+      data: [{ month: "2026-01-01", currency: "PLN", totalMinor: 500000 }],
       isLoading: false,
     } as any);
     renderWithProviders(<SpendChart />);
@@ -157,9 +155,7 @@ describe("SpendChart", () => {
 
   it("renders single month data correctly", () => {
     mockedUseQuery.mockReturnValue({
-      data: [
-        { month: "2026-03-01", currency: "PLN", totalMinor: 999999 },
-      ],
+      data: [{ month: "2026-03-01", currency: "PLN", totalMinor: 999999 }],
       isLoading: false,
     } as any);
     renderWithProviders(<SpendChart />);

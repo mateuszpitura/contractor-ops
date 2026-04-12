@@ -6,9 +6,9 @@
  */
 
 export {
+  ConfluenceBrandIcon as ConfluenceIcon,
   GoogleCalendarBrandIcon as GoogleCalendarIcon,
   LinearBrandIcon as LinearIcon,
   NotionBrandIcon as NotionIcon,
-  ConfluenceBrandIcon as ConfluenceIcon,
   OutlookCalendarBrandIcon as OutlookCalendarIcon,
 } from "./brand-icons";

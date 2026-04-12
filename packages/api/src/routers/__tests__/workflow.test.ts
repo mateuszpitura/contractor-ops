@@ -17,7 +17,7 @@
  * the calendar integration behavior.
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Import the pure function directly (no mocking needed)
@@ -134,22 +134,22 @@ describe("evaluateCondition (workflow helper)", () => {
 describe("workflow router — startRun calendar integration", () => {
   it.todo(
     "builds calendarConfigMap from template tasks with calendarEnabled=true — " +
-    "requires full startRun transaction mock, tested via integration tests",
+      "requires full startRun transaction mock, tested via integration tests",
   );
   it.todo(
     "skips tasks where calendarTaskConfigSchema.safeParse fails — " +
-    "safeParse returns { success: false } and task is excluded from calendarConfigMap",
+      "safeParse returns { success: false } and task is excluded from calendarConfigMap",
   );
   it.todo(
     "returns calendarTaskCount in startRun mutation response — " +
-    "calendarTaskCount equals calendarConfigMap.size, appended to plain(run) return",
+      "calendarTaskCount equals calendarConfigMap.size, appended to plain(run) return",
   );
   it.todo(
     "calls createTaskCalendarEvent for each calendar-eligible TODO task run — " +
-    "fire-and-forget via dynamic import, tested in calendar-sync.test.ts",
+      "fire-and-forget via dynamic import, tested in calendar-sync.test.ts",
   );
   it.todo(
     "logs server-side error when createTaskCalendarEvent fails — " +
-    "catch block logs to console.error, does not propagate to caller",
+      "catch block logs to console.error, does not propagate to caller",
   );
 });

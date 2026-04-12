@@ -1,39 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMutation } from "@tanstack/react-query";
-import {
-  GitBranch,
-  MoreHorizontal,
-  Pencil,
-  Copy,
-  Archive,
-  Power,
-  Trash2,
-} from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Archive, Copy, GitBranch, MoreHorizontal, Pencil, Power, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
-import { useTemplateMutations } from "@/hooks/use-template-mutations";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,7 +14,27 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useTemplateMutations } from "@/hooks/use-template-mutations";
 import { Link, useRouter } from "@/i18n/navigation";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Template status badge styling per UI-SPEC
@@ -110,16 +100,12 @@ export function TemplatesTable() {
   );
 
   const templates = useMemo(() => {
-    const result = templatesQuery.data as
-      | { items: TemplateRow[]; total: number }
-      | undefined;
+    const result = templatesQuery.data as { items: TemplateRow[]; total: number } | undefined;
     return result?.items ?? [];
   }, [templatesQuery.data]);
 
   const total = useMemo(() => {
-    const result = templatesQuery.data as
-      | { items: unknown[]; total: number }
-      | undefined;
+    const result = templatesQuery.data as { items: unknown[]; total: number } | undefined;
     return result?.total ?? 0;
   }, [templatesQuery.data]);
 
@@ -133,9 +119,7 @@ export function TemplatesTable() {
   } = useTemplateMutations(t);
 
   // Seed starter templates on first visit (if org has no templates)
-  const seedMutation = useMutation(
-    trpc.workflow.seedStarterTemplates.mutationOptions(),
-  );
+  const seedMutation = useMutation(trpc.workflow.seedStarterTemplates.mutationOptions());
   const seedAttempted = useRef(false);
 
   useEffect(() => {
@@ -205,12 +189,24 @@ export function TemplatesTable() {
           <TableBody>
             {Array.from({ length: 5 }).map((_, i) => (
               <TableRow key={`skeleton-${i}`}>
-                <TableCell><Skeleton className="h-4 w-40" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-8" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-4" /></TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-40" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-20" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-16" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-8" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-24" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-4" />
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -224,16 +220,9 @@ export function TemplatesTable() {
     return (
       <div className="py-16 text-center">
         <GitBranch className="mx-auto h-10 w-10 text-muted-foreground/50" />
-        <h3 className="mt-3 text-[16px] font-medium">
-          {t("templates.empty.heading")}
-        </h3>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {t("templates.empty.body")}
-        </p>
-        <Button
-          className="mt-4"
-          render={<Link href="/workflows/templates/new" />}
-        >
+        <h3 className="mt-3 text-[16px] font-medium">{t("templates.empty.heading")}</h3>
+        <p className="mt-1 text-sm text-muted-foreground">{t("templates.empty.body")}</p>
+        <Button className="mt-4" render={<Link href="/workflows/templates/new" />}>
           {t("templates.empty.cta")}
         </Button>
       </div>
@@ -246,21 +235,11 @@ export function TemplatesTable() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>
-                {t("templates.columns.name")}
-              </TableHead>
-              <TableHead>
-                {t("templates.columns.type")}
-              </TableHead>
-              <TableHead>
-                {t("templates.columns.status")}
-              </TableHead>
-              <TableHead>
-                {t("templates.columns.taskCount")}
-              </TableHead>
-              <TableHead>
-                {t("templates.columns.lastUpdated")}
-              </TableHead>
+              <TableHead>{t("templates.columns.name")}</TableHead>
+              <TableHead>{t("templates.columns.type")}</TableHead>
+              <TableHead>{t("templates.columns.status")}</TableHead>
+              <TableHead>{t("templates.columns.taskCount")}</TableHead>
+              <TableHead>{t("templates.columns.lastUpdated")}</TableHead>
               <TableHead className="w-10" />
             </TableRow>
           </TableHeader>
@@ -269,9 +248,7 @@ export function TemplatesTable() {
               <TableRow
                 key={template.id}
                 className="cursor-pointer"
-                onClick={() =>
-                  router.push(`/workflows/templates/${template.id}`)
-                }
+                onClick={() => router.push(`/workflows/templates/${template.id}`)}
               >
                 <TableCell>
                   <span className="font-medium">{template.name}</span>
@@ -279,35 +256,21 @@ export function TemplatesTable() {
                 <TableCell>
                   <Badge
                     variant="secondary"
-                    className={
-                      templateTypeBadgeColors[template.type] ?? ""
-                    }
+                    className={templateTypeBadgeColors[template.type] ?? ""}
                   >
-                    {t(
-                      `templateType.${template.type}` as Parameters<
-                        typeof t
-                      >[0],
-                    )}
+                    {t(`templateType.${template.type}` as Parameters<typeof t>[0])}
                   </Badge>
                 </TableCell>
                 <TableCell>
                   <Badge
                     variant="secondary"
-                    className={
-                      templateStatusBadgeColors[template.status] ?? ""
-                    }
+                    className={templateStatusBadgeColors[template.status] ?? ""}
                   >
-                    {t(
-                      `templateStatus.${template.status}` as Parameters<
-                        typeof t
-                      >[0],
-                    )}
+                    {t(`templateStatus.${template.status}` as Parameters<typeof t>[0])}
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  <span className="text-sm tabular-nums">
-                    {template._count.tasks}
-                  </span>
+                  <span className="text-sm tabular-nums">{template._count.tasks}</span>
                 </TableCell>
                 <TableCell>
                   <span className="text-sm text-muted-foreground">
@@ -326,42 +289,30 @@ export function TemplatesTable() {
                           onClick={(e) => e.stopPropagation()}
                         >
                           <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">
-                            {t("templates.actions")}
-                          </span>
+                          <span className="sr-only">{t("templates.actions")}</span>
                         </Button>
                       )}
                     />
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem
-                        onSelect={() =>
-                          router.push(
-                            `/workflows/templates/${template.id}`,
-                          )
-                        }
+                        onSelect={() => router.push(`/workflows/templates/${template.id}`)}
                       >
                         <Pencil className="me-2 h-4 w-4" />
                         {t("templates.actionEdit")}
                       </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onSelect={() => void handleDuplicate(template)}
-                      >
+                      <DropdownMenuItem onSelect={() => void handleDuplicate(template)}>
                         <Copy className="me-2 h-4 w-4" />
                         {t("templates.actionDuplicate")}
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       {template.status === "DRAFT" && (
-                        <DropdownMenuItem
-                          onSelect={() => void handleActivate(template)}
-                        >
+                        <DropdownMenuItem onSelect={() => void handleActivate(template)}>
                           <Power className="me-2 h-4 w-4" />
                           {t("templates.actionActivate")}
                         </DropdownMenuItem>
                       )}
                       {template.status === "ACTIVE" && (
-                        <DropdownMenuItem
-                          onSelect={() => void handleArchive(template)}
-                        >
+                        <DropdownMenuItem onSelect={() => void handleArchive(template)}>
                           <Archive className="me-2 h-4 w-4" />
                           {t("templates.actionArchive")}
                         </DropdownMenuItem>
@@ -397,16 +348,11 @@ export function TemplatesTable() {
             <AlertDialogTitle>
               {t("templates.deleteTitle", { name: deleteTarget?.name ?? "" })}
             </AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("templates.deleteBody")}
-            </AlertDialogDescription>
+            <AlertDialogDescription>{t("templates.deleteBody")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t("templates.deleteCancel")}</AlertDialogCancel>
-            <AlertDialogAction
-              variant="destructive"
-              onClick={() => void handleDelete()}
-            >
+            <AlertDialogAction variant="destructive" onClick={() => void handleDelete()}>
               {t("templates.deleteConfirm")}
             </AlertDialogAction>
           </AlertDialogFooter>

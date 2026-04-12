@@ -2,8 +2,9 @@
  * tRPC context created from incoming request headers.
  * The headers are used by Better Auth to validate sessions.
  */
-import { auth } from "@contractor-ops/auth";
+
 import type { Session } from "@contractor-ops/auth";
+import { auth } from "@contractor-ops/auth";
 
 export type ApiContext = {
   headers: Headers;

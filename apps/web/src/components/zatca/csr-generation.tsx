@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -47,28 +47,25 @@ export function CsrGeneration({ onSuccess, onBack }: CsrGenerationProps) {
       <div className="space-y-1">
         <h3 className="text-base font-semibold">Step 2 of 5: Generate Certificate Request</h3>
         <p className="text-sm text-muted-foreground">
-          A Certificate Signing Request will be generated using your tax details
-          from Step 1.
+          A Certificate Signing Request will be generated using your tax details from Step 1.
         </p>
       </div>
 
       <div className="space-y-2 text-sm text-muted-foreground">
         <p>
-          <span className="font-medium text-foreground">Key Type:</span>{" "}
-          ECDSA P-256 (recommended by ZATCA)
+          <span className="font-medium text-foreground">Key Type:</span> ECDSA P-256 (recommended by
+          ZATCA)
         </p>
         <p>
-          The private key will be stored securely in your organization&apos;s
-          secret vault. It never leaves the server.
+          The private key will be stored securely in your organization&apos;s secret vault. It never
+          leaves the server.
         </p>
       </div>
 
       {/* CSR Preview */}
       {csrPem && (
         <div className="rounded-lg border bg-muted/30 p-4">
-          <p className="mb-2 text-xs font-medium text-muted-foreground">
-            CSR Preview (read-only)
-          </p>
+          <p className="mb-2 text-xs font-medium text-muted-foreground">CSR Preview (read-only)</p>
           <pre className="overflow-x-auto whitespace-pre-wrap break-all font-mono text-xs text-foreground">
             {csrPem}
           </pre>

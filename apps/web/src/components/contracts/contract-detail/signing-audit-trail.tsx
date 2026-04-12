@@ -1,39 +1,17 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import {
-  Send,
-  Eye,
-  PenLine,
-  XCircle,
-  Ban,
-  CheckCircle2,
-  FileDown,
-} from "lucide-react";
-
-import { trpc } from "@/trpc/init";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-  TooltipProvider,
-} from "@/components/ui/tooltip";
+import { Ban, CheckCircle2, Eye, FileDown, PenLine, Send, XCircle } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Event Type to Icon/Color Mapping
 // ---------------------------------------------------------------------------
 
-const EVENT_CONFIG: Record<
-  string,
-  { icon: typeof Send; className: string }
-> = {
+const EVENT_CONFIG: Record<string, { icon: typeof Send; className: string }> = {
   ENVELOPE_CREATED: { icon: Send, className: "text-muted-foreground" },
   ENVELOPE_SENT: { icon: Send, className: "text-muted-foreground" },
   RECIPIENT_VIEWED: { icon: Eye, className: "text-muted-foreground" },
@@ -97,16 +75,9 @@ type SigningAuditTrailProps = {
  * Side panel showing chronological signing events for an envelope.
  * Per UI-SPEC: Sheet from right, 400px wide, newest first.
  */
-export function SigningAuditTrail({
-  envelopeId,
-  open,
-  onOpenChange,
-}: SigningAuditTrailProps) {
+export function SigningAuditTrail({ envelopeId, open, onOpenChange }: SigningAuditTrailProps) {
   const detailQuery = useQuery(
-    trpc.esign.getEnvelopeDetail.queryOptions(
-      { envelopeId },
-      { enabled: open && !!envelopeId }
-    )
+    trpc.esign.getEnvelopeDetail.queryOptions({ envelopeId }, { enabled: open && !!envelopeId }),
   );
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -123,9 +94,7 @@ export function SigningAuditTrail({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-[400px] sm:w-[400px]">
         <SheetHeader>
-          <SheetTitle className="text-xl font-semibold">
-            Signing History
-          </SheetTitle>
+          <SheetTitle className="text-xl font-semibold">Signing History</SheetTitle>
         </SheetHeader>
 
         <div className="mt-4">
@@ -143,12 +112,9 @@ export function SigningAuditTrail({
             </div>
           ) : events.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <h4 className="text-sm font-medium text-muted-foreground">
-                No Signing History
-              </h4>
+              <h4 className="text-sm font-medium text-muted-foreground">No Signing History</h4>
               <p className="mt-1 max-w-[240px] text-sm text-muted-foreground">
-                Signing events will appear here once a document is sent for
-                signature.
+                Signing events will appear here once a document is sent for signature.
               </p>
             </div>
           ) : (
@@ -165,9 +131,7 @@ export function SigningAuditTrail({
                     key={event.id}
                     className="flex items-start gap-3 border-b py-2 last:border-0"
                   >
-                    <Icon
-                      className={`mt-0.5 size-4 shrink-0 ${config.className}`}
-                    />
+                    <Icon className={`mt-0.5 size-4 shrink-0 ${config.className}`} />
                     <div className="min-w-0 flex-1">
                       <p className="text-sm">{event.description}</p>
                       <TooltipProvider>
@@ -179,9 +143,7 @@ export function SigningAuditTrail({
                               </p>
                             )}
                           />
-                          <TooltipContent>
-                            {formatFullDateTime(event.occurredAt)}
-                          </TooltipContent>
+                          <TooltipContent>{formatFullDateTime(event.occurredAt)}</TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
                     </div>

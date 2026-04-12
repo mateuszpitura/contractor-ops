@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const normalizeSigningEvent = vi.fn();
 
@@ -55,20 +55,18 @@ beforeEach(() => {
   vi.clearAllMocks();
   mockSigningEnvelopeFindFirst.mockResolvedValue(baseEnvelope());
   mockSigningEventFindFirst.mockResolvedValue(null);
-  mockTransaction.mockImplementation(
-    async (fn: (tx: Record<string, unknown>) => Promise<void>) => {
-      const tx = {
-        signingEvent: { create: mockSigningEventCreate },
-        signingRecipient: {
-          findFirst: mockSigningRecipientFindFirst,
-          update: mockSigningRecipientUpdate,
-        },
-        signingEnvelope: { update: mockSigningEnvelopeUpdate },
-        contract: { update: mockContractUpdate },
-      };
-      await fn(tx as never);
-    },
-  );
+  mockTransaction.mockImplementation(async (fn: (tx: Record<string, unknown>) => Promise<void>) => {
+    const tx = {
+      signingEvent: { create: mockSigningEventCreate },
+      signingRecipient: {
+        findFirst: mockSigningRecipientFindFirst,
+        update: mockSigningRecipientUpdate,
+      },
+      signingEnvelope: { update: mockSigningEnvelopeUpdate },
+      contract: { update: mockContractUpdate },
+    };
+    await fn(tx as never);
+  });
 });
 
 describe("handleSigningWebhook", () => {
@@ -95,9 +93,7 @@ describe("handleSigningWebhook", () => {
   });
 
   it("returns early without transaction when providerEventId is duplicate", async () => {
-    normalizeSigningEvent.mockReturnValue(
-      baseNormalized({ providerEventId: "dup-1" }),
-    );
+    normalizeSigningEvent.mockReturnValue(baseNormalized({ providerEventId: "dup-1" }));
     mockSigningEventFindFirst.mockResolvedValue({ id: "existing-event" });
 
     const out = await handleSigningWebhook({
@@ -199,9 +195,7 @@ describe("handleSigningWebhook", () => {
 
   it("throws when SigningEnvelope is missing", async () => {
     mockSigningEnvelopeFindFirst.mockResolvedValue(null);
-    normalizeSigningEvent.mockReturnValue(
-      baseNormalized({ externalEnvelopeId: "unknown" }),
-    );
+    normalizeSigningEvent.mockReturnValue(baseNormalized({ externalEnvelopeId: "unknown" }));
 
     await expect(
       handleSigningWebhook({

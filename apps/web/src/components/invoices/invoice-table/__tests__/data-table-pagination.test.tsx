@@ -1,10 +1,7 @@
+import type { ColumnDef } from "@tanstack/react-table";
+import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { useState } from "react";
-import { describe, it, expect } from "vitest";
-import {
-  useReactTable,
-  getCoreRowModel,
-  type ColumnDef,
-} from "@tanstack/react-table";
+import { describe, expect, it } from "vitest";
 
 import { render, screen, setup } from "@/test/test-utils";
 
@@ -61,15 +58,11 @@ describe("DataTablePagination", () => {
 
   it("disables Previous on the first page", () => {
     render(<PaginationHarness />);
-    expect(
-      screen.getByRole("button", { name: /previous page/i }),
-    ).toBeDisabled();
+    expect(screen.getByRole("button", { name: /previous page/i })).toBeDisabled();
   });
 
   it("disables Next on the last page", () => {
-    render(
-      <PaginationHarness totalRows={5} initialPage={1} initialPageSize={10} />,
-    );
+    render(<PaginationHarness totalRows={5} initialPage={1} initialPageSize={10} />);
     expect(screen.getByRole("button", { name: /next page/i })).toBeDisabled();
   });
 });

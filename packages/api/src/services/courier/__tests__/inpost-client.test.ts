@@ -1,7 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-
-import { InPostClient } from "../inpost-client";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { InPostShipmentParams } from "../courier-client";
+import { InPostClient } from "../inpost-client";
 
 // ---------------------------------------------------------------------------
 // InPost Client Tests
@@ -25,8 +24,7 @@ function mockFetchResponse(body: unknown, status = 200) {
     status,
     json: () => Promise.resolve(body),
     text: () => Promise.resolve(JSON.stringify(body)),
-    arrayBuffer: () =>
-      Promise.resolve(new TextEncoder().encode("PDF_CONTENT").buffer),
+    arrayBuffer: () => Promise.resolve(new TextEncoder().encode("PDF_CONTENT").buffer),
   });
 }
 
@@ -77,9 +75,7 @@ describe("InPostClient", () => {
 
       // Verify method and headers
       expect(options.method).toBe("POST");
-      expect(options.headers.Authorization).toBe(
-        `Bearer ${TEST_CONFIG.apiToken}`,
-      );
+      expect(options.headers.Authorization).toBe(`Bearer ${TEST_CONFIG.apiToken}`);
       expect(options.headers["Content-Type"]).toBe("application/json");
 
       // Verify body
@@ -97,16 +93,12 @@ describe("InPostClient", () => {
         externalId: "12345678",
         trackingNumber: "620123456789012345678",
         status: "created",
-        labelUrl:
-          "https://sandbox-api-shipx-pl.easypack24.net/v1/shipments/12345678/label",
+        labelUrl: "https://sandbox-api-shipx-pl.easypack24.net/v1/shipments/12345678/label",
       });
     });
 
     it("throws on non-2xx response with status code and body", async () => {
-      globalThis.fetch = mockFetchResponse(
-        { error: "Invalid token" },
-        401,
-      );
+      globalThis.fetch = mockFetchResponse({ error: "Invalid token" }, 401);
 
       const client = createClient();
       await expect(

@@ -1,10 +1,10 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { EInvoiceEngine } from "../engine/engine.js";
-import { registerProfile, clearProfiles } from "../registry.js";
-import type { EInvoiceProfile } from "../types/profile.js";
-import type { EInvoice } from "../types/invoice.js";
-import type { ValidationResult } from "../types/validation.js";
+import { clearProfiles, registerProfile } from "../registry.js";
 import type { ComplianceStatus } from "../types/compliance.js";
+import type { EInvoice } from "../types/invoice.js";
+import type { EInvoiceProfile } from "../types/profile.js";
+import type { ValidationResult } from "../types/validation.js";
 
 // ---------------------------------------------------------------------------
 // Mock Profile

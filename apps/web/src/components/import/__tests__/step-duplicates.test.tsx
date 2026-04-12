@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, setup } from "@/test/test-utils";
-import { StepDuplicates } from "../step-duplicates";
 import type { ImportRow } from "../import-wizard-dialog";
+import { StepDuplicates } from "../step-duplicates";
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -29,17 +29,9 @@ const duplicateRow = (
   duplicateOf,
 });
 
-const ROW_1 = duplicateRow(
-  1,
-  { taxId: "1234567890", legalName: "New Corp" },
-  "Existing Ltd",
-);
+const ROW_1 = duplicateRow(1, { taxId: "1234567890", legalName: "New Corp" }, "Existing Ltd");
 
-const ROW_2 = duplicateRow(
-  2,
-  { contractorTaxId: "9988776655", title: "Alt title" },
-  "Other Co",
-);
+const ROW_2 = duplicateRow(2, { contractorTaxId: "9988776655", title: "Alt title" }, "Other Co");
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -124,11 +116,7 @@ describe("StepDuplicates", () => {
     usePermissionsMock.mockReturnValue({ role: "readonly" });
 
     render(
-      <StepDuplicates
-        duplicateRows={[ROW_1]}
-        duplicateActions={{}}
-        onActionsChange={vi.fn()}
-      />,
+      <StepDuplicates duplicateRows={[ROW_1]} duplicateActions={{}} onActionsChange={vi.fn()} />,
     );
 
     expect(screen.getByText("12••••••90")).toBeInTheDocument();
@@ -139,11 +127,7 @@ describe("StepDuplicates", () => {
     usePermissionsMock.mockReturnValue({ role: "admin" });
 
     render(
-      <StepDuplicates
-        duplicateRows={[ROW_1]}
-        duplicateActions={{}}
-        onActionsChange={vi.fn()}
-      />,
+      <StepDuplicates duplicateRows={[ROW_1]} duplicateActions={{}} onActionsChange={vi.fn()} />,
     );
 
     expect(screen.getByText("1234567890")).toBeInTheDocument();

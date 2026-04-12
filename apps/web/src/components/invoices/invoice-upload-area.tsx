@@ -1,31 +1,28 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { useDropzone } from "react-dropzone";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
+import { TRPCClientError } from "@trpc/client";
 import {
-  UploadCloud,
-  Loader2,
   CheckCircle2,
-  XCircle,
-  FileText,
-  RotateCcw,
   Eye,
   EyeOff,
+  FileText,
+  Loader2,
+  RotateCcw,
+  UploadCloud,
+  XCircle,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useCallback, useState } from "react";
+import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
-
-import { TRPCClientError } from "@trpc/client";
-import { trpc } from "@/trpc/init";
+import { CreditExhaustedInline } from "@/components/billing/credit-exhausted-inline";
+import type { ExtractedInvoiceData } from "@/components/ocr/ocr-review-panel";
+import { OcrReviewPanel } from "@/components/ocr/ocr-review-panel";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import {
-  OcrReviewPanel,
-  type ExtractedInvoiceData,
-} from "@/components/ocr/ocr-review-panel";
-import { CreditExhaustedInline } from "@/components/billing/credit-exhausted-inline";
 import { useRouter } from "@/i18n/navigation";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -56,10 +53,7 @@ interface UploadingFile {
 import { formatFileSize, truncateFilename as truncateName } from "@/lib/format-file-size";
 
 function isPdfFile(file: File): boolean {
-  return (
-    file.type === "application/pdf" ||
-    file.name.toLowerCase().endsWith(".pdf")
-  );
+  return file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
 }
 
 // ---------------------------------------------------------------------------
@@ -91,34 +85,21 @@ export function InvoiceUploadArea({
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [showPdfReview, setShowPdfReview] = useState(false);
 
-  const requestUploadMutation = useMutation(
-    trpc.document.requestUpload.mutationOptions({}),
-  );
+  const requestUploadMutation = useMutation(trpc.document.requestUpload.mutationOptions({}));
 
-  const confirmUploadMutation = useMutation(
-    trpc.document.confirmUpload.mutationOptions({}),
-  );
+  const confirmUploadMutation = useMutation(trpc.document.confirmUpload.mutationOptions({}));
 
-  const createInvoiceMutation = useMutation(
-    trpc.invoice.create.mutationOptions({}),
-  );
+  const createInvoiceMutation = useMutation(trpc.invoice.create.mutationOptions({}));
 
-  const ocrTriggerMutation = useMutation(
-    trpc.ocr.trigger.mutationOptions({}),
-  );
+  const ocrTriggerMutation = useMutation(trpc.ocr.trigger.mutationOptions({}));
 
-  const ocrRetriggerMutation = useMutation(
-    trpc.ocr.retrigger.mutationOptions({}),
-  );
+  const ocrRetriggerMutation = useMutation(trpc.ocr.retrigger.mutationOptions({}));
 
   const uploadFile = useCallback(
     async (file: File) => {
       const fileId = `${file.name}-${Date.now()}`;
 
-      setFiles((prev) => [
-        ...prev,
-        { id: fileId, file, status: "uploading", progress: 0 },
-      ]);
+      setFiles((prev) => [...prev, { id: fileId, file, status: "uploading", progress: 0 }]);
 
       try {
         // Step 1: Request presigned upload URL
@@ -134,11 +115,7 @@ export function InvoiceUploadArea({
         const storageKey = (result.storageKey as string) ?? "";
 
         setFiles((prev) =>
-          prev.map((f) =>
-            f.id === fileId
-              ? { ...f, documentId, storageKey, progress: 10 }
-              : f,
-          ),
+          prev.map((f) => (f.id === fileId ? { ...f, documentId, storageKey, progress: 10 } : f)),
         );
 
         // Step 2: Upload directly to R2 via presigned URL with progress
@@ -149,13 +126,9 @@ export function InvoiceUploadArea({
 
           xhr.upload.onprogress = (event) => {
             if (event.lengthComputable) {
-              const percent = Math.round(
-                10 + (event.loaded / event.total) * 70,
-              );
+              const percent = Math.round(10 + (event.loaded / event.total) * 70);
               setFiles((prev) =>
-                prev.map((f) =>
-                  f.id === fileId ? { ...f, progress: percent } : f,
-                ),
+                prev.map((f) => (f.id === fileId ? { ...f, progress: percent } : f)),
               );
             }
           };
@@ -172,11 +145,7 @@ export function InvoiceUploadArea({
         });
 
         // Step 3: Confirm upload
-        setFiles((prev) =>
-          prev.map((f) =>
-            f.id === fileId ? { ...f, progress: 85 } : f,
-          ),
-        );
+        setFiles((prev) => prev.map((f) => (f.id === fileId ? { ...f, progress: 85 } : f)));
 
         await confirmUploadMutation.mutateAsync({
           documentId,
@@ -184,19 +153,13 @@ export function InvoiceUploadArea({
 
         // Step 4: Create invoice draft
         setFiles((prev) =>
-          prev.map((f) =>
-            f.id === fileId
-              ? { ...f, status: "creating", progress: 90 }
-              : f,
-          ),
+          prev.map((f) => (f.id === fileId ? { ...f, status: "creating", progress: 90 } : f)),
         );
 
         await createInvoiceMutation.mutateAsync({
           invoiceNumber: file.name.replace(/\.pdf$/i, ""),
           issueDate: new Date().toISOString().split("T")[0]!,
-          dueDate: new Date(Date.now() + 14 * 86400000)
-            .toISOString()
-            .split("T")[0]!,
+          dueDate: new Date(Date.now() + 14 * 86400000).toISOString().split("T")[0]!,
           currency: "PLN",
           subtotalMinor: 0,
           totalMinor: 0,
@@ -205,11 +168,7 @@ export function InvoiceUploadArea({
         });
 
         setFiles((prev) =>
-          prev.map((f) =>
-            f.id === fileId
-              ? { ...f, status: "complete", progress: 100 }
-              : f,
-          ),
+          prev.map((f) => (f.id === fileId ? { ...f, status: "complete", progress: 100 } : f)),
         );
 
         // Step 5: Trigger OCR if file is PDF
@@ -238,20 +197,11 @@ export function InvoiceUploadArea({
         }
       } catch {
         setFiles((prev) =>
-          prev.map((f) =>
-            f.id === fileId
-              ? { ...f, status: "error", progress: 0 }
-              : f,
-          ),
+          prev.map((f) => (f.id === fileId ? { ...f, status: "error", progress: 0 } : f)),
         );
       }
     },
-    [
-      requestUploadMutation,
-      confirmUploadMutation,
-      createInvoiceMutation,
-      ocrTriggerMutation,
-    ],
+    [requestUploadMutation, confirmUploadMutation, createInvoiceMutation, ocrTriggerMutation],
   );
 
   const retryFile = useCallback(
@@ -275,14 +225,11 @@ export function InvoiceUploadArea({
       const totalFiles = files.length + acceptedFiles.length;
       const checkComplete = () => {
         setFiles((current) => {
-          const allDone = current.length >= totalFiles &&
-            current.every(
-              (f) => f.status === "complete" || f.status === "error",
-            );
+          const allDone =
+            current.length >= totalFiles &&
+            current.every((f) => f.status === "complete" || f.status === "error");
           if (allDone && current.some((f) => f.status === "complete")) {
-            const completedCount = current.filter(
-              (f) => f.status === "complete",
-            ).length;
+            const completedCount = current.filter((f) => f.status === "complete").length;
             toast.success(t("complete", { count: completedCount }));
             // Refresh invoice list
             queryClient.invalidateQueries({
@@ -376,9 +323,7 @@ export function InvoiceUploadArea({
             isDragActive ? "scale-110 text-primary" : ""
           }`}
         />
-        <p className="text-center text-sm text-muted-foreground">
-          {t("body")}{" "}
-        </p>
+        <p className="text-center text-sm text-muted-foreground">{t("body")} </p>
         <p className="mt-1 text-xs text-muted-foreground">{t("accepted")}</p>
       </div>
 
@@ -394,24 +339,16 @@ export function InvoiceUploadArea({
       {files.length > 0 && (
         <div className="space-y-2">
           {files.map((item) => (
-            <div
-              key={item.id}
-              className="flex items-center gap-3 rounded-md border px-3 py-2"
-            >
+            <div key={item.id} className="flex items-center gap-3 rounded-md border px-3 py-2">
               <FileText className="size-5 shrink-0 text-muted-foreground" />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm">
-                  {truncateName(item.file.name)}
-                </p>
+                <p className="truncate text-sm">{truncateName(item.file.name)}</p>
                 <div className="mt-0.5 flex items-center gap-2">
                   <span className="text-xs text-muted-foreground">
                     {formatFileSize(item.file.size)}
                   </span>
                   {item.status === "uploading" || item.status === "creating" ? (
-                    <Progress
-                      value={item.progress}
-                      className="h-1 max-w-[120px] flex-1"
-                    />
+                    <Progress value={item.progress} className="h-1 max-w-[120px] flex-1" />
                   ) : null}
                 </div>
               </div>

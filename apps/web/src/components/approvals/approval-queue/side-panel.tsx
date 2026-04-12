@@ -1,15 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import {
-  CheckCircle2,
-  HelpCircle,
-  MoreHorizontal,
-  UserPlus,
-  XCircle,
-} from "lucide-react";
+import { CheckCircle2, HelpCircle, MoreHorizontal, UserPlus, XCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useApprovalActions } from "@/hooks/use-approval-actions";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,25 +11,18 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
-  SheetDescription,
 } from "@/components/ui/sheet";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useApprovalActions } from "@/hooks/use-approval-actions";
 import { Link } from "@/i18n/navigation";
 
 import { formatAmount } from "@/lib/format-currency";
@@ -88,11 +74,9 @@ function MiniChainTracker({ step }: { step: ApprovalQueueRow }) {
         if (isCurrent) {
           circleClass += " bg-primary text-primary-foreground border-primary";
         } else if (isPast) {
-          circleClass +=
-            " bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/30";
+          circleClass += " bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/30";
         } else {
-          circleClass +=
-            " bg-muted text-muted-foreground border-border";
+          circleClass += " bg-muted text-muted-foreground border-border";
         }
 
         return (
@@ -100,11 +84,7 @@ function MiniChainTracker({ step }: { step: ApprovalQueueRow }) {
             {i > 0 && (
               <div
                 className={`h-0.5 w-3 ${
-                  isPast
-                    ? "bg-green-500"
-                    : isCurrent
-                      ? "bg-border"
-                      : "bg-border border-dashed"
+                  isPast ? "bg-green-500" : isCurrent ? "bg-border" : "bg-border border-dashed"
                 }`}
               />
             )}
@@ -112,11 +92,7 @@ function MiniChainTracker({ step }: { step: ApprovalQueueRow }) {
               <TooltipTrigger
                 render={(props) => (
                   <div {...props} className={circleClass}>
-                    {isPast ? (
-                      <CheckCircle2 className="h-4 w-4" />
-                    ) : (
-                      order
-                    )}
+                    {isPast ? <CheckCircle2 className="h-4 w-4" /> : order}
                   </div>
                 )}
               />
@@ -139,11 +115,7 @@ function MiniChainTracker({ step }: { step: ApprovalQueueRow }) {
  * Side panel for viewing and acting on an approval step.
  * Opens on row click from the approval queue table.
  */
-export function ApprovalSidePanel({
-  step,
-  open,
-  onOpenChange,
-}: ApprovalSidePanelProps) {
+export function ApprovalSidePanel({ step, open, onOpenChange }: ApprovalSidePanelProps) {
   const t = useTranslations("Approvals");
 
   // Approval action mutations (extracted hook)
@@ -184,32 +156,21 @@ export function ApprovalSidePanel({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        side="right"
-        className="w-[480px] sm:max-w-[480px] overflow-y-auto"
-      >
+      <SheetContent side="right" className="w-[480px] sm:max-w-[480px] overflow-y-auto">
         <SheetHeader>
           <SheetTitle className="font-mono text-xl">
             {invoice?.invoiceNumber ?? t("sidePanel.unknownInvoice")}
           </SheetTitle>
-          <SheetDescription className="sr-only">
-            {t("sidePanel.description")}
-          </SheetDescription>
+          <SheetDescription className="sr-only">{t("sidePanel.description")}</SheetDescription>
         </SheetHeader>
 
         <div className="space-y-6 px-4 pb-4">
           {/* Status and SLA */}
           <div className="flex items-center gap-2">
-            <Badge
-              variant="secondary"
-              className={statusBadgeColors[step.status] ?? ""}
-            >
+            <Badge variant="secondary" className={statusBadgeColors[step.status] ?? ""}>
               {step.status}
             </Badge>
-            <SlaBadge
-              slaDeadline={step.slaDeadline}
-              status={step.status}
-            />
+            <SlaBadge slaDeadline={step.slaDeadline} status={step.status} />
           </div>
 
           {/* Mini chain tracker */}
@@ -269,9 +230,7 @@ export function ApprovalSidePanel({
               <h4 className="text-[12px] font-medium text-muted-foreground">
                 {t("sidePanel.approver")}
               </h4>
-              <p className="text-sm">
-                {step.approver.name ?? step.approver.email}
-              </p>
+              <p className="text-sm">{step.approver.name ?? step.approver.email}</p>
             </div>
           )}
         </div>
@@ -280,11 +239,7 @@ export function ApprovalSidePanel({
         {isPending && (
           <div className="border-t p-4 space-y-2">
             <div className="flex items-center gap-2">
-              <Button
-                className="flex-1"
-                onClick={() => approveAction()}
-                disabled={actionsPending}
-              >
+              <Button className="flex-1" onClick={() => approveAction()} disabled={actionsPending}>
                 <CheckCircle2 className="me-1.5 h-4 w-4" />
                 {t("sidePanel.approve")}
               </Button>
@@ -293,11 +248,7 @@ export function ApprovalSidePanel({
               <Popover open={rejectOpen} onOpenChange={setRejectOpen}>
                 <PopoverTrigger
                   render={(props) => (
-                    <Button
-                      {...props}
-                      variant="destructive"
-                      className="flex-1"
-                    >
+                    <Button {...props} variant="destructive" className="flex-1">
                       <XCircle className="me-1.5 h-4 w-4" />
                       {t("sidePanel.reject")}
                     </Button>
@@ -305,9 +256,7 @@ export function ApprovalSidePanel({
                 />
                 <PopoverContent className="w-80 p-4" align="end">
                   <div className="space-y-3">
-                    <h4 className="font-medium text-sm">
-                      {t("rejectPopover.heading")}
-                    </h4>
+                    <h4 className="font-medium text-sm">{t("rejectPopover.heading")}</h4>
                     <div className="space-y-1.5">
                       <label className="text-[12px] text-muted-foreground">
                         {t("rejectPopover.commentLabel")}
@@ -318,12 +267,11 @@ export function ApprovalSidePanel({
                         placeholder={t("rejectPopover.commentPlaceholder")}
                         className="min-h-[80px]"
                       />
-                      {rejectComment.length > 0 &&
-                        rejectComment.length < 10 && (
-                          <p className="text-[12px] text-destructive">
-                            {t("rejectPopover.minChars")}
-                          </p>
-                        )}
+                      {rejectComment.length > 0 && rejectComment.length < 10 && (
+                        <p className="text-[12px] text-destructive">
+                          {t("rejectPopover.minChars")}
+                        </p>
+                      )}
                     </div>
                     <div className="flex items-center gap-2 justify-end">
                       <Button
@@ -339,10 +287,7 @@ export function ApprovalSidePanel({
                       <Button
                         variant="destructive"
                         size="sm"
-                        disabled={
-                          rejectComment.length < 10 ||
-                          actionsPending
-                        }
+                        disabled={rejectComment.length < 10 || actionsPending}
                         onClick={() => rejectAction(rejectComment)}
                       >
                         {t("rejectPopover.confirm")}
@@ -357,27 +302,18 @@ export function ApprovalSidePanel({
             <DropdownMenu>
               <DropdownMenuTrigger
                 render={(props) => (
-                  <Button
-                    {...props}
-                    variant="outline"
-                    size="sm"
-                    className="w-full"
-                  >
+                  <Button {...props} variant="outline" size="sm" className="w-full">
                     <MoreHorizontal className="me-1.5 h-4 w-4" />
                     {t("sidePanel.more")}
                   </Button>
                 )}
               />
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem
-                  onClick={() => setClarifyOpen(true)}
-                >
+                <DropdownMenuItem onClick={() => setClarifyOpen(true)}>
                   <HelpCircle className="me-2 h-4 w-4" />
                   {t("sidePanel.requestClarification")}
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setDelegateOpen(true)}
-                >
+                <DropdownMenuItem onClick={() => setDelegateOpen(true)}>
                   <UserPlus className="me-2 h-4 w-4" />
                   {t("sidePanel.delegateApproval")}
                 </DropdownMenuItem>
@@ -397,9 +333,7 @@ export function ApprovalSidePanel({
             className="w-96 rounded-xl bg-background p-4 shadow-lg ring-1 ring-border"
             onClick={(e) => e.stopPropagation()}
           >
-            <h4 className="font-medium text-sm mb-3">
-              {t("clarifyPopover.heading")}
-            </h4>
+            <h4 className="font-medium text-sm mb-3">{t("clarifyPopover.heading")}</h4>
             <div className="space-y-1.5 mb-3">
               <label className="text-[12px] text-muted-foreground">
                 {t("clarifyPopover.commentLabel")}
@@ -424,9 +358,7 @@ export function ApprovalSidePanel({
               </Button>
               <Button
                 size="sm"
-                disabled={
-                  clarifyComment.length < 1 || actionsPending
-                }
+                disabled={clarifyComment.length < 1 || actionsPending}
                 onClick={() => clarifyAction(clarifyComment)}
               >
                 {t("clarifyPopover.confirm")}
@@ -446,9 +378,7 @@ export function ApprovalSidePanel({
             className="w-96 rounded-xl bg-background p-4 shadow-lg ring-1 ring-border"
             onClick={(e) => e.stopPropagation()}
           >
-            <h4 className="font-medium text-sm mb-3">
-              {t("delegatePopover.heading")}
-            </h4>
+            <h4 className="font-medium text-sm mb-3">{t("delegatePopover.heading")}</h4>
             <div className="space-y-3 mb-3">
               <div className="space-y-1.5">
                 <label className="text-[12px] text-muted-foreground">
@@ -486,12 +416,8 @@ export function ApprovalSidePanel({
               </Button>
               <Button
                 size="sm"
-                disabled={
-                  !delegateUserId.trim() || actionsPending
-                }
-                onClick={() =>
-                  delegateAction(delegateUserId, delegateNote)
-                }
+                disabled={!delegateUserId.trim() || actionsPending}
+                onClick={() => delegateAction(delegateUserId, delegateNote)}
               >
                 {t("delegatePopover.confirm")}
               </Button>

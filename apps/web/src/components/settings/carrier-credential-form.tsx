@@ -1,23 +1,17 @@
 "use client";
 
-import { useCallback, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Eye, EyeOff, Loader2, Truck } from "lucide-react";
-import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
+import { useCallback, useState } from "react";
+import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -76,11 +70,7 @@ function PasswordField({
           onClick={() => setVisible(!visible)}
           aria-label={visible ? "Hide" : "Show"}
         >
-          {visible ? (
-            <EyeOff className="h-4 w-4" />
-          ) : (
-            <Eye className="h-4 w-4" />
-          )}
+          {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
         </button>
       </div>
     </div>
@@ -96,19 +86,14 @@ function PasswordField({
  * Renders carrier-specific credential fields with test/save actions.
  * Uses saveCourierConfig and getCourierConfigs from the equipment router.
  */
-export function CarrierCredentialForm({
-  carrier,
-  carrierLabel,
-}: CarrierCredentialFormProps) {
+export function CarrierCredentialForm({ carrier, carrierLabel }: CarrierCredentialFormProps) {
   const t = useTranslations("Settings.carriers");
   const queryClient = useQueryClient();
 
   // Check if this carrier is already configured
   const configsQuery = useQuery(trpc.equipment.getCourierConfigs.queryOptions());
   const configs = (configsQuery.data ?? []) as unknown as Array<{ carrier: string }>;
-  const isConnected = configs.some(
-    (c) => c.carrier.toLowerCase() === carrier,
-  );
+  const isConnected = configs.some((c) => c.carrier.toLowerCase() === carrier);
 
   // DPD credentials state
   const [dpdCreds, setDpdCreds] = useState<DpdCredentials>({
@@ -193,23 +178,17 @@ export function CarrierCredentialForm({
             <PasswordField
               label={t("username")}
               value={dpdCreds.username}
-              onChange={(v) =>
-                setDpdCreds((prev) => ({ ...prev, username: v }))
-              }
+              onChange={(v) => setDpdCreds((prev) => ({ ...prev, username: v }))}
             />
             <PasswordField
               label={t("password")}
               value={dpdCreds.password}
-              onChange={(v) =>
-                setDpdCreds((prev) => ({ ...prev, password: v }))
-              }
+              onChange={(v) => setDpdCreds((prev) => ({ ...prev, password: v }))}
             />
             <PasswordField
               label={t("fid")}
               value={dpdCreds.fid}
-              onChange={(v) =>
-                setDpdCreds((prev) => ({ ...prev, fid: v }))
-              }
+              onChange={(v) => setDpdCreds((prev) => ({ ...prev, fid: v }))}
             />
             <label className="flex cursor-pointer items-center gap-2">
               <Checkbox
@@ -229,23 +208,17 @@ export function CarrierCredentialForm({
             <PasswordField
               label={t("clientId")}
               value={upsCreds.clientId}
-              onChange={(v) =>
-                setUpsCreds((prev) => ({ ...prev, clientId: v }))
-              }
+              onChange={(v) => setUpsCreds((prev) => ({ ...prev, clientId: v }))}
             />
             <PasswordField
               label={t("clientSecret")}
               value={upsCreds.clientSecret}
-              onChange={(v) =>
-                setUpsCreds((prev) => ({ ...prev, clientSecret: v }))
-              }
+              onChange={(v) => setUpsCreds((prev) => ({ ...prev, clientSecret: v }))}
             />
             <PasswordField
               label={t("accountNumber")}
               value={upsCreds.accountNumber}
-              onChange={(v) =>
-                setUpsCreds((prev) => ({ ...prev, accountNumber: v }))
-              }
+              onChange={(v) => setUpsCreds((prev) => ({ ...prev, accountNumber: v }))}
             />
             <label className="flex cursor-pointer items-center gap-2">
               <Checkbox
@@ -263,21 +236,12 @@ export function CarrierCredentialForm({
         )}
 
         <div className="flex justify-end gap-2 pt-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleTest}
-            disabled={isPending}
-          >
-            {testMutation.isPending && (
-              <Loader2 className="me-2 h-4 w-4 animate-spin" />
-            )}
+          <Button variant="outline" size="sm" onClick={handleTest} disabled={isPending}>
+            {testMutation.isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
             {t("testConnection")}
           </Button>
           <Button size="sm" onClick={handleSave} disabled={isPending}>
-            {saveMutation.isPending && (
-              <Loader2 className="me-2 h-4 w-4 animate-spin" />
-            )}
+            {saveMutation.isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
             {t("saveCredentials")}
           </Button>
         </div>

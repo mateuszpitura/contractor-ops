@@ -16,16 +16,12 @@ describe("SlaBadge", () => {
   // ---------------------------------------------------------------------------
 
   it("returns null when status is not PENDING", () => {
-    const { container } = render(
-      <SlaBadge slaDeadline="2099-12-31T00:00:00Z" status="APPROVED" />,
-    );
+    const { container } = render(<SlaBadge slaDeadline="2099-12-31T00:00:00Z" status="APPROVED" />);
     expect(container.innerHTML).toBe("");
   });
 
   it("returns null when slaDeadline is null", () => {
-    const { container } = render(
-      <SlaBadge slaDeadline={null} status="PENDING" />,
-    );
+    const { container } = render(<SlaBadge slaDeadline={null} status="PENDING" />);
     expect(container.innerHTML).toBe("");
   });
 
@@ -34,19 +30,25 @@ describe("SlaBadge", () => {
   // ---------------------------------------------------------------------------
 
   it("shows hours remaining for future deadline", () => {
-    const futureDate = new Date(new Date("2026-01-15T12:00:00Z").getTime() + 10 * 3600000).toISOString(); // +10h
+    const futureDate = new Date(
+      new Date("2026-01-15T12:00:00Z").getTime() + 10 * 3600000,
+    ).toISOString(); // +10h
     render(<SlaBadge slaDeadline={futureDate} status="PENDING" />);
     expect(screen.getByText("10h left")).toBeInTheDocument();
   });
 
   it("shows OVERDUE for past deadline", () => {
-    const pastDate = new Date(new Date("2026-01-15T12:00:00Z").getTime() - 5 * 3600000).toISOString(); // -5h
+    const pastDate = new Date(
+      new Date("2026-01-15T12:00:00Z").getTime() - 5 * 3600000,
+    ).toISOString(); // -5h
     render(<SlaBadge slaDeadline={pastDate} status="PENDING" />);
     expect(screen.getByText(/^OVERDUE \d+h$/)).toBeInTheDocument();
   });
 
   it("rounds up hours (e.g. 2.5h → 3h left)", () => {
-    const futureDate = new Date(new Date("2026-01-15T12:00:00Z").getTime() + 2.5 * 3600000).toISOString();
+    const futureDate = new Date(
+      new Date("2026-01-15T12:00:00Z").getTime() + 2.5 * 3600000,
+    ).toISOString();
     render(<SlaBadge slaDeadline={futureDate} status="PENDING" />);
     expect(screen.getByText("3h left")).toBeInTheDocument();
   });
@@ -57,7 +59,9 @@ describe("SlaBadge", () => {
 
   it("shows green when >50% time remaining", () => {
     // 24h SLA, 20h remaining → 83%
-    const deadline = new Date(new Date("2026-01-15T12:00:00Z").getTime() + 20 * 3600000).toISOString();
+    const deadline = new Date(
+      new Date("2026-01-15T12:00:00Z").getTime() + 20 * 3600000,
+    ).toISOString();
     const { container } = render(
       <SlaBadge slaDeadline={deadline} status="PENDING" slaHours={24} />,
     );
@@ -67,7 +71,9 @@ describe("SlaBadge", () => {
 
   it("shows yellow when 25-50% time remaining", () => {
     // 24h SLA, 10h remaining → 42%
-    const deadline = new Date(new Date("2026-01-15T12:00:00Z").getTime() + 10 * 3600000).toISOString();
+    const deadline = new Date(
+      new Date("2026-01-15T12:00:00Z").getTime() + 10 * 3600000,
+    ).toISOString();
     const { container } = render(
       <SlaBadge slaDeadline={deadline} status="PENDING" slaHours={24} />,
     );
@@ -77,7 +83,9 @@ describe("SlaBadge", () => {
 
   it("shows red when <25% time remaining", () => {
     // 24h SLA, 4h remaining → 17%
-    const deadline = new Date(new Date("2026-01-15T12:00:00Z").getTime() + 4 * 3600000).toISOString();
+    const deadline = new Date(
+      new Date("2026-01-15T12:00:00Z").getTime() + 4 * 3600000,
+    ).toISOString();
     const { container } = render(
       <SlaBadge slaDeadline={deadline} status="PENDING" slaHours={24} />,
     );
@@ -86,7 +94,9 @@ describe("SlaBadge", () => {
   });
 
   it("shows overdue styling for past deadline", () => {
-    const pastDate = new Date(new Date("2026-01-15T12:00:00Z").getTime() - 2 * 3600000).toISOString();
+    const pastDate = new Date(
+      new Date("2026-01-15T12:00:00Z").getTime() - 2 * 3600000,
+    ).toISOString();
     const { container } = render(
       <SlaBadge slaDeadline={pastDate} status="PENDING" slaHours={24} />,
     );
@@ -100,28 +110,28 @@ describe("SlaBadge", () => {
   // ---------------------------------------------------------------------------
 
   it("falls back to green when >24h remaining (no slaHours)", () => {
-    const deadline = new Date(new Date("2026-01-15T12:00:00Z").getTime() + 48 * 3600000).toISOString();
-    const { container } = render(
-      <SlaBadge slaDeadline={deadline} status="PENDING" />,
-    );
+    const deadline = new Date(
+      new Date("2026-01-15T12:00:00Z").getTime() + 48 * 3600000,
+    ).toISOString();
+    const { container } = render(<SlaBadge slaDeadline={deadline} status="PENDING" />);
     const badge = container.firstElementChild;
     expect(badge?.className).toContain("text-green-600");
   });
 
   it("falls back to yellow when 8-24h remaining (no slaHours)", () => {
-    const deadline = new Date(new Date("2026-01-15T12:00:00Z").getTime() + 12 * 3600000).toISOString();
-    const { container } = render(
-      <SlaBadge slaDeadline={deadline} status="PENDING" />,
-    );
+    const deadline = new Date(
+      new Date("2026-01-15T12:00:00Z").getTime() + 12 * 3600000,
+    ).toISOString();
+    const { container } = render(<SlaBadge slaDeadline={deadline} status="PENDING" />);
     const badge = container.firstElementChild;
     expect(badge?.className).toContain("text-amber-600");
   });
 
   it("falls back to red when <8h remaining (no slaHours)", () => {
-    const deadline = new Date(new Date("2026-01-15T12:00:00Z").getTime() + 3 * 3600000).toISOString();
-    const { container } = render(
-      <SlaBadge slaDeadline={deadline} status="PENDING" />,
-    );
+    const deadline = new Date(
+      new Date("2026-01-15T12:00:00Z").getTime() + 3 * 3600000,
+    ).toISOString();
+    const { container } = render(<SlaBadge slaDeadline={deadline} status="PENDING" />);
     const badge = container.firstElementChild;
     expect(badge?.className).toContain("text-destructive");
   });
@@ -131,10 +141,10 @@ describe("SlaBadge", () => {
   // ---------------------------------------------------------------------------
 
   it("uses tabular-nums for consistent digit width", () => {
-    const deadline = new Date(new Date("2026-01-15T12:00:00Z").getTime() + 5 * 3600000).toISOString();
-    const { container } = render(
-      <SlaBadge slaDeadline={deadline} status="PENDING" />,
-    );
+    const deadline = new Date(
+      new Date("2026-01-15T12:00:00Z").getTime() + 5 * 3600000,
+    ).toISOString();
+    const { container } = render(<SlaBadge slaDeadline={deadline} status="PENDING" />);
     const badge = container.firstElementChild;
     expect(badge?.className).toContain("tabular-nums");
   });

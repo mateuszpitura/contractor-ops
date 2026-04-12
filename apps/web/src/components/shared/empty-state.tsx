@@ -56,23 +56,17 @@ export function EmptyState({
 }: EmptyStateProps) {
   // Smart sequencing: when prerequisite is missing, override primary CTA
   const effectivePrimary =
-    prerequisiteMissing && prerequisiteAction
-      ? prerequisiteAction
-      : primaryAction;
+    prerequisiteMissing && prerequisiteAction ? prerequisiteAction : primaryAction;
 
   return (
     <div className="flex min-h-[40vh] flex-col items-center justify-center text-center">
       <Icon className="h-12 w-12 text-muted-foreground" />
       <h2 className="mt-4 font-display text-[20px] font-semibold">{heading}</h2>
-      <p className="mt-2 max-w-[420px] text-sm text-muted-foreground">
-        {body}
-      </p>
+      <p className="mt-2 max-w-[420px] text-sm text-muted-foreground">{body}</p>
       {(effectivePrimary || secondaryAction) && (
         <div className="mt-6 flex gap-3">
           {effectivePrimary && <ActionButton action={effectivePrimary} />}
-          {secondaryAction && (
-            <ActionButton action={secondaryAction} variant="outline" />
-          )}
+          {secondaryAction && <ActionButton action={secondaryAction} variant="outline" />}
         </div>
       )}
     </div>

@@ -5,13 +5,13 @@
 import { XMLBuilder } from "fast-xml-parser";
 import type { EInvoice } from "../../types/invoice.js";
 import {
+  CAC_NS,
+  CBC_NS,
   PINT_AE_CUSTOMIZATION_ID,
   PINT_AE_PROFILE_ID,
   UAE_SCHEME_ID,
-  UBL_INVOICE_NS,
-  CBC_NS,
-  CAC_NS,
   UAE_TAX_SCHEME_ID,
+  UBL_INVOICE_NS,
 } from "./constants.js";
 
 const builder = new XMLBuilder({
@@ -32,10 +32,7 @@ function fromMinor(minorUnits: number): string {
 /**
  * Build a UBL party structure for PINT-AE.
  */
-function buildParty(
-  party: EInvoice["supplier"],
-  currencyCode: string,
-) {
+function buildParty(party: EInvoice["supplier"], currencyCode: string) {
   return {
     "cac:Party": {
       "cac:PartyIdentification": {
@@ -62,9 +59,7 @@ function buildParty(
       ...(party.address || party.country
         ? {
             "cac:PostalAddress": {
-              ...(party.address
-                ? { "cbc:StreetName": party.address }
-                : {}),
+              ...(party.address ? { "cbc:StreetName": party.address } : {}),
               ...(party.country
                 ? {
                     "cac:Country": {
@@ -94,19 +89,14 @@ export function generatePintAeXml(invoice: EInvoice): string {
     },
     "cac:TaxCategory": {
       "cbc:ID": tax.taxCategory,
-      ...(tax.percent != null
-        ? { "cbc:Percent": tax.percent.toString() }
-        : {}),
+      ...(tax.percent != null ? { "cbc:Percent": tax.percent.toString() } : {}),
       "cac:TaxScheme": {
         "cbc:ID": UAE_TAX_SCHEME_ID,
       },
     },
   }));
 
-  const totalTaxAmount = invoice.taxBreakdown.reduce(
-    (sum, t) => sum + t.taxAmountMinor,
-    0,
-  );
+  const totalTaxAmount = invoice.taxBreakdown.reduce((sum, t) => sum + t.taxAmountMinor, 0);
 
   const invoiceLines = invoice.lines.map((line) => ({
     "cbc:ID": String(line.lineNumber),
@@ -139,8 +129,7 @@ export function generatePintAeXml(invoice: EInvoice): string {
     },
   }));
 
-  const buyerReference =
-    (invoice.extensions?.buyerReference as string) ?? invoice.customer.id;
+  const buyerReference = (invoice.extensions?.buyerReference as string) ?? invoice.customer.id;
 
   const doc = {
     Invoice: {
@@ -151,20 +140,12 @@ export function generatePintAeXml(invoice: EInvoice): string {
       "cbc:ProfileID": PINT_AE_PROFILE_ID,
       "cbc:ID": invoice.id,
       "cbc:IssueDate": invoice.issueDate,
-      ...(invoice.dueDate
-        ? { "cbc:DueDate": invoice.dueDate }
-        : {}),
+      ...(invoice.dueDate ? { "cbc:DueDate": invoice.dueDate } : {}),
       "cbc:InvoiceTypeCode": invoice.invoiceTypeCode,
       "cbc:DocumentCurrencyCode": invoice.currencyCode,
       "cbc:BuyerReference": buyerReference,
-      "cac:AccountingSupplierParty": buildParty(
-        invoice.supplier,
-        invoice.currencyCode,
-      ),
-      "cac:AccountingCustomerParty": buildParty(
-        invoice.customer,
-        invoice.currencyCode,
-      ),
+      "cac:AccountingSupplierParty": buildParty(invoice.supplier, invoice.currencyCode),
+      "cac:AccountingCustomerParty": buildParty(invoice.customer, invoice.currencyCode),
       ...(invoice.paymentMeans
         ? {
             "cac:PaymentMeans": {
@@ -173,14 +154,12 @@ export function generatePintAeXml(invoice: EInvoice): string {
                 : {}),
               ...(invoice.paymentMeans.dueDate
                 ? {
-                    "cbc:PaymentDueDate":
-                      invoice.paymentMeans.dueDate,
+                    "cbc:PaymentDueDate": invoice.paymentMeans.dueDate,
                   }
                 : {}),
               ...(invoice.paymentMeans.paymentReference
                 ? {
-                    "cbc:PaymentID":
-                      invoice.paymentMeans.paymentReference,
+                    "cbc:PaymentID": invoice.paymentMeans.paymentReference,
                   }
                 : {}),
               ...(invoice.paymentMeans.bankAccount
@@ -190,8 +169,7 @@ export function generatePintAeXml(invoice: EInvoice): string {
                       ...(invoice.paymentMeans.bankName
                         ? {
                             "cac:FinancialInstitutionBranch": {
-                              "cbc:Name":
-                                invoice.paymentMeans.bankName,
+                              "cbc:Name": invoice.paymentMeans.bankName,
                             },
                           }
                         : {}),

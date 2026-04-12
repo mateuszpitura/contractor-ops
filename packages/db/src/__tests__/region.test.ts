@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock the client module before importing region
 vi.mock("../client.js", () => ({
@@ -9,8 +9,8 @@ vi.mock("../client.js", () => ({
   })),
 }));
 
-import { getRegionalClient, SUPPORTED_REGIONS, preWarmRegionalClients } from "../region.js";
 import { createPrismaClientForUrl } from "../client.js";
+import { getRegionalClient, preWarmRegionalClients, SUPPORTED_REGIONS } from "../region.js";
 
 describe("SUPPORTED_REGIONS", () => {
   it("contains exactly EU and ME", () => {

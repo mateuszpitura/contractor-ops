@@ -1,6 +1,6 @@
 import { prisma } from "@contractor-ops/db";
-import { linearGraphQL } from "./linear-issue-sync.js";
 import type { MergedPerson } from "@contractor-ops/validators";
+import { linearGraphQL } from "./linear-issue-sync.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -53,10 +53,7 @@ export async function fetchUsersFromSource(
 // Jira user fetching (paginated)
 // ---------------------------------------------------------------------------
 
-async function fetchJiraUsers(
-  accessToken: string,
-  metadata: unknown,
-): Promise<SourcePerson[]> {
+async function fetchJiraUsers(accessToken: string, metadata: unknown): Promise<SourcePerson[]> {
   const config = metadata as { cloudId?: string } | null;
   if (!config?.cloudId) return [];
 
@@ -123,10 +120,7 @@ async function fetchLinearUsers(accessToken: string): Promise<SourcePerson[]> {
         }>;
       };
     };
-  }>(
-    accessToken,
-    `{ organization { users { nodes { id name email active avatarUrl } } } }`,
-  );
+  }>(accessToken, `{ organization { users { nodes { id name email active avatarUrl } } } }`);
 
   return data.organization.users.nodes
     .filter((u) => u.active)
@@ -143,9 +137,7 @@ async function fetchLinearUsers(accessToken: string): Promise<SourcePerson[]> {
 // Google Workspace user fetching
 // ---------------------------------------------------------------------------
 
-async function fetchGoogleWorkspaceUsers(
-  accessToken: string,
-): Promise<SourcePerson[]> {
+async function fetchGoogleWorkspaceUsers(accessToken: string): Promise<SourcePerson[]> {
   // Use Google Admin SDK Directory API
   const response = await fetch(
     "https://admin.googleapis.com/admin/directory/v1/users?customer=my_customer&maxResults=500",
@@ -329,9 +321,7 @@ export function mergeByEmail(
     exists: 2,
   };
 
-  merged.sort(
-    (a, b) => (statusOrder[a.status] ?? 99) - (statusOrder[b.status] ?? 99),
-  );
+  merged.sort((a, b) => (statusOrder[a.status] ?? 99) - (statusOrder[b.status] ?? 99));
 
   return merged;
 }

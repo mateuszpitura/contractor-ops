@@ -1,22 +1,20 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { FileText } from "lucide-react";
 import { useTranslations } from "next-intl";
-
 import { parseAsString, useQueryState } from "nuqs";
-
-import { trpc } from "@/trpc/init";
-import { Skeleton } from "@/components/ui/skeleton";
-import { EmptyState } from "@/components/shared/empty-state";
-import { PageHeader } from "@/components/shared/page-header";
-import { AnimateIn } from "@/components/shared/animate-in";
-import { ContractDataTable } from "@/components/contracts/contract-table/data-table";
+import { Suspense, useEffect, useState } from "react";
 import { ContractSidePanel } from "@/components/contracts/contract-side-panel";
+import type { ContractRow } from "@/components/contracts/contract-table/columns";
+import { ContractDataTable } from "@/components/contracts/contract-table/data-table";
 import { ContractWizardDialog } from "@/components/contracts/contract-wizard/wizard-dialog";
 import { ImportWizardDialog } from "@/components/import/import-wizard-dialog";
-import type { ContractRow } from "@/components/contracts/contract-table/columns";
+import { AnimateIn } from "@/components/shared/animate-in";
+import { EmptyState } from "@/components/shared/empty-state";
+import { PageHeader } from "@/components/shared/page-header";
+import { Skeleton } from "@/components/ui/skeleton";
+import { trpc } from "@/trpc/init";
 
 /**
  * Inner contract page content that uses nuqs (requires useSearchParams).
@@ -26,8 +24,7 @@ function ContractsContent() {
   const t = useTranslations("Contracts");
   const te = useTranslations("EmptyStates");
 
-  const [selectedContract, setSelectedContract] =
-    useState<ContractRow | null>(null);
+  const [selectedContract, setSelectedContract] = useState<ContractRow | null>(null);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [importWizardOpen, setImportWizardOpen] = useState(false);
@@ -41,13 +38,12 @@ function ContractsContent() {
   }, [action, setAction]);
 
   // Check contract and contractor counts for empty state
-  const contractCountQuery = useQuery(
-    trpc.contract.list.queryOptions({ page: 1, pageSize: 10 }),
-  );
+  const contractCountQuery = useQuery(trpc.contract.list.queryOptions({ page: 1, pageSize: 10 }));
   const contractorCountQuery = useQuery(
     trpc.contractor.list.queryOptions({ page: 1, pageSize: 10 }),
   );
-  const contractTotal = (contractCountQuery.data as { totalCount: number } | undefined)?.totalCount ?? 0;
+  const contractTotal =
+    (contractCountQuery.data as { totalCount: number } | undefined)?.totalCount ?? 0;
   const contractorCount = (contractorCountQuery.data as { total: number } | undefined)?.total ?? 0;
   const isCountLoading = contractCountQuery.isLoading;
 

@@ -1,12 +1,11 @@
-import type { ReactNode } from "react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { NuqsTestingAdapter } from "nuqs/adapters/testing";
 import { useQuery } from "@tanstack/react-query";
+import { NuqsTestingAdapter } from "nuqs/adapters/testing";
+import type { ReactNode } from "react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { render, screen, setup, within } from "@/test/test-utils";
-
-import { InvoiceDataTable } from "../data-table";
 import type { InvoiceRow } from "../columns";
+import { InvoiceDataTable } from "../data-table";
 
 vi.mock("@/i18n/navigation", () => ({
   Link: ({ children, href }: { children: ReactNode; href: string }) => (
@@ -50,10 +49,7 @@ function baseRow(overrides: Partial<InvoiceRow> = {}): InvoiceRow {
   };
 }
 
-function renderTable(
-  ui: ReactNode,
-  searchParams = "",
-) {
+function renderTable(ui: ReactNode, searchParams = "") {
   return render(
     <NuqsTestingAdapter searchParams={searchParams} hasMemory>
       {ui}
@@ -73,9 +69,7 @@ describe("InvoiceDataTable", () => {
       isFetching: true,
     } as ReturnType<typeof useQuery>);
 
-    const { container } = renderTable(
-      <InvoiceDataTable onRowClick={vi.fn()} onUpload={vi.fn()} />,
-    );
+    const { container } = renderTable(<InvoiceDataTable onRowClick={vi.fn()} onUpload={vi.fn()} />);
 
     expect(container.querySelectorAll('[data-slot="skeleton"]').length).toBeGreaterThan(0);
   });
@@ -118,9 +112,7 @@ describe("InvoiceDataTable", () => {
     );
 
     expect(screen.getByRole("heading", { name: /no invoices found/i })).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /clear filters/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /clear filters/i })).toBeInTheDocument();
   });
 
   it("shows the default empty state and calls onUpload from the CTA", async () => {
@@ -139,12 +131,8 @@ describe("InvoiceDataTable", () => {
 
     expect(screen.getByRole("heading", { name: /no invoices yet/i })).toBeInTheDocument();
 
-    const emptyCell = screen
-      .getByRole("heading", { name: /no invoices yet/i })
-      .closest("td")!;
-    await user.click(
-      within(emptyCell).getByRole("button", { name: /upload invoices/i }),
-    );
+    const emptyCell = screen.getByRole("heading", { name: /no invoices yet/i }).closest("td")!;
+    await user.click(within(emptyCell).getByRole("button", { name: /upload invoices/i }));
     expect(onUpload).toHaveBeenCalledTimes(1);
   });
 
@@ -159,9 +147,7 @@ describe("InvoiceDataTable", () => {
       isFetching: false,
     } as ReturnType<typeof useQuery>);
 
-    renderTable(
-      <InvoiceDataTable onRowClick={vi.fn()} onUpload={vi.fn()} />,
-    );
+    renderTable(<InvoiceDataTable onRowClick={vi.fn()} onUpload={vi.fn()} />);
 
     const row = screen.getByText("FV/DATA/01").closest("tr");
     expect(row?.className).toMatch(/destructive/);

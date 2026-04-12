@@ -1,17 +1,14 @@
-import { z } from "zod";
 import { prisma } from "@contractor-ops/db";
-import {
-  attachDocInputSchema,
-  docSearchInputSchema,
-} from "@contractor-ops/validators";
+import { attachDocInputSchema, docSearchInputSchema } from "@contractor-ops/validators";
+import { z } from "zod";
 import { router } from "../init.js";
 import { tenantProcedure } from "../middleware/tenant.js";
 import {
   attachDocLink,
   detachDocLink,
   getDocLinks,
-  searchDocs,
   refreshDocMetadata,
+  searchDocs,
 } from "../services/doc-link-service.js";
 
 // ---------------------------------------------------------------------------
@@ -42,40 +39,38 @@ export const docsRouter = router({
    * Looks up the IntegrationConnection for the org matching the provider
    * (derived from externalType), then delegates to the doc link service.
    */
-  attach: tenantProcedure
-    .input(attachDocInputSchema)
-    .mutation(async ({ ctx, input }) => {
-      const provider = providerFromExternalType(input.externalType);
+  attach: tenantProcedure.input(attachDocInputSchema).mutation(async ({ ctx, input }) => {
+    const provider = providerFromExternalType(input.externalType);
 
-      const connection = await prisma.integrationConnection.findFirst({
-        where: {
-          organizationId: ctx.organizationId,
-          provider,
-          status: "CONNECTED",
-        },
-        select: { id: true },
-      });
-
-      if (!connection) {
-        const { TRPCError } = await import("@trpc/server");
-        throw new TRPCError({
-          code: "PRECONDITION_FAILED",
-          message: `No active ${provider.toLowerCase()} connection found. Please connect ${provider.toLowerCase()} in Settings > Integrations.`,
-        });
-      }
-
-      const result = await attachDocLink(prisma, {
+    const connection = await prisma.integrationConnection.findFirst({
+      where: {
         organizationId: ctx.organizationId,
-        integrationConnectionId: connection.id,
-        workflowTaskRunId: input.workflowTaskRunId,
-        externalId: input.externalId,
-        externalUrl: input.externalUrl,
-        externalType: input.externalType,
-        metadata: input.metadata as Record<string, unknown>,
-      });
+        provider,
+        status: "CONNECTED",
+      },
+      select: { id: true },
+    });
 
-      return plain(result);
-    }),
+    if (!connection) {
+      const { TRPCError } = await import("@trpc/server");
+      throw new TRPCError({
+        code: "PRECONDITION_FAILED",
+        message: `No active ${provider.toLowerCase()} connection found. Please connect ${provider.toLowerCase()} in Settings > Integrations.`,
+      });
+    }
+
+    const result = await attachDocLink(prisma, {
+      organizationId: ctx.organizationId,
+      integrationConnectionId: connection.id,
+      workflowTaskRunId: input.workflowTaskRunId,
+      externalId: input.externalId,
+      externalUrl: input.externalUrl,
+      externalType: input.externalType,
+      metadata: input.metadata as Record<string, unknown>,
+    });
+
+    return plain(result);
+  }),
 
   /**
    * Detach a doc link from a workflow task run.
@@ -111,18 +106,16 @@ export const docsRouter = router({
    * Aggregates results from connected providers. Returns empty
    * array if no connections exist (no error thrown).
    */
-  search: tenantProcedure
-    .input(docSearchInputSchema)
-    .query(async ({ ctx, input }) => {
-      const results = await searchDocs({
-        organizationId: ctx.organizationId,
-        query: input.query,
-        provider: input.provider,
-        prisma,
-      });
+  search: tenantProcedure.input(docSearchInputSchema).query(async ({ ctx, input }) => {
+    const results = await searchDocs({
+      organizationId: ctx.organizationId,
+      query: input.query,
+      provider: input.provider,
+      prisma,
+    });
 
-      return results;
-    }),
+    return results;
+  }),
 
   /**
    * Refresh cached metadata for a doc link.
@@ -133,11 +126,7 @@ export const docsRouter = router({
   refreshMetadata: tenantProcedure
     .input(z.object({ externalLinkId: z.string().cuid() }))
     .mutation(async ({ ctx, input }) => {
-      const result = await refreshDocMetadata(
-        prisma,
-        input.externalLinkId,
-        ctx.organizationId,
-      );
+      const result = await refreshDocMetadata(prisma, input.externalLinkId, ctx.organizationId);
 
       return plain(result);
     }),

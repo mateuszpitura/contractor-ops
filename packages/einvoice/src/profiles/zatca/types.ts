@@ -15,11 +15,7 @@ export type ZatcaInvoiceTypeCode = "388" | "381" | "383";
  * - 0200000: Simplified tax invoice
  * - 0200001: Simplified third-party invoice
  */
-export type ZatcaInvoiceSubtype =
-  | "0100000"
-  | "0100001"
-  | "0200000"
-  | "0200001";
+export type ZatcaInvoiceSubtype = "0100000" | "0100001" | "0200000" | "0200001";
 
 /** ZATCA profile identifiers for B2B clearance and B2C reporting */
 export type ZatcaProfileId = "reporting:1.0" | "clearance:1.0";

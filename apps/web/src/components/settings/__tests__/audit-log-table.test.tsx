@@ -1,9 +1,12 @@
 import { render, screen } from "@/test/test-utils";
-import { AuditLogTable, type AuditLogEntry } from "../audit-log-table";
+import type { AuditLogEntry } from "../audit-log-table";
+import { AuditLogTable } from "../audit-log-table";
 
 vi.mock("@/i18n/navigation", () => ({
   Link: ({ children, href, ...props }: any) => (
-    <a href={href} {...props}>{children}</a>
+    <a href={href} {...props}>
+      {children}
+    </a>
   ),
 }));
 

@@ -1,6 +1,6 @@
+import { Receipt } from "lucide-react";
 import { render, screen } from "@/test/test-utils";
 import { SummaryCard, SummaryCardSkeleton } from "../summary-card";
-import { Receipt } from "lucide-react";
 
 describe("SummaryCard", () => {
   it("renders label and value", () => {

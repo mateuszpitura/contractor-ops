@@ -32,12 +32,7 @@ export type NotificationType = z.infer<typeof notificationTypeEnum>;
 // Notification status enum (mirrors Prisma NotificationStatus)
 // ---------------------------------------------------------------------------
 
-export const notificationStatusEnum = z.enum([
-  "PENDING",
-  "SENT",
-  "FAILED",
-  "READ",
-]);
+export const notificationStatusEnum = z.enum(["PENDING", "SENT", "FAILED", "READ"]);
 
 // ---------------------------------------------------------------------------
 // Notification list query schema
@@ -61,9 +56,7 @@ export const notificationMarkReadSchema = z.object({
   notificationId: z.string().min(1),
 });
 
-export type NotificationMarkReadInput = z.infer<
-  typeof notificationMarkReadSchema
->;
+export type NotificationMarkReadInput = z.infer<typeof notificationMarkReadSchema>;
 
 // ---------------------------------------------------------------------------
 // Notification preference update schema
@@ -79,6 +72,4 @@ export const notificationPreferenceUpdateSchema = z.object({
   ),
 });
 
-export type NotificationPreferenceUpdateInput = z.infer<
-  typeof notificationPreferenceUpdateSchema
->;
+export type NotificationPreferenceUpdateInput = z.infer<typeof notificationPreferenceUpdateSchema>;

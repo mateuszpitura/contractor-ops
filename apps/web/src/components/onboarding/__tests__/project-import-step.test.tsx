@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, setup } from "@/test/test-utils";
 import { useQuery } from "@tanstack/react-query";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { render, screen, setup } from "@/test/test-utils";
 import { ProjectImportStep } from "../project-import-step";
 
 vi.mock("@tanstack/react-query", async () => {
@@ -28,11 +28,7 @@ const sampleProjects = [
     sourceProvider: "JIRA",
     externalId: "p1",
     name: "Alpha Project",
-    statuses: [
-      { name: "To Do" },
-      { name: "In Progress" },
-      { name: "Done" },
-    ],
+    statuses: [{ name: "To Do" }, { name: "In Progress" }, { name: "Done" }],
   },
   {
     sourceProvider: "LINEAR",
@@ -88,9 +84,7 @@ describe("ProjectImportStep", () => {
         onProjectSelectionsChange={vi.fn()}
       />,
     );
-    expect(
-      screen.getByText(/No projects were found/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/No projects were found/i)).toBeInTheDocument();
   });
 
   // ---- Loading state ----
@@ -108,9 +102,7 @@ describe("ProjectImportStep", () => {
         onProjectSelectionsChange={vi.fn()}
       />,
     );
-    expect(
-      container.querySelectorAll("[data-slot='skeleton']").length,
-    ).toBeGreaterThan(0);
+    expect(container.querySelectorAll("[data-slot='skeleton']").length).toBeGreaterThan(0);
   });
 
   // ---- Project cards ----
@@ -276,9 +268,7 @@ describe("ProjectImportStep", () => {
         onProjectSelectionsChange={vi.fn()}
       />,
     );
-    expect(
-      screen.getByText(/Bidirectional sync/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Bidirectional sync/i)).toBeInTheDocument();
   });
 
   // ---- Source icons ----

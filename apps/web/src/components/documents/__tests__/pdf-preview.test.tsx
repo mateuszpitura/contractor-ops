@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor } from "@/test/test-utils";
 import { PdfPreview } from "../pdf-preview";
 
@@ -43,9 +43,7 @@ describe("PdfPreview", () => {
     });
     render(<PdfPreview {...defaultProps} />);
     await waitFor(() => {
-      expect(
-        screen.getByRole("button", { name: /Download/i }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Download/i })).toBeInTheDocument();
     });
   });
 
@@ -59,10 +57,7 @@ describe("PdfPreview", () => {
     render(<PdfPreview {...defaultProps} />);
     await waitFor(() => {
       const objectEl = document.querySelector("object");
-      expect(objectEl).toHaveAttribute(
-        "data",
-        "https://example.com/file.pdf",
-      );
+      expect(objectEl).toHaveAttribute("data", "https://example.com/file.pdf");
     });
   });
 
@@ -70,9 +65,7 @@ describe("PdfPreview", () => {
     mockFetch.mockRejectedValue(new Error("Network error"));
     render(<PdfPreview {...defaultProps} />);
     await waitFor(() => {
-      expect(
-        screen.getByText("Could not load PDF preview"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Could not load PDF preview")).toBeInTheDocument();
     });
   });
 

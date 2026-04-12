@@ -4,10 +4,10 @@
 
 import type { SecretStore } from "@contractor-ops/secrets";
 import type {
+  GovApiAuditEntry,
   GovApiConfig,
   GovApiEnvironment,
   GovApiRetryConfig,
-  GovApiAuditEntry,
 } from "./types.js";
 
 const DEFAULT_RETRY: GovApiRetryConfig = {
@@ -68,9 +68,7 @@ export abstract class GovApiClient {
       throw new Error("No certificate secret path configured");
     }
     if (!this.secretStore) {
-      throw new Error(
-        "SecretStore not set — call setSecretStore() first",
-      );
+      throw new Error("SecretStore not set — call setSecretStore() first");
     }
     if (this.certificate) return this.certificate;
 
@@ -103,10 +101,7 @@ export abstract class GovApiClient {
 
     for (let attempt = 0; attempt <= retry.maxRetries; attempt++) {
       if (attempt > 0) {
-        const delay = Math.min(
-          retry.baseDelayMs * Math.pow(2, attempt - 1),
-          retry.maxDelayMs,
-        );
+        const delay = Math.min(retry.baseDelayMs * 2 ** (attempt - 1), retry.maxDelayMs);
         await new Promise((r) => setTimeout(r, delay));
       }
 
@@ -142,10 +137,7 @@ export abstract class GovApiClient {
           });
         }
 
-        if (
-          retry.retryableStatuses.includes(response.status) &&
-          attempt < retry.maxRetries
-        ) {
+        if (retry.retryableStatuses.includes(response.status) && attempt < retry.maxRetries) {
           lastResponse = response;
           continue;
         }
@@ -160,12 +152,7 @@ export abstract class GovApiClient {
     }
 
     if (lastResponse) return lastResponse;
-    throw (
-      lastError ??
-      new Error(
-        `Failed to fetch ${url} after ${retry.maxRetries + 1} attempts`,
-      )
-    );
+    throw lastError ?? new Error(`Failed to fetch ${url} after ${retry.maxRetries + 1} attempts`);
   }
 
   /**

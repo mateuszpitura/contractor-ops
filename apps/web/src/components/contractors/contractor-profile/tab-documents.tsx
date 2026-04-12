@@ -1,14 +1,13 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
 import { Files, Upload } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
+import { useTranslations } from "next-intl";
+import { DocumentCard } from "@/components/documents/document-card";
+import { DropZone } from "@/components/documents/drop-zone";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { DropZone } from "@/components/documents/drop-zone";
-import { DocumentCard } from "@/components/documents/document-card";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -31,7 +30,7 @@ export function TabDocuments({ contractorId }: TabDocumentsProps) {
       entityId: contractorId,
       page: 1,
       pageSize: 50,
-    })
+    }),
   );
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -63,12 +62,8 @@ export function TabDocuments({ contractorId }: TabDocumentsProps) {
 
         <div className="flex min-h-[200px] flex-col items-center justify-center gap-3 text-center">
           <Files className="size-10 text-muted-foreground/50" />
-          <h4 className="text-sm font-medium">
-            {t("contractorTab.emptyHeading")}
-          </h4>
-          <p className="max-w-sm text-sm text-muted-foreground">
-            {t("contractorTab.emptyBody")}
-          </p>
+          <h4 className="text-sm font-medium">{t("contractorTab.emptyHeading")}</h4>
+          <p className="max-w-sm text-sm text-muted-foreground">{t("contractorTab.emptyBody")}</p>
         </div>
       </div>
     );
@@ -78,9 +73,7 @@ export function TabDocuments({ contractorId }: TabDocumentsProps) {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-base font-medium">
-          {t("contractorTab.heading")}
-        </h3>
+        <h3 className="text-base font-medium">{t("contractorTab.heading")}</h3>
       </div>
 
       {/* Drop zone for uploads */}
@@ -90,11 +83,7 @@ export function TabDocuments({ contractorId }: TabDocumentsProps) {
       <div className="space-y-3">
         {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
         {documents.map((doc: any, i: number) => (
-          <DocumentCard
-            key={doc.id}
-            document={doc}
-            versionNumber={documents.length - i}
-          />
+          <DocumentCard key={doc.id} document={doc} versionNumber={documents.length - i} />
         ))}
       </div>
     </div>

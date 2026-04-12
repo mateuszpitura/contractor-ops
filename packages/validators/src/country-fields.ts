@@ -40,7 +40,7 @@ export const countryFieldsSchemaMap: Record<string, z.ZodTypeAny> = {
  */
 export function validateCountryFields(
   countryCode: string,
-  fields: unknown
+  fields: unknown,
 ): Record<string, unknown> {
   const schema = countryFieldsSchemaMap[countryCode];
   if (!schema) return {};

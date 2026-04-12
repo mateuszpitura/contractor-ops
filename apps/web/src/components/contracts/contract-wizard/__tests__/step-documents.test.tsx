@@ -1,4 +1,4 @@
-import { render, screen, setup, waitFor, act } from "@/test/test-utils";
+import { act, render, screen, setup, waitFor } from "@/test/test-utils";
 import { StepDocuments } from "../step-documents";
 
 // ---------------------------------------------------------------------------
@@ -62,9 +62,7 @@ describe("StepDocuments", () => {
 
   it("renders skip link that calls onSkip", async () => {
     const onSkip = vi.fn();
-    const { user } = setup(
-      <StepDocuments onDocumentsChange={vi.fn()} onSkip={onSkip} />,
-    );
+    const { user } = setup(<StepDocuments onDocumentsChange={vi.fn()} onSkip={onSkip} />);
 
     const skipButton = screen.getByText(/skip/i);
     expect(skipButton).toBeInTheDocument();
@@ -90,7 +88,10 @@ describe("StepDocuments", () => {
       onerror: null as any,
       status: 200,
     };
-    vi.stubGlobal("XMLHttpRequest", vi.fn(() => xhrMock));
+    vi.stubGlobal(
+      "XMLHttpRequest",
+      vi.fn(() => xhrMock),
+    );
 
     const onDocumentsChange = vi.fn();
     render(<StepDocuments onDocumentsChange={onDocumentsChange} />);
@@ -123,7 +124,10 @@ describe("StepDocuments", () => {
       onerror: null as any,
       status: 200,
     };
-    vi.stubGlobal("XMLHttpRequest", vi.fn(() => xhrMock));
+    vi.stubGlobal(
+      "XMLHttpRequest",
+      vi.fn(() => xhrMock),
+    );
 
     render(<StepDocuments onDocumentsChange={vi.fn()} />);
 
@@ -172,7 +176,10 @@ describe("StepDocuments", () => {
       onerror: null as any,
       status: 200,
     };
-    vi.stubGlobal("XMLHttpRequest", vi.fn(() => xhrMock));
+    vi.stubGlobal(
+      "XMLHttpRequest",
+      vi.fn(() => xhrMock),
+    );
 
     render(<StepDocuments onDocumentsChange={vi.fn()} />);
 
@@ -201,7 +208,10 @@ describe("StepDocuments", () => {
       onerror: null as any,
       status: 200,
     };
-    vi.stubGlobal("XMLHttpRequest", vi.fn(() => xhrMock));
+    vi.stubGlobal(
+      "XMLHttpRequest",
+      vi.fn(() => xhrMock),
+    );
 
     const onDocumentsChange = vi.fn();
     const { user } = setup(<StepDocuments onDocumentsChange={onDocumentsChange} />);
@@ -239,7 +249,10 @@ describe("StepDocuments", () => {
       onerror: null as any,
       status: 200,
     };
-    vi.stubGlobal("XMLHttpRequest", vi.fn(() => xhrMock));
+    vi.stubGlobal(
+      "XMLHttpRequest",
+      vi.fn(() => xhrMock),
+    );
 
     render(<StepDocuments onDocumentsChange={vi.fn()} />);
 
@@ -267,7 +280,10 @@ describe("StepDocuments", () => {
       onerror: null as any,
       status: 200,
     };
-    vi.stubGlobal("XMLHttpRequest", vi.fn(() => xhrMock));
+    vi.stubGlobal(
+      "XMLHttpRequest",
+      vi.fn(() => xhrMock),
+    );
 
     const onDocumentsChange = vi.fn();
     render(<StepDocuments onDocumentsChange={onDocumentsChange} />);
@@ -296,7 +312,10 @@ describe("StepDocuments", () => {
       onerror: null as any,
       status: 200,
     };
-    vi.stubGlobal("XMLHttpRequest", vi.fn(() => xhrMock));
+    vi.stubGlobal(
+      "XMLHttpRequest",
+      vi.fn(() => xhrMock),
+    );
 
     render(<StepDocuments onDocumentsChange={vi.fn()} />);
 
@@ -329,7 +348,10 @@ describe("StepDocuments", () => {
       onerror: null as any,
       status: 200,
     };
-    vi.stubGlobal("XMLHttpRequest", vi.fn(() => xhrMock));
+    vi.stubGlobal(
+      "XMLHttpRequest",
+      vi.fn(() => xhrMock),
+    );
 
     render(<StepDocuments onDocumentsChange={vi.fn()} />);
 
@@ -338,7 +360,11 @@ describe("StepDocuments", () => {
       dropCallback?.([testFile]);
       await Promise.resolve();
       // Simulate progress event
-      xhrMock.upload.onprogress?.({ lengthComputable: true, loaded: 50, total: 100 } as ProgressEvent);
+      xhrMock.upload.onprogress?.({
+        lengthComputable: true,
+        loaded: 50,
+        total: 100,
+      } as ProgressEvent);
     });
 
     // File should appear
@@ -364,7 +390,10 @@ describe("StepDocuments", () => {
       onerror: null as any,
       status: 200,
     };
-    vi.stubGlobal("XMLHttpRequest", vi.fn(() => xhrMock));
+    vi.stubGlobal(
+      "XMLHttpRequest",
+      vi.fn(() => xhrMock),
+    );
 
     render(<StepDocuments onDocumentsChange={vi.fn()} />);
 
@@ -392,7 +421,10 @@ describe("StepDocuments", () => {
       onerror: null as any,
       status: 500,
     };
-    vi.stubGlobal("XMLHttpRequest", vi.fn(() => xhrMock));
+    vi.stubGlobal(
+      "XMLHttpRequest",
+      vi.fn(() => xhrMock),
+    );
 
     render(<StepDocuments onDocumentsChange={vi.fn()} />);
 
@@ -421,7 +453,10 @@ describe("StepDocuments", () => {
       onerror: null as any,
       status: 200,
     };
-    vi.stubGlobal("XMLHttpRequest", vi.fn(() => xhrMock));
+    vi.stubGlobal(
+      "XMLHttpRequest",
+      vi.fn(() => xhrMock),
+    );
 
     render(<StepDocuments onDocumentsChange={vi.fn()} />);
 
@@ -449,7 +484,10 @@ describe("StepDocuments", () => {
       onerror: null as any,
       status: 200,
     };
-    vi.stubGlobal("XMLHttpRequest", vi.fn(() => xhrMock));
+    vi.stubGlobal(
+      "XMLHttpRequest",
+      vi.fn(() => xhrMock),
+    );
 
     render(<StepDocuments onDocumentsChange={vi.fn()} />);
 
@@ -464,7 +502,9 @@ describe("StepDocuments", () => {
       expect(screen.getByText("file1.pdf")).toBeInTheDocument();
     });
 
-    const file2 = new File(["b"], "file2.docx", { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+    const file2 = new File(["b"], "file2.docx", {
+      type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    });
     await act(async () => {
       dropCallback?.([file2]);
       await Promise.resolve();

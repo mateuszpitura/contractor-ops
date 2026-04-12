@@ -1,10 +1,10 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
+import type { ExportItem } from "../payment-export.js";
 import {
   detectFormat,
-  groupItemsByFormat,
   EU_IBAN_COUNTRIES,
+  groupItemsByFormat,
 } from "../payment-format-detection.js";
-import type { ExportItem } from "../payment-export.js";
 
 describe("EU_IBAN_COUNTRIES", () => {
   it("contains all 27 EU + 3 EEA country codes (30 total)", () => {

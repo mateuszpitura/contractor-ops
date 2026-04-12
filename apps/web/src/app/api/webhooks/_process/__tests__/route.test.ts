@@ -1,6 +1,7 @@
 /** @vitest-environment node */
-import { describe, it, expect, vi, beforeEach } from "vitest";
+
 import { NextRequest } from "next/server";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { mockGetAdapter, mockFindUnique, mockUpdate } = vi.hoisted(() => ({
   mockGetAdapter: vi.fn(),
@@ -89,9 +90,7 @@ describe("POST /api/webhooks/_process", () => {
     });
     mockFindUnique.mockResolvedValue(null);
 
-    const res = await POST(
-      postJson({ deliveryId: "missing", provider: "stripe" }),
-    );
+    const res = await POST(postJson({ deliveryId: "missing", provider: "stripe" }));
     expect(res.status).toBe(404);
   });
 
@@ -112,11 +111,7 @@ describe("POST /api/webhooks/_process", () => {
     const json = (await res.json()) as { processed: boolean };
     expect(json.processed).toBe(true);
 
-    expect(handleWebhook).toHaveBeenCalledWith(
-      { type: "test" },
-      "org-1",
-      "conn-1",
-    );
+    expect(handleWebhook).toHaveBeenCalledWith({ type: "test" }, "org-1", "conn-1");
     expect(mockUpdate).toHaveBeenCalledWith({
       where: { id: "del-1" },
       data: expect.objectContaining({
@@ -193,11 +188,7 @@ describe("POST /api/webhooks/_process", () => {
     const res = await POST(postJson({ deliveryId: "del-ds-1", provider: "docusign" }));
 
     expect(res.status).toBe(200);
-    expect(mockHandleSigningCompletion).toHaveBeenCalledWith(
-      "env-123",
-      "conn-ds",
-      "DOCUSIGN",
-    );
+    expect(mockHandleSigningCompletion).toHaveBeenCalledWith("env-123", "conn-ds", "DOCUSIGN");
   });
 
   it("dispatches to handleSigningCompletion for autenti provider when completed", async () => {
@@ -217,11 +208,7 @@ describe("POST /api/webhooks/_process", () => {
     const res = await POST(postJson({ deliveryId: "del-au-1", provider: "autenti" }));
 
     expect(res.status).toBe(200);
-    expect(mockHandleSigningCompletion).toHaveBeenCalledWith(
-      "env-456",
-      "conn-au",
-      "AUTENTI",
-    );
+    expect(mockHandleSigningCompletion).toHaveBeenCalledWith("env-456", "conn-au", "AUTENTI");
   });
 
   it("dispatches to processLinearWebhook for linear provider", async () => {

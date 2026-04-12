@@ -1,15 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import { Check } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Input } from "@/components/ui/input";
 import { useTranslations } from "next-intl";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 // ---------------------------------------------------------------------------
 // Preset swatches (UI-SPEC: 8 colors in 4x2 grid)
@@ -81,8 +77,7 @@ export function BrandColorPicker({ value, onChange }: BrandColorPickerProps) {
         {/* Swatch grid: 4x2 */}
         <div className="grid grid-cols-4 gap-2">
           {SWATCHES.map((swatch) => {
-            const isSelected =
-              value.toLowerCase() === swatch.hex.toLowerCase();
+            const isSelected = value.toLowerCase() === swatch.hex.toLowerCase();
             return (
               <button
                 key={swatch.hex}

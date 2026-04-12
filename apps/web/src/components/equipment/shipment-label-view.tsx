@@ -23,24 +23,14 @@ export function LabelDisplay({
         </object>
       )}
       {trackingNumber && (
-        <p className="text-sm text-muted-foreground">
-          Tracking: {trackingNumber}
-        </p>
+        <p className="text-sm text-muted-foreground">Tracking: {trackingNumber}</p>
       )}
-      {paczkomatName && (
-        <p className="text-sm text-muted-foreground">
-          Drop-off: {paczkomatName}
-        </p>
-      )}
+      {paczkomatName && <p className="text-sm text-muted-foreground">Drop-off: {paczkomatName}</p>}
       <div className="flex gap-2">
         <a href={label.url} download className="text-sm underline">
           Download
         </a>
-        <button
-          type="button"
-          className="text-sm underline"
-          onClick={() => window.print()}
-        >
+        <button type="button" className="text-sm underline" onClick={() => window.print()}>
           Print
         </button>
       </div>

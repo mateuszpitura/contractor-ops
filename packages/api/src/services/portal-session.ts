@@ -1,4 +1,4 @@
-import { randomBytes, createHash } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 import { prisma } from "@contractor-ops/db";
 
 // ---------------------------------------------------------------------------
@@ -78,10 +78,7 @@ export async function validatePortalSession(rawToken: string) {
   if (session.expiresAt < new Date()) return null;
 
   // Block access if the contractor has been archived or deactivated
-  if (
-    session.contractor.status === "ARCHIVED" ||
-    session.contractor.status === "INACTIVE"
-  ) {
+  if (session.contractor.status === "ARCHIVED" || session.contractor.status === "INACTIVE") {
     return null;
   }
 

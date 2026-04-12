@@ -13,7 +13,11 @@ vi.mock("@/trpc/init", () => ({
 }));
 
 vi.mock("@/i18n/navigation", () => ({
-  Link: ({ children, href, ...props }: any) => <a href={href} {...props}>{children}</a>,
+  Link: ({ children, href, ...props }: any) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
 }));
 
 vi.mock("@/components/integrations/jira-task-config", () => ({
@@ -68,12 +72,7 @@ describe("TaskCard", () => {
 
   it("shows untitled task text when title is empty", () => {
     render(
-      <TaskCard
-        index={0}
-        allTasks={[]}
-        form={createMockForm({ title: "" })}
-        onRemove={vi.fn()}
-      />,
+      <TaskCard index={0} allTasks={[]} form={createMockForm({ title: "" })} onRemove={vi.fn()} />,
     );
     expect(screen.getByText("Untitled task")).toBeInTheDocument();
   });

@@ -1,6 +1,6 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
-import { mapDpdStatus, DPD_STATUS_MAP } from "../dpd-status-mapper";
+import { DPD_STATUS_MAP, mapDpdStatus } from "../dpd-status-mapper";
 
 // ---------------------------------------------------------------------------
 // DPD Status Mapper Tests
@@ -58,9 +58,7 @@ describe("DPD Status Mapper", () => {
       const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
       const result = mapDpdStatus("UNKNOWN_STATUS");
       expect(result).toBeNull();
-      expect(warnSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Unknown DPD status"),
-      );
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("Unknown DPD status"));
       warnSpy.mockRestore();
     });
   });

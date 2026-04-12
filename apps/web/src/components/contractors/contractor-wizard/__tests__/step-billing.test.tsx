@@ -1,5 +1,5 @@
-import { render, screen } from "@/test/test-utils";
 import { useForm } from "react-hook-form";
+import { render, screen } from "@/test/test-utils";
 import { StepBilling } from "../step-billing";
 
 function Wrapper() {

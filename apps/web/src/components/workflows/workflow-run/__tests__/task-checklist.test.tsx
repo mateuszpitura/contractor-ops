@@ -24,7 +24,11 @@ vi.mock("@/trpc/init", () => ({
 }));
 
 vi.mock("@/i18n/navigation", () => ({
-  Link: ({ children, href, ...props }: any) => <a href={href} {...props}>{children}</a>,
+  Link: ({ children, href, ...props }: any) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
 }));
 
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
@@ -38,18 +42,40 @@ vi.mock("../task-attachments", () => ({ TaskAttachments: () => null }));
 
 const mockTasks = [
   {
-    id: "t1", title: "Task 1", description: null, taskType: "MANUAL",
-    status: "DONE", required: true, assigneeUserId: null, assigneeRole: null,
-    dueAt: null, completedAt: "2026-03-01", completedByUserId: "u1",
-    startedAt: null, dependsOnTaskRunId: null, resultJson: null,
-    isOverdue: false, createdAt: "2026-02-01",
+    id: "t1",
+    title: "Task 1",
+    description: null,
+    taskType: "MANUAL",
+    status: "DONE",
+    required: true,
+    assigneeUserId: null,
+    assigneeRole: null,
+    dueAt: null,
+    completedAt: "2026-03-01",
+    completedByUserId: "u1",
+    startedAt: null,
+    dependsOnTaskRunId: null,
+    resultJson: null,
+    isOverdue: false,
+    createdAt: "2026-02-01",
   },
   {
-    id: "t2", title: "Task 2", description: null, taskType: "APPROVAL",
-    status: "TODO", required: false, assigneeUserId: "u1", assigneeRole: null,
-    dueAt: null, completedAt: null, completedByUserId: null,
-    startedAt: null, dependsOnTaskRunId: null, resultJson: null,
-    isOverdue: false, createdAt: "2026-02-01",
+    id: "t2",
+    title: "Task 2",
+    description: null,
+    taskType: "APPROVAL",
+    status: "TODO",
+    required: false,
+    assigneeUserId: "u1",
+    assigneeRole: null,
+    dueAt: null,
+    completedAt: null,
+    completedByUserId: null,
+    startedAt: null,
+    dependsOnTaskRunId: null,
+    resultJson: null,
+    isOverdue: false,
+    createdAt: "2026-02-01",
   },
 ];
 
@@ -77,9 +103,7 @@ describe("TaskChecklist", () => {
       status: "SKIPPED",
       resultJson: { skipReason: "condition_not_met" },
     };
-    render(
-      <TaskChecklist tasks={[skippedTask]} runId="run-1" currentUserId="u1" />,
-    );
+    render(<TaskChecklist tasks={[skippedTask]} runId="run-1" currentUserId="u1" />);
     const wrapper = screen.getByText("Task 1").closest("[class*='opacity']");
     expect(wrapper).toBeInTheDocument();
   });

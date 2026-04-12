@@ -20,9 +20,7 @@ interface DataTableColumnToggleProps<TData> {
  * Column visibility dropdown for the contractor data table.
  * Persists visibility state to localStorage.
  */
-export function DataTableColumnToggle<TData>({
-  table,
-}: DataTableColumnToggleProps<TData>) {
+export function DataTableColumnToggle<TData>({ table }: DataTableColumnToggleProps<TData>) {
   const t = useTranslations("Contractors");
 
   return (

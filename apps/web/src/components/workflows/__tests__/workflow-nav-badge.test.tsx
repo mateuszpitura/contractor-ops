@@ -1,5 +1,5 @@
-import { render, screen } from "@/test/test-utils";
 import { useQuery } from "@tanstack/react-query";
+import { render, screen } from "@/test/test-utils";
 import { WorkflowNavBadge } from "../workflow-nav-badge";
 
 vi.mock("@tanstack/react-query", async () => {

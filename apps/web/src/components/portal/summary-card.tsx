@@ -34,9 +34,7 @@ export function SummaryCard({ icon: Icon, label, value, className }: SummaryCard
           <Icon className="h-5 w-5 text-muted-foreground" />
         </div>
         <div className="min-w-0">
-          <p className="text-[13px] font-normal text-muted-foreground">
-            {label}
-          </p>
+          <p className="text-[13px] font-normal text-muted-foreground">{label}</p>
           <p className="font-display text-[28px] font-semibold leading-[1.2]">{value}</p>
         </div>
       </CardContent>

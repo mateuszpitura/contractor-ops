@@ -1,23 +1,14 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { AlertCircle, Loader2, Upload } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useQueryClient } from "@tanstack/react-query";
+import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Upload, AlertCircle, Loader2 } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
-import { validateBankStatementFile } from "@/lib/file-validation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import {
   Table,
@@ -27,6 +18,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { validateBankStatementFile } from "@/lib/file-validation";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -55,24 +48,16 @@ interface BankStatementDialogProps {
 // Component
 // ---------------------------------------------------------------------------
 
-export function BankStatementDialog({
-  runId,
-  open,
-  onOpenChange,
-}: BankStatementDialogProps) {
+export function BankStatementDialog({ runId, open, onOpenChange }: BankStatementDialogProps) {
   const t = useTranslations("Payments");
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Step state: "upload" | "parsing" | "results" | "error"
-  const [step, setStep] = useState<"upload" | "parsing" | "results" | "error">(
-    "upload",
-  );
+  const [step, setStep] = useState<"upload" | "parsing" | "results" | "error">("upload");
   const [parseError, setParseError] = useState<string>("");
   const [matches, setMatches] = useState<MatchResult[]>([]);
-  const [selectedMatches, setSelectedMatches] = useState<Set<number>>(
-    new Set(),
-  );
+  const [selectedMatches, setSelectedMatches] = useState<Set<number>>(new Set());
 
   // Import statement mutation
   const importMutation = useMutation(
@@ -222,9 +207,7 @@ export function BankStatementDialog({
                   const dt = new DataTransfer();
                   dt.items.add(file);
                   fileInputRef.current.files = dt.files;
-                  fileInputRef.current.dispatchEvent(
-                    new Event("change", { bubbles: true }),
-                  );
+                  fileInputRef.current.dispatchEvent(new Event("change", { bubbles: true }));
                 }
               }}
             >
@@ -232,9 +215,7 @@ export function BankStatementDialog({
               <p className="text-sm text-muted-foreground text-center">
                 {t("bankStatement.dropzoneText")}
               </p>
-              <p className="text-xs text-muted-foreground">
-                {t("bankStatement.dropzoneFormats")}
-              </p>
+              <p className="text-xs text-muted-foreground">{t("bankStatement.dropzoneFormats")}</p>
             </div>
             <input
               ref={fileInputRef}
@@ -250,9 +231,7 @@ export function BankStatementDialog({
         {step === "parsing" && (
           <div className="flex flex-col items-center gap-4 py-8">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="text-sm text-muted-foreground">
-              {t("bankStatement.parsingProgress")}
-            </p>
+            <p className="text-sm text-muted-foreground">{t("bankStatement.parsingProgress")}</p>
             <Progress value={60} className="w-48" />
           </div>
         )}
@@ -272,37 +251,23 @@ export function BankStatementDialog({
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-10" />
-                    <TableHead className="text-xs">
-                      {t("bankStatement.colAmount")}
-                    </TableHead>
-                    <TableHead className="text-xs">
-                      {t("bankStatement.colIban")}
-                    </TableHead>
-                    <TableHead className="text-xs">
-                      {t("bankStatement.colStatus")}
-                    </TableHead>
-                    <TableHead className="text-xs">
-                      {t("bankStatement.colInvoice")}
-                    </TableHead>
+                    <TableHead className="text-xs">{t("bankStatement.colAmount")}</TableHead>
+                    <TableHead className="text-xs">{t("bankStatement.colIban")}</TableHead>
+                    <TableHead className="text-xs">{t("bankStatement.colStatus")}</TableHead>
+                    <TableHead className="text-xs">{t("bankStatement.colInvoice")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {matches.map((match) => (
                     <TableRow
                       key={match.transactionIndex}
-                      className={
-                        !match.matched ? "bg-yellow-500/10" : ""
-                      }
+                      className={!match.matched ? "bg-yellow-500/10" : ""}
                     >
                       <TableCell>
                         {match.matched && (
                           <Checkbox
-                            checked={selectedMatches.has(
-                              match.transactionIndex,
-                            )}
-                            onCheckedChange={() =>
-                              toggleMatch(match.transactionIndex)
-                            }
+                            checked={selectedMatches.has(match.transactionIndex)}
+                            onCheckedChange={() => toggleMatch(match.transactionIndex)}
                           />
                         )}
                       </TableCell>
@@ -329,9 +294,7 @@ export function BankStatementDialog({
                             : t("bankStatement.unmatched")}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-xs">
-                        {match.invoiceNumber ?? "\u2014"}
-                      </TableCell>
+                      <TableCell className="text-xs">{match.invoiceNumber ?? "\u2014"}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -360,9 +323,7 @@ export function BankStatementDialog({
         {step === "error" && (
           <div className="flex flex-col items-center gap-4 py-8">
             <AlertCircle className="h-8 w-8 text-destructive" />
-            <p className="text-sm text-muted-foreground text-center">
-              {parseError}
-            </p>
+            <p className="text-sm text-muted-foreground text-center">{parseError}</p>
             <button
               type="button"
               className="text-sm text-primary hover:underline"

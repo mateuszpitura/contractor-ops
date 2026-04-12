@@ -1,6 +1,6 @@
 import { prisma } from "@contractor-ops/db";
-import { Resend } from "resend";
 import type { NOTIFICATION_TYPES } from "@contractor-ops/validators";
+import { Resend } from "resend";
 import { renderNotificationEmail } from "./email-templates.js";
 import { getConnectedMessagingProviders } from "./messaging/index.js";
 
@@ -130,19 +130,14 @@ export async function getOrCreatePreferences(
  * Sends a notification email via Resend with React Email templates.
  * Looks up user email, renders the template, and sends via Resend.
  */
-async function sendNotificationEmail(
-  userId: string,
-  event: NotificationEvent,
-): Promise<void> {
+async function sendNotificationEmail(userId: string, event: NotificationEvent): Promise<void> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { email: true },
   });
 
   if (!user?.email) {
-    console.warn(
-      `[notification-service] No email for user=${userId}, skipping email`,
-    );
+    console.warn(`[notification-service] No email for user=${userId}, skipping email`);
     return;
   }
 
@@ -175,9 +170,7 @@ async function sendNotificationEmail(
 // Channel alert category mapping
 // ---------------------------------------------------------------------------
 
-const NOTIFICATION_TYPE_TO_CHANNEL_CATEGORY: Partial<
-  Record<NotificationType, string>
-> = {
+const NOTIFICATION_TYPE_TO_CHANNEL_CATEGORY: Partial<Record<NotificationType, string>> = {
   APPROVAL_REQUEST: "approvals",
   APPROVAL_DECISION: "approvals",
   INVOICE_RECEIVED: "invoices",
@@ -208,11 +201,7 @@ export async function dispatch(event: NotificationEvent): Promise<void> {
   const dedupCutoff = new Date(now.getTime() - DEDUP_WINDOW_MS);
 
   for (const userId of event.recipientUserIds) {
-    const prefs = await getOrCreatePreferences(
-      userId,
-      event.organizationId,
-      event.type,
-    );
+    const prefs = await getOrCreatePreferences(userId, event.organizationId, event.type);
 
     // Deduplication: skip if same notification was sent recently
     const duplicate = await prisma.notification.findFirst({
@@ -251,10 +240,7 @@ export async function dispatch(event: NotificationEvent): Promise<void> {
       try {
         await sendNotificationEmail(userId, event);
       } catch (error) {
-        console.error(
-          `[notification-service] Email send failed for user=${userId}:`,
-          error,
-        );
+        console.error(`[notification-service] Email send failed for user=${userId}:`, error);
       }
     }
 
@@ -302,13 +288,10 @@ export async function dispatch(event: NotificationEvent): Promise<void> {
   // ---------------------------------------------------------------------------
   const category = NOTIFICATION_TYPE_TO_CHANNEL_CATEGORY[event.type];
   if (category) {
-    const channelProviders = await getConnectedMessagingProviders(
-      event.organizationId,
-    );
+    const channelProviders = await getConnectedMessagingProviders(event.organizationId);
     for (const provider of channelProviders) {
       try {
-        const providerKey =
-          provider.platform === "teams" ? "MICROSOFT_TEAMS" : "SLACK";
+        const providerKey = provider.platform === "teams" ? "MICROSOFT_TEAMS" : "SLACK";
         const connection = await prisma.integrationConnection.findFirst({
           where: {
             organizationId: event.organizationId,
@@ -318,10 +301,8 @@ export async function dispatch(event: NotificationEvent): Promise<void> {
           select: { configJson: true },
         });
 
-        const config =
-          (connection?.configJson as Record<string, unknown>) ?? {};
-        const channelMapping =
-          (config.channelMapping as Record<string, string>) ?? {};
+        const config = (connection?.configJson as Record<string, unknown>) ?? {};
+        const channelMapping = (config.channelMapping as Record<string, string>) ?? {};
         const channelId = channelMapping[category];
 
         if (!channelId) continue;
@@ -334,16 +315,10 @@ export async function dispatch(event: NotificationEvent): Promise<void> {
           entityType: event.entityType ?? "unknown",
           entityId: event.entityId ?? "",
           details: [],
-          viewUrl: buildEntityUrl(
-            event.entityType ?? "unknown",
-            event.entityId ?? "",
-          ),
+          viewUrl: buildEntityUrl(event.entityType ?? "unknown", event.entityId ?? ""),
         });
       } catch (error) {
-        console.error(
-          `[notification-service] ${provider.platform} channel alert failed:`,
-          error,
-        );
+        console.error(`[notification-service] ${provider.platform} channel alert failed:`, error);
       }
     }
   }

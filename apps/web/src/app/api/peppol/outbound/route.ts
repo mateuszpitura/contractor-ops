@@ -1,10 +1,10 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import { verifySignatureAppRouter } from "@upstash/qstash/nextjs";
-import { prisma } from "@contractor-ops/db";
-import { getCredentials } from "@contractor-ops/integrations";
-import { StorecoveAdapter } from "@contractor-ops/einvoice";
 import { PeppolOrchestrator } from "@contractor-ops/api/services/peppol-orchestrator";
+import { prisma } from "@contractor-ops/db";
+import { StorecoveAdapter } from "@contractor-ops/einvoice";
+import { getCredentials } from "@contractor-ops/integrations";
+import { verifySignatureAppRouter } from "@upstash/qstash/nextjs";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 // ---------------------------------------------------------------------------
 // POST /api/peppol/outbound
@@ -28,10 +28,7 @@ async function handler(request: NextRequest) {
   };
 
   if (!organizationId || !invoiceId || !receiverParticipantId) {
-    return NextResponse.json(
-      { error: "Missing required fields" },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
   try {
@@ -45,18 +42,12 @@ async function handler(request: NextRequest) {
     });
 
     if (!connection) {
-      console.error(
-        `[peppol/outbound] No active Peppol connection for org ${organizationId}`,
-      );
+      console.error(`[peppol/outbound] No active Peppol connection for org ${organizationId}`);
       return NextResponse.json({ error: "No Peppol connection" });
     }
 
-    const credentials = await getCredentials(
-      connection.credentialsRef,
-      "peppol",
-    );
-    const config =
-      (connection.configJson as Record<string, unknown>) ?? {};
+    const credentials = await getCredentials(connection.credentialsRef, "peppol");
+    const config = (connection.configJson as Record<string, unknown>) ?? {};
     const environment = config.environment as string;
 
     const adapter = new StorecoveAdapter({

@@ -1,19 +1,19 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { prisma } from "@contractor-ops/db";
-import type { OAuthConfig } from "../types/provider.js";
-import type { CredentialBlob } from "../types/credentials.js";
-import type { WebhookVerificationResult } from "../types/webhook.js";
-import type {
-  ESignAdapter,
-  SigningEnvelopeRequest,
-  SigningEnvelopeResult,
-  EmbeddedSigningUrlResult,
-  SignedDocumentResult,
-  NormalizedSigningEvent,
-} from "../types/esign.js";
-import { BaseAdapter } from "./base-adapter.js";
 import { decryptCredentials } from "../services/credential-service.js";
 import { handleSigningWebhook } from "../services/esign-webhook-handler.js";
+import type { CredentialBlob } from "../types/credentials.js";
+import type {
+  EmbeddedSigningUrlResult,
+  ESignAdapter,
+  NormalizedSigningEvent,
+  SignedDocumentResult,
+  SigningEnvelopeRequest,
+  SigningEnvelopeResult,
+} from "../types/esign.js";
+import type { OAuthConfig } from "../types/provider.js";
+import type { WebhookVerificationResult } from "../types/webhook.js";
+import { BaseAdapter } from "./base-adapter.js";
 
 // ---------------------------------------------------------------------------
 // DocuSign SDK types (untyped JS SDK — declare minimal shapes)
@@ -91,10 +91,7 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
     };
   }
 
-  async exchangeCodeForTokens(
-    code: string,
-    redirectUri: string,
-  ): Promise<CredentialBlob> {
+  async exchangeCodeForTokens(code: string, redirectUri: string): Promise<CredentialBlob> {
     const clientId = process.env.DOCUSIGN_CLIENT_ID;
     const clientSecret = process.env.DOCUSIGN_CLIENT_SECRET;
 
@@ -104,21 +101,18 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
       );
     }
 
-    const response = await fetch(
-      "https://account-d.docusign.com/oauth/token",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`,
-        },
-        body: new URLSearchParams({
-          grant_type: "authorization_code",
-          code,
-          redirect_uri: redirectUri,
-        }),
+    const response = await fetch("https://account-d.docusign.com/oauth/token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`,
       },
-    );
+      body: new URLSearchParams({
+        grant_type: "authorization_code",
+        code,
+        redirect_uri: redirectUri,
+      }),
+    });
 
     if (!response.ok) {
       const text = await response.text();
@@ -137,9 +131,7 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
       refreshToken: data.refresh_token,
       tokenType: data.token_type,
       scope: "signature",
-      expiresAt: new Date(
-        Date.now() + data.expires_in * 1000,
-      ).toISOString(),
+      expiresAt: new Date(Date.now() + data.expires_in * 1000).toISOString(),
     };
   }
 
@@ -157,20 +149,17 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
       throw new Error("No refresh token available for DocuSign");
     }
 
-    const response = await fetch(
-      "https://account-d.docusign.com/oauth/token",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`,
-        },
-        body: new URLSearchParams({
-          grant_type: "refresh_token",
-          refresh_token: credentials.refreshToken,
-        }),
+    const response = await fetch("https://account-d.docusign.com/oauth/token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`,
       },
-    );
+      body: new URLSearchParams({
+        grant_type: "refresh_token",
+        refresh_token: credentials.refreshToken,
+      }),
+    });
 
     if (!response.ok) {
       const text = await response.text();
@@ -189,9 +178,7 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
       refreshToken: data.refresh_token,
       tokenType: data.token_type,
       scope: credentials.scope,
-      expiresAt: new Date(
-        Date.now() + data.expires_in * 1000,
-      ).toISOString(),
+      expiresAt: new Date(Date.now() + data.expires_in * 1000).toISOString(),
     };
   }
 
@@ -261,16 +248,14 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
         });
       }
 
-      envelopeDefinition.notification =
-        docusign.Notification.constructFromObject(notification);
+      envelopeDefinition.notification = docusign.Notification.constructFromObject(notification);
     }
 
-    const envelope = docusign.EnvelopeDefinition.constructFromObject(
-      envelopeDefinition,
-    );
+    const envelope = docusign.EnvelopeDefinition.constructFromObject(envelopeDefinition);
 
-    const result: DocuSignEnvelopeSummary =
-      await envelopesApi.createEnvelope(accountId, { envelopeDefinition: envelope });
+    const result: DocuSignEnvelopeSummary = await envelopesApi.createEnvelope(accountId, {
+      envelopeDefinition: envelope,
+    });
 
     return {
       externalEnvelopeId: result.envelopeId,
@@ -307,10 +292,13 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
       messageOrigins: [origin],
     });
 
-    const result: DocuSignRecipientView =
-      await envelopesApi.createRecipientView(accountId, envelopeId, {
+    const result: DocuSignRecipientView = await envelopesApi.createRecipientView(
+      accountId,
+      envelopeId,
+      {
         recipientViewRequest: viewRequest,
-      });
+      },
+    );
 
     return {
       url: result.url,
@@ -318,21 +306,14 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
     };
   }
 
-  async getSignedDocument(
-    connectionId: string,
-    envelopeId: string,
-  ): Promise<SignedDocumentResult> {
+  async getSignedDocument(connectionId: string, envelopeId: string): Promise<SignedDocumentResult> {
     const { apiClient, accountId } = await this.getApiClient(connectionId);
     const docusign = await this.loadDocuSignSdk();
 
     const envelopesApi = new docusign.EnvelopesApi(apiClient);
 
     // "combined" returns all documents as a single PDF
-    const documentBytes: Buffer = await envelopesApi.getDocument(
-      accountId,
-      envelopeId,
-      "combined",
-    );
+    const documentBytes: Buffer = await envelopesApi.getDocument(accountId, envelopeId, "combined");
 
     return {
       documentBase64: Buffer.from(documentBytes).toString("base64"),
@@ -350,11 +331,10 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
 
     const envelopesApi = new docusign.EnvelopesApi(apiClient);
 
-    const [envelope, recipients]: [DocuSignEnvelope, DocuSignRecipients] =
-      await Promise.all([
-        envelopesApi.getEnvelope(accountId, envelopeId),
-        envelopesApi.listRecipients(accountId, envelopeId),
-      ]);
+    const [envelope, recipients]: [DocuSignEnvelope, DocuSignRecipients] = await Promise.all([
+      envelopesApi.getEnvelope(accountId, envelopeId),
+      envelopesApi.listRecipients(accountId, envelopeId),
+    ]);
 
     return {
       externalEnvelopeId: envelope.envelopeId,
@@ -367,11 +347,7 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
     };
   }
 
-  async voidEnvelope(
-    connectionId: string,
-    envelopeId: string,
-    reason: string,
-  ): Promise<void> {
+  async voidEnvelope(connectionId: string, envelopeId: string, reason: string): Promise<void> {
     const { apiClient, accountId } = await this.getApiClient(connectionId);
     const docusign = await this.loadDocuSignSdk();
 
@@ -396,17 +372,17 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
     const envelopesApi = new docusign.EnvelopesApi(apiClient);
 
     // Retrieve current recipients to find the matching signer
-    const currentRecipients: DocuSignRecipients =
-      await envelopesApi.listRecipients(accountId, envelopeId);
+    const currentRecipients: DocuSignRecipients = await envelopesApi.listRecipients(
+      accountId,
+      envelopeId,
+    );
 
     const matchingSigner = currentRecipients.signers?.find(
       (s) => s.email.toLowerCase() === recipientEmail.toLowerCase(),
     );
 
     if (!matchingSigner) {
-      throw new Error(
-        `Recipient ${recipientEmail} not found in envelope ${envelopeId}`,
-      );
+      throw new Error(`Recipient ${recipientEmail} not found in envelope ${envelopeId}`);
     }
 
     const recipients = docusign.Recipients.constructFromObject({
@@ -445,10 +421,7 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
         r.status === "sent",
     );
 
-    const eventType = this.mapDocuSignEventType(
-      envelopeStatus,
-      changedRecipient?.status,
-    );
+    const eventType = this.mapDocuSignEventType(envelopeStatus, changedRecipient?.status);
 
     return {
       externalEnvelopeId: envelopeId,
@@ -480,9 +453,7 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
       return { valid: false };
     }
 
-    const expectedSignature = createHmac("sha256", secret)
-      .update(rawBody)
-      .digest("base64");
+    const expectedSignature = createHmac("sha256", secret).update(rawBody).digest("base64");
 
     const expectedBuffer = Buffer.from(expectedSignature);
     const receivedBuffer = Buffer.from(signature);
@@ -522,10 +493,7 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
       );
     }
 
-    const credentials = decryptCredentials(
-      connection.credentialsRef,
-      "docusign",
-    );
+    const credentials = decryptCredentials(connection.credentialsRef, "docusign");
 
     const configJson = (connection.configJson ?? {}) as {
       basePath?: string;
@@ -533,21 +501,14 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
     };
 
     if (!configJson.accountId) {
-      throw new Error(
-        `DocuSign accountId not found in connection config for ${connectionId}`,
-      );
+      throw new Error(`DocuSign accountId not found in connection config for ${connectionId}`);
     }
 
     const docusign = await this.loadDocuSignSdk();
 
     const apiClient: DocuSignApiClient = new docusign.ApiClient();
-    apiClient.setBasePath(
-      configJson.basePath ?? "https://demo.docusign.net/restapi",
-    );
-    apiClient.addDefaultHeader(
-      "Authorization",
-      `Bearer ${credentials.accessToken}`,
-    );
+    apiClient.setBasePath(configJson.basePath ?? "https://demo.docusign.net/restapi");
+    apiClient.addDefaultHeader("Authorization", `Bearer ${credentials.accessToken}`);
 
     return { apiClient, accountId: configJson.accountId };
   }
@@ -595,9 +556,7 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
     }
   }
 
-  private mapEnvelopeStatus(
-    status: string,
-  ): NormalizedSigningEvent["envelopeStatus"] {
+  private mapEnvelopeStatus(status: string): NormalizedSigningEvent["envelopeStatus"] {
     const mapping: Record<string, NormalizedSigningEvent["envelopeStatus"]> = {
       created: "CREATED",
       sent: "SENT",
@@ -609,9 +568,7 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
     return mapping[status] ?? "SENT";
   }
 
-  private mapRecipientStatus(
-    status: string,
-  ): NormalizedSigningEvent["recipientStatus"] {
+  private mapRecipientStatus(status: string): NormalizedSigningEvent["recipientStatus"] {
     const mapping: Record<string, NormalizedSigningEvent["recipientStatus"]> = {
       created: "PENDING",
       sent: "SENT",

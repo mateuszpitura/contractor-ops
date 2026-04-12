@@ -1,6 +1,6 @@
-import { z } from "zod";
 import type { LinearStatusMappingEntry } from "@contractor-ops/validators";
 import { linearStatusMappingEntrySchema } from "@contractor-ops/validators";
+import { z } from "zod";
 
 // Use loosely typed prisma client for parallel execution compatibility
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -109,9 +109,7 @@ export async function saveStatusMapping(
     data: {
       configJson: updatedConfig,
       // Transition PENDING_MAPPING -> CONNECTED on first mapping save (D-03)
-      ...(connection.status === "PENDING_MAPPING"
-        ? { status: "CONNECTED" }
-        : {}),
+      ...(connection.status === "PENDING_MAPPING" ? { status: "CONNECTED" } : {}),
     },
   });
 }

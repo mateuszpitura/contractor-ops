@@ -1,5 +1,5 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { render, screen, setup } from "@/test/test-utils";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { OrgCalendarSection } from "../org-calendar-section";
 
 // ---------------------------------------------------------------------------
@@ -12,9 +12,8 @@ const mockMutate = vi.fn();
 const mockInvalidateQueries = vi.fn();
 
 vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
-    "@tanstack/react-query",
-  );
+  const actual =
+    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
   return {
     ...actual,
     useQuery: vi.fn(),
@@ -34,7 +33,10 @@ vi.mock("@/trpc/init", () => ({
     },
     integration: {
       getOAuthUrlGeneric: {
-        queryOptions: vi.fn(() => ({ queryKey: ["integration", "getOAuthUrlGeneric"], enabled: false })),
+        queryOptions: vi.fn(() => ({
+          queryKey: ["integration", "getOAuthUrlGeneric"],
+          enabled: false,
+        })),
       },
     },
   },

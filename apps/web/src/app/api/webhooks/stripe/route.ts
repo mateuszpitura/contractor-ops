@@ -1,11 +1,11 @@
-import * as Sentry from "@sentry/nextjs";
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import { stripe } from "@contractor-ops/api/services/stripe-client";
 import { routeStripeEvent } from "@contractor-ops/api/services/billing-webhook";
+import { stripe } from "@contractor-ops/api/services/stripe-client";
+import { prisma } from "@contractor-ops/db";
 import { createWebhookLogger } from "@contractor-ops/logger";
 import { metrics } from "@contractor-ops/logger/metrics";
-import { prisma } from "@contractor-ops/db";
+import * as Sentry from "@sentry/nextjs";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 const log = createWebhookLogger("stripe");
 
@@ -34,20 +34,13 @@ export async function POST(request: NextRequest) {
   const signature = request.headers.get("stripe-signature");
 
   if (!signature) {
-    return NextResponse.json(
-      { error: "Missing stripe-signature header" },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "Missing stripe-signature header" }, { status: 400 });
   }
 
   // Step 1: Verify webhook signature
   let event;
   try {
-    event = stripe.webhooks.constructEvent(
-      rawBody,
-      signature,
-      process.env.STRIPE_WEBHOOK_SECRET!,
-    );
+    event = stripe.webhooks.constructEvent(rawBody, signature, process.env.STRIPE_WEBHOOK_SECRET!);
   } catch (error) {
     log.warn({ err: error }, "signature verification failed");
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
@@ -98,26 +91,22 @@ export async function POST(request: NextRequest) {
 
     log.info({ eventId: event.id, eventType: event.type }, "event processed");
     metrics.increment("webhook.processed", 1, {
-      provider: "stripe", eventType: event.type,
+      provider: "stripe",
+      eventType: event.type,
     });
 
     return NextResponse.json({ received: true });
   } catch (error) {
-    log.error(
-      { err: error, eventId: event.id, eventType: event.type },
-      "processing failed",
-    );
+    log.error({ err: error, eventId: event.id, eventType: event.type }, "processing failed");
     Sentry.captureException(error, {
       tags: { "webhook.provider": "stripe", "webhook.event_type": event.type },
       extra: { eventId: event.id },
     });
     metrics.increment("webhook.failed", 1, {
-      provider: "stripe", eventType: event.type,
+      provider: "stripe",
+      eventType: event.type,
     });
     // Return 500 so Stripe retries the webhook
-    return NextResponse.json(
-      { error: "Webhook processing failed" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Webhook processing failed" }, { status: 500 });
   }
 }

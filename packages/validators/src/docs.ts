@@ -15,9 +15,7 @@ export const confluencePageMetadataSchema = z.object({
   spaceName: z.string(),
   lastEditedTime: z.string().optional(),
 });
-export type ConfluencePageMetadata = z.infer<
-  typeof confluencePageMetadataSchema
->;
+export type ConfluencePageMetadata = z.infer<typeof confluencePageMetadataSchema>;
 
 // Search result shapes returned by adapters
 export const docSearchResultSchema = z.object({

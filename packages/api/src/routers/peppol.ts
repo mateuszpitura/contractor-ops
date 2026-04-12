@@ -1,18 +1,18 @@
-import { z } from "zod";
-import { TRPCError } from "@trpc/server";
 import { prisma } from "@contractor-ops/db";
-import {
-  connectPeppolSchema,
-  getTransmissionsSchema,
-  getTransmissionByInvoiceIdSchema,
-  retryTransmissionSchema,
-} from "@contractor-ops/validators";
 import { storeCredentials } from "@contractor-ops/integrations";
 import { getQStashClient } from "@contractor-ops/integrations/services/qstash-client";
-import { router } from "../init.js";
-import { tenantProcedure } from "../middleware/tenant.js";
-import { requirePermission } from "../middleware/rbac.js";
+import {
+  connectPeppolSchema,
+  getTransmissionByInvoiceIdSchema,
+  getTransmissionsSchema,
+  retryTransmissionSchema,
+} from "@contractor-ops/validators";
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 import * as E from "../errors.js";
+import { router } from "../init.js";
+import { requirePermission } from "../middleware/rbac.js";
+import { tenantProcedure } from "../middleware/tenant.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -49,8 +49,7 @@ export const peppolRouter = router({
       if (existing) {
         throw new TRPCError({
           code: "CONFLICT",
-          message:
-            "Organization already has an active Peppol participant. Disconnect first.",
+          message: "Organization already has an active Peppol participant. Disconnect first.",
         });
       }
 
@@ -68,13 +67,12 @@ export const peppolRouter = router({
       );
 
       // Upsert IntegrationConnection
-      const existingConnection =
-        await prisma.integrationConnection.findFirst({
-          where: {
-            organizationId: ctx.organizationId,
-            provider: "PEPPOL",
-          },
-        });
+      const existingConnection = await prisma.integrationConnection.findFirst({
+        where: {
+          organizationId: ctx.organizationId,
+          provider: "PEPPOL",
+        },
+      });
 
       let connection;
       if (existingConnection) {
@@ -131,8 +129,7 @@ export const peppolRouter = router({
           retries: 2,
         });
 
-        const currentConfig =
-          (connection.configJson as Record<string, unknown>) ?? {};
+        const currentConfig = (connection.configJson as Record<string, unknown>) ?? {};
         await prisma.integrationConnection.update({
           where: { id: connection.id },
           data: {
@@ -143,10 +140,7 @@ export const peppolRouter = router({
           },
         });
       } catch (error) {
-        console.error(
-          "[peppol.connect] Failed to create QStash schedule:",
-          error,
-        );
+        console.error("[peppol.connect] Failed to create QStash schedule:", error);
         // Don't fail the connection — schedule can be retried
       }
 
@@ -190,8 +184,7 @@ export const peppolRouter = router({
 
       if (connection) {
         // Delete QStash schedule if it exists
-        const configJson =
-          (connection.configJson as Record<string, unknown>) ?? {};
+        const configJson = (connection.configJson as Record<string, unknown>) ?? {};
         const scheduleId = configJson.qstashScheduleId as string | undefined;
 
         if (scheduleId) {
@@ -199,10 +192,7 @@ export const peppolRouter = router({
             const qstash = getQStashClient();
             await qstash.schedules.delete(scheduleId);
           } catch (error) {
-            console.error(
-              "[peppol.disconnect] Failed to delete QStash schedule:",
-              error,
-            );
+            console.error("[peppol.disconnect] Failed to delete QStash schedule:", error);
           }
         }
 

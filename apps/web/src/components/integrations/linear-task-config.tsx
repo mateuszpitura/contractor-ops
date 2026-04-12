@@ -1,13 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-
-import { trpc } from "@/trpc/init";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -16,6 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { trpc } from "@/trpc/init";
 import { LinearLogo } from "./linear-logo";
 
 // ---------------------------------------------------------------------------
@@ -55,13 +54,9 @@ export function LinearTaskConfig({ taskTemplateId }: LinearTaskConfigProps) {
     staleTime: Infinity,
   });
 
-  const connection = connectionQuery.data as
-    | { id: string; status: string }
-    | null
-    | undefined;
+  const connection = connectionQuery.data as { id: string; status: string } | null | undefined;
   const isConnected =
-    connection?.status === "CONNECTED" ||
-    connection?.status === "PENDING_MAPPING";
+    connection?.status === "CONNECTED" || connection?.status === "PENDING_MAPPING";
 
   // Fetch teams when connected
   const teamsQuery = useQuery({
@@ -143,7 +138,7 @@ export function LinearTaskConfig({ taskTemplateId }: LinearTaskConfigProps) {
   }
 
   const teamSummary = selectedTeamId
-    ? teams.find((t) => t.id === selectedTeamId)?.name ?? "Not configured"
+    ? (teams.find((t) => t.id === selectedTeamId)?.name ?? "Not configured")
     : "Not configured";
 
   return (
@@ -157,18 +152,13 @@ export function LinearTaskConfig({ taskTemplateId }: LinearTaskConfigProps) {
             onCheckedChange={handleToggle}
             disabled={!selectedTeamId || saveMutation.isPending}
           />
-          <Label
-            htmlFor={`linear-toggle-${taskTemplateId}`}
-            className="cursor-pointer text-sm"
-          >
+          <Label htmlFor={`linear-toggle-${taskTemplateId}`} className="cursor-pointer text-sm">
             {t("enableToggle")}
           </Label>
         </div>
 
         {/* Team summary */}
-        <span
-          className={`flex-1 text-sm ${selectedTeamId ? "" : "text-muted-foreground"}`}
-        >
+        <span className={`flex-1 text-sm ${selectedTeamId ? "" : "text-muted-foreground"}`}>
           {teamSummary}
         </span>
       </div>
@@ -179,7 +169,9 @@ export function LinearTaskConfig({ taskTemplateId }: LinearTaskConfigProps) {
         <Label className="text-sm">{t("teamLabel")}</Label>
         <Select
           value={selectedTeamId ?? undefined}
-          onValueChange={(v) => { if (v) handleTeamChange(v); }}
+          onValueChange={(v) => {
+            if (v) handleTeamChange(v);
+          }}
         >
           <SelectTrigger className="w-[200px]">
             <SelectValue placeholder={t("teamPlaceholder")} />

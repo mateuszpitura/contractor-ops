@@ -1,29 +1,23 @@
 "use client";
 
-import { useState } from "react";
-import { useTranslations } from "next-intl";
 import {
-  FileText,
-  FileSpreadsheet,
-  Image,
   Download,
   Eye,
-  Upload,
+  FileSpreadsheet,
+  FileText,
+  Image,
   Loader2,
-  ShieldCheck,
   ShieldAlert,
+  ShieldCheck,
   ShieldQuestion,
+  Upload,
 } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
+import { useTranslations } from "next-intl";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-  TooltipProvider,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { trpc } from "@/trpc/init";
 import { PdfPreview } from "./pdf-preview";
 import { VersionHistory } from "./version-history";
 
@@ -53,8 +47,7 @@ type DocumentCardProps = {
 
 function getFileIcon(mimeType: string) {
   if (mimeType.startsWith("image/")) return Image;
-  if (mimeType.includes("spreadsheet") || mimeType.includes("xlsx"))
-    return FileSpreadsheet;
+  if (mimeType.includes("spreadsheet") || mimeType.includes("xlsx")) return FileSpreadsheet;
   return FileText;
 }
 
@@ -135,8 +128,8 @@ export function DocumentCard({
       // Use fetch to call the download URL query
       const result = await fetch(
         `/api/trpc/document.getDownloadUrl?input=${encodeURIComponent(
-          JSON.stringify({ documentId: doc.id })
-        )}`
+          JSON.stringify({ documentId: doc.id }),
+        )}`,
       );
       const data = await result.json();
       const url = data?.result?.data?.url;
@@ -158,9 +151,7 @@ export function DocumentCard({
       {/* Content */}
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <p className="truncate text-sm font-medium">
-            {doc.originalFileName}
-          </p>
+          <p className="truncate text-sm font-medium">{doc.originalFileName}</p>
           {versionNumber != null && (
             <Badge variant="secondary" className="shrink-0">
               {t("version", { n: versionNumber })}
@@ -168,12 +159,8 @@ export function DocumentCard({
           )}
         </div>
         <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
-          <span className="text-xs text-muted-foreground">
-            {formatDate(doc.createdAt)}
-          </span>
-          <span className="text-xs text-muted-foreground">
-            {formatFileSize(doc.fileSizeBytes)}
-          </span>
+          <span className="text-xs text-muted-foreground">{formatDate(doc.createdAt)}</span>
+          <span className="text-xs text-muted-foreground">{formatFileSize(doc.fileSizeBytes)}</span>
           <ScanStatusBadge status={doc.virusScanStatus} />
         </div>
 
@@ -184,11 +171,7 @@ export function DocumentCard({
       {/* Actions */}
       <div className="flex shrink-0 items-center gap-1">
         {isPdf && !isInfected && (
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => setPreviewOpen(true)}
-          >
+          <Button variant="ghost" size="icon-sm" onClick={() => setPreviewOpen(true)}>
             <Eye className="size-3.5" />
             <span className="sr-only">{t("preview")}</span>
           </Button>
@@ -209,22 +192,14 @@ export function DocumentCard({
             </Tooltip>
           </TooltipProvider>
         ) : (
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={handleDownload}
-          >
+          <Button variant="ghost" size="icon-sm" onClick={handleDownload}>
             <Download className="size-3.5" />
             <span className="sr-only">{t("download")}</span>
           </Button>
         )}
 
         {onUploadNewVersion && doc.status === "ACTIVE" && (
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => onUploadNewVersion(doc.id)}
-          >
+          <Button variant="ghost" size="icon-sm" onClick={() => onUploadNewVersion(doc.id)}>
             <Upload className="size-3.5" />
             <span className="sr-only">{t("uploadNewVersion")}</span>
           </Button>

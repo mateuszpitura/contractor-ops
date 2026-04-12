@@ -26,8 +26,7 @@ export const sensitiveActionMiddleware = t.middleware(async ({ ctx, next }) => {
   if (now - sessionCreatedAt > SENSITIVE_ACTION_MAX_AGE_MS) {
     throw new TRPCError({
       code: "FORBIDDEN",
-      message:
-        "This action requires re-authentication. Please sign in again to continue.",
+      message: "This action requires re-authentication. Please sign in again to continue.",
       cause: "REAUTH_REQUIRED",
     });
   }
@@ -40,6 +39,4 @@ export const sensitiveActionMiddleware = t.middleware(async ({ ctx, next }) => {
  * Use for: role changes, user deactivation, settings updates.
  * Chain: auth -> tenant -> sensitive -> handler
  */
-export const sensitiveActionProcedure = tenantProcedure.use(
-  sensitiveActionMiddleware,
-);
+export const sensitiveActionProcedure = tenantProcedure.use(sensitiveActionMiddleware);

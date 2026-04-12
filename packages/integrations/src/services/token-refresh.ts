@@ -34,10 +34,7 @@ export async function refreshExpiring(): Promise<{
       status: "CONNECTED",
       tokenExpiresAt: { lte: cutoff },
       // Skip connections already locked by another refresh attempt
-      OR: [
-        { refreshLockedAt: null },
-        { refreshLockedAt: { lte: staleLock } },
-      ],
+      OR: [{ refreshLockedAt: null }, { refreshLockedAt: { lte: staleLock } }],
     },
   });
 
@@ -60,11 +57,7 @@ export async function refreshExpiring(): Promise<{
 
       if (locked.count === 0) continue; // another process got the lock
 
-      await refreshSingleConnection(
-        conn.id,
-        conn.provider.toLowerCase(),
-        conn.credentialsRef,
-      );
+      await refreshSingleConnection(conn.id, conn.provider.toLowerCase(), conn.credentialsRef);
       refreshed++;
     } catch (error) {
       failed++;
@@ -99,10 +92,7 @@ export async function lazyRefresh(connectionId: string): Promise<boolean> {
   if (conn.tokenExpiresAt > new Date()) return false; // not expired yet
 
   // Check lock — skip if another process is currently refreshing
-  if (
-    conn.refreshLockedAt &&
-    conn.refreshLockedAt > new Date(Date.now() - LOCK_TTL_MS)
-  ) {
+  if (conn.refreshLockedAt && conn.refreshLockedAt > new Date(Date.now() - LOCK_TTL_MS)) {
     return false;
   }
 
@@ -113,11 +103,7 @@ export async function lazyRefresh(connectionId: string): Promise<boolean> {
       data: { refreshLockedAt: new Date() },
     });
 
-    await refreshSingleConnection(
-      connectionId,
-      conn.provider.toLowerCase(),
-      conn.credentialsRef,
-    );
+    await refreshSingleConnection(connectionId, conn.provider.toLowerCase(), conn.credentialsRef);
     return true;
   } catch (error) {
     await markRefreshFailed(connectionId, error);
@@ -155,9 +141,7 @@ async function refreshSingleConnection(
     where: { id: connectionId },
     data: {
       credentialsRef: encrypted,
-      tokenExpiresAt: newCredentials.expiresAt
-        ? new Date(newCredentials.expiresAt)
-        : null,
+      tokenExpiresAt: newCredentials.expiresAt ? new Date(newCredentials.expiresAt) : null,
       lastSyncAt: new Date(),
       lastSuccessAt: new Date(),
       refreshLockedAt: null,
@@ -168,17 +152,13 @@ async function refreshSingleConnection(
 /**
  * Marks a connection as requiring re-authentication after a failed refresh.
  */
-async function markRefreshFailed(
-  connectionId: string,
-  error: unknown,
-): Promise<void> {
+async function markRefreshFailed(connectionId: string, error: unknown): Promise<void> {
   await prisma.integrationConnection.update({
     where: { id: connectionId },
     data: {
       status: "REAUTH_REQUIRED",
       lastErrorAt: new Date(),
-      lastErrorMessage:
-        error instanceof Error ? error.message : "Token refresh failed",
+      lastErrorMessage: error instanceof Error ? error.message : "Token refresh failed",
       refreshLockedAt: null,
     },
   });

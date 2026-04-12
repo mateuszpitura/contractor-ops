@@ -1,5 +1,5 @@
 import { fireEvent } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, setup, waitFor } from "@/test/test-utils";
 import { SocialButtons } from "../social-buttons";
 
@@ -21,12 +21,8 @@ describe("SocialButtons", () => {
 
   it("renders Google and Microsoft buttons", () => {
     setup(<SocialButtons />);
-    expect(
-      screen.getByRole("button", { name: /Google/i }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /Microsoft/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Google/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Microsoft/i })).toBeInTheDocument();
   });
 
   it("renders social divider text", () => {
@@ -58,12 +54,8 @@ describe("SocialButtons", () => {
     // fireEvent does not await the async handler's never-settling Promise; user.click would hang.
     fireEvent.click(screen.getByRole("button", { name: /Google/i }));
     await waitFor(() => {
-      expect(
-        screen.getByRole("button", { name: /Google/i }),
-      ).toBeDisabled();
-      expect(
-        screen.getByRole("button", { name: /Microsoft/i }),
-      ).toBeDisabled();
+      expect(screen.getByRole("button", { name: /Google/i })).toBeDisabled();
+      expect(screen.getByRole("button", { name: /Microsoft/i })).toBeDisabled();
     });
   });
 });

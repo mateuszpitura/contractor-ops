@@ -1,19 +1,15 @@
 import { createHash } from "node:crypto";
-import { TRPCError } from "@trpc/server";
 import { prisma } from "@contractor-ops/db";
 import {
   createSigningEnvelope as createProviderEnvelope,
-  getEmbeddedSigningUrl as getProviderSigningUrl,
   downloadSignedDocument,
-  voidSigningEnvelope as voidProviderEnvelope,
+  getEmbeddedSigningUrl as getProviderSigningUrl,
   resendSigningNotification,
+  voidSigningEnvelope as voidProviderEnvelope,
 } from "@contractor-ops/integrations/services/esign-service";
-import {
-  createPresignedDownloadUrl,
-  createPresignedUploadUrl,
-  generateStorageKey,
-} from "./r2.js";
+import { TRPCError } from "@trpc/server";
 import * as E from "../errors.js";
+import { createPresignedDownloadUrl, createPresignedUploadUrl, generateStorageKey } from "./r2.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -70,7 +66,10 @@ export interface ResendToRecipientParams {
 async function fetchDocumentContent(
   organizationId: string,
   documentId: string,
-): Promise<{ document: { storageKey: string; originalFileName: string; documentType: string }; documentBase64: string }> {
+): Promise<{
+  document: { storageKey: string; originalFileName: string; documentType: string };
+  documentBase64: string;
+}> {
   const document = await prisma.document.findFirst({
     where: { id: documentId, organizationId, deletedAt: null },
     select: { storageKey: true, originalFileName: true, documentType: true },
@@ -123,10 +122,7 @@ export async function sendForSignature(params: SendForSignatureParams) {
   } = params;
 
   // Fetch and prepare the document
-  const { document, documentBase64 } = await fetchDocumentContent(
-    organizationId,
-    documentId,
-  );
+  const { document, documentBase64 } = await fetchDocumentContent(organizationId, documentId);
 
   // Call the provider adapter to create the envelope
   const result = await createProviderEnvelope({
@@ -176,9 +172,7 @@ export async function sendForSignature(params: SendForSignatureParams) {
 
     // b. Create SigningRecipient records
     for (const signer of signers) {
-      const externalRecipient = result.signers.find(
-        (s) => s.email === signer.email,
-      );
+      const externalRecipient = result.signers.find((s) => s.email === signer.email);
       await tx.signingRecipient.create({
         data: {
           signingEnvelopeId: env.id,
@@ -350,9 +344,7 @@ export async function handleSigningCompletion(
   });
 
   if (!uploadResponse.ok) {
-    throw new Error(
-      `Failed to upload signed PDF to R2: ${uploadResponse.status}`,
-    );
+    throw new Error(`Failed to upload signed PDF to R2: ${uploadResponse.status}`);
   }
 
   // Determine document type from original document if available

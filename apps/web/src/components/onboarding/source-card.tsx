@@ -1,12 +1,11 @@
 "use client";
 
-import type { ReactNode, KeyboardEvent } from "react";
 import { useTranslations } from "next-intl";
-
+import type { KeyboardEvent, ReactNode } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 // ---------------------------------------------------------------------------
@@ -60,9 +59,7 @@ export function SourceCard({
     >
       <CardContent className="flex items-center gap-4 py-4">
         {/* Provider icon */}
-        <div className="flex size-10 shrink-0 items-center justify-center">
-          {icon}
-        </div>
+        <div className="flex size-10 shrink-0 items-center justify-center">{icon}</div>
 
         {/* Info */}
         <div className="flex flex-1 flex-col gap-1">
@@ -72,19 +69,14 @@ export function SourceCard({
               {t("connected")}
             </Badge>
           ) : (
-            <span className="text-xs text-muted-foreground">
-              {t("notConnected")}
-            </span>
+            <span className="text-xs text-muted-foreground">{t("notConnected")}</span>
           )}
         </div>
 
         {/* Action */}
         {connected ? (
           <div className="flex items-center gap-2">
-            <label
-              className="text-xs text-muted-foreground"
-              htmlFor={`import-toggle-${provider}`}
-            >
+            <label className="text-xs text-muted-foreground" htmlFor={`import-toggle-${provider}`}>
               {t("importToggle", { tool: name })}
             </label>
             <Switch

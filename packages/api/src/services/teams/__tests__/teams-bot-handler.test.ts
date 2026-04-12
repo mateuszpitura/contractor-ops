@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { TeamsBotHandler } from "../teams-bot-handler.js";
 
 // ---------------------------------------------------------------------------
@@ -108,10 +108,7 @@ describe("TeamsBotHandler", () => {
   describe("onAdaptiveCardInvoke", () => {
     it("returns 400 for missing action data", async () => {
       const context = createMockContext();
-      const result = await handler.onAdaptiveCardInvoke(
-        context as never,
-        { action: {} } as never,
-      );
+      const result = await handler.onAdaptiveCardInvoke(context as never, { action: {} } as never);
 
       expect(result.statusCode).toBe(400);
       expect(result.type).toBe("application/vnd.microsoft.error");

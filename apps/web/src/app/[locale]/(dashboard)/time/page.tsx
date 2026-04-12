@@ -1,24 +1,26 @@
 "use client";
 
-import { Suspense, useCallback, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Clock, ClipboardList, ArrowRightLeft } from "lucide-react";
+import { addDays, format, startOfISOWeek } from "date-fns";
+import { ArrowRightLeft, ClipboardList, Clock } from "lucide-react";
 import { parseAsString, useQueryState } from "nuqs";
+import { Suspense, useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
-
-import { trpc } from "@/trpc/init";
-import { useRouter } from "@/i18n/navigation";
-import { Skeleton } from "@/components/ui/skeleton";
+import { AnimateIn } from "@/components/shared/animate-in";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
-import { AnimateIn } from "@/components/shared/animate-in";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { TimesheetRow } from "@/components/time/approval-queue-table";
+import { ApprovalQueueTable } from "@/components/time/approval-queue-table";
+import { ReconciliationTable } from "@/components/time/reconciliation-table";
 import { TimeEntryStatusBadge } from "@/components/time/time-entry-status-badge";
 import {
-  ApprovalQueueTable,
-  type TimesheetRow,
-} from "@/components/time/approval-queue-table";
-import { ReconciliationTable } from "@/components/time/reconciliation-table";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -27,22 +29,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { format, addDays, startOfISOWeek } from "date-fns";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useRouter } from "@/i18n/navigation";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
 function formatPeriod(weekStart: string | Date): string {
-  const start =
-    typeof weekStart === "string" ? new Date(weekStart) : weekStart;
+  const start = typeof weekStart === "string" ? new Date(weekStart) : weekStart;
   const monday = startOfISOWeek(start);
   const sunday = addDays(monday, 6);
   return `${format(monday, "MMM d")} - ${format(sunday, "MMM d")}`;
@@ -62,14 +58,8 @@ function TimeTrackingContent() {
   const queryClient = useQueryClient();
 
   // URL state
-  const [tab, setTab] = useQueryState(
-    "tab",
-    parseAsString.withDefault("pending"),
-  );
-  const [statusFilter, setStatusFilter] = useQueryState(
-    "status",
-    parseAsString.withDefault("all"),
-  );
+  const [tab, setTab] = useQueryState("tab", parseAsString.withDefault("pending"));
+  const [statusFilter, setStatusFilter] = useQueryState("status", parseAsString.withDefault("all"));
 
   // -----------------------------------------------------------------------
   // Queries
@@ -84,11 +74,7 @@ function TimeTrackingContent() {
     ...trpc.time.listAll.queryOptions({
       ...(statusFilter !== "all"
         ? {
-            status: statusFilter as
-              | "DRAFT"
-              | "SUBMITTED"
-              | "APPROVED"
-              | "REJECTED",
+            status: statusFilter as "DRAFT" | "SUBMITTED" | "APPROVED" | "REJECTED",
           }
         : {}),
     }),
@@ -102,9 +88,7 @@ function TimeTrackingContent() {
   );
 
   const allTimesheets = useMemo(() => {
-    const data = allQuery.data as
-      | { items: TimesheetRow[]; nextCursor?: string }
-      | undefined;
+    const data = allQuery.data as { items: TimesheetRow[]; nextCursor?: string } | undefined;
     return data?.items ?? [];
   }, [allQuery.data]);
 
@@ -213,10 +197,7 @@ function TimeTrackingContent() {
       </AnimateIn>
 
       <AnimateIn delay={1}>
-        <Tabs
-          value={tab}
-          onValueChange={(value) => void setTab(value)}
-        >
+        <Tabs value={tab} onValueChange={(value) => void setTab(value)}>
           <TabsList>
             <TabsTrigger value="pending">
               Pending Reviews
@@ -257,10 +238,7 @@ function TimeTrackingContent() {
             <div className="space-y-4">
               {/* Filters */}
               <div className="flex items-center gap-3">
-                <Select
-                  value={statusFilter}
-                  onValueChange={(v) => void setStatusFilter(v)}
-                >
+                <Select value={statusFilter} onValueChange={(v) => void setStatusFilter(v)}>
                   <SelectTrigger className="w-40">
                     <SelectValue placeholder="Status" />
                   </SelectTrigger>
@@ -289,9 +267,7 @@ function TimeTrackingContent() {
                       <TableRow>
                         <TableHead>Contractor</TableHead>
                         <TableHead>Period</TableHead>
-                        <TableHead className="text-end">
-                          Total Hours
-                        </TableHead>
+                        <TableHead className="text-end">Total Hours</TableHead>
                         <TableHead>Status</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -337,10 +313,7 @@ function LoadingSkeleton() {
   return (
     <div className="space-y-3">
       {Array.from({ length: 5 }).map((_, i) => (
-        <div
-          key={i}
-          className="flex items-center gap-4 rounded-lg border px-4 py-3"
-        >
+        <div key={i} className="flex items-center gap-4 rounded-lg border px-4 py-3">
           <Skeleton className="h-4 w-4" />
           <Skeleton className="h-4 w-32" />
           <Skeleton className="h-4 w-24" />

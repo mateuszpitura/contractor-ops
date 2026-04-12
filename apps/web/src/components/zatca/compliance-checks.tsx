@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Check, Loader2, X } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { zatcaTrpc, type ComplianceCheckResult } from "./zatca-trpc";
+import type { ComplianceCheckResult } from "./zatca-trpc";
+import { zatcaTrpc } from "./zatca-trpc";
 
 // ---------------------------------------------------------------------------
 // Props
@@ -23,7 +24,10 @@ interface ComplianceChecksProps {
 // Status badge mapping
 // ---------------------------------------------------------------------------
 
-const STATUS_BADGE: Record<string, { variant: "success" | "destructive" | "warning"; label: string }> = {
+const STATUS_BADGE: Record<
+  string,
+  { variant: "success" | "destructive" | "warning"; label: string }
+> = {
   CLEARED: { variant: "success", label: "CLEARED" },
   REPORTED: { variant: "success", label: "REPORTED" },
   REJECTED: { variant: "destructive", label: "REJECTED" },
@@ -49,16 +53,16 @@ export function ComplianceChecks({ onSuccess, onBack }: ComplianceChecksProps) {
     onSuccess: (data: unknown) => {
       const typedData = data as ComplianceCheckResult[];
       setResults(typedData);
-      const allPassed = typedData.every(
-        (r) => r.status === "CLEARED" || r.status === "REPORTED",
-      );
+      const allPassed = typedData.every((r) => r.status === "CLEARED" || r.status === "REPORTED");
       if (allPassed) {
         toast.success("All 6 compliance checks passed. Your setup is ready for production.");
       } else {
         const failedCount = typedData.filter(
           (r) => r.status === "REJECTED" || r.status === "ERROR",
         ).length;
-        toast.error(`Compliance check failed: ${failedCount} test(s) did not pass. Review your tax details and try again.`);
+        toast.error(
+          `Compliance check failed: ${failedCount} test(s) did not pass. Review your tax details and try again.`,
+        );
       }
     },
     onError: (error: Error) => {
@@ -67,8 +71,7 @@ export function ComplianceChecks({ onSuccess, onBack }: ComplianceChecksProps) {
   });
 
   const allPassed =
-    results.length === 6 &&
-    results.every((r) => r.status === "CLEARED" || r.status === "REPORTED");
+    results.length === 6 && results.every((r) => r.status === "CLEARED" || r.status === "REPORTED");
   const completedCount = results.length;
   const progressValue = (completedCount / 6) * 100;
 
@@ -87,8 +90,7 @@ export function ComplianceChecks({ onSuccess, onBack }: ComplianceChecksProps) {
       <div className="space-y-1">
         <h3 className="text-base font-semibold">Step 4 of 5: Run Compliance Checks</h3>
         <p className="text-sm text-muted-foreground">
-          6 test invoices will be submitted to ZATCA&apos;s sandbox to verify your
-          setup.
+          6 test invoices will be submitted to ZATCA&apos;s sandbox to verify your setup.
         </p>
       </div>
 
@@ -106,7 +108,11 @@ export function ComplianceChecks({ onSuccess, onBack }: ComplianceChecksProps) {
 
       {/* Test Results */}
       {(results.length > 0 || checksMutation.isPending) && (
-        <div className="space-y-3 rounded-lg border bg-muted/20 p-4" role="list" aria-label="Compliance check results">
+        <div
+          className="space-y-3 rounded-lg border bg-muted/20 p-4"
+          role="list"
+          aria-label="Compliance check results"
+        >
           {TEST_LABELS.map((label, i) => {
             const result = results[i];
             const isRunning = checksMutation.isPending && !result;
@@ -124,7 +130,10 @@ export function ComplianceChecks({ onSuccess, onBack }: ComplianceChecksProps) {
                   ) : isRunning ? (
                     <Loader2 className="h-4 w-4 animate-spin text-primary" aria-label="Running" />
                   ) : isPending ? (
-                    <span className="h-4 w-4 rounded-full border-2 border-muted-foreground/30" aria-label="Pending" />
+                    <span
+                      className="h-4 w-4 rounded-full border-2 border-muted-foreground/30"
+                      aria-label="Pending"
+                    />
                   ) : null}
                   <span className={result ? "text-foreground" : "text-muted-foreground"}>
                     {label}
@@ -146,9 +155,7 @@ export function ComplianceChecks({ onSuccess, onBack }: ComplianceChecksProps) {
       {(results.length > 0 || checksMutation.isPending) && (
         <div className="space-y-1">
           <Progress value={progressValue}>
-            <span className="text-xs text-muted-foreground">
-              {completedCount}/6
-            </span>
+            <span className="text-xs text-muted-foreground">{completedCount}/6</span>
           </Progress>
         </div>
       )}

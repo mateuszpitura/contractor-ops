@@ -1,21 +1,20 @@
 "use client";
 
-import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { Check, X, MoreVertical, Ban, RefreshCw } from "lucide-react";
-
+import { Ban, Check, MoreVertical, RefreshCw, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { trpc } from "@/trpc/init";
-import { Card } from "@/components/ui/card";
+import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { trpc } from "@/trpc/init";
 import { SigningAuditTrail } from "./signing-audit-trail";
 import { VoidEnvelopeDialog } from "./void-envelope-dialog";
 
@@ -44,13 +43,7 @@ type SigningProgressBarProps = {
 // Step Indicator
 // ---------------------------------------------------------------------------
 
-function StepIndicator({
-  recipient,
-  isCurrent,
-}: {
-  recipient: Recipient;
-  isCurrent: boolean;
-}) {
+function StepIndicator({ recipient, isCurrent }: { recipient: Recipient; isCurrent: boolean }) {
   const initial = recipient.name.charAt(0).toUpperCase();
   const status = recipient.status;
 
@@ -91,11 +84,7 @@ function StepIndicator({
 // ---------------------------------------------------------------------------
 
 function ConnectorLine({ completed }: { completed: boolean }) {
-  return (
-    <div
-      className={cn("h-0.5 w-6 flex-shrink-0", completed ? "bg-green-600" : "bg-muted")}
-    />
-  );
+  return <div className={cn("h-0.5 w-6 flex-shrink-0", completed ? "bg-green-600" : "bg-muted")} />;
 }
 
 // ---------------------------------------------------------------------------
@@ -115,19 +104,15 @@ export function SigningProgressBar({ envelope }: SigningProgressBarProps) {
   const [auditOpen, setAuditOpen] = useState(false);
   const [voidOpen, setVoidOpen] = useState(false);
 
-  const sortedRecipients = [...envelope.recipients].sort(
-    (a, b) => a.routingOrder - b.routingOrder
-  );
+  const sortedRecipients = [...envelope.recipients].sort((a, b) => a.routingOrder - b.routingOrder);
 
-  const signedCount = sortedRecipients.filter(
-    (r) => r.status === "SIGNED"
-  ).length;
+  const signedCount = sortedRecipients.filter((r) => r.status === "SIGNED").length;
   const totalCount = sortedRecipients.length;
   const allSigned = signedCount === totalCount && totalCount > 0;
 
   // Find the current signer (first non-signed, non-declined)
   const currentIndex = sortedRecipients.findIndex(
-    (r) => !["SIGNED", "DECLINED"].includes(r.status)
+    (r) => !["SIGNED", "DECLINED"].includes(r.status),
   );
 
   // Resend mutation
@@ -139,7 +124,7 @@ export function SigningProgressBar({ envelope }: SigningProgressBarProps) {
       onError: () => {
         toast.error(tToast("resendFailed"));
       },
-    })
+    }),
   );
 
   // Status text
@@ -152,7 +137,7 @@ export function SigningProgressBar({ envelope }: SigningProgressBarProps) {
 
   // Pending recipients for resend
   const pendingRecipients = sortedRecipients.filter(
-    (r) => !["SIGNED", "DECLINED"].includes(r.status)
+    (r) => !["SIGNED", "DECLINED"].includes(r.status),
   );
 
   return (
@@ -164,14 +149,9 @@ export function SigningProgressBar({ envelope }: SigningProgressBarProps) {
             {sortedRecipients.map((recipient, idx) => (
               <div key={recipient.id} className="flex items-center gap-1">
                 {idx > 0 && (
-                  <ConnectorLine
-                    completed={sortedRecipients[idx - 1]?.status === "SIGNED"}
-                  />
+                  <ConnectorLine completed={sortedRecipients[idx - 1]?.status === "SIGNED"} />
                 )}
-                <StepIndicator
-                  recipient={recipient}
-                  isCurrent={idx === currentIndex}
-                />
+                <StepIndicator recipient={recipient} isCurrent={idx === currentIndex} />
               </div>
             ))}
           </div>
@@ -180,11 +160,7 @@ export function SigningProgressBar({ envelope }: SigningProgressBarProps) {
           <div className="flex items-center gap-3">
             <p className="text-sm text-muted-foreground">{statusText}</p>
 
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setAuditOpen(true)}
-            >
+            <Button variant="ghost" size="sm" onClick={() => setAuditOpen(true)}>
               {t("viewHistory")}
             </Button>
 
@@ -213,10 +189,7 @@ export function SigningProgressBar({ envelope }: SigningProgressBarProps) {
                     {t("resendTo", { name: r.name })}
                   </DropdownMenuItem>
                 ))}
-                <DropdownMenuItem
-                  variant="destructive"
-                  onClick={() => setVoidOpen(true)}
-                >
+                <DropdownMenuItem variant="destructive" onClick={() => setVoidOpen(true)}>
                   <Ban className="me-2 size-3.5" />
                   {t("voidEnvelope")}
                 </DropdownMenuItem>
@@ -226,11 +199,7 @@ export function SigningProgressBar({ envelope }: SigningProgressBarProps) {
         </div>
       </Card>
 
-      <SigningAuditTrail
-        envelopeId={envelope.id}
-        open={auditOpen}
-        onOpenChange={setAuditOpen}
-      />
+      <SigningAuditTrail envelopeId={envelope.id} open={auditOpen} onOpenChange={setAuditOpen} />
 
       <VoidEnvelopeDialog
         envelopeId={envelope.id}

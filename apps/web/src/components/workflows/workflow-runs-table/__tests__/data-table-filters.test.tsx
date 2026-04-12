@@ -1,5 +1,5 @@
-import { render, screen, setup } from "@/test/test-utils";
 import { useQuery } from "@tanstack/react-query";
+import { render, screen, setup } from "@/test/test-utils";
 import { DataTableFilters } from "../data-table-filters";
 
 vi.mock("@tanstack/react-query", async () => {

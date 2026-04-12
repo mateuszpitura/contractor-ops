@@ -1,26 +1,14 @@
 "use client";
 
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { toast } from "sonner";
 import { useTranslations } from "next-intl";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
-
-import { trpc } from "@/trpc/init";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -29,6 +17,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Schema
@@ -177,21 +176,14 @@ export function ShipmentForm({
           {/* Custom carrier name */}
           {watchedCarrier === "Other" && (
             <div className="space-y-2">
-              <Label htmlFor="shipment-carrier-custom">
-                {t("shipment.carrierCustom")}
-              </Label>
-              <Input
-                id="shipment-carrier-custom"
-                {...form.register("carrierCustom")}
-              />
+              <Label htmlFor="shipment-carrier-custom">{t("shipment.carrierCustom")}</Label>
+              <Input id="shipment-carrier-custom" {...form.register("carrierCustom")} />
             </div>
           )}
 
           {/* Tracking number */}
           <div className="space-y-2">
-            <Label htmlFor="shipment-tracking">
-              {t("shipment.trackingNumber")}
-            </Label>
+            <Label htmlFor="shipment-tracking">{t("shipment.trackingNumber")}</Label>
             <Input
               id="shipment-tracking"
               className="font-mono"
@@ -201,9 +193,7 @@ export function ShipmentForm({
 
           {/* Expected delivery */}
           <div className="space-y-2">
-            <Label htmlFor="shipment-expected-delivery">
-              {t("shipment.expectedDelivery")}
-            </Label>
+            <Label htmlFor="shipment-expected-delivery">{t("shipment.expectedDelivery")}</Label>
             <Input
               id="shipment-expected-delivery"
               type="date"
@@ -216,11 +206,7 @@ export function ShipmentForm({
           {/* Notes */}
           <div className="space-y-2">
             <Label htmlFor="shipment-notes">{t("shipment.notes")}</Label>
-            <Textarea
-              id="shipment-notes"
-              rows={2}
-              {...form.register("notes")}
-            />
+            <Textarea id="shipment-notes" rows={2} {...form.register("notes")} />
           </div>
 
           <DialogFooter>
@@ -233,9 +219,7 @@ export function ShipmentForm({
               {t("form.cancel")}
             </Button>
             <Button type="submit" disabled={createMutation.isPending}>
-              {createMutation.isPending && (
-                <Loader2 className="me-2 h-4 w-4 animate-spin" />
-              )}
+              {createMutation.isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
               {t("shipment.createTitle")}
             </Button>
           </DialogFooter>

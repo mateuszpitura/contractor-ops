@@ -1,5 +1,6 @@
-import { BaseAdapter } from "./base-adapter.js";
+import { prisma } from "@contractor-ops/db";
 import type { ProviderHealthStatus } from "../types/health.js";
+import { BaseAdapter } from "./base-adapter.js";
 
 // ---------------------------------------------------------------------------
 // KSeF Adapter
@@ -23,8 +24,6 @@ export class KsefAdapter extends BaseAdapter {
    * recent sync logs.
    */
   async getHealthStatus(connectionId: string): Promise<ProviderHealthStatus> {
-    const { prisma } = await import("@contractor-ops/db");
-
     const connection = await prisma.integrationConnection.findUnique({
       where: { id: connectionId },
       select: {
@@ -80,10 +79,7 @@ export class KsefAdapter extends BaseAdapter {
       status = "DISCONNECTED";
     } else if (connection.lastErrorAt && !connection.lastSuccessAt) {
       status = "ERROR";
-    } else if (
-      connection.tokenExpiresAt &&
-      connection.tokenExpiresAt < new Date()
-    ) {
+    } else if (connection.tokenExpiresAt && connection.tokenExpiresAt < new Date()) {
       status = "REAUTH_REQUIRED";
     } else if (recentSyncs.length > 0 && recentSyncs[0]!.status === "FAILED") {
       status = "ERROR";

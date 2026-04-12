@@ -23,9 +23,7 @@ export function useRtlChartConfig() {
     /** CartesianGrid props */
     gridProps: {},
     /** Legend props: reversed layout for RTL */
-    legendProps: isRtl
-      ? { layout: "horizontal" as const, align: "right" as const }
-      : {},
+    legendProps: isRtl ? { layout: "horizontal" as const, align: "right" as const } : {},
     /** Tooltip props */
     tooltipProps: {},
     /** Bar/Line chart wrapper direction */

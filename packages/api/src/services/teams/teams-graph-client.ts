@@ -47,15 +47,12 @@ export interface UserInfo {
  * @param accessToken - OAuth access token with Team.ReadBasic.All scope
  * @returns Array of teams with id and displayName
  */
-export async function getJoinedTeams(
-  accessToken: string,
-): Promise<TeamInfo[]> {
+export async function getJoinedTeams(accessToken: string): Promise<TeamInfo[]> {
   const client = createGraphClient(accessToken);
 
-  const response = (await client
-    .api("/me/joinedTeams")
-    .select("id,displayName")
-    .get()) as { value: TeamInfo[] };
+  const response = (await client.api("/me/joinedTeams").select("id,displayName").get()) as {
+    value: TeamInfo[];
+  };
 
   return response.value;
 }
@@ -89,10 +86,7 @@ export async function getTeamsChannels(
  * @param email - Email address to look up
  * @returns User info or null if not found
  */
-export async function getUserByEmail(
-  accessToken: string,
-  email: string,
-): Promise<UserInfo | null> {
+export async function getUserByEmail(accessToken: string, email: string): Promise<UserInfo | null> {
   const client = createGraphClient(accessToken);
 
   try {

@@ -1,6 +1,6 @@
-import type { ReactNode } from "react";
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import type { ReactNode } from "react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, setup, waitFor } from "@/test/test-utils";
 
 import { InvoiceUploadArea } from "../invoice-upload-area";
@@ -48,9 +48,8 @@ vi.mock("sonner", () => ({
 }));
 
 vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
-    "@tanstack/react-query",
-  );
+  const actual =
+    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
   return {
     ...actual,
     useQueryClient: () => ({
@@ -294,9 +293,7 @@ describe("InvoiceUploadArea", () => {
     const file = new File(["%PDF-1.4 test"], "inv-credit.pdf", {
       type: "application/pdf",
     });
-    const input = document.querySelector(
-      'input[type="file"]',
-    ) as HTMLInputElement;
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     expect(input).toBeTruthy();
     await user.upload(input, file);
 
@@ -335,9 +332,7 @@ describe("InvoiceUploadArea", () => {
     const file = new File(["%PDF-1.4 test"], "inv-generic.pdf", {
       type: "application/pdf",
     });
-    const input = document.querySelector(
-      'input[type="file"]',
-    ) as HTMLInputElement;
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, file);
 
     await waitFor(() => {
@@ -376,9 +371,7 @@ describe("InvoiceUploadArea", () => {
     const file = new File(["%PDF-1.4 test"], "inv-upgrade.pdf", {
       type: "application/pdf",
     });
-    const input = document.querySelector(
-      'input[type="file"]',
-    ) as HTMLInputElement;
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, file);
 
     await waitFor(() => {
@@ -391,9 +384,7 @@ describe("InvoiceUploadArea", () => {
 
   it("renders drop zone with text and accepted formats", () => {
     renderWithClient(<InvoiceUploadArea />);
-    expect(
-      screen.getByText(/drag.*drop|drop.*PDF|browse/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/drag.*drop|drop.*PDF|browse/i)).toBeInTheDocument();
     expect(screen.getByText(/PDF files only/i)).toBeInTheDocument();
   });
 
@@ -416,9 +407,7 @@ describe("InvoiceUploadArea", () => {
     const file = new File(["%PDF-1.4 content"], "progress-test.pdf", {
       type: "application/pdf",
     });
-    const input = document.querySelector(
-      'input[type="file"]',
-    ) as HTMLInputElement;
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, file);
 
     await waitFor(() => {
@@ -445,9 +434,7 @@ describe("InvoiceUploadArea", () => {
     const file = new File(["%PDF-1.4 content"], "complete-test.pdf", {
       type: "application/pdf",
     });
-    const input = document.querySelector(
-      'input[type="file"]',
-    ) as HTMLInputElement;
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, file);
 
     await waitFor(() => {
@@ -476,9 +463,7 @@ describe("InvoiceUploadArea", () => {
     const file = new File(["%PDF-1.4 content"], "fail-test.pdf", {
       type: "application/pdf",
     });
-    const input = document.querySelector(
-      'input[type="file"]',
-    ) as HTMLInputElement;
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, file);
 
     await waitFor(() => {
@@ -505,9 +490,7 @@ describe("InvoiceUploadArea", () => {
     const file = new File(["%PDF-1.4 content"], "ocr-test.pdf", {
       type: "application/pdf",
     });
-    const input = document.querySelector(
-      'input[type="file"]',
-    ) as HTMLInputElement;
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, file);
 
     await waitFor(() => {
@@ -538,9 +521,7 @@ describe("InvoiceUploadArea", () => {
     const file = new File(["%PDF-1.4 content"], "discard-test.pdf", {
       type: "application/pdf",
     });
-    const input = document.querySelector(
-      'input[type="file"]',
-    ) as HTMLInputElement;
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, file);
 
     await waitFor(() => {
@@ -549,9 +530,7 @@ describe("InvoiceUploadArea", () => {
 
     await user.click(screen.getByText("Discard OCR"));
     await waitFor(() => {
-      expect(
-        screen.queryByTestId("ocr-review-panel"),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByTestId("ocr-review-panel")).not.toBeInTheDocument();
     });
   });
 
@@ -575,9 +554,7 @@ describe("InvoiceUploadArea", () => {
     const file = new File(["%PDF-1.4 content"], "accept-test.pdf", {
       type: "application/pdf",
     });
-    const input = document.querySelector(
-      'input[type="file"]',
-    ) as HTMLInputElement;
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, file);
 
     await waitFor(() => {
@@ -607,9 +584,7 @@ describe("InvoiceUploadArea", () => {
     const file = new File(["%PDF-1.4 content"], "toggle-test.pdf", {
       type: "application/pdf",
     });
-    const input = document.querySelector(
-      'input[type="file"]',
-    ) as HTMLInputElement;
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, file);
 
     await waitFor(() => {
@@ -643,9 +618,7 @@ describe("InvoiceUploadArea", () => {
     const file = new File(["%PDF-1.4 test"], "buy-credits.pdf", {
       type: "application/pdf",
     });
-    const input = document.querySelector(
-      'input[type="file"]',
-    ) as HTMLInputElement;
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, file);
 
     await waitFor(() => {
@@ -675,9 +648,7 @@ describe("InvoiceUploadArea", () => {
     const file = new File(["%PDF-1.4 content"], "toggle-hide-test.pdf", {
       type: "application/pdf",
     });
-    const input = document.querySelector(
-      'input[type="file"]',
-    ) as HTMLInputElement;
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, file);
 
     await waitFor(() => {
@@ -719,9 +690,7 @@ describe("InvoiceUploadArea", () => {
     const file = new File(["%PDF-1.4 content"], "file-info-test.pdf", {
       type: "application/pdf",
     });
-    const input = document.querySelector(
-      'input[type="file"]',
-    ) as HTMLInputElement;
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, file);
 
     await waitFor(() => {
@@ -750,9 +719,7 @@ describe("InvoiceUploadArea", () => {
     const file = new File(["%PDF-1.4 content"], "retry-test.pdf", {
       type: "application/pdf",
     });
-    const input = document.querySelector(
-      'input[type="file"]',
-    ) as HTMLInputElement;
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, file);
 
     await waitFor(() => {
@@ -791,9 +758,7 @@ describe("InvoiceUploadArea", () => {
     const file = new File(["%PDF-1.4 content"], "rerun-test.pdf", {
       type: "application/pdf",
     });
-    const input = document.querySelector(
-      'input[type="file"]',
-    ) as HTMLInputElement;
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, file);
 
     await waitFor(() => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { trpc } from "@/trpc/init";
+import { Loader2 } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2 } from "lucide-react";
+import { trpc } from "@/trpc/init";
 
 interface VatRateSelectorProps {
   value?: string;
@@ -45,9 +45,7 @@ export function VatRateSelector({ value, onChange, disabled }: VatRateSelectorPr
   const reducedRates = ratesQuery.data.filter(
     (r) => !r.isExempt && !r.isReverseCharge && r.ratePercent > 0 && !r.isDefault,
   );
-  const exemptRates = ratesQuery.data.filter(
-    (r) => r.isExempt || r.ratePercent === 0,
-  );
+  const exemptRates = ratesQuery.data.filter((r) => r.isExempt || r.ratePercent === 0);
 
   return (
     <Select value={value} onValueChange={onChange} disabled={disabled}>
@@ -81,9 +79,7 @@ export function VatRateSelector({ value, onChange, disabled }: VatRateSelectorPr
         )}
         {exemptRates.length > 0 && (
           <SelectGroup>
-            <SelectLabel className="text-xs font-medium text-muted-foreground">
-              Exempt
-            </SelectLabel>
+            <SelectLabel className="text-xs font-medium text-muted-foreground">Exempt</SelectLabel>
             {exemptRates.map((rate) => (
               <SelectItem key={rate.id} value={rate.code}>
                 {rate.code === "ZW"

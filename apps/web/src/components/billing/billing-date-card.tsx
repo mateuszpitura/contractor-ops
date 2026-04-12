@@ -1,7 +1,7 @@
 "use client";
 
-import { useTranslations, useFormatter } from "next-intl";
 import { Calendar } from "lucide-react";
+import { useFormatter, useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
 
 // ---------------------------------------------------------------------------
@@ -33,18 +33,10 @@ export function BillingDateCard({ date, isTrialing }: BillingDateCardProps) {
     <Card className="p-4">
       <CardContent className="flex flex-col gap-1 p-0">
         <div className="flex items-start justify-between">
-          <span className="text-xs text-muted-foreground">
-            {t("nextBillingDate")}
-          </span>
-          <Calendar
-            size={16}
-            className="text-muted-foreground"
-            aria-hidden="true"
-          />
+          <span className="text-xs text-muted-foreground">{t("nextBillingDate")}</span>
+          <Calendar size={16} className="text-muted-foreground" aria-hidden="true" />
         </div>
-        <div className="text-2xl font-semibold">
-          {formattedDate ?? "\u2014"}
-        </div>
+        <div className="text-2xl font-semibold">{formattedDate ?? "\u2014"}</div>
         {formattedDate && (
           <span className="text-xs text-muted-foreground">
             {isTrialing ? t("trialEnds") : t("renewsOn")}

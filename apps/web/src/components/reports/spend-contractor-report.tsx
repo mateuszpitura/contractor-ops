@@ -1,18 +1,17 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { type ColumnDef } from "@tanstack/react-table";
-import { useTranslations } from "next-intl";
-import { toast } from "sonner";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import type { ColumnDef } from "@tanstack/react-table";
 import { DollarSign } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
+import { useTranslations } from "next-intl";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import { useRouter } from "@/i18n/navigation";
+import { trpc } from "@/trpc/init";
+import { DrillDownBreadcrumb } from "./drill-down-breadcrumb";
+import { downloadBase64File, ExportButtons } from "./export-buttons";
 import { ReportChart } from "./report-chart";
 import { ReportTable } from "./report-table";
-import { DrillDownBreadcrumb } from "./drill-down-breadcrumb";
-import { ExportButtons, downloadBase64File } from "./export-buttons";
 
 function formatCurrency(grosze: number): string {
   return new Intl.NumberFormat("pl-PL", {
@@ -46,19 +45,14 @@ type SpendRow = {
   lastPaidAt: string | null;
 };
 
-export function SpendContractorReport({
-  dateFrom,
-  dateTo,
-}: SpendContractorReportProps) {
+export function SpendContractorReport({ dateFrom, dateTo }: SpendContractorReportProps) {
   const t = useTranslations("Reports");
   const router = useRouter();
 
   const [page, setPage] = useState(1);
   const [sortBy, setSortBy] = useState("totalSpend");
   const [sortOrder, setSortOrder] = useState("desc");
-  const [drillDownContractorId, setDrillDownContractorId] = useState<
-    string | null
-  >(null);
+  const [drillDownContractorId, setDrillDownContractorId] = useState<string | null>(null);
 
   const tableQuery = useQuery(
     trpc.report.spendByContractor.queryOptions({
@@ -94,16 +88,12 @@ export function SpendContractorReport({
   );
 
   const tableData = useMemo(() => {
-    const result = tableQuery.data as
-      | { items: SpendRow[]; totalCount: number }
-      | undefined;
+    const result = tableQuery.data as { items: SpendRow[]; totalCount: number } | undefined;
     return result?.items ?? [];
   }, [tableQuery.data]);
 
   const totalCount = useMemo(() => {
-    const result = tableQuery.data as
-      | { items: SpendRow[]; totalCount: number }
-      | undefined;
+    const result = tableQuery.data as { items: SpendRow[]; totalCount: number } | undefined;
     return result?.totalCount ?? 0;
   }, [tableQuery.data]);
 
@@ -117,9 +107,7 @@ export function SpendContractorReport({
 
   const drillDownName = useMemo(() => {
     if (!drillDownContractorId) return null;
-    const item = chartData.find(
-      (d) => d.contractorId === drillDownContractorId,
-    );
+    const item = chartData.find((d) => d.contractorId === drillDownContractorId);
     return item?.contractorName ?? drillDownContractorId;
   }, [drillDownContractorId, chartData]);
 
@@ -166,9 +154,7 @@ export function SpendContractorReport({
   };
 
   const handleDrillDown = (contractorId: string) => {
-    setDrillDownContractorId(
-      contractorId === drillDownContractorId ? null : contractorId,
-    );
+    setDrillDownContractorId(contractorId === drillDownContractorId ? null : contractorId);
     setPage(1);
   };
 
@@ -193,9 +179,7 @@ export function SpendContractorReport({
       <DrillDownBreadcrumb
         segments={[
           { label: t("all") },
-          ...(drillDownName
-            ? [{ label: drillDownName, id: drillDownContractorId! }]
-            : []),
+          ...(drillDownName ? [{ label: drillDownName, id: drillDownContractorId! }] : []),
         ]}
         onClear={handleClearDrillDown}
       />
@@ -212,9 +196,7 @@ export function SpendContractorReport({
         sortOrder={sortOrder}
         onRowClick={(row) => router.push(`/contractors/${row.contractorId}`)}
         isLoading={tableQuery.isLoading}
-        emptyIcon={
-          <DollarSign className="mx-auto h-10 w-10 text-muted-foreground/50" />
-        }
+        emptyIcon={<DollarSign className="mx-auto h-10 w-10 text-muted-foreground/50" />}
         emptyTitle={t("emptySpendContractor")}
         emptyDescription={t("emptySpendContractorBody")}
         grandTotalLabel={t("grandTotal")}
@@ -229,9 +211,7 @@ export function SpendContractorReport({
             contractorId: drillDownContractorId ?? undefined,
           })
         }
-        onExportAll={() =>
-          exportMutation.mutate({ dateFrom, dateTo })
-        }
+        onExportAll={() => exportMutation.mutate({ dateFrom, dateTo })}
         isExporting={exportMutation.isPending}
       />
     </div>

@@ -1,6 +1,6 @@
-import { describe, it, expect, vi } from "vitest";
-import { render, screen, setup } from "@/test/test-utils";
 import { useQuery } from "@tanstack/react-query";
+import { describe, expect, it, vi } from "vitest";
+import { render, screen, setup } from "@/test/test-utils";
 
 import { StatusChipBar } from "../status-chip-bar";
 
@@ -28,9 +28,7 @@ describe("StatusChipBar", () => {
       isLoading: true,
     } as ReturnType<typeof useQuery>);
 
-    render(
-      <StatusChipBar activeStatus="" onStatusChange={vi.fn()} />,
-    );
+    render(<StatusChipBar activeStatus="" onStatusChange={vi.fn()} />);
 
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
   });

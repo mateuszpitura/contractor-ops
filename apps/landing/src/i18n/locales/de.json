@@ -1,0 +1,158 @@
+{
+  "meta": {
+    "title": "Contractor Ops — B2B-Auftragnehmer-Management für EU-Unternehmen",
+    "description": "Verträge, Onboarding, Rechnungen, Genehmigungen, Zahlungen und Offboarding — alles an einem Ort. Für Unternehmen mit 5-50 B2B-Auftragnehmern.",
+    "ogTitle": "Contractor Ops — B2B-Auftragnehmer-Management",
+    "ogDescription": "Schluss mit Excel, Slack, E-Mail und manuellen Überweisungen. Ein System für den gesamten Auftragnehmer-Lebenszyklus."
+  },
+  "nav": {
+    "features": "Funktionen",
+    "howItWorks": "So funktioniert's",
+    "pricing": "Preise",
+    "login": "Anmelden",
+    "getStarted": "Loslegen"
+  },
+  "hero": {
+    "badge": "KSeF-bereit seit April 2026",
+    "headline": "Hören Sie auf, Auftragnehmer in",
+    "headlineHighlight": "Tabellen",
+    "subheadline": "Verträge, Rechnungen, Genehmigungen und Zahlungen für Ihre B2B-Auftragnehmer — ein System, null Chaos. Für EU-Unternehmen.",
+    "ctaPrimary": "Kostenlos starten",
+    "ctaSecondary": "So funktioniert's",
+    "metricSaved": "Zeitersparnis pro Woche",
+    "metricAccuracy": "Rechnungsgenauigkeit",
+    "metricOnboarding": "Onboarding-Zeit"
+  },
+  "logoBar": {
+    "title": "Teams in ganz Europa vertrauen uns"
+  },
+  "problem": {
+    "label": "Das Problem",
+    "headline": "Ihre Auftragnehmer-Ops leben in",
+    "headlineHighlight": "sechs verschiedenen Tools",
+    "description": "Jedes Unternehmen mit 5-50 B2B-Auftragnehmern kennt diesen Schmerz. Sie flicken Tools zusammen, die nie für die Zusammenarbeit konzipiert waren.",
+    "tools": {
+      "excel": "Excel / Sheets",
+      "email": "E-Mail / Slack",
+      "slack": "Slack DM",
+      "drive": "Google Drive",
+      "bank": "Banküberweisungen",
+      "nowhere": "Nirgends"
+    },
+    "pains": {
+      "excel": "Auftragnehmerliste und Tarife über mehrere Tabellen verstreut, die niemand pflegt",
+      "email": "Rechnungen in Postfächern vergraben — verloren, dupliziert oder wochenlang nicht zugeordnet",
+      "slack": "\"Wer sollte das genehmigen?\" — keine Verantwortlichkeit, kein Audit-Trail",
+      "drive": "Verträge, NDAs und IP-Dokumente verstreut — nichts verknüpft, nichts durchgesetzt",
+      "bank": "Manuelle Zahlungen — verpasste Fristen, doppelte Überweisungen, keine Abstimmung",
+      "nowhere": "Offboarding existiert nicht — Zugänge bleiben offen, IP-Dokumente nie unterschrieben"
+    }
+  },
+  "features": {
+    "label": "Funktionen",
+    "headline": "Ein System für den gesamten",
+    "headlineHighlight": "Auftragnehmer-Lebenszyklus",
+    "description": "Von der ersten Vertragsunterschrift bis zur letzten Offboarding-Checkliste. Jeder Schritt verfolgt, jede Genehmigung geprüft, jede Zahlung abgestimmt.",
+    "items": {
+      "contracts": {
+        "title": "Verträge & Dokumente",
+        "description": "Vorlagenbasierte Verträge mit E-Signatur, Versionsverfolgung und automatischen Verlängerungsalarmen."
+      },
+      "onboarding": {
+        "title": "Automatisches Onboarding",
+        "description": "Konfigurierbare Checklisten mit Verantwortlichkeit, Fristen und Compliance-Gates. Auftragnehmer bedienen sich selbst."
+      },
+      "invoices": {
+        "title": "Rechnungsabgleich",
+        "description": "Automatischer Rechnungsabruf, Abgleich mit Verträgen und Tarifen, sofortige Markierung von Abweichungen."
+      },
+      "approvals": {
+        "title": "Genehmigungsworkflows",
+        "description": "Mehrstufige Genehmigungsketten mit klarer Verantwortlichkeit, SLA-Tracking und vollständigem Audit-Trail."
+      },
+      "payments": {
+        "title": "Batch-Zahlungen",
+        "description": "Export genehmigter Rechnungen als Zahlungsdateien. Automatische Abstimmung. Ein Klick, alle bezahlt."
+      },
+      "offboarding": {
+        "title": "Sauberes Offboarding",
+        "description": "Strukturierter Austritts-Flow — NDA-Unterzeichnung, IP-Transfer, Zugangswiderrufs-Checklisten."
+      },
+      "compliance": {
+        "title": "Compliance & Audit",
+        "description": "Jede Aktion mit Zeitstempel und Zuordnung. Vollständiger Audit-Trail für Prüfungen und rechtliche Anforderungen."
+      },
+      "analytics": {
+        "title": "Ausgabenanalyse",
+        "description": "Echtzeit-Dashboards mit Auftragnehmer-Ausgaben, Budget-Burnrate und Kostenaufschlüsselung."
+      }
+    }
+  },
+  "howItWorks": {
+    "label": "So funktioniert's",
+    "headline": "Fünf Schritte vom",
+    "headlineHighlight": "Chaos zur Kontrolle",
+    "description": "Ersetzen Sie sechs getrennte Tools durch einen einheitlichen Ablauf. Jeder Schritt speist den nächsten — kein Copy-Paste, nichts geht verloren.",
+    "steps": {
+      "onboard": {
+        "title": "Onboarden",
+        "description": "Auftragnehmer hinzufügen, Checkliste zuweisen. Self-Service für Daten, Dokument-Upload und Vertragsunterschrift."
+      },
+      "contract": {
+        "title": "Vertragsschluss",
+        "description": "Verträge aus Vorlagen generieren. Automatische Verlängerungsverfolgung, Änderungshistorie und Versionskontrolle."
+      },
+      "invoice": {
+        "title": "Fakturieren",
+        "description": "Rechnungen automatisch abgerufen. Mit Verträgen und Tarifkarten abgeglichen. Abweichungen sofort markiert."
+      },
+      "approve": {
+        "title": "Genehmigen",
+        "description": "Rechnungen durch die Genehmigungskette leiten. Jede Aktion mit Zeitstempel und Genehmiger-Identität."
+      },
+      "pay": {
+        "title": "Bezahlen",
+        "description": "Batch-Export genehmigter Rechnungen zur Zahlung. Automatische Abstimmung bei Zahlungseingang. Fertig."
+      }
+    }
+  },
+  "socialProof": {
+    "label": "Teams vertrauen uns",
+    "headline": "Teams die gewechselt haben",
+    "headlineHighlight": "schauen nie zurück",
+    "stats": {
+      "processing": { "value": "92%", "label": "weniger Zeit für Rechnungsverarbeitung" },
+      "auditTrail": { "value": "100%", "label": "Audit-Trail-Abdeckung" },
+      "approvalTime": { "value": "< 2min", "label": "durchschnittliche Genehmigungszeit" },
+      "offboarding": { "value": "0", "label": "verpasste Offboarding-Schritte" }
+    }
+  },
+  "pricing": {
+    "label": "Preise",
+    "headline": "Einfache Preise,",
+    "headlineHighlight": "echter Wert",
+    "description": "Kostenlos starten mit bis zu 5 Auftragnehmern. Skalieren Sie mit Ihrem Wachstum. Keine versteckten Gebühren.",
+    "perContractor": "pro Auftragnehmer / Monat",
+    "upTo5": "bis zu 5 Auftragnehmer",
+    "startFree": "Kostenlos starten",
+    "startTrial": "14-Tage-Test starten",
+    "talkToSales": "Vertrieb kontaktieren",
+    "detailedLink": "Detaillierte Preise, Credits & Pay-as-you-go-Optionen"
+  },
+  "cta": {
+    "headline": "Bereit die",
+    "headlineHighlight": "Kontrolle",
+    "description": "Schließen Sie sich Unternehmen an, die Tabellen-Chaos durch ein einziges System für den gesamten Auftragnehmer-Lebenszyklus ersetzt haben.",
+    "ctaPrimary": "Kostenlos testen",
+    "ctaSecondary": "Demo buchen",
+    "trust": "Keine Kreditkarte nötig \u00b7 14-Tage Pro-Test \u00b7 Jederzeit kündbar"
+  },
+  "footer": {
+    "description": "B2B-Auftragnehmer-Management für EU-Unternehmen. Verträge, Rechnungen, Genehmigungen, Zahlungen — ein System.",
+    "product": "Produkt",
+    "company": "Unternehmen",
+    "legal": "Rechtliches",
+    "copyright": "\u00a9 2026 Contractor Ops. Alle Rechte vorbehalten.",
+    "madeIn": "Made in Poland für globale Unternehmen"
+  }
+}

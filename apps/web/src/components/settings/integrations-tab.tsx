@@ -1,33 +1,29 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, ShieldCheck, Unplug } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useState } from "react";
 import { toast } from "sonner";
-
-import { trpc } from "@/trpc/init";
-import { Button } from "@/components/ui/button";
-import { Link } from "@/i18n/navigation";
-import { ProviderConnectionCard } from "./provider-connection-card";
-import { SlackUserMapping } from "./slack-user-mapping";
-import { KsefSetupDialog } from "./ksef-setup-dialog";
-import { KsefSyncHistory } from "./ksef-sync-history";
+import { SlackBrandIcon } from "@/components/integrations/brand-icons";
+import { GoogleWorkspaceProviderSection } from "@/components/integrations/google-workspace-provider-section";
+import { JiraLogo } from "@/components/integrations/jira-logo";
 import { JiraProviderSection } from "@/components/integrations/jira-provider-section";
 import { LinearProviderSection } from "@/components/integrations/linear-provider-section";
-import { GoogleWorkspaceProviderSection } from "@/components/integrations/google-workspace-provider-section";
+import { ConfluenceIcon, NotionIcon } from "@/components/integrations/provider-icons";
 import { TeamsProviderSection } from "@/components/integrations/teams-provider-section";
+import { PeppolStatusCard } from "@/components/peppol/peppol-status-card";
 import { DpdProviderSection } from "@/components/settings/dpd-provider-section";
 import { UpsProviderSection } from "@/components/settings/ups-provider-section";
-import { JiraLogo } from "@/components/integrations/jira-logo";
-import { SlackBrandIcon } from "@/components/integrations/brand-icons";
-import {
-  NotionIcon,
-  ConfluenceIcon,
-} from "@/components/integrations/provider-icons";
-import { OrgCalendarSection } from "./org-calendar-section";
-import { PeppolStatusCard } from "@/components/peppol/peppol-status-card";
+import { Button } from "@/components/ui/button";
 import { ZatcaStatusCard } from "@/components/zatca/zatca-status-card";
+import { Link } from "@/i18n/navigation";
+import { trpc } from "@/trpc/init";
+import { KsefSetupDialog } from "./ksef-setup-dialog";
+import { KsefSyncHistory } from "./ksef-sync-history";
+import { OrgCalendarSection } from "./org-calendar-section";
+import { ProviderConnectionCard } from "./provider-connection-card";
+import { SlackUserMapping } from "./slack-user-mapping";
 
 // ---------------------------------------------------------------------------
 // Provider registry for UI (static for now, will be dynamic in future phases)
@@ -62,9 +58,7 @@ function KsefControls() {
   const t = useTranslations("ksef");
   const queryClient = useQueryClient();
 
-  const connectionQuery = useQuery(
-    trpc.ksef.connectionStatus.queryOptions(),
-  );
+  const connectionQuery = useQuery(trpc.ksef.connectionStatus.queryOptions());
   const connection = connectionQuery.data as
     | { id: string; status: string; lastSyncAt?: string | null }
     | null
@@ -98,10 +92,7 @@ function KsefControls() {
         disabled={syncMutation.isPending}
       >
         {syncMutation.isPending && (
-          <Loader2
-            className="me-1.5 size-3.5 animate-spin"
-            aria-hidden="true"
-          />
+          <Loader2 className="me-1.5 size-3.5 animate-spin" aria-hidden="true" />
         )}
         {syncMutation.isPending ? t("syncing") : t("syncNow")}
       </Button>
@@ -122,23 +113,14 @@ function KsefProviderSection() {
 
   // Get org NIP from settings
   const settingsQuery = useQuery(trpc.settings.get.queryOptions());
-  const orgData = settingsQuery.data as
-    | { metadata?: Record<string, unknown> }
-    | null
-    | undefined;
+  const orgData = settingsQuery.data as { metadata?: Record<string, unknown> } | null | undefined;
   const orgMetadata = orgData?.metadata ?? {};
-  const settingsJson =
-    (orgMetadata.settingsJson as Record<string, unknown>) ?? {};
+  const settingsJson = (orgMetadata.settingsJson as Record<string, unknown>) ?? {};
   const orgNip = (settingsJson.taxId as string) ?? null;
 
   // KSeF connection status
-  const connectionQuery = useQuery(
-    trpc.ksef.connectionStatus.queryOptions(),
-  );
-  const ksefConnection = connectionQuery.data as
-    | { id: string; status: string }
-    | null
-    | undefined;
+  const connectionQuery = useQuery(trpc.ksef.connectionStatus.queryOptions());
+  const ksefConnection = connectionQuery.data as { id: string; status: string } | null | undefined;
   const isConnected = ksefConnection?.status === "CONNECTED";
 
   return (
@@ -148,18 +130,16 @@ function KsefProviderSection() {
         provider="ksef"
         displayName="KSeF"
         icon={<ShieldCheck className="size-8 text-primary" />}
-        description={tIntegrations("ksef.descriptionDisconnected" as Parameters<typeof tIntegrations>[0])}
+        description={tIntegrations(
+          "ksef.descriptionDisconnected" as Parameters<typeof tIntegrations>[0],
+        )}
       />
 
       {/* KSeF-specific controls (sync button + history) */}
       {isConnected && <KsefControls />}
 
       {/* KSeF setup dialog (triggered by provider card connect) */}
-      <KsefSetupDialog
-        open={setupDialogOpen}
-        onOpenChange={setSetupDialogOpen}
-        orgNip={orgNip}
-      />
+      <KsefSetupDialog open={setupDialogOpen} onOpenChange={setSetupDialogOpen} orgNip={orgNip} />
     </div>
   );
 }
@@ -173,13 +153,8 @@ export function IntegrationsTab() {
   const tImport = useTranslations("OnboardingImport");
 
   // Check Slack connection status for user mapping visibility
-  const healthQuery = useQuery(
-    trpc.integration.getHealth.queryOptions({ provider: "slack" }),
-  );
-  const slackHealth = healthQuery.data as
-    | { status: string }
-    | null
-    | undefined;
+  const healthQuery = useQuery(trpc.integration.getHealth.queryOptions({ provider: "slack" }));
+  const slackHealth = healthQuery.data as { status: string } | null | undefined;
   const isSlackConnected = slackHealth?.status === "CONNECTED";
 
   // Non-KSeF/Jira providers (rendered separately for custom behavior)
@@ -248,7 +223,9 @@ export function IntegrationsTab() {
           provider="confluence"
           displayName="Confluence"
           icon={<ConfluenceIcon className="size-8" />}
-          description={t("provider.connectCta" as Parameters<typeof t>[0], { provider: "Confluence" })}
+          description={t("provider.connectCta" as Parameters<typeof t>[0], {
+            provider: "Confluence",
+          })}
         />
       </div>
 

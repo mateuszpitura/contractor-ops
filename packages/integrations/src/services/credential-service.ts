@@ -1,8 +1,4 @@
-import {
-  createCipheriv,
-  createDecipheriv,
-  randomBytes,
-} from "node:crypto";
+import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 import type { CredentialBlob } from "../types/credentials.js";
 
 // ---------------------------------------------------------------------------
@@ -43,10 +39,7 @@ export function getProviderEncryptionKey(providerSlug: string): Buffer {
  * @param providerSlug - Provider identifier for key lookup
  * @returns Encrypted string in `iv:authTag:ciphertext` format
  */
-export function encryptCredentials(
-  blob: CredentialBlob,
-  providerSlug: string,
-): string {
+export function encryptCredentials(blob: CredentialBlob, providerSlug: string): string {
   const key = getProviderEncryptionKey(providerSlug);
   const iv = randomBytes(IV_LENGTH);
   const plaintext = JSON.stringify(blob);
@@ -69,15 +62,10 @@ export function encryptCredentials(
  * @returns The decrypted credential blob
  * @throws Error if the format is invalid or decryption fails
  */
-export function decryptCredentials(
-  encrypted: string,
-  providerSlug: string,
-): CredentialBlob {
+export function decryptCredentials(encrypted: string, providerSlug: string): CredentialBlob {
   const parts = encrypted.split(":");
   if (parts.length !== 3) {
-    throw new Error(
-      "Invalid encrypted credentials format. Expected iv:authTag:ciphertext",
-    );
+    throw new Error("Invalid encrypted credentials format. Expected iv:authTag:ciphertext");
   }
 
   const [ivHex, authTagHex, ciphertext] = parts as [string, string, string];

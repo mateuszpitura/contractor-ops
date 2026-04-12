@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach, afterAll } from "vitest";
+import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 import {
-  processJiraWebhook,
-  registerJiraWebhooks,
   deregisterJiraWebhooks,
+  processJiraWebhook,
   refreshJiraWebhooks,
+  registerJiraWebhooks,
 } from "../jira-webhook-handler.js";
 
 // ---------------------------------------------------------------------------
@@ -72,15 +72,17 @@ function createMockPrisma() {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function makeWebhookPayload(overrides: {
-  issueKey?: string;
-  statusFrom?: string;
-  statusTo?: string;
-  statusCategoryKey?: string;
-  summary?: string;
-  projectId?: string;
-  changelogItems?: Array<{ field: string; fromString: string | null; toString: string | null }>;
-} = {}) {
+function makeWebhookPayload(
+  overrides: {
+    issueKey?: string;
+    statusFrom?: string;
+    statusTo?: string;
+    statusCategoryKey?: string;
+    summary?: string;
+    projectId?: string;
+    changelogItems?: Array<{ field: string; fromString: string | null; toString: string | null }>;
+  } = {},
+) {
   const {
     issueKey = ISSUE_KEY,
     statusFrom = "To Do",

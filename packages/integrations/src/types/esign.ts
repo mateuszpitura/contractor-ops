@@ -68,13 +68,7 @@ export interface NormalizedSigningEvent {
     | "ENVELOPE_VOIDED"
     | "ENVELOPE_EXPIRED";
   recipientEmail?: string;
-  recipientStatus?:
-    | "PENDING"
-    | "SENT"
-    | "DELIVERED"
-    | "VIEWED"
-    | "SIGNED"
-    | "DECLINED";
+  recipientStatus?: "PENDING" | "SENT" | "DELIVERED" | "VIEWED" | "SIGNED" | "DECLINED";
   envelopeStatus?:
     | "CREATED"
     | "SENT"
@@ -107,21 +101,11 @@ export interface ESignAdapter {
     returnUrl: string,
   ): Promise<EmbeddedSigningUrlResult>;
 
-  getSignedDocument(
-    connectionId: string,
-    envelopeId: string,
-  ): Promise<SignedDocumentResult>;
+  getSignedDocument(connectionId: string, envelopeId: string): Promise<SignedDocumentResult>;
 
-  getEnvelopeStatus(
-    connectionId: string,
-    envelopeId: string,
-  ): Promise<SigningEnvelopeResult>;
+  getEnvelopeStatus(connectionId: string, envelopeId: string): Promise<SigningEnvelopeResult>;
 
-  voidEnvelope(
-    connectionId: string,
-    envelopeId: string,
-    reason: string,
-  ): Promise<void>;
+  voidEnvelope(connectionId: string, envelopeId: string, reason: string): Promise<void>;
 
   resendToRecipient(
     connectionId: string,

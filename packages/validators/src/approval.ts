@@ -19,11 +19,7 @@ export const approvalDecisionTypeEnum = z.enum([
   "DELEGATE",
 ]);
 
-export const approvalResourceTypeEnum = z.enum([
-  "INVOICE",
-  "DOCUMENT",
-  "CONTRACT",
-]);
+export const approvalResourceTypeEnum = z.enum(["INVOICE", "DOCUMENT", "CONTRACT"]);
 
 // ---------------------------------------------------------------------------
 // Condition and step config schemas
@@ -80,15 +76,11 @@ export type ApprovalChainUpdate = z.infer<typeof approvalChainUpdateSchema>;
 
 export const approvalQueueSchema = z.object({
   tab: z.enum(["my", "all"]).default("my"),
-  status: z
-    .enum(["all", "pending", "overdue", "approved", "rejected"])
-    .default("all"),
+  status: z.enum(["all", "pending", "overdue", "approved", "rejected"]).default("all"),
   search: z.string().optional(),
   page: z.number().int().min(1).default(1),
   pageSize: z.number().int().min(1).max(50).default(10),
-  sortBy: z
-    .enum(["slaDeadline", "submitted", "amount"])
-    .default("slaDeadline"),
+  sortBy: z.enum(["slaDeadline", "submitted", "amount"]).default("slaDeadline"),
   sortOrder: z.enum(["asc", "desc"]).default("asc"),
 });
 

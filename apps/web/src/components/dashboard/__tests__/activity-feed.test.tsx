@@ -1,5 +1,5 @@
-import { render, screen } from "@/test/test-utils";
 import { useQuery } from "@tanstack/react-query";
+import { render, screen } from "@/test/test-utils";
 import { ActivityFeed } from "../activity-feed";
 
 vi.mock("@tanstack/react-query", async () => {
@@ -16,7 +16,11 @@ vi.mock("@/trpc/init", () => ({
 }));
 
 vi.mock("@/i18n/navigation", () => ({
-  Link: ({ children, href, ...props }: any) => <a href={href} {...props}>{children}</a>,
+  Link: ({ children, href, ...props }: any) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
 }));
 
 const mockedUseQuery = vi.mocked(useQuery);
@@ -62,8 +66,13 @@ describe("ActivityFeed", () => {
       data: {
         items: [
           {
-            id: "a1", actorName: "Jan", actorType: "USER", action: "CREATED",
-            resourceType: "CONTRACTOR", resourceId: "c1", resourceName: "Acme",
+            id: "a1",
+            actorName: "Jan",
+            actorType: "USER",
+            action: "CREATED",
+            resourceType: "CONTRACTOR",
+            resourceId: "c1",
+            resourceName: "Acme",
             createdAt: now.toISOString(),
           },
         ],

@@ -3,7 +3,9 @@ import { TabAssignments } from "../tab-assignments";
 
 vi.mock("@/i18n/navigation", () => ({
   Link: ({ children, href, ...props }: any) => (
-    <a href={href} {...props}>{children}</a>
+    <a href={href} {...props}>
+      {children}
+    </a>
   ),
 }));
 
@@ -30,12 +32,7 @@ describe("TabAssignments", () => {
 
   it("renders assignment table with contractor name", () => {
     const assignment = makeAssignment();
-    render(
-      <TabAssignments
-        assignments={[assignment]}
-        currentAssignmentId="a-1"
-      />,
-    );
+    render(<TabAssignments assignments={[assignment]} currentAssignmentId="a-1" />);
 
     expect(screen.getByText("Acme Corp")).toBeInTheDocument();
     expect(screen.getByText("Current")).toBeInTheDocument();
@@ -45,12 +42,7 @@ describe("TabAssignments", () => {
     const assignment = makeAssignment({
       contractor: { id: "c-1", legalName: "Acme Corp", displayName: "Acme" },
     });
-    render(
-      <TabAssignments
-        assignments={[assignment]}
-        currentAssignmentId={null}
-      />,
-    );
+    render(<TabAssignments assignments={[assignment]} currentAssignmentId={null} />);
 
     expect(screen.getByText("Acme")).toBeInTheDocument();
     expect(screen.queryByText("Acme Corp")).not.toBeInTheDocument();
@@ -60,24 +52,14 @@ describe("TabAssignments", () => {
     const assignment = makeAssignment({
       unassignedAt: "2026-03-15T00:00:00Z",
     });
-    render(
-      <TabAssignments
-        assignments={[assignment]}
-        currentAssignmentId={null}
-      />,
-    );
+    render(<TabAssignments assignments={[assignment]} currentAssignmentId={null} />);
 
     expect(screen.getByText("Mar 15, 2026")).toBeInTheDocument();
   });
 
   it("renders notes when provided", () => {
     const assignment = makeAssignment({ notes: "Temporary assignment" });
-    render(
-      <TabAssignments
-        assignments={[assignment]}
-        currentAssignmentId={null}
-      />,
-    );
+    render(<TabAssignments assignments={[assignment]} currentAssignmentId={null} />);
 
     expect(screen.getByText("Temporary assignment")).toBeInTheDocument();
   });

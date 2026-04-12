@@ -1,21 +1,19 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { useTranslations } from "next-intl";
-
+import { z } from "zod";
+import { SocialButtons } from "@/components/auth/social-buttons";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { SocialButtons } from "@/components/auth/social-buttons";
+import { Link, useRouter } from "@/i18n/navigation";
 import { authClient } from "@/lib/auth-client";
-import { useRouter } from "@/i18n/navigation";
-import { Link } from "@/i18n/navigation";
 
 /**
  * Registration form with org name, email, password.
@@ -92,9 +90,7 @@ export function RegisterForm() {
         <h1 className="font-display text-[28px] font-semibold leading-[1.2] tracking-tight">
           {t("title")}
         </h1>
-        <p className="text-sm text-muted-foreground">
-          {t("subtitle")}
-        </p>
+        <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

@@ -1,54 +1,40 @@
-import { z } from "zod";
-import { TRPCError } from "@trpc/server";
 import { auth } from "@contractor-ops/auth";
 import { prisma } from "@contractor-ops/db";
 import {
-  updateOrganizationSettingsSchema,
   orgExpiryReminderDefaultsSchema,
+  updateOrganizationSettingsSchema,
 } from "@contractor-ops/validators";
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
+import * as E from "../errors.js";
 import { router } from "../init.js";
-import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
 import { sensitiveActionProcedure } from "../middleware/sensitive.js";
-import {
-  approveChangeRequest,
-  rejectChangeRequest,
-} from "../services/portal-change-request.js";
+import { tenantProcedure } from "../middleware/tenant.js";
+import { CacheKeys, CacheTTL, cached, invalidateByPrefix } from "../services/cache.js";
+import { approveChangeRequest, rejectChangeRequest } from "../services/portal-change-request.js";
 import { createPresignedUploadUrl } from "../services/r2.js";
-import * as E from "../errors.js";
-import {
-  cached,
-  invalidateByPrefix,
-  CacheKeys,
-  CacheTTL,
-} from "../services/cache.js";
 
 export const settingsRouter = router({
   /**
    * Get organization settings.
    * Returns fiscal year, branding, notification defaults, and language.
    */
-  get: tenantProcedure
-    .use(requirePermission({ settings: ["read"] }))
-    .query(async ({ ctx }) => {
-      return cached(
-        CacheKeys.orgSettings(ctx.organizationId),
-        CacheTTL.ORG_SETTINGS,
-        async () => {
-          const org = await auth.api.getFullOrganization({
-            headers: ctx.headers,
-            query: { organizationId: ctx.organizationId },
-          });
+  get: tenantProcedure.use(requirePermission({ settings: ["read"] })).query(async ({ ctx }) => {
+    return cached(CacheKeys.orgSettings(ctx.organizationId), CacheTTL.ORG_SETTINGS, async () => {
+      const org = await auth.api.getFullOrganization({
+        headers: ctx.headers,
+        query: { organizationId: ctx.organizationId },
+      });
 
-          return {
-            id: org?.id,
-            name: org?.name,
-            slug: org?.slug,
-            metadata: org?.metadata,
-          };
-        },
-      );
-    }),
+      return {
+        id: org?.id,
+        name: org?.name,
+        slug: org?.slug,
+        metadata: org?.metadata,
+      };
+    });
+  }),
 
   /**
    * Update organization settings.
@@ -60,17 +46,13 @@ export const settingsRouter = router({
     .mutation(async ({ ctx, input }) => {
       const metadataUpdates: Record<string, unknown> = {};
 
-      if (input.legalName !== undefined)
-        metadataUpdates.legalName = input.legalName;
+      if (input.legalName !== undefined) metadataUpdates.legalName = input.legalName;
       if (input.fiscalYearStartMonth !== undefined)
         metadataUpdates.fiscalYearStartMonth = input.fiscalYearStartMonth;
-      if (input.billingEmail !== undefined)
-        metadataUpdates.billingEmail = input.billingEmail;
-      if (input.language !== undefined)
-        metadataUpdates.language = input.language;
+      if (input.billingEmail !== undefined) metadataUpdates.billingEmail = input.billingEmail;
+      if (input.language !== undefined) metadataUpdates.language = input.language;
       if (input.onboardingCompletedSteps !== undefined)
-        metadataUpdates.onboardingCompletedSteps =
-          input.onboardingCompletedSteps;
+        metadataUpdates.onboardingCompletedSteps = input.onboardingCompletedSteps;
       if (input.onboardingDismissed !== undefined)
         metadataUpdates.onboardingDismissed = input.onboardingDismissed;
       if (input.defaultReturnCarrier !== undefined)
@@ -122,8 +104,9 @@ export const settingsRouter = router({
           });
 
           const settings = (org?.settingsJson as Record<string, unknown>) ?? {};
-          const reminderDaysBefore =
-            (settings.contractExpiryReminderDaysBefore as number[]) ?? [30, 60, 90];
+          const reminderDaysBefore = (settings.contractExpiryReminderDaysBefore as number[]) ?? [
+            30, 60, 90,
+          ];
 
           return { reminderDaysBefore };
         },
@@ -142,8 +125,7 @@ export const settingsRouter = router({
         select: { settingsJson: true },
       });
 
-      const currentSettings =
-        (org?.settingsJson as Record<string, unknown>) ?? {};
+      const currentSettings = (org?.settingsJson as Record<string, unknown>) ?? {};
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const newSettings: any = {
@@ -204,14 +186,12 @@ export const settingsRouter = router({
         select: { settingsJson: true },
       });
 
-      const currentSettings =
-        (org?.settingsJson as Record<string, unknown>) ?? {};
+      const currentSettings = (org?.settingsJson as Record<string, unknown>) ?? {};
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const newSettings: any = {
         ...currentSettings,
-        invoiceDeviationThresholdPercent:
-          input.invoiceDeviationThresholdPercent,
+        invoiceDeviationThresholdPercent: input.invoiceDeviationThresholdPercent,
       };
 
       await prisma.organization.update({
@@ -224,8 +204,7 @@ export const settingsRouter = router({
       void invalidateByPrefix(CacheKeys.settingsPrefix(ctx.organizationId));
 
       return {
-        invoiceDeviationThresholdPercent:
-          input.invoiceDeviationThresholdPercent,
+        invoiceDeviationThresholdPercent: input.invoiceDeviationThresholdPercent,
       };
     }),
 
@@ -240,24 +219,19 @@ export const settingsRouter = router({
   getBranding: tenantProcedure
     .use(requirePermission({ settings: ["read"] }))
     .query(async ({ ctx }) => {
-      return cached(
-        CacheKeys.orgBranding(ctx.organizationId),
-        CacheTTL.ORG_BRANDING,
-        async () => {
-          const org = await prisma.organization.findUnique({
-            where: { id: ctx.organizationId },
-            select: { logo: true, settingsJson: true },
-          });
+      return cached(CacheKeys.orgBranding(ctx.organizationId), CacheTTL.ORG_BRANDING, async () => {
+        const org = await prisma.organization.findUnique({
+          where: { id: ctx.organizationId },
+          select: { logo: true, settingsJson: true },
+        });
 
-          const settings =
-            (org?.settingsJson as Record<string, unknown>) ?? {};
+        const settings = (org?.settingsJson as Record<string, unknown>) ?? {};
 
-          return {
-            brandColor: (settings.brandColor as string) ?? null,
-            logo: org?.logo ?? null,
-          };
-        },
-      );
+        return {
+          brandColor: (settings.brandColor as string) ?? null,
+          logo: org?.logo ?? null,
+        };
+      });
     }),
 
   /**
@@ -272,8 +246,7 @@ export const settingsRouter = router({
         contentType: z
           .string()
           .refine(
-            (ct) =>
-              ["image/png", "image/jpeg", "image/svg+xml"].includes(ct),
+            (ct) => ["image/png", "image/jpeg", "image/svg+xml"].includes(ct),
             "Must be PNG, JPEG, or SVG",
           ),
       }),
@@ -281,10 +254,7 @@ export const settingsRouter = router({
     .mutation(async ({ ctx, input }) => {
       const ext = input.filename.split(".").pop() ?? "png";
       const key = `orgs/${ctx.organizationId}/branding/logo.${ext}`;
-      const uploadUrl = await createPresignedUploadUrl(
-        key,
-        input.contentType,
-      );
+      const uploadUrl = await createPresignedUploadUrl(key, input.contentType);
       // Public URL for R2 (bucket public access)
       const publicUrl = `${process.env.R2_PUBLIC_URL ?? ""}/${key}`;
       return { uploadUrl, publicUrl, storageKey: key };
@@ -313,8 +283,7 @@ export const settingsRouter = router({
         select: { settingsJson: true, logo: true },
       });
 
-      const currentSettings =
-        (org?.settingsJson as Record<string, unknown>) ?? {};
+      const currentSettings = (org?.settingsJson as Record<string, unknown>) ?? {};
 
       // Merge brandColor into settingsJson
       const newSettings: Record<string, unknown> = { ...currentSettings };
@@ -345,8 +314,7 @@ export const settingsRouter = router({
       void invalidateByPrefix(CacheKeys.settingsPrefix(ctx.organizationId));
 
       return {
-        brandColor:
-          (newSettings.brandColor as string) ?? null,
+        brandColor: (newSettings.brandColor as string) ?? null,
         logo: input.logoUrl !== undefined ? input.logoUrl : (org?.logo ?? null),
       };
     }),
@@ -433,9 +401,7 @@ export const settingsRouter = router({
     .input(
       z
         .object({
-          status: z
-            .enum(["PENDING", "APPROVED", "REJECTED"])
-            .optional(),
+          status: z.enum(["PENDING", "APPROVED", "REJECTED"]).optional(),
         })
         .optional(),
     )
@@ -468,9 +434,7 @@ export const settingsRouter = router({
         status: r.status,
         requestedChanges: r.requestedChanges,
         previousValues: r.previousValues,
-        reviewedBy: r.reviewedBy
-          ? { name: r.reviewedBy.name, email: r.reviewedBy.email }
-          : null,
+        reviewedBy: r.reviewedBy ? { name: r.reviewedBy.name, email: r.reviewedBy.email } : null,
         reviewedAt: r.reviewedAt,
         reviewComment: r.reviewComment,
         createdAt: r.createdAt,
@@ -496,19 +460,9 @@ export const settingsRouter = router({
       const reviewerId = ctx.user!.id;
 
       if (input.action === "approve") {
-        await approveChangeRequest(
-          input.requestId,
-          ctx.organizationId,
-          reviewerId,
-          input.comment,
-        );
+        await approveChangeRequest(input.requestId, ctx.organizationId, reviewerId, input.comment);
       } else {
-        await rejectChangeRequest(
-          input.requestId,
-          ctx.organizationId,
-          reviewerId,
-          input.comment,
-        );
+        await rejectChangeRequest(input.requestId, ctx.organizationId, reviewerId, input.comment);
       }
 
       return { success: true as const };

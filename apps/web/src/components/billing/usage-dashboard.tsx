@@ -1,33 +1,28 @@
 "use client";
 
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
 import { Crown, FileSearch, RefreshCw } from "lucide-react";
-import { trpc } from "@/trpc/init";
-
+import { useTranslations } from "next-intl";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-
-import { UsageKpiCard } from "./usage-kpi-card";
-import { SeatCountCard } from "./seat-count-card";
+import { Link } from "@/i18n/navigation";
+import { trpc } from "@/trpc/init";
 import { BillingDateCard } from "./billing-date-card";
 import { CreditProgressBar } from "./credit-progress-bar";
-import { PlanComparisonGrid } from "./plan-comparison-grid";
-import { TopUpDialog } from "./top-up-dialog";
 import type { TierId } from "./plan-comparison-grid";
-import { Link } from "@/i18n/navigation";
+import { PlanComparisonGrid } from "./plan-comparison-grid";
+import { SeatCountCard } from "./seat-count-card";
+import { TopUpDialog } from "./top-up-dialog";
+import { UsageKpiCard } from "./usage-kpi-card";
 
 // ---------------------------------------------------------------------------
 // Status badge variant mapping
 // ---------------------------------------------------------------------------
 
-const STATUS_BADGE_VARIANT: Record<
-  string,
-  "success" | "warning" | "destructive" | "secondary"
-> = {
+const STATUS_BADGE_VARIANT: Record<string, "success" | "warning" | "destructive" | "secondary"> = {
   ACTIVE: "success",
   TRIALING: "warning",
   PAST_DUE: "destructive",
@@ -61,12 +56,9 @@ export function UsageDashboard() {
   const tCredits = useTranslations("Billing.credits");
   const [topUpOpen, setTopUpOpen] = useState(false);
 
-  const {
-    data,
-    isLoading,
-    isError,
-    refetch,
-  } = useQuery(trpc.billing.getUsageDashboard.queryOptions());
+  const { data, isLoading, isError, refetch } = useQuery(
+    trpc.billing.getUsageDashboard.queryOptions(),
+  );
 
   // ---- Loading state ----
   if (isLoading) {
@@ -96,13 +88,7 @@ export function UsageDashboard() {
     );
   }
 
-  const {
-    subscription,
-    credits,
-    activeContractors,
-    includedSeats,
-    planConfig,
-  } = data as {
+  const { subscription, credits, activeContractors, includedSeats, planConfig } = data as {
     subscription: any;
     credits: { balance: number; allowance: number; used: number; tier: string };
     activeContractors: number;
@@ -115,13 +101,8 @@ export function UsageDashboard() {
     return (
       <div className="flex flex-col items-center gap-4 py-12 text-center">
         <p className="text-lg font-semibold">{t("noSubscription")}</p>
-        <p className="text-sm text-muted-foreground max-w-md">
-          {t("noSubscriptionBody")}
-        </p>
-        <Button
-          variant="default"
-          render={<Link href="/settings?tab=billing" />}
-        >
+        <p className="text-sm text-muted-foreground max-w-md">{t("noSubscriptionBody")}</p>
+        <Button variant="default" render={<Link href="/settings?tab=billing" />}>
           {t("choosePlan")}
         </Button>
       </div>
@@ -130,16 +111,11 @@ export function UsageDashboard() {
 
   // ---- Derive values ----
   const currentTier = subscription.tier as TierId;
-  const tierConfig = planConfig?.tiers?.find(
-    (tier: any) => tier.id === currentTier,
-  );
+  const tierConfig = planConfig?.tiers?.find((tier: any) => tier.id === currentTier);
   const seatPriceMinor = tierConfig?.seatPriceMinor ?? 0;
   const isTrialing = subscription.status === "TRIALING";
-  const billingDate = isTrialing
-    ? subscription.trialEnd
-    : subscription.currentPeriodEnd;
-  const badgeVariant =
-    STATUS_BADGE_VARIANT[subscription.status] ?? "secondary";
+  const billingDate = isTrialing ? subscription.trialEnd : subscription.currentPeriodEnd;
+  const badgeVariant = STATUS_BADGE_VARIANT[subscription.status] ?? "secondary";
   const remaining = credits?.balance ?? 0;
   const total = credits?.allowance ?? 0;
   const isLowCredits = total > 0 && remaining / total < 0.2;
@@ -175,10 +151,7 @@ export function UsageDashboard() {
           label={t("ocrCredits")}
           value={
             <div className="space-y-2">
-              <CreditProgressBar
-                used={credits?.used ?? 0}
-                total={total}
-              />
+              <CreditProgressBar used={credits?.used ?? 0} total={total} />
               {isLowCredits && (
                 <Button
                   variant="link"
@@ -194,10 +167,7 @@ export function UsageDashboard() {
         />
 
         {/* Card 4: Next Billing Date */}
-        <BillingDateCard
-          date={billingDate ?? null}
-          isTrialing={isTrialing}
-        />
+        <BillingDateCard date={billingDate ?? null} isTrialing={isTrialing} />
       </div>
 
       <Separator />

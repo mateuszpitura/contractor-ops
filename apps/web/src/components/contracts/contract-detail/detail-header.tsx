@@ -1,48 +1,40 @@
 "use client";
 
-import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { Ban, FilePlus, MoreHorizontal, Pencil, Replace, Upload } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useState } from "react";
+import { toast } from "sonner";
 import {
-  MoreHorizontal,
-  Pencil,
-  FilePlus,
-  Upload,
-  Ban,
-  Replace,
-} from "lucide-react";
-
-import { trpc } from "@/trpc/init";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Breadcrumb,
-  BreadcrumbList,
   BreadcrumbItem,
   BreadcrumbLink,
-  BreadcrumbSeparator,
+  BreadcrumbList,
   BreadcrumbPage,
+  BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  AlertDialog,
-  AlertDialogTrigger,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogAction,
-  AlertDialogCancel,
-} from "@/components/ui/alert-dialog";
 import { Link } from "@/i18n/navigation";
+import { trpc } from "@/trpc/init";
 import { SendForSignatureButton } from "./send-for-signature-button";
 
 // ---------------------------------------------------------------------------
@@ -131,7 +123,7 @@ export function DetailHeader({ contract }: DetailHeaderProps) {
             : "";
         toast.error(message || t("actions.terminateError"));
       },
-    })
+    }),
   );
 
   const supersedeMutation = useMutation(
@@ -149,15 +141,13 @@ export function DetailHeader({ contract }: DetailHeaderProps) {
             : "";
         toast.error(message || t("actions.supersedeError"));
       },
-    })
+    }),
   );
 
   const canTerminate = ["DRAFT", "ACTIVE", "EXPIRING", "EXPIRED", "PENDING_SIGNATURE"].includes(
-    contract.status
+    contract.status,
   );
-  const canSupersede = ["ACTIVE", "EXPIRING", "EXPIRED"].includes(
-    contract.status
-  );
+  const canSupersede = ["ACTIVE", "EXPIRING", "EXPIRED"].includes(contract.status);
 
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -166,10 +156,7 @@ export function DetailHeader({ contract }: DetailHeaderProps) {
           <h1 className="text-[20px] font-semibold leading-tight">
             {contract.title ?? t("untitled")}
           </h1>
-          <Badge
-            variant="secondary"
-            className={statusBadgeStyles[contract.status] ?? ""}
-          >
+          <Badge variant="secondary" className={statusBadgeStyles[contract.status] ?? ""}>
             {tEnum(`status.${contract.status}` as Parameters<typeof tEnum>[0])}
           </Badge>
         </div>
@@ -217,7 +204,6 @@ export function DetailHeader({ contract }: DetailHeaderProps) {
               {t("actions.uploadDocument")}
             </DropdownMenuItem>
 
-
             {(canTerminate || canSupersede) && <DropdownMenuSeparator />}
 
             {canTerminate && (
@@ -257,9 +243,7 @@ export function DetailHeader({ contract }: DetailHeaderProps) {
             <AlertDialogTitle>
               {t("actions.terminateTitle", { title: contract.title ?? "" })}
             </AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("actions.terminateBody")}
-            </AlertDialogDescription>
+            <AlertDialogDescription>{t("actions.terminateBody")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t("actions.cancel")}</AlertDialogCancel>

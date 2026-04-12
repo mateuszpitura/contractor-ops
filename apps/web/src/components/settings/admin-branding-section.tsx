@@ -1,11 +1,10 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { Upload, X, Loader2, Globe } from "lucide-react";
-import { toast } from "sonner";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Globe, Loader2, Upload, X } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useRef, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -76,9 +75,7 @@ export function AdminBrandingSection() {
     },
   });
 
-  const uploadUrlMutation = useMutation(
-    trpc.settings.getLogoUploadUrl.mutationOptions(),
-  );
+  const uploadUrlMutation = useMutation(trpc.settings.getLogoUploadUrl.mutationOptions());
 
   const updateBrandingMutation = useMutation(
     trpc.settings.updateBranding.mutationOptions({
@@ -146,11 +143,10 @@ export function AdminBrandingSection() {
       setUploading(true);
 
       // Get presigned URL
-      const { uploadUrl, publicUrl } =
-        await uploadUrlMutation.mutateAsync({
-          filename: file.name,
-          contentType: file.type,
-        });
+      const { uploadUrl, publicUrl } = await uploadUrlMutation.mutateAsync({
+        filename: file.name,
+        contentType: file.type,
+      });
 
       // Upload to R2
       await fetch(uploadUrl, {
@@ -241,9 +237,7 @@ export function AdminBrandingSection() {
     <Card>
       <CardHeader>
         <h3 className="text-sm font-semibold">{t("heading")}</h3>
-        <p className="text-sm text-muted-foreground">
-          {t("description")}
-        </p>
+        <p className="text-sm text-muted-foreground">{t("description")}</p>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Logo upload */}
@@ -281,9 +275,7 @@ export function AdminBrandingSection() {
             </button>
           )}
 
-          <p className="text-xs text-muted-foreground">
-            {t("logoHint")}
-          </p>
+          <p className="text-xs text-muted-foreground">{t("logoHint")}</p>
 
           <input
             ref={fileInputRef}
@@ -344,20 +336,13 @@ export function AdminBrandingSection() {
               aria-label={tAria("portalSubdomain")}
               aria-describedby="subdomain-suffix subdomain-error"
             />
-            <span
-              id="subdomain-suffix"
-              className="text-sm text-muted-foreground whitespace-nowrap"
-            >
+            <span id="subdomain-suffix" className="text-sm text-muted-foreground whitespace-nowrap">
               {t("subdomainSuffix")}
             </span>
           </div>
 
           {subdomainError && (
-            <p
-              id="subdomain-error"
-              className="text-sm text-destructive"
-              role="alert"
-            >
+            <p id="subdomain-error" className="text-sm text-destructive" role="alert">
               {subdomainError}
             </p>
           )}

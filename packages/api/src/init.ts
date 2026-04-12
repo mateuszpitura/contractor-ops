@@ -9,8 +9,6 @@ const t = initTRPC.context<Context>().create({
 
 export const router = t.router;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- handler shape matches at runtime; typed loosely to avoid circular import of tRPC internals
-export const publicProcedure = t.procedure.use(
-  t.middleware(observabilityMiddleware as any),
-);
+export const publicProcedure = t.procedure.use(t.middleware(observabilityMiddleware as any));
 export const createCallerFactory = t.createCallerFactory;
 export { t };

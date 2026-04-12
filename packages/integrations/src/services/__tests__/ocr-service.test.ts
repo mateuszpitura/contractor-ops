@@ -1,11 +1,8 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import {
-  clearAdapters,
-  registerAdapter,
-} from "../../registry.js";
-import { getOcrAdapter, extractInvoice } from "../ocr-service.js";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { clearAdapters, registerAdapter } from "../../registry.js";
 import type { OcrAdapter, OcrExtractionResult } from "../../types/ocr.js";
 import type { IntegrationProviderAdapter } from "../../types/provider.js";
+import { extractInvoice, getOcrAdapter } from "../ocr-service.js";
 
 // ---------------------------------------------------------------------------
 // Mock adapter
@@ -44,9 +41,7 @@ describe("ocr-service", () => {
     clearAdapters();
     vi.clearAllMocks();
     // Register the mock adapter with the same slug pattern used by ClaudeOcrAdapter
-    registerAdapter(
-      mockOcrAdapter as unknown as IntegrationProviderAdapter,
-    );
+    registerAdapter(mockOcrAdapter as unknown as IntegrationProviderAdapter);
   });
 
   afterEach(() => {
@@ -93,9 +88,7 @@ describe("ocr-service", () => {
         fileName: "test.pdf",
       });
 
-      expect(mockExtractInvoice).toHaveBeenCalledWith(
-        expect.objectContaining({ locale: "pl" }),
-      );
+      expect(mockExtractInvoice).toHaveBeenCalledWith(expect.objectContaining({ locale: "pl" }));
     });
   });
 

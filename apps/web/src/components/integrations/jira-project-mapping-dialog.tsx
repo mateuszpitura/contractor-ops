@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -14,6 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -21,9 +21,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -60,15 +59,9 @@ export function JiraProjectMappingDialog({
   // ---- Local state ----
   const [projectId, setProjectId] = useState<string | undefined>(undefined);
   const [projectKey, setProjectKey] = useState<string | undefined>(undefined);
-  const [projectName, setProjectName] = useState<string | undefined>(
-    undefined,
-  );
-  const [issueTypeId, setIssueTypeId] = useState<string | undefined>(
-    undefined,
-  );
-  const [issueTypeName, setIssueTypeName] = useState<string | undefined>(
-    undefined,
-  );
+  const [projectName, setProjectName] = useState<string | undefined>(undefined);
+  const [issueTypeId, setIssueTypeId] = useState<string | undefined>(undefined);
+  const [issueTypeName, setIssueTypeName] = useState<string | undefined>(undefined);
   const [jiraEnabled, setJiraEnabled] = useState(false);
   const [initialConfig, setInitialConfig] = useState<TaskConfig | null>(null);
 
@@ -183,9 +176,7 @@ export function JiraProjectMappingDialog({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Configure Jira Integration</DialogTitle>
-          <DialogDescription>
-            Map this task to a Jira project and issue type.
-          </DialogDescription>
+          <DialogDescription>Map this task to a Jira project and issue type.</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -195,9 +186,7 @@ export function JiraProjectMappingDialog({
             <Select value={projectId} onValueChange={handleProjectChange}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select a project">
-                  {projectsQuery.isLoading && (
-                    <Loader2 className="size-3.5 animate-spin" />
-                  )}
+                  {projectsQuery.isLoading && <Loader2 className="size-3.5 animate-spin" />}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
@@ -213,16 +202,10 @@ export function JiraProjectMappingDialog({
           {/* Issue Type selector */}
           <div className="space-y-2">
             <Label>Issue Type</Label>
-            <Select
-              value={issueTypeId}
-              onValueChange={handleIssueTypeChange}
-              disabled={!projectId}
-            >
+            <Select value={issueTypeId} onValueChange={handleIssueTypeChange} disabled={!projectId}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select an issue type">
-                  {issueTypesQuery.isLoading && (
-                    <Loader2 className="size-3.5 animate-spin" />
-                  )}
+                  {issueTypesQuery.isLoading && <Loader2 className="size-3.5 animate-spin" />}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
@@ -252,13 +235,8 @@ export function JiraProjectMappingDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Discard Changes
           </Button>
-          <Button
-            onClick={handleSave}
-            disabled={!hasChanges || saveMutation.isPending}
-          >
-            {saveMutation.isPending && (
-              <Loader2 className="me-1.5 size-3.5 animate-spin" />
-            )}
+          <Button onClick={handleSave} disabled={!hasChanges || saveMutation.isPending}>
+            {saveMutation.isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
             Save Mapping
           </Button>
         </DialogFooter>

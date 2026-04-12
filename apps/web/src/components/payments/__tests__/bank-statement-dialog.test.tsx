@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, setup, waitFor } from "@/test/test-utils";
 import { fireEvent } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { render, screen, setup, waitFor } from "@/test/test-utils";
 import { BankStatementDialog } from "../bank-statement-dialog";
 
 // ---------------------------------------------------------------------------
@@ -18,9 +18,8 @@ let importOnError: ((err: unknown) => void) | null = null;
 const confirmMutate = vi.fn();
 
 vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
-    "@tanstack/react-query",
-  );
+  const actual =
+    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
   return {
     ...actual,
     useMutation: (opts: Record<string, unknown>) => {
@@ -68,24 +67,18 @@ describe("BankStatementDialog", () => {
   });
 
   it("renders dialog with title", () => {
-    render(
-      <BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText("Import bank statement")).toBeInTheDocument();
   });
 
   it("shows upload dropzone in upload step", () => {
-    render(
-      <BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText("Drop a bank statement file here")).toBeInTheDocument();
     expect(screen.getByText(/Supported formats/)).toBeInTheDocument();
   });
 
   it("shows hidden file input for mt940 and csv", () => {
-    render(
-      <BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />);
     // Dialog renders in a portal, query the document directly
     const input = document.querySelector('input[type="file"]');
     expect(input).toBeInTheDocument();
@@ -93,16 +86,12 @@ describe("BankStatementDialog", () => {
   });
 
   it("does not render content when closed", () => {
-    render(
-      <BankStatementDialog runId="run-1" open={false} onOpenChange={onOpenChange} />,
-    );
+    render(<BankStatementDialog runId="run-1" open={false} onOpenChange={onOpenChange} />);
     expect(screen.queryByText("Import bank statement")).not.toBeInTheDocument();
   });
 
   it("shows error state when invalid file extension is provided", async () => {
-    render(
-      <BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />);
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
     expect(fileInput).toBeTruthy();
 
@@ -115,9 +104,7 @@ describe("BankStatementDialog", () => {
   });
 
   it("shows error state when file is too large", async () => {
-    render(
-      <BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />);
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
 
     const bigFile = new File(["x"], "test.csv", { type: "text/csv" });
@@ -130,9 +117,7 @@ describe("BankStatementDialog", () => {
   });
 
   it("shows try again button in error state", async () => {
-    render(
-      <BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />);
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
 
     const invalidFile = new File(["content"], "bad.xlsx", { type: "application/vnd.ms-excel" });
@@ -161,9 +146,7 @@ describe("BankStatementDialog", () => {
   });
 
   it("shows parsing state when valid file is selected", async () => {
-    render(
-      <BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />);
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
 
     const csvFile = new File(["col1,col2\nval1,val2"], "statement.csv", { type: "text/csv" });
@@ -175,9 +158,7 @@ describe("BankStatementDialog", () => {
   });
 
   it("calls import mutation with file content and runId", async () => {
-    render(
-      <BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />);
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
 
     const csvFile = new File(["col1,col2\nval1,val2"], "statement.csv", { type: "text/csv" });
@@ -194,16 +175,12 @@ describe("BankStatementDialog", () => {
   });
 
   it("shows dropzone click area", () => {
-    render(
-      <BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText("Drop a bank statement file here")).toBeInTheDocument();
   });
 
   it("accepts mt940 files without error", async () => {
-    render(
-      <BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />);
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
 
     const mt940File = new File([":20:STARTOFMT940"], "statement.mt940", { type: "" });
@@ -216,25 +193,19 @@ describe("BankStatementDialog", () => {
   });
 
   it("passes correct runId to mutation", async () => {
-    render(
-      <BankStatementDialog runId="run-42" open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<BankStatementDialog runId="run-42" open={true} onOpenChange={onOpenChange} />);
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
 
     const csvFile = new File(["data"], "test.csv", { type: "text/csv" });
     fireEvent.change(fileInput, { target: { files: [csvFile] } });
 
     await waitFor(() => {
-      expect(mockMutate).toHaveBeenCalledWith(
-        expect.objectContaining({ runId: "run-42" }),
-      );
+      expect(mockMutate).toHaveBeenCalledWith(expect.objectContaining({ runId: "run-42" }));
     });
   });
 
   it("shows correct file formats hint text", () => {
-    render(
-      <BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText(/Supported/)).toBeInTheDocument();
   });
 
@@ -265,9 +236,7 @@ describe("BankStatementDialog", () => {
       // The useMutation mock passes opts through, so onSuccess is available
     });
 
-    render(
-      <BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />);
 
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
     const csvFile = new File(["col1,col2\nval1,val2"], "statement.csv", { type: "text/csv" });
@@ -301,9 +270,7 @@ describe("BankStatementDialog", () => {
   });
 
   it("sends file content and filename in mutation payload", async () => {
-    render(
-      <BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />);
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
 
     const csvContent = "date,amount,iban\n2025-01-01,1000,PL123";
@@ -322,9 +289,7 @@ describe("BankStatementDialog", () => {
   });
 
   it("handles empty file list gracefully", () => {
-    render(
-      <BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />);
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
 
     fireEvent.change(fileInput, { target: { files: [] } });
@@ -358,9 +323,7 @@ describe("BankStatementDialog", () => {
       // We need to simulate the mutation's onSuccess callback
     });
 
-    render(
-      <BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />);
 
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
     const csvFile = new File(["col1,col2\nval1,val2"], "results.csv", { type: "text/csv" });
@@ -378,7 +341,14 @@ describe("BankStatementDialog", () => {
       if (importOnSuccess)
         importOnSuccess({
           matches: [
-            { transactionIndex: 0, amountMinor: 100000, iban: "PL12345678901234567890123456", matched: true, itemId: "item-1", invoiceNumber: "FV/001" },
+            {
+              transactionIndex: 0,
+              amountMinor: 100000,
+              iban: "PL12345678901234567890123456",
+              matched: true,
+              itemId: "item-1",
+              invoiceNumber: "FV/001",
+            },
           ],
         });
     });
@@ -387,7 +357,9 @@ describe("BankStatementDialog", () => {
       <BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />,
     );
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-    fireEvent.change(fileInput, { target: { files: [new File(["d"], "s.csv", { type: "text/csv" })] } });
+    fireEvent.change(fileInput, {
+      target: { files: [new File(["d"], "s.csv", { type: "text/csv" })] },
+    });
 
     await waitFor(() => {
       expect(screen.getByRole("checkbox")).toBeInTheDocument();
@@ -404,17 +376,31 @@ describe("BankStatementDialog", () => {
       if (importOnSuccess)
         importOnSuccess({
           matches: [
-            { transactionIndex: 0, amountMinor: 100000, iban: "PL12345678901234567890123456", matched: true, itemId: "item-1", invoiceNumber: "FV/001" },
-            { transactionIndex: 1, amountMinor: 200000, iban: "PL11111111111111111111111111", matched: true, itemId: "item-2", invoiceNumber: "FV/002" },
+            {
+              transactionIndex: 0,
+              amountMinor: 100000,
+              iban: "PL12345678901234567890123456",
+              matched: true,
+              itemId: "item-1",
+              invoiceNumber: "FV/001",
+            },
+            {
+              transactionIndex: 1,
+              amountMinor: 200000,
+              iban: "PL11111111111111111111111111",
+              matched: true,
+              itemId: "item-2",
+              invoiceNumber: "FV/002",
+            },
           ],
         });
     });
 
-    render(
-      <BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />);
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-    fireEvent.change(fileInput, { target: { files: [new File(["d"], "s.csv", { type: "text/csv" })] } });
+    fireEvent.change(fileInput, {
+      target: { files: [new File(["d"], "s.csv", { type: "text/csv" })] },
+    });
 
     await waitFor(() => {
       // Both matched, both pre-selected - confirm button and checkboxes present
@@ -428,16 +414,21 @@ describe("BankStatementDialog", () => {
       if (importOnSuccess)
         importOnSuccess({
           matches: [
-            { transactionIndex: 0, amountMinor: 50000, iban: "PL12345678901234567890121234", matched: false },
+            {
+              transactionIndex: 0,
+              amountMinor: 50000,
+              iban: "PL12345678901234567890121234",
+              matched: false,
+            },
           ],
         });
     });
 
-    render(
-      <BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />);
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-    fireEvent.change(fileInput, { target: { files: [new File(["d"], "s.csv", { type: "text/csv" })] } });
+    fireEvent.change(fileInput, {
+      target: { files: [new File(["d"], "s.csv", { type: "text/csv" })] },
+    });
 
     await waitFor(() => {
       expect(screen.getByText("\u2014")).toBeInTheDocument();
@@ -449,16 +440,21 @@ describe("BankStatementDialog", () => {
       if (importOnSuccess)
         importOnSuccess({
           matches: [
-            { transactionIndex: 0, amountMinor: 50000, iban: "PL12345678901234567890121234", matched: false },
+            {
+              transactionIndex: 0,
+              amountMinor: 50000,
+              iban: "PL12345678901234567890121234",
+              matched: false,
+            },
           ],
         });
     });
 
-    render(
-      <BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />);
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-    fireEvent.change(fileInput, { target: { files: [new File(["d"], "s.csv", { type: "text/csv" })] } });
+    fireEvent.change(fileInput, {
+      target: { files: [new File(["d"], "s.csv", { type: "text/csv" })] },
+    });
 
     await waitFor(() => {
       expect(screen.getByText("Unmatched")).toBeInTheDocument();
@@ -468,19 +464,16 @@ describe("BankStatementDialog", () => {
   });
 
   it("verify the correct form content exists in upload step", () => {
-    render(
-      <BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText("Drop a bank statement file here")).toBeInTheDocument();
   });
 
   it("accepts CSV file content with proper encoding", async () => {
-    render(
-      <BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />);
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
 
-    const csvContent = "date,amount,iban,reference\n2025-01-01,1000.00,PL123,REF-001\n2025-01-02,2000.00,PL456,REF-002";
+    const csvContent =
+      "date,amount,iban,reference\n2025-01-01,1000.00,PL123,REF-001\n2025-01-02,2000.00,PL456,REF-002";
     const csvFile = new File([csvContent], "multi-row.csv", { type: "text/csv" });
     fireEvent.change(fileInput, { target: { files: [csvFile] } });
 
@@ -496,9 +489,7 @@ describe("BankStatementDialog", () => {
   });
 
   it("shows parsing progress indicator during parsing step", async () => {
-    render(
-      <BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />);
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
 
     const file = new File(["data"], "parsing.mt940", { type: "" });
@@ -515,9 +506,7 @@ describe("BankStatementDialog", () => {
     );
     expect(screen.getByText("Drop a bank statement file here")).toBeInTheDocument();
 
-    rerender(
-      <BankStatementDialog runId="run-1" open={false} onOpenChange={onOpenChange} />,
-    );
+    rerender(<BankStatementDialog runId="run-1" open={false} onOpenChange={onOpenChange} />);
     expect(screen.queryByText("Drop a bank statement file here")).not.toBeInTheDocument();
   });
 
@@ -549,9 +538,7 @@ describe("BankStatementDialog", () => {
       // The useMutation mock spreads opts, so the component's onSuccess is available
     });
 
-    render(
-      <BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />);
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
     const csvFile = new File(["data"], "statement.csv", { type: "text/csv" });
     fireEvent.change(fileInput, { target: { files: [csvFile] } });
@@ -562,18 +549,14 @@ describe("BankStatementDialog", () => {
   });
 
   it("handles drag and drop file", async () => {
-    render(
-      <BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />);
     // The dropzone area exists
     const dropzone = screen.getByText("Drop a bank statement file here").closest("div");
     expect(dropzone).toBeInTheDocument();
   });
 
   it("handles drag over event on dropzone", async () => {
-    render(
-      <BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />);
     const dropzone = screen.getByText("Drop a bank statement file here").closest("div")!;
     fireEvent.dragOver(dropzone);
     // Should prevent default
@@ -581,9 +564,7 @@ describe("BankStatementDialog", () => {
   });
 
   it("handles empty file event gracefully", () => {
-    render(
-      <BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />);
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
     // Fire with no files
     fireEvent.change(fileInput, { target: { files: null } });
@@ -592,9 +573,7 @@ describe("BankStatementDialog", () => {
   });
 
   it("transitions to parsing then calls mutate for valid csv", async () => {
-    render(
-      <BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />);
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
     const csvContent = "header\nrow1";
     const csvFile = new File([csvContent], "valid.csv", { type: "text/csv" });
@@ -640,9 +619,7 @@ describe("BankStatementDialog", () => {
       if (importOnSuccess) importOnSuccess(matchResults);
     });
 
-    render(
-      <BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />);
 
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
     const csvFile = new File(["data"], "results.csv", { type: "text/csv" });
@@ -659,17 +636,29 @@ describe("BankStatementDialog", () => {
       if (importOnSuccess)
         importOnSuccess({
           matches: [
-            { transactionIndex: 0, amountMinor: 100000, iban: "PL12345678901234567890123456", matched: true, itemId: "item-1", invoiceNumber: "FV/001" },
-            { transactionIndex: 1, amountMinor: 50000, iban: "PL98765432109876543210987654", matched: false },
+            {
+              transactionIndex: 0,
+              amountMinor: 100000,
+              iban: "PL12345678901234567890123456",
+              matched: true,
+              itemId: "item-1",
+              invoiceNumber: "FV/001",
+            },
+            {
+              transactionIndex: 1,
+              amountMinor: 50000,
+              iban: "PL98765432109876543210987654",
+              matched: false,
+            },
           ],
         });
     });
 
-    render(
-      <BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />);
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-    fireEvent.change(fileInput, { target: { files: [new File(["d"], "s.csv", { type: "text/csv" })] } });
+    fireEvent.change(fileInput, {
+      target: { files: [new File(["d"], "s.csv", { type: "text/csv" })] },
+    });
 
     await waitFor(() => {
       expect(screen.getByText("Matched")).toBeInTheDocument();
@@ -682,16 +671,23 @@ describe("BankStatementDialog", () => {
       if (importOnSuccess)
         importOnSuccess({
           matches: [
-            { transactionIndex: 0, amountMinor: 100000, iban: "PL12345678901234567890123456", matched: true, itemId: "item-1", invoiceNumber: "FV/2025/099" },
+            {
+              transactionIndex: 0,
+              amountMinor: 100000,
+              iban: "PL12345678901234567890123456",
+              matched: true,
+              itemId: "item-1",
+              invoiceNumber: "FV/2025/099",
+            },
           ],
         });
     });
 
-    render(
-      <BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />);
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-    fireEvent.change(fileInput, { target: { files: [new File(["d"], "s.csv", { type: "text/csv" })] } });
+    fireEvent.change(fileInput, {
+      target: { files: [new File(["d"], "s.csv", { type: "text/csv" })] },
+    });
 
     await waitFor(() => {
       expect(screen.getByText("FV/2025/099")).toBeInTheDocument();
@@ -703,7 +699,14 @@ describe("BankStatementDialog", () => {
       if (importOnSuccess)
         importOnSuccess({
           matches: [
-            { transactionIndex: 0, amountMinor: 100000, iban: "PL12345678901234567890123456", matched: true, itemId: "item-1", invoiceNumber: "FV/001" },
+            {
+              transactionIndex: 0,
+              amountMinor: 100000,
+              iban: "PL12345678901234567890123456",
+              matched: true,
+              itemId: "item-1",
+              invoiceNumber: "FV/001",
+            },
           ],
         });
     });
@@ -712,7 +715,9 @@ describe("BankStatementDialog", () => {
       <BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />,
     );
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-    fireEvent.change(fileInput, { target: { files: [new File(["d"], "s.csv", { type: "text/csv" })] } });
+    fireEvent.change(fileInput, {
+      target: { files: [new File(["d"], "s.csv", { type: "text/csv" })] },
+    });
 
     await waitFor(() => {
       expect(screen.getByText("Matched")).toBeInTheDocument();
@@ -728,16 +733,23 @@ describe("BankStatementDialog", () => {
       if (importOnSuccess)
         importOnSuccess({
           matches: [
-            { transactionIndex: 0, amountMinor: 100000, iban: "PL12345678901234567890123456", matched: true, itemId: "item-1", invoiceNumber: "FV/001" },
+            {
+              transactionIndex: 0,
+              amountMinor: 100000,
+              iban: "PL12345678901234567890123456",
+              matched: true,
+              itemId: "item-1",
+              invoiceNumber: "FV/001",
+            },
           ],
         });
     });
 
-    render(
-      <BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />);
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-    fireEvent.change(fileInput, { target: { files: [new File(["d"], "s.csv", { type: "text/csv" })] } });
+    fireEvent.change(fileInput, {
+      target: { files: [new File(["d"], "s.csv", { type: "text/csv" })] },
+    });
 
     await waitFor(() => {
       expect(screen.getByText("Cancel")).toBeInTheDocument();
@@ -750,7 +762,14 @@ describe("BankStatementDialog", () => {
       if (importOnSuccess)
         importOnSuccess({
           matches: [
-            { transactionIndex: 0, amountMinor: 100000, iban: "PL12345678901234567890123456", matched: true, itemId: "item-1", invoiceNumber: "FV/001" },
+            {
+              transactionIndex: 0,
+              amountMinor: 100000,
+              iban: "PL12345678901234567890123456",
+              matched: true,
+              itemId: "item-1",
+              invoiceNumber: "FV/001",
+            },
           ],
         });
     });
@@ -759,16 +778,16 @@ describe("BankStatementDialog", () => {
       <BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />,
     );
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-    fireEvent.change(fileInput, { target: { files: [new File(["d"], "s.csv", { type: "text/csv" })] } });
+    fireEvent.change(fileInput, {
+      target: { files: [new File(["d"], "s.csv", { type: "text/csv" })] },
+    });
 
     await waitFor(() => {
       expect(screen.getByText(/Confirm/)).toBeInTheDocument();
     });
 
     await user.click(screen.getByText(/Confirm/));
-    expect(confirmMutate).toHaveBeenCalledWith(
-      expect.objectContaining({ runId: "run-1" }),
-    );
+    expect(confirmMutate).toHaveBeenCalledWith(expect.objectContaining({ runId: "run-1" }));
   });
 
   it("transitions to error step on import mutation error", async () => {
@@ -776,11 +795,11 @@ describe("BankStatementDialog", () => {
       if (importOnError) importOnError(new Error("Server error"));
     });
 
-    render(
-      <BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />);
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-    fireEvent.change(fileInput, { target: { files: [new File(["d"], "s.csv", { type: "text/csv" })] } });
+    fireEvent.change(fileInput, {
+      target: { files: [new File(["d"], "s.csv", { type: "text/csv" })] },
+    });
 
     await waitFor(() => {
       expect(screen.getByText("Try again")).toBeInTheDocument();
@@ -792,16 +811,23 @@ describe("BankStatementDialog", () => {
       if (importOnSuccess)
         importOnSuccess({
           matches: [
-            { transactionIndex: 0, amountMinor: 123456, iban: "PL12345678901234567890123456", matched: true, itemId: "item-1", invoiceNumber: "FV/001" },
+            {
+              transactionIndex: 0,
+              amountMinor: 123456,
+              iban: "PL12345678901234567890123456",
+              matched: true,
+              itemId: "item-1",
+              invoiceNumber: "FV/001",
+            },
           ],
         });
     });
 
-    render(
-      <BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />);
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-    fireEvent.change(fileInput, { target: { files: [new File(["d"], "s.csv", { type: "text/csv" })] } });
+    fireEvent.change(fileInput, {
+      target: { files: [new File(["d"], "s.csv", { type: "text/csv" })] },
+    });
 
     await waitFor(() => {
       // 123456 minor = 1234.56
@@ -814,16 +840,21 @@ describe("BankStatementDialog", () => {
       if (importOnSuccess)
         importOnSuccess({
           matches: [
-            { transactionIndex: 0, amountMinor: 10000, iban: "PL12345678901234567890125678", matched: false },
+            {
+              transactionIndex: 0,
+              amountMinor: 10000,
+              iban: "PL12345678901234567890125678",
+              matched: false,
+            },
           ],
         });
     });
 
-    render(
-      <BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />);
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-    fireEvent.change(fileInput, { target: { files: [new File(["d"], "s.csv", { type: "text/csv" })] } });
+    fireEvent.change(fileInput, {
+      target: { files: [new File(["d"], "s.csv", { type: "text/csv" })] },
+    });
 
     await waitFor(() => {
       expect(screen.getByText("****5678")).toBeInTheDocument();
@@ -835,7 +866,12 @@ describe("BankStatementDialog", () => {
       if (importOnSuccess)
         importOnSuccess({
           matches: [
-            { transactionIndex: 0, amountMinor: 10000, iban: "PL12345678901234567890125678", matched: false },
+            {
+              transactionIndex: 0,
+              amountMinor: 10000,
+              iban: "PL12345678901234567890125678",
+              matched: false,
+            },
           ],
         });
     });
@@ -844,7 +880,9 @@ describe("BankStatementDialog", () => {
       <BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />,
     );
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-    fireEvent.change(fileInput, { target: { files: [new File(["d"], "s.csv", { type: "text/csv" })] } });
+    fireEvent.change(fileInput, {
+      target: { files: [new File(["d"], "s.csv", { type: "text/csv" })] },
+    });
 
     await waitFor(() => {
       expect(screen.getByText("Cancel")).toBeInTheDocument();

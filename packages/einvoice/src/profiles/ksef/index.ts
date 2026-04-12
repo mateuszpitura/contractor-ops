@@ -1,14 +1,12 @@
-import type { EInvoiceProfile } from "../../types/profile.js";
-import type { EInvoice } from "../../types/invoice.js";
-import type { ValidationResult } from "../../types/validation.js";
 import type { ComplianceStatus } from "../../types/compliance.js";
-import { parseFa3Xml } from "./parser.js";
-import { ksefToEInvoice } from "./mapper.js";
+import type { EInvoice } from "../../types/invoice.js";
+import type { EInvoiceProfile } from "../../types/profile.js";
+import type { ValidationResult } from "../../types/validation.js";
+import type { KsefConnectionData } from "./compliance.js";
+import { computeKsefComplianceStatus } from "./compliance.js";
 import { generateFa3Xml } from "./generator.js";
-import {
-  computeKsefComplianceStatus,
-  type KsefConnectionData,
-} from "./compliance.js";
+import { ksefToEInvoice } from "./mapper.js";
+import { parseFa3Xml } from "./parser.js";
 
 // ---------------------------------------------------------------------------
 // KSeF Country Profile
@@ -36,9 +34,7 @@ export class KsefProfile implements EInvoiceProfile {
     | undefined;
 
   constructor(options?: {
-    complianceFetcher?: (
-      organizationId: string,
-    ) => Promise<KsefConnectionData | null>;
+    complianceFetcher?: (organizationId: string) => Promise<KsefConnectionData | null>;
   }) {
     this.complianceFetcher = options?.complianceFetcher;
   }
@@ -47,10 +43,7 @@ export class KsefProfile implements EInvoiceProfile {
     return generateFa3Xml(invoice);
   }
 
-  async parse(
-    xml: string,
-    metadata?: Record<string, unknown>,
-  ): Promise<EInvoice> {
+  async parse(xml: string, metadata?: Record<string, unknown>): Promise<EInvoice> {
     const ksefRef = (metadata?.ksefReferenceNumber as string) ?? "";
     const upoNumber = metadata?.upoNumber as string | undefined;
     const parsed = parseFa3Xml(xml, ksefRef, upoNumber);
@@ -67,8 +60,7 @@ export class KsefProfile implements EInvoiceProfile {
         profileId: this.profileId,
       };
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : String(error);
+      const message = error instanceof Error ? error.message : String(error);
       return {
         valid: false,
         errors: [{ code: "PARSE_ERROR", message, severity: "error" }],
@@ -78,9 +70,7 @@ export class KsefProfile implements EInvoiceProfile {
     }
   }
 
-  async getComplianceStatus(
-    organizationId: string,
-  ): Promise<ComplianceStatus> {
+  async getComplianceStatus(organizationId: string): Promise<ComplianceStatus> {
     if (!this.complianceFetcher) {
       return computeKsefComplianceStatus(null);
     }

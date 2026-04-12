@@ -1,16 +1,10 @@
 "use client";
 
+import { format, formatDistanceToNow } from "date-fns";
 import { ExternalLink, ShieldCheck } from "lucide-react";
-import { formatDistanceToNow, format } from "date-fns";
-
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { CopyableField } from "@/components/shared/copyable-field";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { KsefSourceBadge } from "./ksef-badge";
 
 // ---------------------------------------------------------------------------
@@ -62,20 +56,14 @@ export function KsefMetadataSection({
           {/* KSeF Reference */}
           <div className="space-y-1">
             <p className="text-sm font-semibold">KSeF Reference</p>
-            <CopyableField
-              value={ksefReference}
-              ariaLabel="Copy KSeF reference"
-            />
+            <CopyableField value={ksefReference} ariaLabel="Copy KSeF reference" />
           </div>
 
           {/* UPO Receipt */}
           {upoReceipt && (
             <div className="space-y-1">
               <p className="text-sm font-semibold">UPO Receipt</p>
-              <CopyableField
-                value={upoReceipt}
-                ariaLabel="Copy UPO receipt"
-              />
+              <CopyableField value={upoReceipt} ariaLabel="Copy UPO receipt" />
             </div>
           )}
 

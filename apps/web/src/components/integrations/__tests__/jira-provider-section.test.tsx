@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -36,19 +36,13 @@ vi.mock("@/trpc/init", () => ({
 }));
 
 vi.mock("@/i18n/navigation", () => ({
-  Link: ({
-    children,
-    ...props
-  }: {
-    children: React.ReactNode;
-    href: string;
-  }) => <a {...props}>{children}</a>,
+  Link: ({ children, ...props }: { children: React.ReactNode; href: string }) => (
+    <a {...props}>{children}</a>
+  ),
 }));
 
 vi.mock("@/components/settings/provider-connection-card", () => ({
-  ProviderConnectionCard: () => (
-    <div data-testid="provider-card">ProviderConnectionCard</div>
-  ),
+  ProviderConnectionCard: () => <div data-testid="provider-card">ProviderConnectionCard</div>,
 }));
 
 vi.mock("../jira-logo", () => ({
@@ -63,11 +57,7 @@ vi.mock("../jira-status-mapping-dialog", () => ({
 // Helpers
 // ---------------------------------------------------------------------------
 
-function mockUseQuery(
-  queryKey: unknown[],
-  data: unknown,
-  isLoading = false,
-) {
+function mockUseQuery(queryKey: unknown[], data: unknown, isLoading = false) {
   return { data, isLoading, error: null, isError: false, isPending: isLoading };
 }
 
@@ -135,8 +125,6 @@ describe("JiraProviderSection", () => {
     setupProTier();
     render(<JiraProviderSection />);
 
-    expect(
-      screen.getByRole("button", { name: /configure status mapping/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /configure status mapping/i })).toBeInTheDocument();
   });
 });

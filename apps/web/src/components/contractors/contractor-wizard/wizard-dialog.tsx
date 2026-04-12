@@ -1,23 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useWizardSteps } from "@/hooks/use-wizard-steps";
-import { z } from "zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Check, Loader2 } from "lucide-react";
-import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,10 +18,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-
-import { StepCompany } from "./step-company";
-import { StepBilling } from "./step-billing";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useWizardSteps } from "@/hooks/use-wizard-steps";
+import { trpc } from "@/trpc/init";
 import { StepAssignment } from "./step-assignment";
+import { StepBilling } from "./step-billing";
+import { StepCompany } from "./step-company";
 
 // ---------------------------------------------------------------------------
 // Wizard form schema (mirrors contractorCreateSchema from validators package)
@@ -47,27 +40,60 @@ const wizardSchema = z.object({
     .string()
     .min(1, "NIP is required")
     .refine((v) => isValidNip(v), { message: "Invalid NIP number" }),
-  vatId: z.string().transform((v) => v === "" ? undefined : v).pipe(z.string().optional()),
-  registrationNumber: z.string().transform((v) => v === "" ? undefined : v).pipe(z.string().optional()),
+  vatId: z
+    .string()
+    .transform((v) => (v === "" ? undefined : v))
+    .pipe(z.string().optional()),
+  registrationNumber: z
+    .string()
+    .transform((v) => (v === "" ? undefined : v))
+    .pipe(z.string().optional()),
   email: z.string().email("Invalid email address"),
-  phone: z.string().transform((v) => v === "" ? undefined : v).pipe(z.string().optional()),
+  phone: z
+    .string()
+    .transform((v) => (v === "" ? undefined : v))
+    .pipe(z.string().optional()),
   countryCode: z.string().length(2),
   currency: z.string().length(3),
-  addressLine1: z.string().transform((v) => v === "" ? undefined : v).pipe(z.string().optional()),
-  addressLine2: z.string().transform((v) => v === "" ? undefined : v).pipe(z.string().optional()),
-  city: z.string().transform((v) => v === "" ? undefined : v).pipe(z.string().optional()),
-  postalCode: z.string().transform((v) => v === "" ? undefined : v).pipe(z.string().optional()),
+  addressLine1: z
+    .string()
+    .transform((v) => (v === "" ? undefined : v))
+    .pipe(z.string().optional()),
+  addressLine2: z
+    .string()
+    .transform((v) => (v === "" ? undefined : v))
+    .pipe(z.string().optional()),
+  city: z
+    .string()
+    .transform((v) => (v === "" ? undefined : v))
+    .pipe(z.string().optional()),
+  postalCode: z
+    .string()
+    .transform((v) => (v === "" ? undefined : v))
+    .pipe(z.string().optional()),
   billingModel: z.string().min(1, "Billing model is required"),
   rateValueMinor: z.number().int().positive("Rate must be positive"),
-  bankAccount: z.string().transform((v) => v === "" ? undefined : v).pipe(z.string().optional()),
+  bankAccount: z
+    .string()
+    .transform((v) => (v === "" ? undefined : v))
+    .pipe(z.string().optional()),
   paymentTermsDays: z.preprocess(
     (v) => (v === "" || v === undefined || (typeof v === "number" && isNaN(v)) ? undefined : v),
     z.number().int().positive().optional(),
   ),
   ownerUserId: z.string().min(1, "Owner is required"),
-  primaryTeamId: z.string().transform((v) => v === "" ? undefined : v).pipe(z.string().min(1).optional()),
-  primaryProjectId: z.string().transform((v) => v === "" ? undefined : v).pipe(z.string().min(1).optional()),
-  defaultCostCenterId: z.string().transform((v) => v === "" ? undefined : v).pipe(z.string().min(1).optional()),
+  primaryTeamId: z
+    .string()
+    .transform((v) => (v === "" ? undefined : v))
+    .pipe(z.string().min(1).optional()),
+  primaryProjectId: z
+    .string()
+    .transform((v) => (v === "" ? undefined : v))
+    .pipe(z.string().min(1).optional()),
+  defaultCostCenterId: z
+    .string()
+    .transform((v) => (v === "" ? undefined : v))
+    .pipe(z.string().min(1).optional()),
 });
 
 export type WizardFormValues = z.infer<typeof wizardSchema>;
@@ -78,7 +104,10 @@ const stepSchemas = [
   z.object({
     legalName: z.string().min(1),
     type: z.enum(["SOLE_TRADER", "COMPANY", "INDIVIDUAL_FREELANCER", "OTHER"]),
-    taxId: z.string().min(1).refine((v) => isValidNip(v), { message: "Invalid NIP number" }),
+    taxId: z
+      .string()
+      .min(1)
+      .refine((v) => isValidNip(v), { message: "Invalid NIP number" }),
     email: z.string().email(),
   }),
   // Step 2: Billing
@@ -97,13 +126,7 @@ const stepSchemas = [
 // Step indicator
 // ---------------------------------------------------------------------------
 
-function StepIndicator({
-  steps,
-  currentStep,
-}: {
-  steps: string[];
-  currentStep: number;
-}) {
+function StepIndicator({ steps, currentStep }: { steps: string[]; currentStep: number }) {
   return (
     <div className="flex items-center justify-center gap-0 px-4 py-3">
       {steps.map((label, index) => {
@@ -114,9 +137,7 @@ function StepIndicator({
           <div key={label} className="flex items-center">
             {index > 0 && (
               <div
-                className={`mx-2 h-px w-8 ${
-                  index <= currentStep ? "bg-primary" : "bg-border"
-                }`}
+                className={`mx-2 h-px w-8 ${index <= currentStep ? "bg-primary" : "bg-border"}`}
               />
             )}
             <div className="flex items-center gap-2">
@@ -129,17 +150,11 @@ function StepIndicator({
                       : "border border-border text-muted-foreground"
                 }`}
               >
-                {isCompleted ? (
-                  <Check className="h-3.5 w-3.5" />
-                ) : (
-                  index + 1
-                )}
+                {isCompleted ? <Check className="h-3.5 w-3.5" /> : index + 1}
               </div>
               <span
                 className={`text-[13px] ${
-                  isCurrent
-                    ? "font-medium text-foreground"
-                    : "text-muted-foreground"
+                  isCurrent ? "font-medium text-foreground" : "text-muted-foreground"
                 }`}
               >
                 {label}
@@ -245,9 +260,7 @@ export function WizardDialog({ open, onOpenChange }: WizardDialogProps) {
     if (!schema) return;
 
     // Validate only the current step's fields
-    const stepFields = Object.keys(schema.shape) as Array<
-      keyof WizardFormValues
-    >;
+    const stepFields = Object.keys(schema.shape) as Array<keyof WizardFormValues>;
     const isValid = await form.trigger(stepFields);
 
     if (!isValid) return;
@@ -275,10 +288,7 @@ export function WizardDialog({ open, onOpenChange }: WizardDialogProps) {
   return (
     <>
       <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
-        <DialogContent
-          className="sm:max-w-[640px]"
-          showCloseButton={false}
-        >
+        <DialogContent className="sm:max-w-[640px]" showCloseButton={false}>
           <DialogHeader>
             <DialogTitle>{t("title")}</DialogTitle>
           </DialogHeader>
@@ -304,28 +314,16 @@ export function WizardDialog({ open, onOpenChange }: WizardDialogProps) {
           <div className="flex items-center justify-between border-t pt-4 mt-2">
             <div>
               {currentStep > 0 ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleBack}
-                >
+                <Button type="button" variant="outline" onClick={handleBack}>
                   {t("back")}
                 </Button>
               ) : (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => handleClose()}
-                >
+                <Button type="button" variant="ghost" onClick={() => handleClose()}>
                   {isDirty ? t("discardChanges") : t("close")}
                 </Button>
               )}
             </div>
-            <Button
-              type="button"
-              onClick={handleNext}
-              disabled={createMutation.isPending}
-            >
+            <Button type="button" onClick={handleNext} disabled={createMutation.isPending}>
               {createMutation.isPending ? (
                 <>
                   <Loader2 className="me-2 h-4 w-4 animate-spin" />
@@ -340,25 +338,15 @@ export function WizardDialog({ open, onOpenChange }: WizardDialogProps) {
       </Dialog>
 
       {/* Discard confirmation */}
-      <AlertDialog
-        open={showDiscardDialog}
-        onOpenChange={setShowDiscardDialog}
-      >
+      <AlertDialog open={showDiscardDialog} onOpenChange={setShowDiscardDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              {t("discardConfirm.title")}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("discardConfirm.body")}
-            </AlertDialogDescription>
+            <AlertDialogTitle>{t("discardConfirm.title")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("discardConfirm.body")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t("discardConfirm.keep")}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDiscard}
-              variant="destructive"
-            >
+            <AlertDialogAction onClick={handleDiscard} variant="destructive">
               {t("discardConfirm.discard")}
             </AlertDialogAction>
           </AlertDialogFooter>

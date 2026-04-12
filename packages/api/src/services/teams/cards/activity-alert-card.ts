@@ -17,9 +17,7 @@ export interface ActivityAlertCardParams {
  * - FactSet from the provided details array
  * - "View in Contractor Ops" link
  */
-export function buildActivityAlertCard(
-  params: ActivityAlertCardParams,
-): Record<string, unknown> {
+export function buildActivityAlertCard(params: ActivityAlertCardParams): Record<string, unknown> {
   return {
     type: "AdaptiveCard",
     $schema: "http://adaptivecards.io/schemas/adaptive-card.json",

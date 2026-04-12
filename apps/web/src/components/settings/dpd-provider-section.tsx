@@ -1,24 +1,19 @@
 "use client";
 
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
 import { Truck } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
-import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle as DialogTitleComponent,
 } from "@/components/ui/dialog";
+import { trpc } from "@/trpc/init";
 import { CarrierCredentialForm } from "./carrier-credential-form";
 
 // ---------------------------------------------------------------------------
@@ -32,9 +27,7 @@ export function DpdProviderSection() {
 
   const configsQuery = useQuery(trpc.equipment.getCourierConfigs.queryOptions());
   const configs = (configsQuery.data ?? []) as unknown as Array<{ carrier: string }>;
-  const isConfigured = configs.some(
-    (c) => c.carrier.toLowerCase() === "dpd",
-  );
+  const isConfigured = configs.some((c) => c.carrier.toLowerCase() === "dpd");
 
   return (
     <div className="space-y-4">
@@ -43,9 +36,7 @@ export function DpdProviderSection() {
           <Truck className="size-8 text-red-600" />
           <div className="flex-1">
             <CardTitle className="text-base">DPD</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              {t("dpdDescription")}
-            </p>
+            <p className="text-sm text-muted-foreground">{t("dpdDescription")}</p>
           </div>
           <Badge variant={isConfigured ? "default" : "secondary"}>
             {isConfigured ? tCarriers("connected") : tCarriers("notConfigured")}
@@ -60,9 +51,7 @@ export function DpdProviderSection() {
       <Dialog open={configOpen} onOpenChange={setConfigOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitleComponent>
-              {t("configureDpd")}
-            </DialogTitleComponent>
+            <DialogTitleComponent>{t("configureDpd")}</DialogTitleComponent>
           </DialogHeader>
           <CarrierCredentialForm carrier="dpd" carrierLabel="DPD" />
         </DialogContent>

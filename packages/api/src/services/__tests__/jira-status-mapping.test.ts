@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
-  saveStatusMapping,
   getStatusMapping,
   lookupJiraTransitionId,
   lookupWorkflowStatus,
+  saveStatusMapping,
 } from "../jira-status-mapping.js";
 
 const mockPrisma = {
@@ -45,12 +45,7 @@ describe("jira-status-mapping", () => {
       });
       mockPrisma.integrationConnection.update.mockResolvedValue({});
 
-      await saveStatusMapping(
-        mockPrisma,
-        CONNECTION_ID,
-        PROJECT_ID,
-        sampleMappings,
-      );
+      await saveStatusMapping(mockPrisma, CONNECTION_ID, PROJECT_ID, sampleMappings);
 
       expect(mockPrisma.integrationConnection.update).toHaveBeenCalledWith({
         where: { id: CONNECTION_ID },
@@ -79,17 +74,10 @@ describe("jira-status-mapping", () => {
       });
       mockPrisma.integrationConnection.update.mockResolvedValue({});
 
-      await saveStatusMapping(
-        mockPrisma,
-        CONNECTION_ID,
-        PROJECT_ID,
-        sampleMappings,
-      );
+      await saveStatusMapping(mockPrisma, CONNECTION_ID, PROJECT_ID, sampleMappings);
 
       const updateCall = mockPrisma.integrationConnection.update.mock.calls[0][0];
-      expect(updateCall.data.configJson.statusMappings[PROJECT_ID]).toEqual(
-        sampleMappings,
-      );
+      expect(updateCall.data.configJson.statusMappings[PROJECT_ID]).toEqual(sampleMappings);
     });
 
     it("preserves other configJson fields when updating", async () => {
@@ -98,19 +86,12 @@ describe("jira-status-mapping", () => {
       });
       mockPrisma.integrationConnection.update.mockResolvedValue({});
 
-      await saveStatusMapping(
-        mockPrisma,
-        CONNECTION_ID,
-        PROJECT_ID,
-        sampleMappings,
-      );
+      await saveStatusMapping(mockPrisma, CONNECTION_ID, PROJECT_ID, sampleMappings);
 
       const updateCall = mockPrisma.integrationConnection.update.mock.calls[0][0];
       expect(updateCall.data.configJson.cloudId).toBe("cloud-123");
       expect(updateCall.data.configJson.otherField).toBe("keep-me");
-      expect(updateCall.data.configJson.statusMappings[PROJECT_ID]).toEqual(
-        sampleMappings,
-      );
+      expect(updateCall.data.configJson.statusMappings[PROJECT_ID]).toEqual(sampleMappings);
     });
   });
 
@@ -120,11 +101,7 @@ describe("jira-status-mapping", () => {
         configJson: { statusMappings: { [PROJECT_ID]: sampleMappings } },
       });
 
-      const result = await getStatusMapping(
-        mockPrisma,
-        CONNECTION_ID,
-        PROJECT_ID,
-      );
+      const result = await getStatusMapping(mockPrisma, CONNECTION_ID, PROJECT_ID);
 
       expect(result).toEqual(sampleMappings);
     });
@@ -134,11 +111,7 @@ describe("jira-status-mapping", () => {
         configJson: { statusMappings: {} },
       });
 
-      const result = await getStatusMapping(
-        mockPrisma,
-        CONNECTION_ID,
-        "nonexistent-project",
-      );
+      const result = await getStatusMapping(mockPrisma, CONNECTION_ID, "nonexistent-project");
 
       expect(result).toBeNull();
     });
@@ -169,12 +142,7 @@ describe("jira-status-mapping", () => {
         configJson: { statusMappings: { [PROJECT_ID]: sampleMappings } },
       });
 
-      const result = await lookupJiraTransitionId(
-        mockPrisma,
-        CONNECTION_ID,
-        PROJECT_ID,
-        "BLOCKED",
-      );
+      const result = await lookupJiraTransitionId(mockPrisma, CONNECTION_ID, PROJECT_ID, "BLOCKED");
 
       expect(result).toBeNull();
     });

@@ -1,8 +1,8 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { Plus, X } from "lucide-react";
-
+import { useTranslations } from "next-intl";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -12,7 +12,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -110,9 +109,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
 
   const updateRule = (index: number, partial: Partial<ConditionRule>) => {
     if (!value) return;
-    const newRules = value.rules.map((rule, i) =>
-      i === index ? { ...rule, ...partial } : rule,
-    );
+    const newRules = value.rules.map((rule, i) => (i === index ? { ...rule, ...partial } : rule));
     onChange({ ...value, rules: newRules });
   };
 
@@ -127,9 +124,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
   if (!value || value.rules.length === 0) {
     return (
       <div className="space-y-2">
-        <p className="text-sm text-muted-foreground">
-          {t("noConditions")}
-        </p>
+        <p className="text-sm text-muted-foreground">{t("noConditions")}</p>
         <Button type="button" variant="outline" size="sm" onClick={addRule}>
           <Plus className="me-1.5 size-3.5" />
           {t("addCondition")}
@@ -153,9 +148,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
                 onClick={toggleCombinator}
               >
                 <Badge variant="outline" className="cursor-pointer text-xs">
-                  {value.combinator === "AND"
-                    ? t("conditionAnd")
-                    : t("conditionOr")}
+                  {value.combinator === "AND" ? t("conditionAnd") : t("conditionOr")}
                 </Badge>
               </Button>
             </div>
@@ -166,9 +159,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
             {/* Field select */}
             <Select
               value={rule.field}
-              onValueChange={(val) =>
-                updateRule(index, { field: val as string, value: "" })
-              }
+              onValueChange={(val) => updateRule(index, { field: val as string, value: "" })}
             >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder={t("conditionFieldPlaceholder")} />
@@ -207,9 +198,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
             {rule.field && ENUM_VALUE_FIELDS[rule.field] ? (
               <Select
                 value={rule.value}
-                onValueChange={(val) =>
-                  updateRule(index, { value: val as string })
-                }
+                onValueChange={(val) => updateRule(index, { value: val as string })}
               >
                 <SelectTrigger className="w-[160px]">
                   <SelectValue placeholder={t("conditionValuePlaceholder")} />
@@ -227,9 +216,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
                 className="w-[160px]"
                 placeholder={t("conditionValuePlaceholder")}
                 value={rule.value}
-                onChange={(e) =>
-                  updateRule(index, { value: e.target.value })
-                }
+                onChange={(e) => updateRule(index, { value: e.target.value })}
               />
             )}
 

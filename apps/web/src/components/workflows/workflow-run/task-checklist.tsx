@@ -72,16 +72,12 @@ export function TaskChecklist({
   const t = useTranslations("Workflows");
 
   // Build task title map for dependency tooltips if not provided
-  const titleMap =
-    taskTitleMap ??
-    new Map(tasks.map((task) => [task.id, task.title]));
+  const titleMap = taskTitleMap ?? new Map(tasks.map((task) => [task.id, task.title]));
 
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <h2 className="text-[20px] font-semibold leading-[1.2]">
-          {t("tasksHeading")}
-        </h2>
+        <h2 className="text-[20px] font-semibold leading-[1.2]">{t("tasksHeading")}</h2>
         <TaskChecklistSkeleton />
       </div>
     );
@@ -89,28 +85,22 @@ export function TaskChecklist({
 
   return (
     <div className="space-y-4">
-      <h2 className="text-[20px] font-semibold leading-[1.2]">
-        {t("tasksHeading")}
-      </h2>
+      <h2 className="text-[20px] font-semibold leading-[1.2]">{t("tasksHeading")}</h2>
       <div className="space-y-3">
         {tasks.map((task) => {
           const isConditionSkipped =
             task.status === "SKIPPED" &&
-            (task.resultJson as Record<string, unknown>)?.skipReason ===
-              "condition_not_met";
+            (task.resultJson as Record<string, unknown>)?.skipReason === "condition_not_met";
 
           return (
-            <div
-              key={task.id}
-              className={isConditionSkipped ? "opacity-50" : undefined}
-            >
+            <div key={task.id} className={isConditionSkipped ? "opacity-50" : undefined}>
               <TaskCardRun
                 task={task}
                 runId={runId}
                 currentUserId={currentUserId}
                 dependencyTitle={
                   task.dependsOnTaskRunId
-                    ? titleMap.get(task.dependsOnTaskRunId) ?? undefined
+                    ? (titleMap.get(task.dependsOnTaskRunId) ?? undefined)
                     : undefined
                 }
               />

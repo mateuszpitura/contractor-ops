@@ -1,48 +1,39 @@
 "use client";
 
-import {
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
-  useMemo,
-  Suspense,
-  type ReactNode,
-  type MouseEvent as RME,
-} from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-import { parseAsString, parseAsInteger, useQueryState } from "nuqs";
 import {
-  Search,
-  Users,
-  ChevronRight,
+  AlertTriangle as AlertTriangleIcon,
   ArrowUpRight,
-  Plus,
-  Upload,
+  Briefcase,
+  Building2,
+  CheckCircle,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
   Filter,
+  Hash,
   LayoutGrid,
   LayoutList,
-  CheckCircle,
-  AlertTriangle as AlertTriangleIcon,
-  XCircle,
-  Building2,
-  User,
-  Briefcase,
-  Hash,
   Mail,
-  Wallet,
+  Plus,
+  Search,
   Shield,
-  Clock,
-  ChevronLeft,
+  Upload,
+  User,
+  Users,
+  Wallet,
+  XCircle,
 } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
+import { useTranslations } from "next-intl";
+import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
+import type { ReactNode, MouseEvent as RME } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { WizardDialog } from "@/components/contractors/contractor-wizard/wizard-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Link } from "@/i18n/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
-import { WizardDialog } from "@/components/contractors/contractor-wizard/wizard-dialog";
+import { Link } from "@/i18n/navigation";
+import { trpc } from "@/trpc/init";
 
 // =============================================================================
 // DESIGN UTILITIES
@@ -77,7 +68,8 @@ function AtelierBg() {
       <div
         className="absolute -start-[10%] -top-[10%] h-[700px] w-[700px] rounded-full"
         style={{
-          background: "radial-gradient(circle, color-mix(in oklch, var(--color-primary) 18%, transparent) 0%, transparent 65%)",
+          background:
+            "radial-gradient(circle, color-mix(in oklch, var(--color-primary) 18%, transparent) 0%, transparent 65%)",
           animation: "drift-1 28s ease-in-out infinite",
           filter: "blur(80px)",
         }}
@@ -85,7 +77,8 @@ function AtelierBg() {
       <div
         className="absolute -end-[5%] top-[20%] h-[500px] w-[500px] rounded-full"
         style={{
-          background: "radial-gradient(circle, color-mix(in oklch, oklch(0.78 0.14 55) 12%, transparent) 0%, transparent 65%)",
+          background:
+            "radial-gradient(circle, color-mix(in oklch, oklch(0.78 0.14 55) 12%, transparent) 0%, transparent 65%)",
           animation: "drift-2 35s ease-in-out infinite",
           filter: "blur(100px)",
         }}
@@ -100,7 +93,8 @@ function AtelierBg() {
       <div
         className="absolute inset-0"
         style={{
-          backgroundImage: "radial-gradient(circle, var(--color-muted-foreground) 0.5px, transparent 0.5px)",
+          backgroundImage:
+            "radial-gradient(circle, var(--color-muted-foreground) 0.5px, transparent 0.5px)",
           backgroundSize: "32px 32px",
           opacity: 0.04,
         }}
@@ -156,7 +150,13 @@ function TiltCard({
     </div>
   );
 
-  return href ? <Link href={href} className="block">{inner}</Link> : inner;
+  return href ? (
+    <Link href={href} className="block">
+      {inner}
+    </Link>
+  ) : (
+    inner
+  );
 }
 
 // =============================================================================
@@ -166,7 +166,9 @@ function TiltCard({
 function SectionLabel({ children }: { children: ReactNode }) {
   return (
     <div className="flex items-center gap-2.5 ps-1">
-      <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground/60">{children}</span>
+      <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground/60">
+        {children}
+      </span>
       <div className="h-px flex-1 bg-gradient-to-r from-border/50 to-transparent" />
     </div>
   );
@@ -187,7 +189,9 @@ const LIFECYCLE_STYLES: Record<string, { bg: string; text: string }> = {
 function LifecycleBadge({ stage }: { stage: string }) {
   const s = LIFECYCLE_STYLES[stage] ?? LIFECYCLE_STYLES.DRAFT;
   return (
-    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.1em] ${s.bg} ${s.text}`}>
+    <span
+      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.1em] ${s.bg} ${s.text}`}
+    >
       {stage.replace("_", " ")}
     </span>
   );
@@ -206,7 +210,10 @@ function ComplianceDot({ health }: { health: string }) {
   const c = cfg[health] ?? cfg.green;
   const Icon = c.icon;
   return (
-    <span className={`inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider ${c.color}`} title={c.label}>
+    <span
+      className={`inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider ${c.color}`}
+      title={c.label}
+    >
       <Icon className="h-3 w-3" />
       {c.label}
     </span>
@@ -241,13 +248,7 @@ function fmtRate(minor: number, currency = "PLN") {
 // STATS STRIP — quick overview counters
 // =============================================================================
 
-function StatsStrip({
-  total,
-  byStage,
-}: {
-  total: number;
-  byStage: Record<string, number>;
-}) {
+function StatsStrip({ total, byStage }: { total: number; byStage: Record<string, number> }) {
   const stats = [
     { label: "Total", value: total, color: "var(--color-foreground)" },
     { label: "Active", value: byStage.ACTIVE ?? 0, color: "var(--color-success)" },
@@ -260,7 +261,10 @@ function StatsStrip({
     <div className="flex flex-wrap items-center gap-5">
       {stats.map((s) => (
         <div key={s.label} className="flex items-baseline gap-1.5">
-          <span className="font-display text-[22px] font-black leading-none tracking-tight" style={{ color: s.color }}>
+          <span
+            className="font-display text-[22px] font-black leading-none tracking-tight"
+            style={{ color: s.color }}
+          >
             {s.value}
           </span>
           <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-muted-foreground/50">
@@ -363,7 +367,9 @@ function ContractorCard({ c, index }: { c: ContractorCardData; index: number }) 
                 {fmtRate(rate, c.currency)}
               </span>
               {billingModel && (
-                <span className="text-[9px] text-muted-foreground/40">/{billingModel.toLowerCase().slice(0, 3)}</span>
+                <span className="text-[9px] text-muted-foreground/40">
+                  /{billingModel.toLowerCase().slice(0, 3)}
+                </span>
               )}
             </div>
           )}
@@ -388,7 +394,9 @@ function ContractorCard({ c, index }: { c: ContractorCardData; index: number }) 
           {c.primaryTeam?.name && (
             <div className="flex items-center gap-1.5">
               <Shield className="h-3 w-3 text-muted-foreground/40" />
-              <span className="truncate text-[11px] text-muted-foreground/60">{c.primaryTeam.name}</span>
+              <span className="truncate text-[11px] text-muted-foreground/60">
+                {c.primaryTeam.name}
+              </span>
             </div>
           )}
         </div>
@@ -439,7 +447,9 @@ function ContractorsV2Content() {
       search: debouncedSearch.length >= 2 ? debouncedSearch : undefined,
       sortBy: "createdAt",
       sortOrder: "desc",
-      filters: stage ? { lifecycleStage: [stage as "DRAFT" | "ONBOARDING" | "ACTIVE" | "OFFBOARDING" | "ENDED"] } : undefined,
+      filters: stage
+        ? { lifecycleStage: [stage as "DRAFT" | "ONBOARDING" | "ACTIVE" | "OFFBOARDING" | "ENDED"] }
+        : undefined,
     }),
   );
 
@@ -448,9 +458,7 @@ function ContractorsV2Content() {
   const totalPages = Math.ceil(total / pageSize) || 1;
 
   // ── Compute stage counts from full unfiltered query (separate lightweight call) ──
-  const { data: allData } = useQuery(
-    trpc.contractor.list.queryOptions({ page: 1, pageSize: 1 }),
-  );
+  const { data: allData } = useQuery(trpc.contractor.list.queryOptions({ page: 1, pageSize: 1 }));
   const allTotal = allData?.total ?? 0;
 
   // Approximate stage counts from current view (not perfect but avoids extra queries)
@@ -467,7 +475,9 @@ function ContractorsV2Content() {
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/8">
           <Users className="h-7 w-7 text-primary" />
         </div>
-        <h2 className="mt-5 font-display text-[24px] font-bold tracking-tight">No contractors yet</h2>
+        <h2 className="mt-5 font-display text-[24px] font-bold tracking-tight">
+          No contractors yet
+        </h2>
         <p className="mt-2 max-w-sm text-sm text-muted-foreground">
           Add your first contractor to start managing contracts, invoices, and payments.
         </p>
@@ -515,14 +525,20 @@ function ContractorsV2Content() {
       {/* ================================================================ */}
       {/* FILTERS + SEARCH BAR                                             */}
       {/* ================================================================ */}
-      <div className="atelier-enter flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between" style={{ animationDelay: "100ms" }}>
+      <div
+        className="atelier-enter flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+        style={{ animationDelay: "100ms" }}
+      >
         {/* Stage filter pills */}
         <div className="flex flex-wrap gap-1.5">
           {STAGE_FILTERS.map((f) => (
             <button
               key={f.value}
               type="button"
-              onClick={() => { setStage(f.value); setPage(1); }}
+              onClick={() => {
+                setStage(f.value);
+                setPage(1);
+              }}
               className={`rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.1em] transition-all ${
                 stage === f.value
                   ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
@@ -540,7 +556,10 @@ function ContractorsV2Content() {
           <input
             type="text"
             value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
             placeholder="Search contractors..."
             className="h-9 w-full rounded-xl border border-border/40 bg-card/50 ps-9 pe-4 text-[12px] font-medium text-foreground placeholder:text-muted-foreground/40 backdrop-blur-sm transition-all focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/10 sm:w-[260px]"
           />
@@ -559,10 +578,16 @@ function ContractorsV2Content() {
       ) : contractors.length === 0 ? (
         <div className="atelier-enter atelier-glass rounded-2xl py-16 text-center">
           <Filter className="mx-auto h-8 w-8 text-muted-foreground/30" />
-          <p className="mt-3 text-sm font-medium text-muted-foreground">No contractors match your filters</p>
+          <p className="mt-3 text-sm font-medium text-muted-foreground">
+            No contractors match your filters
+          </p>
           <button
             type="button"
-            onClick={() => { setSearch(""); setStage(""); setPage(1); }}
+            onClick={() => {
+              setSearch("");
+              setStage("");
+              setPage(1);
+            }}
             className="mt-2 text-xs font-semibold text-primary hover:underline"
           >
             Clear all filters
@@ -586,7 +611,10 @@ function ContractorsV2Content() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="atelier-enter flex items-center justify-center gap-4 pt-2" style={{ animationDelay: "200ms" }}>
+            <div
+              className="atelier-enter flex items-center justify-center gap-4 pt-2"
+              style={{ animationDelay: "200ms" }}
+            >
               <button
                 type="button"
                 disabled={page <= 1}

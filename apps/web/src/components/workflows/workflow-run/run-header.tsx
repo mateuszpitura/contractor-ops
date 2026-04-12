@@ -1,31 +1,30 @@
 "use client";
 
-import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
 import { MoreHorizontal } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useState } from "react";
 import { toast } from "sonner";
-
-import { trpc } from "@/trpc/init";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
-  AlertDialogTrigger,
-  AlertDialogContent,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogCancel,
   AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Progress } from "@/components/ui/progress";
 import { Link } from "@/i18n/navigation";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Status badge colors (shared with side panel)
@@ -79,17 +78,14 @@ function calculateRunProgress(tasks: RunTask[]) {
   const activeTasks = tasks.filter((t) => {
     if (
       t.status === "SKIPPED" &&
-      (t.resultJson as Record<string, unknown>)?.skipReason ===
-        "condition_not_met"
+      (t.resultJson as Record<string, unknown>)?.skipReason === "condition_not_met"
     ) {
       return false;
     }
     return true;
   });
 
-  const done = activeTasks.filter(
-    (t) => t.status === "DONE" || t.status === "SKIPPED",
-  ).length;
+  const done = activeTasks.filter((t) => t.status === "DONE" || t.status === "SKIPPED").length;
   const total = activeTasks.length;
 
   return {
@@ -145,8 +141,7 @@ export function RunHeader({ run }: RunHeaderProps) {
     }),
   );
 
-  const canCancel =
-    run.status !== "COMPLETED" && run.status !== "CANCELLED";
+  const canCancel = run.status !== "COMPLETED" && run.status !== "CANCELLED";
 
   return (
     <div className="space-y-4">
@@ -158,10 +153,7 @@ export function RunHeader({ run }: RunHeaderProps) {
             <h1 className="text-[20px] font-semibold leading-[1.2]">
               {run.workflowTemplate?.name ?? t("workflowLabel")}
             </h1>
-            <Badge
-              variant="secondary"
-              className={statusBadgeColors[run.status] ?? ""}
-            >
+            <Badge variant="secondary" className={statusBadgeColors[run.status] ?? ""}>
               {t(`runStatus.${run.status}` as Parameters<typeof t>[0])}
             </Badge>
           </div>
@@ -243,9 +235,7 @@ export function RunHeader({ run }: RunHeaderProps) {
 
             <AlertDialogContent>
               <AlertDialogTitle>{t("cancelWorkflowTitle")}</AlertDialogTitle>
-              <AlertDialogDescription>
-                {t("cancelWorkflowBody")}
-              </AlertDialogDescription>
+              <AlertDialogDescription>{t("cancelWorkflowBody")}</AlertDialogDescription>
               <div className="flex justify-end gap-2 pt-2">
                 <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
                 <AlertDialogAction

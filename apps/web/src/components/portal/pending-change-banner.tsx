@@ -1,12 +1,8 @@
 "use client";
 
+import { ChevronDown, Clock } from "lucide-react";
 import { useState } from "react";
-import { Clock, ChevronDown } from "lucide-react";
-import {
-  Collapsible,
-  CollapsibleTrigger,
-  CollapsibleContent,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -48,9 +44,7 @@ function formatDate(date: Date | string): string {
  * Displays at the top of the Financial Details section when a change
  * request is pending approval (D-04, UI-SPEC).
  */
-export function PendingChangeBanner({
-  pendingChangeRequest,
-}: PendingChangeBannerProps) {
+export function PendingChangeBanner({ pendingChangeRequest }: PendingChangeBannerProps) {
   const [detailsOpen, setDetailsOpen] = useState(false);
 
   const changes = pendingChangeRequest.requestedChanges;
@@ -67,8 +61,8 @@ export function PendingChangeBanner({
             Changes Pending Approval
           </p>
           <p className="text-sm text-amber-700/80 dark:text-amber-400/80">
-            You submitted changes on {formatDate(pendingChangeRequest.createdAt)}
-            . Your current details remain active until approved.
+            You submitted changes on {formatDate(pendingChangeRequest.createdAt)}. Your current
+            details remain active until approved.
           </p>
 
           {changeEntries.length > 0 && (

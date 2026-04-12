@@ -40,9 +40,7 @@ export const INPOST_STATUS_MAP: Record<string, string> = {
 export function mapInPostStatus(rawStatus: string): string | null {
   const mapped = INPOST_STATUS_MAP[rawStatus];
   if (!mapped) {
-    console.warn(
-      `[inpost-status-mapper] Unknown ShipX status: "${rawStatus}" — skipping`,
-    );
+    console.warn(`[inpost-status-mapper] Unknown ShipX status: "${rawStatus}" — skipping`);
     return null;
   }
   return mapped;
@@ -52,8 +50,4 @@ export function mapInPostStatus(rawStatus: string): string | null {
  * Statuses that should trigger user notifications (per D-06).
  * Intermediate statuses update silently; only terminal/critical events notify.
  */
-export const NOTIFICATION_STATUSES = [
-  "DELIVERED",
-  "FAILED",
-  "RETURNED",
-] as const;
+export const NOTIFICATION_STATUSES = ["DELIVERED", "FAILED", "RETURNED"] as const;

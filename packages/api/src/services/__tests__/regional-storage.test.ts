@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -27,12 +27,12 @@ vi.mock("@aws-sdk/s3-request-presigner", () => ({
   getSignedUrl: vi.fn(async () => "https://r2.example.com/signed-url"),
 }));
 
+import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { tenantStore } from "@contractor-ops/db";
-import { PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import {
-  getRegionalBucket,
-  createRegionalPresignedUploadUrl,
   createRegionalPresignedDownloadUrl,
+  createRegionalPresignedUploadUrl,
+  getRegionalBucket,
 } from "../regional-storage.js";
 
 // ---------------------------------------------------------------------------
@@ -63,9 +63,7 @@ describe("getRegionalBucket", () => {
   });
 
   it("throws for unsupported region", () => {
-    expect(() => getRegionalBucket("INVALID")).toThrow(
-      "Unsupported storage region: INVALID",
-    );
+    expect(() => getRegionalBucket("INVALID")).toThrow("Unsupported storage region: INVALID");
   });
 
   it("throws when env var is not set", () => {
@@ -93,12 +91,7 @@ describe("createRegionalPresignedUploadUrl", () => {
   });
 
   it("uses correct bucket for explicit EU region", async () => {
-    const url = await createRegionalPresignedUploadUrl(
-      "test-key",
-      "application/pdf",
-      300,
-      "EU",
-    );
+    const url = await createRegionalPresignedUploadUrl("test-key", "application/pdf", 300, "EU");
     expect(url).toBe("https://r2.example.com/signed-url");
     expect(PutObjectCommand).toHaveBeenCalledWith({
       Bucket: "bucket-eu",
@@ -108,12 +101,7 @@ describe("createRegionalPresignedUploadUrl", () => {
   });
 
   it("uses correct bucket for explicit ME region", async () => {
-    await createRegionalPresignedUploadUrl(
-      "test-key",
-      "application/pdf",
-      300,
-      "ME",
-    );
+    await createRegionalPresignedUploadUrl("test-key", "application/pdf", 300, "ME");
     expect(PutObjectCommand).toHaveBeenCalledWith({
       Bucket: "bucket-me",
       Key: "test-key",
@@ -128,17 +116,15 @@ describe("createRegionalPresignedUploadUrl", () => {
     });
 
     await createRegionalPresignedUploadUrl("test-key", "application/pdf");
-    expect(PutObjectCommand).toHaveBeenCalledWith(
-      expect.objectContaining({ Bucket: "bucket-me" }),
-    );
+    expect(PutObjectCommand).toHaveBeenCalledWith(expect.objectContaining({ Bucket: "bucket-me" }));
   });
 
   it("throws when no region and no tenant context", async () => {
     vi.mocked(tenantStore.getStore).mockReturnValue(null as never);
 
-    await expect(
-      createRegionalPresignedUploadUrl("test-key", "application/pdf"),
-    ).rejects.toThrow("No region in tenant context");
+    await expect(createRegionalPresignedUploadUrl("test-key", "application/pdf")).rejects.toThrow(
+      "No region in tenant context",
+    );
   });
 });
 
@@ -160,9 +146,7 @@ describe("createRegionalPresignedDownloadUrl", () => {
 
   it("uses correct bucket for explicit region", async () => {
     await createRegionalPresignedDownloadUrl("test-key", 900, "EU");
-    expect(GetObjectCommand).toHaveBeenCalledWith(
-      expect.objectContaining({ Bucket: "bucket-eu" }),
-    );
+    expect(GetObjectCommand).toHaveBeenCalledWith(expect.objectContaining({ Bucket: "bucket-eu" }));
   });
 
   it("auto-resolves region from tenant context", async () => {
@@ -172,8 +156,6 @@ describe("createRegionalPresignedDownloadUrl", () => {
     });
 
     await createRegionalPresignedDownloadUrl("test-key");
-    expect(GetObjectCommand).toHaveBeenCalledWith(
-      expect.objectContaining({ Bucket: "bucket-eu" }),
-    );
+    expect(GetObjectCommand).toHaveBeenCalledWith(expect.objectContaining({ Bucket: "bucket-eu" }));
   });
 });

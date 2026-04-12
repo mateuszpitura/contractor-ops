@@ -1,13 +1,13 @@
 "use client";
 
+import { UserPlus } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
+import { InviteDialog } from "@/components/settings/invite-dialog";
+import { UsersTable } from "@/components/settings/users-table";
 import { AnimateIn } from "@/components/shared/animate-in";
 import { Button } from "@/components/ui/button";
-import { UserPlus } from "lucide-react";
-import { UsersTable } from "@/components/settings/users-table";
-import { InviteDialog } from "@/components/settings/invite-dialog";
 import { usePermissions } from "@/hooks/use-permissions";
-import { useTranslations } from "next-intl";
 
 /**
  * Team members page.
@@ -25,10 +25,10 @@ export default function MembersPage() {
       <AnimateIn delay={0}>
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="font-display text-[22px] font-semibold leading-tight tracking-tight">{t("title")}</h1>
-            <p className="text-sm text-muted-foreground">
-              {t("subtitle")}
-            </p>
+            <h1 className="font-display text-[22px] font-semibold leading-tight tracking-tight">
+              {t("title")}
+            </h1>
+            <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
           </div>
 
           {canInvite && (

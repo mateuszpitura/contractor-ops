@@ -72,7 +72,9 @@ describe("AssignmentDialog", () => {
 
     const buttons = screen.getAllByRole("button");
     const assignButton = buttons.find(
-      (b) => b.textContent?.toLowerCase().includes("assign") && !b.textContent?.toLowerCase().includes("cancel"),
+      (b) =>
+        b.textContent?.toLowerCase().includes("assign") &&
+        !b.textContent?.toLowerCase().includes("cancel"),
     );
     expect(assignButton).toBeDisabled();
   });
@@ -125,9 +127,7 @@ describe("AssignmentDialog", () => {
   });
 
   it("uses legalName as fallback when displayName is null", () => {
-    mockContractors = [
-      { id: "c1", displayName: null, legalName: "Legal Entity LLC" },
-    ];
+    mockContractors = [{ id: "c1", displayName: null, legalName: "Legal Entity LLC" }];
     render(<AssignmentDialog {...makeProps()} />);
 
     expect(screen.getByText("Legal Entity LLC")).toBeInTheDocument();

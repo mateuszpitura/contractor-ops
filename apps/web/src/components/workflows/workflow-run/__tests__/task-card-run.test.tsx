@@ -1,5 +1,5 @@
-import { render, screen, setup } from "@/test/test-utils";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { render, screen, setup } from "@/test/test-utils";
 import { TaskCardRun } from "../task-card-run";
 
 vi.mock("@tanstack/react-query", async () => {
@@ -25,7 +25,11 @@ vi.mock("@/trpc/init", () => ({
 }));
 
 vi.mock("@/i18n/navigation", () => ({
-  Link: ({ children, href, ...props }: any) => <a href={href} {...props}>{children}</a>,
+  Link: ({ children, href, ...props }: any) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
 }));
 
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
@@ -91,11 +95,7 @@ describe("TaskCardRun", () => {
 
   it("does not show actions for done tasks", () => {
     render(
-      <TaskCardRun
-        task={{ ...mockTask, status: "DONE" }}
-        runId="run-1"
-        currentUserId="user-1"
-      />,
+      <TaskCardRun task={{ ...mockTask, status: "DONE" }} runId="run-1" currentUserId="user-1" />,
     );
     expect(screen.queryByText("Complete")).not.toBeInTheDocument();
   });
@@ -117,11 +117,7 @@ describe("TaskCardRun", () => {
 
   it("renders overdue label when task is overdue", () => {
     render(
-      <TaskCardRun
-        task={{ ...mockTask, isOverdue: true }}
-        runId="run-1"
-        currentUserId="user-1"
-      />,
+      <TaskCardRun task={{ ...mockTask, isOverdue: true }} runId="run-1" currentUserId="user-1" />,
     );
     expect(screen.getByText("Overdue")).toBeInTheDocument();
   });
@@ -194,17 +190,13 @@ describe("TaskCardRun", () => {
   });
 
   it("renders description when task is expanded", async () => {
-    const { user } = setup(
-      <TaskCardRun task={mockTask} runId="run-1" currentUserId="user-1" />,
-    );
+    const { user } = setup(<TaskCardRun task={mockTask} runId="run-1" currentUserId="user-1" />);
     await user.click(screen.getByText("Collect NDA"));
     expect(screen.getByText("Please collect the NDA document")).toBeInTheDocument();
   });
 
   it("renders task comments and attachments when expanded", async () => {
-    const { user } = setup(
-      <TaskCardRun task={mockTask} runId="run-1" currentUserId="user-1" />,
-    );
+    const { user } = setup(<TaskCardRun task={mockTask} runId="run-1" currentUserId="user-1" />);
     await user.click(screen.getByText("Collect NDA"));
     expect(screen.getByTestId("task-comments")).toBeInTheDocument();
     expect(screen.getByTestId("task-attachments")).toBeInTheDocument();
@@ -272,9 +264,7 @@ describe("TaskCardRun", () => {
   });
 
   it("renders created date when expanded", async () => {
-    const { user } = setup(
-      <TaskCardRun task={mockTask} runId="run-1" currentUserId="user-1" />,
-    );
+    const { user } = setup(<TaskCardRun task={mockTask} runId="run-1" currentUserId="user-1" />);
     await user.click(screen.getByText("Collect NDA"));
     expect(screen.getByText(/Created/)).toBeInTheDocument();
   });
@@ -295,29 +285,21 @@ describe("TaskCardRun", () => {
   it("clicking complete button triggers mutation", async () => {
     const mockMutate = vi.fn();
     mockedUseMutation.mockReturnValue({ mutate: mockMutate, isPending: false } as any);
-    const { user } = setup(
-      <TaskCardRun task={mockTask} runId="run-1" currentUserId="user-1" />,
-    );
+    const { user } = setup(<TaskCardRun task={mockTask} runId="run-1" currentUserId="user-1" />);
     await user.click(screen.getByText("Complete"));
-    expect(mockMutate).toHaveBeenCalledWith(
-      expect.objectContaining({ taskRunId: "task-1" }),
-    );
+    expect(mockMutate).toHaveBeenCalledWith(expect.objectContaining({ taskRunId: "task-1" }));
   });
 
   // ---- Skip popover opens on click ----
   it("clicking skip button opens skip popover with textarea", async () => {
-    const { user } = setup(
-      <TaskCardRun task={mockTask} runId="run-1" currentUserId="user-1" />,
-    );
+    const { user } = setup(<TaskCardRun task={mockTask} runId="run-1" currentUserId="user-1" />);
     await user.click(screen.getByText("Skip"));
     expect(screen.getByRole("textbox")).toBeInTheDocument();
   });
 
   // ---- Skip popover: confirm disabled when reason too short ----
   it("skip confirm button disabled when reason is less than 3 chars", async () => {
-    const { user } = setup(
-      <TaskCardRun task={mockTask} runId="run-1" currentUserId="user-1" />,
-    );
+    const { user } = setup(<TaskCardRun task={mockTask} runId="run-1" currentUserId="user-1" />);
     await user.click(screen.getByText("Skip"));
     const textarea = screen.getByRole("textbox");
     await user.type(textarea, "ab");
@@ -327,9 +309,7 @@ describe("TaskCardRun", () => {
 
   // ---- Skip popover: confirm enabled when reason is 3+ chars ----
   it("skip confirm button enabled when reason is 3+ chars", async () => {
-    const { user } = setup(
-      <TaskCardRun task={mockTask} runId="run-1" currentUserId="user-1" />,
-    );
+    const { user } = setup(<TaskCardRun task={mockTask} runId="run-1" currentUserId="user-1" />);
     await user.click(screen.getByText("Skip"));
     const textarea = screen.getByRole("textbox");
     await user.type(textarea, "Not needed for this contractor");
@@ -339,9 +319,7 @@ describe("TaskCardRun", () => {
 
   // ---- Reassign popover opens on click ----
   it("clicking reassign button opens reassign popover with select", async () => {
-    const { user } = setup(
-      <TaskCardRun task={mockTask} runId="run-1" currentUserId="user-1" />,
-    );
+    const { user } = setup(<TaskCardRun task={mockTask} runId="run-1" currentUserId="user-1" />);
     await user.click(screen.getByText("Reassign"));
     // Reassign popover should have a select trigger and confirm button
     expect(screen.getByText("Reassign task")).toBeInTheDocument();

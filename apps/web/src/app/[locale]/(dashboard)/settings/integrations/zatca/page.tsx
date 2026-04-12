@@ -1,18 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import type { ZatcaOnboardingState } from "@contractor-ops/einvoice";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, ShieldCheck } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
-
-import type { ZatcaOnboardingState } from "@contractor-ops/einvoice";
-import { Button } from "@/components/ui/button";
-import { Link } from "@/i18n/navigation";
 import { AnimateIn } from "@/components/shared/animate-in";
+import { Button } from "@/components/ui/button";
+import { EnvironmentToggle } from "@/components/zatca/environment-toggle";
 import { OnboardingWizard } from "@/components/zatca/onboarding-wizard";
 import { ZatcaComplianceWidget } from "@/components/zatca/zatca-compliance-widget";
-import { EnvironmentToggle } from "@/components/zatca/environment-toggle";
 import { zatcaTrpc } from "@/components/zatca/zatca-trpc";
+import { Link } from "@/i18n/navigation";
 
 // ---------------------------------------------------------------------------
 // ZATCA Settings Page
@@ -109,8 +108,8 @@ export default function ZatcaSettingsPage() {
           {environment === "sandbox" && (
             <AnimateIn delay={1}>
               <div className="rounded-lg border border-blue-500/30 bg-blue-50 px-4 py-3 text-sm text-blue-700 dark:bg-blue-950/20 dark:text-blue-400">
-                Sandbox mode — Test invoices are not submitted to ZATCA. Switch
-                to production when ready.
+                Sandbox mode — Test invoices are not submitted to ZATCA. Switch to production when
+                ready.
               </div>
             </AnimateIn>
           )}

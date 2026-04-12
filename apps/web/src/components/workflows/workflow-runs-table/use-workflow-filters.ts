@@ -1,8 +1,8 @@
 import {
-  parseAsInteger,
-  parseAsString,
   parseAsArrayOf,
   parseAsBoolean,
+  parseAsInteger,
+  parseAsString,
   useQueryStates,
 } from "nuqs";
 

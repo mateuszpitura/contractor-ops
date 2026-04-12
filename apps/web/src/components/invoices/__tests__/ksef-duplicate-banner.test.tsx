@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { render, screen, setup } from "@/test/test-utils";
 
 import { KsefDuplicateBanner } from "../ksef-duplicate-banner";

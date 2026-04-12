@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
 import { prisma } from "@contractor-ops/db";
+import { registerAllAdapters } from "@contractor-ops/integrations/adapters/register-all";
 import { getAdapter } from "@contractor-ops/integrations/registry";
 import { getQStashClient } from "@contractor-ops/integrations/services/qstash-client";
-import { registerAllAdapters } from "@contractor-ops/integrations/adapters/register-all";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 // ---------------------------------------------------------------------------
 // Ensure adapters are registered
@@ -47,8 +47,7 @@ export async function POST(
   }
 
   // Step 2: Parse payload (Slack sends form-encoded, others send JSON)
-  const isSlackViewSubmission =
-    provider === "slack" && rawBody.includes("view_submission");
+  const isSlackViewSubmission = provider === "slack" && rawBody.includes("view_submission");
 
   let payloadJson: unknown;
   try {
@@ -85,10 +84,7 @@ export async function POST(
       retries: 3,
     });
   } catch (queueError) {
-    console.error(
-      `[webhook/${provider}] Failed to queue for processing:`,
-      queueError,
-    );
+    console.error(`[webhook/${provider}] Failed to queue for processing:`, queueError);
     // Still return 200 — delivery is logged, can be retried manually
   }
 

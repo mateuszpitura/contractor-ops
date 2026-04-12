@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { mapUpsStatus, UPS_STATUS_MAP } from "../ups-status-mapper";
 
@@ -50,9 +50,7 @@ describe("UPS Status Mapper", () => {
       const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
       const result = mapUpsStatus("UNKNOWN");
       expect(result).toBeNull();
-      expect(warnSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Unknown UPS status"),
-      );
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("Unknown UPS status"));
       warnSpy.mockRestore();
     });
   });

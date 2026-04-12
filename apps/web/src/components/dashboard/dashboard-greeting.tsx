@@ -31,9 +31,7 @@ export function DashboardGreeting() {
       <h1 className="gradient-text font-display text-3xl font-bold leading-tight tracking-tighter sm:text-4xl">
         {t(greetingKey, { name: firstName })}
       </h1>
-      <p className="mt-1.5 text-base text-muted-foreground">
-        {t("subtitle")}
-      </p>
+      <p className="mt-1.5 text-base text-muted-foreground">{t("subtitle")}</p>
     </div>
   );
 }

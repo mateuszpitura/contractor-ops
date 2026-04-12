@@ -6,8 +6,8 @@
 // ---------------------------------------------------------------------------
 
 import QRCode from "qrcode";
-import type { QRCodeable } from "../../types/profile.js";
 import type { EInvoice } from "../../types/invoice.js";
+import type { QRCodeable } from "../../types/profile.js";
 import { ZatcaTlvTag } from "./types.js";
 
 // ---------------------------------------------------------------------------
@@ -31,16 +31,12 @@ const MAX_SUPPLIER_NAME_LENGTH = 1000;
  *
  * Fields are concatenated sequentially into a single buffer.
  */
-export function encodeTLV(
-  fields: Array<{ tag: number; value: string | Buffer }>,
-): Buffer {
+export function encodeTLV(fields: Array<{ tag: number; value: string | Buffer }>): Buffer {
   const chunks: Buffer[] = [];
 
   for (const field of fields) {
     const valueBuffer =
-      typeof field.value === "string"
-        ? Buffer.from(field.value, "utf-8")
-        : field.value;
+      typeof field.value === "string" ? Buffer.from(field.value, "utf-8") : field.value;
 
     const tagByte = Buffer.from([field.tag]);
     const lengthBytes = encodeLength(valueBuffer.length);
@@ -57,9 +53,7 @@ export function encodeTLV(
  * Parses sequentially: tag (1 byte), length (variable), value (length bytes).
  * Handles multi-byte length encoding (0x81 and 0x82 prefixes).
  */
-export function decodeTLV(
-  buffer: Buffer,
-): Array<{ tag: number; value: Buffer }> {
+export function decodeTLV(buffer: Buffer): Array<{ tag: number; value: Buffer }> {
   const result: Array<{ tag: number; value: Buffer }> = [];
   let offset = 0;
 
@@ -107,10 +101,7 @@ function encodeLength(length: number): Buffer {
  * Decode a BER-style length from a buffer at the given offset.
  * Returns the decoded length and number of bytes consumed.
  */
-function decodeLength(
-  buffer: Buffer,
-  offset: number,
-): { length: number; bytesRead: number } {
+function decodeLength(buffer: Buffer, offset: number): { length: number; bytesRead: number } {
   const firstByte = buffer[offset]!;
 
   if (firstByte < 128) {
@@ -205,15 +196,11 @@ export class ZatcaTLVQRCode implements QRCodeable {
         name: sellerName ?? "",
       },
       issueDate: timestamp ?? "",
-      taxInclusiveAmount: totalStr
-        ? Math.round(parseFloat(totalStr) * 100)
-        : 0,
+      taxInclusiveAmount: totalStr ? Math.round(parseFloat(totalStr) * 100) : 0,
       taxBreakdown: [
         {
           taxableAmountMinor: 0,
-          taxAmountMinor: vatStr
-            ? Math.round(parseFloat(vatStr) * 100)
-            : 0,
+          taxAmountMinor: vatStr ? Math.round(parseFloat(vatStr) * 100) : 0,
           taxCategory: "S",
         },
       ],
@@ -228,13 +215,8 @@ export class ZatcaTLVQRCode implements QRCodeable {
    * Build TLV fields from an EInvoice.
    * Tags 1-5 always included. Tags 6-8 only when cryptographic data present.
    */
-  private buildTlvFields(
-    invoice: EInvoice,
-  ): Array<{ tag: number; value: string | Buffer }> {
-    const vatAmount = invoice.taxBreakdown.reduce(
-      (sum, t) => sum + t.taxAmountMinor,
-      0,
-    );
+  private buildTlvFields(invoice: EInvoice): Array<{ tag: number; value: string | Buffer }> {
+    const vatAmount = invoice.taxBreakdown.reduce((sum, t) => sum + t.taxAmountMinor, 0);
 
     const fields: Array<{ tag: number; value: string | Buffer }> = [
       { tag: ZatcaTlvTag.SELLER_NAME, value: invoice.supplier.name },

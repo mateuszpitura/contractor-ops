@@ -197,27 +197,26 @@ export const zatcaRouter = router({
   getComplianceStats: tenantProcedure
     .use(requirePermission({ settings: ["read"] }))
     .query(async ({ ctx }) => {
-      const [total, cleared, reported, rejected, pending, warning] =
-        await Promise.all([
-          prisma.zatcaInvoiceChain.count({
-            where: { organizationId: ctx.organizationId },
-          }),
-          prisma.zatcaInvoiceChain.count({
-            where: { organizationId: ctx.organizationId, zatcaStatus: "CLEARED" },
-          }),
-          prisma.zatcaInvoiceChain.count({
-            where: { organizationId: ctx.organizationId, zatcaStatus: "REPORTED" },
-          }),
-          prisma.zatcaInvoiceChain.count({
-            where: { organizationId: ctx.organizationId, zatcaStatus: "REJECTED" },
-          }),
-          prisma.zatcaInvoiceChain.count({
-            where: { organizationId: ctx.organizationId, zatcaStatus: "PENDING" },
-          }),
-          prisma.zatcaInvoiceChain.count({
-            where: { organizationId: ctx.organizationId, zatcaStatus: "WARNING" },
-          }),
-        ]);
+      const [total, cleared, reported, rejected, pending, warning] = await Promise.all([
+        prisma.zatcaInvoiceChain.count({
+          where: { organizationId: ctx.organizationId },
+        }),
+        prisma.zatcaInvoiceChain.count({
+          where: { organizationId: ctx.organizationId, zatcaStatus: "CLEARED" },
+        }),
+        prisma.zatcaInvoiceChain.count({
+          where: { organizationId: ctx.organizationId, zatcaStatus: "REPORTED" },
+        }),
+        prisma.zatcaInvoiceChain.count({
+          where: { organizationId: ctx.organizationId, zatcaStatus: "REJECTED" },
+        }),
+        prisma.zatcaInvoiceChain.count({
+          where: { organizationId: ctx.organizationId, zatcaStatus: "PENDING" },
+        }),
+        prisma.zatcaInvoiceChain.count({
+          where: { organizationId: ctx.organizationId, zatcaStatus: "WARNING" },
+        }),
+      ]);
 
       return { total, cleared, reported, rejected, pending, warning };
     }),

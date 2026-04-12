@@ -1,16 +1,12 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Search } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
-
-import { trpc } from "@/trpc/init";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
   DialogContent,
@@ -19,7 +15,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Template type badge styling
@@ -79,9 +78,7 @@ export function TemplatePicker({
 
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [typeFilter, setTypeFilter] = useState<string | null>(
-    preFilterType ?? null,
-  );
+  const [typeFilter, setTypeFilter] = useState<string | null>(preFilterType ?? null);
 
   // Fetch active templates
   const templatesQuery = useQuery({
@@ -95,9 +92,7 @@ export function TemplatePicker({
   });
 
   const templates = useMemo(() => {
-    const result = templatesQuery.data as
-      | { items: TemplateOption[] }
-      | undefined;
+    const result = templatesQuery.data as { items: TemplateOption[] } | undefined;
     let items = result?.items ?? [];
 
     // Apply type filter if set
@@ -111,9 +106,7 @@ export function TemplatePicker({
   const isLoading = templatesQuery.isLoading;
 
   // Start run mutation
-  const startRunMutation = useMutation(
-    trpc.workflow.startRun.mutationOptions(),
-  );
+  const startRunMutation = useMutation(trpc.workflow.startRun.mutationOptions());
 
   const isBulk = contractorIds && contractorIds.length > 0;
   const effectiveContractorId = contractorId ?? contractorIds?.[0];
@@ -140,20 +133,18 @@ export function TemplatePicker({
           totalCalendarTasks += result.calendarTaskCount ?? 0;
         }
       } else if (effectiveContractorId) {
-        const result = await startRunMutation.mutateAsync({
+        const result = (await startRunMutation.mutateAsync({
           templateId: selectedId,
           contractorId: effectiveContractorId,
           contractId,
-        }) as { calendarTaskCount?: number };
+        })) as { calendarTaskCount?: number };
         totalCalendarTasks = result.calendarTaskCount ?? 0;
       }
 
       toast.success(t("toast.workflowStarted"));
 
       if (totalCalendarTasks > 0) {
-        toast.info(
-          `Calendar events are being created for ${totalCalendarTasks} task(s)`,
-        );
+        toast.info(`Calendar events are being created for ${totalCalendarTasks} task(s)`);
       }
       onOpenChange(false);
       setSelectedId(null);
@@ -196,9 +187,7 @@ export function TemplatePicker({
         <DialogHeader>
           <DialogTitle>{tp("title")}</DialogTitle>
           <DialogDescription>
-            {isBulk && contractorIds
-              ? tp("startForCount", { count: contractorIds.length })
-              : null}
+            {isBulk && contractorIds ? tp("startForCount", { count: contractorIds.length }) : null}
           </DialogDescription>
         </DialogHeader>
 
@@ -234,10 +223,7 @@ export function TemplatePicker({
           {isLoading ? (
             <div className="space-y-2 p-1">
               {Array.from({ length: 4 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-3 rounded-lg border p-3"
-                >
+                <div key={i} className="flex items-center gap-3 rounded-lg border p-3">
                   <div className="flex-1 space-y-2">
                     <Skeleton className="h-4 w-40" />
                     <Skeleton className="h-3 w-24" />
@@ -249,9 +235,7 @@ export function TemplatePicker({
           ) : templates.length === 0 ? (
             <div className="py-8 text-center">
               <p className="text-sm font-medium">{tp("noTemplates")}</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {tp("noTemplatesBody")}
-              </p>
+              <p className="mt-1 text-sm text-muted-foreground">{tp("noTemplatesBody")}</p>
             </div>
           ) : (
             <div className="space-y-1 p-1">
@@ -260,17 +244,13 @@ export function TemplatePicker({
                   key={template.id}
                   type="button"
                   className={`w-full text-start rounded-lg border p-3 transition-colors hover:bg-accent/50 ${
-                    selectedId === template.id
-                      ? "ring-2 ring-primary border-primary"
-                      : ""
+                    selectedId === template.id ? "ring-2 ring-primary border-primary" : ""
                   }`}
                   onClick={() => setSelectedId(template.id)}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium truncate">
-                        {template.name}
-                      </p>
+                      <p className="text-sm font-medium truncate">{template.name}</p>
                       {template.description && (
                         <p className="mt-0.5 text-[13px] text-muted-foreground line-clamp-2">
                           {template.description}
@@ -280,15 +260,9 @@ export function TemplatePicker({
                     <div className="flex items-center gap-2 shrink-0">
                       <Badge
                         variant="secondary"
-                        className={
-                          templateTypeBadgeColors[template.type] ?? ""
-                        }
+                        className={templateTypeBadgeColors[template.type] ?? ""}
                       >
-                        {t(
-                          `templateType.${template.type}` as Parameters<
-                            typeof t
-                          >[0],
-                        )}
+                        {t(`templateType.${template.type}` as Parameters<typeof t>[0])}
                       </Badge>
                     </div>
                   </div>
@@ -302,18 +276,13 @@ export function TemplatePicker({
         </ScrollArea>
 
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => handleOpenChange(false)}
-          >
+          <Button variant="outline" onClick={() => handleOpenChange(false)}>
             {tp("close")}
           </Button>
           <Button
             onClick={() => void handleStart()}
             disabled={
-              !selectedId ||
-              startRunMutation.isPending ||
-              (!effectiveContractorId && !isBulk)
+              !selectedId || startRunMutation.isPending || (!effectiveContractorId && !isBulk)
             }
           >
             {startRunMutation.isPending ? "..." : tp("start")}

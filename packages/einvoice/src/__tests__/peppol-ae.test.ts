@@ -1,12 +1,16 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import { PeppolAEProfile } from "../profiles/peppol-ae/index.js";
+import { beforeEach, describe, expect, it } from "vitest";
+import {
+  PINT_AE_CUSTOMIZATION_ID,
+  PINT_AE_PROFILE_ID,
+  UAE_SCHEME_ID,
+} from "../profiles/peppol-ae/constants.js";
 import { generatePintAeXml } from "../profiles/peppol-ae/generator.js";
+import { PeppolAEProfile } from "../profiles/peppol-ae/index.js";
 import { parsePintAeXml } from "../profiles/peppol-ae/parser.js";
-import { validatePintAeXml } from "../profiles/peppol-ae/validator.js";
 import { PeppolAEQRCode } from "../profiles/peppol-ae/qr-code.js";
-import { PINT_AE_CUSTOMIZATION_ID, PINT_AE_PROFILE_ID, UAE_SCHEME_ID } from "../profiles/peppol-ae/constants.js";
 import { peppolParticipantIdSchema } from "../profiles/peppol-ae/schemas.js";
-import { registerProfile, getProfile, clearProfiles } from "../registry.js";
+import { validatePintAeXml } from "../profiles/peppol-ae/validator.js";
+import { clearProfiles, getProfile, registerProfile } from "../registry.js";
 import type { EInvoice } from "../types/invoice.js";
 
 /** Test fixture: UAE AED invoice with 5% VAT */
@@ -170,9 +174,7 @@ describe("PINT-AE Parser", () => {
     const xml = generatePintAeXml(original);
     const parsed = parsePintAeXml(xml);
 
-    expect((parsed.extensions as Record<string, unknown>)?.buyerReference).toBe(
-      "PO-2026-042",
-    );
+    expect((parsed.extensions as Record<string, unknown>)?.buyerReference).toBe("PO-2026-042");
   });
 
   it("sets transmissionId from metadata", () => {
@@ -201,30 +203,20 @@ describe("PINT-AE Validator", () => {
     invoice.customer.id = "";
     const xml = generatePintAeXml(invoice);
     // Remove BuyerReference from XML
-    const xmlNoBuyerRef = xml.replace(
-      /<cbc:BuyerReference>[^<]*<\/cbc:BuyerReference>/,
-      "",
-    );
+    const xmlNoBuyerRef = xml.replace(/<cbc:BuyerReference>[^<]*<\/cbc:BuyerReference>/, "");
     const result = validatePintAeXml(xmlNoBuyerRef);
     expect(result.valid).toBe(false);
-    expect(result.errors.some((e) => e.code === "MISSING_BUYER_REFERENCE")).toBe(
-      true,
-    );
+    expect(result.errors.some((e) => e.code === "MISSING_BUYER_REFERENCE")).toBe(true);
   });
 
   it("rejects XML missing supplier TRN", () => {
     const invoice = createTestInvoice();
     const xml = generatePintAeXml(invoice);
     // Remove schemeID attribute from supplier
-    const xmlNoScheme = xml.replace(
-      /schemeID="0192"/,
-      'schemeID="NONE"',
-    );
+    const xmlNoScheme = xml.replace(/schemeID="0192"/, 'schemeID="NONE"');
     const result = validatePintAeXml(xmlNoScheme);
     expect(result.valid).toBe(false);
-    expect(
-      result.errors.some((e) => e.code === "MISSING_SUPPLIER_TRN"),
-    ).toBe(true);
+    expect(result.errors.some((e) => e.code === "MISSING_SUPPLIER_TRN")).toBe(true);
   });
 
   it("returns error for malformed XML", () => {
@@ -243,9 +235,7 @@ describe("PINT-AE Validator", () => {
       const xmlNoCustomerScheme =
         parts[0] + UAE_SCHEME_ID + parts[1] + "0000" + parts.slice(2).join(UAE_SCHEME_ID);
       const result = validatePintAeXml(xmlNoCustomerScheme);
-      expect(
-        result.warnings.some((w) => w.code === "MISSING_CUSTOMER_TRN"),
-      ).toBe(true);
+      expect(result.warnings.some((w) => w.code === "MISSING_CUSTOMER_TRN")).toBe(true);
     }
   });
 });
@@ -266,9 +256,7 @@ describe("PeppolAEQRCode", () => {
 
   it("parseQR extracts data from pipe-delimited string", async () => {
     const qr = new PeppolAEQRCode();
-    const data = Buffer.from(
-      "Acme UAE LLC|123456789012345|2026-04-11|25200.00|1200.00",
-    );
+    const data = Buffer.from("Acme UAE LLC|123456789012345|2026-04-11|25200.00|1200.00");
     const partial = await qr.parseQR(data);
     expect(partial.supplier?.name).toBe("Acme UAE LLC");
     expect(partial.supplier?.id).toBe("123456789012345");
@@ -279,21 +267,13 @@ describe("PeppolAEQRCode", () => {
 
 describe("Peppol Schemas", () => {
   it("validates correct participant ID format", () => {
-    const result = peppolParticipantIdSchema.safeParse(
-      "0192:123456789012345",
-    );
+    const result = peppolParticipantIdSchema.safeParse("0192:123456789012345");
     expect(result.success).toBe(true);
   });
 
   it("rejects invalid participant ID format", () => {
-    expect(
-      peppolParticipantIdSchema.safeParse("0192:12345").success,
-    ).toBe(false);
-    expect(
-      peppolParticipantIdSchema.safeParse("0088:123456789012345").success,
-    ).toBe(false);
-    expect(peppolParticipantIdSchema.safeParse("invalid").success).toBe(
-      false,
-    );
+    expect(peppolParticipantIdSchema.safeParse("0192:12345").success).toBe(false);
+    expect(peppolParticipantIdSchema.safeParse("0088:123456789012345").success).toBe(false);
+    expect(peppolParticipantIdSchema.safeParse("invalid").success).toBe(false);
   });
 });

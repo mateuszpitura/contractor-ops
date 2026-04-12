@@ -11,11 +11,9 @@
 // support res.status(n).send(body) chain.
 // ---------------------------------------------------------------------------
 
-import {
-  CloudAdapter,
-  ConfigurationBotFrameworkAuthentication,
-} from "botbuilder";
+import type { IncomingMessage, ServerResponse } from "node:http";
 import { TeamsBotHandler } from "@contractor-ops/api/services/teams/teams-bot-handler";
+import { CloudAdapter, ConfigurationBotFrameworkAuthentication } from "botbuilder";
 
 // ---------------------------------------------------------------------------
 // CloudAdapter singleton (shared across requests)
@@ -103,8 +101,8 @@ export async function POST(request: Request): Promise<Response> {
 
     // Process the activity through the adapter and bot handler
     await getAdapter().process(
-      req as unknown as import("http").IncomingMessage,
-      res as unknown as import("http").ServerResponse,
+      req as unknown as IncomingMessage,
+      res as unknown as ServerResponse,
       async (context) => {
         await bot.run(context);
       },
@@ -112,24 +110,17 @@ export async function POST(request: Request): Promise<Response> {
 
     // Return the response
     const responseBody =
-      res.responseBody !== undefined
-        ? JSON.stringify(res.responseBody)
-        : undefined;
+      res.responseBody !== undefined ? JSON.stringify(res.responseBody) : undefined;
 
     return new Response(responseBody, {
       status: res.statusCode,
-      headers: responseBody
-        ? { "Content-Type": "application/json" }
-        : undefined,
+      headers: responseBody ? { "Content-Type": "application/json" } : undefined,
     });
   } catch (error) {
     console.error("[Teams] Bot Framework endpoint error:", error);
-    return new Response(
-      JSON.stringify({ error: "Internal server error" }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      },
-    );
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }

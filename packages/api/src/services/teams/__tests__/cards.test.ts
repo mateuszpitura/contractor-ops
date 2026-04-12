@@ -1,8 +1,8 @@
-import { describe, it, expect } from "vitest";
-import { buildApprovalCard } from "../cards/approval-card.js";
-import { buildApprovalResultCard } from "../cards/approval-result-card.js";
+import { describe, expect, it } from "vitest";
 import { buildActivityAlertCard } from "../cards/activity-alert-card.js";
+import { buildApprovalCard } from "../cards/approval-card.js";
 import { buildApprovalReminderCard } from "../cards/approval-reminder-card.js";
+import { buildApprovalResultCard } from "../cards/approval-result-card.js";
 import { buildRejectModalCard } from "../cards/reject-modal-card.js";
 
 // ---------------------------------------------------------------------------
@@ -12,9 +12,7 @@ import { buildRejectModalCard } from "../cards/reject-modal-card.js";
 function assertAdaptiveCard(card: Record<string, unknown>) {
   expect(card.type).toBe("AdaptiveCard");
   expect(card.version).toBe("1.4");
-  expect(card.$schema).toBe(
-    "http://adaptivecards.io/schemas/adaptive-card.json",
-  );
+  expect(card.$schema).toBe("http://adaptivecards.io/schemas/adaptive-card.json");
 }
 
 // ---------------------------------------------------------------------------

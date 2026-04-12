@@ -1,26 +1,24 @@
 "use client";
 
-import { useEffect } from "react";
-import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-import { toast } from "sonner";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  ClipboardCheck,
   CheckCircle2,
-  UserCheck,
+  ClipboardCheck,
   Clock,
-  FileWarning,
   FileText,
+  FileWarning,
   Loader2,
+  UserCheck,
 } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
+import { useTranslations } from "next-intl";
+import { useEffect } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
 import {
   Table,
   TableBody,
@@ -29,11 +27,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -123,20 +118,15 @@ export function NotificationPreferences() {
   const tAria = useTranslations("Common.aria");
   const queryClient = useQueryClient();
 
-  const preferencesQuery = useQuery(
-    trpc.notification.getPreferences.queryOptions(),
-  );
-  const slackStatusQuery = useQuery(
-    trpc.integration.getSlackStatus.queryOptions(),
-  );
+  const preferencesQuery = useQuery(trpc.notification.getPreferences.queryOptions());
+  const slackStatusQuery = useQuery(trpc.integration.getSlackStatus.queryOptions());
   const teamsHealthQuery = useQuery(
     trpc.integration.getHealth.queryOptions({ provider: "microsoft_teams" }),
   );
 
   const isSlackConnected = slackStatusQuery.data?.connected === true;
   const isTeamsConnected =
-    (teamsHealthQuery.data as { status?: string } | null | undefined)?.status ===
-    "CONNECTED";
+    (teamsHealthQuery.data as { status?: string } | null | undefined)?.status === "CONNECTED";
 
   const form = useForm<PreferenceFormValues>({
     resolver: zodResolver(preferenceFormSchema),
@@ -156,9 +146,7 @@ export function NotificationPreferences() {
       const prefs = preferencesQuery.data;
       form.reset({
         preferences: NOTIFICATION_TYPES.map((type) => {
-          const pref = prefs.find(
-            (p: { notificationType: string }) => p.notificationType === type,
-          );
+          const pref = prefs.find((p: { notificationType: string }) => p.notificationType === type);
           return {
             notificationType: type,
             channelEmail: pref?.channelEmail ?? true,
@@ -216,30 +204,18 @@ export function NotificationPreferences() {
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-base font-semibold">
-          {t("notifications.heading")}
-        </h3>
-        <p className="text-sm text-muted-foreground">
-          {t("notifications.description")}
-        </p>
+        <h3 className="text-base font-semibold">{t("notifications.heading")}</h3>
+        <p className="text-sm text-muted-foreground">{t("notifications.description")}</p>
       </div>
 
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-auto">
-                {t("notifications.columnEvent")}
-              </TableHead>
-              <TableHead className="w-20 text-center">
-                {t("notifications.columnInApp")}
-              </TableHead>
-              <TableHead className="w-20 text-center">
-                {t("notifications.columnEmail")}
-              </TableHead>
-              <TableHead className="w-20 text-center">
-                {t("notifications.columnSlack")}
-              </TableHead>
+              <TableHead className="w-auto">{t("notifications.columnEvent")}</TableHead>
+              <TableHead className="w-20 text-center">{t("notifications.columnInApp")}</TableHead>
+              <TableHead className="w-20 text-center">{t("notifications.columnEmail")}</TableHead>
+              <TableHead className="w-20 text-center">{t("notifications.columnSlack")}</TableHead>
               <TableHead className="w-20 text-center">
                 {t("notifications.columnTeams" as Parameters<typeof t>[0])}
               </TableHead>
@@ -260,11 +236,7 @@ export function NotificationPreferences() {
                         <Icon className={`size-4 ${config.iconClass}`} />
                       </div>
                       <span className="text-sm font-medium">
-                        {t(
-                          `notifications.${config.labelKey}` as Parameters<
-                            typeof t
-                          >[0],
-                        )}
+                        {t(`notifications.${config.labelKey}` as Parameters<typeof t>[0])}
                       </span>
                     </div>
                   </TableCell>
@@ -275,9 +247,7 @@ export function NotificationPreferences() {
                       <TooltipTrigger render={<div className="inline-flex" />}>
                         <Switch checked disabled aria-label={tAria("inApp")} />
                       </TooltipTrigger>
-                      <TooltipContent>
-                        {t("notifications.inAppTooltip")}
-                      </TooltipContent>
+                      <TooltipContent>{t("notifications.inAppTooltip")}</TooltipContent>
                     </Tooltip>
                   </TableCell>
 
@@ -313,15 +283,9 @@ export function NotificationPreferences() {
                     ) : (
                       <Tooltip>
                         <TooltipTrigger render={<div className="inline-flex" />}>
-                          <Switch
-                            checked={false}
-                            disabled
-                            aria-label={tAria("slack")}
-                          />
+                          <Switch checked={false} disabled aria-label={tAria("slack")} />
                         </TooltipTrigger>
-                        <TooltipContent>
-                          {t("notifications.slackDisabledTooltip")}
-                        </TooltipContent>
+                        <TooltipContent>{t("notifications.slackDisabledTooltip")}</TooltipContent>
                       </Tooltip>
                     )}
                   </TableCell>
@@ -362,13 +326,8 @@ export function NotificationPreferences() {
         </Table>
 
         <div className="mt-4">
-          <Button
-            type="submit"
-            disabled={!form.formState.isDirty || updateMutation.isPending}
-          >
-            {updateMutation.isPending && (
-              <Loader2 className="me-1.5 size-3.5 animate-spin" />
-            )}
+          <Button type="submit" disabled={!form.formState.isDirty || updateMutation.isPending}>
+            {updateMutation.isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
             {t("notifications.savePreferences")}
           </Button>
         </div>

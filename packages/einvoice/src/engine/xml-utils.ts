@@ -6,17 +6,10 @@
  * Safely navigates a nested object path, returning undefined if any
  * segment is missing. Extracted from KSeF XML parser for reuse.
  */
-export function dig(
-  obj: Record<string, unknown>,
-  ...keys: string[]
-): unknown {
+export function dig(obj: Record<string, unknown>, ...keys: string[]): unknown {
   let current: unknown = obj;
   for (const key of keys) {
-    if (
-      current === null ||
-      current === undefined ||
-      typeof current !== "object"
-    ) {
+    if (current === null || current === undefined || typeof current !== "object") {
       return undefined;
     }
     current = (current as Record<string, unknown>)[key];
@@ -34,6 +27,6 @@ export function dig(
  */
 export function toMinorUnits(value: unknown, exponent = 2): number {
   if (value === undefined || value === null || value === "") return 0;
-  const factor = Math.pow(10, exponent);
+  const factor = 10 ** exponent;
   return Math.round(parseFloat(String(value)) * factor);
 }

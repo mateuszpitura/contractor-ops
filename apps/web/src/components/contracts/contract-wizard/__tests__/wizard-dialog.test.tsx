@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, setup, waitFor } from "@/test/test-utils";
 import { ContractWizardDialog } from "../wizard-dialog";
 
@@ -11,9 +11,7 @@ vi.mock("sonner", () => ({
 }));
 
 vi.mock("../step-details", () => ({
-  StepDetails: ({ form }: { form: unknown }) => (
-    <div data-testid="step-details">Step Details</div>
-  ),
+  StepDetails: ({ form }: { form: unknown }) => <div data-testid="step-details">Step Details</div>,
 }));
 
 vi.mock("../step-financial", () => ({
@@ -23,10 +21,18 @@ vi.mock("../step-financial", () => ({
 }));
 
 vi.mock("../step-documents", () => ({
-  StepDocuments: ({ onDocumentsChange, onSkip }: { onDocumentsChange: (ids: string[]) => void; onSkip: () => void }) => (
+  StepDocuments: ({
+    onDocumentsChange,
+    onSkip,
+  }: {
+    onDocumentsChange: (ids: string[]) => void;
+    onSkip: () => void;
+  }) => (
     <div data-testid="step-documents">
       Step Documents
-      <button data-testid="skip-docs" onClick={onSkip}>Skip</button>
+      <button data-testid="skip-docs" onClick={onSkip}>
+        Skip
+      </button>
     </div>
   ),
 }));
@@ -37,9 +43,8 @@ const mockMutate = vi.fn();
 const mockMutateAsync = vi.fn().mockResolvedValue({ id: "new-contract-1" });
 
 vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
-    "@tanstack/react-query",
-  );
+  const actual =
+    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
   return {
     ...actual,
     useQuery: () => ({ isLoading: false, data: contractorData }),
@@ -132,13 +137,7 @@ describe("ContractWizardDialog", () => {
         rateValueMinor: 50000,
       },
     };
-    render(
-      <ContractWizardDialog
-        open={true}
-        onOpenChange={onOpenChange}
-        contractorId="ct-1"
-      />,
-    );
+    render(<ContractWizardDialog open={true} onOpenChange={onOpenChange} contractorId="ct-1" />);
     expect(screen.getByTestId("step-details")).toBeInTheDocument();
   });
 
@@ -150,9 +149,7 @@ describe("ContractWizardDialog", () => {
   });
 
   it("next button triggers validation on step 1", async () => {
-    const { user } = setup(
-      <ContractWizardDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    const { user } = setup(<ContractWizardDialog open={true} onOpenChange={onOpenChange} />);
     await user.click(screen.getByText("Next: Financial terms"));
     // Validation fails for empty required fields, stays on step 1
     expect(screen.getByTestId("step-details")).toBeInTheDocument();
@@ -160,9 +157,7 @@ describe("ContractWizardDialog", () => {
   });
 
   it("close button calls onOpenChange when form is clean", async () => {
-    const { user } = setup(
-      <ContractWizardDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    const { user } = setup(<ContractWizardDialog open={true} onOpenChange={onOpenChange} />);
     await user.click(screen.getByText("Close"));
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
@@ -183,13 +178,7 @@ describe("ContractWizardDialog", () => {
         rateValueMinor: 50000,
       },
     };
-    render(
-      <ContractWizardDialog
-        open={true}
-        onOpenChange={onOpenChange}
-        contractorId="ct-1"
-      />,
-    );
+    render(<ContractWizardDialog open={true} onOpenChange={onOpenChange} contractorId="ct-1" />);
     // Step details should be rendered with contractorId
     expect(screen.getByTestId("step-details")).toBeInTheDocument();
   });
@@ -208,9 +197,7 @@ describe("ContractWizardDialog", () => {
   });
 
   it("keeps step at 1 when validation fails on next", async () => {
-    const { user } = setup(
-      <ContractWizardDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    const { user } = setup(<ContractWizardDialog open={true} onOpenChange={onOpenChange} />);
     // Click next multiple times -- fields are empty so validation fails
     await user.click(screen.getByText("Next: Financial terms"));
     await user.click(screen.getByText("Next: Financial terms"));
@@ -284,13 +271,7 @@ describe("ContractWizardDialog", () => {
         rateValueMinor: 75000,
       },
     };
-    render(
-      <ContractWizardDialog
-        open={true}
-        onOpenChange={onOpenChange}
-        contractorId="ct-2"
-      />,
-    );
+    render(<ContractWizardDialog open={true} onOpenChange={onOpenChange} contractorId="ct-2" />);
     expect(screen.getByTestId("step-details")).toBeInTheDocument();
   });
 
@@ -300,13 +281,7 @@ describe("ContractWizardDialog", () => {
       currency: "GBP",
       customFieldsJson: null,
     };
-    render(
-      <ContractWizardDialog
-        open={true}
-        onOpenChange={onOpenChange}
-        contractorId="ct-3"
-      />,
-    );
+    render(<ContractWizardDialog open={true} onOpenChange={onOpenChange} contractorId="ct-3" />);
     expect(screen.getByTestId("step-details")).toBeInTheDocument();
   });
 
@@ -316,13 +291,7 @@ describe("ContractWizardDialog", () => {
       currency: "EUR",
       customFieldsJson: {},
     };
-    render(
-      <ContractWizardDialog
-        open={true}
-        onOpenChange={onOpenChange}
-        contractorId="ct-4"
-      />,
-    );
+    render(<ContractWizardDialog open={true} onOpenChange={onOpenChange} contractorId="ct-4" />);
     expect(screen.getByTestId("step-details")).toBeInTheDocument();
   });
 
@@ -333,9 +302,7 @@ describe("ContractWizardDialog", () => {
   });
 
   it("validation blocks advancement when step 1 fields empty and clicked twice", async () => {
-    const { user } = setup(
-      <ContractWizardDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    const { user } = setup(<ContractWizardDialog open={true} onOpenChange={onOpenChange} />);
     await user.click(screen.getByText("Next: Financial terms"));
     expect(screen.getByTestId("step-details")).toBeInTheDocument();
     await user.click(screen.getByText("Next: Financial terms"));

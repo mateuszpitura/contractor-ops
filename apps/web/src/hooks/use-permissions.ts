@@ -1,7 +1,7 @@
 "use client";
 
-import { authClient } from "@/lib/auth-client";
 import { useDashboardContext } from "@/components/layout/dashboard-context";
+import { authClient } from "@/lib/auth-client";
 
 /**
  * Permission matrix matching packages/auth/src/roles.ts.

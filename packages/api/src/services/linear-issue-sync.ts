@@ -1,6 +1,6 @@
-import { TRPCError } from "@trpc/server";
 import { decryptCredentials } from "@contractor-ops/integrations/services/credential-service";
 import type { LinearIssueMetadata } from "@contractor-ops/validators";
+import { TRPCError } from "@trpc/server";
 import { resolveLinearStateId } from "./linear-status-mapping.js";
 
 // Use loosely typed prisma client for parallel execution compatibility
@@ -299,8 +299,7 @@ export async function createLinearIssue(
       data: {
         status: "FAILED",
         completedAt: new Date(),
-        errorMessage:
-          error instanceof Error ? error.message : "Unknown error",
+        errorMessage: error instanceof Error ? error.message : "Unknown error",
       },
     });
 
@@ -352,8 +351,7 @@ export async function syncTaskStatusToLinear(
   }
 
   // 2. Parse metadata and check loop prevention
-  const metadata =
-    (externalLink.metadataJson as Record<string, unknown>) ?? {};
+  const metadata = (externalLink.metadataJson as Record<string, unknown>) ?? {};
   const lastSyncOrigin = metadata.lastSyncOrigin as string | undefined;
   const lastSyncAt = metadata.lastSyncAt as string | undefined;
 
@@ -379,9 +377,7 @@ export async function syncTaskStatusToLinear(
   // 4. Determine teamId from metadata or connection config
   const linearIssueId = metadata.linearIssueId as string;
   if (!linearIssueId) {
-    console.warn(
-      `[Linear] ExternalLink ${externalLink.id} missing linearIssueId in metadata`,
-    );
+    console.warn(`[Linear] ExternalLink ${externalLink.id} missing linearIssueId in metadata`);
     return;
   }
 
@@ -404,19 +400,12 @@ export async function syncTaskStatusToLinear(
   }
 
   if (!teamId) {
-    console.warn(
-      `[Linear] Cannot determine teamId for task ${taskRunId}, skipping outbound sync`,
-    );
+    console.warn(`[Linear] Cannot determine teamId for task ${taskRunId}, skipping outbound sync`);
     return;
   }
 
   // 5. Resolve target stateId from status mapping
-  const targetStateId = await resolveLinearStateId(
-    prisma,
-    connection.id,
-    teamId,
-    newStatus,
-  );
+  const targetStateId = await resolveLinearStateId(prisma, connection.id, teamId, newStatus);
 
   if (!targetStateId) {
     // No mapping for this workflow status -- log and return
@@ -523,8 +512,7 @@ export async function syncTaskStatusToLinear(
       data: {
         status: "FAILED",
         completedAt: new Date(),
-        errorMessage:
-          error instanceof Error ? error.message : "Unknown error",
+        errorMessage: error instanceof Error ? error.message : "Unknown error",
       },
     });
 
@@ -532,8 +520,7 @@ export async function syncTaskStatusToLinear(
       where: { id: connection.id },
       data: {
         lastErrorAt: new Date(),
-        lastErrorMessage:
-          error instanceof Error ? error.message : "Unknown error",
+        lastErrorMessage: error instanceof Error ? error.message : "Unknown error",
       },
     });
 

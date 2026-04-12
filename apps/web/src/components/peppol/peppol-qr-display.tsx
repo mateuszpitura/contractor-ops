@@ -17,10 +17,7 @@ interface PeppolQRDisplayProps {
  * Displays the UAE FTA QR code for a Peppol-AE invoice.
  * Rendered on the invoice detail view when QR data is present.
  */
-export function PeppolQRDisplay({
-  qrCodeBase64,
-  invoiceNumber,
-}: PeppolQRDisplayProps) {
+export function PeppolQRDisplay({ qrCodeBase64, invoiceNumber }: PeppolQRDisplayProps) {
   if (!qrCodeBase64) return null;
 
   return (
@@ -33,9 +30,7 @@ export function PeppolQRDisplay({
         height={200}
         className="rounded"
       />
-      <p className="text-xs text-muted-foreground">
-        UAE FTA QR Code — Scan to verify
-      </p>
+      <p className="text-xs text-muted-foreground">UAE FTA QR Code — Scan to verify</p>
     </div>
   );
 }

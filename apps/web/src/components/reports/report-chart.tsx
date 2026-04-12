@@ -1,17 +1,17 @@
 "use client";
 
-import { useMemo } from "react";
 import { useLocale } from "next-intl";
+import { useMemo } from "react";
 import {
-  BarChart,
   Bar,
+  BarChart,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
 } from "recharts";
 
 import { Skeleton } from "@/components/ui/skeleton";
@@ -67,9 +67,7 @@ export function ReportChart({
 
   const sortedData = useMemo(() => {
     if (type === "bar-horizontal") {
-      return [...data]
-        .sort((a, b) => (b[dataKey] as number) - (a[dataKey] as number))
-        .slice(0, 10);
+      return [...data].sort((a, b) => (b[dataKey] as number) - (a[dataKey] as number)).slice(0, 10);
     }
     return data;
   }, [data, dataKey, type]);
@@ -141,11 +139,7 @@ export function ReportChart({
                 return (
                   <Cell
                     key={entryId}
-                    fill={
-                      isActive
-                        ? "var(--color-primary)"
-                        : "var(--color-muted-foreground)"
-                    }
+                    fill={isActive ? "var(--color-primary)" : "var(--color-muted-foreground)"}
                     opacity={isActive ? 1 : 0.3}
                   />
                 );
@@ -166,11 +160,7 @@ export function ReportChart({
             margin={{ top: 0, right: 20, bottom: 0, left: 0 }}
             style={chartStyle}
           >
-            <XAxis
-              dataKey={nameKey}
-              tick={{ fontSize: 12 }}
-              {...xAxisProps}
-            />
+            <XAxis dataKey={nameKey} tick={{ fontSize: 12 }} {...xAxisProps} />
             <YAxis tick={{ fontSize: 12 }} {...yAxisProps} />
             <Tooltip cursor={{ fill: "var(--color-muted)", opacity: 0.3 }} />
             <Bar
@@ -222,10 +212,7 @@ export function ReportChart({
                     "var(--color-primary)"
                   }
                   opacity={
-                    !activeId ||
-                    (entry.id ?? entry.name ?? "").toLowerCase() === activeId
-                      ? 1
-                      : 0.3
+                    !activeId || (entry.id ?? entry.name ?? "").toLowerCase() === activeId ? 1 : 0.3
                   }
                 />
               ))}

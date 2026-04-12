@@ -1,25 +1,25 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+import { parseAsString, useQueryState } from "nuqs";
 import { Suspense } from "react";
-import { AnimateIn } from "@/components/shared/animate-in";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { OrgSettingsForm } from "@/components/settings/org-settings-form";
-import { ExpiryReminderDefaults } from "@/components/settings/expiry-reminder-defaults";
-import { InvoiceMatchingSettings } from "@/components/settings/invoice-matching-settings";
-import { TransferTitleSettings } from "@/components/settings/transfer-title-settings";
-import { AdminBrandingSection } from "@/components/settings/admin-branding-section";
-import { ApprovalChainsTab } from "@/components/settings/approval-chains-tab";
-import { NotificationPreferences } from "@/components/settings/notification-preferences";
-import { ReminderRulesSection } from "@/components/settings/reminder-rules-section";
-import { IntegrationsTab } from "@/components/settings/integrations-tab";
-import { EInvoiceComplianceDetail } from "@/components/einvoice/compliance-detail";
-import { AuditLogTab } from "@/components/settings/audit-log-tab";
 import { BillingTab } from "@/components/billing/billing-tab";
 import { ConsentManagementSection } from "@/components/consent/consent-management-section";
-import { useTranslations } from "next-intl";
-import { useRouter } from "@/i18n/navigation";
+import { EInvoiceComplianceDetail } from "@/components/einvoice/compliance-detail";
+import { AdminBrandingSection } from "@/components/settings/admin-branding-section";
+import { ApprovalChainsTab } from "@/components/settings/approval-chains-tab";
+import { AuditLogTab } from "@/components/settings/audit-log-tab";
+import { ExpiryReminderDefaults } from "@/components/settings/expiry-reminder-defaults";
+import { IntegrationsTab } from "@/components/settings/integrations-tab";
+import { InvoiceMatchingSettings } from "@/components/settings/invoice-matching-settings";
+import { NotificationPreferences } from "@/components/settings/notification-preferences";
+import { OrgSettingsForm } from "@/components/settings/org-settings-form";
+import { ReminderRulesSection } from "@/components/settings/reminder-rules-section";
+import { TransferTitleSettings } from "@/components/settings/transfer-title-settings";
+import { AnimateIn } from "@/components/shared/animate-in";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePermissions } from "@/hooks/use-permissions";
-import { parseAsString, useQueryState } from "nuqs";
+import { useRouter } from "@/i18n/navigation";
 
 // ---------------------------------------------------------------------------
 // Inner content (uses nuqs, needs Suspense boundary)
@@ -31,10 +31,7 @@ function SettingsContent() {
   const { can } = usePermissions();
 
   // URL-synced tab state for deep linking (e.g. OAuth callback to ?tab=integrations)
-  const [activeTab, setActiveTab] = useQueryState(
-    "tab",
-    parseAsString.withDefault("general"),
-  );
+  const [activeTab, setActiveTab] = useQueryState("tab", parseAsString.withDefault("general"));
 
   const canManageIntegrations = can("organization", ["update"]);
   const canManageBilling = can("organization", ["update"]);
@@ -44,83 +41,70 @@ function SettingsContent() {
     <div className="space-y-6">
       <AnimateIn delay={0}>
         <div>
-          <h1 className="font-display text-[22px] font-semibold leading-tight tracking-tight">{t("title")}</h1>
+          <h1 className="font-display text-[22px] font-semibold leading-tight tracking-tight">
+            {t("title")}
+          </h1>
           <p className="mt-0.5 text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
       </AnimateIn>
 
       <AnimateIn delay={1}>
-      <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val)} className="w-full">
-        <TabsList>
-          <TabsTrigger value="general">{t("tabs.general")}</TabsTrigger>
-          <TabsTrigger value="approvals">{t("tabs.approvals")}</TabsTrigger>
-          <TabsTrigger value="notifications">
-            {t("tabs.notifications")}
-          </TabsTrigger>
+        <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val)} className="w-full">
+          <TabsList>
+            <TabsTrigger value="general">{t("tabs.general")}</TabsTrigger>
+            <TabsTrigger value="approvals">{t("tabs.approvals")}</TabsTrigger>
+            <TabsTrigger value="notifications">{t("tabs.notifications")}</TabsTrigger>
+            {canManageIntegrations && (
+              <TabsTrigger value="integrations">{t("tabs.integrations")}</TabsTrigger>
+            )}
+            {canManageBilling && <TabsTrigger value="billing">{t("tabs.billing")}</TabsTrigger>}
+            {canViewAuditLog && <TabsTrigger value="audit-log">{t("tabs.auditLog")}</TabsTrigger>}
+            <TabsTrigger value="privacy">{t("tabs.privacy")}</TabsTrigger>
+            <TabsTrigger value="members" onClick={() => router.push("/settings/members")}>
+              {t("tabs.members")}
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="general" className="mt-6 space-y-6">
+            <OrgSettingsForm />
+            <ExpiryReminderDefaults />
+            <InvoiceMatchingSettings />
+            <TransferTitleSettings />
+            <AdminBrandingSection />
+          </TabsContent>
+
+          <TabsContent value="approvals" className="mt-6">
+            <ApprovalChainsTab />
+          </TabsContent>
+
+          <TabsContent value="notifications" className="mt-6 space-y-8">
+            <NotificationPreferences />
+            <ReminderRulesSection />
+          </TabsContent>
+
           {canManageIntegrations && (
-            <TabsTrigger value="integrations">
-              {t("tabs.integrations")}
-            </TabsTrigger>
+            <TabsContent value="integrations" className="mt-6 space-y-8">
+              <EInvoiceComplianceDetail />
+              <IntegrationsTab />
+            </TabsContent>
           )}
+
           {canManageBilling && (
-            <TabsTrigger value="billing">
-              {t("tabs.billing")}
-            </TabsTrigger>
+            <TabsContent value="billing" className="mt-6 space-y-8">
+              <BillingTab />
+            </TabsContent>
           )}
+
           {canViewAuditLog && (
-            <TabsTrigger value="audit-log">
-              {t("tabs.auditLog")}
-            </TabsTrigger>
+            <TabsContent value="audit-log" className="mt-6">
+              <AuditLogTab />
+            </TabsContent>
           )}
-          <TabsTrigger value="privacy">{t("tabs.privacy")}</TabsTrigger>
-          <TabsTrigger
-            value="members"
-            onClick={() => router.push("/settings/members")}
-          >
-            {t("tabs.members")}
-          </TabsTrigger>
-        </TabsList>
 
-        <TabsContent value="general" className="mt-6 space-y-6">
-          <OrgSettingsForm />
-          <ExpiryReminderDefaults />
-          <InvoiceMatchingSettings />
-          <TransferTitleSettings />
-          <AdminBrandingSection />
-        </TabsContent>
-
-        <TabsContent value="approvals" className="mt-6">
-          <ApprovalChainsTab />
-        </TabsContent>
-
-        <TabsContent value="notifications" className="mt-6 space-y-8">
-          <NotificationPreferences />
-          <ReminderRulesSection />
-        </TabsContent>
-
-        {canManageIntegrations && (
-          <TabsContent value="integrations" className="mt-6 space-y-8">
-            <EInvoiceComplianceDetail />
-            <IntegrationsTab />
+          <TabsContent value="privacy" className="mt-6 space-y-6">
+            <ConsentManagementSection />
           </TabsContent>
-        )}
-
-        {canManageBilling && (
-          <TabsContent value="billing" className="mt-6 space-y-8">
-            <BillingTab />
-          </TabsContent>
-        )}
-
-        {canViewAuditLog && (
-          <TabsContent value="audit-log" className="mt-6">
-            <AuditLogTab />
-          </TabsContent>
-        )}
-
-        <TabsContent value="privacy" className="mt-6 space-y-6">
-          <ConsentManagementSection />
-        </TabsContent>
-      </Tabs>
+        </Tabs>
       </AnimateIn>
     </div>
   );

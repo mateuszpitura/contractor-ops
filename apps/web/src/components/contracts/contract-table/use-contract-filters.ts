@@ -1,9 +1,4 @@
-import {
-  parseAsInteger,
-  parseAsString,
-  parseAsArrayOf,
-  useQueryStates,
-} from "nuqs";
+import { parseAsArrayOf, parseAsInteger, parseAsString, useQueryStates } from "nuqs";
 
 /**
  * URL state management for contract list filters.

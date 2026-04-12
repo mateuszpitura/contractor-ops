@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { X } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
 // ---------------------------------------------------------------------------
@@ -20,9 +20,7 @@ interface TrialBannerProps {
 export function TrialBanner({ trialEnd, onUpgrade }: TrialBannerProps) {
   const [dismissed, setDismissed] = useState(false);
 
-  const daysRemaining = Math.ceil(
-    (trialEnd.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
-  );
+  const daysRemaining = Math.ceil((trialEnd.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
 
   // Only render during last 7 days of trial, and only if not expired
   if (daysRemaining <= 0 || daysRemaining > 7 || dismissed) {

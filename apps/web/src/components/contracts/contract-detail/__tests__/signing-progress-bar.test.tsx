@@ -39,8 +39,22 @@ describe("SigningProgressBar", () => {
     id: "env1",
     status: "SENT",
     recipients: [
-      { id: "r1", name: "Jan", email: "jan@test.com", role: "signer", status: "SIGNED", routingOrder: 1 },
-      { id: "r2", name: "Anna", email: "anna@test.com", role: "countersigner", status: "PENDING", routingOrder: 2 },
+      {
+        id: "r1",
+        name: "Jan",
+        email: "jan@test.com",
+        role: "signer",
+        status: "SIGNED",
+        routingOrder: 1,
+      },
+      {
+        id: "r2",
+        name: "Anna",
+        email: "anna@test.com",
+        role: "countersigner",
+        status: "PENDING",
+        routingOrder: 2,
+      },
     ],
   };
 

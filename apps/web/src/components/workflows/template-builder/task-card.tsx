@@ -1,36 +1,31 @@
 "use client";
 
-import { useCallback, useState } from "react";
-import { useTranslations } from "next-intl";
 import { useQuery } from "@tanstack/react-query";
-import type { UseFormReturn } from "react-hook-form";
 import {
-  GripVertical,
-  ChevronDown,
-  ChevronUp,
-  FileText,
-  CheckCircle,
-  KeyRound,
   Banknote,
-  Monitor,
+  Bell,
   BookOpen,
   Calendar,
+  CheckCircle,
+  ChevronDown,
+  ChevronUp,
   ClipboardList,
-  Bell,
+  FileText,
+  GripVertical,
+  KeyRound,
+  Monitor,
 } from "lucide-react";
-
+import { useTranslations } from "next-intl";
+import { useCallback, useState } from "react";
+import type { UseFormReturn } from "react-hook-form";
+import { JiraTaskConfig } from "@/components/integrations/jira-task-config";
+import { LinearTaskConfig } from "@/components/integrations/linear-task-config";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import {
   Select,
   SelectContent,
@@ -38,13 +33,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-import { trpc } from "@/trpc/init";
-import { JiraTaskConfig } from "@/components/integrations/jira-task-config";
-import { LinearTaskConfig } from "@/components/integrations/linear-task-config";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import { CalendarTaskConfig } from "@/components/workflow/calendar-task-config";
+import { trpc } from "@/trpc/init";
 import { ConditionBuilder, getConditionSummary } from "./condition-builder";
-import type { TemplateFormValues, TaskFormValues } from "./use-template-form";
+import type { TaskFormValues, TemplateFormValues } from "./use-template-form";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -114,13 +108,7 @@ const USER_ROLES = [
 // Component
 // ---------------------------------------------------------------------------
 
-export function TaskCard({
-  index,
-  onRemove,
-  allTasks,
-  form,
-  dragHandleProps,
-}: TaskCardProps) {
+export function TaskCard({ index, onRemove, allTasks, form, dragHandleProps }: TaskCardProps) {
   const t = useTranslations("Workflows");
   const [isOpen, setIsOpen] = useState(false);
 
@@ -215,7 +203,8 @@ export function TaskCard({
 
             {task?.dueOffsetDays ? (
               <span className="hidden text-xs text-muted-foreground sm:inline">
-                {task.dueOffsetDays}{t("dueOffsetDays")}
+                {task.dueOffsetDays}
+                {t("dueOffsetDays")}
               </span>
             ) : null}
 
@@ -226,20 +215,13 @@ export function TaskCard({
             )}
 
             {conditionSummary && (
-              <Badge
-                variant="outline"
-                className="max-w-[240px] shrink-0 truncate text-xs"
-              >
+              <Badge variant="outline" className="max-w-[240px] shrink-0 truncate text-xs">
                 {conditionSummary}
               </Badge>
             )}
 
             <span className="ms-auto shrink-0 text-muted-foreground">
-              {isOpen ? (
-                <ChevronUp className="size-4" />
-              ) : (
-                <ChevronDown className="size-4" />
-              )}
+              {isOpen ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
             </span>
           </CollapsibleTrigger>
         </div>
@@ -303,11 +285,9 @@ export function TaskCard({
               <Select
                 value={assigneeMode}
                 onValueChange={(val) =>
-                  form.setValue(
-                    `tasks.${index}.assigneeMode`,
-                    val as typeof assigneeMode,
-                    { shouldDirty: true },
-                  )
+                  form.setValue(`tasks.${index}.assigneeMode`, val as typeof assigneeMode, {
+                    shouldDirty: true,
+                  })
                 }
                 items={assigneeModeItems}
               >
@@ -408,9 +388,7 @@ export function TaskCard({
                   })}
                   aria-label={t("dueOffsetDays")}
                 />
-                <span className="text-sm text-muted-foreground">
-                  {t("dueOffsetDays")}
-                </span>
+                <span className="text-sm text-muted-foreground">{t("dueOffsetDays")}</span>
                 <Input
                   id={`task-due-hours-${index}`}
                   type="number"
@@ -422,9 +400,7 @@ export function TaskCard({
                   })}
                   aria-label={t("dueOffsetHours")}
                 />
-                <span className="text-sm text-muted-foreground">
-                  {t("dueOffsetHours")}
-                </span>
+                <span className="text-sm text-muted-foreground">{t("dueOffsetHours")}</span>
               </div>
             </div>
 
@@ -487,19 +463,13 @@ export function TaskCard({
             </div>
 
             {/* Jira integration — only for saved task templates */}
-            {task?.id && (
-              <JiraTaskConfig taskTemplateId={task.id} />
-            )}
+            {task?.id && <JiraTaskConfig taskTemplateId={task.id} />}
 
             {/* Linear integration — only for saved task templates (D-05) */}
-            {task?.id && (
-              <LinearTaskConfig taskTemplateId={task.id} />
-            )}
+            {task?.id && <LinearTaskConfig taskTemplateId={task.id} />}
 
             {/* Calendar integration — only for saved task templates */}
-            {task?.id && (
-              <CalendarTaskConfig taskTemplateId={task.id} />
-            )}
+            {task?.id && <CalendarTaskConfig taskTemplateId={task.id} />}
 
             {/* Actions */}
             <div className="flex items-center justify-between border-t pt-3">
@@ -510,12 +480,7 @@ export function TaskCard({
               >
                 {t("removeTask")}
               </button>
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                onClick={() => setIsOpen(false)}
-              >
+              <Button type="button" variant="secondary" size="sm" onClick={() => setIsOpen(false)}>
                 {t("doneEditing")}
               </Button>
             </div>

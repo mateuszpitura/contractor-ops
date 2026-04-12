@@ -1,10 +1,10 @@
 "use client";
 
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "@/i18n/navigation";
 import { trpc } from "@/trpc/init";
-import { TrialBanner } from "./trial-banner";
 import { SoftBlockModal } from "./soft-block-modal";
+import { TrialBanner } from "./trial-banner";
 
 // ---------------------------------------------------------------------------
 // Statuses that should trigger the soft-block modal
@@ -31,9 +31,7 @@ const BLOCKED_STATUSES = new Set([
 export function BillingOverlay() {
   const router = useRouter();
 
-  const { data: subscription } = useQuery(
-    trpc.billing.getSubscription.queryOptions(),
-  );
+  const { data: subscription } = useQuery(trpc.billing.getSubscription.queryOptions());
 
   const checkoutMutation = useMutation({
     ...trpc.billing.createCheckoutSession.mutationOptions(),
@@ -48,13 +46,10 @@ export function BillingOverlay() {
   if (!subscription) return null;
 
   const isTrialing = subscription.status === "TRIALING";
-  const trialEnd = subscription.trialEnd
-    ? new Date(subscription.trialEnd)
-    : null;
+  const trialEnd = subscription.trialEnd ? new Date(subscription.trialEnd) : null;
 
   // Trial expired: show soft-block modal
-  const isTrialExpired =
-    isTrialing && trialEnd !== null && trialEnd.getTime() < Date.now();
+  const isTrialExpired = isTrialing && trialEnd !== null && trialEnd.getTime() < Date.now();
 
   // Subscription in a blocked state (canceled, unpaid, etc.)
   const isBlocked = BLOCKED_STATUSES.has(subscription.status);
@@ -63,10 +58,7 @@ export function BillingOverlay() {
   const isPastDue = subscription.status === "PAST_DUE";
 
   // Trial ending soon: show banner (last 7 days)
-  const showTrialBanner =
-    isTrialing &&
-    trialEnd !== null &&
-    !isTrialExpired;
+  const showTrialBanner = isTrialing && trialEnd !== null && !isTrialExpired;
 
   function handleUpgrade() {
     router.push("/settings?tab=billing");
@@ -78,14 +70,9 @@ export function BillingOverlay() {
 
   return (
     <>
-      {showTrialBanner && trialEnd && (
-        <TrialBanner trialEnd={trialEnd} onUpgrade={handleUpgrade} />
-      )}
+      {showTrialBanner && trialEnd && <TrialBanner trialEnd={trialEnd} onUpgrade={handleUpgrade} />}
       {isPastDue && <PastDueBanner onResolve={handleUpgrade} />}
-      <SoftBlockModal
-        isOpen={isTrialExpired || isBlocked}
-        onSelectPlan={handleSelectPlan}
-      />
+      <SoftBlockModal isOpen={isTrialExpired || isBlocked} onSelectPlan={handleSelectPlan} />
     </>
   );
 }
@@ -100,8 +87,8 @@ function PastDueBanner({ onResolve }: { onResolve: () => void }) {
       role="alert"
       className="bg-destructive/10 border-b border-destructive/20 px-4 py-2 text-center text-sm text-destructive"
     >
-      <span className="font-medium">Payment failed.</span>{" "}
-      Update your payment method to avoid service interruption.{" "}
+      <span className="font-medium">Payment failed.</span> Update your payment method to avoid
+      service interruption.{" "}
       <button
         type="button"
         onClick={onResolve}

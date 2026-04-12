@@ -1,33 +1,26 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { ArrowRight, Clock, Play, Plus, Star, Upload } from "lucide-react";
 import { useTranslations } from "next-intl";
-import {
-  ArrowRight,
-  Plus,
-  Upload,
-  Play,
-  Star,
-  Clock,
-} from "lucide-react";
-
-import { trpc } from "@/trpc/init";
-import { useRouter } from "@/i18n/navigation";
-import { navigationItems } from "@/lib/navigation";
-import { useSearch, type RecentItem } from "./search-provider";
-import { NotionIcon, ConfluenceIcon } from "@/components/integrations/provider-icons";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { ConfluenceIcon, NotionIcon } from "@/components/integrations/provider-icons";
+import { Badge } from "@/components/ui/badge";
 import {
   CommandDialog,
-  CommandInput,
-  CommandList,
   CommandEmpty,
   CommandGroup,
+  CommandInput,
   CommandItem,
+  CommandList,
   CommandSeparator,
 } from "@/components/ui/command";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useRouter } from "@/i18n/navigation";
+import { navigationItems } from "@/lib/navigation";
+import { trpc } from "@/trpc/init";
+import type { RecentItem } from "./search-provider";
+import { useSearch } from "./search-provider";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -70,10 +63,30 @@ const TYPE_BADGE_CLASSES: Record<string, string> = {
 // ---------------------------------------------------------------------------
 
 const QUICK_ACTIONS = [
-  { key: "new-contractor", labelKey: "actions.newContractor" as const, icon: Plus, href: "/contractors?action=new" },
-  { key: "new-contract", labelKey: "actions.newContract" as const, icon: Plus, href: "/contracts?action=new" },
-  { key: "upload-invoice", labelKey: "actions.uploadInvoice" as const, icon: Upload, href: "/invoices?action=upload" },
-  { key: "start-workflow", labelKey: "actions.startWorkflow" as const, icon: Play, href: "/workflows?action=start" },
+  {
+    key: "new-contractor",
+    labelKey: "actions.newContractor" as const,
+    icon: Plus,
+    href: "/contractors?action=new",
+  },
+  {
+    key: "new-contract",
+    labelKey: "actions.newContract" as const,
+    icon: Plus,
+    href: "/contracts?action=new",
+  },
+  {
+    key: "upload-invoice",
+    labelKey: "actions.uploadInvoice" as const,
+    icon: Upload,
+    href: "/invoices?action=upload",
+  },
+  {
+    key: "start-workflow",
+    labelKey: "actions.startWorkflow" as const,
+    icon: Play,
+    href: "/workflows?action=start",
+  },
 ] as const;
 
 // ---------------------------------------------------------------------------
@@ -100,7 +113,10 @@ function writePinned(items: PinnedItem[]): void {
   }
 }
 
-function formatRelativeTimeData(timestamp: number): { key: string; params?: Record<string, number> } {
+function formatRelativeTimeData(timestamp: number): {
+  key: string;
+  params?: Record<string, number>;
+} {
   const diff = Math.floor((Date.now() - timestamp) / 1000);
   if (diff < 60) return { key: "justNow" };
   if (diff < 3600) return { key: "minutesAgo", params: { minutes: Math.floor(diff / 60) } };
@@ -185,9 +201,7 @@ export function CommandPalette() {
   const matchedPages = useMemo(() => {
     if (!debouncedQuery || debouncedQuery.length < 2) return [];
     const q = debouncedQuery.toLowerCase();
-    return navigationItems.filter((item) =>
-      item.label.toLowerCase().includes(q),
-    );
+    return navigationItems.filter((item) => item.label.toLowerCase().includes(q));
   }, [debouncedQuery]);
 
   // Client-side action matching
@@ -195,7 +209,9 @@ export function CommandPalette() {
     if (!debouncedQuery || debouncedQuery.length < 2) return QUICK_ACTIONS.slice();
     const q = debouncedQuery.toLowerCase();
     return QUICK_ACTIONS.filter((a) =>
-      t(a.labelKey as Parameters<typeof t>[0]).toLowerCase().includes(q),
+      t(a.labelKey as Parameters<typeof t>[0])
+        .toLowerCase()
+        .includes(q),
     );
   }, [debouncedQuery, t]);
 
@@ -234,25 +250,19 @@ export function CommandPalette() {
   );
 
   // Pin/unpin toggle
-  const togglePin = useCallback(
-    (item: { type: string; id: string; name: string }) => {
-      setPinnedItems((prev) => {
-        const exists = prev.some(
-          (p) => p.type === item.type && p.id === item.id,
-        );
-        const next = exists
-          ? prev.filter((p) => !(p.type === item.type && p.id === item.id))
-          : [...prev, item];
-        writePinned(next);
-        return next;
-      });
-    },
-    [],
-  );
+  const togglePin = useCallback((item: { type: string; id: string; name: string }) => {
+    setPinnedItems((prev) => {
+      const exists = prev.some((p) => p.type === item.type && p.id === item.id);
+      const next = exists
+        ? prev.filter((p) => !(p.type === item.type && p.id === item.id))
+        : [...prev, item];
+      writePinned(next);
+      return next;
+    });
+  }, []);
 
   const isPinned = useCallback(
-    (type: string, id: string) =>
-      pinnedItems.some((p) => p.type === type && p.id === id),
+    (type: string, id: string) => pinnedItems.some((p) => p.type === type && p.id === id),
     [pinnedItems],
   );
 
@@ -265,11 +275,7 @@ export function CommandPalette() {
       className="w-[560px]"
       shouldFilter={!isSearching}
     >
-      <CommandInput
-        placeholder={t("placeholder")}
-        value={query}
-        onValueChange={setQuery}
-      />
+      <CommandInput placeholder={t("placeholder")} value={query} onValueChange={setQuery} />
       {/* Live region for screen reader result announcements */}
       {isSearching && !isLoading && (
         <div className="sr-only" aria-live="polite" aria-atomic="true">
@@ -302,19 +308,17 @@ export function CommandPalette() {
                     onSelect={() => handleRecentClick(item)}
                   >
                     <Clock className="h-4 w-4 text-muted-foreground" />
-                    <span className="flex-1 truncate text-sm font-medium">
-                      {item.name}
-                    </span>
+                    <span className="flex-1 truncate text-sm font-medium">{item.name}</span>
                     {item.type !== "page" && (
-                      <Badge
-                        variant="secondary"
-                        className={TYPE_BADGE_CLASSES[item.type] ?? ""}
-                      >
+                      <Badge variant="secondary" className={TYPE_BADGE_CLASSES[item.type] ?? ""}>
                         {item.type}
                       </Badge>
                     )}
                     <span className="text-xs text-muted-foreground">
-                      {(() => { const { key, params } = formatRelativeTimeData(item.viewedAt); return tTime(key as Parameters<typeof tTime>[0], params); })()}
+                      {(() => {
+                        const { key, params } = formatRelativeTimeData(item.viewedAt);
+                        return tTime(key as Parameters<typeof tTime>[0], params);
+                      })()}
                     </span>
                   </CommandItem>
                 ))}
@@ -329,18 +333,11 @@ export function CommandPalette() {
                   {pinnedItems.map((item) => (
                     <CommandItem
                       key={`pinned-${item.type}-${item.id}`}
-                      onSelect={() =>
-                        navigate(entityDetailUrl(item.type, item.id))
-                      }
+                      onSelect={() => navigate(entityDetailUrl(item.type, item.id))}
                     >
                       <Star className="h-4 w-4 text-warning" />
-                      <span className="flex-1 truncate text-sm font-medium">
-                        {item.name}
-                      </span>
-                      <Badge
-                        variant="secondary"
-                        className={TYPE_BADGE_CLASSES[item.type] ?? ""}
-                      >
+                      <span className="flex-1 truncate text-sm font-medium">{item.name}</span>
+                      <Badge variant="secondary" className={TYPE_BADGE_CLASSES[item.type] ?? ""}>
                         {item.type}
                       </Badge>
                     </CommandItem>
@@ -353,10 +350,7 @@ export function CommandPalette() {
             <CommandSeparator />
             <CommandGroup heading={t("sections.actions")}>
               {QUICK_ACTIONS.map((action) => (
-                <CommandItem
-                  key={action.key}
-                  onSelect={() => navigate(action.href)}
-                >
+                <CommandItem key={action.key} onSelect={() => navigate(action.href)}>
                   <action.icon className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">{t(action.labelKey as Parameters<typeof t>[0])}</span>
                 </CommandItem>
@@ -398,16 +392,11 @@ export function CommandPalette() {
                     onSelect={() => handleEntityClick(item)}
                     className="group"
                   >
-                    <Badge
-                      variant="secondary"
-                      className={TYPE_BADGE_CLASSES[item.type] ?? ""}
-                    >
+                    <Badge variant="secondary" className={TYPE_BADGE_CLASSES[item.type] ?? ""}>
                       {item.type}
                     </Badge>
                     <div className="flex flex-1 flex-col gap-0.5 overflow-hidden">
-                      <span className="truncate text-sm font-semibold">
-                        {item.name}
-                      </span>
+                      <span className="truncate text-sm font-semibold">{item.name}</span>
                       <span className="truncate text-sm text-muted-foreground">
                         {item.subtitle}
                       </span>
@@ -423,9 +412,7 @@ export function CommandPalette() {
                           name: item.name,
                         });
                       }}
-                      aria-label={
-                        isPinned(item.type, item.id) ? t("unpin") : t("pin")
-                      }
+                      aria-label={isPinned(item.type, item.id) ? t("unpin") : t("pin")}
                     >
                       <Star
                         className={`h-4 w-4 ${
@@ -455,8 +442,7 @@ export function CommandPalette() {
                 <CommandSeparator />
                 <CommandGroup heading="Docs">
                   {docResults.map((result) => {
-                    const ProviderIcon =
-                      result.provider === "notion" ? NotionIcon : ConfluenceIcon;
+                    const ProviderIcon = result.provider === "notion" ? NotionIcon : ConfluenceIcon;
 
                     return (
                       <CommandItem
@@ -464,16 +450,11 @@ export function CommandPalette() {
                         onSelect={() => window.open(result.url, "_blank")}
                       >
                         <ProviderIcon className="h-3.5 w-3.5 shrink-0" />
-                        <span className="flex-1 truncate text-sm font-medium">
-                          {result.title}
-                        </span>
+                        <span className="flex-1 truncate text-sm font-medium">{result.title}</span>
                         <span className="text-xs text-muted-foreground shrink-0">
                           {result.subtitle}
                         </span>
-                        <Badge
-                          variant="secondary"
-                          className={TYPE_BADGE_CLASSES.doc}
-                        >
+                        <Badge variant="secondary" className={TYPE_BADGE_CLASSES.doc}>
                           doc
                         </Badge>
                       </CommandItem>
@@ -489,10 +470,7 @@ export function CommandPalette() {
                 <CommandSeparator />
                 <CommandGroup heading={t("sections.pages")}>
                   {matchedPages.map((item) => (
-                    <CommandItem
-                      key={`page-${item.key}`}
-                      onSelect={() => navigate(item.href)}
-                    >
+                    <CommandItem key={`page-${item.key}`} onSelect={() => navigate(item.href)}>
                       <ArrowRight className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm">{item.label}</span>
                     </CommandItem>
@@ -507,12 +485,11 @@ export function CommandPalette() {
                 <CommandSeparator />
                 <CommandGroup heading={t("sections.actions")}>
                   {matchedActions.map((action) => (
-                    <CommandItem
-                      key={action.key}
-                      onSelect={() => navigate(action.href)}
-                    >
+                    <CommandItem key={action.key} onSelect={() => navigate(action.href)}>
                       <action.icon className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">{t(action.labelKey as Parameters<typeof t>[0])}</span>
+                      <span className="text-sm">
+                        {t(action.labelKey as Parameters<typeof t>[0])}
+                      </span>
                     </CommandItem>
                   ))}
                 </CommandGroup>
@@ -524,15 +501,9 @@ export function CommandPalette() {
 
       {/* Footer keyboard hints */}
       <div className="flex items-center gap-4 border-t border-border/40 px-3 py-2">
-        <span className="text-xs font-mono text-muted-foreground/70">
-          {t("footer.select")}
-        </span>
-        <span className="text-xs font-mono text-muted-foreground/70">
-          {t("footer.navigate")}
-        </span>
-        <span className="text-xs font-mono text-muted-foreground/70">
-          {t("footer.close")}
-        </span>
+        <span className="text-xs font-mono text-muted-foreground/70">{t("footer.select")}</span>
+        <span className="text-xs font-mono text-muted-foreground/70">{t("footer.navigate")}</span>
+        <span className="text-xs font-mono text-muted-foreground/70">{t("footer.close")}</span>
       </div>
     </CommandDialog>
   );

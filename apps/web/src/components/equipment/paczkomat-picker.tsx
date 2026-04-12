@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
 import { MapPin } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -52,9 +52,7 @@ export function PaczkomatPicker({
   geowidgetToken,
 }: PaczkomatPickerProps) {
   const t = useTranslations("Equipment.paczkomat");
-  const [selectedPoint, setSelectedPoint] = useState<PaczkomatPoint | null>(
-    null,
-  );
+  const [selectedPoint, setSelectedPoint] = useState<PaczkomatPoint | null>(null);
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const [iframeError, setIframeError] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -77,16 +75,13 @@ export function PaczkomatPicker({
       if (event.origin !== GEOWIDGET_ORIGIN) return;
 
       try {
-        const data =
-          typeof event.data === "string" ? JSON.parse(event.data) : event.data;
+        const data = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
 
         if (data?.name && data?.address?.line1) {
           setSelectedPoint({
             id: data.name,
             name: data.name,
-            address: [data.address.line1, data.address.line2]
-              .filter(Boolean)
-              .join(", "),
+            address: [data.address.line1, data.address.line2].filter(Boolean).join(", "),
           });
         } else if (data?.name) {
           setSelectedPoint({
@@ -145,9 +140,7 @@ export function PaczkomatPicker({
             <div className="flex h-[400px] items-center justify-center rounded-md border border-dashed text-center">
               <div className="space-y-2">
                 <MapPin className="mx-auto h-8 w-8 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">
-                  {t("loadError")}
-                </p>
+                <p className="text-sm text-muted-foreground">{t("loadError")}</p>
                 <Button
                   variant="outline"
                   size="sm"
@@ -164,17 +157,12 @@ export function PaczkomatPicker({
 
           {/* Selected locker info */}
           {selectedPoint && (
-            <div
-              className="mt-3 rounded-md border bg-card p-3"
-              aria-live="polite"
-            >
+            <div className="mt-3 rounded-md border bg-card p-3" aria-live="polite">
               <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 shrink-0 text-primary" />
                 <div>
                   <p className="text-sm font-medium">{selectedPoint.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {selectedPoint.address}
-                  </p>
+                  <p className="text-xs text-muted-foreground">{selectedPoint.address}</p>
                 </div>
               </div>
             </div>

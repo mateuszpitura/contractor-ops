@@ -1,9 +1,9 @@
 "use client";
 
 import { Check, X } from "lucide-react";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 // ---------------------------------------------------------------------------
@@ -83,9 +83,7 @@ export function PlanCard({
         <div className="flex items-center gap-2">
           <span className="text-sm font-semibold">{tier.name}</span>
           {isCurrentPlan && <Badge variant="default">Current plan</Badge>}
-          {isRecommended && !isCurrentPlan && (
-            <Badge variant="success">Recommended</Badge>
-          )}
+          {isRecommended && !isCurrentPlan && <Badge variant="success">Recommended</Badge>}
         </div>
         <p className="text-sm text-muted-foreground">{tier.description}</p>
       </CardHeader>
@@ -111,25 +109,14 @@ export function PlanCard({
         <ul className="flex flex-col gap-2">
           {tier.features.map((feature) => (
             <li key={feature} className="flex items-start gap-2 text-sm">
-              <Check
-                size={16}
-                className="mt-0.5 shrink-0 text-primary"
-                aria-hidden="true"
-              />
+              <Check size={16} className="mt-0.5 shrink-0 text-primary" aria-hidden="true" />
               {feature}
             </li>
           ))}
           {!compact &&
             tier.excludedFeatures.map((feature) => (
-              <li
-                key={feature}
-                className="flex items-start gap-2 text-sm text-muted-foreground"
-              >
-                <X
-                  size={16}
-                  className="mt-0.5 shrink-0 text-muted-foreground"
-                  aria-hidden="true"
-                />
+              <li key={feature} className="flex items-start gap-2 text-sm text-muted-foreground">
+                <X size={16} className="mt-0.5 shrink-0 text-muted-foreground" aria-hidden="true" />
                 {feature}
               </li>
             ))}

@@ -10,9 +10,8 @@ vi.mock("next-intl", async (importOriginal) => {
 });
 
 vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
-    "@tanstack/react-query",
-  );
+  const actual =
+    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
   return {
     ...actual,
     useMutation: () => ({ mutate: vi.fn(), mutateAsync: vi.fn(), isPending: false }),
@@ -37,99 +36,73 @@ vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 describe("KsefSetupDialog", () => {
   it("renders dialog with NIP field when open", () => {
-    render(
-      <KsefSetupDialog open={true} onOpenChange={vi.fn()} orgNip="1234567890" />,
-    );
+    render(<KsefSetupDialog open={true} onOpenChange={vi.fn()} orgNip="1234567890" />);
     expect(screen.getByText("connectTitle")).toBeInTheDocument();
     expect(screen.getByDisplayValue("1234567890")).toBeInTheDocument();
   });
 
   it("shows orgNipMissing warning when NIP is null", () => {
-    render(
-      <KsefSetupDialog open={true} onOpenChange={vi.fn()} orgNip={null} />,
-    );
+    render(<KsefSetupDialog open={true} onOpenChange={vi.fn()} orgNip={null} />);
     expect(screen.getByText("orgNipMissing")).toBeInTheDocument();
   });
 
   it("renders token and certificate tabs", () => {
-    render(
-      <KsefSetupDialog open={true} onOpenChange={vi.fn()} orgNip="123" />,
-    );
+    render(<KsefSetupDialog open={true} onOpenChange={vi.fn()} orgNip="123" />);
     const tokenMatches = screen.getAllByText("tokenLabel");
     expect(tokenMatches.length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("certificateLabel")).toBeInTheDocument();
   });
 
   it("renders save and discard buttons", () => {
-    render(
-      <KsefSetupDialog open={true} onOpenChange={vi.fn()} orgNip="123" />,
-    );
+    render(<KsefSetupDialog open={true} onOpenChange={vi.fn()} orgNip="123" />);
     expect(screen.getByText("saveCredentials")).toBeInTheDocument();
     expect(screen.getByText("discard")).toBeInTheDocument();
   });
 
   it("does not render when closed", () => {
-    render(
-      <KsefSetupDialog open={false} onOpenChange={vi.fn()} orgNip="123" />,
-    );
+    render(<KsefSetupDialog open={false} onOpenChange={vi.fn()} orgNip="123" />);
     expect(screen.queryByText("connectTitle")).not.toBeInTheDocument();
   });
 
   it("renders dialog description", () => {
-    render(
-      <KsefSetupDialog open={true} onOpenChange={vi.fn()} orgNip="123" />,
-    );
+    render(<KsefSetupDialog open={true} onOpenChange={vi.fn()} orgNip="123" />);
     expect(screen.getByText("connectDescription")).toBeInTheDocument();
   });
 
   it("renders NIP label", () => {
-    render(
-      <KsefSetupDialog open={true} onOpenChange={vi.fn()} orgNip="123" />,
-    );
+    render(<KsefSetupDialog open={true} onOpenChange={vi.fn()} orgNip="123" />);
     expect(screen.getByText("orgNipLabel")).toBeInTheDocument();
   });
 
   it("shows NIP helper text when NIP is present", () => {
-    render(
-      <KsefSetupDialog open={true} onOpenChange={vi.fn()} orgNip="9876543210" />,
-    );
+    render(<KsefSetupDialog open={true} onOpenChange={vi.fn()} orgNip="9876543210" />);
     expect(screen.getByText("orgNipHelper")).toBeInTheDocument();
   });
 
   it("renders token textarea in token tab", () => {
-    render(
-      <KsefSetupDialog open={true} onOpenChange={vi.fn()} orgNip="123" />,
-    );
+    render(<KsefSetupDialog open={true} onOpenChange={vi.fn()} orgNip="123" />);
     expect(screen.getByPlaceholderText("tokenPlaceholder")).toBeInTheDocument();
   });
 
   it("renders token helper text", () => {
-    render(
-      <KsefSetupDialog open={true} onOpenChange={vi.fn()} orgNip="123" />,
-    );
+    render(<KsefSetupDialog open={true} onOpenChange={vi.fn()} orgNip="123" />);
     expect(screen.getByText("tokenHelper")).toBeInTheDocument();
   });
 
   it("save button is disabled when token is empty", () => {
-    render(
-      <KsefSetupDialog open={true} onOpenChange={vi.fn()} orgNip="123" />,
-    );
+    render(<KsefSetupDialog open={true} onOpenChange={vi.fn()} orgNip="123" />);
     const saveBtn = screen.getByText("saveCredentials").closest("button");
     expect(saveBtn).toBeDisabled();
   });
 
   it("NIP field is disabled and read-only", () => {
-    render(
-      <KsefSetupDialog open={true} onOpenChange={vi.fn()} orgNip="123" />,
-    );
+    render(<KsefSetupDialog open={true} onOpenChange={vi.fn()} orgNip="123" />);
     const nipInput = screen.getByDisplayValue("123");
     expect(nipInput).toBeDisabled();
   });
 
   it("save button is disabled when NIP is null", () => {
-    render(
-      <KsefSetupDialog open={true} onOpenChange={vi.fn()} orgNip={null} />,
-    );
+    render(<KsefSetupDialog open={true} onOpenChange={vi.fn()} orgNip={null} />);
     const saveBtn = screen.getByText("saveCredentials").closest("button");
     expect(saveBtn).toBeDisabled();
   });

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { CheckCircle2, AlertCircle } from "lucide-react";
+import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -14,12 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-  TooltipProvider,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 import type { ImportRow } from "./import-wizard-dialog";
 
@@ -33,20 +28,13 @@ interface StepPreviewProps {
   totalRows: number;
 }
 
-export function StepPreview({
-  validRows,
-  invalidRows,
-  totalRows,
-}: StepPreviewProps) {
+export function StepPreview({ validRows, invalidRows, totalRows }: StepPreviewProps) {
   const t = useTranslations("Import");
   const [showErrorsOnly, setShowErrorsOnly] = useState(false);
 
   const allRows = useMemo(
-    () =>
-      [...validRows, ...invalidRows].sort(
-        (a, b) => a.rowNumber - b.rowNumber
-      ),
-    [validRows, invalidRows]
+    () => [...validRows, ...invalidRows].sort((a, b) => a.rowNumber - b.rowNumber),
+    [validRows, invalidRows],
   );
 
   const displayRows = showErrorsOnly ? invalidRows : allRows;
@@ -133,9 +121,7 @@ export function StepPreview({
 
       {/* Empty state */}
       {totalRows === 0 && (
-        <div className="text-sm text-muted-foreground">
-          {t("preview.noRows")}
-        </div>
+        <div className="text-sm text-muted-foreground">{t("preview.noRows")}</div>
       )}
 
       {/* Data table */}
@@ -154,10 +140,7 @@ export function StepPreview({
               {displayRows.map((row) => {
                 const isInvalid = row.status === "invalid";
                 return (
-                  <TableRow
-                    key={row.rowNumber}
-                    className={isInvalid ? "bg-destructive/5" : ""}
-                  >
+                  <TableRow key={row.rowNumber} className={isInvalid ? "bg-destructive/5" : ""}>
                     <TableCell className="font-mono text-xs text-muted-foreground">
                       {row.rowNumber}
                     </TableCell>
@@ -169,11 +152,7 @@ export function StepPreview({
                       return (
                         <TableCell
                           key={col}
-                          className={
-                            hasError
-                              ? "border-l-2 border-destructive"
-                              : ""
-                          }
+                          className={hasError ? "border-l-2 border-destructive" : ""}
                         >
                           <div className="flex items-center gap-1">
                             <span className="truncate max-w-[160px] text-sm">

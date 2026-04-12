@@ -18,9 +18,9 @@ describe("DataTableToolbar", () => {
     render(<DataTableToolbar {...makeProps()} />);
 
     // 6 chips: all, draft, locked, exported, completed, cancelled
-    const buttons = screen.getAllByRole("button").filter(
-      (b) => b.classList.contains("rounded-full"),
-    );
+    const buttons = screen
+      .getAllByRole("button")
+      .filter((b) => b.classList.contains("rounded-full"));
     expect(buttons).toHaveLength(6);
   });
 
@@ -33,9 +33,7 @@ describe("DataTableToolbar", () => {
 
   it("calls onStatusChange when a chip is clicked", async () => {
     const onStatusChange = vi.fn();
-    const { user } = setup(
-      <DataTableToolbar {...makeProps({ onStatusChange })} />,
-    );
+    const { user } = setup(<DataTableToolbar {...makeProps({ onStatusChange })} />);
 
     await user.click(screen.getByText(/exported/i));
     expect(onStatusChange).toHaveBeenCalledWith("EXPORTED");

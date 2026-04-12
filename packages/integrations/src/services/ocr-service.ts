@@ -1,9 +1,5 @@
 import { getAdapter } from "../registry.js";
-import type {
-  OcrAdapter,
-  OcrExtractionRequest,
-  OcrExtractionResult,
-} from "../types/ocr.js";
+import type { OcrAdapter, OcrExtractionRequest, OcrExtractionResult } from "../types/ocr.js";
 
 // ---------------------------------------------------------------------------
 // Provider-Agnostic OCR Orchestration Service
@@ -32,9 +28,7 @@ export function getOcrAdapter(provider: OcrProvider): OcrAdapter {
   // Verify the adapter implements OcrAdapter methods
   const ocrAdapter = adapter as unknown as OcrAdapter;
   if (typeof ocrAdapter.extractInvoice !== "function") {
-    throw new Error(
-      `Adapter for ${provider} does not implement the OcrAdapter interface.`,
-    );
+    throw new Error(`Adapter for ${provider} does not implement the OcrAdapter interface.`);
   }
 
   return ocrAdapter;
@@ -66,8 +60,8 @@ export async function extractInvoice(params: {
 // Re-export OCR types for consumer convenience
 export type {
   OcrAdapter,
+  OcrExtractionField,
   OcrExtractionRequest,
   OcrExtractionResult,
-  OcrExtractionField,
   OcrLineItem,
 } from "../types/ocr.js";

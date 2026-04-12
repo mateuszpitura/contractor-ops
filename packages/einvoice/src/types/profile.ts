@@ -2,9 +2,9 @@
 // E-Invoice Profile Interface
 // ---------------------------------------------------------------------------
 
+import type { ComplianceStatus } from "./compliance.js";
 import type { EInvoice } from "./invoice.js";
 import type { ValidationResult } from "./validation.js";
-import type { ComplianceStatus } from "./compliance.js";
 
 /**
  * Certificate information for digital signing operations.
@@ -68,10 +68,7 @@ export interface EInvoiceProfile {
   /** Generate country-specific XML from canonical EInvoice */
   generate(invoice: EInvoice): Promise<string>;
   /** Parse country-specific XML into canonical EInvoice */
-  parse(
-    xml: string,
-    metadata?: Record<string, unknown>,
-  ): Promise<EInvoice>;
+  parse(xml: string, metadata?: Record<string, unknown>): Promise<EInvoice>;
   /** Validate XML against country-specific rules */
   validate(xml: string): Promise<ValidationResult>;
   /** Get compliance status for an organization */

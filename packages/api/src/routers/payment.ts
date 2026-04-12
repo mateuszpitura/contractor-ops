@@ -1,21 +1,23 @@
-import { z } from "zod";
-import { TRPCError } from "@trpc/server";
 import { prisma } from "@contractor-ops/db";
 import {
+  bankStatementConfirmSchema,
+  markAllPaidSchema,
+  paymentRunCancelSchema,
   paymentRunCreateSchema,
-  paymentRunLockSchema,
   paymentRunItemStatusSchema,
   paymentRunListSchema,
-  paymentRunCancelSchema,
-  markAllPaidSchema,
-  bankStatementConfirmSchema,
+  paymentRunLockSchema,
   readyForPaymentListSchema,
   removeFromRunSchema,
 } from "@contractor-ops/validators";
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 import * as E from "../errors.js";
 import { router } from "../init.js";
-import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
+import { tenantProcedure } from "../middleware/tenant.js";
+import { matchStatementToRun, parseBankStatement } from "../services/bank-statement.js";
+import type { ExportItem, OrgBankInfo } from "../services/payment-export.js";
 import {
   generateCsv,
   generateElixir,
@@ -23,13 +25,8 @@ import {
   generateSwiftXml,
   resolveTransferTitle,
 } from "../services/payment-export.js";
-import { calculateWht } from "../services/tax-rate.service.js";
-import type { ExportItem, OrgBankInfo } from "../services/payment-export.js";
 import { groupItemsByFormat } from "../services/payment-format-detection.js";
-import {
-  parseBankStatement,
-  matchStatementToRun,
-} from "../services/bank-statement.js";
+import { calculateWht } from "../services/tax-rate.service.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -53,10 +50,7 @@ function plain<T>(data: T): T {
 const IDEMPOTENCY_TTL_MS = 24 * 60 * 60_000;
 
 /** Maps "orgId:idempotencyKey" → { runIds, expiresAt } or "PENDING" sentinel */
-const idempotencyCache = new Map<
-  string,
-  { result: unknown; expiresAt: number } | "PENDING"
->();
+const idempotencyCache = new Map<string, { result: unknown; expiresAt: number } | "PENDING">();
 
 if (typeof globalThis !== "undefined") {
   const cleanup = () => {
@@ -183,161 +177,156 @@ export const paymentRouter = router({
       let result;
       try {
         result = await prisma.$transaction(async (tx) => {
-        // Fetch all invoices with their data
-        const invoices = await tx.invoice.findMany({
-          where: {
-            id: { in: input.invoiceIds },
-            organizationId: ctx.organizationId,
-            deletedAt: null,
-          },
-          include: {
-            billingProfile: { select: { id: true, preferredCurrency: true } },
-          },
-        });
-
-        // Verify all invoices have paymentStatus READY
-        const notReady = invoices.filter(
-          (inv) => inv.paymentStatus !== "READY",
-        );
-        if (notReady.length > 0) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: E.PAYMENT_INVOICES_NOT_READY,
+          // Fetch all invoices with their data
+          const invoices = await tx.invoice.findMany({
+            where: {
+              id: { in: input.invoiceIds },
+              organizationId: ctx.organizationId,
+              deletedAt: null,
+            },
+            include: {
+              billingProfile: { select: { id: true, preferredCurrency: true } },
+            },
           });
-        }
 
-        if (invoices.length !== input.invoiceIds.length) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: E.PAYMENT_INVOICES_NOT_FOUND,
-          });
-        }
-
-        // Group invoices by currency if requested
-        const groups: Map<string, typeof invoices> = new Map();
-        if (input.groupByCurrency) {
-          for (const inv of invoices) {
-            const curr = inv.currency;
-            if (!groups.has(curr)) groups.set(curr, []);
-            groups.get(curr)!.push(inv);
-          }
-        } else {
-          // Validate all invoices share the same currency
-          const currencies = new Set(invoices.map((inv) => inv.currency));
-          if (currencies.size > 1) {
+          // Verify all invoices have paymentStatus READY
+          const notReady = invoices.filter((inv) => inv.paymentStatus !== "READY");
+          if (notReady.length > 0) {
             throw new TRPCError({
               code: "BAD_REQUEST",
-              message: E.PAYMENT_MIXED_CURRENCIES,
+              message: E.PAYMENT_INVOICES_NOT_READY,
             });
           }
-          groups.set(input.currency ?? invoices[0]?.currency ?? "PLN", invoices);
-        }
 
-        const runs = [];
-
-        for (const [currency, groupInvoices] of groups) {
-          // Generate sequential run number
-          const year = new Date().getFullYear();
-          const prefix = `PR-${year}-`;
-
-          const lastRun = await tx.paymentRun.findFirst({
-            where: {
-              organizationId: ctx.organizationId,
-              runNumber: { startsWith: prefix },
-            },
-            orderBy: { runNumber: "desc" },
-            select: { runNumber: true },
-          });
-
-          const seq = lastRun?.runNumber
-            ? parseInt(lastRun.runNumber.replace(prefix, ""), 10) + 1
-            : 1;
-
-          const runNumber = `${prefix}${String(seq).padStart(3, "0")}`;
-
-          // Calculate totals
-          const totalMinor = groupInvoices.reduce(
-            (sum, inv) => sum + inv.amountToPayMinor,
-            0,
-          );
-
-          // Create the run
-          const run = await tx.paymentRun.create({
-            data: {
-              organizationId: ctx.organizationId,
-              runNumber,
-              name: input.name ?? null,
-              status: "DRAFT",
-              currency,
-              createdByUserId: ctx.user!.id,
-              totalMinor,
-              invoiceCount: groupInvoices.length,
-              notes: input.notes ?? null,
-            },
-          });
-
-          // Batch-create items and update invoice statuses
-          await tx.paymentRunItem.createMany({
-            data: groupInvoices.map((inv) => ({
-              organizationId: ctx.organizationId,
-              paymentRunId: run.id,
-              invoiceId: inv.id,
-              contractorId: inv.contractorId!,
-              billingProfileId: inv.billingProfileId ?? null,
-              amountMinor: inv.amountToPayMinor,
-              currency: inv.currency,
-              status: "PENDING" as const,
-            })),
-          });
-
-          // Apply WHT calculations for Saudi orgs on cross-border payments
-          const org = await tx.organization.findUniqueOrThrow({
-            where: { id: ctx.organizationId },
-            select: { countryCode: true },
-          });
-          if (org.countryCode === "SA") {
-            const items = await tx.paymentRunItem.findMany({
-              where: { paymentRunId: run.id },
-              include: { contractor: { select: { countryCode: true } } },
+          if (invoices.length !== input.invoiceIds.length) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: E.PAYMENT_INVOICES_NOT_FOUND,
             });
-            for (const item of items) {
-              const whtResult = await calculateWht(
-                org.countryCode,
-                item.contractor.countryCode,
-                "technical_services",
-                item.amountMinor,
-              );
-              if (whtResult) {
-                await tx.paymentRunItem.update({
-                  where: { id: item.id },
-                  data: {
-                    grossAmountMinor: item.amountMinor,
-                    amountMinor: whtResult.netAmountMinor,
-                    whtAmountMinor: whtResult.whtAmountMinor,
-                    whtRate: whtResult.whtRate,
-                    whtTreatyApplied: whtResult.treatyApplied,
-                    whtTreatyReference: whtResult.treatyReference,
-                    whtServiceType: "technical_services",
-                  },
-                });
-                await tx.invoice.update({
-                  where: { id: item.invoiceId },
-                  data: { withholdingMinor: whtResult.whtAmountMinor },
-                });
+          }
+
+          // Group invoices by currency if requested
+          const groups: Map<string, typeof invoices> = new Map();
+          if (input.groupByCurrency) {
+            for (const inv of invoices) {
+              const curr = inv.currency;
+              if (!groups.has(curr)) groups.set(curr, []);
+              groups.get(curr)!.push(inv);
+            }
+          } else {
+            // Validate all invoices share the same currency
+            const currencies = new Set(invoices.map((inv) => inv.currency));
+            if (currencies.size > 1) {
+              throw new TRPCError({
+                code: "BAD_REQUEST",
+                message: E.PAYMENT_MIXED_CURRENCIES,
+              });
+            }
+            groups.set(input.currency ?? invoices[0]?.currency ?? "PLN", invoices);
+          }
+
+          const runs = [];
+
+          for (const [currency, groupInvoices] of groups) {
+            // Generate sequential run number
+            const year = new Date().getFullYear();
+            const prefix = `PR-${year}-`;
+
+            const lastRun = await tx.paymentRun.findFirst({
+              where: {
+                organizationId: ctx.organizationId,
+                runNumber: { startsWith: prefix },
+              },
+              orderBy: { runNumber: "desc" },
+              select: { runNumber: true },
+            });
+
+            const seq = lastRun?.runNumber
+              ? parseInt(lastRun.runNumber.replace(prefix, ""), 10) + 1
+              : 1;
+
+            const runNumber = `${prefix}${String(seq).padStart(3, "0")}`;
+
+            // Calculate totals
+            const totalMinor = groupInvoices.reduce((sum, inv) => sum + inv.amountToPayMinor, 0);
+
+            // Create the run
+            const run = await tx.paymentRun.create({
+              data: {
+                organizationId: ctx.organizationId,
+                runNumber,
+                name: input.name ?? null,
+                status: "DRAFT",
+                currency,
+                createdByUserId: ctx.user!.id,
+                totalMinor,
+                invoiceCount: groupInvoices.length,
+                notes: input.notes ?? null,
+              },
+            });
+
+            // Batch-create items and update invoice statuses
+            await tx.paymentRunItem.createMany({
+              data: groupInvoices.map((inv) => ({
+                organizationId: ctx.organizationId,
+                paymentRunId: run.id,
+                invoiceId: inv.id,
+                contractorId: inv.contractorId!,
+                billingProfileId: inv.billingProfileId ?? null,
+                amountMinor: inv.amountToPayMinor,
+                currency: inv.currency,
+                status: "PENDING" as const,
+              })),
+            });
+
+            // Apply WHT calculations for Saudi orgs on cross-border payments
+            const org = await tx.organization.findUniqueOrThrow({
+              where: { id: ctx.organizationId },
+              select: { countryCode: true },
+            });
+            if (org.countryCode === "SA") {
+              const items = await tx.paymentRunItem.findMany({
+                where: { paymentRunId: run.id },
+                include: { contractor: { select: { countryCode: true } } },
+              });
+              for (const item of items) {
+                const whtResult = await calculateWht(
+                  org.countryCode,
+                  item.contractor.countryCode,
+                  "technical_services",
+                  item.amountMinor,
+                );
+                if (whtResult) {
+                  await tx.paymentRunItem.update({
+                    where: { id: item.id },
+                    data: {
+                      grossAmountMinor: item.amountMinor,
+                      amountMinor: whtResult.netAmountMinor,
+                      whtAmountMinor: whtResult.whtAmountMinor,
+                      whtRate: whtResult.whtRate,
+                      whtTreatyApplied: whtResult.treatyApplied,
+                      whtTreatyReference: whtResult.treatyReference,
+                      whtServiceType: "technical_services",
+                    },
+                  });
+                  await tx.invoice.update({
+                    where: { id: item.invoiceId },
+                    data: { withholdingMinor: whtResult.whtAmountMinor },
+                  });
+                }
               }
             }
+
+            await tx.invoice.updateMany({
+              where: { id: { in: groupInvoices.map((inv) => inv.id) } },
+              data: { paymentStatus: "IN_RUN" },
+            });
+
+            runs.push(run);
           }
 
-          await tx.invoice.updateMany({
-            where: { id: { in: groupInvoices.map((inv) => inv.id) } },
-            data: { paymentStatus: "IN_RUN" },
-          });
-
-          runs.push(run);
-        }
-
-        return runs;
-      });
+          return runs;
+        });
 
         const plainResult = plain(result);
 
@@ -602,18 +591,10 @@ export const paymentRouter = router({
           fileBuffer = generateElixir(exportItems, orgBank);
           ext = "txt";
         } else if (input.exportFormat === "SWIFT_XML") {
-          fileBuffer = generateSwiftXml(
-            exportItems,
-            orgBank,
-            run.runNumber ?? run.id,
-          );
+          fileBuffer = generateSwiftXml(exportItems, orgBank, run.runNumber ?? run.id);
           ext = "xml";
         } else {
-          fileBuffer = generateSepaXml(
-            exportItems,
-            orgBank,
-            run.runNumber ?? run.id,
-          );
+          fileBuffer = generateSepaXml(exportItems, orgBank, run.runNumber ?? run.id);
           ext = "xml";
         }
 
@@ -680,8 +661,7 @@ export const paymentRouter = router({
           data: {
             status: input.status,
             paymentReference: input.paymentReference ?? null,
-            failureReason:
-              input.status === "FAILED" ? input.failureReason : null,
+            failureReason: input.status === "FAILED" ? input.failureReason : null,
             markedPaidAt: input.status === "PAID" ? new Date() : null,
           },
         });
@@ -909,16 +889,12 @@ export const paymentRouter = router({
       if (run.status !== "EXPORTED") {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message:
-            "Bank statement can only be imported for exported payment runs",
+          message: "Bank statement can only be imported for exported payment runs",
         });
       }
 
       // Parse statement
-      const transactions = parseBankStatement(
-        input.fileContent,
-        input.fileName,
-      );
+      const transactions = parseBankStatement(input.fileContent, input.fileName);
 
       // Build items for matching
       const matchItems = run.items.map((item) => ({
@@ -1030,85 +1006,88 @@ export const paymentRouter = router({
     .use(requirePermission({ payment: ["create"] }))
     .input(removeFromRunSchema)
     .mutation(async ({ ctx, input }) => {
-      const result = await prisma.$transaction(async (tx) => {
-        const run = await tx.paymentRun.findFirst({
-          where: {
-            id: input.runId,
-            organizationId: ctx.organizationId,
-          },
-        });
-
-        if (!run) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: E.PAYMENT_RUN_NOT_FOUND,
+      const result = await prisma.$transaction(
+        async (tx) => {
+          const run = await tx.paymentRun.findFirst({
+            where: {
+              id: input.runId,
+              organizationId: ctx.organizationId,
+            },
           });
-        }
 
-        if (run.status !== "DRAFT") {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: E.PAYMENT_RUN_NOT_DRAFT,
+          if (!run) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: E.PAYMENT_RUN_NOT_FOUND,
+            });
+          }
+
+          if (run.status !== "DRAFT") {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: E.PAYMENT_RUN_NOT_DRAFT,
+            });
+          }
+
+          // Find the item
+          const item = await tx.paymentRunItem.findFirst({
+            where: {
+              paymentRunId: run.id,
+              invoiceId: input.invoiceId,
+              organizationId: ctx.organizationId,
+            },
           });
-        }
 
-        // Find the item
-        const item = await tx.paymentRunItem.findFirst({
-          where: {
-            paymentRunId: run.id,
-            invoiceId: input.invoiceId,
-            organizationId: ctx.organizationId,
-          },
-        });
+          if (!item) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: E.PAYMENT_INVOICE_NOT_IN_RUN,
+            });
+          }
 
-        if (!item) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: E.PAYMENT_INVOICE_NOT_IN_RUN,
+          // Delete the item
+          await tx.paymentRunItem.delete({
+            where: { id: item.id },
           });
-        }
 
-        // Delete the item
-        await tx.paymentRunItem.delete({
-          where: { id: item.id },
-        });
+          // Release invoice back to READY
+          await tx.invoice.update({
+            where: { id: input.invoiceId },
+            data: { paymentStatus: "READY" },
+          });
 
-        // Release invoice back to READY
-        await tx.invoice.update({
-          where: { id: input.invoiceId },
-          data: { paymentStatus: "READY" },
-        });
+          // Recalculate run totals from actual remaining items (not cached values)
+          const remainingAgg = await tx.paymentRunItem.aggregate({
+            where: { paymentRunId: run.id, status: { not: "SKIPPED" } },
+            _sum: { amountMinor: true },
+            _count: true,
+          });
 
-        // Recalculate run totals from actual remaining items (not cached values)
-        const remainingAgg = await tx.paymentRunItem.aggregate({
-          where: { paymentRunId: run.id, status: { not: "SKIPPED" } },
-          _sum: { amountMinor: true },
-          _count: true,
-        });
+          const newTotalMinor = remainingAgg._sum.amountMinor ?? 0;
+          const newInvoiceCount = remainingAgg._count;
 
-        const newTotalMinor = remainingAgg._sum.amountMinor ?? 0;
-        const newInvoiceCount = remainingAgg._count;
+          // If no items remain, auto-cancel the run
+          if (newInvoiceCount === 0) {
+            return tx.paymentRun.update({
+              where: { id: run.id },
+              data: {
+                totalMinor: 0,
+                invoiceCount: 0,
+                status: "CANCELLED",
+              },
+            });
+          }
 
-        // If no items remain, auto-cancel the run
-        if (newInvoiceCount === 0) {
           return tx.paymentRun.update({
             where: { id: run.id },
             data: {
-              totalMinor: 0,
-              invoiceCount: 0,
-              status: "CANCELLED",
+              totalMinor: newTotalMinor,
+              invoiceCount: newInvoiceCount,
             },
           });
-        }
-
-        return tx.paymentRun.update({
-          where: { id: run.id },
-          data: {
-            totalMinor: newTotalMinor,
-            invoiceCount: newInvoiceCount,
-          },
-        });
-      }, { isolationLevel: "Serializable" });
+        },
+        { isolationLevel: "Serializable" },
+      );
 
       return plain(result);
     }),

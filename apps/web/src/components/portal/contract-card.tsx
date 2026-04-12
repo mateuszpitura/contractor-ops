@@ -109,22 +109,13 @@ export function ContractCard({ contract, className }: ContractCardProps) {
 
   return (
     <Link href={`/portal/contracts/${contract.id}`} className="block">
-      <Card
-        className={cn(
-          "cursor-pointer transition-colors hover:border-primary/50",
-          className,
-        )}
-      >
+      <Card className={cn("cursor-pointer transition-colors hover:border-primary/50", className)}>
         <CardContent className="space-y-2 p-4">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <p className="text-sm font-semibold leading-snug truncate">
-                {contract.title}
-              </p>
+              <p className="text-sm font-semibold leading-snug truncate">{contract.title}</p>
               {contract.contractNumber && (
-                <p className="text-[13px] text-muted-foreground">
-                  {contract.contractNumber}
-                </p>
+                <p className="text-[13px] text-muted-foreground">{contract.contractNumber}</p>
               )}
             </div>
             <Badge variant={statusBadgeVariant(contract.status)}>

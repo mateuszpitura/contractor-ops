@@ -1,6 +1,6 @@
 import { prisma } from "@contractor-ops/db";
-import type { ProviderHealthStatus } from "../types/health.js";
 import { getAllAdapters } from "../registry.js";
+import type { ProviderHealthStatus } from "../types/health.js";
 
 // ---------------------------------------------------------------------------
 // Health Service — aggregates provider connection health from multiple sources
@@ -110,7 +110,5 @@ export async function getAllProviderHealth(
   organizationId: string,
 ): Promise<ProviderHealthStatus[]> {
   const adapters = getAllAdapters();
-  return Promise.all(
-    adapters.map((a) => getProviderHealth(organizationId, a.slug)),
-  );
+  return Promise.all(adapters.map((a) => getProviderHealth(organizationId, a.slug)));
 }

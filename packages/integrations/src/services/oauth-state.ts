@@ -34,9 +34,7 @@ export function generateOAuthState(
 ): string {
   const timestamp = Date.now();
   const dataToSign = `${provider}:${orgId}:${userId}:${timestamp}`;
-  const sig = createHmac("sha256", signingSecret)
-    .update(dataToSign)
-    .digest("hex");
+  const sig = createHmac("sha256", signingSecret).update(dataToSign).digest("hex");
 
   const payload = { provider, orgId, userId, timestamp, sig };
   return Buffer.from(JSON.stringify(payload)).toString("base64url");
@@ -57,25 +55,24 @@ export function verifyOAuthState(
   signingSecret: string,
 ): OAuthStatePayload | null {
   try {
-    const decoded = JSON.parse(
-      Buffer.from(stateParam, "base64url").toString("utf-8"),
-    ) as { provider: string; orgId: string; userId: string; timestamp: number; sig: string };
+    const decoded = JSON.parse(Buffer.from(stateParam, "base64url").toString("utf-8")) as {
+      provider: string;
+      orgId: string;
+      userId: string;
+      timestamp: number;
+      sig: string;
+    };
 
     // Verify provider matches URL parameter (cross-provider CSRF protection)
     if (decoded.provider !== expectedProvider) return null;
 
     // Recompute HMAC and compare with timing-safe equality
     const dataToSign = `${decoded.provider}:${decoded.orgId}:${decoded.userId}:${decoded.timestamp}`;
-    const expectedSig = createHmac("sha256", signingSecret)
-      .update(dataToSign)
-      .digest("hex");
+    const expectedSig = createHmac("sha256", signingSecret).update(dataToSign).digest("hex");
 
     const sigBuffer = Buffer.from(decoded.sig, "hex");
     const expectedBuffer = Buffer.from(expectedSig, "hex");
-    if (
-      sigBuffer.length !== expectedBuffer.length ||
-      !timingSafeEqual(sigBuffer, expectedBuffer)
-    ) {
+    if (sigBuffer.length !== expectedBuffer.length || !timingSafeEqual(sigBuffer, expectedBuffer)) {
       return null;
     }
 

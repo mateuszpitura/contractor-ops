@@ -1,41 +1,39 @@
-import { z } from "zod";
-import { TRPCError } from "@trpc/server";
 import { auth } from "@contractor-ops/auth";
 import { prisma } from "@contractor-ops/db";
 import { inviteUserSchema, updateUserRoleSchema } from "@contractor-ops/validators";
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 import { router } from "../init.js";
-import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
 import { sensitiveActionProcedure } from "../middleware/sensitive.js";
+import { tenantProcedure } from "../middleware/tenant.js";
 
 export const userRouter = router({
   /**
    * List all members of the current organization.
    * Returns user details including name, email, role, and status.
    */
-  list: tenantProcedure
-    .use(requirePermission({ member: ["read"] }))
-    .query(async ({ ctx }) => {
-      const org = await auth.api.getFullOrganization({
-        headers: ctx.headers,
-        query: { organizationId: ctx.organizationId },
-      });
+  list: tenantProcedure.use(requirePermission({ member: ["read"] })).query(async ({ ctx }) => {
+    const org = await auth.api.getFullOrganization({
+      headers: ctx.headers,
+      query: { organizationId: ctx.organizationId },
+    });
 
-      // Flatten nested user object so frontend gets a consistent shape:
-      // { id, userId, name, email, image, role, createdAt }
-      return (org?.members ?? []).map((member: Record<string, unknown>) => {
-        const user = (member.user ?? {}) as Record<string, unknown>;
-        return {
-          id: member.id,
-          userId: member.userId ?? user.id,
-          name: user.name ?? null,
-          email: user.email ?? null,
-          image: user.image ?? null,
-          role: member.role ?? null,
-          createdAt: member.createdAt ?? null,
-        };
-      });
-    }),
+    // Flatten nested user object so frontend gets a consistent shape:
+    // { id, userId, name, email, image, role, createdAt }
+    return (org?.members ?? []).map((member: Record<string, unknown>) => {
+      const user = (member.user ?? {}) as Record<string, unknown>;
+      return {
+        id: member.id,
+        userId: member.userId ?? user.id,
+        name: user.name ?? null,
+        email: user.email ?? null,
+        image: user.image ?? null,
+        role: member.role ?? null,
+        createdAt: member.createdAt ?? null,
+      };
+    });
+  }),
 
   /**
    * Invite a new user to the organization.

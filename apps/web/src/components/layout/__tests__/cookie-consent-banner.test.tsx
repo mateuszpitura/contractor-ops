@@ -2,7 +2,11 @@ import { render, screen, setup } from "@/test/test-utils";
 import { CookieConsentBanner } from "../cookie-consent-banner";
 
 vi.mock("@/i18n/navigation", () => ({
-  Link: ({ children, href, ...props }: any) => <a href={href} {...props}>{children}</a>,
+  Link: ({ children, href, ...props }: any) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
 }));
 
 describe("CookieConsentBanner", () => {

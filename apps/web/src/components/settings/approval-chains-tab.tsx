@@ -1,22 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useState } from "react";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2 } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Card,
-  CardHeader,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
+import type { ChainData } from "@/components/settings/chain-editor-dialog";
+import { ChainEditorDialog } from "@/components/settings/chain-editor-dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,8 +17,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ChainEditorDialog } from "@/components/settings/chain-editor-dialog";
-import type { ChainData } from "@/components/settings/chain-editor-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -47,10 +41,8 @@ function formatConditionSummary(
 
   return conditions
     .map((c: { field: string; operator: string; value: string | number }) => {
-      const opLabel =
-        c.operator === "gt" ? ">" : c.operator === "lt" ? "<" : "=";
-      const valueLabel =
-        c.field === "amount" ? `${c.value} PLN` : String(c.value);
+      const opLabel = c.operator === "gt" ? ">" : c.operator === "lt" ? "<" : "=";
+      const valueLabel = c.field === "amount" ? `${c.value} PLN` : String(c.value);
       return `${c.field === "amount" ? t("approvals.editor.fieldAmount") : t("approvals.editor.fieldContractorType")} ${opLabel} ${valueLabel}`;
     })
     .join(", ");
@@ -171,12 +163,8 @@ export function ApprovalChainsTab() {
     return (
       <>
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <h3 className="text-base font-semibold">
-            {t("approvals.empty.heading")}
-          </h3>
-          <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-            {t("approvals.empty.body")}
-          </p>
+          <h3 className="text-base font-semibold">{t("approvals.empty.heading")}</h3>
+          <p className="mt-1 max-w-sm text-sm text-muted-foreground">{t("approvals.empty.body")}</p>
           <Button className="mt-4" onClick={handleCreate}>
             <Plus className="me-1.5 size-4" />
             {t("approvals.empty.cta")}
@@ -199,9 +187,7 @@ export function ApprovalChainsTab() {
         <div className="flex items-start justify-between">
           <div>
             <h3 className="text-base font-semibold">{t("approvals.heading")}</h3>
-            <p className="text-sm text-muted-foreground">
-              {t("approvals.description")}
-            </p>
+            <p className="text-sm text-muted-foreground">{t("approvals.description")}</p>
           </div>
           <Button onClick={handleCreate}>
             <Plus className="me-1.5 size-4" />
@@ -230,19 +216,21 @@ export function ApprovalChainsTab() {
             <CardContent>
               <div className="flex items-center gap-3">
                 <Badge variant="secondary">
-                  {t("approvals.levelsCount", { n: Array.isArray(chain.stepsJson) ? chain.stepsJson.length : 0 })}
+                  {t("approvals.levelsCount", {
+                    n: Array.isArray(chain.stepsJson) ? chain.stepsJson.length : 0,
+                  })}
                 </Badge>
                 <span className="text-sm text-muted-foreground">
-                  {formatConditionSummary(chain.conditionsJson, (key: string, params?: Record<string, string | number>) => t(key as Parameters<typeof t>[0], params))}
+                  {formatConditionSummary(
+                    chain.conditionsJson,
+                    (key: string, params?: Record<string, string | number>) =>
+                      t(key as Parameters<typeof t>[0], params),
+                  )}
                 </span>
               </div>
             </CardContent>
             <CardFooter className="gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleEdit(chain)}
-              >
+              <Button variant="ghost" size="sm" onClick={() => handleEdit(chain)}>
                 <Pencil className="me-1.5 size-3.5" />
                 {t("approvals.edit")}
               </Button>
@@ -261,11 +249,7 @@ export function ApprovalChainsTab() {
       </div>
 
       {/* Chain editor dialog */}
-      <ChainEditorDialog
-        open={editorOpen}
-        onOpenChange={setEditorOpen}
-        chainData={editingChain}
-      />
+      <ChainEditorDialog open={editorOpen} onOpenChange={setEditorOpen} chainData={editingChain} />
 
       {/* Delete confirmation dialog */}
       <AlertDialog
@@ -276,12 +260,8 @@ export function ApprovalChainsTab() {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              {t("approvals.deleteConfirm.title")}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("approvals.deleteConfirm.body")}
-            </AlertDialogDescription>
+            <AlertDialogTitle>{t("approvals.deleteConfirm.title")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("approvals.deleteConfirm.body")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t("approvals.deleteConfirm.cancel")}</AlertDialogCancel>

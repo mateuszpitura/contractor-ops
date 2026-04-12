@@ -80,9 +80,7 @@ export const linearStatusMappingSchema = z.record(
   z.array(linearStatusMappingEntrySchema),
 );
 
-export type LinearStatusMappingEntry = z.infer<
-  typeof linearStatusMappingEntrySchema
->;
+export type LinearStatusMappingEntry = z.infer<typeof linearStatusMappingEntrySchema>;
 export type LinearStatusMapping = z.infer<typeof linearStatusMappingSchema>;
 
 // ---------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Outfit, Bricolage_Grotesque, JetBrains_Mono } from "next/font/google";
+import { Bricolage_Grotesque, JetBrains_Mono, Outfit } from "next/font/google";
 import type { ReactNode } from "react";
 
 // Sentry: instrument client-side route transitions for performance tracing

@@ -1,22 +1,16 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
-import { useTranslations } from "next-intl";
+import type { FetchProjectsOutput, MergedPerson } from "@contractor-ops/validators";
 import { Check } from "lucide-react";
-
+import { useTranslations } from "next-intl";
+import { useCallback, useMemo, useState } from "react";
 import { FeatureGate } from "@/components/billing/feature-gate";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-
-import { SourceSelectionStep } from "./source-selection-step";
+import { ConfirmImportStep } from "./confirm-import-step";
 import { PeopleReviewStep } from "./people-review-step";
 import { ProjectImportStep } from "./project-import-step";
-import { ConfirmImportStep } from "./confirm-import-step";
-
-import type {
-  MergedPerson,
-  FetchProjectsOutput,
-} from "@contractor-ops/validators";
+import { SourceSelectionStep } from "./source-selection-step";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -48,11 +42,7 @@ function WizardStepIndicator({
   steps: Array<{ step: WizardStep; label: string }>;
 }) {
   return (
-    <nav
-      className="flex items-center gap-6"
-      role="navigation"
-      aria-label="Wizard steps"
-    >
+    <nav className="flex items-center gap-6" role="navigation" aria-label="Wizard steps">
       {steps.map(({ step, label }, index) => {
         const isCurrent = step === currentStep;
         const isCompleted = step < currentStep;
@@ -65,19 +55,14 @@ function WizardStepIndicator({
           >
             {index > 0 && (
               <div
-                className={`hidden h-px w-8 sm:block ${
-                  isCompleted ? "bg-primary" : "bg-border"
-                }`}
+                className={`hidden h-px w-8 sm:block ${isCompleted ? "bg-primary" : "bg-border"}`}
                 aria-hidden="true"
               />
             )}
             <div className="flex items-center gap-1.5">
               {isCompleted ? (
                 <div className="flex size-6 items-center justify-center rounded-full bg-primary">
-                  <Check
-                    className="size-3.5 text-primary-foreground"
-                    aria-hidden="true"
-                  />
+                  <Check className="size-3.5 text-primary-foreground" aria-hidden="true" />
                 </div>
               ) : (
                 <div
@@ -124,15 +109,13 @@ export function ImportWizard() {
 
   // Step 2: People data + selections
   const [mergedPeople, setMergedPeople] = useState<MergedPerson[]>([]);
-  const [personSelections, setPersonSelections] = useState<
-    Map<string, PersonSelection>
-  >(new Map());
+  const [personSelections, setPersonSelections] = useState<Map<string, PersonSelection>>(new Map());
 
   // Step 3: Projects data + selections
   const [projects, setProjects] = useState<FetchProjectsOutput>([]);
-  const [projectSelections, setProjectSelections] = useState<
-    Map<string, ProjectSelection>
-  >(new Map());
+  const [projectSelections, setProjectSelections] = useState<Map<string, ProjectSelection>>(
+    new Map(),
+  );
 
   // Step 4: Import job
   const [jobId, setJobId] = useState<string | null>(null);
@@ -190,83 +173,81 @@ export function ImportWizard() {
 
   return (
     <FeatureGate requiredTier="Pro" featureName="Onboarding import wizard">
-    <div className="flex flex-col gap-8">
-      {/* Page title */}
-      <div>
-        <h1 className="font-display text-[28px] font-semibold leading-[1.15]">
-          {t("pageTitle")}
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {t("pageSubtitle")}
-        </p>
-      </div>
+      <div className="flex flex-col gap-8">
+        {/* Page title */}
+        <div>
+          <h1 className="font-display text-[28px] font-semibold leading-[1.15]">
+            {t("pageTitle")}
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">{t("pageSubtitle")}</p>
+        </div>
 
-      {/* Step indicator + progress */}
-      <div className="space-y-3">
-        <WizardStepIndicator currentStep={step} steps={stepsConfig} />
-        <Progress value={progressPercent} />
-      </div>
+        {/* Step indicator + progress */}
+        <div className="space-y-3">
+          <WizardStepIndicator currentStep={step} steps={stepsConfig} />
+          <Progress value={progressPercent} />
+        </div>
 
-      {/* Step content */}
-      <div className="min-h-[400px]">
-        {step === 1 && (
-          <SourceSelectionStep
-            selectedSources={selectedSources}
-            onSourcesChange={setSelectedSources}
-          />
-        )}
-
-        {step === 2 && (
-          <PeopleReviewStep
-            selectedSources={selectedSources}
-            mergedPeople={mergedPeople}
-            onMergedPeopleChange={setMergedPeople}
-            personSelections={personSelections}
-            onPersonSelectionsChange={setPersonSelections}
-          />
-        )}
-
-        {step === 3 && (
-          <ProjectImportStep
-            selectedSources={selectedSources}
-            projects={projects}
-            onProjectsChange={setProjects}
-            projectSelections={projectSelections}
-            onProjectSelectionsChange={setProjectSelections}
-          />
-        )}
-
-        {step === 4 && (
-          <ConfirmImportStep
-            mergedPeople={mergedPeople}
-            personSelections={personSelections}
-            projects={projects}
-            projectSelections={projectSelections}
-            jobId={jobId}
-            onJobIdChange={setJobId}
-          />
-        )}
-      </div>
-
-      {/* Sticky footer navigation */}
-      {!jobId && (
-        <div className="sticky bottom-0 flex items-center justify-between border-t bg-background py-4">
-          {step > 1 ? (
-            <Button variant="ghost" onClick={handleBack}>
-              {t("nav.back")}
-            </Button>
-          ) : (
-            <div />
+        {/* Step content */}
+        <div className="min-h-[400px]">
+          {step === 1 && (
+            <SourceSelectionStep
+              selectedSources={selectedSources}
+              onSourcesChange={setSelectedSources}
+            />
           )}
 
-          {step < 4 && (
-            <Button onClick={handleContinue} disabled={!canContinue}>
-              {t("nav.continue")}
-            </Button>
+          {step === 2 && (
+            <PeopleReviewStep
+              selectedSources={selectedSources}
+              mergedPeople={mergedPeople}
+              onMergedPeopleChange={setMergedPeople}
+              personSelections={personSelections}
+              onPersonSelectionsChange={setPersonSelections}
+            />
+          )}
+
+          {step === 3 && (
+            <ProjectImportStep
+              selectedSources={selectedSources}
+              projects={projects}
+              onProjectsChange={setProjects}
+              projectSelections={projectSelections}
+              onProjectSelectionsChange={setProjectSelections}
+            />
+          )}
+
+          {step === 4 && (
+            <ConfirmImportStep
+              mergedPeople={mergedPeople}
+              personSelections={personSelections}
+              projects={projects}
+              projectSelections={projectSelections}
+              jobId={jobId}
+              onJobIdChange={setJobId}
+            />
           )}
         </div>
-      )}
-    </div>
+
+        {/* Sticky footer navigation */}
+        {!jobId && (
+          <div className="sticky bottom-0 flex items-center justify-between border-t bg-background py-4">
+            {step > 1 ? (
+              <Button variant="ghost" onClick={handleBack}>
+                {t("nav.back")}
+              </Button>
+            ) : (
+              <div />
+            )}
+
+            {step < 4 && (
+              <Button onClick={handleContinue} disabled={!canContinue}>
+                {t("nav.continue")}
+              </Button>
+            )}
+          </div>
+        )}
+      </div>
     </FeatureGate>
   );
 }

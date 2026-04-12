@@ -171,12 +171,42 @@ function buildEcdsaCsr(
  * 6 test invoices must be submitted successfully during onboarding step 3.
  */
 const COMPLIANCE_INVOICE_SPECS = [
-  { invoiceTypeCode: "388" as const, invoiceSubtype: "0100000", invoiceType: "standard" as const, label: "Standard Tax Invoice" },
-  { invoiceTypeCode: "381" as const, invoiceSubtype: "0100000", invoiceType: "standard" as const, label: "Standard Credit Note" },
-  { invoiceTypeCode: "383" as const, invoiceSubtype: "0100000", invoiceType: "standard" as const, label: "Standard Debit Note" },
-  { invoiceTypeCode: "388" as const, invoiceSubtype: "0200000", invoiceType: "simplified" as const, label: "Simplified Tax Invoice" },
-  { invoiceTypeCode: "381" as const, invoiceSubtype: "0200000", invoiceType: "simplified" as const, label: "Simplified Credit Note" },
-  { invoiceTypeCode: "383" as const, invoiceSubtype: "0200000", invoiceType: "simplified" as const, label: "Simplified Debit Note" },
+  {
+    invoiceTypeCode: "388" as const,
+    invoiceSubtype: "0100000",
+    invoiceType: "standard" as const,
+    label: "Standard Tax Invoice",
+  },
+  {
+    invoiceTypeCode: "381" as const,
+    invoiceSubtype: "0100000",
+    invoiceType: "standard" as const,
+    label: "Standard Credit Note",
+  },
+  {
+    invoiceTypeCode: "383" as const,
+    invoiceSubtype: "0100000",
+    invoiceType: "standard" as const,
+    label: "Standard Debit Note",
+  },
+  {
+    invoiceTypeCode: "388" as const,
+    invoiceSubtype: "0200000",
+    invoiceType: "simplified" as const,
+    label: "Simplified Tax Invoice",
+  },
+  {
+    invoiceTypeCode: "381" as const,
+    invoiceSubtype: "0200000",
+    invoiceType: "simplified" as const,
+    label: "Simplified Credit Note",
+  },
+  {
+    invoiceTypeCode: "383" as const,
+    invoiceSubtype: "0200000",
+    invoiceType: "simplified" as const,
+    label: "Simplified Debit Note",
+  },
 ] as const;
 
 /** SHA-256 hash of the string "0" — used as PIH for the first invoice in a chain */

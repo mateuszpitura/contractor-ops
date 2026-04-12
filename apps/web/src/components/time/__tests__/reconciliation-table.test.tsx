@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@/test/test-utils";
 
 vi.mock("@tanstack/react-query", () => ({
@@ -22,9 +22,7 @@ vi.mock("@/i18n/navigation", () => ({
 }));
 
 vi.mock("@/components/shared/empty-state", () => ({
-  EmptyState: ({ heading }: { heading: string }) => (
-    <div data-testid="empty-state">{heading}</div>
-  ),
+  EmptyState: ({ heading }: { heading: string }) => <div data-testid="empty-state">{heading}</div>,
 }));
 
 vi.mock("@/components/time/deviation-flag", () => ({
@@ -82,9 +80,7 @@ describe("ReconciliationTable", () => {
       isLoading: false,
     } as any);
     render(<ReconciliationTable />);
-    expect(screen.getByTestId("empty-state")).toHaveTextContent(
-      "No reconciliation data",
-    );
+    expect(screen.getByTestId("empty-state")).toHaveTextContent("No reconciliation data");
   });
 
   it("renders table rows with data", () => {

@@ -1,7 +1,7 @@
-import { describe, it, expect } from "vitest";
-import { NuqsTestingAdapter } from "nuqs/adapters/testing";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { NuqsTestingAdapter } from "nuqs/adapters/testing";
+import { describe, expect, it } from "vitest";
 
 import { useInvoiceFilters } from "../use-invoice-filters";
 
@@ -12,10 +12,7 @@ function FiltersProbe() {
       <span data-testid="page">{state.page}</span>
       <span data-testid="pageSize">{state.pageSize}</span>
       <span data-testid="search">{state.search}</span>
-      <button
-        type="button"
-        onClick={() => void setState({ page: 4 })}
-      >
+      <button type="button" onClick={() => void setState({ page: 4 })}>
         setPage4
       </button>
     </div>

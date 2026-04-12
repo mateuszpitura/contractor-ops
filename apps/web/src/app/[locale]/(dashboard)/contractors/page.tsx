@@ -1,22 +1,20 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Users } from "lucide-react";
 import { useTranslations } from "next-intl";
-
 import { parseAsString, useQueryState } from "nuqs";
-
-import { trpc } from "@/trpc/init";
-import { Skeleton } from "@/components/ui/skeleton";
-import { EmptyState } from "@/components/shared/empty-state";
-import { PageHeader } from "@/components/shared/page-header";
-import { AnimateIn } from "@/components/shared/animate-in";
-import { ContractorDataTable } from "@/components/contractors/contractor-table/data-table";
+import { Suspense, useEffect, useState } from "react";
 import { ContractorSidePanel } from "@/components/contractors/contractor-side-panel";
+import type { ContractorRow } from "@/components/contractors/contractor-table/columns";
+import { ContractorDataTable } from "@/components/contractors/contractor-table/data-table";
 import { WizardDialog } from "@/components/contractors/contractor-wizard/wizard-dialog";
 import { ImportWizardDialog } from "@/components/import/import-wizard-dialog";
-import type { ContractorRow } from "@/components/contractors/contractor-table/columns";
+import { AnimateIn } from "@/components/shared/animate-in";
+import { EmptyState } from "@/components/shared/empty-state";
+import { PageHeader } from "@/components/shared/page-header";
+import { Skeleton } from "@/components/ui/skeleton";
+import { trpc } from "@/trpc/init";
 
 /**
  * Inner contractor page content that uses nuqs (requires useSearchParams).
@@ -26,8 +24,7 @@ function ContractorsContent() {
   const t = useTranslations("Contractors");
   const te = useTranslations("EmptyStates");
 
-  const [selectedContractor, setSelectedContractor] =
-    useState<ContractorRow | null>(null);
+  const [selectedContractor, setSelectedContractor] = useState<ContractorRow | null>(null);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [importWizardOpen, setImportWizardOpen] = useState(false);
@@ -41,9 +38,7 @@ function ContractorsContent() {
   }, [action, setAction]);
 
   // Lightweight count query for empty state detection
-  const countQuery = useQuery(
-    trpc.contractor.list.queryOptions({ page: 1, pageSize: 10 }),
-  );
+  const countQuery = useQuery(trpc.contractor.list.queryOptions({ page: 1, pageSize: 10 }));
   const totalCount = (countQuery.data as { total: number } | undefined)?.total ?? 0;
   const isCountLoading = countQuery.isLoading;
 
@@ -66,7 +61,10 @@ function ContractorsContent() {
           heading={te("contractors.heading")}
           body={te("contractors.body")}
           primaryAction={{ label: te("contractors.cta"), onClick: handleAddContractor }}
-          secondaryAction={{ label: te("contractors.secondary"), onClick: () => setImportWizardOpen(true) }}
+          secondaryAction={{
+            label: te("contractors.secondary"),
+            onClick: () => setImportWizardOpen(true),
+          }}
         />
         <WizardDialog open={wizardOpen} onOpenChange={setWizardOpen} />
         <ImportWizardDialog

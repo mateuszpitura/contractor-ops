@@ -1,16 +1,22 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
+import { useState } from "react";
 import { toast } from "sonner";
-
-import { trpc } from "@/trpc/init";
-import { getAvatarInitials } from "@/lib/avatar-initials";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -19,19 +25,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Command,
-  CommandInput,
-  CommandList,
-  CommandEmpty,
-  CommandGroup,
-  CommandItem,
-} from "@/components/ui/command";
+import { getAvatarInitials } from "@/lib/avatar-initials";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -59,10 +54,7 @@ type UserMapping = {
 // Status badge config
 // ---------------------------------------------------------------------------
 
-const STATUS_BADGE: Record<
-  string,
-  { labelKey: string; className: string }
-> = {
+const STATUS_BADGE: Record<string, { labelKey: string; className: string }> = {
   auto_matched: {
     labelKey: "statusAutoMatched",
     className: "bg-emerald-500/10 text-emerald-500",
@@ -81,13 +73,7 @@ const STATUS_BADGE: Record<
 // Link User Popover
 // ---------------------------------------------------------------------------
 
-function LinkUserPopover({
-  userId,
-  onLinked,
-}: {
-  userId: string;
-  onLinked: () => void;
-}) {
+function LinkUserPopover({ userId, onLinked }: { userId: string; onLinked: () => void }) {
   const t = useTranslations("Settings");
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
@@ -117,11 +103,7 @@ function LinkUserPopover({
   // The user types a Slack user ID and submits
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger
-        render={
-          <Button variant="ghost" size="sm" type="button" />
-        }
-      >
+      <PopoverTrigger render={<Button variant="ghost" size="sm" type="button" />}>
         {t("integrations.userMapping.linkUser")}
       </PopoverTrigger>
       <PopoverContent className="w-[280px] p-0" align="start">
@@ -139,9 +121,7 @@ function LinkUserPopover({
                   onSelect={() => handleSelect(search)}
                   className="cursor-pointer"
                 >
-                  <span className="text-sm">
-                    Link as &quot;{search}&quot;
-                  </span>
+                  <span className="text-sm">Link as &quot;{search}&quot;</span>
                 </CommandItem>
               ) : (
                 <span className="text-sm text-muted-foreground p-2">
@@ -164,9 +144,7 @@ export function SlackUserMapping() {
   const t = useTranslations("Settings");
   const queryClient = useQueryClient();
 
-  const mappingsQuery = useQuery(
-    trpc.integration.listUserMappings.queryOptions(),
-  );
+  const mappingsQuery = useQuery(trpc.integration.listUserMappings.queryOptions());
   const mappings = (mappingsQuery.data?.mappings ?? []) as UserMapping[];
 
   const unlinkMutation = useMutation(
@@ -222,12 +200,8 @@ export function SlackUserMapping() {
   return (
     <div className="space-y-4">
       <div>
-        <h4 className="text-base font-semibold">
-          {t("integrations.userMapping.heading")}
-        </h4>
-        <p className="text-sm text-muted-foreground">
-          {t("integrations.userMapping.description")}
-        </p>
+        <h4 className="text-base font-semibold">{t("integrations.userMapping.heading")}</h4>
+        <p className="text-sm text-muted-foreground">{t("integrations.userMapping.description")}</p>
       </div>
 
       <p className="text-sm text-muted-foreground">
@@ -242,9 +216,7 @@ export function SlackUserMapping() {
           <TableRow>
             <TableHead>{t("integrations.userMapping.columnUser")}</TableHead>
             <TableHead>{t("integrations.userMapping.columnEmail")}</TableHead>
-            <TableHead>
-              {t("integrations.userMapping.columnSlackUser")}
-            </TableHead>
+            <TableHead>{t("integrations.userMapping.columnSlackUser")}</TableHead>
             <TableHead>{t("integrations.userMapping.columnStatus")}</TableHead>
             <TableHead>{t("integrations.userMapping.columnAction")}</TableHead>
           </TableRow>
@@ -253,14 +225,9 @@ export function SlackUserMapping() {
           {mappings.map((mapping) => {
             const status = getMappingStatus(mapping);
             const statusConfig = STATUS_BADGE[status];
-            const slackMetadata = mapping.slackLink?.metadata as Record<
-              string,
-              unknown
-            > | null;
+            const slackMetadata = mapping.slackLink?.metadata as Record<string, unknown> | null;
             const slackDisplayName =
-              (slackMetadata?.displayName as string) ??
-              mapping.slackLink?.externalId ??
-              "---";
+              (slackMetadata?.displayName as string) ?? mapping.slackLink?.externalId ?? "---";
 
             return (
               <TableRow key={mapping.userId}>
@@ -272,22 +239,17 @@ export function SlackUserMapping() {
                         {getAvatarInitials(mapping.user.name, mapping.user.email)}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="text-sm font-medium">
-                      {mapping.user.name ?? "Unknown"}
-                    </span>
+                    <span className="text-sm font-medium">{mapping.user.name ?? "Unknown"}</span>
                   </div>
                 </TableCell>
-                <TableCell className="text-sm">
-                  {mapping.user.email}
-                </TableCell>
+                <TableCell className="text-sm">{mapping.user.email}</TableCell>
                 <TableCell className="text-sm">{slackDisplayName}</TableCell>
                 <TableCell>
-                  <Badge
-                    variant="secondary"
-                    className={statusConfig.className}
-                  >
+                  <Badge variant="secondary" className={statusConfig.className}>
                     {t(
-                      `integrations.userMapping.${statusConfig.labelKey}` as Parameters<typeof t>[0],
+                      `integrations.userMapping.${statusConfig.labelKey}` as Parameters<
+                        typeof t
+                      >[0],
                     )}
                   </Badge>
                 </TableCell>
@@ -306,10 +268,7 @@ export function SlackUserMapping() {
                       {t("integrations.userMapping.unlinkUser")}
                     </Button>
                   ) : (
-                    <LinkUserPopover
-                      userId={mapping.userId}
-                      onLinked={() => {}}
-                    />
+                    <LinkUserPopover userId={mapping.userId} onLinked={() => {}} />
                   )}
                 </TableCell>
               </TableRow>

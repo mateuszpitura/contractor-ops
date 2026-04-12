@@ -73,11 +73,7 @@ export function stripDiacritics(s: string): string {
 /**
  * Format a string into pipe-delimited lines of max lineWidth chars.
  */
-export function formatMultiline(
-  s: string,
-  maxLines: number,
-  lineWidth: number,
-): string {
+export function formatMultiline(s: string, maxLines: number, lineWidth: number): string {
   const clean = stripDiacritics(s);
   const lines: string[] = [];
   let remaining = clean;
@@ -179,10 +175,7 @@ export async function generateCsv(items: ExportItem[]): Promise<Buffer> {
  * Strips diacritics to ASCII for bank compatibility.
  * Lines separated by CRLF.
  */
-export function generateElixir(
-  items: ExportItem[],
-  sender: OrgBankInfo,
-): Buffer {
+export function generateElixir(items: ExportItem[], sender: OrgBankInfo): Buffer {
   const lines = items.map((item) => {
     const date = formatDateYYYYMMDD(item.dueDate);
     const amountMinor = String(item.amountMinor);
@@ -229,19 +222,12 @@ export function generateElixir(
 /**
  * Generate a SEPA XML pain.001.001.03 credit transfer initiation document.
  */
-export function generateSepaXml(
-  items: ExportItem[],
-  org: OrgBankInfo,
-  runNumber: string,
-): Buffer {
-  const msgId = runNumber
-    .replace(/[^a-zA-Z0-9-]/g, "")
-    .substring(0, 35);
+export function generateSepaXml(items: ExportItem[], org: OrgBankInfo, runNumber: string): Buffer {
+  const msgId = runNumber.replace(/[^a-zA-Z0-9-]/g, "").substring(0, 35);
   const now = new Date().toISOString();
   const totalAmount = items.reduce((sum, i) => sum + i.amountMinor, 0);
   const requestedDate =
-    items[0]?.dueDate.toISOString().slice(0, 10) ??
-    new Date().toISOString().slice(0, 10);
+    items[0]?.dueDate.toISOString().slice(0, 10) ?? new Date().toISOString().slice(0, 10);
 
   const transactions = items
     .map((item, i) => {
@@ -298,29 +284,19 @@ ${transactions}
  * Used for international (non-SEPA) transfers — AED, SAR, GBP, and other non-EUR currencies.
  * Per D-03: sits alongside generateSepaXml, format chosen by payment run.
  */
-export function generateSwiftXml(
-  items: ExportItem[],
-  org: OrgBankInfo,
-  runNumber: string,
-): Buffer {
-  const msgId = runNumber
-    .replace(/[^a-zA-Z0-9-]/g, "")
-    .substring(0, 35);
+export function generateSwiftXml(items: ExportItem[], org: OrgBankInfo, runNumber: string): Buffer {
+  const msgId = runNumber.replace(/[^a-zA-Z0-9-]/g, "").substring(0, 35);
   const now = new Date().toISOString();
   const currency = items[0]?.currency ?? "USD";
   const totalAmount = items.reduce((sum, i) => sum + i.amountMinor, 0);
   const requestedDate =
-    items[0]?.dueDate.toISOString().slice(0, 10) ??
-    new Date().toISOString().slice(0, 10);
+    items[0]?.dueDate.toISOString().slice(0, 10) ?? new Date().toISOString().slice(0, 10);
 
   const transactions = items
     .map((item, i) => {
       const endToEndId = `${msgId}-${String(i + 1).padStart(4, "0")}`;
       const bic = item.swiftBic ?? "NOTPROVIDED";
-      const purposeCode = getPurposeCode(
-        item.serviceCategory ?? "",
-        item.purposeCodeOverride,
-      );
+      const purposeCode = getPurposeCode(item.serviceCategory ?? "", item.purposeCodeOverride);
       const country = item.creditorCountry ?? "";
 
       return `      <CdtTrfTxInf>
@@ -328,8 +304,12 @@ export function generateSwiftXml(
         <Amt><InstdAmt Ccy="${escapeXml(item.currency)}">${minorToDecimal(item.amountMinor, item.currency)}</InstdAmt></Amt>
         <CdtrAgt><FinInstnId><BICFI>${escapeXml(bic)}</BICFI></FinInstnId></CdtrAgt>
         <Cdtr>
-          <Nm>${escapeXml(item.contractorName)}</Nm>${country ? `
-          <PstlAdr><Ctry>${escapeXml(country)}</Ctry></PstlAdr>` : ""}
+          <Nm>${escapeXml(item.contractorName)}</Nm>${
+            country
+              ? `
+          <PstlAdr><Ctry>${escapeXml(country)}</Ctry></PstlAdr>`
+              : ""
+          }
         </Cdtr>
         <CdtrAcct><Id><IBAN>${escapeXml(item.iban)}</IBAN></Id></CdtrAcct>
         <Purp><Cd>${purposeCode}</Cd></Purp>

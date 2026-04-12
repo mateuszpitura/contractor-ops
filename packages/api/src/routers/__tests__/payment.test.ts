@@ -9,8 +9,8 @@
  *    then asserts the arguments passed to Prisma (WHERE clauses, data).
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import { TRPCError } from "@trpc/server";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -124,7 +124,10 @@ vi.mock("@contractor-ops/db", () => ({
 }));
 
 vi.mock("../../services/r2.js", () => ({
-  createPresignedUploadUrl: vi.fn(async () => ({ url: "https://r2.example.com/upload", key: "mock-key" })),
+  createPresignedUploadUrl: vi.fn(async () => ({
+    url: "https://r2.example.com/upload",
+    key: "mock-key",
+  })),
   createPresignedDownloadUrl: vi.fn(async () => "https://r2.example.com/download"),
   generateStorageKey: vi.fn(() => "mock-storage-key"),
   headObject: vi.fn(async () => ({ ContentLength: 1024 })),
@@ -165,7 +168,10 @@ vi.mock("../../services/calendar-deadline-sync.js", () => ({
 }));
 
 vi.mock("../../services/report-export.js", () => ({
-  generateAuditCsv: vi.fn(async () => ({ base64: "bW9jaw==", filename: "audit-log-2025-01-01.csv" })),
+  generateAuditCsv: vi.fn(async () => ({
+    base64: "bW9jaw==",
+    filename: "audit-log-2025-01-01.csv",
+  })),
 }));
 
 vi.mock("../../services/billing-service.js", () => ({
@@ -222,9 +228,7 @@ vi.mock("../../services/payment-export.js", () => ({
 }));
 
 vi.mock("../../services/bank-statement.js", () => ({
-  parseBankStatement: vi.fn(() => [
-    { amount: 100000, iban: "PL1234", reference: "FV/2025/001" },
-  ]),
+  parseBankStatement: vi.fn(() => [{ amount: 100000, iban: "PL1234", reference: "FV/2025/001" }]),
   matchStatementToRun: vi.fn(() => [
     { itemId: "clitem00000000000000000001", transactionIndex: 0, confidence: 1 },
   ]),
@@ -252,7 +256,7 @@ vi.mock("@contractor-ops/logger/metrics", () => ({
 
 import { createCallerFactory } from "../../init.js";
 import { appRouter } from "../../root.js";
-import { parseBankStatement, matchStatementToRun } from "../../services/bank-statement.js";
+import { matchStatementToRun, parseBankStatement } from "../../services/bank-statement.js";
 
 // ---------------------------------------------------------------------------
 // Caller helper
@@ -355,8 +359,8 @@ function makeItem(overrides: Record<string, unknown> = {}) {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  mockPrisma.$transaction.mockImplementation(
-    async (fn: (tx: unknown) => Promise<unknown>) => fn(mockPrisma),
+  mockPrisma.$transaction.mockImplementation(async (fn: (tx: unknown) => Promise<unknown>) =>
+    fn(mockPrisma),
   );
 });
 
@@ -461,9 +465,7 @@ describe("payment router", () => {
       const invoice = makeInvoice({ paymentStatus: "IN_RUN" });
       mockPrisma.invoice.findMany.mockResolvedValueOnce([invoice]);
 
-      await expect(
-        caller.payment.create({ invoiceIds: [INVOICE_ID_1] }),
-      ).rejects.toMatchObject({
+      await expect(caller.payment.create({ invoiceIds: [INVOICE_ID_1] })).rejects.toMatchObject({
         code: "BAD_REQUEST",
         message: "PAYMENT_INVOICES_NOT_READY",
       });
@@ -480,9 +482,7 @@ describe("payment router", () => {
 
       mockPrisma.invoice.findMany.mockResolvedValueOnce([invoicePLN, invoiceEUR]);
       // First findFirst for PLN run number, second for EUR run number
-      mockPrisma.paymentRun.findFirst
-        .mockResolvedValueOnce(null)
-        .mockResolvedValueOnce(null);
+      mockPrisma.paymentRun.findFirst.mockResolvedValueOnce(null).mockResolvedValueOnce(null);
 
       await caller.payment.create({
         invoiceIds: [INVOICE_ID_1, INVOICE_ID_2],
@@ -510,9 +510,7 @@ describe("payment router", () => {
       const item = makeItem();
       mockPrisma.paymentRun.findFirst.mockResolvedValueOnce(run);
       mockPrisma.paymentRunItem.findFirst.mockResolvedValueOnce(item);
-      mockPrisma.paymentRunItem.findMany.mockResolvedValueOnce([
-        { amountGrosze: 200000 },
-      ]);
+      mockPrisma.paymentRunItem.findMany.mockResolvedValueOnce([{ amountGrosze: 200000 }]);
 
       await caller.payment.removeFromRun({
         runId: RUN_ID,
@@ -656,7 +654,7 @@ describe("payment router", () => {
       const item = makeItem();
       mockPrisma.paymentRunItem.findFirst.mockResolvedValueOnce(item);
       mockPrisma.paymentRunItem.count
-        .mockResolvedValueOnce(1)  // remaining non-terminal
+        .mockResolvedValueOnce(1) // remaining non-terminal
         .mockResolvedValueOnce(0); // failed count (not reached since remaining > 0)
 
       await caller.payment.updateItemStatus({
@@ -685,7 +683,7 @@ describe("payment router", () => {
       const item = makeItem();
       mockPrisma.paymentRunItem.findFirst.mockResolvedValueOnce(item);
       mockPrisma.paymentRunItem.count
-        .mockResolvedValueOnce(1)  // remaining non-terminal
+        .mockResolvedValueOnce(1) // remaining non-terminal
         .mockResolvedValueOnce(0);
 
       await caller.payment.updateItemStatus({
@@ -808,9 +806,7 @@ describe("payment router", () => {
       mockPrisma.paymentRun.findFirst.mockResolvedValueOnce(run);
       mockPrisma.member.findFirst.mockResolvedValueOnce({ role: "member" });
 
-      await expect(
-        caller.payment.cancel({ runId: RUN_ID }),
-      ).rejects.toMatchObject({
+      await expect(caller.payment.cancel({ runId: RUN_ID })).rejects.toMatchObject({
         code: "FORBIDDEN",
       });
     });
@@ -819,9 +815,7 @@ describe("payment router", () => {
       const run = makeRun({ status: "COMPLETED", items: [] });
       mockPrisma.paymentRun.findFirst.mockResolvedValueOnce(run);
 
-      await expect(
-        caller.payment.cancel({ runId: RUN_ID }),
-      ).rejects.toMatchObject({
+      await expect(caller.payment.cancel({ runId: RUN_ID })).rejects.toMatchObject({
         code: "BAD_REQUEST",
         message: "PAYMENT_RUN_INVALID_STATUS",
       });
@@ -868,10 +862,7 @@ describe("payment router", () => {
         fileName: "statement.mt940",
       });
 
-      expect(parseBankStatement).toHaveBeenCalledWith(
-        "MT940-content-here",
-        "statement.mt940",
-      );
+      expect(parseBankStatement).toHaveBeenCalledWith("MT940-content-here", "statement.mt940");
       expect(matchStatementToRun).toHaveBeenCalledTimes(1);
     });
 
@@ -902,7 +893,7 @@ describe("payment router", () => {
       mockPrisma.paymentRunItem.findFirst.mockResolvedValueOnce(item);
       // After marking paid: 0 remaining -> auto-complete
       mockPrisma.paymentRunItem.count
-        .mockResolvedValueOnce(0)  // remaining pending/exported
+        .mockResolvedValueOnce(0) // remaining pending/exported
         .mockResolvedValueOnce(0); // failed count
       mockPrisma.paymentRun.findUnique.mockResolvedValueOnce({
         ...run,
@@ -933,7 +924,7 @@ describe("payment router", () => {
       mockPrisma.paymentRunItem.findFirst.mockResolvedValueOnce(item);
       // 0 remaining -> triggers auto-complete
       mockPrisma.paymentRunItem.count
-        .mockResolvedValueOnce(0)  // remaining
+        .mockResolvedValueOnce(0) // remaining
         .mockResolvedValueOnce(0); // failed
       mockPrisma.paymentRun.findUnique.mockResolvedValueOnce({
         ...run,

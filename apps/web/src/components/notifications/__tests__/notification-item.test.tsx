@@ -1,18 +1,13 @@
 import { fireEvent } from "@testing-library/react";
 import { render, screen } from "@/test/test-utils";
-import {
-  NotificationItem,
-  getEntityUrl,
-  type NotificationData,
-} from "../notification-item";
+import type { NotificationData } from "../notification-item";
+import { getEntityUrl, NotificationItem } from "../notification-item";
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-function makeNotification(
-  overrides: Partial<NotificationData> = {},
-): NotificationData {
+function makeNotification(overrides: Partial<NotificationData> = {}): NotificationData {
   return {
     id: "notif-1",
     type: "APPROVAL_REQUEST",
@@ -46,14 +41,10 @@ describe("NotificationItem", () => {
   // -------------------------------------------------------------------------
 
   it("renders title and body", () => {
-    render(
-      <NotificationItem notification={makeNotification()} onClick={vi.fn()} />,
-    );
+    render(<NotificationItem notification={makeNotification()} onClick={vi.fn()} />);
 
     expect(screen.getByText("New approval request")).toBeInTheDocument();
-    expect(
-      screen.getByText("Invoice #1234 needs your approval"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Invoice #1234 needs your approval")).toBeInTheDocument();
   });
 
   // -------------------------------------------------------------------------
@@ -62,15 +53,10 @@ describe("NotificationItem", () => {
 
   it("shows unread dot when readAt is null", () => {
     const { container } = render(
-      <NotificationItem
-        notification={makeNotification({ readAt: null })}
-        onClick={vi.fn()}
-      />,
+      <NotificationItem notification={makeNotification({ readAt: null })} onClick={vi.fn()} />,
     );
 
-    expect(
-      container.querySelector(".rounded-full.bg-primary"),
-    ).toBeInTheDocument();
+    expect(container.querySelector(".rounded-full.bg-primary")).toBeInTheDocument();
   });
 
   it("does NOT show unread dot when readAt is set", () => {
@@ -83,15 +69,11 @@ describe("NotificationItem", () => {
       />,
     );
 
-    expect(
-      container.querySelector(".rounded-full.bg-primary"),
-    ).not.toBeInTheDocument();
+    expect(container.querySelector(".rounded-full.bg-primary")).not.toBeInTheDocument();
   });
 
   it("applies bg-muted class for unread notifications", () => {
-    render(
-      <NotificationItem notification={makeNotification()} onClick={vi.fn()} />,
-    );
+    render(<NotificationItem notification={makeNotification()} onClick={vi.fn()} />);
 
     const button = screen.getByRole("button");
     expect(button.className).toContain("bg-muted");
@@ -119,9 +101,7 @@ describe("NotificationItem", () => {
   it("calls onClick when clicked", () => {
     const onClick = vi.fn();
 
-    render(
-      <NotificationItem notification={makeNotification()} onClick={onClick} />,
-    );
+    render(<NotificationItem notification={makeNotification()} onClick={onClick} />);
 
     fireEvent.click(screen.getByRole("button"));
 
@@ -189,13 +169,7 @@ describe("NotificationItem", () => {
   // -------------------------------------------------------------------------
 
   it("applies smaller padding in compact mode", () => {
-    render(
-      <NotificationItem
-        notification={makeNotification()}
-        onClick={vi.fn()}
-        compact
-      />,
-    );
+    render(<NotificationItem notification={makeNotification()} onClick={vi.fn()} compact />);
 
     const button = screen.getByRole("button");
     expect(button.className).toContain("px-3");

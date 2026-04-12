@@ -35,9 +35,7 @@ export const googleDirectoryUserSchema = z.object({
   isAdmin: z.boolean().optional(),
 });
 
-export type GoogleDirectoryUserParsed = z.infer<
-  typeof googleDirectoryUserSchema
->;
+export type GoogleDirectoryUserParsed = z.infer<typeof googleDirectoryUserSchema>;
 
 // ---------------------------------------------------------------------------
 // Google Group Schema
@@ -81,16 +79,12 @@ export const directoryImportInputSchema = z.object({
     .min(1),
   defaultRole: directoryRoleEnum,
   groupRoleMappings: z.array(groupRoleMappingSchema).default([]),
-  userRoleOverrides: z
-    .record(z.string().email(), directoryRoleEnum)
-    .default({}),
+  userRoleOverrides: z.record(z.string().email(), directoryRoleEnum).default({}),
   /**
    * Client-supplied group memberships for display purposes only.
    * Server MUST re-fetch from Google API for RBAC role resolution.
    */
-  userGroupMemberships: z
-    .record(z.string().email(), z.array(z.string().email()))
-    .default({}),
+  userGroupMemberships: z.record(z.string().email(), z.array(z.string().email())).default({}),
 });
 
 export type DirectoryImportInput = z.infer<typeof directoryImportInputSchema>;

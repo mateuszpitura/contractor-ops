@@ -1,17 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { useSearchParams } from "next/navigation";
-import { trpc } from "@/trpc/init";
-import { toast } from "sonner";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { UsageDashboard } from "./usage-dashboard";
-import { ProrationPreview } from "./proration-preview";
+import { trpc } from "@/trpc/init";
 import type { TierId } from "./plan-comparison-grid";
+import { ProrationPreview } from "./proration-preview";
+import { UsageDashboard } from "./usage-dashboard";
 
 // ---------------------------------------------------------------------------
 // Component
@@ -22,9 +21,7 @@ export function BillingTab() {
   const [selectedPriceId, setSelectedPriceId] = useState<string | null>(null);
 
   // Fetch current subscription
-  const { data: subscription } = useQuery(
-    trpc.billing.getSubscription.queryOptions(),
-  );
+  const { data: subscription } = useQuery(trpc.billing.getSubscription.queryOptions());
 
   // Checkout mutation
   const checkoutMutation = useMutation({
@@ -111,14 +108,8 @@ export function BillingTab() {
 
       {/* Manage Billing Portal */}
       {subscription && (
-        <Button
-          variant="outline"
-          onClick={handlePortal}
-          disabled={portalMutation.isPending}
-        >
-          {portalMutation.isPending && (
-            <Loader2 className="animate-spin" aria-hidden="true" />
-          )}
+        <Button variant="outline" onClick={handlePortal} disabled={portalMutation.isPending}>
+          {portalMutation.isPending && <Loader2 className="animate-spin" aria-hidden="true" />}
           Manage billing
         </Button>
       )}

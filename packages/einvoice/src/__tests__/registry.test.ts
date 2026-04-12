@@ -1,14 +1,9 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import {
-  registerProfile,
-  getProfile,
-  listProfiles,
-  clearProfiles,
-} from "../registry.js";
-import type { EInvoiceProfile } from "../types/profile.js";
-import type { EInvoice } from "../types/invoice.js";
-import type { ValidationResult } from "../types/validation.js";
+import { beforeEach, describe, expect, it } from "vitest";
+import { clearProfiles, getProfile, listProfiles, registerProfile } from "../registry.js";
 import type { ComplianceStatus } from "../types/compliance.js";
+import type { EInvoice } from "../types/invoice.js";
+import type { EInvoiceProfile } from "../types/profile.js";
+import type { ValidationResult } from "../types/validation.js";
 
 // ---------------------------------------------------------------------------
 // Mock Profile
@@ -66,9 +61,7 @@ describe("Profile Registry", () => {
   });
 
   it("throws for unregistered profileId", () => {
-    expect(() => getProfile("nonexistent")).toThrow(
-      "Unknown e-invoicing profile: nonexistent",
-    );
+    expect(() => getProfile("nonexistent")).toThrow("Unknown e-invoicing profile: nonexistent");
   });
 
   it("lists all registered profiles", () => {

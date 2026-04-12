@@ -3,8 +3,7 @@
 // ---------------------------------------------------------------------------
 
 /** PINT-AE customization ID for UAE invoices */
-export const PINT_AE_CUSTOMIZATION_ID =
-  "urn:peppol:pint:billing-1@uae-1.0";
+export const PINT_AE_CUSTOMIZATION_ID = "urn:peppol:pint:billing-1@uae-1.0";
 
 /** Standard Peppol BIS Billing 3.0 profile ID */
 export const PINT_AE_PROFILE_ID = "urn:peppol:bis:billing";
@@ -29,9 +28,6 @@ export const UAE_TAX_CATEGORIES: Record<string, string> = {
 };
 
 // UBL 2.1 namespace constants
-export const UBL_INVOICE_NS =
-  "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2";
-export const CBC_NS =
-  "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2";
-export const CAC_NS =
-  "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2";
+export const UBL_INVOICE_NS = "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2";
+export const CBC_NS = "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2";
+export const CAC_NS = "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2";

@@ -1,12 +1,11 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-
-import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Link } from "@/i18n/navigation";
 
 // ---------------------------------------------------------------------------
 // Success Page
@@ -30,16 +29,12 @@ export default function PortalInvoiceSubmitSuccessPage() {
         <h1 className="text-xl font-semibold">{t("submitSuccess.title")}</h1>
 
         {/* Body */}
-        <p className="mt-3 text-sm text-muted-foreground">
-          {t("submitSuccess.body")}
-        </p>
+        <p className="mt-3 text-sm text-muted-foreground">{t("submitSuccess.body")}</p>
 
         {/* Next steps card */}
         <Card className="mt-6">
           <CardContent className="pt-4">
-            <p className="text-sm">
-              {t("submitSuccess.nextStep")}
-            </p>
+            <p className="text-sm">{t("submitSuccess.nextStep")}</p>
           </CardContent>
         </Card>
 

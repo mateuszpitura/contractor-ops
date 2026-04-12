@@ -32,9 +32,7 @@ export function computeDuplicateCheckHash(
   totalGrosze: number,
 ): string {
   return createHash("sha256")
-    .update(
-      `${invoiceNumber.trim().toLowerCase()}|${sellerTaxId.trim()}|${totalGrosze}`,
-    )
+    .update(`${invoiceNumber.trim().toLowerCase()}|${sellerTaxId.trim()}|${totalGrosze}`)
     .digest("hex");
 }
 
@@ -209,18 +207,13 @@ export async function runAutoMatch(
 
     // Time-based reconciliation (Phase 18 - D-13)
     // Warning only: does NOT change matchStatus or block approval (D-15)
-    if (
-      bestContract.rateType === "PER_HOUR" ||
-      bestContract.rateType === "PER_DAY"
-    ) {
+    if (bestContract.rateType === "PER_HOUR" || bestContract.rateType === "PER_DAY") {
       // Use invoice service period or fall back to issueDate +/- 30 days
       const now = new Date();
       const periodStart =
-        invoice.servicePeriodStart ??
-        new Date(now.getFullYear(), now.getMonth(), 1);
+        invoice.servicePeriodStart ?? new Date(now.getFullYear(), now.getMonth(), 1);
       const periodEnd =
-        invoice.servicePeriodEnd ??
-        new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        invoice.servicePeriodEnd ?? new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
       const timeRecon = await computeTimeReconciliation(
         prisma,
@@ -270,10 +263,7 @@ export async function runAutoMatch(
   let matchStatus: MatchResult["matchStatus"];
 
   // Check deviation override first
-  if (
-    amountDeltaPercent !== null &&
-    Math.abs(amountDeltaPercent) > deviationThresholdPercent
-  ) {
+  if (amountDeltaPercent !== null && Math.abs(amountDeltaPercent) > deviationThresholdPercent) {
     matchStatus = "DISCREPANCY";
   } else if (score >= 80) {
     matchStatus = "MATCHED";

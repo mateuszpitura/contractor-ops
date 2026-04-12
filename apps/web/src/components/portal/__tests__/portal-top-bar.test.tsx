@@ -7,7 +7,13 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("@/lib/avatar-initials", () => ({
-  getAvatarInitials: (name: string) => name.split(" ").map((w: string) => w[0]).join("").slice(0, 2).toUpperCase(),
+  getAvatarInitials: (name: string) =>
+    name
+      .split(" ")
+      .map((w: string) => w[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase(),
 }));
 
 vi.mock("./portal-mobile-menu", () => ({
@@ -31,11 +37,7 @@ describe("PortalTopBar", () => {
   });
 
   it("renders org logo when provided", () => {
-    render(
-      <PortalTopBar
-        {...makeProps({ orgLogo: "https://example.com/logo.png" })}
-      />,
-    );
+    render(<PortalTopBar {...makeProps({ orgLogo: "https://example.com/logo.png" })} />);
 
     const img = screen.getByRole("img", { name: "Acme Corp" });
     expect(img).toHaveAttribute("src", "https://example.com/logo.png");

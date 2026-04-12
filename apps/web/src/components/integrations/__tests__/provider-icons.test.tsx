@@ -1,10 +1,10 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { render } from "@/test/test-utils";
 import {
+  ConfluenceIcon,
   GoogleCalendarIcon,
   LinearIcon,
   NotionIcon,
-  ConfluenceIcon,
   OutlookCalendarIcon,
 } from "../provider-icons";
 

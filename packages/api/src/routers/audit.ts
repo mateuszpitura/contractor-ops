@@ -1,8 +1,8 @@
-import { z } from "zod";
 import { prisma } from "@contractor-ops/db";
+import { z } from "zod";
 import { router } from "../init.js";
-import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
+import { tenantProcedure } from "../middleware/tenant.js";
 import { requireTier } from "../middleware/tier.js";
 import { generateAuditCsv } from "../services/report-export.js";
 
@@ -41,11 +41,13 @@ export const auditRouter = router({
   list: tenantProcedure
     .use(settingsRead)
     .input(
-      z.object({
-        page: z.number().min(1).default(1),
-        pageSize: z.number().min(1).max(100).default(25),
-        sortOrder: z.enum(["asc", "desc"]).default("desc"),
-      }).merge(auditFilterSchema),
+      z
+        .object({
+          page: z.number().min(1).default(1),
+          pageSize: z.number().min(1).max(100).default(25),
+          sortOrder: z.enum(["asc", "desc"]).default("desc"),
+        })
+        .merge(auditFilterSchema),
     )
     .query(async ({ ctx, input }) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -99,22 +101,20 @@ export const auditRouter = router({
   /**
    * Returns distinct actors for filter dropdown.
    */
-  actors: tenantProcedure
-    .use(settingsRead)
-    .query(async ({ ctx }) => {
-      const actors = await prisma.auditLog.findMany({
-        where: { organizationId: ctx.organizationId },
-        distinct: ["actorId"],
-        select: { actorId: true, actorName: true },
-      });
+  actors: tenantProcedure.use(settingsRead).query(async ({ ctx }) => {
+    const actors = await prisma.auditLog.findMany({
+      where: { organizationId: ctx.organizationId },
+      distinct: ["actorId"],
+      select: { actorId: true, actorName: true },
+    });
 
-      return actors
-        .filter((a) => a.actorId !== null)
-        .map((a) => ({
-          id: a.actorId!,
-          name: a.actorName ?? a.actorId!,
-        }));
-    }),
+    return actors
+      .filter((a) => a.actorId !== null)
+      .map((a) => ({
+        id: a.actorId!,
+        name: a.actorName ?? a.actorId!,
+      }));
+  }),
 
   /**
    * Export audit log as CSV.

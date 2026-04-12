@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Search } from "lucide-react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-
-import { trpc } from "@/trpc/init";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -14,10 +13,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-import { NotionIcon, ConfluenceIcon } from "./provider-icons";
+import { trpc } from "@/trpc/init";
+import { ConfluenceIcon, NotionIcon } from "./provider-icons";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -48,11 +47,7 @@ interface AttachDocDialogProps {
 // Component
 // ---------------------------------------------------------------------------
 
-export function AttachDocDialog({
-  workflowTaskRunId,
-  open,
-  onOpenChange,
-}: AttachDocDialogProps) {
+export function AttachDocDialog({ workflowTaskRunId, open, onOpenChange }: AttachDocDialogProps) {
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [providerFilter, setProviderFilter] = useState<ProviderFilter>("all");
@@ -103,8 +98,7 @@ export function AttachDocDialog({
   });
 
   const handleSelect = (result: DocSearchResult) => {
-    const externalType =
-      result.provider === "notion" ? "NOTION_PAGE" : "CONFLUENCE_PAGE";
+    const externalType = result.provider === "notion" ? "NOTION_PAGE" : "CONFLUENCE_PAGE";
 
     const metadata =
       result.provider === "notion"
@@ -139,9 +133,7 @@ export function AttachDocDialog({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Attach Document</DialogTitle>
-          <DialogDescription>
-            Search for a page to link to this step.
-          </DialogDescription>
+          <DialogDescription>Search for a page to link to this step.</DialogDescription>
         </DialogHeader>
 
         {/* Search input */}
@@ -190,8 +182,7 @@ export function AttachDocDialog({
           ) : (
             <div className="space-y-0.5 p-1">
               {results.map((result) => {
-                const ProviderIcon =
-                  result.provider === "notion" ? NotionIcon : ConfluenceIcon;
+                const ProviderIcon = result.provider === "notion" ? NotionIcon : ConfluenceIcon;
 
                 return (
                   <button
@@ -202,9 +193,7 @@ export function AttachDocDialog({
                     disabled={attachMutation.isPending}
                   >
                     <ProviderIcon className="h-3.5 w-3.5 shrink-0" />
-                    <span className="text-sm font-medium flex-1 truncate">
-                      {result.title}
-                    </span>
+                    <span className="text-sm font-medium flex-1 truncate">{result.title}</span>
                     <span className="text-xs text-muted-foreground shrink-0">
                       {result.subtitle}
                     </span>

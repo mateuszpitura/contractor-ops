@@ -6,7 +6,8 @@ import { ShieldCheck } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
-import { zatcaTrpc, type ComplianceStats } from "./zatca-trpc";
+import type { ComplianceStats } from "./zatca-trpc";
+import { zatcaTrpc } from "./zatca-trpc";
 
 // ---------------------------------------------------------------------------
 // Status dot color mapping
@@ -113,8 +114,8 @@ export function ZatcaComplianceWidget({
             </span>
             {expiryDays < 30 && (
               <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
-                Your ZATCA certificate expires in {expiryDays} days. Renew to
-                avoid submission disruption.
+                Your ZATCA certificate expires in {expiryDays} days. Renew to avoid submission
+                disruption.
               </p>
             )}
           </div>

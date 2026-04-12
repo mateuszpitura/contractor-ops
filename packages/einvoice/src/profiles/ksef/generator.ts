@@ -48,16 +48,10 @@ export function generateFa3Xml(invoice: EInvoice): string {
     P_7: line.description,
     ...(line.quantity != null ? { P_8B: line.quantity } : {}),
     ...(line.unit != null ? { P_8A: line.unit } : {}),
-    ...(line.unitPriceMinor != null
-      ? { P_9A: fromMinorUnits(line.unitPriceMinor) }
-      : {}),
-    ...(line.netAmountMinor != null
-      ? { P_11: fromMinorUnits(line.netAmountMinor) }
-      : {}),
+    ...(line.unitPriceMinor != null ? { P_9A: fromMinorUnits(line.unitPriceMinor) } : {}),
+    ...(line.netAmountMinor != null ? { P_11: fromMinorUnits(line.netAmountMinor) } : {}),
     ...(line.vatRate != null ? { P_12: line.vatRate } : {}),
-    ...(line.vatAmountMinor != null
-      ? { P_11A: fromMinorUnits(line.vatAmountMinor) }
-      : {}),
+    ...(line.vatAmountMinor != null ? { P_11A: fromMinorUnits(line.vatAmountMinor) } : {}),
   }));
 
   const faktura = {
@@ -88,9 +82,7 @@ export function generateFa3Xml(invoice: EInvoice): string {
         KodWaluty: invoice.currencyCode,
         FaWiersz: lines,
         P_13_1: fromMinorUnits(invoice.taxExclusiveAmount),
-        P_14_1: fromMinorUnits(
-          invoice.taxInclusiveAmount - invoice.taxExclusiveAmount,
-        ),
+        P_14_1: fromMinorUnits(invoice.taxInclusiveAmount - invoice.taxExclusiveAmount),
         P_15: fromMinorUnits(invoice.taxInclusiveAmount),
         ...(invoice.paymentMeans
           ? {

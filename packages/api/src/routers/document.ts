@@ -1,27 +1,27 @@
-import { z } from "zod";
-import { TRPCError } from "@trpc/server";
 import { prisma } from "@contractor-ops/db";
 import {
-  documentRequestUploadSchema,
   documentConfirmUploadSchema,
   documentLinkSchema,
   documentListSchema,
+  documentRequestUploadSchema,
   documentVersionUploadSchema,
 } from "@contractor-ops/validators";
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
+import * as E from "../errors.js";
 import { router } from "../init.js";
-import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
+import { tenantProcedure } from "../middleware/tenant.js";
+import { uploadRateLimitMiddleware } from "../middleware/upload-rate-limit.js";
+import { isAllowedMimeType, validateMimeType } from "../services/mime-validator.js";
 import {
-  createPresignedUploadUrl,
   createPresignedDownloadUrl,
+  createPresignedUploadUrl,
+  deleteObject,
   generateStorageKey,
   headObject,
-  deleteObject,
 } from "../services/r2.js";
-import { isAllowedMimeType, validateMimeType } from "../services/mime-validator.js";
 import { isClamAvailable, scanBuffer } from "../services/virus-scanner.js";
-import { uploadRateLimitMiddleware } from "../middleware/upload-rate-limit.js";
-import * as E from "../errors.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -384,11 +384,7 @@ export const documentRouter = router({
         });
 
         // Generate storage key and update
-        const storageKey = generateStorageKey(
-          ctx.organizationId,
-          newDoc.id,
-          input.filename,
-        );
+        const storageKey = generateStorageKey(ctx.organizationId, newDoc.id, input.filename);
         await tx.document.update({
           where: { id: newDoc.id },
           data: { storageKey },
@@ -408,11 +404,7 @@ export const documentRouter = router({
         }
 
         // Generate presigned upload URL
-        const uploadUrl = await createPresignedUploadUrl(
-          storageKey,
-          input.mimeType,
-          300,
-        );
+        const uploadUrl = await createPresignedUploadUrl(storageKey, input.mimeType, 300);
 
         return { documentId: newDoc.id, uploadUrl, storageKey };
       });

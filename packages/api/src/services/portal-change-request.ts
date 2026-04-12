@@ -1,6 +1,6 @@
-import { TRPCError } from "@trpc/server";
 import { prisma } from "@contractor-ops/db";
 import type { Prisma } from "@contractor-ops/db/generated/prisma/client";
+import { TRPCError } from "@trpc/server";
 import * as E from "../errors.js";
 
 type InputJsonValue = Prisma.InputJsonValue;

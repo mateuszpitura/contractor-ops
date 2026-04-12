@@ -2,7 +2,11 @@ import { render, screen } from "@/test/test-utils";
 import { TopBar } from "../top-bar";
 
 vi.mock("@/i18n/navigation", () => ({
-  Link: ({ children, href, ...props }: any) => <a href={href} {...props}>{children}</a>,
+  Link: ({ children, href, ...props }: any) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
   usePathname: () => "/contractors",
   useRouter: () => ({ push: vi.fn() }),
 }));

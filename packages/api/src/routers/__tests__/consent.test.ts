@@ -5,7 +5,7 @@
  * to consent-record and privacy-notice services.
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -92,9 +92,7 @@ vi.mock("@sentry/nextjs", () => {
     end: vi.fn(),
   };
   return {
-    startSpan: vi.fn(
-      (_o: unknown, fn: (span: typeof mockSpan) => unknown) => fn(mockSpan),
-    ),
+    startSpan: vi.fn((_o: unknown, fn: (span: typeof mockSpan) => unknown) => fn(mockSpan)),
     captureException: vi.fn(),
   };
 });
@@ -113,9 +111,7 @@ vi.mock("../../services/privacy-notice.js", () => ({
 }));
 
 vi.mock("../../services/cache.js", () => ({
-  cached: vi.fn(
-    async (_k: string, _t: number, fn: () => Promise<unknown>) => fn(),
-  ),
+  cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
   invalidate: vi.fn(async () => undefined),
   invalidateByPrefix: vi.fn(async () => undefined),
   CacheKeys: {},
@@ -149,9 +145,7 @@ vi.mock("../../services/r2.js", () => ({
     url: "https://r2.example.com/upload",
     key: "mock-key",
   })),
-  createPresignedDownloadUrl: vi.fn(
-    async () => "https://r2.example.com/download",
-  ),
+  createPresignedDownloadUrl: vi.fn(async () => "https://r2.example.com/download"),
   generateStorageKey: vi.fn(() => "mock-storage-key"),
   headObject: vi.fn(async () => ({ ContentLength: 1024 })),
   deleteObject: vi.fn(async () => undefined),
@@ -332,9 +326,7 @@ describe("consentRouter", () => {
       const result = await caller.consent.getCurrentConsent();
 
       expect(result).toHaveProperty("CONTRACTOR_DATA_PROCESSING");
-      expect(
-        result["CONTRACTOR_DATA_PROCESSING"].granted,
-      ).toBe(true);
+      expect(result["CONTRACTOR_DATA_PROCESSING"].granted).toBe(true);
     });
   });
 
@@ -458,10 +450,7 @@ describe("consentRouter", () => {
         userId: "target-user-123",
       });
 
-      expect(mockGetCurrentConsent).toHaveBeenCalledWith(
-        ORG_ID,
-        "target-user-123",
-      );
+      expect(mockGetCurrentConsent).toHaveBeenCalledWith(ORG_ID, "target-user-123");
       expect(result).toHaveProperty("ANALYTICS_REPORTING");
     });
   });

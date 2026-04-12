@@ -1,12 +1,11 @@
 "use client";
 
-import { useCallback } from "react";
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-
 // Forward-declared tab content components (imported lazily by parent)
 import type { ReactNode } from "react";
+import { useCallback } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const TAB_KEYS = [
   "overview",
@@ -58,15 +57,11 @@ export function ProfileTabs({
       params.set("tab", tab);
       router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     },
-    [searchParams, router, pathname]
+    [searchParams, router, pathname],
   );
 
   return (
-    <Tabs
-      value={currentTab}
-      onValueChange={(value) => setTab(value as string)}
-      className="w-full"
-    >
+    <Tabs value={currentTab} onValueChange={(value) => setTab(value as string)} className="w-full">
       <TabsList variant="line" className="w-full justify-start overflow-x-auto">
         {TAB_KEYS.map((key) => (
           <TabsTrigger key={key} value={key}>

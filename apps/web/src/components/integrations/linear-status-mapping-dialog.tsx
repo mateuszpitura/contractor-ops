@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-import { toast } from "sonner";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, Loader2 } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
+import { useTranslations } from "next-intl";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -15,6 +14,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
   SelectContent,
@@ -30,15 +31,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -72,13 +66,7 @@ interface LinearTeam {
   states: LinearState[];
 }
 
-type LinearStateType =
-  | "triage"
-  | "backlog"
-  | "unstarted"
-  | "started"
-  | "completed"
-  | "cancelled";
+type LinearStateType = "triage" | "backlog" | "unstarted" | "started" | "completed" | "cancelled";
 
 interface MappingEntry {
   workflowStatus: string;
@@ -120,10 +108,7 @@ function computeSmartDefaults(states: LinearState[]): MappingEntry[] {
 // Component
 // ---------------------------------------------------------------------------
 
-export function LinearStatusMappingDialog({
-  open,
-  onOpenChange,
-}: LinearStatusMappingDialogProps) {
+export function LinearStatusMappingDialog({ open, onOpenChange }: LinearStatusMappingDialogProps) {
   const t = useTranslations("Settings.integrations.linear.mapping");
   const queryClient = useQueryClient();
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
@@ -135,10 +120,7 @@ export function LinearStatusMappingDialog({
     ...trpc.linear.connectionStatus.queryOptions(),
     enabled: open,
   });
-  const connection = connectionQuery.data as
-    | { id: string; status: string }
-    | null
-    | undefined;
+  const connection = connectionQuery.data as { id: string; status: string } | null | undefined;
 
   // ---- Fetch teams ----
   const teamsQuery = useQuery({
@@ -159,9 +141,7 @@ export function LinearStatusMappingDialog({
   useEffect(() => {
     if (!selectedTeamId) return;
 
-    const serverMappings = existingMappingQuery.data as
-      | MappingEntry[]
-      | undefined;
+    const serverMappings = existingMappingQuery.data as MappingEntry[] | undefined;
 
     if (serverMappings && serverMappings.length > 0) {
       setMappings([...serverMappings]);
@@ -209,8 +189,7 @@ export function LinearStatusMappingDialog({
       const initial = initialMappings[i];
       if (!initial) return true;
       return (
-        m.workflowStatus !== initial.workflowStatus ||
-        m.linearStateId !== initial.linearStateId
+        m.workflowStatus !== initial.workflowStatus || m.linearStateId !== initial.linearStateId
       );
     });
   }, [mappings, initialMappings]);
@@ -222,9 +201,7 @@ export function LinearStatusMappingDialog({
     if (!linearState) return;
 
     setMappings((prev) => {
-      const existing = prev.findIndex(
-        (m) => m.workflowStatus === workflowStatus,
-      );
+      const existing = prev.findIndex((m) => m.workflowStatus === workflowStatus);
       const entry: MappingEntry = {
         workflowStatus,
         linearStateId: linearState.id,
@@ -250,8 +227,7 @@ export function LinearStatusMappingDialog({
   }
 
   function getMappedStateId(workflowStatus: string): string | undefined {
-    return mappings.find((m) => m.workflowStatus === workflowStatus)
-      ?.linearStateId;
+    return mappings.find((m) => m.workflowStatus === workflowStatus)?.linearStateId;
   }
 
   const teamStates = selectedTeam?.states ?? [];
@@ -262,24 +238,17 @@ export function LinearStatusMappingDialog({
         <DialogHeader>
           <DialogTitle>{t("title")}</DialogTitle>
           <DialogDescription>
-            {selectedTeam
-              ? t("description", { teamName: selectedTeam.name })
-              : t("selectTeam")}
+            {selectedTeam ? t("description", { teamName: selectedTeam.name }) : t("selectTeam")}
           </DialogDescription>
         </DialogHeader>
 
         {/* Team selector */}
         <div className="space-y-2">
           <Label>{t("selectTeam")}</Label>
-          <Select
-            value={selectedTeamId ?? undefined}
-            onValueChange={(v) => setSelectedTeamId(v)}
-          >
+          <Select value={selectedTeamId ?? undefined} onValueChange={(v) => setSelectedTeamId(v)}>
             <SelectTrigger className="w-full">
               <SelectValue placeholder={t("selectTeam")}>
-                {teamsQuery.isLoading && (
-                  <Loader2 className="size-3.5 animate-spin" />
-                )}
+                {teamsQuery.isLoading && <Loader2 className="size-3.5 animate-spin" />}
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
@@ -296,9 +265,7 @@ export function LinearStatusMappingDialog({
         {!teamsQuery.isLoading && teams.length === 0 && (
           <div className="rounded-md border border-dashed p-6 text-center">
             <p className="text-sm font-medium">{t("noTeams")}</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {t("noTeamsBody")}
-            </p>
+            <p className="mt-1 text-sm text-muted-foreground">{t("noTeamsBody")}</p>
           </div>
         )}
 
@@ -321,18 +288,14 @@ export function LinearStatusMappingDialog({
                     <TableRow key={ws.value}>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium">
-                            {ws.label}
-                          </span>
+                          <span className="text-sm font-medium">{ws.label}</span>
                           {isUnmapped && (
                             <TooltipProvider>
                               <Tooltip>
                                 <TooltipTrigger>
                                   <AlertTriangle className="size-3.5 text-warning" />
                                 </TooltipTrigger>
-                                <TooltipContent>
-                                  {t("unmappedTooltip")}
-                                </TooltipContent>
+                                <TooltipContent>{t("unmappedTooltip")}</TooltipContent>
                               </Tooltip>
                             </TooltipProvider>
                           )}
@@ -358,8 +321,7 @@ export function LinearStatusMappingDialog({
                                     <span
                                       className="size-2 shrink-0 rounded-full"
                                       style={{
-                                        backgroundColor:
-                                          state.color || undefined,
+                                        backgroundColor: state.color || undefined,
                                       }}
                                       aria-hidden="true"
                                     />
@@ -385,13 +347,9 @@ export function LinearStatusMappingDialog({
           </Button>
           <Button
             onClick={handleSave}
-            disabled={
-              !hasChanges || saveMutation.isPending || !selectedTeamId
-            }
+            disabled={!hasChanges || saveMutation.isPending || !selectedTeamId}
           >
-            {saveMutation.isPending && (
-              <Loader2 className="me-1.5 size-3.5 animate-spin" />
-            )}
+            {saveMutation.isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
             {saveMutation.isPending ? t("saving") : t("save")}
           </Button>
         </DialogFooter>

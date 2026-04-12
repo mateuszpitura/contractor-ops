@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, setup, waitFor } from "@/test/test-utils";
 import { ProviderDetailSheet } from "../provider-detail-sheet";
 
@@ -12,9 +12,8 @@ let mockWebhookLogData: { items: unknown[]; nextCursor?: string } = {
 const mockDisconnectMutate = vi.fn();
 
 vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
-    "@tanstack/react-query",
-  );
+  const actual =
+    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
   return {
     ...actual,
     useQuery: (opts: { queryKey?: unknown[] }) => {
@@ -140,17 +139,13 @@ describe("ProviderDetailSheet", () => {
   // ---- Disconnect button ----
   it("shows disconnect button when connected", () => {
     render(<ProviderDetailSheet {...defaultProps} />);
-    expect(
-      screen.getByText("Disconnect Slack"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Disconnect Slack")).toBeInTheDocument();
   });
 
   it("opens disconnect confirmation dialog on click", async () => {
     const { user } = setup(<ProviderDetailSheet {...defaultProps} />);
     await user.click(screen.getByText("Disconnect Slack"));
-    expect(
-      await screen.findByRole("alertdialog"),
-    ).toBeInTheDocument();
+    expect(await screen.findByRole("alertdialog")).toBeInTheDocument();
   });
 
   it("does not show disconnect button when status is DISCONNECTED", () => {
@@ -259,9 +254,7 @@ describe("ProviderDetailSheet", () => {
   it("shows empty webhook log message when no items", () => {
     mockWebhookLogData = { items: [] };
     render(<ProviderDetailSheet {...defaultProps} />);
-    expect(
-      screen.getByText(/No webhook/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/No webhook/i)).toBeInTheDocument();
   });
 
   // ---- Status badges ----

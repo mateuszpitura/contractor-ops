@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, setup, waitFor } from "@/test/test-utils";
 import userEvent from "@testing-library/user-event";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { render, screen, setup, waitFor } from "@/test/test-utils";
 import { AuditLogTab } from "../audit-log-tab";
 
 const mockSetSearch = vi.fn();
@@ -44,9 +44,8 @@ const mockExportMutate = vi.fn();
 let mockExportPending = false;
 
 vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
-    "@tanstack/react-query",
-  );
+  const actual =
+    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
   return {
     ...actual,
     keepPreviousData: Symbol("keepPreviousData"),
@@ -130,18 +129,14 @@ describe("AuditLogTab", () => {
   it("shows skeleton loading state when list is pending", () => {
     mockListPending = true;
     const { container } = render(<AuditLogTab />);
-    expect(
-      container.querySelectorAll("[data-slot='skeleton']").length,
-    ).toBeGreaterThan(0);
+    expect(container.querySelectorAll("[data-slot='skeleton']").length).toBeGreaterThan(0);
     expect(screen.queryByPlaceholderText("Search audit log...")).not.toBeInTheDocument();
   });
 
   // ---- Search ----
   it("renders search input", () => {
     render(<AuditLogTab />);
-    expect(
-      screen.getByPlaceholderText("Search audit log..."),
-    ).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Search audit log...")).toBeInTheDocument();
   });
 
   it("updates local search value on typing", async () => {
@@ -335,7 +330,10 @@ describe("AuditLogTab", () => {
 
   // ---- Export with multiple items ----
   it("enables export with large total count", () => {
-    mockListData = { items: Array.from({ length: 25 }, (_, i) => ({ id: String(i) })), totalCount: 250 };
+    mockListData = {
+      items: Array.from({ length: 25 }, (_, i) => ({ id: String(i) })),
+      totalCount: 250,
+    };
     render(<AuditLogTab />);
     const exportBtn = screen.getByText("Export audit log").closest("button");
     expect(exportBtn).not.toBeDisabled();

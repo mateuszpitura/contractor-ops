@@ -1,12 +1,13 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import { prisma, type Prisma } from "@contractor-ops/db";
+import type { Prisma } from "@contractor-ops/db";
+import { prisma } from "@contractor-ops/db";
 import {
+  encryptCredentials,
   getAdapter,
   registerAllAdapters,
   verifyOAuthState,
-  encryptCredentials,
 } from "@contractor-ops/integrations";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 // Ensure all OAuth adapters are registered before any callback is processed
 registerAllAdapters();
@@ -37,11 +38,7 @@ export async function GET(
 
     // Look up the adapter for this provider
     const adapter = getAdapter(provider);
-    if (
-      !adapter?.supportsOAuth ||
-      !adapter.exchangeCodeForTokens ||
-      !adapter.getOAuthConfig
-    ) {
+    if (!adapter?.supportsOAuth || !adapter.exchangeCodeForTokens || !adapter.getOAuthConfig) {
       console.error(`[oauth/${provider}] No OAuth adapter registered`);
       return NextResponse.redirect(settingsUrl("error"));
     }
@@ -50,9 +47,7 @@ export async function GET(
     const oauthConfig = adapter.getOAuthConfig();
     const signingSecret = process.env[oauthConfig.clientSecretEnvVar];
     if (!signingSecret) {
-      console.error(
-        `[oauth/${provider}] Missing env var: ${oauthConfig.clientSecretEnvVar}`,
-      );
+      console.error(`[oauth/${provider}] Missing env var: ${oauthConfig.clientSecretEnvVar}`);
       return NextResponse.redirect(settingsUrl("error"));
     }
 
@@ -90,9 +85,7 @@ export async function GET(
       connectedByUserId: state.userId,
       connectedAt: new Date(),
       configJson: (credentials.extra ?? {}) as Prisma.InputJsonValue,
-      tokenExpiresAt: credentials.expiresAt
-        ? new Date(credentials.expiresAt)
-        : null,
+      tokenExpiresAt: credentials.expiresAt ? new Date(credentials.expiresAt) : null,
       lastErrorAt: null,
       lastErrorMessage: null,
     };

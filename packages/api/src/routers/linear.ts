@@ -1,18 +1,19 @@
-import { z } from "zod";
-import { TRPCError } from "@trpc/server";
-import { prisma, type Prisma } from "@contractor-ops/db";
+import type { Prisma } from "@contractor-ops/db";
+import { prisma } from "@contractor-ops/db";
 import { decryptCredentials } from "@contractor-ops/integrations/services/credential-service";
+import type { LinearIssueMetadata } from "@contractor-ops/validators";
 import {
   linearTaskConfigSchema,
   saveLinearStatusMappingInputSchema,
   saveLinearTaskConfigInputSchema,
 } from "@contractor-ops/validators";
-import type { LinearIssueMetadata } from "@contractor-ops/validators";
-import { router } from "../init.js";
-import { tenantProcedure } from "../middleware/tenant.js";
-import { requirePermission } from "../middleware/rbac.js";
-import { requireTier } from "../middleware/tier.js";
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 import * as E from "../errors.js";
+import { router } from "../init.js";
+import { requirePermission } from "../middleware/rbac.js";
+import { tenantProcedure } from "../middleware/tenant.js";
+import { requireTier } from "../middleware/tier.js";
 import { linearGraphQL } from "../services/linear-issue-sync.js";
 import { registerLinearWebhook } from "../services/linear-webhook-handler.js";
 
@@ -178,8 +179,7 @@ export const linearRouter = router({
     .input(z.object({ teamId: z.string() }))
     .query(async ({ ctx, input }) => {
       const connection = await loadLinearConnection(ctx.organizationId);
-      const config =
-        (connection.configJson as LinearConnectionConfig) ?? {};
+      const config = (connection.configJson as LinearConnectionConfig) ?? {};
       const mappings = config.statusMappings ?? {};
       const teamMappings = mappings[input.teamId];
 
@@ -205,8 +205,7 @@ export const linearRouter = router({
         });
       }
 
-      const config =
-        (connection.configJson as LinearConnectionConfig) ?? {};
+      const config = (connection.configJson as LinearConnectionConfig) ?? {};
       const statusMappings = config.statusMappings ?? {};
       const stateCache = config.stateCache ?? {};
 
@@ -214,8 +213,7 @@ export const linearRouter = router({
       statusMappings[input.teamId] = input.mappings;
 
       // Build state cache for webhook lookup (stateId -> { name, type })
-      const teamStateCache: Record<string, { name: string; type: string }> =
-        {};
+      const teamStateCache: Record<string, { name: string; type: string }> = {};
       for (const mapping of input.mappings) {
         teamStateCache[mapping.linearStateId] = {
           name: mapping.linearStateName,
@@ -233,21 +231,15 @@ export const linearRouter = router({
             statusMappings,
             stateCache,
           } as Prisma.InputJsonValue,
-          ...(connection.status === "PENDING_MAPPING"
-            ? { status: "CONNECTED" }
-            : {}),
+          ...(connection.status === "PENDING_MAPPING" ? { status: "CONNECTED" } : {}),
         },
       });
 
       // Fire-and-forget: register webhook for this team if not yet registered
       const webhooks = (config.webhooks as Record<string, string> | undefined) ?? {};
       if (!webhooks[input.teamId]) {
-        void registerLinearWebhook(prisma, connection.id, input.teamId).catch(
-          (err) =>
-            console.error(
-              `[Linear] Webhook registration failed for team ${input.teamId}:`,
-              err,
-            ),
+        void registerLinearWebhook(prisma, connection.id, input.teamId).catch((err) =>
+          console.error(`[Linear] Webhook registration failed for team ${input.teamId}:`, err),
         );
       }
 
@@ -278,8 +270,7 @@ export const linearRouter = router({
         });
       }
 
-      const existingConfig =
-        (template.configJson as Record<string, unknown>) ?? {};
+      const existingConfig = (template.configJson as Record<string, unknown>) ?? {};
 
       await prisma.workflowTaskTemplate.update({
         where: { id: input.taskTemplateId },

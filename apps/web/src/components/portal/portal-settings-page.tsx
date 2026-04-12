@@ -1,16 +1,14 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
-import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
-import { ProfileSection } from "./profile-section";
+import { Skeleton } from "@/components/ui/skeleton";
+import { trpc } from "@/trpc/init";
 import { NotificationPreferencesSection } from "./notification-preferences-section";
-
 import type { ProfileField } from "./profile-section";
+import { ProfileSection } from "./profile-section";
 
 // ---------------------------------------------------------------------------
 // Loading skeleton
@@ -54,9 +52,7 @@ export function PortalSettingsPage() {
   const profileQuery = useQuery(trpc.portal.getProfile.queryOptions());
 
   // Mutations
-  const updateContactInfo = useMutation(
-    trpc.portal.updateContactInfo.mutationOptions(),
-  );
+  const updateContactInfo = useMutation(trpc.portal.updateContactInfo.mutationOptions());
 
   const submitFinancialChange = useMutation(
     trpc.portal.submitFinancialChangeRequest.mutationOptions(),
@@ -65,9 +61,7 @@ export function PortalSettingsPage() {
   const profile = profileQuery.data;
 
   // Personal Information save handler
-  const handleContactSave = async (
-    values: Record<string, string | null>,
-  ) => {
+  const handleContactSave = async (values: Record<string, string | null>) => {
     await updateContactInfo.mutateAsync({
       displayName: values.displayName ?? "",
       phone: values.phone || null,
@@ -84,9 +78,7 @@ export function PortalSettingsPage() {
   };
 
   // Financial Details save handler
-  const handleFinancialSave = async (
-    values: Record<string, string | null>,
-  ) => {
+  const handleFinancialSave = async (values: Record<string, string | null>) => {
     await submitFinancialChange.mutateAsync({
       bankAccountNumber: values.bankAccountNumber || undefined,
       bankName: values.bankName || undefined,
@@ -165,9 +157,7 @@ export function PortalSettingsPage() {
       {/* Page heading */}
       <div className="mb-6">
         <h1 className="text-xl font-semibold">{t("settings.title")}</h1>
-        <p className="text-sm text-muted-foreground">
-          {t("settings.subtitle")}
-        </p>
+        <p className="text-sm text-muted-foreground">{t("settings.subtitle")}</p>
       </div>
 
       {profileQuery.isPending ? (
@@ -192,11 +182,10 @@ export function PortalSettingsPage() {
               profile?.pendingChangeRequest
                 ? {
                     id: profile.pendingChangeRequest.id,
-                    requestedChanges:
-                      profile.pendingChangeRequest.requestedChanges as Record<
-                        string,
-                        unknown
-                      >,
+                    requestedChanges: profile.pendingChangeRequest.requestedChanges as Record<
+                      string,
+                      unknown
+                    >,
                     createdAt: profile.pendingChangeRequest.createdAt,
                   }
                 : null

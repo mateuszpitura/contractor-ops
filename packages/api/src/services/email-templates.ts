@@ -1,11 +1,11 @@
 import type { ReactElement } from "react";
 import { createElement } from "react";
-import { ApprovalRequestEmail } from "../emails/approval-request.js";
 import { ApprovalDecisionEmail } from "../emails/approval-decision.js";
-import { TaskAssignedEmail } from "../emails/task-assigned.js";
-import { TaskOverdueEmail } from "../emails/task-overdue.js";
+import { ApprovalRequestEmail } from "../emails/approval-request.js";
 import { ContractExpiringEmail } from "../emails/contract-expiring.js";
 import { InvoiceReceivedEmail } from "../emails/invoice-received.js";
+import { TaskAssignedEmail } from "../emails/task-assigned.js";
+import { TaskOverdueEmail } from "../emails/task-overdue.js";
 
 // ---------------------------------------------------------------------------
 // Subject lines (from UI-SPEC copywriting contract)
@@ -16,10 +16,8 @@ const SUBJECT_LINES: Record<string, (data: Record<string, unknown>) => string> =
     `Action required: Approve invoice ${(data.invoiceNumber as string) ?? ""}`.trim(),
   APPROVAL_DECISION: (data) =>
     `Invoice ${(data.invoiceNumber as string) ?? ""} ${(data.decision as string)?.toLowerCase() ?? "processed"}`.trim(),
-  TASK_ASSIGNED: (data) =>
-    `New task assigned: ${(data.taskName as string) ?? ""}`.trim(),
-  TASK_OVERDUE: (data) =>
-    `Overdue: ${(data.taskName as string) ?? "Task"} is past due`.trim(),
+  TASK_ASSIGNED: (data) => `New task assigned: ${(data.taskName as string) ?? ""}`.trim(),
+  TASK_OVERDUE: (data) => `Overdue: ${(data.taskName as string) ?? "Task"} is past due`.trim(),
   CONTRACT_EXPIRING: (data) =>
     `Contract expiring soon: ${(data.contractTitle as string) ?? ""}`.trim(),
   INVOICE_RECEIVED: (data) =>

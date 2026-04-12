@@ -1,19 +1,13 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NotionAdapter } from "../notion-adapter.js";
 
-function mockFetch(response: {
-  ok: boolean;
-  status?: number;
-  body: unknown;
-}) {
+function mockFetch(response: { ok: boolean; status?: number; body: unknown }) {
   return vi.fn().mockResolvedValue({
     ok: response.ok,
     status: response.status ?? (response.ok ? 200 : 400),
     text: () =>
       Promise.resolve(
-        typeof response.body === "string"
-          ? response.body
-          : JSON.stringify(response.body),
+        typeof response.body === "string" ? response.body : JSON.stringify(response.body),
       ),
     json: () => Promise.resolve(response.body),
   });
@@ -41,9 +35,9 @@ describe("NotionAdapter", () => {
   });
 
   it("throws when exchangeCodeForTokens is called without Notion client env vars", async () => {
-    await expect(
-      adapter.exchangeCodeForTokens("code", "http://localhost/cb"),
-    ).rejects.toThrow(/NOTION_CLIENT_ID and NOTION_CLIENT_SECRET/);
+    await expect(adapter.exchangeCodeForTokens("code", "http://localhost/cb")).rejects.toThrow(
+      /NOTION_CLIENT_ID and NOTION_CLIENT_SECRET/,
+    );
   });
 
   it("exchanges code using HTTP Basic auth (not client_secret in body)", async () => {
@@ -70,9 +64,7 @@ describe("NotionAdapter", () => {
     expect(out.accessToken).toBe("secret_token");
     const [, init] = fetchMock.mock.calls[0]!;
     const headers = (init as RequestInit).headers as Record<string, string>;
-    expect(headers.Authorization).toBe(
-      `Basic ${Buffer.from("nid:nsec").toString("base64")}`,
-    );
+    expect(headers.Authorization).toBe(`Basic ${Buffer.from("nid:nsec").toString("base64")}`);
     const body = JSON.parse((init as RequestInit).body as string);
     expect(body).not.toHaveProperty("client_secret");
     expect(body.grant_type).toBe("authorization_code");
@@ -136,9 +128,9 @@ describe("NotionAdapter", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
 
-    await expect(
-      adapter.exchangeCodeForTokens("bad", "http://localhost/cb"),
-    ).rejects.toThrow(/Notion OAuth exchange failed: bad_code/);
+    await expect(adapter.exchangeCodeForTokens("bad", "http://localhost/cb")).rejects.toThrow(
+      /Notion OAuth exchange failed: bad_code/,
+    );
   });
 
   it("throws when token refresh returns non-OK", async () => {

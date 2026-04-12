@@ -6,24 +6,19 @@
 // ConversationReferences, and card builders from the teams/cards/ module.
 // ---------------------------------------------------------------------------
 
-import {
-  CloudAdapter,
-  ConfigurationBotFrameworkAuthentication,
-  CardFactory,
-  type ConversationReference,
-  type TurnContext,
-} from "botbuilder";
 import { prisma } from "@contractor-ops/db";
-import type {
-  MessagingProvider,
-  ApprovalCardParams,
-  ReminderDMParams,
-  ChannelAlertParams,
-} from "./types.js";
-import { getConversationReference } from "../teams/teams-bot-handler.js";
+import type { ConversationReference, TurnContext } from "botbuilder";
+import { CardFactory, CloudAdapter, ConfigurationBotFrameworkAuthentication } from "botbuilder";
+import { buildActivityAlertCard } from "../teams/cards/activity-alert-card.js";
 import { buildApprovalCard } from "../teams/cards/approval-card.js";
 import { buildApprovalReminderCard } from "../teams/cards/approval-reminder-card.js";
-import { buildActivityAlertCard } from "../teams/cards/activity-alert-card.js";
+import { getConversationReference } from "../teams/teams-bot-handler.js";
+import type {
+  ApprovalCardParams,
+  ChannelAlertParams,
+  MessagingProvider,
+  ReminderDMParams,
+} from "./types.js";
 
 // ---------------------------------------------------------------------------
 // CloudAdapter singleton
@@ -52,10 +47,7 @@ function getCloudAdapter(): CloudAdapter {
  * Looks up the ExternalLink for a given user to find their AAD Object ID.
  * Falls back to null if no link exists.
  */
-async function resolveAadObjectId(
-  organizationId: string,
-  userId: string,
-): Promise<string | null> {
+async function resolveAadObjectId(organizationId: string, userId: string): Promise<string | null> {
   const link = await prisma.externalLink.findFirst({
     where: {
       organizationId,
@@ -76,22 +68,14 @@ async function resolveAadObjectId(
 export class TeamsMessagingProvider implements MessagingProvider {
   readonly platform = "teams" as const;
 
-  async getUserId(
-    organizationId: string,
-    userId: string,
-  ): Promise<string | null> {
+  async getUserId(organizationId: string, userId: string): Promise<string | null> {
     return resolveAadObjectId(organizationId, userId);
   }
 
   async sendApprovalCard(params: ApprovalCardParams): Promise<void> {
-    const convRef = await getConversationReference(
-      params.organizationId,
-      params.recipientId,
-    );
+    const convRef = await getConversationReference(params.organizationId, params.recipientId);
     if (!convRef) {
-      console.warn(
-        `[Teams] No ConversationReference for recipient ${params.recipientId}`,
-      );
+      console.warn(`[Teams] No ConversationReference for recipient ${params.recipientId}`);
       return;
     }
 
@@ -119,14 +103,9 @@ export class TeamsMessagingProvider implements MessagingProvider {
   }
 
   async sendReminderDM(params: ReminderDMParams): Promise<void> {
-    const convRef = await getConversationReference(
-      params.organizationId,
-      params.recipientId,
-    );
+    const convRef = await getConversationReference(params.organizationId, params.recipientId);
     if (!convRef) {
-      console.warn(
-        `[Teams] No ConversationReference for recipient ${params.recipientId}`,
-      );
+      console.warn(`[Teams] No ConversationReference for recipient ${params.recipientId}`);
       return;
     }
 
@@ -180,21 +159,16 @@ export class TeamsMessagingProvider implements MessagingProvider {
     });
 
     if (!connection) {
-      console.warn(
-        `[Teams] No MICROSOFT_TEAMS connection for org ${params.organizationId}`,
-      );
+      console.warn(`[Teams] No MICROSOFT_TEAMS connection for org ${params.organizationId}`);
       return;
     }
 
-    const config = connection.configJson as Record<string, unknown> ?? {};
-    const teamRefs =
-      (config.teamConversationReferences as Record<string, unknown>) ?? {};
+    const config = (connection.configJson as Record<string, unknown>) ?? {};
+    const teamRefs = (config.teamConversationReferences as Record<string, unknown>) ?? {};
     const channelRef = teamRefs[params.channelId];
 
     if (!channelRef) {
-      console.warn(
-        `[Teams] No ConversationReference for channel ${params.channelId}`,
-      );
+      console.warn(`[Teams] No ConversationReference for channel ${params.channelId}`);
       return;
     }
 

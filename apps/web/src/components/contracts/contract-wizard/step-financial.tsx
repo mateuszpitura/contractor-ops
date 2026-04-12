@@ -1,8 +1,8 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import React from "react";
 import type { UseFormReturn } from "react-hook-form";
-import { useTranslations } from "next-intl";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -39,13 +39,7 @@ const RATE_TYPES = [
   "PER_DELIVERABLE",
 ] as const;
 
-const INVOICE_CYCLES = [
-  "WEEKLY",
-  "BIWEEKLY",
-  "MONTHLY",
-  "ON_DELIVERABLE",
-  "AD_HOC",
-] as const;
+const INVOICE_CYCLES = ["WEEKLY", "BIWEEKLY", "MONTHLY", "ON_DELIVERABLE", "AD_HOC"] as const;
 
 // ---------------------------------------------------------------------------
 // Props
@@ -154,14 +148,10 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
           </span>
         </div>
         {isPreFilled("rateValueMinor") && (
-          <p className="text-xs text-muted-foreground">
-            {t("preFilled")}
-          </p>
+          <p className="text-xs text-muted-foreground">{t("preFilled")}</p>
         )}
         {errors.rateValueMinor && (
-          <p className="text-sm text-destructive">
-            {errors.rateValueMinor.message}
-          </p>
+          <p className="text-sm text-destructive">{errors.rateValueMinor.message}</p>
         )}
       </div>
 
@@ -189,13 +179,9 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
           </SelectContent>
         </Select>
         {isPreFilled("currency") && (
-          <p className="text-xs text-muted-foreground">
-            {t("preFilled")}
-          </p>
+          <p className="text-xs text-muted-foreground">{t("preFilled")}</p>
         )}
-        {errors.currency && (
-          <p className="text-sm text-destructive">{errors.currency.message}</p>
-        )}
+        {errors.currency && <p className="text-sm text-destructive">{errors.currency.message}</p>}
       </div>
 
       {/* Billing model */}
@@ -204,11 +190,10 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
         <Select
           value={watch("billingModel") ?? ""}
           onValueChange={(value) =>
-            setValue(
-              "billingModel",
-              (value ?? "") as ContractWizardFormValues["billingModel"],
-              { shouldDirty: true, shouldValidate: true },
-            )
+            setValue("billingModel", (value ?? "") as ContractWizardFormValues["billingModel"], {
+              shouldDirty: true,
+              shouldValidate: true,
+            })
           }
           items={billingModelItems}
         >
@@ -224,14 +209,10 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
           </SelectContent>
         </Select>
         {isPreFilled("billingModel") && (
-          <p className="text-xs text-muted-foreground">
-            {t("preFilled")}
-          </p>
+          <p className="text-xs text-muted-foreground">{t("preFilled")}</p>
         )}
         {errors.billingModel && (
-          <p className="text-sm text-destructive">
-            {errors.billingModel.message}
-          </p>
+          <p className="text-sm text-destructive">{errors.billingModel.message}</p>
         )}
       </div>
 
@@ -241,11 +222,10 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
         <Select
           value={watch("rateType") ?? ""}
           onValueChange={(value) =>
-            setValue(
-              "rateType",
-              (value ?? "") as ContractWizardFormValues["rateType"],
-              { shouldDirty: true, shouldValidate: true },
-            )
+            setValue("rateType", (value ?? "") as ContractWizardFormValues["rateType"], {
+              shouldDirty: true,
+              shouldValidate: true,
+            })
           }
           items={rateTypeItems}
         >
@@ -260,11 +240,7 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
             ))}
           </SelectContent>
         </Select>
-        {errors.rateType && (
-          <p className="text-sm text-destructive">
-            {errors.rateType.message}
-          </p>
-        )}
+        {errors.rateType && <p className="text-sm text-destructive">{errors.rateType.message}</p>}
       </div>
 
       {/* Payment terms */}
@@ -280,9 +256,7 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
           {...register("paymentTermsDays", { valueAsNumber: true })}
         />
         {errors.paymentTermsDays && (
-          <p className="text-sm text-destructive">
-            {errors.paymentTermsDays.message}
-          </p>
+          <p className="text-sm text-destructive">{errors.paymentTermsDays.message}</p>
         )}
       </div>
 
@@ -292,11 +266,10 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
         <Select
           value={watch("invoiceCycle") ?? ""}
           onValueChange={(value) =>
-            setValue(
-              "invoiceCycle",
-              (value ?? "") as ContractWizardFormValues["invoiceCycle"],
-              { shouldDirty: true, shouldValidate: true },
-            )
+            setValue("invoiceCycle", (value ?? "") as ContractWizardFormValues["invoiceCycle"], {
+              shouldDirty: true,
+              shouldValidate: true,
+            })
           }
           items={invoiceCycleItems}
         >
@@ -312,9 +285,7 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
           </SelectContent>
         </Select>
         {errors.invoiceCycle && (
-          <p className="text-sm text-destructive">
-            {errors.invoiceCycle.message}
-          </p>
+          <p className="text-sm text-destructive">{errors.invoiceCycle.message}</p>
         )}
       </div>
     </div>

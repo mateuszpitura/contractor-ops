@@ -6,7 +6,7 @@
  * correct WHERE clauses including organizationId scoping, filters, and pagination.
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Constants (vi.hoisted so mock factories can reference them)
@@ -112,7 +112,10 @@ vi.mock("../../services/billing-webhook.js", () => ({
 }));
 
 vi.mock("../../services/r2.js", () => ({
-  createPresignedUploadUrl: vi.fn(async () => ({ url: "https://r2.example.com/upload", key: "mock-key" })),
+  createPresignedUploadUrl: vi.fn(async () => ({
+    url: "https://r2.example.com/upload",
+    key: "mock-key",
+  })),
   createPresignedDownloadUrl: vi.fn(async () => "https://r2.example.com/download"),
   generateStorageKey: vi.fn(() => "mock-storage-key"),
   headObject: vi.fn(async () => ({ ContentLength: 1024 })),
@@ -399,9 +402,7 @@ describe("audit router", () => {
 
   describe("export", () => {
     it("returns base64 CSV with all matching rows (up to 10000 limit)", async () => {
-      const entries = [
-        { id: "audit-1", action: "contractor.created", createdAt: new Date() },
-      ];
+      const entries = [{ id: "audit-1", action: "contractor.created", createdAt: new Date() }];
       mockPrisma.auditLog.findMany.mockResolvedValue(entries);
 
       const result = await caller.audit.export({});
@@ -457,10 +458,7 @@ describe("audit router", () => {
       const fs = await import("node:fs");
       const path = await import("node:path");
       const sourceDir = path.resolve(import.meta.dirname, "../../routers");
-      const source = fs.readFileSync(
-        path.join(sourceDir, "audit.ts"),
-        "utf-8",
-      );
+      const source = fs.readFileSync(path.join(sourceDir, "audit.ts"), "utf-8");
 
       expect(source).toContain('import { requireTier } from "../middleware/tier.js"');
       expect(source).toContain('requireTier("ENTERPRISE")');

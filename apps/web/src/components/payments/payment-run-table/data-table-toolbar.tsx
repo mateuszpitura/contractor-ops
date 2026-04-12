@@ -1,18 +1,14 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
-import { parseAsString, useQueryState } from "nuqs";
 import { CalendarIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { parseAsString, useQueryState } from "nuqs";
+import { useCallback, useMemo, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 // ---------------------------------------------------------------------------
 // Status chip definitions
@@ -96,20 +92,14 @@ export function DataTableToolbar({
 
       {/* Date range filter */}
       <Popover>
-        <PopoverTrigger
-          render={
-            <Button variant="outline" size="sm" className="h-8 gap-1.5" />
-          }
-        >
+        <PopoverTrigger render={<Button variant="outline" size="sm" className="h-8 gap-1.5" />}>
           <CalendarIcon className="h-3.5 w-3.5" />
           <span className="text-xs">{dateLabel}</span>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="end">
           <div className="flex gap-2 p-3">
             <div>
-              <p className="text-xs font-medium mb-2 text-muted-foreground">
-                From
-              </p>
+              <p className="text-xs font-medium mb-2 text-muted-foreground">From</p>
               <Calendar
                 mode="single"
                 selected={dateFrom}
@@ -118,14 +108,8 @@ export function DataTableToolbar({
               />
             </div>
             <div>
-              <p className="text-xs font-medium mb-2 text-muted-foreground">
-                To
-              </p>
-              <Calendar
-                mode="single"
-                selected={dateTo}
-                onSelect={onDateToChange}
-              />
+              <p className="text-xs font-medium mb-2 text-muted-foreground">To</p>
+              <Calendar mode="single" selected={dateTo} onSelect={onDateToChange} />
             </div>
           </div>
           {(dateFrom || dateTo) && (

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GoogleWorkspaceAdapter } from "../adapters/google-workspace-adapter.js";
 
 function mockFetch(
@@ -16,10 +16,7 @@ function mockFetch(
     return Promise.resolve({
       ok: r.ok,
       status: r.status,
-      text: () =>
-        Promise.resolve(
-          typeof r.body === "string" ? r.body : JSON.stringify(r.body),
-        ),
+      text: () => Promise.resolve(typeof r.body === "string" ? r.body : JSON.stringify(r.body)),
       json: () => Promise.resolve(r.body),
     });
   });
@@ -45,12 +42,8 @@ describe("GoogleWorkspaceAdapter", () => {
       const c = adapter.getOAuthConfig();
       expect(c.clientIdEnvVar).toBe("GOOGLE_WORKSPACE_CLIENT_ID");
       expect(c.clientSecretEnvVar).toBe("GOOGLE_WORKSPACE_CLIENT_SECRET");
-      expect(c.scopes).toContain(
-        "https://www.googleapis.com/auth/admin.directory.user.readonly",
-      );
-      expect(c.scopes).toContain(
-        "https://www.googleapis.com/auth/admin.directory.group.readonly",
-      );
+      expect(c.scopes).toContain("https://www.googleapis.com/auth/admin.directory.user.readonly");
+      expect(c.scopes).toContain("https://www.googleapis.com/auth/admin.directory.group.readonly");
       expect(c.extraAuthParams?.access_type).toBe("offline");
       expect(c.extraAuthParams?.prompt).toBe("consent");
     });
@@ -97,14 +90,12 @@ describe("GoogleWorkspaceAdapter", () => {
       process.env.GOOGLE_WORKSPACE_CLIENT_ID = "gw-id";
       process.env.GOOGLE_WORKSPACE_CLIENT_SECRET = "gw-secret";
 
-      const fetchMock = mockFetch([
-        { ok: false, status: 400, body: { error: "invalid_grant" } },
-      ]);
+      const fetchMock = mockFetch([{ ok: false, status: 400, body: { error: "invalid_grant" } }]);
       vi.stubGlobal("fetch", fetchMock);
 
-      await expect(
-        adapter.exchangeCodeForTokens("bad", "http://localhost/cb"),
-      ).rejects.toThrow(/Google Workspace OAuth exchange failed/);
+      await expect(adapter.exchangeCodeForTokens("bad", "http://localhost/cb")).rejects.toThrow(
+        /Google Workspace OAuth exchange failed/,
+      );
     });
   });
 
@@ -145,9 +136,7 @@ describe("GoogleWorkspaceAdapter", () => {
       process.env.GOOGLE_WORKSPACE_CLIENT_ID = "gw-id";
       process.env.GOOGLE_WORKSPACE_CLIENT_SECRET = "gw-secret";
 
-      const fetchMock = mockFetch([
-        { ok: false, status: 401, body: "unauthorized" },
-      ]);
+      const fetchMock = mockFetch([{ ok: false, status: 401, body: "unauthorized" }]);
       vi.stubGlobal("fetch", fetchMock);
 
       await expect(

@@ -1,17 +1,11 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import {
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-  type ColumnDef,
-} from "@tanstack/react-table";
 import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
+import type { ColumnDef } from "@tanstack/react-table";
+import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { Banknote } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
+import { useTranslations } from "next-intl";
+import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -24,6 +18,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Link } from "@/i18n/navigation";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Row type (mapped from listByContractor return shape)
@@ -48,12 +43,10 @@ type PaymentItemRow = {
 // ---------------------------------------------------------------------------
 
 const itemStatusBadgeColors: Record<string, string> = {
-  PENDING:
-    "bg-muted text-muted-foreground border border-border",
+  PENDING: "bg-muted text-muted-foreground border border-border",
   PAID: "bg-green-500/10 text-green-600 dark:text-green-400",
   FAILED: "bg-red-500/10 text-red-600 dark:text-red-400",
-  EXPORTED:
-    "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+  EXPORTED: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
 };
 
 // ---------------------------------------------------------------------------
@@ -73,9 +66,7 @@ export function TabPayments({ contractorId }: TabPaymentsProps) {
   const [page, setPage] = useState(1);
   const pageSize = 10;
 
-  const paymentsQuery = useQuery(
-    trpc.payment.listByContractor.queryOptions({ contractorId }),
-  );
+  const paymentsQuery = useQuery(trpc.payment.listByContractor.queryOptions({ contractorId }));
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rawItems: any[] = paymentsQuery.data ?? [];
@@ -128,10 +119,7 @@ export function TabPayments({ contractorId }: TabPaymentsProps) {
         accessorKey: "runNumber",
         header: t("columnRunNumber"),
         cell: ({ row }) => (
-          <Link
-            href={`/payments`}
-            className="font-medium text-primary hover:underline"
-          >
+          <Link href={`/payments`} className="font-medium text-primary hover:underline">
             {row.original.runNumber}
           </Link>
         ),
@@ -178,10 +166,7 @@ export function TabPayments({ contractorId }: TabPaymentsProps) {
         accessorKey: "status",
         header: t("columnStatus"),
         cell: ({ row }) => (
-          <Badge
-            variant="secondary"
-            className={itemStatusBadgeColors[row.original.status] ?? ""}
-          >
+          <Badge variant="secondary" className={itemStatusBadgeColors[row.original.status] ?? ""}>
             {t(
               `itemStatus${row.original.status.charAt(0) + row.original.status.slice(1).toLowerCase()}` as Parameters<
                 typeof t
@@ -233,9 +218,7 @@ export function TabPayments({ contractorId }: TabPaymentsProps) {
       <div className="flex min-h-[300px] flex-col items-center justify-center gap-3 text-center">
         <Banknote className="size-8 text-muted-foreground/50" />
         <h4 className="text-sm font-medium">{t("contractorEmptyHeading")}</h4>
-        <p className="max-w-sm text-sm text-muted-foreground">
-          {t("contractorEmptyBody")}
-        </p>
+        <p className="max-w-sm text-sm text-muted-foreground">{t("contractorEmptyBody")}</p>
       </div>
     );
   }
@@ -263,10 +246,7 @@ export function TabPayments({ contractorId }: TabPaymentsProps) {
                   <TableHead key={header.id}>
                     {header.isPlaceholder
                       ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
+                      : flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 ))}
               </TableRow>

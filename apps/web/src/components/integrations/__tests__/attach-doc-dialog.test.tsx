@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, setup, waitFor } from "@/test/test-utils";
 import { AttachDocDialog } from "../attach-doc-dialog";
 
@@ -44,9 +44,8 @@ let searchLoading = false;
 const mockMutate = vi.fn();
 
 vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
-    "@tanstack/react-query",
-  );
+  const actual =
+    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
   return {
     ...actual,
     useQuery: (opts: { queryKey?: unknown; enabled?: boolean }) => {
@@ -93,61 +92,29 @@ describe("AttachDocDialog", () => {
   });
 
   it("renders dialog title when open", () => {
-    render(
-      <AttachDocDialog
-        workflowTaskRunId="wtr-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
-    );
+    render(<AttachDocDialog workflowTaskRunId="wtr-1" open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText("Attach Document")).toBeInTheDocument();
   });
 
   it("renders dialog description", () => {
-    render(
-      <AttachDocDialog
-        workflowTaskRunId="wtr-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
-    );
-    expect(
-      screen.getByText("Search for a page to link to this step."),
-    ).toBeInTheDocument();
+    render(<AttachDocDialog workflowTaskRunId="wtr-1" open={true} onOpenChange={onOpenChange} />);
+    expect(screen.getByText("Search for a page to link to this step.")).toBeInTheDocument();
   });
 
   it("does not render dialog when closed", () => {
-    render(
-      <AttachDocDialog
-        workflowTaskRunId="wtr-1"
-        open={false}
-        onOpenChange={onOpenChange}
-      />,
-    );
+    render(<AttachDocDialog workflowTaskRunId="wtr-1" open={false} onOpenChange={onOpenChange} />);
     expect(screen.queryByText("Attach Document")).not.toBeInTheDocument();
   });
 
   it("renders search input with placeholder", () => {
-    render(
-      <AttachDocDialog
-        workflowTaskRunId="wtr-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
-    );
+    render(<AttachDocDialog workflowTaskRunId="wtr-1" open={true} onOpenChange={onOpenChange} />);
     expect(
       screen.getByPlaceholderText("Search Notion and Confluence pages..."),
     ).toBeInTheDocument();
   });
 
   it("renders provider filter buttons", () => {
-    render(
-      <AttachDocDialog
-        workflowTaskRunId="wtr-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
-    );
+    render(<AttachDocDialog workflowTaskRunId="wtr-1" open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText("All")).toBeInTheDocument();
     expect(screen.getByText("Notion")).toBeInTheDocument();
     expect(screen.getByText("Confluence")).toBeInTheDocument();
@@ -156,35 +123,21 @@ describe("AttachDocDialog", () => {
   it("shows no results message when search returns empty", async () => {
     searchData = [];
     const { user } = setup(
-      <AttachDocDialog
-        workflowTaskRunId="wtr-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
+      <AttachDocDialog workflowTaskRunId="wtr-1" open={true} onOpenChange={onOpenChange} />,
     );
-    const input = screen.getByPlaceholderText(
-      "Search Notion and Confluence pages...",
-    );
+    const input = screen.getByPlaceholderText("Search Notion and Confluence pages...");
     await user.type(input, "xyz");
     await waitFor(() => {
-      expect(
-        screen.getByText("No pages found matching your search."),
-      ).toBeInTheDocument();
+      expect(screen.getByText("No pages found matching your search.")).toBeInTheDocument();
     });
   });
 
   it("renders search results when available", async () => {
     searchData = mockSearchResults;
     const { user } = setup(
-      <AttachDocDialog
-        workflowTaskRunId="wtr-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
+      <AttachDocDialog workflowTaskRunId="wtr-1" open={true} onOpenChange={onOpenChange} />,
     );
-    const input = screen.getByPlaceholderText(
-      "Search Notion and Confluence pages...",
-    );
+    const input = screen.getByPlaceholderText("Search Notion and Confluence pages...");
     await user.type(input, "design");
     await waitFor(() => {
       expect(screen.getByText("Design System")).toBeInTheDocument();
@@ -195,15 +148,9 @@ describe("AttachDocDialog", () => {
   it("renders result subtitles", async () => {
     searchData = mockSearchResults;
     const { user } = setup(
-      <AttachDocDialog
-        workflowTaskRunId="wtr-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
+      <AttachDocDialog workflowTaskRunId="wtr-1" open={true} onOpenChange={onOpenChange} />,
     );
-    const input = screen.getByPlaceholderText(
-      "Search Notion and Confluence pages...",
-    );
+    const input = screen.getByPlaceholderText("Search Notion and Confluence pages...");
     await user.type(input, "docs");
     await waitFor(() => {
       expect(screen.getByText("Engineering")).toBeInTheDocument();
@@ -214,15 +161,9 @@ describe("AttachDocDialog", () => {
   it("calls mutate when selecting a result", async () => {
     searchData = mockSearchResults;
     const { user } = setup(
-      <AttachDocDialog
-        workflowTaskRunId="wtr-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
+      <AttachDocDialog workflowTaskRunId="wtr-1" open={true} onOpenChange={onOpenChange} />,
     );
-    const input = screen.getByPlaceholderText(
-      "Search Notion and Confluence pages...",
-    );
+    const input = screen.getByPlaceholderText("Search Notion and Confluence pages...");
     await user.type(input, "design");
     await waitFor(() => {
       expect(screen.getByText("Design System")).toBeInTheDocument();

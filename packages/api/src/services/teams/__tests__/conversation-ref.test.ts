@@ -1,8 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import {
-  storeConversationReference,
-  getConversationReference,
-} from "../teams-bot-handler.js";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { getConversationReference, storeConversationReference } from "../teams-bot-handler.js";
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -103,9 +100,9 @@ describe("ConversationReference storage (TEAM-06)", () => {
       expect(mockUpdate).toHaveBeenCalledOnce();
       const configJson = mockUpdate.mock.calls[0]![0].data.configJson;
       expect(configJson.conversationReferences["aad-user-1"]).toEqual(newRef);
-      expect(
-        configJson.conversationReferences["aad-user-1"].serviceUrl,
-      ).toBe("https://new-service.example.com/");
+      expect(configJson.conversationReferences["aad-user-1"].serviceUrl).toBe(
+        "https://new-service.example.com/",
+      );
     });
 
     it("stores team-scoped references under teamConversationReferences", async () => {
@@ -187,9 +184,7 @@ describe("ConversationReference storage (TEAM-06)", () => {
 
       const configJson = mockUpdate.mock.calls[0]![0].data.configJson;
       // Existing ref preserved
-      expect(configJson.conversationReferences["aad-user-1"]).toEqual(
-        existingRef,
-      );
+      expect(configJson.conversationReferences["aad-user-1"]).toEqual(existingRef);
       // New ref added
       expect(configJson.conversationReferences["aad-user-2"]).toEqual(newRef);
       // Other config preserved

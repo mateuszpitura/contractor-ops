@@ -22,9 +22,7 @@ export function registerAdapter(adapter: IntegrationProviderAdapter): void {
  * @param slug - The provider slug to look up (case-insensitive)
  * @returns The adapter, or undefined if not registered
  */
-export function getAdapter(
-  slug: string,
-): IntegrationProviderAdapter | undefined {
+export function getAdapter(slug: string): IntegrationProviderAdapter | undefined {
   return adapters.get(slug.toLowerCase());
 }
 

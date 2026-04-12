@@ -1,11 +1,10 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { Banknote } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
+import { EmptyState } from "@/components/shared/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -16,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { EmptyState } from "@/components/shared/empty-state";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -80,10 +79,18 @@ export default function PortalPaymentsPage() {
             <TableBody>
               {Array.from({ length: 3 }).map((_, i) => (
                 <TableRow key={i}>
-                  <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-28" /></TableCell>
-                  <TableCell><Skeleton className="h-5 w-12 rounded-full" /></TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-32" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-24" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-28" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-5 w-12 rounded-full" />
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -105,19 +112,13 @@ export default function PortalPaymentsPage() {
                 <TableRow
                   key={payment.id}
                   className="cursor-pointer"
-                  onClick={() =>
-                    router.push(`/portal/invoices/${payment.id}`)
-                  }
+                  onClick={() => router.push(`/portal/invoices/${payment.id}`)}
                 >
-                  <TableCell className="text-sm font-medium">
-                    {payment.invoiceNumber}
-                  </TableCell>
+                  <TableCell className="text-sm font-medium">{payment.invoiceNumber}</TableCell>
                   <TableCell className="text-sm">
                     {formatAmount(payment.amountMinor, payment.currency)}
                   </TableCell>
-                  <TableCell className="text-sm">
-                    {formatDate(payment.paidAt)}
-                  </TableCell>
+                  <TableCell className="text-sm">{formatDate(payment.paidAt)}</TableCell>
                   <TableCell>
                     <Badge variant="default">{t("payments.paid")}</Badge>
                   </TableCell>

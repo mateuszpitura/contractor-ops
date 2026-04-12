@@ -49,9 +49,7 @@ describe("StepConfirmation", () => {
 
   it("calls onViewRun when view run link is clicked", async () => {
     const onViewRun = vi.fn();
-    const { user } = setup(
-      <StepConfirmation {...makeProps({ onViewRun })} />,
-    );
+    const { user } = setup(<StepConfirmation {...makeProps({ onViewRun })} />);
 
     await user.click(screen.getByText(/view payment run/i));
     expect(onViewRun).toHaveBeenCalledTimes(1);
@@ -59,9 +57,7 @@ describe("StepConfirmation", () => {
 
   it("calls onClose when close button is clicked", async () => {
     const onClose = vi.fn();
-    const { user } = setup(
-      <StepConfirmation {...makeProps({ onClose })} />,
-    );
+    const { user } = setup(<StepConfirmation {...makeProps({ onClose })} />);
 
     await user.click(screen.getByRole("button", { name: /close/i }));
     expect(onClose).toHaveBeenCalledTimes(1);

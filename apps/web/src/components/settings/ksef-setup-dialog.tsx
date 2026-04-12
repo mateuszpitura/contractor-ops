@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-import { toast } from "sonner";
 import { Loader2, ShieldCheck, Upload } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
+import { useTranslations } from "next-intl";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -15,10 +14,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Props
@@ -34,18 +33,12 @@ interface KsefSetupDialogProps {
 // Component
 // ---------------------------------------------------------------------------
 
-export function KsefSetupDialog({
-  open,
-  onOpenChange,
-  orgNip,
-}: KsefSetupDialogProps) {
+export function KsefSetupDialog({ open, onOpenChange, orgNip }: KsefSetupDialogProps) {
   const t = useTranslations("ksef");
   const queryClient = useQueryClient();
 
   // Form state
-  const [authMethod, setAuthMethod] = useState<"token" | "certificate">(
-    "token",
-  );
+  const [authMethod, setAuthMethod] = useState<"token" | "certificate">("token");
   const [token, setToken] = useState("");
   const [certificateFile, setCertificateFile] = useState<File | null>(null);
   const [certificatePassword, setCertificatePassword] = useState("");
@@ -68,9 +61,7 @@ export function KsefSetupDialog({
       resetAndClose();
     },
     onError: (error: Error) => {
-      toast.error(
-        error.message || t("connectionFailedToast"),
-      );
+      toast.error(error.message || t("connectionFailedToast"));
     },
   });
 
@@ -95,9 +86,7 @@ export function KsefSetupDialog({
       let certificateBase64 = "";
       if (certificateFile) {
         const buffer = await certificateFile.arrayBuffer();
-        certificateBase64 = btoa(
-          String.fromCharCode(...new Uint8Array(buffer)),
-        );
+        certificateBase64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
       }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (connectMutation.mutate as any)({
@@ -130,17 +119,9 @@ export function KsefSetupDialog({
           {/* Organization NIP (read-only) */}
           <div className="space-y-2">
             <Label htmlFor="ksef-nip">{t("orgNipLabel")}</Label>
-            <Input
-              id="ksef-nip"
-              value={orgNip ?? ""}
-              readOnly
-              disabled
-              className="font-mono"
-            />
+            <Input id="ksef-nip" value={orgNip ?? ""} readOnly disabled className="font-mono" />
             {orgNip ? (
-              <p className="text-xs text-muted-foreground">
-                {t("orgNipHelper")}
-              </p>
+              <p className="text-xs text-muted-foreground">{t("orgNipHelper")}</p>
             ) : (
               <p className="text-xs text-destructive">{t("orgNipMissing")}</p>
             )}
@@ -172,9 +153,7 @@ export function KsefSetupDialog({
                   placeholder={t("tokenPlaceholder")}
                   className="flex w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 />
-                <p className="text-xs text-muted-foreground">
-                  {t("tokenHelper")}
-                </p>
+                <p className="text-xs text-muted-foreground">{t("tokenHelper")}</p>
               </div>
             </TabsContent>
 
@@ -187,9 +166,7 @@ export function KsefSetupDialog({
                     className="flex h-20 cursor-pointer items-center justify-center rounded-md border-2 border-dashed border-muted-foreground/25 bg-muted/30 text-sm text-muted-foreground transition-colors hover:border-primary/50 hover:bg-muted/50"
                   >
                     {certificateFile ? (
-                      <span className="font-medium text-foreground">
-                        {certificateFile.name}
-                      </span>
+                      <span className="font-medium text-foreground">{certificateFile.name}</span>
                     ) : (
                       <span className="flex items-center gap-2">
                         <Upload className="size-4" aria-hidden="true" />
@@ -201,18 +178,14 @@ export function KsefSetupDialog({
                       type="file"
                       accept=".p12,.pem"
                       disabled={isFormDisabled}
-                      onChange={(e) =>
-                        setCertificateFile(e.target.files?.[0] ?? null)
-                      }
+                      onChange={(e) => setCertificateFile(e.target.files?.[0] ?? null)}
                       className="sr-only"
                     />
                   </label>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="ksef-cert-password">
-                    {t("certificatePasswordLabel")}
-                  </Label>
+                  <Label htmlFor="ksef-cert-password">{t("certificatePasswordLabel")}</Label>
                   <Input
                     id="ksef-cert-password"
                     type="password"
@@ -233,10 +206,7 @@ export function KsefSetupDialog({
           </Button>
           <Button onClick={handleSave} disabled={isSaveDisabled}>
             {connectMutation.isPending && (
-              <Loader2
-                className="me-1.5 size-3.5 animate-spin"
-                aria-hidden="true"
-              />
+              <Loader2 className="me-1.5 size-3.5 animate-spin" aria-hidden="true" />
             )}
             {t("saveCredentials")}
           </Button>

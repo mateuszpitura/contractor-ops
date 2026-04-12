@@ -1,5 +1,6 @@
 import { render, screen } from "@/test/test-utils";
-import { getColumns, type ContractorRow } from "../columns";
+import type { ContractorRow } from "../columns";
+import { getColumns } from "../columns";
 
 vi.mock("date-fns", () => ({
   formatDistanceToNow: () => "2 days ago",
@@ -107,16 +108,22 @@ describe("getColumns cell renderers", () => {
   it("lifecycleStage cell renders badge for each stage", () => {
     for (const stage of ["DRAFT", "ONBOARDING", "ACTIVE", "OFFBOARDING", "ENDED"]) {
       const { unmount } = render(
-        <>{(() => {
-          const t = (key: string) => key;
-          const cols = getColumns(t);
-          const col = cols.find((c) => (c as any).accessorKey === "lifecycleStage");
-          const cellFn = col!.cell as (info: any) => any;
-          return cellFn({
-            row: { original: makeRow({ lifecycleStage: stage }), getIsSelected: () => false, toggleSelected: vi.fn() },
-            getValue: () => stage,
-          });
-        })()}</>,
+        <>
+          {(() => {
+            const t = (key: string) => key;
+            const cols = getColumns(t);
+            const col = cols.find((c) => (c as any).accessorKey === "lifecycleStage");
+            const cellFn = col!.cell as (info: any) => any;
+            return cellFn({
+              row: {
+                original: makeRow({ lifecycleStage: stage }),
+                getIsSelected: () => false,
+                toggleSelected: vi.fn(),
+              },
+              getValue: () => stage,
+            });
+          })()}
+        </>,
       );
       expect(screen.getByText(`lifecycle.${stage}`)).toBeInTheDocument();
       unmount();
@@ -129,16 +136,22 @@ describe("getColumns cell renderers", () => {
   });
 
   it("owner cell renders name and avatar when owner exists with image", () => {
-    renderCell("owner", makeRow({
-      owner: { id: "u1", name: "Jan Kowalski", image: "https://example.com/img.jpg" },
-    }));
+    renderCell(
+      "owner",
+      makeRow({
+        owner: { id: "u1", name: "Jan Kowalski", image: "https://example.com/img.jpg" },
+      }),
+    );
     expect(screen.getByText("Jan Kowalski")).toBeInTheDocument();
   });
 
   it("owner cell renders owner.id when owner.name is null", () => {
-    renderCell("owner", makeRow({
-      owner: { id: "u1", name: null, image: null },
-    }));
+    renderCell(
+      "owner",
+      makeRow({
+        owner: { id: "u1", name: null, image: null },
+      }),
+    );
     expect(screen.getByText("u1")).toBeInTheDocument();
   });
 
@@ -148,9 +161,12 @@ describe("getColumns cell renderers", () => {
   });
 
   it("billingModel cell renders model when present", () => {
-    renderCell("billingModel", makeRow({
-      customFieldsJson: { billingModel: "HOURLY" },
-    }));
+    renderCell(
+      "billingModel",
+      makeRow({
+        customFieldsJson: { billingModel: "HOURLY" },
+      }),
+    );
     expect(screen.getByText("billingModel.HOURLY")).toBeInTheDocument();
   });
 
@@ -160,10 +176,13 @@ describe("getColumns cell renderers", () => {
   });
 
   it("rate cell renders formatted amount when rateValueMinor is present", () => {
-    renderCell("rate", makeRow({
-      customFieldsJson: { rateValueMinor: 15000 },
-      currency: "PLN",
-    }));
+    renderCell(
+      "rate",
+      makeRow({
+        customFieldsJson: { rateValueMinor: 15000 },
+        currency: "PLN",
+      }),
+    );
     expect(screen.getByText(/150,00/)).toBeInTheDocument();
     expect(screen.getByText(/PLN/)).toBeInTheDocument();
   });

@@ -82,9 +82,7 @@ describe("EquipmentDetailHeader", () => {
 
   it("calls onEdit when edit button is clicked", async () => {
     const onEdit = vi.fn();
-    const { user } = setup(
-      <EquipmentDetailHeader {...makeProps()} onEdit={onEdit} />,
-    );
+    const { user } = setup(<EquipmentDetailHeader {...makeProps()} onEdit={onEdit} />);
 
     await user.click(screen.getByRole("button", { name: /edit/i }));
     expect(onEdit).toHaveBeenCalledTimes(1);
@@ -116,11 +114,7 @@ describe("EquipmentDetailHeader", () => {
   });
 
   it("does not show serial number when it is null", () => {
-    render(
-      <EquipmentDetailHeader
-        {...makeProps({ serialNumber: null })}
-      />,
-    );
+    render(<EquipmentDetailHeader {...makeProps({ serialNumber: null })} />);
     expect(screen.queryByText("SN-123456")).not.toBeInTheDocument();
   });
 

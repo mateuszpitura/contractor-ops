@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@/test/test-utils";
 import { OcrReviewPanel } from "../ocr-review-panel";
 
@@ -36,9 +36,7 @@ vi.mock("@/trpc/init", () => ({
 vi.mock("next/dynamic", () => ({
   __esModule: true,
   default: () => {
-    const PdfViewer = ({ url }: { url: string }) => (
-      <div data-testid="pdf-viewer">{url}</div>
-    );
+    const PdfViewer = ({ url }: { url: string }) => <div data-testid="pdf-viewer">{url}</div>;
     PdfViewer.displayName = "PdfViewer";
     return PdfViewer;
   },
@@ -106,9 +104,7 @@ describe("OcrReviewPanel", () => {
       isLoading: false,
     });
     render(<OcrReviewPanel {...defaultProps} />);
-    expect(
-      screen.getByText("Review Extracted Data"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Review Extracted Data")).toBeInTheDocument();
   });
 
   it("shows extraction status bar for non-pending statuses", () => {
@@ -162,9 +158,7 @@ describe("OcrReviewPanel", () => {
       isLoading: false,
     });
     render(<OcrReviewPanel {...defaultProps} />);
-    expect(screen.getByTestId("pdf-viewer")).toHaveTextContent(
-      "https://example.com/test.pdf",
-    );
+    expect(screen.getByTestId("pdf-viewer")).toHaveTextContent("https://example.com/test.pdf");
   });
 
   it("renders Accept & Save button when extraction is complete", () => {
@@ -516,7 +510,9 @@ describe("OcrReviewPanel", () => {
     // Alert dialog should appear
     const { waitFor } = await import("@/test/test-utils");
     await waitFor(() => {
-      expect(screen.getByText("Discard extracted data and start with an empty form?")).toBeInTheDocument();
+      expect(
+        screen.getByText("Discard extracted data and start with an empty form?"),
+      ).toBeInTheDocument();
     });
     await user.click(screen.getByText("Discard"));
     expect(onDiscard).toHaveBeenCalledTimes(1);
@@ -541,7 +537,9 @@ describe("OcrReviewPanel", () => {
     await user.click(screen.getByText("Re-run OCR"));
     const { waitFor } = await import("@/test/test-utils");
     await waitFor(() => {
-      expect(screen.getByText("Re-running OCR will replace the current extracted data. Continue?")).toBeInTheDocument();
+      expect(
+        screen.getByText("Re-running OCR will replace the current extracted data. Continue?"),
+      ).toBeInTheDocument();
     });
     await user.click(screen.getByText("Re-run"));
     expect(onRetrigger).toHaveBeenCalledTimes(1);

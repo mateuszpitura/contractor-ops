@@ -1,7 +1,7 @@
 import { prisma } from "@contractor-ops/db";
-import type { MessagingProvider } from "./types.js";
 import { SlackMessagingProvider } from "./slack-messaging-provider.js";
 import { TeamsMessagingProvider } from "./teams-messaging-provider.js";
+import type { MessagingProvider } from "./types.js";
 
 // ---------------------------------------------------------------------------
 // Provider Factory
@@ -47,8 +47,8 @@ export async function getConnectedMessagingProviders(
 
 // Re-export all types
 export type {
-  MessagingProvider,
   ApprovalCardParams,
-  ReminderDMParams,
   ChannelAlertParams,
+  MessagingProvider,
+  ReminderDMParams,
 } from "./types.js";

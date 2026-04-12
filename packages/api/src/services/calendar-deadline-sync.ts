@@ -1,8 +1,5 @@
 import type { CalendarTaskConfig } from "@contractor-ops/validators";
-import {
-  createCalendarEvent,
-  updateCalendarEvent,
-} from "./calendar-event-service.js";
+import { createCalendarEvent, updateCalendarEvent } from "./calendar-event-service.js";
 
 // Use loosely typed prisma client for parallel execution compatibility
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -274,8 +271,7 @@ export async function createTaskCalendarEvent(
   if (!input.config.calendarEnabled) return;
 
   // Substitute template variables in title
-  let title =
-    input.config.titleTemplate ?? "{task} - {contractor} ({contract})";
+  let title = input.config.titleTemplate ?? "{task} - {contractor} ({contract})";
   title = title.replace(/\{contractor\}/g, input.contractorName);
   title = title.replace(/\{contract\}/g, input.contractName);
   title = title.replace(/\{task\}/g, input.taskName);

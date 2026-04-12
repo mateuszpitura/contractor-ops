@@ -3,8 +3,8 @@
 // ---------------------------------------------------------------------------
 
 import { XMLParser } from "fast-xml-parser";
-import type { ValidationResult, ValidationError } from "../../types/validation.js";
 import { dig } from "../../engine/xml-utils.js";
+import type { ValidationError, ValidationResult } from "../../types/validation.js";
 import { PINT_AE_CUSTOMIZATION_ID, UAE_SCHEME_ID } from "./constants.js";
 
 const parser = new XMLParser({
@@ -12,8 +12,7 @@ const parser = new XMLParser({
   attributeNamePrefix: "@_",
   textNodeName: "#text",
   parseAttributeValue: false,
-  isArray: (name) =>
-    ["cac:InvoiceLine", "cac:TaxSubtotal"].includes(name),
+  isArray: (name) => ["cac:InvoiceLine", "cac:TaxSubtotal"].includes(name),
 });
 
 /**
@@ -70,8 +69,7 @@ export function validatePintAeXml(xml: string): ValidationResult {
       errors: [
         {
           code: "PARSE_ERROR",
-          message:
-            err instanceof Error ? err.message : String(err),
+          message: err instanceof Error ? err.message : String(err),
           severity: "error",
         },
       ],
@@ -114,7 +112,9 @@ export function validatePintAeXml(xml: string): ValidationResult {
   }
 
   // Check supplier TRN
-  const supplierParty = dig(inv, "cac:AccountingSupplierParty") as Record<string, unknown> | undefined;
+  const supplierParty = dig(inv, "cac:AccountingSupplierParty") as
+    | Record<string, unknown>
+    | undefined;
   if (!supplierParty || !hasTrnIdentifier(supplierParty)) {
     errors.push({
       code: "MISSING_SUPPLIER_TRN",
@@ -125,7 +125,9 @@ export function validatePintAeXml(xml: string): ValidationResult {
   }
 
   // Check customer TRN (warning for cross-border)
-  const customerParty = dig(inv, "cac:AccountingCustomerParty") as Record<string, unknown> | undefined;
+  const customerParty = dig(inv, "cac:AccountingCustomerParty") as
+    | Record<string, unknown>
+    | undefined;
   if (customerParty && !hasTrnIdentifier(customerParty)) {
     warnings.push({
       code: "MISSING_CUSTOMER_TRN",

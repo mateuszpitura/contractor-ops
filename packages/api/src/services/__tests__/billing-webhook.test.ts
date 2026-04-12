@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import type Stripe from "stripe";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Hoisted mocks (vi.hoisted runs before vi.mock factories)
@@ -36,10 +36,8 @@ vi.mock("../stripe-client.js", () => ({
 vi.mock("../billing-constants.js", () => ({
   TIER_CREDIT_ALLOWANCE: { STARTER: 20, PRO: 100, ENTERPRISE: 500 },
   TRIAL_CREDIT_ALLOWANCE: 5,
-  resolveTierFromPriceId: (...args: unknown[]) =>
-    mockResolveTierFromPriceId(...args),
-  resolveTopUpCredits: (...args: unknown[]) =>
-    mockResolveTopUpCredits(...args),
+  resolveTierFromPriceId: (...args: unknown[]) => mockResolveTierFromPriceId(...args),
+  resolveTopUpCredits: (...args: unknown[]) => mockResolveTopUpCredits(...args),
 }));
 
 vi.mock("../credit-service.js", () => ({
@@ -105,10 +103,7 @@ function createMockTx() {
   };
 }
 
-function makeEvent(
-  type: string,
-  dataObject: Record<string, unknown>,
-): Stripe.Event {
+function makeEvent(type: string, dataObject: Record<string, unknown>): Stripe.Event {
   return {
     id: `evt_${Math.random().toString(36).slice(2)}`,
     type,
@@ -186,10 +181,7 @@ describe("billing-webhook", () => {
       mockStripeSubscriptionsRetrieve.mockResolvedValue(sub);
       tx.subscription.findUnique.mockResolvedValue(null);
 
-      const event = makeEvent(
-        "checkout.session.completed",
-        makeCheckoutSession(),
-      );
+      const event = makeEvent("checkout.session.completed", makeCheckoutSession());
 
       await routeStripeEvent(event, tx);
 
@@ -201,10 +193,7 @@ describe("billing-webhook", () => {
     it("routes customer.subscription.updated to handleSubscriptionUpdated", async () => {
       tx.subscription.findUnique.mockResolvedValue(null);
 
-      const event = makeEvent(
-        "customer.subscription.updated",
-        makeSubscription(),
-      );
+      const event = makeEvent("customer.subscription.updated", makeSubscription());
 
       await routeStripeEvent(event, tx);
 
@@ -217,10 +206,7 @@ describe("billing-webhook", () => {
         organizationId: "org_1",
       });
 
-      const event = makeEvent(
-        "customer.subscription.deleted",
-        makeSubscription(),
-      );
+      const event = makeEvent("customer.subscription.deleted", makeSubscription());
 
       await routeStripeEvent(event, tx);
 
@@ -270,16 +256,11 @@ describe("billing-webhook", () => {
       });
       tx.member.findMany.mockResolvedValue([{ userId: "usr_1" }]);
 
-      const event = makeEvent(
-        "customer.subscription.trial_will_end",
-        makeSubscription(),
-      );
+      const event = makeEvent("customer.subscription.trial_will_end", makeSubscription());
 
       await routeStripeEvent(event, tx);
 
-      expect(mockDispatch).toHaveBeenCalledWith(
-        expect.objectContaining({ type: "TRIAL_ENDING" }),
-      );
+      expect(mockDispatch).toHaveBeenCalledWith(expect.objectContaining({ type: "TRIAL_ENDING" }));
     });
 
     it("does not throw on unhandled event type", async () => {
@@ -415,10 +396,7 @@ describe("billing-webhook", () => {
         organizationId: "org_1",
       });
 
-      const event = makeEvent(
-        "customer.subscription.deleted",
-        makeSubscription(),
-      );
+      const event = makeEvent("customer.subscription.deleted", makeSubscription());
 
       await routeStripeEvent(event, tx);
 
@@ -426,19 +404,13 @@ describe("billing-webhook", () => {
         where: { stripeSubscriptionId: "sub_123" },
         data: { status: "CANCELED" },
       });
-      expect(mockInvalidate).toHaveBeenCalledWith(
-        "sub:org_1",
-        "credit:org_1",
-      );
+      expect(mockInvalidate).toHaveBeenCalledWith("sub:org_1", "credit:org_1");
     });
 
     it("skips update when subscription is not found in DB", async () => {
       tx.subscription.findUnique.mockResolvedValue(null);
 
-      const event = makeEvent(
-        "customer.subscription.deleted",
-        makeSubscription(),
-      );
+      const event = makeEvent("customer.subscription.deleted", makeSubscription());
 
       await routeStripeEvent(event, tx);
 
@@ -453,9 +425,7 @@ describe("billing-webhook", () => {
   describe("handleCheckoutCompleted - trial credits", () => {
     beforeEach(() => {
       // handleCheckoutCompleted retrieves the subscription from Stripe
-      mockStripeSubscriptionsRetrieve.mockResolvedValue(
-        makeSubscription({ status: "trialing" }),
-      );
+      mockStripeSubscriptionsRetrieve.mockResolvedValue(makeSubscription({ status: "trialing" }));
       // handleSubscriptionUpdated (called first) needs findUnique for tier change check
       tx.subscription.findUnique.mockResolvedValue(null);
       // No existing trial entry
@@ -503,14 +473,9 @@ describe("billing-webhook", () => {
     });
 
     it("skips trial credits when subscription is active (not trialing)", async () => {
-      mockStripeSubscriptionsRetrieve.mockResolvedValue(
-        makeSubscription({ status: "active" }),
-      );
+      mockStripeSubscriptionsRetrieve.mockResolvedValue(makeSubscription({ status: "active" }));
 
-      const event = makeEvent(
-        "checkout.session.completed",
-        makeCheckoutSession(),
-      );
+      const event = makeEvent("checkout.session.completed", makeCheckoutSession());
 
       await routeStripeEvent(event, tx);
 
@@ -628,10 +593,7 @@ describe("billing-webhook", () => {
         id: "existing_ledger",
       });
 
-      const event = makeEvent(
-        "invoice.paid",
-        makeInvoice({ id: "inv_dup" }),
-      );
+      const event = makeEvent("invoice.paid", makeInvoice({ id: "inv_dup" }));
 
       await routeStripeEvent(event, tx);
 
@@ -654,10 +616,7 @@ describe("billing-webhook", () => {
         currentPeriodEnd: periodEnd,
       });
 
-      const event = makeEvent(
-        "invoice.paid",
-        makeInvoice({ id: "inv_period" }),
-      );
+      const event = makeEvent("invoice.paid", makeInvoice({ id: "inv_period" }));
 
       await routeStripeEvent(event, tx);
 
@@ -679,15 +638,9 @@ describe("billing-webhook", () => {
       tx.subscription.findUnique.mockResolvedValue({
         organization: { id: "org_1", billingEmail: "billing@test.com" },
       });
-      tx.member.findMany.mockResolvedValue([
-        { userId: "usr_admin1" },
-        { userId: "usr_admin2" },
-      ]);
+      tx.member.findMany.mockResolvedValue([{ userId: "usr_admin1" }, { userId: "usr_admin2" }]);
 
-      const event = makeEvent(
-        "customer.subscription.trial_will_end",
-        makeSubscription(),
-      );
+      const event = makeEvent("customer.subscription.trial_will_end", makeSubscription());
 
       await routeStripeEvent(event, tx);
 
@@ -719,10 +672,7 @@ describe("billing-webhook", () => {
       });
       tx.member.findMany.mockResolvedValue([{ userId: "usr_1" }]);
 
-      const event = makeEvent(
-        "customer.subscription.trial_will_end",
-        makeSubscription(),
-      );
+      const event = makeEvent("customer.subscription.trial_will_end", makeSubscription());
 
       await routeStripeEvent(event, tx);
 
@@ -740,10 +690,7 @@ describe("billing-webhook", () => {
       });
       tx.member.findMany.mockResolvedValue([{ userId: "usr_1" }]);
 
-      const event = makeEvent(
-        "customer.subscription.trial_will_end",
-        makeSubscription(),
-      );
+      const event = makeEvent("customer.subscription.trial_will_end", makeSubscription());
 
       await routeStripeEvent(event, tx);
 
@@ -764,10 +711,7 @@ describe("billing-webhook", () => {
         organizationId: "org_1",
         organization: { id: "org_1", billingEmail: "billing@acme.com" },
       });
-      tx.member.findMany.mockResolvedValue([
-        { userId: "usr_admin1" },
-        { userId: "usr_admin2" },
-      ]);
+      tx.member.findMany.mockResolvedValue([{ userId: "usr_admin1" }, { userId: "usr_admin2" }]);
     });
 
     it("sets subscription status to PAST_DUE", async () => {

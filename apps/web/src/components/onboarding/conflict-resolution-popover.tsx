@@ -1,25 +1,19 @@
 "use client";
 
-import { useState } from "react";
-import { useTranslations } from "next-intl";
 import { AlertTriangle } from "lucide-react";
-
-import {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-  PopoverHeader,
-  PopoverTitle,
-} from "@/components/ui/popover";
+import { useTranslations } from "next-intl";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  Popover,
+  PopoverContent,
+  PopoverHeader,
+  PopoverTitle,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -54,9 +48,7 @@ export function ConflictResolutionPopover({
   const t = useTranslations("OnboardingImport.step2");
   const [customValues, setCustomValues] = useState<Record<string, string>>({});
 
-  const unresolvedCount = conflicts.filter(
-    (c) => !resolvedConflicts[c.field],
-  ).length;
+  const unresolvedCount = conflicts.filter((c) => !resolvedConflicts[c.field]).length;
 
   return (
     <Popover>
@@ -66,16 +58,10 @@ export function ConflictResolutionPopover({
             render={
               <PopoverTrigger
                 render={
-                  <Badge
-                    variant="warning"
-                    className="cursor-pointer"
-                    aria-expanded={false}
-                  />
+                  <Badge variant="warning" className="cursor-pointer" aria-expanded={false} />
                 }
               >
-                {unresolvedCount > 0 && (
-                  <AlertTriangle className="size-3" aria-hidden="true" />
-                )}
+                {unresolvedCount > 0 && <AlertTriangle className="size-3" aria-hidden="true" />}
                 {t("columnStatus")} ({unresolvedCount})
               </PopoverTrigger>
             }
@@ -95,9 +81,7 @@ export function ConflictResolutionPopover({
 
             return (
               <div key={conflict.field} className="space-y-2">
-                <p className="text-xs font-medium text-muted-foreground">
-                  {conflict.field}
-                </p>
+                <p className="text-xs font-medium text-muted-foreground">{conflict.field}</p>
 
                 <div className="space-y-1">
                   {conflict.values.map((cv) => (
@@ -124,10 +108,7 @@ export function ConflictResolutionPopover({
                     <input
                       type="radio"
                       name={`conflict-${conflict.field}`}
-                      checked={
-                        !!resolved &&
-                        !conflict.values.some((cv) => cv.value === resolved)
-                      }
+                      checked={!!resolved && !conflict.values.some((cv) => cv.value === resolved)}
                       onChange={() => {
                         const custom = customValues[conflict.field] ?? "";
                         if (custom) onResolve(conflict.field, custom);

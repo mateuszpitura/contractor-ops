@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { Check, Copy } from "lucide-react";
+import { useState } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -11,11 +11,7 @@ interface CopyableFieldProps {
   className?: string;
 }
 
-export function CopyableField({
-  value,
-  ariaLabel,
-  className,
-}: CopyableFieldProps) {
+export function CopyableField({ value, ariaLabel, className }: CopyableFieldProps) {
   const [copied, setCopied] = useState(false);
 
   async function handleCopy() {
@@ -45,10 +41,7 @@ export function CopyableField({
           aria-hidden="true"
         />
       ) : (
-        <Copy
-          className="size-3.5 transition-opacity duration-150 ease-in-out"
-          aria-hidden="true"
-        />
+        <Copy className="size-3.5 transition-opacity duration-150 ease-in-out" aria-hidden="true" />
       )}
     </button>
   );

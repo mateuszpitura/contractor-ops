@@ -1,30 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import type { UseFormReturn } from "react-hook-form";
-import { useTranslations } from "next-intl";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { useTranslations } from "next-intl";
+import { useEffect, useState } from "react";
+import type { UseFormReturn } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Command,
   CommandEmpty,
@@ -33,9 +17,19 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { usePermissions } from "@/hooks/use-permissions";
-import { maskTaxId, canViewSensitivePii } from "@/lib/mask-pii";
+import { canViewSensitivePii, maskTaxId } from "@/lib/mask-pii";
+import { trpc } from "@/trpc/init";
 import type { ContractWizardFormValues } from "./wizard-dialog";
 
 // ---------------------------------------------------------------------------
@@ -107,9 +101,7 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
   );
 
   const contractors = (contractorsData?.items ?? []) as ContractorListItem[];
-  const selectedContractor = contractors.find(
-    (c) => c.id === selectedContractorId,
-  );
+  const selectedContractor = contractors.find((c) => c.id === selectedContractorId);
 
   // If contractorId prop provided, auto-set and lock
   useEffect(() => {
@@ -169,9 +161,7 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
               }
             >
               {selectedContractor?.displayName ?? (
-                <span className="text-muted-foreground">
-                  {t("fields.contractorPlaceholder")}
-                </span>
+                <span className="text-muted-foreground">{t("fields.contractorPlaceholder")}</span>
               )}
             </PopoverTrigger>
             <PopoverContent className="w-[--anchor-width] p-0" align="start">
@@ -200,7 +190,9 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
                         <span>{contractor.displayName}</span>
                         {contractor.taxId ? (
                           <span className="ms-auto text-xs text-muted-foreground font-mono">
-                            {showPii ? String(contractor.taxId) : maskTaxId(String(contractor.taxId))}
+                            {showPii
+                              ? String(contractor.taxId)
+                              : maskTaxId(String(contractor.taxId))}
                           </span>
                         ) : null}
                       </CommandItem>
@@ -212,9 +204,7 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
           </Popover>
         )}
         {errors.contractorId && (
-          <p className="text-sm text-destructive">
-            {errors.contractorId.message}
-          </p>
+          <p className="text-sm text-destructive">{errors.contractorId.message}</p>
         )}
       </div>
 
@@ -224,9 +214,7 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
           {t("fields.title")}
         </Label>
         <Input id="title" {...register("title")} />
-        {errors.title && (
-          <p className="text-sm text-destructive">{errors.title.message}</p>
-        )}
+        {errors.title && <p className="text-sm text-destructive">{errors.title.message}</p>}
       </div>
 
       {/* Contract type */}
@@ -235,11 +223,10 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
         <Select
           value={watch("type") ?? ""}
           onValueChange={(value) =>
-            setValue(
-              "type",
-              (value ?? "") as ContractWizardFormValues["type"],
-              { shouldDirty: true, shouldValidate: true },
-            )
+            setValue("type", (value ?? "") as ContractWizardFormValues["type"], {
+              shouldDirty: true,
+              shouldValidate: true,
+            })
           }
           items={contractTypeItems}
         >
@@ -254,9 +241,7 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
             ))}
           </SelectContent>
         </Select>
-        {errors.type && (
-          <p className="text-sm text-destructive">{errors.type.message}</p>
-        )}
+        {errors.type && <p className="text-sm text-destructive">{errors.type.message}</p>}
       </div>
 
       {/* Start date */}
@@ -264,20 +249,13 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
         <Label className="text-[13px]">{t("fields.startDate")}</Label>
         <Popover open={startDateOpen} onOpenChange={setStartDateOpen}>
           <PopoverTrigger
-            render={
-              <Button
-                variant="outline"
-                className="w-full justify-start font-normal"
-              />
-            }
+            render={<Button variant="outline" className="w-full justify-start font-normal" />}
           >
             <CalendarIcon className="me-2 h-4 w-4" />
             {startDate ? (
               format(new Date(startDate), "PPP")
             ) : (
-              <span className="text-muted-foreground">
-                {t("fields.selectDate")}
-              </span>
+              <span className="text-muted-foreground">{t("fields.selectDate")}</span>
             )}
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
@@ -288,11 +266,7 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
             />
           </PopoverContent>
         </Popover>
-        {errors.startDate && (
-          <p className="text-sm text-destructive">
-            {errors.startDate.message}
-          </p>
-        )}
+        {errors.startDate && <p className="text-sm text-destructive">{errors.startDate.message}</p>}
       </div>
 
       {/* End date (optional) */}
@@ -300,20 +274,13 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
         <Label className="text-[13px]">{t("fields.endDate")}</Label>
         <Popover open={endDateOpen} onOpenChange={setEndDateOpen}>
           <PopoverTrigger
-            render={
-              <Button
-                variant="outline"
-                className="w-full justify-start font-normal"
-              />
-            }
+            render={<Button variant="outline" className="w-full justify-start font-normal" />}
           >
             <CalendarIcon className="me-2 h-4 w-4" />
             {endDate ? (
               format(new Date(endDate), "PPP")
             ) : (
-              <span className="text-muted-foreground">
-                {t("fields.selectDate")}
-              </span>
+              <span className="text-muted-foreground">{t("fields.selectDate")}</span>
             )}
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
@@ -321,15 +288,11 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
               mode="single"
               selected={endDate ? new Date(endDate) : undefined}
               onSelect={handleEndDateSelect}
-              disabled={(date) =>
-                startDate ? date < new Date(startDate) : false
-              }
+              disabled={(date) => (startDate ? date < new Date(startDate) : false)}
             />
           </PopoverContent>
         </Popover>
-        {errors.endDate && (
-          <p className="text-sm text-destructive">{errors.endDate.message}</p>
-        )}
+        {errors.endDate && <p className="text-sm text-destructive">{errors.endDate.message}</p>}
       </div>
 
       {/* Notice period */}
@@ -345,9 +308,7 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
           {...register("noticePeriodDays", { valueAsNumber: true })}
         />
         {errors.noticePeriodDays && (
-          <p className="text-sm text-destructive">
-            {errors.noticePeriodDays.message}
-          </p>
+          <p className="text-sm text-destructive">{errors.noticePeriodDays.message}</p>
         )}
       </div>
 

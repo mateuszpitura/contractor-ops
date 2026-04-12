@@ -1,9 +1,9 @@
 import { prisma } from "@contractor-ops/db";
 import {
+  NOTIFICATION_TYPES,
   notificationListSchema,
   notificationMarkReadSchema,
   notificationPreferenceUpdateSchema,
-  NOTIFICATION_TYPES,
 } from "@contractor-ops/validators";
 import { router } from "../init.js";
 import { tenantProcedure } from "../middleware/tenant.js";
@@ -26,47 +26,45 @@ export const notificationRouter = router({
    * List notifications for the current user with optional filters.
    * Supports filtering by type, status, unread-only, and pagination.
    */
-  list: tenantProcedure
-    .input(notificationListSchema)
-    .query(async ({ ctx, input }) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const where: Record<string, any> = {
-        organizationId: ctx.organizationId,
-        userId: ctx.user!.id,
-      };
+  list: tenantProcedure.input(notificationListSchema).query(async ({ ctx, input }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const where: Record<string, any> = {
+      organizationId: ctx.organizationId,
+      userId: ctx.user!.id,
+    };
 
-      if (input.type) {
-        where.type = input.type;
-      }
+    if (input.type) {
+      where.type = input.type;
+    }
 
-      if (input.status) {
-        where.status = input.status;
-      }
+    if (input.status) {
+      where.status = input.status;
+    }
 
-      if (input.unreadOnly) {
-        where.readAt = null;
-        where.status = { in: ["PENDING", "SENT"] };
-      }
+    if (input.unreadOnly) {
+      where.readAt = null;
+      where.status = { in: ["PENDING", "SENT"] };
+    }
 
-      const [items, total] = await Promise.all([
-        prisma.notification.findMany({
-          where,
-          orderBy: { createdAt: "desc" },
-          skip: (input.page - 1) * input.perPage,
-          take: input.perPage,
-        }),
-        prisma.notification.count({ where }),
-      ]);
+    const [items, total] = await Promise.all([
+      prisma.notification.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip: (input.page - 1) * input.perPage,
+        take: input.perPage,
+      }),
+      prisma.notification.count({ where }),
+    ]);
 
-      const totalPages = Math.ceil(total / input.perPage);
+    const totalPages = Math.ceil(total / input.perPage);
 
-      return plain({
-        items,
-        total,
-        page: input.page,
-        totalPages,
-      });
-    }),
+    return plain({
+      items,
+      total,
+      page: input.page,
+      totalPages,
+    });
+  }),
 
   /**
    * Get unread notification count for the current user.
@@ -87,23 +85,21 @@ export const notificationRouter = router({
    * Mark a single notification as read.
    * Only the notification owner can mark it read.
    */
-  markRead: tenantProcedure
-    .input(notificationMarkReadSchema)
-    .mutation(async ({ ctx, input }) => {
-      await prisma.notification.updateMany({
-        where: {
-          id: input.notificationId,
-          userId: ctx.user!.id,
-          organizationId: ctx.organizationId,
-        },
-        data: {
-          readAt: new Date(),
-          status: "READ",
-        },
-      });
+  markRead: tenantProcedure.input(notificationMarkReadSchema).mutation(async ({ ctx, input }) => {
+    await prisma.notification.updateMany({
+      where: {
+        id: input.notificationId,
+        userId: ctx.user!.id,
+        organizationId: ctx.organizationId,
+      },
+      data: {
+        readAt: new Date(),
+        status: "READ",
+      },
+    });
 
-      return { success: true };
-    }),
+    return { success: true };
+  }),
 
   /**
    * Mark all notifications as read for the current user.

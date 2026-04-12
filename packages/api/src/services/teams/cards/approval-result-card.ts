@@ -22,9 +22,7 @@ export interface ApprovalResultCardParams {
  * - Optional rejection comment
  * - "View in Contractor Ops" link
  */
-export function buildApprovalResultCard(
-  params: ApprovalResultCardParams,
-): Record<string, unknown> {
+export function buildApprovalResultCard(params: ApprovalResultCardParams): Record<string, unknown> {
   const isApproved = params.result === "approved";
   const icon = isApproved ? "\u2705" : "\u274C";
   const label = isApproved ? "Approved" : "Rejected";

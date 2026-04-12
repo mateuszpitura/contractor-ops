@@ -7,7 +7,7 @@
  * permission checks, org scoping, and the portal signing URL access control.
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -22,7 +22,13 @@ const PORTAL_SESSION_TOKEN = "portal-session-token-esign";
 // Mock Prisma via vi.hoisted
 // ---------------------------------------------------------------------------
 
-const { mockPrisma, mockSendForSignature, mockGetSigningUrl, mockVoidEnvelope, mockResendToRecipient } = vi.hoisted(() => {
+const {
+  mockPrisma,
+  mockSendForSignature,
+  mockGetSigningUrl,
+  mockVoidEnvelope,
+  mockResendToRecipient,
+} = vi.hoisted(() => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   type Rec = Record<string, any>;
 
@@ -222,9 +228,7 @@ describe("esign.sendForSignature", () => {
       documentId: "doc-1",
       connectionId: "conn-1",
       provider: "DOCUSIGN",
-      signers: [
-        { name: "Signer A", email: "a@test.com", role: "signer", routingOrder: 1 },
-      ],
+      signers: [{ name: "Signer A", email: "a@test.com", role: "signer", routingOrder: 1 }],
     });
 
     expect(result.id).toBe("env-1");
@@ -253,9 +257,7 @@ describe("esign.getEnvelopeDetail", () => {
       recipients: [
         { id: "r1", name: "Signer", email: "s@test.com", routingOrder: 1, status: "PENDING" },
       ],
-      events: [
-        { id: "e1", occurredAt: new Date("2025-06-01"), eventType: "SENT" },
-      ],
+      events: [{ id: "e1", occurredAt: new Date("2025-06-01"), eventType: "SENT" }],
       sentBy: { id: USER_ID, name: "User", email: "user@test.com" },
     };
     mockPrisma.signingEnvelope.findFirst.mockResolvedValue(envelopeData);

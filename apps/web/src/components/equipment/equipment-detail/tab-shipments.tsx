@@ -1,21 +1,14 @@
 "use client";
 
-import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { useTranslations } from "next-intl";
 import { format } from "date-fns";
-import { Truck, Trash2 } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
-import { Button } from "@/components/ui/button";
+import { Trash2, Truck } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useState } from "react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -24,9 +17,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ShipmentTimeline } from "../shipment-timeline";
-import { ShipmentStatusBadge } from "../shipment-status-badge";
+import { trpc } from "@/trpc/init";
 import { ReturnApprovalBanner } from "../return-approval-banner";
+import { ShipmentStatusBadge } from "../shipment-status-badge";
+import { ShipmentTimeline } from "../shipment-timeline";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -99,9 +93,7 @@ export function TabShipments({
   if (shipments.length === 0) {
     return (
       <div className="space-y-4">
-        {pendingReturn && (
-          <ReturnApprovalBanner returnRequest={pendingReturn} />
-        )}
+        {pendingReturn && <ReturnApprovalBanner returnRequest={pendingReturn} />}
         <div className="flex justify-end">
           <Button onClick={onCreateShipment}>
             <Truck className="me-1.5 size-3.5" />
@@ -110,9 +102,7 @@ export function TabShipments({
         </div>
         <div className="flex min-h-[300px] flex-col items-center justify-center text-center">
           <Truck className="h-10 w-10 text-muted-foreground/50" />
-          <h3 className="mt-3 text-[16px] font-medium">
-            {t("detail.shipmentsEmpty")}
-          </h3>
+          <h3 className="mt-3 text-[16px] font-medium">{t("detail.shipmentsEmpty")}</h3>
           <p className="mt-1 text-sm text-muted-foreground">
             {t("detail.shipmentsEmptyDescription")}
           </p>
@@ -123,9 +113,7 @@ export function TabShipments({
 
   return (
     <div className="space-y-4">
-      {pendingReturn && (
-        <ReturnApprovalBanner returnRequest={pendingReturn} />
-      )}
+      {pendingReturn && <ReturnApprovalBanner returnRequest={pendingReturn} />}
       <div className="flex justify-end">
         <Button onClick={onCreateShipment}>
           <Truck className="me-1.5 size-3.5" />
@@ -144,9 +132,7 @@ export function TabShipments({
                     : t("shipment.return")}
                 </CardTitle>
                 <ShipmentStatusBadge status={shipment.currentStatus} />
-                <span className="text-sm text-muted-foreground">
-                  {shipment.carrier}
-                </span>
+                <span className="text-sm text-muted-foreground">{shipment.carrier}</span>
                 {shipment.trackingNumber && (
                   <span className="font-mono text-xs text-muted-foreground">
                     {shipment.trackingNumber}
@@ -181,16 +167,11 @@ export function TabShipments({
       ))}
 
       {/* Delete confirmation */}
-      <Dialog
-        open={!!deleteTarget}
-        onOpenChange={(v) => !v && setDeleteTarget(null)}
-      >
+      <Dialog open={!!deleteTarget} onOpenChange={(v) => !v && setDeleteTarget(null)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t("shipment.deleteTitle")}</DialogTitle>
-            <DialogDescription>
-              {t("shipment.deleteDescription")}
-            </DialogDescription>
+            <DialogDescription>{t("shipment.deleteDescription")}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button
@@ -202,9 +183,7 @@ export function TabShipments({
             </Button>
             <Button
               variant="destructive"
-              onClick={() =>
-                deleteTarget && deleteMutation.mutate({ id: deleteTarget })
-              }
+              onClick={() => deleteTarget && deleteMutation.mutate({ id: deleteTarget })}
               disabled={deleteMutation.isPending}
             >
               {t("shipment.deleteTitle")}

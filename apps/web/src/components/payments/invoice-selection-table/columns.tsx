@@ -1,8 +1,8 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 
 // ---------------------------------------------------------------------------
 // Row type matching the tRPC payment.readyForPayment response shape
@@ -59,13 +59,8 @@ export function getColumns(t: TranslateFunction): ColumnDef<ReadyInvoiceRow>[] {
       header: ({ table }) => (
         <Checkbox
           checked={table.getIsAllPageRowsSelected()}
-          indeterminate={
-            table.getIsSomePageRowsSelected() &&
-            !table.getIsAllPageRowsSelected()
-          }
-          onCheckedChange={(value) =>
-            table.toggleAllPageRowsSelected(!!value)
-          }
+          indeterminate={table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()}
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
           aria-label={t("selection.selectAll")}
         />
       ),
@@ -91,9 +86,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ReadyInvoiceRow>[] {
       accessorKey: "invoiceNumber",
       header: t("selection.invoiceNumber"),
       cell: ({ row }) => (
-        <span className="font-semibold text-sm">
-          {row.original.invoiceNumber}
-        </span>
+        <span className="font-semibold text-sm">{row.original.invoiceNumber}</span>
       ),
       enableHiding: false,
     },
@@ -108,9 +101,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ReadyInvoiceRow>[] {
         const hasMissingIban = !row.original.billingProfile?.bankAccountMasked;
         return (
           <div className="flex items-center gap-1.5">
-            <span className="text-sm truncate">
-              {contractor?.legalName ?? "\u2014"}
-            </span>
+            <span className="text-sm truncate">{contractor?.legalName ?? "\u2014"}</span>
             {hasMissingIban && (
               <Badge
                 variant="outline"
@@ -127,9 +118,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ReadyInvoiceRow>[] {
     // 4. Amount
     {
       accessorKey: "amountToPayMinor",
-      header: () => (
-        <span className="text-end block">{t("selection.amount")}</span>
-      ),
+      header: () => <span className="text-end block">{t("selection.amount")}</span>,
       cell: ({ row }) => (
         <span className="font-mono text-sm tabular-nums text-end block">
           {formatMinorUnits(row.original.amountToPayMinor)}
@@ -141,9 +130,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ReadyInvoiceRow>[] {
     {
       accessorKey: "currency",
       header: t("selection.currency"),
-      cell: ({ row }) => (
-        <span className="text-sm">{row.original.currency}</span>
-      ),
+      cell: ({ row }) => <span className="text-sm">{row.original.currency}</span>,
       enableSorting: false,
     },
 
@@ -153,13 +140,8 @@ export function getColumns(t: TranslateFunction): ColumnDef<ReadyInvoiceRow>[] {
       header: t("selection.dueDate"),
       cell: ({ row }) => {
         const dueDate = row.original.dueDate;
-        if (!dueDate)
-          return <span className="text-muted-foreground">&mdash;</span>;
-        return (
-          <span className="text-sm">
-            {new Date(dueDate).toLocaleDateString("pl-PL")}
-          </span>
-        );
+        if (!dueDate) return <span className="text-muted-foreground">&mdash;</span>;
+        return <span className="text-sm">{new Date(dueDate).toLocaleDateString("pl-PL")}</span>;
       },
     },
 

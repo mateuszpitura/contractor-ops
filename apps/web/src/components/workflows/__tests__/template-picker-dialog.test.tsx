@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, setup } from "@/test/test-utils";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { TemplatePicker } from "../template-picker-dialog";
 
 vi.mock("@tanstack/react-query", async () => {
@@ -80,11 +80,7 @@ describe("TemplatePicker", () => {
       isLoading: false,
     } as any);
     const { container } = render(
-      <TemplatePicker
-        open={false}
-        onOpenChange={vi.fn()}
-        contractorId="c1"
-      />,
+      <TemplatePicker open={false} onOpenChange={vi.fn()} contractorId="c1" />,
     );
     expect(container.innerHTML).toBe("");
   });
@@ -95,13 +91,7 @@ describe("TemplatePicker", () => {
       data: { items: mockTemplates },
       isLoading: false,
     } as any);
-    render(
-      <TemplatePicker
-        open={true}
-        onOpenChange={vi.fn()}
-        contractorId="c1"
-      />,
-    );
+    render(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
     expect(screen.getByText("Onboarding Flow")).toBeInTheDocument();
     expect(screen.getByText("Offboarding Flow")).toBeInTheDocument();
     expect(screen.getByText("Document Collection")).toBeInTheDocument();
@@ -112,17 +102,9 @@ describe("TemplatePicker", () => {
       data: { items: mockTemplates },
       isLoading: false,
     } as any);
-    render(
-      <TemplatePicker
-        open={true}
-        onOpenChange={vi.fn()}
-        contractorId="c1"
-      />,
-    );
+    render(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
     expect(screen.getByText("Standard onboarding")).toBeInTheDocument();
-    expect(
-      screen.getByText("Collect required documents"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Collect required documents")).toBeInTheDocument();
   });
 
   it("renders task count for each template", () => {
@@ -130,13 +112,7 @@ describe("TemplatePicker", () => {
       data: { items: [mockTemplates[0]] },
       isLoading: false,
     } as any);
-    render(
-      <TemplatePicker
-        open={true}
-        onOpenChange={vi.fn()}
-        contractorId="c1"
-      />,
-    );
+    render(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
     expect(screen.getByText(/5 tasks/i)).toBeInTheDocument();
   });
 
@@ -146,13 +122,7 @@ describe("TemplatePicker", () => {
       data: { items: [] },
       isLoading: false,
     } as any);
-    render(
-      <TemplatePicker
-        open={true}
-        onOpenChange={vi.fn()}
-        contractorId="c1"
-      />,
-    );
+    render(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
     expect(screen.getByText("No templates available")).toBeInTheDocument();
   });
 
@@ -161,16 +131,8 @@ describe("TemplatePicker", () => {
       data: { items: [] },
       isLoading: false,
     } as any);
-    render(
-      <TemplatePicker
-        open={true}
-        onOpenChange={vi.fn()}
-        contractorId="c1"
-      />,
-    );
-    expect(
-      screen.getByText(/Ask your admin/i),
-    ).toBeInTheDocument();
+    render(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
+    expect(screen.getByText(/Ask your admin/i)).toBeInTheDocument();
   });
 
   // ---- Search ----
@@ -179,16 +141,8 @@ describe("TemplatePicker", () => {
       data: { items: mockTemplates },
       isLoading: false,
     } as any);
-    render(
-      <TemplatePicker
-        open={true}
-        onOpenChange={vi.fn()}
-        contractorId="c1"
-      />,
-    );
-    expect(
-      screen.getByPlaceholderText("Search templates..."),
-    ).toBeInTheDocument();
+    render(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
+    expect(screen.getByPlaceholderText("Search templates...")).toBeInTheDocument();
   });
 
   it("updates search value on typing", async () => {
@@ -196,13 +150,7 @@ describe("TemplatePicker", () => {
       data: { items: mockTemplates },
       isLoading: false,
     } as any);
-    const { user } = setup(
-      <TemplatePicker
-        open={true}
-        onOpenChange={vi.fn()}
-        contractorId="c1"
-      />,
-    );
+    const { user } = setup(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
     const input = screen.getByPlaceholderText("Search templates...");
     await user.type(input, "onboard");
     expect(input).toHaveValue("onboard");
@@ -214,13 +162,7 @@ describe("TemplatePicker", () => {
       data: { items: mockTemplates },
       isLoading: false,
     } as any);
-    render(
-      <TemplatePicker
-        open={true}
-        onOpenChange={vi.fn()}
-        contractorId="c1"
-      />,
-    );
+    render(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
     const startBtn = screen.getByText("Start");
     expect(startBtn.closest("button")).toBeDisabled();
   });
@@ -230,13 +172,7 @@ describe("TemplatePicker", () => {
       data: { items: mockTemplates },
       isLoading: false,
     } as any);
-    const { user } = setup(
-      <TemplatePicker
-        open={true}
-        onOpenChange={vi.fn()}
-        contractorId="c1"
-      />,
-    );
+    const { user } = setup(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
     await user.click(screen.getByText("Onboarding Flow"));
     const startBtn = screen.getByText("Start");
     expect(startBtn.closest("button")).not.toBeDisabled();
@@ -249,15 +185,9 @@ describe("TemplatePicker", () => {
       isLoading: false,
     } as any);
     render(
-      <TemplatePicker
-        open={true}
-        onOpenChange={vi.fn()}
-        contractorIds={["c1", "c2", "c3"]}
-      />,
+      <TemplatePicker open={true} onOpenChange={vi.fn()} contractorIds={["c1", "c2", "c3"]} />,
     );
-    expect(
-      screen.getByText(/3 contractors/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/3 contractors/i)).toBeInTheDocument();
   });
 
   // ---- Close button ----
@@ -266,13 +196,7 @@ describe("TemplatePicker", () => {
       data: { items: mockTemplates },
       isLoading: false,
     } as any);
-    render(
-      <TemplatePicker
-        open={true}
-        onOpenChange={vi.fn()}
-        contractorId="c1"
-      />,
-    );
+    render(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
     expect(screen.getByText("Close")).toBeInTheDocument();
   });
 
@@ -283,11 +207,7 @@ describe("TemplatePicker", () => {
     } as any);
     const onOpenChange = vi.fn();
     const { user } = setup(
-      <TemplatePicker
-        open={true}
-        onOpenChange={onOpenChange}
-        contractorId="c1"
-      />,
+      <TemplatePicker open={true} onOpenChange={onOpenChange} contractorId="c1" />,
     );
     await user.click(screen.getByText("Close"));
     expect(onOpenChange).toHaveBeenCalledWith(false);
@@ -299,13 +219,7 @@ describe("TemplatePicker", () => {
       data: undefined,
       isLoading: true,
     } as any);
-    render(
-      <TemplatePicker
-        open={true}
-        onOpenChange={vi.fn()}
-        contractorId="c1"
-      />,
-    );
+    render(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
     // Loading state should not show templates or empty state
     expect(screen.queryByText("No templates available")).not.toBeInTheDocument();
   });
@@ -316,13 +230,7 @@ describe("TemplatePicker", () => {
       data: { items: [mockTemplates[0]] },
       isLoading: false,
     } as any);
-    render(
-      <TemplatePicker
-        open={true}
-        onOpenChange={vi.fn()}
-        contractorId="c1"
-      />,
-    );
+    render(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
     expect(screen.getAllByText("Onboarding").length).toBeGreaterThanOrEqual(1);
   });
 
@@ -332,13 +240,7 @@ describe("TemplatePicker", () => {
       data: { items: mockTemplates },
       isLoading: false,
     } as any);
-    const { user } = setup(
-      <TemplatePicker
-        open={true}
-        onOpenChange={vi.fn()}
-        contractorId="c1"
-      />,
-    );
+    const { user } = setup(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
     const input = screen.getByPlaceholderText("Search templates...");
     await user.type(input, "Onboard");
     expect(screen.getByText("Onboarding Flow")).toBeInTheDocument();
@@ -350,13 +252,7 @@ describe("TemplatePicker", () => {
       data: { items: mockTemplates },
       isLoading: false,
     } as any);
-    const { user } = setup(
-      <TemplatePicker
-        open={true}
-        onOpenChange={vi.fn()}
-        contractorId="c1"
-      />,
-    );
+    const { user } = setup(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
     await user.click(screen.getByText("Onboarding Flow"));
     expect(screen.getByText("Start").closest("button")).not.toBeDisabled();
     // Clicking again keeps the same template selected (no toggle)
@@ -370,13 +266,7 @@ describe("TemplatePicker", () => {
       data: { items: [mockTemplates[1]] },
       isLoading: false,
     } as any);
-    render(
-      <TemplatePicker
-        open={true}
-        onOpenChange={vi.fn()}
-        contractorId="c1"
-      />,
-    );
+    render(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
     expect(screen.getByText(/3 tasks/i)).toBeInTheDocument();
   });
 
@@ -385,13 +275,7 @@ describe("TemplatePicker", () => {
       data: { items: [mockTemplates[2]] },
       isLoading: false,
     } as any);
-    render(
-      <TemplatePicker
-        open={true}
-        onOpenChange={vi.fn()}
-        contractorId="c1"
-      />,
-    );
+    render(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
     expect(screen.getByText(/2 tasks/i)).toBeInTheDocument();
   });
 
@@ -401,13 +285,7 @@ describe("TemplatePicker", () => {
       data: { items: mockTemplates },
       isLoading: false,
     } as any);
-    render(
-      <TemplatePicker
-        open={true}
-        onOpenChange={vi.fn()}
-        contractorId="c1"
-      />,
-    );
+    render(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
     const headings = screen.getAllByRole("heading");
     expect(headings.length).toBeGreaterThan(0);
   });
@@ -418,13 +296,7 @@ describe("TemplatePicker", () => {
       data: { items: mockTemplates },
       isLoading: false,
     } as any);
-    render(
-      <TemplatePicker
-        open={true}
-        onOpenChange={vi.fn()}
-        contractorIds={["c1"]}
-      />,
-    );
+    render(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorIds={["c1"]} />);
     expect(screen.getByText(/1 contractor/i)).toBeInTheDocument();
   });
 
@@ -434,13 +306,7 @@ describe("TemplatePicker", () => {
       data: { items: mockTemplates },
       isLoading: false,
     } as any);
-    const { user } = setup(
-      <TemplatePicker
-        open={true}
-        onOpenChange={vi.fn()}
-        contractorId="c1"
-      />,
-    );
+    const { user } = setup(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
     await user.click(screen.getByText("Onboarding Flow"));
     const btn = screen.getByText("Onboarding Flow").closest("button");
     expect(btn?.className).toContain("ring-2");
@@ -460,11 +326,7 @@ describe("TemplatePicker", () => {
     } as any);
     const onOpenChange = vi.fn();
     const { user } = setup(
-      <TemplatePicker
-        open={true}
-        onOpenChange={onOpenChange}
-        contractorId="c1"
-      />,
+      <TemplatePicker open={true} onOpenChange={onOpenChange} contractorId="c1" />,
     );
     await user.click(screen.getByText("Onboarding Flow"));
     await user.click(screen.getByText("Start"));
@@ -482,25 +344,15 @@ describe("TemplatePicker", () => {
       data: { items: mockTemplates },
       isLoading: false,
     } as any);
-    const { user } = setup(
-      <TemplatePicker
-        open={true}
-        onOpenChange={vi.fn()}
-        contractorId="c1"
-      />,
-    );
+    const { user } = setup(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
     await user.click(screen.getByText("Onboarding Flow"));
-    expect(
-      screen.getByText("Onboarding Flow").closest("button")?.className,
-    ).toContain("ring-2");
+    expect(screen.getByText("Onboarding Flow").closest("button")?.className).toContain("ring-2");
 
     await user.click(screen.getByText("Offboarding Flow"));
-    expect(
-      screen.getByText("Offboarding Flow").closest("button")?.className,
-    ).toContain("ring-2");
-    expect(
-      screen.getByText("Onboarding Flow").closest("button")?.className,
-    ).not.toContain("ring-2");
+    expect(screen.getByText("Offboarding Flow").closest("button")?.className).toContain("ring-2");
+    expect(screen.getByText("Onboarding Flow").closest("button")?.className).not.toContain(
+      "ring-2",
+    );
   });
 
   // ---- Type filter: preFilterType ----
@@ -548,12 +400,7 @@ describe("TemplatePicker", () => {
       data: { items: mockTemplates },
       isLoading: false,
     } as any);
-    render(
-      <TemplatePicker
-        open={true}
-        onOpenChange={vi.fn()}
-      />,
-    );
+    render(<TemplatePicker open={true} onOpenChange={vi.fn()} />);
     const startBtn = screen.getByText("Start").closest("button");
     expect(startBtn).toBeDisabled();
   });
@@ -572,11 +419,7 @@ describe("TemplatePicker", () => {
     } as any);
     const onOpenChange = vi.fn();
     const { user } = setup(
-      <TemplatePicker
-        open={true}
-        onOpenChange={onOpenChange}
-        contractorIds={["c1", "c2"]}
-      />,
+      <TemplatePicker open={true} onOpenChange={onOpenChange} contractorIds={["c1", "c2"]} />,
     );
     await user.click(screen.getByText("Onboarding Flow"));
     await user.click(screen.getByText("Start"));
@@ -596,13 +439,7 @@ describe("TemplatePicker", () => {
       data: { items: mockTemplates },
       isLoading: false,
     } as any);
-    const { user } = setup(
-      <TemplatePicker
-        open={true}
-        onOpenChange={vi.fn()}
-        contractorId="c1"
-      />,
-    );
+    const { user } = setup(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
     await user.click(screen.getByText("Onboarding Flow"));
     await user.click(screen.getByText("Start"));
     const { toast } = await import("sonner");
@@ -621,13 +458,7 @@ describe("TemplatePicker", () => {
       data: { items: mockTemplates },
       isLoading: false,
     } as any);
-    const { user } = setup(
-      <TemplatePicker
-        open={true}
-        onOpenChange={vi.fn()}
-        contractorId="c1"
-      />,
-    );
+    const { user } = setup(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
     await user.click(screen.getByText("Onboarding Flow"));
     await user.click(screen.getByText("Start"));
     const { toast } = await import("sonner");
@@ -642,11 +473,7 @@ describe("TemplatePicker", () => {
     } as any);
     const onOpenChange = vi.fn();
     const { user } = setup(
-      <TemplatePicker
-        open={true}
-        onOpenChange={onOpenChange}
-        contractorId="c1"
-      />,
+      <TemplatePicker open={true} onOpenChange={onOpenChange} contractorId="c1" />,
     );
     await user.click(screen.getByText("Onboarding Flow"));
     const input = screen.getByPlaceholderText("Search templates...");

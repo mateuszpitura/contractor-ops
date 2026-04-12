@@ -84,13 +84,9 @@ export class DPDClient implements CourierClient {
    *
    * Accepts BaseShipmentParams and narrows to DPDShipmentParams internally.
    */
-  async createShipment(
-    params: ShipmentParams,
-  ): Promise<CourierShipmentResult> {
+  async createShipment(params: ShipmentParams): Promise<CourierShipmentResult> {
     if (!("deliveryAddress" in params)) {
-      throw new Error(
-        "[dpd-client] createShipment requires deliveryAddress for DPD shipments",
-      );
+      throw new Error("[dpd-client] createShipment requires deliveryAddress for DPD shipments");
     }
     const dpdParams = params as DPDShipmentParams;
     const url = `${this.baseUrl}/createShipment`;
@@ -140,9 +136,7 @@ export class DPDClient implements CourierClient {
 
     if (!response.ok) {
       const errorBody = await response.text().catch(() => "unknown");
-      throw new Error(
-        `[dpd-client] createShipment failed: HTTP ${response.status} — ${errorBody}`,
-      );
+      throw new Error(`[dpd-client] createShipment failed: HTTP ${response.status} — ${errorBody}`);
     }
 
     const json = await response.json();
@@ -161,10 +155,7 @@ export class DPDClient implements CourierClient {
    *
    * GET /label/{waybill}
    */
-  async getLabel(
-    shipmentExternalId: string,
-    _format: LabelFormat = "pdf",
-  ): Promise<Buffer> {
+  async getLabel(shipmentExternalId: string, _format: LabelFormat = "pdf"): Promise<Buffer> {
     const url = `${this.baseUrl}/label/${shipmentExternalId}`;
 
     const response = await globalThis.fetch(url, {
@@ -174,9 +165,7 @@ export class DPDClient implements CourierClient {
 
     if (!response.ok) {
       const errorBody = await response.text().catch(() => "unknown");
-      throw new Error(
-        `[dpd-client] getLabel failed: HTTP ${response.status} — ${errorBody}`,
-      );
+      throw new Error(`[dpd-client] getLabel failed: HTTP ${response.status} — ${errorBody}`);
     }
 
     const arrayBuffer = await response.arrayBuffer();
@@ -198,9 +187,7 @@ export class DPDClient implements CourierClient {
 
     if (!response.ok) {
       const errorBody = await response.text().catch(() => "unknown");
-      throw new Error(
-        `[dpd-client] getStatus failed: HTTP ${response.status} — ${errorBody}`,
-      );
+      throw new Error(`[dpd-client] getStatus failed: HTTP ${response.status} — ${errorBody}`);
     }
 
     const json = await response.json();
@@ -232,9 +219,7 @@ export class DPDClient implements CourierClient {
 
     if (!response.ok) {
       const errorBody = await response.text().catch(() => "unknown");
-      throw new Error(
-        `[dpd-client] cancelShipment failed: HTTP ${response.status} — ${errorBody}`,
-      );
+      throw new Error(`[dpd-client] cancelShipment failed: HTTP ${response.status} — ${errorBody}`);
     }
   }
 }

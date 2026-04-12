@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { TRPCError } from "@trpc/server";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@contractor-ops/integrations/services/credential-service", () => ({
   decryptCredentials: vi.fn().mockReturnValue({ accessToken: "test-token" }),
@@ -40,7 +40,9 @@ function createMockPrisma(overrides: Record<string, unknown> = {}) {
   };
 }
 
-function mockFetchResponses(responses: Array<{ status: number; body: unknown; headers?: Record<string, string> }>) {
+function mockFetchResponses(
+  responses: Array<{ status: number; body: unknown; headers?: Record<string, string> }>,
+) {
   let callIndex = 0;
   return vi.fn().mockImplementation(() => {
     const resp = responses[callIndex] ?? responses[responses.length - 1]!;
@@ -57,7 +59,10 @@ function mockFetchResponses(responses: Array<{ status: number; body: unknown; he
   });
 }
 
-function makeSearchResponse(issues: Array<{ key: string; summary: string }>, opts: { startAt?: number; total?: number } = {}) {
+function makeSearchResponse(
+  issues: Array<{ key: string; summary: string }>,
+  opts: { startAt?: number; total?: number } = {},
+) {
   return {
     issues: issues.map((i) => ({ key: i.key, fields: { summary: i.summary } })),
     startAt: opts.startAt ?? 0,
@@ -114,9 +119,7 @@ describe("jira-worklog", () => {
   describe("syncJiraWorklogs", () => {
     it("performs JQL search for issues with user worklogs in date range", async () => {
       const prisma = createMockPrisma();
-      const fetchMock = mockFetchResponses([
-        { status: 200, body: makeSearchResponse([]) },
-      ]);
+      const fetchMock = mockFetchResponses([{ status: 200, body: makeSearchResponse([]) }]);
       vi.stubGlobal("fetch", fetchMock);
 
       await syncJiraWorklogs(prisma, ...baseArgs);
@@ -166,9 +169,7 @@ describe("jira-worklog", () => {
         { status: 200, body: makeSearchResponse([{ key: "PROJ-1", summary: "Task" }]) },
         {
           status: 200,
-          body: makeWorklogResponse([
-            { id: "wl-1", accountId: "acc-456", seconds: 3600 },
-          ]),
+          body: makeWorklogResponse([{ id: "wl-1", accountId: "acc-456", seconds: 3600 }]),
         },
       ]);
       vi.stubGlobal("fetch", fetchMock);
@@ -192,9 +193,7 @@ describe("jira-worklog", () => {
         { status: 200, body: makeSearchResponse([{ key: "PROJ-1", summary: "Task" }]) },
         {
           status: 200,
-          body: makeWorklogResponse([
-            { id: "wl-1", accountId: "acc-456", seconds: 7200 },
-          ]),
+          body: makeWorklogResponse([{ id: "wl-1", accountId: "acc-456", seconds: 7200 }]),
         },
       ]);
       vi.stubGlobal("fetch", fetchMock);
@@ -219,9 +218,7 @@ describe("jira-worklog", () => {
         { status: 200, body: makeSearchResponse([{ key: "PROJ-1", summary: "Task" }]) },
         {
           status: 200,
-          body: makeWorklogResponse([
-            { id: "wl-1", accountId: "acc-456", seconds: 1800 },
-          ]),
+          body: makeWorklogResponse([{ id: "wl-1", accountId: "acc-456", seconds: 1800 }]),
         },
       ]);
       vi.stubGlobal("fetch", fetchMock);
@@ -243,9 +240,7 @@ describe("jira-worklog", () => {
         { status: 200, body: makeSearchResponse([{ key: "DEV-42", summary: "Fix login bug" }]) },
         {
           status: 200,
-          body: makeWorklogResponse([
-            { id: "wl-1", accountId: "acc-456", seconds: 900 },
-          ]),
+          body: makeWorklogResponse([{ id: "wl-1", accountId: "acc-456", seconds: 900 }]),
         },
       ]);
       vi.stubGlobal("fetch", fetchMock);
@@ -305,9 +300,7 @@ describe("jira-worklog", () => {
         { status: 200, body: makeSearchResponse([{ key: "PROJ-1", summary: "Task" }]) },
         {
           status: 200,
-          body: makeWorklogResponse([
-            { id: "wl-1", accountId: "acc-456", seconds: 3600 },
-          ]),
+          body: makeWorklogResponse([{ id: "wl-1", accountId: "acc-456", seconds: 3600 }]),
         },
       ]);
       vi.stubGlobal("fetch", fetchMock);
@@ -351,18 +344,12 @@ describe("jira-worklog", () => {
 
     it("handles 401 with reconnect error message", async () => {
       const prisma = createMockPrisma();
-      const fetchMock = mockFetchResponses([
-        { status: 401, body: { message: "Unauthorized" } },
-      ]);
+      const fetchMock = mockFetchResponses([{ status: 401, body: { message: "Unauthorized" } }]);
       vi.stubGlobal("fetch", fetchMock);
 
-      await expect(syncJiraWorklogs(prisma, ...baseArgs)).rejects.toThrow(
-        TRPCError,
-      );
+      await expect(syncJiraWorklogs(prisma, ...baseArgs)).rejects.toThrow(TRPCError);
 
-      await expect(syncJiraWorklogs(prisma, ...baseArgs)).rejects.toThrow(
-        /reconnect/i,
-      );
+      await expect(syncJiraWorklogs(prisma, ...baseArgs)).rejects.toThrow(/reconnect/i);
     });
   });
 });

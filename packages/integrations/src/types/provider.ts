@@ -1,6 +1,6 @@
 import type { CredentialBlob } from "./credentials.js";
-import type { WebhookVerificationResult } from "./webhook.js";
 import type { ProviderHealthStatus } from "./health.js";
+import type { WebhookVerificationResult } from "./webhook.js";
 
 /**
  * OAuth configuration for providers that support OAuth 2.0 authorization.
@@ -32,10 +32,7 @@ export interface IntegrationProviderAdapter {
   getOAuthConfig?(): OAuthConfig;
 
   /** Exchanges an authorization code for access/refresh tokens. */
-  exchangeCodeForTokens?(
-    code: string,
-    redirectUri: string,
-  ): Promise<CredentialBlob>;
+  exchangeCodeForTokens?(code: string, redirectUri: string): Promise<CredentialBlob>;
 
   /** Refreshes an expired access token using the refresh token. */
   refreshToken?(credentials: CredentialBlob): Promise<CredentialBlob>;
@@ -47,11 +44,7 @@ export interface IntegrationProviderAdapter {
   ): WebhookVerificationResult;
 
   /** Processes a verified webhook payload. Returns provider-specific result or void. */
-  handleWebhook?(
-    payload: unknown,
-    organizationId: string,
-    connectionId: string,
-  ): Promise<unknown>;
+  handleWebhook?(payload: unknown, organizationId: string, connectionId: string): Promise<unknown>;
 
   /** Returns health status for a connection (recent syncs, errors, etc.). */
   getHealthStatus?(connectionId: string): Promise<ProviderHealthStatus>;

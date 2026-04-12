@@ -1,14 +1,13 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { CheckCircle, Loader2, XCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { CheckCircle, XCircle, Loader2 } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
-import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import { Link } from "@/i18n/navigation";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // ImportProgressTracker
@@ -52,9 +51,7 @@ export function ImportProgressTracker({ jobId }: ImportProgressTrackerProps) {
   const isComplete = progress.status === "completed";
   const isFailed = progress.status === "failed";
   const percentDone =
-    progress.totalItems > 0
-      ? Math.round((progress.completedItems / progress.totalItems) * 100)
-      : 0;
+    progress.totalItems > 0 ? Math.round((progress.completedItems / progress.totalItems) * 100) : 0;
 
   // Completed state
   if (isComplete && progress.failedItems.length === 0) {
@@ -69,9 +66,7 @@ export function ImportProgressTracker({ jobId }: ImportProgressTrackerProps) {
               projects: 0,
             })}
           </p>
-          <Button render={<Link href="/dashboard" />}>
-            {t("completeCta")}
-          </Button>
+          <Button render={<Link href="/dashboard" />}>{t("completeCta")}</Button>
         </CardContent>
       </Card>
     );
@@ -107,10 +102,7 @@ export function ImportProgressTracker({ jobId }: ImportProgressTrackerProps) {
               className="flex items-center justify-between rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2"
             >
               <div className="flex items-center gap-2">
-                <XCircle
-                  className="size-4 text-destructive"
-                  aria-hidden="true"
-                />
+                <XCircle className="size-4 text-destructive" aria-hidden="true" />
                 <div>
                   <span className="text-sm font-medium">{item.email}</span>
                   <p className="text-xs text-muted-foreground">{item.error}</p>
@@ -119,16 +111,11 @@ export function ImportProgressTracker({ jobId }: ImportProgressTrackerProps) {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() =>
-                  retryMutation.mutate({ jobId, email: item.email })
-                }
+                onClick={() => retryMutation.mutate({ jobId, email: item.email })}
                 disabled={retryMutation.isPending}
               >
                 {retryMutation.isPending ? (
-                  <Loader2
-                    className="size-3 animate-spin"
-                    aria-hidden="true"
-                  />
+                  <Loader2 className="size-3 animate-spin" aria-hidden="true" />
                 ) : (
                   t("retryButton")
                 )}

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Check, Loader2 } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -30,16 +30,14 @@ function StatusItem({ label, status }: StatusItemProps) {
   return (
     <div className="flex items-center gap-2 text-sm" role="listitem">
       {status === "loading" && (
-        <Loader2
-          className="h-4 w-4 animate-spin text-primary"
-          aria-label="Loading"
-        />
+        <Loader2 className="h-4 w-4 animate-spin text-primary" aria-label="Loading" />
       )}
-      {status === "done" && (
-        <Check className="h-4 w-4 text-green-600" aria-label="Complete" />
-      )}
+      {status === "done" && <Check className="h-4 w-4 text-green-600" aria-label="Complete" />}
       {status === "pending" && (
-        <span className="h-4 w-4 rounded-full border-2 border-muted-foreground/30" aria-label="Pending" />
+        <span
+          className="h-4 w-4 rounded-full border-2 border-muted-foreground/30"
+          aria-label="Pending"
+        />
       )}
       <span className={status === "done" ? "text-foreground" : "text-muted-foreground"}>
         {label}
@@ -89,8 +87,7 @@ export function ComplianceCsid({ onSuccess, onBack }: ComplianceCsidProps) {
       <div className="space-y-1">
         <h3 className="text-base font-semibold">Step 3 of 5: Request Compliance Certificate</h3>
         <p className="text-sm text-muted-foreground">
-          Your CSR will be submitted to ZATCA to obtain a compliance certificate
-          for testing.
+          Your CSR will be submitted to ZATCA to obtain a compliance certificate for testing.
         </p>
       </div>
 
@@ -118,10 +115,7 @@ export function ComplianceCsid({ onSuccess, onBack }: ComplianceCsidProps) {
             label="Submitting CSR to ZATCA..."
             status={csidReceived ? "done" : "loading"}
           />
-          <StatusItem
-            label="Compliance CSID received"
-            status={csidReceived ? "done" : "pending"}
-          />
+          <StatusItem label="Compliance CSID received" status={csidReceived ? "done" : "pending"} />
           <StatusItem
             label="Certificate stored securely"
             status={certStored ? "done" : csidReceived ? "loading" : "pending"}

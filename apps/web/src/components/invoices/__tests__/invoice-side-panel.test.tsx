@@ -1,10 +1,9 @@
 import type { ReactNode } from "react";
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { render, screen, setup } from "@/test/test-utils";
-
-import type { InvoiceRow } from "../invoice-table/columns";
 import { InvoiceSidePanel } from "../invoice-side-panel";
+import type { InvoiceRow } from "../invoice-table/columns";
 
 vi.mock("@/i18n/navigation", () => ({
   Link: ({ children, href }: { children: ReactNode; href: string }) => (
@@ -28,24 +27,14 @@ const sampleInvoice: InvoiceRow = {
 
 describe("InvoiceSidePanel", () => {
   it("renders nothing when invoice is null", () => {
-    const { container } = render(
-      <InvoiceSidePanel
-        invoice={null}
-        open
-        onOpenChange={vi.fn()}
-      />,
-    );
+    const { container } = render(<InvoiceSidePanel invoice={null} open onOpenChange={vi.fn()} />);
     expect(container.firstChild).toBeNull();
   });
 
   it("shows invoice number, amounts, contractor link, and open-invoice CTA when open", async () => {
     const onOpenChange = vi.fn();
     const { user } = setup(
-      <InvoiceSidePanel
-        invoice={sampleInvoice}
-        open
-        onOpenChange={onOpenChange}
-      />,
+      <InvoiceSidePanel invoice={sampleInvoice} open onOpenChange={onOpenChange} />,
     );
 
     expect(screen.getByText("FV/PANEL/01")).toBeInTheDocument();

@@ -81,19 +81,14 @@ export async function computeTimeReconciliation(
     typeof settings.timeDeviationThresholdPercent === "number"
       ? settings.timeDeviationThresholdPercent
       : 10;
-  const hoursPerDay =
-    typeof settings.timeHoursPerDay === "number"
-      ? settings.timeHoursPerDay
-      : 8;
+  const hoursPerDay = typeof settings.timeHoursPerDay === "number" ? settings.timeHoursPerDay : 8;
 
   // 4. Calculate expected amount
   //    PER_HOUR: (minutes * rateGrosze) / 60
   //    PER_DAY: (minutes / (hoursPerDay * 60)) * rateGrosze
   let expectedAmountGrosze: number;
   if (contract.rateType === "PER_HOUR") {
-    expectedAmountGrosze = Math.round(
-      (approvedMinutes * contract.rateValueGrosze) / 60,
-    );
+    expectedAmountGrosze = Math.round((approvedMinutes * contract.rateValueGrosze) / 60);
   } else {
     // PER_DAY
     const days = approvedMinutes / (hoursPerDay * 60);
@@ -104,9 +99,7 @@ export async function computeTimeReconciliation(
   const deviationGrosze = invoicedAmountGrosze - expectedAmountGrosze;
   const deviationPercent =
     expectedAmountGrosze > 0
-      ? Math.round(
-          (Math.abs(deviationGrosze) / expectedAmountGrosze) * 10000,
-        ) / 100
+      ? Math.round((Math.abs(deviationGrosze) / expectedAmountGrosze) * 10000) / 100
       : 0;
   const withinThreshold = deviationPercent <= thresholdPercent;
 

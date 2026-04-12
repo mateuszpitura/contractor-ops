@@ -197,8 +197,7 @@ export async function submitTimesheet(
   if (updated.count === 0) {
     throw new TRPCError({
       code: "PRECONDITION_FAILED",
-      message:
-        "Timesheet cannot be submitted (wrong status or not found)",
+      message: "Timesheet cannot be submitted (wrong status or not found)",
     });
   }
 

@@ -1,21 +1,16 @@
 "use client";
 
-import { useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Filter, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
+import { useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Switch } from "@/components/ui/switch";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -36,13 +31,7 @@ interface DataTableFiltersProps {
 // Filter option sets
 // ---------------------------------------------------------------------------
 
-const RUN_STATUSES = [
-  "NOT_STARTED",
-  "IN_PROGRESS",
-  "COMPLETED",
-  "CANCELLED",
-  "BLOCKED",
-] as const;
+const RUN_STATUSES = ["NOT_STARTED", "IN_PROGRESS", "COMPLETED", "CANCELLED", "BLOCKED"] as const;
 
 // ---------------------------------------------------------------------------
 // Component
@@ -51,10 +40,7 @@ const RUN_STATUSES = [
 /**
  * Filter popover and active filter badges for the workflow runs data table.
  */
-export function DataTableFilters({
-  filters,
-  onFiltersChange,
-}: DataTableFiltersProps) {
+export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersProps) {
   const t = useTranslations("Workflows");
 
   // Fetch templates for template filter
@@ -64,17 +50,13 @@ export function DataTableFilters({
       pageSize: 50,
     }),
   );
-  const templates = (
-    templatesQuery.data as
-      | { items: Array<{ id: string; name: string }> }
-      | undefined
-  )?.items ?? [];
+  const templates =
+    (templatesQuery.data as { items: Array<{ id: string; name: string }> } | undefined)?.items ??
+    [];
 
   // Active filter count for badge
   const activeFilterCount =
-    filters.status.length +
-    filters.templateId.length +
-    (filters.overdueOnly ? 1 : 0);
+    filters.status.length + filters.templateId.length + (filters.overdueOnly ? 1 : 0);
 
   const hasActiveFilters = activeFilterCount > 0;
 
@@ -115,10 +97,7 @@ export function DataTableFilters({
                 <Filter className="h-3.5 w-3.5" />
                 {t("filters")}
                 {hasActiveFilters && (
-                  <Badge
-                    variant="secondary"
-                    className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]"
-                  >
+                  <Badge variant="secondary" className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]">
                     {activeFilterCount}
                   </Badge>
                 )}
@@ -151,18 +130,13 @@ export function DataTableFilters({
 
               {/* Overdue only toggle */}
               <div className="flex items-center justify-between">
-                <Label
-                  htmlFor="overdue-toggle"
-                  className="text-[13px] font-medium text-foreground"
-                >
+                <Label htmlFor="overdue-toggle" className="text-[13px] font-medium text-foreground">
                   {t("filterOverdueOnly")}
                 </Label>
                 <Switch
                   id="overdue-toggle"
                   checked={filters.overdueOnly}
-                  onCheckedChange={(checked) =>
-                    onFiltersChange({ overdueOnly: checked === true })
-                  }
+                  onCheckedChange={(checked) => onFiltersChange({ overdueOnly: checked === true })}
                 />
               </div>
             </div>
@@ -247,13 +221,7 @@ function FilterSection({
   );
 }
 
-function FilterBadge({
-  label,
-  onRemove,
-}: {
-  label: string;
-  onRemove: () => void;
-}) {
+function FilterBadge({ label, onRemove }: { label: string; onRemove: () => void }) {
   const tAria = useTranslations("Common.aria");
 
   return (

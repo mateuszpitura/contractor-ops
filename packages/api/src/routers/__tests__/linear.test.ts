@@ -2,54 +2,50 @@
  * Linear router — connection status (no external API on this path).
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const {
-  ORG_ID,
-  USER_ID,
-  mockPrisma,
-  mockLinearGraphQL,
-  mockRegisterLinearWebhook,
-} = vi.hoisted(() => {
-  const ORG_ID = "org-linear-00000000-0000-0000-0000-000000000001";
-  const USER_ID = "user-linear-00000000-0000-0000-0000-000000000001";
-  const mockLinearGraphQL = vi.fn();
-  const mockRegisterLinearWebhook = vi.fn().mockResolvedValue(undefined);
+const { ORG_ID, USER_ID, mockPrisma, mockLinearGraphQL, mockRegisterLinearWebhook } = vi.hoisted(
+  () => {
+    const ORG_ID = "org-linear-00000000-0000-0000-0000-000000000001";
+    const USER_ID = "user-linear-00000000-0000-0000-0000-000000000001";
+    const mockLinearGraphQL = vi.fn();
+    const mockRegisterLinearWebhook = vi.fn().mockResolvedValue(undefined);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const mockPrisma: Record<string, any> = {
-    integrationConnection: {
-      findFirst: vi.fn(),
-      update: vi.fn(),
-    },
-    workflowTaskTemplate: {
-      findFirst: vi.fn(),
-      update: vi.fn(),
-    },
-    externalLink: {
-      findFirst: vi.fn(),
-      findMany: vi.fn(),
-    },
-    workflowTaskRun: {
-      findMany: vi.fn(),
-    },
-    subscription: {
-      findUnique: vi.fn(async () => ({
-        id: "sub_linear_mock",
-        status: "ACTIVE",
-        tier: "PRO",
-      })),
-    },
-  };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const mockPrisma: Record<string, any> = {
+      integrationConnection: {
+        findFirst: vi.fn(),
+        update: vi.fn(),
+      },
+      workflowTaskTemplate: {
+        findFirst: vi.fn(),
+        update: vi.fn(),
+      },
+      externalLink: {
+        findFirst: vi.fn(),
+        findMany: vi.fn(),
+      },
+      workflowTaskRun: {
+        findMany: vi.fn(),
+      },
+      subscription: {
+        findUnique: vi.fn(async () => ({
+          id: "sub_linear_mock",
+          status: "ACTIVE",
+          tier: "PRO",
+        })),
+      },
+    };
 
-  return {
-    ORG_ID,
-    USER_ID,
-    mockPrisma,
-    mockLinearGraphQL,
-    mockRegisterLinearWebhook,
-  };
-});
+    return {
+      ORG_ID,
+      USER_ID,
+      mockPrisma,
+      mockLinearGraphQL,
+      mockRegisterLinearWebhook,
+    };
+  },
+);
 
 vi.mock("@contractor-ops/auth", () => ({
   auth: {
@@ -75,9 +71,7 @@ vi.mock("@contractor-ops/db", () => ({
 vi.mock("@sentry/nextjs", () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
-    startSpan: vi.fn(
-      (_o: unknown, fn: (span: typeof mockSpan) => unknown) => fn(mockSpan),
-    ),
+    startSpan: vi.fn((_o: unknown, fn: (span: typeof mockSpan) => unknown) => fn(mockSpan)),
     captureException: vi.fn(),
   };
 });
@@ -111,8 +105,7 @@ vi.mock("@contractor-ops/integrations/services/credential-service", () => ({
 }));
 
 vi.mock("../../services/linear-issue-sync.js", async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import("../../services/linear-issue-sync.js")>();
+  const actual = await importOriginal<typeof import("../../services/linear-issue-sync.js")>();
   return {
     ...actual,
     linearGraphQL: (...args: unknown[]) => mockLinearGraphQL(...args),
@@ -120,8 +113,7 @@ vi.mock("../../services/linear-issue-sync.js", async (importOriginal) => {
 });
 
 vi.mock("../../services/linear-webhook-handler.js", () => ({
-  registerLinearWebhook: (...args: unknown[]) =>
-    mockRegisterLinearWebhook(...args),
+  registerLinearWebhook: (...args: unknown[]) => mockRegisterLinearWebhook(...args),
 }));
 
 import { createCallerFactory } from "../../init.js";
@@ -266,10 +258,7 @@ describe("linearRouter", () => {
         ],
       },
     ]);
-    expect(mockLinearGraphQL).toHaveBeenCalledWith(
-      "lin-token",
-      expect.stringContaining("teams"),
-    );
+    expect(mockLinearGraphQL).toHaveBeenCalledWith("lin-token", expect.stringContaining("teams"));
   });
 
   it("getStatusMapping returns team entries from configJson", async () => {
@@ -348,11 +337,7 @@ describe("linearRouter", () => {
     });
 
     await vi.waitFor(() => {
-      expect(mockRegisterLinearWebhook).toHaveBeenCalledWith(
-        mockPrisma,
-        "conn-linear-1",
-        "tm-new",
-      );
+      expect(mockRegisterLinearWebhook).toHaveBeenCalledWith(mockPrisma, "conn-linear-1", "tm-new");
     });
   });
 
@@ -482,10 +467,7 @@ describe("linearRouter", () => {
       const fs = await import("node:fs");
       const path = await import("node:path");
       const sourceDir = path.resolve(import.meta.dirname, "../../routers");
-      const source = fs.readFileSync(
-        path.join(sourceDir, "linear.ts"),
-        "utf-8",
-      );
+      const source = fs.readFileSync(path.join(sourceDir, "linear.ts"), "utf-8");
 
       expect(source).toContain('import { requireTier } from "../middleware/tier.js"');
       expect(source).toContain('requireTier("PRO")');
@@ -498,13 +480,20 @@ describe("linearRouter", () => {
       const fs = await import("node:fs");
       const path = await import("node:path");
       const sourceDir = path.resolve(import.meta.dirname, "../../routers");
-      const source = fs.readFileSync(
-        path.join(sourceDir, "linear.ts"),
-        "utf-8",
-      );
+      const source = fs.readFileSync(path.join(sourceDir, "linear.ts"), "utf-8");
 
-      for (const proc of ["connectionStatus", "teams", "getStatusMapping", "getLinkedIssue", "getLinkedIssues", "linkedIssues"]) {
-        const procRegex = new RegExp(`${proc}:\\s*tenantProcedure[\\s\\S]*?(?=\\w+:\\s*tenantProcedure|\\}\\);$)`, "m");
+      for (const proc of [
+        "connectionStatus",
+        "teams",
+        "getStatusMapping",
+        "getLinkedIssue",
+        "getLinkedIssues",
+        "linkedIssues",
+      ]) {
+        const procRegex = new RegExp(
+          `${proc}:\\s*tenantProcedure[\\s\\S]*?(?=\\w+:\\s*tenantProcedure|\\}\\);$)`,
+          "m",
+        );
         const match = source.match(procRegex);
         if (match) {
           expect(match[0]).not.toContain("requireTier");

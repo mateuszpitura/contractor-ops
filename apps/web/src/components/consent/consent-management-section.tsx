@@ -1,29 +1,22 @@
 "use client";
 
-import { useCallback } from "react";
-import { useTranslations } from "next-intl";
-import { Download, Globe, FileText, History, Loader2 } from "lucide-react";
-import { toast } from "sonner";
-
-import { trpc } from "@/trpc/init";
+import type { ConsentPurpose } from "@contractor-ops/validators";
 import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardDescription,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+  isPdplJurisdiction,
+  OPTIONAL_PURPOSES,
+  REQUIRED_PURPOSES,
+} from "@contractor-ops/validators";
+import { Download, FileText, Globe, History, Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useCallback } from "react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { trpc } from "@/trpc/init";
 import { ConsentPurposeToggle } from "./consent-purpose-toggle";
 import { PrivacyNoticeDisplay } from "./privacy-notice-display";
-import {
-  REQUIRED_PURPOSES,
-  OPTIONAL_PURPOSES,
-  isPdplJurisdiction,
-} from "@contractor-ops/validators";
-import type { ConsentPurpose } from "@contractor-ops/validators";
 
 // ---------------------------------------------------------------------------
 // Component
@@ -34,8 +27,7 @@ export function ConsentManagementSection() {
   const utils = trpc.useUtils();
 
   // Queries
-  const { data: notice, isLoading: noticeLoading } =
-    trpc.consent.getPrivacyNotice.useQuery();
+  const { data: notice, isLoading: noticeLoading } = trpc.consent.getPrivacyNotice.useQuery();
   const { data: currentConsent, isLoading: consentLoading } =
     trpc.consent.getCurrentConsent.useQuery();
   const { data: consentHistory } = trpc.consent.getConsentHistory.useQuery({});
@@ -97,9 +89,7 @@ export function ConsentManagementSection() {
     return (
       <Card>
         <CardContent className="py-8 text-center">
-          <p className="text-sm text-muted-foreground">
-            {t("settings.notRequired")}
-          </p>
+          <p className="text-sm text-muted-foreground">{t("settings.notRequired")}</p>
         </CardContent>
       </Card>
     );
@@ -114,9 +104,7 @@ export function ConsentManagementSection() {
 
       {/* Section B: Your Consents */}
       <div className="space-y-4">
-        <h3 className="font-display text-base font-semibold">
-          {t("settings.yourConsents")}
-        </h3>
+        <h3 className="font-display text-base font-semibold">{t("settings.yourConsents")}</h3>
 
         <div className="space-y-3">
           {[...REQUIRED_PURPOSES, ...OPTIONAL_PURPOSES].map((purpose) => {
@@ -170,10 +158,7 @@ export function ConsentManagementSection() {
                 </thead>
                 <tbody>
                   {consentHistory.map((record) => (
-                    <tr
-                      key={record.id}
-                      className="border-t border-border/50"
-                    >
+                    <tr key={record.id} className="border-t border-border/50">
                       <td className="px-3 py-2 font-mono">
                         {record.purpose.toLowerCase().replace(/_/g, " ")}
                       </td>
@@ -182,17 +167,13 @@ export function ConsentManagementSection() {
                           variant={record.granted ? "default" : "destructive"}
                           className="text-[10px]"
                         >
-                          {record.granted
-                            ? t("settings.granted")
-                            : t("settings.revoked")}
+                          {record.granted ? t("settings.granted") : t("settings.revoked")}
                         </Badge>
                       </td>
                       <td className="px-3 py-2 text-muted-foreground">
                         {new Date(record.createdAt).toLocaleDateString()}
                       </td>
-                      <td className="px-3 py-2 text-muted-foreground">
-                        v{record.version}
-                      </td>
+                      <td className="px-3 py-2 text-muted-foreground">v{record.version}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -208,20 +189,14 @@ export function ConsentManagementSection() {
       <div className="space-y-3">
         <div className="flex items-center gap-2">
           <FileText className="h-4 w-4 text-muted-foreground" />
-          <h3 className="font-display text-base font-semibold">
-            {t("settings.legalDocuments")}
-          </h3>
+          <h3 className="font-display text-base font-semibold">{t("settings.legalDocuments")}</h3>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm">
-                {t("settings.dpaTitle")}
-              </CardTitle>
-              <CardDescription className="text-xs">
-                {t("settings.dpaDescription")}
-              </CardDescription>
+              <CardTitle className="text-sm">{t("settings.dpaTitle")}</CardTitle>
+              <CardDescription className="text-xs">{t("settings.dpaDescription")}</CardDescription>
             </CardHeader>
             <CardContent>
               <Button
@@ -243,12 +218,8 @@ export function ConsentManagementSection() {
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm">
-                {t("settings.sccTitle")}
-              </CardTitle>
-              <CardDescription className="text-xs">
-                {t("settings.sccDescription")}
-              </CardDescription>
+              <CardTitle className="text-sm">{t("settings.sccTitle")}</CardTitle>
+              <CardDescription className="text-xs">{t("settings.sccDescription")}</CardDescription>
             </CardHeader>
             <CardContent>
               <Button
@@ -299,9 +270,7 @@ export function ConsentManagementSection() {
                   </p>
                 </div>
               ) : (
-                <p className="text-xs text-muted-foreground">
-                  {t("settings.noCrossBorder")}
-                </p>
+                <p className="text-xs text-muted-foreground">{t("settings.noCrossBorder")}</p>
               )}
             </CardContent>
           </Card>

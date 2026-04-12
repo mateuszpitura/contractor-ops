@@ -1,14 +1,10 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
+import { differenceInDays, formatDistanceToNow, isPast } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { formatDistanceToNow, differenceInDays, isPast } from "date-fns";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 // ---------------------------------------------------------------------------
 // Row type matching the tRPC contract.list response shape
@@ -80,13 +76,8 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractRow>[] {
       header: ({ table }) => (
         <Checkbox
           checked={table.getIsAllPageRowsSelected()}
-          indeterminate={
-            table.getIsSomePageRowsSelected() &&
-            !table.getIsAllPageRowsSelected()
-          }
-          onCheckedChange={(value) =>
-            table.toggleAllPageRowsSelected(!!value)
-          }
+          indeterminate={table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()}
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
           aria-label={t("columns.selectAll")}
         />
       ),
@@ -118,13 +109,11 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractRow>[] {
     // 3. Contractor
     {
       id: "contractor",
-      accessorFn: (row) =>
-        row.contractor.displayName ?? row.contractor.legalName,
+      accessorFn: (row) => row.contractor.displayName ?? row.contractor.legalName,
       header: t("columns.contractor"),
       cell: ({ row }) => (
         <span className="text-sm">
-          {row.original.contractor.displayName ??
-            row.original.contractor.legalName}
+          {row.original.contractor.displayName ?? row.original.contractor.legalName}
         </span>
       ),
     },
@@ -147,10 +136,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractRow>[] {
       cell: ({ row }) => {
         const status = row.original.status;
         return (
-          <Badge
-            variant="secondary"
-            className={statusBadgeColors[status] ?? ""}
-          >
+          <Badge variant="secondary" className={statusBadgeColors[status] ?? ""}>
             {t(`status.${status}`)}
           </Badge>
         );
@@ -163,14 +149,9 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractRow>[] {
       header: t("columns.startDate"),
       cell: ({ row }) => {
         const startDate = row.original.startDate;
-        if (!startDate)
-          return <span className="text-muted-foreground">&mdash;</span>;
+        if (!startDate) return <span className="text-muted-foreground">&mdash;</span>;
         try {
-          return (
-            <span className="text-sm">
-              {new Date(startDate).toLocaleDateString("pl-PL")}
-            </span>
-          );
+          return <span className="text-sm">{new Date(startDate).toLocaleDateString("pl-PL")}</span>;
         } catch {
           return <span className="text-muted-foreground">&mdash;</span>;
         }
@@ -183,8 +164,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractRow>[] {
       header: t("columns.endDate"),
       cell: ({ row }) => {
         const endDate = row.original.endDate;
-        if (!endDate)
-          return <span className="text-muted-foreground">&mdash;</span>;
+        if (!endDate) return <span className="text-muted-foreground">&mdash;</span>;
         try {
           const date = new Date(endDate);
           const daysRemaining = differenceInDays(date, new Date());
@@ -226,11 +206,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractRow>[] {
           maximumFractionDigits: 2,
         }).format(minor / 100);
 
-        return (
-          <span className="font-mono text-sm tabular-nums">
-            {formatted}
-          </span>
-        );
+        return <span className="font-mono text-sm tabular-nums">{formatted}</span>;
       },
     },
 
@@ -239,9 +215,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractRow>[] {
       accessorKey: "currency",
       header: t("columns.currency"),
       enableSorting: false,
-      cell: ({ row }) => (
-        <span className="text-sm">{row.original.currency}</span>
-      ),
+      cell: ({ row }) => <span className="text-sm">{row.original.currency}</span>,
     },
 
     // 10. Billing cycle
@@ -250,9 +224,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractRow>[] {
       header: t("columns.billingCycle"),
       enableSorting: false,
       cell: ({ row }) => (
-        <span className="text-sm">
-          {t(`billingModel.${row.original.billingModel}`)}
-        </span>
+        <span className="text-sm">{t(`billingModel.${row.original.billingModel}`)}</span>
       ),
     },
 
@@ -262,8 +234,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractRow>[] {
       header: t("columns.owner"),
       cell: ({ row }) => {
         const owner = row.original.internalOwner;
-        if (!owner)
-          return <span className="text-muted-foreground">&mdash;</span>;
+        if (!owner) return <span className="text-muted-foreground">&mdash;</span>;
         return <span className="text-sm">{owner.name ?? owner.id}</span>;
       },
       enableSorting: false,
@@ -275,13 +246,9 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractRow>[] {
       header: t("columns.complianceRisk"),
       cell: ({ row }) => {
         const risk = row.original.complianceRiskLevel;
-        if (!risk)
-          return <span className="text-muted-foreground">&mdash;</span>;
+        if (!risk) return <span className="text-muted-foreground">&mdash;</span>;
         return (
-          <Badge
-            variant="secondary"
-            className={riskBadgeColors[risk] ?? ""}
-          >
+          <Badge variant="secondary" className={riskBadgeColors[risk] ?? ""}>
             {t(`risk.${risk}`)}
           </Badge>
         );

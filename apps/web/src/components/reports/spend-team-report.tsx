@@ -1,17 +1,17 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { type ColumnDef } from "@tanstack/react-table";
-import { useTranslations } from "next-intl";
-import { toast } from "sonner";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import type { ColumnDef } from "@tanstack/react-table";
 import { UsersRound } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
 
 import { trpc } from "@/trpc/init";
+import { DrillDownBreadcrumb } from "./drill-down-breadcrumb";
+import { downloadBase64File, ExportButtons } from "./export-buttons";
 import { ReportChart } from "./report-chart";
 import { ReportTable } from "./report-table";
-import { DrillDownBreadcrumb } from "./drill-down-breadcrumb";
-import { ExportButtons, downloadBase64File } from "./export-buttons";
 
 function formatCurrency(grosze: number): string {
   return new Intl.NumberFormat("pl-PL", {
@@ -54,9 +54,7 @@ export function SpendTeamReport({ dateFrom, dateTo }: SpendTeamReportProps) {
     }),
   );
 
-  const chartQuery = useQuery(
-    trpc.report.spendByTeamChart.queryOptions({ dateFrom, dateTo }),
-  );
+  const chartQuery = useQuery(trpc.report.spendByTeamChart.queryOptions({ dateFrom, dateTo }));
 
   const exportMutation = useMutation(
     trpc.report.exportSpendByTeam.mutationOptions({
@@ -76,16 +74,12 @@ export function SpendTeamReport({ dateFrom, dateTo }: SpendTeamReportProps) {
   );
 
   const tableData = useMemo(() => {
-    const result = tableQuery.data as
-      | { items: TeamSpendRow[]; totalCount: number }
-      | undefined;
+    const result = tableQuery.data as { items: TeamSpendRow[]; totalCount: number } | undefined;
     return result?.items ?? [];
   }, [tableQuery.data]);
 
   const totalCount = useMemo(() => {
-    const result = tableQuery.data as
-      | { items: TeamSpendRow[]; totalCount: number }
-      | undefined;
+    const result = tableQuery.data as { items: TeamSpendRow[]; totalCount: number } | undefined;
     return result?.totalCount ?? 0;
   }, [tableQuery.data]);
 
@@ -176,9 +170,7 @@ export function SpendTeamReport({ dateFrom, dateTo }: SpendTeamReportProps) {
       <DrillDownBreadcrumb
         segments={[
           { label: t("all") },
-          ...(drillDownName
-            ? [{ label: drillDownName, id: drillDownTeamId! }]
-            : []),
+          ...(drillDownName ? [{ label: drillDownName, id: drillDownTeamId! }] : []),
         ]}
         onClear={handleClearDrillDown}
       />
@@ -194,9 +186,7 @@ export function SpendTeamReport({ dateFrom, dateTo }: SpendTeamReportProps) {
         sortBy={sortBy}
         sortOrder={sortOrder}
         isLoading={tableQuery.isLoading}
-        emptyIcon={
-          <UsersRound className="mx-auto h-10 w-10 text-muted-foreground/50" />
-        }
+        emptyIcon={<UsersRound className="mx-auto h-10 w-10 text-muted-foreground/50" />}
         emptyTitle={t("emptySpendTeam")}
         emptyDescription={t("emptySpendTeamBody")}
         grandTotalLabel={t("grandTotal")}

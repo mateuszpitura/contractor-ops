@@ -1,24 +1,21 @@
 "use client";
 
-import { useCallback, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Package, Truck } from "lucide-react";
-import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
-import { isCarrierFormValid } from "@/lib/carrier-validation";
+import { useCallback, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
   SelectContent,
@@ -26,13 +23,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  PaczkomatPicker,
-  type PaczkomatPoint,
-} from "./paczkomat-picker";
+import { isCarrierFormValid } from "@/lib/carrier-validation";
+import { trpc } from "@/trpc/init";
+import type { DpdAddress, ParcelSize } from "./dpd-fieldset";
+import { DpdFieldset } from "./dpd-fieldset";
 import { PaczkomatDisplay } from "./paczkomat-display";
-import { DpdFieldset, type DpdAddress, type ParcelSize } from "./dpd-fieldset";
-import { UpsFieldset, type UpsServiceCode } from "./ups-fieldset";
+import type { PaczkomatPoint } from "./paczkomat-picker";
+import { PaczkomatPicker } from "./paczkomat-picker";
+import type { UpsServiceCode } from "./ups-fieldset";
+import { UpsFieldset } from "./ups-fieldset";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -89,13 +88,9 @@ export function CarrierShipmentForm({
 
   // Auto-select if only one carrier configured
   const defaultCarrier =
-    configuredCarriers.length === 1
-      ? (configuredCarriers[0] as Carrier)
-      : undefined;
+    configuredCarriers.length === 1 ? (configuredCarriers[0] as Carrier) : undefined;
 
-  const [selectedCarrier, setSelectedCarrier] = useState<Carrier | undefined>(
-    defaultCarrier,
-  );
+  const [selectedCarrier, setSelectedCarrier] = useState<Carrier | undefined>(defaultCarrier);
 
   // InPost state
   const [selectedPoint, setSelectedPoint] = useState<PaczkomatPoint | null>(
@@ -186,10 +181,7 @@ export function CarrierShipmentForm({
     }),
   );
 
-  const isPending =
-    inpostMutation.isPending ||
-    dpdMutation.isPending ||
-    upsMutation.isPending;
+  const isPending = inpostMutation.isPending || dpdMutation.isPending || upsMutation.isPending;
 
   // Validate required fields per carrier
   const isFormValid = isCarrierFormValid(selectedCarrier ?? "", {
@@ -246,9 +238,7 @@ export function CarrierShipmentForm({
   ]);
 
   const geowidgetToken =
-    typeof window !== "undefined"
-      ? (process.env.NEXT_PUBLIC_INPOST_GEOWIDGET_TOKEN ?? "")
-      : "";
+    typeof window !== "undefined" ? (process.env.NEXT_PUBLIC_INPOST_GEOWIDGET_TOKEN ?? "") : "";
 
   // Empty state: no carriers configured
   if (configuredCarriers.length === 0) {
@@ -262,9 +252,7 @@ export function CarrierShipmentForm({
             <Truck className="h-10 w-10 text-muted-foreground" />
             <div className="space-y-1">
               <p className="text-sm font-medium">{t("noCarriers")}</p>
-              <p className="text-sm text-muted-foreground">
-                {t("noCarriersBody")}
-              </p>
+              <p className="text-sm text-muted-foreground">{t("noCarriersBody")}</p>
             </div>
           </div>
         </DialogContent>
@@ -284,10 +272,7 @@ export function CarrierShipmentForm({
             {/* Carrier dropdown */}
             <div className="space-y-2">
               <Label>{t("selectCarrier")}</Label>
-              <Select
-                value={selectedCarrier ?? ""}
-                onValueChange={handleCarrierChange}
-              >
+              <Select value={selectedCarrier ?? ""} onValueChange={handleCarrierChange}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder={t("selectCarrier")} />
                 </SelectTrigger>
@@ -339,16 +324,11 @@ export function CarrierShipmentForm({
                   <Label>{t("parcelSize")}</Label>
                   <RadioGroup
                     value={parcelSize}
-                    onValueChange={(val) =>
-                      val && setParcelSize(val as ParcelSize)
-                    }
+                    onValueChange={(val) => val && setParcelSize(val as ParcelSize)}
                     className="flex gap-4"
                   >
                     {(["small", "medium", "large"] as const).map((size) => (
-                      <label
-                        key={size}
-                        className="flex cursor-pointer items-center gap-2"
-                      >
+                      <label key={size} className="flex cursor-pointer items-center gap-2">
                         <RadioGroupItem value={size} />
                         <span className="text-sm">{t(size)}</span>
                       </label>
@@ -382,20 +362,11 @@ export function CarrierShipmentForm({
           </div>
 
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={isPending}
-            >
+            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
               {t("cancel")}
             </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={!isFormValid || isPending}
-            >
-              {isPending && (
-                <Loader2 className="me-2 h-4 w-4 animate-spin" />
-              )}
+            <Button onClick={handleSubmit} disabled={!isFormValid || isPending}>
+              {isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
               {t("createShipment")}
             </Button>
           </DialogFooter>

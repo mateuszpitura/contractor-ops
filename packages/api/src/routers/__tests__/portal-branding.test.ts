@@ -5,33 +5,30 @@
  * (portal layout: org name + logo; brandColor remains admin-only via settings.getBranding).
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Mock Prisma + ids (hoisted for portal-session mock)
 // ---------------------------------------------------------------------------
 
-const { ORG_ID, USER_ID, PORTAL_SESSION_TOKEN, CONTRACTOR_ID, mockPrisma } =
-  vi.hoisted(() => {
-    const ORG_ID = "org-branding-001";
-    const USER_ID = "user-branding-001";
-    const PORTAL_SESSION_TOKEN = "portal-branding-session";
-    const CONTRACTOR_ID = "contractor-branding-001";
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    type Rec = Record<string, any>;
+const { ORG_ID, USER_ID, PORTAL_SESSION_TOKEN, CONTRACTOR_ID, mockPrisma } = vi.hoisted(() => {
+  const ORG_ID = "org-branding-001";
+  const USER_ID = "user-branding-001";
+  const PORTAL_SESSION_TOKEN = "portal-branding-session";
+  const CONTRACTOR_ID = "contractor-branding-001";
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  type Rec = Record<string, any>;
 
-    const mockPrisma: Rec = {
-      organization: {
-        findUnique: vi.fn(),
-        update: vi.fn(),
-      },
-      $transaction: vi.fn(async (fn: (tx: Rec) => Promise<unknown>) =>
-        fn(mockPrisma),
-      ),
-    };
+  const mockPrisma: Rec = {
+    organization: {
+      findUnique: vi.fn(),
+      update: vi.fn(),
+    },
+    $transaction: vi.fn(async (fn: (tx: Rec) => Promise<unknown>) => fn(mockPrisma)),
+  };
 
-    return { ORG_ID, USER_ID, PORTAL_SESSION_TOKEN, CONTRACTOR_ID, mockPrisma };
-  });
+  return { ORG_ID, USER_ID, PORTAL_SESSION_TOKEN, CONTRACTOR_ID, mockPrisma };
+});
 
 // ---------------------------------------------------------------------------
 // Module mocks
@@ -280,24 +277,16 @@ describe("settings.updateBranding", () => {
   });
 
   it("validates brandColor matches /^#[0-9a-fA-F]{6}$/ regex", async () => {
-    await expect(
-      caller.settings.updateBranding({ brandColor: "#xyz" }),
-    ).rejects.toThrow();
+    await expect(caller.settings.updateBranding({ brandColor: "#xyz" })).rejects.toThrow();
 
-    await expect(
-      caller.settings.updateBranding({ brandColor: "#12345" }),
-    ).rejects.toThrow();
+    await expect(caller.settings.updateBranding({ brandColor: "#12345" })).rejects.toThrow();
 
-    await expect(
-      caller.settings.updateBranding({ brandColor: "red" }),
-    ).rejects.toThrow();
+    await expect(caller.settings.updateBranding({ brandColor: "red" })).rejects.toThrow();
   });
 
   it("rejects invalid hex colors (e.g., '#xyz', '#12345', 'red')", async () => {
     // 7 chars instead of 6
-    await expect(
-      caller.settings.updateBranding({ brandColor: "#1234567" }),
-    ).rejects.toThrow();
+    await expect(caller.settings.updateBranding({ brandColor: "#1234567" })).rejects.toThrow();
   });
 
   it("saves logoUrl to organization.logo field", async () => {

@@ -6,7 +6,11 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("@/i18n/navigation", () => ({
-  Link: ({ children, href, ...props }: any) => <a href={href} {...props}>{children}</a>,
+  Link: ({ children, href, ...props }: any) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
   usePathname: () => "/dashboard",
 }));
 
@@ -18,9 +22,7 @@ vi.mock("@/lib/navigation", () => ({
   navigationGroups: [
     {
       key: "overview",
-      items: [
-        { key: "dashboard", href: "/dashboard", icon: () => null },
-      ],
+      items: [{ key: "dashboard", href: "/dashboard", icon: () => null }],
     },
     {
       key: "operations",

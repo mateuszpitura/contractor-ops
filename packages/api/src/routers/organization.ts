@@ -3,9 +3,9 @@ import {
   createOrganizationSchema,
   updateOrganizationSettingsSchema,
 } from "@contractor-ops/validators";
-import { router, publicProcedure } from "../init.js";
-import { tenantProcedure } from "../middleware/tenant.js";
+import { publicProcedure, router } from "../init.js";
 import { adminProcedure } from "../middleware/rbac.js";
+import { tenantProcedure } from "../middleware/tenant.js";
 
 export const organizationRouter = router({
   /**
@@ -13,30 +13,28 @@ export const organizationRouter = router({
    * Public procedure because the user may not have an active org yet.
    * After creation, sets the new org as active in the session.
    */
-  create: publicProcedure
-    .input(createOrganizationSchema)
-    .mutation(async ({ ctx, input }) => {
-      const org = await auth.api.createOrganization({
-        headers: ctx.headers,
-        body: {
-          name: input.name,
-          slug: input.name.toLowerCase().replace(/\s+/g, "-"),
-          metadata: {
-            countryCode: input.countryCode,
-            defaultCurrency: input.defaultCurrency,
-            timezone: input.timezone,
-          },
+  create: publicProcedure.input(createOrganizationSchema).mutation(async ({ ctx, input }) => {
+    const org = await auth.api.createOrganization({
+      headers: ctx.headers,
+      body: {
+        name: input.name,
+        slug: input.name.toLowerCase().replace(/\s+/g, "-"),
+        metadata: {
+          countryCode: input.countryCode,
+          defaultCurrency: input.defaultCurrency,
+          timezone: input.timezone,
         },
-      });
+      },
+    });
 
-      // Set the new organization as active
-      await auth.api.setActiveOrganization({
-        headers: ctx.headers,
-        body: { organizationId: org.id },
-      });
+    // Set the new organization as active
+    await auth.api.setActiveOrganization({
+      headers: ctx.headers,
+      body: { organizationId: org.id },
+    });
 
-      return org;
-    }),
+    return org;
+  }),
 
   /**
    * Get the current active organization details.
@@ -66,14 +64,11 @@ export const organizationRouter = router({
 
       // Store extended settings in metadata
       const metadataUpdates: Record<string, unknown> = {};
-      if (input.legalName !== undefined)
-        metadataUpdates.legalName = input.legalName;
+      if (input.legalName !== undefined) metadataUpdates.legalName = input.legalName;
       if (input.fiscalYearStartMonth !== undefined)
         metadataUpdates.fiscalYearStartMonth = input.fiscalYearStartMonth;
-      if (input.billingEmail !== undefined)
-        metadataUpdates.billingEmail = input.billingEmail;
-      if (input.language !== undefined)
-        metadataUpdates.language = input.language;
+      if (input.billingEmail !== undefined) metadataUpdates.billingEmail = input.billingEmail;
+      if (input.language !== undefined) metadataUpdates.language = input.language;
 
       if (Object.keys(metadataUpdates).length > 0) {
         updateData.metadata = metadataUpdates;

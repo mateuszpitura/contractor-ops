@@ -38,13 +38,9 @@ export function PeppolInboundBanner({
           {senderName ? ` (${senderName})` : ""}
         </p>
         {documentType && (
-          <p className="text-sm text-muted-foreground">
-            Document type: {documentType}
-          </p>
+          <p className="text-sm text-muted-foreground">Document type: {documentType}</p>
         )}
-        <p className="text-sm text-muted-foreground">
-          Received: {receivedAt.toLocaleString()}
-        </p>
+        <p className="text-sm text-muted-foreground">Received: {receivedAt.toLocaleString()}</p>
       </AlertDescription>
     </Alert>
   );

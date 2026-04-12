@@ -1,6 +1,7 @@
 import { render, screen, setup } from "@/test/test-utils";
+import type { PaymentRunRow } from "../columns";
+import { getColumns } from "../columns";
 import { PaymentRunDataTable } from "../data-table";
-import { getColumns, type PaymentRunRow } from "../columns";
 
 vi.mock("../payment-run-badge", () => ({
   PaymentRunBadge: ({ status }: any) => <span>{status}</span>,

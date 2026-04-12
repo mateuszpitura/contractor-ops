@@ -2,19 +2,12 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardAction,
-} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "@/i18n/navigation";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -68,16 +61,12 @@ const DEADLINE_BADGE_CONFIG: Record<
  */
 export function DeadlinesWidget() {
   const t = useTranslations("Dashboard");
-  const { data, isLoading } = useQuery(
-    trpc.dashboard.deadlines.queryOptions(),
-  );
+  const { data, isLoading } = useQuery(trpc.dashboard.deadlines.queryOptions());
 
   return (
     <Card className="neon-card">
       <CardHeader>
-        <CardTitle className="font-display text-lg font-semibold">
-          {t("deadlines.title")}
-        </CardTitle>
+        <CardTitle className="font-display text-lg font-semibold">{t("deadlines.title")}</CardTitle>
         <CardAction>
           <Link
             href="/reports?report=expiring-contracts"
@@ -95,9 +84,7 @@ export function DeadlinesWidget() {
             ))}
           </div>
         ) : !data?.length ? (
-          <p className="py-8 text-center text-sm text-muted-foreground">
-            {t("deadlines.empty")}
-          </p>
+          <p className="py-8 text-center text-sm text-muted-foreground">{t("deadlines.empty")}</p>
         ) : (
           <ScrollArea className="scroll-fade-bottom max-h-[320px]">
             <div className="flex flex-col gap-2">
@@ -111,10 +98,7 @@ export function DeadlinesWidget() {
                     key={`${item.type}-${item.entityId}`}
                     className={`flex items-center gap-3 rounded-lg border-s-2 ${badge.accent} ps-3 pe-2.5 py-2.5 transition-all duration-200 hover:bg-surface-2 hover:ps-3.5`}
                   >
-                    <Badge
-                      variant={badge.variant}
-                      className={isOverdue ? "badge-glow" : ""}
-                    >
+                    <Badge variant={badge.variant} className={isOverdue ? "badge-glow" : ""}>
                       {t(badge.labelKey as Parameters<typeof t>[0])}
                     </Badge>
                     <Link
@@ -125,9 +109,7 @@ export function DeadlinesWidget() {
                     </Link>
                     <span
                       className={`shrink-0 text-xs font-mono tabular-nums ${
-                        isOverdue
-                          ? "font-bold text-destructive"
-                          : "text-muted-foreground"
+                        isOverdue ? "font-bold text-destructive" : "text-muted-foreground"
                       }`}
                     >
                       {isOverdue

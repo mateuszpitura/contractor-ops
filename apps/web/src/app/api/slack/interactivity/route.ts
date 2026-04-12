@@ -3,25 +3,19 @@
  * This route remains for backward compatibility during Slack app URL migration.
  * Remove after Slack app webhook URL is updated to /api/webhooks/slack.
  */
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+
 import { createHmac, timingSafeEqual } from "node:crypto";
-import { prisma } from "@contractor-ops/db";
-import {
-  getSlackClient,
-  updateMessageToResult,
-} from "@contractor-ops/api/services/slack-client";
 import { advanceFlow } from "@contractor-ops/api/services/approval-engine";
+import { getSlackClient, updateMessageToResult } from "@contractor-ops/api/services/slack-client";
+import { prisma } from "@contractor-ops/db";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 // ---------------------------------------------------------------------------
 // Slack Signature Verification
 // ---------------------------------------------------------------------------
 
-function verifySlackSignature(
-  body: string,
-  timestamp: string,
-  signature: string,
-): boolean {
+function verifySlackSignature(body: string, timestamp: string, signature: string): boolean {
   const signingSecret = process.env.SLACK_SIGNING_SECRET;
   if (!signingSecret) return false;
 
@@ -93,10 +87,7 @@ async function processBlockAction(
   const slackUserId = payload.user?.id as string;
   const actor = await resolveUserFromSlackId(slackUserId);
   if (!actor) {
-    console.error(
-      "[slack-interactivity] Could not resolve user for Slack ID:",
-      slackUserId,
-    );
+    console.error("[slack-interactivity] Could not resolve user for Slack ID:", slackUserId);
     return;
   }
 
@@ -212,8 +203,7 @@ async function processViewSubmission(
 ) {
   if (payload.view?.callback_id !== "reject_invoice_modal") return;
 
-  const comment =
-    payload.view?.state?.values?.comment_block?.comment_input?.value ?? "";
+  const comment = payload.view?.state?.values?.comment_block?.comment_input?.value ?? "";
 
   const metadata = JSON.parse(payload.view.private_metadata) as {
     invoiceId: string;

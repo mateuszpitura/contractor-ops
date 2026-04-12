@@ -1,9 +1,12 @@
 import { render, screen } from "@/test/test-utils";
-import { getEquipmentColumns, type EquipmentRow } from "../equipment-columns";
+import type { EquipmentRow } from "../equipment-columns";
+import { getEquipmentColumns } from "../equipment-columns";
 
 vi.mock("@/i18n/navigation", () => ({
   Link: ({ children, href, ...props }: any) => (
-    <a href={href} {...props}>{children}</a>
+    <a href={href} {...props}>
+      {children}
+    </a>
   ),
 }));
 
@@ -12,7 +15,9 @@ vi.mock("@/components/equipment/equipment-type-icon", () => ({
 }));
 
 vi.mock("@/components/equipment/equipment-status-badge", () => ({
-  EquipmentStatusBadge: ({ status }: { status: string }) => <span data-testid="status-badge">{status}</span>,
+  EquipmentStatusBadge: ({ status }: { status: string }) => (
+    <span data-testid="status-badge">{status}</span>
+  ),
 }));
 
 function makeRow(overrides: Partial<EquipmentRow> = {}): EquipmentRow {
@@ -126,27 +131,33 @@ describe("getEquipmentColumns cell renderers", () => {
   });
 
   it("assignee cell renders contractor name as link when assigned", () => {
-    renderCell("assignee", makeRow({
-      currentAssignment: {
-        id: "a1",
-        contractorId: "c-1",
-        contractorName: "John Doe",
-        assignedAt: "2026-01-01",
-      },
-    }));
+    renderCell(
+      "assignee",
+      makeRow({
+        currentAssignment: {
+          id: "a1",
+          contractorId: "c-1",
+          contractorName: "John Doe",
+          assignedAt: "2026-01-01",
+        },
+      }),
+    );
     expect(screen.getByText("John Doe")).toBeInTheDocument();
     expect(screen.getByRole("link")).toHaveAttribute("href", "/contractors/c-1");
   });
 
   it("assignee cell falls back to contractorId when name is null", () => {
-    renderCell("assignee", makeRow({
-      currentAssignment: {
-        id: "a1",
-        contractorId: "c-1",
-        contractorName: null,
-        assignedAt: "2026-01-01",
-      },
-    }));
+    renderCell(
+      "assignee",
+      makeRow({
+        currentAssignment: {
+          id: "a1",
+          contractorId: "c-1",
+          contractorName: null,
+          assignedAt: "2026-01-01",
+        },
+      }),
+    );
     expect(screen.getByText("c-1")).toBeInTheDocument();
   });
 });

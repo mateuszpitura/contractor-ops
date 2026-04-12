@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@contractor-ops/db", () => ({
   prisma: {
@@ -17,8 +17,8 @@ vi.mock("@contractor-ops/db", () => ({
 
 import { prisma } from "@contractor-ops/db";
 import {
-  createChangeRequest,
   approveChangeRequest,
+  createChangeRequest,
   rejectChangeRequest,
 } from "../portal-change-request.js";
 
@@ -177,12 +177,7 @@ describe("portal-change-request", () => {
       mockPrisma.contractorBillingProfile.update.mockResolvedValue({});
       mockPrisma.contractorChangeRequest.update.mockResolvedValue({});
 
-      await approveChangeRequest(
-        REQUEST_ID,
-        ORG_ID,
-        REVIEWER_ID,
-        "Verified with accounting team",
-      );
+      await approveChangeRequest(REQUEST_ID, ORG_ID, REVIEWER_ID, "Verified with accounting team");
 
       expect(mockPrisma.contractorChangeRequest.update).toHaveBeenCalledWith({
         where: { id: REQUEST_ID },
@@ -195,9 +190,9 @@ describe("portal-change-request", () => {
     it("throws NOT_FOUND for non-existent or already-reviewed request", async () => {
       mockPrisma.contractorChangeRequest.findFirst.mockResolvedValue(null);
 
-      await expect(
-        approveChangeRequest(REQUEST_ID, ORG_ID, REVIEWER_ID),
-      ).rejects.toMatchObject({ code: "NOT_FOUND" });
+      await expect(approveChangeRequest(REQUEST_ID, ORG_ID, REVIEWER_ID)).rejects.toMatchObject({
+        code: "NOT_FOUND",
+      });
     });
 
     it("throws NOT_FOUND when billing profile does not exist", async () => {
@@ -209,9 +204,9 @@ describe("portal-change-request", () => {
       });
       mockPrisma.contractorBillingProfile.findFirst.mockResolvedValue(null);
 
-      await expect(
-        approveChangeRequest(REQUEST_ID, ORG_ID, REVIEWER_ID),
-      ).rejects.toMatchObject({ code: "NOT_FOUND" });
+      await expect(approveChangeRequest(REQUEST_ID, ORG_ID, REVIEWER_ID)).rejects.toMatchObject({
+        code: "NOT_FOUND",
+      });
     });
   });
 
@@ -242,12 +237,7 @@ describe("portal-change-request", () => {
       });
       mockPrisma.contractorChangeRequest.update.mockResolvedValue({});
 
-      await rejectChangeRequest(
-        REQUEST_ID,
-        ORG_ID,
-        REVIEWER_ID,
-        "Documents not verified",
-      );
+      await rejectChangeRequest(REQUEST_ID, ORG_ID, REVIEWER_ID, "Documents not verified");
 
       expect(mockPrisma.contractorChangeRequest.update).toHaveBeenCalledWith({
         where: { id: REQUEST_ID },
@@ -260,9 +250,9 @@ describe("portal-change-request", () => {
     it("throws NOT_FOUND for non-existent or already-reviewed request", async () => {
       mockPrisma.contractorChangeRequest.findFirst.mockResolvedValue(null);
 
-      await expect(
-        rejectChangeRequest(REQUEST_ID, ORG_ID, REVIEWER_ID),
-      ).rejects.toMatchObject({ code: "NOT_FOUND" });
+      await expect(rejectChangeRequest(REQUEST_ID, ORG_ID, REVIEWER_ID)).rejects.toMatchObject({
+        code: "NOT_FOUND",
+      });
     });
   });
 });

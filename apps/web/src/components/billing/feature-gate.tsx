@@ -1,7 +1,7 @@
 "use client";
 
-import type { ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
+import type { ReactNode } from "react";
 import { trpc } from "@/trpc/init";
 import { UpgradeInlineBanner } from "./upgrade-inline-banner";
 
@@ -34,14 +34,8 @@ const PROP_TO_KEY: Record<string, string> = {
 // Component
 // ---------------------------------------------------------------------------
 
-export function FeatureGate({
-  requiredTier,
-  featureName,
-  children,
-}: FeatureGateProps) {
-  const { data: subscription, isLoading } = useQuery(
-    trpc.billing.getSubscription.queryOptions(),
-  );
+export function FeatureGate({ requiredTier, featureName, children }: FeatureGateProps) {
+  const { data: subscription, isLoading } = useQuery(trpc.billing.getSubscription.queryOptions());
 
   // Don't flash upgrade banner while loading
   if (isLoading) {
@@ -49,18 +43,11 @@ export function FeatureGate({
   }
 
   const requiredTierKey = PROP_TO_KEY[requiredTier] ?? "PRO";
-  const currentRank = subscription?.tier
-    ? (TIER_RANK[subscription.tier as string] ?? 0)
-    : 0;
+  const currentRank = subscription?.tier ? (TIER_RANK[subscription.tier as string] ?? 0) : 0;
   const requiredRank = TIER_RANK[requiredTierKey] ?? 0;
 
   if (!subscription || currentRank < requiredRank) {
-    return (
-      <UpgradeInlineBanner
-        featureName={featureName}
-        requiredTier={requiredTier}
-      />
-    );
+    return <UpgradeInlineBanner featureName={featureName} requiredTier={requiredTier} />;
   }
 
   return <>{children}</>;

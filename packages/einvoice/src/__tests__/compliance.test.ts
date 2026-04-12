@@ -1,8 +1,6 @@
-import { describe, it, expect } from "vitest";
-import {
-  computeKsefComplianceStatus,
-  type KsefConnectionData,
-} from "../profiles/ksef/compliance.js";
+import { describe, expect, it } from "vitest";
+import type { KsefConnectionData } from "../profiles/ksef/compliance.js";
+import { computeKsefComplianceStatus } from "../profiles/ksef/compliance.js";
 
 describe("computeKsefComplianceStatus", () => {
   it("returns not_connected when no connection exists", () => {

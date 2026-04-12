@@ -1,8 +1,9 @@
 "use client";
 
+import type { DirectoryRole } from "@contractor-ops/validators";
 import { useTranslations } from "next-intl";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -10,8 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ROLE_OPTIONS, ROLE_LABELS } from "./role-assignment-controls";
-import type { DirectoryRole } from "@contractor-ops/validators";
+import { ROLE_LABELS, ROLE_OPTIONS } from "./role-assignment-controls";
 
 // ---------------------------------------------------------------------------
 // GroupRoleMappingStep
@@ -58,23 +58,18 @@ export function GroupRoleMappingStep({
               <CardContent className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-semibold">{group.name}</span>
-                  <Badge variant="secondary">
-                    {group.memberEmails.length}
-                  </Badge>
+                  <Badge variant="secondary">{group.memberEmails.length}</Badge>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <Select
                     value={mappedRole ?? ""}
                     onValueChange={(val) => {
-                      if (val)
-                        onMappingChange(group.email, val as DirectoryRole);
+                      if (val) onMappingChange(group.email, val as DirectoryRole);
                     }}
                   >
                     <SelectTrigger className="w-48">
-                      <SelectValue>
-                        {ROLE_LABELS[displayRole]}
-                      </SelectValue>
+                      <SelectValue>{ROLE_LABELS[displayRole]}</SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       {ROLE_OPTIONS.map((role) => (

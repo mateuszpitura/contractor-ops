@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/table";
 
 import { usePermissions } from "@/hooks/use-permissions";
-import { maskTaxId, canViewSensitivePii } from "@/lib/mask-pii";
+import { canViewSensitivePii, maskTaxId } from "@/lib/mask-pii";
 import type { ImportRow } from "./import-wizard-dialog";
 
 // ---------------------------------------------------------------------------
@@ -26,9 +26,7 @@ import type { ImportRow } from "./import-wizard-dialog";
 interface StepDuplicatesProps {
   duplicateRows: ImportRow[];
   duplicateActions: Record<string, "skip" | "update" | "create">;
-  onActionsChange: (
-    actions: Record<string, "skip" | "update" | "create">
-  ) => void;
+  onActionsChange: (actions: Record<string, "skip" | "update" | "create">) => void;
 }
 
 export function StepDuplicates({
@@ -44,10 +42,7 @@ export function StepDuplicates({
     return duplicateActions[String(rowNumber)] ?? "skip";
   };
 
-  const handleActionChange = (
-    rowNumber: number,
-    action: "skip" | "update" | "create"
-  ) => {
+  const handleActionChange = (rowNumber: number, action: "skip" | "update" | "create") => {
     onActionsChange({
       ...duplicateActions,
       [String(rowNumber)]: action,
@@ -74,12 +69,7 @@ export function StepDuplicates({
 
       {/* Bulk action buttons */}
       <div className="flex gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => handleBulkAction("skip")}
-          type="button"
-        >
+        <Button variant="outline" size="sm" onClick={() => handleBulkAction("skip")} type="button">
           {t("duplicates.skipAll")}
         </Button>
         <Button
@@ -105,30 +95,23 @@ export function StepDuplicates({
           </TableHeader>
           <TableBody>
             {duplicateRows.map((row) => {
-              const taxId = String(
-                row.data["taxId"] ?? row.data["contractorTaxId"] ?? ""
-              );
-              const name = String(
-                row.data["legalName"] ?? row.data["title"] ?? ""
-              );
+              const taxId = String(row.data["taxId"] ?? row.data["contractorTaxId"] ?? "");
+              const name = String(row.data["legalName"] ?? row.data["title"] ?? "");
               const existingName = row.duplicateOf ?? "-";
               const action = getAction(row.rowNumber);
 
               return (
                 <TableRow key={row.rowNumber}>
-                  <TableCell className="font-mono text-sm">{showPii ? taxId : maskTaxId(taxId)}</TableCell>
-                  <TableCell className="text-sm">{name}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {existingName}
+                  <TableCell className="font-mono text-sm">
+                    {showPii ? taxId : maskTaxId(taxId)}
                   </TableCell>
+                  <TableCell className="text-sm">{name}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{existingName}</TableCell>
                   <TableCell>
                     <RadioGroup
                       value={action}
                       onValueChange={(val) =>
-                        handleActionChange(
-                          row.rowNumber,
-                          val as "skip" | "update" | "create"
-                        )
+                        handleActionChange(row.rowNumber, val as "skip" | "update" | "create")
                       }
                       className="flex gap-3"
                     >

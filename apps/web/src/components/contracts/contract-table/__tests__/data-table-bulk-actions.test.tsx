@@ -26,9 +26,7 @@ function makeMockTable(selectedCount: number) {
 
 describe("DataTableBulkActions (contracts)", () => {
   it("returns null when no rows selected", () => {
-    const { container } = render(
-      <DataTableBulkActions table={makeMockTable(0)} />,
-    );
+    const { container } = render(<DataTableBulkActions table={makeMockTable(0)} />);
     expect(container.innerHTML).toBe("");
   });
 

@@ -9,11 +9,13 @@ vi.mock("@/components/documents/document-list", () => ({
   DocumentList: () => <div data-testid="document-list" />,
 }));
 
+vi.mock("@/components/contractors/country-compliance-section", () => ({
+  CountryComplianceSection: () => <div data-testid="country-compliance" />,
+}));
+
 describe("TabCompliance", () => {
   it("renders empty state when no compliance items", () => {
-    render(
-      <TabCompliance contractor={{ id: "c1", complianceItems: [] }} />,
-    );
+    render(<TabCompliance contractor={{ id: "c1", complianceItems: [] }} />);
     // Should render the empty state icon and message
     const container = document.querySelector("div");
     expect(container).toBeInTheDocument();
@@ -43,9 +45,7 @@ describe("TabCompliance", () => {
       },
     ];
 
-    render(
-      <TabCompliance contractor={{ id: "c1", complianceItems: items }} />,
-    );
+    render(<TabCompliance contractor={{ id: "c1", complianceItems: items }} />);
     expect(screen.getByText("Insurance Certificate")).toBeInTheDocument();
     expect(screen.getByText("NDA")).toBeInTheDocument();
   });
@@ -64,9 +64,7 @@ describe("TabCompliance", () => {
       },
     ];
 
-    render(
-      <TabCompliance contractor={{ id: "c1", complianceItems: items }} />,
-    );
+    render(<TabCompliance contractor={{ id: "c1", complianceItems: items }} />);
     const buttons = screen.getAllByRole("button");
     expect(buttons.length).toBeGreaterThan(0);
   });
@@ -86,9 +84,7 @@ describe("TabCompliance", () => {
       },
     ];
 
-    render(
-      <TabCompliance contractor={{ id: "c1", complianceItems: items }} />,
-    );
+    render(<TabCompliance contractor={{ id: "c1", complianceItems: items }} />);
     expect(screen.getByText("Expiring Doc")).toBeInTheDocument();
   });
 });

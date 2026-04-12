@@ -1,25 +1,11 @@
 "use client";
 
+import { addWeeks, endOfISOWeek, format, startOfISOWeek, subWeeks } from "date-fns";
+import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
-import {
-  ChevronLeft,
-  ChevronRight,
-  CalendarDays,
-} from "lucide-react";
-import {
-  startOfISOWeek,
-  endOfISOWeek,
-  addWeeks,
-  subWeeks,
-  format,
-} from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { TimeEntryStatusBadge } from "./time-entry-status-badge";
 
 // ---------------------------------------------------------------------------
@@ -59,14 +45,9 @@ export function TimesheetHeader({
   const weekEnd = endOfISOWeek(weekStartDate);
   const weekLabel = `${format(weekStartDate, "MMM d")} - ${format(weekEnd, "MMM d, yyyy")}`;
   const totalHours = totalMinutes / 60;
-  const displayHours =
-    totalHours % 1 === 0
-      ? totalHours.toFixed(0)
-      : totalHours.toFixed(1);
+  const displayHours = totalHours % 1 === 0 ? totalHours.toFixed(0) : totalHours.toFixed(1);
 
-  const canSubmit =
-    totalMinutes > 0 &&
-    (status === "DRAFT" || status === "REJECTED");
+  const canSubmit = totalMinutes > 0 && (status === "DRAFT" || status === "REJECTED");
 
   const handlePrevWeek = () => {
     onWeekChange(subWeeks(weekStartDate, 1));
@@ -87,12 +68,7 @@ export function TimesheetHeader({
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       {/* Left: Week selector */}
       <div className="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handlePrevWeek}
-          aria-label="Previous week"
-        >
+        <Button variant="ghost" size="icon" onClick={handlePrevWeek} aria-label="Previous week">
           <ChevronLeft className="h-4 w-4" />
         </Button>
 
@@ -113,12 +89,7 @@ export function TimesheetHeader({
           </PopoverContent>
         </Popover>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleNextWeek}
-          aria-label="Next week"
-        >
+        <Button variant="ghost" size="icon" onClick={handleNextWeek} aria-label="Next week">
           <ChevronRight className="h-4 w-4" />
         </Button>
 
@@ -135,10 +106,7 @@ export function TimesheetHeader({
             {displayHours}h
           </span>
         </div>
-        <Button
-          onClick={onSubmit}
-          disabled={!canSubmit || isSubmitting}
-        >
+        <Button onClick={onSubmit} disabled={!canSubmit || isSubmitting}>
           {isSubmitting ? "Submitting..." : "Submit Timesheet"}
         </Button>
       </div>

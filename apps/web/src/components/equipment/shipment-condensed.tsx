@@ -31,9 +31,7 @@ export function ShipmentCondensed({ shipment }: ShipmentCondensedProps) {
       <span className="text-muted-foreground">{shipment.carrier}</span>
       <ShipmentStatusBadge status={shipment.currentStatus} />
       {shipment.trackingNumber && (
-        <span className="font-mono text-xs text-muted-foreground">
-          {shipment.trackingNumber}
-        </span>
+        <span className="font-mono text-xs text-muted-foreground">{shipment.trackingNumber}</span>
       )}
     </div>
   );

@@ -46,24 +46,14 @@ function makeShipment(overrides: Record<string, unknown> = {}) {
 
 describe("TabShipments", () => {
   it("renders empty state when no shipments", () => {
-    render(
-      <TabShipments
-        shipments={[]}
-        equipmentId="eq-1"
-        onCreateShipment={vi.fn()}
-      />,
-    );
+    render(<TabShipments shipments={[]} equipmentId="eq-1" onCreateShipment={vi.fn()} />);
 
     expect(screen.getByText(/no shipments/i)).toBeInTheDocument();
   });
 
   it("renders shipment card with tracking number and carrier", () => {
     render(
-      <TabShipments
-        shipments={[makeShipment()]}
-        equipmentId="eq-1"
-        onCreateShipment={vi.fn()}
-      />,
+      <TabShipments shipments={[makeShipment()]} equipmentId="eq-1" onCreateShipment={vi.fn()} />,
     );
 
     expect(screen.getByText("TR-12345")).toBeInTheDocument();
@@ -73,11 +63,7 @@ describe("TabShipments", () => {
   it("shows create shipment button", async () => {
     const onCreateShipment = vi.fn();
     const { user } = setup(
-      <TabShipments
-        shipments={[]}
-        equipmentId="eq-1"
-        onCreateShipment={onCreateShipment}
-      />,
+      <TabShipments shipments={[]} equipmentId="eq-1" onCreateShipment={onCreateShipment} />,
     );
 
     const btn = screen.getByRole("button", { name: /create shipment/i });
@@ -174,11 +160,7 @@ describe("TabShipments", () => {
 
   it("renders shipment timeline component", () => {
     render(
-      <TabShipments
-        shipments={[makeShipment()]}
-        equipmentId="eq-1"
-        onCreateShipment={vi.fn()}
-      />,
+      <TabShipments shipments={[makeShipment()]} equipmentId="eq-1" onCreateShipment={vi.fn()} />,
     );
 
     expect(screen.getByTestId("shipment-timeline")).toBeInTheDocument();
@@ -205,11 +187,7 @@ describe("TabShipments", () => {
 
   it("renders date for shipment", () => {
     render(
-      <TabShipments
-        shipments={[makeShipment()]}
-        equipmentId="eq-1"
-        onCreateShipment={vi.fn()}
-      />,
+      <TabShipments shipments={[makeShipment()]} equipmentId="eq-1" onCreateShipment={vi.fn()} />,
     );
 
     expect(screen.getByText("Mar 1, 2026")).toBeInTheDocument();

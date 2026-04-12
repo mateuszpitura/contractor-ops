@@ -1,8 +1,8 @@
-import { UPSClient } from "./ups-client.js";
-import { mapUpsStatus } from "./ups-status-mapper.js";
+import { checkShipmentTaskCompletion } from "../equipment-workflow.js";
 import { NOTIFICATION_STATUSES } from "./inpost-status-mapper.js";
 import { dispatchShipmentNotification } from "./shipment-notification.js";
-import { checkShipmentTaskCompletion } from "../equipment-workflow.js";
+import { UPSClient } from "./ups-client.js";
+import { mapUpsStatus } from "./ups-status-mapper.js";
 
 // ---------------------------------------------------------------------------
 // UPS Polling Service
@@ -22,13 +22,11 @@ const TERMINAL_STATUSES = ["DELIVERED", "FAILED", "RETURNED"];
  * Maps (shipment status, direction) to equipment status.
  * Duplicated from equipment.ts to avoid circular imports.
  */
-const SHIPMENT_TO_EQUIPMENT_STATUS: Record<
-  string,
-  Record<string, string | undefined> | undefined
-> = {
-  DELIVERED: { OUTBOUND: "DELIVERED", RETURN: "RETURNED" },
-  RETURNED: { OUTBOUND: undefined, RETURN: "RETURNED" },
-};
+const SHIPMENT_TO_EQUIPMENT_STATUS: Record<string, Record<string, string | undefined> | undefined> =
+  {
+    DELIVERED: { OUTBOUND: "DELIVERED", RETURN: "RETURNED" },
+    RETURNED: { OUTBOUND: undefined, RETURN: "RETURNED" },
+  };
 
 const EQUIPMENT_STATUS_TRANSITIONS: Record<string, string[]> = {
   AVAILABLE: ["ASSIGNED", "IN_TRANSIT", "RETIRED"],
@@ -73,9 +71,7 @@ export async function pollUpsShipmentStatuses(
   });
 
   if (!config) {
-    console.warn(
-      `[ups-polling] No courier config found for org=${organizationId}`,
-    );
+    console.warn(`[ups-polling] No courier config found for org=${organizationId}`);
     return { checked: 0, updated: 0 };
   }
 
@@ -147,11 +143,17 @@ export async function pollUpsShipmentStatuses(
 
       // Dispatch notification for terminal shipment statuses
       if ((NOTIFICATION_STATUSES as readonly string[]).includes(mappedStatus)) {
-        void dispatchShipmentNotification(db, organizationId, {
-          id: shipment.id,
-          trackingNumber: shipment.trackingNumber,
-          currentStatus: shipment.currentStatus,
-        }, mappedStatus, "UPS");
+        void dispatchShipmentNotification(
+          db,
+          organizationId,
+          {
+            id: shipment.id,
+            trackingNumber: shipment.trackingNumber,
+            currentStatus: shipment.currentStatus,
+          },
+          mappedStatus,
+          "UPS",
+        );
       }
 
       // Fire-and-forget: check workflow task auto-completion (per D-01/D-02)
@@ -173,8 +175,7 @@ export async function pollUpsShipmentStatuses(
         });
 
         if (equipment) {
-          const allowed =
-            EQUIPMENT_STATUS_TRANSITIONS[equipment.status] ?? [];
+          const allowed = EQUIPMENT_STATUS_TRANSITIONS[equipment.status] ?? [];
           if (allowed.includes(newEquipmentStatus)) {
             await db.equipment.update({
               where: { id: shipment.equipmentId },
@@ -193,9 +194,7 @@ export async function pollUpsShipmentStatuses(
     }
   }
 
-  console.info(
-    `[ups-polling] Org ${organizationId}: checked ${checked}, updated ${updated}`,
-  );
+  console.info(`[ups-polling] Org ${organizationId}: checked ${checked}, updated ${updated}`);
 
   return { checked, updated };
 }

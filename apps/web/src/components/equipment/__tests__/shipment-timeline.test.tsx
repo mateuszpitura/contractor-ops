@@ -1,5 +1,5 @@
-import { render, screen } from "@/test/test-utils";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { render, screen } from "@/test/test-utils";
 
 vi.mock("@/trpc/init", () => ({
   trpc: {
@@ -21,9 +21,7 @@ function renderWithQuery(ui: React.ReactElement) {
   const qc = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
-  return render(
-    <QueryClientProvider client={qc}>{ui}</QueryClientProvider>,
-  );
+  return render(<QueryClientProvider client={qc}>{ui}</QueryClientProvider>);
 }
 
 const baseProps = {
@@ -38,9 +36,27 @@ describe("ShipmentTimeline", () => {
         {...baseProps}
         currentStatus="IN_TRANSIT"
         events={[
-          { id: "e1", status: "CREATED", notes: null, occurredAt: "2025-01-01T10:00:00Z", createdByUserId: null },
-          { id: "e2", status: "PICKED_UP", notes: null, occurredAt: "2025-01-02T10:00:00Z", createdByUserId: null },
-          { id: "e3", status: "IN_TRANSIT", notes: "On the way", occurredAt: "2025-01-03T10:00:00Z", createdByUserId: null },
+          {
+            id: "e1",
+            status: "CREATED",
+            notes: null,
+            occurredAt: "2025-01-01T10:00:00Z",
+            createdByUserId: null,
+          },
+          {
+            id: "e2",
+            status: "PICKED_UP",
+            notes: null,
+            occurredAt: "2025-01-02T10:00:00Z",
+            createdByUserId: null,
+          },
+          {
+            id: "e3",
+            status: "IN_TRANSIT",
+            notes: "On the way",
+            occurredAt: "2025-01-03T10:00:00Z",
+            createdByUserId: null,
+          },
         ]}
       />,
     );
@@ -54,7 +70,13 @@ describe("ShipmentTimeline", () => {
         {...baseProps}
         currentStatus="IN_TRANSIT"
         events={[
-          { id: "e1", status: "IN_TRANSIT", notes: "Shipped via express", occurredAt: "2025-01-03T10:00:00Z", createdByUserId: null },
+          {
+            id: "e1",
+            status: "IN_TRANSIT",
+            notes: "Shipped via express",
+            occurredAt: "2025-01-03T10:00:00Z",
+            createdByUserId: null,
+          },
         ]}
       />,
     );
@@ -62,13 +84,7 @@ describe("ShipmentTimeline", () => {
   });
 
   it("shows add status update form when not terminal", () => {
-    renderWithQuery(
-      <ShipmentTimeline
-        {...baseProps}
-        currentStatus="IN_TRANSIT"
-        events={[]}
-      />,
-    );
+    renderWithQuery(<ShipmentTimeline {...baseProps} currentStatus="IN_TRANSIT" events={[]} />);
     expect(screen.getByText("Add status update")).toBeInTheDocument();
   });
 
@@ -78,7 +94,13 @@ describe("ShipmentTimeline", () => {
         {...baseProps}
         currentStatus="DELIVERED"
         events={[
-          { id: "e1", status: "DELIVERED", notes: null, occurredAt: "2025-01-05T10:00:00Z", createdByUserId: null },
+          {
+            id: "e1",
+            status: "DELIVERED",
+            notes: null,
+            occurredAt: "2025-01-05T10:00:00Z",
+            createdByUserId: null,
+          },
         ]}
       />,
     );
@@ -91,7 +113,13 @@ describe("ShipmentTimeline", () => {
         {...baseProps}
         currentStatus="FAILED"
         events={[
-          { id: "e1", status: "FAILED", notes: "Address invalid", occurredAt: "2025-01-05T10:00:00Z", createdByUserId: null },
+          {
+            id: "e1",
+            status: "FAILED",
+            notes: "Address invalid",
+            occurredAt: "2025-01-05T10:00:00Z",
+            createdByUserId: null,
+          },
         ]}
       />,
     );
@@ -105,7 +133,13 @@ describe("ShipmentTimeline", () => {
         {...baseProps}
         currentStatus="RETURNED"
         events={[
-          { id: "e1", status: "RETURNED", notes: "Refused by recipient", occurredAt: "2025-01-05T10:00:00Z", createdByUserId: null },
+          {
+            id: "e1",
+            status: "RETURNED",
+            notes: "Refused by recipient",
+            occurredAt: "2025-01-05T10:00:00Z",
+            createdByUserId: null,
+          },
         ]}
       />,
     );
@@ -119,7 +153,13 @@ describe("ShipmentTimeline", () => {
         {...baseProps}
         currentStatus="RETURNED"
         events={[
-          { id: "e1", status: "RETURNED", notes: null, occurredAt: "2025-01-05T10:00:00Z", createdByUserId: null },
+          {
+            id: "e1",
+            status: "RETURNED",
+            notes: null,
+            occurredAt: "2025-01-05T10:00:00Z",
+            createdByUserId: null,
+          },
         ]}
       />,
     );
@@ -132,7 +172,13 @@ describe("ShipmentTimeline", () => {
         {...baseProps}
         currentStatus="CREATED"
         events={[
-          { id: "e1", status: "CREATED", notes: null, occurredAt: "2025-01-01T10:00:00Z", createdByUserId: null },
+          {
+            id: "e1",
+            status: "CREATED",
+            notes: null,
+            occurredAt: "2025-01-01T10:00:00Z",
+            createdByUserId: null,
+          },
         ]}
       />,
     );
@@ -145,8 +191,20 @@ describe("ShipmentTimeline", () => {
         {...baseProps}
         currentStatus="DELIVERED"
         events={[
-          { id: "e1", status: "CREATED", notes: null, occurredAt: "2025-01-01T10:00:00Z", createdByUserId: null },
-          { id: "e2", status: "DELIVERED", notes: "Left at door", occurredAt: "2025-01-05T10:00:00Z", createdByUserId: null },
+          {
+            id: "e1",
+            status: "CREATED",
+            notes: null,
+            occurredAt: "2025-01-01T10:00:00Z",
+            createdByUserId: null,
+          },
+          {
+            id: "e2",
+            status: "DELIVERED",
+            notes: "Left at door",
+            occurredAt: "2025-01-05T10:00:00Z",
+            createdByUserId: null,
+          },
         ]}
       />,
     );
@@ -155,13 +213,7 @@ describe("ShipmentTimeline", () => {
   });
 
   it("disables add button when no status is selected", () => {
-    renderWithQuery(
-      <ShipmentTimeline
-        {...baseProps}
-        currentStatus="IN_TRANSIT"
-        events={[]}
-      />,
-    );
+    renderWithQuery(<ShipmentTimeline {...baseProps} currentStatus="IN_TRANSIT" events={[]} />);
     const addBtn = screen.getByRole("button", { name: "Add" });
     expect(addBtn).toBeDisabled();
   });
@@ -172,8 +224,20 @@ describe("ShipmentTimeline", () => {
         {...baseProps}
         currentStatus="PICKED_UP"
         events={[
-          { id: "e1", status: "CREATED", notes: null, occurredAt: "2025-01-15T14:30:00Z", createdByUserId: null },
-          { id: "e2", status: "PICKED_UP", notes: null, occurredAt: "2025-01-16T09:00:00Z", createdByUserId: null },
+          {
+            id: "e1",
+            status: "CREATED",
+            notes: null,
+            occurredAt: "2025-01-15T14:30:00Z",
+            createdByUserId: null,
+          },
+          {
+            id: "e2",
+            status: "PICKED_UP",
+            notes: null,
+            occurredAt: "2025-01-16T09:00:00Z",
+            createdByUserId: null,
+          },
         ]}
       />,
     );

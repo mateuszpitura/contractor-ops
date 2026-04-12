@@ -1,8 +1,9 @@
-import type { OAuthConfig } from "../types/provider.js";
+import { prisma } from "@contractor-ops/db";
+import { decryptCredentials } from "../services/credential-service.js";
 import type { CredentialBlob } from "../types/credentials.js";
 import type { ProviderHealthStatus } from "../types/health.js";
+import type { OAuthConfig } from "../types/provider.js";
 import { BaseAdapter } from "./base-adapter.js";
-import { decryptCredentials } from "../services/credential-service.js";
 
 // ---------------------------------------------------------------------------
 // Azure AD / Microsoft Teams OAuth 2.0 Configuration
@@ -21,8 +22,7 @@ import { decryptCredentials } from "../services/credential-service.js";
 const TEAMS_OAUTH_CONFIG: OAuthConfig = {
   clientIdEnvVar: "AZURE_BOT_APP_ID",
   clientSecretEnvVar: "AZURE_BOT_APP_SECRET",
-  authorizationUrl:
-    "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
+  authorizationUrl: "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
   tokenUrl: "https://login.microsoftonline.com/common/oauth2/v2.0/token",
   scopes: [
     "https://graph.microsoft.com/Team.ReadBasic.All",
@@ -66,10 +66,7 @@ export class TeamsAdapter extends BaseAdapter {
     return TEAMS_OAUTH_CONFIG;
   }
 
-  async exchangeCodeForTokens(
-    code: string,
-    redirectUri: string,
-  ): Promise<CredentialBlob> {
+  async exchangeCodeForTokens(code: string, redirectUri: string): Promise<CredentialBlob> {
     const clientId = process.env.AZURE_BOT_APP_ID;
     const clientSecret = process.env.AZURE_BOT_APP_SECRET;
 
@@ -114,9 +111,7 @@ export class TeamsAdapter extends BaseAdapter {
       refreshToken: data.refresh_token,
       tokenType: data.token_type,
       scope: data.scope,
-      expiresAt: new Date(
-        Date.now() + data.expires_in * 1000,
-      ).toISOString(),
+      expiresAt: new Date(Date.now() + data.expires_in * 1000).toISOString(),
     };
   }
 
@@ -131,10 +126,7 @@ export class TeamsAdapter extends BaseAdapter {
     }
 
     // Decrypt stored credentials using AES-256-GCM per-provider encryption
-    const decrypted = decryptCredentials(
-      credentials.accessToken,
-      "microsoft_teams",
-    );
+    const decrypted = decryptCredentials(credentials.accessToken, "microsoft_teams");
 
     if (!decrypted.refreshToken) {
       throw new Error("No refresh token available for Microsoft Teams");
@@ -174,9 +166,7 @@ export class TeamsAdapter extends BaseAdapter {
       refreshToken: data.refresh_token ?? decrypted.refreshToken,
       tokenType: data.token_type,
       scope: data.scope,
-      expiresAt: new Date(
-        Date.now() + data.expires_in * 1000,
-      ).toISOString(),
+      expiresAt: new Date(Date.now() + data.expires_in * 1000).toISOString(),
     };
   }
 
@@ -185,8 +175,6 @@ export class TeamsAdapter extends BaseAdapter {
   // -------------------------------------------------------------------------
 
   async getHealthStatus(connectionId: string): Promise<ProviderHealthStatus> {
-    const { prisma } = await import("@contractor-ops/db");
-
     const connection = await prisma.integrationConnection.findUnique({
       where: { id: connectionId },
       select: {
@@ -242,15 +230,9 @@ export class TeamsAdapter extends BaseAdapter {
       status = "DISCONNECTED";
     } else if (connection.lastErrorAt && !connection.lastSuccessAt) {
       status = "ERROR";
-    } else if (
-      connection.tokenExpiresAt &&
-      connection.tokenExpiresAt < new Date()
-    ) {
+    } else if (connection.tokenExpiresAt && connection.tokenExpiresAt < new Date()) {
       status = "REAUTH_REQUIRED";
-    } else if (
-      recentSyncs.length > 0 &&
-      recentSyncs[0]!.status === "FAILED"
-    ) {
+    } else if (recentSyncs.length > 0 && recentSyncs[0]!.status === "FAILED") {
       status = "ERROR";
     } else {
       status = "CONNECTED";

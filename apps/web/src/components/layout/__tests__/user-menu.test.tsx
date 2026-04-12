@@ -174,9 +174,7 @@ describe("UserMenu", () => {
     const trigger = screen.getAllByRole("button")[0];
     await user.click(trigger);
     const switches = await screen.findAllByRole("switch");
-    const darkModeSwitch = switches.find(
-      (s) => s.getAttribute("aria-label") === "Dark mode",
-    );
+    const darkModeSwitch = switches.find((s) => s.getAttribute("aria-label") === "Dark mode");
     expect(darkModeSwitch).toBeDefined();
     if (darkModeSwitch) {
       await user.click(darkModeSwitch);
@@ -190,9 +188,7 @@ describe("UserMenu", () => {
     const trigger = screen.getAllByRole("button")[0];
     await user.click(trigger);
     const switches = await screen.findAllByRole("switch");
-    const densitySwitch = switches.find(
-      (s) => s.getAttribute("aria-label") === "Compact",
-    );
+    const densitySwitch = switches.find((s) => s.getAttribute("aria-label") === "Compact");
     expect(densitySwitch).toBeDefined();
     if (densitySwitch) {
       await user.click(densitySwitch);

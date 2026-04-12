@@ -1,38 +1,32 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
+import type { FetchProjectsOutput } from "@contractor-ops/validators";
 import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
 import {
+  ArrowDown,
+  ArrowUp,
+  ChevronDown,
+  ChevronRight,
   FolderKanban,
   GripVertical,
   Plus,
   X,
-  ArrowUp,
-  ArrowDown,
-  ChevronDown,
-  ChevronRight,
 } from "lucide-react";
-import { useState } from "react";
-
-import { trpc } from "@/trpc/init";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useTranslations } from "next-intl";
+import { useCallback, useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-
+import { trpc } from "@/trpc/init";
 import type { ProjectSelection } from "./import-wizard";
-import type { FetchProjectsOutput } from "@contractor-ops/validators";
 
 // ---------------------------------------------------------------------------
 // Source icon helpers
 // ---------------------------------------------------------------------------
 
-import {
-  JiraBrandIcon,
-  LinearBrandIcon,
-} from "@/components/integrations/brand-icons";
+import { JiraBrandIcon, LinearBrandIcon } from "@/components/integrations/brand-icons";
 
 const SOURCE_ICONS: Record<string, React.ReactNode> = {
   JIRA: <JiraBrandIcon className="size-4" />,
@@ -49,11 +43,7 @@ interface ProjectCardProps {
   onSelectionChange: (sel: ProjectSelection) => void;
 }
 
-function ProjectCard({
-  project,
-  selection,
-  onSelectionChange,
-}: ProjectCardProps) {
+function ProjectCard({ project, selection, onSelectionChange }: ProjectCardProps) {
   const t = useTranslations("OnboardingImport.step3");
   const [expanded, setExpanded] = useState(false);
 
@@ -116,19 +106,10 @@ function ProjectCard({
               onClick={() => setExpanded(!expanded)}
               disabled={selection.skip}
             >
-              {expanded ? (
-                <ChevronDown className="size-4" />
-              ) : (
-                <ChevronRight className="size-4" />
-              )}
+              {expanded ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
               {t("editSteps")}
             </Button>
-            <Button
-              variant="link"
-              size="sm"
-              onClick={handleSkip}
-              className="text-muted-foreground"
-            >
+            <Button variant="link" size="sm" onClick={handleSkip} className="text-muted-foreground">
               {t("skipProject")}
             </Button>
           </div>
@@ -152,10 +133,7 @@ function ProjectCard({
           <div className="space-y-2">
             {selection.steps.map((step, i) => (
               <div key={i} className="flex items-center gap-2">
-                <GripVertical
-                  className="size-4 text-muted-foreground"
-                  aria-hidden="true"
-                />
+                <GripVertical className="size-4 text-muted-foreground" aria-hidden="true" />
                 <Input
                   value={step.name}
                   onChange={(e) => handleRenameStep(i, e.target.value)}
@@ -191,12 +169,7 @@ function ProjectCard({
               </div>
             ))}
 
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleAddStep}
-              className="mt-1"
-            >
+            <Button variant="outline" size="sm" onClick={handleAddStep} className="mt-1">
               <Plus className="size-3" />
               {t("addStep")}
             </Button>
@@ -216,9 +189,7 @@ interface ProjectImportStepProps {
   projects: FetchProjectsOutput;
   onProjectsChange: (projects: FetchProjectsOutput) => void;
   projectSelections: Map<string, ProjectSelection>;
-  onProjectSelectionsChange: (
-    selections: Map<string, ProjectSelection>,
-  ) => void;
+  onProjectSelectionsChange: (selections: Map<string, ProjectSelection>) => void;
 }
 
 export function ProjectImportStep({
@@ -231,9 +202,7 @@ export function ProjectImportStep({
   const t = useTranslations("OnboardingImport.step3");
 
   // Only fetch from PM tools
-  const pmSources = selectedSources.filter(
-    (s) => s === "JIRA" || s === "LINEAR",
-  );
+  const pmSources = selectedSources.filter((s) => s === "JIRA" || s === "LINEAR");
 
   const projectsQuery = useQuery({
     ...trpc.onboardingImport.fetchProjects.queryOptions({
@@ -289,14 +258,9 @@ export function ProjectImportStep({
   if (projects.length === 0 && pmSources.length === 0) {
     return (
       <div className="flex flex-col items-center gap-4 py-16">
-        <FolderKanban
-          className="size-12 text-muted-foreground"
-          aria-hidden="true"
-        />
+        <FolderKanban className="size-12 text-muted-foreground" aria-hidden="true" />
         <h3 className="text-lg font-semibold">{t("emptyHeading")}</h3>
-        <p className="max-w-md text-center text-sm text-muted-foreground">
-          {t("emptyBody")}
-        </p>
+        <p className="max-w-md text-center text-sm text-muted-foreground">{t("emptyBody")}</p>
       </div>
     );
   }
@@ -305,9 +269,7 @@ export function ProjectImportStep({
     <div className="space-y-6">
       {/* Heading */}
       <div>
-        <h2 className="font-display text-xl font-semibold leading-[1.2]">
-          {t("heading")}
-        </h2>
+        <h2 className="font-display text-xl font-semibold leading-[1.2]">{t("heading")}</h2>
         <p className="mt-1 text-sm text-muted-foreground">{t("subtitle")}</p>
       </div>
 

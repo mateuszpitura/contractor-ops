@@ -1,0 +1,15 @@
+# Gitleaks config — https://github.com/gitleaks/gitleaks
+# Used by scripts/security-scan.sh and CI (gitleaks-action reads repo root).
+
+title = "contractor-ops"
+
+[extend]
+# Use default ruleset
+useDefault = true
+
+[allowlist]
+description = "Known false positives and non-app paths (see SECURITY-AUDIT.md)"
+paths = [
+  # Local Claude / agent metadata — not production application source
+  '''^\.claude/''',
+]

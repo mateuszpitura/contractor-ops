@@ -1,17 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Package, RotateCcw } from "lucide-react";
-import { toast } from "sonner";
-import { useTranslations } from "next-intl";
 import { format } from "date-fns";
-
-import { trpc } from "@/trpc/init";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Loader2, Package, RotateCcw } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useState } from "react";
+import { toast } from "sonner";
+import { EquipmentStatusBadge } from "@/components/equipment/equipment-status-badge";
+import { EquipmentTypeIcon } from "@/components/equipment/equipment-type-icon";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,8 +18,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { EquipmentTypeIcon } from "@/components/equipment/equipment-type-icon";
-import { EquipmentStatusBadge } from "@/components/equipment/equipment-status-badge";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { trpc } from "@/trpc/init";
 import { PortalReturnFlow } from "./portal-return-flow";
 
 // ---------------------------------------------------------------------------
@@ -63,9 +62,7 @@ export function PortalEquipmentTab() {
     } | null;
   }>;
 
-  const returnStatusQuery = useQuery(
-    trpc.portal.getReturnStatus.queryOptions(),
-  );
+  const returnStatusQuery = useQuery(trpc.portal.getReturnStatus.queryOptions());
   const returnRequest = returnStatusQuery.data as unknown as {
     id: string;
     status: string;
@@ -122,12 +119,8 @@ export function PortalEquipmentTab() {
         <h1 className="text-xl font-semibold">{t("title")}</h1>
         <div className="flex min-h-[300px] flex-col items-center justify-center text-center">
           <Package className="h-12 w-12 text-muted-foreground" />
-          <h3 className="mt-4 font-display text-[20px] font-semibold">
-            {t("emptyTitle")}
-          </h3>
-          <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-            {t("emptyDescription")}
-          </p>
+          <h3 className="mt-4 font-display text-[20px] font-semibold">{t("emptyTitle")}</h3>
+          <p className="mt-2 max-w-sm text-sm text-muted-foreground">{t("emptyDescription")}</p>
         </div>
       </div>
     );
@@ -138,17 +131,11 @@ export function PortalEquipmentTab() {
   // -------------------------------------------------------------------------
 
   const canReturn = equipment.some(
-    (item) =>
-      item.equipment.status === "ASSIGNED" ||
-      item.equipment.status === "DELIVERED",
+    (item) => item.equipment.status === "ASSIGNED" || item.equipment.status === "DELIVERED",
   );
 
   const returnableItems = equipment
-    .filter(
-      (item) =>
-        item.equipment.status === "ASSIGNED" ||
-        item.equipment.status === "DELIVERED",
-    )
+    .filter((item) => item.equipment.status === "ASSIGNED" || item.equipment.status === "DELIVERED")
     .map((item) => ({
       name: item.equipment.name,
       serialNumber: item.equipment.serialNumber,
@@ -156,8 +143,7 @@ export function PortalEquipmentTab() {
 
   const hasActiveReturn =
     returnRequest &&
-    (returnRequest.status === "PENDING_APPROVAL" ||
-      returnRequest.status === "SHIPMENT_CREATED");
+    (returnRequest.status === "PENDING_APPROVAL" || returnRequest.status === "SHIPMENT_CREATED");
 
   // -------------------------------------------------------------------------
   // Render
@@ -180,11 +166,7 @@ export function PortalEquipmentTab() {
         <div className="rounded-md border-s-4 border-warning bg-warning/10 p-4">
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium">{t("pendingApproval")}</p>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCancelDialogOpen(true)}
-            >
+            <Button variant="outline" size="sm" onClick={() => setCancelDialogOpen(true)}>
               {t("cancelReturn")}
             </Button>
           </div>
@@ -195,10 +177,7 @@ export function PortalEquipmentTab() {
         <div className="rounded-md border-s-4 border-primary bg-primary/10 p-4">
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium">{t("returnApproved")}</p>
-            <Button
-              size="sm"
-              onClick={() => setReturnFlowOpen(true)}
-            >
+            <Button size="sm" onClick={() => setReturnFlowOpen(true)}>
               {t("viewLabel")}
             </Button>
           </div>
@@ -210,30 +189,20 @@ export function PortalEquipmentTab() {
         {equipment.map((item) => (
           <Card key={item.assignmentId}>
             <CardContent className="flex items-center gap-4 p-4">
-              <EquipmentTypeIcon
-                type={item.equipment.type}
-                className="h-6 w-6"
-              />
+              <EquipmentTypeIcon type={item.equipment.type} className="h-6 w-6" />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">
-                    {item.equipment.name}
-                  </span>
+                  <span className="text-sm font-medium">{item.equipment.name}</span>
                   <EquipmentStatusBadge status={item.equipment.status} />
                 </div>
                 <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
                   {item.equipment.serialNumber && (
-                    <span className="font-mono">
-                      {item.equipment.serialNumber}
-                    </span>
+                    <span className="font-mono">{item.equipment.serialNumber}</span>
                   )}
                   {item.latestShipment?.deliveredAt && (
                     <span>
                       {t("deliveredOn", {
-                        date: format(
-                          new Date(item.latestShipment.deliveredAt),
-                          "MMM d, yyyy",
-                        ),
+                        date: format(new Date(item.latestShipment.deliveredAt), "MMM d, yyyy"),
                       })}
                     </span>
                   )}
@@ -264,12 +233,8 @@ export function PortalEquipmentTab() {
       <AlertDialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              {tReturn("cancelConfirmTitle")}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {tReturn("cancelConfirmDescription")}
-            </AlertDialogDescription>
+            <AlertDialogTitle>{tReturn("cancelConfirmTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>{tReturn("cancelConfirmDescription")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={cancelMutation.isPending}>
@@ -284,9 +249,7 @@ export function PortalEquipmentTab() {
               }}
               disabled={cancelMutation.isPending}
             >
-              {cancelMutation.isPending && (
-                <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
-              )}
+              {cancelMutation.isPending && <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />}
               {tReturn("cancelConfirmTitle")}
             </AlertDialogAction>
           </AlertDialogFooter>

@@ -20,21 +20,11 @@ const documentTypeEnum = z.enum([
   "OTHER",
 ]);
 
-const documentStatusEnum = z.enum([
-  "ACTIVE",
-  "SUPERSEDED",
-  "EXPIRED",
-  "ARCHIVED",
-]);
+const documentStatusEnum = z.enum(["ACTIVE", "SUPERSEDED", "EXPIRED", "ARCHIVED"]);
 
 const documentLinkEntityTypeEnum = z.enum(["CONTRACTOR", "CONTRACT"]);
 
-const documentLinkRoleEnum = z.enum([
-  "PRIMARY",
-  "SUPPORTING",
-  "GENERATED_OUTPUT",
-  "SIGNED_COPY",
-]);
+const documentLinkRoleEnum = z.enum(["PRIMARY", "SUPPORTING", "GENERATED_OUTPUT", "SIGNED_COPY"]);
 
 /** Maximum allowed file size: 25 MB */
 const MAX_FILE_SIZE_BYTES = 25 * 1024 * 1024;
@@ -61,9 +51,7 @@ export const documentRequestUploadSchema = z.object({
   linkRole: documentLinkRoleEnum.default("PRIMARY"),
 });
 
-export type DocumentRequestUploadInput = z.infer<
-  typeof documentRequestUploadSchema
->;
+export type DocumentRequestUploadInput = z.infer<typeof documentRequestUploadSchema>;
 
 /**
  * Schema for confirming that a file was uploaded to R2.
@@ -73,9 +61,7 @@ export const documentConfirmUploadSchema = z.object({
   documentId: z.string().min(1, "Document ID is required"),
 });
 
-export type DocumentConfirmUploadInput = z.infer<
-  typeof documentConfirmUploadSchema
->;
+export type DocumentConfirmUploadInput = z.infer<typeof documentConfirmUploadSchema>;
 
 /**
  * Schema for linking a document to a contractor or contract entity.
@@ -118,6 +104,4 @@ export const documentVersionUploadSchema = z.object({
     .max(MAX_FILE_SIZE_BYTES, "File exceeds 25 MB limit"),
 });
 
-export type DocumentVersionUploadInput = z.infer<
-  typeof documentVersionUploadSchema
->;
+export type DocumentVersionUploadInput = z.infer<typeof documentVersionUploadSchema>;

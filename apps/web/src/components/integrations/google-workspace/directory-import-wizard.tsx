@@ -1,31 +1,22 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import type { DirectoryRole } from "@contractor-ops/validators";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { AlertTriangle, Check } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Check, AlertTriangle } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
-
-import { trpc } from "@/trpc/init";
 import { FeatureGate } from "@/components/billing/feature-gate";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-
+import { trpc } from "@/trpc/init";
+import type { DirectoryUser } from "./directory-preview-table";
+import { DirectoryPreviewTable } from "./directory-preview-table";
 import { DirectorySummaryBar } from "./directory-summary-bar";
-import {
-  DirectoryPreviewTable,
-  type DirectoryUser,
-} from "./directory-preview-table";
-import { RoleAssignmentControls, ROLE_LABELS } from "./role-assignment-controls";
 import { GroupRoleMappingStep } from "./group-role-mapping-step";
 import { ImportConfirmStep } from "./import-confirm-step";
-import type { DirectoryRole } from "@contractor-ops/validators";
+import { ROLE_LABELS, RoleAssignmentControls } from "./role-assignment-controls";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -67,9 +58,7 @@ function StepIndicator({
             }`}
             aria-current={isCurrent ? "step" : undefined}
           >
-            {isCompleted && (
-              <Check className="size-3.5" aria-hidden="true" />
-            )}
+            {isCompleted && <Check className="size-3.5" aria-hidden="true" />}
             <span>
               {step}. {label}
             </span>
@@ -84,10 +73,7 @@ function StepIndicator({
 // DirectoryImportWizard
 // ---------------------------------------------------------------------------
 
-export function DirectoryImportWizard({
-  open,
-  onOpenChange,
-}: DirectoryImportWizardProps) {
+export function DirectoryImportWizard({ open, onOpenChange }: DirectoryImportWizardProps) {
   const t = useTranslations("GoogleWorkspace.import");
   const queryClient = useQueryClient();
 
@@ -95,9 +81,7 @@ export function DirectoryImportWizard({
   const [step, setStep] = useState<WizardStep>(1);
   const [selectedEmails, setSelectedEmails] = useState<Set<string>>(new Set());
   const [defaultRole, setDefaultRole] = useState<DirectoryRole>("readonly");
-  const [groupMappings, setGroupMappings] = useState<
-    Map<string, DirectoryRole>
-  >(new Map());
+  const [groupMappings, setGroupMappings] = useState<Map<string, DirectoryRole>>(new Map());
 
   // Reset when dialog closes
   const handleOpenChange = useCallback(
@@ -129,9 +113,7 @@ export function DirectoryImportWizard({
   // Step 2: Group listing (mutation fired when entering step 2)
   // ---------------------------------------------------------------------------
 
-  const listGroupsMutation = useMutation(
-    trpc.googleWorkspace.listUserGroups.mutationOptions(),
-  );
+  const listGroupsMutation = useMutation(trpc.googleWorkspace.listUserGroups.mutationOptions());
 
   const handleGoToStep2 = useCallback(() => {
     const emails = Array.from(selectedEmails);
@@ -141,16 +123,13 @@ export function DirectoryImportWizard({
 
   const groups = listGroupsMutation.data?.groups ?? [];
 
-  const handleGroupMappingChange = useCallback(
-    (groupEmail: string, role: DirectoryRole) => {
-      setGroupMappings((prev) => {
-        const next = new Map(prev);
-        next.set(groupEmail, role);
-        return next;
-      });
-    },
-    [],
-  );
+  const handleGroupMappingChange = useCallback((groupEmail: string, role: DirectoryRole) => {
+    setGroupMappings((prev) => {
+      const next = new Map(prev);
+      next.set(groupEmail, role);
+      return next;
+    });
+  }, []);
 
   // ---------------------------------------------------------------------------
   // Step 3: Compute role breakdown
@@ -253,8 +232,7 @@ export function DirectoryImportWizard({
     const groupRoleMappingsPayload = Array.from(groupMappings.entries()).map(
       ([groupEmail, role]) => ({
         groupEmail,
-        groupName:
-          groups.find((g) => g.email === groupEmail)?.name ?? groupEmail,
+        groupName: groups.find((g) => g.email === groupEmail)?.name ?? groupEmail,
         role,
       }),
     );
@@ -266,14 +244,7 @@ export function DirectoryImportWizard({
       userRoleOverrides: {},
       userGroupMemberships,
     });
-  }, [
-    selectedUsers,
-    defaultRole,
-    groupMappings,
-    groups,
-    userGroupMemberships,
-    importMutation,
-  ]);
+  }, [selectedUsers, defaultRole, groupMappings, groups, userGroupMemberships, importMutation]);
 
   // ---------------------------------------------------------------------------
   // Steps config
@@ -291,135 +262,119 @@ export function DirectoryImportWizard({
 
   return (
     <FeatureGate requiredTier="Pro" featureName="Google Workspace directory import">
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto sm:max-w-3xl">
-        <DialogHeader>
-          <DialogTitle>{t("title")}</DialogTitle>
-        </DialogHeader>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto sm:max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>{t("title")}</DialogTitle>
+          </DialogHeader>
 
-        <StepIndicator currentStep={step} steps={stepsConfig} />
+          <StepIndicator currentStep={step} steps={stepsConfig} />
 
-        {/* Step 1: Preview directory */}
-        {step === 1 && (
-          <div className="space-y-4">
-            {directoryQuery.isLoading && (
-              <div className="space-y-3">
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-8 w-64" />
-                <Skeleton className="h-64 w-full" />
-              </div>
-            )}
+          {/* Step 1: Preview directory */}
+          {step === 1 && (
+            <div className="space-y-4">
+              {directoryQuery.isLoading && (
+                <div className="space-y-3">
+                  <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-8 w-64" />
+                  <Skeleton className="h-64 w-full" />
+                </div>
+              )}
 
-            {directoryQuery.isError && (
-              <div className="flex items-center gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-4">
-                <AlertTriangle
-                  className="size-5 text-destructive"
-                  aria-hidden="true"
-                />
-                <p className="text-sm text-destructive">
-                  {t("fetchError")}
-                </p>
-              </div>
-            )}
+              {directoryQuery.isError && (
+                <div className="flex items-center gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-4">
+                  <AlertTriangle className="size-5 text-destructive" aria-hidden="true" />
+                  <p className="text-sm text-destructive">{t("fetchError")}</p>
+                </div>
+              )}
 
-            {directoryData && stats && (
-              <>
-                {stats.total === 0 ? (
-                  <div className="py-8 text-center">
-                    <h3 className="text-lg font-semibold">
-                      {t("emptyNoUsers")}
-                    </h3>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {t("emptyNoUsersBody")}
-                    </p>
-                  </div>
-                ) : stats.new === 0 ? (
-                  <div className="py-8 text-center">
-                    <h3 className="text-lg font-semibold">
-                      {t("emptyAllImported")}
-                    </h3>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {t("emptyAllImportedBody")}
-                    </p>
-                  </div>
-                ) : (
-                  <>
-                    <DirectorySummaryBar
-                      total={stats.total}
-                      alreadyImported={stats.alreadyImported}
-                      newUsers={stats.new}
-                      selected={selectedEmails.size}
-                    />
+              {directoryData && stats && (
+                <>
+                  {stats.total === 0 ? (
+                    <div className="py-8 text-center">
+                      <h3 className="text-lg font-semibold">{t("emptyNoUsers")}</h3>
+                      <p className="mt-1 text-sm text-muted-foreground">{t("emptyNoUsersBody")}</p>
+                    </div>
+                  ) : stats.new === 0 ? (
+                    <div className="py-8 text-center">
+                      <h3 className="text-lg font-semibold">{t("emptyAllImported")}</h3>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {t("emptyAllImportedBody")}
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      <DirectorySummaryBar
+                        total={stats.total}
+                        alreadyImported={stats.alreadyImported}
+                        newUsers={stats.new}
+                        selected={selectedEmails.size}
+                      />
 
-                    <DirectoryPreviewTable
-                      users={users}
-                      selectedEmails={selectedEmails}
-                      onSelectionChange={setSelectedEmails}
-                    />
-                  </>
-                )}
+                      <DirectoryPreviewTable
+                        users={users}
+                        selectedEmails={selectedEmails}
+                        onSelectionChange={setSelectedEmails}
+                      />
+                    </>
+                  )}
 
-                {stats.new > 0 && (
-                  <div className="flex justify-end">
-                    <Button
-                      onClick={handleGoToStep2}
-                      disabled={selectedEmails.size === 0}
-                    >
-                      {t("nextRoles")}
-                    </Button>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        )}
-
-        {/* Step 2: Role assignment + Group mapping */}
-        {step === 2 && (
-          <div className="space-y-6">
-            <RoleAssignmentControls
-              defaultRole={defaultRole}
-              onDefaultRoleChange={setDefaultRole}
-            />
-
-            {listGroupsMutation.isPending ? (
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-48" />
-                <Skeleton className="h-16 w-full" />
-                <Skeleton className="h-16 w-full" />
-              </div>
-            ) : (
-              <GroupRoleMappingStep
-                groups={groups}
-                mappings={groupMappings}
-                onMappingChange={handleGroupMappingChange}
-                defaultRole={defaultRole}
-              />
-            )}
-
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setStep(1)}>
-                {t("back")}
-              </Button>
-              <Button onClick={() => setStep(3)}>
-                {t("nextReview")}
-              </Button>
+                  {stats.new > 0 && (
+                    <div className="flex justify-end">
+                      <Button onClick={handleGoToStep2} disabled={selectedEmails.size === 0}>
+                        {t("nextRoles")}
+                      </Button>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Step 3: Confirm import */}
-        {step === 3 && (
-          <ImportConfirmStep
-            userCount={selectedUsers.length}
-            roleBreakdown={roleBreakdown}
-            onConfirm={handleConfirmImport}
-            onBack={() => setStep(2)}
-            isImporting={importMutation.isPending}
-          />
-        )}
-      </DialogContent>
-    </Dialog>
+          {/* Step 2: Role assignment + Group mapping */}
+          {step === 2 && (
+            <div className="space-y-6">
+              <RoleAssignmentControls
+                defaultRole={defaultRole}
+                onDefaultRoleChange={setDefaultRole}
+              />
+
+              {listGroupsMutation.isPending ? (
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-48" />
+                  <Skeleton className="h-16 w-full" />
+                  <Skeleton className="h-16 w-full" />
+                </div>
+              ) : (
+                <GroupRoleMappingStep
+                  groups={groups}
+                  mappings={groupMappings}
+                  onMappingChange={handleGroupMappingChange}
+                  defaultRole={defaultRole}
+                />
+              )}
+
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setStep(1)}>
+                  {t("back")}
+                </Button>
+                <Button onClick={() => setStep(3)}>{t("nextReview")}</Button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 3: Confirm import */}
+          {step === 3 && (
+            <ImportConfirmStep
+              userCount={selectedUsers.length}
+              roleBreakdown={roleBreakdown}
+              onConfirm={handleConfirmImport}
+              onBack={() => setStep(2)}
+              isImporting={importMutation.isPending}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </FeatureGate>
   );
 }

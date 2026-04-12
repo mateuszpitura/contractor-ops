@@ -1,13 +1,7 @@
 "use client";
 
+import { Clock, FilePlus, FileText, RefreshCw, Upload } from "lucide-react";
 import { useTranslations } from "next-intl";
-import {
-  FileText,
-  FilePlus,
-  RefreshCw,
-  Clock,
-  Upload,
-} from "lucide-react";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -72,9 +66,7 @@ export function ActivityTab({ contract }: ActivityTabProps) {
 
   // Contract created
   const createdAt =
-    typeof contract.createdAt === "string"
-      ? new Date(contract.createdAt)
-      : contract.createdAt;
+    typeof contract.createdAt === "string" ? new Date(contract.createdAt) : contract.createdAt;
   events.push({
     icon: FileText,
     text: t("contractCreated"),
@@ -83,9 +75,7 @@ export function ActivityTab({ contract }: ActivityTabProps) {
 
   // Status changed (if updated differs from created significantly)
   const updatedAt =
-    typeof contract.updatedAt === "string"
-      ? new Date(contract.updatedAt)
-      : contract.updatedAt;
+    typeof contract.updatedAt === "string" ? new Date(contract.updatedAt) : contract.updatedAt;
   if (Math.abs(updatedAt.getTime() - createdAt.getTime()) > 60000) {
     events.push({
       icon: RefreshCw,
@@ -97,9 +87,7 @@ export function ActivityTab({ contract }: ActivityTabProps) {
   // Amendments
   for (const amendment of contract.amendments ?? []) {
     const amendmentDate =
-      typeof amendment.createdAt === "string"
-        ? new Date(amendment.createdAt)
-        : amendment.createdAt;
+      typeof amendment.createdAt === "string" ? new Date(amendment.createdAt) : amendment.createdAt;
     events.push({
       icon: FilePlus,
       text: t("amendmentAdded", { title: amendment.title }),
@@ -141,9 +129,7 @@ export function ActivityTab({ contract }: ActivityTabProps) {
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm">{event.text}</p>
-              <p className="text-xs text-muted-foreground">
-                {formatRelativeTime(event.time)}
-              </p>
+              <p className="text-xs text-muted-foreground">{formatRelativeTime(event.time)}</p>
             </div>
           </div>
         );

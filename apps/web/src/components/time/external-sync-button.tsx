@@ -1,23 +1,14 @@
 "use client";
 
+import { endOfISOWeek, format, startOfISOWeek } from "date-fns";
+import { CalendarDays, Clock, Loader2, Ticket } from "lucide-react";
 import { useState } from "react";
-import { Clock, Ticket, Loader2, CalendarDays } from "lucide-react";
-import { format, startOfISOWeek, endOfISOWeek } from "date-fns";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Label } from "@/components/ui/label";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 // ---------------------------------------------------------------------------
@@ -27,10 +18,7 @@ import { cn } from "@/lib/utils";
 interface ExternalSyncButtonProps {
   provider: "CLOCKIFY" | "JIRA";
   connected: boolean;
-  onSync: (
-    startDate: string,
-    endDate: string,
-  ) => Promise<{ imported: number; skipped: number }>;
+  onSync: (startDate: string, endDate: string) => Promise<{ imported: number; skipped: number }>;
   isSyncing: boolean;
 }
 
@@ -79,24 +67,15 @@ export function ExternalSyncButton({
   const handleImport = async () => {
     setPopoverOpen(false);
     try {
-      const result = await onSync(
-        format(fromDate, "yyyy-MM-dd"),
-        format(toDate, "yyyy-MM-dd"),
-      );
+      const result = await onSync(format(fromDate, "yyyy-MM-dd"), format(toDate, "yyyy-MM-dd"));
 
       if (result.imported > 0) {
-        toast.success(
-          `${result.imported} entries imported from ${config.label}`,
-        );
+        toast.success(`${result.imported} entries imported from ${config.label}`);
       } else {
-        toast.info(
-          `No entries found in ${config.label} for the selected period`,
-        );
+        toast.info(`No entries found in ${config.label} for the selected period`);
       }
     } catch {
-      toast.error(
-        `Failed to import from ${config.label}. Check your connection in Settings.`,
-      );
+      toast.error(`Failed to import from ${config.label}. Check your connection in Settings.`);
     }
   };
 
@@ -113,10 +92,7 @@ export function ExternalSyncButton({
             </span>
           </TooltipTrigger>
           <TooltipContent>
-            <p>
-              Connect {config.label} in Settings &gt; Integrations to import
-              time entries
-            </p>
+            <p>Connect {config.label} in Settings &gt; Integrations to import time entries</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -142,23 +118,14 @@ export function ExternalSyncButton({
       </PopoverTrigger>
       <PopoverContent className="w-80" align="start">
         <div className="space-y-4">
-          <h4 className="text-sm font-semibold">
-            Import from {config.label}
-          </h4>
+          <h4 className="text-sm font-semibold">Import from {config.label}</h4>
 
           {/* From date */}
           <div className="space-y-1.5">
             <Label className="text-xs">From</Label>
-            <Popover
-              open={fromCalendarOpen}
-              onOpenChange={setFromCalendarOpen}
-            >
+            <Popover open={fromCalendarOpen} onOpenChange={setFromCalendarOpen}>
               <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full justify-start font-normal"
-                >
+                <Button variant="outline" size="sm" className="w-full justify-start font-normal">
                   <CalendarDays className="me-2 h-3.5 w-3.5" />
                   {format(fromDate, "MMM d, yyyy")}
                 </Button>
@@ -182,11 +149,7 @@ export function ExternalSyncButton({
             <Label className="text-xs">To</Label>
             <Popover open={toCalendarOpen} onOpenChange={setToCalendarOpen}>
               <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full justify-start font-normal"
-                >
+                <Button variant="outline" size="sm" className="w-full justify-start font-normal">
                   <CalendarDays className="me-2 h-3.5 w-3.5" />
                   {format(toDate, "MMM d, yyyy")}
                 </Button>

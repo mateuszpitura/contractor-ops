@@ -1,6 +1,6 @@
-import { WebClient } from "@slack/web-api";
 import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 import { prisma } from "@contractor-ops/db";
+import { WebClient } from "@slack/web-api";
 
 // ---------------------------------------------------------------------------
 // Token Encryption / Decryption (AES-256-GCM)
@@ -67,9 +67,7 @@ export function decryptToken(encrypted: string): string {
  * Returns a Slack WebClient for the given organization, or null if no
  * active Slack integration is configured.
  */
-export async function getSlackClient(
-  organizationId: string,
-): Promise<WebClient | null> {
+export async function getSlackClient(organizationId: string): Promise<WebClient | null> {
   const connection = await prisma.integrationConnection.findFirst({
     where: {
       organizationId,
@@ -315,9 +313,7 @@ export async function syncWorkspaceUsers(
 
   const result = await client.users.list({});
   const members = result.members ?? [];
-  const realMembers = members.filter(
-    (m) => !m.is_bot && !m.deleted && m.id !== "USLACKBOT",
-  );
+  const realMembers = members.filter((m) => !m.is_bot && !m.deleted && m.id !== "USLACKBOT");
 
   let matched = 0;
 

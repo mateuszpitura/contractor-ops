@@ -10,10 +10,7 @@ import { z } from "zod";
  */
 export const peppolParticipantIdSchema = z
   .string()
-  .regex(
-    /^0192:\d{15}$/,
-    "Invalid UAE Peppol Participant ID (expected 0192:NNNNNNNNNNNNNNN)",
-  );
+  .regex(/^0192:\d{15}$/, "Invalid UAE Peppol Participant ID (expected 0192:NNNNNNNNNNNNNNN)");
 
 export type PeppolParticipantId = z.infer<typeof peppolParticipantIdSchema>;
 

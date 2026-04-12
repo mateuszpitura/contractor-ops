@@ -4,12 +4,7 @@ import { z } from "zod";
 // Source provider enum
 // ---------------------------------------------------------------------------
 
-export const sourceProviderSchema = z.enum([
-  "JIRA",
-  "LINEAR",
-  "GOOGLE_WORKSPACE",
-  "SLACK",
-]);
+export const sourceProviderSchema = z.enum(["JIRA", "LINEAR", "GOOGLE_WORKSPACE", "SLACK"]);
 
 export type SourceProvider = z.infer<typeof sourceProviderSchema>;
 

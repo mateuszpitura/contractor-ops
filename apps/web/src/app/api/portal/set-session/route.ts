@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { z } from "zod";
 
 // ---------------------------------------------------------------------------
@@ -34,10 +35,7 @@ export async function POST(req: NextRequest) {
     const parsed = setSessionSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Invalid request body" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
     }
 
     const { token, expiresAt } = parsed.data;
@@ -53,9 +51,6 @@ export async function POST(req: NextRequest) {
 
     return response;
   } catch {
-    return NextResponse.json(
-      { error: "Failed to set session" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Failed to set session" }, { status: 500 });
   }
 }

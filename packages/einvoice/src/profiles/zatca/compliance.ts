@@ -2,10 +2,7 @@
 // ZATCA Compliance Status
 // ---------------------------------------------------------------------------
 
-import type {
-  ComplianceStatus,
-  ComplianceState,
-} from "../../types/compliance.js";
+import type { ComplianceState, ComplianceStatus } from "../../types/compliance.js";
 
 /**
  * Data needed to compute ZATCA compliance status.
@@ -33,9 +30,7 @@ export interface ZatcaConnectionData {
  * - suspended: Certificate expired or manually paused
  * - error: Failed state requiring intervention
  */
-export function computeZatcaComplianceStatus(
-  data: ZatcaConnectionData | null,
-): ComplianceStatus {
+export function computeZatcaComplianceStatus(data: ZatcaConnectionData | null): ComplianceStatus {
   if (!data) {
     return {
       profileId: "zatca",
@@ -63,21 +58,13 @@ export function computeZatcaComplianceStatus(
   let state = stateMap[data.status] ?? "error";
 
   // Check for certificate expiry
-  if (
-    state === "active" &&
-    data.certificateExpiresAt &&
-    data.certificateExpiresAt < new Date()
-  ) {
+  if (state === "active" && data.certificateExpiresAt && data.certificateExpiresAt < new Date()) {
     state = "suspended";
   }
 
   // Health score based on submission success rate
-  const total =
-    (data.clearanceCount ?? 0) +
-    (data.reportingCount ?? 0) +
-    (data.failedCount ?? 0);
-  const successful =
-    (data.clearanceCount ?? 0) + (data.reportingCount ?? 0);
+  const total = (data.clearanceCount ?? 0) + (data.reportingCount ?? 0) + (data.failedCount ?? 0);
+  const successful = (data.clearanceCount ?? 0) + (data.reportingCount ?? 0);
   const healthScore =
     total > 0 ? Math.round((successful / total) * 100) : state === "active" ? 100 : 0;
 

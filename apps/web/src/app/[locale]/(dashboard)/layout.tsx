@@ -1,18 +1,16 @@
-import type { ReactNode } from "react";
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
 import { auth } from "@contractor-ops/auth";
 import { prisma } from "@contractor-ops/db";
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import type { ReactNode } from "react";
+import { BillingOverlay } from "@/components/billing/billing-overlay";
+import { BreadcrumbProvider } from "@/components/layout/breadcrumb-context";
+import type { OrgInfo } from "@/components/layout/dashboard-context";
+import { DashboardProvider } from "@/components/layout/dashboard-context";
 import { AppSidebar } from "@/components/layout/sidebar";
 import { TopBar } from "@/components/layout/top-bar";
 import { SearchProvider } from "@/components/search/search-provider";
-import { BreadcrumbProvider } from "@/components/layout/breadcrumb-context";
-import {
-  DashboardProvider,
-  type OrgInfo,
-} from "@/components/layout/dashboard-context";
-import { BillingOverlay } from "@/components/billing/billing-overlay";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 /**
  * Dashboard layout (server component).
@@ -25,11 +23,7 @@ import { BillingOverlay } from "@/components/billing/billing-overlay";
  * 3. Fetches active org info + user role and passes it via DashboardProvider
  *    so client components render immediately without loading flashes.
  */
-export default async function DashboardLayout({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export default async function DashboardLayout({ children }: { children: ReactNode }) {
   const reqHeaders = await headers();
   const session = await auth.api.getSession({ headers: reqHeaders });
 
@@ -79,23 +73,28 @@ export default async function DashboardLayout({
   return (
     <DashboardProvider activeOrg={activeOrg} userRole={userRole}>
       <BreadcrumbProvider>
-      <SearchProvider>
-        <SidebarProvider>
-          {/* Skip to content link — visible on focus for keyboard users */}
-          <a
-            href="#main-content"
-            className="fixed start-4 top-4 z-[100] -translate-y-16 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-lg transition-transform focus:translate-y-0"
-          >
-            Skip to content
-          </a>
-          <AppSidebar />
-          <SidebarInset>
-            <TopBar />
-            <BillingOverlay />
-            <main id="main-content" className="mesh-bg grain-overlay min-w-0 flex-1 overflow-x-hidden p-6">{children}</main>
-          </SidebarInset>
-        </SidebarProvider>
-      </SearchProvider>
+        <SearchProvider>
+          <SidebarProvider>
+            {/* Skip to content link — visible on focus for keyboard users */}
+            <a
+              href="#main-content"
+              className="fixed start-4 top-4 z-[100] -translate-y-16 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-lg transition-transform focus:translate-y-0"
+            >
+              Skip to content
+            </a>
+            <AppSidebar />
+            <SidebarInset>
+              <TopBar />
+              <BillingOverlay />
+              <main
+                id="main-content"
+                className="mesh-bg grain-overlay min-w-0 flex-1 overflow-x-hidden p-6"
+              >
+                {children}
+              </main>
+            </SidebarInset>
+          </SidebarProvider>
+        </SearchProvider>
       </BreadcrumbProvider>
     </DashboardProvider>
   );

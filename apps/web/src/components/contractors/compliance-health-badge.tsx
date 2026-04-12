@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle, AlertTriangle, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle, XCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 type ComplianceHealth = "green" | "yellow" | "red";
@@ -39,18 +39,12 @@ const healthConfig: Record<
  * Compliance health badge pill with icon and translated label.
  * Renders green/yellow/red status with appropriate color and icon.
  */
-export function ComplianceHealthBadge({
-  health,
-  size = "sm",
-}: ComplianceHealthBadgeProps) {
+export function ComplianceHealthBadge({ health, size = "sm" }: ComplianceHealthBadgeProps) {
   const t = useTranslations("Contractors.health");
   const config = healthConfig[health];
   const Icon = config.icon;
 
-  const sizeClasses =
-    size === "sm"
-      ? "px-2 py-0.5 text-xs gap-1"
-      : "px-2.5 py-1 text-sm gap-1.5";
+  const sizeClasses = size === "sm" ? "px-2 py-0.5 text-xs gap-1" : "px-2.5 py-1 text-sm gap-1.5";
 
   return (
     <span

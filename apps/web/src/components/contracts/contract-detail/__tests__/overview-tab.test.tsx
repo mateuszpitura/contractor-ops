@@ -17,7 +17,9 @@ vi.mock("@/trpc/init", () => ({
 
 vi.mock("@/i18n/navigation", () => ({
   Link: ({ children, href, ...props }: any) => (
-    <a href={href} {...props}>{children}</a>
+    <a href={href} {...props}>
+      {children}
+    </a>
   ),
 }));
 
@@ -69,9 +71,7 @@ describe("OverviewTab", () => {
   });
 
   it("renders no contractor message when none linked", () => {
-    render(
-      <OverviewTab contract={{ ...baseContract, contractor: null }} />,
-    );
+    render(<OverviewTab contract={{ ...baseContract, contractor: null }} />);
     // Should show "no contractor" text
     const container = document.querySelector("div");
     expect(container).toBeInTheDocument();
@@ -143,9 +143,7 @@ describe("OverviewTab", () => {
   });
 
   it("renders without end date gracefully", () => {
-    render(
-      <OverviewTab contract={{ ...baseContract, endDate: null, noticePeriodDays: null }} />,
-    );
+    render(<OverviewTab contract={{ ...baseContract, endDate: null, noticePeriodDays: null }} />);
     const container = document.querySelector("div");
     expect(container).toBeInTheDocument();
   });

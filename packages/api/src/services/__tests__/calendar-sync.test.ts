@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
-  syncContractExpiryDeadline,
-  syncApprovalSlaDeadline,
-  syncPaymentDueDeadline,
   createTaskCalendarEvent,
+  syncApprovalSlaDeadline,
+  syncContractExpiryDeadline,
+  syncPaymentDueDeadline,
 } from "../calendar-deadline-sync.js";
 
 vi.mock("../calendar-event-service.js", () => ({
@@ -11,10 +11,7 @@ vi.mock("../calendar-event-service.js", () => ({
   updateCalendarEvent: vi.fn(),
 }));
 
-import {
-  createCalendarEvent,
-  updateCalendarEvent,
-} from "../calendar-event-service.js";
+import { createCalendarEvent, updateCalendarEvent } from "../calendar-event-service.js";
 
 const mockCreateCalendarEvent = vi.mocked(createCalendarEvent);
 const mockUpdateCalendarEvent = vi.mocked(updateCalendarEvent);
@@ -51,9 +48,7 @@ describe("syncContractExpiryDeadline", () => {
     await syncContractExpiryDeadline(mockPrisma, baseInput);
 
     const args = mockCreateCalendarEvent.mock.calls[0]![1] as any;
-    expect(args.summary).toBe(
-      "[Contractor Ops] Contract expiry: Jane Doe - Dev Services",
-    );
+    expect(args.summary).toBe("[Contractor Ops] Contract expiry: Jane Doe - Dev Services");
   });
 
   it("description contains contract name, contractor name, formatted date, and deep link /contracts/{contractId}", async () => {
@@ -122,9 +117,7 @@ describe("syncContractExpiryDeadline", () => {
     expect(mockUpdateCalendarEvent).toHaveBeenCalledTimes(1);
 
     const args = mockUpdateCalendarEvent.mock.calls[0]![1] as any;
-    expect(args.summary).toBe(
-      "[Contractor Ops] Contract expiry: Jane Doe - Dev Services",
-    );
+    expect(args.summary).toBe("[Contractor Ops] Contract expiry: Jane Doe - Dev Services");
     expect(args.organizationId).toBe(ORG_ID);
     expect(args.entityType).toBe("CONTRACT");
     expect(args.entityId).toBe("c-1");
@@ -168,9 +161,7 @@ describe("syncApprovalSlaDeadline", () => {
     });
 
     const args = mockCreateCalendarEvent.mock.calls[0]![1] as any;
-    expect(args.summary).toBe(
-      "[Contractor Ops] Approval deadline: Invoice - INV-2025-001",
-    );
+    expect(args.summary).toBe("[Contractor Ops] Approval deadline: Invoice - INV-2025-001");
   });
 
   it("description contains deep link to /approvals (not entity-specific)", async () => {
@@ -225,9 +216,7 @@ describe("syncPaymentDueDeadline", () => {
     });
 
     const args = mockCreateCalendarEvent.mock.calls[0]![1] as any;
-    expect(args.summary).toBe(
-      "[Contractor Ops] Payment due: Acme Corp - INV-2025-042",
-    );
+    expect(args.summary).toBe("[Contractor Ops] Payment due: Acme Corp - INV-2025-042");
   });
 
   it("description contains deep link /invoices/{invoiceId}", async () => {

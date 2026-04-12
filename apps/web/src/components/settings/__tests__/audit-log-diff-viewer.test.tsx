@@ -14,12 +14,7 @@ describe("AuditLogDiffViewer", () => {
   });
 
   it("renders before/after columns for changed fields", () => {
-    render(
-      <AuditLogDiffViewer
-        oldValues={{ name: "Old" }}
-        newValues={{ name: "New" }}
-      />,
-    );
+    render(<AuditLogDiffViewer oldValues={{ name: "Old" }} newValues={{ name: "New" }} />);
     expect(screen.getByText("Before")).toBeInTheDocument();
     expect(screen.getByText("After")).toBeInTheDocument();
     expect(screen.getByText("Old")).toBeInTheDocument();
@@ -28,22 +23,14 @@ describe("AuditLogDiffViewer", () => {
 
   it("displays field keys as labels", () => {
     render(
-      <AuditLogDiffViewer
-        oldValues={{ email: "a@b.com" }}
-        newValues={{ email: "c@d.com" }}
-      />,
+      <AuditLogDiffViewer oldValues={{ email: "a@b.com" }} newValues={{ email: "c@d.com" }} />,
     );
     const fieldLabels = screen.getAllByText(/email:/i);
     expect(fieldLabels.length).toBe(2);
   });
 
   it("handles null old values with non-null new values", () => {
-    render(
-      <AuditLogDiffViewer
-        oldValues={null}
-        newValues={{ status: "active" }}
-      />,
-    );
+    render(<AuditLogDiffViewer oldValues={null} newValues={{ status: "active" }} />);
     expect(screen.getByText("Before")).toBeInTheDocument();
     expect(screen.getByText("null")).toBeInTheDocument();
     expect(screen.getByText("active")).toBeInTheDocument();

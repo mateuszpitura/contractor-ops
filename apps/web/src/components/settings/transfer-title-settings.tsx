@@ -1,24 +1,17 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Loader2, Save } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Loader2, Save } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Schema
@@ -61,8 +54,7 @@ export function TransferTitleSettings() {
   const orgData = settingsQuery.data as any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const settingsJson = (orgData?.metadata as any)?.settingsJson ?? {};
-  const currentTemplate: string =
-    settingsJson.paymentTransferTitleTemplate ?? "{invoice_number}";
+  const currentTemplate: string = settingsJson.paymentTransferTitleTemplate ?? "{invoice_number}";
 
   const {
     register,
@@ -131,26 +123,16 @@ export function TransferTitleSettings() {
               placeholder={t("templatePlaceholder")}
               {...register("template")}
             />
-            <p className="text-xs text-muted-foreground">
-              {t("templateHelper")}
-            </p>
+            <p className="text-xs text-muted-foreground">{t("templateHelper")}</p>
             {errors.template && (
-              <p className="text-xs text-destructive">
-                {errors.template.message}
-              </p>
+              <p className="text-xs text-destructive">{errors.template.message}</p>
             )}
           </div>
 
           {/* Live preview */}
-          <p className="text-xs text-muted-foreground">
-            {t("preview", { value: preview })}
-          </p>
+          <p className="text-xs text-muted-foreground">{t("preview", { value: preview })}</p>
 
-          <Button
-            type="submit"
-            size="sm"
-            disabled={!isDirty || updateMutation.isPending}
-          >
+          <Button type="submit" size="sm" disabled={!isDirty || updateMutation.isPending}>
             {updateMutation.isPending ? (
               <Loader2 className="me-1.5 size-3.5 animate-spin" />
             ) : (

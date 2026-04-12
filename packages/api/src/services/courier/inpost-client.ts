@@ -68,13 +68,9 @@ export class InPostClient implements CourierClient {
    *
    * POST /v1/organizations/{orgId}/shipments
    */
-  async createShipment(
-    params: ShipmentParams,
-  ): Promise<CourierShipmentResult> {
+  async createShipment(params: ShipmentParams): Promise<CourierShipmentResult> {
     if (!("targetPoint" in params)) {
-      throw new Error(
-        "[InPostClient] createShipment requires targetPoint (Paczkomat ID)",
-      );
+      throw new Error("[InPostClient] createShipment requires targetPoint (Paczkomat ID)");
     }
     const inpostParams = params as InPostShipmentParams;
 
@@ -125,13 +121,9 @@ export class InPostClient implements CourierClient {
    *
    * GET /v1/shipments/{id}/label
    */
-  async getLabel(
-    shipmentExternalId: string,
-    format: LabelFormat = "pdf",
-  ): Promise<Buffer> {
+  async getLabel(shipmentExternalId: string, format: LabelFormat = "pdf"): Promise<Buffer> {
     const url = `${this.baseUrl}/v1/shipments/${shipmentExternalId}/label`;
-    const accept =
-      format === "zpl" ? "application/zpl" : "application/pdf";
+    const accept = format === "zpl" ? "application/zpl" : "application/pdf";
 
     const response = await globalThis.fetch(url, {
       method: "GET",
@@ -143,9 +135,7 @@ export class InPostClient implements CourierClient {
 
     if (!response.ok) {
       const errorBody = await response.text().catch(() => "unknown");
-      throw new Error(
-        `[InPostClient] getLabel failed: HTTP ${response.status} — ${errorBody}`,
-      );
+      throw new Error(`[InPostClient] getLabel failed: HTTP ${response.status} — ${errorBody}`);
     }
 
     const arrayBuffer = await response.arrayBuffer();
@@ -167,9 +157,7 @@ export class InPostClient implements CourierClient {
 
     if (!response.ok) {
       const errorBody = await response.text().catch(() => "unknown");
-      throw new Error(
-        `[InPostClient] getStatus failed: HTTP ${response.status} — ${errorBody}`,
-      );
+      throw new Error(`[InPostClient] getStatus failed: HTTP ${response.status} — ${errorBody}`);
     }
 
     const json = await response.json();

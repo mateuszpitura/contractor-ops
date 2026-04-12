@@ -1,51 +1,50 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { GripVertical, Loader2, Plus, FileText } from "lucide-react";
+import type { DragEndEvent } from "@dnd-kit/core";
 import {
-  DndContext,
   closestCenter,
+  DndContext,
   KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
-  type DragEndEvent,
 } from "@dnd-kit/core";
 import {
+  arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
   useSortable,
   verticalListSortingStrategy,
-  arrayMove,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { FileText, GripVertical, Loader2, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { trpc } from "@/trpc/init";
-import { getAvatarInitials } from "@/lib/avatar-initials";
-import { Button } from "@/components/ui/button";
+import { useCallback, useState } from "react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
-  SelectTrigger,
-  SelectValue,
   SelectContent,
   SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
+import { getAvatarInitials } from "@/lib/avatar-initials";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -74,23 +73,12 @@ type SendForSignatureDialogProps = {
 // Sortable Signer Row
 // ---------------------------------------------------------------------------
 
-function SortableSignerRow({
-  signer,
-  index,
-}: {
-  signer: Signer;
-  index: number;
-}) {
+function SortableSignerRow({ signer, index }: { signer: Signer; index: number }) {
   const tAria = useTranslations("Common.aria");
   const t = useTranslations("ContractDetail.signing.sendDialog");
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: signer.id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: signer.id,
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -156,9 +144,7 @@ export function SendForSignatureDialog({
   // Provider selection
   // ---------------------------------------------------------------------------
 
-  const connectionsQuery = useQuery(
-    trpc.esign.listConnections.queryOptions()
-  );
+  const connectionsQuery = useQuery(trpc.esign.listConnections.queryOptions());
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const esignConnections = ((connectionsQuery.data as any) ?? []) as Array<{
     id: string;
@@ -168,9 +154,7 @@ export function SendForSignatureDialog({
   }>;
 
   const [selectedConnectionId, setSelectedConnectionId] = useState("");
-  const selectedConnection = esignConnections.find(
-    (c) => c.id === selectedConnectionId
-  );
+  const selectedConnection = esignConnections.find((c) => c.id === selectedConnectionId);
 
   // ---------------------------------------------------------------------------
   // Signers with drag reorder
@@ -182,14 +166,14 @@ export function SendForSignatureDialog({
       name: p.name,
       email: p.email,
       role: p.role,
-    }))
+    })),
   );
 
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   );
 
   const handleDragEnd = useCallback((event: DragEndEvent) => {
@@ -231,7 +215,7 @@ export function SendForSignatureDialog({
       onError: () => {
         toast.error(tToast("sendFailed"));
       },
-    })
+    }),
   );
 
   function resetForm() {
@@ -245,7 +229,7 @@ export function SendForSignatureDialog({
         name: p.name,
         email: p.email,
         role: p.role,
-      }))
+      })),
     );
   }
 
@@ -265,8 +249,7 @@ export function SendForSignatureDialog({
       })),
       message: message || undefined,
       expiresInDays: parseInt(expiresInDays, 10),
-      reminderIntervalDays:
-        reminderInterval === "none" ? null : parseInt(reminderInterval, 10),
+      reminderIntervalDays: reminderInterval === "none" ? null : parseInt(reminderInterval, 10),
     });
   }
 
@@ -278,12 +261,8 @@ export function SendForSignatureDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[640px] p-0">
         <DialogHeader className="px-6 pt-6">
-          <DialogTitle className="text-xl font-semibold">
-            {tSend("title")}
-          </DialogTitle>
-          <DialogDescription>
-            {tSend("description")}
-          </DialogDescription>
+          <DialogTitle className="text-xl font-semibold">{tSend("title")}</DialogTitle>
+          <DialogDescription>{tSend("description")}</DialogDescription>
         </DialogHeader>
 
         <ScrollArea className="max-h-[calc(80vh-120px)]">
@@ -304,9 +283,7 @@ export function SendForSignatureDialog({
                   <SelectContent>
                     {esignConnections.map((conn) => (
                       <SelectItem key={conn.id} value={conn.id}>
-                        {conn.provider === "DOCUSIGN"
-                          ? "DocuSign"
-                          : "Autenti"}
+                        {conn.provider === "DOCUSIGN" ? "DocuSign" : "Autenti"}
                       </SelectItem>
                     ))}
                     {esignConnections.length === 0 && (
@@ -334,19 +311,13 @@ export function SendForSignatureDialog({
                   >
                     <div className="space-y-2">
                       {signers.map((signer, index) => (
-                        <SortableSignerRow
-                          key={signer.id}
-                          signer={signer}
-                          index={index}
-                        />
+                        <SortableSignerRow key={signer.id} signer={signer} index={index} />
                       ))}
                     </div>
                   </SortableContext>
                 </DndContext>
               ) : (
-                <p className="text-sm text-muted-foreground">
-                  {tSend("noSigners")}
-                </p>
+                <p className="text-sm text-muted-foreground">{tSend("noSigners")}</p>
               )}
 
               {!signers.some((s) => s.role === "countersigner") && (
@@ -450,10 +421,7 @@ export function SendForSignatureDialog({
           <Button
             onClick={handleSubmit}
             disabled={
-              sendMutation.isPending ||
-              !selectedConnectionId ||
-              signers.length === 0 ||
-              !documentId
+              sendMutation.isPending || !selectedConnectionId || signers.length === 0 || !documentId
             }
           >
             {sendMutation.isPending ? (

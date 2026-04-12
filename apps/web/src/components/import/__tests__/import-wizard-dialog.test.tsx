@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, setup, act } from "@/test/test-utils";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { act, render, screen, setup } from "@/test/test-utils";
 import { ImportWizardDialog } from "../import-wizard-dialog";
 
 // ---------------------------------------------------------------------------
@@ -20,9 +20,18 @@ vi.mock("../step-upload", () => ({
   }) => (
     <div data-testid="step-upload">
       Upload step - entity: {props.entityType}, file: {props.fileName ?? "none"}
-      <button data-testid="select-file" onClick={() => props.onFileSelected("base64data", "test.csv")}>Select</button>
-      <button data-testid="remove-file" onClick={props.onFileRemoved}>Remove</button>
-      <button data-testid="change-entity" onClick={() => props.onEntityTypeChange("contract")}>Change Entity</button>
+      <button
+        data-testid="select-file"
+        onClick={() => props.onFileSelected("base64data", "test.csv")}
+      >
+        Select
+      </button>
+      <button data-testid="remove-file" onClick={props.onFileRemoved}>
+        Remove
+      </button>
+      <button data-testid="change-entity" onClick={() => props.onEntityTypeChange("contract")}>
+        Change Entity
+      </button>
     </div>
   ),
 }));
@@ -41,23 +50,30 @@ vi.mock("../step-duplicates", () => ({
     duplicateActions: Record<string, string>;
     onActionsChange: (actions: Record<string, string>) => void;
   }) => (
-    <div data-testid="step-duplicates">
-      Duplicates step - count: {props.duplicateRows.length}
-    </div>
+    <div data-testid="step-duplicates">Duplicates step - count: {props.duplicateRows.length}</div>
   ),
 }));
 
 vi.mock("../step-confirm", () => ({
   StepConfirm: (props: {
     entityType: string;
-    counts: { newRecords: number; updates: number; skippedDuplicates: number; skippedErrors: number };
+    counts: {
+      newRecords: number;
+      updates: number;
+      skippedDuplicates: number;
+      skippedErrors: number;
+    };
     importResult: unknown;
     isImporting: boolean;
     onImport: () => void;
   }) => (
     <div data-testid="step-confirm">
       Confirm step - new: {props.counts.newRecords}, errors: {props.counts.skippedErrors}
-      {!props.importResult && <button data-testid="trigger-import" onClick={props.onImport}>Import</button>}
+      {!props.importResult && (
+        <button data-testid="trigger-import" onClick={props.onImport}>
+          Import
+        </button>
+      )}
       {props.importResult && <span data-testid="import-done">Done</span>}
     </div>
   ),
@@ -70,9 +86,8 @@ let lastMutationCallbacks: Array<{
 }> = [];
 
 vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
-    "@tanstack/react-query",
-  );
+  const actual =
+    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
   return {
     ...actual,
     useMutation: (opts: Record<string, unknown>) => {
@@ -143,11 +158,7 @@ describe("ImportWizardDialog", () => {
 
   it("accepts defaultEntityType prop", () => {
     render(
-      <ImportWizardDialog
-        open={true}
-        onOpenChange={onOpenChange}
-        defaultEntityType="contract"
-      />,
+      <ImportWizardDialog open={true} onOpenChange={onOpenChange} defaultEntityType="contract" />,
     );
     expect(screen.getByTestId("step-upload")).toHaveTextContent("entity: contract");
   });
@@ -178,18 +189,14 @@ describe("ImportWizardDialog", () => {
   });
 
   it("enables next button after file is selected", async () => {
-    const { user } = setup(
-      <ImportWizardDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    const { user } = setup(<ImportWizardDialog open={true} onOpenChange={onOpenChange} />);
     await user.click(screen.getByTestId("select-file"));
     const nextBtn = screen.getByText("Next");
     expect(nextBtn.closest("button")).not.toBeDisabled();
   });
 
   it("calls parse mutation when next is clicked with file", async () => {
-    const { user } = setup(
-      <ImportWizardDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    const { user } = setup(<ImportWizardDialog open={true} onOpenChange={onOpenChange} />);
     await user.click(screen.getByTestId("select-file"));
     await user.click(screen.getByText("Next"));
     expect(mockMutate).toHaveBeenCalledWith(
@@ -201,26 +208,20 @@ describe("ImportWizardDialog", () => {
   });
 
   it("shows discard label on close button when file selected", async () => {
-    const { user } = setup(
-      <ImportWizardDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    const { user } = setup(<ImportWizardDialog open={true} onOpenChange={onOpenChange} />);
     await user.click(screen.getByTestId("select-file"));
     expect(screen.getByText("Discard")).toBeInTheDocument();
   });
 
   it("shows discard confirmation dialog when closing with data", async () => {
-    const { user } = setup(
-      <ImportWizardDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    const { user } = setup(<ImportWizardDialog open={true} onOpenChange={onOpenChange} />);
     await user.click(screen.getByTestId("select-file"));
     await user.click(screen.getByText("Discard"));
     expect(screen.getByText("Discard import?")).toBeInTheDocument();
   });
 
   it("navigates to mapping step on parse success", async () => {
-    const { user } = setup(
-      <ImportWizardDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    const { user } = setup(<ImportWizardDialog open={true} onOpenChange={onOpenChange} />);
     await user.click(screen.getByTestId("select-file"));
     await user.click(screen.getByText("Next"));
 
@@ -239,9 +240,7 @@ describe("ImportWizardDialog", () => {
   });
 
   it("shows back button on mapping step", async () => {
-    const { user } = setup(
-      <ImportWizardDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    const { user } = setup(<ImportWizardDialog open={true} onOpenChange={onOpenChange} />);
     await user.click(screen.getByTestId("select-file"));
     await user.click(screen.getByText("Next"));
 
@@ -258,9 +257,7 @@ describe("ImportWizardDialog", () => {
   });
 
   it("navigates back from mapping to upload step", async () => {
-    const { user } = setup(
-      <ImportWizardDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    const { user } = setup(<ImportWizardDialog open={true} onOpenChange={onOpenChange} />);
     await user.click(screen.getByTestId("select-file"));
     await user.click(screen.getByText("Next"));
 
@@ -278,9 +275,7 @@ describe("ImportWizardDialog", () => {
   });
 
   it("navigates to preview step on validate success", async () => {
-    const { user } = setup(
-      <ImportWizardDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    const { user } = setup(<ImportWizardDialog open={true} onOpenChange={onOpenChange} />);
     await user.click(screen.getByTestId("select-file"));
     await user.click(screen.getByText("Next"));
 
@@ -311,9 +306,7 @@ describe("ImportWizardDialog", () => {
   });
 
   it("removes file when file removed callback is called", async () => {
-    const { user } = setup(
-      <ImportWizardDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    const { user } = setup(<ImportWizardDialog open={true} onOpenChange={onOpenChange} />);
     await user.click(screen.getByTestId("select-file"));
     expect(screen.getByTestId("step-upload")).toHaveTextContent("file: test.csv");
 
@@ -322,25 +315,19 @@ describe("ImportWizardDialog", () => {
   });
 
   it("changes entity type when entity change callback is called", async () => {
-    const { user } = setup(
-      <ImportWizardDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    const { user } = setup(<ImportWizardDialog open={true} onOpenChange={onOpenChange} />);
     await user.click(screen.getByTestId("change-entity"));
     expect(screen.getByTestId("step-upload")).toHaveTextContent("entity: contract");
   });
 
   it("does not call mutate when next is clicked without file", async () => {
-    const { user } = setup(
-      <ImportWizardDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    const { user } = setup(<ImportWizardDialog open={true} onOpenChange={onOpenChange} />);
     // Next button is disabled, but even if somehow clicked, no mutation
     expect(mockMutate).not.toHaveBeenCalled();
   });
 
   it("discards wizard data when discard is confirmed", async () => {
-    const { user } = setup(
-      <ImportWizardDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    const { user } = setup(<ImportWizardDialog open={true} onOpenChange={onOpenChange} />);
     await user.click(screen.getByTestId("select-file"));
     await user.click(screen.getByText("Discard"));
 
@@ -354,9 +341,7 @@ describe("ImportWizardDialog", () => {
   });
 
   it("navigates from preview to confirm step when no duplicates", async () => {
-    const { user } = setup(
-      <ImportWizardDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    const { user } = setup(<ImportWizardDialog open={true} onOpenChange={onOpenChange} />);
     await user.click(screen.getByTestId("select-file"));
     await user.click(screen.getByText("Next"));
 
@@ -392,9 +377,7 @@ describe("ImportWizardDialog", () => {
   });
 
   it("shows duplicates step when validate returns duplicate rows", async () => {
-    const { user } = setup(
-      <ImportWizardDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    const { user } = setup(<ImportWizardDialog open={true} onOpenChange={onOpenChange} />);
     await user.click(screen.getByTestId("select-file"));
     await user.click(screen.getByText("Next"));
 
@@ -413,7 +396,15 @@ describe("ImportWizardDialog", () => {
       lastMutationCallbacks[1]?.onSuccess?.({
         validRows: [{ rowNumber: 1, data: {}, status: "valid", errors: [] }],
         invalidRows: [],
-        duplicateRows: [{ rowNumber: 2, data: { taxId: "1234567890" }, status: "duplicate", errors: [], duplicateOf: "existing-1" }],
+        duplicateRows: [
+          {
+            rowNumber: 2,
+            data: { taxId: "1234567890" },
+            status: "duplicate",
+            errors: [],
+            duplicateOf: "existing-1",
+          },
+        ],
         totalRows: 2,
         columnMapping: {},
       });
@@ -428,9 +419,7 @@ describe("ImportWizardDialog", () => {
   });
 
   it("navigates back from confirm to preview when no duplicates", async () => {
-    const { user } = setup(
-      <ImportWizardDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    const { user } = setup(<ImportWizardDialog open={true} onOpenChange={onOpenChange} />);
     await user.click(screen.getByTestId("select-file"));
     await user.click(screen.getByText("Next"));
 
@@ -465,9 +454,7 @@ describe("ImportWizardDialog", () => {
   });
 
   it("triggers commit mutation from confirm step", async () => {
-    const { user } = setup(
-      <ImportWizardDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    const { user } = setup(<ImportWizardDialog open={true} onOpenChange={onOpenChange} />);
     await user.click(screen.getByTestId("select-file"));
     await user.click(screen.getByText("Next"));
 
@@ -503,9 +490,7 @@ describe("ImportWizardDialog", () => {
   });
 
   it("hides footer after import result is available", async () => {
-    const { user } = setup(
-      <ImportWizardDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    const { user } = setup(<ImportWizardDialog open={true} onOpenChange={onOpenChange} />);
     await user.click(screen.getByTestId("select-file"));
     await user.click(screen.getByText("Next"));
 
@@ -551,9 +536,7 @@ describe("ImportWizardDialog", () => {
   });
 
   it("navigates from duplicates to confirm step", async () => {
-    const { user } = setup(
-      <ImportWizardDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    const { user } = setup(<ImportWizardDialog open={true} onOpenChange={onOpenChange} />);
     await user.click(screen.getByTestId("select-file"));
     await user.click(screen.getByText("Next"));
 
@@ -572,7 +555,15 @@ describe("ImportWizardDialog", () => {
       lastMutationCallbacks[1]?.onSuccess?.({
         validRows: [{ rowNumber: 1, data: {}, status: "valid", errors: [] }],
         invalidRows: [],
-        duplicateRows: [{ rowNumber: 2, data: { taxId: "1234567890" }, status: "duplicate", errors: [], duplicateOf: "existing-1" }],
+        duplicateRows: [
+          {
+            rowNumber: 2,
+            data: { taxId: "1234567890" },
+            status: "duplicate",
+            errors: [],
+            duplicateOf: "existing-1",
+          },
+        ],
         totalRows: 2,
         columnMapping: {},
       });
@@ -588,9 +579,7 @@ describe("ImportWizardDialog", () => {
   });
 
   it("navigates back from confirm to duplicates when duplicates exist", async () => {
-    const { user } = setup(
-      <ImportWizardDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    const { user } = setup(<ImportWizardDialog open={true} onOpenChange={onOpenChange} />);
     await user.click(screen.getByTestId("select-file"));
     await user.click(screen.getByText("Next"));
 
@@ -609,7 +598,15 @@ describe("ImportWizardDialog", () => {
       lastMutationCallbacks[1]?.onSuccess?.({
         validRows: [{ rowNumber: 1, data: {}, status: "valid", errors: [] }],
         invalidRows: [],
-        duplicateRows: [{ rowNumber: 2, data: { taxId: "111" }, status: "duplicate", errors: [], duplicateOf: "x" }],
+        duplicateRows: [
+          {
+            rowNumber: 2,
+            data: { taxId: "111" },
+            status: "duplicate",
+            errors: [],
+            duplicateOf: "x",
+          },
+        ],
         totalRows: 2,
         columnMapping: {},
       });
@@ -626,9 +623,7 @@ describe("ImportWizardDialog", () => {
   });
 
   it("shows step 4 confirm counts correctly", async () => {
-    const { user } = setup(
-      <ImportWizardDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    const { user } = setup(<ImportWizardDialog open={true} onOpenChange={onOpenChange} />);
     await user.click(screen.getByTestId("select-file"));
     await user.click(screen.getByText("Next"));
 
@@ -649,7 +644,14 @@ describe("ImportWizardDialog", () => {
           { rowNumber: 1, data: {}, status: "valid", errors: [] },
           { rowNumber: 2, data: {}, status: "valid", errors: [] },
         ],
-        invalidRows: [{ rowNumber: 3, data: {}, status: "invalid", errors: [{ field: "email", message: "invalid" }] }],
+        invalidRows: [
+          {
+            rowNumber: 3,
+            data: {},
+            status: "invalid",
+            errors: [{ field: "email", message: "invalid" }],
+          },
+        ],
         duplicateRows: [],
         totalRows: 3,
         columnMapping: {},

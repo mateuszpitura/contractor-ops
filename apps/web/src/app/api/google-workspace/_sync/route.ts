@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import { z } from "zod";
-import { verifySignatureAppRouter } from "@upstash/qstash/nextjs";
-import { registerAllAdapters } from "@contractor-ops/integrations/adapters/register-all";
 import { processDirectorySync } from "@contractor-ops/api/services/google-workspace-sync-orchestrator";
+import { registerAllAdapters } from "@contractor-ops/integrations/adapters/register-all";
+import { verifySignatureAppRouter } from "@upstash/qstash/nextjs";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+import { z } from "zod";
 
 // ---------------------------------------------------------------------------
 // Ensure adapters are registered
@@ -60,10 +60,7 @@ async function handler(request: NextRequest) {
       `[google-workspace/_sync] Failed to sync directory for org ${organizationId}:`,
       error,
     );
-    return NextResponse.json(
-      { error: "Google Workspace directory sync failed" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Google Workspace directory sync failed" }, { status: 500 });
   }
 }
 

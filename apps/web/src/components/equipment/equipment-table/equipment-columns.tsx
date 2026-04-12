@@ -1,7 +1,7 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, Pencil, UserPlus, UserMinus, Truck, Archive } from "lucide-react";
+import { Archive, MoreHorizontal, Pencil, Truck, UserMinus, UserPlus } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,9 +12,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { EquipmentTypeIcon } from "../equipment-type-icon";
-import { EquipmentStatusBadge } from "../equipment-status-badge";
 import { Link } from "@/i18n/navigation";
+import { EquipmentStatusBadge } from "../equipment-status-badge";
+import { EquipmentTypeIcon } from "../equipment-type-icon";
 
 // ---------------------------------------------------------------------------
 // Row type matching tRPC equipment.list response shape
@@ -95,9 +95,7 @@ export function getEquipmentColumns(
       accessorKey: "type",
       header: t("list.columns.type"),
       cell: ({ row }) => (
-        <Badge variant="secondary">
-          {t(`type.${row.original.type}` as string)}
-        </Badge>
+        <Badge variant="secondary">{t(`type.${row.original.type}` as string)}</Badge>
       ),
     },
 
@@ -115,11 +113,7 @@ export function getEquipmentColumns(
       cell: ({ row }) => {
         const assignment = row.original.currentAssignment;
         if (!assignment) {
-          return (
-            <span className="text-muted-foreground text-sm">
-              {t("list.unassigned")}
-            </span>
-          );
+          return <span className="text-muted-foreground text-sm">{t("list.unassigned")}</span>;
         }
         return (
           <Link
@@ -176,9 +170,7 @@ export function getEquipmentColumns(
                 </DropdownMenuItem>
               )}
               {!isRetired && (
-                <DropdownMenuItem
-                  onSelect={() => actions.onCreateShipment(equipment)}
-                >
+                <DropdownMenuItem onSelect={() => actions.onCreateShipment(equipment)}>
                   <Truck className="me-2 h-3.5 w-3.5" />
                   {t("detail.createShipment")}
                 </DropdownMenuItem>

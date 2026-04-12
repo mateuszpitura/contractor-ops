@@ -2,9 +2,8 @@ import { render, screen, setup } from "@/test/test-utils";
 import { CarrierCredentialForm } from "../carrier-credential-form";
 
 vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
-    "@tanstack/react-query",
-  );
+  const actual =
+    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
   return {
     ...actual,
     useQuery: () => ({ isLoading: false, data: [] }),
@@ -158,18 +157,14 @@ describe("CarrierCredentialForm", () => {
 
   // ---- Typing in credential fields ----
   it("allows typing into DPD username field", async () => {
-    const { user, container } = setup(
-      <CarrierCredentialForm carrier="dpd" carrierLabel="DPD" />,
-    );
+    const { user, container } = setup(<CarrierCredentialForm carrier="dpd" carrierLabel="DPD" />);
     const inputs = container.querySelectorAll('input[type="password"]');
     await user.type(inputs[0] as HTMLElement, "my-user");
     expect(inputs[0]).toHaveValue("my-user");
   });
 
   it("allows typing into UPS client ID field", async () => {
-    const { user, container } = setup(
-      <CarrierCredentialForm carrier="ups" carrierLabel="UPS" />,
-    );
+    const { user, container } = setup(<CarrierCredentialForm carrier="ups" carrierLabel="UPS" />);
     const inputs = container.querySelectorAll('input[type="password"]');
     await user.type(inputs[0] as HTMLElement, "client-123");
     expect(inputs[0]).toHaveValue("client-123");
@@ -177,9 +172,7 @@ describe("CarrierCredentialForm", () => {
 
   // ---- Toggle password visibility for multiple fields ----
   it("toggles visibility back to hidden after two clicks", async () => {
-    const { user, container } = setup(
-      <CarrierCredentialForm carrier="dpd" carrierLabel="DPD" />,
-    );
+    const { user, container } = setup(<CarrierCredentialForm carrier="dpd" carrierLabel="DPD" />);
     const showButtons = screen.getAllByLabelText("Show");
     await user.click(showButtons[0]);
     expect(screen.getByLabelText("Hide")).toBeInTheDocument();
@@ -190,9 +183,7 @@ describe("CarrierCredentialForm", () => {
 
   // ---- Sandbox checkbox interaction ----
   it("toggles sandbox checkbox for DPD", async () => {
-    const { user } = setup(
-      <CarrierCredentialForm carrier="dpd" carrierLabel="DPD" />,
-    );
+    const { user } = setup(<CarrierCredentialForm carrier="dpd" carrierLabel="DPD" />);
     const checkbox = screen.getByRole("checkbox");
     await user.click(checkbox);
     // Checkbox should now be checked

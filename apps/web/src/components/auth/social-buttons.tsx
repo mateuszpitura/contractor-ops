@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
-import { Loader2 } from "lucide-react";
 
 /**
  * Social OAuth buttons for Google and Microsoft.
@@ -33,9 +33,7 @@ export function SocialButtons() {
           <span className="w-full border-t" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-card px-2 text-muted-foreground">
-            {t("socialDivider")}
-          </span>
+          <span className="bg-card px-2 text-muted-foreground">{t("socialDivider")}</span>
         </div>
       </div>
 

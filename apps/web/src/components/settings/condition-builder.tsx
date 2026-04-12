@@ -88,9 +88,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
           {/* Field select */}
           <Select
             value={condition.field}
-            onValueChange={(v) =>
-              handleUpdate(index, { field: v as Condition["field"] })
-            }
+            onValueChange={(v) => handleUpdate(index, { field: v as Condition["field"] })}
             items={fieldItems}
           >
             <SelectTrigger className="w-[160px]">
@@ -108,9 +106,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
           {/* Operator select */}
           <Select
             value={condition.operator}
-            onValueChange={(v) =>
-              handleUpdate(index, { operator: v as Condition["operator"] })
-            }
+            onValueChange={(v) => handleUpdate(index, { operator: v as Condition["operator"] })}
             items={operatorItems}
           >
             <SelectTrigger className="w-[140px]">
@@ -164,9 +160,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
         {t("approvals.editor.addCondition")}
       </Button>
 
-      <p className="text-xs text-muted-foreground">
-        {t("approvals.editor.conditionsHelp")}
-      </p>
+      <p className="text-xs text-muted-foreground">{t("approvals.editor.conditionsHelp")}</p>
     </div>
   );
 }

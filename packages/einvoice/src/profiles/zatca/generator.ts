@@ -10,14 +10,10 @@ import type { ZatcaInvoiceType, ZatcaProfileId } from "./types.js";
 // XML Namespaces
 // ---------------------------------------------------------------------------
 
-const UBL_INVOICE_NS =
-  "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2";
-const CBC_NS =
-  "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2";
-const CAC_NS =
-  "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2";
-const EXT_NS =
-  "urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2";
+const UBL_INVOICE_NS = "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2";
+const CBC_NS = "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2";
+const CAC_NS = "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2";
+const EXT_NS = "urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2";
 const SIG_NS = "urn:oasis:names:specification:ubl:schema:xsd:CommonSignatureComponents-2";
 const SAC_NS = "urn:oasis:names:specification:ubl:schema:xsd:SignatureAggregateComponents-2";
 const DS_NS = "http://www.w3.org/2000/09/xmldsig#";
@@ -71,10 +67,7 @@ function extractIssueTime(issueDate: string): string {
 /**
  * Build a UBL party structure for ZATCA.
  */
-function buildParty(
-  party: EInvoice["supplier"],
-  currencyCode: string,
-) {
+function buildParty(party: EInvoice["supplier"], currencyCode: string) {
   return {
     "cac:Party": {
       "cac:PartyIdentification": {
@@ -149,19 +142,14 @@ export function generateZatcaXml(invoice: EInvoice): string {
     },
     "cac:TaxCategory": {
       "cbc:ID": tax.taxCategory,
-      ...(tax.percent != null
-        ? { "cbc:Percent": tax.percent.toString() }
-        : {}),
+      ...(tax.percent != null ? { "cbc:Percent": tax.percent.toString() } : {}),
       "cac:TaxScheme": {
         "cbc:ID": ZATCA_TAX_SCHEME_ID,
       },
     },
   }));
 
-  const totalTaxAmount = invoice.taxBreakdown.reduce(
-    (sum, t) => sum + t.taxAmountMinor,
-    0,
-  );
+  const totalTaxAmount = invoice.taxBreakdown.reduce((sum, t) => sum + t.taxAmountMinor, 0);
 
   // Invoice lines
   const invoiceLines = invoice.lines.map((line) => ({
@@ -190,9 +178,7 @@ export function generateZatcaXml(invoice: EInvoice): string {
         ? {
             "cac:ClassifiedTaxCategory": {
               "cbc:ID": line.vatRate,
-              ...(line.vatRate === "S"
-                ? { "cbc:Percent": "15" }
-                : {}),
+              ...(line.vatRate === "S" ? { "cbc:Percent": "15" } : {}),
               "cac:TaxScheme": {
                 "cbc:ID": ZATCA_TAX_SCHEME_ID,
               },
@@ -261,14 +247,8 @@ export function generateZatcaXml(invoice: EInvoice): string {
         },
       ],
 
-      "cac:AccountingSupplierParty": buildParty(
-        invoice.supplier,
-        invoice.currencyCode,
-      ),
-      "cac:AccountingCustomerParty": buildParty(
-        invoice.customer,
-        invoice.currencyCode,
-      ),
+      "cac:AccountingSupplierParty": buildParty(invoice.supplier, invoice.currencyCode),
+      "cac:AccountingCustomerParty": buildParty(invoice.customer, invoice.currencyCode),
 
       ...(invoice.paymentMeans
         ? {

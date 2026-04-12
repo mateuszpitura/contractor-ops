@@ -1,14 +1,9 @@
 "use client";
 
-import { ShieldCheck } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { ShieldCheck } from "lucide-react";
 
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 // ---------------------------------------------------------------------------
 // Props

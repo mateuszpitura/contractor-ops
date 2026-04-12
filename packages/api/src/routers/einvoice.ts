@@ -1,11 +1,8 @@
 import { prisma } from "@contractor-ops/db";
-import {
-  listProfiles,
-  computeKsefComplianceStatus,
-} from "@contractor-ops/einvoice";
+import { computeKsefComplianceStatus, listProfiles } from "@contractor-ops/einvoice";
 import { router } from "../init.js";
-import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
+import { tenantProcedure } from "../middleware/tenant.js";
 
 // ---------------------------------------------------------------------------
 // E-Invoicing Router
@@ -26,37 +23,35 @@ export const einvoiceRouter = router({
       for (const profile of profiles) {
         if (profile.profileId === "ksef") {
           // Fetch KSeF connection data from DB
-          const connection =
-            await prisma.integrationConnection.findFirst({
-              where: {
-                organizationId: ctx.organizationId,
-                provider: "KSEF",
-              },
-              select: {
-                status: true,
-                configJson: true,
-                lastSyncAt: true,
-                lastSuccessAt: true,
-                lastErrorAt: true,
-                lastErrorMessage: true,
-                connectedAt: true,
-              },
-            });
+          const connection = await prisma.integrationConnection.findFirst({
+            where: {
+              organizationId: ctx.organizationId,
+              provider: "KSEF",
+            },
+            select: {
+              status: true,
+              configJson: true,
+              lastSyncAt: true,
+              lastSuccessAt: true,
+              lastErrorAt: true,
+              lastErrorMessage: true,
+              connectedAt: true,
+            },
+          });
 
           let recentSyncStatuses: string[] = [];
           if (connection) {
-            const recentSyncs =
-              await prisma.integrationSyncLog.findMany({
-                where: {
-                  organizationId: ctx.organizationId,
-                  integrationConnection: {
-                    provider: "KSEF",
-                  },
+            const recentSyncs = await prisma.integrationSyncLog.findMany({
+              where: {
+                organizationId: ctx.organizationId,
+                integrationConnection: {
+                  provider: "KSEF",
                 },
-                orderBy: { startedAt: "desc" },
-                take: 10,
-                select: { status: true },
-              });
+              },
+              orderBy: { startedAt: "desc" },
+              take: 10,
+              select: { status: true },
+            });
             recentSyncStatuses = recentSyncs.map((s) => s.status);
           }
 
@@ -65,10 +60,7 @@ export const einvoiceRouter = router({
               connection
                 ? {
                     ...connection,
-                    configJson: (connection.configJson as Record<
-                      string,
-                      unknown
-                    >) ?? {},
+                    configJson: (connection.configJson as Record<string, unknown>) ?? {},
                     recentSyncStatuses,
                   }
                 : null,
@@ -76,9 +68,7 @@ export const einvoiceRouter = router({
           );
         } else {
           // Generic: delegate to profile
-          statuses.push(
-            await profile.getComplianceStatus(ctx.organizationId),
-          );
+          statuses.push(await profile.getComplianceStatus(ctx.organizationId));
         }
       }
 

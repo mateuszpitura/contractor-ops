@@ -12,7 +12,7 @@
  */
 
 import { execSync } from "node:child_process";
-import { resolve, dirname } from "node:path";
+import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -57,17 +57,14 @@ function main() {
       console.error(`[${region}] Schema push FAILED: ${message}`);
       results.push({ region, status: "failed", error: message });
       // Fail fast — do not continue to other regions if one fails
-      console.error(
-        "\nAborting: Schema push failed. Fix the issue and re-run.",
-      );
+      console.error("\nAborting: Schema push failed. Fix the issue and re-run.");
       process.exit(1);
     }
   }
 
   console.log("\n--- Summary ---");
   for (const r of results) {
-    const icon =
-      r.status === "ok" ? "OK" : r.status === "skipped" ? "SKIP" : "FAIL";
+    const icon = r.status === "ok" ? "OK" : r.status === "skipped" ? "SKIP" : "FAIL";
     console.log(`  [${icon}] ${r.region}${r.error ? ` — ${r.error}` : ""}`);
   }
 
@@ -78,9 +75,7 @@ function main() {
 
   const pushed = results.filter((r) => r.status === "ok");
   if (pushed.length === 0) {
-    console.log(
-      "\nWarning: No regions were pushed. Set DATABASE_URL_EU and/or DATABASE_URL_ME.",
-    );
+    console.log("\nWarning: No regions were pushed. Set DATABASE_URL_EU and/or DATABASE_URL_ME.");
     process.exit(1);
   }
 

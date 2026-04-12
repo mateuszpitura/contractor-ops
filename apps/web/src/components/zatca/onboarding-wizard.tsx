@@ -1,17 +1,17 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-
 import type { ZatcaOnboardingState } from "@contractor-ops/einvoice";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Stepper, type StepDefinition } from "./stepper";
-import { TaxDetailsForm } from "./tax-details-form";
-import { CsrGeneration } from "./csr-generation";
-import { ComplianceCsid } from "./compliance-csid";
 import { ComplianceChecks } from "./compliance-checks";
+import { ComplianceCsid } from "./compliance-csid";
+import { CsrGeneration } from "./csr-generation";
 import { ProductionCertificate } from "./production-certificate";
+import type { StepDefinition } from "./stepper";
+import { Stepper } from "./stepper";
+import { TaxDetailsForm } from "./tax-details-form";
 import { zatcaTrpc } from "./zatca-trpc";
 
 // ---------------------------------------------------------------------------
@@ -112,34 +112,17 @@ export function OnboardingWizard({ onComplete, onCancel }: OnboardingWizardProps
     <Card>
       <CardHeader className="space-y-4 border-b">
         <CardTitle className="text-base font-semibold">ZATCA Onboarding</CardTitle>
-        <Stepper
-          steps={ONBOARDING_STEPS}
-          currentStep={activeStep}
-          onStepClick={goToStep}
-        />
+        <Stepper steps={ONBOARDING_STEPS} currentStep={activeStep} onStepClick={goToStep} />
       </CardHeader>
 
       <CardContent className="pt-6">
         {/* Step content with slide transition */}
-        <div
-          className="transition-all duration-200 ease-out"
-          key={activeStep}
-        >
-          {activeStep === 0 && (
-            <TaxDetailsForm onSuccess={goNext} onCancel={onCancel} />
-          )}
-          {activeStep === 1 && (
-            <CsrGeneration onSuccess={goNext} onBack={goBack} />
-          )}
-          {activeStep === 2 && (
-            <ComplianceCsid onSuccess={goNext} onBack={goBack} />
-          )}
-          {activeStep === 3 && (
-            <ComplianceChecks onSuccess={goNext} onBack={goBack} />
-          )}
-          {activeStep === 4 && (
-            <ProductionCertificate onSuccess={onComplete} onBack={goBack} />
-          )}
+        <div className="transition-all duration-200 ease-out" key={activeStep}>
+          {activeStep === 0 && <TaxDetailsForm onSuccess={goNext} onCancel={onCancel} />}
+          {activeStep === 1 && <CsrGeneration onSuccess={goNext} onBack={goBack} />}
+          {activeStep === 2 && <ComplianceCsid onSuccess={goNext} onBack={goBack} />}
+          {activeStep === 3 && <ComplianceChecks onSuccess={goNext} onBack={goBack} />}
+          {activeStep === 4 && <ProductionCertificate onSuccess={onComplete} onBack={goBack} />}
         </div>
       </CardContent>
     </Card>

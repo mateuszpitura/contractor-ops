@@ -1,10 +1,7 @@
 "use client";
 
-import { Clock, Send, CheckCircle2 } from "lucide-react";
-import {
-  SummaryCard,
-  SummaryCardSkeleton,
-} from "@/components/portal/summary-card";
+import { CheckCircle2, Clock, Send } from "lucide-react";
+import { SummaryCard, SummaryCardSkeleton } from "@/components/portal/summary-card";
 
 // ---------------------------------------------------------------------------
 // Props
@@ -54,16 +51,8 @@ export function TimeSummaryStats({
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <SummaryCard
-        icon={Clock}
-        label="This Week"
-        value={formatHours(currentWeekMinutes)}
-      />
-      <SummaryCard
-        icon={Send}
-        label="Pending Review"
-        value={pendingCount}
-      />
+      <SummaryCard icon={Clock} label="This Week" value={formatHours(currentWeekMinutes)} />
+      <SummaryCard icon={Send} label="Pending Review" value={pendingCount} />
       <SummaryCard
         icon={CheckCircle2}
         label="Approved This Month"

@@ -34,10 +34,7 @@ export class GovApiRateLimiter {
     const redis = new Redis({ url, token });
     this.limiter = new Ratelimit({
       redis,
-      limiter: Ratelimit.slidingWindow(
-        this.config.maxRequests,
-        `${this.config.windowMs} ms`,
-      ),
+      limiter: Ratelimit.slidingWindow(this.config.maxRequests, `${this.config.windowMs} ms`),
       prefix: `gov-api:${this.apiName}`,
     });
   }
@@ -59,9 +56,7 @@ export class GovApiRateLimiter {
       };
     }
     try {
-      const result = await this.limiter.limit(
-        `${this.apiName}:${identifier}`,
-      );
+      const result = await this.limiter.limit(`${this.apiName}:${identifier}`);
       return {
         allowed: result.success,
         remaining: result.remaining,

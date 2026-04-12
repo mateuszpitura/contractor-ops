@@ -1,9 +1,5 @@
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 // ---------------------------------------------------------------------------
 // Status dot color mapping (per UI-SPEC D-09, Linear state types)

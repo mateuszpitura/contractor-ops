@@ -1,0 +1,126 @@
+import { TRPCError } from "@trpc/server";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("@sentry/nextjs", () => {
+  const mockSpan = {
+    setStatus: vi.fn(),
+    setAttribute: vi.fn(),
+    end: vi.fn(),
+  };
+  return {
+    startSpan: vi.fn((_o: unknown, fn: (span: typeof mockSpan) => unknown) => fn(mockSpan)),
+    captureException: vi.fn(),
+  };
+});
+
+vi.mock("@contractor-ops/logger", () => ({
+  createTrpcLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+  })),
+}));
+
+vi.mock("@contractor-ops/logger/metrics", () => ({
+  metrics: { increment: vi.fn(), distribution: vi.fn(), histogram: vi.fn() },
+}));
+
+import { t } from "../../init.js";
+import { authedProcedure } from "../auth.js";
+import { uploadRateLimitMiddleware } from "../upload-rate-limit.js";
+
+function ctxForUser(userId: string) {
+  const session = {
+    session: {
+      id: "sess-1",
+      userId,
+      activeOrganizationId: "org_up",
+      expiresAt: new Date("2099-01-01"),
+      token: "mock-token",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      ipAddress: null,
+      userAgent: null,
+    },
+    user: {
+      id: userId,
+      name: "Test",
+      email: "t@example.com",
+      emailVerified: true,
+      image: null,
+      banned: false,
+      banReason: null,
+      banExpires: null,
+      role: "admin",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  };
+  return {
+    headers: new Headers(),
+    session: session as never,
+    user: session.user as never,
+  };
+}
+
+describe("uploadRateLimitMiddleware", () => {
+  const router = t.router({
+    upload: authedProcedure.use(uploadRateLimitMiddleware).query(({ ctx }) => ({
+      remaining: ctx.uploadRateLimit?.remaining,
+    })),
+  });
+  const createCaller = t.createCallerFactory(router);
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-04T12:00:00.000Z"));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("throws UNAUTHORIZED when user id is missing", async () => {
+    await expect(
+      createCaller({
+        headers: new Headers(),
+        session: null,
+        user: null,
+      }).upload(),
+    ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+  });
+
+  it("allows first 10 uploads and exposes remaining count", async () => {
+    const uid = `u-rate-${Math.random().toString(36).slice(2)}`;
+    const c = createCaller(ctxForUser(uid));
+    for (let i = 0; i < 10; i++) {
+      const r = await c.upload();
+      expect(r.remaining).toBe(10 - (i + 1));
+    }
+  });
+
+  it("throws TOO_MANY_REQUESTS on the 11th upload in the same window", async () => {
+    const uid = `u-11-${Math.random().toString(36).slice(2)}`;
+    const c = createCaller(ctxForUser(uid));
+    for (let i = 0; i < 10; i++) {
+      await c.upload();
+    }
+    await expect(c.upload()).rejects.toMatchObject({
+      code: "TOO_MANY_REQUESTS",
+    });
+  });
+
+  it("allows uploads again after the window expires", async () => {
+    const uid = `u-win-${Math.random().toString(36).slice(2)}`;
+    const c = createCaller(ctxForUser(uid));
+    for (let i = 0; i < 10; i++) {
+      await c.upload();
+    }
+    await expect(c.upload()).rejects.toMatchObject({
+      code: "TOO_MANY_REQUESTS",
+    });
+    vi.advanceTimersByTime(61_000);
+    const r = await c.upload();
+    expect(r.remaining).toBe(9);
+  });
+});

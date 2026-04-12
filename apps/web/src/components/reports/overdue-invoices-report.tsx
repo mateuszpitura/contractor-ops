@@ -1,17 +1,16 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { type ColumnDef } from "@tanstack/react-table";
-import { useTranslations } from "next-intl";
-import { toast } from "sonner";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import type { ColumnDef } from "@tanstack/react-table";
 import { Clock } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
-import { useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { useRouter } from "@/i18n/navigation";
+import { trpc } from "@/trpc/init";
+import { downloadBase64File, ExportButtons } from "./export-buttons";
 import { ReportTable } from "./report-table";
-import { ExportButtons, downloadBase64File } from "./export-buttons";
 
 function formatCurrency(grosze: number): string {
   return new Intl.NumberFormat("pl-PL", {
@@ -85,16 +84,12 @@ export function OverdueInvoicesReport({
   );
 
   const tableData = useMemo(() => {
-    const result = tableQuery.data as
-      | { items: OverdueRow[]; totalCount: number }
-      | undefined;
+    const result = tableQuery.data as { items: OverdueRow[]; totalCount: number } | undefined;
     return result?.items ?? [];
   }, [tableQuery.data]);
 
   const totalCount = useMemo(() => {
-    const result = tableQuery.data as
-      | { items: OverdueRow[]; totalCount: number }
-      | undefined;
+    const result = tableQuery.data as { items: OverdueRow[]; totalCount: number } | undefined;
     return result?.totalCount ?? 0;
   }, [tableQuery.data]);
 
@@ -114,8 +109,7 @@ export function OverdueInvoicesReport({
         accessorKey: "amountGrosze",
         header: t("amount"),
         enableSorting: true,
-        cell: ({ row }) =>
-          `${formatCurrency(row.original.amountGrosze)} ${row.original.currency}`,
+        cell: ({ row }) => `${formatCurrency(row.original.amountGrosze)} ${row.original.currency}`,
       },
       {
         accessorKey: "dueDate",
@@ -128,21 +122,13 @@ export function OverdueInvoicesReport({
         header: t("daysOverdue"),
         cell: ({ getValue }) => {
           const days = getValue<number>();
-          return (
-            <span
-              className={days > 30 ? "font-medium text-destructive" : ""}
-            >
-              {days}
-            </span>
-          );
+          return <span className={days > 30 ? "font-medium text-destructive" : ""}>{days}</span>;
         },
       },
       {
         accessorKey: "status",
         header: t("status"),
-        cell: ({ getValue }) => (
-          <Badge variant="secondary">{getValue<string>()}</Badge>
-        ),
+        cell: ({ getValue }) => <Badge variant="secondary">{getValue<string>()}</Badge>,
       },
     ],
     [t],
@@ -169,9 +155,7 @@ export function OverdueInvoicesReport({
         sortOrder={sortOrder}
         onRowClick={(row) => router.push(`/invoices/${row.invoiceId}`)}
         isLoading={tableQuery.isLoading}
-        emptyIcon={
-          <Clock className="mx-auto h-10 w-10 text-muted-foreground/50" />
-        }
+        emptyIcon={<Clock className="mx-auto h-10 w-10 text-muted-foreground/50" />}
         emptyTitle={t("emptyOverdueInvoices")}
         emptyDescription={t("emptyOverdueInvoicesBody")}
       />

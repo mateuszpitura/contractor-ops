@@ -1,6 +1,7 @@
-import type { OAuthConfig } from "../types/provider.js";
+import { prisma } from "@contractor-ops/db";
 import type { CredentialBlob } from "../types/credentials.js";
 import type { ProviderHealthStatus } from "../types/health.js";
+import type { OAuthConfig } from "../types/provider.js";
 import { BaseAdapter } from "./base-adapter.js";
 
 // ---------------------------------------------------------------------------
@@ -59,10 +60,7 @@ export class GoogleCalendarAdapter extends BaseAdapter {
     return GOOGLE_CALENDAR_OAUTH_CONFIG;
   }
 
-  async exchangeCodeForTokens(
-    code: string,
-    redirectUri: string,
-  ): Promise<CredentialBlob> {
+  async exchangeCodeForTokens(code: string, redirectUri: string): Promise<CredentialBlob> {
     const clientId = process.env.GOOGLE_CALENDAR_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_CALENDAR_CLIENT_SECRET;
 
@@ -104,9 +102,7 @@ export class GoogleCalendarAdapter extends BaseAdapter {
       refreshToken: data.refresh_token,
       tokenType: data.token_type,
       scope: data.scope,
-      expiresAt: new Date(
-        Date.now() + data.expires_in * 1000,
-      ).toISOString(),
+      expiresAt: new Date(Date.now() + data.expires_in * 1000).toISOString(),
     };
   }
 
@@ -154,9 +150,7 @@ export class GoogleCalendarAdapter extends BaseAdapter {
       refreshToken: credentials.refreshToken, // Google doesn't rotate refresh tokens
       tokenType: data.token_type,
       scope: data.scope,
-      expiresAt: new Date(
-        Date.now() + data.expires_in * 1000,
-      ).toISOString(),
+      expiresAt: new Date(Date.now() + data.expires_in * 1000).toISOString(),
     };
   }
 
@@ -297,10 +291,7 @@ export class GoogleCalendarAdapter extends BaseAdapter {
    * @param accessToken - The OAuth access token
    * @param eventId - The event ID to delete
    */
-  async deleteEvent(
-    accessToken: string,
-    eventId: string,
-  ): Promise<void> {
+  async deleteEvent(accessToken: string, eventId: string): Promise<void> {
     const response = await fetch(
       `https://www.googleapis.com/calendar/v3/calendars/primary/events/${eventId}`,
       {
@@ -322,8 +313,6 @@ export class GoogleCalendarAdapter extends BaseAdapter {
   // -------------------------------------------------------------------------
 
   async getHealthStatus(connectionId: string): Promise<ProviderHealthStatus> {
-    const { prisma } = await import("@contractor-ops/db");
-
     const connection = await prisma.integrationConnection.findUnique({
       where: { id: connectionId },
       select: {
@@ -376,15 +365,9 @@ export class GoogleCalendarAdapter extends BaseAdapter {
       status = "DISCONNECTED";
     } else if (connection.lastErrorAt && !connection.lastSuccessAt) {
       status = "ERROR";
-    } else if (
-      connection.tokenExpiresAt &&
-      connection.tokenExpiresAt < new Date()
-    ) {
+    } else if (connection.tokenExpiresAt && connection.tokenExpiresAt < new Date()) {
       status = "REAUTH_REQUIRED";
-    } else if (
-      recentSyncs.length > 0 &&
-      recentSyncs[0]!.status === "FAILED"
-    ) {
+    } else if (recentSyncs.length > 0 && recentSyncs[0]!.status === "FAILED") {
       status = "ERROR";
     } else {
       status = "CONNECTED";

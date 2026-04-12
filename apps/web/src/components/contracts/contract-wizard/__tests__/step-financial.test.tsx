@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
 import { useForm } from "react-hook-form";
+import { describe, expect, it } from "vitest";
 
 import { render, screen } from "@/test/test-utils";
 
@@ -38,8 +38,6 @@ describe("StepFinancial", () => {
   it("shows pre-filled hint when rate field was pre-filled", () => {
     render(<FinancialHarness preFilledFields={new Set(["rateValueMinor"])} />);
 
-    expect(
-      screen.getByText(/Pre-filled from contractor billing profile/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Pre-filled from contractor billing profile/i)).toBeInTheDocument();
   });
 });

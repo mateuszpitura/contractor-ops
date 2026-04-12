@@ -3,13 +3,14 @@
  * This route remains for backward compatibility during Resend webhook URL migration.
  * Remove after Resend webhook URL is updated to /api/webhooks/resend.
  */
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import { Resend } from "resend";
-import type { WebhookEventPayload } from "resend";
-import { prisma } from "@contractor-ops/db";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+
 import { randomUUID } from "node:crypto";
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { prisma } from "@contractor-ops/db";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+import type { WebhookEventPayload } from "resend";
+import { Resend } from "resend";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -31,9 +32,7 @@ if (typeof globalThis !== "undefined") {
   const cleanup = () => {
     const now = Date.now();
     for (const [key, entry] of emailIntakeMap) {
-      entry.timestamps = entry.timestamps.filter(
-        (ts) => now - ts < EMAIL_RATE_WINDOW_MS,
-      );
+      entry.timestamps = entry.timestamps.filter((ts) => now - ts < EMAIL_RATE_WINDOW_MS);
       if (entry.timestamps.length === 0) emailIntakeMap.delete(key);
     }
   };
@@ -46,9 +45,7 @@ function checkEmailIntakeLimit(orgId: string): {
 } {
   const now = Date.now();
   const entry = emailIntakeMap.get(orgId) ?? { timestamps: [] };
-  entry.timestamps = entry.timestamps.filter(
-    (ts) => now - ts < EMAIL_RATE_WINDOW_MS,
-  );
+  entry.timestamps = entry.timestamps.filter((ts) => now - ts < EMAIL_RATE_WINDOW_MS);
 
   if (entry.timestamps.length >= EMAIL_RATE_MAX) {
     return { allowed: false, remaining: 0 };
@@ -121,18 +118,12 @@ export async function POST(request: NextRequest) {
   // Fail loudly if webhook secret is not configured
   if (!webhookSecret) {
     console.error("[resend-inbound] RESEND_WEBHOOK_SECRET is not set");
-    return NextResponse.json(
-      { error: "Webhook secret not configured" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Webhook secret not configured" }, { status: 500 });
   }
 
   if (!apiKey) {
     console.error("[resend-inbound] RESEND_API_KEY is not set");
-    return NextResponse.json(
-      { error: "Resend API key not configured" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Resend API key not configured" }, { status: 500 });
   }
 
   const resend = new Resend(apiKey);
@@ -145,10 +136,7 @@ export async function POST(request: NextRequest) {
   const svixSignature = request.headers.get("svix-signature");
 
   if (!svixId || !svixTimestamp || !svixSignature) {
-    return NextResponse.json(
-      { error: "Missing webhook signature headers" },
-      { status: 401 },
-    );
+    return NextResponse.json({ error: "Missing webhook signature headers" }, { status: 401 });
   }
 
   let event: WebhookEventPayload;
@@ -204,10 +192,7 @@ export async function POST(request: NextRequest) {
   });
 
   if (!organization) {
-    console.warn(
-      "[resend-inbound] No organization found for slug: %s",
-      orgSlug,
-    );
+    console.warn("[resend-inbound] No organization found for slug: %s", orgSlug);
     return NextResponse.json({ received: true });
   }
 
@@ -221,10 +206,7 @@ export async function POST(request: NextRequest) {
       orgSlug,
       EMAIL_RATE_MAX,
     );
-    return NextResponse.json(
-      { error: "Email intake rate limit exceeded" },
-      { status: 429 },
-    );
+    return NextResponse.json({ error: "Email intake rate limit exceeded" }, { status: 429 });
   }
 
   // ---------- Step 4: Fetch attachments via Resend Receiving API ----------
@@ -264,10 +246,7 @@ export async function POST(request: NextRequest) {
         });
 
         if (!attResponse.data) {
-          console.error(
-            "[resend-inbound] No data returned for attachment %s",
-            attachmentId,
-          );
+          console.error("[resend-inbound] No data returned for attachment %s", attachmentId);
           return null;
         }
 
@@ -362,11 +341,10 @@ export async function POST(request: NextRequest) {
         // Process non-PDF attachments as SUPPORTING_ATTACHMENT for this invoice
         for (const nonPdfId of nonPdfAttachmentIds) {
           try {
-            const nonPdfResponse =
-              await resend.emails.receiving.attachments.get({
-                id: nonPdfId,
-                emailId: emailData.email_id,
-              });
+            const nonPdfResponse = await resend.emails.receiving.attachments.get({
+              id: nonPdfId,
+              emailId: emailData.email_id,
+            });
 
             if (!nonPdfResponse.data) continue;
             const nonPdfData = nonPdfResponse.data;
@@ -374,12 +352,9 @@ export async function POST(request: NextRequest) {
             const downloadResp = await fetch(nonPdfData.download_url);
             if (!downloadResp.ok) continue;
 
-            const nonPdfBuffer = Buffer.from(
-              await downloadResp.arrayBuffer(),
-            );
+            const nonPdfBuffer = Buffer.from(await downloadResp.arrayBuffer());
             const nonPdfFileId = randomUUID();
-            const ext =
-              nonPdfData.filename?.split(".").pop()?.toLowerCase() ?? "bin";
+            const ext = nonPdfData.filename?.split(".").pop()?.toLowerCase() ?? "bin";
             const nonPdfKey = `orgs/${orgId}/invoices/${nonPdfFileId}.${ext}`;
 
             await client.send(
@@ -395,8 +370,7 @@ export async function POST(request: NextRequest) {
               data: {
                 organizationId: orgId,
                 storageKey: nonPdfKey,
-                originalFileName:
-                  nonPdfData.filename ?? `attachment-${nonPdfFileId}.${ext}`,
+                originalFileName: nonPdfData.filename ?? `attachment-${nonPdfFileId}.${ext}`,
                 mimeType: nonPdfData.content_type,
                 fileSizeBytes: nonPdfData.size ?? nonPdfBuffer.length,
                 checksumSha256: "",
@@ -436,11 +410,7 @@ export async function POST(request: NextRequest) {
 
         return invoice.id;
       } catch (error) {
-        console.error(
-          "[resend-inbound] Failed to process PDF attachment %s:",
-          attachmentId,
-          error,
-        );
+        console.error("[resend-inbound] Failed to process PDF attachment %s:", attachmentId, error);
         return null;
       }
     }),

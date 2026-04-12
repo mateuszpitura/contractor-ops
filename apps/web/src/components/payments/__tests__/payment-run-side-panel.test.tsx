@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, setup, waitFor } from "@/test/test-utils";
 import { PaymentRunSidePanel } from "../payment-run-side-panel";
 
@@ -14,6 +14,10 @@ vi.mock("@/i18n/navigation", () => ({
   Link: ({ children, ...props }: React.PropsWithChildren<{ href: string }>) => (
     <a {...props}>{children}</a>
   ),
+}));
+
+vi.mock("@/components/payments/wht-summary-card", () => ({
+  WhtSummaryCard: () => <div data-testid="wht-summary" />,
 }));
 
 vi.mock("../payment-run-badge", () => ({
@@ -66,9 +70,8 @@ let runData: typeof baseRun | null = baseRun;
 const mockMutate = vi.fn();
 
 vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
-    "@tanstack/react-query",
-  );
+  const actual =
+    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
   return {
     ...actual,
     useQuery: () => ({ isLoading: false, data: runData }),
@@ -107,72 +110,36 @@ describe("PaymentRunSidePanel", () => {
   });
 
   it("renders run header with run number and status badge", () => {
-    render(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
-    );
+    render(<PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText("PR-001")).toBeInTheDocument();
     expect(screen.getByTestId("run-badge")).toHaveTextContent("DRAFT");
   });
 
   it("renders metadata grid with format, invoice count, and total", () => {
-    render(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
-    );
+    render(<PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText("MT940")).toBeInTheDocument();
     expect(screen.getByText("2")).toBeInTheDocument();
   });
 
   it("renders invoice items with invoice numbers", () => {
-    render(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
-    );
+    render(<PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText("FV/2025/001")).toBeInTheDocument();
     expect(screen.getByText("FV/2025/002")).toBeInTheDocument();
   });
 
   it("renders contractor names in items", () => {
-    render(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
-    );
+    render(<PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText("Acme Corp")).toBeInTheDocument();
     expect(screen.getByText("Beta LLC")).toBeInTheDocument();
   });
 
   it("shows payment reference when present", () => {
-    render(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
-    );
+    render(<PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText("Ref: REF-123")).toBeInTheDocument();
   });
 
   it("shows cancel button for DRAFT status", () => {
-    render(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
-    );
+    render(<PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText("Cancel run")).toBeInTheDocument();
   });
 
@@ -193,13 +160,7 @@ describe("PaymentRunSidePanel", () => {
 
   it("shows download export for COMPLETED status", () => {
     runData = { ...baseRun, status: "COMPLETED" };
-    render(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
-    );
+    render(<PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText("Download export")).toBeInTheDocument();
     // No cancel or mark all paid for completed
     expect(screen.queryByText("Cancel run")).not.toBeInTheDocument();
@@ -209,11 +170,7 @@ describe("PaymentRunSidePanel", () => {
   it("renders skeleton loading state when run data is null", () => {
     runData = null;
     const { container } = render(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
+      <PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />,
     );
     // When run is null, no run header is shown
     expect(screen.queryByText("PR-001")).not.toBeInTheDocument();
@@ -221,37 +178,19 @@ describe("PaymentRunSidePanel", () => {
 
   it("shows cancel button for LOCKED status with download", () => {
     runData = { ...baseRun, status: "LOCKED" };
-    render(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
-    );
+    render(<PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText("Download export")).toBeInTheDocument();
     expect(screen.getByText("Cancel run")).toBeInTheDocument();
   });
 
   it("shows completed date when present", () => {
     runData = { ...baseRun, completedAt: "2025-03-20T10:00:00Z" };
-    render(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
-    );
+    render(<PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText("Completed")).toBeInTheDocument();
   });
 
   it("renders item badges for each invoice", () => {
-    render(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
-    );
+    render(<PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />);
     const badges = screen.getAllByTestId("item-badge");
     expect(badges.length).toBe(2);
     expect(badges[0]).toHaveTextContent("PENDING");
@@ -259,13 +198,7 @@ describe("PaymentRunSidePanel", () => {
   });
 
   it("renders formatted amounts for items", () => {
-    render(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
-    );
+    render(<PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />);
     // 300000 minor = 3000.00 PLN, 200000 = 2000.00 PLN
     expect(screen.getByText(/3[\s\u00a0]?000,00 PLN/)).toBeInTheDocument();
     expect(screen.getByText(/2[\s\u00a0]?000,00 PLN/)).toBeInTheDocument();
@@ -287,36 +220,20 @@ describe("PaymentRunSidePanel", () => {
 
   it("shows CANCELLED status with no action buttons", () => {
     runData = { ...baseRun, status: "CANCELLED" };
-    render(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
-    );
+    render(<PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />);
     expect(screen.queryByText("Cancel run")).not.toBeInTheDocument();
     expect(screen.queryByText("Mark all paid")).not.toBeInTheDocument();
     expect(screen.queryByText("Download export")).not.toBeInTheDocument();
   });
 
   it("shows today for items created today", () => {
-    render(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
-    );
+    render(<PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText("today")).toBeInTheDocument();
   });
 
   it("opens cancel dialog when cancel run button is clicked", async () => {
     const { user } = setup(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
+      <PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />,
     );
     await user.click(screen.getByText("Cancel run"));
     // AlertDialog title should be visible
@@ -345,38 +262,20 @@ describe("PaymentRunSidePanel", () => {
 
   it("renders import statement button for EXPORTED status even without handler", () => {
     runData = { ...baseRun, status: "EXPORTED" };
-    render(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
-    );
+    render(<PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />);
     // Button is always rendered for EXPORTED, handler is optional
     expect(screen.getByText("Import statement")).toBeInTheDocument();
   });
 
   it("renders due dates for invoice items", () => {
-    render(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
-    );
+    render(<PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />);
     // Items have invoice numbers which include due dates
     expect(screen.getByText("FV/2025/001")).toBeInTheDocument();
     expect(screen.getByText("FV/2025/002")).toBeInTheDocument();
   });
 
   it("renders export format in metadata", () => {
-    render(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
-    );
+    render(<PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText("MT940")).toBeInTheDocument();
     expect(screen.getByText("Export format")).toBeInTheDocument();
   });
@@ -396,13 +295,7 @@ describe("PaymentRunSidePanel", () => {
   });
 
   it("shows invoice links for items", () => {
-    render(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
-    );
+    render(<PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />);
     const links = screen.getAllByRole("link");
     expect(links.some((l) => l.getAttribute("href")?.includes("/invoices/"))).toBe(true);
   });
@@ -427,11 +320,7 @@ describe("PaymentRunSidePanel", () => {
 
   it("confirms cancel dialog and calls cancel mutation", async () => {
     const { user } = setup(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
+      <PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />,
     );
     await user.click(screen.getByText("Cancel run"));
     await waitFor(() => {
@@ -446,13 +335,7 @@ describe("PaymentRunSidePanel", () => {
 
   it("renders LOCKED status with cancel and download buttons", () => {
     runData = { ...baseRun, status: "LOCKED" };
-    render(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
-    );
+    render(<PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByTestId("run-badge")).toHaveTextContent("LOCKED");
     expect(screen.getByText("Download export")).toBeInTheDocument();
     expect(screen.getByText("Cancel run")).toBeInTheDocument();
@@ -470,37 +353,21 @@ describe("PaymentRunSidePanel", () => {
         baseRun.items[1]!,
       ],
     };
-    render(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
-    );
+    render(<PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText("Ref: PAY-REF-999")).toBeInTheDocument();
   });
 
   it("renders download export button and shows toast on click", async () => {
     runData = { ...baseRun, status: "COMPLETED" };
     const { user } = setup(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
+      <PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />,
     );
     await user.click(screen.getByText("Download export"));
     // toast.info is called by handleDownloadExport
   });
 
   it("shows total amount formatted", () => {
-    render(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
-    );
+    render(<PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />);
     // 500000 minor = 5000.00 PLN
     expect(screen.getByText(/5[\s\u00a0]?000,00 PLN/)).toBeInTheDocument();
   });
@@ -510,13 +377,7 @@ describe("PaymentRunSidePanel", () => {
   // ---------------------------------------------------------------------------
 
   it("shows per-item more menu for PENDING items in DRAFT status", () => {
-    render(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
-    );
+    render(<PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />);
     // PENDING items should have a more button (MoreHorizontal)
     // PAID items in DRAFT also get the remove option
     const moreButtons = document.querySelectorAll('[data-slot="dropdown-menu-trigger"]');
@@ -547,13 +408,7 @@ describe("PaymentRunSidePanel", () => {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     runData = { ...baseRun, createdAt: yesterday.toISOString() };
-    render(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
-    );
+    render(<PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText("yesterday")).toBeInTheDocument();
   });
 
@@ -561,63 +416,33 @@ describe("PaymentRunSidePanel", () => {
     const fiveDaysAgo = new Date();
     fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
     runData = { ...baseRun, createdAt: fiveDaysAgo.toISOString() };
-    render(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
-    );
+    render(<PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText("5d ago")).toBeInTheDocument();
   });
 
   it("shows localized date for items older than 30 days", () => {
     const oldDate = new Date("2024-01-15T10:00:00Z");
     runData = { ...baseRun, createdAt: oldDate.toISOString() };
-    render(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
-    );
+    render(<PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />);
     // Should render a pl-PL formatted date
     expect(screen.getByText(/2024/)).toBeInTheDocument();
   });
 
   it("renders without exportFormat showing dash", () => {
     runData = { ...baseRun, exportFormat: null };
-    render(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
-    );
+    render(<PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText("Export format")).toBeInTheDocument();
   });
 
   it("formats currency with correct label when currency differs", () => {
     runData = { ...baseRun, currency: "EUR", totalMinor: 100000 };
-    render(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
-    );
+    render(<PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText(/1[\s\u00a0]?000,00 EUR/)).toBeInTheDocument();
   });
 
   it("renders without runNumber, falls back to truncated id", () => {
     runData = { ...baseRun, runNumber: null };
-    render(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
-    );
+    render(<PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText("run-1")).toBeInTheDocument();
   });
 
@@ -627,15 +452,9 @@ describe("PaymentRunSidePanel", () => {
 
   it("shows mark paid and mark failed options in per-item dropdown", async () => {
     const { user } = setup(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
+      <PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />,
     );
-    const moreButtons = document.querySelectorAll(
-      '[data-slot="dropdown-menu-trigger"]',
-    );
+    const moreButtons = document.querySelectorAll('[data-slot="dropdown-menu-trigger"]');
     expect(moreButtons.length).toBeGreaterThan(0);
     await user.click(moreButtons[0] as HTMLElement);
     await waitFor(() => {
@@ -646,15 +465,9 @@ describe("PaymentRunSidePanel", () => {
 
   it("shows remove from run option for DRAFT items", async () => {
     const { user } = setup(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
+      <PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />,
     );
-    const moreButtons = document.querySelectorAll(
-      '[data-slot="dropdown-menu-trigger"]',
-    );
+    const moreButtons = document.querySelectorAll('[data-slot="dropdown-menu-trigger"]');
     await user.click(moreButtons[0] as HTMLElement);
     await waitFor(() => {
       expect(screen.getByText("Remove from run")).toBeInTheDocument();
@@ -663,15 +476,9 @@ describe("PaymentRunSidePanel", () => {
 
   it("shows inline mark paid form when mark paid is clicked", async () => {
     const { user } = setup(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
+      <PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />,
     );
-    const moreButtons = document.querySelectorAll(
-      '[data-slot="dropdown-menu-trigger"]',
-    );
+    const moreButtons = document.querySelectorAll('[data-slot="dropdown-menu-trigger"]');
     await user.click(moreButtons[0] as HTMLElement);
     await waitFor(() => {
       expect(screen.getByText("Mark paid")).toBeInTheDocument();
@@ -685,15 +492,9 @@ describe("PaymentRunSidePanel", () => {
 
   it("shows inline mark failed form when mark failed is clicked", async () => {
     const { user } = setup(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
+      <PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />,
     );
-    const moreButtons = document.querySelectorAll(
-      '[data-slot="dropdown-menu-trigger"]',
-    );
+    const moreButtons = document.querySelectorAll('[data-slot="dropdown-menu-trigger"]');
     await user.click(moreButtons[0] as HTMLElement);
     await waitFor(() => {
       expect(screen.getByText("Mark failed")).toBeInTheDocument();
@@ -706,15 +507,9 @@ describe("PaymentRunSidePanel", () => {
 
   it("shows remove confirmation when remove from run is clicked", async () => {
     const { user } = setup(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
+      <PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />,
     );
-    const moreButtons = document.querySelectorAll(
-      '[data-slot="dropdown-menu-trigger"]',
-    );
+    const moreButtons = document.querySelectorAll('[data-slot="dropdown-menu-trigger"]');
     await user.click(moreButtons[0] as HTMLElement);
     await waitFor(() => {
       expect(screen.getByText("Remove from run")).toBeInTheDocument();
@@ -727,15 +522,9 @@ describe("PaymentRunSidePanel", () => {
 
   it("calls mutation when mark paid confirm is clicked", async () => {
     const { user } = setup(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
+      <PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />,
     );
-    const moreButtons = document.querySelectorAll(
-      '[data-slot="dropdown-menu-trigger"]',
-    );
+    const moreButtons = document.querySelectorAll('[data-slot="dropdown-menu-trigger"]');
     await user.click(moreButtons[0] as HTMLElement);
     await waitFor(() => {
       expect(screen.getByText("Mark paid")).toBeInTheDocument();
@@ -750,15 +539,9 @@ describe("PaymentRunSidePanel", () => {
 
   it("calls mutation when remove confirm is clicked", async () => {
     const { user } = setup(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
+      <PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />,
     );
-    const moreButtons = document.querySelectorAll(
-      '[data-slot="dropdown-menu-trigger"]',
-    );
+    const moreButtons = document.querySelectorAll('[data-slot="dropdown-menu-trigger"]');
     await user.click(moreButtons[0] as HTMLElement);
     await waitFor(() => {
       expect(screen.getByText("Remove from run")).toBeInTheDocument();
@@ -773,15 +556,9 @@ describe("PaymentRunSidePanel", () => {
 
   it("cancels mark paid inline form when cancel is clicked", async () => {
     const { user } = setup(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
+      <PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />,
     );
-    const moreButtons = document.querySelectorAll(
-      '[data-slot="dropdown-menu-trigger"]',
-    );
+    const moreButtons = document.querySelectorAll('[data-slot="dropdown-menu-trigger"]');
     await user.click(moreButtons[0] as HTMLElement);
     await waitFor(() => {
       expect(screen.getByText("Mark paid")).toBeInTheDocument();
@@ -800,15 +577,9 @@ describe("PaymentRunSidePanel", () => {
 
   it("calls mutation with reference when mark paid confirm includes reference", async () => {
     const { user } = setup(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
+      <PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />,
     );
-    const moreButtons = document.querySelectorAll(
-      '[data-slot="dropdown-menu-trigger"]',
-    );
+    const moreButtons = document.querySelectorAll('[data-slot="dropdown-menu-trigger"]');
     await user.click(moreButtons[0] as HTMLElement);
     await waitFor(() => {
       expect(screen.getByText("Mark paid")).toBeInTheDocument();
@@ -825,15 +596,9 @@ describe("PaymentRunSidePanel", () => {
 
   it("shows mark failed inline form and calls mutation with reason", async () => {
     const { user } = setup(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
+      <PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />,
     );
-    const moreButtons = document.querySelectorAll(
-      '[data-slot="dropdown-menu-trigger"]',
-    );
+    const moreButtons = document.querySelectorAll('[data-slot="dropdown-menu-trigger"]');
     await user.click(moreButtons[0] as HTMLElement);
     await waitFor(() => {
       expect(screen.getByText("Mark failed")).toBeInTheDocument();
@@ -851,15 +616,9 @@ describe("PaymentRunSidePanel", () => {
 
   it("mark failed confirm is disabled when no failure reason is entered", async () => {
     const { user } = setup(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
+      <PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />,
     );
-    const moreButtons = document.querySelectorAll(
-      '[data-slot="dropdown-menu-trigger"]',
-    );
+    const moreButtons = document.querySelectorAll('[data-slot="dropdown-menu-trigger"]');
     await user.click(moreButtons[0] as HTMLElement);
     await waitFor(() => {
       expect(screen.getByText("Mark failed")).toBeInTheDocument();
@@ -876,15 +635,9 @@ describe("PaymentRunSidePanel", () => {
 
   it("cancels mark failed inline form when cancel is clicked", async () => {
     const { user } = setup(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
+      <PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />,
     );
-    const moreButtons = document.querySelectorAll(
-      '[data-slot="dropdown-menu-trigger"]',
-    );
+    const moreButtons = document.querySelectorAll('[data-slot="dropdown-menu-trigger"]');
     await user.click(moreButtons[0] as HTMLElement);
     await waitFor(() => {
       expect(screen.getByText("Mark failed")).toBeInTheDocument();
@@ -912,13 +665,7 @@ describe("PaymentRunSidePanel", () => {
         baseRun.items[1]!,
       ],
     };
-    render(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
-    );
+    render(<PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />);
     // FAILED items don't have dropdown menus (isTerminal)
     const badges = screen.getAllByTestId("item-badge");
     expect(badges[0]).toHaveTextContent("FAILED");
@@ -941,17 +688,9 @@ describe("PaymentRunSidePanel", () => {
         },
       ],
     };
-    render(
-      <PaymentRunSidePanel
-        runId="run-1"
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
-    );
+    render(<PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />);
     // Terminal items in non-DRAFT should have no dropdown
-    const moreButtons = document.querySelectorAll(
-      '[data-slot="dropdown-menu-trigger"]',
-    );
+    const moreButtons = document.querySelectorAll('[data-slot="dropdown-menu-trigger"]');
     expect(moreButtons.length).toBe(0);
   });
 
@@ -965,9 +704,7 @@ describe("PaymentRunSidePanel", () => {
         onImportStatement={onImportStatement}
       />,
     );
-    const moreButtons = document.querySelectorAll(
-      '[data-slot="dropdown-menu-trigger"]',
-    );
+    const moreButtons = document.querySelectorAll('[data-slot="dropdown-menu-trigger"]');
     if (moreButtons.length > 0) {
       await user.click(moreButtons[0] as HTMLElement);
       await waitFor(() => {

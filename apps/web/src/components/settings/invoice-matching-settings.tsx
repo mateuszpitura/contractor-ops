@@ -1,22 +1,21 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ClipboardCopy, Loader2, Save } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Loader2, Save, ClipboardCopy } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Component
@@ -35,9 +34,7 @@ export function InvoiceMatchingSettings() {
   const emailAddress = `invoices@${orgSlug}.contractorhub.io`;
 
   // Load current deviation threshold
-  const invoiceSettingsQuery = useQuery(
-    trpc.settings.getInvoiceSettings.queryOptions(),
-  );
+  const invoiceSettingsQuery = useQuery(trpc.settings.getInvoiceSettings.queryOptions());
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const invoiceData = invoiceSettingsQuery.data as any;
 
@@ -92,12 +89,7 @@ export function InvoiceMatchingSettings() {
             {t("invoiceEmailInbox")}
           </label>
           <div className="flex items-center gap-2">
-            <Input
-              id="invoice-email"
-              value={emailAddress}
-              readOnly
-              className="font-mono text-sm"
-            />
+            <Input id="invoice-email" value={emailAddress} readOnly className="font-mono text-sm" />
             <Button
               type="button"
               variant="outline"
@@ -108,9 +100,7 @@ export function InvoiceMatchingSettings() {
               <ClipboardCopy className="size-4" />
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">
-            {t("invoiceEmailBody")}
-          </p>
+          <p className="text-xs text-muted-foreground">{t("invoiceEmailBody")}</p>
         </div>
 
         {/* Deviation threshold */}
@@ -127,18 +117,11 @@ export function InvoiceMatchingSettings() {
             onChange={(e) => setThreshold(Number(e.target.value))}
             className="max-w-[120px]"
           />
-          <p className="text-xs text-muted-foreground">
-            {t("deviationThresholdHelp")}
-          </p>
+          <p className="text-xs text-muted-foreground">{t("deviationThresholdHelp")}</p>
         </div>
-
       </CardContent>
       <CardFooter>
-        <Button
-          size="sm"
-          onClick={handleSave}
-          disabled={updateMutation.isPending}
-        >
+        <Button size="sm" onClick={handleSave} disabled={updateMutation.isPending}>
           {updateMutation.isPending ? (
             <Loader2 className="me-1.5 size-3.5 animate-spin" />
           ) : (

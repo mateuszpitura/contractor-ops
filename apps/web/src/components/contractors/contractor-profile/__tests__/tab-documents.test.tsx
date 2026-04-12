@@ -27,9 +27,7 @@ vi.mock("@/components/documents/drop-zone", () => ({
 }));
 
 vi.mock("@/components/documents/document-card", () => ({
-  DocumentCard: ({ document }: any) => (
-    <div data-testid="document-card">{document.id}</div>
-  ),
+  DocumentCard: ({ document }: any) => <div data-testid="document-card">{document.id}</div>,
 }));
 
 describe("TabDocuments", () => {

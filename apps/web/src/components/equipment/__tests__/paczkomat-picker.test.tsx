@@ -23,10 +23,7 @@ describe("PaczkomatPicker", () => {
 
     const iframe = screen.getByTitle(/inpost paczkomat/i);
     expect(iframe).toBeInTheDocument();
-    expect(iframe).toHaveAttribute(
-      "src",
-      expect.stringContaining("test-token"),
-    );
+    expect(iframe).toHaveAttribute("src", expect.stringContaining("test-token"));
   });
 
   it("confirm button is disabled when no point selected", () => {

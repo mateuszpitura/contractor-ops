@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Mock Prisma
@@ -27,7 +27,7 @@ vi.mock("../registry.js", () => ({
   ],
 }));
 
-import { getProviderHealth, getAllProviderHealth } from "../services/health-service.js";
+import { getAllProviderHealth, getProviderHealth } from "../services/health-service.js";
 
 // ---------------------------------------------------------------------------
 // Tests

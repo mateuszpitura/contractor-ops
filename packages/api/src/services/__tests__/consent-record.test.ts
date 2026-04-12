@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@contractor-ops/db", () => ({
   prisma: {
@@ -13,12 +13,12 @@ vi.mock("@contractor-ops/db", () => ({
 
 import { prisma } from "@contractor-ops/db";
 import {
-  grantConsent,
-  revokeConsent,
-  getCurrentConsent,
-  getConsentHistory,
-  hasRequiredConsents,
   bulkGrantConsent,
+  getConsentHistory,
+  getCurrentConsent,
+  grantConsent,
+  hasRequiredConsents,
+  revokeConsent,
 } from "../consent-record.js";
 
 const mockPrisma = prisma as unknown as {
@@ -82,11 +82,7 @@ describe("consent-record", () => {
         granted: false,
       });
 
-      const result = await revokeConsent(
-        ORG_ID,
-        USER_ID,
-        "CONTRACTOR_DATA_PROCESSING",
-      );
+      const result = await revokeConsent(ORG_ID, USER_ID, "CONTRACTOR_DATA_PROCESSING");
 
       expect(result).toEqual({ id: "cr_2", version: 2 });
       expect(mockPrisma.consentRecord.create).toHaveBeenCalledWith({
@@ -253,11 +249,7 @@ describe("consent-record", () => {
       ];
       mockPrisma.consentRecord.findMany.mockResolvedValue(records);
 
-      const result = await getConsentHistory(
-        ORG_ID,
-        USER_ID,
-        "CONTRACTOR_DATA_PROCESSING",
-      );
+      const result = await getConsentHistory(ORG_ID, USER_ID, "CONTRACTOR_DATA_PROCESSING");
 
       expect(result).toHaveLength(2);
       expect(result[0].id).toBe("cr_2");
@@ -313,11 +305,7 @@ describe("consent-record", () => {
         granted: true,
       });
 
-      const result = await grantConsent(
-        ORG_ID,
-        USER_ID,
-        "ANALYTICS_REPORTING",
-      );
+      const result = await grantConsent(ORG_ID, USER_ID, "ANALYTICS_REPORTING");
 
       expect(result.version).toBe(3);
       expect(mockPrisma.consentRecord.create).toHaveBeenCalledWith({

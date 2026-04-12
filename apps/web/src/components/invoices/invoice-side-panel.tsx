@@ -1,18 +1,13 @@
 "use client";
 
+import { Mail, Upload } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Upload, Mail } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Link } from "@/i18n/navigation";
 import type { InvoiceRow } from "./invoice-table/columns";
 
@@ -38,14 +33,13 @@ const statusBadgeColors: Record<string, string> = {
 // Match status indicator
 // ---------------------------------------------------------------------------
 
-const matchStatusConfig: Record<string, { dotClass: string; labelKey: string }> =
-  {
-    MATCHED: { dotClass: "bg-green-500", labelKey: "strongMatch" },
-    PARTIAL: { dotClass: "bg-amber-500", labelKey: "partialMatch" },
-    DISCREPANCY: { dotClass: "bg-red-500", labelKey: "discrepancy" },
-    UNMATCHED: { dotClass: "bg-muted-foreground", labelKey: "unmatched" },
-    MANUALLY_CONFIRMED: { dotClass: "bg-blue-500", labelKey: "manualMatch" },
-  };
+const matchStatusConfig: Record<string, { dotClass: string; labelKey: string }> = {
+  MATCHED: { dotClass: "bg-green-500", labelKey: "strongMatch" },
+  PARTIAL: { dotClass: "bg-amber-500", labelKey: "partialMatch" },
+  DISCREPANCY: { dotClass: "bg-red-500", labelKey: "discrepancy" },
+  UNMATCHED: { dotClass: "bg-muted-foreground", labelKey: "unmatched" },
+  MANUALLY_CONFIRMED: { dotClass: "bg-blue-500", labelKey: "manualMatch" },
+};
 
 // ---------------------------------------------------------------------------
 // Currency / minor-unit formatter
@@ -83,11 +77,7 @@ interface InvoiceSidePanelProps {
  * Slide-out side panel showing invoice summary.
  * Opens from right on row click. 480px on desktop, 400px on tablet.
  */
-export function InvoiceSidePanel({
-  invoice,
-  open,
-  onOpenChange,
-}: InvoiceSidePanelProps) {
+export function InvoiceSidePanel({ invoice, open, onOpenChange }: InvoiceSidePanelProps) {
   const t = useTranslations("Invoices");
   const ts = useTranslations("Invoices.sidePanel");
 
@@ -107,13 +97,8 @@ export function InvoiceSidePanel({
                 {invoice.invoiceNumber}
               </SheetTitle>
               <div className="flex items-center gap-2 flex-wrap">
-                <Badge
-                  variant="secondary"
-                  className={statusBadgeColors[invoice.status] ?? ""}
-                >
-                  {t(
-                    `status.${invoice.status}` as Parameters<typeof t>[0],
-                  )}
+                <Badge variant="secondary" className={statusBadgeColors[invoice.status] ?? ""}>
+                  {t(`status.${invoice.status}` as Parameters<typeof t>[0])}
                 </Badge>
                 {invoice.source === "MANUAL_UPLOAD" ? (
                   <Upload className="h-4 w-4 text-muted-foreground" />
@@ -136,15 +121,8 @@ export function InvoiceSidePanel({
                   value={formatMinorUnits(invoice.subtotalMinor)}
                   mono
                 />
-                <DetailItem
-                  label={ts("gross")}
-                  value={formatMinorUnits(invoice.totalMinor)}
-                  mono
-                />
-                <DetailItem
-                  label={t("columns.currency")}
-                  value={invoice.currency}
-                />
+                <DetailItem label={ts("gross")} value={formatMinorUnits(invoice.totalMinor)} mono />
+                <DetailItem label={t("columns.currency")} value={invoice.currency} />
               </div>
             </div>
 
@@ -165,14 +143,8 @@ export function InvoiceSidePanel({
                   }
                 />
                 <div className="space-y-1">
-                  <dt className="text-[13px] text-muted-foreground">
-                    {t("columns.dueDate")}
-                  </dt>
-                  <dd
-                    className={
-                      overdue ? "text-destructive font-medium" : ""
-                    }
-                  >
+                  <dt className="text-[13px] text-muted-foreground">{t("columns.dueDate")}</dt>
+                  <dd className={overdue ? "text-destructive font-medium" : ""}>
                     {invoice.dueDate
                       ? new Date(invoice.dueDate).toLocaleDateString("pl-PL")
                       : "\u2014"}
@@ -191,15 +163,9 @@ export function InvoiceSidePanel({
               <div className="flex items-center gap-2 text-sm">
                 {matchConfig ? (
                   <>
-                    <span
-                      className={`inline-block h-2 w-2 rounded-full ${matchConfig.dotClass}`}
-                    />
+                    <span className={`inline-block h-2 w-2 rounded-full ${matchConfig.dotClass}`} />
                     <span>
-                      {t(
-                        `matchStatus.${matchConfig.labelKey}` as Parameters<
-                          typeof t
-                        >[0],
-                      )}
+                      {t(`matchStatus.${matchConfig.labelKey}` as Parameters<typeof t>[0])}
                     </span>
                   </>
                 ) : (
@@ -219,10 +185,7 @@ export function InvoiceSidePanel({
             <Separator />
 
             {/* Open full invoice CTA */}
-            <Button
-              render={<Link href={`/invoices/${invoice.id}`} />}
-              className="w-full"
-            >
+            <Button render={<Link href={`/invoices/${invoice.id}`} />} className="w-full">
               {ts("openInvoice")}
             </Button>
           </div>

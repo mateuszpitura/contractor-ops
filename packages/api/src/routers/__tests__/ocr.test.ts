@@ -7,7 +7,7 @@
  * retrigger has inline Prisma logic for finding existing extraction and document.
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -360,9 +360,9 @@ describe("ocr.retrigger", () => {
   it("throws when extraction not found (org-scoped)", async () => {
     mockPrisma.ocrExtraction.findFirst.mockResolvedValue(null);
 
-    await expect(
-      tenantCaller.ocr.retrigger({ extractionId: "nonexistent" }),
-    ).rejects.toThrow("Extraction not found");
+    await expect(tenantCaller.ocr.retrigger({ extractionId: "nonexistent" })).rejects.toThrow(
+      "Extraction not found",
+    );
   });
 });
 
@@ -412,10 +412,7 @@ describe("ocr.portalGetResult", () => {
       const fs = await import("node:fs");
       const path = await import("node:path");
       const sourceDir = path.resolve(import.meta.dirname, "../../routers");
-      const source = fs.readFileSync(
-        path.join(sourceDir, "ocr.ts"),
-        "utf-8",
-      );
+      const source = fs.readFileSync(path.join(sourceDir, "ocr.ts"), "utf-8");
 
       expect(source).toContain('import { requireTier } from "../middleware/tier.js"');
       expect(source).toContain('requireTier("PRO")');
@@ -428,13 +425,13 @@ describe("ocr.portalGetResult", () => {
       const fs = await import("node:fs");
       const path = await import("node:path");
       const sourceDir = path.resolve(import.meta.dirname, "../../routers");
-      const source = fs.readFileSync(
-        path.join(sourceDir, "ocr.ts"),
-        "utf-8",
-      );
+      const source = fs.readFileSync(path.join(sourceDir, "ocr.ts"), "utf-8");
 
       for (const proc of ["getResult", "getByDocument"]) {
-        const procRegex = new RegExp(`${proc}:\\s*tenantProcedure[\\s\\S]*?(?=\\w+:\\s*tenantProcedure|\\}\\);$)`, "m");
+        const procRegex = new RegExp(
+          `${proc}:\\s*tenantProcedure[\\s\\S]*?(?=\\w+:\\s*tenantProcedure|\\}\\);$)`,
+          "m",
+        );
         const match = source.match(procRegex);
         if (match) {
           expect(match[0]).not.toContain("requireTier");

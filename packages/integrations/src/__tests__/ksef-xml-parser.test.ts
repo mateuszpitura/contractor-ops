@@ -1,7 +1,7 @@
-import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { parseFa3Xml, mapKsefToInvoiceFields } from "../services/ksef-xml-parser.js";
+import { describe, expect, it } from "vitest";
+import { mapKsefToInvoiceFields, parseFa3Xml } from "../services/ksef-xml-parser.js";
 
 const FIXTURE_PATH = resolve(__dirname, "fixtures/sample-fa3.xml");
 const sampleXml = readFileSync(FIXTURE_PATH, "utf-8");
@@ -35,8 +35,7 @@ describe("parseFa3Xml", () => {
   });
 
   it("handles missing optional payment fields", () => {
-    const xmlWithoutPayment = sampleXml
-      .replace(/<Platnosc>[\s\S]*?<\/Platnosc>/, "");
+    const xmlWithoutPayment = sampleXml.replace(/<Platnosc>[\s\S]*?<\/Platnosc>/, "");
 
     const result = parseFa3Xml(xmlWithoutPayment, "KSEF-REF-002");
 
@@ -45,21 +44,14 @@ describe("parseFa3Xml", () => {
   });
 
   it("throws on malformed XML (not valid XML at all)", () => {
-    expect(() =>
-      parseFa3Xml("this is not xml at all {{{", "KSEF-REF-BAD"),
-    ).toThrow();
+    expect(() => parseFa3Xml("this is not xml at all {{{", "KSEF-REF-BAD")).toThrow();
   });
 
   it("throws on XML missing required seller NIP", () => {
     // Remove the seller NIP element to trigger Zod validation failure
-    const xmlWithoutSellerNip = sampleXml.replace(
-      /<NIP>5261040828<\/NIP>/,
-      "",
-    );
+    const xmlWithoutSellerNip = sampleXml.replace(/<NIP>5261040828<\/NIP>/, "");
 
-    expect(() =>
-      parseFa3Xml(xmlWithoutSellerNip, "KSEF-REF-NO-NIP"),
-    ).toThrow();
+    expect(() => parseFa3Xml(xmlWithoutSellerNip, "KSEF-REF-NO-NIP")).toThrow();
   });
 });
 

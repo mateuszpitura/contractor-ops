@@ -1,10 +1,9 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { format, formatDistanceStrict } from "date-fns";
 import { UserPlus } from "lucide-react";
-
-import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -13,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+import { Link } from "@/i18n/navigation";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -43,22 +42,15 @@ interface TabAssignmentsProps {
 // Component
 // ---------------------------------------------------------------------------
 
-export function TabAssignments({
-  assignments,
-  currentAssignmentId,
-}: TabAssignmentsProps) {
+export function TabAssignments({ assignments, currentAssignmentId }: TabAssignmentsProps) {
   const t = useTranslations("Equipment.detail");
 
   if (assignments.length === 0) {
     return (
       <div className="flex min-h-[300px] flex-col items-center justify-center text-center">
         <UserPlus className="h-10 w-10 text-muted-foreground/50" />
-        <h3 className="mt-3 text-[16px] font-medium">
-          {t("assignmentsEmpty")}
-        </h3>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {t("assignmentsEmptyDescription")}
-        </p>
+        <h3 className="mt-3 text-[16px] font-medium">{t("assignmentsEmpty")}</h3>
+        <p className="mt-1 text-sm text-muted-foreground">{t("assignmentsEmptyDescription")}</p>
       </div>
     );
   }
@@ -83,23 +75,16 @@ export function TabAssignments({
                   new Date(assignment.assignedAt),
                   new Date(assignment.unassignedAt),
                 )
-              : formatDistanceStrict(
-                  new Date(assignment.assignedAt),
-                  new Date(),
-                ) + " (active)";
+              : formatDistanceStrict(new Date(assignment.assignedAt), new Date()) + " (active)";
 
             return (
-              <TableRow
-                key={assignment.id}
-                className={isCurrent ? "bg-primary/5" : ""}
-              >
+              <TableRow key={assignment.id} className={isCurrent ? "bg-primary/5" : ""}>
                 <TableCell>
                   <Link
                     href={`/contractors/${assignment.contractor.id}`}
                     className="font-medium hover:underline"
                   >
-                    {assignment.contractor.displayName ??
-                      assignment.contractor.legalName}
+                    {assignment.contractor.displayName ?? assignment.contractor.legalName}
                   </Link>
                   {isCurrent && (
                     <Badge variant="success" className="ms-2">
@@ -112,15 +97,10 @@ export function TabAssignments({
                 </TableCell>
                 <TableCell className="text-sm">
                   {assignment.unassignedAt
-                    ? format(
-                        new Date(assignment.unassignedAt),
-                        "MMM d, yyyy",
-                      )
+                    ? format(new Date(assignment.unassignedAt), "MMM d, yyyy")
                     : "\u2014"}
                 </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {duration}
-                </TableCell>
+                <TableCell className="text-sm text-muted-foreground">{duration}</TableCell>
                 <TableCell className="max-w-[200px] text-sm text-muted-foreground">
                   {assignment.notes ? (
                     <span className="line-clamp-2">{assignment.notes}</span>

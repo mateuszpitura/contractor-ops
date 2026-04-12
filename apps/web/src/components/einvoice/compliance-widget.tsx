@@ -2,21 +2,17 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { FileCheck } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
+import { PeppolComplianceWidget } from "@/components/peppol/peppol-compliance-widget";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "@/i18n/navigation";
-import { PeppolComplianceWidget } from "@/components/peppol/peppol-compliance-widget";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // State → color mapping (per D-08: green/yellow/red/gray)
 // ---------------------------------------------------------------------------
 
-const stateStyles: Record<
-  string,
-  { bg: string; text: string; dot: string }
-> = {
+const stateStyles: Record<string, { bg: string; text: string; dot: string }> = {
   active: {
     bg: "bg-emerald-50 dark:bg-emerald-950/30",
     text: "text-emerald-700 dark:text-emerald-400",
@@ -74,9 +70,7 @@ const stateLabels: Record<string, string> = {
  * gray (not connected).
  */
 export function EInvoiceComplianceWidget() {
-  const { data, isLoading } = useQuery(
-    trpc.einvoice.complianceStatuses.queryOptions(),
-  );
+  const { data, isLoading } = useQuery(trpc.einvoice.complianceStatuses.queryOptions());
   const { data: peppolStatus } = useQuery(trpc.peppol.getStatus.queryOptions());
 
   if (isLoading) {
@@ -98,7 +92,8 @@ export function EInvoiceComplianceWidget() {
   const peppolState = peppolStatus
     ? peppolStatus.participant.status === "ACTIVE"
       ? "active"
-      : peppolStatus.participant.status === "PENDING" || peppolStatus.participant.status === "REGISTERED"
+      : peppolStatus.participant.status === "PENDING" ||
+          peppolStatus.participant.status === "REGISTERED"
         ? "onboarding"
         : peppolStatus.participant.status === "SUSPENDED"
           ? "suspended"
@@ -119,8 +114,7 @@ export function EInvoiceComplianceWidget() {
       </CardHeader>
       <CardContent className="space-y-2">
         {statuses.map((status) => {
-          const style =
-            stateStyles[status.state] ?? stateStyles.not_connected;
+          const style = stateStyles[status.state] ?? stateStyles.not_connected;
           const label = stateLabels[status.state] ?? status.state;
           return (
             <Link
@@ -133,13 +127,9 @@ export function EInvoiceComplianceWidget() {
                   className={`inline-block h-2 w-2 rounded-full ${style.dot}`}
                   aria-hidden="true"
                 />
-                <span className="text-sm font-medium">
-                  {status.displayName}
-                </span>
+                <span className="text-sm font-medium">{status.displayName}</span>
               </div>
-              <span className={`text-xs font-medium ${style.text}`}>
-                {label}
-              </span>
+              <span className={`text-xs font-medium ${style.text}`}>{label}</span>
             </Link>
           );
         })}

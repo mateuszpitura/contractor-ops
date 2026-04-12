@@ -1,37 +1,37 @@
-import { z } from "zod";
-import { TRPCError } from "@trpc/server";
 import { prisma } from "@contractor-ops/db";
 import type { Prisma } from "@contractor-ops/db/generated/prisma/client";
 import {
-  equipmentCreateSchema,
-  equipmentUpdateSchema,
-  equipmentListSchema,
-  equipmentAssignSchema,
-  equipmentUnassignSchema,
-  shipmentCreateSchema,
-  shipmentEventCreateSchema,
-  inpostShipmentCreateSchema,
-  dpdShipmentCreateSchema,
-  upsShipmentCreateSchema,
   dpdConfigSchema,
-  upsConfigSchema,
+  dpdShipmentCreateSchema,
+  equipmentAssignSchema,
+  equipmentCreateSchema,
+  equipmentListSchema,
+  equipmentUnassignSchema,
+  equipmentUpdateSchema,
+  inpostShipmentCreateSchema,
   returnRequestApproveSchema,
   returnRequestRejectSchema,
   returnRequestStatusEnum,
+  shipmentCreateSchema,
+  shipmentEventCreateSchema,
+  upsConfigSchema,
+  upsShipmentCreateSchema,
 } from "@contractor-ops/validators";
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 import { router } from "../init.js";
-import { tenantProcedure } from "../middleware/tenant.js";
 import { adminProcedure, requirePermission } from "../middleware/rbac.js";
+import { tenantProcedure } from "../middleware/tenant.js";
 import { requireTier } from "../middleware/tier.js";
-import { checkShipmentTaskCompletion } from "../services/equipment-workflow.js";
-import { InPostClient } from "../services/courier/inpost-client.js";
-import type { InPostClientConfig } from "../services/courier/inpost-client.js";
-import { DPDClient } from "../services/courier/dpd-client.js";
-import type { DPDClientConfig } from "../services/courier/dpd-client.js";
-import { UPSClient } from "../services/courier/ups-client.js";
-import type { UPSClientConfig } from "../services/courier/ups-client.js";
-import { dispatch } from "../services/notification-service.js";
 import { getCourierClient } from "../services/courier/carrier-factory.js";
+import type { DPDClientConfig } from "../services/courier/dpd-client.js";
+import { DPDClient } from "../services/courier/dpd-client.js";
+import type { InPostClientConfig } from "../services/courier/inpost-client.js";
+import { InPostClient } from "../services/courier/inpost-client.js";
+import type { UPSClientConfig } from "../services/courier/ups-client.js";
+import { UPSClient } from "../services/courier/ups-client.js";
+import { checkShipmentTaskCompletion } from "../services/equipment-workflow.js";
+import { dispatch } from "../services/notification-service.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -69,19 +69,17 @@ const EQUIPMENT_STATUS_TRANSITIONS: Record<string, string[]> = {
  * Maps a (shipment status, direction) pair to the resulting equipment status.
  * Only certain terminal shipment statuses trigger an equipment status change.
  */
-const SHIPMENT_TO_EQUIPMENT_STATUS: Record<
-  string,
-  Record<string, string | undefined> | undefined
-> = {
-  DELIVERED: {
-    OUTBOUND: "DELIVERED",
-    RETURN: "RETURNED",
-  },
-  RETURNED: {
-    OUTBOUND: undefined,
-    RETURN: "RETURNED",
-  },
-};
+const SHIPMENT_TO_EQUIPMENT_STATUS: Record<string, Record<string, string | undefined> | undefined> =
+  {
+    DELIVERED: {
+      OUTBOUND: "DELIVERED",
+      RETURN: "RETURNED",
+    },
+    RETURNED: {
+      OUTBOUND: undefined,
+      RETURN: "RETURNED",
+    },
+  };
 
 // ---------------------------------------------------------------------------
 // Error constants
@@ -225,8 +223,7 @@ export const equipmentRouter = router({
         });
       }
 
-      const currentAssignment =
-        equipment.assignments.find((a) => !a.unassignedAt) ?? null;
+      const currentAssignment = equipment.assignments.find((a) => !a.unassignedAt) ?? null;
 
       return plain({
         ...equipment,
@@ -688,8 +685,7 @@ export const equipmentRouter = router({
         const newEquipmentStatus = directionMap?.[shipment.direction];
 
         if (newEquipmentStatus) {
-          const allowedTransitions =
-            EQUIPMENT_STATUS_TRANSITIONS[shipment.equipment.status] ?? [];
+          const allowedTransitions = EQUIPMENT_STATUS_TRANSITIONS[shipment.equipment.status] ?? [];
           if (allowedTransitions.includes(newEquipmentStatus)) {
             await tx.equipment.update({
               where: { id: shipment.equipmentId },
@@ -985,9 +981,7 @@ export const equipmentRouter = router({
         },
         targetPoint: input.targetPointId,
         parcelSize: input.parcelSize,
-        reference: input.workflowTaskRunId
-          ? `workflow-${input.workflowTaskRunId}`
-          : undefined,
+        reference: input.workflowTaskRunId ? `workflow-${input.workflowTaskRunId}` : undefined,
       });
 
       // Determine new equipment status
@@ -1190,9 +1184,7 @@ export const equipmentRouter = router({
         },
         deliveryAddress: input.deliveryAddress,
         parcelSize: input.parcelSize,
-        reference: input.workflowTaskRunId
-          ? `workflow-${input.workflowTaskRunId}`
-          : undefined,
+        reference: input.workflowTaskRunId ? `workflow-${input.workflowTaskRunId}` : undefined,
       });
 
       // 4. Create DB records for each equipment item
@@ -1378,9 +1370,7 @@ export const equipmentRouter = router({
         deliveryAddress: input.deliveryAddress,
         parcelSize: input.parcelSize,
         serviceCode: input.serviceCode,
-        reference: input.workflowTaskRunId
-          ? `workflow-${input.workflowTaskRunId}`
-          : undefined,
+        reference: input.workflowTaskRunId ? `workflow-${input.workflowTaskRunId}` : undefined,
       });
 
       // 4. Create DB records for each equipment item
@@ -1547,11 +1537,7 @@ export const equipmentRouter = router({
         // If the error is about the shipment not being found, that means
         // auth succeeded -- the API accepted our credentials.
         const msg = error instanceof Error ? error.message : String(error);
-        if (
-          msg.includes("not found") ||
-          msg.includes("NOT_FOUND") ||
-          msg.includes("404")
-        ) {
+        if (msg.includes("not found") || msg.includes("NOT_FOUND") || msg.includes("404")) {
           return { success: true as const };
         }
         return {

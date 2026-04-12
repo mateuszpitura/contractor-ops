@@ -1,5 +1,5 @@
-import type { KsefParsedInvoice } from "./schemas.js";
 import type { EInvoice, EInvoiceTaxSubtotal } from "../../types/invoice.js";
+import type { KsefParsedInvoice } from "./schemas.js";
 
 // ---------------------------------------------------------------------------
 // KSeF → Prisma Invoice Model Mapper
@@ -14,10 +14,7 @@ export function mapKsefToInvoiceFields(parsed: KsefParsedInvoice) {
   const vatRateCounts = new Map<string, number>();
   for (const line of parsed.lines) {
     if (line.vatRate) {
-      vatRateCounts.set(
-        line.vatRate,
-        (vatRateCounts.get(line.vatRate) ?? 0) + 1,
-      );
+      vatRateCounts.set(line.vatRate, (vatRateCounts.get(line.vatRate) ?? 0) + 1);
     }
   }
   let primaryVatRate: string | null = null;
@@ -35,9 +32,7 @@ export function mapKsefToInvoiceFields(parsed: KsefParsedInvoice) {
     source: "KSEF" as const,
     sourceReference: parsed.upoNumber ?? null,
     issueDate: new Date(parsed.issueDate),
-    dueDate: parsed.payment?.dueDate
-      ? new Date(parsed.payment.dueDate)
-      : null,
+    dueDate: parsed.payment?.dueDate ? new Date(parsed.payment.dueDate) : null,
     currency: parsed.currency,
     subtotalMinor: parsed.totals.netMinor,
     vatRate: primaryVatRate,
@@ -103,10 +98,7 @@ function mapPaymentMethodCode(method: string | undefined): string | undefined {
  */
 export function ksefToEInvoice(parsed: KsefParsedInvoice): EInvoice {
   // Build tax breakdown by grouping lines by vatRate
-  const taxGroups = new Map<
-    string,
-    { taxable: number; tax: number; rate: number }
-  >();
+  const taxGroups = new Map<string, { taxable: number; tax: number; rate: number }>();
   for (const line of parsed.lines) {
     const key = line.vatRate ?? "0";
     const existing = taxGroups.get(key) ?? { taxable: 0, tax: 0, rate: 0 };
@@ -116,9 +108,7 @@ export function ksefToEInvoice(parsed: KsefParsedInvoice): EInvoice {
     taxGroups.set(key, existing);
   }
 
-  const taxBreakdown: EInvoiceTaxSubtotal[] = Array.from(
-    taxGroups.entries(),
-  ).map(([, group]) => ({
+  const taxBreakdown: EInvoiceTaxSubtotal[] = Array.from(taxGroups.entries()).map(([, group]) => ({
     taxableAmountMinor: group.taxable,
     taxAmountMinor: group.tax,
     taxCategory: group.rate > 0 ? "S" : "Z",

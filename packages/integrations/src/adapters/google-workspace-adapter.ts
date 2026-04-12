@@ -1,6 +1,7 @@
-import type { OAuthConfig } from "../types/provider.js";
+import { prisma } from "@contractor-ops/db";
 import type { CredentialBlob } from "../types/credentials.js";
 import type { ProviderHealthStatus } from "../types/health.js";
+import type { OAuthConfig } from "../types/provider.js";
 import { BaseAdapter } from "./base-adapter.js";
 
 // ---------------------------------------------------------------------------
@@ -85,10 +86,7 @@ export class GoogleWorkspaceAdapter extends BaseAdapter {
     return GOOGLE_WORKSPACE_OAUTH_CONFIG;
   }
 
-  async exchangeCodeForTokens(
-    code: string,
-    redirectUri: string,
-  ): Promise<CredentialBlob> {
+  async exchangeCodeForTokens(code: string, redirectUri: string): Promise<CredentialBlob> {
     const clientId = process.env.GOOGLE_WORKSPACE_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_WORKSPACE_CLIENT_SECRET;
 
@@ -130,9 +128,7 @@ export class GoogleWorkspaceAdapter extends BaseAdapter {
       refreshToken: data.refresh_token,
       tokenType: data.token_type,
       scope: data.scope,
-      expiresAt: new Date(
-        Date.now() + data.expires_in * 1000,
-      ).toISOString(),
+      expiresAt: new Date(Date.now() + data.expires_in * 1000).toISOString(),
     };
   }
 
@@ -180,9 +176,7 @@ export class GoogleWorkspaceAdapter extends BaseAdapter {
       refreshToken: credentials.refreshToken, // Google doesn't rotate refresh tokens
       tokenType: data.token_type,
       scope: data.scope,
-      expiresAt: new Date(
-        Date.now() + data.expires_in * 1000,
-      ).toISOString(),
+      expiresAt: new Date(Date.now() + data.expires_in * 1000).toISOString(),
     };
   }
 
@@ -195,16 +189,12 @@ export class GoogleWorkspaceAdapter extends BaseAdapter {
    * Paginates through the Admin SDK Directory API with `customer=my_customer`
    * to list all users across the domain.
    */
-  async listAllDirectoryUsers(
-    accessToken: string,
-  ): Promise<GoogleDirectoryUser[]> {
+  async listAllDirectoryUsers(accessToken: string): Promise<GoogleDirectoryUser[]> {
     const allUsers: GoogleDirectoryUser[] = [];
     let pageToken: string | undefined;
 
     do {
-      const url = new URL(
-        "https://admin.googleapis.com/admin/directory/v1/users",
-      );
+      const url = new URL("https://admin.googleapis.com/admin/directory/v1/users");
       url.searchParams.set("customer", "my_customer");
       url.searchParams.set("maxResults", "500");
       url.searchParams.set("projection", "FULL");
@@ -221,9 +211,7 @@ export class GoogleWorkspaceAdapter extends BaseAdapter {
 
       if (!response.ok) {
         const text = await response.text();
-        throw new Error(
-          `Google Workspace Directory API failed (${response.status}): ${text}`,
-        );
+        throw new Error(`Google Workspace Directory API failed (${response.status}): ${text}`);
       }
 
       const data = (await response.json()) as {
@@ -247,17 +235,12 @@ export class GoogleWorkspaceAdapter extends BaseAdapter {
    * Lists all groups a user belongs to in the Google Workspace directory.
    * Returns empty array on 404 (user not in any groups).
    */
-  async listUserGroups(
-    accessToken: string,
-    userEmail: string,
-  ): Promise<GoogleGroup[]> {
+  async listUserGroups(accessToken: string, userEmail: string): Promise<GoogleGroup[]> {
     const allGroups: GoogleGroup[] = [];
     let pageToken: string | undefined;
 
     do {
-      const url = new URL(
-        "https://admin.googleapis.com/admin/directory/v1/groups",
-      );
+      const url = new URL("https://admin.googleapis.com/admin/directory/v1/groups");
       url.searchParams.set("userKey", userEmail);
       url.searchParams.set("maxResults", "200");
       if (pageToken) {
@@ -277,9 +260,7 @@ export class GoogleWorkspaceAdapter extends BaseAdapter {
 
       if (!response.ok) {
         const text = await response.text();
-        throw new Error(
-          `Google Workspace Groups API failed (${response.status}): ${text}`,
-        );
+        throw new Error(`Google Workspace Groups API failed (${response.status}): ${text}`);
       }
 
       const data = (await response.json()) as {
@@ -302,8 +283,6 @@ export class GoogleWorkspaceAdapter extends BaseAdapter {
   // -------------------------------------------------------------------------
 
   async getHealthStatus(connectionId: string): Promise<ProviderHealthStatus> {
-    const { prisma } = await import("@contractor-ops/db");
-
     const connection = await prisma.integrationConnection.findUnique({
       where: { id: connectionId },
       select: {
@@ -356,15 +335,9 @@ export class GoogleWorkspaceAdapter extends BaseAdapter {
       status = "DISCONNECTED";
     } else if (connection.lastErrorAt && !connection.lastSuccessAt) {
       status = "ERROR";
-    } else if (
-      connection.tokenExpiresAt &&
-      connection.tokenExpiresAt < new Date()
-    ) {
+    } else if (connection.tokenExpiresAt && connection.tokenExpiresAt < new Date()) {
       status = "REAUTH_REQUIRED";
-    } else if (
-      recentSyncs.length > 0 &&
-      recentSyncs[0]!.status === "FAILED"
-    ) {
+    } else if (recentSyncs.length > 0 && recentSyncs[0]!.status === "FAILED") {
       status = "ERROR";
     } else {
       status = "CONNECTED";

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@/test/test-utils";
 import { LinearIssueChip } from "../linear-issue-chip";
 
@@ -17,11 +17,7 @@ vi.mock("@/components/ui/tooltip", () => ({
   }) => {
     if (renderProp) {
       const { props } = renderProp as React.ReactElement<Record<string, unknown>>;
-      return (
-        <a {...(props as React.AnchorHTMLAttributes<HTMLAnchorElement>)}>
-          {children}
-        </a>
-      );
+      return <a {...(props as React.AnchorHTMLAttributes<HTMLAnchorElement>)}>{children}</a>;
     }
     return <div>{children}</div>;
   },
@@ -55,9 +51,7 @@ describe("LinearIssueChip", () => {
 
   it("renders a link to the issue url", () => {
     render(<LinearIssueChip {...baseProps} />);
-    const link = screen.getByLabelText(
-      "Open Linear issue ENG-123 in new tab",
-    );
+    const link = screen.getByLabelText("Open Linear issue ENG-123 in new tab");
     expect(link).toHaveAttribute("href", "https://linear.app/team/ENG-123");
     expect(link).toHaveAttribute("target", "_blank");
     expect(link).toHaveAttribute("rel", "noopener noreferrer");
@@ -76,9 +70,7 @@ describe("LinearIssueChip", () => {
 
   it("applies custom className", () => {
     render(<LinearIssueChip {...baseProps} className="extra" />);
-    const link = screen.getByLabelText(
-      "Open Linear issue ENG-123 in new tab",
-    );
+    const link = screen.getByLabelText("Open Linear issue ENG-123 in new tab");
     expect(link.className).toContain("extra");
   });
 
@@ -89,25 +81,19 @@ describe("LinearIssueChip", () => {
   });
 
   it("uses bg-success for completed statusType", () => {
-    const { container } = render(
-      <LinearIssueChip {...baseProps} statusType="completed" />,
-    );
+    const { container } = render(<LinearIssueChip {...baseProps} statusType="completed" />);
     const dot = container.querySelector(".rounded-full");
     expect(dot?.className).toContain("bg-success");
   });
 
   it("uses bg-destructive for cancelled statusType", () => {
-    const { container } = render(
-      <LinearIssueChip {...baseProps} statusType="cancelled" />,
-    );
+    const { container } = render(<LinearIssueChip {...baseProps} statusType="cancelled" />);
     const dot = container.querySelector(".rounded-full");
     expect(dot?.className).toContain("bg-destructive");
   });
 
   it("uses bg-muted-foreground for backlog statusType", () => {
-    const { container } = render(
-      <LinearIssueChip {...baseProps} statusType="backlog" />,
-    );
+    const { container } = render(<LinearIssueChip {...baseProps} statusType="backlog" />);
     const dot = container.querySelector(".rounded-full");
     expect(dot?.className).toContain("bg-muted-foreground");
   });

@@ -3,11 +3,11 @@
 // or R2_BUCKET_NAME_EU for backward compatibility.
 
 import {
-  S3Client,
-  PutObjectCommand,
+  DeleteObjectCommand,
   GetObjectCommand,
   HeadObjectCommand,
-  DeleteObjectCommand,
+  PutObjectCommand,
+  S3Client,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
@@ -37,9 +37,7 @@ export function createR2Client(): S3Client {
 
 function getDefaultBucket(): string {
   return (
-    process.env.R2_BUCKET_NAME ??
-    process.env.R2_BUCKET_NAME_EU ??
-    "contractor-ops-documents-eu"
+    process.env.R2_BUCKET_NAME ?? process.env.R2_BUCKET_NAME_EU ?? "contractor-ops-documents-eu"
   );
 }
 
@@ -51,11 +49,7 @@ function getDefaultBucket(): string {
  * Generates a deterministic storage key for a document.
  * Format: `orgs/{orgId}/documents/{docId}.{ext}`
  */
-export function generateStorageKey(
-  orgId: string,
-  docId: string,
-  filename: string,
-): string {
+export function generateStorageKey(orgId: string, docId: string, filename: string): string {
   const ext = filename.split(".").pop() ?? "";
   return `orgs/${orgId}/documents/${docId}${ext ? `.${ext}` : ""}`;
 }
@@ -86,10 +80,7 @@ export async function createPresignedUploadUrl(
  * Creates a presigned GET URL for downloading a file from R2.
  * Default expiry: 15 minutes.
  */
-export async function createPresignedDownloadUrl(
-  key: string,
-  expiresIn = 900,
-): Promise<string> {
+export async function createPresignedDownloadUrl(key: string, expiresIn = 900): Promise<string> {
   const client = createR2Client();
   const command = new GetObjectCommand({
     Bucket: getDefaultBucket(),

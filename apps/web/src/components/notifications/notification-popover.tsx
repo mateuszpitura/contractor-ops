@@ -1,25 +1,17 @@
 "use client";
 
-import { Bell, BellOff } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Bell, BellOff } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-
-import { trpc } from "@/trpc/init";
-import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  NotificationItem,
-  getEntityUrl,
-  type NotificationData,
-} from "./notification-item";
+import { useRouter } from "@/i18n/navigation";
+import { trpc } from "@/trpc/init";
+import type { NotificationData } from "./notification-item";
+import { getEntityUrl, NotificationItem } from "./notification-item";
 
 // ---------------------------------------------------------------------------
 // Loading skeletons
@@ -58,8 +50,7 @@ export function NotificationPopover() {
     refetchIntervalInBackground: false,
   });
 
-  const unreadCount = (unreadQuery.data as { count: number } | undefined)
-    ?.count ?? 0;
+  const unreadCount = (unreadQuery.data as { count: number } | undefined)?.count ?? 0;
 
   // List query -- only fetches when popover is open (enabled below is always true,
   // but we refetch on open via the popover onOpenChange)
@@ -68,9 +59,7 @@ export function NotificationPopover() {
     enabled: true,
   });
 
-  const notifications = (
-    listQuery.data as { items: NotificationData[] } | undefined
-  )?.items ?? [];
+  const notifications = (listQuery.data as { items: NotificationData[] } | undefined)?.items ?? [];
 
   // Mark single notification as read
   const markReadMutation = useMutation(
@@ -131,7 +120,11 @@ export function NotificationPopover() {
             variant="ghost"
             size="icon"
             className="relative h-8 w-8"
-            aria-label={unreadCount > 0 ? tAria("notificationsWithUnread", { title: t("title"), count: unreadCount }) : t("title")}
+            aria-label={
+              unreadCount > 0
+                ? tAria("notificationsWithUnread", { title: t("title"), count: unreadCount })
+                : t("title")
+            }
           />
         }
       >
@@ -147,11 +140,7 @@ export function NotificationPopover() {
         )}
       </PopoverTrigger>
 
-      <PopoverContent
-        align="end"
-        sideOffset={8}
-        className="w-96 gap-0 p-0"
-      >
+      <PopoverContent align="end" sideOffset={8} className="w-96 gap-0 p-0">
         {/* Header */}
         <div className="flex items-center justify-between border-b px-4 py-3">
           <span className="text-sm font-semibold">{t("title")}</span>
@@ -174,9 +163,7 @@ export function NotificationPopover() {
           /* Empty state */
           <div className="flex flex-col items-center justify-center py-10">
             <BellOff className="h-8 w-8 text-muted-foreground" />
-            <span className="mt-2 text-sm text-muted-foreground">
-              {t("empty")}
-            </span>
+            <span className="mt-2 text-sm text-muted-foreground">{t("empty")}</span>
           </div>
         ) : (
           <>

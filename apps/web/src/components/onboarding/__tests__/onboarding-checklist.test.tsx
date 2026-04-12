@@ -1,5 +1,5 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { render, screen } from "@/test/test-utils";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { OnboardingChecklist } from "../onboarding-checklist";
 
 vi.mock("@tanstack/react-query", async () => {
@@ -26,7 +26,11 @@ vi.mock("@/hooks/use-permissions", () => ({
 }));
 
 vi.mock("@/i18n/navigation", () => ({
-  Link: ({ children, href, ...props }: any) => <a href={href} {...props}>{children}</a>,
+  Link: ({ children, href, ...props }: any) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
 }));
 
 const mockedUseQuery = vi.mocked(useQuery);
@@ -59,8 +63,12 @@ describe("OnboardingChecklist", () => {
       data: {
         metadata: {
           onboardingCompletedSteps: [
-            "org-details", "invite-team", "add-contractor",
-            "configure-approvals", "connect-slack", "privacyConsent",
+            "org-details",
+            "invite-team",
+            "add-contractor",
+            "configure-approvals",
+            "connect-slack",
+            "privacyConsent",
           ],
         },
       },

@@ -1,16 +1,16 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import {
-  FileText,
   FileSpreadsheet,
+  FileText,
   Image,
-  X,
   Loader2,
-  ShieldCheck,
   ShieldAlert,
+  ShieldCheck,
   ShieldQuestion,
+  X,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -53,8 +53,7 @@ function formatFileSizeData(bytes: number): { key: string; size: string } {
 
 function getFileIcon(mimeType: string) {
   if (mimeType.startsWith("image/")) return Image;
-  if (mimeType.includes("spreadsheet") || mimeType.includes("xlsx"))
-    return FileSpreadsheet;
+  if (mimeType.includes("spreadsheet") || mimeType.includes("xlsx")) return FileSpreadsheet;
   return FileText;
 }
 
@@ -96,9 +95,7 @@ function ScanStatusBadge({ status }: { status: UploadStatus }) {
         </span>
       );
     case "error":
-      return (
-        <span className="text-xs text-destructive">{t("uploadError")}</span>
-      );
+      return <span className="text-xs text-destructive">{t("uploadError")}</span>;
     default:
       return null;
   }
@@ -119,25 +116,19 @@ export function UploadProgress({ file, onRemove }: UploadProgressProps) {
         <p className="truncate text-sm">{file.file.name}</p>
         <div className="mt-0.5 flex items-center gap-2">
           <span className="text-xs text-muted-foreground">
-            {(() => { const { key, size } = formatFileSizeData(file.file.size); return tCommon(`fileSize.${key}` as Parameters<typeof tCommon>[0], { size }); })()}
+            {(() => {
+              const { key, size } = formatFileSizeData(file.file.size);
+              return tCommon(`fileSize.${key}` as Parameters<typeof tCommon>[0], { size });
+            })()}
           </span>
           {file.status === "uploading" ? (
-            <Progress
-              value={file.progress}
-              className="h-1.5 max-w-[120px] flex-1"
-            />
+            <Progress value={file.progress} className="h-1.5 max-w-[120px] flex-1" />
           ) : (
             <ScanStatusBadge status={file.status} />
           )}
         </div>
       </div>
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon-sm"
-        className="shrink-0"
-        onClick={onRemove}
-      >
+      <Button type="button" variant="ghost" size="icon-sm" className="shrink-0" onClick={onRemove}>
         <X className="size-3.5" />
         <span className="sr-only">{tCommon("srOnly.remove")}</span>
       </Button>

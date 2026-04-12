@@ -1,18 +1,18 @@
 // ZATCA schemas — re-exported from @contractor-ops/einvoice
-export {
-  zatcaEnvironmentSchema,
-  zatcaTaxDetailsSchema,
-  zatcaConnectionConfigSchema,
-  zatcaOnboardingStepSchema,
-  zatcaCsrAttributesSchema,
-  zatcaInvoiceFieldsSchema,
-} from "@contractor-ops/einvoice";
 
 export type {
-  ZatcaEnvironment,
-  ZatcaTaxDetails,
   ZatcaConnectionConfig,
-  ZatcaOnboardingStepType,
   ZatcaCsrAttributes,
+  ZatcaEnvironment,
   ZatcaInvoiceFields,
+  ZatcaOnboardingStepType,
+  ZatcaTaxDetails,
+} from "@contractor-ops/einvoice";
+export {
+  zatcaConnectionConfigSchema,
+  zatcaCsrAttributesSchema,
+  zatcaEnvironmentSchema,
+  zatcaInvoiceFieldsSchema,
+  zatcaOnboardingStepSchema,
+  zatcaTaxDetailsSchema,
 } from "@contractor-ops/einvoice";

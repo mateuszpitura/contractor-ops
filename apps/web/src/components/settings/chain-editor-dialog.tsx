@@ -1,21 +1,37 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Loader2, Plus, X } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useCallback, useEffect, useState } from "react";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { Plus, X, Loader2 } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
+import { z } from "zod";
+import type { Condition } from "@/components/settings/condition-builder";
+import { ConditionBuilder } from "@/components/settings/condition-builder";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
@@ -24,36 +40,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Command,
-  CommandInput,
-  CommandList,
-  CommandEmpty,
-  CommandGroup,
-  CommandItem,
-} from "@/components/ui/command";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogFooter,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  ConditionBuilder,
-  type Condition,
-} from "@/components/settings/condition-builder";
+import { Switch } from "@/components/ui/switch";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Form schema (local wizard schema -- mirrors validators/approval.ts)
@@ -86,17 +75,18 @@ const stepSchema = z.object({
   approverType: z.enum(["user", "role"]),
   approverUserId: z.string().nullish(),
   approverRole: z.enum(APPROVER_ROLES).nullish(),
-  slaHours: z.coerce.number().int().min(1, "SLA must be between 1 and 720 hours").max(720, "SLA must be between 1 and 720 hours"),
+  slaHours: z.coerce
+    .number()
+    .int()
+    .min(1, "SLA must be between 1 and 720 hours")
+    .max(720, "SLA must be between 1 and 720 hours"),
   required: z.boolean(),
 });
 
 const chainFormSchema = z.object({
   name: z.string().min(1, "Chain name is required").max(100),
   isDefault: z.boolean(),
-  steps: z
-    .array(stepSchema)
-    .min(1, "Add at least one approval level")
-    .max(3),
+  steps: z.array(stepSchema).min(1, "Add at least one approval level").max(3),
   conditions: z
     .array(
       z.object({
@@ -208,7 +198,9 @@ function UserPicker({
             onValueChange={setSearch}
           />
           <CommandList>
-            <CommandEmpty>{t("approvals.editor.noUsersFound" as Parameters<typeof t>[0])}</CommandEmpty>
+            <CommandEmpty>
+              {t("approvals.editor.noUsersFound" as Parameters<typeof t>[0])}
+            </CommandEmpty>
             <CommandGroup>
               {filteredUsers.map((user) => (
                 <CommandItem
@@ -223,9 +215,7 @@ function UserPicker({
                 >
                   <div className="flex flex-col">
                     <span className="text-sm font-medium">{user.name}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {user.email}
-                    </span>
+                    <span className="text-xs text-muted-foreground">{user.email}</span>
                   </div>
                   <Badge variant="secondary" className="ms-auto">
                     {ROLE_LABELS[user.role] ?? user.role}
@@ -244,11 +234,7 @@ function UserPicker({
 // Component
 // ---------------------------------------------------------------------------
 
-export function ChainEditorDialog({
-  open,
-  onOpenChange,
-  chainData,
-}: ChainEditorDialogProps) {
+export function ChainEditorDialog({ open, onOpenChange, chainData }: ChainEditorDialogProps) {
   const t = useTranslations("Settings");
   const queryClient = useQueryClient();
   const isEditMode = chainData !== null;
@@ -274,9 +260,7 @@ export function ChainEditorDialog({
     if (!open) return;
 
     if (chainData) {
-      const steps = Array.isArray(chainData.stepsJson)
-        ? chainData.stepsJson
-        : [];
+      const steps = Array.isArray(chainData.stepsJson) ? chainData.stepsJson : [];
 
       form.reset({
         name: chainData.name,
@@ -285,7 +269,8 @@ export function ChainEditorDialog({
           name: (s.name as string) ?? "",
           approverType: s.approverUserId ? ("user" as const) : ("role" as const),
           approverUserId: (s.approverUserId as string | null) ?? null,
-          approverRole: (s.approverRole as ChainFormValues["steps"][number]["approverRole"]) ?? null,
+          approverRole:
+            (s.approverRole as ChainFormValues["steps"][number]["approverRole"]) ?? null,
           slaHours: (s.slaHours as number) ?? 24,
           required: (s.required as boolean) ?? true,
         })),
@@ -341,19 +326,15 @@ export function ChainEditorDialog({
     (data: ChainFormValues) => {
       const stepsJson = data.steps.map((step) => ({
         name: step.name,
-        approverUserId:
-          step.approverType === "user" ? (step.approverUserId ?? null) : null,
-        approverRole:
-          step.approverType === "role" ? (step.approverRole ?? null) : null,
+        approverUserId: step.approverType === "user" ? (step.approverUserId ?? null) : null,
+        approverRole: step.approverType === "role" ? (step.approverRole ?? null) : null,
         slaHours: step.slaHours,
         required: step.required,
       }));
 
       const conditionsJson =
         data.conditions && data.conditions.length > 0
-          ? data.conditions.filter(
-              (c) => c.value !== "" && c.value !== undefined,
-            )
+          ? data.conditions.filter((c) => c.value !== "" && c.value !== undefined)
           : null;
 
       if (isEditMode && chainData) {
@@ -391,10 +372,7 @@ export function ChainEditorDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-6"
-        >
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           {/* Section 1: Chain name + default toggle */}
           <div className="space-y-4">
             <div className="space-y-2">
@@ -405,18 +383,14 @@ export function ChainEditorDialog({
                 {...form.register("name")}
               />
               {form.formState.errors.name && (
-                <p className="text-xs text-destructive">
-                  {form.formState.errors.name.message}
-                </p>
+                <p className="text-xs text-destructive">{form.formState.errors.name.message}</p>
               )}
             </div>
 
             <div className="flex items-center justify-between">
               <div>
                 <Label htmlFor="chain-default">{t("approvals.editor.defaultToggle")}</Label>
-                <p className="text-xs text-muted-foreground">
-                  {t("approvals.editor.defaultHelp")}
-                </p>
+                <p className="text-xs text-muted-foreground">{t("approvals.editor.defaultHelp")}</p>
               </div>
               <Controller
                 control={form.control}
@@ -437,9 +411,7 @@ export function ChainEditorDialog({
             <h4 className="text-sm font-semibold">{t("approvals.editor.levelsHeading")}</h4>
 
             {form.formState.errors.steps?.root && (
-              <p className="text-xs text-destructive">
-                {form.formState.errors.steps.root.message}
-              </p>
+              <p className="text-xs text-destructive">{form.formState.errors.steps.root.message}</p>
             )}
 
             {fields.map((field, index) => (
@@ -514,10 +486,7 @@ export function ChainEditorDialog({
                       control={form.control}
                       name={`steps.${index}.approverUserId`}
                       render={({ field: userField }) => (
-                        <UserPicker
-                          value={userField.value}
-                          onChange={userField.onChange}
-                        />
+                        <UserPicker value={userField.value} onChange={userField.onChange} />
                       )}
                     />
                   ) : (
@@ -567,7 +536,9 @@ export function ChainEditorDialog({
 
                   {/* Required toggle */}
                   <div className="flex items-center justify-between">
-                    <Label htmlFor={`step-required-${index}`}>{t("approvals.editor.required")}</Label>
+                    <Label htmlFor={`step-required-${index}`}>
+                      {t("approvals.editor.required")}
+                    </Label>
                     <Controller
                       control={form.control}
                       name={`steps.${index}.required`}
@@ -588,14 +559,7 @@ export function ChainEditorDialog({
             {fields.length >= 3 ? (
               <Tooltip>
                 <TooltipTrigger
-                  render={
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      disabled
-                    />
-                  }
+                  render={<Button type="button" variant="outline" size="sm" disabled />}
                 >
                   <Plus className="me-1.5 size-3.5" />
                   {t("approvals.editor.addLevel")}
@@ -641,9 +605,7 @@ export function ChainEditorDialog({
               {t("approvals.editor.discard")}
             </Button>
             <Button type="submit" disabled={isPending}>
-              {isPending && (
-                <Loader2 className="me-1.5 size-3.5 animate-spin" />
-              )}
+              {isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
               {t("approvals.editor.save")}
             </Button>
           </DialogFooter>

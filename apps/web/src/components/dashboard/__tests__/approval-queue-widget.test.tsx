@@ -1,5 +1,5 @@
-import { render, screen } from "@/test/test-utils";
 import { useQuery } from "@tanstack/react-query";
+import { render, screen } from "@/test/test-utils";
 import { ApprovalQueueWidget } from "../approval-queue-widget";
 
 vi.mock("@tanstack/react-query", async () => {
@@ -16,7 +16,11 @@ vi.mock("@/trpc/init", () => ({
 }));
 
 vi.mock("@/i18n/navigation", () => ({
-  Link: ({ children, href, ...props }: any) => <a href={href} {...props}>{children}</a>,
+  Link: ({ children, href, ...props }: any) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
 }));
 
 const mockedUseQuery = vi.mocked(useQuery);

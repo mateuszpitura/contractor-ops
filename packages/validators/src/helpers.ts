@@ -23,9 +23,6 @@ export const optionalFk = z
  * Converts NaN, empty string, and undefined to undefined before validation.
  */
 export const optionalPositiveInt = z.preprocess(
-  (v) =>
-    v === "" || v === undefined || (typeof v === "number" && isNaN(v))
-      ? undefined
-      : v,
+  (v) => (v === "" || v === undefined || (typeof v === "number" && Number.isNaN(v)) ? undefined : v),
   z.number().int().positive().optional(),
 );

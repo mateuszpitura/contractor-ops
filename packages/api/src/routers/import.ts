@@ -4,18 +4,18 @@
  * row validation, duplicate detection, and batch database operations.
  */
 
-import { z } from "zod";
-import { TRPCError } from "@trpc/server";
 import { prisma } from "@contractor-ops/db";
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
+import * as E from "../errors.js";
 import { router } from "../init.js";
-import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
+import { tenantProcedure } from "../middleware/tenant.js";
 import {
-  parseImportFile,
   autoMapColumns,
+  parseImportFile,
   processImportFile,
 } from "../services/import-processor.js";
-import * as E from "../errors.js";
 
 // ---------------------------------------------------------------------------
 // Shared input schemas
@@ -54,10 +54,7 @@ export const importRouter = router({
       } catch (err) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message:
-            err instanceof Error
-              ? err.message
-              : "Failed to parse import file",
+          message: err instanceof Error ? err.message : "Failed to parse import file",
         });
       }
 
@@ -105,10 +102,7 @@ export const importRouter = router({
       } catch (err) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message:
-            err instanceof Error
-              ? err.message
-              : "Failed to process import file",
+          message: err instanceof Error ? err.message : "Failed to process import file",
         });
       }
     }),
@@ -137,9 +131,7 @@ export const importRouter = router({
       try {
         await prisma.$transaction(async (tx) => {
           for (const row of rows) {
-            const taxId = String(
-              row.taxId ?? row.contractorTaxId ?? "",
-            ).trim();
+            const taxId = String(row.taxId ?? row.contractorTaxId ?? "").trim();
             const duplicateAction = duplicateActions[taxId];
 
             if (entityType === "contractor") {
@@ -167,14 +159,10 @@ export const importRouter = router({
                   where: { id: existing.id },
                   data: {
                     legalName: String(row.legalName ?? existing.legalName),
-                    displayName: String(
-                      row.displayName ?? existing.displayName,
-                    ),
+                    displayName: String(row.displayName ?? existing.displayName),
                     email: String(row.email ?? existing.email),
                     phone: row.phone ? String(row.phone) : existing.phone,
-                    countryCode: String(
-                      row.countryCode ?? existing.countryCode,
-                    ),
+                    countryCode: String(row.countryCode ?? existing.countryCode),
                     currency: String(row.currency ?? existing.currency),
                   },
                 });
@@ -188,9 +176,7 @@ export const importRouter = router({
                   data: {
                     organizationId: ctx.organizationId,
                     legalName: String(row.legalName ?? ""),
-                    displayName: String(
-                      row.displayName ?? row.legalName ?? "",
-                    ),
+                    displayName: String(row.displayName ?? row.legalName ?? ""),
                     type: String(row.type ?? "COMPANY") as
                       | "SOLE_TRADER"
                       | "COMPANY"
@@ -213,9 +199,7 @@ export const importRouter = router({
               }
             } else {
               // Contract import
-              const contractorId = row.contractorId
-                ? String(row.contractorId)
-                : null;
+              const contractorId = row.contractorId ? String(row.contractorId) : null;
 
               if (!contractorId) {
                 // Try resolving by taxId
@@ -248,9 +232,7 @@ export const importRouter = router({
                       | "DPA"
                       | "OTHER",
                     startDate: new Date(String(row.startDate)),
-                    endDate: row.endDate
-                      ? new Date(String(row.endDate))
-                      : null,
+                    endDate: row.endDate ? new Date(String(row.endDate)) : null,
                     currency: String(row.currency ?? "PLN"),
                     billingModel: "MONTHLY_RETAINER",
                     rateType: "MONTHLY_FIXED",
@@ -268,8 +250,7 @@ export const importRouter = router({
       } catch (err) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message:
-            err instanceof Error ? err.message : "Import commit failed",
+          message: err instanceof Error ? err.message : "Import commit failed",
         });
       }
 

@@ -1,22 +1,22 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
+import {
+  AlertCircle,
+  AlertTriangle,
+  Banknote,
+  Check,
+  CheckCircle2,
+  Clock,
+  Inbox,
+  Mail,
+  Upload,
+  XCircle,
+} from "lucide-react";
+import { KsefSourceBadge } from "@/components/invoices/ksef-badge";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Link } from "@/i18n/navigation";
-import {
-  Inbox,
-  CheckCircle2,
-  AlertCircle,
-  AlertTriangle,
-  Clock,
-  XCircle,
-  Banknote,
-  Check,
-  Upload,
-  Mail,
-} from "lucide-react";
-import { KsefSourceBadge } from "@/components/invoices/ksef-badge";
 
 // ---------------------------------------------------------------------------
 // Row type matching the tRPC invoice.list response shape
@@ -145,13 +145,8 @@ export function getColumns(t: TranslateFunction): ColumnDef<InvoiceRow>[] {
       header: ({ table }) => (
         <Checkbox
           checked={table.getIsAllPageRowsSelected()}
-          indeterminate={
-            table.getIsSomePageRowsSelected() &&
-            !table.getIsAllPageRowsSelected()
-          }
-          onCheckedChange={(value) =>
-            table.toggleAllPageRowsSelected(!!value)
-          }
+          indeterminate={table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()}
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
           aria-label={t("columns.selectAll")}
         />
       ),
@@ -173,9 +168,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<InvoiceRow>[] {
       accessorKey: "invoiceNumber",
       header: t("columns.invoiceNumber"),
       cell: ({ row }) => (
-        <span className="font-mono text-[13px]">
-          {row.original.invoiceNumber}
-        </span>
+        <span className="font-mono text-[13px]">{row.original.invoiceNumber}</span>
       ),
       enableHiding: false,
     },
@@ -187,8 +180,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<InvoiceRow>[] {
       header: t("columns.contractor"),
       cell: ({ row }) => {
         const contractor = row.original.contractor;
-        if (!contractor)
-          return <span className="text-muted-foreground">&mdash;</span>;
+        if (!contractor) return <span className="text-muted-foreground">&mdash;</span>;
         return (
           <Link
             href={`/contractors/${contractor.id}`}
@@ -207,14 +199,9 @@ export function getColumns(t: TranslateFunction): ColumnDef<InvoiceRow>[] {
       header: t("columns.issueDate"),
       cell: ({ row }) => {
         const issueDate = row.original.issueDate;
-        if (!issueDate)
-          return <span className="text-muted-foreground">&mdash;</span>;
+        if (!issueDate) return <span className="text-muted-foreground">&mdash;</span>;
         try {
-          return (
-            <span className="text-sm">
-              {new Date(issueDate).toLocaleDateString("pl-PL")}
-            </span>
-          );
+          return <span className="text-sm">{new Date(issueDate).toLocaleDateString("pl-PL")}</span>;
         } catch {
           return <span className="text-muted-foreground">&mdash;</span>;
         }
@@ -227,14 +214,11 @@ export function getColumns(t: TranslateFunction): ColumnDef<InvoiceRow>[] {
       header: t("columns.dueDate"),
       cell: ({ row }) => {
         const dueDate = row.original.dueDate;
-        if (!dueDate)
-          return <span className="text-muted-foreground">&mdash;</span>;
+        if (!dueDate) return <span className="text-muted-foreground">&mdash;</span>;
         try {
           const overdue = isOverdue(dueDate, row.original.status);
           return (
-            <span
-              className={`text-sm ${overdue ? "text-destructive font-medium" : ""}`}
-            >
+            <span className={`text-sm ${overdue ? "text-destructive font-medium" : ""}`}>
               {new Date(dueDate).toLocaleDateString("pl-PL")}
             </span>
           );
@@ -247,9 +231,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<InvoiceRow>[] {
     // 6. Net amount (right-aligned)
     {
       accessorKey: "subtotalMinor",
-      header: () => (
-        <span className="text-end block">{t("columns.netAmount")}</span>
-      ),
+      header: () => <span className="text-end block">{t("columns.netAmount")}</span>,
       cell: ({ row }) => (
         <span className="font-mono text-sm tabular-nums text-end block">
           {formatMinorUnits(row.original.subtotalMinor)}
@@ -260,9 +242,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<InvoiceRow>[] {
     // 7. Gross amount (right-aligned)
     {
       accessorKey: "totalMinor",
-      header: () => (
-        <span className="text-end block">{t("columns.grossAmount")}</span>
-      ),
+      header: () => <span className="text-end block">{t("columns.grossAmount")}</span>,
       cell: ({ row }) => (
         <span className="font-mono text-sm tabular-nums text-end block">
           {formatMinorUnits(row.original.totalMinor)}
@@ -274,9 +254,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<InvoiceRow>[] {
     {
       accessorKey: "currency",
       header: t("columns.currency"),
-      cell: ({ row }) => (
-        <span className="text-sm">{row.original.currency}</span>
-      ),
+      cell: ({ row }) => <span className="text-sm">{row.original.currency}</span>,
     },
 
     // 9. Status badge
@@ -287,11 +265,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<InvoiceRow>[] {
         const status = row.original.status;
         const config = statusBadgeConfig[status];
         if (!config) {
-          return (
-            <Badge variant="secondary">
-              {t(`status.${status}`)}
-            </Badge>
-          );
+          return <Badge variant="secondary">{t(`status.${status}`)}</Badge>;
         }
         const { className, Icon } = config;
         return (
@@ -315,9 +289,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<InvoiceRow>[] {
         }
         return (
           <span className="inline-flex items-center gap-1.5 text-sm">
-            <span
-              className={`inline-block h-2 w-2 rounded-full ${config.dotClass}`}
-            />
+            <span className={`inline-block h-2 w-2 rounded-full ${config.dotClass}`} />
             {t(`matchStatus.${config.label}`)}
           </span>
         );

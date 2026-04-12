@@ -1,19 +1,13 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GoogleCalendarAdapter } from "../google-calendar-adapter.js";
 
-function mockFetch(response: {
-  ok: boolean;
-  status?: number;
-  body: unknown;
-}) {
+function mockFetch(response: { ok: boolean; status?: number; body: unknown }) {
   return vi.fn().mockResolvedValue({
     ok: response.ok,
     status: response.status ?? (response.ok ? 200 : 400),
     text: () =>
       Promise.resolve(
-        typeof response.body === "string"
-          ? response.body
-          : JSON.stringify(response.body),
+        typeof response.body === "string" ? response.body : JSON.stringify(response.body),
       ),
     json: () => Promise.resolve(response.body),
   });
@@ -42,9 +36,7 @@ describe("GoogleCalendarAdapter", () => {
   });
 
   it("throws when OAuth env vars are missing for exchangeCodeForTokens", async () => {
-    await expect(
-      adapter.exchangeCodeForTokens("code", "http://localhost/cb"),
-    ).rejects.toThrow(
+    await expect(adapter.exchangeCodeForTokens("code", "http://localhost/cb")).rejects.toThrow(
       /GOOGLE_CALENDAR_CLIENT_ID and GOOGLE_CALENDAR_CLIENT_SECRET environment variables are required/,
     );
   });
@@ -89,9 +81,9 @@ describe("GoogleCalendarAdapter", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
 
-    await expect(
-      adapter.exchangeCodeForTokens("bad", "http://localhost/cb"),
-    ).rejects.toThrow(/Google Calendar OAuth exchange failed: invalid_grant/);
+    await expect(adapter.exchangeCodeForTokens("bad", "http://localhost/cb")).rejects.toThrow(
+      /Google Calendar OAuth exchange failed: invalid_grant/,
+    );
   });
 
   it("refreshes token using refresh_token grant", async () => {
@@ -213,10 +205,7 @@ describe("GoogleCalendarAdapter", () => {
 
     const [, init] = fetchMock.mock.calls[0]!;
     const parsed = JSON.parse((init as RequestInit).body as string);
-    expect(parsed.attendees).toEqual([
-      { email: "a@example.com" },
-      { email: "b@example.com" },
-    ]);
+    expect(parsed.attendees).toEqual([{ email: "a@example.com" }, { email: "b@example.com" }]);
   });
 
   it("throws when createEvent returns non-OK", async () => {
@@ -267,12 +256,7 @@ describe("GoogleCalendarAdapter", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
 
-    await adapter.updateEvent(
-      "tok",
-      "evt-1",
-      { summary: "Updated" },
-      '"oldetag"',
-    );
+    await adapter.updateEvent("tok", "evt-1", { summary: "Updated" }, '"oldetag"');
 
     const [, init] = fetchMock.mock.calls[0]!;
     expect((init as RequestInit).method).toBe("PATCH");
@@ -289,9 +273,9 @@ describe("GoogleCalendarAdapter", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
 
-    await expect(
-      adapter.updateEvent("tok", "evt-1", { summary: "X" }, '"etag"'),
-    ).rejects.toThrow(/Google Calendar update event failed: Precondition Failed/);
+    await expect(adapter.updateEvent("tok", "evt-1", { summary: "X" }, '"etag"')).rejects.toThrow(
+      /Google Calendar update event failed: Precondition Failed/,
+    );
   });
 
   it("deleteEvent sends DELETE to event endpoint", async () => {
@@ -301,9 +285,7 @@ describe("GoogleCalendarAdapter", () => {
     await adapter.deleteEvent("tok", "evt-del");
 
     const [url, init] = fetchMock.mock.calls[0]!;
-    expect(url).toBe(
-      "https://www.googleapis.com/calendar/v3/calendars/primary/events/evt-del",
-    );
+    expect(url).toBe("https://www.googleapis.com/calendar/v3/calendars/primary/events/evt-del");
     expect((init as RequestInit).method).toBe("DELETE");
   });
 

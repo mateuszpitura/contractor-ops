@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { AlertTriangle, Loader2, ShieldCheck } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -48,8 +48,7 @@ export function ProductionCertificate({ onSuccess, onBack }: ProductionCertifica
       <div className="space-y-1">
         <h3 className="text-base font-semibold">Step 5 of 5: Activate Production Certificate</h3>
         <p className="text-sm text-muted-foreground">
-          All compliance checks passed. Exchange your compliance certificate for
-          a production one.
+          All compliance checks passed. Exchange your compliance certificate for a production one.
         </p>
       </div>
 
@@ -61,8 +60,7 @@ export function ProductionCertificate({ onSuccess, onBack }: ProductionCertifica
             Production Activation
           </AlertTitle>
           <AlertDescription className="text-amber-700 dark:text-amber-400">
-            Once activated, all invoices for Saudi organizations will be
-            submitted to ZATCA.
+            Once activated, all invoices for Saudi organizations will be submitted to ZATCA.
           </AlertDescription>
         </Alert>
       )}
@@ -108,11 +106,7 @@ export function ProductionCertificate({ onSuccess, onBack }: ProductionCertifica
         <Button type="button" variant="outline" onClick={onBack} disabled={completed}>
           Back
         </Button>
-        {completed && (
-          <Button onClick={onSuccess}>
-            Complete
-          </Button>
-        )}
+        {completed && <Button onClick={onSuccess}>Complete</Button>}
       </div>
     </div>
   );

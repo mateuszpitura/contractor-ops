@@ -1,14 +1,14 @@
 "use client";
 
+import { Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
 import { formatMinorUnits } from "@/lib/format-currency";
 
 interface WhtCertificatePreviewProps {
@@ -67,9 +67,7 @@ export function WhtCertificatePreviewDialog({
               {certificate.contractorTaxId && (
                 <>
                   <span className="text-muted-foreground">Tax ID</span>
-                  <span className="font-medium">
-                    {certificate.contractorTaxId}
-                  </span>
+                  <span className="font-medium">{certificate.contractorTaxId}</span>
                 </>
               )}
               <span className="text-muted-foreground">Payment Date</span>
@@ -82,28 +80,19 @@ export function WhtCertificatePreviewDialog({
               <span className="text-muted-foreground">Gross Amount</span>
               <span className="font-mono font-semibold">
                 {certificate.currency}{" "}
-                {formatMinorUnits(
-                  certificate.grossAmountMinor,
-                  certificate.currency,
-                )}
+                {formatMinorUnits(certificate.grossAmountMinor, certificate.currency)}
               </span>
               <span className="text-muted-foreground">WHT Rate</span>
               <span className="font-semibold">{certificate.whtRate}%</span>
               <span className="text-muted-foreground">WHT Amount</span>
               <span className="font-mono font-semibold">
                 {certificate.currency}{" "}
-                {formatMinorUnits(
-                  certificate.whtAmountMinor,
-                  certificate.currency,
-                )}
+                {formatMinorUnits(certificate.whtAmountMinor, certificate.currency)}
               </span>
               <span className="text-muted-foreground">Net Paid</span>
               <span className="font-mono font-semibold">
                 {certificate.currency}{" "}
-                {formatMinorUnits(
-                  certificate.netAmountMinor,
-                  certificate.currency,
-                )}
+                {formatMinorUnits(certificate.netAmountMinor, certificate.currency)}
               </span>
             </div>
 

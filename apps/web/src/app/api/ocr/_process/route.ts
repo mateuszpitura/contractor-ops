@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import { verifySignatureAppRouter } from "@upstash/qstash/nextjs";
-import { registerAllAdapters } from "@contractor-ops/integrations/adapters/register-all";
 import { processOcrExtraction } from "@contractor-ops/api/services/ocr-extraction";
+import { registerAllAdapters } from "@contractor-ops/integrations/adapters/register-all";
+import { verifySignatureAppRouter } from "@upstash/qstash/nextjs";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 // ---------------------------------------------------------------------------
 // Ensure adapters are registered
@@ -50,15 +50,9 @@ async function handler(request: NextRequest) {
 
     return NextResponse.json({ processed: true });
   } catch (error) {
-    console.error(
-      `[ocr/_process] Failed to process extraction ${extractionId}:`,
-      error,
-    );
+    console.error(`[ocr/_process] Failed to process extraction ${extractionId}:`, error);
 
-    return NextResponse.json(
-      { error: "Processing failed" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Processing failed" }, { status: 500 });
   }
 }
 

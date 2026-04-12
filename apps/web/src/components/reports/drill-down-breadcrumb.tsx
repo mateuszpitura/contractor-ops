@@ -2,8 +2,6 @@
 
 import { X } from "lucide-react";
 import { useTranslations } from "next-intl";
-
-import { Button } from "@/components/ui/button";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -12,16 +10,14 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { Button } from "@/components/ui/button";
 
 interface DrillDownBreadcrumbProps {
   segments: Array<{ label: string; id?: string }>;
   onClear: () => void;
 }
 
-export function DrillDownBreadcrumb({
-  segments,
-  onClear,
-}: DrillDownBreadcrumbProps) {
+export function DrillDownBreadcrumb({ segments, onClear }: DrillDownBreadcrumbProps) {
   const t = useTranslations("Reports");
 
   // Only render when a drill-down is active (more than 1 segment)

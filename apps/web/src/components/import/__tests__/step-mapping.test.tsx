@@ -4,9 +4,7 @@ import { StepMapping } from "../step-mapping";
 describe("StepMapping", () => {
   const defaultProps = {
     headers: ["Nazwa", "NIP", "Email"],
-    sampleRows: [
-      { Nazwa: "Acme sp. z o.o.", NIP: "1234567890", Email: "acme@test.com" },
-    ],
+    sampleRows: [{ Nazwa: "Acme sp. z o.o.", NIP: "1234567890", Email: "acme@test.com" }],
     suggestedMapping: { Nazwa: "legalName", NIP: "taxId", Email: "email" },
     entityType: "contractor" as const,
     columnMapping: { Nazwa: "legalName", NIP: "taxId", Email: "email" },

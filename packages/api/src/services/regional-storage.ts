@@ -10,10 +10,10 @@
  */
 
 import {
-  PutObjectCommand,
+  DeleteObjectCommand,
   GetObjectCommand,
   HeadObjectCommand,
-  DeleteObjectCommand,
+  PutObjectCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { tenantStore } from "@contractor-ops/db";
@@ -43,9 +43,7 @@ export function getRegionalBucket(region: string): string {
   }
   const bucket = process.env[envVar];
   if (!bucket) {
-    throw new Error(
-      `${envVar} environment variable is not set for region ${region}`,
-    );
+    throw new Error(`${envVar} environment variable is not set for region ${region}`);
   }
   return bucket;
 }
@@ -58,9 +56,7 @@ function resolveRegion(explicitRegion?: string): string {
   if (explicitRegion) return explicitRegion;
   const ctx = tenantStore.getStore();
   if (!ctx?.region) {
-    throw new Error(
-      "No region in tenant context and no explicit region provided",
-    );
+    throw new Error("No region in tenant context and no explicit region provided");
   }
   return ctx.region;
 }

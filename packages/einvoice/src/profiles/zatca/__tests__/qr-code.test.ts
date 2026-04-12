@@ -2,18 +2,16 @@
 // ZatcaTLVQRCode Tests -- TLV encoding and QR code generation
 // ---------------------------------------------------------------------------
 
-import { describe, it, expect } from "vitest";
-import { ZatcaTLVQRCode, encodeTLV, decodeTLV } from "../qr-code.js";
-import { ZatcaTlvTag } from "../types.js";
+import { describe, expect, it } from "vitest";
 import type { EInvoice } from "../../../types/invoice.js";
+import { decodeTLV, encodeTLV, ZatcaTLVQRCode } from "../qr-code.js";
+import { ZatcaTlvTag } from "../types.js";
 
 // ---------------------------------------------------------------------------
 // Test Fixtures
 // ---------------------------------------------------------------------------
 
-function makeInvoice(
-  overrides: Partial<EInvoice> = {},
-): EInvoice {
+function makeInvoice(overrides: Partial<EInvoice> = {}): EInvoice {
   return {
     id: "INV-001",
     issueDate: "2024-03-15T12:30:00Z",
@@ -68,9 +66,7 @@ function makeInvoice(
 
 describe("encodeTLV", () => {
   it("produces correct bytes for tag=1, value='Test Seller'", () => {
-    const result = encodeTLV([
-      { tag: 1, value: "Test Seller" },
-    ]);
+    const result = encodeTLV([{ tag: 1, value: "Test Seller" }]);
 
     // Tag 1 (0x01), Length 11 (0x0B), Value "Test Seller" in UTF-8
     expect(result[0]).toBe(0x01);
@@ -91,7 +87,7 @@ describe("encodeTLV", () => {
   });
 
   it("handles Buffer values directly", () => {
-    const buf = Buffer.from([0xDE, 0xAD, 0xBE, 0xEF]);
+    const buf = Buffer.from([0xde, 0xad, 0xbe, 0xef]);
     const result = encodeTLV([{ tag: 6, value: buf }]);
 
     expect(result[0]).toBe(0x06);
@@ -134,7 +130,7 @@ describe("decodeTLV", () => {
 
   it("parses multi-byte length values", () => {
     // tag=1, 0x81, 0xC8 (200), then 200 'A' bytes
-    const header = Buffer.from([0x01, 0x81, 0xC8]);
+    const header = Buffer.from([0x01, 0x81, 0xc8]);
     const payload = Buffer.alloc(200, 0x41);
     const buf = Buffer.concat([header, payload]);
     const result = decodeTLV(buf);
@@ -146,8 +142,14 @@ describe("decodeTLV", () => {
 
   it("parses multiple fields sequentially", () => {
     const buf = Buffer.from([
-      0x01, 0x02, 0x41, 0x42, // tag=1, len=2, "AB"
-      0x02, 0x02, 0x43, 0x44, // tag=2, len=2, "CD"
+      0x01,
+      0x02,
+      0x41,
+      0x42, // tag=1, len=2, "AB"
+      0x02,
+      0x02,
+      0x43,
+      0x44, // tag=2, len=2, "CD"
     ]);
     const result = decodeTLV(buf);
 
@@ -185,9 +187,7 @@ describe("TLV roundtrip", () => {
 
   it("encodeTLV + decodeTLV preserves Buffer values", () => {
     const hashBuf = Buffer.from("deadbeef", "hex");
-    const fields = [
-      { tag: ZatcaTlvTag.INVOICE_HASH, value: hashBuf },
-    ];
+    const fields = [{ tag: ZatcaTlvTag.INVOICE_HASH, value: hashBuf }];
 
     const encoded = encodeTLV(fields);
     const decoded = decodeTLV(encoded);
@@ -235,9 +235,7 @@ describe("ZatcaTLVQRCode", () => {
       // Decode the QR content to verify tags are present
       // The QR contains base64-encoded TLV data
       // We verify indirectly through parseQR roundtrip
-      const parsed = await qrCode.parseQR(
-        extractTlvFromQrGeneration(invoice),
-      );
+      const parsed = await qrCode.parseQR(extractTlvFromQrGeneration(invoice));
       expect(parsed.supplier?.name).toBe("Acme Saudi Ltd");
       expect(parsed.supplier?.id).toBe("300075588700003");
       expect(parsed.issueDate).toBe("2024-03-15T12:30:00Z");
@@ -263,9 +261,7 @@ describe("ZatcaTLVQRCode", () => {
 
       // Verify B2B tags exist through TLV extraction
       const tlvBuffer = extractTlvFromQrGeneration(invoice);
-      const parsed = decodeTLV(
-        Buffer.from(tlvBuffer.toString("utf-8"), "base64"),
-      );
+      const parsed = decodeTLV(Buffer.from(tlvBuffer.toString("utf-8"), "base64"));
       const tags = parsed.map((p) => p.tag);
       expect(tags).toContain(ZatcaTlvTag.SELLER_NAME);
       expect(tags).toContain(ZatcaTlvTag.VAT_NUMBER);
@@ -280,12 +276,9 @@ describe("ZatcaTLVQRCode", () => {
     it("tag values match ZATCA spec fields", async () => {
       const invoice = makeInvoice();
       const tlvBuffer = extractTlvFromQrGeneration(invoice);
-      const decoded = decodeTLV(
-        Buffer.from(tlvBuffer.toString("utf-8"), "base64"),
-      );
+      const decoded = decodeTLV(Buffer.from(tlvBuffer.toString("utf-8"), "base64"));
 
-      const findTag = (tag: number) =>
-        decoded.find((d) => d.tag === tag)?.value.toString("utf-8");
+      const findTag = (tag: number) => decoded.find((d) => d.tag === tag)?.value.toString("utf-8");
 
       expect(findTag(ZatcaTlvTag.SELLER_NAME)).toBe("Acme Saudi Ltd");
       expect(findTag(ZatcaTlvTag.VAT_NUMBER)).toBe("300075588700003");
@@ -302,9 +295,7 @@ describe("ZatcaTLVQRCode", () => {
         },
       });
 
-      await expect(qrCode.generateQR(invoice)).rejects.toThrow(
-        /supplier name/i,
-      );
+      await expect(qrCode.generateQR(invoice)).rejects.toThrow(/supplier name/i);
     });
   });
 
@@ -341,10 +332,7 @@ describe("ZatcaTLVQRCode", () => {
  * This mirrors the encoding logic without the QR image rendering step.
  */
 function extractTlvFromQrGeneration(invoice: EInvoice): Buffer {
-  const vatAmount = invoice.taxBreakdown.reduce(
-    (sum, t) => sum + t.taxAmountMinor,
-    0,
-  );
+  const vatAmount = invoice.taxBreakdown.reduce((sum, t) => sum + t.taxAmountMinor, 0);
 
   const fields: Array<{ tag: number; value: string | Buffer }> = [
     { tag: ZatcaTlvTag.SELLER_NAME, value: invoice.supplier.name },

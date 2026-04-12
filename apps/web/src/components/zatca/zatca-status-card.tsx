@@ -1,14 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { Settings, ShieldCheck, Unplug } from "lucide-react";
-
 import type { ZatcaOnboardingState } from "@contractor-ops/einvoice";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Settings, ShieldCheck, Unplug } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,6 +16,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "@/i18n/navigation";
 import { OnboardingWizard } from "./onboarding-wizard";
 import { zatcaTrpc } from "./zatca-trpc";
@@ -28,7 +27,10 @@ import { zatcaTrpc } from "./zatca-trpc";
 // Status badge mapping
 // ---------------------------------------------------------------------------
 
-const STATUS_CONFIG: Record<string, { label: string; variant: "success" | "warning" | "info" | "destructive" | "outline" }> = {
+const STATUS_CONFIG: Record<
+  string,
+  { label: string; variant: "success" | "warning" | "info" | "destructive" | "outline" }
+> = {
   production: { label: "Production", variant: "success" },
   sandbox: { label: "Sandbox", variant: "warning" },
   compliance: { label: "Onboarding", variant: "info" },
@@ -53,7 +55,11 @@ export function ZatcaStatusCard() {
   const state = stateQuery.data as ZatcaOnboardingState | undefined;
   const isConnected = state?.productionCertActive === true;
   const isOnboarding = state && !state.productionCertActive && state.currentStep !== "tax_details";
-  const certStatus = state?.productionCertActive ? "production" : state?.complianceCsidReceived ? "compliance" : "none";
+  const certStatus = state?.productionCertActive
+    ? "production"
+    : state?.complianceCsidReceived
+      ? "compliance"
+      : "none";
   const statusConfig = STATUS_CONFIG[certStatus] ?? STATUS_CONFIG.none!;
 
   function handleWizardComplete() {
@@ -79,13 +85,11 @@ export function ZatcaStatusCard() {
             <div className="flex-1 space-y-1">
               <h3 className="text-base font-semibold">Connect to ZATCA</h3>
               <p className="text-sm text-muted-foreground">
-                Submit e-invoices to ZATCA for clearance and reporting. Set up
-                your organization&apos;s certificate to get started.
+                Submit e-invoices to ZATCA for clearance and reporting. Set up your
+                organization&apos;s certificate to get started.
               </p>
             </div>
-            <Button onClick={() => setWizardOpen(true)}>
-              Connect to ZATCA
-            </Button>
+            <Button onClick={() => setWizardOpen(true)}>Connect to ZATCA</Button>
           </div>
         </Card>
 
@@ -144,9 +148,7 @@ export function ZatcaStatusCard() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ShieldCheck className="h-5 w-5 text-green-600" />
-            <CardTitle className="text-base font-semibold">
-              ZATCA (Saudi Arabia)
-            </CardTitle>
+            <CardTitle className="text-base font-semibold">ZATCA (Saudi Arabia)</CardTitle>
           </div>
           <Badge variant={statusConfig.variant}>{statusConfig.label}</Badge>
         </div>
@@ -155,11 +157,7 @@ export function ZatcaStatusCard() {
       <CardContent className="space-y-4 p-0">
         {/* Actions */}
         <div className="flex gap-2 pt-2">
-          <Button
-            variant="outline"
-            size="sm"
-            render={<Link href="/settings/integrations/zatca" />}
-          >
+          <Button variant="outline" size="sm" render={<Link href="/settings/integrations/zatca" />}>
             <Settings className="me-1.5 h-3.5 w-3.5" />
             Manage
           </Button>
@@ -176,8 +174,8 @@ export function ZatcaStatusCard() {
               <AlertDialogHeader>
                 <AlertDialogTitle>Disconnect ZATCA</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Disconnect ZATCA: Active invoices will no longer be submitted.
-                  Pending submissions will be cancelled. Continue?
+                  Disconnect ZATCA: Active invoices will no longer be submitted. Pending submissions
+                  will be cancelled. Continue?
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>

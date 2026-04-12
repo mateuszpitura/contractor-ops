@@ -1,12 +1,12 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
+import { formatDistanceToNow } from "date-fns";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getAvatarInitials } from "@/lib/avatar-initials";
 import { ComplianceHealthBadge } from "../compliance-health-badge";
-import { formatDistanceToNow } from "date-fns";
 
 // ---------------------------------------------------------------------------
 // Row type matching the tRPC contractor.list response shape
@@ -66,13 +66,8 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractorRow>[] {
       header: ({ table }) => (
         <Checkbox
           checked={table.getIsAllPageRowsSelected()}
-          indeterminate={
-            table.getIsSomePageRowsSelected() &&
-            !table.getIsAllPageRowsSelected()
-          }
-          onCheckedChange={(value) =>
-            table.toggleAllPageRowsSelected(!!value)
-          }
+          indeterminate={table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()}
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
           aria-label={t("columns.selectAll")}
         />
       ),
@@ -95,13 +90,9 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractorRow>[] {
       header: t("columns.name"),
       cell: ({ row }) => (
         <div className="min-w-[160px]">
-          <div className="font-medium">
-            {row.original.displayName ?? row.original.legalName}
-          </div>
+          <div className="font-medium">{row.original.displayName ?? row.original.legalName}</div>
           {row.original.displayName && (
-            <div className="text-xs text-muted-foreground">
-              {row.original.legalName}
-            </div>
+            <div className="text-xs text-muted-foreground">{row.original.legalName}</div>
           )}
         </div>
       ),
@@ -126,10 +117,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractorRow>[] {
       cell: ({ row }) => {
         const stage = row.original.lifecycleStage;
         return (
-          <Badge
-            variant="secondary"
-            className={lifecycleBadgeColors[stage] ?? ""}
-          >
+          <Badge variant="secondary" className={lifecycleBadgeColors[stage] ?? ""}>
             {t(`lifecycle.${stage}`)}
           </Badge>
         );
@@ -206,18 +194,14 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractorRow>[] {
     {
       accessorKey: "currency",
       header: t("columns.currency"),
-      cell: ({ row }) => (
-        <span className="text-sm">{row.original.currency}</span>
-      ),
+      cell: ({ row }) => <span className="text-sm">{row.original.currency}</span>,
     },
 
     // 9. Next invoice expected (placeholder)
     {
       id: "nextInvoice",
       header: t("columns.nextInvoice"),
-      cell: () => (
-        <span className="text-muted-foreground">&mdash;</span>
-      ),
+      cell: () => <span className="text-muted-foreground">&mdash;</span>,
       enableSorting: false,
     },
 
@@ -240,9 +224,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractorRow>[] {
     {
       id: "contractEnd",
       header: t("columns.contractEnd"),
-      cell: () => (
-        <span className="text-muted-foreground">&mdash;</span>
-      ),
+      cell: () => <span className="text-muted-foreground">&mdash;</span>,
       enableSorting: false,
     },
 
@@ -252,8 +234,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractorRow>[] {
       header: t("columns.lastActivity"),
       cell: ({ row }) => {
         const updatedAt = row.original.updatedAt;
-        if (!updatedAt)
-          return <span className="text-muted-foreground">&mdash;</span>;
+        if (!updatedAt) return <span className="text-muted-foreground">&mdash;</span>;
         try {
           return (
             <span className="text-sm text-muted-foreground">
@@ -271,9 +252,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractorRow>[] {
     {
       accessorKey: "complianceHealth",
       header: t("columns.health"),
-      cell: ({ row }) => (
-        <ComplianceHealthBadge health={row.original.complianceHealth} />
-      ),
+      cell: ({ row }) => <ComplianceHealthBadge health={row.original.complianceHealth} />,
       enableSorting: false,
     },
   ];

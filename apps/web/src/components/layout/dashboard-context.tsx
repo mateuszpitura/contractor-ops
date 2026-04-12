@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, useContext, type ReactNode } from "react";
+import type { ReactNode } from "react";
+import { createContext, useContext } from "react";
 
 export type OrgInfo = {
   id: string;

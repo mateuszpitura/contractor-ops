@@ -24,11 +24,13 @@ export class GovApiAuditLogger {
    */
   async log(entry: GovApiAuditEntry): Promise<void> {
     try {
-      await (this.prisma as unknown as {
-        govApiAuditLog: {
-          create: (args: { data: Record<string, unknown> }) => Promise<unknown>;
-        };
-      }).govApiAuditLog.create({
+      await (
+        this.prisma as unknown as {
+          govApiAuditLog: {
+            create: (args: { data: Record<string, unknown> }) => Promise<unknown>;
+          };
+        }
+      ).govApiAuditLog.create({
         data: {
           organizationId: entry.organizationId,
           apiName: entry.apiName,

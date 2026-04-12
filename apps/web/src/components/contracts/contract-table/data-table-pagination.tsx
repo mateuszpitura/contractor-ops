@@ -46,20 +46,14 @@ export function DataTablePagination<TData>({
   return (
     <div className="flex items-center justify-between px-4 py-3">
       <div className="flex items-center gap-4 text-sm text-muted-foreground">
-        {selectedCount > 0 && (
-          <span>{tb("selected", { count: selectedCount })}</span>
-        )}
-        <span>
-          {t("of", { total: totalRows })}
-        </span>
+        {selectedCount > 0 && <span>{tb("selected", { count: selectedCount })}</span>}
+        <span>{t("of", { total: totalRows })}</span>
       </div>
 
       <div className="flex items-center gap-4">
         {/* Page size selector */}
         <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">
-            {t("rowsPerPage")}
-          </span>
+          <span className="text-sm text-muted-foreground">{t("rowsPerPage")}</span>
           <Select
             value={String(pageSize)}
             onValueChange={(value) => onPageSizeChange(Number(value))}

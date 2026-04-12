@@ -1,8 +1,7 @@
-import type { IntegrationProviderAdapter } from "../types/provider.js";
-import type { OAuthConfig } from "../types/provider.js";
 import type { CredentialBlob } from "../types/credentials.js";
-import type { WebhookVerificationResult } from "../types/webhook.js";
 import type { ProviderHealthStatus } from "../types/health.js";
+import type { IntegrationProviderAdapter, OAuthConfig } from "../types/provider.js";
+import type { WebhookVerificationResult } from "../types/webhook.js";
 
 // ---------------------------------------------------------------------------
 // Base Adapter
@@ -23,10 +22,7 @@ export abstract class BaseAdapter implements IntegrationProviderAdapter {
 
   getOAuthConfig?(): OAuthConfig;
 
-  exchangeCodeForTokens?(
-    _code: string,
-    _redirectUri: string,
-  ): Promise<CredentialBlob>;
+  exchangeCodeForTokens?(_code: string, _redirectUri: string): Promise<CredentialBlob>;
 
   refreshToken?(_credentials: CredentialBlob): Promise<CredentialBlob>;
 

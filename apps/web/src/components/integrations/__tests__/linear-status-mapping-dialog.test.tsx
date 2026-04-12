@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, setup, waitFor } from "@/test/test-utils";
 import userEvent from "@testing-library/user-event";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { render, screen, setup, waitFor } from "@/test/test-utils";
 import { LinearStatusMappingDialog } from "../linear-status-mapping-dialog";
 
 // ---------------------------------------------------------------------------
@@ -47,9 +47,8 @@ let existingMappingLoading = false;
 const mockMutate = vi.fn();
 
 vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
-    "@tanstack/react-query",
-  );
+  const actual =
+    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
   return {
     ...actual,
     useQuery: (opts: { queryKey?: unknown }) => {
@@ -115,105 +114,77 @@ describe("LinearStatusMappingDialog", () => {
   });
 
   it("renders dialog title when open", () => {
-    render(
-      <LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText("Status Mapping")).toBeInTheDocument();
   });
 
   it("does not render dialog content when closed", () => {
-    render(
-      <LinearStatusMappingDialog open={false} onOpenChange={onOpenChange} />,
-    );
+    render(<LinearStatusMappingDialog open={false} onOpenChange={onOpenChange} />);
     expect(screen.queryByText("Status Mapping")).not.toBeInTheDocument();
   });
 
   it("renders team select label", () => {
-    render(
-      <LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
     // "Select a team" appears in label, description, and placeholder
     const elements = screen.getAllByText("Select a team");
     expect(elements.length).toBeGreaterThanOrEqual(1);
   });
 
   it("renders save and discard buttons", () => {
-    render(
-      <LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText("Save Mapping")).toBeInTheDocument();
     expect(screen.getByText("Discard Changes")).toBeInTheDocument();
   });
 
   it("save button is disabled without team selection", () => {
-    render(
-      <LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
     const saveBtn = screen.getByRole("button", { name: "Save Mapping" });
     expect(saveBtn).toBeDisabled();
   });
 
   it("discard button calls onOpenChange(false)", async () => {
-    const { user } = setup(
-      <LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    const { user } = setup(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
     await user.click(screen.getByText("Discard Changes"));
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
   it("renders combobox trigger for team select", () => {
-    render(
-      <LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByRole("combobox")).toBeInTheDocument();
   });
 
   it("does not show mapping table before team is selected", () => {
-    render(
-      <LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
     expect(screen.queryByText("Workflow Status")).not.toBeInTheDocument();
     expect(screen.queryByText("Linear State")).not.toBeInTheDocument();
   });
 
   it("shows no teams message when teams list is empty", () => {
     teamsData = [];
-    render(
-      <LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
     expect(screen.getByText("No Linear teams found")).toBeInTheDocument();
   });
 
   it("shows no teams body text when teams list is empty", () => {
     teamsData = [];
-    render(
-      <LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />,
-    );
-    expect(
-      screen.getByText(/Connect your Linear workspace/),
-    ).toBeInTheDocument();
+    render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
+    expect(screen.getByText(/Connect your Linear workspace/)).toBeInTheDocument();
   });
 
   it("does not show no teams message when teams are available", () => {
-    render(
-      <LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
     expect(screen.queryByText("No Linear teams found")).not.toBeInTheDocument();
   });
 
   it("renders dialog description prompting team selection before selection", () => {
-    render(
-      <LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
     // Before team selection, description should show "Select a team"
     const descriptions = screen.getAllByText("Select a team");
     expect(descriptions.length).toBeGreaterThanOrEqual(1);
   });
 
   it("renders exactly two footer buttons", () => {
-    render(
-      <LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
     const saveBtn = screen.getByRole("button", { name: "Save Mapping" });
     const discardBtn = screen.getByRole("button", { name: "Discard Changes" });
     expect(saveBtn).toBeTruthy();
@@ -234,17 +205,13 @@ describe("LinearStatusMappingDialog", () => {
         linearStateType: "triage",
       },
     ];
-    render(
-      <LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
     // Without team selected, mapping table should not be visible
     expect(screen.queryByText("Workflow Status")).not.toBeInTheDocument();
   });
 
   it("does not call save mutation when save button is disabled", () => {
-    render(
-      <LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
     const saveBtn = screen.getByRole("button", { name: "Save Mapping" });
     expect(saveBtn).toBeDisabled();
     expect(mockMutate).not.toHaveBeenCalled();
@@ -252,51 +219,39 @@ describe("LinearStatusMappingDialog", () => {
 
   it("shows loading spinner when teams are loading", () => {
     teamsLoading = true;
-    render(
-      <LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
     // The combobox should still be rendered
     expect(screen.getByRole("combobox")).toBeInTheDocument();
   });
 
   it("shows loading spinner in mapping when existingMappingLoading is true", () => {
     existingMappingLoading = true;
-    render(
-      <LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
     // Without team selection, no loading spinner for mappings
     expect(screen.queryByText("Workflow Status")).not.toBeInTheDocument();
   });
 
   it("renders dialog description with 'Select a team' when no team selected", () => {
-    render(
-      <LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
     const selectTeamElements = screen.getAllByText("Select a team");
     expect(selectTeamElements.length).toBeGreaterThanOrEqual(2);
   });
 
   it("does not show no teams message when teams list has items", () => {
     teamsData = mockTeams;
-    render(
-      <LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
     expect(screen.queryByText("No Linear teams found")).not.toBeInTheDocument();
   });
 
   it("renders connection-dependent dialog content", () => {
     connectionData = null;
-    render(
-      <LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
     // Dialog still renders but teams may not be fetched
     expect(screen.getByText("Status Mapping")).toBeInTheDocument();
   });
 
   it("renders with multiple teams available", () => {
-    render(
-      <LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
     // Teams are available in the dropdown but we don't need to click to verify
     expect(screen.getByRole("combobox")).toBeInTheDocument();
     expect(teamsData.length).toBe(2);
@@ -308,9 +263,7 @@ describe("LinearStatusMappingDialog", () => {
 
   it("renders mapping table after selecting a team via combobox", async () => {
     const user = userEvent.setup({ pointerEventsCheck: 0 });
-    render(
-      <LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
     // Open the team select dropdown
     const combobox = screen.getByRole("combobox");
     await user.click(combobox);
@@ -336,9 +289,7 @@ describe("LinearStatusMappingDialog", () => {
   it("applies smart defaults when no existing mapping", async () => {
     existingMapping = [];
     const user = userEvent.setup({ pointerEventsCheck: 0 });
-    render(
-      <LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
     const combobox = screen.getByRole("combobox");
     await user.click(combobox);
     await waitFor(() => {
@@ -355,14 +306,27 @@ describe("LinearStatusMappingDialog", () => {
 
   it("loads existing server mappings when team is selected", async () => {
     existingMapping = [
-      { workflowStatus: "TODO", linearStateId: "s3", linearStateName: "Todo", linearStateType: "unstarted" },
-      { workflowStatus: "IN_PROGRESS", linearStateId: "s4", linearStateName: "In Progress", linearStateType: "started" },
-      { workflowStatus: "DONE", linearStateId: "s6", linearStateName: "Done", linearStateType: "completed" },
+      {
+        workflowStatus: "TODO",
+        linearStateId: "s3",
+        linearStateName: "Todo",
+        linearStateType: "unstarted",
+      },
+      {
+        workflowStatus: "IN_PROGRESS",
+        linearStateId: "s4",
+        linearStateName: "In Progress",
+        linearStateType: "started",
+      },
+      {
+        workflowStatus: "DONE",
+        linearStateId: "s6",
+        linearStateName: "Done",
+        linearStateType: "completed",
+      },
     ];
     const user = userEvent.setup({ pointerEventsCheck: 0 });
-    render(
-      <LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
     const combobox = screen.getByRole("combobox");
     await user.click(combobox);
     await waitFor(() => {
@@ -379,12 +343,15 @@ describe("LinearStatusMappingDialog", () => {
 
   it("enables save button after changing a mapping", async () => {
     existingMapping = [
-      { workflowStatus: "TODO", linearStateId: "s3", linearStateName: "Todo", linearStateType: "unstarted" },
+      {
+        workflowStatus: "TODO",
+        linearStateId: "s3",
+        linearStateName: "Todo",
+        linearStateType: "unstarted",
+      },
     ];
     const user = userEvent.setup({ pointerEventsCheck: 0 });
-    render(
-      <LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
     const combobox = screen.getByRole("combobox");
     await user.click(combobox);
     await waitFor(() => {
@@ -403,9 +370,7 @@ describe("LinearStatusMappingDialog", () => {
   it("calls save mutation with correct payload when save is clicked", async () => {
     existingMapping = [];
     const user = userEvent.setup({ pointerEventsCheck: 0 });
-    render(
-      <LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
     const combobox = screen.getByRole("combobox");
     await user.click(combobox);
     await waitFor(() => {
@@ -423,9 +388,7 @@ describe("LinearStatusMappingDialog", () => {
 
   it("renders second team option and can switch teams", async () => {
     const user = userEvent.setup({ pointerEventsCheck: 0 });
-    render(
-      <LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
     const combobox = screen.getByRole("combobox");
     await user.click(combobox);
     await waitFor(() => {
@@ -440,9 +403,7 @@ describe("LinearStatusMappingDialog", () => {
   it("renders unmapped warning icon for statuses without mapping", async () => {
     existingMapping = [];
     const user = userEvent.setup({ pointerEventsCheck: 0 });
-    render(
-      <LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
     const combobox = screen.getByRole("combobox");
     await user.click(combobox);
     await waitFor(() => {
@@ -460,9 +421,7 @@ describe("LinearStatusMappingDialog", () => {
   it("changes mapping for a workflow status via inline select", async () => {
     existingMapping = [];
     const user = userEvent.setup({ pointerEventsCheck: 0 });
-    render(
-      <LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
     const combobox = screen.getByRole("combobox");
     await user.click(combobox);
     await waitFor(() => {
@@ -485,9 +444,7 @@ describe("LinearStatusMappingDialog", () => {
 
   it("description updates after team is selected", async () => {
     const user = userEvent.setup({ pointerEventsCheck: 0 });
-    render(
-      <LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
     const combobox = screen.getByRole("combobox");
     await user.click(combobox);
     await waitFor(() => {
@@ -503,9 +460,7 @@ describe("LinearStatusMappingDialog", () => {
   it("switching teams resets mappings", async () => {
     existingMapping = [];
     const user = userEvent.setup({ pointerEventsCheck: 0 });
-    render(
-      <LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
     const combobox = screen.getByRole("combobox");
     // Select first team
     await user.click(combobox);
@@ -531,9 +486,7 @@ describe("LinearStatusMappingDialog", () => {
   it("save mutation is called with team ID and mappings", async () => {
     existingMapping = [];
     const user = userEvent.setup({ pointerEventsCheck: 0 });
-    render(
-      <LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
     const combobox = screen.getByRole("combobox");
     await user.click(combobox);
     await waitFor(() => {
@@ -554,9 +507,7 @@ describe("LinearStatusMappingDialog", () => {
 
   it("shows all 6 workflow status labels in mapping table", async () => {
     const user = userEvent.setup({ pointerEventsCheck: 0 });
-    render(
-      <LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
     const combobox = screen.getByRole("combobox");
     await user.click(combobox);
     await waitFor(() => {

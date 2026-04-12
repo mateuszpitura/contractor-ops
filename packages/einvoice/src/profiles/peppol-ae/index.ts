@@ -2,14 +2,14 @@
 // Peppol PINT-AE Country Profile (UAE)
 // ---------------------------------------------------------------------------
 
-import type { EInvoiceProfile } from "../../types/profile.js";
-import type { EInvoice } from "../../types/invoice.js";
-import type { ValidationResult } from "../../types/validation.js";
 import type { ComplianceStatus } from "../../types/compliance.js";
+import type { EInvoice } from "../../types/invoice.js";
+import type { EInvoiceProfile } from "../../types/profile.js";
+import type { ValidationResult } from "../../types/validation.js";
 import { generatePintAeXml } from "./generator.js";
 import { parsePintAeXml } from "./parser.js";
-import { validatePintAeXml } from "./validator.js";
 import { PeppolAEQRCode } from "./qr-code.js";
+import { validatePintAeXml } from "./validator.js";
 
 /**
  * Connection data for computing Peppol compliance status.
@@ -27,9 +27,7 @@ export interface PeppolConnectionData {
 /**
  * Compute compliance status from Peppol connection data.
  */
-export function computePeppolComplianceStatus(
-  data: PeppolConnectionData | null,
-): ComplianceStatus {
+export function computePeppolComplianceStatus(data: PeppolConnectionData | null): ComplianceStatus {
   if (!data) {
     return {
       profileId: "peppol-ae",
@@ -61,10 +59,7 @@ export function computePeppolComplianceStatus(
   if (state === "active") {
     const total = (data.sentCount ?? 0) + (data.receivedCount ?? 0);
     const failed = data.failedCount ?? 0;
-    healthScore =
-      total > 0
-        ? Math.round(((total - failed) / total) * 100)
-        : 100;
+    healthScore = total > 0 ? Math.round(((total - failed) / total) * 100) : 100;
   }
 
   return {
@@ -103,15 +98,11 @@ export class PeppolAEProfile implements EInvoiceProfile {
   readonly qrCode = new PeppolAEQRCode();
 
   private complianceFetcher?:
-    | ((
-        organizationId: string,
-      ) => Promise<PeppolConnectionData | null>)
+    | ((organizationId: string) => Promise<PeppolConnectionData | null>)
     | undefined;
 
   constructor(options?: {
-    complianceFetcher?: (
-      organizationId: string,
-    ) => Promise<PeppolConnectionData | null>;
+    complianceFetcher?: (organizationId: string) => Promise<PeppolConnectionData | null>;
   }) {
     this.complianceFetcher = options?.complianceFetcher;
   }
@@ -120,10 +111,7 @@ export class PeppolAEProfile implements EInvoiceProfile {
     return generatePintAeXml(invoice);
   }
 
-  async parse(
-    xml: string,
-    metadata?: Record<string, unknown>,
-  ): Promise<EInvoice> {
+  async parse(xml: string, metadata?: Record<string, unknown>): Promise<EInvoice> {
     return parsePintAeXml(xml, metadata);
   }
 
@@ -131,9 +119,7 @@ export class PeppolAEProfile implements EInvoiceProfile {
     return validatePintAeXml(xml);
   }
 
-  async getComplianceStatus(
-    organizationId: string,
-  ): Promise<ComplianceStatus> {
+  async getComplianceStatus(organizationId: string): Promise<ComplianceStatus> {
     if (!this.complianceFetcher) {
       return computePeppolComplianceStatus(null);
     }

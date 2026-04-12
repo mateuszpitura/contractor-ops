@@ -1,11 +1,11 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { trpc } from "@/trpc/init";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -21,11 +21,7 @@ interface ProrationPreviewProps {
 // Component
 // ---------------------------------------------------------------------------
 
-export function ProrationPreview({
-  newPriceId,
-  onConfirm,
-  onCancel,
-}: ProrationPreviewProps) {
+export function ProrationPreview({ newPriceId, onConfirm, onCancel }: ProrationPreviewProps) {
   const { data, isLoading, isError } = useQuery(
     trpc.billing.getProrationPreview.queryOptions({ newPriceId }),
   );
@@ -69,24 +65,14 @@ export function ProrationPreview({
 
         {/* Line items */}
         <ul className="space-y-2">
-          {data.lines.map(
-            (
-              line: { description: string; amountMinor: number },
-              index: number,
-            ) => (
-              <li
-                key={index}
-                className="flex items-center justify-between text-sm"
-              >
-                <span className="text-muted-foreground">
-                  {line.description}
-                </span>
-                <span className="tabular-nums font-medium">
-                  {(line.amountMinor / 100).toFixed(2)} PLN
-                </span>
-              </li>
-            ),
-          )}
+          {data.lines.map((line: { description: string; amountMinor: number }, index: number) => (
+            <li key={index} className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">{line.description}</span>
+              <span className="tabular-nums font-medium">
+                {(line.amountMinor / 100).toFixed(2)} PLN
+              </span>
+            </li>
+          ))}
         </ul>
 
         <Separator />
@@ -94,9 +80,7 @@ export function ProrationPreview({
         {/* Total */}
         <div className="flex items-center justify-between text-sm font-semibold">
           <span>Total</span>
-          <span className="tabular-nums">
-            {Math.abs(totalPLN).toFixed(2)} PLN
-          </span>
+          <span className="tabular-nums">{Math.abs(totalPLN).toFixed(2)} PLN</span>
         </div>
 
         <p className="text-sm text-muted-foreground">

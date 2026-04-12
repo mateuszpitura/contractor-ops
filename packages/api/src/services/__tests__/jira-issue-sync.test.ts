@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach, afterAll } from "vitest";
 import { TRPCError } from "@trpc/server";
+import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   createJiraIssue,
-  transitionJiraIssue,
   detectScopeExpansionNeeded,
+  transitionJiraIssue,
 } from "../jira-issue-sync.js";
 
 // ---------------------------------------------------------------------------
@@ -107,15 +107,16 @@ function mockJiraConfig() {
 }
 
 /** Sets up the common mocks needed for a successful createJiraIssue call */
-function setupCreateMocks(prisma: ReturnType<typeof createMockPrisma>, overrides: {
-  taskRun?: Record<string, unknown>;
-  jiraConfig?: Record<string, unknown>;
-  connection?: Record<string, unknown>;
-  fetchResponse?: Response;
-} = {}) {
-  prisma.workflowTaskRun.findUnique.mockResolvedValue(
-    overrides.taskRun ?? mockTaskRun(),
-  );
+function setupCreateMocks(
+  prisma: ReturnType<typeof createMockPrisma>,
+  overrides: {
+    taskRun?: Record<string, unknown>;
+    jiraConfig?: Record<string, unknown>;
+    connection?: Record<string, unknown>;
+    fetchResponse?: Response;
+  } = {},
+) {
+  prisma.workflowTaskRun.findUnique.mockResolvedValue(overrides.taskRun ?? mockTaskRun());
   prisma.workflowTaskTemplate.findUnique.mockResolvedValue({
     configJson: { jiraEnabled: true },
   });
@@ -126,9 +127,7 @@ function setupCreateMocks(prisma: ReturnType<typeof createMockPrisma>, overrides
   prisma.integrationConnection.findUnique.mockResolvedValue(
     overrides.connection ?? mockConnection(),
   );
-  mockFetch.mockResolvedValue(
-    overrides.fetchResponse ?? mockCreateIssueResponse(),
-  );
+  mockFetch.mockResolvedValue(overrides.fetchResponse ?? mockCreateIssueResponse());
 }
 
 function mockCreateIssueResponse(key = "PROJ-42", id = "12345") {
@@ -251,9 +250,7 @@ describe("jira-issue-sync", () => {
       const prisma = createMockPrisma();
       prisma.workflowTaskRun.findUnique.mockResolvedValue(null);
 
-      await expect(
-        createJiraIssue(prisma, ORG_ID, CONNECTION_ID, TASK_RUN_ID),
-      ).rejects.toThrow(
+      await expect(createJiraIssue(prisma, ORG_ID, CONNECTION_ID, TASK_RUN_ID)).rejects.toThrow(
         expect.objectContaining({
           code: "NOT_FOUND",
         }),
@@ -266,9 +263,7 @@ describe("jira-issue-sync", () => {
         connection: mockConnection({ status: "DISCONNECTED" }),
       });
 
-      await expect(
-        createJiraIssue(prisma, ORG_ID, CONNECTION_ID, TASK_RUN_ID),
-      ).rejects.toThrow(
+      await expect(createJiraIssue(prisma, ORG_ID, CONNECTION_ID, TASK_RUN_ID)).rejects.toThrow(
         expect.objectContaining({
           code: "PRECONDITION_FAILED",
         }),
@@ -281,9 +276,7 @@ describe("jira-issue-sync", () => {
         fetchResponse: new Response("Unauthorized", { status: 401 }),
       });
 
-      await expect(
-        createJiraIssue(prisma, ORG_ID, CONNECTION_ID, TASK_RUN_ID),
-      ).rejects.toThrow(
+      await expect(createJiraIssue(prisma, ORG_ID, CONNECTION_ID, TASK_RUN_ID)).rejects.toThrow(
         expect.objectContaining({
           code: "UNAUTHORIZED",
         }),

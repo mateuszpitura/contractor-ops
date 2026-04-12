@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { render, screen, setup } from "@/test/test-utils";
 import { ExternalSyncButton } from "../external-sync-button";
 
@@ -21,24 +21,14 @@ describe("ExternalSyncButton", () => {
 
   it("renders Jira provider label", () => {
     render(
-      <ExternalSyncButton
-        provider="JIRA"
-        connected={false}
-        onSync={vi.fn()}
-        isSyncing={false}
-      />,
+      <ExternalSyncButton provider="JIRA" connected={false} onSync={vi.fn()} isSyncing={false} />,
     );
     expect(screen.getByText(/Sync from Jira/)).toBeInTheDocument();
   });
 
   it("renders importing state", () => {
     render(
-      <ExternalSyncButton
-        provider="CLOCKIFY"
-        connected={true}
-        onSync={vi.fn()}
-        isSyncing={true}
-      />,
+      <ExternalSyncButton provider="CLOCKIFY" connected={true} onSync={vi.fn()} isSyncing={true} />,
     );
     expect(screen.getByText(/Importing/)).toBeInTheDocument();
   });

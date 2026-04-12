@@ -74,13 +74,8 @@ export function getColumns(t: TranslateFunction): ColumnDef<WorkflowRunRow>[] {
       header: ({ table }) => (
         <Checkbox
           checked={table.getIsAllPageRowsSelected()}
-          indeterminate={
-            table.getIsSomePageRowsSelected() &&
-            !table.getIsAllPageRowsSelected()
-          }
-          onCheckedChange={(value) =>
-            table.toggleAllPageRowsSelected(!!value)
-          }
+          indeterminate={table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()}
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
           aria-label={t("columns.selectAll")}
         />
       ),
@@ -104,9 +99,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<WorkflowRunRow>[] {
       header: t("columns.workflowName"),
       cell: ({ row }) => (
         <div className="min-w-[160px]">
-          <span className="font-medium">
-            {row.original.workflowTemplate.name}
-          </span>
+          <span className="font-medium">{row.original.workflowTemplate.name}</span>
         </div>
       ),
       enableHiding: false,
@@ -115,13 +108,11 @@ export function getColumns(t: TranslateFunction): ColumnDef<WorkflowRunRow>[] {
     // 3. Contractor
     {
       id: "contractor",
-      accessorFn: (row) =>
-        row.contractor.displayName ?? row.contractor.legalName,
+      accessorFn: (row) => row.contractor.displayName ?? row.contractor.legalName,
       header: t("columns.contractor"),
       cell: ({ row }) => (
         <span className="text-sm">
-          {row.original.contractor.displayName ??
-            row.original.contractor.legalName}
+          {row.original.contractor.displayName ?? row.original.contractor.legalName}
         </span>
       ),
     },
@@ -134,9 +125,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<WorkflowRunRow>[] {
       cell: ({ row }) => (
         <Badge
           variant="secondary"
-          className={
-            templateTypeBadgeColors[row.original.workflowTemplate.type] ?? ""
-          }
+          className={templateTypeBadgeColors[row.original.workflowTemplate.type] ?? ""}
         >
           {t(`templateType.${row.original.workflowTemplate.type}`)}
         </Badge>
@@ -151,10 +140,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<WorkflowRunRow>[] {
       cell: ({ row }) => {
         const status = row.original.status;
         return (
-          <Badge
-            variant="secondary"
-            className={statusBadgeColors[status] ?? ""}
-          >
+          <Badge variant="secondary" className={statusBadgeColors[status] ?? ""}>
             {t(`runStatus.${status}`)}
           </Badge>
         );
@@ -182,14 +168,9 @@ export function getColumns(t: TranslateFunction): ColumnDef<WorkflowRunRow>[] {
       header: t("columns.startedAt"),
       cell: ({ row }) => {
         const startedAt = row.original.startedAt;
-        if (!startedAt)
-          return <span className="text-muted-foreground">&mdash;</span>;
+        if (!startedAt) return <span className="text-muted-foreground">&mdash;</span>;
         try {
-          return (
-            <span className="text-sm">
-              {new Date(startedAt).toLocaleDateString("pl-PL")}
-            </span>
-          );
+          return <span className="text-sm">{new Date(startedAt).toLocaleDateString("pl-PL")}</span>;
         } catch {
           return <span className="text-muted-foreground">&mdash;</span>;
         }
@@ -202,8 +183,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<WorkflowRunRow>[] {
       header: t("columns.dueAt"),
       cell: ({ row }) => {
         const dueAt = row.original.dueAt;
-        if (!dueAt)
-          return <span className="text-muted-foreground">&mdash;</span>;
+        if (!dueAt) return <span className="text-muted-foreground">&mdash;</span>;
         try {
           const date = new Date(dueAt);
           const isOverdue =
@@ -212,9 +192,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<WorkflowRunRow>[] {
             row.original.status !== "CANCELLED";
 
           return (
-            <span
-              className={`text-sm ${isOverdue ? "text-destructive font-medium" : ""}`}
-            >
+            <span className={`text-sm ${isOverdue ? "text-destructive font-medium" : ""}`}>
               {date.toLocaleDateString("pl-PL")}
             </span>
           );

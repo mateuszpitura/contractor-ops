@@ -1,12 +1,12 @@
-import * as Sentry from "@sentry/nextjs";
 import { prisma } from "@contractor-ops/db";
 import type { Prisma } from "@contractor-ops/db/generated/prisma/client";
+import { extractInvoice } from "@contractor-ops/integrations/services/ocr-service";
+import { getQStashClient } from "@contractor-ops/integrations/services/qstash-client";
 import { createLogger } from "@contractor-ops/logger";
 import { metrics } from "@contractor-ops/logger/metrics";
-import { getQStashClient } from "@contractor-ops/integrations/services/qstash-client";
-import { extractInvoice } from "@contractor-ops/integrations/services/ocr-service";
-import { createPresignedDownloadUrl } from "./r2.js";
+import * as Sentry from "@sentry/nextjs";
 import { checkAndDeductCredit } from "./credit-service.js";
+import { createPresignedDownloadUrl } from "./r2.js";
 
 const log = createLogger({ service: "ocr" });
 
@@ -28,8 +28,7 @@ export async function triggerOcrExtraction(params: {
   storageKey: string;
   invoiceId?: string;
 }): Promise<
-  | { extractionId: string }
-  | { error: "no_subscription" | "credits_exhausted"; remaining: number }
+  { extractionId: string } | { error: "no_subscription" | "credits_exhausted"; remaining: number }
 > {
   // Credit check per BILL-06 -- hard-block when exhausted
   const creditResult = await checkAndDeductCredit(params.organizationId);
@@ -147,10 +146,7 @@ export async function processOcrExtraction(params: {
       metrics.distribution("ocr.confidence", result.overallConfidence);
     }
   } catch (error) {
-    log.error(
-      { err: error, extractionId: params.extractionId },
-      "ocr extraction failed",
-    );
+    log.error({ err: error, extractionId: params.extractionId }, "ocr extraction failed");
     Sentry.captureException(error, {
       tags: { "ocr.extraction_id": params.extractionId },
     });
@@ -161,8 +157,7 @@ export async function processOcrExtraction(params: {
       where: { id: params.extractionId },
       data: {
         status: "FAILED",
-        errorMessage:
-          error instanceof Error ? error.message : "Unknown processing error",
+        errorMessage: error instanceof Error ? error.message : "Unknown processing error",
         retryCount: { increment: 1 },
         completedAt: new Date(),
       },

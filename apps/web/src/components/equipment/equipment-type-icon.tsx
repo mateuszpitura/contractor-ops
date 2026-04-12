@@ -1,26 +1,19 @@
 "use client";
 
+import type { LucideIcon } from "lucide-react";
 import {
-  Laptop,
-  Monitor,
-  Smartphone,
+  Box,
   Headphones,
   Keyboard,
+  Laptop,
+  Monitor,
   Mouse,
   Package,
-  Box,
-  type LucideIcon,
+  Smartphone,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type EquipmentType =
-  | "LAPTOP"
-  | "MONITOR"
-  | "PHONE"
-  | "HEADSET"
-  | "KEYBOARD"
-  | "MOUSE"
-  | "OTHER";
+type EquipmentType = "LAPTOP" | "MONITOR" | "PHONE" | "HEADSET" | "KEYBOARD" | "MOUSE" | "OTHER";
 
 const TYPE_ICON_MAP: Record<EquipmentType, LucideIcon> = {
   LAPTOP: Laptop,

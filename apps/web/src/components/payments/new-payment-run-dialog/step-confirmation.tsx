@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback } from "react";
-import { useTranslations } from "next-intl";
 import { CheckCircle2 } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useCallback } from "react";
 
 import { Button } from "@/components/ui/button";
 
@@ -80,11 +80,7 @@ export function StepConfirmation({
   }, [fileBase64, fileName]);
 
   const formatLabel =
-    exportFormat === "CSV"
-      ? "CSV"
-      : exportFormat === "BANK_FILE"
-        ? "Elixir"
-        : "SEPA XML";
+    exportFormat === "CSV" ? "CSV" : exportFormat === "BANK_FILE" ? "Elixir" : "SEPA XML";
 
   return (
     <div className="flex flex-col items-center gap-6 py-4">
@@ -115,11 +111,7 @@ export function StepConfirmation({
       </Button>
 
       {/* View run link */}
-      <button
-        type="button"
-        className="text-sm text-primary hover:underline"
-        onClick={onViewRun}
-      >
+      <button type="button" className="text-sm text-primary hover:underline" onClick={onViewRun}>
         {t("step3.viewPaymentRun")}
       </button>
 

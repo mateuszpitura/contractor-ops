@@ -97,12 +97,7 @@ export class InfisicalSecretStore implements SecretStore {
         return null;
       }
       console.error(`[infisical] Failed to get secret at path: ${path}`);
-      throw new SecretStoreError(
-        `Failed to retrieve secret`,
-        "get",
-        path,
-        error,
-      );
+      throw new SecretStoreError(`Failed to retrieve secret`, "get", path, error);
     }
   }
 
@@ -134,12 +129,7 @@ export class InfisicalSecretStore implements SecretStore {
     } catch (error) {
       if (error instanceof SecretStoreError) throw error;
       console.error(`[infisical] Failed to set secret at path: ${path}`);
-      throw new SecretStoreError(
-        `Failed to store secret`,
-        "set",
-        path,
-        error,
-      );
+      throw new SecretStoreError(`Failed to store secret`, "set", path, error);
     }
   }
 
@@ -157,12 +147,7 @@ export class InfisicalSecretStore implements SecretStore {
       // Deleting non-existent secret is a no-op
       if (this.isNotFoundError(error)) return;
       console.error(`[infisical] Failed to delete secret at path: ${path}`);
-      throw new SecretStoreError(
-        `Failed to delete secret`,
-        "delete",
-        path,
-        error,
-      );
+      throw new SecretStoreError(`Failed to delete secret`, "delete", path, error);
     }
   }
 
@@ -214,12 +199,7 @@ export class InfisicalSecretStore implements SecretStore {
     } catch (error) {
       this.initPromise = null; // Allow retry
       console.error("[infisical] Failed to initialize SDK");
-      throw new SecretStoreError(
-        "Failed to initialize Infisical SDK",
-        "init",
-        undefined,
-        error,
-      );
+      throw new SecretStoreError("Failed to initialize Infisical SDK", "init", undefined, error);
     }
   }
 

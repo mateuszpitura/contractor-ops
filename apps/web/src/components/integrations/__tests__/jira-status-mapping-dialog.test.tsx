@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, setup, waitFor } from "@/test/test-utils";
 import userEvent from "@testing-library/user-event";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { render, screen, setup, waitFor } from "@/test/test-utils";
 import { JiraStatusMappingDialog } from "../jira-status-mapping-dialog";
 
 // ---------------------------------------------------------------------------
@@ -24,9 +24,8 @@ let existingMapping: unknown[] = [];
 const mockMutate = vi.fn();
 
 vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
-    "@tanstack/react-query",
-  );
+  const actual =
+    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
   return {
     ...actual,
     useQuery: (opts: { queryKey?: unknown }) => {
@@ -55,7 +54,9 @@ vi.mock("@/trpc/init", () => ({
   trpc: {
     jira: {
       listProjects: { queryOptions: vi.fn(() => ({ queryKey: ["jira", "listProjects"] })) },
-      listProjectStatuses: { queryOptions: vi.fn(() => ({ queryKey: ["jira", "listProjectStatuses"] })) },
+      listProjectStatuses: {
+        queryOptions: vi.fn(() => ({ queryKey: ["jira", "listProjectStatuses"] })),
+      },
       getStatusMapping: {
         queryOptions: vi.fn(() => ({ queryKey: ["jira", "getStatusMapping"] })),
         queryKey: vi.fn(() => ["jira", "getStatusMapping"]),
@@ -82,22 +83,14 @@ describe("JiraStatusMappingDialog", () => {
 
   it("renders dialog with title", () => {
     render(
-      <JiraStatusMappingDialog
-        open={true}
-        onOpenChange={onOpenChange}
-        connectionId="conn-1"
-      />,
+      <JiraStatusMappingDialog open={true} onOpenChange={onOpenChange} connectionId="conn-1" />,
     );
     expect(screen.getByText("Status Mapping")).toBeInTheDocument();
   });
 
   it("renders save and discard buttons", () => {
     render(
-      <JiraStatusMappingDialog
-        open={true}
-        onOpenChange={onOpenChange}
-        connectionId="conn-1"
-      />,
+      <JiraStatusMappingDialog open={true} onOpenChange={onOpenChange} connectionId="conn-1" />,
     );
     expect(screen.getByText("Save Mapping")).toBeInTheDocument();
     expect(screen.getByText("Discard Changes")).toBeInTheDocument();
@@ -105,11 +98,7 @@ describe("JiraStatusMappingDialog", () => {
 
   it("save button is disabled without project selection", () => {
     render(
-      <JiraStatusMappingDialog
-        open={true}
-        onOpenChange={onOpenChange}
-        connectionId="conn-1"
-      />,
+      <JiraStatusMappingDialog open={true} onOpenChange={onOpenChange} connectionId="conn-1" />,
     );
     const saveBtn = screen.getByRole("button", { name: "Save Mapping" });
     expect(saveBtn).toBeDisabled();
@@ -117,11 +106,7 @@ describe("JiraStatusMappingDialog", () => {
 
   it("discard button calls onOpenChange(false)", async () => {
     const { user } = setup(
-      <JiraStatusMappingDialog
-        open={true}
-        onOpenChange={onOpenChange}
-        connectionId="conn-1"
-      />,
+      <JiraStatusMappingDialog open={true} onOpenChange={onOpenChange} connectionId="conn-1" />,
     );
     await user.click(screen.getByText("Discard Changes"));
     expect(onOpenChange).toHaveBeenCalledWith(false);
@@ -129,11 +114,7 @@ describe("JiraStatusMappingDialog", () => {
 
   it("renders project select when projects exist", () => {
     render(
-      <JiraStatusMappingDialog
-        open={true}
-        onOpenChange={onOpenChange}
-        connectionId="conn-1"
-      />,
+      <JiraStatusMappingDialog open={true} onOpenChange={onOpenChange} connectionId="conn-1" />,
     );
     const buttons = screen.getAllByRole("button");
     expect(buttons.length).toBeGreaterThanOrEqual(3);
@@ -141,22 +122,14 @@ describe("JiraStatusMappingDialog", () => {
 
   it("does not render dialog when closed", () => {
     render(
-      <JiraStatusMappingDialog
-        open={false}
-        onOpenChange={onOpenChange}
-        connectionId="conn-1"
-      />,
+      <JiraStatusMappingDialog open={false} onOpenChange={onOpenChange} connectionId="conn-1" />,
     );
     expect(screen.queryByText("Status Mapping")).not.toBeInTheDocument();
   });
 
   it("does not show mapping table without project selection", () => {
     render(
-      <JiraStatusMappingDialog
-        open={true}
-        onOpenChange={onOpenChange}
-        connectionId="conn-1"
-      />,
+      <JiraStatusMappingDialog open={true} onOpenChange={onOpenChange} connectionId="conn-1" />,
     );
     expect(screen.queryByText("Workflow Status")).not.toBeInTheDocument();
   });
@@ -164,25 +137,15 @@ describe("JiraStatusMappingDialog", () => {
   // ---- Dialog description ----
   it("renders dialog description", () => {
     render(
-      <JiraStatusMappingDialog
-        open={true}
-        onOpenChange={onOpenChange}
-        connectionId="conn-1"
-      />,
+      <JiraStatusMappingDialog open={true} onOpenChange={onOpenChange} connectionId="conn-1" />,
     );
-    expect(
-      screen.getByText(/Map workflow task statuses to Jira transitions/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Map workflow task statuses to Jira transitions/)).toBeInTheDocument();
   });
 
   // ---- Jira Project label ----
   it("renders Jira Project label", () => {
     render(
-      <JiraStatusMappingDialog
-        open={true}
-        onOpenChange={onOpenChange}
-        connectionId="conn-1"
-      />,
+      <JiraStatusMappingDialog open={true} onOpenChange={onOpenChange} connectionId="conn-1" />,
     );
     expect(screen.getByText("Jira Project")).toBeInTheDocument();
   });
@@ -190,11 +153,7 @@ describe("JiraStatusMappingDialog", () => {
   // ---- Select trigger ----
   it("renders project select trigger (combobox)", () => {
     render(
-      <JiraStatusMappingDialog
-        open={true}
-        onOpenChange={onOpenChange}
-        connectionId="conn-1"
-      />,
+      <JiraStatusMappingDialog open={true} onOpenChange={onOpenChange} connectionId="conn-1" />,
     );
     expect(screen.getByRole("combobox")).toBeInTheDocument();
   });
@@ -202,11 +161,7 @@ describe("JiraStatusMappingDialog", () => {
   // ---- Save button disabled without changes ----
   it("save button is disabled when no changes and no project", () => {
     render(
-      <JiraStatusMappingDialog
-        open={true}
-        onOpenChange={onOpenChange}
-        connectionId="conn-1"
-      />,
+      <JiraStatusMappingDialog open={true} onOpenChange={onOpenChange} connectionId="conn-1" />,
     );
     const saveBtn = screen.getByRole("button", { name: "Save Mapping" });
     expect(saveBtn).toBeDisabled();
@@ -215,11 +170,7 @@ describe("JiraStatusMappingDialog", () => {
   // ---- Project select has a combobox trigger ----
   it("renders combobox trigger for project select", () => {
     render(
-      <JiraStatusMappingDialog
-        open={true}
-        onOpenChange={onOpenChange}
-        connectionId="conn-1"
-      />,
+      <JiraStatusMappingDialog open={true} onOpenChange={onOpenChange} connectionId="conn-1" />,
     );
     const combobox = screen.getByRole("combobox");
     expect(combobox).toBeInTheDocument();
@@ -228,17 +179,11 @@ describe("JiraStatusMappingDialog", () => {
   // ---- Dialog footer buttons count ----
   it("renders exactly two footer buttons (save and discard)", () => {
     render(
-      <JiraStatusMappingDialog
-        open={true}
-        onOpenChange={onOpenChange}
-        connectionId="conn-1"
-      />,
+      <JiraStatusMappingDialog open={true} onOpenChange={onOpenChange} connectionId="conn-1" />,
     );
     const buttons = screen.getAllByRole("button");
     const saveBtn = buttons.find((b) => b.textContent === "Save Mapping");
-    const discardBtn = buttons.find(
-      (b) => b.textContent === "Discard Changes",
-    );
+    const discardBtn = buttons.find((b) => b.textContent === "Discard Changes");
     expect(saveBtn).toBeTruthy();
     expect(discardBtn).toBeTruthy();
   });
@@ -249,11 +194,7 @@ describe("JiraStatusMappingDialog", () => {
 
   it("does not call save when no project is selected", () => {
     render(
-      <JiraStatusMappingDialog
-        open={true}
-        onOpenChange={onOpenChange}
-        connectionId="conn-1"
-      />,
+      <JiraStatusMappingDialog open={true} onOpenChange={onOpenChange} connectionId="conn-1" />,
     );
     const saveBtn = screen.getByRole("button", { name: "Save Mapping" });
     expect(saveBtn).toBeDisabled();
@@ -262,11 +203,7 @@ describe("JiraStatusMappingDialog", () => {
 
   it("renders combobox trigger for project selector", () => {
     render(
-      <JiraStatusMappingDialog
-        open={true}
-        onOpenChange={onOpenChange}
-        connectionId="conn-1"
-      />,
+      <JiraStatusMappingDialog open={true} onOpenChange={onOpenChange} connectionId="conn-1" />,
     );
     expect(screen.getByRole("combobox")).toBeInTheDocument();
   });
@@ -274,11 +211,7 @@ describe("JiraStatusMappingDialog", () => {
   it("shows projects loading spinner when projects are loading", () => {
     projectsLoading = true;
     render(
-      <JiraStatusMappingDialog
-        open={true}
-        onOpenChange={onOpenChange}
-        connectionId="conn-1"
-      />,
+      <JiraStatusMappingDialog open={true} onOpenChange={onOpenChange} connectionId="conn-1" />,
     );
     expect(screen.getByRole("combobox")).toBeInTheDocument();
   });
@@ -289,11 +222,7 @@ describe("JiraStatusMappingDialog", () => {
       { id: "js-2", name: "Done", statusCategory: { key: "done", name: "Done" } },
     ];
     render(
-      <JiraStatusMappingDialog
-        open={true}
-        onOpenChange={onOpenChange}
-        connectionId="conn-1"
-      />,
+      <JiraStatusMappingDialog open={true} onOpenChange={onOpenChange} connectionId="conn-1" />,
     );
     // Without project selected, mapping table is not shown
     expect(screen.queryByText("Workflow Status")).not.toBeInTheDocument();
@@ -310,22 +239,14 @@ describe("JiraStatusMappingDialog", () => {
       },
     ];
     render(
-      <JiraStatusMappingDialog
-        open={true}
-        onOpenChange={onOpenChange}
-        connectionId="conn-1"
-      />,
+      <JiraStatusMappingDialog open={true} onOpenChange={onOpenChange} connectionId="conn-1" />,
     );
     expect(screen.getByText("Status Mapping")).toBeInTheDocument();
   });
 
   it("renders description text about mapping transitions", () => {
     render(
-      <JiraStatusMappingDialog
-        open={true}
-        onOpenChange={onOpenChange}
-        connectionId="conn-1"
-      />,
+      <JiraStatusMappingDialog open={true} onOpenChange={onOpenChange} connectionId="conn-1" />,
     );
     expect(screen.getByText(/Map workflow task statuses/)).toBeInTheDocument();
   });
@@ -337,16 +258,16 @@ describe("JiraStatusMappingDialog", () => {
   it("renders mapping table after selecting a project", async () => {
     statusesData = [
       { id: "js-1", name: "Open", statusCategory: { key: "new", name: "New" } },
-      { id: "js-2", name: "In Progress", statusCategory: { key: "indeterminate", name: "In Progress" } },
+      {
+        id: "js-2",
+        name: "In Progress",
+        statusCategory: { key: "indeterminate", name: "In Progress" },
+      },
       { id: "js-3", name: "Done", statusCategory: { key: "done", name: "Done" } },
     ];
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     render(
-      <JiraStatusMappingDialog
-        open={true}
-        onOpenChange={onOpenChange}
-        connectionId="conn-1"
-      />,
+      <JiraStatusMappingDialog open={true} onOpenChange={onOpenChange} connectionId="conn-1" />,
     );
     const combobox = screen.getByRole("combobox");
     await user.click(combobox);
@@ -366,16 +287,10 @@ describe("JiraStatusMappingDialog", () => {
   });
 
   it("shows save button enabled after selecting project with no existing mappings", async () => {
-    statusesData = [
-      { id: "js-1", name: "Open", statusCategory: { key: "new", name: "New" } },
-    ];
+    statusesData = [{ id: "js-1", name: "Open", statusCategory: { key: "new", name: "New" } }];
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     render(
-      <JiraStatusMappingDialog
-        open={true}
-        onOpenChange={onOpenChange}
-        connectionId="conn-1"
-      />,
+      <JiraStatusMappingDialog open={true} onOpenChange={onOpenChange} connectionId="conn-1" />,
     );
     const combobox = screen.getByRole("combobox");
     await user.click(combobox);
@@ -390,18 +305,18 @@ describe("JiraStatusMappingDialog", () => {
 
   it("loads existing mappings when project is selected", async () => {
     existingMapping = [
-      { workflowStatus: "TODO", jiraTransitionId: "js-1", jiraTransitionName: "Open", jiraTargetStatusName: "Open", jiraTargetStatusCategory: "new" },
+      {
+        workflowStatus: "TODO",
+        jiraTransitionId: "js-1",
+        jiraTransitionName: "Open",
+        jiraTargetStatusName: "Open",
+        jiraTargetStatusCategory: "new",
+      },
     ];
-    statusesData = [
-      { id: "js-1", name: "Open", statusCategory: { key: "new", name: "New" } },
-    ];
+    statusesData = [{ id: "js-1", name: "Open", statusCategory: { key: "new", name: "New" } }];
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     render(
-      <JiraStatusMappingDialog
-        open={true}
-        onOpenChange={onOpenChange}
-        connectionId="conn-1"
-      />,
+      <JiraStatusMappingDialog open={true} onOpenChange={onOpenChange} connectionId="conn-1" />,
     );
     const combobox = screen.getByRole("combobox");
     await user.click(combobox);
@@ -424,11 +339,7 @@ describe("JiraStatusMappingDialog", () => {
     ];
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     render(
-      <JiraStatusMappingDialog
-        open={true}
-        onOpenChange={onOpenChange}
-        connectionId="conn-1"
-      />,
+      <JiraStatusMappingDialog open={true} onOpenChange={onOpenChange} connectionId="conn-1" />,
     );
     // Select project first
     const combobox = screen.getByRole("combobox");
@@ -456,11 +367,7 @@ describe("JiraStatusMappingDialog", () => {
     statusesData = [];
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     render(
-      <JiraStatusMappingDialog
-        open={true}
-        onOpenChange={onOpenChange}
-        connectionId="conn-1"
-      />,
+      <JiraStatusMappingDialog open={true} onOpenChange={onOpenChange} connectionId="conn-1" />,
     );
     const combobox = screen.getByRole("combobox");
     await user.click(combobox);
@@ -477,11 +384,7 @@ describe("JiraStatusMappingDialog", () => {
     statusesData = [];
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     render(
-      <JiraStatusMappingDialog
-        open={true}
-        onOpenChange={onOpenChange}
-        connectionId="conn-1"
-      />,
+      <JiraStatusMappingDialog open={true} onOpenChange={onOpenChange} connectionId="conn-1" />,
     );
     const combobox = screen.getByRole("combobox");
     await user.click(combobox);
@@ -495,16 +398,10 @@ describe("JiraStatusMappingDialog", () => {
   });
 
   it("shows all 6 workflow status labels in mapping table after project selection", async () => {
-    statusesData = [
-      { id: "js-1", name: "Open", statusCategory: { key: "new", name: "New" } },
-    ];
+    statusesData = [{ id: "js-1", name: "Open", statusCategory: { key: "new", name: "New" } }];
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     render(
-      <JiraStatusMappingDialog
-        open={true}
-        onOpenChange={onOpenChange}
-        connectionId="conn-1"
-      />,
+      <JiraStatusMappingDialog open={true} onOpenChange={onOpenChange} connectionId="conn-1" />,
     );
     const combobox = screen.getByRole("combobox");
     await user.click(combobox);
@@ -529,11 +426,7 @@ describe("JiraStatusMappingDialog", () => {
     ];
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     render(
-      <JiraStatusMappingDialog
-        open={true}
-        onOpenChange={onOpenChange}
-        connectionId="conn-1"
-      />,
+      <JiraStatusMappingDialog open={true} onOpenChange={onOpenChange} connectionId="conn-1" />,
     );
     const combobox = screen.getByRole("combobox");
     await user.click(combobox);
@@ -557,11 +450,7 @@ describe("JiraStatusMappingDialog", () => {
     existingMapping = [];
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     render(
-      <JiraStatusMappingDialog
-        open={true}
-        onOpenChange={onOpenChange}
-        connectionId="conn-1"
-      />,
+      <JiraStatusMappingDialog open={true} onOpenChange={onOpenChange} connectionId="conn-1" />,
     );
     const combobox = screen.getByRole("combobox");
     await user.click(combobox);
@@ -595,17 +484,11 @@ describe("JiraStatusMappingDialog", () => {
   });
 
   it("switching projects resets mappings", async () => {
-    statusesData = [
-      { id: "js-1", name: "Open", statusCategory: { key: "new", name: "New" } },
-    ];
+    statusesData = [{ id: "js-1", name: "Open", statusCategory: { key: "new", name: "New" } }];
     existingMapping = [];
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     render(
-      <JiraStatusMappingDialog
-        open={true}
-        onOpenChange={onOpenChange}
-        connectionId="conn-1"
-      />,
+      <JiraStatusMappingDialog open={true} onOpenChange={onOpenChange} connectionId="conn-1" />,
     );
     const combobox = screen.getByRole("combobox");
     // Select first project
@@ -630,17 +513,11 @@ describe("JiraStatusMappingDialog", () => {
   });
 
   it("shows unmapped warning tooltips for statuses without mapping", async () => {
-    statusesData = [
-      { id: "js-1", name: "Open", statusCategory: { key: "new", name: "New" } },
-    ];
+    statusesData = [{ id: "js-1", name: "Open", statusCategory: { key: "new", name: "New" } }];
     existingMapping = [];
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     render(
-      <JiraStatusMappingDialog
-        open={true}
-        onOpenChange={onOpenChange}
-        connectionId="conn-1"
-      />,
+      <JiraStatusMappingDialog open={true} onOpenChange={onOpenChange} connectionId="conn-1" />,
     );
     const combobox = screen.getByRole("combobox");
     await user.click(combobox);

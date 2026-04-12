@@ -190,9 +190,7 @@ describe("BillingOverlay", () => {
   it("past due banner shows update payment text", () => {
     subscriptionData = { status: "PAST_DUE", trialEnd: null };
     render(<BillingOverlay />);
-    expect(
-      screen.getByText(/Update your payment method/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Update your payment method/)).toBeInTheDocument();
   });
 
   // ---- Trial banner shows correct date ----
@@ -203,9 +201,7 @@ describe("BillingOverlay", () => {
       trialEnd: futureDate.toISOString(),
     };
     render(<BillingOverlay />);
-    expect(screen.getByTestId("trial-banner")).toHaveTextContent(
-      futureDate.toISOString(),
-    );
+    expect(screen.getByTestId("trial-banner")).toHaveTextContent(futureDate.toISOString());
   });
 
   // ---- Go to billing is a button ----

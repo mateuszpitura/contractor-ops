@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -27,7 +27,9 @@ vi.mock("next/navigation", () => ({
 vi.mock("@/trpc/init", () => ({
   trpc: {
     integration: {
-      getHealth: { queryOptions: (input: unknown) => ({ queryKey: ["integration.getHealth", input] }) },
+      getHealth: {
+        queryOptions: (input: unknown) => ({ queryKey: ["integration.getHealth", input] }),
+      },
     },
     billing: {
       getSubscription: { queryOptions: () => ({ queryKey: ["billing.getSubscription"] }) },

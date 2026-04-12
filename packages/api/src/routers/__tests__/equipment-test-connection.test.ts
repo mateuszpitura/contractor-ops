@@ -6,7 +6,7 @@
  * without leaking internal error details.
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -26,10 +26,23 @@ const { mockPrisma, mockCourierClient } = vi.hoisted(() => {
   const mockPrisma: Rec = {
     equipmentAssignment: { findMany: vi.fn() },
     returnRequest: { findFirst: vi.fn(), create: vi.fn(), update: vi.fn() },
-    equipment: { updateMany: vi.fn(), update: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), create: vi.fn(), count: vi.fn() },
+    equipment: {
+      updateMany: vi.fn(),
+      update: vi.fn(),
+      findMany: vi.fn(),
+      findFirst: vi.fn(),
+      create: vi.fn(),
+      count: vi.fn(),
+    },
     shipment: { findFirst: vi.fn(), create: vi.fn(), findMany: vi.fn() },
     shipmentEvent: { create: vi.fn() },
-    contractor: { findUnique: vi.fn(), findFirst: vi.fn(), update: vi.fn(), findMany: vi.fn(), count: vi.fn() },
+    contractor: {
+      findUnique: vi.fn(),
+      findFirst: vi.fn(),
+      update: vi.fn(),
+      findMany: vi.fn(),
+      count: vi.fn(),
+    },
     contractorBillingProfile: { findFirst: vi.fn() },
     organization: { findUnique: vi.fn(), update: vi.fn() },
     courierConfig: { findUnique: vi.fn(), upsert: vi.fn(), findMany: vi.fn() },
@@ -273,9 +286,7 @@ describe("equipment.testCourierConnection", () => {
       fid: "dpd-fid-123",
       sandbox: true,
     });
-    expect(mockCourierClient.getStatus).toHaveBeenCalledWith(
-      "TEST_CONNECTION_PROBE",
-    );
+    expect(mockCourierClient.getStatus).toHaveBeenCalledWith("TEST_CONNECTION_PROBE");
   });
 
   it("returns success:true when UPS credentials are valid", async () => {
@@ -302,9 +313,7 @@ describe("equipment.testCourierConnection", () => {
   });
 
   it("returns success:true when carrier responds with shipment-not-found (auth succeeded)", async () => {
-    mockCourierClient.getStatus.mockRejectedValueOnce(
-      new Error("Shipment not found (404)"),
-    );
+    mockCourierClient.getStatus.mockRejectedValueOnce(new Error("Shipment not found (404)"));
 
     const result = await caller.equipment.testCourierConnection({
       carrier: "dpd",

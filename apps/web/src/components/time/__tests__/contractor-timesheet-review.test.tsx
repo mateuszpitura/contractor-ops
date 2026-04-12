@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { render, screen, setup } from "@/test/test-utils";
 import { ContractorTimesheetReview } from "../contractor-timesheet-review";
 
@@ -24,9 +24,7 @@ vi.mock("../rejection-reason-dialog", () => ({
   }) =>
     open ? (
       <div data-testid="rejection-dialog">
-        <button onClick={() => onConfirm("reason text")}>
-          confirm-reject
-        </button>
+        <button onClick={() => onConfirm("reason text")}>confirm-reject</button>
       </div>
     ) : null,
 }));
@@ -105,25 +103,19 @@ describe("ContractorTimesheetReview", () => {
         timesheet={{ ...baseTimesheet, status: "APPROVED" }}
       />,
     );
-    expect(
-      screen.queryByText("Approve Timesheet"),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText("Approve Timesheet")).not.toBeInTheDocument();
   });
 
   it("calls onApprove when approve clicked", async () => {
     const onApprove = vi.fn();
-    const { user } = setup(
-      <ContractorTimesheetReview {...defaultProps} onApprove={onApprove} />,
-    );
+    const { user } = setup(<ContractorTimesheetReview {...defaultProps} onApprove={onApprove} />);
     await user.click(screen.getByText("Approve Timesheet"));
     expect(onApprove).toHaveBeenCalled();
   });
 
   it("calls onBack when back clicked", async () => {
     const onBack = vi.fn();
-    const { user } = setup(
-      <ContractorTimesheetReview {...defaultProps} onBack={onBack} />,
-    );
+    const { user } = setup(<ContractorTimesheetReview {...defaultProps} onBack={onBack} />);
     await user.click(screen.getByText("Back to Queue"));
     expect(onBack).toHaveBeenCalled();
   });

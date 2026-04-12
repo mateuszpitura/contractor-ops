@@ -15,11 +15,7 @@ interface ExportButtonsProps {
  * Triggers a browser download from a base64-encoded data string.
  * Used across all report exports for CSV file delivery.
  */
-export function downloadBase64File(
-  base64Data: string,
-  filename: string,
-  mimeType: string,
-): void {
+export function downloadBase64File(base64Data: string, filename: string, mimeType: string): void {
   const binaryStr = atob(base64Data);
   const bytes = new Uint8Array(binaryStr.length);
   for (let i = 0; i < binaryStr.length; i++) {
@@ -34,11 +30,7 @@ export function downloadBase64File(
   URL.revokeObjectURL(url);
 }
 
-export function ExportButtons({
-  onExportPage,
-  onExportAll,
-  isExporting,
-}: ExportButtonsProps) {
+export function ExportButtons({ onExportPage, onExportAll, isExporting }: ExportButtonsProps) {
   const t = useTranslations("Reports");
 
   return (
@@ -57,12 +49,7 @@ export function ExportButtons({
         )}
         {t("exportPage")}
       </Button>
-      <Button
-        size="sm"
-        onClick={onExportAll}
-        disabled={isExporting}
-        className="h-8 gap-1.5"
-      >
+      <Button size="sm" onClick={onExportAll} disabled={isExporting} className="h-8 gap-1.5">
         {isExporting ? (
           <Loader2 className="h-3.5 w-3.5 animate-spin" />
         ) : (

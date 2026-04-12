@@ -24,8 +24,7 @@ function handleTierError(error: unknown): boolean {
       requiredTier?: string;
     };
     if (parsed.type === "TIER_REQUIRED" && parsed.requiredTier) {
-      const tierLabel =
-        parsed.requiredTier === "ENTERPRISE" ? "Enterprise" : "Pro";
+      const tierLabel = parsed.requiredTier === "ENTERPRISE" ? "Enterprise" : "Pro";
       toast.error(`This feature requires ${tierLabel} plan.`, {
         action: {
           label: "Upgrade",
@@ -78,13 +77,11 @@ export function makeQueryClient() {
       queries: {
         staleTime: 30 * 1000,
         retry: shouldRetry,
-        retryDelay: (attemptIndex) =>
-          Math.min(1000 * 3 ** attemptIndex, 30_000),
+        retryDelay: (attemptIndex) => Math.min(1000 * 3 ** attemptIndex, 30_000),
       },
       mutations: {
         retry: shouldRetry,
-        retryDelay: (attemptIndex) =>
-          Math.min(1000 * 3 ** attemptIndex, 30_000),
+        retryDelay: (attemptIndex) => Math.min(1000 * 3 ** attemptIndex, 30_000),
         onError: (error) => {
           handleTierError(error);
         },

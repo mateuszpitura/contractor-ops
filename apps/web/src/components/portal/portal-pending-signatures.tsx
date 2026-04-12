@@ -1,15 +1,14 @@
 "use client";
 
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-
 import { useTranslations } from "next-intl";
-import { trpc } from "@/trpc/init";
+import { useState } from "react";
+import { EmbeddedSigningModal } from "@/components/contracts/contract-detail/embedded-signing-modal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { EmbeddedSigningModal } from "@/components/contracts/contract-detail/embedded-signing-modal";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -70,13 +69,9 @@ type SigningTarget = {
  */
 export function PortalPendingSignatures() {
   const t = useTranslations("Portal");
-  const [signingTarget, setSigningTarget] = useState<SigningTarget | null>(
-    null
-  );
+  const [signingTarget, setSigningTarget] = useState<SigningTarget | null>(null);
 
-  const pendingQuery = useQuery(
-    trpc.esign.listPendingForContractor.queryOptions()
-  );
+  const pendingQuery = useQuery(trpc.esign.listPendingForContractor.queryOptions());
 
   const items = (pendingQuery.data ?? []) as PendingItem[];
 
@@ -146,10 +141,7 @@ export function PortalPendingSignatures() {
             ))}
 
             {hasMore && (
-              <a
-                href="/portal/signatures"
-                className="text-sm text-primary hover:underline"
-              >
+              <a href="/portal/signatures" className="text-sm text-primary hover:underline">
                 {t("pendingSignatures.viewAll")}
               </a>
             )}

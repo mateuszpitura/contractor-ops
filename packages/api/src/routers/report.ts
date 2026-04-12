@@ -1,14 +1,14 @@
-import { z } from "zod";
 import { prisma } from "@contractor-ops/db";
 import { Prisma } from "@contractor-ops/db/generated/prisma/client";
+import { z } from "zod";
 import { router } from "../init.js";
-import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
+import { tenantProcedure } from "../middleware/tenant.js";
 import {
-  generateSpendCsv,
+  generateComplianceCsv,
   generateContractsCsv,
   generateInvoicesCsv,
-  generateComplianceCsv,
+  generateSpendCsv,
 } from "../services/report-export.js";
 
 // ---------------------------------------------------------------------------
@@ -51,9 +51,7 @@ export const reportRouter = router({
       z.object({
         ...dateRangeInput,
         ...paginationInput,
-        sortBy: z
-          .enum(["totalSpend", "invoiceCount", "contractorName"])
-          .default("totalSpend"),
+        sortBy: z.enum(["totalSpend", "invoiceCount", "contractorName"]).default("totalSpend"),
         contractorId: z.string().optional(),
       }),
     )
@@ -124,9 +122,7 @@ export const reportRouter = router({
           invoiceCount: Number(r.invoiceCount),
           totalGrosze: Number(r.totalGrosze),
           avgGrosze: Number(r.avgGrosze),
-          lastPaidAt: r.lastPaidAt
-            ? new Date(r.lastPaidAt).toISOString()
-            : null,
+          lastPaidAt: r.lastPaidAt ? new Date(r.lastPaidAt).toISOString() : null,
         })),
         totalCount: countResult[0]?.count ?? 0,
       };
@@ -141,9 +137,7 @@ export const reportRouter = router({
       z.object({
         ...dateRangeInput,
         ...paginationInput,
-        sortBy: z
-          .enum(["totalSpend", "invoiceCount", "teamName"])
-          .default("totalSpend"),
+        sortBy: z.enum(["totalSpend", "invoiceCount", "teamName"]).default("totalSpend"),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -220,17 +214,13 @@ export const reportRouter = router({
       z.object({
         days: z.enum(["30", "60", "90"]).default("30"),
         ...paginationInput,
-        sortBy: z
-          .enum(["endDate", "contractorName", "title"])
-          .default("endDate"),
+        sortBy: z.enum(["endDate", "contractorName", "title"]).default("endDate"),
       }),
     )
     .query(async ({ ctx, input }) => {
       const now = new Date();
       const daysNum = parseInt(input.days, 10);
-      const futureDate = new Date(
-        now.getTime() + daysNum * 24 * 60 * 60 * 1000,
-      );
+      const futureDate = new Date(now.getTime() + daysNum * 24 * 60 * 60 * 1000);
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const orderBy: any =
@@ -269,9 +259,7 @@ export const reportRouter = router({
           contractorId: c.contractor.id,
           contractorName: c.contractor.legalName,
           endDate: c.endDate!.toISOString(),
-          daysRemaining: Math.ceil(
-            (c.endDate!.getTime() - now.getTime()) / msPerDay,
-          ),
+          daysRemaining: Math.ceil((c.endDate!.getTime() - now.getTime()) / msPerDay),
           status: c.status,
         })),
         totalCount,
@@ -286,9 +274,7 @@ export const reportRouter = router({
     .input(
       z.object({
         ...paginationInput,
-        sortBy: z
-          .enum(["dueDate", "amount", "contractorName"])
-          .default("dueDate"),
+        sortBy: z.enum(["dueDate", "amount", "contractorName"]).default("dueDate"),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -305,7 +291,7 @@ export const reportRouter = router({
       const where = {
         organizationId: ctx.organizationId,
         dueDate: { lt: now },
-        paymentStatus: { notIn: ["PAID"] as ("PAID")[] },
+        paymentStatus: { notIn: ["PAID"] as "PAID"[] },
         deletedAt: null,
       };
 
@@ -335,9 +321,7 @@ export const reportRouter = router({
           amountGrosze: inv.amountToPayGrosze,
           currency: inv.currency,
           dueDate: inv.dueDate.toISOString(),
-          daysOverdue: Math.ceil(
-            (now.getTime() - inv.dueDate.getTime()) / msPerDay,
-          ),
+          daysOverdue: Math.ceil((now.getTime() - inv.dueDate.getTime()) / msPerDay),
           status: inv.paymentStatus,
         })),
         totalCount,
@@ -352,9 +336,7 @@ export const reportRouter = router({
     .input(
       z.object({
         ...paginationInput,
-        sortBy: z
-          .enum(["health", "contractorName", "missingDocs"])
-          .default("health"),
+        sortBy: z.enum(["health", "contractorName", "missingDocs"]).default("health"),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -397,12 +379,8 @@ export const reportRouter = router({
 
       for (const c of contractors) {
         const missingOrExpired = c._count.complianceItems;
-        const hasPending = c.complianceItems.some(
-          (ci) => ci.status === "PENDING",
-        );
-        const hasActiveContract = c.contracts.some(
-          (con) => con.status === "ACTIVE",
-        );
+        const hasPending = c.complianceItems.some((ci) => ci.status === "PENDING");
+        const hasActiveContract = c.contracts.some((con) => con.status === "ACTIVE");
 
         let health: "red" | "yellow" | "green" = "green";
         if (missingOrExpired > 0 || !hasActiveContract) {
@@ -579,57 +557,51 @@ export const reportRouter = router({
   /**
    * Compliance gaps summary for pie chart.
    */
-  complianceGapsChart: tenantProcedure
-    .use(reportRead)
-    .query(async ({ ctx }) => {
-      const contractors = await prisma.contractor.findMany({
-        where: {
-          organizationId: ctx.organizationId,
-          status: "ACTIVE",
-          deletedAt: null,
+  complianceGapsChart: tenantProcedure.use(reportRead).query(async ({ ctx }) => {
+    const contractors = await prisma.contractor.findMany({
+      where: {
+        organizationId: ctx.organizationId,
+        status: "ACTIVE",
+        deletedAt: null,
+      },
+      include: {
+        complianceItems: {
+          select: { status: true },
         },
-        include: {
-          complianceItems: {
-            select: { status: true },
-          },
-          contracts: {
-            where: { deletedAt: null },
-            select: { status: true },
-          },
-          _count: {
-            select: {
-              complianceItems: {
-                where: { status: { in: ["MISSING", "EXPIRED"] } },
-              },
+        contracts: {
+          where: { deletedAt: null },
+          select: { status: true },
+        },
+        _count: {
+          select: {
+            complianceItems: {
+              where: { status: { in: ["MISSING", "EXPIRED"] } },
             },
           },
         },
-      });
+      },
+    });
 
-      let critical = 0;
-      let warning = 0;
-      let ok = 0;
+    let critical = 0;
+    let warning = 0;
+    let ok = 0;
 
-      for (const c of contractors) {
-        const missingOrExpired = c._count.complianceItems;
-        const hasPending = c.complianceItems.some(
-          (ci) => ci.status === "PENDING",
-        );
-        const hasActiveContract = c.contracts.some(
-          (con) => con.status === "ACTIVE",
-        );
+    for (const c of contractors) {
+      const missingOrExpired = c._count.complianceItems;
+      const hasPending = c.complianceItems.some((ci) => ci.status === "PENDING");
+      const hasActiveContract = c.contracts.some((con) => con.status === "ACTIVE");
 
-        if (missingOrExpired > 0 || !hasActiveContract) {
-          critical++;
-        } else if (hasPending) {
-          warning++;
-        } else {
-          ok++;
-        }
+      if (missingOrExpired > 0 || !hasActiveContract) {
+        critical++;
+      } else if (hasPending) {
+        warning++;
+      } else {
+        ok++;
       }
+    }
 
-      return { critical, warning, ok };
-    }),
+    return { critical, warning, ok };
+  }),
 
   // =========================================================================
   // Export mutations
@@ -682,9 +654,7 @@ export const reportRouter = router({
           invoiceCount: Number(r.invoiceCount),
           totalGrosze: Number(r.totalGrosze),
           avgGrosze: Number(r.avgGrosze),
-          lastPaidAt: r.lastPaidAt
-            ? new Date(r.lastPaidAt).toISOString()
-            : null,
+          lastPaidAt: r.lastPaidAt ? new Date(r.lastPaidAt).toISOString() : null,
         })),
       );
 
@@ -759,9 +729,7 @@ export const reportRouter = router({
     .mutation(async ({ ctx, input }) => {
       const now = new Date();
       const daysNum = parseInt(input.days, 10);
-      const futureDate = new Date(
-        now.getTime() + daysNum * 24 * 60 * 60 * 1000,
-      );
+      const futureDate = new Date(now.getTime() + daysNum * 24 * 60 * 60 * 1000);
       const msPerDay = 24 * 60 * 60 * 1000;
 
       const contracts = await prisma.contract.findMany({
@@ -782,9 +750,7 @@ export const reportRouter = router({
           contractTitle: c.title,
           contractorName: c.contractor.legalName,
           endDate: c.endDate!.toISOString().slice(0, 10),
-          daysRemaining: Math.ceil(
-            (c.endDate!.getTime() - now.getTime()) / msPerDay,
-          ),
+          daysRemaining: Math.ceil((c.endDate!.getTime() - now.getTime()) / msPerDay),
           status: c.status,
         })),
       );
@@ -800,118 +766,108 @@ export const reportRouter = router({
   /**
    * Export overdue invoices as CSV.
    */
-  exportOverdueInvoices: tenantProcedure
-    .use(reportRead)
-    .mutation(async ({ ctx }) => {
-      const now = new Date();
-      const msPerDay = 24 * 60 * 60 * 1000;
+  exportOverdueInvoices: tenantProcedure.use(reportRead).mutation(async ({ ctx }) => {
+    const now = new Date();
+    const msPerDay = 24 * 60 * 60 * 1000;
 
-      const invoices = await prisma.invoice.findMany({
-        where: {
-          organizationId: ctx.organizationId,
-          dueDate: { lt: now },
-          paymentStatus: { notIn: ["PAID"] as ("PAID")[] },
-          deletedAt: null,
-        },
-        include: {
-          contractor: { select: { legalName: true } },
-        },
-        orderBy: { dueDate: "asc" },
-      });
+    const invoices = await prisma.invoice.findMany({
+      where: {
+        organizationId: ctx.organizationId,
+        dueDate: { lt: now },
+        paymentStatus: { notIn: ["PAID"] as "PAID"[] },
+        deletedAt: null,
+      },
+      include: {
+        contractor: { select: { legalName: true } },
+      },
+      orderBy: { dueDate: "asc" },
+    });
 
-      const csv = await generateInvoicesCsv(
-        invoices.map((inv) => ({
-          invoiceNumber: inv.invoiceNumber,
-          contractorName: inv.contractor?.legalName ?? "Unknown",
-          amountGrosze: inv.amountToPayGrosze,
-          currency: inv.currency,
-          dueDate: inv.dueDate.toISOString().slice(0, 10),
-          daysOverdue: Math.ceil(
-            (now.getTime() - inv.dueDate.getTime()) / msPerDay,
-          ),
-          status: inv.paymentStatus,
-        })),
-      );
+    const csv = await generateInvoicesCsv(
+      invoices.map((inv) => ({
+        invoiceNumber: inv.invoiceNumber,
+        contractorName: inv.contractor?.legalName ?? "Unknown",
+        amountGrosze: inv.amountToPayGrosze,
+        currency: inv.currency,
+        dueDate: inv.dueDate.toISOString().slice(0, 10),
+        daysOverdue: Math.ceil((now.getTime() - inv.dueDate.getTime()) / msPerDay),
+        status: inv.paymentStatus,
+      })),
+    );
 
-      const timestamp = new Date().toISOString().slice(0, 10);
-      return {
-        data: csv.data,
-        filename: `overdue-invoices-${timestamp}.csv`,
-        mimeType: csv.mimeType,
-      };
-    }),
+    const timestamp = new Date().toISOString().slice(0, 10);
+    return {
+      data: csv.data,
+      filename: `overdue-invoices-${timestamp}.csv`,
+      mimeType: csv.mimeType,
+    };
+  }),
 
   /**
    * Export compliance gaps as CSV.
    */
-  exportComplianceGaps: tenantProcedure
-    .use(reportRead)
-    .mutation(async ({ ctx }) => {
-      const contractors = await prisma.contractor.findMany({
-        where: {
-          organizationId: ctx.organizationId,
-          status: "ACTIVE",
-          deletedAt: null,
+  exportComplianceGaps: tenantProcedure.use(reportRead).mutation(async ({ ctx }) => {
+    const contractors = await prisma.contractor.findMany({
+      where: {
+        organizationId: ctx.organizationId,
+        status: "ACTIVE",
+        deletedAt: null,
+      },
+      include: {
+        complianceItems: { select: { status: true } },
+        contracts: {
+          where: { deletedAt: null },
+          select: { status: true },
         },
-        include: {
-          complianceItems: { select: { status: true } },
-          contracts: {
-            where: { deletedAt: null },
-            select: { status: true },
-          },
-          _count: {
-            select: {
-              complianceItems: {
-                where: { status: { in: ["MISSING", "EXPIRED"] } },
-              },
+        _count: {
+          select: {
+            complianceItems: {
+              where: { status: { in: ["MISSING", "EXPIRED"] } },
             },
           },
         },
-      });
+      },
+    });
 
-      type GapItem = {
-        contractorName: string;
-        missingDocuments: number;
-        contractStatus: string;
-        overdueTasks: number;
-        health: string;
-      };
+    type GapItem = {
+      contractorName: string;
+      missingDocuments: number;
+      contractStatus: string;
+      overdueTasks: number;
+      health: string;
+    };
 
-      const items: GapItem[] = [];
+    const items: GapItem[] = [];
 
-      for (const c of contractors) {
-        const missingOrExpired = c._count.complianceItems;
-        const hasPending = c.complianceItems.some(
-          (ci) => ci.status === "PENDING",
-        );
-        const hasActiveContract = c.contracts.some(
-          (con) => con.status === "ACTIVE",
-        );
+    for (const c of contractors) {
+      const missingOrExpired = c._count.complianceItems;
+      const hasPending = c.complianceItems.some((ci) => ci.status === "PENDING");
+      const hasActiveContract = c.contracts.some((con) => con.status === "ACTIVE");
 
-        let health = "green";
-        if (missingOrExpired > 0 || !hasActiveContract) {
-          health = "red";
-        } else if (hasPending) {
-          health = "yellow";
-        }
-
-        if (health !== "green") {
-          items.push({
-            contractorName: c.legalName,
-            missingDocuments: missingOrExpired,
-            contractStatus: hasActiveContract ? "ACTIVE" : "NONE",
-            overdueTasks: 0,
-            health,
-          });
-        }
+      let health = "green";
+      if (missingOrExpired > 0 || !hasActiveContract) {
+        health = "red";
+      } else if (hasPending) {
+        health = "yellow";
       }
 
-      const csv = await generateComplianceCsv(items);
-      const timestamp = new Date().toISOString().slice(0, 10);
-      return {
-        data: csv.data,
-        filename: `compliance-gaps-${timestamp}.csv`,
-        mimeType: csv.mimeType,
-      };
-    }),
+      if (health !== "green") {
+        items.push({
+          contractorName: c.legalName,
+          missingDocuments: missingOrExpired,
+          contractStatus: hasActiveContract ? "ACTIVE" : "NONE",
+          overdueTasks: 0,
+          health,
+        });
+      }
+    }
+
+    const csv = await generateComplianceCsv(items);
+    const timestamp = new Date().toISOString().slice(0, 10);
+    return {
+      data: csv.data,
+      filename: `compliance-gaps-${timestamp}.csv`,
+      mimeType: csv.mimeType,
+    };
+  }),
 });

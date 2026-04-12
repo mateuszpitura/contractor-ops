@@ -16,9 +16,7 @@ describe("PaczkomatDisplay", () => {
 
   it("renders point address", () => {
     render(<PaczkomatDisplay {...defaultProps} />);
-    expect(
-      screen.getByText("ul. Marszalkowska 1, 00-001 Warszawa"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("ul. Marszalkowska 1, 00-001 Warszawa")).toBeInTheDocument();
   });
 
   it("renders change button with translated label", () => {
@@ -28,9 +26,7 @@ describe("PaczkomatDisplay", () => {
 
   it("calls onChangeClick when change button is clicked", async () => {
     const onClick = vi.fn();
-    const { user } = setup(
-      <PaczkomatDisplay {...defaultProps} onChangeClick={onClick} />,
-    );
+    const { user } = setup(<PaczkomatDisplay {...defaultProps} onChangeClick={onClick} />);
     await user.click(screen.getByRole("button", { name: "Change" }));
     expect(onClick).toHaveBeenCalledTimes(1);
   });

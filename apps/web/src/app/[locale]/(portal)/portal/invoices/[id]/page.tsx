@@ -1,19 +1,18 @@
 "use client";
 
-import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Download } from "lucide-react";
+import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
-import { Link } from "@/i18n/navigation";
+import { ActivityLog } from "@/components/portal/activity-log";
+import { StatusTimeline, StatusTimelineSkeleton } from "@/components/portal/status-timeline";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
-import { StatusTimeline, StatusTimelineSkeleton } from "@/components/portal/status-timeline";
-import { ActivityLog } from "@/components/portal/activity-log";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Link } from "@/i18n/navigation";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -48,7 +47,10 @@ function getStatusDisplay(
     paymentStatus: string;
   },
   t: ReturnType<typeof useTranslations<"Portal">>,
-): { label: string; variant: "info" | "warning" | "success" | "success-outline" | "success-solid" | "destructive" } {
+): {
+  label: string;
+  variant: "info" | "warning" | "success" | "success-outline" | "success-solid" | "destructive";
+} {
   if (invoice.paymentStatus === "PAID")
     return { label: t("invoices.status.paid"), variant: "success-solid" };
   if (invoice.paymentStatus === "IN_RUN")
@@ -57,10 +59,7 @@ function getStatusDisplay(
     return { label: t("invoices.status.approved"), variant: "success" };
   if (invoice.status === "REJECTED")
     return { label: t("invoices.status.rejected"), variant: "destructive" };
-  if (
-    invoice.status === "UNDER_REVIEW" ||
-    invoice.status === "APPROVAL_PENDING"
-  )
+  if (invoice.status === "UNDER_REVIEW" || invoice.status === "APPROVAL_PENDING")
     return { label: t("invoices.status.inReview"), variant: "warning" };
   return { label: t("invoices.status.submitted"), variant: "info" };
 }
@@ -149,15 +148,13 @@ export default function PortalInvoiceDetailPage() {
   const statusDisplay = getStatusDisplay(invoice, t);
 
   // Derive submitted date from activity log
-  const submittedEntry = invoice.activityLog.find(
-    (e) => e.event.toLowerCase().includes("submitted"),
+  const submittedEntry = invoice.activityLog.find((e) =>
+    e.event.toLowerCase().includes("submitted"),
   );
   const submittedDate = submittedEntry?.timestamp;
 
   // Check if rejected
-  const rejectedEntry = invoice.activityLog.find(
-    (e) => e.event.toLowerCase().includes("rejected"),
-  );
+  const rejectedEntry = invoice.activityLog.find((e) => e.event.toLowerCase().includes("rejected"));
 
   return (
     <div className="space-y-6">
@@ -215,9 +212,7 @@ export default function PortalInvoiceDetailPage() {
             <span className="text-[13px] text-muted-foreground">
               {t("invoiceDetail.netAmount")}
             </span>
-            <span className="text-sm">
-              {formatAmount(invoice.subtotalMinor, invoice.currency)}
-            </span>
+            <span className="text-sm">{formatAmount(invoice.subtotalMinor, invoice.currency)}</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-[13px] text-muted-foreground">
@@ -253,17 +248,9 @@ export default function PortalInvoiceDetailPage() {
                 {t("invoiceDetail.attachedFiles")}
               </span>
               {invoice.files.map((file) => (
-                <div
-                  key={file.id}
-                  className="flex items-center justify-between"
-                >
+                <div key={file.id} className="flex items-center justify-between">
                   <span className="text-sm">{file.name}</span>
-                  <a
-                    href={file.downloadUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    download
-                  >
+                  <a href={file.downloadUrl} target="_blank" rel="noopener noreferrer" download>
                     <Button variant="outline" size="sm">
                       <Download className="me-1.5 h-3.5 w-3.5" />
                       {t("invoiceDetail.download")}
@@ -296,10 +283,7 @@ export default function PortalInvoiceDetailPage() {
             <div className="flex items-center justify-between">
               <span className="text-[13px] text-muted-foreground">{t("invoiceDetail.amount")}</span>
               <span className="text-sm font-medium">
-                {formatAmount(
-                  invoice.payment.amountMinor,
-                  invoice.payment.currency,
-                )}
+                {formatAmount(invoice.payment.amountMinor, invoice.payment.currency)}
               </span>
             </div>
           </CardContent>

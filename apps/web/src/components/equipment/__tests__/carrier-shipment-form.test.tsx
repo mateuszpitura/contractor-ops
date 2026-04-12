@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, setup, waitFor } from "@/test/test-utils";
 import { CarrierShipmentForm } from "../carrier-shipment-form";
 
@@ -29,9 +29,8 @@ vi.mock("../ups-fieldset", () => ({
 const mockMutate = vi.fn();
 
 vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
-    "@tanstack/react-query",
-  );
+  const actual =
+    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
   return {
     ...actual,
     useMutation: (opts: Record<string, unknown>) => ({
@@ -99,23 +98,13 @@ describe("CarrierShipmentForm", () => {
   });
 
   it("auto-selects carrier when only one configured", () => {
-    render(
-      <CarrierShipmentForm
-        {...defaultProps}
-        configuredCarriers={["dpd"]}
-      />,
-    );
+    render(<CarrierShipmentForm {...defaultProps} configuredCarriers={["dpd"]} />);
     // With auto-select, DPD fieldset mock should render
     expect(screen.getByTestId("dpd-fieldset")).toBeInTheDocument();
   });
 
   it("shows no carriers message when none configured", () => {
-    render(
-      <CarrierShipmentForm
-        {...defaultProps}
-        configuredCarriers={[]}
-      />,
-    );
+    render(<CarrierShipmentForm {...defaultProps} configuredCarriers={[]} />);
     expect(screen.getByText("No carriers configured")).toBeInTheDocument();
   });
 
@@ -125,33 +114,18 @@ describe("CarrierShipmentForm", () => {
   });
 
   it("shows inpost fields when inpost is auto-selected", () => {
-    render(
-      <CarrierShipmentForm
-        {...defaultProps}
-        configuredCarriers={["inpost"]}
-      />,
-    );
+    render(<CarrierShipmentForm {...defaultProps} configuredCarriers={["inpost"]} />);
     // InPost shows paczkomat picker button
     expect(screen.getByText("Select Paczkomat")).toBeInTheDocument();
   });
 
   it("shows UPS fieldset when UPS is auto-selected", () => {
-    render(
-      <CarrierShipmentForm
-        {...defaultProps}
-        configuredCarriers={["ups"]}
-      />,
-    );
+    render(<CarrierShipmentForm {...defaultProps} configuredCarriers={["ups"]} />);
     expect(screen.getByTestId("ups-fieldset")).toBeInTheDocument();
   });
 
   it("shows recipient name for inpost carrier", () => {
-    render(
-      <CarrierShipmentForm
-        {...defaultProps}
-        configuredCarriers={["inpost"]}
-      />,
-    );
+    render(<CarrierShipmentForm {...defaultProps} configuredCarriers={["inpost"]} />);
     expect(screen.getByText("Acme Corp")).toBeInTheDocument();
   });
 
@@ -184,34 +158,19 @@ describe("CarrierShipmentForm", () => {
   });
 
   it("shows parcel size options for inpost carrier", () => {
-    render(
-      <CarrierShipmentForm
-        {...defaultProps}
-        configuredCarriers={["inpost"]}
-      />,
-    );
+    render(<CarrierShipmentForm {...defaultProps} configuredCarriers={["inpost"]} />);
     expect(screen.getByText("Small")).toBeInTheDocument();
     expect(screen.getByText("Medium")).toBeInTheDocument();
     expect(screen.getByText("Large")).toBeInTheDocument();
   });
 
   it("shows no carriers body text when none configured", () => {
-    render(
-      <CarrierShipmentForm
-        {...defaultProps}
-        configuredCarriers={[]}
-      />,
-    );
+    render(<CarrierShipmentForm {...defaultProps} configuredCarriers={[]} />);
     expect(screen.getByText(/Set up carrier credentials/i)).toBeInTheDocument();
   });
 
   it("shows DPD fieldset when DPD is auto-selected", () => {
-    render(
-      <CarrierShipmentForm
-        {...defaultProps}
-        configuredCarriers={["dpd"]}
-      />,
-    );
+    render(<CarrierShipmentForm {...defaultProps} configuredCarriers={["dpd"]} />);
     expect(screen.getByTestId("dpd-fieldset")).toBeInTheDocument();
     expect(screen.queryByTestId("ups-fieldset")).not.toBeInTheDocument();
     expect(screen.queryByTestId("paczkomat-picker")).not.toBeInTheDocument();
@@ -225,33 +184,18 @@ describe("CarrierShipmentForm", () => {
   });
 
   it("shows contractor name for DPD carrier", () => {
-    render(
-      <CarrierShipmentForm
-        {...defaultProps}
-        configuredCarriers={["dpd"]}
-      />,
-    );
+    render(<CarrierShipmentForm {...defaultProps} configuredCarriers={["dpd"]} />);
     // DPD fieldset renders but contractor name shows in the component header area
     expect(screen.getByTestId("dpd-fieldset")).toBeInTheDocument();
   });
 
   it("shows contractor name for UPS carrier", () => {
-    render(
-      <CarrierShipmentForm
-        {...defaultProps}
-        configuredCarriers={["ups"]}
-      />,
-    );
+    render(<CarrierShipmentForm {...defaultProps} configuredCarriers={["ups"]} />);
     expect(screen.getByTestId("ups-fieldset")).toBeInTheDocument();
   });
 
   it("submit is disabled for inpost when no paczkomat selected", () => {
-    render(
-      <CarrierShipmentForm
-        {...defaultProps}
-        configuredCarriers={["inpost"]}
-      />,
-    );
+    render(<CarrierShipmentForm {...defaultProps} configuredCarriers={["inpost"]} />);
     const submitBtns = screen.getAllByText("Create shipment");
     const submitBtn = submitBtns.find((el) => el.closest("button"));
     expect(submitBtn?.closest("button")).toBeDisabled();
@@ -259,23 +203,14 @@ describe("CarrierShipmentForm", () => {
 
   it("shows direction in dialog context", () => {
     render(
-      <CarrierShipmentForm
-        {...defaultProps}
-        direction="RETURN"
-        configuredCarriers={["inpost"]}
-      />,
+      <CarrierShipmentForm {...defaultProps} direction="RETURN" configuredCarriers={["inpost"]} />,
     );
     // Dialog still shows the form
     expect(screen.getByText("Select Paczkomat")).toBeInTheDocument();
   });
 
   it("renders parcel size radio group for inpost", () => {
-    render(
-      <CarrierShipmentForm
-        {...defaultProps}
-        configuredCarriers={["inpost"]}
-      />,
-    );
+    render(<CarrierShipmentForm {...defaultProps} configuredCarriers={["inpost"]} />);
     const radios = screen.getAllByRole("radio");
     expect(radios.length).toBe(3); // small, medium, large
   });
@@ -289,9 +224,7 @@ describe("CarrierShipmentForm", () => {
 
   it("calls onOpenChange(false) when cancel is clicked", async () => {
     const onOpenChange = vi.fn();
-    const { user } = setup(
-      <CarrierShipmentForm {...defaultProps} onOpenChange={onOpenChange} />,
-    );
+    const { user } = setup(<CarrierShipmentForm {...defaultProps} onOpenChange={onOpenChange} />);
     await user.click(screen.getByText("Cancel"));
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
@@ -312,17 +245,10 @@ describe("CarrierShipmentForm", () => {
   });
 
   it("renders medium parcel size as default for inpost", () => {
-    render(
-      <CarrierShipmentForm
-        {...defaultProps}
-        configuredCarriers={["inpost"]}
-      />,
-    );
+    render(<CarrierShipmentForm {...defaultProps} configuredCarriers={["inpost"]} />);
     const radios = screen.getAllByRole("radio");
     // Medium should be checked by default — find by aria-checked
-    const checkedRadio = radios.find(
-      (r) => r.getAttribute("aria-checked") === "true",
-    );
+    const checkedRadio = radios.find((r) => r.getAttribute("aria-checked") === "true");
     expect(checkedRadio).toBeTruthy();
     // The checked radio should be the medium one (second of three)
     expect(radios.indexOf(checkedRadio!)).toBe(1);
@@ -337,22 +263,13 @@ describe("CarrierShipmentForm", () => {
 
   it("renders dialog description for RETURN direction", () => {
     render(
-      <CarrierShipmentForm
-        {...defaultProps}
-        direction="RETURN"
-        configuredCarriers={["dpd"]}
-      />,
+      <CarrierShipmentForm {...defaultProps} direction="RETURN" configuredCarriers={["dpd"]} />,
     );
     expect(screen.getByTestId("dpd-fieldset")).toBeInTheDocument();
   });
 
   it("renders two equipment IDs in form context", () => {
-    render(
-      <CarrierShipmentForm
-        {...defaultProps}
-        configuredCarriers={["ups"]}
-      />,
-    );
+    render(<CarrierShipmentForm {...defaultProps} configuredCarriers={["ups"]} />);
     expect(screen.getByTestId("ups-fieldset")).toBeInTheDocument();
   });
 
@@ -369,33 +286,20 @@ describe("CarrierShipmentForm", () => {
   });
 
   it("auto-selects and shows correct fieldset for single dpd carrier", () => {
-    render(
-      <CarrierShipmentForm
-        {...defaultProps}
-        configuredCarriers={["dpd"]}
-      />,
-    );
+    render(<CarrierShipmentForm {...defaultProps} configuredCarriers={["dpd"]} />);
     expect(screen.getByTestId("dpd-fieldset")).toBeInTheDocument();
     expect(screen.queryByTestId("ups-fieldset")).not.toBeInTheDocument();
   });
 
   it("auto-selects and shows correct fieldset for single ups carrier", () => {
-    render(
-      <CarrierShipmentForm
-        {...defaultProps}
-        configuredCarriers={["ups"]}
-      />,
-    );
+    render(<CarrierShipmentForm {...defaultProps} configuredCarriers={["ups"]} />);
     expect(screen.getByTestId("ups-fieldset")).toBeInTheDocument();
     expect(screen.queryByTestId("dpd-fieldset")).not.toBeInTheDocument();
   });
 
   it("changes parcel size radio for inpost carrier", async () => {
     const { user } = setup(
-      <CarrierShipmentForm
-        {...defaultProps}
-        configuredCarriers={["inpost"]}
-      />,
+      <CarrierShipmentForm {...defaultProps} configuredCarriers={["inpost"]} />,
     );
     const radios = screen.getAllByRole("radio");
     // Click Large (third option)
@@ -417,7 +321,9 @@ describe("CarrierShipmentForm", () => {
     );
     // With preferred paczkomat, form should be valid
     const submitBtns = screen.getAllByText("Create shipment");
-    const submitBtn = submitBtns.find((el) => el.closest("button") && !el.closest("button")?.disabled);
+    const submitBtn = submitBtns.find(
+      (el) => el.closest("button") && !el.closest("button")?.disabled,
+    );
     expect(submitBtn).toBeTruthy();
     await user.click(submitBtn!);
     expect(mockMutate).toHaveBeenCalledWith(
@@ -430,12 +336,7 @@ describe("CarrierShipmentForm", () => {
   });
 
   it("resets form state when dialog is opened", async () => {
-    render(
-      <CarrierShipmentForm
-        {...defaultProps}
-        configuredCarriers={["inpost"]}
-      />,
-    );
+    render(<CarrierShipmentForm {...defaultProps} configuredCarriers={["inpost"]} />);
     // Form should show InPost (auto-selected)
     expect(screen.getByText("Select Paczkomat")).toBeInTheDocument();
   });
@@ -445,12 +346,7 @@ describe("CarrierShipmentForm", () => {
     // DPD needs address filled — but since DpdFieldset is mocked, the form validation
     // via isCarrierFormValid will determine. Let's verify the component renders and
     // the submit flow exists.
-    render(
-      <CarrierShipmentForm
-        {...defaultProps}
-        configuredCarriers={["dpd"]}
-      />,
-    );
+    render(<CarrierShipmentForm {...defaultProps} configuredCarriers={["dpd"]} />);
     expect(screen.getByTestId("dpd-fieldset")).toBeInTheDocument();
     // Submit button exists but may be disabled due to empty address
     const submitBtns = screen.getAllByText("Create shipment");
@@ -459,12 +355,7 @@ describe("CarrierShipmentForm", () => {
   });
 
   it("submit button calls ups mutation when ups carrier is auto-selected", async () => {
-    render(
-      <CarrierShipmentForm
-        {...defaultProps}
-        configuredCarriers={["ups"]}
-      />,
-    );
+    render(<CarrierShipmentForm {...defaultProps} configuredCarriers={["ups"]} />);
     expect(screen.getByTestId("ups-fieldset")).toBeInTheDocument();
     const submitBtns = screen.getAllByText("Create shipment");
     const submitBtn = submitBtns.find((el) => el.closest("button"));
@@ -474,10 +365,7 @@ describe("CarrierShipmentForm", () => {
   // ---- Carrier change resets state ----
   it("changes to small parcel size via radio", async () => {
     const { user } = setup(
-      <CarrierShipmentForm
-        {...defaultProps}
-        configuredCarriers={["inpost"]}
-      />,
+      <CarrierShipmentForm {...defaultProps} configuredCarriers={["inpost"]} />,
     );
     const radios = screen.getAllByRole("radio");
     // Click Small (first option)
@@ -560,58 +448,33 @@ describe("CarrierShipmentForm", () => {
   });
 
   it("auto-selects DPD with all fields when only dpd configured", () => {
-    render(
-      <CarrierShipmentForm
-        {...defaultProps}
-        configuredCarriers={["dpd"]}
-      />,
-    );
+    render(<CarrierShipmentForm {...defaultProps} configuredCarriers={["dpd"]} />);
     expect(screen.getByTestId("dpd-fieldset")).toBeInTheDocument();
     expect(screen.queryByTestId("ups-fieldset")).not.toBeInTheDocument();
   });
 
   it("auto-selects UPS with service code when only ups configured", () => {
-    render(
-      <CarrierShipmentForm
-        {...defaultProps}
-        configuredCarriers={["ups"]}
-      />,
-    );
+    render(<CarrierShipmentForm {...defaultProps} configuredCarriers={["ups"]} />);
     expect(screen.getByTestId("ups-fieldset")).toBeInTheDocument();
     expect(screen.queryByTestId("dpd-fieldset")).not.toBeInTheDocument();
   });
 
   // ---- No carriers body text ----
   it("no carriers state shows correct title and body", () => {
-    render(
-      <CarrierShipmentForm
-        {...defaultProps}
-        configuredCarriers={[]}
-      />,
-    );
+    render(<CarrierShipmentForm {...defaultProps} configuredCarriers={[]} />);
     expect(screen.getByText("No carriers configured")).toBeInTheDocument();
     expect(screen.getByText(/Set up carrier credentials/i)).toBeInTheDocument();
   });
 
   // ---- Parcel size label ----
   it("shows parcel size label for inpost", () => {
-    render(
-      <CarrierShipmentForm
-        {...defaultProps}
-        configuredCarriers={["inpost"]}
-      />,
-    );
+    render(<CarrierShipmentForm {...defaultProps} configuredCarriers={["inpost"]} />);
     expect(screen.getByText("Parcel size")).toBeInTheDocument();
   });
 
   // ---- Recipient label for inpost ----
   it("shows recipient label for inpost", () => {
-    render(
-      <CarrierShipmentForm
-        {...defaultProps}
-        configuredCarriers={["inpost"]}
-      />,
-    );
+    render(<CarrierShipmentForm {...defaultProps} configuredCarriers={["inpost"]} />);
     expect(screen.getByText("Recipient")).toBeInTheDocument();
   });
 });

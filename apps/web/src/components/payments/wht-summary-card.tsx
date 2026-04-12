@@ -1,12 +1,12 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { FileText, Loader2 } from "lucide-react";
-import { trpc } from "@/trpc/init";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatMinorUnits } from "@/lib/format-currency";
+import { trpc } from "@/trpc/init";
 
 interface WhtSummaryCardProps {
   paymentRunId: string;
@@ -39,10 +39,7 @@ export function WhtSummaryCard({ paymentRunId, items }: WhtSummaryCardProps) {
   if (whtItems.length === 0) return null;
 
   const currency = whtItems[0]?.currency ?? "SAR";
-  const totalGross = whtItems.reduce(
-    (sum, i) => sum + (i.grossAmountMinor ?? i.amountMinor),
-    0,
-  );
+  const totalGross = whtItems.reduce((sum, i) => sum + (i.grossAmountMinor ?? i.amountMinor), 0);
   const totalWht = whtItems.reduce((sum, i) => sum + (i.whtAmountMinor ?? 0), 0);
   const totalNet = totalGross - totalWht;
   const treatyCount = whtItems.filter((i) => i.whtTreatyApplied).length;
@@ -56,9 +53,7 @@ export function WhtSummaryCard({ paymentRunId, items }: WhtSummaryCardProps) {
   return (
     <Card className="p-6">
       <CardHeader className="p-0 pb-4">
-        <CardTitle className="text-base font-semibold">
-          Withholding Tax Summary
-        </CardTitle>
+        <CardTitle className="text-base font-semibold">Withholding Tax Summary</CardTitle>
       </CardHeader>
       <CardContent className="p-0">
         <div className="grid grid-cols-3 gap-8">
@@ -86,16 +81,10 @@ export function WhtSummaryCard({ paymentRunId, items }: WhtSummaryCardProps) {
           <span>
             Items with WHT: {whtItems.length} of {items.length}
           </span>
-          {treatyCount > 0 && (
-            <Badge variant="outline">Treaty rates applied: {treatyCount}</Badge>
-          )}
+          {treatyCount > 0 && <Badge variant="outline">Treaty rates applied: {treatyCount}</Badge>}
         </div>
 
-        <Button
-          onClick={handleGenerateAll}
-          disabled={generateMutation.isPending}
-          className="mt-6"
-        >
+        <Button onClick={handleGenerateAll} disabled={generateMutation.isPending} className="mt-6">
           {generateMutation.isPending ? (
             <Loader2 className="me-2 h-4 w-4 animate-spin" />
           ) : (

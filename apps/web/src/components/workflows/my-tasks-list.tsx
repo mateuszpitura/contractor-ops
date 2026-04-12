@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   AlertCircle,
@@ -12,22 +11,19 @@ import {
   XCircle,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
+import { useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { Link } from "@/i18n/navigation";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Task status icon mapping per UI-SPEC
 // ---------------------------------------------------------------------------
 
-const TASK_STATUS_ICON: Record<
-  string,
-  { icon: React.ElementType; className: string }
-> = {
+const TASK_STATUS_ICON: Record<string, { icon: React.ElementType; className: string }> = {
   TODO: { icon: Circle, className: "text-muted-foreground" },
   IN_PROGRESS: { icon: CircleDot, className: "text-primary" },
   DONE: { icon: CheckCircle2, className: "text-green-600 dark:text-green-400" },
@@ -85,9 +81,7 @@ export function MyTasksList() {
   );
 
   const tasks = useMemo(() => {
-    const result = tasksQuery.data as
-      | { items: MyTaskRow[]; total: number }
-      | undefined;
+    const result = tasksQuery.data as { items: MyTaskRow[]; total: number } | undefined;
     return result?.items ?? [];
   }, [tasksQuery.data]);
 
@@ -116,12 +110,8 @@ export function MyTasksList() {
     return (
       <div className="py-16 text-center">
         <CheckCircle2 className="mx-auto h-10 w-10 text-muted-foreground/50" />
-        <h3 className="mt-3 text-[16px] font-medium">
-          {t("myTasks.empty.heading")}
-        </h3>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {t("myTasks.empty.body")}
-        </p>
+        <h3 className="mt-3 text-[16px] font-medium">{t("myTasks.empty.heading")}</h3>
+        <p className="mt-1 text-sm text-muted-foreground">{t("myTasks.empty.body")}</p>
       </div>
     );
   }
@@ -145,24 +135,18 @@ export function MyTasksList() {
         {tasks.map((task) => {
           const statusConfig = task.isOverdue
             ? TASK_STATUS_ICON.OVERDUE
-            : TASK_STATUS_ICON[task.status] ?? TASK_STATUS_ICON.TODO;
+            : (TASK_STATUS_ICON[task.status] ?? TASK_STATUS_ICON.TODO);
           const StatusIcon = statusConfig.icon;
 
           return (
-            <Link
-              key={task.id}
-              href={`/workflows/${task.workflowRun.id}`}
-              className="block"
-            >
+            <Link key={task.id} href={`/workflows/${task.workflowRun.id}`} className="block">
               <Card
                 className={`flex items-center gap-4 p-4 transition-colors hover:bg-accent/50 ${
                   task.isOverdue ? "bg-destructive/[0.03]" : ""
                 }`}
               >
                 {/* Status icon */}
-                <StatusIcon
-                  className={`h-5 w-5 shrink-0 ${statusConfig.className}`}
-                />
+                <StatusIcon className={`h-5 w-5 shrink-0 ${statusConfig.className}`} />
 
                 {/* Task info */}
                 <div className="flex-1 min-w-0">
@@ -179,9 +163,7 @@ export function MyTasksList() {
                 {task.dueAt && (
                   <span
                     className={`text-[13px] shrink-0 ${
-                      task.isOverdue
-                        ? "text-destructive font-medium"
-                        : "text-muted-foreground"
+                      task.isOverdue ? "text-destructive font-medium" : "text-muted-foreground"
                     }`}
                   >
                     {new Date(task.dueAt).toLocaleDateString("pl-PL")}
@@ -196,9 +178,7 @@ export function MyTasksList() {
       {/* Empty filtered state */}
       {tasks.length === 0 && overdueOnly && (
         <div className="py-8 text-center">
-          <p className="text-sm text-muted-foreground">
-            {t("myTasks.noOverdue")}
-          </p>
+          <p className="text-sm text-muted-foreground">{t("myTasks.noOverdue")}</p>
         </div>
       )}
     </div>

@@ -1,15 +1,15 @@
-import { z } from "zod";
-import { TRPCError } from "@trpc/server";
 import { prisma } from "@contractor-ops/db";
 import {
   reminderRuleCreateSchema,
-  reminderRuleUpdateSchema,
   reminderRuleToggleSchema,
+  reminderRuleUpdateSchema,
 } from "@contractor-ops/validators";
-import { router } from "../init.js";
-import { tenantProcedure } from "../middleware/tenant.js";
-import { requirePermission } from "../middleware/rbac.js";
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 import * as E from "../errors.js";
+import { router } from "../init.js";
+import { requirePermission } from "../middleware/rbac.js";
+import { tenantProcedure } from "../middleware/tenant.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -54,9 +54,7 @@ export const reminderRouter = router({
           offsetHours: input.offsetHours ?? null,
           channel: input.channel,
           recipientMode: input.recipientMode,
-          configJson: input.configJson
-            ? JSON.parse(JSON.stringify(input.configJson))
-            : undefined,
+          configJson: input.configJson ? JSON.parse(JSON.stringify(input.configJson)) : undefined,
           active: input.active,
         },
       });
@@ -88,9 +86,7 @@ export const reminderRouter = router({
         where: { id },
         data: {
           ...data,
-          configJson: data.configJson
-            ? JSON.parse(JSON.stringify(data.configJson))
-            : undefined,
+          configJson: data.configJson ? JSON.parse(JSON.stringify(data.configJson)) : undefined,
         },
       });
 

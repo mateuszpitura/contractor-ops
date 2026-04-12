@@ -1,11 +1,11 @@
-import * as Sentry from "@sentry/nextjs";
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import { prisma } from "@contractor-ops/db";
-import { dispatch } from "@contractor-ops/api/services/notification-service";
 import { withCronMonitor } from "@contractor-ops/api/services/cron-monitor";
+import { dispatch } from "@contractor-ops/api/services/notification-service";
+import { prisma } from "@contractor-ops/db";
 import { createCronLogger } from "@contractor-ops/logger";
 import { metrics } from "@contractor-ops/logger/metrics";
+import * as Sentry from "@sentry/nextjs";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { Resend } from "resend";
 
 const log = createCronLogger("trial-notifications");
@@ -45,10 +45,14 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  return Sentry.withMonitor("trial-notifications", () => withCronMonitor("trial-notifications", handleTrialNotifications), {
-    schedule: { type: "crontab", value: "0 9 * * *" },
-    timezone: "UTC",
-  });
+  return Sentry.withMonitor(
+    "trial-notifications",
+    () => withCronMonitor("trial-notifications", handleTrialNotifications),
+    {
+      schedule: { type: "crontab", value: "0 9 * * *" },
+      timezone: "UTC",
+    },
+  );
 }
 
 async function handleTrialNotifications() {
@@ -83,9 +87,7 @@ async function handleTrialNotifications() {
         (sub.trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
       );
 
-      const adminUserIds = sub.organization.members.map(
-        (m: { userId: string }) => m.userId,
-      );
+      const adminUserIds = sub.organization.members.map((m: { userId: string }) => m.userId);
 
       if (daysUntilTrialEnd === 7) {
         // 7-day notification
@@ -165,10 +167,6 @@ async function handleTrialNotifications() {
     Sentry.captureException(error, {
       tags: { "cron.job": "trial-notifications" },
     });
-    return NextResponse.json(
-      { error: "Cron processing failed" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Cron processing failed" }, { status: 500 });
   }
 }
-

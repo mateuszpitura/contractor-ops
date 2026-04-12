@@ -1,5 +1,5 @@
-import { render, screen } from "@/test/test-utils";
 import { useQuery } from "@tanstack/react-query";
+import { render, screen } from "@/test/test-utils";
 import { WorkflowSidePanel } from "../workflow-side-panel";
 
 vi.mock("@tanstack/react-query", async () => {
@@ -24,7 +24,11 @@ vi.mock("@/trpc/init", () => ({
 }));
 
 vi.mock("@/i18n/navigation", () => ({
-  Link: ({ children, href, ...props }: any) => <a href={href} {...props}>{children}</a>,
+  Link: ({ children, href, ...props }: any) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
 }));
 
 vi.mock("@/components/integrations/jira-issue-chip", () => ({
@@ -156,7 +160,11 @@ describe("WorkflowSidePanel", () => {
             contractor: null,
             tasks: [
               { status: "DONE", isOverdue: false, resultJson: null },
-              { status: "SKIPPED", isOverdue: false, resultJson: { skipReason: "condition_not_met" } },
+              {
+                status: "SKIPPED",
+                isOverdue: false,
+                resultJson: { skipReason: "condition_not_met" },
+              },
               { status: "TODO", isOverdue: false, resultJson: null },
             ],
           },

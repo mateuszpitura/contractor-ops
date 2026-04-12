@@ -1,15 +1,14 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-import { TrendingUp, TrendingDown, Minus, ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Minus, TrendingDown, TrendingUp } from "lucide-react";
 import { motion } from "motion/react";
-
-import { trpc } from "@/trpc/init";
+import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "@/i18n/navigation";
-import { springs, stagger, fadeUp } from "@/lib/motion";
+import { fadeUp, springs, stagger } from "@/lib/motion";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Types

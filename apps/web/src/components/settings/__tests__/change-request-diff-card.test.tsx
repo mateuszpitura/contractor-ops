@@ -2,9 +2,8 @@ import { render, screen } from "@/test/test-utils";
 import { ChangeRequestDiffCard } from "../change-request-diff-card";
 
 vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
-    "@tanstack/react-query",
-  );
+  const actual =
+    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
   return {
     ...actual,
     useMutation: () => ({ mutate: vi.fn(), isPending: false }),
@@ -59,20 +58,12 @@ describe("ChangeRequestDiffCard", () => {
   });
 
   it("hides action buttons for non-PENDING status", () => {
-    render(
-      <ChangeRequestDiffCard
-        request={{ ...baseRequest, status: "APPROVED" }}
-      />,
-    );
+    render(<ChangeRequestDiffCard request={{ ...baseRequest, status: "APPROVED" }} />);
     expect(screen.queryByText("Approve Changes")).not.toBeInTheDocument();
   });
 
   it("shows status badge for APPROVED requests", () => {
-    render(
-      <ChangeRequestDiffCard
-        request={{ ...baseRequest, status: "APPROVED" }}
-      />,
-    );
+    render(<ChangeRequestDiffCard request={{ ...baseRequest, status: "APPROVED" }} />);
     expect(screen.getByText("Approved")).toBeInTheDocument();
   });
 });

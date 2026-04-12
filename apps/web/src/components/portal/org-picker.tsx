@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { cn } from "@/lib/utils";
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -52,9 +52,7 @@ export function OrgPicker({ orgs, email, onSelect, loading }: OrgPickerProps) {
     <div className="mx-auto w-full max-w-[480px]">
       <div className="mb-6 text-center">
         <h1 className="text-xl font-semibold">{t("title")}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {t("description")}
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground">{t("description")}</p>
       </div>
 
       <div className="space-y-3">
@@ -67,10 +65,8 @@ export function OrgPicker({ orgs, email, onSelect, loading }: OrgPickerProps) {
               key={org.organizationId}
               className={cn(
                 "cursor-pointer transition-colors",
-                isSelected && loading
-                  ? "border-primary"
-                  : "hover:border-primary",
-                isDisabled && "opacity-50 cursor-not-allowed"
+                isSelected && loading ? "border-primary" : "hover:border-primary",
+                isDisabled && "opacity-50 cursor-not-allowed",
               )}
               onClick={() => !isDisabled && handleSelect(org)}
               role="button"
@@ -105,9 +101,7 @@ export function OrgPicker({ orgs, email, onSelect, loading }: OrgPickerProps) {
         })}
       </div>
 
-      <p className="mt-4 text-center text-xs text-muted-foreground">
-        {t("signedInAs", { email })}
-      </p>
+      <p className="mt-4 text-center text-xs text-muted-foreground">{t("signedInAs", { email })}</p>
     </div>
   );
 }

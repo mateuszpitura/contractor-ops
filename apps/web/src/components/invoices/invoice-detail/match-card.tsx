@@ -1,20 +1,12 @@
 "use client";
 
-import { useState, useCallback } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { AlertCircle, AlertTriangle, Ban, Info, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import {
-  AlertTriangle,
-  Loader2,
-  Info,
-  AlertCircle,
-  Ban,
-} from "lucide-react";
-
-import { trpc } from "@/trpc/init";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Command,
@@ -24,11 +16,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -37,9 +25,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Link } from "@/i18n/navigation";
 import { usePermissions } from "@/hooks/use-permissions";
-import { maskTaxId, canViewSensitivePii } from "@/lib/mask-pii";
+import { Link } from "@/i18n/navigation";
+import { canViewSensitivePii, maskTaxId } from "@/lib/mask-pii";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -145,20 +134,13 @@ export function MatchCard({ invoice, onMatchConfirmed }: MatchCardProps) {
   const showPii = canViewSensitivePii(role);
   const matchStatus = invoice.matchStatus;
   const latestResult = invoice.matchResults?.[0];
-  const flags: string[] = Array.isArray(invoice.flagsJson)
-    ? invoice.flagsJson
-    : [];
+  const flags: string[] = Array.isArray(invoice.flagsJson) ? invoice.flagsJson : [];
 
   // Filter out DUPLICATE_SUSPECTED from match card flags (shown in separate banner)
   const displayFlags = flags.filter((f) => f !== "DUPLICATE_SUSPECTED");
 
   if (matchStatus === "UNMATCHED") {
-    return (
-      <UnmatchedCard
-        invoiceId={invoice.id}
-        onMatchConfirmed={onMatchConfirmed}
-      />
-    );
+    return <UnmatchedCard invoiceId={invoice.id} onMatchConfirmed={onMatchConfirmed} />;
   }
 
   const isManual = matchStatus === "MANUALLY_CONFIRMED";
@@ -181,24 +163,16 @@ export function MatchCard({ invoice, onMatchConfirmed }: MatchCardProps) {
       <CardContent className="space-y-4">
         {/* Confidence indicator */}
         <div className="flex items-center gap-2">
-          <span className="text-[13px] text-muted-foreground">
-            {t("match.confidence")}
-          </span>
-          <span
-            className={`inline-block h-2 w-2 rounded-full ${confidence.dotClass}`}
-          />
-          <span className="text-sm font-medium">
-            {t(`match.${confidence.labelKey}`)}
-          </span>
+          <span className="text-[13px] text-muted-foreground">{t("match.confidence")}</span>
+          <span className={`inline-block h-2 w-2 rounded-full ${confidence.dotClass}`} />
+          <span className="text-sm font-medium">{t(`match.${confidence.labelKey}`)}</span>
           <span className="text-[13px] text-muted-foreground">{score}%</span>
         </div>
 
         {/* Matched contractor */}
         {invoice.contractor && (
           <div className="space-y-0.5">
-            <span className="text-[13px] text-muted-foreground">
-              {t("match.contractor")}
-            </span>
+            <span className="text-[13px] text-muted-foreground">{t("match.contractor")}</span>
             <div className="flex items-center gap-2">
               <Link
                 href={`/contractors/${invoice.contractor.id}`}
@@ -218,9 +192,7 @@ export function MatchCard({ invoice, onMatchConfirmed }: MatchCardProps) {
         {/* Matched contract */}
         {invoice.contract && (
           <div className="space-y-0.5">
-            <span className="text-[13px] text-muted-foreground">
-              {t("match.contract")}
-            </span>
+            <span className="text-[13px] text-muted-foreground">{t("match.contract")}</span>
             <div className="flex items-center gap-2">
               <Link
                 href={`/contracts/${invoice.contract.id}`}
@@ -236,46 +208,38 @@ export function MatchCard({ invoice, onMatchConfirmed }: MatchCardProps) {
         )}
 
         {/* Deviation display */}
-        {latestResult?.expectedAmountMinor != null &&
-          latestResult.amountDeltaPercent != null && (
-            <div className="space-y-1 rounded-md border bg-background p-3">
-              <div className="flex justify-between text-[13px]">
-                <span className="text-muted-foreground">
-                  {t("match.expected")}
-                </span>
-                <span className="font-mono">
-                  {formatMinorUnits(latestResult.expectedAmountMinor)}{" "}
-                  {invoice.currency}
-                </span>
-              </div>
-              <div className="flex justify-between text-[13px]">
-                <span className="text-muted-foreground">
-                  {t("match.actual")}
-                </span>
-                <span className="font-mono">
-                  {formatMinorUnits(invoice.totalMinor)} {invoice.currency}
-                </span>
-              </div>
-              <div className="flex justify-between text-[13px]">
-                <span className="text-muted-foreground">
-                  {t("match.deviation")}
-                </span>
-                <span
-                  className={`font-mono font-medium ${
-                    Math.abs(latestResult.amountDeltaPercent) > 10
-                      ? "text-destructive"
-                      : "text-green-600 dark:text-green-400"
-                  }`}
-                >
-                  {latestResult.amountDeltaPercent > 0 ? "+" : ""}
-                  {latestResult.amountDeltaPercent.toFixed(1)}%
-                  {Math.abs(latestResult.amountDeltaPercent) > 10 && (
-                    <AlertTriangle className="ms-1 inline h-3 w-3" />
-                  )}
-                </span>
-              </div>
+        {latestResult?.expectedAmountMinor != null && latestResult.amountDeltaPercent != null && (
+          <div className="space-y-1 rounded-md border bg-background p-3">
+            <div className="flex justify-between text-[13px]">
+              <span className="text-muted-foreground">{t("match.expected")}</span>
+              <span className="font-mono">
+                {formatMinorUnits(latestResult.expectedAmountMinor)} {invoice.currency}
+              </span>
             </div>
-          )}
+            <div className="flex justify-between text-[13px]">
+              <span className="text-muted-foreground">{t("match.actual")}</span>
+              <span className="font-mono">
+                {formatMinorUnits(invoice.totalMinor)} {invoice.currency}
+              </span>
+            </div>
+            <div className="flex justify-between text-[13px]">
+              <span className="text-muted-foreground">{t("match.deviation")}</span>
+              <span
+                className={`font-mono font-medium ${
+                  Math.abs(latestResult.amountDeltaPercent) > 10
+                    ? "text-destructive"
+                    : "text-green-600 dark:text-green-400"
+                }`}
+              >
+                {latestResult.amountDeltaPercent > 0 ? "+" : ""}
+                {latestResult.amountDeltaPercent.toFixed(1)}%
+                {Math.abs(latestResult.amountDeltaPercent) > 10 && (
+                  <AlertTriangle className="ms-1 inline h-3 w-3" />
+                )}
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* Flags */}
         {displayFlags.length > 0 && (
@@ -285,11 +249,7 @@ export function MatchCard({ invoice, onMatchConfirmed }: MatchCardProps) {
               if (!config) return null;
               const { className, Icon, labelKey } = config;
               return (
-                <Badge
-                  key={flag}
-                  variant="secondary"
-                  className={`gap-1 ${className}`}
-                >
+                <Badge key={flag} variant="secondary" className={`gap-1 ${className}`}>
                   <Icon className="h-3 w-3" />
                   {t(`match.${labelKey}`)}
                 </Badge>
@@ -315,26 +275,19 @@ function UnmatchedCard({
 }) {
   const t = useTranslations("Invoices");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedContractorId, setSelectedContractorId] = useState<
-    string | null
-  >(null);
+  const [selectedContractorId, setSelectedContractorId] = useState<string | null>(null);
   const [selectedContractorName, setSelectedContractorName] = useState("");
-  const [selectedContractId, setSelectedContractId] = useState<string | null>(
-    null
-  );
+  const [selectedContractId, setSelectedContractId] = useState<string | null>(null);
   const [contractorPopoverOpen, setContractorPopoverOpen] = useState(false);
 
   // Debounced search for contractors
   const [debouncedQuery, setDebouncedQuery] = useState("");
 
-  const handleSearchChange = useCallback(
-    (value: string) => {
-      setSearchQuery(value);
-      const timeout = setTimeout(() => setDebouncedQuery(value), 300);
-      return () => clearTimeout(timeout);
-    },
-    []
-  );
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchQuery(value);
+    const timeout = setTimeout(() => setDebouncedQuery(value), 300);
+    return () => clearTimeout(timeout);
+  }, []);
 
   const contractorsQuery = useQuery({
     ...trpc.invoice.searchContractors.queryOptions({
@@ -366,7 +319,7 @@ function UnmatchedCard({
       onError: () => {
         toast.error(t("match.matchError"));
       },
-    })
+    }),
   );
 
   function handleConfirmMatch() {
@@ -386,19 +339,11 @@ function UnmatchedCard({
       <CardContent className="space-y-4">
         {/* Contractor search picker */}
         <div className="space-y-1.5">
-          <span className="text-[13px] text-muted-foreground">
-            {t("match.contractor")}
-          </span>
-          <Popover
-            open={contractorPopoverOpen}
-            onOpenChange={setContractorPopoverOpen}
-          >
+          <span className="text-[13px] text-muted-foreground">{t("match.contractor")}</span>
+          <Popover open={contractorPopoverOpen} onOpenChange={setContractorPopoverOpen}>
             <PopoverTrigger
               render={
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-start font-normal"
-                />
+                <Button variant="outline" className="w-full justify-start text-start font-normal" />
               }
             >
               {selectedContractorName || t("match.searchContractor")}
@@ -418,9 +363,7 @@ function UnmatchedCard({
                         <Skeleton className="h-8 w-full" />
                       </div>
                     ) : (
-                      <span className="text-sm text-muted-foreground">
-                        No contractors found
-                      </span>
+                      <span className="text-sm text-muted-foreground">No contractors found</span>
                     )}
                   </CommandEmpty>
                   <CommandGroup>
@@ -442,9 +385,7 @@ function UnmatchedCard({
                           }}
                         >
                           <div className="flex flex-col gap-0.5">
-                            <span className="text-sm">
-                              {contractor.legalName}
-                            </span>
+                            <span className="text-sm">{contractor.legalName}</span>
                             <div className="flex items-center gap-2">
                               {contractor.taxId && (
                                 <span className="font-mono text-xs text-muted-foreground">
@@ -457,7 +398,7 @@ function UnmatchedCard({
                             </div>
                           </div>
                         </CommandItem>
-                      )
+                      ),
                     )}
                   </CommandGroup>
                 </CommandList>
@@ -469,33 +410,22 @@ function UnmatchedCard({
         {/* Contract picker */}
         {selectedContractorId && (
           <div className="space-y-1.5">
-            <span className="text-[13px] text-muted-foreground">
-              {t("match.contract")}
-            </span>
+            <span className="text-[13px] text-muted-foreground">{t("match.contract")}</span>
             {contractsQuery.isLoading ? (
               <Skeleton className="h-9 w-full" />
             ) : contracts.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                {t("match.noContracts")}
-              </p>
+              <p className="text-sm text-muted-foreground">{t("match.noContracts")}</p>
             ) : (
               <Select
                 value={selectedContractId ?? undefined}
                 onValueChange={(val) => setSelectedContractId(val)}
               >
                 <SelectTrigger>
-                  <SelectValue
-                    placeholder={t("match.selectContract")}
-                  />
+                  <SelectValue placeholder={t("match.selectContract")} />
                 </SelectTrigger>
                 <SelectContent>
                   {contracts.map(
-                    (contract: {
-                      id: string;
-                      title: string;
-                      type: string;
-                      status: string;
-                    }) => (
+                    (contract: { id: string; title: string; type: string; status: string }) => (
                       <SelectItem key={contract.id} value={contract.id}>
                         <div className="flex items-center gap-2">
                           <span>{contract.title}</span>
@@ -504,7 +434,7 @@ function UnmatchedCard({
                           </Badge>
                         </div>
                       </SelectItem>
-                    )
+                    ),
                   )}
                 </SelectContent>
               </Select>
@@ -518,9 +448,7 @@ function UnmatchedCard({
           disabled={!selectedContractorId || manualMatchMutation.isPending}
           className="w-full"
         >
-          {manualMatchMutation.isPending && (
-            <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
-          )}
+          {manualMatchMutation.isPending && <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />}
           {t("match.confirmMatch")}
         </Button>
       </CardContent>

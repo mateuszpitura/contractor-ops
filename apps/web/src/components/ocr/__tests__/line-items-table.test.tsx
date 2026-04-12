@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, setup } from "@/test/test-utils";
 import { LineItemsTable } from "../line-items-table";
 
@@ -33,16 +33,12 @@ describe("LineItemsTable", () => {
   });
 
   it("renders item count badge", () => {
-    render(
-      <LineItemsTable items={[makeItem()]} onChange={onChange} />,
-    );
+    render(<LineItemsTable items={[makeItem()]} onChange={onChange} />);
     expect(screen.getByText("1 items")).toBeInTheDocument();
   });
 
   it("renders table headers", () => {
-    render(
-      <LineItemsTable items={[makeItem()]} onChange={onChange} />,
-    );
+    render(<LineItemsTable items={[makeItem()]} onChange={onChange} />);
     expect(screen.getByText("Description")).toBeInTheDocument();
     expect(screen.getByText("Qty")).toBeInTheDocument();
     expect(screen.getByText("Unit")).toBeInTheDocument();
@@ -53,46 +49,26 @@ describe("LineItemsTable", () => {
   });
 
   it("renders item values in inputs when not readOnly", () => {
-    render(
-      <LineItemsTable items={[makeItem()]} onChange={onChange} />,
-    );
+    render(<LineItemsTable items={[makeItem()]} onChange={onChange} />);
     const inputs = screen.getAllByRole("textbox");
     // description input should have Widget A
     expect(inputs[0]).toHaveValue("Widget A");
   });
 
   it("renders item values as text in readOnly mode", () => {
-    render(
-      <LineItemsTable
-        items={[makeItem()]}
-        onChange={onChange}
-        readOnly
-      />,
-    );
+    render(<LineItemsTable items={[makeItem()]} onChange={onChange} readOnly />);
     expect(screen.getByText("Widget A")).toBeInTheDocument();
     expect(screen.getByText("100.00")).toBeInTheDocument(); // unitPriceMinor 10000 -> 100.00
   });
 
   it("does not show remove buttons in readOnly mode", () => {
-    render(
-      <LineItemsTable
-        items={[makeItem()]}
-        onChange={onChange}
-        readOnly
-      />,
-    );
-    expect(
-      screen.queryByRole("button", { name: /Remove Item/i }),
-    ).not.toBeInTheDocument();
+    render(<LineItemsTable items={[makeItem()]} onChange={onChange} readOnly />);
+    expect(screen.queryByRole("button", { name: /Remove Item/i })).not.toBeInTheDocument();
   });
 
   it("shows remove button when not readOnly", () => {
-    render(
-      <LineItemsTable items={[makeItem()]} onChange={onChange} />,
-    );
-    expect(
-      screen.getByRole("button", { name: /Remove Item/i }),
-    ).toBeInTheDocument();
+    render(<LineItemsTable items={[makeItem()]} onChange={onChange} />);
+    expect(screen.getByRole("button", { name: /Remove Item/i })).toBeInTheDocument();
   });
 
   it("calls onChange when remove button is clicked", async () => {
@@ -106,36 +82,22 @@ describe("LineItemsTable", () => {
       name: /Remove Item/i,
     });
     await user.click(removeButtons[0]);
-    expect(onChange).toHaveBeenCalledWith([
-      expect.objectContaining({ id: "item-2" }),
-    ]);
+    expect(onChange).toHaveBeenCalledWith([expect.objectContaining({ id: "item-2" })]);
   });
 
   it("shows add line item button when not readOnly", () => {
-    render(
-      <LineItemsTable items={[]} onChange={onChange} />,
-    );
-    expect(
-      screen.getByRole("button", { name: /Add line item/i }),
-    ).toBeInTheDocument();
+    render(<LineItemsTable items={[]} onChange={onChange} />);
+    expect(screen.getByRole("button", { name: /Add line item/i })).toBeInTheDocument();
   });
 
   it("does not show add button in readOnly mode", () => {
-    render(
-      <LineItemsTable items={[]} onChange={onChange} readOnly />,
-    );
-    expect(
-      screen.queryByRole("button", { name: /Add line item/i }),
-    ).not.toBeInTheDocument();
+    render(<LineItemsTable items={[]} onChange={onChange} readOnly />);
+    expect(screen.queryByRole("button", { name: /Add line item/i })).not.toBeInTheDocument();
   });
 
   it("calls onChange with new item when add button is clicked", async () => {
-    const { user } = setup(
-      <LineItemsTable items={[]} onChange={onChange} />,
-    );
-    await user.click(
-      screen.getByRole("button", { name: /Add line item/i }),
-    );
+    const { user } = setup(<LineItemsTable items={[]} onChange={onChange} />);
+    await user.click(screen.getByRole("button", { name: /Add line item/i }));
     expect(onChange).toHaveBeenCalledWith([
       expect.objectContaining({
         description: "",
@@ -152,11 +114,7 @@ describe("LineItemsTable", () => {
 
   it("formats minor-unit values correctly (null as empty)", () => {
     render(
-      <LineItemsTable
-        items={[makeItem({ unitPriceMinor: null })]}
-        onChange={onChange}
-        readOnly
-      />,
+      <LineItemsTable items={[makeItem({ unitPriceMinor: null })]} onChange={onChange} readOnly />,
     );
     // null unitPrice should render mdash
     expect(screen.queryByText("0.00")).not.toBeInTheDocument();
@@ -164,9 +122,7 @@ describe("LineItemsTable", () => {
 
   // ---- Edit cell values ----
   it("calls onChange when description input is changed", async () => {
-    const { user } = setup(
-      <LineItemsTable items={[makeItem()]} onChange={onChange} />,
-    );
+    const { user } = setup(<LineItemsTable items={[makeItem()]} onChange={onChange} />);
     const inputs = screen.getAllByRole("textbox");
     await user.clear(inputs[0]);
     await user.type(inputs[0], "New Widget");
@@ -174,9 +130,7 @@ describe("LineItemsTable", () => {
   });
 
   it("calls onChange when quantity input is changed", async () => {
-    const { user } = setup(
-      <LineItemsTable items={[makeItem()]} onChange={onChange} />,
-    );
+    const { user } = setup(<LineItemsTable items={[makeItem()]} onChange={onChange} />);
     const inputs = screen.getAllByRole("textbox");
     // quantity input is second
     await user.clear(inputs[1]);
@@ -185,9 +139,7 @@ describe("LineItemsTable", () => {
   });
 
   it("calls onChange when unit input is changed", async () => {
-    const { user } = setup(
-      <LineItemsTable items={[makeItem()]} onChange={onChange} />,
-    );
+    const { user } = setup(<LineItemsTable items={[makeItem()]} onChange={onChange} />);
     const inputs = screen.getAllByRole("textbox");
     await user.clear(inputs[2]);
     await user.type(inputs[2], "kg");
@@ -195,9 +147,7 @@ describe("LineItemsTable", () => {
   });
 
   it("calls onChange when unit price input is changed", async () => {
-    const { user } = setup(
-      <LineItemsTable items={[makeItem()]} onChange={onChange} />,
-    );
+    const { user } = setup(<LineItemsTable items={[makeItem()]} onChange={onChange} />);
     const inputs = screen.getAllByRole("textbox");
     await user.clear(inputs[3]);
     await user.type(inputs[3], "50.00");
@@ -222,10 +172,7 @@ describe("LineItemsTable", () => {
   it("renders all remove buttons for multiple items", () => {
     render(
       <LineItemsTable
-        items={[
-          makeItem(),
-          makeItem({ id: "item-2", description: "Widget B" }),
-        ]}
+        items={[makeItem(), makeItem({ id: "item-2", description: "Widget B" })]}
         onChange={onChange}
       />,
     );
@@ -237,13 +184,7 @@ describe("LineItemsTable", () => {
 
   // ---- readOnly mode shows text, not inputs ----
   it("shows all values as text in readOnly mode", () => {
-    render(
-      <LineItemsTable
-        items={[makeItem()]}
-        onChange={onChange}
-        readOnly
-      />,
-    );
+    render(<LineItemsTable items={[makeItem()]} onChange={onChange} readOnly />);
     expect(screen.getByText("Widget A")).toBeInTheDocument();
     expect(screen.getByText("2")).toBeInTheDocument();
     expect(screen.getByText("pcs")).toBeInTheDocument();
@@ -252,9 +193,7 @@ describe("LineItemsTable", () => {
 
   // ---- VAT rate change ----
   it("calls onChange when vat rate input is changed", async () => {
-    const { user } = setup(
-      <LineItemsTable items={[makeItem()]} onChange={onChange} />,
-    );
+    const { user } = setup(<LineItemsTable items={[makeItem()]} onChange={onChange} />);
     const inputs = screen.getAllByRole("textbox");
     // vatRate is at index 5
     await user.clear(inputs[5]);
@@ -276,9 +215,7 @@ describe("LineItemsTable", () => {
 
   // ---- Cell blur saves ----
   it("calls onChange on input blur after editing description", async () => {
-    const { user } = setup(
-      <LineItemsTable items={[makeItem()]} onChange={onChange} />,
-    );
+    const { user } = setup(<LineItemsTable items={[makeItem()]} onChange={onChange} />);
     const inputs = screen.getAllByRole("textbox");
     await user.click(inputs[0]);
     await user.clear(inputs[0]);
@@ -289,12 +226,8 @@ describe("LineItemsTable", () => {
 
   // ---- Add row adds new empty item ----
   it("adds a row with default empty values", async () => {
-    const { user } = setup(
-      <LineItemsTable items={[makeItem()]} onChange={onChange} />,
-    );
-    await user.click(
-      screen.getByRole("button", { name: /Add line item/i }),
-    );
+    const { user } = setup(<LineItemsTable items={[makeItem()]} onChange={onChange} />);
+    await user.click(screen.getByRole("button", { name: /Add line item/i }));
     const lastCall = onChange.mock.calls[onChange.mock.calls.length - 1][0];
     expect(lastCall.length).toBe(2);
     expect(lastCall[1].description).toBe("");
@@ -316,57 +249,35 @@ describe("LineItemsTable", () => {
 
   // ---- Net amount column ----
   it("renders net amount value in readOnly mode", () => {
-    render(
-      <LineItemsTable
-        items={[makeItem()]}
-        onChange={onChange}
-        readOnly
-      />,
-    );
+    render(<LineItemsTable items={[makeItem()]} onChange={onChange} readOnly />);
     // 20000 minor = 200.00
     expect(screen.getByText("200.00")).toBeInTheDocument();
   });
 
   // ---- Gross amount column ----
   it("renders gross amount value in readOnly mode", () => {
-    render(
-      <LineItemsTable
-        items={[makeItem()]}
-        onChange={onChange}
-        readOnly
-      />,
-    );
+    render(<LineItemsTable items={[makeItem()]} onChange={onChange} readOnly />);
     // 24600 minor = 246.00
     expect(screen.getByText("246.00")).toBeInTheDocument();
   });
 
   // ---- VAT amount display ----
   it("renders vat amount in readOnly mode", () => {
-    render(
-      <LineItemsTable
-        items={[makeItem()]}
-        onChange={onChange}
-        readOnly
-      />,
-    );
+    render(<LineItemsTable items={[makeItem()]} onChange={onChange} readOnly />);
     // 4600 minor = 46.00
     expect(screen.getByText("46.00")).toBeInTheDocument();
   });
 
   // ---- Confidence value display ----
   it("displays confidence value for items", () => {
-    render(
-      <LineItemsTable items={[makeItem()]} onChange={onChange} />,
-    );
+    render(<LineItemsTable items={[makeItem()]} onChange={onChange} />);
     // Confidence column exists and renders
     expect(screen.getByText("Conf.")).toBeInTheDocument();
   });
 
   // ---- Cell edit: description triggers onChange ----
   it("calls onChange when single character is typed in description", async () => {
-    const { user } = setup(
-      <LineItemsTable items={[makeItem()]} onChange={onChange} />,
-    );
+    const { user } = setup(<LineItemsTable items={[makeItem()]} onChange={onChange} />);
     const inputs = screen.getAllByRole("textbox");
     const descInput = inputs[0]!;
     await user.type(descInput, "X");
@@ -378,9 +289,7 @@ describe("LineItemsTable", () => {
 
   // ---- Cell edit: quantity ----
   it("calls onChange when quantity is edited", async () => {
-    const { user } = setup(
-      <LineItemsTable items={[makeItem()]} onChange={onChange} />,
-    );
+    const { user } = setup(<LineItemsTable items={[makeItem()]} onChange={onChange} />);
     const inputs = screen.getAllByRole("textbox");
     // Find the qty input (value "2")
     const qtyInput = inputs.find((i) => (i as HTMLInputElement).value === "2");
@@ -393,9 +302,7 @@ describe("LineItemsTable", () => {
 
   // ---- Cell edit: unit ----
   it("calls onChange when unit is edited", async () => {
-    const { user } = setup(
-      <LineItemsTable items={[makeItem()]} onChange={onChange} />,
-    );
+    const { user } = setup(<LineItemsTable items={[makeItem()]} onChange={onChange} />);
     const inputs = screen.getAllByRole("textbox");
     const unitInput = inputs.find((i) => (i as HTMLInputElement).value === "pcs");
     if (unitInput) {
@@ -407,9 +314,7 @@ describe("LineItemsTable", () => {
 
   // ---- Cell edit: VAT rate ----
   it("calls onChange when VAT rate is edited", async () => {
-    const { user } = setup(
-      <LineItemsTable items={[makeItem()]} onChange={onChange} />,
-    );
+    const { user } = setup(<LineItemsTable items={[makeItem()]} onChange={onChange} />);
     const inputs = screen.getAllByRole("textbox");
     const vatInput = inputs.find((i) => (i as HTMLInputElement).value === "23%");
     if (vatInput) {
@@ -421,9 +326,7 @@ describe("LineItemsTable", () => {
 
   // ---- Cell edit: unit price (minor units) ----
   it("calls onChange when unit price is edited", async () => {
-    const { user } = setup(
-      <LineItemsTable items={[makeItem()]} onChange={onChange} />,
-    );
+    const { user } = setup(<LineItemsTable items={[makeItem()]} onChange={onChange} />);
     const inputs = screen.getAllByRole("textbox");
     const priceInput = inputs.find((i) => (i as HTMLInputElement).value === "100.00");
     if (priceInput) {

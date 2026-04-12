@@ -1,14 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { Globe, Settings, Unplug } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { toast } from "sonner";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,16 +15,17 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { trpc } from "@/trpc/init";
 import { PeppolWizard } from "./peppol-wizard";
 
 // ---------------------------------------------------------------------------
 // Status badge mapping
 // ---------------------------------------------------------------------------
 
-const STATUS_VARIANTS: Record<
-  string,
-  { label: string; className: string }
-> = {
+const STATUS_VARIANTS: Record<string, { label: string; className: string }> = {
   ACTIVE: {
     label: "Active",
     className: "bg-success/10 text-success border-success/20",
@@ -91,18 +87,13 @@ export function PeppolStatusCard() {
             </div>
             <div className="flex-1 space-y-1">
               <h3 className="text-base font-semibold">Peppol Network</h3>
+              <p className="text-sm text-muted-foreground">Not connected to Peppol</p>
               <p className="text-sm text-muted-foreground">
-                Not connected to Peppol
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Connect to the Peppol network to send and receive e-invoices
-                with UAE trading partners. You will need your TRN and ASP
-                credentials.
+                Connect to the Peppol network to send and receive e-invoices with UAE trading
+                partners. You will need your TRN and ASP credentials.
               </p>
             </div>
-            <Button onClick={() => setWizardOpen(true)}>
-              Connect to Peppol
-            </Button>
+            <Button onClick={() => setWizardOpen(true)}>Connect to Peppol</Button>
           </div>
         </Card>
         <PeppolWizard open={wizardOpen} onOpenChange={setWizardOpen} />
@@ -111,8 +102,7 @@ export function PeppolStatusCard() {
   }
 
   const { participant, connection } = statusQuery.data;
-  const statusInfo = STATUS_VARIANTS[participant.status] ??
-    STATUS_VARIANTS.DEREGISTERED!;
+  const statusInfo = STATUS_VARIANTS[participant.status] ?? STATUS_VARIANTS.DEREGISTERED!;
   const counts = participantQuery.data?._count;
 
   return (
@@ -121,9 +111,7 @@ export function PeppolStatusCard() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Globe className="h-5 w-5" />
-            <CardTitle className="text-base font-semibold">
-              Peppol Network
-            </CardTitle>
+            <CardTitle className="text-base font-semibold">Peppol Network</CardTitle>
           </div>
           <Badge variant="outline" className={statusInfo.className}>
             {statusInfo.label}
@@ -136,9 +124,7 @@ export function PeppolStatusCard() {
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Participant ID</span>
-            <span className="font-mono text-sm">
-              {participant.participantId}
-            </span>
+            <span className="font-mono text-sm">{participant.participantId}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">ASP Provider</span>
@@ -147,9 +133,7 @@ export function PeppolStatusCard() {
           {connection?.lastSyncAt && (
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Last Sync</span>
-              <span className="text-sm">
-                {new Date(connection.lastSyncAt).toLocaleString()}
-              </span>
+              <span className="text-sm">{new Date(connection.lastSyncAt).toLocaleString()}</span>
             </div>
           )}
         </div>
@@ -158,15 +142,11 @@ export function PeppolStatusCard() {
         {counts && (
           <div className="flex gap-6 rounded-lg bg-muted/30 p-3">
             <div className="text-center">
-              <p className="font-mono text-sm font-medium">
-                {counts.sentTransmissions}
-              </p>
+              <p className="font-mono text-sm font-medium">{counts.sentTransmissions}</p>
               <p className="text-xs text-muted-foreground">Sent</p>
             </div>
             <div className="text-center">
-              <p className="font-mono text-sm font-medium">
-                {counts.receivedTransmissions}
-              </p>
+              <p className="font-mono text-sm font-medium">{counts.receivedTransmissions}</p>
               <p className="text-xs text-muted-foreground">Received</p>
             </div>
             <div className="text-center">
@@ -197,8 +177,8 @@ export function PeppolStatusCard() {
               <AlertDialogHeader>
                 <AlertDialogTitle>Disconnect Peppol</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Your Participant ID will be deregistered and you will not
-                  be able to send or receive Peppol invoices. Continue?
+                  Your Participant ID will be deregistered and you will not be able to send or
+                  receive Peppol invoices. Continue?
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -207,9 +187,7 @@ export function PeppolStatusCard() {
                   onClick={() => disconnectMutation.mutate()}
                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                 >
-                  {disconnectMutation.isPending
-                    ? "Disconnecting..."
-                    : "Disconnect"}
+                  {disconnectMutation.isPending ? "Disconnecting..." : "Disconnect"}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>

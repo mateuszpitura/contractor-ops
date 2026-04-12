@@ -16,7 +16,9 @@ vi.mock("@/trpc/init", () => ({
     portal: {
       requestReturn: { mutationOptions: (opts: any) => ({ mutationFn: vi.fn(), ...opts }) },
       getReturnStatus: { queryKey: () => ["portal.returnStatus"] },
-      getReturnLabel: { queryOptions: () => ({ queryKey: ["portal.returnLabel"], enabled: false }) },
+      getReturnLabel: {
+        queryOptions: () => ({ queryKey: ["portal.returnLabel"], enabled: false }),
+      },
       listEquipment: { queryKey: () => ["portal.listEquipment"] },
     },
   },
@@ -320,9 +322,7 @@ describe("PortalReturnFlow", () => {
 
   // ---- handleOpenChange resets state on reopen ----
   it("resets state when dialog is reopened", () => {
-    const { rerender } = render(
-      <PortalReturnFlow {...makeProps({ open: false })} />,
-    );
+    const { rerender } = render(<PortalReturnFlow {...makeProps({ open: false })} />);
     rerender(<PortalReturnFlow {...makeProps({ open: true })} />);
     expect(screen.getByText("MacBook Pro")).toBeInTheDocument();
   });
@@ -382,9 +382,7 @@ describe("PortalReturnFlow", () => {
   // ---- Step 1: cancel closes dialog ----
   it("cancel button on step 1 calls onOpenChange(false)", async () => {
     const onOpenChange = vi.fn();
-    const { user } = setup(
-      <PortalReturnFlow {...makeProps({ onOpenChange })} />,
-    );
+    const { user } = setup(<PortalReturnFlow {...makeProps({ onOpenChange })} />);
     await user.click(screen.getByText("Cancel"));
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });

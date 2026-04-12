@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { render, screen } from "@/test/test-utils";
 
@@ -18,10 +18,7 @@ describe("KsefMetadataSection", () => {
     );
 
     const link = screen.getByRole("link", { name: /view in ksef/i });
-    expect(link).toHaveAttribute(
-      "href",
-      "https://ksef.mf.gov.pl/web/REF%2FABC%20123",
-    );
+    expect(link).toHaveAttribute("href", "https://ksef.mf.gov.pl/web/REF%2FABC%20123");
   });
 
   it("shows the UPO receipt block only when upoReceipt is set", () => {
@@ -46,9 +43,7 @@ describe("KsefMetadataSection", () => {
     );
 
     expect(screen.getByText("UPO Receipt")).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /copy upo receipt/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /copy upo receipt/i })).toBeInTheDocument();
   });
 
   it("exposes copy for the KSeF reference", () => {
@@ -61,8 +56,6 @@ describe("KsefMetadataSection", () => {
       />,
     );
 
-    expect(
-      screen.getByRole("button", { name: /copy ksef reference/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /copy ksef reference/i })).toBeInTheDocument();
   });
 });

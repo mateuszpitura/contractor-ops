@@ -3,13 +3,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { FileText } from "lucide-react";
 import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
+import { ContractCard, ContractCardSkeleton } from "@/components/portal/contract-card";
 import { EmptyState } from "@/components/shared/empty-state";
-import {
-  ContractCard,
-  ContractCardSkeleton,
-} from "@/components/portal/contract-card";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Component

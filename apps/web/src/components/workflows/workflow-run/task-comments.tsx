@@ -1,17 +1,16 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
+import { useTranslations } from "next-intl";
+import { useState } from "react";
 import { toast } from "sonner";
-
-import { trpc } from "@/trpc/init";
-import { getAvatarInitials } from "@/lib/avatar-initials";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
+import { getAvatarInitials } from "@/lib/avatar-initials";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -102,18 +101,14 @@ export function TaskComments({ runId, taskRunId }: TaskCommentsProps) {
               </Avatar>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 text-[13px]">
-                  <span className="font-medium truncate">
-                    {comment.author?.name ?? "Unknown"}
-                  </span>
+                  <span className="font-medium truncate">{comment.author?.name ?? "Unknown"}</span>
                   <span className="text-muted-foreground shrink-0">
                     {formatDistanceToNow(new Date(comment.createdAt), {
                       addSuffix: true,
                     })}
                   </span>
                 </div>
-                <p className="text-sm whitespace-pre-wrap break-words">
-                  {comment.body}
-                </p>
+                <p className="text-sm whitespace-pre-wrap break-words">{comment.body}</p>
               </div>
             </div>
           ))}

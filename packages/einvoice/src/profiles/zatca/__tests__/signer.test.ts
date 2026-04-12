@@ -2,14 +2,14 @@
 // ZatcaXAdESSigner Tests -- XAdES-BES enveloped digital signatures
 // ---------------------------------------------------------------------------
 
-import { describe, it, expect, beforeAll } from "vitest";
 import { execSync } from "node:child_process";
 import crypto from "node:crypto";
+import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import fs from "node:fs";
-import { ZatcaXAdESSigner } from "../signer.js";
+import { beforeAll, describe, expect, it } from "vitest";
 import type { CertificateInfo } from "../../../types/profile.js";
+import { ZatcaXAdESSigner } from "../signer.js";
 
 // ---------------------------------------------------------------------------
 // Test Fixtures
@@ -30,10 +30,9 @@ function generateTestCertificate(): {
 
   try {
     // Generate ECDSA P-256 key
-    execSync(
-      `openssl ecparam -genkey -name prime256v1 -noout -out "${keyPath}"`,
-      { stdio: "pipe" },
-    );
+    execSync(`openssl ecparam -genkey -name prime256v1 -noout -out "${keyPath}"`, {
+      stdio: "pipe",
+    });
 
     // Generate self-signed certificate
     execSync(
@@ -42,10 +41,9 @@ function generateTestCertificate(): {
     );
 
     // Convert cert to DER for base64 encoding
-    execSync(
-      `openssl x509 -in "${certPath}" -outform DER -out "${certDerPath}"`,
-      { stdio: "pipe" },
-    );
+    execSync(`openssl x509 -in "${certPath}" -outform DER -out "${certDerPath}"`, {
+      stdio: "pipe",
+    });
 
     const certDer = fs.readFileSync(certDerPath);
     const privateKeyPem = fs.readFileSync(keyPath, "utf-8");
@@ -146,9 +144,7 @@ describe("ZatcaXAdESSigner", () => {
   it("sign() uses Exclusive XML Canonicalization", async () => {
     const signedXml = await signer.sign(TEST_INVOICE_XML, testCert);
 
-    expect(signedXml).toContain(
-      "http://www.w3.org/2001/10/xml-exc-c14n#",
-    );
+    expect(signedXml).toContain("http://www.w3.org/2001/10/xml-exc-c14n#");
   });
 
   // Test 4: sign() uses SHA-256 digest and ECDSA-SHA256 signature algorithm
@@ -156,9 +152,7 @@ describe("ZatcaXAdESSigner", () => {
     const signedXml = await signer.sign(TEST_INVOICE_XML, testCert);
 
     expect(signedXml).toContain("http://www.w3.org/2001/04/xmlenc#sha256");
-    expect(signedXml).toContain(
-      "http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha256",
-    );
+    expect(signedXml).toContain("http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha256");
   });
 
   // Test 5: verify() returns valid=true for correctly signed XML
@@ -188,14 +182,9 @@ describe("ZatcaXAdESSigner", () => {
     const signedXml = await signer.sign(TEST_INVOICE_XML, testCert);
 
     // Extract the raw key data (between PEM headers) for checking
-    const keyLines = testCert.privateKey!
-      .split("\n")
-      .filter(
-        (l) =>
-          l.trim() !== "" &&
-          !l.includes("-----BEGIN") &&
-          !l.includes("-----END"),
-      );
+    const keyLines = testCert
+      .privateKey!.split("\n")
+      .filter((l) => l.trim() !== "" && !l.includes("-----BEGIN") && !l.includes("-----END"));
 
     // The private key base64 content should not appear in output
     for (const line of keyLines) {

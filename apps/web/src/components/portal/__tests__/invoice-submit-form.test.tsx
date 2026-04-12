@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, setup, waitFor } from "@/test/test-utils";
 import { InvoiceSubmitForm } from "../invoice-submit-form";
 
@@ -20,9 +20,7 @@ vi.mock("@/components/ocr/confidence-badge", () => ({
 }));
 
 vi.mock("@/components/ocr/nip-validation-badge", () => ({
-  NipValidationBadge: ({ nip }: { nip: string }) => (
-    <span data-testid="nip-badge">{nip}</span>
-  ),
+  NipValidationBadge: ({ nip }: { nip: string }) => <span data-testid="nip-badge">{nip}</span>,
 }));
 
 vi.mock("@/components/ocr/extraction-status-bar", () => ({
@@ -42,9 +40,7 @@ vi.mock("@/components/ocr/extraction-status-bar", () => ({
 }));
 
 vi.mock("@/components/ocr/ocr-processing-overlay", () => ({
-  OcrProcessingOverlay: () => (
-    <div data-testid="ocr-processing-overlay">Processing...</div>
-  ),
+  OcrProcessingOverlay: () => <div data-testid="ocr-processing-overlay">Processing...</div>,
 }));
 
 vi.mock("@/components/billing/credit-exhausted-inline", () => ({
@@ -110,9 +106,8 @@ let ocrData: Record<string, unknown> | null = null;
 let ocrTriggerBehavior: "success" | "credit-exhausted" | "generic-error" = "success";
 
 vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
-    "@tanstack/react-query",
-  );
+  const actual =
+    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
   return {
     ...actual,
     useQuery: (opts: { queryKey?: unknown }) => {
@@ -154,9 +149,13 @@ vi.mock("@tanstack/react-query", async () => {
 vi.mock("@/trpc/init", () => ({
   trpc: {
     portal: {
-      getActiveContracts: { queryOptions: vi.fn(() => ({ queryKey: ["portal", "getActiveContracts"] })) },
+      getActiveContracts: {
+        queryOptions: vi.fn(() => ({ queryKey: ["portal", "getActiveContracts"] })),
+      },
       getUploadUrl: { mutationOptions: vi.fn(() => ({ mutationKey: ["portal", "getUploadUrl"] })) },
-      submitInvoice: { mutationOptions: vi.fn(() => ({ mutationKey: ["portal", "submitInvoice"] })) },
+      submitInvoice: {
+        mutationOptions: vi.fn(() => ({ mutationKey: ["portal", "submitInvoice"] })),
+      },
     },
     ocr: {
       portalTrigger: { mutationOptions: vi.fn(() => ({ mutationKey: ["ocr", "portalTrigger"] })) },
@@ -324,8 +323,8 @@ describe("InvoiceSubmitForm", () => {
         fields: {
           invoiceNumber: { value: "FV/01", confidence: 0.95 },
           issueDate: { value: "2025-01-01", confidence: 0.85 },
-          dueDate: { value: "2025-02-01", confidence: 0.80 },
-          totalNet: { value: 50000, confidence: 0.90 },
+          dueDate: { value: "2025-02-01", confidence: 0.8 },
+          totalNet: { value: 50000, confidence: 0.9 },
           totalGross: { value: 61500, confidence: 0.88 },
         },
       },
@@ -369,9 +368,7 @@ describe("InvoiceSubmitForm", () => {
     const file = new File(["%PDF-1.4 test"], "inv-credit.pdf", {
       type: "application/pdf",
     });
-    const input = document.querySelector(
-      'input[type="file"]',
-    ) as HTMLInputElement;
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     expect(input).toBeTruthy();
     await user.upload(input, file);
 
@@ -395,17 +392,13 @@ describe("InvoiceSubmitForm", () => {
     const file = new File(["%PDF-1.4 test"], "inv-generic.pdf", {
       type: "application/pdf",
     });
-    const input = document.querySelector(
-      'input[type="file"]',
-    ) as HTMLInputElement;
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     expect(input).toBeTruthy();
     await user.upload(input, file);
 
     // Wait for the upload chain to settle
     await waitFor(() => {
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining("manual entry available"),
-      );
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("manual entry available"));
     });
 
     // CreditExhaustedInline should NOT appear for generic errors
@@ -422,9 +415,7 @@ describe("InvoiceSubmitForm", () => {
     const file = new File(["%PDF-1.4 test"], "my-invoice.pdf", {
       type: "application/pdf",
     });
-    const input = document.querySelector(
-      'input[type="file"]',
-    ) as HTMLInputElement;
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, file);
 
     await waitFor(() => {
@@ -441,9 +432,7 @@ describe("InvoiceSubmitForm", () => {
     const file = new File(["%PDF-1.4 test"], "removable.pdf", {
       type: "application/pdf",
     });
-    const input = document.querySelector(
-      'input[type="file"]',
-    ) as HTMLInputElement;
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, file);
 
     await waitFor(() => {
@@ -463,9 +452,7 @@ describe("InvoiceSubmitForm", () => {
     const file = new File(["%PDF-1.4 test"], "viewable.pdf", {
       type: "application/pdf",
     });
-    const input = document.querySelector(
-      'input[type="file"]',
-    ) as HTMLInputElement;
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, file);
 
     await waitFor(() => {
@@ -494,9 +481,7 @@ describe("InvoiceSubmitForm", () => {
       },
     };
     render(<InvoiceSubmitForm />);
-    expect(screen.getByTestId("extraction-status-bar")).toHaveTextContent(
-      "PARTIAL",
-    );
+    expect(screen.getByTestId("extraction-status-bar")).toHaveTextContent("PARTIAL");
   });
 
   it("shows review with invoice number filled", async () => {
@@ -515,7 +500,7 @@ describe("InvoiceSubmitForm", () => {
         fields: {
           invoiceNumber: { value: "FV/2025/99", confidence: 0.99 },
           issueDate: { value: "2025-06-01", confidence: 0.95 },
-          dueDate: { value: "2025-06-15", confidence: 0.90 },
+          dueDate: { value: "2025-06-15", confidence: 0.9 },
           totalNet: { value: 100000, confidence: 0.92 },
           totalGross: { value: 123000, confidence: 0.91 },
         },
@@ -537,9 +522,7 @@ describe("InvoiceSubmitForm", () => {
     const file = new File(["%PDF-1.4 test"], "removable-test.pdf", {
       type: "application/pdf",
     });
-    const input = document.querySelector(
-      'input[type="file"]',
-    ) as HTMLInputElement;
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, file);
 
     await waitFor(() => {
@@ -552,9 +535,7 @@ describe("InvoiceSubmitForm", () => {
 
     // Should go back to idle state with dropzone
     await waitFor(() => {
-      expect(
-        screen.getByText("Drop your invoice PDF here or browse"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Drop your invoice PDF here or browse")).toBeInTheDocument();
     });
   });
 
@@ -584,9 +565,7 @@ describe("InvoiceSubmitForm", () => {
     const file = new File(["%PDF-1.4 test"], "progress-test.pdf", {
       type: "application/pdf",
     });
-    const input = document.querySelector(
-      'input[type="file"]',
-    ) as HTMLInputElement;
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, file);
 
     // Should show uploading state
@@ -605,9 +584,7 @@ describe("InvoiceSubmitForm", () => {
 
   it("renders submit button text", () => {
     render(<InvoiceSubmitForm />);
-    expect(
-      screen.getByRole("button", { name: "Submit Invoice" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Submit Invoice" })).toBeInTheDocument();
   });
 
   it("renders review section with contract info when contract selected", async () => {
@@ -635,9 +612,7 @@ describe("InvoiceSubmitForm", () => {
     const file = new File(["%PDF-1.4 test"], "block-upload.pdf", {
       type: "application/pdf",
     });
-    const input = document.querySelector(
-      'input[type="file"]',
-    ) as HTMLInputElement;
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, file);
 
     await waitFor(() => {
@@ -655,8 +630,6 @@ describe("InvoiceSubmitForm", () => {
       },
     };
     render(<InvoiceSubmitForm />);
-    expect(screen.getByTestId("extraction-status-bar")).toHaveTextContent(
-      "FAILED",
-    );
+    expect(screen.getByTestId("extraction-status-bar")).toHaveTextContent("FAILED");
   });
 });

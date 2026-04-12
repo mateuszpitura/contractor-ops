@@ -1,14 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
+import { useState } from "react";
+import { DocumentCard } from "@/components/documents/document-card";
+import { DropZone } from "@/components/documents/drop-zone";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { DropZone } from "@/components/documents/drop-zone";
-import { DocumentCard } from "@/components/documents/document-card";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -43,11 +42,7 @@ export function TaskAttachments({ taskRunId }: TaskAttachmentsProps) {
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h4 className="text-sm font-medium">{t("attachmentsHeading")}</h4>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setShowDropZone((prev) => !prev)}
-        >
+        <Button variant="ghost" size="sm" onClick={() => setShowDropZone((prev) => !prev)}>
           {t("addAttachment")}
         </Button>
       </div>
@@ -70,12 +65,7 @@ export function TaskAttachments({ taskRunId }: TaskAttachmentsProps) {
       )}
 
       {/* Upload drop zone */}
-      {showDropZone && (
-        <DropZone
-          entityType="WORKFLOW_TASK_RUN"
-          entityId={taskRunId}
-        />
-      )}
+      {showDropZone && <DropZone entityType="WORKFLOW_TASK_RUN" entityId={taskRunId} />}
     </div>
   );
 }

@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, setup, act } from "@/test/test-utils";
-import { DropZone, ACCEPTED_TYPES, MAX_FILE_SIZE } from "../drop-zone";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { act, render, screen, setup } from "@/test/test-utils";
+import { ACCEPTED_TYPES, DropZone, MAX_FILE_SIZE } from "../drop-zone";
 
 // ---------------------------------------------------------------------------
 // react-dropzone mock with controllable isDragActive
@@ -27,7 +27,9 @@ vi.mock("react-dropzone", () => ({
 
 vi.mock("@tanstack/react-query", () => ({
   useMutation: () => ({
-    mutateAsync: vi.fn().mockResolvedValue({ documentId: "doc-1", uploadUrl: "https://example.com/upload" }),
+    mutateAsync: vi
+      .fn()
+      .mockResolvedValue({ documentId: "doc-1", uploadUrl: "https://example.com/upload" }),
     mutate: vi.fn(),
     isPending: false,
   }),
@@ -57,7 +59,9 @@ vi.mock("@/components/documents/upload-progress", () => ({
     <div data-testid="upload-progress">
       <span>{file.file.name}</span>
       <span>{file.status}</span>
-      <button onClick={onRemove} data-testid="remove-file">Remove</button>
+      <button onClick={onRemove} data-testid="remove-file">
+        Remove
+      </button>
     </div>
   ),
 }));
@@ -91,9 +95,7 @@ describe("DropZone", () => {
     render(<DropZone />);
     expect(screen.getByText("Drag files here or")).toBeInTheDocument();
     expect(screen.getByText("Browse files")).toBeInTheDocument();
-    expect(
-      screen.getByText("PDF, DOCX, XLSX, PNG, JPG up to 25 MB"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("PDF, DOCX, XLSX, PNG, JPG up to 25 MB")).toBeInTheDocument();
   });
 
   // -------------------------------------------------------------------------
@@ -108,14 +110,10 @@ describe("DropZone", () => {
 
   it("exports ACCEPTED_TYPES for docx and xlsx", () => {
     expect(
-      ACCEPTED_TYPES[
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-      ],
+      ACCEPTED_TYPES["application/vnd.openxmlformats-officedocument.wordprocessingml.document"],
     ).toEqual([".docx"]);
     expect(
-      ACCEPTED_TYPES[
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-      ],
+      ACCEPTED_TYPES["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"],
     ).toEqual([".xlsx"]);
   });
 
@@ -367,9 +365,7 @@ describe("DropZone", () => {
   it("forwards rejection array to onFileRejected when multiple types rejected", () => {
     const onFileRejected = vi.fn();
     render(<DropZone onFileRejected={onFileRejected} />);
-    const rejected = [
-      { file: new File([], "big.pdf"), errors: [{ code: "file-too-large" }] },
-    ];
+    const rejected = [{ file: new File([], "big.pdf"), errors: [{ code: "file-too-large" }] }];
     act(() => {
       mockOnDrop?.([], rejected);
     });

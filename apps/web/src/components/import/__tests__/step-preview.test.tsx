@@ -22,10 +22,7 @@ interface ImportRow {
 // Fixtures
 // ---------------------------------------------------------------------------
 
-const validRow = (
-  rowNumber: number,
-  data: Record<string, unknown>,
-): ImportRow => ({
+const validRow = (rowNumber: number, data: Record<string, unknown>): ImportRow => ({
   rowNumber,
   data,
   status: "valid",
@@ -55,14 +52,10 @@ const ROW_VALID_2 = validRow(2, {
   nip: "0987654321",
 });
 
-const ROW_INVALID_3 = invalidRow(
-  3,
-  { name: "", email: "bad-email", nip: "123" },
-  [
-    { field: "name", message: "Name is required" },
-    { field: "email", message: "Invalid email format" },
-  ],
-);
+const ROW_INVALID_3 = invalidRow(3, { name: "", email: "bad-email", nip: "123" }, [
+  { field: "name", message: "Name is required" },
+  { field: "email", message: "Invalid email format" },
+]);
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -92,25 +85,13 @@ describe("StepPreview", () => {
   // -------------------------------------------------------------------------
 
   it("shows 'All X rows are valid' when there are no invalid rows", () => {
-    render(
-      <StepPreview
-        validRows={[ROW_VALID_1, ROW_VALID_2]}
-        invalidRows={[]}
-        totalRows={2}
-      />,
-    );
+    render(<StepPreview validRows={[ROW_VALID_1, ROW_VALID_2]} invalidRows={[]} totalRows={2} />);
 
     expect(screen.getByText("All 2 rows are valid")).toBeInTheDocument();
   });
 
   it("does NOT show filter buttons when there are no invalid rows", () => {
-    render(
-      <StepPreview
-        validRows={[ROW_VALID_1]}
-        invalidRows={[]}
-        totalRows={1}
-      />,
-    );
+    render(<StepPreview validRows={[ROW_VALID_1]} invalidRows={[]} totalRows={1} />);
 
     expect(screen.queryByText("Show all")).not.toBeInTheDocument();
     expect(screen.queryByText("Show errors only")).not.toBeInTheDocument();
@@ -121,13 +102,7 @@ describe("StepPreview", () => {
   // -------------------------------------------------------------------------
 
   it("shows filter buttons when there are invalid rows", () => {
-    render(
-      <StepPreview
-        validRows={[ROW_VALID_1]}
-        invalidRows={[ROW_INVALID_3]}
-        totalRows={2}
-      />,
-    );
+    render(<StepPreview validRows={[ROW_VALID_1]} invalidRows={[ROW_INVALID_3]} totalRows={2} />);
 
     expect(screen.getByText("Show all")).toBeInTheDocument();
     expect(screen.getByText("Show errors only")).toBeInTheDocument();
@@ -153,13 +128,7 @@ describe("StepPreview", () => {
   });
 
   it("renders all data columns as table headers", () => {
-    render(
-      <StepPreview
-        validRows={[ROW_VALID_1]}
-        invalidRows={[]}
-        totalRows={1}
-      />,
-    );
+    render(<StepPreview validRows={[ROW_VALID_1]} invalidRows={[]} totalRows={1} />);
 
     expect(screen.getByText("name")).toBeInTheDocument();
     expect(screen.getByText("email")).toBeInTheDocument();
@@ -167,13 +136,7 @@ describe("StepPreview", () => {
   });
 
   it("shows row numbers", () => {
-    render(
-      <StepPreview
-        validRows={[ROW_VALID_1, ROW_VALID_2]}
-        invalidRows={[]}
-        totalRows={2}
-      />,
-    );
+    render(<StepPreview validRows={[ROW_VALID_1, ROW_VALID_2]} invalidRows={[]} totalRows={2} />);
 
     expect(screen.getByText("1")).toBeInTheDocument();
     expect(screen.getByText("2")).toBeInTheDocument();
@@ -185,11 +148,7 @@ describe("StepPreview", () => {
 
   it("applies destructive background class to invalid rows", () => {
     const { container } = render(
-      <StepPreview
-        validRows={[ROW_VALID_1]}
-        invalidRows={[ROW_INVALID_3]}
-        totalRows={2}
-      />,
+      <StepPreview validRows={[ROW_VALID_1]} invalidRows={[ROW_INVALID_3]} totalRows={2} />,
     );
 
     const destructiveRows = container.querySelectorAll(".bg-destructive\\/5");
@@ -198,11 +157,7 @@ describe("StepPreview", () => {
 
   it("applies destructive border class to error cells", () => {
     const { container } = render(
-      <StepPreview
-        validRows={[ROW_VALID_1]}
-        invalidRows={[ROW_INVALID_3]}
-        totalRows={2}
-      />,
+      <StepPreview validRows={[ROW_VALID_1]} invalidRows={[ROW_INVALID_3]} totalRows={2} />,
     );
 
     const errorCells = container.querySelectorAll(".border-destructive");
@@ -253,9 +208,7 @@ describe("StepPreview", () => {
   // -------------------------------------------------------------------------
 
   it("handles empty data gracefully (0 rows)", () => {
-    render(
-      <StepPreview validRows={[]} invalidRows={[]} totalRows={0} />,
-    );
+    render(<StepPreview validRows={[]} invalidRows={[]} totalRows={0} />);
 
     expect(screen.getByText("0 valid rows")).toBeInTheDocument();
     expect(screen.getByText("0 invalid rows")).toBeInTheDocument();
@@ -270,11 +223,7 @@ describe("StepPreview", () => {
 
   it("renders error tooltip content matching error message", async () => {
     const { user } = setup(
-      <StepPreview
-        validRows={[]}
-        invalidRows={[ROW_INVALID_3]}
-        totalRows={1}
-      />,
+      <StepPreview validRows={[]} invalidRows={[ROW_INVALID_3]} totalRows={1} />,
     );
 
     // Hover over the first AlertCircle icon to trigger tooltip
@@ -287,9 +236,7 @@ describe("StepPreview", () => {
     );
 
     await user.hover(tooltipTriggers[0]);
-    expect(
-      await screen.findByText("Name is required"),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("Name is required")).toBeInTheDocument();
   });
 
   // -------------------------------------------------------------------------
@@ -298,17 +245,11 @@ describe("StepPreview", () => {
 
   it("highlights each errored cell independently in the same row", () => {
     const { container } = render(
-      <StepPreview
-        validRows={[]}
-        invalidRows={[ROW_INVALID_3]}
-        totalRows={1}
-      />,
+      <StepPreview validRows={[]} invalidRows={[ROW_INVALID_3]} totalRows={1} />,
     );
 
     // ROW_INVALID_3 has errors on "name" and "email" — both cells should be highlighted
-    const errorCells = container.querySelectorAll(
-      ".border-l-2.border-destructive",
-    );
+    const errorCells = container.querySelectorAll(".border-l-2.border-destructive");
     expect(errorCells).toHaveLength(2);
   });
 
@@ -320,13 +261,7 @@ describe("StepPreview", () => {
     const rowA = validRow(1, { alpha: "a", beta: "b" });
     const rowB = validRow(2, { beta: "b2", gamma: "g" });
 
-    render(
-      <StepPreview
-        validRows={[rowA, rowB]}
-        invalidRows={[]}
-        totalRows={2}
-      />,
-    );
+    render(<StepPreview validRows={[rowA, rowB]} invalidRows={[]} totalRows={2} />);
 
     const headers = screen.getAllByRole("columnheader");
     // First header is "#", then data columns
@@ -344,11 +279,7 @@ describe("StepPreview", () => {
     const row3 = validRow(3, { name: "Third" });
 
     const { container } = render(
-      <StepPreview
-        validRows={[row5, row1, row3]}
-        invalidRows={[]}
-        totalRows={3}
-      />,
+      <StepPreview validRows={[row5, row1, row3]} invalidRows={[]} totalRows={3} />,
     );
 
     // Get all body rows (skip header)
@@ -365,14 +296,9 @@ describe("StepPreview", () => {
   // -------------------------------------------------------------------------
 
   it("renders stats in Polish", () => {
-    render(
-      <StepPreview
-        validRows={[ROW_VALID_1]}
-        invalidRows={[ROW_INVALID_3]}
-        totalRows={2}
-      />,
-      { locale: "pl" },
-    );
+    render(<StepPreview validRows={[ROW_VALID_1]} invalidRows={[ROW_INVALID_3]} totalRows={2} />, {
+      locale: "pl",
+    });
 
     expect(screen.getByText("1 poprawny wiersz")).toBeInTheDocument();
     expect(screen.getByText("1 nieprawidłowy wiersz")).toBeInTheDocument();

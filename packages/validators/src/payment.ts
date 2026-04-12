@@ -21,12 +21,7 @@ export const paymentRunItemStatusEnum = z.enum([
   "SKIPPED",
 ]);
 
-export const paymentExportFormatEnum = z.enum([
-  "CSV",
-  "BANK_FILE",
-  "SEPA_XML",
-  "SWIFT_XML",
-]);
+export const paymentExportFormatEnum = z.enum(["CSV", "BANK_FILE", "SEPA_XML", "SWIFT_XML"]);
 
 // ---------------------------------------------------------------------------
 // Payment Run schemas
@@ -69,15 +64,10 @@ export const paymentRunItemStatusSchema = z
     paymentReference: z.string().max(100).optional(),
     failureReason: z.string().max(500).optional(),
   })
-  .refine(
-    (d) =>
-      d.status !== "FAILED" ||
-      (d.failureReason && d.failureReason.length > 0),
-    {
-      message: "Failure reason required when marking failed",
-      path: ["failureReason"],
-    },
-  );
+  .refine((d) => d.status !== "FAILED" || (d.failureReason && d.failureReason.length > 0), {
+    message: "Failure reason required when marking failed",
+    path: ["failureReason"],
+  });
 
 export type PaymentRunItemStatus = z.infer<typeof paymentRunItemStatusSchema>;
 
@@ -88,9 +78,7 @@ export const paymentRunListSchema = z.object({
   status: paymentRunStatusEnum.optional(),
   cursor: z.string().optional(),
   limit: z.number().int().min(1).max(100).default(20),
-  sortBy: z
-    .enum(["createdAt", "runNumber", "totalMinor"])
-    .default("createdAt"),
+  sortBy: z.enum(["createdAt", "runNumber", "totalMinor"]).default("createdAt"),
   sortOrder: z.enum(["asc", "desc"]).default("desc"),
   dateFrom: z.coerce.date().optional(),
   dateTo: z.coerce.date().optional(),

@@ -43,13 +43,7 @@ describe("StatusTimeline", () => {
   });
 
   it("shows first 2 steps as green and 3rd as active for APPROVED", () => {
-    render(
-      <StatusTimeline
-        status="UNDER_REVIEW"
-        approvalStatus="APPROVED"
-        paymentStatus="NONE"
-      />,
-    );
+    render(<StatusTimeline status="UNDER_REVIEW" approvalStatus="APPROVED" paymentStatus="NONE" />);
 
     // Active step index = 2 (Approved), so steps 0 (Submitted) and 1 (In Review) are past
     // Past step labels should have green text
@@ -73,13 +67,7 @@ describe("StatusTimeline", () => {
   });
 
   it("shows all steps as green for PAID", () => {
-    render(
-      <StatusTimeline
-        status="UNDER_REVIEW"
-        approvalStatus="APPROVED"
-        paymentStatus="PAID"
-      />,
-    );
+    render(<StatusTimeline status="UNDER_REVIEW" approvalStatus="APPROVED" paymentStatus="PAID" />);
 
     // Active step index = 4 (all steps are past), so all labels should be green
     const allLabels = [
@@ -99,10 +87,7 @@ describe("StatusTimeline", () => {
 
   it("shows destructive styling on step 1 when rejected", () => {
     const { container } = render(
-      <StatusTimeline
-        {...defaultProps}
-        rejectedAt="2026-04-01T00:00:00Z"
-      />,
+      <StatusTimeline {...defaultProps} rejectedAt="2026-04-01T00:00:00Z" />,
     );
 
     const destructiveCircles = container.querySelectorAll(".bg-destructive");

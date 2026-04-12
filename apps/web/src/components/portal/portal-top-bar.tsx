@@ -1,33 +1,32 @@
 "use client";
 
-import { useState } from "react";
 import {
-  LayoutDashboard,
-  FileText,
-  Receipt,
-  FolderOpen,
-  Clock,
   Banknote,
-  Package,
-  Settings,
-  Menu,
+  Clock,
+  FileText,
+  FolderOpen,
+  LayoutDashboard,
   LogOut,
+  Menu,
+  Package,
+  Receipt,
+  Settings,
 } from "lucide-react";
-import { usePathname } from "next/navigation";
-import { useRouter } from "next/navigation";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { getAvatarInitials } from "@/lib/avatar-initials";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useTranslations } from "next-intl";
+import { getAvatarInitials } from "@/lib/avatar-initials";
+import { cn } from "@/lib/utils";
 import { PortalMobileMenu } from "./portal-mobile-menu";
 
 // ---------------------------------------------------------------------------
@@ -115,11 +114,7 @@ export function PortalTopBar({
         {/* Left: Org branding */}
         <div className="flex items-center gap-2 shrink-0">
           {orgLogo && (
-            <img
-              src={orgLogo}
-              alt={orgName}
-              className="h-8 w-8 rounded-md object-cover"
-            />
+            <img src={orgLogo} alt={orgName} className="h-8 w-8 rounded-md object-cover" />
           )}
           <span className="text-sm font-semibold">{orgName}</span>
         </div>
@@ -139,7 +134,7 @@ export function PortalTopBar({
                   "inline-flex items-center gap-1.5 border-b-2 pb-[calc(theme(spacing.4)-2px)] pt-4 text-[13px] font-normal transition-colors",
                   active
                     ? "border-primary text-foreground"
-                    : "border-transparent text-muted-foreground hover:text-foreground"
+                    : "border-transparent text-muted-foreground hover:text-foreground",
                 )}
               >
                 <item.icon className="h-4 w-4" />
@@ -171,9 +166,7 @@ export function PortalTopBar({
               <DropdownMenuLabel>
                 <div className="flex flex-col">
                   <span className="text-sm font-medium">{contractorName}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {contractorEmail}
-                  </span>
+                  <span className="text-xs text-muted-foreground">{contractorEmail}</span>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />

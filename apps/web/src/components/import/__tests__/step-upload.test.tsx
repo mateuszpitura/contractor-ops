@@ -1,5 +1,5 @@
-import { render, screen, setup, waitFor, act } from "@/test/test-utils";
 import { toast } from "sonner";
+import { act, render, screen, setup, waitFor } from "@/test/test-utils";
 import { StepUpload } from "../step-upload";
 
 vi.mock("sonner", () => ({ toast: { error: vi.fn() } }));
@@ -176,9 +176,7 @@ describe("StepUpload", () => {
   });
 
   it("renders file spreadsheet icon when file is selected", () => {
-    const { container } = render(
-      <StepUpload {...defaultProps} fileName="data.csv" />,
-    );
+    const { container } = render(<StepUpload {...defaultProps} fileName="data.csv" />);
     const svgs = container.querySelectorAll("svg");
     expect(svgs.length).toBeGreaterThan(0);
   });
@@ -295,10 +293,7 @@ describe("StepUpload", () => {
       await capturedOnDrop!([file]);
     });
     await waitFor(() => {
-      expect(onFileSelected).toHaveBeenCalledWith(
-        expect.any(String),
-        "import.csv",
-      );
+      expect(onFileSelected).toHaveBeenCalledWith(expect.any(String), "import.csv");
     });
   });
 

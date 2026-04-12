@@ -6,7 +6,9 @@ import { z } from "zod";
  */
 export const createOrganizationSchema = z.object({
   name: z.string().min(2, "Organization name must be at least 2 characters").max(255),
-  countryCode: z.string().length(2, "Country code must be exactly 2 characters (ISO 3166-1 alpha-2)"),
+  countryCode: z
+    .string()
+    .length(2, "Country code must be exactly 2 characters (ISO 3166-1 alpha-2)"),
   defaultCurrency: z.string().length(3, "Currency code must be exactly 3 characters (ISO 4217)"),
   timezone: z.string().min(1, "Timezone is required"),
 });
@@ -23,10 +25,7 @@ export const updateOrganizationSettingsSchema = z.object({
   fiscalYearStartMonth: z.number().int().min(1).max(12).optional(),
   billingEmail: z.string().email("Invalid billing email").optional(),
   language: z.enum(["pl", "en"]).optional(),
-  onboardingCompletedSteps: z
-    .array(z.string().min(1).max(50))
-    .max(10)
-    .optional(),
+  onboardingCompletedSteps: z.array(z.string().min(1).max(50)).max(10).optional(),
   onboardingDismissed: z.boolean().optional(),
   defaultReturnCarrier: z.string().max(20).optional(),
 });

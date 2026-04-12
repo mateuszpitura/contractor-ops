@@ -6,15 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import { Link } from "@/i18n/navigation";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { usePermissions } from "@/hooks/use-permissions";
-import { maskTaxId, canViewSensitivePii } from "@/lib/mask-pii";
+import { Link } from "@/i18n/navigation";
+import { canViewSensitivePii, maskTaxId } from "@/lib/mask-pii";
 import { ComplianceHealthBadge } from "./compliance-health-badge";
 import type { ContractorRow } from "./contractor-table/columns";
 
@@ -44,11 +39,7 @@ interface ContractorSidePanelProps {
  * Slide-out side panel showing contractor summary.
  * Opens from right on row click. 480px on desktop, 400px on tablet.
  */
-export function ContractorSidePanel({
-  contractor,
-  open,
-  onOpenChange,
-}: ContractorSidePanelProps) {
+export function ContractorSidePanel({ contractor, open, onOpenChange }: ContractorSidePanelProps) {
   const t = useTranslations("Contractors");
   const ts = useTranslations("Contractors.sidePanel");
   const { role } = usePermissions();
@@ -57,12 +48,8 @@ export function ContractorSidePanel({
   if (!contractor) return null;
 
   const custom = contractor.customFieldsJson as Record<string, unknown> | null;
-  const billingModel = custom?.billingModel
-    ? String(custom.billingModel)
-    : null;
-  const rateMinor = typeof custom?.rateValueMinor === "number"
-    ? custom.rateValueMinor
-    : null;
+  const billingModel = custom?.billingModel ? String(custom.billingModel) : null;
+  const rateMinor = typeof custom?.rateValueMinor === "number" ? custom.rateValueMinor : null;
 
   const rateDisplay =
     rateMinor !== null
@@ -85,15 +72,9 @@ export function ContractorSidePanel({
               <div className="flex items-center gap-2 flex-wrap">
                 <Badge
                   variant="secondary"
-                  className={
-                    lifecycleBadgeColors[contractor.lifecycleStage] ?? ""
-                  }
+                  className={lifecycleBadgeColors[contractor.lifecycleStage] ?? ""}
                 >
-                  {t(
-                    `lifecycle.${contractor.lifecycleStage}` as Parameters<
-                      typeof t
-                    >[0],
-                  )}
+                  {t(`lifecycle.${contractor.lifecycleStage}` as Parameters<typeof t>[0])}
                 </Badge>
                 <Badge variant="secondary">
                   {t(`type.${contractor.type}` as Parameters<typeof t>[0])}
@@ -115,43 +96,22 @@ export function ContractorSidePanel({
                   value={showPii ? contractor.taxId : maskTaxId(contractor.taxId)}
                   mono
                 />
-                <DetailItem
-                  label="Email"
-                  value={contractor.email}
-                />
-                <DetailItem
-                  label={t("columns.billingModel")}
-                  value={billingModel}
-                />
+                <DetailItem label="Email" value={contractor.email} />
+                <DetailItem label={t("columns.billingModel")} value={billingModel} />
                 <DetailItem
                   label={t("columns.rate")}
-                  value={
-                    rateDisplay
-                      ? `${rateDisplay} ${contractor.currency}`
-                      : null
-                  }
+                  value={rateDisplay ? `${rateDisplay} ${contractor.currency}` : null}
                   mono
                 />
-                <DetailItem
-                  label={t("columns.owner")}
-                  value={contractor.owner?.name}
-                />
-                <DetailItem
-                  label={t("columns.teamProject")}
-                  value={contractor.primaryTeam?.name}
-                />
+                <DetailItem label={t("columns.owner")} value={contractor.owner?.name} />
+                <DetailItem label={t("columns.teamProject")} value={contractor.primaryTeam?.name} />
               </div>
             </div>
 
             <Separator />
 
             {/* Open full profile CTA */}
-            <Button
-              render={
-                <Link href={`/contractors/${contractor.id}`} />
-              }
-              className="w-full"
-            >
+            <Button render={<Link href={`/contractors/${contractor.id}`} />} className="w-full">
               {ts("openFullProfile")}
             </Button>
           </div>

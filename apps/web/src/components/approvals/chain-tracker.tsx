@@ -3,25 +3,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { CheckCircle2, XCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
-import { cn } from "@/lib/utils";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from "@/components/ui/card";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { getAvatarInitials } from "@/lib/avatar-initials";
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-  TooltipProvider,
-} from "@/components/ui/tooltip";
-import { Skeleton } from "@/components/ui/skeleton";
 import { SlaBadge } from "@/components/approvals/sla-badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { getAvatarInitials } from "@/lib/avatar-initials";
+import { cn } from "@/lib/utils";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -89,10 +78,7 @@ function getStepStyles(status: string, isAfterRejected: boolean) {
   }
 }
 
-function getConnectorStyle(
-  leftStatus: string,
-  rightStatus: string,
-): string {
+function getConnectorStyle(leftStatus: string, rightStatus: string): string {
   if (leftStatus === "APPROVED" && rightStatus === "APPROVED") {
     return "border-green-500 border-solid";
   }
@@ -152,13 +138,10 @@ function StepCircle({
   const styles = getStepStyles(step.status, isAfterRejected);
   const Icon = styles.showIcon ? styles.icon : null;
 
-  const approverName =
-    step.approver?.name ?? step.approverRole ?? `Step ${step.stepOrder + 1}`;
+  const approverName = step.approver?.name ?? step.approverRole ?? `Step ${step.stepOrder + 1}`;
 
   const tooltipLabel = `${step.name} - ${approverName}${
-    step.slaDeadline
-      ? ` - SLA: ${new Date(step.slaDeadline).toLocaleString()}`
-      : ""
+    step.slaDeadline ? ` - SLA: ${new Date(step.slaDeadline).toLocaleString()}` : ""
   }`;
 
   return (
@@ -182,19 +165,12 @@ function StepCircle({
           </div>
 
           {/* Step info below (horizontal) or to the right (vertical) */}
-          <div
-            className={cn(
-              "flex flex-col gap-0.5",
-              isVertical ? "items-start" : "items-center",
-            )}
-          >
+          <div className={cn("flex flex-col gap-0.5", isVertical ? "items-start" : "items-center")}>
             {/* Approver avatar + name */}
             <div className="flex items-center gap-1">
               {step.approver && (
                 <Avatar size="sm">
-                  {step.approver.image && (
-                    <AvatarImage src={step.approver.image} />
-                  )}
+                  {step.approver.image && <AvatarImage src={step.approver.image} />}
                   <AvatarFallback>
                     {getAvatarInitials(step.approver.name, step.approver.email)}
                   </AvatarFallback>
@@ -207,10 +183,7 @@ function StepCircle({
 
             {/* SLA badge for pending steps */}
             {step.status === "PENDING" && step.slaDeadline && (
-              <SlaBadge
-                slaDeadline={step.slaDeadline}
-                status={step.status}
-              />
+              <SlaBadge slaDeadline={step.slaDeadline} status={step.status} />
             )}
           </div>
         </TooltipTrigger>
@@ -230,9 +203,7 @@ interface ChainTrackerProps {
 
 export function ChainTracker({ invoiceId }: ChainTrackerProps) {
   const t = useTranslations("Approvals");
-  const { data, isLoading } = useQuery(
-    trpc.approval.getAuditTrail.queryOptions({ invoiceId }),
-  );
+  const { data, isLoading } = useQuery(trpc.approval.getAuditTrail.queryOptions({ invoiceId }));
 
   if (isLoading) return <ChainTrackerSkeleton />;
 
@@ -254,16 +225,13 @@ export function ChainTracker({ invoiceId }: ChainTrackerProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-sm font-semibold">
-          {t("chainTracker.heading")}
-        </CardTitle>
+        <CardTitle className="text-sm font-semibold">{t("chainTracker.heading")}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         {/* Horizontal stepper (lg+), vertical stepper (< lg) */}
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:gap-0">
           {steps.map((step, idx) => {
-            const isAfterRejected =
-              rejectedIndex >= 0 && idx > rejectedIndex;
+            const isAfterRejected = rejectedIndex >= 0 && idx > rejectedIndex;
 
             return (
               <div
@@ -283,10 +251,7 @@ export function ChainTracker({ invoiceId }: ChainTrackerProps) {
                         "hidden lg:block",
                         "h-[2px] w-8 flex-shrink-0 border-t-2",
                         "self-center lg:self-auto lg:mt-4",
-                        getConnectorStyle(
-                          steps[idx - 1].status,
-                          step.status,
-                        ),
+                        getConnectorStyle(steps[idx - 1].status, step.status),
                       )}
                     />
                     {/* Vertical connector (< lg) */}
@@ -294,20 +259,13 @@ export function ChainTracker({ invoiceId }: ChainTrackerProps) {
                       className={cn(
                         "lg:hidden",
                         "ms-[15px] h-6 w-[2px] border-s-2",
-                        getConnectorStyle(
-                          steps[idx - 1].status,
-                          step.status,
-                        ),
+                        getConnectorStyle(steps[idx - 1].status, step.status),
                       )}
                     />
                   </>
                 )}
 
-                <StepCircle
-                  step={step}
-                  isAfterRejected={isAfterRejected}
-                  isVertical={false}
-                />
+                <StepCircle step={step} isAfterRejected={isAfterRejected} isVertical={false} />
               </div>
             );
           })}

@@ -1,7 +1,7 @@
-import { render, screen, setup } from "@/test/test-utils";
 import { useForm } from "react-hook-form";
-import { StepCompany } from "../step-company";
 import { toast } from "sonner";
+import { render, screen, setup } from "@/test/test-utils";
+import { StepCompany } from "../step-company";
 
 vi.mock("sonner", () => ({
   toast: { error: vi.fn(), success: vi.fn() },

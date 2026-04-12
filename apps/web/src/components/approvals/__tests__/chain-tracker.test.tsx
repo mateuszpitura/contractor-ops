@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@/test/test-utils";
 
 vi.mock("next-intl", async (importOriginal) => {
@@ -25,8 +25,7 @@ vi.mock("@/trpc/init", () => ({
 }));
 
 vi.mock("@/lib/avatar-initials", () => ({
-  getAvatarInitials: (name: string | null, email: string) =>
-    name ? name[0] : email[0],
+  getAvatarInitials: (name: string | null, email: string) => (name ? name[0] : email[0]),
 }));
 
 vi.mock("@/components/approvals/sla-badge", () => ({
@@ -111,9 +110,7 @@ describe("ChainTracker", () => {
     // APPROVED step shows icon (not number), PENDING step shows "2"
     expect(screen.getByText("2")).toBeInTheDocument();
     // Chain name
-    expect(
-      screen.getByText("chainTracker.chain(Finance Chain)"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("chainTracker.chain(Finance Chain)")).toBeInTheDocument();
     // Approver name
     expect(screen.getByText("Anna")).toBeInTheDocument();
   });

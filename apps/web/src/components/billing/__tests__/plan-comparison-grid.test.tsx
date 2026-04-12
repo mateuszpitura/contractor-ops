@@ -23,10 +23,7 @@ describe("PlanComparisonGrid", () => {
 
   it("has an accessible radiogroup role", () => {
     render(<PlanComparisonGrid onSelectPlan={vi.fn()} />);
-    expect(screen.getByRole("radiogroup")).toHaveAttribute(
-      "aria-label",
-      "Select a plan",
-    );
+    expect(screen.getByRole("radiogroup")).toHaveAttribute("aria-label", "Select a plan");
   });
 
   it("marks Pro as recommended", () => {
@@ -37,13 +34,9 @@ describe("PlanComparisonGrid", () => {
   });
 
   it("shows 'current' CTA for the current tier", () => {
-    render(
-      <PlanComparisonGrid currentTier="PRO" onSelectPlan={vi.fn()} />,
-    );
+    render(<PlanComparisonGrid currentTier="PRO" onSelectPlan={vi.fn()} />);
     // The Pro plan button should say "current plan" (from PlanCard)
-    expect(
-      screen.getByRole("button", { name: /current plan/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /current plan/i })).toBeInTheDocument();
   });
 
   it("renders choose buttons for plans without a current tier", () => {
@@ -54,9 +47,7 @@ describe("PlanComparisonGrid", () => {
   });
 
   it("shows upgrade CTA for plans above current tier", () => {
-    render(
-      <PlanComparisonGrid currentTier="STARTER" onSelectPlan={vi.fn()} />,
-    );
+    render(<PlanComparisonGrid currentTier="STARTER" onSelectPlan={vi.fn()} />);
     expect(screen.getByRole("button", { name: /current plan/i })).toBeInTheDocument();
   });
 
@@ -73,16 +64,12 @@ describe("PlanComparisonGrid", () => {
   });
 
   it("renders current plan for ENTERPRISE tier", () => {
-    render(
-      <PlanComparisonGrid currentTier="ENTERPRISE" onSelectPlan={vi.fn()} />,
-    );
+    render(<PlanComparisonGrid currentTier="ENTERPRISE" onSelectPlan={vi.fn()} />);
     expect(screen.getByRole("button", { name: /current plan/i })).toBeInTheDocument();
   });
 
   it("renders grid with three plan columns", () => {
-    const { container } = render(
-      <PlanComparisonGrid onSelectPlan={vi.fn()} />,
-    );
+    const { container } = render(<PlanComparisonGrid onSelectPlan={vi.fn()} />);
     const grid = container.querySelector("[role='radiogroup']");
     expect(grid?.children.length).toBe(3);
   });
@@ -90,9 +77,7 @@ describe("PlanComparisonGrid", () => {
   // ---- Plan select handler ----
   it("calls onSelectPlan when a plan button is clicked", async () => {
     const onSelectPlan = vi.fn();
-    const { user } = setup(
-      <PlanComparisonGrid onSelectPlan={onSelectPlan} />,
-    );
+    const { user } = setup(<PlanComparisonGrid onSelectPlan={onSelectPlan} />);
     const buttons = screen.getAllByRole("button", { name: /choose a plan/i });
     await user.click(buttons[0]!);
     expect(onSelectPlan).toHaveBeenCalledTimes(1);
@@ -101,9 +86,7 @@ describe("PlanComparisonGrid", () => {
   // ---- Plan select handler with different plans ----
   it("calls onSelectPlan for each plan button", async () => {
     const onSelectPlan = vi.fn();
-    const { user } = setup(
-      <PlanComparisonGrid onSelectPlan={onSelectPlan} />,
-    );
+    const { user } = setup(<PlanComparisonGrid onSelectPlan={onSelectPlan} />);
     const buttons = screen.getAllByRole("button", { name: /choose a plan/i });
     await user.click(buttons[0]!);
     await user.click(buttons[1]!);
@@ -113,18 +96,14 @@ describe("PlanComparisonGrid", () => {
 
   // ---- Change mode for higher tier ----
   it("shows change CTA for plans below current tier", () => {
-    render(
-      <PlanComparisonGrid currentTier="ENTERPRISE" onSelectPlan={vi.fn()} />,
-    );
+    render(<PlanComparisonGrid currentTier="ENTERPRISE" onSelectPlan={vi.fn()} />);
     // Starter and Pro should show "change" CTA, Enterprise should show "current"
     expect(screen.getByRole("button", { name: /current plan/i })).toBeInTheDocument();
   });
 
   // ---- Compact mode ----
   it("renders in compact mode when compact prop is true", () => {
-    const { container } = render(
-      <PlanComparisonGrid onSelectPlan={vi.fn()} compact />,
-    );
+    const { container } = render(<PlanComparisonGrid onSelectPlan={vi.fn()} compact />);
     const grid = container.querySelector("[role='radiogroup']");
     expect(grid?.children.length).toBe(3);
   });

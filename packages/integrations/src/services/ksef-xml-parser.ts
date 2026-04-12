@@ -1,8 +1,6 @@
+import type { KsefParsedInvoice } from "@contractor-ops/validators";
+import { ksefParsedInvoiceSchema } from "@contractor-ops/validators";
 import { XMLParser } from "fast-xml-parser";
-import {
-  ksefParsedInvoiceSchema,
-  type KsefParsedInvoice,
-} from "@contractor-ops/validators";
 
 // ---------------------------------------------------------------------------
 // FA(3) XML Parser
@@ -93,11 +91,10 @@ export function parseFa3Xml(
     const vatAmount =
       line["P_11A"] != null
         ? toGrosze(line["P_11A"])
-        : vatRateStr && !isNaN(parseFloat(vatRateStr))
+        : vatRateStr && !Number.isNaN(parseFloat(vatRateStr))
           ? Math.round(netAmount * (parseFloat(vatRateStr) / 100))
           : undefined;
-    const grossAmount =
-      vatAmount !== undefined ? netAmount + vatAmount : undefined;
+    const grossAmount = vatAmount !== undefined ? netAmount + vatAmount : undefined;
 
     return {
       lineNumber: Number(line["NrWierszaFa"] ?? 0),
@@ -113,18 +110,26 @@ export function parseFa3Xml(
   });
 
   // Totals
-  const netTotal = fa["P_13_1"] != null ? toGrosze(fa["P_13_1"]) : lines.reduce((s, l) => s + (l.netAmountGrosze ?? 0), 0);
-  const vatTotal = fa["P_14_1"] != null ? toGrosze(fa["P_14_1"]) : lines.reduce((s, l) => s + (l.vatAmountGrosze ?? 0), 0);
+  const netTotal =
+    fa["P_13_1"] != null
+      ? toGrosze(fa["P_13_1"])
+      : lines.reduce((s, l) => s + (l.netAmountGrosze ?? 0), 0);
+  const vatTotal =
+    fa["P_14_1"] != null
+      ? toGrosze(fa["P_14_1"])
+      : lines.reduce((s, l) => s + (l.vatAmountGrosze ?? 0), 0);
   const grossTotal = fa["P_15"] != null ? toGrosze(fa["P_15"]) : netTotal + vatTotal;
 
   // Payment info
   const platnosc = fa["Platnosc"] as Record<string, unknown> | undefined;
   const payment = platnosc
     ? {
-        dueDate: platnosc["TerminPlatnosci"] != null ? String(platnosc["TerminPlatnosci"]) : undefined,
-        bankAccount: (platnosc["NrRB"] ?? dig(platnosc, "RachunekBankowy", "NrRB")) != null
-          ? String(platnosc["NrRB"] ?? dig(platnosc, "RachunekBankowy", "NrRB"))
-          : undefined,
+        dueDate:
+          platnosc["TerminPlatnosci"] != null ? String(platnosc["TerminPlatnosci"]) : undefined,
+        bankAccount:
+          (platnosc["NrRB"] ?? dig(platnosc, "RachunekBankowy", "NrRB")) != null
+            ? String(platnosc["NrRB"] ?? dig(platnosc, "RachunekBankowy", "NrRB"))
+            : undefined,
         method: platnosc["FormaPlatnosci"] != null ? String(platnosc["FormaPlatnosci"]) : undefined,
       }
     : undefined;

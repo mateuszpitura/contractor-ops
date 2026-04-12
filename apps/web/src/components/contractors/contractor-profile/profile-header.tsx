@@ -1,32 +1,26 @@
 "use client";
 
-import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { FilePlus, MoreHorizontal, Pencil, Play } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { MoreHorizontal, Pencil, FilePlus, Play } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
+import { useState } from "react";
+import { toast } from "sonner";
+import { ContractWizardDialog } from "@/components/contracts/contract-wizard/wizard-dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { getAvatarInitials } from "@/lib/avatar-initials";
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ContractWizardDialog } from "@/components/contracts/contract-wizard/wizard-dialog";
 import { TemplatePicker } from "@/components/workflows/template-picker-dialog";
+import { getAvatarInitials } from "@/lib/avatar-initials";
+import { trpc } from "@/trpc/init";
 
-type LifecycleStage =
-  | "DRAFT"
-  | "ONBOARDING"
-  | "ACTIVE"
-  | "OFFBOARDING"
-  | "ENDED";
+type LifecycleStage = "DRAFT" | "ONBOARDING" | "ACTIVE" | "OFFBOARDING" | "ENDED";
 
 type ProfileHeaderProps = {
   contractor: {
@@ -62,9 +56,7 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
   const lifecycleMutation = useMutation(
     trpc.contractor.updateLifecycleStage.mutationOptions({
       onSuccess: (_data, variables) => {
-        toast.success(
-          t("lifecycle.transitioned", { stage: variables.stage })
-        );
+        toast.success(t("lifecycle.transitioned", { stage: variables.stage }));
         queryClient.invalidateQueries({
           queryKey: trpc.contractor.getById.queryKey(),
         });
@@ -76,7 +68,7 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
             : "";
         toast.error(message || tToast("statusFailed"));
       },
-    })
+    }),
   );
 
   const archiveMutation = useMutation(
@@ -94,7 +86,7 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
             : "";
         toast.error(message || tToast("archiveFailed"));
       },
-    })
+    }),
   );
 
   const stage = contractor.lifecycleStage as LifecycleStage;
@@ -113,13 +105,8 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
       <div className="flex items-center gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-[20px] font-semibold leading-tight">
-              {contractor.displayName}
-            </h1>
-            <Badge
-              variant="secondary"
-              className={lifecycleBadgeStyles[stage] ?? ""}
-            >
+            <h1 className="text-[20px] font-semibold leading-tight">{contractor.displayName}</h1>
+            <Badge variant="secondary" className={lifecycleBadgeStyles[stage] ?? ""}>
               {t(`lifecycle.${stage}` as Parameters<typeof t>[0]) ?? stage}
             </Badge>
             <Badge variant="secondary" className="bg-secondary text-secondary-foreground">
@@ -132,9 +119,7 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
                 {contractor.owner.image && (
                   <AvatarImage src={contractor.owner.image} alt={contractor.owner.name ?? ""} />
                 )}
-                <AvatarFallback>
-                  {getAvatarInitials(contractor.owner.name)}
-                </AvatarFallback>
+                <AvatarFallback>{getAvatarInitials(contractor.owner.name)}</AvatarFallback>
               </Avatar>
               <span className="text-sm text-muted-foreground">
                 {contractor.owner.name ?? t("unknown")}
@@ -145,11 +130,7 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
       </div>
 
       <div className="flex items-center gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => toast.info(t("actions.editComingSoon"))}
-        >
+        <Button variant="outline" size="sm" onClick={() => toast.info(t("actions.editComingSoon"))}>
           <Pencil className="me-1.5 size-3.5" />
           {t("actions.edit")}
         </Button>
@@ -238,11 +219,7 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
               </DropdownMenuItem>
             )}
             {stage === "ENDED" && (
-              <DropdownMenuItem
-                disabled={isPending}
-                variant="destructive"
-                onSelect={handleArchive}
-              >
+              <DropdownMenuItem disabled={isPending} variant="destructive" onSelect={handleArchive}>
                 {t("actions.archive")}
               </DropdownMenuItem>
             )}

@@ -1,20 +1,19 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { useTranslations } from "next-intl";
-
+import { z } from "zod";
+import { SocialButtons } from "@/components/auth/social-buttons";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { SocialButtons } from "@/components/auth/social-buttons";
-import { authClient } from "@/lib/auth-client";
 import { useRouter } from "@/i18n/navigation";
+import { authClient } from "@/lib/auth-client";
 
 interface InviteAcceptFormProps {
   token: string;
@@ -71,10 +70,9 @@ export function InviteAcceptForm({
       }
 
       // Step 2: Accept invitation
-      const { error: acceptError } =
-        await authClient.organization.acceptInvitation({
-          invitationId: token,
-        });
+      const { error: acceptError } = await authClient.organization.acceptInvitation({
+        invitationId: token,
+      });
 
       if (acceptError) {
         toast.error(acceptError.message ?? tToast("acceptInviteFailed"));
@@ -95,9 +93,7 @@ export function InviteAcceptForm({
         <h1 className="font-display text-[28px] font-semibold leading-[1.2] tracking-tight">
           {t("title", { orgName })}
         </h1>
-        <p className="text-sm text-muted-foreground">
-          {t("subtitle")}
-        </p>
+        <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -105,13 +101,7 @@ export function InviteAcceptForm({
             <Label htmlFor="email" className="text-[13px]">
               {t("emailLabel")}
             </Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              disabled
-              className="bg-muted"
-            />
+            <Input id="email" type="email" value={email} disabled className="bg-muted" />
           </div>
 
           <div className="space-y-2">
@@ -127,9 +117,7 @@ export function InviteAcceptForm({
               {...register("password")}
             />
             {errors.password && (
-              <p className="text-sm text-destructive">
-                {errors.password.message}
-              </p>
+              <p className="text-sm text-destructive">{errors.password.message}</p>
             )}
           </div>
 

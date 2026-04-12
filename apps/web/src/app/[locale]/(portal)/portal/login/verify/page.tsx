@@ -1,16 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import { Loader2, AlertCircle } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { AlertCircle, Loader2 } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+import { OrgPicker } from "@/components/portal/org-picker";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { OrgPicker } from "@/components/portal/org-picker";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -78,13 +77,9 @@ export default function PortalVerifyPage() {
 
   const [state, setState] = useState<VerifyState>({ status: "verifying" });
 
-  const verifyMagicLink = useMutation(
-    trpc.portal.verifyMagicLink.mutationOptions(),
-  );
+  const verifyMagicLink = useMutation(trpc.portal.verifyMagicLink.mutationOptions());
 
-  const selectOrg = useMutation(
-    trpc.portal.selectOrg.mutationOptions(),
-  );
+  const selectOrg = useMutation(trpc.portal.selectOrg.mutationOptions());
 
   // Verify token on mount
   useEffect(() => {
@@ -104,10 +99,7 @@ export default function PortalVerifyPage() {
         if (!result.needsOrgPicker && result.session) {
           // Single org: set cookie and redirect
           try {
-            await setSessionCookie(
-              result.session.rawToken,
-              result.session.expiresAt.toISOString(),
-            );
+            await setSessionCookie(result.session.rawToken, result.session.expiresAt.toISOString());
             router.push("/portal");
           } catch {
             setState({
@@ -168,9 +160,7 @@ export default function PortalVerifyPage() {
         <Card className="w-full max-w-[400px]">
           <CardContent className="flex flex-col items-center gap-3 py-12">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">
-              {t("verify.verifying")}
-            </p>
+            <p className="text-sm text-muted-foreground">{t("verify.verifying")}</p>
           </CardContent>
         </Card>
       </div>
@@ -187,11 +177,7 @@ export default function PortalVerifyPage() {
               <AlertCircle className="h-6 w-6 text-destructive" />
             </div>
             <p className="text-sm text-muted-foreground">{state.message}</p>
-            <Button
-              variant="outline"
-              className="mt-2"
-              onClick={() => router.push("/portal/login")}
-            >
+            <Button variant="outline" className="mt-2" onClick={() => router.push("/portal/login")}>
               {t("verify.backToLogin")}
             </Button>
           </CardContent>

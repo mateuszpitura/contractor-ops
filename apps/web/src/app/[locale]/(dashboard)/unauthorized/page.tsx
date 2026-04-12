@@ -14,9 +14,7 @@ export default function UnauthorizedPage() {
       <div className="space-y-4">
         <p className="font-display text-6xl font-bold text-muted-foreground/20">{t("code")}</p>
         <h1 className="font-display text-[22px] font-semibold">{t("heading")}</h1>
-        <p className="max-w-md text-sm text-muted-foreground">
-          {t("body")}
-        </p>
+        <p className="max-w-md text-sm text-muted-foreground">{t("body")}</p>
         <Button render={<Link href="/" />} className="mt-4">
           {t("cta")}
         </Button>

@@ -1,11 +1,11 @@
+import { prisma } from "@contractor-ops/db";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import { createAuthMiddleware, APIError } from "better-auth/api";
+import { APIError, createAuthMiddleware } from "better-auth/api";
 import { nextCookies } from "better-auth/next-js";
 import { admin } from "better-auth/plugins/admin";
 import { magicLink } from "better-auth/plugins/magic-link";
 import { organization } from "better-auth/plugins/organization";
-import { prisma } from "@contractor-ops/db";
 import { ac } from "./permissions.js";
 import { roles } from "./roles.js";
 
@@ -65,9 +65,7 @@ export const auth = betterAuth({
         });
 
         if (user?.lockedUntil && user.lockedUntil > new Date()) {
-          const minutesLeft = Math.ceil(
-            (user.lockedUntil.getTime() - Date.now()) / 60_000,
-          );
+          const minutesLeft = Math.ceil((user.lockedUntil.getTime() - Date.now()) / 60_000);
           throw new APIError("TOO_MANY_REQUESTS", {
             message: `Account locked. Try again in ${minutesLeft} minute${minutesLeft === 1 ? "" : "s"}.`,
           });
@@ -130,9 +128,7 @@ export const auth = betterAuth({
       },
       async sendInvitationEmail(data) {
         if (process.env.NODE_ENV === "development") {
-          console.log(
-            `[DEV] Invitation email to ${data.email}: ${data.invitation.id}`,
-          );
+          console.log(`[DEV] Invitation email to ${data.email}: ${data.invitation.id}`);
           return;
         }
         // TODO: Implement production email sending via Resend (Phase 7)

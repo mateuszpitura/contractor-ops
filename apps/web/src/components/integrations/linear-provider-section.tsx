@@ -1,16 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
 import { AlertTriangle } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
+import { useTranslations } from "next-intl";
+import { useEffect, useState } from "react";
 import { FeatureGate } from "@/components/billing/feature-gate";
 import { ProviderConnectionCard } from "@/components/settings/provider-connection-card";
+import { Button } from "@/components/ui/button";
+import { trpc } from "@/trpc/init";
 import { LinearLogo } from "./linear-logo";
 import { LinearStatusMappingDialog } from "./linear-status-mapping-dialog";
-import { Button } from "@/components/ui/button";
 
 // ---------------------------------------------------------------------------
 // LinearProviderSection
@@ -20,13 +19,8 @@ export function LinearProviderSection() {
   const t = useTranslations("Settings.integrations.linear");
   const [mappingOpen, setMappingOpen] = useState(false);
 
-  const healthQuery = useQuery(
-    trpc.integration.getHealth.queryOptions({ provider: "linear" }),
-  );
-  const health = healthQuery.data as
-    | { status: string; connectionId?: string }
-    | null
-    | undefined;
+  const healthQuery = useQuery(trpc.integration.getHealth.queryOptions({ provider: "linear" }));
+  const health = healthQuery.data as { status: string; connectionId?: string } | null | undefined;
   const isConnected = health?.status === "CONNECTED";
   const isPendingMapping = health?.status === "PENDING_MAPPING";
   const needsReauth = health?.status === "REAUTH_REQUIRED";
@@ -71,10 +65,7 @@ export function LinearProviderSection() {
           </div>
         )}
 
-        <LinearStatusMappingDialog
-          open={mappingOpen}
-          onOpenChange={setMappingOpen}
-        />
+        <LinearStatusMappingDialog open={mappingOpen} onOpenChange={setMappingOpen} />
       </div>
     </FeatureGate>
   );

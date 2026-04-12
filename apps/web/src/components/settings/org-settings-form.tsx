@@ -1,15 +1,16 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Loader2, Save } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
-import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
-import { useLocale, useTranslations } from "next-intl";
+import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -19,7 +20,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/trpc/init";
 
@@ -51,12 +51,13 @@ function getAllTimezones(): Array<{ value: string; label: string }> {
     return zones.map((tz) => {
       // Format: "Europe/Warsaw" → "Europe/Warsaw (GMT+1)"
       try {
-        const offset = new Intl.DateTimeFormat("en", {
-          timeZone: tz,
-          timeZoneName: "shortOffset",
-        })
-          .formatToParts(new Date())
-          .find((p) => p.type === "timeZoneName")?.value ?? "";
+        const offset =
+          new Intl.DateTimeFormat("en", {
+            timeZone: tz,
+            timeZoneName: "shortOffset",
+          })
+            .formatToParts(new Date())
+            .find((p) => p.type === "timeZoneName")?.value ?? "";
         return { value: tz, label: `${tz.replace(/_/g, " ")} (${offset})` };
       } catch {
         return { value: tz, label: tz.replace(/_/g, " ") };
@@ -77,7 +78,28 @@ function getAllTimezones(): Array<{ value: string; label: string }> {
 /** All currencies via Intl.DisplayNames */
 function getAllCurrencies(): Array<{ value: string; label: string }> {
   // Common currencies first, then alphabetical
-  const common = ["PLN", "EUR", "USD", "GBP", "CHF", "CZK", "SEK", "NOK", "DKK", "HUF", "RON", "BGN", "HRK", "UAH", "JPY", "CNY", "AUD", "CAD", "BRL", "INR"];
+  const common = [
+    "PLN",
+    "EUR",
+    "USD",
+    "GBP",
+    "CHF",
+    "CZK",
+    "SEK",
+    "NOK",
+    "DKK",
+    "HUF",
+    "RON",
+    "BGN",
+    "HRK",
+    "UAH",
+    "JPY",
+    "CNY",
+    "AUD",
+    "CAD",
+    "BRL",
+    "INR",
+  ];
   try {
     const displayNames = new Intl.DisplayNames(["en"], { type: "currency" });
     return common.map((code) => ({
@@ -92,11 +114,55 @@ function getAllCurrencies(): Array<{ value: string; label: string }> {
 /** All countries via Intl.DisplayNames */
 function getAllCountries(): Array<{ value: string; label: string }> {
   const codes = [
-    "PL", "DE", "GB", "US", "FR", "IT", "ES", "NL", "BE", "AT", "CH",
-    "CZ", "SK", "HU", "RO", "BG", "HR", "SI", "LT", "LV", "EE",
-    "SE", "NO", "DK", "FI", "IE", "PT", "GR", "UA", "CA", "AU",
-    "JP", "CN", "IN", "BR", "MX", "KR", "SG", "HK", "NZ", "IL",
-    "AE", "SA", "ZA", "TR", "AR", "CL", "CO", "PE",
+    "PL",
+    "DE",
+    "GB",
+    "US",
+    "FR",
+    "IT",
+    "ES",
+    "NL",
+    "BE",
+    "AT",
+    "CH",
+    "CZ",
+    "SK",
+    "HU",
+    "RO",
+    "BG",
+    "HR",
+    "SI",
+    "LT",
+    "LV",
+    "EE",
+    "SE",
+    "NO",
+    "DK",
+    "FI",
+    "IE",
+    "PT",
+    "GR",
+    "UA",
+    "CA",
+    "AU",
+    "JP",
+    "CN",
+    "IN",
+    "BR",
+    "MX",
+    "KR",
+    "SG",
+    "HK",
+    "NZ",
+    "IL",
+    "AE",
+    "SA",
+    "ZA",
+    "TR",
+    "AR",
+    "CL",
+    "CO",
+    "PE",
   ];
   try {
     const displayNames = new Intl.DisplayNames(["en"], { type: "region" });
@@ -107,7 +173,9 @@ function getAllCountries(): Array<{ value: string; label: string }> {
       }))
       .sort((a, b) => a.label.localeCompare(b.label));
   } catch {
-    return codes.map((code) => ({ value: code, label: code })).sort((a, b) => a.label.localeCompare(b.label));
+    return codes
+      .map((code) => ({ value: code, label: code }))
+      .sort((a, b) => a.label.localeCompare(b.label));
   }
 }
 
@@ -237,14 +305,8 @@ export function OrgSettingsForm() {
             <Label htmlFor="name" className="text-[13px]">
               {t("fields.orgName")}
             </Label>
-            <Input
-              id="name"
-              disabled={updateMutation.isPending}
-              {...register("name")}
-            />
-            {errors.name && (
-              <p className="text-sm text-destructive">{errors.name.message}</p>
-            )}
+            <Input id="name" disabled={updateMutation.isPending} {...register("name")} />
+            {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
           </div>
 
           {/* Legal name */}
@@ -253,11 +315,7 @@ export function OrgSettingsForm() {
               {t("fields.legalName")}{" "}
               <span className="text-muted-foreground">{t("fields.legalNameOptional")}</span>
             </Label>
-            <Input
-              id="legalName"
-              disabled={updateMutation.isPending}
-              {...register("legalName")}
-            />
+            <Input id="legalName" disabled={updateMutation.isPending} {...register("legalName")} />
           </div>
 
           {/* Country */}
@@ -404,9 +462,7 @@ export function OrgSettingsForm() {
               {...register("billingEmail")}
             />
             {errors.billingEmail && (
-              <p className="text-sm text-destructive">
-                {errors.billingEmail.message}
-              </p>
+              <p className="text-sm text-destructive">{errors.billingEmail.message}</p>
             )}
           </div>
         </CardContent>

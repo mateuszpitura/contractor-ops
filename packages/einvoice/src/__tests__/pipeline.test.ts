@@ -1,10 +1,10 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { runPipeline } from "../engine/pipeline.js";
-import type { EInvoiceProfile, Signable, QRCodeable } from "../types/profile.js";
-import type { EInvoice } from "../types/invoice.js";
-import type { ValidationResult } from "../types/validation.js";
-import type { ComplianceStatus } from "../types/compliance.js";
 import { KsefProfile } from "../profiles/ksef/index.js";
+import type { ComplianceStatus } from "../types/compliance.js";
+import type { EInvoice } from "../types/invoice.js";
+import type { EInvoiceProfile, QRCodeable, Signable } from "../types/profile.js";
+import type { ValidationResult } from "../types/validation.js";
 
 // ---------------------------------------------------------------------------
 // Test Invoice
@@ -165,12 +165,7 @@ describe("runPipeline", () => {
     });
     expect(result.signedXml).toBe("<signed-xml/>");
     expect(result.qrData).toEqual(Buffer.from("QR_DATA"));
-    expect(result.stepsExecuted).toEqual([
-      "generate",
-      "validate",
-      "sign",
-      "qrCode",
-    ]);
+    expect(result.stepsExecuted).toEqual(["generate", "validate", "sign", "qrCode"]);
   });
 
   it("validation failure stops pipeline before sign/QR", async () => {
@@ -187,9 +182,7 @@ describe("runPipeline", () => {
     const result = await runPipeline(profile, testInvoice);
     expect(result.signedXml).toBeNull();
     expect(result.validation.warnings).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ code: "SIGN_SKIPPED" }),
-      ]),
+      expect.arrayContaining([expect.objectContaining({ code: "SIGN_SKIPPED" })]),
     );
   });
 

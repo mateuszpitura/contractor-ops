@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import type { EInvoice } from "../types/invoice.js";
 
 /** Test fixture: Saudi SAR invoice with 15% VAT */
@@ -65,9 +65,7 @@ function createTestInvoice(
 
 describe("ZATCA Profile", () => {
   it("has profileId=zatca and country=SA", async () => {
-    const { ZatcaProfile } = await import(
-      "../profiles/zatca/index.js"
-    );
+    const { ZatcaProfile } = await import("../profiles/zatca/index.js");
     const profile = new ZatcaProfile();
     expect(profile.profileId).toBe("zatca");
     expect(profile.country).toBe("SA");
@@ -76,9 +74,7 @@ describe("ZATCA Profile", () => {
 
 describe("ZATCA UBL 2.1 Generator", () => {
   it("produces XML with ProfileID containing reporting:1.0 for simplified", async () => {
-    const { generateZatcaXml } = await import(
-      "../profiles/zatca/generator.js"
-    );
+    const { generateZatcaXml } = await import("../profiles/zatca/generator.js");
     const invoice = createTestInvoice({
       extensions: {
         invoiceType: "simplified",
@@ -93,18 +89,14 @@ describe("ZATCA UBL 2.1 Generator", () => {
   });
 
   it("produces XML with ProfileID containing clearance:1.0 for standard", async () => {
-    const { generateZatcaXml } = await import(
-      "../profiles/zatca/generator.js"
-    );
+    const { generateZatcaXml } = await import("../profiles/zatca/generator.js");
     const invoice = createTestInvoice();
     const xml = generateZatcaXml(invoice);
     expect(xml).toContain("clearance:1.0");
   });
 
   it("contains UUID element", async () => {
-    const { generateZatcaXml } = await import(
-      "../profiles/zatca/generator.js"
-    );
+    const { generateZatcaXml } = await import("../profiles/zatca/generator.js");
     const invoice = createTestInvoice();
     const xml = generateZatcaXml(invoice);
     expect(xml).toContain("<cbc:UUID>");
@@ -112,9 +104,7 @@ describe("ZATCA UBL 2.1 Generator", () => {
   });
 
   it("contains AdditionalDocumentReference for ICV and PIH", async () => {
-    const { generateZatcaXml } = await import(
-      "../profiles/zatca/generator.js"
-    );
+    const { generateZatcaXml } = await import("../profiles/zatca/generator.js");
     const invoice = createTestInvoice();
     const xml = generateZatcaXml(invoice);
     expect(xml).toContain("ICV");
@@ -122,9 +112,7 @@ describe("ZATCA UBL 2.1 Generator", () => {
   });
 
   it("uses InvoiceTypeCode 388 with subtype @name attribute", async () => {
-    const { generateZatcaXml } = await import(
-      "../profiles/zatca/generator.js"
-    );
+    const { generateZatcaXml } = await import("../profiles/zatca/generator.js");
     const invoice = createTestInvoice();
     const xml = generateZatcaXml(invoice);
     expect(xml).toContain("388");
@@ -134,9 +122,7 @@ describe("ZATCA UBL 2.1 Generator", () => {
 
 describe("ZATCA Zod Schemas", () => {
   it("zatcaTaxDetailsSchema rejects invalid VAT number", async () => {
-    const { zatcaTaxDetailsSchema } = await import(
-      "../profiles/zatca/schemas.js"
-    );
+    const { zatcaTaxDetailsSchema } = await import("../profiles/zatca/schemas.js");
     const result = zatcaTaxDetailsSchema.safeParse({
       vatNumber: "123",
       orgNameArabic: "شركة",
@@ -150,9 +136,7 @@ describe("ZATCA Zod Schemas", () => {
   });
 
   it("zatcaTaxDetailsSchema accepts valid 15-digit VAT number", async () => {
-    const { zatcaTaxDetailsSchema } = await import(
-      "../profiles/zatca/schemas.js"
-    );
+    const { zatcaTaxDetailsSchema } = await import("../profiles/zatca/schemas.js");
     const result = zatcaTaxDetailsSchema.safeParse({
       vatNumber: "300075588700003",
       orgNameArabic: "شركة",

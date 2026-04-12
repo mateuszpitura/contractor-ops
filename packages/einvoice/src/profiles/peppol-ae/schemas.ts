@@ -10,10 +10,7 @@ import { z } from "zod";
  */
 export const peppolParticipantIdSchema = z
   .string()
-  .regex(
-    /^0192:\d{15}$/,
-    "Invalid UAE Peppol Participant ID (expected 0192:NNNNNNNNNNNNNNN)",
-  );
+  .regex(/^0192:\d{15}$/, "Invalid UAE Peppol Participant ID (expected 0192:NNNNNNNNNNNNNNN)");
 
 /**
  * Peppol connection configuration.
@@ -25,9 +22,7 @@ export const peppolConnectionConfigSchema = z.object({
   environment: z.enum(["sandbox", "production"]),
 });
 
-export type PeppolConnectionConfig = z.infer<
-  typeof peppolConnectionConfigSchema
->;
+export type PeppolConnectionConfig = z.infer<typeof peppolConnectionConfigSchema>;
 
 /**
  * Peppol transmission status values.
@@ -39,6 +34,4 @@ export const peppolTransmissionStatusSchema = z.enum([
   "failed",
 ]);
 
-export type PeppolTransmissionStatusType = z.infer<
-  typeof peppolTransmissionStatusSchema
->;
+export type PeppolTransmissionStatusType = z.infer<typeof peppolTransmissionStatusSchema>;

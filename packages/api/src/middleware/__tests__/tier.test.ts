@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import { TRPCError } from "@trpc/server";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockGetSubscription = vi.fn();
 
@@ -14,9 +14,7 @@ vi.mock("@sentry/nextjs", () => {
     end: vi.fn(),
   };
   return {
-    startSpan: vi.fn(
-      (_o: unknown, fn: (span: typeof mockSpan) => unknown) => fn(mockSpan),
-    ),
+    startSpan: vi.fn((_o: unknown, fn: (span: typeof mockSpan) => unknown) => fn(mockSpan)),
     captureException: vi.fn(),
   };
 });
@@ -42,7 +40,7 @@ vi.mock("@contractor-ops/db", () => ({
 
 import { t } from "../../init.js";
 import { tenantProcedure } from "../tenant.js";
-import { requireTier, proProcedure, enterpriseProcedure } from "../tier.js";
+import { enterpriseProcedure, proProcedure, requireTier } from "../tier.js";
 
 function authedWithOrg() {
   const userId = "user_tier";
@@ -98,15 +96,9 @@ function makeSub(tier: string, status: string = "ACTIVE") {
 
 describe("requireTier", () => {
   const router = t.router({
-    proGated: tenantProcedure
-      .use(requireTier("PRO"))
-      .query(() => "pro-ok"),
-    enterpriseGated: tenantProcedure
-      .use(requireTier("ENTERPRISE"))
-      .query(() => "enterprise-ok"),
-    starterGated: tenantProcedure
-      .use(requireTier("STARTER"))
-      .query(() => "starter-ok"),
+    proGated: tenantProcedure.use(requireTier("PRO")).query(() => "pro-ok"),
+    enterpriseGated: tenantProcedure.use(requireTier("ENTERPRISE")).query(() => "enterprise-ok"),
+    starterGated: tenantProcedure.use(requireTier("STARTER")).query(() => "starter-ok"),
   });
   const createCaller = t.createCallerFactory(router);
 
@@ -116,17 +108,13 @@ describe("requireTier", () => {
 
   it("passes when org has PRO subscription and PRO is required", async () => {
     mockGetSubscription.mockResolvedValue(makeSub("PRO"));
-    await expect(createCaller(authedWithOrg()).proGated()).resolves.toBe(
-      "pro-ok",
-    );
+    await expect(createCaller(authedWithOrg()).proGated()).resolves.toBe("pro-ok");
     expect(mockGetSubscription).toHaveBeenCalledWith("org_tier");
   });
 
   it("passes when org has ENTERPRISE subscription and PRO is required (higher tier)", async () => {
     mockGetSubscription.mockResolvedValue(makeSub("ENTERPRISE"));
-    await expect(createCaller(authedWithOrg()).proGated()).resolves.toBe(
-      "pro-ok",
-    );
+    await expect(createCaller(authedWithOrg()).proGated()).resolves.toBe("pro-ok");
   });
 
   it("throws FORBIDDEN when org has STARTER subscription and PRO is required", async () => {
@@ -199,9 +187,7 @@ describe("requireTier", () => {
 
   it("passes for TRIALING subscription when STARTER tier is required", async () => {
     mockGetSubscription.mockResolvedValue(makeSub("STARTER", "TRIALING"));
-    await expect(
-      createCaller(authedWithOrg()).starterGated(),
-    ).resolves.toBe("starter-ok");
+    await expect(createCaller(authedWithOrg()).starterGated()).resolves.toBe("starter-ok");
   });
 });
 
@@ -218,11 +204,7 @@ describe("proProcedure and enterpriseProcedure", () => {
 
   it("proProcedure and enterpriseProcedure are exported and chain correctly from tenantProcedure", async () => {
     mockGetSubscription.mockResolvedValue(makeSub("ENTERPRISE"));
-    await expect(createCaller(authedWithOrg()).proPing()).resolves.toBe(
-      "pro-ping",
-    );
-    await expect(
-      createCaller(authedWithOrg()).enterprisePing(),
-    ).resolves.toBe("enterprise-ping");
+    await expect(createCaller(authedWithOrg()).proPing()).resolves.toBe("pro-ping");
+    await expect(createCaller(authedWithOrg()).enterprisePing()).resolves.toBe("enterprise-ping");
   });
 });

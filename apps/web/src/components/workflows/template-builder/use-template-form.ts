@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useCallback, useEffect } from "react";
+import { useFieldArray, useForm } from "react-hook-form";
+import { z } from "zod";
 
 // ---------------------------------------------------------------------------
 // Local schema mirroring templateCreateSchema from validators package
@@ -68,13 +68,7 @@ const taskSchema = z.object({
 
 export const templateFormSchema = z.object({
   name: z.string().min(1, "Template name is required").max(255),
-  type: z.enum([
-    "ONBOARDING",
-    "OFFBOARDING",
-    "DOCUMENT_COLLECTION",
-    "COMPLIANCE_REVIEW",
-    "CUSTOM",
-  ]),
+  type: z.enum(["ONBOARDING", "OFFBOARDING", "DOCUMENT_COLLECTION", "COMPLIANCE_REVIEW", "CUSTOM"]),
   description: z.string().optional(),
   tasks: z.array(taskSchema),
 });

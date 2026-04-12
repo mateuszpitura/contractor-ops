@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { optionalString, optionalFk, optionalPositiveInt } from "./helpers.js";
+import { optionalFk, optionalPositiveInt, optionalString } from "./helpers.js";
 
 // ---------------------------------------------------------------------------
 // Prisma enum mirrors (string unions — validators package has no Prisma dep)
@@ -42,13 +42,7 @@ const rateTypeEnum = z.enum([
   "PER_DELIVERABLE",
 ]);
 
-const invoiceCycleEnum = z.enum([
-  "WEEKLY",
-  "BIWEEKLY",
-  "MONTHLY",
-  "ON_DELIVERABLE",
-  "AD_HOC",
-]);
+const invoiceCycleEnum = z.enum(["WEEKLY", "BIWEEKLY", "MONTHLY", "ON_DELIVERABLE", "AD_HOC"]);
 
 const complianceRiskLevelEnum = z.enum(["LOW", "MEDIUM", "HIGH"]);
 
@@ -119,10 +113,13 @@ const contractUpdateBaseSchema = z.object({
   expectedHoursPerPeriod: z.number().positive().nullable().optional(),
   paymentTermsDays: z.number().int().positive().nullable().optional(),
   invoiceCycle: invoiceCycleEnum.nullable().optional(),
-  internalOwnerUserId: z.preprocess((v) => v === "" ? null : v, z.string().min(1).nullable().optional()),
-  teamId: z.preprocess((v) => v === "" ? null : v, z.string().min(1).nullable().optional()),
-  projectId: z.preprocess((v) => v === "" ? null : v, z.string().min(1).nullable().optional()),
-  costCenterId: z.preprocess((v) => v === "" ? null : v, z.string().min(1).nullable().optional()),
+  internalOwnerUserId: z.preprocess(
+    (v) => (v === "" ? null : v),
+    z.string().min(1).nullable().optional(),
+  ),
+  teamId: z.preprocess((v) => (v === "" ? null : v), z.string().min(1).nullable().optional()),
+  projectId: z.preprocess((v) => (v === "" ? null : v), z.string().min(1).nullable().optional()),
+  costCenterId: z.preprocess((v) => (v === "" ? null : v), z.string().min(1).nullable().optional()),
   notes: z.string().nullable().optional(),
 });
 
@@ -165,9 +162,7 @@ export const contractStatusTransitionSchema = z.object({
   targetStatus: contractStatusEnum,
 });
 
-export type ContractStatusTransitionInput = z.infer<
-  typeof contractStatusTransitionSchema
->;
+export type ContractStatusTransitionInput = z.infer<typeof contractStatusTransitionSchema>;
 
 /**
  * Schema for creating a contract amendment.
@@ -190,9 +185,7 @@ export const contractExpiryReminderSchema = z.object({
   reminderDaysBefore: z.array(z.number().int().positive()),
 });
 
-export type ContractExpiryReminderInput = z.infer<
-  typeof contractExpiryReminderSchema
->;
+export type ContractExpiryReminderInput = z.infer<typeof contractExpiryReminderSchema>;
 
 /**
  * Schema for org-level default expiry reminder intervals.
@@ -202,6 +195,4 @@ export const orgExpiryReminderDefaultsSchema = z.object({
   reminderDaysBefore: z.array(z.number().int().positive()).min(1).max(10),
 });
 
-export type OrgExpiryReminderDefaultsInput = z.infer<
-  typeof orgExpiryReminderDefaultsSchema
->;
+export type OrgExpiryReminderDefaultsInput = z.infer<typeof orgExpiryReminderDefaultsSchema>;

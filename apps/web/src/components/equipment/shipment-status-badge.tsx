@@ -35,10 +35,7 @@ interface ShipmentStatusBadgeProps {
 /**
  * Badge displaying shipment status with appropriate color variant.
  */
-export function ShipmentStatusBadge({
-  status,
-  className,
-}: ShipmentStatusBadgeProps) {
+export function ShipmentStatusBadge({ status, className }: ShipmentStatusBadgeProps) {
   const t = useTranslations("Equipment.shipment.status");
   const variant = STATUS_VARIANT_MAP[status as ShipmentStatus] ?? "secondary";
   const label = t(status as Parameters<typeof t>[0]);

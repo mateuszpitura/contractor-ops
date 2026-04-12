@@ -3,14 +3,12 @@
  * This route remains for backward compatibility during Slack app URL migration.
  * Remove after Slack app configuration is updated to use the new OAuth callback URL.
  */
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+
 import { createHmac, timingSafeEqual } from "node:crypto";
+import { encryptToken, syncWorkspaceUsers } from "@contractor-ops/api/services/slack-client";
 import { prisma } from "@contractor-ops/db";
-import {
-  encryptToken,
-  syncWorkspaceUsers,
-} from "@contractor-ops/api/services/slack-client";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -39,17 +37,12 @@ function verifyState(stateParam: string): OAuthState | null {
     if (!signingSecret) return null;
 
     const payload = `${decoded.orgId}:${decoded.userId}:${decoded.timestamp}`;
-    const expectedSig = createHmac("sha256", signingSecret)
-      .update(payload)
-      .digest("hex");
+    const expectedSig = createHmac("sha256", signingSecret).update(payload).digest("hex");
 
     // Timing-safe comparison
     const sigBuffer = Buffer.from(decoded.sig, "hex");
     const expectedBuffer = Buffer.from(expectedSig, "hex");
-    if (
-      sigBuffer.length !== expectedBuffer.length ||
-      !timingSafeEqual(sigBuffer, expectedBuffer)
-    ) {
+    if (sigBuffer.length !== expectedBuffer.length || !timingSafeEqual(sigBuffer, expectedBuffer)) {
       return null;
     }
 

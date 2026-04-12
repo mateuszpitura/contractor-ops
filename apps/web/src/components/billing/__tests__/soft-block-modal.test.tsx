@@ -21,18 +21,14 @@ vi.mock("../plan-comparison-grid", () => ({
 describe("SoftBlockModal", () => {
   it("does not render content when closed", () => {
     render(<SoftBlockModal isOpen={false} onSelectPlan={vi.fn()} />);
-    expect(
-      screen.queryByText("Your trial has ended"),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText("Your trial has ended")).not.toBeInTheDocument();
   });
 
   it("renders title and description when open", () => {
     render(<SoftBlockModal isOpen={true} onSelectPlan={vi.fn()} />);
     expect(screen.getByText("Your trial has ended")).toBeInTheDocument();
     expect(
-      screen.getByText(
-        "Your data is safe. Choose a plan to continue using Contractor Ops.",
-      ),
+      screen.getByText("Your data is safe. Choose a plan to continue using Contractor Ops."),
     ).toBeInTheDocument();
   });
 

@@ -1,8 +1,8 @@
-import type { ReactNode } from "react";
+import { validatePortalSession } from "@contractor-ops/api/services/portal-session";
+import { prisma } from "@contractor-ops/db";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { prisma } from "@contractor-ops/db";
-import { validatePortalSession } from "@contractor-ops/api/services/portal-session";
+import type { ReactNode } from "react";
 import { PortalTopBar } from "@/components/portal/portal-top-bar";
 
 /**
@@ -19,11 +19,7 @@ import { PortalTopBar } from "@/components/portal/portal-top-bar";
  * Does NOT use SidebarProvider or AppSidebar (D-01 -- no sidebar).
  * Content constrained to max-w-[1200px] with centered layout.
  */
-export default async function PortalLayout({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export default async function PortalLayout({ children }: { children: ReactNode }) {
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get("portal_session")?.value;
   const headerStore = await headers();
@@ -37,16 +33,13 @@ export default async function PortalLayout({
         select: { name: true, logo: true, settingsJson: true },
       });
       if (org) {
-        const settings =
-          (org.settingsJson as Record<string, unknown>) ?? {};
+        const settings = (org.settingsJson as Record<string, unknown>) ?? {};
         const brandColor = (settings.brandColor as string) ?? null;
         return (
           <div
             className="min-h-screen bg-background"
             style={
-              brandColor
-                ? ({ "--brand-accent": brandColor } as React.CSSProperties)
-                : undefined
+              brandColor ? ({ "--brand-accent": brandColor } as React.CSSProperties) : undefined
             }
           >
             {children}
@@ -71,18 +64,13 @@ export default async function PortalLayout({
   });
 
   // Extract brand color from org settings for CSS custom property injection (D-12)
-  const settings =
-    (organization?.settingsJson as Record<string, unknown>) ?? {};
+  const settings = (organization?.settingsJson as Record<string, unknown>) ?? {};
   const brandColor = (settings.brandColor as string) ?? null;
 
   return (
     <div
       className="min-h-screen bg-background"
-      style={
-        brandColor
-          ? ({ "--brand-accent": brandColor } as React.CSSProperties)
-          : undefined
-      }
+      style={brandColor ? ({ "--brand-accent": brandColor } as React.CSSProperties) : undefined}
     >
       <a
         href="#portal-content"

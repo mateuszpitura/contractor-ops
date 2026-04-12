@@ -136,9 +136,7 @@ export async function lookupWorkflowStatus(
   const mappings = await getStatusMapping(prisma, connectionId, projectId);
   if (!mappings) return null;
 
-  const entry = mappings.find(
-    (m) => m.jiraTargetStatusName === jiraStatusName,
-  );
+  const entry = mappings.find((m) => m.jiraTargetStatusName === jiraStatusName);
 
   return entry?.workflowStatus ?? null;
 }

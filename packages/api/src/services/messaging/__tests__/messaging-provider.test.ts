@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SlackMessagingProvider } from "../slack-messaging-provider.js";
 import { TeamsMessagingProvider } from "../teams-messaging-provider.js";
 import type { MessagingProvider } from "../types.js";
@@ -27,11 +27,7 @@ vi.mock("../../slack-client.js", () => ({
 }));
 
 const mockContinueConversationAsync = vi.fn(
-  async (
-    _appId: string,
-    _ref: unknown,
-    callback: (ctx: unknown) => Promise<void>,
-  ) => {
+  async (_appId: string, _ref: unknown, callback: (ctx: unknown) => Promise<void>) => {
     await callback({ sendActivity: vi.fn() });
   },
 );
@@ -241,9 +237,7 @@ describe("TeamsMessagingProvider.sendChannelAlert", () => {
 
     // Key assertion: the "No ConversationReference" warning should NOT fire
     // because channelRef was found via teamRefs[params.channelId]
-    expect(warnSpy).not.toHaveBeenCalledWith(
-      expect.stringContaining("No ConversationReference"),
-    );
+    expect(warnSpy).not.toHaveBeenCalledWith(expect.stringContaining("No ConversationReference"));
 
     warnSpy.mockRestore();
     logSpy.mockRestore();

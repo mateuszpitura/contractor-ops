@@ -1,17 +1,12 @@
-import { z } from "zod";
 import { isValidIBAN } from "ibantools";
-import { optionalString, optionalFk, optionalPositiveInt } from "./helpers.js";
+import { z } from "zod";
+import { optionalFk, optionalPositiveInt, optionalString } from "./helpers.js";
 
 // ---------------------------------------------------------------------------
 // Prisma enum mirrors (string unions — validators package has no Prisma dep)
 // ---------------------------------------------------------------------------
 
-const contractorTypeEnum = z.enum([
-  "SOLE_TRADER",
-  "COMPANY",
-  "INDIVIDUAL_FREELANCER",
-  "OTHER",
-]);
+const contractorTypeEnum = z.enum(["SOLE_TRADER", "COMPANY", "INDIVIDUAL_FREELANCER", "OTHER"]);
 
 const contractorStatusEnum = z.enum(["ACTIVE", "INACTIVE", "ARCHIVED"]);
 
@@ -40,8 +35,7 @@ export function isValidNip(raw: string): boolean {
   if (!/^\d{10}$/.test(nip)) return false;
 
   const digits = nip.split("").map(Number);
-  const checksum =
-    NIP_WEIGHTS.reduce((sum, w, i) => sum + w * digits[i]!, 0) % 11;
+  const checksum = NIP_WEIGHTS.reduce((sum, w, i) => sum + w * digits[i]!, 0) % 11;
 
   return checksum === digits[9];
 }
@@ -58,8 +52,7 @@ export const nipSchema = z
 // IBAN validation (via ibantools)
 // ---------------------------------------------------------------------------
 
-const ibanRefine = (val: string) =>
-  isValidIBAN(val.replace(/\s/g, "").toUpperCase());
+const ibanRefine = (val: string) => isValidIBAN(val.replace(/\s/g, "").toUpperCase());
 
 // ---------------------------------------------------------------------------
 // Contractor CRUD schemas

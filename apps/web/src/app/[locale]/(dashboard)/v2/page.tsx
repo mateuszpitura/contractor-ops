@@ -1,39 +1,30 @@
 "use client";
 
-import {
-  useState,
-  useEffect,
-  useRef,
-  useMemo,
-  useCallback,
-  type ReactNode,
-  type CSSProperties,
-  type MouseEvent as ReactMouseEvent,
-} from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
 import { formatDistanceToNow } from "date-fns";
 import {
-  ArrowUpRight,
-  Users,
-  FileCheck,
-  Wallet,
-  AlertTriangle,
-  ListChecks,
-  ChevronRight,
   Activity,
-  Zap,
-  TrendingUp,
-  TrendingDown,
+  AlertTriangle,
+  ArrowUpRight,
   CalendarClock,
+  ChevronRight,
   CircleDot,
+  FileCheck,
+  ListChecks,
+  TrendingDown,
+  TrendingUp,
+  Users,
+  Wallet,
+  Zap,
 } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
-import { authClient } from "@/lib/auth-client";
-import { usePermissions } from "@/hooks/use-permissions";
+import { useTranslations } from "next-intl";
+import type { CSSProperties, MouseEvent as ReactMouseEvent, ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { usePermissions } from "@/hooks/use-permissions";
 import { Link } from "@/i18n/navigation";
+import { authClient } from "@/lib/auth-client";
+import { trpc } from "@/trpc/init";
 
 // =============================================================================
 // MESH BACKGROUND — three drifting color orbs + grain + diagonal stripe
@@ -46,7 +37,8 @@ function AtelierBackground() {
       <div
         className="absolute inset-0"
         style={{
-          background: "linear-gradient(170deg, color-mix(in oklch, var(--color-primary) 5%, transparent) 0%, transparent 40%, color-mix(in oklch, oklch(0.6 0.15 270) 3%, transparent) 100%)",
+          background:
+            "linear-gradient(170deg, color-mix(in oklch, var(--color-primary) 5%, transparent) 0%, transparent 40%, color-mix(in oklch, oklch(0.6 0.15 270) 3%, transparent) 100%)",
         }}
       />
 
@@ -54,7 +46,8 @@ function AtelierBackground() {
       <div
         className="absolute -start-[10%] -top-[10%] h-[800px] w-[800px] rounded-full"
         style={{
-          background: "radial-gradient(circle, color-mix(in oklch, var(--color-primary) 22%, transparent) 0%, transparent 65%)",
+          background:
+            "radial-gradient(circle, color-mix(in oklch, var(--color-primary) 22%, transparent) 0%, transparent 65%)",
           animation: "drift-1 28s ease-in-out infinite",
           filter: "blur(80px)",
         }}
@@ -62,7 +55,8 @@ function AtelierBackground() {
       <div
         className="absolute -end-[5%] top-[10%] h-[650px] w-[650px] rounded-full"
         style={{
-          background: "radial-gradient(circle, color-mix(in oklch, oklch(0.78 0.14 55) 16%, transparent) 0%, transparent 65%)",
+          background:
+            "radial-gradient(circle, color-mix(in oklch, oklch(0.78 0.14 55) 16%, transparent) 0%, transparent 65%)",
           animation: "drift-2 35s ease-in-out infinite",
           filter: "blur(100px)",
         }}
@@ -70,7 +64,8 @@ function AtelierBackground() {
       <div
         className="absolute bottom-[-5%] start-[35%] h-[550px] w-[550px] rounded-full"
         style={{
-          background: "radial-gradient(circle, color-mix(in oklch, oklch(0.55 0.2 270) 12%, transparent) 0%, transparent 65%)",
+          background:
+            "radial-gradient(circle, color-mix(in oklch, oklch(0.55 0.2 270) 12%, transparent) 0%, transparent 65%)",
           animation: "drift-3 24s ease-in-out infinite",
           filter: "blur(90px)",
         }}
@@ -89,7 +84,8 @@ function AtelierBackground() {
       <div
         className="absolute inset-0"
         style={{
-          backgroundImage: "radial-gradient(circle, var(--color-muted-foreground) 0.5px, transparent 0.5px)",
+          backgroundImage:
+            "radial-gradient(circle, var(--color-muted-foreground) 0.5px, transparent 0.5px)",
           backgroundSize: "32px 32px",
           opacity: 0.04,
         }}
@@ -99,7 +95,8 @@ function AtelierBackground() {
       <div
         className="absolute inset-0 opacity-[0.015] dark:opacity-[0.025]"
         style={{
-          backgroundImage: "repeating-linear-gradient(135deg, var(--color-foreground) 0px, var(--color-foreground) 1px, transparent 1px, transparent 80px)",
+          backgroundImage:
+            "repeating-linear-gradient(135deg, var(--color-foreground) 0px, var(--color-foreground) 1px, transparent 1px, transparent 80px)",
         }}
       />
     </div>
@@ -197,11 +194,14 @@ function AnimatedNumber({
   const frameRef = useRef(0);
 
   useEffect(() => {
-    if (value === 0) { setDisplay(0); return; }
+    if (value === 0) {
+      setDisplay(0);
+      return;
+    }
     const start = performance.now();
     const tick = (now: number) => {
       const p = Math.min((now - start) / duration, 1);
-      const eased = p === 1 ? 1 : 1 - Math.pow(2, -12 * p);
+      const eased = p === 1 ? 1 : 1 - 2 ** (-12 * p);
       setDisplay(Math.round(eased * value));
       if (p < 1) frameRef.current = requestAnimationFrame(tick);
     };
@@ -238,7 +238,14 @@ function Ring({
   return (
     <div className="relative" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" strokeWidth={stroke} className="stroke-border/30" />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          fill="none"
+          strokeWidth={stroke}
+          className="stroke-border/30"
+        />
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -299,7 +306,14 @@ function Sparkline({
         </linearGradient>
       </defs>
       <polygon points={area} fill={`url(#${id}-g)`} />
-      <polyline points={line} fill="none" stroke={color} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
+      <polyline
+        points={line}
+        fill="none"
+        stroke={color}
+        strokeWidth={2.5}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
       <circle cx={w} cy={toY(data[data.length - 1])} r={4} fill={color} opacity={0.9}>
         <animate attributeName="r" values="4;6;4" dur="2.5s" repeatCount="indefinite" />
         <animate attributeName="opacity" values="0.9;0.4;0.9" dur="2.5s" repeatCount="indefinite" />
@@ -319,13 +333,16 @@ function LiveClock() {
     const id = setInterval(() => setT(new Date()), 1000);
     return () => clearInterval(id);
   }, []);
-  if (!t) return <span className="font-mono text-xs tabular-nums text-muted-foreground">--:--</span>;
+  if (!t)
+    return <span className="font-mono text-xs tabular-nums text-muted-foreground">--:--</span>;
   const h = t.getHours().toString().padStart(2, "0");
   const m = t.getMinutes().toString().padStart(2, "0");
   const s = t.getSeconds().toString().padStart(2, "0");
   return (
     <span className="font-mono text-xs tabular-nums text-muted-foreground/70">
-      {h}<span className="animate-pulse text-primary">:</span>{m}
+      {h}
+      <span className="animate-pulse text-primary">:</span>
+      {m}
       <span className="text-[9px] text-muted-foreground/40">.{s}</span>
     </span>
   );
@@ -341,10 +358,16 @@ function PulseDot({ color, pulse = false }: { color: string; pulse?: boolean }) 
       {pulse && (
         <span
           className="absolute inset-0 rounded-full opacity-75"
-          style={{ backgroundColor: color, animation: "ring-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite" }}
+          style={{
+            backgroundColor: color,
+            animation: "ring-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite",
+          }}
         />
       )}
-      <span className="relative inline-flex h-2 w-2 rounded-full" style={{ backgroundColor: color }} />
+      <span
+        className="relative inline-flex h-2 w-2 rounded-full"
+        style={{ backgroundColor: color }}
+      />
     </span>
   );
 }
@@ -376,31 +399,52 @@ function SlaPill({ status }: { status: string }) {
 // DEADLINE HELPERS
 // =============================================================================
 
-const DL_CFG: Record<string, { icon: React.ComponentType<{ className?: string }>; color: string }> = {
-  CONTRACT_EXPIRING: { icon: CalendarClock, color: "var(--color-warning)" },
-  TASK_OVERDUE: { icon: AlertTriangle, color: "var(--color-destructive)" },
-  INVOICE_DUE: { icon: FileCheck, color: "var(--color-info)" },
-};
+const DL_CFG: Record<string, { icon: React.ComponentType<{ className?: string }>; color: string }> =
+  {
+    CONTRACT_EXPIRING: { icon: CalendarClock, color: "var(--color-warning)" },
+    TASK_OVERDUE: { icon: AlertTriangle, color: "var(--color-destructive)" },
+    INVOICE_DUE: { icon: FileCheck, color: "var(--color-info)" },
+  };
 
 function dlHref(type: string, id: string) {
-  return type === "CONTRACT_EXPIRING" ? `/contracts/${id}` : type === "INVOICE_DUE" ? `/invoices/${id}` : "/workflows?tab=my-tasks";
+  return type === "CONTRACT_EXPIRING"
+    ? `/contracts/${id}`
+    : type === "INVOICE_DUE"
+      ? `/invoices/${id}`
+      : "/workflows?tab=my-tasks";
 }
 
 // =============================================================================
 // CURRENCY
 // =============================================================================
 
-const plnFmt = new Intl.NumberFormat("pl-PL", { style: "currency", currency: "PLN", minimumFractionDigits: 0, maximumFractionDigits: 0 });
+const plnFmt = new Intl.NumberFormat("pl-PL", {
+  style: "currency",
+  currency: "PLN",
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0,
+});
 const fmtAmt = (g: number, cur = "PLN") =>
   cur !== "PLN"
-    ? new Intl.NumberFormat("pl-PL", { style: "currency", currency: cur, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(g / 100)
+    ? new Intl.NumberFormat("pl-PL", {
+        style: "currency",
+        currency: cur,
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      }).format(g / 100)
     : plnFmt.format(g / 100);
 
 // =============================================================================
 // SECTION LABEL — editorial-style section headers
 // =============================================================================
 
-function SectionLabel({ children, icon: Icon }: { children: ReactNode; icon?: React.ComponentType<{ className?: string }> }) {
+function SectionLabel({
+  children,
+  icon: Icon,
+}: {
+  children: ReactNode;
+  icon?: React.ComponentType<{ className?: string }>;
+}) {
   return (
     <div className="flex items-center gap-2.5 ps-1">
       {Icon && (
@@ -431,7 +475,9 @@ export default function DashboardV2Page() {
   const { data: kpis } = useQuery(trpc.dashboard.kpis.queryOptions());
   const { data: spendRaw } = useQuery(trpc.dashboard.spendTrend.queryOptions({ months: "6" }));
   const { data: deadlines } = useQuery(trpc.dashboard.deadlines.queryOptions());
-  const { data: approvalsRaw } = useQuery(trpc.approval.listPending.queryOptions({ page: 1, pageSize: 5 }));
+  const { data: approvalsRaw } = useQuery(
+    trpc.approval.listPending.queryOptions({ page: 1, pageSize: 5 }),
+  );
   const { data: activityRaw } = useQuery(trpc.dashboard.activity.queryOptions());
 
   const approvals = approvalsRaw?.items ?? [];
@@ -448,7 +494,11 @@ export default function DashboardV2Page() {
 
   const [now] = useState(() => new Date());
   const greetKey = now.getHours() < 12 ? "morning" : now.getHours() < 18 ? "afternoon" : "evening";
-  const dateStr = now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+  const dateStr = now.toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
 
   // ==========================================================================
   // RENDER
@@ -494,7 +544,11 @@ export default function DashboardV2Page() {
                 {/* Quick-nav pills */}
                 <div className="flex flex-wrap gap-2">
                   {[
-                    { label: "Contractors", href: "/contractors", count: kpis?.activeContractors.value },
+                    {
+                      label: "Contractors",
+                      href: "/contractors",
+                      count: kpis?.activeContractors.value,
+                    },
                     { label: "Invoices", href: "/invoices" },
                     { label: "Approvals", href: "/approvals", count: kpis?.pendingApprovals.value },
                   ].map((n) => (
@@ -531,27 +585,45 @@ export default function DashboardV2Page() {
                   <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
                     {/* The big number */}
                     <p className="atelier-hero-glow bg-gradient-to-r from-foreground via-primary/80 to-foreground bg-clip-text font-display text-[56px] font-black leading-none tracking-tighter text-transparent sm:text-[72px] lg:text-[80px]">
-                      <AnimatedNumber value={totalSpend} format={(n) => plnFmt.format(n / 100)} duration={2200} />
+                      <AnimatedNumber
+                        value={totalSpend}
+                        format={(n) => plnFmt.format(n / 100)}
+                        duration={2200}
+                      />
                     </p>
 
                     {/* Trend chip */}
-                    {sparkData.length >= 2 && (() => {
-                      const prev = sparkData[sparkData.length - 2];
-                      const curr = sparkData[sparkData.length - 1];
-                      const pct = prev === 0 ? 0 : ((curr - prev) / prev) * 100;
-                      const up = pct >= 0;
-                      return (
-                        <div className={`mb-2 flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold ${up ? "bg-emerald-500/8 text-emerald-600 dark:text-emerald-400" : "bg-red-500/8 text-red-600 dark:text-red-400"}`}>
-                          {up ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                          {up ? "+" : ""}{pct.toFixed(1)}% vs prev month
-                        </div>
-                      );
-                    })()}
+                    {sparkData.length >= 2 &&
+                      (() => {
+                        const prev = sparkData[sparkData.length - 2];
+                        const curr = sparkData[sparkData.length - 1];
+                        const pct = prev === 0 ? 0 : ((curr - prev) / prev) * 100;
+                        const up = pct >= 0;
+                        return (
+                          <div
+                            className={`mb-2 flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold ${up ? "bg-emerald-500/8 text-emerald-600 dark:text-emerald-400" : "bg-red-500/8 text-red-600 dark:text-red-400"}`}
+                          >
+                            {up ? (
+                              <TrendingUp className="h-3 w-3" />
+                            ) : (
+                              <TrendingDown className="h-3 w-3" />
+                            )}
+                            {up ? "+" : ""}
+                            {pct.toFixed(1)}% vs prev month
+                          </div>
+                        );
+                      })()}
                   </div>
 
                   {/* Sparkline — stretches to full width */}
                   <div className="w-full">
-                    <Sparkline data={sparkData} w={600} h={56} color="var(--color-primary)" id="hero" />
+                    <Sparkline
+                      data={sparkData}
+                      w={600}
+                      h={56}
+                      color="var(--color-primary)"
+                      id="hero"
+                    />
                   </div>
                 </div>
               </TiltCard>
@@ -564,13 +636,55 @@ export default function DashboardV2Page() {
         {/* ================================================================ */}
         <SectionLabel icon={CircleDot}>Key Metrics</SectionLabel>
         <div className="mt-3 mb-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-          {([
-            { icon: Users, label: "Active contractors", val: kpis?.activeContractors.value ?? 0, prev: kpis?.activeContractors.prevValue ?? 0, color: "var(--color-chart-1)", href: "/contractors?status=active" },
-            { icon: FileCheck, label: "Pending approvals", val: kpis?.pendingApprovals.value ?? 0, prev: kpis?.pendingApprovals.prevValue ?? 0, color: "var(--color-warning)", href: "/approvals?tab=my&status=pending", ring: true },
-            { icon: AlertTriangle, label: "Expiring contracts", val: kpis?.expiringContracts.value ?? 0, prev: (kpis?.expiringContracts as { value: number; prevValue?: number })?.prevValue ?? 0, color: "var(--color-destructive)", href: "/contracts?status=expiring" },
-            { icon: ListChecks, label: "Open tasks", val: kpis?.openTasks.value ?? 0, prev: (kpis?.openTasks as { value: number; prevValue?: number })?.prevValue ?? 0, color: "var(--color-info)", href: "/workflows?tab=my-tasks", ring: true },
-            { icon: Zap, label: "Ready to pay", val: kpis?.readyToPayTotal.valueMinor ?? 0, prev: kpis?.readyToPayTotal.prevValueMinor ?? 0, color: "var(--color-success)", href: "/payments?status=ready", fmt: (n: number) => plnFmt.format(n / 100) },
-          ] as const).map((kpi, i) => {
+          {(
+            [
+              {
+                icon: Users,
+                label: "Active contractors",
+                val: kpis?.activeContractors.value ?? 0,
+                prev: kpis?.activeContractors.prevValue ?? 0,
+                color: "var(--color-chart-1)",
+                href: "/contractors?status=active",
+              },
+              {
+                icon: FileCheck,
+                label: "Pending approvals",
+                val: kpis?.pendingApprovals.value ?? 0,
+                prev: kpis?.pendingApprovals.prevValue ?? 0,
+                color: "var(--color-warning)",
+                href: "/approvals?tab=my&status=pending",
+                ring: true,
+              },
+              {
+                icon: AlertTriangle,
+                label: "Expiring contracts",
+                val: kpis?.expiringContracts.value ?? 0,
+                prev:
+                  (kpis?.expiringContracts as { value: number; prevValue?: number })?.prevValue ??
+                  0,
+                color: "var(--color-destructive)",
+                href: "/contracts?status=expiring",
+              },
+              {
+                icon: ListChecks,
+                label: "Open tasks",
+                val: kpis?.openTasks.value ?? 0,
+                prev: (kpis?.openTasks as { value: number; prevValue?: number })?.prevValue ?? 0,
+                color: "var(--color-info)",
+                href: "/workflows?tab=my-tasks",
+                ring: true,
+              },
+              {
+                icon: Zap,
+                label: "Ready to pay",
+                val: kpis?.readyToPayTotal.valueMinor ?? 0,
+                prev: kpis?.readyToPayTotal.prevValueMinor ?? 0,
+                color: "var(--color-success)",
+                href: "/payments?status=ready",
+                fmt: (n: number) => plnFmt.format(n / 100),
+              },
+            ] as const
+          ).map((kpi, i) => {
             const pct = kpi.prev === 0 ? 0 : ((kpi.val - kpi.prev) / kpi.prev) * 100;
             const up = pct > 0;
             const flat = pct === 0;
@@ -582,13 +696,24 @@ export default function DashboardV2Page() {
                   <div className="flex items-start justify-between">
                     <div
                       className="flex h-9 w-9 items-center justify-center rounded-xl transition-transform group-hover:scale-110"
-                      style={{ background: `color-mix(in oklch, ${kpi.color} 10%, transparent)`, color: kpi.color }}
+                      style={{
+                        background: `color-mix(in oklch, ${kpi.color} 10%, transparent)`,
+                        color: kpi.color,
+                      }}
                     >
                       <Icon className="h-4 w-4" />
                     </div>
                     {"ring" in kpi && kpi.ring && (
-                      <Ring value={kpi.val} max={Math.max(kpi.val, 8)} color={kpi.color} size={38} stroke={3}>
-                        <span className="text-[8px] font-bold" style={{ color: kpi.color }}>{kpi.val}</span>
+                      <Ring
+                        value={kpi.val}
+                        max={Math.max(kpi.val, 8)}
+                        color={kpi.color}
+                        size={38}
+                        stroke={3}
+                      >
+                        <span className="text-[8px] font-bold" style={{ color: kpi.color }}>
+                          {kpi.val}
+                        </span>
                       </Ring>
                     )}
                   </div>
@@ -601,8 +726,11 @@ export default function DashboardV2Page() {
                         {kpi.label}
                       </span>
                       {!flat && (
-                        <span className={`text-[9px] font-bold ${up ? "text-emerald-500" : "text-red-500"}`}>
-                          {up ? "+" : ""}{pct.toFixed(0)}%
+                        <span
+                          className={`text-[9px] font-bold ${up ? "text-emerald-500" : "text-red-500"}`}
+                        >
+                          {up ? "+" : ""}
+                          {pct.toFixed(0)}%
                         </span>
                       )}
                     </div>
@@ -631,21 +759,28 @@ export default function DashboardV2Page() {
             <TiltCard delay={750}>
               <div className="mb-4 flex items-center justify-between">
                 <h3 className="font-display text-[15px] font-bold">{t("deadlines.title")}</h3>
-                <Link href="/reports?report=expiring-contracts" className="flex items-center gap-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary/60 transition-colors hover:text-primary">
+                <Link
+                  href="/reports?report=expiring-contracts"
+                  className="flex items-center gap-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary/60 transition-colors hover:text-primary"
+                >
                   All <ChevronRight className="h-3 w-3" />
                 </Link>
               </div>
 
               {!deadlines?.length ? (
-                <p className="py-10 text-center text-xs text-muted-foreground">{t("deadlines.empty")}</p>
+                <p className="py-10 text-center text-xs text-muted-foreground">
+                  {t("deadlines.empty")}
+                </p>
               ) : (
                 <div className="relative space-y-0.5">
                   {/* Glowing gradient timeline */}
                   <div
                     className="absolute start-[9px] top-4 bottom-4 w-[2px] rounded-full"
                     style={{
-                      background: "linear-gradient(to bottom, var(--color-primary), var(--color-warning), var(--color-destructive), transparent)",
-                      boxShadow: "0 0 12px color-mix(in oklch, var(--color-primary) 25%, transparent)",
+                      background:
+                        "linear-gradient(to bottom, var(--color-primary), var(--color-warning), var(--color-destructive), transparent)",
+                      boxShadow:
+                        "0 0 12px color-mix(in oklch, var(--color-primary) 25%, transparent)",
                     }}
                   />
 
@@ -666,12 +801,23 @@ export default function DashboardV2Page() {
                           className="absolute start-[3px] h-[14px] w-[14px] rounded-full border-2 bg-card transition-shadow group-hover/d:shadow-md"
                           style={{ borderColor: cfg.color, boxShadow: `0 0 6px ${cfg.color}` }}
                         >
-                          <div className="absolute inset-[3px] rounded-full" style={{ backgroundColor: cfg.color }} />
+                          <div
+                            className="absolute inset-[3px] rounded-full"
+                            style={{ backgroundColor: cfg.color }}
+                          />
                         </div>
-                        <span style={{ color: cfg.color }}><Icon className="h-3.5 w-3.5" /></span>
-                        <span className="min-w-0 flex-1 truncate text-[13px] font-medium">{item.entityName}</span>
-                        <span className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold tabular-nums ${overdue ? "bg-red-500/10 text-red-500" : "bg-muted/50 text-muted-foreground"}`}>
-                          {overdue ? t("deadlines.overdue", { days }) : t("deadlines.upcoming", { days })}
+                        <span style={{ color: cfg.color }}>
+                          <Icon className="h-3.5 w-3.5" />
+                        </span>
+                        <span className="min-w-0 flex-1 truncate text-[13px] font-medium">
+                          {item.entityName}
+                        </span>
+                        <span
+                          className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold tabular-nums ${overdue ? "bg-red-500/10 text-red-500" : "bg-muted/50 text-muted-foreground"}`}
+                        >
+                          {overdue
+                            ? t("deadlines.overdue", { days })
+                            : t("deadlines.upcoming", { days })}
                         </span>
                       </Link>
                     );
@@ -689,7 +835,9 @@ export default function DashboardV2Page() {
         <div className="mt-3 mb-8">
           {approvals.length === 0 ? (
             <TiltCard delay={900}>
-              <p className="py-10 text-center text-xs text-muted-foreground">{t("approvals.empty")}</p>
+              <p className="py-10 text-center text-xs text-muted-foreground">
+                {t("approvals.empty")}
+              </p>
             </TiltCard>
           ) : (
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
@@ -743,7 +891,9 @@ export default function DashboardV2Page() {
         <div className="mt-3">
           <TiltCard delay={1100}>
             {activities.length === 0 ? (
-              <p className="py-10 text-center text-xs text-muted-foreground">{t("activity.empty")}</p>
+              <p className="py-10 text-center text-xs text-muted-foreground">
+                {t("activity.empty")}
+              </p>
             ) : (
               <div className="grid grid-cols-1 gap-px overflow-hidden rounded-xl border border-border/30 sm:grid-cols-2 xl:grid-cols-4">
                 {activities.slice(0, 8).map((item) => (
@@ -764,7 +914,10 @@ export default function DashboardV2Page() {
                         </span>
                       </p>
                       <div className="mt-1 flex items-center gap-1.5">
-                        <Badge variant="secondary" className="px-1.5 py-0 text-[8px] font-bold uppercase tracking-wider">
+                        <Badge
+                          variant="secondary"
+                          className="px-1.5 py-0 text-[8px] font-bold uppercase tracking-wider"
+                        >
                           {t(`activity.resources.${item.resourceType}` as Parameters<typeof t>[0])}
                         </Badge>
                         <span className="text-[9px] text-muted-foreground/40">
@@ -787,10 +940,14 @@ export default function DashboardV2Page() {
 // SPEND CHART V2
 // =============================================================================
 
+type RechartsBundle = typeof import("recharts");
+
 function SpendChartV2() {
   const t = useTranslations("Dashboard");
-  const [RC, setRC] = useState<typeof import("recharts") | null>(null);
-  useEffect(() => { import("recharts").then(setRC); }, []);
+  const [RC, setRC] = useState<RechartsBundle | null>(null);
+  useEffect(() => {
+    import("recharts").then(setRC);
+  }, []);
 
   const [range, setRange] = useState<"6" | "12" | "ytd">("6");
   const { data, isLoading } = useQuery(trpc.dashboard.spendTrend.queryOptions({ months: range }));
@@ -837,7 +994,9 @@ function SpendChartV2() {
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary/20 border-t-primary" />
         </div>
       ) : chartData.length === 0 ? (
-        <div className="flex h-[280px] items-center justify-center text-xs text-muted-foreground">{t("spend.empty")}</div>
+        <div className="flex h-[280px] items-center justify-center text-xs text-muted-foreground">
+          {t("spend.empty")}
+        </div>
       ) : (
         <RC.ResponsiveContainer width="100%" height={280}>
           <RC.AreaChart data={chartData}>
@@ -851,9 +1010,27 @@ function SpendChartV2() {
                 <stop offset="100%" stopColor="var(--color-chart-3)" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <RC.CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" strokeOpacity={0.2} vertical={false} />
-            <RC.XAxis dataKey="month" fontSize={9} tickLine={false} axisLine={false} stroke="var(--color-muted-foreground)" />
-            <RC.YAxis fontSize={9} tickLine={false} axisLine={false} stroke="var(--color-muted-foreground)" tickFormatter={(v: number) => plnFmt.format(v / 100)} width={72} />
+            <RC.CartesianGrid
+              strokeDasharray="3 3"
+              stroke="var(--color-border)"
+              strokeOpacity={0.2}
+              vertical={false}
+            />
+            <RC.XAxis
+              dataKey="month"
+              fontSize={9}
+              tickLine={false}
+              axisLine={false}
+              stroke="var(--color-muted-foreground)"
+            />
+            <RC.YAxis
+              fontSize={9}
+              tickLine={false}
+              axisLine={false}
+              stroke="var(--color-muted-foreground)"
+              tickFormatter={(v: number) => plnFmt.format(v / 100)}
+              width={72}
+            />
             <RC.Tooltip
               contentStyle={{
                 background: "var(--color-popover)",
@@ -863,10 +1040,37 @@ function SpendChartV2() {
                 boxShadow: "0 16px 48px rgba(0,0,0,0.16)",
                 backdropFilter: "blur(16px)",
               }}
-              formatter={(value: unknown, name: unknown) => [plnFmt.format(Number(value) / 100), String(name)]}
+              formatter={(value: unknown, name: unknown) => [
+                plnFmt.format(Number(value) / 100),
+                String(name),
+              ]}
             />
-            <RC.Area type="monotone" dataKey="PLN" stackId="1" stroke="var(--color-chart-1)" fill="url(#v2p)" strokeWidth={2.5} dot={false} activeDot={{ r: 5, strokeWidth: 2, stroke: "var(--color-card)", fill: "var(--color-chart-1)" }} />
-            {hasEur && <RC.Area type="monotone" dataKey="EUR" stackId="1" stroke="var(--color-chart-3)" fill="url(#v2e)" strokeWidth={2.5} dot={false} />}
+            <RC.Area
+              type="monotone"
+              dataKey="PLN"
+              stackId="1"
+              stroke="var(--color-chart-1)"
+              fill="url(#v2p)"
+              strokeWidth={2.5}
+              dot={false}
+              activeDot={{
+                r: 5,
+                strokeWidth: 2,
+                stroke: "var(--color-card)",
+                fill: "var(--color-chart-1)",
+              }}
+            />
+            {hasEur && (
+              <RC.Area
+                type="monotone"
+                dataKey="EUR"
+                stackId="1"
+                stroke="var(--color-chart-3)"
+                fill="url(#v2e)"
+                strokeWidth={2.5}
+                dot={false}
+              />
+            )}
           </RC.AreaChart>
         </RC.ResponsiveContainer>
       )}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,9 +10,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 // ---------------------------------------------------------------------------
 // Props
@@ -48,9 +48,7 @@ export function RejectionReasonDialog({
   const [reason, setReason] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  const title = isBulk
-    ? `Reject ${count} Timesheet${count !== 1 ? "s" : ""}`
-    : "Reject Timesheet";
+  const title = isBulk ? `Reject ${count} Timesheet${count !== 1 ? "s" : ""}` : "Reject Timesheet";
 
   const description = isBulk
     ? "All selected timesheets will be rejected with the same reason."
@@ -98,23 +96,13 @@ export function RejectionReasonDialog({
             className={error ? "border-destructive" : ""}
           />
           <div className="flex items-center justify-between">
-            {error ? (
-              <p className="text-xs text-destructive">{error}</p>
-            ) : (
-              <span />
-            )}
-            <p className="text-xs text-muted-foreground">
-              {reason.length}/500
-            </p>
+            {error ? <p className="text-xs text-destructive">{error}</p> : <span />}
+            <p className="text-xs text-muted-foreground">{reason.length}/500</p>
           </div>
         </div>
 
         <DialogFooter className="gap-2 sm:gap-0">
-          <Button
-            variant="outline"
-            onClick={() => handleOpenChange(false)}
-            disabled={isSubmitting}
-          >
+          <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={isSubmitting}>
             Keep Reviewing
           </Button>
           <Button

@@ -1,18 +1,16 @@
 "use client";
 
-import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
+import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
-import { authClient } from "@/lib/auth-client";
+import { useBreadcrumbOverride } from "@/components/layout/breadcrumb-context";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useBreadcrumbOverride } from "@/components/layout/breadcrumb-context";
-import { Link } from "@/i18n/navigation";
-
 import { RunHeader } from "@/components/workflows/workflow-run/run-header";
 import { TaskChecklist } from "@/components/workflows/workflow-run/task-checklist";
+import { Link } from "@/i18n/navigation";
+import { authClient } from "@/lib/auth-client";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Skeleton
@@ -59,9 +57,7 @@ export default function WorkflowRunDetailPage() {
   const session = authClient.useSession();
   const currentUserId = session?.data?.user?.id ?? null;
 
-  const runQuery = useQuery(
-    trpc.workflow.getRun.queryOptions({ id: params.id }),
-  );
+  const runQuery = useQuery(trpc.workflow.getRun.queryOptions({ id: params.id }));
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const run = runQuery.data as any;
@@ -72,8 +68,7 @@ export default function WorkflowRunDetailPage() {
   if (runQuery.isError) {
     const isNotFound =
       runQuery.error?.message?.includes("not found") ||
-      (runQuery.error as { data?: { code?: string } })?.data?.code ===
-        "NOT_FOUND";
+      (runQuery.error as { data?: { code?: string } })?.data?.code === "NOT_FOUND";
 
     if (isNotFound) {
       return (
@@ -88,9 +83,7 @@ export default function WorkflowRunDetailPage() {
 
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center gap-3 text-center">
-        <h2 className="text-lg font-medium">
-          {t("errors.failedToLoadWorkflowDetail")}
-        </h2>
+        <h2 className="text-lg font-medium">{t("errors.failedToLoadWorkflowDetail")}</h2>
         <Button variant="outline" onClick={() => runQuery.refetch()}>
           {t("errors.retry")}
         </Button>
@@ -106,11 +99,7 @@ export default function WorkflowRunDetailPage() {
       ) : (
         <>
           <RunHeader run={run} />
-          <TaskChecklist
-            tasks={run.tasks}
-            runId={run.id}
-            currentUserId={currentUserId}
-          />
+          <TaskChecklist tasks={run.tasks} runId={run.id} currentUserId={currentUserId} />
         </>
       )}
     </div>

@@ -1,5 +1,5 @@
-import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
+import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
@@ -18,11 +18,7 @@ const nextConfig: NextConfig = {
     "@contractor-ops/ui",
     "react-pdf",
   ],
-  serverExternalPackages: [
-    "@contractor-ops/db",
-    "@contractor-ops/integrations",
-    "docusign-esign",
-  ],
+  serverExternalPackages: ["@contractor-ops/db", "@contractor-ops/integrations", "docusign-esign"],
   webpack(config, { isServer }) {
     // ESM TypeScript packages use .js extensions in imports (e.g. "./foo.js")
     // that must resolve to .ts source files when transpiled by Next.js webpack.

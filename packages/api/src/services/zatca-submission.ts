@@ -11,13 +11,13 @@
 
 import { createHash, randomUUID } from "node:crypto";
 import { prisma } from "@contractor-ops/db";
+import type { ZatcaClearanceResponse, ZatcaReportingResponse } from "@contractor-ops/einvoice";
 import {
+  ZATCA_PRODUCTION_URL,
+  ZATCA_SANDBOX_URL,
   ZatcaApiClient,
   ZatcaApiError,
-  ZATCA_SANDBOX_URL,
-  ZATCA_PRODUCTION_URL,
 } from "@contractor-ops/einvoice";
-import type { ZatcaClearanceResponse, ZatcaReportingResponse } from "@contractor-ops/einvoice";
 import { createZatcaSecretStore, ZATCA_SECRET_NAMES } from "@contractor-ops/integrations";
 import { getQStashClient } from "@contractor-ops/integrations/services/qstash-client";
 import { acquireChainLock, getNextChainEntry, recordChainEntry } from "./zatca-hash-chain.js";
@@ -221,9 +221,7 @@ export async function submitToZatca(options: SubmitToZatcaOptions): Promise<void
  * - non-retryable: job goes to dead letter queue
  * - auth: logged as auth gate, no retry
  */
-export async function handleZatcaSubmissionJob(
-  payload: ZatcaSubmissionJobPayload,
-): Promise<void> {
+export async function handleZatcaSubmissionJob(payload: ZatcaSubmissionJobPayload): Promise<void> {
   try {
     await submitToZatca({
       invoiceId: payload.invoiceId,
@@ -313,7 +311,5 @@ function extractRejectionReason(
   validationResults: { errorMessages?: Array<{ message?: string }> } | undefined,
 ): string {
   if (!validationResults?.errorMessages?.length) return "Unknown rejection";
-  return validationResults.errorMessages
-    .map((e) => e.message ?? "Unknown")
-    .join("; ");
+  return validationResults.errorMessages.map((e) => e.message ?? "Unknown").join("; ");
 }

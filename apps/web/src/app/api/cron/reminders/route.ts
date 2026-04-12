@@ -1,11 +1,11 @@
-import * as Sentry from "@sentry/nextjs";
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import { prisma } from "@contractor-ops/db";
-import { dispatch } from "@contractor-ops/api/services/notification-service";
 import { withCronMonitor } from "@contractor-ops/api/services/cron-monitor";
+import { dispatch } from "@contractor-ops/api/services/notification-service";
+import { prisma } from "@contractor-ops/db";
 import { createCronLogger } from "@contractor-ops/logger";
 import { metrics } from "@contractor-ops/logger/metrics";
+import * as Sentry from "@sentry/nextjs";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 const log = createCronLogger("reminders");
 
@@ -60,10 +60,7 @@ async function evaluateReminderRules(): Promise<{
     const offsetDays = rule.offsetDays ?? 0;
 
     // Determine which entities match based on triggerType
-    if (
-      rule.triggerType === "BEFORE_CONTRACT_END" &&
-      rule.entityType === "CONTRACT"
-    ) {
+    if (rule.triggerType === "BEFORE_CONTRACT_END" && rule.entityType === "CONTRACT") {
       const targetDate = addDays(today, offsetDays);
       const contracts = await prisma.contract.findMany({
         where: {
@@ -136,10 +133,7 @@ async function evaluateReminderRules(): Promise<{
       }
     }
 
-    if (
-      rule.triggerType === "BEFORE_DUE_DATE" &&
-      rule.entityType === "INVOICE"
-    ) {
+    if (rule.triggerType === "BEFORE_DUE_DATE" && rule.entityType === "INVOICE") {
       const targetDate = addDays(today, offsetDays);
       const invoices = await prisma.invoice.findMany({
         where: {
@@ -212,10 +206,7 @@ async function evaluateReminderRules(): Promise<{
       }
     }
 
-    if (
-      rule.triggerType === "AFTER_DUE_DATE" &&
-      rule.entityType === "INVOICE"
-    ) {
+    if (rule.triggerType === "AFTER_DUE_DATE" && rule.entityType === "INVOICE") {
       const targetDate = addDays(today, -offsetDays);
       const invoices = await prisma.invoice.findMany({
         where: {
@@ -423,37 +414,39 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  return Sentry.withMonitor("reminders", () => withCronMonitor("reminders", async () => {
-    try {
-      const [ruleResults, overdueTasksNotified] = await Promise.all([
-        evaluateReminderRules(),
-        detectOverdueTasks(),
-      ]);
+  return Sentry.withMonitor(
+    "reminders",
+    () =>
+      withCronMonitor("reminders", async () => {
+        try {
+          const [ruleResults, overdueTasksNotified] = await Promise.all([
+            evaluateReminderRules(),
+            detectOverdueTasks(),
+          ]);
 
-      log.info(
-        { processed: ruleResults.processed, sent: ruleResults.sent, overdueTasksNotified },
-        "reminders cron completed",
-      );
-      metrics.gauge("cron.reminders.sent", ruleResults.sent);
-      metrics.gauge("cron.reminders.overdue_tasks", overdueTasksNotified);
+          log.info(
+            { processed: ruleResults.processed, sent: ruleResults.sent, overdueTasksNotified },
+            "reminders cron completed",
+          );
+          metrics.gauge("cron.reminders.sent", ruleResults.sent);
+          metrics.gauge("cron.reminders.overdue_tasks", overdueTasksNotified);
 
-      return NextResponse.json({
-        processed: ruleResults.processed,
-        sent: ruleResults.sent,
-        overdueTasksNotified,
-      });
-    } catch (error) {
-      log.error({ err: error }, "reminders cron failed");
-      Sentry.captureException(error, {
-        tags: { "cron.job": "reminders" },
-      });
-      return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 },
-      );
-    }
-  }), {
-    schedule: { type: "crontab", value: "0 9 * * *" },
-    timezone: "UTC",
-  });
+          return NextResponse.json({
+            processed: ruleResults.processed,
+            sent: ruleResults.sent,
+            overdueTasksNotified,
+          });
+        } catch (error) {
+          log.error({ err: error }, "reminders cron failed");
+          Sentry.captureException(error, {
+            tags: { "cron.job": "reminders" },
+          });
+          return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+        }
+      }),
+    {
+      schedule: { type: "crontab", value: "0 9 * * *" },
+      timezone: "UTC",
+    },
+  );
 }

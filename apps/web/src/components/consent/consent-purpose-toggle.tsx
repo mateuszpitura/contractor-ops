@@ -1,12 +1,11 @@
 "use client";
 
+import type { ConsentPurpose } from "@contractor-ops/validators";
 import { Shield } from "lucide-react";
 import { useTranslations } from "next-intl";
-
-import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import type { ConsentPurpose } from "@contractor-ops/validators";
+import { Switch } from "@/components/ui/switch";
 
 // ---------------------------------------------------------------------------
 // Props
@@ -47,16 +46,10 @@ export function ConsentPurposeToggle({
 
       <div className="flex-1 space-y-1">
         <div className="flex items-center gap-2">
-          <Label
-            htmlFor={switchId}
-            className="text-sm font-medium leading-none"
-          >
+          <Label htmlFor={switchId} className="text-sm font-medium leading-none">
             {label}
           </Label>
-          <Badge
-            variant={required ? "default" : "secondary"}
-            className="text-[10px] px-1.5 py-0"
-          >
+          <Badge variant={required ? "default" : "secondary"} className="text-[10px] px-1.5 py-0">
             {required ? t("required") : t("optional")}
           </Badge>
         </div>

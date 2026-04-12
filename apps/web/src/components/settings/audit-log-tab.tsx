@@ -1,16 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useQuery, useMutation, keepPreviousData } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
+import { Download, Loader2, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { parseAsString, useQueryState } from "nuqs";
-import { Search, Download, Loader2 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-
-import { trpc } from "@/trpc/init";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -18,7 +15,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { AuditLogTable, type AuditLogEntry } from "./audit-log-table";
+import { Skeleton } from "@/components/ui/skeleton";
+import { trpc } from "@/trpc/init";
+import type { AuditLogEntry } from "./audit-log-table";
+import { AuditLogTable } from "./audit-log-table";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -72,14 +72,8 @@ export function AuditLogTab() {
   // URL state (nuqs)
   // ---------------------------------------------------------------------------
 
-  const [search, setSearch] = useQueryState(
-    "auditSearch",
-    parseAsString.withDefault(""),
-  );
-  const [actorId, setActorId] = useQueryState(
-    "actorId",
-    parseAsString.withDefault(""),
-  );
+  const [search, setSearch] = useQueryState("auditSearch", parseAsString.withDefault(""));
+  const [actorId, setActorId] = useQueryState("actorId", parseAsString.withDefault(""));
   const [actionFilter, setActionFilter] = useQueryState(
     "actionFilter",
     parseAsString.withDefault(""),
@@ -88,22 +82,10 @@ export function AuditLogTab() {
     "resourceType",
     parseAsString.withDefault(""),
   );
-  const [dateFrom, setDateFrom] = useQueryState(
-    "dateFrom",
-    parseAsString.withDefault(""),
-  );
-  const [dateTo, setDateTo] = useQueryState(
-    "dateTo",
-    parseAsString.withDefault(""),
-  );
-  const [auditPage, setAuditPage] = useQueryState(
-    "auditPage",
-    parseAsString.withDefault("1"),
-  );
-  const [auditSort, setAuditSort] = useQueryState(
-    "auditSort",
-    parseAsString.withDefault("desc"),
-  );
+  const [dateFrom, setDateFrom] = useQueryState("dateFrom", parseAsString.withDefault(""));
+  const [dateTo, setDateTo] = useQueryState("dateTo", parseAsString.withDefault(""));
+  const [auditPage, setAuditPage] = useQueryState("auditPage", parseAsString.withDefault("1"));
+  const [auditSort, setAuditSort] = useQueryState("auditSort", parseAsString.withDefault("desc"));
 
   // ---------------------------------------------------------------------------
   // Debounced search
@@ -143,16 +125,7 @@ export function AuditLogTab() {
       dateTo: dateTo || undefined,
       sortOrder: (auditSort as "asc" | "desc") || "desc",
     }),
-    [
-      currentPage,
-      search,
-      actorId,
-      actionFilter,
-      resourceType,
-      dateFrom,
-      dateTo,
-      auditSort,
-    ],
+    [currentPage, search, actorId, actionFilter, resourceType, dateFrom, dateTo, auditSort],
   );
 
   const listQuery = useQuery({
@@ -232,9 +205,7 @@ export function AuditLogTab() {
           document.body.removeChild(a);
           URL.revokeObjectURL(url);
 
-          toast.success(
-            t("exportToast", { count: totalCount }),
-          );
+          toast.success(t("exportToast", { count: totalCount }));
         },
       },
     );

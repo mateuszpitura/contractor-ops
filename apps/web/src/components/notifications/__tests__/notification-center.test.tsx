@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@/test/test-utils";
 import { NotificationCenter } from "../notification-center";
 
@@ -124,9 +124,7 @@ describe("NotificationCenter", () => {
       isLoading: false,
     });
     render(<NotificationCenter />);
-    expect(
-      screen.getByRole("button", { name: /Mark all read/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Mark all read/i })).toBeInTheDocument();
   });
 
   it("disables mark all read button when unread count is 0", () => {
@@ -140,9 +138,7 @@ describe("NotificationCenter", () => {
         isLoading: false,
       });
     render(<NotificationCenter />);
-    expect(
-      screen.getByRole("button", { name: /Mark all read/i }),
-    ).toBeDisabled();
+    expect(screen.getByRole("button", { name: /Mark all read/i })).toBeDisabled();
   });
 
   it("renders empty state when no notifications", () => {

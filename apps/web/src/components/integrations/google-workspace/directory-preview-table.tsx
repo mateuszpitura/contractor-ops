@@ -1,22 +1,21 @@
 "use client";
 
-import { useMemo, useState, useCallback } from "react";
+import type { ColumnDef } from "@tanstack/react-table";
 import {
-  useReactTable,
+  flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
-  flexRender,
-  type ColumnDef,
+  useReactTable,
 } from "@tanstack/react-table";
-import { useTranslations } from "next-intl";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-
-import { Checkbox } from "@/components/ui/checkbox";
+import { useTranslations } from "next-intl";
+import { useCallback, useMemo, useState } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -32,12 +31,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -82,9 +76,7 @@ export function DirectoryPreviewTable({
   // Search state with debounce
   const [searchValue, setSearchValue] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [debounceTimer, setDebounceTimer] = useState<ReturnType<
-    typeof setTimeout
-  > | null>(null);
+  const [debounceTimer, setDebounceTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
 
   const handleSearchChange = useCallback(
     (value: string) => {
@@ -138,8 +130,7 @@ export function DirectoryPreviewTable({
     selectableFiltered.every((u) => selectedEmails.has(u.primaryEmail));
 
   const someVisibleSelected =
-    !allVisibleSelected &&
-    selectableFiltered.some((u) => selectedEmails.has(u.primaryEmail));
+    !allVisibleSelected && selectableFiltered.some((u) => selectedEmails.has(u.primaryEmail));
 
   const handleSelectAll = useCallback(() => {
     const next = new Set(selectedEmails);
@@ -204,10 +195,7 @@ export function DirectoryPreviewTable({
           return (
             <Avatar>
               {user.thumbnailPhotoUrl && (
-                <AvatarImage
-                  src={user.thumbnailPhotoUrl}
-                  alt={user.name.fullName}
-                />
+                <AvatarImage src={user.thumbnailPhotoUrl} alt={user.name.fullName} />
               )}
               <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
             </Avatar>
@@ -238,9 +226,7 @@ export function DirectoryPreviewTable({
                     >
                       {t("alreadyExists")}
                     </TooltipTrigger>
-                    <TooltipContent>
-                      {t("alreadyExistsTooltip")}
-                    </TooltipContent>
+                    <TooltipContent>{t("alreadyExistsTooltip")}</TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
               )}
@@ -253,9 +239,7 @@ export function DirectoryPreviewTable({
         header: "Email",
         accessorKey: "primaryEmail",
         cell: ({ row }) => (
-          <span className="text-sm text-muted-foreground">
-            {row.original.primaryEmail}
-          </span>
+          <span className="text-sm text-muted-foreground">{row.original.primaryEmail}</span>
         ),
       },
       {
@@ -281,14 +265,7 @@ export function DirectoryPreviewTable({
         meta: { hideBelow: 1024 },
       },
     ],
-    [
-      allVisibleSelected,
-      someVisibleSelected,
-      selectedEmails,
-      handleSelectAll,
-      handleRowSelect,
-      t,
-    ],
+    [allVisibleSelected, someVisibleSelected, selectedEmails, handleSelectAll, handleRowSelect, t],
   );
 
   // Table instance
@@ -320,9 +297,7 @@ export function DirectoryPreviewTable({
             onValueChange={(val) => setOrgUnitFilter(val === "__all__" ? "" : (val ?? ""))}
           >
             <SelectTrigger className="w-48">
-              <SelectValue>
-                {orgUnitFilter || t("allOrgUnits")}
-              </SelectValue>
+              <SelectValue>{orgUnitFilter || t("allOrgUnits")}</SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="__all__">{t("allOrgUnits")}</SelectItem>
@@ -344,9 +319,7 @@ export function DirectoryPreviewTable({
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   const hideBelow = (
-                    header.column.columnDef.meta as
-                      | { hideBelow?: number }
-                      | undefined
+                    header.column.columnDef.meta as { hideBelow?: number } | undefined
                   )?.hideBelow;
 
                   const responsiveClass =
@@ -360,10 +333,7 @@ export function DirectoryPreviewTable({
                     <TableHead key={header.id} className={responsiveClass}>
                       {header.isPlaceholder
                         ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )}
+                        : flexRender(header.column.columnDef.header, header.getContext())}
                     </TableHead>
                   );
                 })}
@@ -388,16 +358,12 @@ export function DirectoryPreviewTable({
                     key={row.id}
                     className={isExisting ? "opacity-50" : ""}
                     data-state={
-                      selectedEmails.has(row.original.primaryEmail)
-                        ? "selected"
-                        : undefined
+                      selectedEmails.has(row.original.primaryEmail) ? "selected" : undefined
                     }
                   >
                     {row.getVisibleCells().map((cell) => {
                       const hideBelow = (
-                        cell.column.columnDef.meta as
-                          | { hideBelow?: number }
-                          | undefined
+                        cell.column.columnDef.meta as { hideBelow?: number } | undefined
                       )?.hideBelow;
 
                       const responsiveClass =
@@ -409,10 +375,7 @@ export function DirectoryPreviewTable({
 
                       return (
                         <TableCell key={cell.id} className={responsiveClass}>
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext(),
-                          )}
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
                         </TableCell>
                       );
                     })}
@@ -428,13 +391,9 @@ export function DirectoryPreviewTable({
       {table.getPageCount() > 1 && (
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           <span>
-            {table.getState().pagination.pageIndex *
-              table.getState().pagination.pageSize +
-              1}
-            -
+            {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1}-
             {Math.min(
-              (table.getState().pagination.pageIndex + 1) *
-                table.getState().pagination.pageSize,
+              (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
               filteredUsers.length,
             )}{" "}
             of {filteredUsers.length}

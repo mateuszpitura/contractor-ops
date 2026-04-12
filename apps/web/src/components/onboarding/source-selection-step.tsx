@@ -1,19 +1,20 @@
 "use client";
 
-import { useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
+import { useCallback } from "react";
 import { toast } from "sonner";
-
-import { trpc } from "@/trpc/init";
-import { useRouter } from "@/i18n/navigation";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-
-import { SourceCard } from "./source-card";
-
-import { JiraBrandIcon, LinearBrandIcon, SlackBrandIcon } from "@/components/integrations/brand-icons";
+import {
+  JiraBrandIcon,
+  LinearBrandIcon,
+  SlackBrandIcon,
+} from "@/components/integrations/brand-icons";
 import { GoogleWorkspaceLogo } from "@/components/integrations/google-workspace-logo";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useRouter } from "@/i18n/navigation";
+import { trpc } from "@/trpc/init";
+import { SourceCard } from "./source-card";
 
 // ---------------------------------------------------------------------------
 // Provider icon mapping
@@ -50,9 +51,7 @@ export function SourceSelectionStep({
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const sourcesQuery = useQuery(
-    trpc.onboardingImport.listSources.queryOptions(),
-  );
+  const sourcesQuery = useQuery(trpc.onboardingImport.listSources.queryOptions());
 
   const sources = sourcesQuery.data ?? [];
 
@@ -102,9 +101,7 @@ export function SourceSelectionStep({
             void queryClient.invalidateQueries({
               queryKey: trpc.onboardingImport.listSources.queryKey(),
             });
-            toast.info(
-              `Checking ${PROVIDER_NAMES[provider] ?? provider} connection...`,
-            );
+            toast.info(`Checking ${PROVIDER_NAMES[provider] ?? provider} connection...`);
           }
         }, 500);
       } catch {
@@ -122,12 +119,8 @@ export function SourceSelectionStep({
     <div className="space-y-6">
       {/* Heading */}
       <div>
-        <h2 className="font-display text-xl font-semibold leading-[1.2]">
-          {t("step1.heading")}
-        </h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {t("step1.subtitle")}
-        </p>
+        <h2 className="font-display text-xl font-semibold leading-[1.2]">{t("step1.heading")}</h2>
+        <p className="mt-1 text-sm text-muted-foreground">{t("step1.subtitle")}</p>
       </div>
 
       {/* Source cards grid */}

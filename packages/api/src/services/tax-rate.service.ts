@@ -6,16 +6,13 @@ import type { TaxRateResponse, WhtCalculation, WhtServiceType } from "@contracto
  */
 export async function getTaxRatesForCountry(
   countryCode: string,
-  asOfDate: Date = new Date()
+  asOfDate: Date = new Date(),
 ): Promise<TaxRateResponse[]> {
   const rates = await prisma.taxRate.findMany({
     where: {
       countryCode,
       effectiveFrom: { lte: asOfDate },
-      OR: [
-        { effectiveTo: null },
-        { effectiveTo: { gte: asOfDate } },
-      ],
+      OR: [{ effectiveTo: null }, { effectiveTo: { gte: asOfDate } }],
     },
     orderBy: [{ isDefault: "desc" }, { ratePercent: "desc" }],
   });
@@ -39,17 +36,14 @@ export async function getTaxRatesForCountry(
 export async function validateVatRateCode(
   countryCode: string,
   code: string,
-  asOfDate: Date = new Date()
+  asOfDate: Date = new Date(),
 ): Promise<boolean> {
   const rate = await prisma.taxRate.findFirst({
     where: {
       countryCode,
       code,
       effectiveFrom: { lte: asOfDate },
-      OR: [
-        { effectiveTo: null },
-        { effectiveTo: { gte: asOfDate } },
-      ],
+      OR: [{ effectiveTo: null }, { effectiveTo: { gte: asOfDate } }],
     },
   });
   return rate !== null;
@@ -64,7 +58,7 @@ export async function calculateWht(
   contractorResidency: string,
   serviceType: WhtServiceType,
   grossAmountMinor: number,
-  paymentDate: Date = new Date()
+  paymentDate: Date = new Date(),
 ): Promise<WhtCalculation | null> {
   // Only Saudi currently imposes WHT in our system
   if (orgCountry !== "SA") return null;
@@ -78,10 +72,7 @@ export async function calculateWht(
       contractorResidency: { in: [contractorResidency, "XX"] },
       serviceType,
       effectiveFrom: { lte: paymentDate },
-      OR: [
-        { effectiveTo: null },
-        { effectiveTo: { gte: paymentDate } },
-      ],
+      OR: [{ effectiveTo: null }, { effectiveTo: { gte: paymentDate } }],
     },
     orderBy: {
       // Prefer specific country over XX fallback
@@ -93,7 +84,7 @@ export async function calculateWht(
 
   const treatyApplied = rate.treatyRate !== null && rate.contractorResidency !== "XX";
   const appliedRate = treatyApplied ? Number(rate.treatyRate) : Number(rate.standardRate);
-  const whtAmountMinor = Math.round(grossAmountMinor * appliedRate / 100);
+  const whtAmountMinor = Math.round((grossAmountMinor * appliedRate) / 100);
 
   return {
     grossAmountMinor,

@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
   directoryImportInputSchema,
   googleDirectoryUserSchema,
@@ -88,9 +88,7 @@ describe("Google Workspace Validators", () => {
       expect(parsed.defaultRole).toBe("readonly");
       expect(parsed.groupRoleMappings).toHaveLength(1);
       expect(parsed.userRoleOverrides["boss@example.com"]).toBe("admin");
-      expect(parsed.userGroupMemberships["member@example.com"]).toEqual([
-        "group@example.com",
-      ]);
+      expect(parsed.userGroupMemberships["member@example.com"]).toEqual(["group@example.com"]);
     });
 
     it("defaults groupRoleMappings to empty array", () => {

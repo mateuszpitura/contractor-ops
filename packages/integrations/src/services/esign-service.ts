@@ -1,11 +1,11 @@
 import { getAdapter } from "../registry.js";
 import type {
+  EmbeddedSigningUrlResult,
   ESignAdapter,
+  NormalizedSigningEvent,
+  SignedDocumentResult,
   SigningEnvelopeRequest,
   SigningEnvelopeResult,
-  EmbeddedSigningUrlResult,
-  SignedDocumentResult,
-  NormalizedSigningEvent,
 } from "../types/esign.js";
 
 // ---------------------------------------------------------------------------
@@ -35,9 +35,7 @@ export function getESignAdapter(provider: ESignProvider): ESignAdapter {
   // Verify the adapter implements ESignAdapter methods
   const esignAdapter = adapter as unknown as ESignAdapter;
   if (typeof esignAdapter.createEnvelope !== "function") {
-    throw new Error(
-      `Adapter for ${provider} does not implement the ESignAdapter interface.`,
-    );
+    throw new Error(`Adapter for ${provider} does not implement the ESignAdapter interface.`);
   }
 
   return esignAdapter;
@@ -103,11 +101,7 @@ export async function voidSigningEnvelope(params: {
   reason: string;
 }): Promise<void> {
   const adapter = getESignAdapter(params.provider);
-  return adapter.voidEnvelope(
-    params.connectionId,
-    params.envelopeId,
-    params.reason,
-  );
+  return adapter.voidEnvelope(params.connectionId, params.envelopeId, params.reason);
 }
 
 /**
@@ -120,11 +114,7 @@ export async function resendSigningNotification(params: {
   recipientEmail: string;
 }): Promise<void> {
   const adapter = getESignAdapter(params.provider);
-  return adapter.resendToRecipient(
-    params.connectionId,
-    params.envelopeId,
-    params.recipientEmail,
-  );
+  return adapter.resendToRecipient(params.connectionId, params.envelopeId, params.recipientEmail);
 }
 
 /**
@@ -140,11 +130,11 @@ export function normalizeSigningEvent(
 
 // Re-export e-sign types for consumer convenience
 export type {
-  ESignAdapter,
-  SigningEnvelopeRequest,
-  SignerInfo,
-  SigningEnvelopeResult,
   EmbeddedSigningUrlResult,
-  SignedDocumentResult,
+  ESignAdapter,
   NormalizedSigningEvent,
+  SignedDocumentResult,
+  SignerInfo,
+  SigningEnvelopeRequest,
+  SigningEnvelopeResult,
 } from "../types/esign.js";

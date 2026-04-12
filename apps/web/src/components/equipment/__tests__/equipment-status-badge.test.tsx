@@ -13,21 +13,15 @@ const ALL_STATUSES = [
 ] as const;
 
 describe("EquipmentStatusBadge", () => {
-  it.each(ALL_STATUSES)(
-    "renders $status with translated label '$label'",
-    ({ status, label }) => {
-      render(<EquipmentStatusBadge status={status} />);
-      expect(screen.getByText(label)).toBeInTheDocument();
-    },
-  );
+  it.each(ALL_STATUSES)("renders $status with translated label '$label'", ({ status, label }) => {
+    render(<EquipmentStatusBadge status={status} />);
+    expect(screen.getByText(label)).toBeInTheDocument();
+  });
 
-  it.each(ALL_STATUSES)(
-    "sets aria-label to '$label' for status $status",
-    ({ status, label }) => {
-      render(<EquipmentStatusBadge status={status} />);
-      expect(screen.getByLabelText(label)).toBeInTheDocument();
-    },
-  );
+  it.each(ALL_STATUSES)("sets aria-label to '$label' for status $status", ({ status, label }) => {
+    render(<EquipmentStatusBadge status={status} />);
+    expect(screen.getByLabelText(label)).toBeInTheDocument();
+  });
 
   it("falls back to secondary variant for unknown status", () => {
     // The component falls back to "secondary" variant for unknown statuses via

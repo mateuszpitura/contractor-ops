@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, setup } from "@/test/test-utils";
 import { DuplicateWarning } from "../duplicate-warning";
 
@@ -22,9 +22,8 @@ vi.mock("@/trpc/init", () => ({
 }));
 
 vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
-    "@tanstack/react-query",
-  );
+  const actual =
+    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
   return {
     ...actual,
     useMutation: (opts: {
@@ -32,9 +31,7 @@ vi.mock("@tanstack/react-query", async () => {
       onSuccess?: () => void;
     }) => ({
       mutate: (vars: { id: string }) => {
-        void Promise.resolve(opts.mutationFn?.(vars)).then(() =>
-          opts.onSuccess?.(),
-        );
+        void Promise.resolve(opts.mutationFn?.(vars)).then(() => opts.onSuccess?.());
         mutateMock(vars);
       },
       isPending: false,
@@ -59,11 +56,7 @@ describe("DuplicateWarning", () => {
 
   it("renders duplicate heading and invoice number in body", () => {
     render(
-      <DuplicateWarning
-        invoiceId="inv-1"
-        duplicateInvoiceId="inv-0"
-        invoiceNumber="FV/01/2025"
-      />,
+      <DuplicateWarning invoiceId="inv-1" duplicateInvoiceId="inv-0" invoiceNumber="FV/01/2025" />,
     );
     expect(
       screen.getByRole("heading", { name: /possible duplicate detected/i }),

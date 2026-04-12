@@ -2,10 +2,9 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -43,10 +42,7 @@ const STATUS_CHIPS = [
  * Active chip gets primary styling, inactive gets muted.
  * Overflow: horizontal scroll with fade gradient on narrow screens.
  */
-export function StatusChipBar({
-  activeStatus,
-  onStatusChange,
-}: StatusChipBarProps) {
+export function StatusChipBar({ activeStatus, onStatusChange }: StatusChipBarProps) {
   const t = useTranslations("Invoices");
 
   // Fetch live counts

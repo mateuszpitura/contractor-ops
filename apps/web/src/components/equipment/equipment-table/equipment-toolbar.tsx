@@ -1,18 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
 import { Filter, Loader2, Search, X } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -103,9 +99,7 @@ export function EquipmentToolbar({
 
   const toggleFilterValue = (key: keyof FilterState, value: string) => {
     const current = filters[key];
-    const next = current.includes(value)
-      ? current.filter((v) => v !== value)
-      : [...current, value];
+    const next = current.includes(value) ? current.filter((v) => v !== value) : [...current, value];
     onFiltersChange({ [key]: next });
   };
 
@@ -138,10 +132,7 @@ export function EquipmentToolbar({
                 <Filter className="h-3.5 w-3.5" />
                 {t("list.filters.type")}
                 {hasActiveFilters && (
-                  <Badge
-                    variant="secondary"
-                    className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]"
-                  >
+                  <Badge variant="secondary" className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]">
                     {activeFilterCount}
                   </Badge>
                 )}
@@ -250,13 +241,7 @@ function FilterSection({
   );
 }
 
-function FilterBadge({
-  label,
-  onRemove,
-}: {
-  label: string;
-  onRemove: () => void;
-}) {
+function FilterBadge({ label, onRemove }: { label: string; onRemove: () => void }) {
   return (
     <Badge variant="secondary" className="gap-1 ps-2 pe-1 py-0.5">
       <span className="text-xs">{label}</span>

@@ -2,7 +2,11 @@ import { render, screen } from "@/test/test-utils";
 import { SortableTaskList } from "../sortable-task-list";
 
 vi.mock("@/i18n/navigation", () => ({
-  Link: ({ children, href, ...props }: any) => <a href={href} {...props}>{children}</a>,
+  Link: ({ children, href, ...props }: any) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
 }));
 
 vi.mock("@dnd-kit/core", () => ({

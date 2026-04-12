@@ -1,22 +1,22 @@
-import { z } from "zod";
-import { TRPCError } from "@trpc/server";
 import { prisma } from "@contractor-ops/db";
 import {
   approveTimesheetSchema,
-  rejectTimesheetSchema,
   bulkApproveTimesheetsSchema,
   bulkRejectTimesheetsSchema,
   listTimesheetsSchema,
+  rejectTimesheetSchema,
   timeReconciliationSchema,
 } from "@contractor-ops/validators";
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 import { router } from "../init.js";
-import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
+import { tenantProcedure } from "../middleware/tenant.js";
 import {
   approveTimesheet,
-  rejectTimesheet,
   bulkApproveTimesheets,
   bulkRejectTimesheets,
+  rejectTimesheet,
 } from "../services/time-entry.js";
 import { computeTimeReconciliation } from "../services/time-reconciliation.js";
 
@@ -51,31 +51,29 @@ export const timeRouter = router({
    * List pending (SUBMITTED) timesheets for manager review.
    * Ordered by submittedAt ASC (oldest first).
    */
-  listPending: tenantProcedure
-    .use(requirePermission({ time: ["read"] }))
-    .query(async ({ ctx }) => {
-      const timesheets = await prisma.timesheet.findMany({
-        where: {
-          organizationId: ctx.organizationId,
-          status: "SUBMITTED",
-        },
-        orderBy: { submittedAt: "asc" },
-        include: {
-          contractor: {
-            select: {
-              id: true,
-              legalName: true,
-              email: true,
-            },
-          },
-          _count: {
-            select: { entries: true },
+  listPending: tenantProcedure.use(requirePermission({ time: ["read"] })).query(async ({ ctx }) => {
+    const timesheets = await prisma.timesheet.findMany({
+      where: {
+        organizationId: ctx.organizationId,
+        status: "SUBMITTED",
+      },
+      orderBy: { submittedAt: "asc" },
+      include: {
+        contractor: {
+          select: {
+            id: true,
+            legalName: true,
+            email: true,
           },
         },
-      });
+        _count: {
+          select: { entries: true },
+        },
+      },
+    });
 
-      return plain(timesheets);
-    }),
+    return plain(timesheets);
+  }),
 
   /**
    * List all timesheets with optional filters (status, contractor, date range).
@@ -214,16 +212,12 @@ export const timeRouter = router({
       });
 
       const hasTimesheetSet = new Set(
-        contractorWithTimesheets.map(
-          (t: { contractorId: string }) => t.contractorId,
-        ),
+        contractorWithTimesheets.map((t: { contractorId: string }) => t.contractorId),
       );
 
       // Calculate total approved hours this month per contractor
       const now = new Date();
-      const monthStart = new Date(
-        Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1),
-      );
+      const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
 
       const monthlyStats = await prisma.timesheet.groupBy({
         by: ["contractorId"],
@@ -236,12 +230,10 @@ export const timeRouter = router({
       });
 
       const monthlyMap = new Map(
-        monthlyStats.map(
-          (s: { contractorId: string; _sum: { totalMinutes: number | null } }) => [
-            s.contractorId,
-            s._sum.totalMinutes ?? 0,
-          ],
-        ),
+        monthlyStats.map((s: { contractorId: string; _sum: { totalMinutes: number | null } }) => [
+          s.contractorId,
+          s._sum.totalMinutes ?? 0,
+        ]),
       );
 
       const result = contractors
@@ -380,18 +372,10 @@ export const timeRouter = router({
       const issueDate = invoice.issueDate;
       const periodStart =
         invoice.servicePeriodStart ??
-        new Date(
-          Date.UTC(issueDate.getUTCFullYear(), issueDate.getUTCMonth(), 1),
-        );
+        new Date(Date.UTC(issueDate.getUTCFullYear(), issueDate.getUTCMonth(), 1));
       const periodEnd =
         invoice.servicePeriodEnd ??
-        new Date(
-          Date.UTC(
-            issueDate.getUTCFullYear(),
-            issueDate.getUTCMonth() + 1,
-            0,
-          ),
-        );
+        new Date(Date.UTC(issueDate.getUTCFullYear(), issueDate.getUTCMonth() + 1, 0));
 
       const result = await computeTimeReconciliation(
         prisma,
@@ -440,9 +424,7 @@ export const timeRouter = router({
       const invoices = await prisma.invoice.findMany({
         where: invoiceWhere,
         take: input.limit + 1,
-        ...(input.cursor
-          ? { cursor: { id: input.cursor }, skip: 1 }
-          : {}),
+        ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
         orderBy: { issueDate: "desc" },
         include: {
           contractor: {
@@ -473,22 +455,10 @@ export const timeRouter = router({
           const issueDate = inv.issueDate;
           const periodStart =
             inv.servicePeriodStart ??
-            new Date(
-              Date.UTC(
-                issueDate.getUTCFullYear(),
-                issueDate.getUTCMonth(),
-                1,
-              ),
-            );
+            new Date(Date.UTC(issueDate.getUTCFullYear(), issueDate.getUTCMonth(), 1));
           const periodEnd =
             inv.servicePeriodEnd ??
-            new Date(
-              Date.UTC(
-                issueDate.getUTCFullYear(),
-                issueDate.getUTCMonth() + 1,
-                0,
-              ),
-            );
+            new Date(Date.UTC(issueDate.getUTCFullYear(), issueDate.getUTCMonth() + 1, 0));
 
           const reconciliation = await computeTimeReconciliation(
             prisma,
@@ -519,14 +489,8 @@ export const timeRouter = router({
 
       // Filter out nulls and sort by deviation percent descending
       const filtered = items
-        .filter(
-          (item): item is NonNullable<typeof item> => item !== null,
-        )
-        .sort(
-          (a, b) =>
-            b.reconciliation.deviationPercent -
-            a.reconciliation.deviationPercent,
-        );
+        .filter((item): item is NonNullable<typeof item> => item !== null)
+        .sort((a, b) => b.reconciliation.deviationPercent - a.reconciliation.deviationPercent);
 
       return plain({ items: filtered, nextCursor });
     }),

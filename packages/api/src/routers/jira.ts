@@ -1,27 +1,21 @@
-import { z } from "zod";
-import { TRPCError } from "@trpc/server";
 import { prisma } from "@contractor-ops/db";
 import { decryptCredentials } from "@contractor-ops/integrations/services/credential-service";
+import type { JiraIssueMetadata } from "@contractor-ops/validators";
 import {
   jiraTaskConfigSchema,
   saveJiraStatusMappingInputSchema,
   saveJiraTaskConfigInputSchema,
 } from "@contractor-ops/validators";
-import type { JiraIssueMetadata } from "@contractor-ops/validators";
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
+import * as E from "../errors.js";
 import { router } from "../init.js";
-import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
+import { tenantProcedure } from "../middleware/tenant.js";
 import { requireTier } from "../middleware/tier.js";
 import { detectScopeExpansionNeeded } from "../services/jira-issue-sync.js";
-import {
-  getStatusMapping,
-  saveStatusMapping,
-} from "../services/jira-status-mapping.js";
-import {
-  registerJiraWebhooks,
-  deregisterJiraWebhooks,
-} from "../services/jira-webhook-handler.js";
-import * as E from "../errors.js";
+import { getStatusMapping, saveStatusMapping } from "../services/jira-status-mapping.js";
+import { deregisterJiraWebhooks, registerJiraWebhooks } from "../services/jira-webhook-handler.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -50,8 +44,7 @@ function buildJiraApiContext(
   if (!config?.cloudId) {
     throw new TRPCError({
       code: "BAD_REQUEST",
-      message:
-        "Jira connection is missing cloudId. Please reconnect your Jira integration.",
+      message: "Jira connection is missing cloudId. Please reconnect your Jira integration.",
     });
   }
 
@@ -151,10 +144,7 @@ export const jiraRouter = router({
     .use(requirePermission({ settings: ["read"] }))
     .input(z.object({ connectionId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const connection = await loadConnection(
-        input.connectionId,
-        ctx.organizationId,
-      );
+      const connection = await loadConnection(input.connectionId, ctx.organizationId);
       const { baseUrl, authHeaders } = buildJiraApiContext(
         connection.configJson,
         connection.credentialsRef,
@@ -193,10 +183,7 @@ export const jiraRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const connection = await loadConnection(
-        input.connectionId,
-        ctx.organizationId,
-      );
+      const connection = await loadConnection(input.connectionId, ctx.organizationId);
       const { baseUrl, authHeaders } = buildJiraApiContext(
         connection.configJson,
         connection.credentialsRef,
@@ -236,19 +223,15 @@ export const jiraRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const connection = await loadConnection(
-        input.connectionId,
-        ctx.organizationId,
-      );
+      const connection = await loadConnection(input.connectionId, ctx.organizationId);
       const { baseUrl, authHeaders } = buildJiraApiContext(
         connection.configJson,
         connection.credentialsRef,
       );
 
-      const response = await fetch(
-        `${baseUrl}/status/project/${input.projectId}`,
-        { headers: authHeaders },
-      );
+      const response = await fetch(`${baseUrl}/status/project/${input.projectId}`, {
+        headers: authHeaders,
+      });
 
       if (!response.ok) {
         const text = await response.text();
@@ -279,11 +262,7 @@ export const jiraRouter = router({
       }),
     )
     .query(async ({ input }) => {
-      const mapping = await getStatusMapping(
-        prisma,
-        input.connectionId,
-        input.projectId,
-      );
+      const mapping = await getStatusMapping(prisma, input.connectionId, input.projectId);
 
       return mapping ?? [];
     }),
@@ -434,21 +413,12 @@ export const jiraRouter = router({
     .use(requireTier("PRO"))
     .input(saveJiraStatusMappingInputSchema)
     .mutation(async ({ ctx, input }) => {
-      const connection = await loadConnection(
-        input.connectionId,
-        ctx.organizationId,
-      );
+      const connection = await loadConnection(input.connectionId, ctx.organizationId);
 
-      await saveStatusMapping(
-        prisma,
-        input.connectionId,
-        input.projectId,
-        input.mappings,
-      );
+      await saveStatusMapping(prisma, input.connectionId, input.projectId, input.mappings);
 
       // Re-register webhooks for all projects that have status mappings
-      const config =
-        (connection.configJson as JiraConnectionConfig) ?? {};
+      const config = (connection.configJson as JiraConnectionConfig) ?? {};
       const statusMappings = config.statusMappings ?? {};
 
       // Include the just-saved project
@@ -464,10 +434,7 @@ export const jiraRouter = router({
           // For now, use the project IDs directly in JQL (Jira accepts both)
           await registerJiraWebhooks(prisma, input.connectionId, projectKeys);
         } catch (error) {
-          console.error(
-            "[jira.saveStatusMapping] Failed to register webhooks:",
-            error,
-          );
+          console.error("[jira.saveStatusMapping] Failed to register webhooks:", error);
           // Don't fail the save — webhooks can be retried
         }
       }
@@ -498,8 +465,7 @@ export const jiraRouter = router({
         });
       }
 
-      const existingConfig =
-        (template.configJson as Record<string, unknown>) ?? {};
+      const existingConfig = (template.configJson as Record<string, unknown>) ?? {};
 
       await prisma.workflowTaskTemplate.update({
         where: { id: input.taskTemplateId },
@@ -542,10 +508,7 @@ export const jiraRouter = router({
       try {
         await deregisterJiraWebhooks(prisma, input.connectionId);
       } catch (error) {
-        console.error(
-          "[jira.disconnect] Failed to deregister webhooks:",
-          error,
-        );
+        console.error("[jira.disconnect] Failed to deregister webhooks:", error);
       }
 
       await prisma.integrationConnection.update({

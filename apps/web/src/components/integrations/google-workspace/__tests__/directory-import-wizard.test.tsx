@@ -1,9 +1,13 @@
-import { render, screen, setup } from "@/test/test-utils";
 import { useQuery } from "@tanstack/react-query";
+import { render, screen, setup } from "@/test/test-utils";
 import { DirectoryImportWizard } from "../directory-import-wizard";
 
 vi.mock("@/i18n/navigation", () => ({
-  Link: ({ children, href, ...props }: any) => <a href={href} {...props}>{children}</a>,
+  Link: ({ children, href, ...props }: any) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
   useRouter: () => ({ push: vi.fn(), replace: vi.fn(), back: vi.fn() }),
   usePathname: () => "/test",
 }));
@@ -13,9 +17,8 @@ vi.mock("@/components/billing/feature-gate", () => ({
 }));
 
 vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
-    "@tanstack/react-query",
-  );
+  const actual =
+    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
   return {
     ...actual,
     useQuery: vi.fn(),
@@ -53,11 +56,13 @@ vi.mock("../directory-preview-table", () => ({
       {users.map((u: any) => (
         <div key={u.primaryEmail}>
           <span>{u.name.fullName}</span>
-          <button onClick={() => {
-            const next = new Set(selectedEmails);
-            next.add(u.primaryEmail);
-            onSelectionChange(next);
-          }}>
+          <button
+            onClick={() => {
+              const next = new Set(selectedEmails);
+              next.add(u.primaryEmail);
+              onSelectionChange(next);
+            }}
+          >
             Select {u.name.fullName}
           </button>
         </div>
@@ -109,12 +114,14 @@ const MOCK_USERS = [
   },
 ];
 
-function setupDirectoryMock(options: {
-  users?: typeof MOCK_USERS;
-  stats?: { total: number; alreadyImported: number; new: number };
-  isLoading?: boolean;
-  isError?: boolean;
-} = {}) {
+function setupDirectoryMock(
+  options: {
+    users?: typeof MOCK_USERS;
+    stats?: { total: number; alreadyImported: number; new: number };
+    isLoading?: boolean;
+    isError?: boolean;
+  } = {},
+) {
   const {
     users = [],
     stats = { total: 0, alreadyImported: 0, new: 0 },

@@ -8,7 +8,7 @@
  * to avoid complex module mocking of tRPC internals.
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Mock @contractor-ops/db
@@ -16,9 +16,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const mockFindUnique = vi.fn();
 const mockScopedClient = { _scoped: true };
-const mockTenantStoreRun = vi.fn(
-  (_ctx: unknown, fn: () => unknown) => fn(),
-);
+const mockTenantStoreRun = vi.fn((_ctx: unknown, fn: () => unknown) => fn());
 
 vi.mock("@contractor-ops/db", () => ({
   prisma: {
@@ -37,11 +35,7 @@ vi.mock("@contractor-ops/db", () => ({
   createTenantClientFrom: vi.fn(() => mockScopedClient),
 }));
 
-import {
-  tenantStore,
-  getRegionalClient,
-  createTenantClientFrom,
-} from "@contractor-ops/db";
+import { createTenantClientFrom, getRegionalClient, tenantStore } from "@contractor-ops/db";
 
 // ---------------------------------------------------------------------------
 // Middleware under test — extracted logic
@@ -51,18 +45,15 @@ import {
 // is fragile and adds no value to what we're actually verifying.
 // ---------------------------------------------------------------------------
 
-async function runTenantMiddleware(opts: {
-  session: unknown;
-  user: unknown;
-}) {
+async function runTenantMiddleware(opts: { session: unknown; user: unknown }) {
   const { session, user } = opts;
 
   if (!session || !user) {
     throw new Error("UNAUTHORIZED");
   }
 
-  const orgId = (session as { session: { activeOrganizationId: string | null } })
-    .session.activeOrganizationId;
+  const orgId = (session as { session: { activeOrganizationId: string | null } }).session
+    .activeOrganizationId;
 
   if (!orgId) {
     throw new Error("No active organization. Please select an organization first.");
@@ -76,8 +67,9 @@ async function runTenantMiddleware(opts: {
   });
   const region = (org as { dataRegion?: string } | null)?.dataRegion ?? "EU";
 
-  const { getRegionalClient: getClient, createTenantClientFrom: createClient } =
-    await import("@contractor-ops/db");
+  const { getRegionalClient: getClient, createTenantClientFrom: createClient } = await import(
+    "@contractor-ops/db"
+  );
   const regionalPrisma = getClient(region);
   const scopedClient = createClient(regionalPrisma);
 
@@ -156,9 +148,9 @@ describe("tenant middleware — region routing", () => {
   });
 
   it("throws when no session provided", async () => {
-    await expect(
-      runTenantMiddleware({ session: null, user: null }),
-    ).rejects.toThrow("UNAUTHORIZED");
+    await expect(runTenantMiddleware({ session: null, user: null })).rejects.toThrow(
+      "UNAUTHORIZED",
+    );
   });
 
   it("throws when no active organization", async () => {

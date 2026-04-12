@@ -1,13 +1,9 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { Users } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Progress,
-  ProgressIndicator,
-  ProgressTrack,
-} from "@/components/ui/progress";
+import { Progress, ProgressIndicator, ProgressTrack } from "@/components/ui/progress";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -39,9 +35,7 @@ export function SeatCountCard({
     <Card className="p-4">
       <CardContent className="flex flex-col gap-1 p-0">
         <div className="flex items-start justify-between">
-          <span className="text-xs text-muted-foreground">
-            {t("activeSeats")}
-          </span>
+          <span className="text-xs text-muted-foreground">{t("activeSeats")}</span>
           <Users size={16} className="text-muted-foreground" aria-hidden="true" />
         </div>
         <div className="text-2xl font-semibold">{activeContractors}</div>
@@ -66,8 +60,7 @@ export function SeatCountCard({
           <ProgressTrack>
             <ProgressIndicator
               style={{
-                backgroundColor:
-                  overage > 0 ? "var(--warning)" : "var(--primary)",
+                backgroundColor: overage > 0 ? "var(--warning)" : "var(--primary)",
               }}
             />
           </ProgressTrack>

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { screen, setup, waitFor } from "@/test/test-utils";
 import { InviteAcceptForm } from "../invite-accept-form";
 
@@ -41,29 +41,15 @@ describe("InviteAcceptForm", () => {
   });
 
   it("renders pre-filled email as disabled", () => {
-    setup(
-      <InviteAcceptForm
-        token="tok-123"
-        email="invited@example.com"
-        orgName="Acme Corp"
-      />,
-    );
+    setup(<InviteAcceptForm token="tok-123" email="invited@example.com" orgName="Acme Corp" />);
     const emailInput = screen.getByLabelText("Work email");
     expect(emailInput).toHaveValue("invited@example.com");
     expect(emailInput).toBeDisabled();
   });
 
   it("renders org name in title", () => {
-    setup(
-      <InviteAcceptForm
-        token="tok-123"
-        email="invited@example.com"
-        orgName="Acme Corp"
-      />,
-    );
-    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
-      "Join Acme Corp",
-    );
+    setup(<InviteAcceptForm token="tok-123" email="invited@example.com" orgName="Acme Corp" />);
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Join Acme Corp");
   });
 
   it("renders social buttons", () => {
@@ -72,32 +58,20 @@ describe("InviteAcceptForm", () => {
   });
 
   it("shows validation error for short password", async () => {
-    const { user } = setup(
-      <InviteAcceptForm token="tok-123" email="test@example.com" />,
-    );
+    const { user } = setup(<InviteAcceptForm token="tok-123" email="test@example.com" />);
     await user.type(screen.getByLabelText("Password"), "short");
-    await user.click(
-      screen.getByRole("button", { name: "Accept and join" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Accept and join" }));
     await waitFor(() => {
-      expect(
-        screen.getByText("Password must be at least 8 characters"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Password must be at least 8 characters")).toBeInTheDocument();
     });
   });
 
   it("calls signUp and acceptInvitation on valid submit", async () => {
     const { user } = setup(
-      <InviteAcceptForm
-        token="tok-123"
-        email="invited@example.com"
-        orgName="Acme"
-      />,
+      <InviteAcceptForm token="tok-123" email="invited@example.com" orgName="Acme" />,
     );
     await user.type(screen.getByLabelText("Password"), "password123");
-    await user.click(
-      screen.getByRole("button", { name: "Accept and join" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Accept and join" }));
     await waitFor(() => {
       expect(signUpEmail).toHaveBeenCalledWith({
         email: "invited@example.com",
@@ -118,13 +92,9 @@ describe("InviteAcceptForm", () => {
     signUpEmail.mockResolvedValue({
       error: { message: "Account exists" },
     });
-    const { user } = setup(
-      <InviteAcceptForm token="tok-123" email="test@example.com" />,
-    );
+    const { user } = setup(<InviteAcceptForm token="tok-123" email="test@example.com" />);
     await user.type(screen.getByLabelText("Password"), "password123");
-    await user.click(
-      screen.getByRole("button", { name: "Accept and join" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Accept and join" }));
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith("Account exists");
     });
@@ -136,13 +106,9 @@ describe("InviteAcceptForm", () => {
     acceptInvitation.mockResolvedValue({
       error: { message: "Invalid token" },
     });
-    const { user } = setup(
-      <InviteAcceptForm token="tok-123" email="test@example.com" />,
-    );
+    const { user } = setup(<InviteAcceptForm token="tok-123" email="test@example.com" />);
     await user.type(screen.getByLabelText("Password"), "password123");
-    await user.click(
-      screen.getByRole("button", { name: "Accept and join" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Accept and join" }));
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith("Invalid token");
     });
@@ -151,8 +117,6 @@ describe("InviteAcceptForm", () => {
 
   it("defaults orgName to 'the organization'", () => {
     setup(<InviteAcceptForm token="tok-123" />);
-    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
-      "Join the organization",
-    );
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Join the organization");
   });
 });

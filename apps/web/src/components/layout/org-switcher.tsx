@@ -1,7 +1,18 @@
 "use client";
 
+import { Building2, ChevronsUpDown, Plus } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { ChevronsUpDown, Building2, Plus } from "lucide-react";
+import { toast } from "sonner";
+import { useDashboardContext } from "@/components/layout/dashboard-context";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,24 +21,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  SidebarMenuButton,
-  useSidebar,
-} from "@/components/ui/sidebar";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useTranslations } from "next-intl";
+import { SidebarMenuButton, useSidebar } from "@/components/ui/sidebar";
 import { authClient } from "@/lib/auth-client";
-import { useDashboardContext } from "@/components/layout/dashboard-context";
-import { toast } from "sonner";
 
 /**
  * Organization switcher dropdown at the top of the sidebar.
@@ -58,7 +55,10 @@ export function OrgSwitcher() {
 
     setIsCreating(true);
     try {
-      const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+      const slug = name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
       const { error } = await authClient.organization.create({ name, slug });
 
       if (error) {
@@ -91,9 +91,7 @@ export function OrgSwitcher() {
             {currentOrg?.name?.charAt(0)?.toUpperCase() ?? "O"}
           </div>
           <div className="grid flex-1 text-start text-sm leading-tight">
-            <span className="truncate font-semibold">
-              {currentOrg?.name ?? t("selectOrg")}
-            </span>
+            <span className="truncate font-semibold">{currentOrg?.name ?? t("selectOrg")}</span>
           </div>
           <ChevronsUpDown className="ms-auto size-4" />
         </DropdownMenuTrigger>
@@ -119,10 +117,7 @@ export function OrgSwitcher() {
             </DropdownMenuItem>
           ))}
           <DropdownMenuSeparator />
-          <DropdownMenuItem
-            className="gap-2 p-2"
-            onClick={() => setDialogOpen(true)}
-          >
+          <DropdownMenuItem className="gap-2 p-2" onClick={() => setDialogOpen(true)}>
             <div className="flex size-6 items-center justify-center rounded-md border bg-background">
               <Plus className="size-3.5" />
             </div>
@@ -135,9 +130,7 @@ export function OrgSwitcher() {
         <DialogContent className="sm:max-w-[400px]">
           <DialogHeader>
             <DialogTitle>{t("createTitle")}</DialogTitle>
-            <DialogDescription>
-              {t("createDescription")}
-            </DialogDescription>
+            <DialogDescription>{t("createDescription")}</DialogDescription>
           </DialogHeader>
           <form
             onSubmit={(e) => {
@@ -166,10 +159,7 @@ export function OrgSwitcher() {
               >
                 {t("cancel")}
               </Button>
-              <Button
-                type="submit"
-                disabled={isCreating || !newOrgName.trim()}
-              >
+              <Button type="submit" disabled={isCreating || !newOrgName.trim()}>
                 {isCreating ? t("creating") : t("create")}
               </Button>
             </div>

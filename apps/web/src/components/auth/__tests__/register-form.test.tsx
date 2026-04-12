@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { screen, setup, waitFor } from "@/test/test-utils";
 import { RegisterForm } from "../register-form";
 
@@ -61,9 +61,7 @@ describe("RegisterForm", () => {
   it("shows validation error for short org name", async () => {
     const { user } = setup(<RegisterForm />);
     await user.type(screen.getByLabelText("Organization name"), "A");
-    await user.click(
-      screen.getByRole("button", { name: "Create organization" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Create organization" }));
     await waitFor(() => {
       expect(
         screen.getByText("Organization name must be at least 2 characters"),
@@ -76,13 +74,9 @@ describe("RegisterForm", () => {
     await user.type(screen.getByLabelText("Organization name"), "My Org");
     await user.type(screen.getByLabelText("Work email"), "test@example.com");
     await user.type(screen.getByLabelText("Password"), "short");
-    await user.click(
-      screen.getByRole("button", { name: "Create organization" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Create organization" }));
     await waitFor(() => {
-      expect(
-        screen.getByText("Password must be at least 8 characters"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Password must be at least 8 characters")).toBeInTheDocument();
     });
   });
 
@@ -91,9 +85,7 @@ describe("RegisterForm", () => {
     await user.type(screen.getByLabelText("Organization name"), "My Company");
     await user.type(screen.getByLabelText("Work email"), "test@example.com");
     await user.type(screen.getByLabelText("Password"), "password123");
-    await user.click(
-      screen.getByRole("button", { name: "Create organization" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Create organization" }));
     await waitFor(() => {
       expect(signUpEmail).toHaveBeenCalledWith({
         email: "test@example.com",
@@ -119,9 +111,7 @@ describe("RegisterForm", () => {
     await user.type(screen.getByLabelText("Organization name"), "My Company");
     await user.type(screen.getByLabelText("Work email"), "test@example.com");
     await user.type(screen.getByLabelText("Password"), "password123");
-    await user.click(
-      screen.getByRole("button", { name: "Create organization" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Create organization" }));
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith("Email already exists");
     });
@@ -137,9 +127,7 @@ describe("RegisterForm", () => {
     await user.type(screen.getByLabelText("Organization name"), "My Company");
     await user.type(screen.getByLabelText("Work email"), "test@example.com");
     await user.type(screen.getByLabelText("Password"), "password123");
-    await user.click(
-      screen.getByRole("button", { name: "Create organization" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Create organization" }));
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith("Org name taken");
     });

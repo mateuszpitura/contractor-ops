@@ -1,12 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-
-import { trpc } from "@/trpc/init";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,6 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -97,9 +96,7 @@ export function ApprovalQueueToolbar({
     trpc.approval.bulkApprove.mutationOptions({
       onSuccess: (data) => {
         const result = data as { succeeded: number; failed: number };
-        toast.success(
-          t("toast.bulkApproved", { count: result.succeeded }),
-        );
+        toast.success(t("toast.bulkApproved", { count: result.succeeded }));
         onClearSelection();
         void queryClient.invalidateQueries({
           queryKey: [["approval", "listPending"]],
@@ -119,9 +116,7 @@ export function ApprovalQueueToolbar({
     trpc.approval.bulkReject.mutationOptions({
       onSuccess: (data) => {
         const result = data as { succeeded: number; failed: number };
-        toast.success(
-          t("toast.bulkRejected", { count: result.succeeded }),
-        );
+        toast.success(t("toast.bulkRejected", { count: result.succeeded }));
         setBulkRejectOpen(false);
         setBulkRejectComment("");
         onClearSelection();
@@ -205,21 +200,13 @@ export function ApprovalQueueToolbar({
             <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">
               {t("bulk.selectedCount", { count })}
             </span>
-            <Button
-              size="sm"
-              onClick={handleBulkApprove}
-              disabled={bulkApproveMutation.isPending}
-            >
+            <Button size="sm" onClick={handleBulkApprove} disabled={bulkApproveMutation.isPending}>
               {bulkApproveMutation.isPending && (
                 <Loader2 className="me-1 h-3.5 w-3.5 animate-spin" />
               )}
               {t("bulk.approve", { count })}
             </Button>
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => setBulkRejectOpen(true)}
-            >
+            <Button variant="destructive" size="sm" onClick={() => setBulkRejectOpen(true)}>
               {t("bulk.reject", { count })}
             </Button>
             <Button variant="ghost" size="sm" onClick={onClearSelection}>
@@ -233,12 +220,8 @@ export function ApprovalQueueToolbar({
       <Dialog open={bulkRejectOpen} onOpenChange={setBulkRejectOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>
-              {t("bulkRejectDialog.heading", { count })}
-            </DialogTitle>
-            <DialogDescription>
-              {t("bulkRejectDialog.description")}
-            </DialogDescription>
+            <DialogTitle>{t("bulkRejectDialog.heading", { count })}</DialogTitle>
+            <DialogDescription>{t("bulkRejectDialog.description")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
             <label className="text-[12px] font-medium text-muted-foreground">
@@ -251,9 +234,7 @@ export function ApprovalQueueToolbar({
               className="min-h-[100px]"
             />
             {bulkRejectComment.length > 0 && bulkRejectComment.length < 10 && (
-              <p className="text-[12px] text-destructive">
-                {t("rejectPopover.minChars")}
-              </p>
+              <p className="text-[12px] text-destructive">{t("rejectPopover.minChars")}</p>
             )}
           </div>
           <DialogFooter>
@@ -268,9 +249,7 @@ export function ApprovalQueueToolbar({
             </Button>
             <Button
               variant="destructive"
-              disabled={
-                bulkRejectComment.length < 10 || bulkRejectMutation.isPending
-              }
+              disabled={bulkRejectComment.length < 10 || bulkRejectMutation.isPending}
               onClick={handleBulkReject}
             >
               {bulkRejectMutation.isPending && (

@@ -2,11 +2,8 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
-import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -16,6 +13,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { trpc } from "@/trpc/init";
 
 interface DeactivateDialogProps {
   open: boolean;
@@ -29,12 +28,7 @@ interface DeactivateDialogProps {
  * Uses AlertDialog for destructive action confirmation pattern.
  * Calls trpc.user.deactivate on confirm, refreshes the user list on success.
  */
-export function DeactivateDialog({
-  open,
-  onOpenChange,
-  userId,
-  userName,
-}: DeactivateDialogProps) {
+export function DeactivateDialog({ open, onOpenChange, userId, userName }: DeactivateDialogProps) {
   const t = useTranslations("Users.deactivateDialog");
   const tToast = useTranslations("Settings.toast");
   const queryClient = useQueryClient();
@@ -65,9 +59,7 @@ export function DeactivateDialog({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{t("title", { userName })}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {t("body")}
-          </AlertDialogDescription>
+          <AlertDialogDescription>{t("body")}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={deactivateMutation.isPending}>

@@ -1,39 +1,33 @@
-import { z } from "zod";
-import { TRPCError } from "@trpc/server";
 import { prisma } from "@contractor-ops/db";
 import {
   approvalChainCreateSchema,
   approvalChainUpdateSchema,
   approvalQueueSchema,
   approveStepSchema,
-  rejectStepSchema,
-  delegateStepSchema,
-  requestClarificationSchema,
   bulkApproveSchema,
   bulkRejectSchema,
+  delegateStepSchema,
+  rejectStepSchema,
+  requestClarificationSchema,
 } from "@contractor-ops/validators";
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 import * as E from "../errors.js";
 import { router } from "../init.js";
-import { tenantProcedure } from "../middleware/tenant.js";
 import { requirePermission } from "../middleware/rbac.js";
+import { tenantProcedure } from "../middleware/tenant.js";
 import {
-  routeToChain,
-  createApprovalFlow,
   advanceFlow,
   computeSlaStatus,
+  createApprovalFlow,
+  routeToChain,
 } from "../services/approval-engine.js";
-import { dispatch } from "../services/notification-service.js";
+import { CacheKeys, CacheTTL, cached, invalidate, invalidateByPrefix } from "../services/cache.js";
 import {
-  syncPaymentDueDeadline,
   syncApprovalSlaDeadline,
+  syncPaymentDueDeadline,
 } from "../services/calendar-deadline-sync.js";
-import {
-  cached,
-  invalidate,
-  invalidateByPrefix,
-  CacheKeys,
-  CacheTTL,
-} from "../services/cache.js";
+import { dispatch } from "../services/notification-service.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -302,9 +296,7 @@ export const approvalRouter = router({
       ]);
 
       // Batch-fetch invoice data for all steps
-      const invoiceIds = [
-        ...new Set(steps.map((s) => s.approvalFlow.resourceId)),
-      ];
+      const invoiceIds = [...new Set(steps.map((s) => s.approvalFlow.resourceId))];
 
       const invoices = await prisma.invoice.findMany({
         where: { id: { in: invoiceIds } },
@@ -325,11 +317,7 @@ export const approvalRouter = router({
 
       // Parse chain configs to get slaHours per step
       const chainConfigIds = [
-        ...new Set(
-          steps
-            .map((s) => s.approvalFlow.chainConfigId)
-            .filter(Boolean) as string[],
-        ),
+        ...new Set(steps.map((s) => s.approvalFlow.chainConfigId).filter(Boolean) as string[]),
       ];
 
       const chainConfigs =
@@ -340,9 +328,7 @@ export const approvalRouter = router({
             })
           : [];
 
-      const chainConfigMap = new Map(
-        chainConfigs.map((c) => [c.id, c.stepsJson]),
-      );
+      const chainConfigMap = new Map(chainConfigs.map((c) => [c.id, c.stepsJson]));
 
       // Enrich steps with invoice data and SLA status
       const enrichedSteps = steps.map((step) => {
@@ -488,13 +474,16 @@ export const approvalRouter = router({
             decision: "approved",
             approverName: ctx.user!.name ?? "approver",
           },
-        }).catch((err) =>
-          console.error("[approval] dispatch APPROVAL_DECISION failed:", err),
-        );
+        }).catch((err) => console.error("[approval] dispatch APPROVAL_DECISION failed:", err));
       }
 
       // If flow advanced to next step, dispatch APPROVAL_REQUEST to next approver
-      if (!result.advanceResult.completed && result.advanceResult.nextStepOrder && result.flow && result.invoice) {
+      if (
+        !result.advanceResult.completed &&
+        result.advanceResult.nextStepOrder &&
+        result.flow &&
+        result.invoice
+      ) {
         const nextStep = result.flow.steps.find(
           (s) => s.stepOrder === result.advanceResult.nextStepOrder,
         );
@@ -548,9 +537,7 @@ export const approvalRouter = router({
           contractorName: contractor?.displayName ?? "Unknown",
           dueDate: new Date(result.invoice.dueDate),
           userId: ctx.user!.id,
-        }).catch((err) =>
-          console.error("[approval] payment deadline sync failed:", err),
-        );
+        }).catch((err) => console.error("[approval] payment deadline sync failed:", err));
       }
 
       void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
@@ -1017,8 +1004,7 @@ export const approvalRouter = router({
         if (!allowedMatchStatuses.includes(invoice.matchStatus)) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message:
-              "Invoice must be matched or manually confirmed before submitting for approval",
+            message: "Invoice must be matched or manually confirmed before submitting for approval",
           });
         }
 
@@ -1037,8 +1023,7 @@ export const approvalRouter = router({
         if (!chainConfig) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message:
-              "No approval chain configured for this organization",
+            message: "No approval chain configured for this organization",
           });
         }
 
@@ -1093,9 +1078,7 @@ export const approvalRouter = router({
             invoiceId: inv.id,
             flowId: flow.approvalFlow.id,
           },
-        }).catch((err) =>
-          console.error("[approval] dispatch APPROVAL_REQUEST failed:", err),
-        );
+        }).catch((err) => console.error("[approval] dispatch APPROVAL_REQUEST failed:", err));
       }
 
       // Calendar auto-push: sync approval SLA deadline (D-09)
@@ -1107,9 +1090,7 @@ export const approvalRouter = router({
           itemName: flow.invoice.invoiceNumber ?? `INV-${flow.invoice.id.slice(-6)}`,
           deadline: new Date(firstStep.slaDeadline),
           userId: ctx.user!.id,
-        }).catch((err) =>
-          console.error("[approval] SLA deadline sync failed:", err),
-        );
+        }).catch((err) => console.error("[approval] SLA deadline sync failed:", err));
       }
 
       return plain(flow.approvalFlow);
@@ -1257,8 +1238,7 @@ export const approvalRouter = router({
       // Sort by timestamp DESC (most recent first)
       events.sort(
         (a, b) =>
-          new Date(b.timestamp as string).getTime() -
-          new Date(a.timestamp as string).getTime(),
+          new Date(b.timestamp as string).getTime() - new Date(a.timestamp as string).getTime(),
       );
 
       return plain({ events, flow: flowSummary });

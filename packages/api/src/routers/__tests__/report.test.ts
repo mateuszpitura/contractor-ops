@@ -6,7 +6,7 @@
  * correct WHERE clauses, query structures, and returns the expected shape.
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Constants (vi.hoisted so mock factories can reference them)
@@ -150,7 +150,10 @@ vi.mock("../../services/billing-webhook.js", () => ({
 }));
 
 vi.mock("../../services/r2.js", () => ({
-  createPresignedUploadUrl: vi.fn(async () => ({ url: "https://r2.example.com/upload", key: "mock-key" })),
+  createPresignedUploadUrl: vi.fn(async () => ({
+    url: "https://r2.example.com/upload",
+    key: "mock-key",
+  })),
   createPresignedDownloadUrl: vi.fn(async () => "https://r2.example.com/download"),
   generateStorageKey: vi.fn(() => "mock-storage-key"),
   headObject: vi.fn(async () => ({ ContentLength: 1024 })),
@@ -334,9 +337,7 @@ describe("report router", () => {
     });
 
     it("supports pagination with page and pageSize", async () => {
-      mockPrisma.$queryRaw
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([{ count: 50 }]);
+      mockPrisma.$queryRaw.mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: 50 }]);
 
       const result = await caller.report.spendByContractor({
         ...DATE_RANGE,
@@ -481,9 +482,7 @@ describe("report router", () => {
     });
 
     it("supports pagination and sorting", async () => {
-      mockPrisma.$queryRaw
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([{ count: 15 }]);
+      mockPrisma.$queryRaw.mockResolvedValueOnce([]).mockResolvedValueOnce([{ count: 15 }]);
 
       const result = await caller.report.spendByTeam({
         ...DATE_RANGE,

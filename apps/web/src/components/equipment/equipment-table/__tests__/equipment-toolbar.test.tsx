@@ -23,9 +23,7 @@ describe("EquipmentToolbar", () => {
 
   it("calls onAddEquipment when add button is clicked", async () => {
     const onAddEquipment = vi.fn();
-    const { user } = setup(
-      <EquipmentToolbar {...makeProps({ onAddEquipment })} />,
-    );
+    const { user } = setup(<EquipmentToolbar {...makeProps({ onAddEquipment })} />);
 
     await user.click(screen.getByRole("button", { name: /add equipment/i }));
     expect(onAddEquipment).toHaveBeenCalledTimes(1);

@@ -1,9 +1,9 @@
-import { TRPCError } from "@trpc/server";
 import { decryptCredentials } from "@contractor-ops/integrations/services/credential-service";
 import type { LinearIssueMetadata } from "@contractor-ops/validators";
 import { linearWebhookPayloadSchema } from "@contractor-ops/validators";
-import { resolveInternalStatus } from "./linear-status-mapping.js";
+import { TRPCError } from "@trpc/server";
 import { linearGraphQL } from "./linear-issue-sync.js";
+import { resolveInternalStatus } from "./linear-status-mapping.js";
 
 // Use loosely typed prisma client for parallel execution compatibility
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -93,9 +93,10 @@ export async function processLinearWebhook(
         responsePayloadJson: {
           action: webhookPayload.action,
           identifier: webhookPayload.data.identifier,
-          reason: webhookPayload.action !== "update"
-            ? `Action '${webhookPayload.action}' not processed`
-            : "No state change detected (updatedFrom.stateId missing)",
+          reason:
+            webhookPayload.action !== "update"
+              ? `Action '${webhookPayload.action}' not processed`
+              : "No state change detected (updatedFrom.stateId missing)",
         },
       },
     });
@@ -135,8 +136,7 @@ export async function processLinearWebhook(
   }
 
   // 4. Loop prevention: Check if this is a bounce-back from our own outbound sync
-  const metadata =
-    (externalLink.metadataJson as Record<string, unknown>) ?? {};
+  const metadata = (externalLink.metadataJson as Record<string, unknown>) ?? {};
   const lastSyncOrigin = metadata.lastSyncOrigin as string | undefined;
   const lastSyncAt = metadata.lastSyncAt as string | undefined;
 
@@ -179,8 +179,7 @@ export async function processLinearWebhook(
   });
 
   if (recentDuplicate) {
-    const recentPayload =
-      recentDuplicate.responsePayloadJson as Record<string, unknown> | null;
+    const recentPayload = recentDuplicate.responsePayloadJson as Record<string, unknown> | null;
     if (recentPayload?.newStateId === newStateId) {
       // Duplicate webhook -- skip
       return;
@@ -333,8 +332,7 @@ export async function processLinearWebhook(
       data: {
         status: "FAILED",
         completedAt: new Date(),
-        errorMessage:
-          error instanceof Error ? error.message : "Unknown error",
+        errorMessage: error instanceof Error ? error.message : "Unknown error",
       },
     });
 

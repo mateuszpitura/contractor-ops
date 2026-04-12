@@ -1,5 +1,5 @@
-import { render, screen, setup } from "@/test/test-utils";
 import { useQuery } from "@tanstack/react-query";
+import { render, screen, setup } from "@/test/test-utils";
 import { EmbeddedSigningModal } from "../embedded-signing-modal";
 
 const mockedUseQuery = vi.fn();
@@ -52,9 +52,7 @@ describe("EmbeddedSigningModal", () => {
   });
 
   it("returns null when not open", () => {
-    const { container } = render(
-      <EmbeddedSigningModal {...defaultProps} open={false} />,
-    );
+    const { container } = render(<EmbeddedSigningModal {...defaultProps} open={false} />);
     expect(container.innerHTML).toBe("");
   });
 
@@ -120,9 +118,7 @@ describe("EmbeddedSigningModal", () => {
 
   it("calls onOpenChange(false) when close button is clicked", async () => {
     const onOpenChange = vi.fn();
-    const { user } = setup(
-      <EmbeddedSigningModal {...defaultProps} onOpenChange={onOpenChange} />,
-    );
+    const { user } = setup(<EmbeddedSigningModal {...defaultProps} onOpenChange={onOpenChange} />);
     await user.click(screen.getByRole("button"));
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
@@ -134,9 +130,7 @@ describe("EmbeddedSigningModal", () => {
       isLoading: false,
     });
     const onOpenChange = vi.fn();
-    const { user } = setup(
-      <EmbeddedSigningModal {...defaultProps} onOpenChange={onOpenChange} />,
-    );
+    const { user } = setup(<EmbeddedSigningModal {...defaultProps} onOpenChange={onOpenChange} />);
     const returnBtn = screen.getByText(/return to contract/i);
     await user.click(returnBtn);
     expect(onOpenChange).toHaveBeenCalledWith(false);

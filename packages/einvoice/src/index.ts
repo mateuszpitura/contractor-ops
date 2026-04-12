@@ -135,12 +135,28 @@ export { validatePintAeXml } from "./profiles/peppol-ae/validator.js";
 // ZATCA profile
 import { ZatcaProfile as _ZatcaProfile } from "./profiles/zatca/index.js";
 
+export type {
+  ZatcaApiClientConfig,
+  ZatcaClearanceResponse,
+  ZatcaCsidResponse,
+  ZatcaReportingResponse,
+  ZatcaSubmissionPayload,
+  ZatcaValidationResult,
+} from "./profiles/zatca/api-client.js";
+// ZATCA API client
+export {
+  ZATCA_PRODUCTION_URL,
+  ZATCA_SANDBOX_URL,
+  ZatcaApiClient,
+  ZatcaApiError,
+} from "./profiles/zatca/api-client.js";
 export type { ZatcaConnectionData } from "./profiles/zatca/compliance.js";
 export { computeZatcaComplianceStatus } from "./profiles/zatca/compliance.js";
 export { generateZatcaXml } from "./profiles/zatca/generator.js";
 export { ZatcaProfile } from "./profiles/zatca/index.js";
 export { buildComplianceTestInvoices, generateZatcaCsr } from "./profiles/zatca/onboarding.js";
 export { parseZatcaXml } from "./profiles/zatca/parser.js";
+export { ZatcaTLVQRCode } from "./profiles/zatca/qr-code.js";
 export type {
   ZatcaConnectionConfig,
   ZatcaCsrAttributes,
@@ -158,24 +174,8 @@ export {
   zatcaOnboardingStepSchema,
   zatcaTaxDetailsSchema,
 } from "./profiles/zatca/schemas.js";
-// ZATCA API client
-export {
-  ZatcaApiClient,
-  ZatcaApiError,
-  ZATCA_SANDBOX_URL,
-  ZATCA_PRODUCTION_URL,
-} from "./profiles/zatca/api-client.js";
-export type {
-  ZatcaApiClientConfig,
-  ZatcaClearanceResponse,
-  ZatcaCsidResponse,
-  ZatcaReportingResponse,
-  ZatcaSubmissionPayload,
-  ZatcaValidationResult,
-} from "./profiles/zatca/api-client.js";
 // ZATCA signer and QR
 export { ZatcaXAdESSigner } from "./profiles/zatca/signer.js";
-export { ZatcaTLVQRCode } from "./profiles/zatca/qr-code.js";
 // ZATCA types
 export type {
   ZatcaInvoiceExtensions,

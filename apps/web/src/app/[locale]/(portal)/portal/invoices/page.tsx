@@ -1,14 +1,11 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
-import { Link } from "@/i18n/navigation";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -19,6 +16,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Link } from "@/i18n/navigation";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -67,10 +66,7 @@ function getStatusDisplay(
     return { label: t("invoices.status.approved"), variant: "success" };
   if (invoice.status === "REJECTED")
     return { label: t("invoices.status.rejected"), variant: "destructive" };
-  if (
-    invoice.status === "UNDER_REVIEW" ||
-    invoice.status === "APPROVAL_PENDING"
-  )
+  if (invoice.status === "UNDER_REVIEW" || invoice.status === "APPROVAL_PENDING")
     return { label: t("invoices.status.inReview"), variant: "warning" };
   return { label: t("invoices.status.submitted"), variant: "info" };
 }
@@ -97,11 +93,21 @@ function InvoiceListSkeleton({ t }: { t: ReturnType<typeof useTranslations<"Port
           <TableBody>
             {Array.from({ length: 5 }).map((_, i) => (
               <TableRow key={i}>
-                <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                <TableCell><Skeleton className="h-5 w-20 rounded-full" /></TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-24" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-32" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-20" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-24" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-5 w-20 rounded-full" />
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -137,9 +143,7 @@ function InvoicesEmptyState({ t }: { t: ReturnType<typeof useTranslations<"Porta
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center">
       <h2 className="text-xl font-semibold">{t("invoices.emptyTitle")}</h2>
-      <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-        {t("invoices.emptyBody")}
-      </p>
+      <p className="mt-2 max-w-sm text-sm text-muted-foreground">{t("invoices.emptyBody")}</p>
       <Link href="/portal/invoices/submit">
         <Button className="mt-6">
           <Plus className="me-1.5 h-4 w-4" />
@@ -158,9 +162,7 @@ export default function PortalInvoicesPage() {
   const t = useTranslations("Portal");
   const router = useRouter();
 
-  const { data: invoices, isLoading } = useQuery(
-    trpc.portal.listInvoices.queryOptions(),
-  );
+  const { data: invoices, isLoading } = useQuery(trpc.portal.listInvoices.queryOptions());
 
   return (
     <div className="space-y-6">
@@ -201,9 +203,7 @@ export default function PortalInvoicesPage() {
                     <TableRow
                       key={invoice.id}
                       className="cursor-pointer"
-                      onClick={() =>
-                        router.push(`/portal/invoices/${invoice.id}`)
-                      }
+                      onClick={() => router.push(`/portal/invoices/${invoice.id}`)}
                     >
                       <TableCell>
                         <Link
@@ -217,18 +217,14 @@ export default function PortalInvoicesPage() {
                       <TableCell className="text-muted-foreground">
                         {invoice.contract?.title ?? t("invoices.fallback")}
                       </TableCell>
-                      <TableCell>
-                        {formatAmount(invoice.totalMinor, invoice.currency)}
-                      </TableCell>
+                      <TableCell>{formatAmount(invoice.totalMinor, invoice.currency)}</TableCell>
                       <TableCell className="text-muted-foreground">
                         {invoice.receivedAt
                           ? formatDate(invoice.receivedAt)
                           : t("invoices.fallback")}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={statusDisplay.variant}>
-                          {statusDisplay.label}
-                        </Badge>
+                        <Badge variant={statusDisplay.variant}>{statusDisplay.label}</Badge>
                       </TableCell>
                     </TableRow>
                   );
@@ -242,17 +238,11 @@ export default function PortalInvoicesPage() {
             {invoices.map((invoice) => {
               const statusDisplay = getStatusDisplay(invoice, t);
               return (
-                <Link
-                  key={invoice.id}
-                  href={`/portal/invoices/${invoice.id}`}
-                  className="block"
-                >
+                <Link key={invoice.id} href={`/portal/invoices/${invoice.id}`} className="block">
                   <Card className="transition-colors hover:bg-muted/50">
                     <CardContent className="space-y-2 pt-4">
                       <div className="flex items-center justify-between">
-                        <span className="font-medium">
-                          {invoice.invoiceNumber}
-                        </span>
+                        <span className="font-medium">{invoice.invoiceNumber}</span>
                         <span className="text-sm font-medium">
                           {formatAmount(invoice.totalMinor, invoice.currency)}
                         </span>
@@ -261,9 +251,7 @@ export default function PortalInvoicesPage() {
                         {invoice.contract?.title ?? t("invoices.fallback")}
                       </p>
                       <div className="flex items-center justify-between">
-                        <Badge variant={statusDisplay.variant}>
-                          {statusDisplay.label}
-                        </Badge>
+                        <Badge variant={statusDisplay.variant}>{statusDisplay.label}</Badge>
                         <span className="text-[13px] text-muted-foreground">
                           {invoice.receivedAt
                             ? formatDate(invoice.receivedAt)

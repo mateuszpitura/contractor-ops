@@ -1,6 +1,7 @@
 import { render, screen } from "@/test/test-utils";
+import type { ReadyInvoiceRow } from "../columns";
+import { getColumns } from "../columns";
 import { InvoiceSelectionDataTable } from "../data-table";
-import { getColumns, type ReadyInvoiceRow } from "../columns";
 
 function makeRow(overrides: Partial<ReadyInvoiceRow> = {}): ReadyInvoiceRow {
   return {

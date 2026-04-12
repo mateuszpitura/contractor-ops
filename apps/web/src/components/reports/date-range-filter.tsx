@@ -1,24 +1,14 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import {
-  startOfMonth,
-  subMonths,
-  startOfYear,
-  format,
-} from "date-fns";
+import { format, startOfMonth, startOfYear, subMonths } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useMemo, useState } from "react";
 import type { DateRange } from "react-day-picker";
-
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 type Preset = "this-month" | "last-3m" | "last-6m" | "ytd" | "custom";
 
@@ -55,11 +45,7 @@ interface DateRangeFilterProps {
   onDateChange: (from: string, to: string) => void;
 }
 
-export function DateRangeFilter({
-  dateFrom,
-  dateTo,
-  onDateChange,
-}: DateRangeFilterProps) {
+export function DateRangeFilter({ dateFrom, dateTo, onDateChange }: DateRangeFilterProps) {
   const t = useTranslations("Reports");
   const [activePreset, setActivePreset] = useState<Preset>("last-3m");
   const [popoverOpen, setPopoverOpen] = useState(false);

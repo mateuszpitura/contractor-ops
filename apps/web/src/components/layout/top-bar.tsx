@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { UserPlus, FilePlus, Upload, Search } from "lucide-react";
+import { FilePlus, Search, Upload, UserPlus } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useState } from "react";
+import { ContractWizardDialog } from "@/components/contracts/contract-wizard/wizard-dialog";
+import { useBreadcrumbContext } from "@/components/layout/breadcrumb-context";
+import { NotificationPopover } from "@/components/notifications/notification-popover";
+import { CommandPalette } from "@/components/search/command-palette";
+import { useSearch } from "@/components/search/search-provider";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -13,20 +16,12 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Link } from "@/i18n/navigation";
-import { useBreadcrumbContext } from "@/components/layout/breadcrumb-context";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { usePathname, useRouter } from "@/i18n/navigation";
-import { ContractWizardDialog } from "@/components/contracts/contract-wizard/wizard-dialog";
-import { NotificationPopover } from "@/components/notifications/notification-popover";
-import { useSearch } from "@/components/search/search-provider";
-import { CommandPalette } from "@/components/search/command-palette";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 
 /**
  * Top bar above main content area.
@@ -48,8 +43,7 @@ export function TopBar() {
   const segments = pathname.split("/").filter(Boolean);
 
   /** Detect UUID/CUID segments that need an override to display properly */
-  const isIdSegment = (segment: string): boolean =>
-    /^[a-zA-Z0-9_-]{20,}$/.test(segment);
+  const isIdSegment = (segment: string): boolean => /^[a-zA-Z0-9_-]{20,}$/.test(segment);
 
   /** Map URL segment → translated label. Uses Navigation i18n, context overrides, or skeleton. */
   const breadcrumbLabel = (segment: string): string | null => {
@@ -90,9 +84,7 @@ export function TopBar() {
                     ) : isLast ? (
                       <BreadcrumbPage>{label}</BreadcrumbPage>
                     ) : (
-                      <BreadcrumbLink
-                        render={(props) => <Link {...props} href={href} />}
-                      >
+                      <BreadcrumbLink render={(props) => <Link {...props} href={href} />}>
                         {label}
                       </BreadcrumbLink>
                     )}
@@ -198,10 +190,7 @@ export function TopBar() {
       <div className="accent-line sticky top-14 z-30 w-full" />
 
       {/* Contract creation wizard (portal/dialog, works from any page) */}
-      <ContractWizardDialog
-        open={contractWizardOpen}
-        onOpenChange={setContractWizardOpen}
-      />
+      <ContractWizardDialog open={contractWizardOpen} onOpenChange={setContractWizardOpen} />
 
       {/* Command palette (global search) */}
       <CommandPalette />

@@ -26,14 +26,15 @@ const sha256HexRegex = /^[a-f0-9]{64}$/;
 export const zatcaTaxDetailsSchema = z.object({
   vatNumber: z
     .string()
-    .regex(saudiVatNumberRegex, "Must be a valid 15-digit Saudi VAT number starting and ending with 3"),
+    .regex(
+      saudiVatNumberRegex,
+      "Must be a valid 15-digit Saudi VAT number starting and ending with 3",
+    ),
   orgNameArabic: z.string().min(1, "Arabic organization name is required"),
   street: z.string().min(1, "Street address is required"),
   city: z.string().min(1, "City is required"),
   district: z.string().min(1, "District is required"),
-  postalCode: z
-    .string()
-    .regex(saudiPostalCodeRegex, "Must be a valid 5-digit Saudi postal code"),
+  postalCode: z.string().regex(saudiPostalCodeRegex, "Must be a valid 5-digit Saudi postal code"),
   invoiceTypes: z
     .array(z.enum(["standard", "simplified"]))
     .min(1, "At least one invoice type must be selected"),
@@ -48,9 +49,7 @@ export type ZatcaTaxDetails = z.infer<typeof zatcaTaxDetailsSchema>;
 export const zatcaCsrAttributesSchema = z.object({
   commonName: z.string().min(1),
   orgName: z.string().min(1),
-  vatNumber: z
-    .string()
-    .regex(saudiVatNumberRegex),
+  vatNumber: z.string().regex(saudiVatNumberRegex),
   country: z.literal("SA"),
   serialNumber: z.string().min(1),
   title: z.enum(["0100", "1000", "1100"]),
@@ -104,9 +103,7 @@ export const zatcaConnectionConfigSchema = z.object({
   environment: zatcaEnvironmentSchema,
   currentStep: zatcaOnboardingStepSchema,
   taxDetails: zatcaTaxDetailsSchema.optional(),
-  certificateStatus: z
-    .enum(["none", "compliance", "production"])
-    .default("none"),
+  certificateStatus: z.enum(["none", "compliance", "production"]).default("none"),
 });
 
 export type ZatcaConnectionConfig = z.infer<typeof zatcaConnectionConfigSchema>;

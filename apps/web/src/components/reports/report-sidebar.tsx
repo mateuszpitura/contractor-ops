@@ -1,13 +1,7 @@
 "use client";
 
-import {
-  Users,
-  UsersRound,
-  FileWarning,
-  Clock,
-  ShieldAlert,
-  type LucideIcon,
-} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { Clock, FileWarning, ShieldAlert, Users, UsersRound } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { cn } from "@/lib/utils";
@@ -54,9 +48,7 @@ export function ReportSidebar({ activeReport, onSelect }: ReportSidebarProps) {
                   )}
                 >
                   <Icon className="h-4 w-4 shrink-0" />
-                  <span className="truncate">
-                    {t(report.labelKey as Parameters<typeof t>[0])}
-                  </span>
+                  <span className="truncate">{t(report.labelKey as Parameters<typeof t>[0])}</span>
                 </button>
               </li>
             );

@@ -1,21 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import dynamic from "next/dynamic";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-
-import { trpc } from "@/trpc/init";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,22 +15,34 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import dynamic from "next/dynamic";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { trpc } from "@/trpc/init";
 
 const PdfViewer = dynamic(
   () => import("@/components/ocr/pdf-viewer").then((mod) => mod.PdfViewer),
   { ssr: false },
 );
-import { ConfidenceFieldWrapper } from "@/components/ocr/confidence-field-wrapper";
-import { NipValidationBadge } from "@/components/ocr/nip-validation-badge";
-import { ExtractionStatusBar } from "@/components/ocr/extraction-status-bar";
-import { OcrProcessingOverlay } from "@/components/ocr/ocr-processing-overlay";
-import { LineItemsTable } from "@/components/ocr/line-items-table";
+
 import type {
   OcrExtractionField,
   OcrExtractionResult,
   OcrLineItem,
 } from "@contractor-ops/integrations/types/ocr";
+import { ConfidenceFieldWrapper } from "@/components/ocr/confidence-field-wrapper";
+import { ExtractionStatusBar } from "@/components/ocr/extraction-status-bar";
+import { LineItemsTable } from "@/components/ocr/line-items-table";
+import { NipValidationBadge } from "@/components/ocr/nip-validation-badge";
+import { OcrProcessingOverlay } from "@/components/ocr/ocr-processing-overlay";
 
 export interface ExtractedInvoiceData {
   invoiceNumber: string;
@@ -267,9 +267,7 @@ export function OcrReviewPanel({
   const fieldCount = resultJson
     ? Object.values(resultJson.fields).filter((f) => f.value != null).length
     : 0;
-  const totalFields = resultJson
-    ? Object.keys(resultJson.fields).length
-    : 0;
+  const totalFields = resultJson ? Object.keys(resultJson.fields).length : 0;
 
   // Build accept data
   const handleAccept = useCallback(() => {
@@ -289,10 +287,20 @@ export function OcrReviewPanel({
       lineItems,
     });
   }, [
-    invoiceNumber, issueDate, dueDate, currency,
-    subtotalMinor, vatAmountMinor, totalMinor,
-    sellerTaxId, sellerName, buyerTaxId, buyerName,
-    sellerBankAccount, lineItems, onAccept,
+    invoiceNumber,
+    issueDate,
+    dueDate,
+    currency,
+    subtotalMinor,
+    vatAmountMinor,
+    totalMinor,
+    sellerTaxId,
+    sellerName,
+    buyerTaxId,
+    buyerName,
+    sellerBankAccount,
+    lineItems,
+    onAccept,
   ]);
 
   // Field wrapper with cascade animation
@@ -370,7 +378,12 @@ export function OcrReviewPanel({
                       confidence={getFieldConfidence(resultJson?.fields, "currency")}
                       label="Currency"
                     >
-                      <Select value={currency} onValueChange={(val) => { if (val) setCurrency(val); }}>
+                      <Select
+                        value={currency}
+                        onValueChange={(val) => {
+                          if (val) setCurrency(val);
+                        }}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Select currency" />
                         </SelectTrigger>
@@ -514,10 +527,7 @@ export function OcrReviewPanel({
               <Separator />
 
               {/* Section 5: Line Items */}
-              <LineItemsTable
-                items={lineItems}
-                onChange={setLineItems}
-              />
+              <LineItemsTable items={lineItems} onChange={setLineItems} />
 
               <Separator />
 
@@ -537,9 +547,7 @@ export function OcrReviewPanel({
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Keep Data</AlertDialogCancel>
-                        <AlertDialogAction onClick={onDiscard}>
-                          Discard
-                        </AlertDialogAction>
+                        <AlertDialogAction onClick={onDiscard}>Discard</AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
@@ -557,9 +565,7 @@ export function OcrReviewPanel({
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={onRetrigger}>
-                          Re-run
-                        </AlertDialogAction>
+                        <AlertDialogAction onClick={onRetrigger}>Re-run</AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>

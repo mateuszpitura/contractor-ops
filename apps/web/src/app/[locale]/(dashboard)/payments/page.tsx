@@ -1,27 +1,23 @@
 "use client";
 
-import { Suspense, useCallback, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Banknote, CreditCard, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { parseAsString, useQueryState } from "nuqs";
-import { Banknote, CreditCard, Plus } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
-import { Skeleton } from "@/components/ui/skeleton";
-import { EmptyState } from "@/components/shared/empty-state";
-import { PageHeader } from "@/components/shared/page-header";
-import { AnimateIn } from "@/components/shared/animate-in";
-import { Button } from "@/components/ui/button";
-
-import {
-  getColumns,
-  type PaymentRunRow,
-} from "@/components/payments/payment-run-table/columns";
+import { Suspense, useCallback, useMemo, useState } from "react";
+import { BankStatementDialog } from "@/components/payments/bank-statement-dialog";
+import { NewPaymentRunDialog } from "@/components/payments/new-payment-run-dialog";
+import { PaymentRunSidePanel } from "@/components/payments/payment-run-side-panel";
+import type { PaymentRunRow } from "@/components/payments/payment-run-table/columns";
+import { getColumns } from "@/components/payments/payment-run-table/columns";
 import { PaymentRunDataTable } from "@/components/payments/payment-run-table/data-table";
 import { DataTableToolbar } from "@/components/payments/payment-run-table/data-table-toolbar";
-import { PaymentRunSidePanel } from "@/components/payments/payment-run-side-panel";
-import { NewPaymentRunDialog } from "@/components/payments/new-payment-run-dialog";
-import { BankStatementDialog } from "@/components/payments/bank-statement-dialog";
+import { AnimateIn } from "@/components/shared/animate-in";
+import { EmptyState } from "@/components/shared/empty-state";
+import { PageHeader } from "@/components/shared/page-header";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
 // Inner content (uses nuqs, needs Suspense boundary)
@@ -32,10 +28,7 @@ function PaymentsContent() {
   const te = useTranslations("EmptyStates");
 
   // URL state via nuqs
-  const [status, setStatus] = useQueryState(
-    "status",
-    parseAsString.withDefault("all"),
-  );
+  const [status, setStatus] = useQueryState("status", parseAsString.withDefault("all"));
 
   // Date range state (local, not URL-synced for simplicity)
   const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
@@ -51,9 +44,7 @@ function PaymentsContent() {
 
   // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [bankStatementRunId, setBankStatementRunId] = useState<string | null>(
-    null,
-  );
+  const [bankStatementRunId, setBankStatementRunId] = useState<string | null>(null);
 
   // Build query input
   const queryInput = useMemo(
@@ -61,13 +52,7 @@ function PaymentsContent() {
       status:
         status === "all"
           ? undefined
-          : (status as
-              | "DRAFT"
-              | "LOCKED"
-              | "EXPORTED"
-              | "COMPLETED"
-              | "FAILED"
-              | "CANCELLED"),
+          : (status as "DRAFT" | "LOCKED" | "EXPORTED" | "COMPLETED" | "FAILED" | "CANCELLED"),
       cursor: currentCursor,
       limit: 20,
       sortBy: "createdAt" as const,
@@ -102,21 +87,15 @@ function PaymentsContent() {
     [setStatus],
   );
 
-  const handleDateFromChange = useCallback(
-    (date: Date | undefined) => {
-      setDateFrom(date);
-      setCursors([]);
-    },
-    [],
-  );
+  const handleDateFromChange = useCallback((date: Date | undefined) => {
+    setDateFrom(date);
+    setCursors([]);
+  }, []);
 
-  const handleDateToChange = useCallback(
-    (date: Date | undefined) => {
-      setDateTo(date);
-      setCursors([]);
-    },
-    [],
-  );
+  const handleDateToChange = useCallback((date: Date | undefined) => {
+    setDateTo(date);
+    setCursors([]);
+  }, []);
 
   // Pagination handlers
   const handleNextPage = useCallback(() => {
@@ -138,22 +117,19 @@ function PaymentsContent() {
   // Column definitions
   const columns = useMemo(
     () =>
-      getColumns(
-        (key: string) => t(key as Parameters<typeof t>[0]),
-        {
-          onDownloadExport: () => {
-            // Download handled via side panel
-          },
-          onMarkAllPaid: (run) => {
-            setSelectedRunId(run.id);
-            setSidePanelOpen(true);
-          },
-          onCancelRun: (run) => {
-            setSelectedRunId(run.id);
-            setSidePanelOpen(true);
-          },
+      getColumns((key: string) => t(key as Parameters<typeof t>[0]), {
+        onDownloadExport: () => {
+          // Download handled via side panel
         },
-      ),
+        onMarkAllPaid: (run) => {
+          setSelectedRunId(run.id);
+          setSidePanelOpen(true);
+        },
+        onCancelRun: (run) => {
+          setSelectedRunId(run.id);
+          setSidePanelOpen(true);
+        },
+      }),
     [t],
   );
 
@@ -164,7 +140,13 @@ function PaymentsContent() {
   const contractorCount = (contractorCountQuery.data as { total: number } | undefined)?.total ?? 0;
 
   const isLoading = runsQuery.isLoading;
-  const isEmpty = !isLoading && data.length === 0 && status === "all" && !dateFrom && !dateTo && cursors.length === 0;
+  const isEmpty =
+    !isLoading &&
+    data.length === 0 &&
+    status === "all" &&
+    !dateFrom &&
+    !dateTo &&
+    cursors.length === 0;
 
   return (
     <div className="space-y-6">
@@ -272,10 +254,7 @@ function PaymentsLoading() {
       {/* Table skeleton */}
       <div className="rounded-xl border bg-background">
         {Array.from({ length: 8 }).map((_, i) => (
-          <div
-            key={i}
-            className="flex items-center gap-4 px-4 py-3 border-b last:border-b-0"
-          >
+          <div key={i} className="flex items-center gap-4 px-4 py-3 border-b last:border-b-0">
             <Skeleton className="h-4 w-24" />
             <Skeleton className="h-4 w-20" />
             <Skeleton className="h-4 w-16" />

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@contractor-ops/db", () => ({
   prisma: {
@@ -13,9 +13,7 @@ vi.mock("@contractor-ops/db", () => ({
 }));
 
 vi.mock("../cache.js", () => ({
-  cached: vi.fn(
-    async (_k: string, _t: number, fn: () => Promise<unknown>) => fn(),
-  ),
+  cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
   CacheKeys: {},
   CacheTTL: { ORG_SETTINGS: 900 },
   cacheKey: (...segments: string[]) => segments.join(":"),
@@ -23,9 +21,9 @@ vi.mock("../cache.js", () => ({
 
 import { prisma } from "@contractor-ops/db";
 import {
-  getPrivacyNotice,
-  getDefaultNoticeContent,
   createPrivacyNotice,
+  getDefaultNoticeContent,
+  getPrivacyNotice,
 } from "../privacy-notice.js";
 
 const mockPrisma = prisma as unknown as {
@@ -54,13 +52,9 @@ describe("privacy-notice", () => {
       const content = getDefaultNoticeContent("AE");
 
       expect(content.jurisdiction).toBe("AE");
-      expect(content.legalReference).toContain(
-        "Federal Decree-Law No. 45/2021",
-      );
+      expect(content.legalReference).toContain("Federal Decree-Law No. 45/2021");
       expect(content.sections.length).toBeGreaterThan(0);
-      expect(
-        content.sections.some((s) => s.title === "Your Rights"),
-      ).toBe(true);
+      expect(content.sections.some((s) => s.title === "Your Rights")).toBe(true);
     });
 
     it("returns Saudi PDPL reference for SA jurisdiction", () => {
@@ -69,9 +63,7 @@ describe("privacy-notice", () => {
       expect(content.jurisdiction).toBe("SA");
       expect(content.legalReference).toContain("Royal Decree M/19");
       expect(content.sections.length).toBeGreaterThan(0);
-      expect(
-        content.sections.some((s) => s.title === "Data Protection Officer"),
-      ).toBe(true);
+      expect(content.sections.some((s) => s.title === "Data Protection Officer")).toBe(true);
     });
   });
 
@@ -93,9 +85,7 @@ describe("privacy-notice", () => {
       expect(result).not.toBeNull();
       expect(result!.jurisdiction).toBe("AE");
       expect(result!.controller.name).toBe("Test Corp");
-      expect(result!.legalReference).toContain(
-        "Federal Decree-Law No. 45/2021",
-      );
+      expect(result!.legalReference).toContain("Federal Decree-Law No. 45/2021");
       // Should have created default notice
       expect(mockPrisma.privacyNotice.create).toHaveBeenCalled();
     });

@@ -76,9 +76,7 @@ export const getTimesheetSchema = z.object({
 
 /** List timesheets with filters (admin) */
 export const listTimesheetsSchema = z.object({
-  status: z
-    .enum(["DRAFT", "SUBMITTED", "APPROVED", "REJECTED"])
-    .optional(),
+  status: z.enum(["DRAFT", "SUBMITTED", "APPROVED", "REJECTED"]).optional(),
   contractorId: z.string().optional(),
   from: z.string().date().optional(),
   to: z.string().date().optional(),
@@ -117,9 +115,7 @@ export type CreateSingleEntry = z.infer<typeof createSingleEntrySchema>;
 export type SubmitTimesheet = z.infer<typeof submitTimesheetSchema>;
 export type ApproveTimesheet = z.infer<typeof approveTimesheetSchema>;
 export type RejectTimesheet = z.infer<typeof rejectTimesheetSchema>;
-export type BulkApproveTimesheets = z.infer<
-  typeof bulkApproveTimesheetsSchema
->;
+export type BulkApproveTimesheets = z.infer<typeof bulkApproveTimesheetsSchema>;
 export type BulkRejectTimesheets = z.infer<typeof bulkRejectTimesheetsSchema>;
 export type GetTimesheet = z.infer<typeof getTimesheetSchema>;
 export type ListTimesheets = z.infer<typeof listTimesheetsSchema>;
