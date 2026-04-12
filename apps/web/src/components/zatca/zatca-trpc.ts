@@ -34,6 +34,22 @@ export interface ComplianceCheckResult {
   message?: string;
 }
 
+export interface ZatcaSubmissionResult {
+  id: string;
+  icv: number;
+  zatcaUuid: string;
+  zatcaStatus: string;
+  zatcaResponse?: unknown;
+  submittedAt?: string | null;
+  clearedAt?: string | null;
+  reportedAt?: string | null;
+  rejectedAt?: string | null;
+  rejectionReason?: string | null;
+  createdAt: string;
+  invoiceHash: string;
+  previousHash: string;
+}
+
 // ---------------------------------------------------------------------------
 // Typed accessor
 // ---------------------------------------------------------------------------
