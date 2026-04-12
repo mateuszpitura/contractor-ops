@@ -243,8 +243,8 @@ Plans:
   4. StorecoveAdapter uses GovApiRateLimiter for Peppol ASP API calls
 **Plans**: 4 plans
 Plans:
-- [ ] 54-01-PLAN.md — Core/foundation router ctx.db migration + document/settings/portal/GDPR regional storage
-- [ ] 54-02-PLAN.md — Remaining 21 integration/feature routers ctx.db migration
+- [x] 54-01-PLAN.md — Core/foundation router ctx.db migration + document/settings/portal/GDPR regional storage
+- [x] 54-02-PLAN.md — Remaining 21 integration/feature routers ctx.db migration
 - [ ] 54-03-PLAN.md — ZatcaApiClient extends GovApiClient + ZATCA service DI
 - [ ] 54-04-PLAN.md — StorecoveAdapter GovApiRateLimiter/AuditLogger composition + Peppol service DI
 
@@ -277,5 +277,5 @@ Phases 45-52 complete. Gap closure: 53 -> 54 -> 55
 | 51. PDPL Compliance | v4.0 | 4/4 | Complete    | 2026-04-11 |
 | 52. Multi-Region Infrastructure | v4.0 | 4/4 | Complete    | 2026-04-12 |
 | 53. Peppol QR & Consent Gate | v4.0 | 2/2 | Complete    | 2026-04-12 |
-| 54. Regional Routing & Gov API | v4.0 | 0/4 | Planned    | — |
+| 54. Regional Routing & Gov API | v4.0 | 2/4 | In Progress|  |
 | 55. Verification & Doc Fixes | v4.0 | 0/0 | Planned    | — |

@@ -4,12 +4,12 @@ milestone: v4.0
 milestone_name: International Foundation & Gulf Expansion
 status: executing
 stopped_at: Phase 55 context gathered
-last_updated: "2026-04-12T10:47:34.112Z"
-last_activity: 2026-04-12
+last_updated: "2026-04-12T10:52:18.011Z"
+last_activity: 2026-04-12 -- Phase 54 execution started
 progress:
   total_phases: 11
   completed_phases: 9
-  total_plans: 47
+  total_plans: 51
   completed_plans: 47
   percent: 0
 ---
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-11)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 53 — peppol-qr-persistence-consent-onboarding-gate
+**Current focus:** Phase 54 — regional-routing-adoption-gov-api-wiring
 
 ## Current Position
 
-Phase: 54
-Plan: Not started
-Status: Executing Phase 53
-Last activity: 2026-04-12
+Phase: 54 (regional-routing-adoption-gov-api-wiring) — EXECUTING
+Plan: 1 of 4
+Status: Executing Phase 54
+Last activity: 2026-04-12 -- Phase 54 execution started
 
 Progress: [░░░░░░░░░░] 0% (v4.0)
 
