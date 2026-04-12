@@ -14,7 +14,7 @@ import crypto from "node:crypto";
 // ---------------------------------------------------------------------------
 
 /** Minimal Prisma client interface for testability */
-interface PrismaLike {
+export interface PrismaLike {
   $executeRawUnsafe: (query: string, ...args: unknown[]) => Promise<unknown>;
   zatcaInvoiceChain: {
     findFirst: (args: {

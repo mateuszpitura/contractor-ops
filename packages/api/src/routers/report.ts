@@ -222,8 +222,7 @@ export const reportRouter = router({
       const daysNum = parseInt(input.days, 10);
       const futureDate = new Date(now.getTime() + daysNum * 24 * 60 * 60 * 1000);
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const orderBy: any =
+      const orderBy: Prisma.ContractOrderByWithRelationInput =
         input.sortBy === "contractorName"
           ? { contractor: { legalName: input.sortOrder } }
           : { [input.sortBy]: input.sortOrder };
@@ -280,8 +279,7 @@ export const reportRouter = router({
     .query(async ({ ctx, input }) => {
       const now = new Date();
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const orderBy: any =
+      const orderBy: Prisma.InvoiceOrderByWithRelationInput =
         input.sortBy === "contractorName"
           ? { contractor: { legalName: input.sortOrder } }
           : input.sortBy === "amount"

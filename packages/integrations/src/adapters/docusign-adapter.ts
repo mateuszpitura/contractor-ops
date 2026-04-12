@@ -516,8 +516,8 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
   /**
    * Dynamically loads the docusign-esign SDK (pure JS, no types).
    */
+  // biome-ignore lint/suspicious/noExplicitAny: docusign-esign SDK has no TypeScript type definitions
   private async loadDocuSignSdk(): Promise<any> {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return await import("docusign-esign");
   }
 

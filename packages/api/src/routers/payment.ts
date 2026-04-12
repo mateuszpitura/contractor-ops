@@ -89,7 +89,7 @@ export const paymentRouter = router({
     .use(requirePermission({ payment: ["read"] }))
     .input(readyForPaymentListSchema)
     .query(async ({ ctx, input }) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // biome-ignore lint/suspicious/noExplicitAny: dynamically built Prisma where clause requires flexible property assignment for nested filter operators (e.g. { gte, lte })
       const where: Record<string, any> = {
         organizationId: ctx.organizationId,
         paymentStatus: "READY",
@@ -401,7 +401,7 @@ export const paymentRouter = router({
     .use(requirePermission({ payment: ["read"] }))
     .input(paymentRunListSchema)
     .query(async ({ ctx, input }) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // biome-ignore lint/suspicious/noExplicitAny: dynamically built Prisma where clause requires flexible property assignment for nested filter operators (e.g. { gte, lte })
       const where: Record<string, any> = {
         organizationId: ctx.organizationId,
       };
@@ -543,14 +543,17 @@ export const paymentRouter = router({
           select: { name: true, metadata: true },
         });
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const settingsJson = (org?.metadata as any)?.settingsJson ?? {};
+        const parsedMetadata = org?.metadata
+          ? (JSON.parse(org.metadata) as Record<string, unknown>)
+          : null;
+        const settingsJson = (parsedMetadata?.settingsJson ?? {}) as Record<string, unknown>;
+        const bankAccount = (settingsJson.bankAccount ?? {}) as Record<string, unknown>;
         const transferTitleTemplate =
-          settingsJson.paymentTransferTitleTemplate ?? "{invoice_number}";
+          (settingsJson.paymentTransferTitleTemplate as string | undefined) ?? "{invoice_number}";
         const orgBank: OrgBankInfo = {
           name: org?.name ?? "",
-          iban: settingsJson.bankAccount?.iban ?? "",
-          bic: settingsJson.bankAccount?.bic ?? "",
+          iban: (bankAccount.iban as string | undefined) ?? "",
+          bic: (bankAccount.bic as string | undefined) ?? "",
         };
 
         // Build ExportItems

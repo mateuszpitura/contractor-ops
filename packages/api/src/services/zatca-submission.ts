@@ -11,6 +11,7 @@
 
 import { createHash, randomUUID } from "node:crypto";
 import { prisma } from "@contractor-ops/db";
+import type { Prisma } from "@contractor-ops/db/generated/prisma/client";
 import type { ZatcaClearanceResponse, ZatcaReportingResponse } from "@contractor-ops/einvoice";
 import {
   ZATCA_PRODUCTION_URL,
@@ -20,6 +21,7 @@ import {
 } from "@contractor-ops/einvoice";
 import { createZatcaSecretStore, ZATCA_SECRET_NAMES } from "@contractor-ops/integrations";
 import { getQStashClient } from "@contractor-ops/integrations/services/qstash-client";
+import type { PrismaLike } from "./zatca-hash-chain.js";
 import { acquireChainLock, getNextChainEntry, recordChainEntry } from "./zatca-hash-chain.js";
 
 // ---------------------------------------------------------------------------
@@ -107,11 +109,12 @@ export async function submitToZatca(options: SubmitToZatcaOptions): Promise<void
 
   // Step 1-5: Transaction with advisory lock
   const chainRecord = await prisma.$transaction(async (tx) => {
+    const txClient = tx as unknown as PrismaLike;
     // Step 1: Acquire advisory lock
-    await acquireChainLock(tx as any, organizationId);
+    await acquireChainLock(txClient, organizationId);
 
     // Step 2: Get next ICV + PIH
-    const { icv, pih } = await getNextChainEntry(tx as any, organizationId);
+    const { icv, pih } = await getNextChainEntry(txClient, organizationId);
 
     // Step 3-4: Generate invoice XML with ZATCA extensions
     const zatcaUuid = randomUUID();
@@ -123,7 +126,7 @@ export async function submitToZatca(options: SubmitToZatcaOptions): Promise<void
     const invoiceHash = createHash("sha256").update(invoiceXml).digest("hex");
 
     // Step 5: Record chain entry
-    const record = await recordChainEntry(tx as any, {
+    const record = await recordChainEntry(txClient, {
       organizationId,
       icv,
       invoiceId,
@@ -177,7 +180,7 @@ export async function submitToZatca(options: SubmitToZatcaOptions): Promise<void
       where: { id: chainRecord.id },
       data: {
         zatcaStatus: mapZatcaStatus(status),
-        zatcaResponse: response as any,
+        zatcaResponse: response as unknown as Prisma.InputJsonValue,
         submittedAt: now,
         ...(status === "CLEARED" && { clearedAt: now }),
         ...(status === "REPORTED" && { reportedAt: now }),

@@ -49,8 +49,8 @@ function createRootLogger(): Logger {
   // ── Pretty stdout (dev) or plain stdout (prod) ────────────────────
   if (isDev) {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-explicit-any
-      const pretty = require("pino-pretty") as any;
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const pretty = require("pino-pretty") as typeof import("pino-pretty");
       streams.push({
         level: baseOptions.level as pino.Level,
         stream: pretty({

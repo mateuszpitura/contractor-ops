@@ -1,5 +1,6 @@
 import { auth } from "@contractor-ops/auth";
 import { prisma } from "@contractor-ops/db";
+import type { Prisma } from "@contractor-ops/db/generated/prisma/client";
 import {
   orgExpiryReminderDefaultsSchema,
   updateOrganizationSettingsSchema,
@@ -127,8 +128,7 @@ export const settingsRouter = router({
 
       const currentSettings = (org?.settingsJson as Record<string, unknown>) ?? {};
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const newSettings: any = {
+      const newSettings: Record<string, unknown> = {
         ...currentSettings,
         contractExpiryReminderDaysBefore: input.reminderDaysBefore,
       };
@@ -136,7 +136,7 @@ export const settingsRouter = router({
       await prisma.organization.update({
         where: { id: ctx.organizationId },
         data: {
-          settingsJson: newSettings,
+          settingsJson: newSettings as Prisma.InputJsonValue,
         },
       });
 
@@ -188,8 +188,7 @@ export const settingsRouter = router({
 
       const currentSettings = (org?.settingsJson as Record<string, unknown>) ?? {};
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const newSettings: any = {
+      const newSettings: Record<string, unknown> = {
         ...currentSettings,
         invoiceDeviationThresholdPercent: input.invoiceDeviationThresholdPercent,
       };
@@ -197,7 +196,7 @@ export const settingsRouter = router({
       await prisma.organization.update({
         where: { id: ctx.organizationId },
         data: {
-          settingsJson: newSettings,
+          settingsJson: newSettings as Prisma.InputJsonValue,
         },
       });
 
@@ -296,8 +295,7 @@ export const settingsRouter = router({
       }
 
       // Build update data
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const updateData: { settingsJson?: any; logo?: string | null } = {};
+      const updateData: { settingsJson?: Prisma.InputJsonValue; logo?: string | null } = {};
 
       if (input.brandColor !== undefined) {
         updateData.settingsJson = newSettings;

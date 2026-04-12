@@ -1,4 +1,5 @@
 import { prisma } from "@contractor-ops/db";
+import type { Prisma } from "@contractor-ops/db/generated/prisma/client";
 import {
   amendmentCreateSchema,
   contractCreateSchema,
@@ -174,8 +175,7 @@ export const contractRouter = router({
         });
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const updateData: Record<string, any> = { ...input.data };
+      const updateData: Record<string, unknown> = { ...input.data };
 
       // Convert date strings to Date objects if present
       if (updateData.startDate) {
@@ -235,7 +235,7 @@ export const contractRouter = router({
     .query(async ({ ctx, input }) => {
       const { page, pageSize, search, sortBy, sortOrder, contractorId, filters } = input;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // biome-ignore lint/suspicious/noExplicitAny: dynamically built Prisma where clause requires flexible property assignment for nested filter operators (e.g. { gte, lte })
       const where: Record<string, any> = {
         organizationId: ctx.organizationId,
         deletedAt: null,
@@ -356,8 +356,7 @@ export const contractRouter = router({
         });
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const updateData: Record<string, any> = {
+      const updateData: Record<string, unknown> = {
         status: input.targetStatus,
       };
 
@@ -411,8 +410,7 @@ export const contractRouter = router({
           title: input.title,
           effectiveDate: new Date(input.effectiveDate),
           description: input.description ?? null,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          changesSummaryJson: input.changesSummaryJson as any,
+          changesSummaryJson: input.changesSummaryJson as Prisma.InputJsonValue,
         },
       });
 
@@ -461,8 +459,7 @@ export const contractRouter = router({
 
       const currentMetadata = (contract.metadataJson as Record<string, unknown>) ?? {};
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const newMetadata: any = {
+      const newMetadata: Record<string, unknown> = {
         ...currentMetadata,
         reminderDaysBefore: input.reminderDaysBefore,
       };
@@ -470,7 +467,7 @@ export const contractRouter = router({
       const updated = await prisma.contract.update({
         where: { id: input.contractId },
         data: {
-          metadataJson: newMetadata,
+          metadataJson: newMetadata as Prisma.InputJsonValue,
         },
       });
 
@@ -564,8 +561,7 @@ export const contractRouter = router({
 
       if (valid.length > 0) {
         await prisma.$transaction(async (tx) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const updateData: Record<string, any> = {
+          const updateData: Record<string, unknown> = {
             status: input.targetStatus,
           };
 

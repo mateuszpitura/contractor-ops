@@ -1,4 +1,5 @@
 import { prisma } from "@contractor-ops/db";
+import type { Prisma } from "@contractor-ops/db/generated/prisma/client";
 import { metrics } from "@contractor-ops/logger/metrics";
 import { TIER_CREDIT_ALLOWANCE, TRIAL_CREDIT_ALLOWANCE } from "./billing-constants.js";
 import { CacheKeys, CacheTTL, cached, invalidate } from "./cache.js";
@@ -106,9 +107,8 @@ async function fetchCreditBalance(organizationId: string): Promise<CreditBalance
  * @returns Whether the deduction was allowed, remaining credits, and reason if denied
  */
 export async function checkAndDeductCredit(organizationId: string): Promise<CreditDeductionResult> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const result = await prisma.$transaction(
-    async (tx: any) => {
+    async (tx: Prisma.TransactionClient) => {
       const subscription = await tx.subscription.findUnique({
         where: { organizationId },
       });
