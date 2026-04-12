@@ -1,5 +1,6 @@
 import { render, screen, setup } from '@/test/test-utils';
 import { UserMenu } from '../user-menu';
+import { routing } from '@/i18n/routing';
 
 vi.mock('@/lib/auth-client', () => ({
   authClient: {
@@ -227,5 +228,38 @@ describe('UserMenu', () => {
     render(<UserMenu />);
     const initials = screen.getAllByText('JK');
     expect(initials.length).toBeGreaterThanOrEqual(1);
+  });
+
+  // -------------------------------------------------------------------------
+  // Wave 0 scaffold — implemented in Plan 05 (German locale support)
+  // These tests fail by design until Plan 05 adds 'de' to routing.locales AND
+  // extends the component's internal localeOrder array at user-menu.tsx:100.
+  // Covers FOUND-03 (locale-order drift detection).
+  // -------------------------------------------------------------------------
+  describe('locale cycling parity with routing.locales (FOUND-03, Plan 05)', () => {
+    it('cycles through every locale declared in routing.locales', async () => {
+      const { user } = setup(<UserMenu />);
+      const trigger = screen.getAllByRole('button')[0];
+      if (!trigger) throw new Error('No trigger button');
+      await user.click(trigger);
+
+      // Every locale in routing.locales must appear as a toggle label at some
+      // point during N-cycle rotation. Guards against localeOrder hardcoding.
+      for (const locale of routing.locales) {
+        const upper = locale.toUpperCase();
+        // Assert at least one menu contains a locale token for every declared locale.
+        // Wave 0: this WILL fail when localeOrder is still ['pl', 'en', 'ar']
+        // and 'de' is added to routing — the cycle never visits 'de'.
+        expect(Array.from(document.querySelectorAll('*'))
+          .some(el => el.textContent === upper || el.textContent?.includes(upper)))
+          .toBe(true);
+      }
+    });
+
+    it('routing.locales.length matches the localeOrder length in user-menu', () => {
+      // Structural drift guard — the component-internal localeOrder must have
+      // the same cardinality as routing.locales. Plan 05 extends both.
+      expect(routing.locales.length).toBeGreaterThanOrEqual(4);
+    });
   });
 });

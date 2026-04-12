@@ -180,4 +180,48 @@ describe('OnboardingConsentStep', () => {
 
     expect(onComplete).toHaveBeenCalledTimes(1);
   });
+
+  // -------------------------------------------------------------------------
+  // Wave 0 scaffold — implemented in Plan 08 (GB + DE privacy acknowledgement)
+  // Tests fail by design until Plan 08 either:
+  //   - extends isPdplJurisdiction to include GB + DE, OR
+  //   - introduces a new requiresPrivacyAcknowledgement(code) predicate.
+  // Plan 08 must also render an acknowledgement checkbox + link-in-label to
+  // /legal/privacy with target='_blank' and rel='noopener noreferrer'.
+  // Covers FOUND-01..06 onboarding privacy acknowledgement flow.
+  // -------------------------------------------------------------------------
+  describe('privacy acknowledgement for GB + DE orgs (FOUND-01..06, Plan 08)', () => {
+    it.each(['GB', 'DE'] as const)(
+      'renders acknowledgement step for orgCountryCode=%s',
+      countryCode => {
+        const { container } = render(
+          <OnboardingConsentStep orgCountryCode={countryCode} onComplete={onComplete} />,
+        );
+        // Wave 0: current isPdplJurisdiction returns false for GB/DE -> component
+        // returns null. When Plan 08 extends the predicate, the step renders.
+        expect(container.innerHTML).not.toBe('');
+      },
+    );
+
+    it('acknowledgement checkbox is unchecked by default for GB org', () => {
+      render(<OnboardingConsentStep orgCountryCode="GB" onComplete={onComplete} />);
+      const checkbox = screen.getByRole('checkbox', { name: /acknowledge/i });
+      expect(checkbox).not.toBeChecked();
+    });
+
+    it('Continue button is disabled until checkbox toggled on', () => {
+      render(<OnboardingConsentStep orgCountryCode="DE" onComplete={onComplete} />);
+      const continueBtn = screen.getByRole('button', { name: /continue|weiter/i });
+      expect(continueBtn).toBeDisabled();
+    });
+
+    it('link in label points to /legal/privacy with safe rel + target', () => {
+      render(<OnboardingConsentStep orgCountryCode="DE" onComplete={onComplete} />);
+      const link = screen.getByRole('link', { name: /privacy|datenschutz/i });
+      expect(link).toHaveAttribute('href', expect.stringContaining('/legal/privacy'));
+      expect(link).toHaveAttribute('target', '_blank');
+      expect(link).toHaveAttribute('rel', expect.stringContaining('noopener'));
+      expect(link).toHaveAttribute('rel', expect.stringContaining('noreferrer'));
+    });
+  });
 });
