@@ -157,7 +157,7 @@ Plans:
 - [x] 48-05-PLAN.md — Device onboarding: CSR generation, compliance checks, certificate exchange
 - [x] 48-06-PLAN.md — Onboarding wizard UI, status badges, compliance widget, schema push
 - [ ] 48-07-PLAN.md — [GAP] Wire submission pipeline to real ZATCA XML generation, signing, and QR
-- [ ] 48-08-PLAN.md — [GAP] Wire orphaned ZATCA UI components into invoice detail page
+- [x] 48-08-PLAN.md — [GAP] Wire orphaned ZATCA UI components into invoice detail page
 **UI hint**: yes
 
 ### Phase 49: Peppol PINT-AE Integration
@@ -225,7 +225,7 @@ Phases execute in numeric order: 45 -> 46 -> 47 -> 48 -> 49 -> 50 -> 51 -> 52
 | 45. Pluggable E-Invoicing Engine Core | v4.0 | 5/5 | Complete    | 2026-04-11 |
 | 46. Multi-Currency & SWIFT Payments | v4.0 | 5/5 | Complete    | 2026-04-11 |
 | 47. VAT Engine, WHT & Country Fields | v4.0 | 7/7 | Complete    | 2026-04-11 |
-| 48. ZATCA Fatoorah Integration | v4.0 | 6/8 | Gap Closure   | — |
+| 48. ZATCA Fatoorah Integration | v4.0 | 7/8 | In Progress|  |
 | 49. Peppol PINT-AE Integration | v4.0 | 5/5 | Complete    | 2026-04-12 |
 | 50. Arabic Localization & RTL Layout | v4.0 | 7/7 | Complete    | 2026-04-12 |
 | 51. PDPL Compliance | v4.0 | 4/4 | Complete    | 2026-04-11 |
