@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useLocale } from "next-intl";
 import {
   BarChart,
   Bar,
@@ -14,6 +15,7 @@ import {
 } from "recharts";
 
 import { Skeleton } from "@/components/ui/skeleton";
+import { useRtlChartConfig } from "@/hooks/use-rtl-chart-config";
 
 type ChartType = "bar-horizontal" | "bar-grouped" | "pie";
 
@@ -37,15 +39,6 @@ const PIE_COLORS: Record<string, string> = {
   ok: "var(--color-success, #22c55e)",
 };
 
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat("pl-PL", {
-    style: "currency",
-    currency: "PLN",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value / 100);
-}
-
 export function ReportChart({
   type,
   data,
@@ -56,6 +49,22 @@ export function ReportChart({
   isLoading,
   idKey = "id",
 }: ReportChartProps) {
+  const locale = useLocale();
+  const { xAxisProps, yAxisProps, chartStyle } = useRtlChartConfig();
+
+  const formatCurrency = useMemo(() => {
+    const fmt = new Intl.NumberFormat(
+      locale === "ar" ? "ar-SA-u-nu-latn" : locale === "pl" ? "pl-PL" : "en-US",
+      {
+        style: "currency",
+        currency: locale === "ar" ? "AED" : "PLN",
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      },
+    );
+    return (value: number) => fmt.format(value / 100);
+  }, [locale]);
+
   const sortedData = useMemo(() => {
     if (type === "bar-horizontal") {
       return [...data]
@@ -96,17 +105,20 @@ export function ReportChart({
             data={sortedData}
             layout="vertical"
             margin={{ top: 0, right: 20, bottom: 0, left: 0 }}
+            style={chartStyle}
           >
             <XAxis
               type="number"
               tickFormatter={(v: number) => formatCurrency(v)}
               tick={{ fontSize: 12 }}
+              {...xAxisProps}
             />
             <YAxis
               type="category"
               dataKey={nameKey}
               width={150}
               tick={{ fontSize: 12 }}
+              {...yAxisProps}
             />
             <Tooltip
               formatter={(value) => formatCurrency(Number(value))}
@@ -152,12 +164,14 @@ export function ReportChart({
           <BarChart
             data={sortedData}
             margin={{ top: 0, right: 20, bottom: 0, left: 0 }}
+            style={chartStyle}
           >
             <XAxis
               dataKey={nameKey}
               tick={{ fontSize: 12 }}
+              {...xAxisProps}
             />
-            <YAxis tick={{ fontSize: 12 }} />
+            <YAxis tick={{ fontSize: 12 }} {...yAxisProps} />
             <Tooltip cursor={{ fill: "var(--color-muted)", opacity: 0.3 }} />
             <Bar
               dataKey={dataKey}

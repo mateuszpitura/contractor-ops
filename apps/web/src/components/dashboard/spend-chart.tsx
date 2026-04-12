@@ -14,9 +14,11 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
+import { useLocale } from "next-intl";
 import { trpc } from "@/trpc/init";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useRtlChartConfig } from "@/hooks/use-rtl-chart-config";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -31,13 +33,6 @@ interface ChartDataPoint {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-const currencyFormatter = new Intl.NumberFormat("pl-PL", {
-  style: "currency",
-  currency: "PLN",
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 0,
-});
 
 function formatMonthLabel(isoString: string): string {
   const date = new Date(isoString);
@@ -130,6 +125,23 @@ function ChartTooltip({
  */
 export function SpendChart() {
   const t = useTranslations("Dashboard");
+  const locale = useLocale();
+  const { xAxisProps, yAxisProps, chartStyle } = useRtlChartConfig();
+
+  const currencyFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat(
+        locale === "ar" ? "ar-SA-u-nu-latn" : locale === "pl" ? "pl-PL" : "en-US",
+        {
+          style: "currency",
+          currency: locale === "ar" ? "AED" : "PLN",
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0,
+        },
+      ),
+    [locale],
+  );
+
   const [spendRange, setSpendRange] = useQueryState(
     "spend",
     parseAsString.withDefault("6"),
@@ -180,7 +192,7 @@ export function SpendChart() {
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={280}>
-            <AreaChart data={chartData}>
+            <AreaChart data={chartData} style={chartStyle}>
               <defs>
                 <linearGradient id="gradPLN" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="oklch(0.65 0.145 178)" stopOpacity={0.35} />
@@ -209,6 +221,7 @@ export function SpendChart() {
                 tickLine={false}
                 axisLine={false}
                 tick={{ fill: "var(--color-muted-foreground)" }}
+                {...xAxisProps}
               />
               <YAxis
                 fontSize={11}
@@ -219,6 +232,7 @@ export function SpendChart() {
                   currencyFormatter.format(val / 100)
                 }
                 width={70}
+                {...yAxisProps}
               />
               <Tooltip
                 content={<ChartTooltip />}
