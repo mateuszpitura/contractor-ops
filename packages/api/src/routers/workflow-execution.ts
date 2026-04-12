@@ -152,8 +152,7 @@ export const workflowExecutionRouter = router({
             ? (taskIdMap.get(taskTemplate.dependsOnTaskTemplateId) ?? null)
             : null;
 
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          let resultJson: any = null;
+          let resultJson: Record<string, unknown> | null = null;
 
           const status = !conditionMet
             ? ("SKIPPED" as const)
@@ -595,8 +594,7 @@ export const workflowExecutionRouter = router({
     .query(async ({ ctx, input }) => {
       const { page, pageSize, search, sortBy, sortOrder, contractorId, filters } = input;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const where: Record<string, any> = {
+      const where: Record<string, unknown> = {
         organizationId: ctx.organizationId,
       };
 
@@ -680,8 +678,7 @@ export const workflowExecutionRouter = router({
     .query(async ({ ctx, input }) => {
       const { page, pageSize, overdueOnly } = input;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const where: Record<string, any> = {
+      const where: Record<string, unknown> = {
         organizationId: ctx.organizationId,
         assigneeUserId: ctx.user!.id,
         status: { in: ["TODO", "IN_PROGRESS", "BLOCKED"] },
@@ -1068,8 +1065,7 @@ export const workflowExecutionRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const where: Record<string, any> = {
+      const where: Record<string, unknown> = {
         organizationId: ctx.organizationId,
         workflowRunId: input.workflowRunId,
       };

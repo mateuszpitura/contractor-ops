@@ -76,8 +76,7 @@ export interface ConditionGroup {
  * Get a nested field value from an object using dot notation.
  * e.g., "contractor.type" -> context.contractor.type
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getNestedValue(obj: Record<string, any>, path: string): unknown {
+function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
   return path.split(".").reduce((current, key) => current?.[key], obj);
 }
 
@@ -87,15 +86,14 @@ function getNestedValue(obj: Record<string, any>, path: string): unknown {
  */
 export function evaluateCondition(
   condition: ConditionGroup | null,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  context: { contractor: any; contract?: any },
+  context: { contractor: Record<string, unknown>; contract?: Record<string, unknown> },
 ): boolean {
   if (!condition || !condition.rules || condition.rules.length === 0) {
     return true;
   }
 
   const results = condition.rules.map((rule) => {
-    const fieldValue = getNestedValue(context as unknown as Record<string, unknown>, rule.field);
+    const fieldValue = getNestedValue(context as Record<string, unknown>, rule.field);
     const strValue = String(fieldValue ?? "");
 
     switch (rule.operator) {
@@ -124,15 +122,11 @@ export function evaluateCondition(
  * Returns null if no matching user is found (task will be unassigned).
  */
 export async function resolveAssignee(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   task: { assigneeMode: string; assigneeUserId?: string | null; assigneeRole?: string | null },
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  contractor: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  contract: any | null,
+  contractor: { internalOwnerUserId?: string | null },
+  contract: { internalOwnerUserId?: string | null } | null,
   orgId: string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  tx: any,
+  tx: { member: { findFirst: (args: unknown) => Promise<{ userId: string } | null> } },
 ): Promise<string | null> {
   switch (task.assigneeMode) {
     case "FIXED_USER":
@@ -167,8 +161,7 @@ export async function resolveAssignee(
  * from both numerator and denominator.
  */
 export function calculateProgress(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  tasks: Array<{ status: string; resultJson?: any }>,
+  tasks: Array<{ status: string; resultJson?: unknown }>,
 ): { done: number; total: number; percent: number } {
   // Exclude condition-skipped tasks from the total
   const activeTasks = tasks.filter((t) => {
