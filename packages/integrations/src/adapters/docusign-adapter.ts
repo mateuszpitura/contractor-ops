@@ -16,7 +16,7 @@ import type { WebhookVerificationResult } from "../types/webhook.js";
 import { BaseAdapter } from "./base-adapter.js";
 
 // ---------------------------------------------------------------------------
-// DocuSign SDK types (untyped JS SDK — declare minimal shapes)
+// DocuSign SDK types (untyped JS SDK — declare minimal shapes we use)
 // ---------------------------------------------------------------------------
 
 interface DocuSignApiClient {
@@ -46,6 +46,37 @@ interface DocuSignSigner {
 
 interface DocuSignRecipients {
   signers?: DocuSignSigner[];
+}
+
+/** Constructable model from docusign-esign SDK */
+interface Constructable<T> {
+  constructFromObject(data: Record<string, unknown>): T;
+}
+
+/** Envelopes API from docusign-esign SDK */
+interface DocuSignEnvelopesApi {
+  createEnvelope(accountId: string, opts: { envelopeDefinition: unknown }): Promise<DocuSignEnvelopeSummary>;
+  createRecipientView(accountId: string, envelopeId: string, opts: { recipientViewRequest: unknown }): Promise<DocuSignRecipientView>;
+  getDocument(accountId: string, envelopeId: string, documentId: string): Promise<Buffer>;
+  getEnvelope(accountId: string, envelopeId: string): Promise<DocuSignEnvelope>;
+  listRecipients(accountId: string, envelopeId: string): Promise<DocuSignRecipients>;
+  update(accountId: string, envelopeId: string, opts: { envelope: unknown }): Promise<void>;
+  updateRecipients(accountId: string, envelopeId: string, opts: { recipients: unknown; resendEnvelope?: string }): Promise<void>;
+}
+
+/** Shape of the dynamically imported docusign-esign module */
+interface DocuSignSdk {
+  ApiClient: new () => DocuSignApiClient;
+  EnvelopesApi: new (client: DocuSignApiClient) => DocuSignEnvelopesApi;
+  Document: Constructable<unknown>;
+  Signer: Constructable<unknown>;
+  Recipients: Constructable<unknown>;
+  EnvelopeDefinition: Constructable<unknown>;
+  Envelope: Constructable<unknown>;
+  RecipientViewRequest: Constructable<unknown>;
+  Notification: Constructable<unknown>;
+  Expirations: Constructable<unknown>;
+  Reminders: Constructable<unknown>;
 }
 
 // ---------------------------------------------------------------------------
@@ -513,10 +544,10 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
 
   /**
    * Dynamically loads the docusign-esign SDK (pure JS, no types).
+   * Returns as DocuSignSdk — our local interface covering the subset we use.
    */
-  // biome-ignore lint/suspicious/noExplicitAny: docusign-esign SDK has no TypeScript type definitions
-  private async loadDocuSignSdk(): Promise<any> {
-    return await import("docusign-esign");
+  private async loadDocuSignSdk(): Promise<DocuSignSdk> {
+    return (await import("docusign-esign")) as unknown as DocuSignSdk;
   }
 
   private mapDocuSignEventType(
