@@ -90,7 +90,7 @@ Full details: `.planning/milestones/v3.0-ROADMAP.md`
 - [x] **Phase 51: PDPL Compliance** - UAE and Saudi privacy law compliance with consent management and cross-border transfer safeguards (completed 2026-04-11)
 - [x] **Phase 52: Multi-Region Infrastructure** - Regional database routing, file storage residency, and government API framework (completed 2026-04-11)
 - [x] **Phase 53: Peppol QR Persistence & Consent Onboarding Gate** - [GAP CLOSURE] Add qrCodeBase64 to Invoice model, wire OnboardingConsentStep into onboarding (2 plans) (completed 2026-04-12)
-- [ ] **Phase 54: Regional Routing Adoption & Gov API Wiring** - [GAP CLOSURE] Migrate routers to ctx.db, adopt regional storage, wire gov-api framework (4 plans)
+- [x] **Phase 54: Regional Routing Adoption & Gov API Wiring** - [GAP CLOSURE] Migrate routers to ctx.db, adopt regional storage, wire gov-api framework (4 plans) (completed 2026-04-12)
 - [ ] **Phase 55: Verification & Documentation Fixes** - [GAP CLOSURE] Re-verify phases 45/48, update SUMMARY frontmatter, fix hardcoded pl-PL formatters
 
 ## Phase Details
@@ -245,8 +245,8 @@ Plans:
 Plans:
 - [x] 54-01-PLAN.md — Core/foundation router ctx.db migration + document/settings/portal/GDPR regional storage
 - [x] 54-02-PLAN.md — Remaining 21 integration/feature routers ctx.db migration
-- [ ] 54-03-PLAN.md — ZatcaApiClient extends GovApiClient + ZATCA service DI
-- [ ] 54-04-PLAN.md — StorecoveAdapter GovApiRateLimiter/AuditLogger composition + Peppol service DI
+- [x] 54-03-PLAN.md — ZatcaApiClient extends GovApiClient + ZATCA service DI
+- [x] 54-04-PLAN.md — StorecoveAdapter GovApiRateLimiter/AuditLogger composition + Peppol service DI
 
 ### Phase 55: Verification & Documentation Fixes
 **Goal**: All milestone verification artifacts are current, SUMMARY frontmatter is complete, and locale formatters are consistent
@@ -277,5 +277,5 @@ Phases 45-52 complete. Gap closure: 53 -> 54 -> 55
 | 51. PDPL Compliance | v4.0 | 4/4 | Complete    | 2026-04-11 |
 | 52. Multi-Region Infrastructure | v4.0 | 4/4 | Complete    | 2026-04-12 |
 | 53. Peppol QR & Consent Gate | v4.0 | 2/2 | Complete    | 2026-04-12 |
-| 54. Regional Routing & Gov API | v4.0 | 2/4 | In Progress|  |
+| 54. Regional Routing & Gov API | v4.0 | 4/4 | Complete   | 2026-04-12 |
 | 55. Verification & Doc Fixes | v4.0 | 0/0 | Planned    | — |
