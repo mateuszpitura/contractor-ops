@@ -321,7 +321,7 @@ export const peppolRouter = router({
    * Used by the invoice detail page to show transmission status.
    */
   getTransmissionByInvoiceId: tenantProcedure
-    .use(requirePermission({ settings: ["read"] }))
+    .use(requirePermission({ invoice: ["read"] }))
     .input(getTransmissionByInvoiceIdSchema)
     .query(async ({ ctx, input }) => {
       const transmission = await prisma.peppolTransmission.findFirst({
