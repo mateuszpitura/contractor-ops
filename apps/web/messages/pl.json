@@ -4134,6 +4134,23 @@
       }
     }
   },
+  "Consent": {
+    "privacyNotice": {
+      "title": "Informacja o prywatności",
+      "controller": "Administrator",
+      "expand": "Rozwiń"
+    },
+    "onboarding": {
+      "requiredConsents": "Zgody wymagane",
+      "optionalConsents": "Zgody opcjonalne",
+      "optionalNote": "Zgody opcjonalne można zmienić w dowolnej chwili w ustawieniach.",
+      "continue": "Dalej"
+    },
+    "privacyAcknowledgement": {
+      "label": "Zapoznałem/am się z <link>informacją o prywatności</link> i akceptuję jej treść.",
+      "error": "Aby kontynuować, potwierdź zapoznanie się z informacją o prywatności."
+    }
+  },
   "CookieConsent": {
     "message": "Ta strona używa wyłącznie niezbędnych plików cookie do uwierzytelniania i zarządzania sesją. Nie stosujemy plików cookie śledzących ani reklamowych.",
     "accept": "Rozumiem",

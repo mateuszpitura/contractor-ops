@@ -4131,6 +4131,23 @@
       }
     }
   },
+  "Consent": {
+    "privacyNotice": {
+      "title": "إشعار الخصوصية",
+      "controller": "المتحكم",
+      "expand": "توسيع"
+    },
+    "onboarding": {
+      "requiredConsents": "الموافقات المطلوبة",
+      "optionalConsents": "الموافقات الاختيارية",
+      "optionalNote": "يمكنك تغيير الموافقات الاختيارية في أي وقت من إعداداتك.",
+      "continue": "متابعة"
+    },
+    "privacyAcknowledgement": {
+      "label": "لقد قرأت وفهمت <link>إشعار الخصوصية</link>.",
+      "error": "يرجى تأكيد قراءتك لإشعار الخصوصية للمتابعة."
+    }
+  },
   "CookieConsent": {
     "message": "This site uses essential cookies for authentication and session management. No tracking or advertising cookies are used.",
     "accept": "Got it",

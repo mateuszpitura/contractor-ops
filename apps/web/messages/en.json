@@ -4134,6 +4134,23 @@
       }
     }
   },
+  "Consent": {
+    "privacyNotice": {
+      "title": "Privacy notice",
+      "controller": "Controller",
+      "expand": "Expand"
+    },
+    "onboarding": {
+      "requiredConsents": "Required consents",
+      "optionalConsents": "Optional consents",
+      "optionalNote": "You can change optional consents at any time in your settings.",
+      "continue": "Continue"
+    },
+    "privacyAcknowledgement": {
+      "label": "I have read and understood the <link>privacy notice</link>.",
+      "error": "Please confirm you have read the privacy notice to continue."
+    }
+  },
   "CookieConsent": {
     "message": "This site uses essential cookies for authentication and session management. No tracking or advertising cookies are used.",
     "accept": "Got it",

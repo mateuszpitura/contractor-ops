@@ -2,16 +2,18 @@
 
 import type { ConsentPurpose } from '@contractor-ops/validators';
 import {
-  isPdplJurisdiction,
   OPTIONAL_PURPOSES,
   REQUIRED_PURPOSES,
+  requiresPrivacyAcknowledgement,
+  resolveJurisdiction,
 } from '@contractor-ops/validators';
 import { Loader2 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { trpc } from '@/trpc/init';
 import { ConsentPurposeToggle } from './consent-purpose-toggle';
+import { PrivacyNoticeAcknowledgement } from './privacy-notice-acknowledgement';
 import { PrivacyNoticeDisplay } from './privacy-notice-display';
 
 // ---------------------------------------------------------------------------
@@ -27,24 +29,39 @@ interface OnboardingConsentStepProps {
 // Component
 // ---------------------------------------------------------------------------
 
-export function OnboardingConsentStep({ orgCountryCode, onComplete }: OnboardingConsentStepProps) {
-  const _t = useTranslations('Consent');
-
-  // Skip entirely for non-PDPL jurisdictions
-  if (!isPdplJurisdiction(orgCountryCode)) {
-    // Call onComplete on mount for non-PDPL orgs
+/**
+ * Phase 51 consent step — extended in Phase 56 · Plan 08 (D-10) to gate
+ * onboarding for UK + DE orgs in addition to the existing AE/SA (PDPL)
+ * flow. UK/DE orgs render a privacy-notice acknowledgement checkbox that
+ * must be ticked before the Continue button activates.
+ */
+export function OnboardingConsentStep({
+  orgCountryCode,
+  onComplete,
+}: OnboardingConsentStepProps) {
+  // Skip entirely for jurisdictions that do not require onboarding consent.
+  if (!requiresPrivacyAcknowledgement(orgCountryCode)) {
     return null;
   }
 
-  return <ConsentStepContent onComplete={onComplete} />;
+  return <ConsentStepContent orgCountryCode={orgCountryCode} onComplete={onComplete} />;
 }
 
 // ---------------------------------------------------------------------------
-// Inner content (only renders for PDPL jurisdictions)
+// Inner content (only renders for jurisdictions requiring acknowledgement)
 // ---------------------------------------------------------------------------
 
-function ConsentStepContent({ onComplete }: { onComplete: () => void }) {
+function ConsentStepContent({
+  orgCountryCode,
+  onComplete,
+}: {
+  orgCountryCode: string | null | undefined;
+  onComplete: () => void;
+}) {
   const t = useTranslations('Consent');
+  const locale = useLocale();
+  const jurisdiction = resolveJurisdiction(orgCountryCode);
+  const jurisdictionUrl = `/${locale}/legal/privacy/${jurisdiction.toLowerCase()}`;
 
   const [consents, setConsents] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};
@@ -53,6 +70,8 @@ function ConsentStepContent({ onComplete }: { onComplete: () => void }) {
     }
     return initial;
   });
+  const [privacyAck, setPrivacyAck] = useState(false);
+  const [ackError, setAckError] = useState<string | undefined>(undefined);
 
   const { data: notice, isLoading: noticeLoading } = trpc.consent.getPrivacyNotice.useQuery();
 
@@ -66,9 +85,20 @@ function ConsentStepContent({ onComplete }: { onComplete: () => void }) {
     setConsents(prev => ({ ...prev, [purpose]: granted }));
   }, []);
 
+  const handleAckChange = useCallback((next: boolean) => {
+    setPrivacyAck(next);
+    if (next) setAckError(undefined);
+  }, []);
+
   const allRequiredGranted = REQUIRED_PURPOSES.every(p => consents[p] === true);
+  const canContinue = allRequiredGranted && privacyAck;
 
   const handleAccept = useCallback(() => {
+    if (!privacyAck) {
+      setAckError(t('privacyAcknowledgement.error'));
+      return;
+    }
+
     const consentEntries = Object.entries(consents)
       .filter(([, granted]) => granted)
       .map(([purpose]) => ({
@@ -78,8 +108,13 @@ function ConsentStepContent({ onComplete }: { onComplete: () => void }) {
 
     if (consentEntries.length === 0) return;
 
-    bulkGrantMutation.mutate({ consents: consentEntries });
-  }, [consents, bulkGrantMutation]);
+    bulkGrantMutation.mutate({
+      consents: consentEntries,
+      privacyNoticeAcknowledged: true,
+      privacyNoticeJurisdiction: jurisdiction,
+      privacyNoticeVersion: 1,
+    });
+  }, [consents, bulkGrantMutation, privacyAck, jurisdiction, t]);
 
   if (noticeLoading) {
     return (
@@ -123,14 +158,23 @@ function ConsentStepContent({ onComplete }: { onComplete: () => void }) {
         <p className="text-xs text-muted-foreground">{t('onboarding.optionalNote')}</p>
       </div>
 
-      {/* Accept Button */}
+      {/* Privacy Notice Acknowledgement (UK/DE + PDPL) */}
+      <PrivacyNoticeAcknowledgement
+        checked={privacyAck}
+        onChange={handleAckChange}
+        jurisdictionUrl={jurisdictionUrl}
+        error={ackError}
+      />
+
+      {/* Continue / Weiter Button */}
       <Button
         onClick={handleAccept}
-        disabled={!allRequiredGranted || bulkGrantMutation.isPending}
+        disabled={!canContinue || bulkGrantMutation.isPending}
+        aria-disabled={!canContinue || bulkGrantMutation.isPending}
         className="w-full"
         size="lg">
         {bulkGrantMutation.isPending ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : null}
-        {t('onboarding.acceptAndContinue')}
+        {t('onboarding.continue')}
       </Button>
     </div>
   );

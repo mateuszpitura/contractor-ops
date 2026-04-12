@@ -52,6 +52,7 @@ export {
   OPTIONAL_PURPOSES,
   PDPL_JURISDICTIONS,
   REQUIRED_PURPOSES,
+  requiresPrivacyAcknowledgement,
 } from './consent.js';
 export type {
   AmendmentCreateInput,

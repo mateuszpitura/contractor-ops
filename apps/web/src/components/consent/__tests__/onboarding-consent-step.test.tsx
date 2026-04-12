@@ -1,6 +1,32 @@
 import { render, screen, setup } from '@/test/test-utils';
 import { OnboardingConsentStep } from '../onboarding-consent-step';
 
+// Mock the PrivacyNoticeAcknowledgement child component to expose a
+// plain checkbox + link without next-intl t.rich complexity.
+vi.mock('../privacy-notice-acknowledgement', () => ({
+  PrivacyNoticeAcknowledgement: ({
+    checked,
+    onChange,
+    jurisdictionUrl,
+  }: {
+    checked: boolean;
+    onChange: (next: boolean) => void;
+    jurisdictionUrl: string;
+  }) => (
+    <div>
+      <input
+        type="checkbox"
+        aria-label="privacy-acknowledge"
+        checked={checked}
+        onChange={e => onChange(e.target.checked)}
+      />
+      <a href={jurisdictionUrl} target="_blank" rel="noopener noreferrer">
+        privacy-notice
+      </a>
+    </div>
+  ),
+}));
+
 // ---------------------------------------------------------------------------
 // Mocks
 // ---------------------------------------------------------------------------
@@ -20,9 +46,16 @@ vi.mock('next-intl', async importOriginal => {
   const actual = await importOriginal<typeof import('next-intl')>();
   return {
     ...actual,
-    useTranslations: () => (key: string, values?: Record<string, unknown>) => {
-      if (values) return `${key} ${JSON.stringify(values)}`;
-      return key;
+    useLocale: () => 'en',
+    useTranslations: () => {
+      const translate = (key: string, values?: Record<string, unknown>) => {
+        if (values) return `${key} ${JSON.stringify(values)}`;
+        return key;
+      };
+      // Provide a minimal t.rich stub compatible with next-intl consumers.
+      (translate as unknown as { rich: (k: string, values?: Record<string, unknown>) => string }).rich =
+        translate as never;
+      return translate;
     },
   };
 });
@@ -131,31 +164,34 @@ describe('OnboardingConsentStep', () => {
   it('accept button is disabled when required purposes not granted', () => {
     render(<OnboardingConsentStep orgCountryCode="AE" onComplete={onComplete} />);
 
-    const acceptBtn = screen.getByRole('button', { name: /acceptAndContinue/i });
+    const acceptBtn = screen.getByRole('button', { name: /onboarding\.continue|continue|weiter/i });
     expect(acceptBtn).toBeDisabled();
   });
 
-  it('accept button is enabled when all required purposes granted', async () => {
+  it('accept button is enabled when all required purposes granted + ack ticked', async () => {
     const { user } = setup(<OnboardingConsentStep orgCountryCode="AE" onComplete={onComplete} />);
 
     // Toggle all 3 required purposes
     await user.click(screen.getByTestId('switch-CONTRACTOR_DATA_PROCESSING'));
     await user.click(screen.getByTestId('switch-INVOICE_PAYMENT_PROCESSING'));
     await user.click(screen.getByTestId('switch-COMMUNICATION_NOTIFICATIONS'));
+    // Phase 56 · Plan 08 — acknowledgement now required for all jurisdictions
+    await user.click(screen.getByRole('checkbox', { name: /privacy-acknowledge/i }));
 
-    const acceptBtn = screen.getByRole('button', { name: /acceptAndContinue/i });
+    const acceptBtn = screen.getByRole('button', { name: /onboarding\.continue|continue|weiter/i });
     expect(acceptBtn).not.toBeDisabled();
   });
 
-  it('calls bulkGrant mutation with granted consents on accept', async () => {
+  it('calls bulkGrant mutation with granted consents + acknowledgement metadata on accept', async () => {
     const { user } = setup(<OnboardingConsentStep orgCountryCode="AE" onComplete={onComplete} />);
 
     // Toggle all 3 required purposes
     await user.click(screen.getByTestId('switch-CONTRACTOR_DATA_PROCESSING'));
     await user.click(screen.getByTestId('switch-INVOICE_PAYMENT_PROCESSING'));
     await user.click(screen.getByTestId('switch-COMMUNICATION_NOTIFICATIONS'));
+    await user.click(screen.getByRole('checkbox', { name: /privacy-acknowledge/i }));
 
-    const acceptBtn = screen.getByRole('button', { name: /acceptAndContinue/i });
+    const acceptBtn = screen.getByRole('button', { name: /onboarding\.continue|continue|weiter/i });
     await user.click(acceptBtn);
 
     expect(mockBulkGrantMutate).toHaveBeenCalledTimes(1);
@@ -167,6 +203,9 @@ describe('OnboardingConsentStep', () => {
         { purpose: 'COMMUNICATION_NOTIFICATIONS', granted: true },
       ]),
     );
+    expect(arg.privacyNoticeAcknowledged).toBe(true);
+    expect(arg.privacyNoticeJurisdiction).toBe('AE');
+    expect(arg.privacyNoticeVersion).toBe(1);
   });
 
   it('calls onComplete after successful bulkGrant', async () => {
@@ -175,8 +214,9 @@ describe('OnboardingConsentStep', () => {
     await user.click(screen.getByTestId('switch-CONTRACTOR_DATA_PROCESSING'));
     await user.click(screen.getByTestId('switch-INVOICE_PAYMENT_PROCESSING'));
     await user.click(screen.getByTestId('switch-COMMUNICATION_NOTIFICATIONS'));
+    await user.click(screen.getByRole('checkbox', { name: /privacy-acknowledge/i }));
 
-    await user.click(screen.getByRole('button', { name: /acceptAndContinue/i }));
+    await user.click(screen.getByRole('button', { name: /onboarding\.continue|continue|weiter/i }));
 
     expect(onComplete).toHaveBeenCalledTimes(1);
   });
