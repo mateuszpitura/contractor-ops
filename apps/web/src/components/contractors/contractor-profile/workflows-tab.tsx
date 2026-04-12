@@ -1,30 +1,30 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { GitBranch, Plus } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useMemo, useState } from "react";
-import { JiraActivitySummary } from "@/components/integrations/jira-activity-summary";
-import { JiraIssueChip } from "@/components/integrations/jira-issue-chip";
-import { LinearIssueChip } from "@/components/integrations/linear-issue-chip";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { TemplatePicker } from "@/components/workflows/template-picker-dialog";
-import { Link } from "@/i18n/navigation";
-import { trpc } from "@/trpc/init";
+import { useQuery } from '@tanstack/react-query';
+import { GitBranch, Plus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useMemo, useState } from 'react';
+import { JiraActivitySummary } from '@/components/integrations/jira-activity-summary';
+import { JiraIssueChip } from '@/components/integrations/jira-issue-chip';
+import { LinearIssueChip } from '@/components/integrations/linear-issue-chip';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { TemplatePicker } from '@/components/workflows/template-picker-dialog';
+import { Link } from '@/i18n/navigation';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Run status badge styling (matching UI-SPEC)
 // ---------------------------------------------------------------------------
 
 const runStatusBadgeColors: Record<string, string> = {
-  NOT_STARTED: "bg-muted text-muted-foreground border border-border",
-  IN_PROGRESS: "bg-primary/10 text-primary",
-  COMPLETED: "bg-green-500/10 text-green-600 dark:text-green-400",
-  CANCELLED: "bg-muted text-muted-foreground border border-border",
-  BLOCKED: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
-  OVERDUE: "bg-destructive/10 text-destructive",
+  NOT_STARTED: 'bg-muted text-muted-foreground border border-border',
+  IN_PROGRESS: 'bg-primary/10 text-primary',
+  COMPLETED: 'bg-green-500/10 text-green-600 dark:text-green-400',
+  CANCELLED: 'bg-muted text-muted-foreground border border-border',
+  BLOCKED: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+  OVERDUE: 'bg-destructive/10 text-destructive',
 };
 
 // ---------------------------------------------------------------------------
@@ -56,7 +56,7 @@ interface LinkedIssueData {
     key: string;
     summary: string;
     status: string;
-    statusCategory: "new" | "indeterminate" | "done";
+    statusCategory: 'new' | 'indeterminate' | 'done';
     url: string;
   };
   externalUrl: string;
@@ -72,7 +72,7 @@ interface LinkedLinearIssueData {
     identifier: string;
     title: string;
     status: string;
-    statusType: "triage" | "backlog" | "unstarted" | "started" | "completed" | "cancelled";
+    statusType: 'triage' | 'backlog' | 'unstarted' | 'started' | 'completed' | 'cancelled';
     url: string;
   };
   externalUrl: string;
@@ -90,7 +90,7 @@ function RunLinearChips({ runId }: { runId: string }) {
 
   const issuesQuery = useQuery({
     ...trpc.linear.linkedIssues.queryOptions({
-      entityType: "WORKFLOW_RUN",
+      entityType: 'WORKFLOW_RUN',
       entityId: runId,
     }),
     enabled: !!connectionQuery.data,
@@ -104,8 +104,8 @@ function RunLinearChips({ runId }: { runId: string }) {
   const overflow = issues.length - 3;
 
   return (
-    <div className="flex items-center gap-1" onClick={(e) => e.preventDefault()}>
-      {visible.map((issue) => (
+    <div className="flex items-center gap-1" onClick={e => e.preventDefault()}>
+      {visible.map(issue => (
         <LinearIssueChip
           key={issue.id}
           identifier={issue.metadataJson.identifier}
@@ -136,7 +136,7 @@ function RunJiraChips({ runId }: { runId: string }) {
 
   const issuesQuery = useQuery({
     ...trpc.jira.linkedIssues.queryOptions({
-      entityType: "WORKFLOW_RUN",
+      entityType: 'WORKFLOW_RUN',
       entityId: runId,
     }),
     enabled: !!connectionQuery.data,
@@ -150,8 +150,8 @@ function RunJiraChips({ runId }: { runId: string }) {
   const overflow = issues.length - 3;
 
   return (
-    <div className="flex items-center gap-1" onClick={(e) => e.preventDefault()}>
-      {visible.map((issue) => (
+    <div className="flex items-center gap-1" onClick={e => e.preventDefault()}>
+      {visible.map(issue => (
         <JiraIssueChip
           key={issue.id}
           issueKey={issue.metadataJson.key}
@@ -183,7 +183,7 @@ type WorkflowsTabProps = {
 // ---------------------------------------------------------------------------
 
 export function WorkflowsTab({ contractorId }: WorkflowsTabProps) {
-  const t = useTranslations("Workflows");
+  const t = useTranslations('Workflows');
   const [pickerOpen, setPickerOpen] = useState(false);
   const [page, setPage] = useState(1);
   const pageSize = 10;
@@ -193,8 +193,8 @@ export function WorkflowsTab({ contractorId }: WorkflowsTabProps) {
       contractorId,
       page,
       pageSize,
-      sortBy: "startedAt",
-      sortOrder: "desc",
+      sortBy: 'startedAt',
+      sortOrder: 'desc',
     }),
   );
 
@@ -228,11 +228,11 @@ export function WorkflowsTab({ contractorId }: WorkflowsTabProps) {
       <>
         <div className="flex min-h-[300px] flex-col items-center justify-center gap-3 text-center">
           <GitBranch className="size-10 text-muted-foreground/50" />
-          <h4 className="text-sm font-medium">{t("contractorNoWorkflows")}</h4>
-          <p className="max-w-sm text-sm text-muted-foreground">{t("contractorNoWorkflowsBody")}</p>
+          <h4 className="text-sm font-medium">{t('contractorNoWorkflows')}</h4>
+          <p className="max-w-sm text-sm text-muted-foreground">{t('contractorNoWorkflowsBody')}</p>
           <Button size="sm" onClick={() => setPickerOpen(true)}>
             <Plus className="me-1.5 size-3.5" />
-            {t("contractorNoWorkflowsCta")}
+            {t('contractorNoWorkflowsCta')}
           </Button>
         </div>
         <TemplatePicker
@@ -251,27 +251,26 @@ export function WorkflowsTab({ contractorId }: WorkflowsTabProps) {
 
       {/* Header with CTA */}
       <div className="flex items-center justify-between">
-        <h3 className="text-base font-medium">{t("contractorWorkflowsTab")}</h3>
+        <h3 className="text-base font-medium">{t('contractorWorkflowsTab')}</h3>
         <Button size="sm" onClick={() => setPickerOpen(true)}>
           <Plus className="me-1.5 size-3.5" />
-          {t("contractorStartWorkflow")}
+          {t('contractorStartWorkflow')}
         </Button>
       </div>
 
       {/* Runs list */}
       <div className="space-y-2">
-        {items.map((run) => (
+        {items.map(run => (
           <Link
             key={run.id}
             href={`/workflows/${run.id}`}
-            className="flex items-center gap-4 rounded-lg border px-4 py-3 transition-colors hover:bg-muted/50"
-          >
+            className="flex items-center gap-4 rounded-lg border px-4 py-3 transition-colors hover:bg-muted/50">
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium truncate">
-                {run.workflowTemplate?.name ?? "Workflow"}
+                {run.workflowTemplate?.name ?? 'Workflow'}
               </p>
             </div>
-            <Badge variant="secondary" className={runStatusBadgeColors[run.status] ?? ""}>
+            <Badge variant="secondary" className={runStatusBadgeColors[run.status] ?? ''}>
               {t(`runStatus.${run.status}` as Parameters<typeof t>[0])}
             </Badge>
             <RunJiraChips runId={run.id} />
@@ -281,7 +280,7 @@ export function WorkflowsTab({ contractorId }: WorkflowsTabProps) {
             </span>
             {run.startedAt && (
               <span className="text-sm text-muted-foreground">
-                {new Date(run.startedAt).toLocaleDateString("pl-PL")}
+                {new Date(run.startedAt).toLocaleDateString('pl-PL')}
               </span>
             )}
           </Link>
@@ -295,8 +294,7 @@ export function WorkflowsTab({ contractorId }: WorkflowsTabProps) {
             variant="outline"
             size="sm"
             disabled={page <= 1}
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-          >
+            onClick={() => setPage(p => Math.max(1, p - 1))}>
             &laquo;
           </Button>
           <span className="text-sm text-muted-foreground">
@@ -306,8 +304,7 @@ export function WorkflowsTab({ contractorId }: WorkflowsTabProps) {
             variant="outline"
             size="sm"
             disabled={page >= totalPages}
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-          >
+            onClick={() => setPage(p => Math.min(totalPages, p + 1))}>
             &raquo;
           </Button>
         </div>

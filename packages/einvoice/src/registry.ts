@@ -2,7 +2,7 @@
 // E-Invoice Profile Registry
 // ---------------------------------------------------------------------------
 
-import type { EInvoiceProfile } from "./types/profile.js";
+import type { EInvoiceProfile } from './types/profile.js';
 
 /**
  * Static registry map for e-invoicing country profiles.
@@ -29,7 +29,7 @@ export function getProfile(profileId: string): EInvoiceProfile {
   const profile = profiles.get(profileId);
   if (!profile) {
     throw new Error(
-      `Unknown e-invoicing profile: ${profileId}. Available: ${Array.from(profiles.keys()).join(", ") || "none"}`,
+      `Unknown e-invoicing profile: ${profileId}. Available: ${Array.from(profiles.keys()).join(', ') || 'none'}`,
     );
   }
   return profile;

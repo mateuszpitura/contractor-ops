@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { FileCheck } from "lucide-react";
-import { PeppolComplianceWidget } from "@/components/peppol/peppol-compliance-widget";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Link } from "@/i18n/navigation";
-import { trpc } from "@/trpc/init";
+import { useQuery } from '@tanstack/react-query';
+import { FileCheck } from 'lucide-react';
+import { PeppolComplianceWidget } from '@/components/peppol/peppol-compliance-widget';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Link } from '@/i18n/navigation';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // State → color mapping (per D-08: green/yellow/red/gray)
@@ -14,50 +14,50 @@ import { trpc } from "@/trpc/init";
 
 const stateStyles: Record<string, { bg: string; text: string; dot: string }> = {
   active: {
-    bg: "bg-emerald-50 dark:bg-emerald-950/30",
-    text: "text-emerald-700 dark:text-emerald-400",
-    dot: "bg-emerald-500",
+    bg: 'bg-emerald-50 dark:bg-emerald-950/30',
+    text: 'text-emerald-700 dark:text-emerald-400',
+    dot: 'bg-emerald-500',
   },
   sandbox: {
-    bg: "bg-amber-50 dark:bg-amber-950/30",
-    text: "text-amber-700 dark:text-amber-400",
-    dot: "bg-amber-500",
+    bg: 'bg-amber-50 dark:bg-amber-950/30',
+    text: 'text-amber-700 dark:text-amber-400',
+    dot: 'bg-amber-500',
   },
   degraded: {
-    bg: "bg-amber-50 dark:bg-amber-950/30",
-    text: "text-amber-700 dark:text-amber-400",
-    dot: "bg-amber-500",
+    bg: 'bg-amber-50 dark:bg-amber-950/30',
+    text: 'text-amber-700 dark:text-amber-400',
+    dot: 'bg-amber-500',
   },
   onboarding: {
-    bg: "bg-blue-50 dark:bg-blue-950/30",
-    text: "text-blue-700 dark:text-blue-400",
-    dot: "bg-blue-500",
+    bg: 'bg-blue-50 dark:bg-blue-950/30',
+    text: 'text-blue-700 dark:text-blue-400',
+    dot: 'bg-blue-500',
   },
   suspended: {
-    bg: "bg-muted",
-    text: "text-muted-foreground",
-    dot: "bg-muted-foreground/40",
+    bg: 'bg-muted',
+    text: 'text-muted-foreground',
+    dot: 'bg-muted-foreground/40',
   },
   error: {
-    bg: "bg-red-50 dark:bg-red-950/30",
-    text: "text-red-700 dark:text-red-400",
-    dot: "bg-red-500",
+    bg: 'bg-red-50 dark:bg-red-950/30',
+    text: 'text-red-700 dark:text-red-400',
+    dot: 'bg-red-500',
   },
   not_connected: {
-    bg: "bg-muted/50",
-    text: "text-muted-foreground/60",
-    dot: "bg-muted-foreground/30",
+    bg: 'bg-muted/50',
+    text: 'text-muted-foreground/60',
+    dot: 'bg-muted-foreground/30',
   },
 };
 
 const stateLabels: Record<string, string> = {
-  active: "Active",
-  sandbox: "Sandbox",
-  degraded: "Degraded",
-  onboarding: "Onboarding",
-  suspended: "Suspended",
-  error: "Error",
-  not_connected: "Not Connected",
+  active: 'Active',
+  sandbox: 'Sandbox',
+  degraded: 'Degraded',
+  onboarding: 'Onboarding',
+  suspended: 'Suspended',
+  error: 'Error',
+  not_connected: 'Not Connected',
 };
 
 // ---------------------------------------------------------------------------
@@ -90,14 +90,14 @@ export function EInvoiceComplianceWidget() {
 
   // Derive Peppol compliance state from connection status
   const peppolState = peppolStatus
-    ? peppolStatus.participant.status === "ACTIVE"
-      ? "active"
-      : peppolStatus.participant.status === "PENDING" ||
-          peppolStatus.participant.status === "REGISTERED"
-        ? "onboarding"
-        : peppolStatus.participant.status === "SUSPENDED"
-          ? "suspended"
-          : "error"
+    ? peppolStatus.participant.status === 'ACTIVE'
+      ? 'active'
+      : peppolStatus.participant.status === 'PENDING' ||
+          peppolStatus.participant.status === 'REGISTERED'
+        ? 'onboarding'
+        : peppolStatus.participant.status === 'SUSPENDED'
+          ? 'suspended'
+          : 'error'
     : null;
 
   if (statuses.length === 0 && !peppolState) {
@@ -113,15 +113,14 @@ export function EInvoiceComplianceWidget() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
-        {statuses.map((status) => {
+        {statuses.map(status => {
           const style = stateStyles[status.state] ?? stateStyles.not_connected;
           const label = stateLabels[status.state] ?? status.state;
           return (
             <Link
               key={status.profileId}
               href="/settings#einvoice"
-              className={`flex items-center justify-between rounded-lg px-3 py-2 transition-colors hover:opacity-80 ${style.bg}`}
-            >
+              className={`flex items-center justify-between rounded-lg px-3 py-2 transition-colors hover:opacity-80 ${style.bg}`}>
               <div className="flex items-center gap-2">
                 <span
                   className={`inline-block h-2 w-2 rounded-full ${style.dot}`}
@@ -137,7 +136,7 @@ export function EInvoiceComplianceWidget() {
           <PeppolComplianceWidget
             status={{
               state: peppolState,
-              healthScore: peppolState === "active" ? 100 : peppolState === "onboarding" ? 50 : 0,
+              healthScore: peppolState === 'active' ? 100 : peppolState === 'onboarding' ? 50 : 0,
             }}
           />
         )}

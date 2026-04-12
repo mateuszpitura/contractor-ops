@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
-import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { trpc } from "@/trpc/init";
-import { ProrationPreview } from "./proration-preview";
-import { UsageDashboard } from "./usage-dashboard";
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { Loader2 } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { trpc } from '@/trpc/init';
+import { ProrationPreview } from './proration-preview';
+import { UsageDashboard } from './usage-dashboard';
 
 // ---------------------------------------------------------------------------
 // Component
@@ -31,7 +31,7 @@ export function BillingTab() {
       }
     },
     onError() {
-      toast.error("Failed to start checkout. Please try again.");
+      toast.error('Failed to start checkout. Please try again.');
     },
   });
 
@@ -44,19 +44,19 @@ export function BillingTab() {
       }
     },
     onError() {
-      toast.error("Failed to open billing portal. Please try again.");
+      toast.error('Failed to open billing portal. Please try again.');
     },
   });
 
   // Handle success return from Stripe Checkout
   useEffect(() => {
-    const sessionId = searchParams.get("session_id");
+    const sessionId = searchParams.get('session_id');
     if (sessionId) {
-      toast.success("Subscription updated successfully!");
+      toast.success('Subscription updated successfully!');
       // Clean the URL
       const url = new URL(window.location.href);
-      url.searchParams.delete("session_id");
-      window.history.replaceState({}, "", url.toString());
+      url.searchParams.delete('session_id');
+      window.history.replaceState({}, '', url.toString());
     }
   }, [searchParams]);
 

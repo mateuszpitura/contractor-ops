@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { Check, Minus } from "lucide-react";
-import { Fragment } from "react";
-import { FadeUp, ScaleIn } from "@/components/motion-wrapper";
+import { Check, Minus } from 'lucide-react';
+import { Fragment } from 'react';
+import { FadeUp, ScaleIn } from '@/components/motion-wrapper';
 
 type FeatureValue = boolean | string;
 
@@ -15,64 +15,64 @@ interface FeatureRow {
 
 const categories: { category: string; features: FeatureRow[] }[] = [
   {
-    category: "Contractor Management",
+    category: 'Contractor Management',
     features: [
-      { name: "Contractor profiles", starter: true, pro: true, enterprise: true },
-      { name: "Document storage", starter: "100 MB", pro: "10 GB", enterprise: "Unlimited" },
+      { name: 'Contractor profiles', starter: true, pro: true, enterprise: true },
+      { name: 'Document storage', starter: '100 MB', pro: '10 GB', enterprise: 'Unlimited' },
       {
-        name: "Onboarding checklists",
-        starter: "Basic",
-        pro: "Custom",
-        enterprise: "Custom + API",
+        name: 'Onboarding checklists',
+        starter: 'Basic',
+        pro: 'Custom',
+        enterprise: 'Custom + API',
       },
-      { name: "Offboarding workflows", starter: false, pro: true, enterprise: true },
-      { name: "Contractor self-service portal", starter: false, pro: true, enterprise: true },
+      { name: 'Offboarding workflows', starter: false, pro: true, enterprise: true },
+      { name: 'Contractor self-service portal', starter: false, pro: true, enterprise: true },
     ],
   },
   {
-    category: "Contracts & Compliance",
+    category: 'Contracts & Compliance',
     features: [
-      { name: "Contract templates", starter: "3", pro: "Unlimited", enterprise: "Unlimited" },
-      { name: "E-signatures (DocuSign)", starter: false, pro: true, enterprise: true },
-      { name: "Version history", starter: false, pro: true, enterprise: true },
-      { name: "Renewal alerts", starter: true, pro: true, enterprise: true },
-      { name: "Full audit trail", starter: true, pro: true, enterprise: true },
-      { name: "Custom compliance gates", starter: false, pro: false, enterprise: true },
+      { name: 'Contract templates', starter: '3', pro: 'Unlimited', enterprise: 'Unlimited' },
+      { name: 'E-signatures (DocuSign)', starter: false, pro: true, enterprise: true },
+      { name: 'Version history', starter: false, pro: true, enterprise: true },
+      { name: 'Renewal alerts', starter: true, pro: true, enterprise: true },
+      { name: 'Full audit trail', starter: true, pro: true, enterprise: true },
+      { name: 'Custom compliance gates', starter: false, pro: false, enterprise: true },
     ],
   },
   {
-    category: "Invoicing & Payments",
+    category: 'Invoicing & Payments',
     features: [
-      { name: "Invoice upload & tracking", starter: true, pro: true, enterprise: true },
-      { name: "KSeF auto-pull", starter: false, pro: true, enterprise: true },
-      { name: "Contract rate matching", starter: false, pro: true, enterprise: true },
-      { name: "Discrepancy flagging", starter: false, pro: true, enterprise: true },
-      { name: "Multi-step approval chains", starter: false, pro: true, enterprise: true },
-      { name: "Batch payment export", starter: false, pro: true, enterprise: true },
-      { name: "Payment reconciliation", starter: false, pro: true, enterprise: true },
+      { name: 'Invoice upload & tracking', starter: true, pro: true, enterprise: true },
+      { name: 'KSeF auto-pull', starter: false, pro: true, enterprise: true },
+      { name: 'Contract rate matching', starter: false, pro: true, enterprise: true },
+      { name: 'Discrepancy flagging', starter: false, pro: true, enterprise: true },
+      { name: 'Multi-step approval chains', starter: false, pro: true, enterprise: true },
+      { name: 'Batch payment export', starter: false, pro: true, enterprise: true },
+      { name: 'Payment reconciliation', starter: false, pro: true, enterprise: true },
     ],
   },
   {
-    category: "Analytics & Integrations",
+    category: 'Analytics & Integrations',
     features: [
-      { name: "Spend dashboard", starter: "Basic", pro: "Advanced", enterprise: "Custom" },
-      { name: "Budget tracking", starter: false, pro: true, enterprise: true },
-      { name: "Cost breakdowns", starter: false, pro: true, enterprise: true },
-      { name: "API access", starter: false, pro: false, enterprise: true },
-      { name: "Webhooks", starter: false, pro: false, enterprise: true },
-      { name: "Custom integrations", starter: false, pro: false, enterprise: true },
-      { name: "SSO / SAML", starter: false, pro: false, enterprise: true },
+      { name: 'Spend dashboard', starter: 'Basic', pro: 'Advanced', enterprise: 'Custom' },
+      { name: 'Budget tracking', starter: false, pro: true, enterprise: true },
+      { name: 'Cost breakdowns', starter: false, pro: true, enterprise: true },
+      { name: 'API access', starter: false, pro: false, enterprise: true },
+      { name: 'Webhooks', starter: false, pro: false, enterprise: true },
+      { name: 'Custom integrations', starter: false, pro: false, enterprise: true },
+      { name: 'SSO / SAML', starter: false, pro: false, enterprise: true },
     ],
   },
   {
-    category: "Support",
+    category: 'Support',
     features: [
-      { name: "Community support", starter: true, pro: true, enterprise: true },
-      { name: "Email support", starter: true, pro: true, enterprise: true },
-      { name: "Priority support", starter: false, pro: true, enterprise: true },
-      { name: "Dedicated account manager", starter: false, pro: false, enterprise: true },
-      { name: "SLA guarantee", starter: false, pro: false, enterprise: true },
-      { name: "Custom onboarding", starter: false, pro: false, enterprise: true },
+      { name: 'Community support', starter: true, pro: true, enterprise: true },
+      { name: 'Email support', starter: true, pro: true, enterprise: true },
+      { name: 'Priority support', starter: false, pro: true, enterprise: true },
+      { name: 'Dedicated account manager', starter: false, pro: false, enterprise: true },
+      { name: 'SLA guarantee', starter: false, pro: false, enterprise: true },
+      { name: 'Custom onboarding', starter: false, pro: false, enterprise: true },
     ],
   },
 ];
@@ -140,14 +140,13 @@ export function FeatureComparison() {
               </thead>
 
               <tbody>
-                {categories.map((cat) => (
+                {categories.map(cat => (
                   <Fragment key={cat.category}>
                     {/* Category header */}
                     <tr className="border-t border-border/30">
                       <td
                         colSpan={4}
-                        className="py-3.5 px-6 text-xs font-bold uppercase tracking-wider text-muted-foreground bg-surface-2/40"
-                      >
+                        className="py-3.5 px-6 text-xs font-bold uppercase tracking-wider text-muted-foreground bg-surface-2/40">
                         {cat.category}
                       </td>
                     </tr>
@@ -155,9 +154,8 @@ export function FeatureComparison() {
                       <tr
                         key={row.name}
                         className={`border-t border-border/20 transition-colors hover:bg-muted/20 ${
-                          i % 2 === 0 ? "" : "bg-surface-2/10"
-                        }`}
-                      >
+                          i % 2 === 0 ? '' : 'bg-surface-2/10'
+                        }`}>
                         <td className="py-3 px-6 text-sm text-foreground/85">{row.name}</td>
                         <td className="py-3 px-4 text-center">
                           <CellValue value={row.starter} />

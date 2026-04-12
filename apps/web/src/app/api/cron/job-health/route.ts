@@ -1,13 +1,13 @@
-import { timingSafeEqual } from "node:crypto";
-import { withCronMonitor } from "@contractor-ops/api/services/cron-monitor";
-import { prisma } from "@contractor-ops/db";
-import { createCronLogger } from "@contractor-ops/logger";
-import { metrics } from "@contractor-ops/logger/metrics";
-import * as Sentry from "@sentry/nextjs";
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import { timingSafeEqual } from 'node:crypto';
+import { withCronMonitor } from '@contractor-ops/api/services/cron-monitor';
+import { prisma } from '@contractor-ops/db';
+import { createCronLogger } from '@contractor-ops/logger';
+import { metrics } from '@contractor-ops/logger/metrics';
+import * as Sentry from '@sentry/nextjs';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
-const log = createCronLogger("job-health");
+const log = createCronLogger('job-health');
 
 /** Webhook deliveries stuck in RECEIVED longer than this are considered stale. */
 const STALE_THRESHOLD_MIN = 15;
@@ -28,19 +28,19 @@ const FAILURE_ALERT_THRESHOLD = 10;
  * 4. Reports metrics and fires Sentry alerts when thresholds breached
  */
 export async function GET(request: NextRequest) {
-  const authHeader = request.headers.get("authorization") ?? "";
-  const expected = `Bearer ${process.env.CRON_SECRET ?? ""}`;
+  const authHeader = request.headers.get('authorization') ?? '';
+  const expected = `Bearer ${process.env.CRON_SECRET ?? ''}`;
   const isAuthorized =
     authHeader.length === expected.length &&
     timingSafeEqual(Buffer.from(authHeader), Buffer.from(expected));
   if (!isAuthorized) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   return Sentry.withMonitor(
-    "job-health",
+    'job-health',
     () =>
-      withCronMonitor("job-health", async () => {
+      withCronMonitor('job-health', async () => {
         try {
           const now = new Date();
           const staleCutoff = new Date(now.getTime() - STALE_THRESHOLD_MIN * 60_000);
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
           // 1. Find stale webhook deliveries (stuck in RECEIVED)
           const staleDeliveries = await prisma.webhookDelivery.findMany({
             where: {
-              deliveryStatus: "RECEIVED",
+              deliveryStatus: 'RECEIVED',
               receivedAt: { lt: staleCutoff },
             },
             select: {
@@ -65,10 +65,10 @@ export async function GET(request: NextRequest) {
           if (staleDeliveries.length > 0) {
             await prisma.webhookDelivery.updateMany({
               where: {
-                id: { in: staleDeliveries.map((d) => d.id) },
+                id: { in: staleDeliveries.map(d => d.id) },
               },
               data: {
-                deliveryStatus: "FAILED",
+                deliveryStatus: 'FAILED',
                 processedAt: now,
                 errorMessage: JSON.stringify({
                   reason: `Stale: stuck in RECEIVED for >${STALE_THRESHOLD_MIN} minutes`,
@@ -81,21 +81,21 @@ export async function GET(request: NextRequest) {
             log.warn(
               {
                 count: staleDeliveries.length,
-                deliveries: staleDeliveries.map((d) => ({
+                deliveries: staleDeliveries.map(d => ({
                   id: d.id,
                   provider: d.provider,
                   eventType: d.eventType,
                   receivedAt: d.receivedAt,
                 })),
               },
-              "marked stale webhook deliveries as FAILED",
+              'marked stale webhook deliveries as FAILED',
             );
           }
 
           // 3. Count recent failures (last hour)
           const recentFailureCount = await prisma.webhookDelivery.count({
             where: {
-              deliveryStatus: "FAILED",
+              deliveryStatus: 'FAILED',
               processedAt: { gte: oneHourAgo },
             },
           });
@@ -103,22 +103,22 @@ export async function GET(request: NextRequest) {
           // 4. Count pending (queue depth)
           const pendingCount = await prisma.webhookDelivery.count({
             where: {
-              deliveryStatus: "RECEIVED",
+              deliveryStatus: 'RECEIVED',
             },
           });
 
           // 5. Report metrics
-          metrics.gauge("jobs.webhook.pending", pendingCount);
-          metrics.gauge("jobs.webhook.failures_1h", recentFailureCount);
-          metrics.gauge("jobs.webhook.stale_cleared", staleDeliveries.length);
+          metrics.gauge('jobs.webhook.pending', pendingCount);
+          metrics.gauge('jobs.webhook.failures_1h', recentFailureCount);
+          metrics.gauge('jobs.webhook.stale_cleared', staleDeliveries.length);
 
           // 6. Alert if failure threshold breached
           if (recentFailureCount > FAILURE_ALERT_THRESHOLD) {
             const alertMessage = `Background job alert: ${recentFailureCount} webhook delivery failures in the last hour (threshold: ${FAILURE_ALERT_THRESHOLD})`;
             log.error({ recentFailureCount, threshold: FAILURE_ALERT_THRESHOLD }, alertMessage);
             Sentry.captureMessage(alertMessage, {
-              level: "error",
-              tags: { "cron.job": "job-health", "alert.type": "failure_threshold" },
+              level: 'error',
+              tags: { 'cron.job': 'job-health', 'alert.type': 'failure_threshold' },
               extra: { recentFailureCount, pendingCount, staleCleared: staleDeliveries.length },
             });
           }
@@ -128,8 +128,8 @@ export async function GET(request: NextRequest) {
             const alertMessage = `Background job alert: ${pendingCount} webhook deliveries pending (queue depth > 100)`;
             log.error({ pendingCount }, alertMessage);
             Sentry.captureMessage(alertMessage, {
-              level: "warning",
-              tags: { "cron.job": "job-health", "alert.type": "queue_depth" },
+              level: 'warning',
+              tags: { 'cron.job': 'job-health', 'alert.type': 'queue_depth' },
               extra: { pendingCount, recentFailureCount },
             });
           }
@@ -140,7 +140,7 @@ export async function GET(request: NextRequest) {
               recentFailureCount,
               staleCleared: staleDeliveries.length,
             },
-            "job health check completed",
+            'job health check completed',
           );
 
           return NextResponse.json({
@@ -150,16 +150,16 @@ export async function GET(request: NextRequest) {
             healthy: recentFailureCount <= FAILURE_ALERT_THRESHOLD && pendingCount <= 100,
           });
         } catch (error) {
-          log.error({ err: error }, "job health check failed");
+          log.error({ err: error }, 'job health check failed');
           Sentry.captureException(error, {
-            tags: { "cron.job": "job-health" },
+            tags: { 'cron.job': 'job-health' },
           });
-          return NextResponse.json({ error: "Health check failed" }, { status: 500 });
+          return NextResponse.json({ error: 'Health check failed' }, { status: 500 });
         }
       }),
     {
-      schedule: { type: "crontab", value: "*/5 * * * *" },
-      timezone: "UTC",
+      schedule: { type: 'crontab', value: '*/5 * * * *' },
+      timezone: 'UTC',
     },
   );
 }

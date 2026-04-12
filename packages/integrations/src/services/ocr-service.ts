@@ -1,11 +1,11 @@
-import { getAdapter } from "../registry.js";
-import type { OcrAdapter, OcrExtractionRequest, OcrExtractionResult } from "../types/ocr.js";
+import { getAdapter } from '../registry.js';
+import type { OcrAdapter, OcrExtractionRequest, OcrExtractionResult } from '../types/ocr.js';
 
 // ---------------------------------------------------------------------------
 // Provider-Agnostic OCR Orchestration Service
 // ---------------------------------------------------------------------------
 
-type OcrProvider = "CLAUDE" | "GOOGLE_DOCUMENT_AI" | "AZURE_FORM_RECOGNIZER";
+type OcrProvider = 'CLAUDE' | 'GOOGLE_DOCUMENT_AI' | 'AZURE_FORM_RECOGNIZER';
 
 /**
  * Resolves the OcrAdapter for a given provider from the adapter registry.
@@ -27,7 +27,7 @@ export function getOcrAdapter(provider: OcrProvider): OcrAdapter {
 
   // Verify the adapter implements OcrAdapter methods
   const ocrAdapter = adapter as unknown as OcrAdapter;
-  if (typeof ocrAdapter.extractInvoice !== "function") {
+  if (typeof ocrAdapter.extractInvoice !== 'function') {
     throw new Error(`Adapter for ${provider} does not implement the OcrAdapter interface.`);
   }
 
@@ -51,7 +51,7 @@ export async function extractInvoice(params: {
   const request: OcrExtractionRequest = {
     pdfBase64: params.pdfBase64,
     fileName: params.fileName,
-    locale: params.locale ?? "pl",
+    locale: params.locale ?? 'pl',
   };
 
   return adapter.extractInvoice(request);
@@ -64,4 +64,4 @@ export type {
   OcrExtractionRequest,
   OcrExtractionResult,
   OcrLineItem,
-} from "../types/ocr.js";
+} from '../types/ocr.js';

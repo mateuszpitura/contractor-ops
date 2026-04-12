@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Check, Pencil, X } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Link } from "@/i18n/navigation";
-import { trpc } from "@/trpc/init";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Check, Pencil, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Link } from '@/i18n/navigation';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -49,11 +49,11 @@ type OverviewTabProps = {
 // ---------------------------------------------------------------------------
 
 function formatDate(date: string | Date): string {
-  const d = typeof date === "string" ? new Date(date) : date;
-  return d.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return d.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
   });
 }
 
@@ -62,7 +62,7 @@ function formatCurrency(minor: number, currency: string): string {
 }
 
 function getDaysRemaining(endDate: string | Date): number {
-  const end = typeof endDate === "string" ? new Date(endDate) : endDate;
+  const end = typeof endDate === 'string' ? new Date(endDate) : endDate;
   const now = new Date();
   return Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 }
@@ -80,7 +80,7 @@ function FieldRow({
   return (
     <div className="flex flex-col gap-0.5">
       <span className="text-xs text-muted-foreground">{label}</span>
-      <span className={`text-sm ${mono ? "font-mono text-[13px]" : ""}`}>{value}</span>
+      <span className={`text-sm ${mono ? 'font-mono text-[13px]' : ''}`}>{value}</span>
     </div>
   );
 }
@@ -96,31 +96,31 @@ function ExpiryRemindersEditor({
   contractId: string;
   currentReminders: number[];
 }) {
-  const t = useTranslations("ContractDetail.overview");
+  const t = useTranslations('ContractDetail.overview');
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
-  const [reminders, setReminders] = useState(currentReminders.join(", "));
+  const [reminders, setReminders] = useState(currentReminders.join(', '));
 
   const mutation = useMutation(
     trpc.contract.updateExpiryReminders.mutationOptions({
       onSuccess: () => {
-        toast.success(t("reminders.saved"));
+        toast.success(t('reminders.saved'));
         queryClient.invalidateQueries({
           queryKey: trpc.contract.getById.queryKey(),
         });
         setEditing(false);
       },
       onError: () => {
-        toast.error(t("reminders.error"));
+        toast.error(t('reminders.error'));
       },
     }),
   );
 
   function handleSave() {
     const parsed = reminders
-      .split(",")
-      .map((s) => parseInt(s.trim(), 10))
-      .filter((n) => !Number.isNaN(n) && n > 0);
+      .split(',')
+      .map(s => parseInt(s.trim(), 10))
+      .filter(n => !Number.isNaN(n) && n > 0);
 
     if (parsed.length === 0) return;
 
@@ -135,14 +135,14 @@ function ExpiryRemindersEditor({
       <div className="flex items-center gap-2">
         <span className="text-sm">
           {currentReminders.length > 0
-            ? t("reminders.display", {
-                days: currentReminders.join(", "),
+            ? t('reminders.display', {
+                days: currentReminders.join(', '),
               })
-            : t("reminders.none")}
+            : t('reminders.none')}
         </span>
         <Button variant="ghost" size="icon-sm" onClick={() => setEditing(true)}>
           <Pencil className="size-3" />
-          <span className="sr-only">{t("reminders.edit")}</span>
+          <span className="sr-only">{t('reminders.edit')}</span>
         </Button>
       </div>
     );
@@ -153,9 +153,9 @@ function ExpiryRemindersEditor({
       <input
         type="text"
         value={reminders}
-        onChange={(e) => setReminders(e.target.value)}
+        onChange={e => setReminders(e.target.value)}
         className="h-7 w-40 rounded-md border bg-background px-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-        placeholder={t("remindersPlaceholder")}
+        placeholder={t('remindersPlaceholder')}
       />
       <Button variant="ghost" size="icon-sm" onClick={handleSave} disabled={mutation.isPending}>
         <Check className="size-3" />
@@ -165,9 +165,8 @@ function ExpiryRemindersEditor({
         size="icon-sm"
         onClick={() => {
           setEditing(false);
-          setReminders(currentReminders.join(", "));
-        }}
-      >
+          setReminders(currentReminders.join(', '));
+        }}>
         <X className="size-3" />
       </Button>
     </div>
@@ -179,9 +178,9 @@ function ExpiryRemindersEditor({
 // ---------------------------------------------------------------------------
 
 export function OverviewTab({ contract }: OverviewTabProps) {
-  const t = useTranslations("ContractDetail.overview");
-  const tEnum = useTranslations("Contracts");
-  const tContractor = useTranslations("Contractors");
+  const t = useTranslations('ContractDetail.overview');
+  const tEnum = useTranslations('Contracts');
+  const tContractor = useTranslations('Contractors');
 
   const metadata = (contract.metadataJson as Record<string, unknown>) ?? {};
   const reminderDaysBefore = (metadata.reminderDaysBefore as number[]) ?? [];
@@ -190,18 +189,18 @@ export function OverviewTab({ contract }: OverviewTabProps) {
 
   const daysColor =
     daysRemaining === null
-      ? ""
+      ? ''
       : daysRemaining > 60
-        ? "text-green-600 dark:text-green-400"
+        ? 'text-green-600 dark:text-green-400'
         : daysRemaining > 30
-          ? "text-amber-600 dark:text-amber-400"
-          : "text-red-500 dark:text-red-400";
+          ? 'text-amber-600 dark:text-amber-400'
+          : 'text-red-500 dark:text-red-400';
 
   const noticeDays = contract.noticePeriodDays;
   const noticeDeadline =
     contract.endDate && noticeDays
       ? new Date(
-          (typeof contract.endDate === "string"
+          (typeof contract.endDate === 'string'
             ? new Date(contract.endDate)
             : contract.endDate
           ).getTime() -
@@ -214,50 +213,50 @@ export function OverviewTab({ contract }: OverviewTabProps) {
       {/* Contract details card */}
       <Card>
         <CardHeader>
-          <CardTitle>{t("contractDetails")}</CardTitle>
+          <CardTitle>{t('contractDetails')}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-3">
           <FieldRow
-            label={t("fields.type")}
+            label={t('fields.type')}
             value={
               contract.type ? tEnum(`type.${contract.type}` as Parameters<typeof tEnum>[0]) : null
             }
           />
           <FieldRow
-            label={t("fields.autoRenewal")}
-            value={contract.autoRenewal ? t("fields.yes") : t("fields.no")}
+            label={t('fields.autoRenewal')}
+            value={contract.autoRenewal ? t('fields.yes') : t('fields.no')}
           />
           {contract.noticePeriodDays != null && (
             <FieldRow
-              label={t("fields.noticePeriod")}
-              value={t("fields.noticePeriodDays", {
+              label={t('fields.noticePeriod')}
+              value={t('fields.noticePeriodDays', {
                 days: contract.noticePeriodDays,
               })}
             />
           )}
           {contract.renewalTerms && (
-            <FieldRow label={t("fields.renewalTerms")} value={contract.renewalTerms} />
+            <FieldRow label={t('fields.renewalTerms')} value={contract.renewalTerms} />
           )}
-          <FieldRow label={t("fields.notes")} value={contract.notes} />
+          <FieldRow label={t('fields.notes')} value={contract.notes} />
         </CardContent>
       </Card>
 
       {/* Financial terms card */}
       <Card>
         <CardHeader>
-          <CardTitle>{t("financialTerms")}</CardTitle>
+          <CardTitle>{t('financialTerms')}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-3">
           {contract.rateValueMinor != null && (
             <FieldRow
-              label={t("fields.rate")}
+              label={t('fields.rate')}
               value={formatCurrency(contract.rateValueMinor, contract.currency)}
               mono
             />
           )}
-          <FieldRow label={t("fields.currency")} value={contract.currency} />
+          <FieldRow label={t('fields.currency')} value={contract.currency} />
           <FieldRow
-            label={t("fields.billingModel")}
+            label={t('fields.billingModel')}
             value={
               contract.billingModel
                 ? tEnum(`billingModel.${contract.billingModel}` as Parameters<typeof tEnum>[0])
@@ -265,7 +264,7 @@ export function OverviewTab({ contract }: OverviewTabProps) {
             }
           />
           <FieldRow
-            label={t("fields.rateType")}
+            label={t('fields.rateType')}
             value={
               contract.rateType
                 ? tEnum(`rateType.${contract.rateType}` as Parameters<typeof tEnum>[0])
@@ -274,14 +273,14 @@ export function OverviewTab({ contract }: OverviewTabProps) {
           />
           {contract.paymentTermsDays != null && (
             <FieldRow
-              label={t("fields.paymentTerms")}
-              value={t("fields.paymentTermsDays", {
+              label={t('fields.paymentTerms')}
+              value={t('fields.paymentTermsDays', {
                 days: contract.paymentTermsDays,
               })}
             />
           )}
           <FieldRow
-            label={t("fields.invoiceCycle")}
+            label={t('fields.invoiceCycle')}
             value={
               contract.invoiceCycle
                 ? tEnum(`invoiceCycle.${contract.invoiceCycle}` as Parameters<typeof tEnum>[0])
@@ -290,7 +289,7 @@ export function OverviewTab({ contract }: OverviewTabProps) {
           />
           {contract.retainerAmountMinor != null && (
             <FieldRow
-              label={t("fields.retainerAmount")}
+              label={t('fields.retainerAmount')}
               value={formatCurrency(contract.retainerAmountMinor, contract.currency)}
               mono
             />
@@ -301,31 +300,31 @@ export function OverviewTab({ contract }: OverviewTabProps) {
       {/* Key dates card */}
       <Card>
         <CardHeader>
-          <CardTitle>{t("keyDates")}</CardTitle>
+          <CardTitle>{t('keyDates')}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-3">
           {contract.startDate && (
-            <FieldRow label={t("fields.startDate")} value={formatDate(contract.startDate)} />
+            <FieldRow label={t('fields.startDate')} value={formatDate(contract.startDate)} />
           )}
           {contract.endDate && (
-            <FieldRow label={t("fields.endDate")} value={formatDate(contract.endDate)} />
+            <FieldRow label={t('fields.endDate')} value={formatDate(contract.endDate)} />
           )}
           {noticeDeadline && (
-            <FieldRow label={t("fields.noticeDeadline")} value={formatDate(noticeDeadline)} />
+            <FieldRow label={t('fields.noticeDeadline')} value={formatDate(noticeDeadline)} />
           )}
           {daysRemaining !== null && (
             <div className="flex flex-col gap-0.5">
-              <span className="text-xs text-muted-foreground">{t("fields.daysRemaining")}</span>
+              <span className="text-xs text-muted-foreground">{t('fields.daysRemaining')}</span>
               <span className={`text-sm font-medium ${daysColor}`}>
                 {daysRemaining > 0
-                  ? t("expiresIn", { days: daysRemaining })
-                  : t("expiredAgo", { days: Math.abs(daysRemaining) })}
+                  ? t('expiresIn', { days: daysRemaining })
+                  : t('expiredAgo', { days: Math.abs(daysRemaining) })}
               </span>
             </div>
           )}
           {/* Expiry reminders */}
           <div className="flex flex-col gap-0.5">
-            <span className="text-xs text-muted-foreground">{t("reminders.label")}</span>
+            <span className="text-xs text-muted-foreground">{t('reminders.label')}</span>
             <ExpiryRemindersEditor contractId={contract.id} currentReminders={reminderDaysBefore} />
           </div>
         </CardContent>
@@ -334,24 +333,23 @@ export function OverviewTab({ contract }: OverviewTabProps) {
       {/* Linked contractor card */}
       <Card>
         <CardHeader>
-          <CardTitle>{t("linkedContractor")}</CardTitle>
+          <CardTitle>{t('linkedContractor')}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-3">
           {contract.contractor ? (
             <>
               <div className="flex flex-col gap-0.5">
-                <span className="text-xs text-muted-foreground">{t("fields.contractorName")}</span>
+                <span className="text-xs text-muted-foreground">{t('fields.contractorName')}</span>
                 <Link
                   href={`/contractors/${contract.contractor.id}`}
-                  className="text-sm text-primary hover:underline"
-                >
+                  className="text-sm text-primary hover:underline">
                   {contract.contractor.displayName}
                 </Link>
               </div>
-              <FieldRow label={t("fields.legalName")} value={contract.contractor.legalName} />
+              <FieldRow label={t('fields.legalName')} value={contract.contractor.legalName} />
               <div className="flex flex-col gap-0.5">
                 <span className="text-xs text-muted-foreground">
-                  {t("fields.contractorStatus")}
+                  {t('fields.contractorStatus')}
                 </span>
                 <Badge variant="secondary" className="w-fit">
                   {tContractor(
@@ -361,7 +359,7 @@ export function OverviewTab({ contract }: OverviewTabProps) {
               </div>
             </>
           ) : (
-            <p className="text-sm text-muted-foreground">{t("noContractor")}</p>
+            <p className="text-sm text-muted-foreground">{t('noContractor')}</p>
           )}
         </CardContent>
       </Card>

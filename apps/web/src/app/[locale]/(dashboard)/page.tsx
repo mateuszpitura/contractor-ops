@@ -1,44 +1,31 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { LayoutDashboard } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { Suspense } from "react";
-import { ActivityFeed } from "@/components/dashboard/activity-feed";
-import { ApprovalQueueWidget } from "@/components/dashboard/approval-queue-widget";
-import { DashboardGreeting } from "@/components/dashboard/dashboard-greeting";
-import { DeadlinesWidget } from "@/components/dashboard/deadlines-widget";
-import { KpiCards } from "@/components/dashboard/kpi-cards";
-import { SpendChart } from "@/components/dashboard/spend-chart";
-import { TaxObligationsWidget } from "@/components/dashboard/tax-obligations-widget";
-import { EInvoiceComplianceWidget } from "@/components/einvoice/compliance-widget";
-import { OnboardingChecklist } from "@/components/onboarding/onboarding-checklist";
-import { AnimateIn } from "@/components/shared/animate-in";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { usePermissions } from "@/hooks/use-permissions";
-import { Link } from "@/i18n/navigation";
-import { trpc } from "@/trpc/init";
-
-// ---------------------------------------------------------------------------
-// Error boundary wrapper for individual widgets
-// ---------------------------------------------------------------------------
-
-function _WidgetErrorFallback({ name }: { name: string }) {
-  const t = useTranslations("Dashboard");
-  return (
-    <div className="flex h-[200px] flex-col items-center justify-center rounded-xl border border-border/40 bg-surface-1 p-6 text-center shadow-sm">
-      <p className="text-sm text-destructive">{t("errors.widgetFailed", { name })}</p>
-    </div>
-  );
-}
+import { useQuery } from '@tanstack/react-query';
+import { LayoutDashboard } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { Suspense } from 'react';
+import { ActivityFeed } from '@/components/dashboard/activity-feed';
+import { ApprovalQueueWidget } from '@/components/dashboard/approval-queue-widget';
+import { DashboardGreeting } from '@/components/dashboard/dashboard-greeting';
+import { DeadlinesWidget } from '@/components/dashboard/deadlines-widget';
+import { KpiCards } from '@/components/dashboard/kpi-cards';
+import { SpendChart } from '@/components/dashboard/spend-chart';
+import { TaxObligationsWidget } from '@/components/dashboard/tax-obligations-widget';
+import { EInvoiceComplianceWidget } from '@/components/einvoice/compliance-widget';
+import { OnboardingChecklist } from '@/components/onboarding/onboarding-checklist';
+import { AnimateIn } from '@/components/shared/animate-in';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { usePermissions } from '@/hooks/use-permissions';
+import { Link } from '@/i18n/navigation';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Empty state when all KPIs are zero
 // ---------------------------------------------------------------------------
 
 function DashboardEmptyState() {
-  const t = useTranslations("Dashboard.emptyState");
+  const t = useTranslations('Dashboard.emptyState');
 
   return (
     <div className="dot-grid corner-marks flex min-h-[60vh] flex-col items-center justify-center rounded-2xl border border-border/40 text-center">
@@ -46,10 +33,10 @@ function DashboardEmptyState() {
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
           <LayoutDashboard className="h-8 w-8 text-primary" />
         </div>
-        <h2 className="mt-6 font-display text-2xl font-semibold tracking-tight">{t("heading")}</h2>
-        <p className="mt-2 max-w-md text-sm text-muted-foreground">{t("body")}</p>
+        <h2 className="mt-6 font-display text-2xl font-semibold tracking-tight">{t('heading')}</h2>
+        <p className="mt-2 max-w-md text-sm text-muted-foreground">{t('body')}</p>
         <Button render={<Link href="/contractors?action=new" />} className="mt-8">
-          {t("cta")}
+          {t('cta')}
         </Button>
       </div>
     </div>
@@ -62,7 +49,7 @@ function DashboardEmptyState() {
 
 function DashboardContent() {
   const { can } = usePermissions();
-  const hasReportAccess = can("report", ["read"]);
+  const hasReportAccess = can('report', ['read']);
 
   // Fetch KPIs to check for empty state
   const { data: kpis, isLoading: kpisLoading } = useQuery(trpc.dashboard.kpis.queryOptions());
@@ -168,8 +155,7 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
-      }
-    >
+      }>
       <DashboardContent />
     </Suspense>
   );

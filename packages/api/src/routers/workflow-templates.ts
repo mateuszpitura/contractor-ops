@@ -1,19 +1,19 @@
 /**
  * Workflow template procedures: CRUD, duplication, and starter template seeding.
  */
-import type { Prisma } from "@contractor-ops/db";
+import type { Prisma } from '@contractor-ops/db';
 import {
   templateCreateSchema,
   templateListSchema,
   templateUpdateSchema,
-} from "@contractor-ops/validators";
-import { TRPCError } from "@trpc/server";
-import { z } from "zod";
-import * as E from "../errors.js";
-import { router } from "../init.js";
-import { requirePermission } from "../middleware/rbac.js";
-import { tenantProcedure } from "../middleware/tenant.js";
-import { plain, WORKFLOW_TEMPLATE_KEYS } from "./workflow-shared.js";
+} from '@contractor-ops/validators';
+import { TRPCError } from '@trpc/server';
+import { z } from 'zod';
+import * as E from '../errors.js';
+import { router } from '../init.js';
+import { requirePermission } from '../middleware/rbac.js';
+import { tenantProcedure } from '../middleware/tenant.js';
+import { plain, WORKFLOW_TEMPLATE_KEYS } from './workflow-shared.js';
 
 // ---------------------------------------------------------------------------
 // Workflow Templates sub-router
@@ -24,10 +24,10 @@ export const workflowTemplatesRouter = router({
    * Create a new workflow template with task definitions.
    */
   createTemplate: tenantProcedure
-    .use(requirePermission({ workflow: ["create"] }))
+    .use(requirePermission({ workflow: ['create'] }))
     .input(templateCreateSchema)
     .mutation(async ({ ctx, input }) => {
-      const template = await ctx.db.$transaction(async (tx) => {
+      const template = await ctx.db.$transaction(async tx => {
         const created = await tx.workflowTemplate.create({
           data: {
             organizationId: ctx.organizationId,
@@ -35,15 +35,15 @@ export const workflowTemplatesRouter = router({
             type: input.type,
             description: input.description ?? null,
             version: 1,
-            status: "DRAFT",
-            appliesToEntityType: "CONTRACTOR",
+            status: 'DRAFT',
+            appliesToEntityType: 'CONTRACTOR',
             createdByUserId: ctx.user?.id,
           },
         });
 
         if (input.tasks.length > 0) {
           await tx.workflowTaskTemplate.createMany({
-            data: input.tasks.map((task) => ({
+            data: input.tasks.map(task => ({
               organizationId: ctx.organizationId,
               workflowTemplateId: created.id,
               title: task.title,
@@ -65,7 +65,7 @@ export const workflowTemplatesRouter = router({
 
         return tx.workflowTemplate.findUniqueOrThrow({
           where: { id: created.id },
-          include: { tasks: { orderBy: { sortOrder: "asc" } } },
+          include: { tasks: { orderBy: { sortOrder: 'asc' } } },
         });
       });
 
@@ -76,10 +76,10 @@ export const workflowTemplatesRouter = router({
    * Update a workflow template. Tasks are replaced (delete all + recreate).
    */
   updateTemplate: tenantProcedure
-    .use(requirePermission({ workflow: ["update"] }))
+    .use(requirePermission({ workflow: ['update'] }))
     .input(templateUpdateSchema)
     .mutation(async ({ ctx, input }) => {
-      const template = await ctx.db.$transaction(async (tx) => {
+      const template = await ctx.db.$transaction(async tx => {
         const existing = await tx.workflowTemplate.findFirst({
           where: {
             id: input.id,
@@ -89,7 +89,7 @@ export const workflowTemplatesRouter = router({
 
         if (!existing) {
           throw new TRPCError({
-            code: "NOT_FOUND",
+            code: 'NOT_FOUND',
             message: E.WORKFLOW_TEMPLATE_NOT_FOUND,
           });
         }
@@ -114,7 +114,7 @@ export const workflowTemplatesRouter = router({
 
           if (input.tasks.length > 0) {
             await tx.workflowTaskTemplate.createMany({
-              data: input.tasks.map((task) => ({
+              data: input.tasks.map(task => ({
                 organizationId: ctx.organizationId,
                 workflowTemplateId: input.id,
                 title: task.title,
@@ -137,7 +137,7 @@ export const workflowTemplatesRouter = router({
 
         return tx.workflowTemplate.findUniqueOrThrow({
           where: { id: input.id },
-          include: { tasks: { orderBy: { sortOrder: "asc" } } },
+          include: { tasks: { orderBy: { sortOrder: 'asc' } } },
         });
       });
 
@@ -148,7 +148,7 @@ export const workflowTemplatesRouter = router({
    * Get a workflow template by ID with tasks.
    */
   getTemplate: tenantProcedure
-    .use(requirePermission({ workflow: ["read"] }))
+    .use(requirePermission({ workflow: ['read'] }))
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
       const template = await ctx.db.workflowTemplate.findFirst({
@@ -156,12 +156,12 @@ export const workflowTemplatesRouter = router({
           id: input.id,
           organizationId: ctx.organizationId,
         },
-        include: { tasks: { orderBy: { sortOrder: "asc" } } },
+        include: { tasks: { orderBy: { sortOrder: 'asc' } } },
       });
 
       if (!template) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: E.WORKFLOW_TEMPLATE_NOT_FOUND,
         });
       }
@@ -173,7 +173,7 @@ export const workflowTemplatesRouter = router({
    * List workflow templates with pagination, search, and status filter.
    */
   listTemplates: tenantProcedure
-    .use(requirePermission({ workflow: ["read"] }))
+    .use(requirePermission({ workflow: ['read'] }))
     .input(templateListSchema)
     .query(async ({ ctx, input }) => {
       const { page, pageSize, search, status } = input;
@@ -187,7 +187,7 @@ export const workflowTemplatesRouter = router({
       }
 
       if (search && search.length >= 2) {
-        where.name = { contains: search, mode: "insensitive" };
+        where.name = { contains: search, mode: 'insensitive' };
       }
 
       const [items, total] = await Promise.all([
@@ -195,7 +195,7 @@ export const workflowTemplatesRouter = router({
           where,
           skip: (page - 1) * pageSize,
           take: pageSize,
-          orderBy: { createdAt: "desc" },
+          orderBy: { createdAt: 'desc' },
           include: {
             _count: { select: { runs: true, tasks: true } },
           },
@@ -210,7 +210,7 @@ export const workflowTemplatesRouter = router({
    * Delete a workflow template (only DRAFT with no runs).
    */
   deleteTemplate: tenantProcedure
-    .use(requirePermission({ workflow: ["delete"] }))
+    .use(requirePermission({ workflow: ['delete'] }))
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const template = await ctx.db.workflowTemplate.findFirst({
@@ -223,26 +223,26 @@ export const workflowTemplatesRouter = router({
 
       if (!template) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: E.WORKFLOW_TEMPLATE_NOT_FOUND,
         });
       }
 
-      if (template.status !== "DRAFT") {
+      if (template.status !== 'DRAFT') {
         throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Only draft templates can be deleted. Archive the template instead.",
+          code: 'BAD_REQUEST',
+          message: 'Only draft templates can be deleted. Archive the template instead.',
         });
       }
 
       if (template._count.runs > 0) {
         throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Cannot delete a template that has existing runs. Archive it instead.",
+          code: 'BAD_REQUEST',
+          message: 'Cannot delete a template that has existing runs. Archive it instead.',
         });
       }
 
-      await ctx.db.$transaction(async (tx) => {
+      await ctx.db.$transaction(async tx => {
         await tx.workflowTaskTemplate.deleteMany({
           where: { workflowTemplateId: input.id },
         });
@@ -258,7 +258,7 @@ export const workflowTemplatesRouter = router({
    * Duplicate a workflow template (creates a new DRAFT copy).
    */
   duplicateTemplate: tenantProcedure
-    .use(requirePermission({ workflow: ["create"] }))
+    .use(requirePermission({ workflow: ['create'] }))
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const source = await ctx.db.workflowTemplate.findFirst({
@@ -266,17 +266,17 @@ export const workflowTemplatesRouter = router({
           id: input.id,
           organizationId: ctx.organizationId,
         },
-        include: { tasks: { orderBy: { sortOrder: "asc" } } },
+        include: { tasks: { orderBy: { sortOrder: 'asc' } } },
       });
 
       if (!source) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: E.WORKFLOW_TEMPLATE_NOT_FOUND,
         });
       }
 
-      const duplicate = await ctx.db.$transaction(async (tx) => {
+      const duplicate = await ctx.db.$transaction(async tx => {
         const created = await tx.workflowTemplate.create({
           data: {
             organizationId: ctx.organizationId,
@@ -284,7 +284,7 @@ export const workflowTemplatesRouter = router({
             type: source.type,
             description: source.description,
             version: 1,
-            status: "DRAFT",
+            status: 'DRAFT',
             appliesToEntityType: source.appliesToEntityType,
             createdByUserId: ctx.user?.id,
           },
@@ -334,7 +334,7 @@ export const workflowTemplatesRouter = router({
 
         return tx.workflowTemplate.findUniqueOrThrow({
           where: { id: created.id },
-          include: { tasks: { orderBy: { sortOrder: "asc" } } },
+          include: { tasks: { orderBy: { sortOrder: 'asc' } } },
         });
       });
 
@@ -346,7 +346,7 @@ export const workflowTemplatesRouter = router({
    * No-op if any templates already exist. Called from Templates tab on first visit.
    */
   seedStarterTemplates: tenantProcedure
-    .use(requirePermission({ workflow: ["create"] }))
+    .use(requirePermission({ workflow: ['create'] }))
     .mutation(async ({ ctx }) => {
       const existingCount = await ctx.db.workflowTemplate.count({
         where: { organizationId: ctx.organizationId },
@@ -356,18 +356,18 @@ export const workflowTemplatesRouter = router({
         return { seeded: false };
       }
 
-      await ctx.db.$transaction(async (tx) => {
+      await ctx.db.$transaction(async tx => {
         // ----- Template 1: Contractor Onboarding -----
         const onboarding = await tx.workflowTemplate.create({
           data: {
             organizationId: ctx.organizationId,
-            name: "Contractor Onboarding",
-            type: "ONBOARDING",
+            name: 'Contractor Onboarding',
+            type: 'ONBOARDING',
             description:
-              "Standard onboarding workflow for new contractors. Review and customize tasks before activating.",
+              'Standard onboarding workflow for new contractors. Review and customize tasks before activating.',
             version: 1,
-            status: "DRAFT",
-            appliesToEntityType: "CONTRACTOR",
+            status: 'DRAFT',
+            appliesToEntityType: 'CONTRACTOR',
             createdByUserId: ctx.user?.id,
           },
         });
@@ -375,62 +375,62 @@ export const workflowTemplatesRouter = router({
         const onboardingTasks = [
           {
             title: WORKFLOW_TEMPLATE_KEYS.onboarding.collectNda,
-            taskType: "DOCUMENT_COLLECTION" as const,
-            assigneeRole: "OPS_MANAGER" as const,
+            taskType: 'DOCUMENT_COLLECTION' as const,
+            assigneeRole: 'OPS_MANAGER' as const,
             dueOffsetDays: 2,
             sortOrder: 0,
           },
           {
             title: WORKFLOW_TEMPLATE_KEYS.onboarding.signContract,
-            taskType: "APPROVAL" as const,
-            assigneeRole: "LEGAL_VIEWER" as const,
+            taskType: 'APPROVAL' as const,
+            assigneeRole: 'LEGAL_VIEWER' as const,
             dueOffsetDays: 5,
             sortOrder: 1,
           },
           {
             title: WORKFLOW_TEMPLATE_KEYS.onboarding.setupItAccess,
-            taskType: "ACCESS_GRANT" as const,
-            assigneeRole: "IT_ADMIN" as const,
+            taskType: 'ACCESS_GRANT' as const,
+            assigneeRole: 'IT_ADMIN' as const,
             dueOffsetDays: 3,
             sortOrder: 2,
           },
           {
             title: WORKFLOW_TEMPLATE_KEYS.onboarding.setupFinance,
-            taskType: "FINANCE_SETUP" as const,
-            assigneeRole: "FINANCE_ADMIN" as const,
+            taskType: 'FINANCE_SETUP' as const,
+            assigneeRole: 'FINANCE_ADMIN' as const,
             dueOffsetDays: 3,
             sortOrder: 3,
           },
           {
             title: WORKFLOW_TEMPLATE_KEYS.onboarding.provisionEquipment,
-            taskType: "EQUIPMENT" as const,
-            assigneeRole: "OPS_MANAGER" as const,
+            taskType: 'EQUIPMENT' as const,
+            assigneeRole: 'OPS_MANAGER' as const,
             dueOffsetDays: 5,
             sortOrder: 4,
           },
           {
             title: WORKFLOW_TEMPLATE_KEYS.onboarding.teamIntroMeeting,
-            taskType: "MEETING" as const,
-            assigneeRole: "TEAM_MANAGER" as const,
+            taskType: 'MEETING' as const,
+            assigneeRole: 'TEAM_MANAGER' as const,
             dueOffsetDays: 7,
             sortOrder: 5,
           },
           {
             title: WORKFLOW_TEMPLATE_KEYS.onboarding.knowledgeTransfer,
-            taskType: "KNOWLEDGE_TRANSFER" as const,
-            assigneeRole: "TEAM_MANAGER" as const,
+            taskType: 'KNOWLEDGE_TRANSFER' as const,
+            assigneeRole: 'TEAM_MANAGER' as const,
             dueOffsetDays: 14,
             sortOrder: 6,
           },
         ];
 
         await tx.workflowTaskTemplate.createMany({
-          data: onboardingTasks.map((task) => ({
+          data: onboardingTasks.map(task => ({
             organizationId: ctx.organizationId,
             workflowTemplateId: onboarding.id,
             title: task.title,
             taskType: task.taskType,
-            assigneeMode: "ROLE_BASED" as const,
+            assigneeMode: 'ROLE_BASED' as const,
             assigneeRole: task.assigneeRole,
             dueOffsetDays: task.dueOffsetDays,
             sortOrder: task.sortOrder,
@@ -447,13 +447,13 @@ export const workflowTemplatesRouter = router({
         const offboarding = await tx.workflowTemplate.create({
           data: {
             organizationId: ctx.organizationId,
-            name: "Contractor Offboarding",
-            type: "OFFBOARDING",
+            name: 'Contractor Offboarding',
+            type: 'OFFBOARDING',
             description:
-              "Standard offboarding workflow for departing contractors. Review and customize tasks before activating.",
+              'Standard offboarding workflow for departing contractors. Review and customize tasks before activating.',
             version: 1,
-            status: "DRAFT",
-            appliesToEntityType: "CONTRACTOR",
+            status: 'DRAFT',
+            appliesToEntityType: 'CONTRACTOR',
             createdByUserId: ctx.user?.id,
           },
         });
@@ -461,48 +461,48 @@ export const workflowTemplatesRouter = router({
         const offboardingTasks = [
           {
             title: WORKFLOW_TEMPLATE_KEYS.offboarding.knowledgeTransfer,
-            taskType: "KNOWLEDGE_TRANSFER" as const,
-            assigneeRole: "TEAM_MANAGER" as const,
+            taskType: 'KNOWLEDGE_TRANSFER' as const,
+            assigneeRole: 'TEAM_MANAGER' as const,
             dueOffsetDays: 7,
             sortOrder: 0,
           },
           {
             title: WORKFLOW_TEMPLATE_KEYS.offboarding.revokeItAccess,
-            taskType: "ACCESS_REVOKE" as const,
-            assigneeRole: "IT_ADMIN" as const,
+            taskType: 'ACCESS_REVOKE' as const,
+            assigneeRole: 'IT_ADMIN' as const,
             dueOffsetDays: 1,
             sortOrder: 1,
           },
           {
             title: WORKFLOW_TEMPLATE_KEYS.offboarding.returnEquipment,
-            taskType: "EQUIPMENT" as const,
-            assigneeRole: "OPS_MANAGER" as const,
+            taskType: 'EQUIPMENT' as const,
+            assigneeRole: 'OPS_MANAGER' as const,
             dueOffsetDays: 5,
             sortOrder: 2,
           },
           {
             title: WORKFLOW_TEMPLATE_KEYS.offboarding.financeWrapUp,
-            taskType: "FINANCE_SETUP" as const,
-            assigneeRole: "FINANCE_ADMIN" as const,
+            taskType: 'FINANCE_SETUP' as const,
+            assigneeRole: 'FINANCE_ADMIN' as const,
             dueOffsetDays: 3,
             sortOrder: 3,
           },
           {
             title: WORKFLOW_TEMPLATE_KEYS.offboarding.finalDocumentation,
-            taskType: "DOCUMENT_COLLECTION" as const,
-            assigneeRole: "OPS_MANAGER" as const,
+            taskType: 'DOCUMENT_COLLECTION' as const,
+            assigneeRole: 'OPS_MANAGER' as const,
             dueOffsetDays: 5,
             sortOrder: 4,
           },
         ];
 
         await tx.workflowTaskTemplate.createMany({
-          data: offboardingTasks.map((task) => ({
+          data: offboardingTasks.map(task => ({
             organizationId: ctx.organizationId,
             workflowTemplateId: offboarding.id,
             title: task.title,
             taskType: task.taskType,
-            assigneeMode: "ROLE_BASED" as const,
+            assigneeMode: 'ROLE_BASED' as const,
             assigneeRole: task.assigneeRole,
             dueOffsetDays: task.dueOffsetDays,
             sortOrder: task.sortOrder,

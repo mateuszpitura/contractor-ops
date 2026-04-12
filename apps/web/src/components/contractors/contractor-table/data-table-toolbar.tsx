@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { Filter, Loader2, Search, X } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { trpc } from "@/trpc/init";
+import { useQuery } from '@tanstack/react-query';
+import { Filter, Loader2, Search, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -38,11 +38,11 @@ interface DataTableToolbarProps {
 // Filter option sets
 // ---------------------------------------------------------------------------
 
-const LIFECYCLE_STAGES = ["DRAFT", "ONBOARDING", "ACTIVE", "OFFBOARDING", "ENDED"] as const;
+const LIFECYCLE_STAGES = ['DRAFT', 'ONBOARDING', 'ACTIVE', 'OFFBOARDING', 'ENDED'] as const;
 
-const BILLING_MODELS = ["FIXED", "HOURLY", "PROJECT", "MILESTONE"] as const;
+const BILLING_MODELS = ['FIXED', 'HOURLY', 'PROJECT', 'MILESTONE'] as const;
 
-const HEALTH_OPTIONS = ["green", "yellow", "red"] as const;
+const HEALTH_OPTIONS = ['green', 'yellow', 'red'] as const;
 
 // ---------------------------------------------------------------------------
 // Component
@@ -60,7 +60,7 @@ export function DataTableToolbar({
   onAddContractor,
   onImport,
 }: DataTableToolbarProps) {
-  const t = useTranslations("Contractors");
+  const t = useTranslations('Contractors');
 
   // Debounced search
   const [localSearch, setLocalSearch] = useState(search);
@@ -75,7 +75,7 @@ export function DataTableToolbar({
       setLocalSearch(value);
       clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
-        onSearchChange(value.length >= 2 ? value : "");
+        onSearchChange(value.length >= 2 ? value : '');
       }, 300);
     },
     [onSearchChange],
@@ -109,12 +109,12 @@ export function DataTableToolbar({
 
   const toggleFilterValue = (key: keyof FilterState, value: string) => {
     const current = filters[key];
-    const next = current.includes(value) ? current.filter((v) => v !== value) : [...current, value];
+    const next = current.includes(value) ? current.filter(v => v !== value) : [...current, value];
     onFiltersChange({ [key]: next });
   };
 
   const removeFilter = (key: keyof FilterState, value: string) => {
-    onFiltersChange({ [key]: filters[key].filter((v) => v !== value) });
+    onFiltersChange({ [key]: filters[key].filter(v => v !== value) });
   };
 
   return (
@@ -125,9 +125,9 @@ export function DataTableToolbar({
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute start-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder={t("searchPlaceholder")}
+            placeholder={t('searchPlaceholder')}
             value={localSearch}
-            onChange={(e) => handleSearchInput(e.target.value)}
+            onChange={e => handleSearchInput(e.target.value)}
             className="h-9 ps-9 pe-8"
           />
           {isSearching && (
@@ -138,10 +138,10 @@ export function DataTableToolbar({
         {/* Filters popover */}
         <Popover>
           <PopoverTrigger
-            render={(props) => (
+            render={props => (
               <Button {...props} variant="outline" size="lg">
                 <Filter className="h-3.5 w-3.5" />
-                {t("filters")}
+                {t('filters')}
                 {hasActiveFilters && (
                   <Badge variant="secondary" className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]">
                     {activeFilterCount}
@@ -154,18 +154,18 @@ export function DataTableToolbar({
             <div className="max-h-[400px] overflow-y-auto p-4 space-y-4">
               {/* Status / Lifecycle Stage */}
               <FilterSection
-                title={t("columns.status")}
-                options={LIFECYCLE_STAGES.map((stage) => ({
+                title={t('columns.status')}
+                options={LIFECYCLE_STAGES.map(stage => ({
                   value: stage,
                   label: t(`lifecycle.${stage}`),
                 }))}
                 selected={filters.lifecycleStage}
-                onToggle={(value) => toggleFilterValue("lifecycleStage", value)}
+                onToggle={value => toggleFilterValue('lifecycleStage', value)}
               />
 
               {/* Owner */}
               <FilterSection
-                title={t("columns.owner")}
+                title={t('columns.owner')}
                 options={(
                   users as Array<{
                     id?: string;
@@ -173,34 +173,34 @@ export function DataTableToolbar({
                     name?: string | null;
                     email?: string | null;
                   }>
-                ).map((user) => ({
-                  value: user.id ?? user.userId ?? "",
-                  label: user.name ?? user.email ?? "Unknown",
+                ).map(user => ({
+                  value: user.id ?? user.userId ?? '',
+                  label: user.name ?? user.email ?? 'Unknown',
                 }))}
                 selected={filters.owner}
-                onToggle={(value) => toggleFilterValue("owner", value)}
+                onToggle={value => toggleFilterValue('owner', value)}
               />
 
               {/* Billing model */}
               <FilterSection
-                title={t("columns.billingModel")}
-                options={BILLING_MODELS.map((model) => ({
+                title={t('columns.billingModel')}
+                options={BILLING_MODELS.map(model => ({
                   value: model,
                   label: t(`billingModel.${model}`),
                 }))}
                 selected={filters.billingModel}
-                onToggle={(value) => toggleFilterValue("billingModel", value)}
+                onToggle={value => toggleFilterValue('billingModel', value)}
               />
 
               {/* Compliance health */}
               <FilterSection
-                title={t("columns.health")}
-                options={HEALTH_OPTIONS.map((health) => ({
+                title={t('columns.health')}
+                options={HEALTH_OPTIONS.map(health => ({
                   value: health,
                   label: t(`health.${health}`),
                 }))}
                 selected={filters.health}
-                onToggle={(value) => toggleFilterValue("health", value)}
+                onToggle={value => toggleFilterValue('health', value)}
               />
             </div>
           </PopoverContent>
@@ -212,27 +212,27 @@ export function DataTableToolbar({
         {/* Import CTA */}
         {onImport && (
           <Button size="lg" variant="outline" onClick={onImport}>
-            {t("import")}
+            {t('import')}
           </Button>
         )}
 
         {/* Add contractor CTA */}
         <Button size="lg" onClick={onAddContractor}>
-          {t("addContractor")}
+          {t('addContractor')}
         </Button>
       </div>
 
       {/* Active filter badges */}
       {hasActiveFilters && (
         <div className="flex flex-wrap items-center gap-1.5">
-          {filters.lifecycleStage.map((stage) => (
+          {filters.lifecycleStage.map(stage => (
             <FilterBadge
               key={`stage-${stage}`}
               label={t(`lifecycle.${stage}` as Parameters<typeof t>[0])}
-              onRemove={() => removeFilter("lifecycleStage", stage)}
+              onRemove={() => removeFilter('lifecycleStage', stage)}
             />
           ))}
-          {filters.owner.map((ownerId) => {
+          {filters.owner.map(ownerId => {
             const user = (
               users as Array<{
                 id?: string;
@@ -240,35 +240,34 @@ export function DataTableToolbar({
                 name?: string | null;
                 email?: string | null;
               }>
-            ).find((u) => (u.id ?? u.userId) === ownerId);
+            ).find(u => (u.id ?? u.userId) === ownerId);
             return (
               <FilterBadge
                 key={`owner-${ownerId}`}
                 label={user?.name ?? user?.email ?? ownerId}
-                onRemove={() => removeFilter("owner", ownerId)}
+                onRemove={() => removeFilter('owner', ownerId)}
               />
             );
           })}
-          {filters.billingModel.map((model) => (
+          {filters.billingModel.map(model => (
             <FilterBadge
               key={`billing-${model}`}
               label={t(`billingModel.${model}`)}
-              onRemove={() => removeFilter("billingModel", model)}
+              onRemove={() => removeFilter('billingModel', model)}
             />
           ))}
-          {filters.health.map((health) => (
+          {filters.health.map(health => (
             <FilterBadge
               key={`health-${health}`}
               label={t(`health.${health}` as Parameters<typeof t>[0])}
-              onRemove={() => removeFilter("health", health)}
+              onRemove={() => removeFilter('health', health)}
             />
           ))}
           <button
             type="button"
             className="ms-1 text-xs text-muted-foreground hover:text-foreground underline"
-            onClick={clearAllFilters}
-          >
-            {t("clearAll")}
+            onClick={clearAllFilters}>
+            {t('clearAll')}
           </button>
         </div>
       )}
@@ -297,11 +296,10 @@ function FilterSection({
     <div className="space-y-2">
       <h4 className="text-[13px] font-medium text-foreground">{title}</h4>
       <div className="space-y-1">
-        {options.map((option) => (
+        {options.map(option => (
           <label
             key={option.value}
-            className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent"
-          >
+            className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent">
             <Checkbox
               checked={selected.includes(option.value)}
               onCheckedChange={() => onToggle(option.value)}
@@ -315,7 +313,7 @@ function FilterSection({
 }
 
 function FilterBadge({ label, onRemove }: { label: string; onRemove: () => void }) {
-  const tAria = useTranslations("Common.aria");
+  const tAria = useTranslations('Common.aria');
 
   return (
     <Badge variant="secondary" className="gap-1 ps-2 pe-1 py-0.5">
@@ -324,8 +322,7 @@ function FilterBadge({ label, onRemove }: { label: string; onRemove: () => void 
         type="button"
         className="ms-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20"
         onClick={onRemove}
-        aria-label={tAria("removeFilter", { label })}
-      >
+        aria-label={tAria('removeFilter', { label })}>
         <X className="h-3 w-3" />
       </button>
     </Badge>

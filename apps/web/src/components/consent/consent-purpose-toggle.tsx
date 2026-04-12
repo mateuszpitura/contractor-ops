@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import type { ConsentPurpose } from "@contractor-ops/validators";
-import { Shield } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { Badge } from "@/components/ui/badge";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
+import type { ConsentPurpose } from '@contractor-ops/validators';
+import { Shield } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -30,9 +30,9 @@ export function ConsentPurposeToggle({
   onToggle,
   disabled = false,
 }: ConsentPurposeToggleProps) {
-  const t = useTranslations("Consent");
+  const t = useTranslations('Consent');
 
-  const purposeKey = purpose.toLowerCase().replace(/_/g, "-");
+  const purposeKey = purpose.toLowerCase().replace(/_/g, '-');
   const label = t(`purposes.${purposeKey}.label`);
   const description = t(`purposes.${purposeKey}.description`);
 
@@ -49,8 +49,8 @@ export function ConsentPurposeToggle({
           <Label htmlFor={switchId} className="text-sm font-medium leading-none">
             {label}
           </Label>
-          <Badge variant={required ? "default" : "secondary"} className="text-[10px] px-1.5 py-0">
-            {required ? t("required") : t("optional")}
+          <Badge variant={required ? 'default' : 'secondary'} className="text-[10px] px-1.5 py-0">
+            {required ? t('required') : t('optional')}
           </Badge>
         </div>
         <p className="text-xs text-muted-foreground">{description}</p>
@@ -59,7 +59,7 @@ export function ConsentPurposeToggle({
       <Switch
         id={switchId}
         checked={granted}
-        onCheckedChange={(checked) => onToggle(purpose, checked)}
+        onCheckedChange={checked => onToggle(purpose, checked)}
         disabled={disabled || (required && !granted)}
         aria-required={required}
         aria-label={`${label} consent toggle`}

@@ -1,8 +1,8 @@
-import type { LucideIcon } from "lucide-react";
+import type { LucideIcon } from 'lucide-react';
 
-import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
+import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -28,7 +28,7 @@ interface SummaryCardProps {
  */
 export function SummaryCard({ icon: Icon, label, value, className }: SummaryCardProps) {
   return (
-    <Card className={cn("card-interactive p-6", className)}>
+    <Card className={cn('card-interactive p-6', className)}>
       <CardContent className="flex items-start gap-4 p-0">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">
           <Icon className="h-5 w-5 text-muted-foreground" />
@@ -51,7 +51,7 @@ export function SummaryCard({ icon: Icon, label, value, className }: SummaryCard
  */
 export function SummaryCardSkeleton({ className }: { className?: string }) {
   return (
-    <Card className={cn("p-6", className)}>
+    <Card className={cn('p-6', className)}>
       <CardContent className="flex items-start gap-4 p-0">
         <Skeleton className="h-10 w-10 shrink-0 rounded-lg" />
         <div className="min-w-0 space-y-2">

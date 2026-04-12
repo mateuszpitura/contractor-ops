@@ -1,27 +1,27 @@
-"use client";
+'use client';
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { addDays, format, startOfISOWeek } from "date-fns";
-import { ClipboardList, Clock } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { parseAsString, useQueryState } from "nuqs";
-import { Suspense, useCallback, useMemo } from "react";
-import { toast } from "sonner";
-import { AnimateIn } from "@/components/shared/animate-in";
-import { EmptyState } from "@/components/shared/empty-state";
-import { PageHeader } from "@/components/shared/page-header";
-import type { TimesheetRow } from "@/components/time/approval-queue-table";
-import { ApprovalQueueTable } from "@/components/time/approval-queue-table";
-import { ReconciliationTable } from "@/components/time/reconciliation-table";
-import { TimeEntryStatusBadge } from "@/components/time/time-entry-status-badge";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { addDays, format, startOfISOWeek } from 'date-fns';
+import { ClipboardList, Clock } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { parseAsString, useQueryState } from 'nuqs';
+import { Suspense, useCallback, useMemo } from 'react';
+import { toast } from 'sonner';
+import { AnimateIn } from '@/components/shared/animate-in';
+import { EmptyState } from '@/components/shared/empty-state';
+import { PageHeader } from '@/components/shared/page-header';
+import type { TimesheetRow } from '@/components/time/approval-queue-table';
+import { ApprovalQueueTable } from '@/components/time/approval-queue-table';
+import { ReconciliationTable } from '@/components/time/reconciliation-table';
+import { TimeEntryStatusBadge } from '@/components/time/time-entry-status-badge';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
+} from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -29,20 +29,20 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useRouter } from "@/i18n/navigation";
-import { trpc } from "@/trpc/init";
+} from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useRouter } from '@/i18n/navigation';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
 function formatPeriod(weekStart: string | Date): string {
-  const start = typeof weekStart === "string" ? new Date(weekStart) : weekStart;
+  const start = typeof weekStart === 'string' ? new Date(weekStart) : weekStart;
   const monday = startOfISOWeek(start);
   const sunday = addDays(monday, 6);
-  return `${format(monday, "MMM d")} - ${format(sunday, "MMM d")}`;
+  return `${format(monday, 'MMM d')} - ${format(sunday, 'MMM d')}`;
 }
 
 function minutesToDisplay(minutes: number): string {
@@ -55,13 +55,13 @@ function minutesToDisplay(minutes: number): string {
 // ---------------------------------------------------------------------------
 
 function TimeTrackingContent() {
-  const t = useTranslations("Time");
+  const t = useTranslations('Time');
   const router = useRouter();
   const queryClient = useQueryClient();
 
   // URL state
-  const [tab, setTab] = useQueryState("tab", parseAsString.withDefault("pending"));
-  const [statusFilter, setStatusFilter] = useQueryState("status", parseAsString.withDefault("all"));
+  const [tab, setTab] = useQueryState('tab', parseAsString.withDefault('pending'));
+  const [statusFilter, setStatusFilter] = useQueryState('status', parseAsString.withDefault('all'));
 
   // -----------------------------------------------------------------------
   // Queries
@@ -74,13 +74,13 @@ function TimeTrackingContent() {
 
   const allQuery = useQuery({
     ...trpc.time.listAll.queryOptions({
-      ...(statusFilter !== "all"
+      ...(statusFilter !== 'all'
         ? {
-            status: statusFilter as "DRAFT" | "SUBMITTED" | "APPROVED" | "REJECTED",
+            status: statusFilter as 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED',
           }
         : {}),
     }),
-    enabled: tab === "all",
+    enabled: tab === 'all',
     refetchInterval: 30000,
   });
 
@@ -100,52 +100,52 @@ function TimeTrackingContent() {
 
   const invalidate = useCallback(() => {
     void queryClient.invalidateQueries({
-      queryKey: [["time", "listPending"]],
+      queryKey: [['time', 'listPending']],
     });
     void queryClient.invalidateQueries({
-      queryKey: [["time", "listAll"]],
+      queryKey: [['time', 'listAll']],
     });
   }, [queryClient]);
 
   const approveMutation = useMutation(
     trpc.time.approve.mutationOptions({
       onSuccess: () => {
-        toast.success(t("toast.approved"));
+        toast.success(t('toast.approved'));
         invalidate();
       },
-      onError: () => toast.error(t("errors.failedToApprove")),
+      onError: () => toast.error(t('errors.failedToApprove')),
     }),
   );
 
   const rejectMutation = useMutation(
     trpc.time.reject.mutationOptions({
       onSuccess: () => {
-        toast.success(t("toast.rejected"));
+        toast.success(t('toast.rejected'));
         invalidate();
       },
-      onError: () => toast.error(t("errors.failedToReject")),
+      onError: () => toast.error(t('errors.failedToReject')),
     }),
   );
 
   const bulkApproveMutation = useMutation(
     trpc.time.bulkApprove.mutationOptions({
-      onSuccess: (data) => {
+      onSuccess: data => {
         const result = data as { count: number };
-        toast.success(t("toast.bulkApproved", { count: result.count }));
+        toast.success(t('toast.bulkApproved', { count: result.count }));
         invalidate();
       },
-      onError: () => toast.error(t("errors.failedToApproveTimesheets")),
+      onError: () => toast.error(t('errors.failedToApproveTimesheets')),
     }),
   );
 
   const bulkRejectMutation = useMutation(
     trpc.time.bulkReject.mutationOptions({
-      onSuccess: (data) => {
+      onSuccess: data => {
         const result = data as { count: number };
-        toast.success(t("toast.bulkRejected", { count: result.count }));
+        toast.success(t('toast.bulkRejected', { count: result.count }));
         invalidate();
       },
-      onError: () => toast.error(t("errors.failedToRejectTimesheets")),
+      onError: () => toast.error(t('errors.failedToRejectTimesheets')),
     }),
   );
 
@@ -195,22 +195,22 @@ function TimeTrackingContent() {
   return (
     <div className="space-y-6">
       <AnimateIn delay={0}>
-        <PageHeader title={t("pageTitle")} />
+        <PageHeader title={t('pageTitle')} />
       </AnimateIn>
 
       <AnimateIn delay={1}>
-        <Tabs value={tab} onValueChange={(value) => void setTab(value)}>
+        <Tabs value={tab} onValueChange={value => void setTab(value)}>
           <TabsList>
             <TabsTrigger value="pending">
-              {t("tabs.pendingReviews")}
+              {t('tabs.pendingReviews')}
               {pendingTimesheets.length > 0 && (
                 <span className="ms-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-medium text-primary-foreground">
                   {pendingTimesheets.length}
                 </span>
               )}
             </TabsTrigger>
-            <TabsTrigger value="all">{t("tabs.allEntries")}</TabsTrigger>
-            <TabsTrigger value="reconciliation">{t("tabs.reconciliation")}</TabsTrigger>
+            <TabsTrigger value="all">{t('tabs.allEntries')}</TabsTrigger>
+            <TabsTrigger value="reconciliation">{t('tabs.reconciliation')}</TabsTrigger>
           </TabsList>
 
           {/* Tab 1: Pending Reviews */}
@@ -220,8 +220,8 @@ function TimeTrackingContent() {
             ) : pendingTimesheets.length === 0 ? (
               <EmptyState
                 icon={Clock}
-                heading={t("emptyStates.noPendingReviewsHeading")}
-                body={t("emptyStates.noPendingReviewsBody")}
+                heading={t('emptyStates.noPendingReviewsHeading')}
+                body={t('emptyStates.noPendingReviewsBody')}
               />
             ) : (
               <ApprovalQueueTable
@@ -240,16 +240,16 @@ function TimeTrackingContent() {
             <div className="space-y-4">
               {/* Filters */}
               <div className="flex items-center gap-3">
-                <Select value={statusFilter} onValueChange={(v) => void setStatusFilter(v)}>
+                <Select value={statusFilter} onValueChange={v => void setStatusFilter(v)}>
                   <SelectTrigger className="w-40">
-                    <SelectValue placeholder={t("filters.statusPlaceholder")} />
+                    <SelectValue placeholder={t('filters.statusPlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">{t("filters.allStatuses")}</SelectItem>
-                    <SelectItem value="DRAFT">{t("filters.draft")}</SelectItem>
-                    <SelectItem value="SUBMITTED">{t("filters.submitted")}</SelectItem>
-                    <SelectItem value="APPROVED">{t("filters.approved")}</SelectItem>
-                    <SelectItem value="REJECTED">{t("filters.rejected")}</SelectItem>
+                    <SelectItem value="all">{t('filters.allStatuses')}</SelectItem>
+                    <SelectItem value="DRAFT">{t('filters.draft')}</SelectItem>
+                    <SelectItem value="SUBMITTED">{t('filters.submitted')}</SelectItem>
+                    <SelectItem value="APPROVED">{t('filters.approved')}</SelectItem>
+                    <SelectItem value="REJECTED">{t('filters.rejected')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -259,22 +259,22 @@ function TimeTrackingContent() {
               ) : allTimesheets.length === 0 ? (
                 <EmptyState
                   icon={ClipboardList}
-                  heading={t("emptyStates.noTimeEntriesHeading")}
-                  body={t("emptyStates.noTimeEntriesBody")}
+                  heading={t('emptyStates.noTimeEntriesHeading')}
+                  body={t('emptyStates.noTimeEntriesBody')}
                 />
               ) : (
                 <div className="rounded-xl border bg-background">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>{t("columns.contractor")}</TableHead>
-                        <TableHead>{t("columns.period")}</TableHead>
-                        <TableHead className="text-end">{t("columns.totalHours")}</TableHead>
-                        <TableHead>{t("columns.status")}</TableHead>
+                        <TableHead>{t('columns.contractor')}</TableHead>
+                        <TableHead>{t('columns.period')}</TableHead>
+                        <TableHead className="text-end">{t('columns.totalHours')}</TableHead>
+                        <TableHead>{t('columns.status')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {allTimesheets.map((ts) => (
+                      {allTimesheets.map(ts => (
                         <TableRow key={ts.id}>
                           <TableCell className="text-sm font-medium">
                             {ts.contractor.legalName}
@@ -344,8 +344,7 @@ export default function TimePage() {
           <Skeleton className="h-10 w-80" />
           <LoadingSkeleton />
         </div>
-      }
-    >
+      }>
       <TimeTrackingContent />
     </Suspense>
   );

@@ -1,4 +1,4 @@
-import { Redis } from "@upstash/redis";
+import { Redis } from '@upstash/redis';
 
 // ---------------------------------------------------------------------------
 // Client
@@ -34,10 +34,10 @@ const inflight = new Map<string, Promise<unknown>>();
 // Cache key helpers
 // ---------------------------------------------------------------------------
 
-const KEY_PREFIX = "co:"; // contractor-ops namespace
+const KEY_PREFIX = 'co:'; // contractor-ops namespace
 
 export function cacheKey(...segments: string[]): string {
-  return KEY_PREFIX + segments.join(":");
+  return KEY_PREFIX + segments.join(':');
 }
 
 // ---------------------------------------------------------------------------
@@ -47,7 +47,7 @@ export function cacheKey(...segments: string[]): string {
 // Sentinel value to distinguish "cached null" from "cache miss".
 // Upstash returns null for both missing keys and stored null values,
 // so we wrap nullable results in an envelope.
-const CACHE_ENVELOPE = "__co_v" as const;
+const CACHE_ENVELOPE = '__co_v' as const;
 type CacheEnvelope<T> = { [CACHE_ENVELOPE]: T };
 
 function wrap<T>(value: T): CacheEnvelope<T> {
@@ -59,7 +59,7 @@ function unwrap<T>(envelope: CacheEnvelope<T>): T {
 }
 
 function isEnvelope<T>(value: unknown): value is CacheEnvelope<T> {
-  return typeof value === "object" && value !== null && CACHE_ENVELOPE in value;
+  return typeof value === 'object' && value !== null && CACHE_ENVELOPE in value;
 }
 
 /**
@@ -86,15 +86,15 @@ export async function cached<T>(key: string, ttlSec: number, fn: () => Promise<T
       return unwrap(hit);
     }
   } catch (err) {
-    console.warn("[cache] Redis GET failed, falling back to DB:", err);
+    console.warn('[cache] Redis GET failed, falling back to DB:', err);
   }
 
   // 2. Cache miss → fetch with singleflight
   const result = await singleflight(key, fn);
 
   // 3. Write-back (fire-and-forget, don't block response)
-  client.set(key, wrap(result), { ex: ttlSec }).catch((err) => {
-    console.warn("[cache] Redis SET failed:", err);
+  client.set(key, wrap(result), { ex: ttlSec }).catch(err => {
+    console.warn('[cache] Redis SET failed:', err);
   });
 
   return result;
@@ -131,7 +131,7 @@ export async function invalidate(...keys: string[]): Promise<void> {
   try {
     await client.del(...keys);
   } catch (err) {
-    console.warn("[cache] Redis DEL failed:", err);
+    console.warn('[cache] Redis DEL failed:', err);
   }
 }
 
@@ -157,7 +157,7 @@ export async function invalidateByPrefix(prefix: string): Promise<void> {
       }
     } while (cursor !== 0);
   } catch (err) {
-    console.warn("[cache] Redis prefix invalidation failed:", err);
+    console.warn('[cache] Redis prefix invalidation failed:', err);
   }
 }
 
@@ -167,21 +167,21 @@ export async function invalidateByPrefix(prefix: string): Promise<void> {
 
 export const CacheKeys = {
   // Org-scoped — orgId comes first so prefix invalidation works
-  subscription: (orgId: string) => cacheKey(orgId, "billing", "sub"),
-  creditBalance: (orgId: string) => cacheKey(orgId, "billing", "credits"),
-  dashboardKpis: (orgId: string) => cacheKey(orgId, "dash", "kpis"),
-  dashboardSpend: (orgId: string, months: string) => cacheKey(orgId, "dash", "spend", months),
-  dashboardDeadlines: (orgId: string) => cacheKey(orgId, "dash", "deadlines"),
-  dashboardActivity: (orgId: string) => cacheKey(orgId, "dash", "activity"),
-  orgSettings: (orgId: string) => cacheKey(orgId, "settings", "org"),
-  orgSettingsJson: (orgId: string, sub: string) => cacheKey(orgId, "settings", "json", sub),
-  orgBranding: (orgId: string) => cacheKey(orgId, "settings", "branding"),
-  approvalChains: (orgId: string) => cacheKey(orgId, "approval", "chains"),
+  subscription: (orgId: string) => cacheKey(orgId, 'billing', 'sub'),
+  creditBalance: (orgId: string) => cacheKey(orgId, 'billing', 'credits'),
+  dashboardKpis: (orgId: string) => cacheKey(orgId, 'dash', 'kpis'),
+  dashboardSpend: (orgId: string, months: string) => cacheKey(orgId, 'dash', 'spend', months),
+  dashboardDeadlines: (orgId: string) => cacheKey(orgId, 'dash', 'deadlines'),
+  dashboardActivity: (orgId: string) => cacheKey(orgId, 'dash', 'activity'),
+  orgSettings: (orgId: string) => cacheKey(orgId, 'settings', 'org'),
+  orgSettingsJson: (orgId: string, sub: string) => cacheKey(orgId, 'settings', 'json', sub),
+  orgBranding: (orgId: string) => cacheKey(orgId, 'settings', 'branding'),
+  approvalChains: (orgId: string) => cacheKey(orgId, 'approval', 'chains'),
 
   // Prefix patterns for broad invalidation (match all keys for an org+domain)
-  dashboardPrefix: (orgId: string) => cacheKey(orgId, "dash"),
-  settingsPrefix: (orgId: string) => cacheKey(orgId, "settings"),
-  billingPrefix: (orgId: string) => cacheKey(orgId, "billing"),
+  dashboardPrefix: (orgId: string) => cacheKey(orgId, 'dash'),
+  settingsPrefix: (orgId: string) => cacheKey(orgId, 'settings'),
+  billingPrefix: (orgId: string) => cacheKey(orgId, 'billing'),
 } as const;
 
 // ---------------------------------------------------------------------------

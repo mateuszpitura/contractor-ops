@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import type { Table } from "@tanstack/react-table";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useTranslations } from "next-intl";
+import type { Table } from '@tanstack/react-table';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 
 interface DataTablePaginationProps<TData> {
   table: Table<TData>;
@@ -36,9 +36,9 @@ export function DataTablePagination<TData>({
   onPageChange,
   onPageSizeChange,
 }: DataTablePaginationProps<TData>) {
-  const t = useTranslations("Contractors.pagination");
-  const tAria = useTranslations("Common.aria");
-  const tb = useTranslations("Contractors.bulkActions");
+  const t = useTranslations('Contractors.pagination');
+  const tAria = useTranslations('Common.aria');
+  const tb = useTranslations('Contractors.bulkActions');
 
   const totalPages = Math.max(1, Math.ceil(totalRows / pageSize));
   const selectedCount = table.getFilteredSelectedRowModel().rows.length;
@@ -46,23 +46,20 @@ export function DataTablePagination<TData>({
   return (
     <div className="flex items-center justify-between px-4 py-3">
       <div className="flex items-center gap-4 text-sm text-muted-foreground">
-        {selectedCount > 0 && <span>{tb("selected", { count: selectedCount })}</span>}
-        <span>{t("of", { total: totalRows })}</span>
+        {selectedCount > 0 && <span>{tb('selected', { count: selectedCount })}</span>}
+        <span>{t('of', { total: totalRows })}</span>
       </div>
 
       <div className="flex items-center gap-4">
         {/* Page size selector */}
         <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">{t("rowsPerPage")}</span>
-          <Select
-            value={String(pageSize)}
-            onValueChange={(value) => onPageSizeChange(Number(value))}
-          >
+          <span className="text-sm text-muted-foreground">{t('rowsPerPage')}</span>
+          <Select value={String(pageSize)} onValueChange={value => onPageSizeChange(Number(value))}>
             <SelectTrigger className="h-8 w-[70px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {PAGE_SIZE_OPTIONS.map((size) => (
+              {PAGE_SIZE_OPTIONS.map(size => (
                 <SelectItem key={size} value={String(size)}>
                   {size}
                 </SelectItem>
@@ -73,7 +70,7 @@ export function DataTablePagination<TData>({
 
         {/* Page indicator */}
         <span className="text-sm text-muted-foreground">
-          {t("page", { page: currentPage, totalPages })}
+          {t('page', { page: currentPage, totalPages })}
         </span>
 
         {/* Navigation buttons */}
@@ -84,8 +81,7 @@ export function DataTablePagination<TData>({
             className="h-8 w-8"
             disabled={currentPage <= 1}
             onClick={() => onPageChange(currentPage - 1)}
-            aria-label={tAria("previousPage")}
-          >
+            aria-label={tAria('previousPage')}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <Button
@@ -94,8 +90,7 @@ export function DataTablePagination<TData>({
             className="h-8 w-8"
             disabled={currentPage >= totalPages}
             onClick={() => onPageChange(currentPage + 1)}
-            aria-label={tAria("nextPage")}
-          >
+            aria-label={tAria('nextPage')}>
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>

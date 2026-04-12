@@ -14,22 +14,22 @@
 // Per T-48-18: Compliance credentials only in Infisical, never in configJson.
 // ---------------------------------------------------------------------------
 
-import nodeCrypto from "node:crypto";
-import type { Prisma } from "@contractor-ops/db";
-import { prisma as defaultPrisma } from "@contractor-ops/db";
+import nodeCrypto from 'node:crypto';
+import type { Prisma } from '@contractor-ops/db';
+import { prisma as defaultPrisma } from '@contractor-ops/db';
 import type {
   ZatcaConnectionConfig,
   ZatcaOnboardingState,
   ZatcaTaxDetails,
-} from "@contractor-ops/einvoice";
+} from '@contractor-ops/einvoice';
 import {
   buildComplianceTestInvoices,
   generateZatcaCsr,
   generateZatcaXml,
   zatcaTaxDetailsSchema,
-} from "@contractor-ops/einvoice";
-import { createZatcaSecretStore, ZATCA_SECRET_NAMES } from "@contractor-ops/integrations";
-import { TRPCError } from "@trpc/server";
+} from '@contractor-ops/einvoice';
+import { createZatcaSecretStore, ZATCA_SECRET_NAMES } from '@contractor-ops/integrations';
+import { TRPCError } from '@trpc/server';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -40,7 +40,7 @@ export interface ComplianceCheckResult {
   type: string;
   invoiceTypeCode: string;
   subtype: string;
-  status: "CLEARED" | "REPORTED" | "REJECTED" | "ERROR";
+  status: 'CLEARED' | 'REPORTED' | 'REJECTED' | 'ERROR';
   message?: string;
 }
 
@@ -79,7 +79,7 @@ interface ZatcaApiClientLike {
 async function loadZatcaApiClient(options: Record<string, unknown>): Promise<ZatcaApiClientLike> {
   try {
     // The api-client.ts is created by Plan 04 and exports ZatcaApiClient
-    const mod = await import("@contractor-ops/einvoice");
+    const mod = await import('@contractor-ops/einvoice');
     const ClientClass = (mod as Record<string, unknown>).ZatcaApiClient as
       | (new (
           opts: Record<string, unknown>,
@@ -87,14 +87,14 @@ async function loadZatcaApiClient(options: Record<string, unknown>): Promise<Zat
       | undefined;
 
     if (!ClientClass) {
-      throw new Error("ZatcaApiClient not found in einvoice exports");
+      throw new Error('ZatcaApiClient not found in einvoice exports');
     }
 
     return new ClientClass(options);
   } catch {
     throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "errors.zatca.apiClientUnavailable",
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'errors.zatca.apiClientUnavailable',
     });
   }
 }
@@ -107,24 +107,24 @@ async function getOrCreateConnection(organizationId: string, userId?: string) {
   let connection = await defaultPrisma.integrationConnection.findFirst({
     where: {
       organizationId,
-      provider: "ZATCA",
+      provider: 'ZATCA',
     },
   });
 
   if (!connection) {
     const defaultConfig: ZatcaConnectionConfig = {
-      environment: "sandbox",
-      currentStep: "tax_details",
-      certificateStatus: "none",
+      environment: 'sandbox',
+      currentStep: 'tax_details',
+      certificateStatus: 'none',
     };
 
     connection = await defaultPrisma.integrationConnection.create({
       data: {
         organizationId,
-        provider: "ZATCA",
-        status: "DISCONNECTED",
+        provider: 'ZATCA',
+        status: 'DISCONNECTED',
         credentialsRef: `infisical:zatca/${organizationId}`,
-        connectedByUserId: userId ?? "system",
+        connectedByUserId: userId ?? 'system',
         configJson: defaultConfig as unknown as Prisma.InputJsonValue,
       },
     });
@@ -139,7 +139,7 @@ async function getOrCreateConnection(organizationId: string, userId?: string) {
 async function updateConnectionConfig(
   connectionId: string,
   update: Record<string, unknown>,
-  statusOverride?: "CONNECTED" | "DISCONNECTED" | "ERROR" | "REAUTH_REQUIRED" | "PENDING_MAPPING",
+  statusOverride?: 'CONNECTED' | 'DISCONNECTED' | 'ERROR' | 'REAUTH_REQUIRED' | 'PENDING_MAPPING',
 ) {
   const connection = await defaultPrisma.integrationConnection.findUniqueOrThrow({
     where: { id: connectionId },
@@ -181,7 +181,7 @@ export async function saveTaxDetails(
 
   await updateConnectionConfig(connection.id, {
     taxDetails: validated,
-    currentStep: "csr_generation",
+    currentStep: 'csr_generation',
   });
 }
 
@@ -206,30 +206,30 @@ export async function generateAndStoreCsr(organizationId: string): Promise<{ csr
 
   if (!taxDetails) {
     throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: "errors.zatca.taxDetailsRequired",
+      code: 'BAD_REQUEST',
+      message: 'errors.zatca.taxDetailsRequired',
     });
   }
 
   // Derive invoice types title code
   const invoiceTypes = taxDetails.invoiceTypes ?? [];
-  let title: "0100" | "1000" | "1100" = "1100";
-  if (invoiceTypes.includes("standard") && !invoiceTypes.includes("simplified")) {
-    title = "0100";
-  } else if (!invoiceTypes.includes("standard") && invoiceTypes.includes("simplified")) {
-    title = "1000";
+  let title: '0100' | '1000' | '1100' = '1100';
+  if (invoiceTypes.includes('standard') && !invoiceTypes.includes('simplified')) {
+    title = '0100';
+  } else if (!invoiceTypes.includes('standard') && invoiceTypes.includes('simplified')) {
+    title = '1000';
   }
 
   // Build CSR attributes from tax details
   const csrAttributes = {
-    commonName: "contractor-ops",
+    commonName: 'contractor-ops',
     orgName: taxDetails.orgNameArabic,
     vatNumber: taxDetails.vatNumber,
-    country: "SA" as const,
+    country: 'SA' as const,
     serialNumber: `1-contractor-ops|2-ContractorOps|3-${nodeCrypto.randomUUID()}`,
     title,
     registeredAddress: `${taxDetails.street}, ${taxDetails.district}, ${taxDetails.city} ${taxDetails.postalCode}`,
-    businessCategory: "Technology",
+    businessCategory: 'Technology',
   };
 
   // Generate CSR and key pair
@@ -241,7 +241,7 @@ export async function generateAndStoreCsr(organizationId: string): Promise<{ csr
 
   // Store CSR in configJson for the next step (CSR is public, safe to store)
   await updateConnectionConfig(connection.id, {
-    currentStep: "compliance_csid",
+    currentStep: 'compliance_csid',
     csrPem: csr,
   });
 
@@ -268,16 +268,16 @@ export async function requestComplianceCsid(
 
   if (!csrPem) {
     throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: "errors.zatca.csrRequired",
+      code: 'BAD_REQUEST',
+      message: 'errors.zatca.csrRequired',
     });
   }
 
   // Base64-encode the CSR PEM for ZATCA API
-  const csrBase64 = Buffer.from(csrPem).toString("base64");
+  const csrBase64 = Buffer.from(csrPem).toString('base64');
 
   // Create API client with sandbox configuration
-  const environment = (config?.environment as string) ?? "sandbox";
+  const environment = (config?.environment as string) ?? 'sandbox';
   const apiClient = await loadZatcaApiClient({ environment });
 
   // Submit CSR to ZATCA
@@ -291,8 +291,8 @@ export async function requestComplianceCsid(
 
   // Update connection config (no secrets in configJson)
   await updateConnectionConfig(connection.id, {
-    currentStep: "compliance_checks",
-    certificateStatus: "compliance",
+    currentStep: 'compliance_checks',
+    certificateStatus: 'compliance',
   });
 
   return { requestId: response.requestID };
@@ -318,8 +318,8 @@ export async function runComplianceChecks(
 
   if (!taxDetails) {
     throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: "errors.zatca.taxDetailsRequiredForCompliance",
+      code: 'BAD_REQUEST',
+      message: 'errors.zatca.taxDetailsRequiredForCompliance',
     });
   }
 
@@ -332,12 +332,12 @@ export async function runComplianceChecks(
 
   if (!(certificate && apiSecret)) {
     throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: "errors.zatca.complianceCsidRequired",
+      code: 'BAD_REQUEST',
+      message: 'errors.zatca.complianceCsidRequired',
     });
   }
 
-  const environment = (config?.environment as string) ?? "sandbox";
+  const environment = (config?.environment as string) ?? 'sandbox';
   const apiClient = await loadZatcaApiClient({
     environment,
     certificate,
@@ -358,7 +358,7 @@ export async function runComplianceChecks(
       const xml = await generateZatcaXml(invoice);
 
       // Compute hash
-      const hash = nodeCrypto.createHash("sha256").update(xml, "utf-8").digest("base64");
+      const hash = nodeCrypto.createHash('sha256').update(xml, 'utf-8').digest('base64');
 
       const uuid = ext.uuid as string;
 
@@ -369,27 +369,27 @@ export async function runComplianceChecks(
         type: `${invoiceType} ${invoice.invoiceTypeCode}`,
         invoiceTypeCode: invoice.invoiceTypeCode,
         subtype: invoiceSubtype,
-        status: (response.validationResults?.status as ComplianceCheckResult["status"]) ?? "ERROR",
+        status: (response.validationResults?.status as ComplianceCheckResult['status']) ?? 'ERROR',
         message: response.validationResults?.warningMessages?.[0]?.message,
       });
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Unknown error";
+      const message = error instanceof Error ? error.message : 'Unknown error';
       results.push({
         type: `${invoiceType} ${invoice.invoiceTypeCode}`,
         invoiceTypeCode: invoice.invoiceTypeCode,
         subtype: invoiceSubtype,
-        status: "ERROR",
+        status: 'ERROR',
         message,
       });
     }
   }
 
   // Check if all passed
-  const allPassed = results.every((r) => r.status === "CLEARED" || r.status === "REPORTED");
+  const allPassed = results.every(r => r.status === 'CLEARED' || r.status === 'REPORTED');
 
   if (allPassed) {
     await updateConnectionConfig(connection.id, {
-      currentStep: "production_certificate",
+      currentStep: 'production_certificate',
     });
   }
 
@@ -420,12 +420,12 @@ export async function exchangeProductionCertificate(organizationId: string): Pro
 
   if (!(requestId && certificate && apiSecret)) {
     throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: "errors.zatca.complianceChecksMustPass",
+      code: 'BAD_REQUEST',
+      message: 'errors.zatca.complianceChecksMustPass',
     });
   }
 
-  const environment = (config?.environment as string) ?? "sandbox";
+  const environment = (config?.environment as string) ?? 'sandbox';
   const apiClient = await loadZatcaApiClient({
     environment,
     certificate,
@@ -447,15 +447,15 @@ export async function exchangeProductionCertificate(organizationId: string): Pro
   // Update connection to CONNECTED + production
   const productionConfig = {
     ...(config ?? {}),
-    currentStep: "production_certificate",
-    certificateStatus: "production",
-    environment: "production",
+    currentStep: 'production_certificate',
+    certificateStatus: 'production',
+    environment: 'production',
   };
 
   await defaultPrisma.integrationConnection.update({
     where: { id: connection.id },
     data: {
-      status: "CONNECTED",
+      status: 'CONNECTED',
       connectedAt: new Date(),
       configJson: productionConfig as unknown as Prisma.InputJsonValue,
     },
@@ -476,13 +476,13 @@ export async function getOnboardingState(organizationId: string): Promise<ZatcaO
   const connection = await defaultPrisma.integrationConnection.findFirst({
     where: {
       organizationId,
-      provider: "ZATCA",
+      provider: 'ZATCA',
     },
   });
 
   if (!connection) {
     return {
-      currentStep: "tax_details",
+      currentStep: 'tax_details',
       taxDetails: false,
       csrGenerated: false,
       complianceCsidReceived: false,
@@ -492,15 +492,15 @@ export async function getOnboardingState(organizationId: string): Promise<ZatcaO
   }
 
   const config = (connection.configJson as Record<string, unknown>) ?? {};
-  const currentStep = (config.currentStep as string) ?? "tax_details";
-  const certStatus = (config.certificateStatus as string) ?? "none";
+  const currentStep = (config.currentStep as string) ?? 'tax_details';
+  const certStatus = (config.certificateStatus as string) ?? 'none';
 
   return {
-    currentStep: currentStep as ZatcaOnboardingState["currentStep"],
+    currentStep: currentStep as ZatcaOnboardingState['currentStep'],
     taxDetails: !!config.taxDetails,
     csrGenerated: !!config.csrPem,
-    complianceCsidReceived: certStatus === "compliance" || certStatus === "production",
-    complianceChecksPassed: currentStep === "production_certificate" || certStatus === "production",
-    productionCertActive: certStatus === "production",
+    complianceCsidReceived: certStatus === 'compliance' || certStatus === 'production',
+    complianceChecksPassed: currentStep === 'production_certificate' || certStatus === 'production',
+    productionCertActive: certStatus === 'production',
   };
 }

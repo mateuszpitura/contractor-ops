@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { X } from "lucide-react";
-import { useState } from "react";
+import { X } from 'lucide-react';
+import { useState } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,10 +11,10 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
-import { ConfluenceIcon, NotionIcon } from "./provider-icons";
+} from '@/components/ui/alert-dialog';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
+import { ConfluenceIcon, NotionIcon } from './provider-icons';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -24,7 +24,7 @@ function formatRelativeTime(dateString: string): string {
   const diff = Date.now() - new Date(dateString).getTime();
   const seconds = Math.floor(diff / 1000);
 
-  if (seconds < 60) return "just now";
+  if (seconds < 60) return 'just now';
   const minutes = Math.floor(seconds / 60);
   if (minutes < 60) return `${minutes}m ago`;
   const hours = Math.floor(minutes / 60);
@@ -43,7 +43,7 @@ interface DocLinkChipProps {
   id: string;
   title: string;
   url: string;
-  provider: "notion" | "confluence";
+  provider: 'notion' | 'confluence';
   lastEditedTime?: string;
   readOnly?: boolean;
   onRemove?: (id: string) => void;
@@ -66,8 +66,8 @@ export function DocLinkChip({
 }: DocLinkChipProps) {
   const [confirmOpen, setConfirmOpen] = useState(false);
 
-  const ProviderIcon = provider === "notion" ? NotionIcon : ConfluenceIcon;
-  const providerLabel = provider === "notion" ? "Notion" : "Confluence";
+  const ProviderIcon = provider === 'notion' ? NotionIcon : ConfluenceIcon;
+  const providerLabel = provider === 'notion' ? 'Notion' : 'Confluence';
   const showRemove = !readOnly && !!onRemove;
 
   const tooltipText = lastEditedTime
@@ -85,12 +85,11 @@ export function DocLinkChip({
               rel="noopener noreferrer"
               aria-label={`Open ${title} in ${providerLabel} (new tab)`}
               className={cn(
-                "group inline-flex items-center gap-1 rounded-md border border-border bg-muted/50 px-2 py-1 max-w-[220px] hover:bg-muted transition-colors duration-150",
+                'group inline-flex items-center gap-1 rounded-md border border-border bg-muted/50 px-2 py-1 max-w-[220px] hover:bg-muted transition-colors duration-150',
                 className,
               )}
             />
-          }
-        >
+          }>
           <ProviderIcon className="h-3.5 w-3.5 shrink-0" />
           <span className="text-xs font-medium text-foreground truncate">{title}</span>
           {showRemove && (
@@ -98,12 +97,11 @@ export function DocLinkChip({
               type="button"
               className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 text-muted-foreground hover:text-destructive ms-0.5 shrink-0"
               aria-label={`Remove link to ${title}`}
-              onClick={(e) => {
+              onClick={e => {
                 e.preventDefault();
                 e.stopPropagation();
                 setConfirmOpen(true);
-              }}
-            >
+              }}>
               <X className="h-3 w-3" />
             </button>
           )}
@@ -128,8 +126,7 @@ export function DocLinkChip({
                 onClick={() => {
                   onRemove(id);
                   setConfirmOpen(false);
-                }}
-              >
+                }}>
                 Remove Link
               </AlertDialogAction>
             </AlertDialogFooter>

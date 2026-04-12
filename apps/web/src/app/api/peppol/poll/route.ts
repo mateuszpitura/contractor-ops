@@ -1,10 +1,10 @@
-import { PeppolOrchestrator } from "@contractor-ops/api/services/peppol-orchestrator";
-import { prisma } from "@contractor-ops/db";
-import { StorecoveAdapter } from "@contractor-ops/einvoice";
-import { getCredentials } from "@contractor-ops/integrations";
-import { verifySignatureAppRouter } from "@upstash/qstash/nextjs";
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import { PeppolOrchestrator } from '@contractor-ops/api/services/peppol-orchestrator';
+import { prisma } from '@contractor-ops/db';
+import { StorecoveAdapter } from '@contractor-ops/einvoice';
+import { getCredentials } from '@contractor-ops/integrations';
+import { verifySignatureAppRouter } from '@upstash/qstash/nextjs';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 // ---------------------------------------------------------------------------
 // POST /api/peppol/poll
@@ -25,10 +25,10 @@ async function handler(request: NextRequest) {
     // Otherwise, poll all active participants.
     const participants = organizationId
       ? await prisma.peppolParticipant.findMany({
-          where: { organizationId, status: "ACTIVE" },
+          where: { organizationId, status: 'ACTIVE' },
         })
       : await prisma.peppolParticipant.findMany({
-          where: { status: "ACTIVE" },
+          where: { status: 'ACTIVE' },
         });
 
     const results: Array<{
@@ -41,23 +41,23 @@ async function handler(request: NextRequest) {
         const connection = await prisma.integrationConnection.findFirst({
           where: {
             organizationId: participant.organizationId,
-            provider: "PEPPOL",
-            status: "CONNECTED",
+            provider: 'PEPPOL',
+            status: 'CONNECTED',
           },
         });
 
         if (!connection) continue;
 
-        const credentials = await getCredentials(connection.credentialsRef, "peppol");
+        const credentials = await getCredentials(connection.credentialsRef, 'peppol');
         const config = (connection.configJson as Record<string, unknown>) ?? {};
         const environment = config.environment as string;
 
         const adapter = new StorecoveAdapter({
           apiKey: credentials.accessToken,
           baseUrl:
-            environment === "production"
-              ? "https://api.storecove.com/api/v2"
-              : "https://api-sandbox.storecove.com/api/v2",
+            environment === 'production'
+              ? 'https://api.storecove.com/api/v2'
+              : 'https://api-sandbox.storecove.com/api/v2',
         });
 
         const orchestrator = new PeppolOrchestrator(adapter);
@@ -83,7 +83,7 @@ async function handler(request: NextRequest) {
         const connection = await prisma.integrationConnection.findFirst({
           where: {
             organizationId: participant.organizationId,
-            provider: "PEPPOL",
+            provider: 'PEPPOL',
           },
         });
 
@@ -94,10 +94,12 @@ async function handler(request: NextRequest) {
               data: {
                 lastSyncAt: new Date(),
                 lastErrorAt: new Date(),
-                lastErrorMessage: error instanceof Error ? error.message : "Poll failed",
+                lastErrorMessage: error instanceof Error ? error.message : 'Poll failed',
               },
             })
-            .catch(() => {});
+            .catch(() => {
+              /* ignored */
+            });
         }
       }
     }
@@ -107,8 +109,8 @@ async function handler(request: NextRequest) {
       results,
     });
   } catch (error) {
-    console.error("[peppol/poll] Global poll failure:", error);
-    return NextResponse.json({ error: "Poll failed" }, { status: 500 });
+    console.error('[peppol/poll] Global poll failure:', error);
+    return NextResponse.json({ error: 'Poll failed' }, { status: 500 });
   }
 }
 

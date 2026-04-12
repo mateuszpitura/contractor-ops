@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // ---------------------------------------------------------------------------
 // Single draft entry for save
@@ -76,7 +76,7 @@ export const getTimesheetSchema = z.object({
 
 /** List timesheets with filters (admin) */
 export const listTimesheetsSchema = z.object({
-  status: z.enum(["DRAFT", "SUBMITTED", "APPROVED", "REJECTED"]).optional(),
+  status: z.enum(['DRAFT', 'SUBMITTED', 'APPROVED', 'REJECTED']).optional(),
   contractorId: z.string().optional(),
   from: z.string().date().optional(),
   to: z.string().date().optional(),
@@ -89,7 +89,7 @@ export const listTimesheetsSchema = z.object({
 // ---------------------------------------------------------------------------
 
 export const syncExternalEntriesSchema = z.object({
-  provider: z.enum(["CLOCKIFY", "JIRA"]),
+  provider: z.enum(['CLOCKIFY', 'JIRA']),
   startDate: z.string().date(),
   endDate: z.string().date(),
 });

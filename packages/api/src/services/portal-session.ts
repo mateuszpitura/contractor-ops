@@ -1,5 +1,5 @@
-import { createHash, randomBytes } from "node:crypto";
-import { prisma } from "@contractor-ops/db";
+import { createHash, randomBytes } from 'node:crypto';
+import { prisma } from '@contractor-ops/db';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -17,7 +17,7 @@ const SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
  * The raw token is sent to the client; only the SHA-256 hash is stored.
  */
 export function generateSessionToken(): string {
-  return randomBytes(32).toString("base64url");
+  return randomBytes(32).toString('base64url');
 }
 
 /**
@@ -25,7 +25,7 @@ export function generateSessionToken(): string {
  * Ensures stolen database contents cannot be used to impersonate sessions.
  */
 export function hashToken(token: string): string {
-  return createHash("sha256").update(token).digest("hex");
+  return createHash('sha256').update(token).digest('hex');
 }
 
 // ---------------------------------------------------------------------------
@@ -78,7 +78,7 @@ export async function validatePortalSession(rawToken: string) {
   if (session.expiresAt < new Date()) return null;
 
   // Block access if the contractor has been archived or deactivated
-  if (session.contractor.status === "ARCHIVED" || session.contractor.status === "INACTIVE") {
+  if (session.contractor.status === 'ARCHIVED' || session.contractor.status === 'INACTIVE') {
     return null;
   }
 

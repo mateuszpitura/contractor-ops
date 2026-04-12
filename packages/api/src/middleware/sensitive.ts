@@ -1,6 +1,6 @@
-import { TRPCError } from "@trpc/server";
-import { t } from "../init.js";
-import { tenantProcedure } from "./tenant.js";
+import { TRPCError } from '@trpc/server';
+import { t } from '../init.js';
+import { tenantProcedure } from './tenant.js';
 
 const SENSITIVE_ACTION_MAX_AGE_MS = 5 * 60 * 1000; // 5 minutes
 
@@ -17,7 +17,7 @@ const SENSITIVE_ACTION_MAX_AGE_MS = 5 * 60 * 1000; // 5 minutes
  */
 export const sensitiveActionMiddleware = t.middleware(async ({ ctx, next }) => {
   if (!ctx.session) {
-    throw new TRPCError({ code: "UNAUTHORIZED" });
+    throw new TRPCError({ code: 'UNAUTHORIZED' });
   }
 
   const sessionCreatedAt = new Date(ctx.session.session.createdAt).getTime();
@@ -25,9 +25,9 @@ export const sensitiveActionMiddleware = t.middleware(async ({ ctx, next }) => {
 
   if (now - sessionCreatedAt > SENSITIVE_ACTION_MAX_AGE_MS) {
     throw new TRPCError({
-      code: "FORBIDDEN",
-      message: "This action requires re-authentication. Please sign in again to continue.",
-      cause: "REAUTH_REQUIRED",
+      code: 'FORBIDDEN',
+      message: 'This action requires re-authentication. Please sign in again to continue.',
+      cause: 'REAUTH_REQUIRED',
     });
   }
 

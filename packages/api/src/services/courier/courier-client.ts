@@ -29,10 +29,10 @@ export interface CourierClient {
  */
 export interface BaseShipmentParams {
   organizationId: string;
-  direction: "OUTBOUND" | "RETURN";
+  direction: 'OUTBOUND' | 'RETURN';
   receiver: { name: string; email: string; phone: string };
   sender: { name: string; email: string; phone: string };
-  parcelSize: "small" | "medium" | "large";
+  parcelSize: 'small' | 'medium' | 'large';
   reference?: string;
 }
 
@@ -66,7 +66,7 @@ export interface CourierStatusResult {
 /**
  * Supported label formats.
  */
-export type LabelFormat = "pdf" | "zpl";
+export type LabelFormat = 'pdf' | 'zpl';
 
 // ---------------------------------------------------------------------------
 // Address-based carrier params (DPD, UPS)
@@ -92,7 +92,7 @@ export interface AddressSender {
 }
 
 /** Address-based shipment params for carriers that deliver to street addresses (DPD, UPS). */
-export interface AddressShipmentParams extends Omit<BaseShipmentParams, "sender"> {
+export interface AddressShipmentParams extends Omit<BaseShipmentParams, 'sender'> {
   sender: AddressSender;
   deliveryAddress: DeliveryAddress;
 }

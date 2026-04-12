@@ -1,13 +1,13 @@
-import { createHash } from "node:crypto";
-import type { PrismaClient } from "@contractor-ops/db";
-import { computeTimeReconciliation } from "./time-reconciliation.js";
+import { createHash } from 'node:crypto';
+import type { PrismaClient } from '@contractor-ops/db';
+import { computeTimeReconciliation } from './time-reconciliation.js';
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
 export interface MatchResult {
-  matchStatus: "UNMATCHED" | "PARTIAL" | "MATCHED" | "DISCREPANCY";
+  matchStatus: 'UNMATCHED' | 'PARTIAL' | 'MATCHED' | 'DISCREPANCY';
   contractorId: string | null;
   contractId: string | null;
   score: number;
@@ -31,9 +31,9 @@ export function computeDuplicateCheckHash(
   sellerTaxId: string,
   totalMinor: number,
 ): string {
-  return createHash("sha256")
+  return createHash('sha256')
     .update(`${invoiceNumber.trim().toLowerCase()}|${sellerTaxId.trim()}|${totalMinor}`)
-    .digest("hex");
+    .digest('hex');
 }
 
 // ---------------------------------------------------------------------------
@@ -78,7 +78,7 @@ export async function runAutoMatch(
 
   if (!invoice.sellerTaxId) {
     return {
-      matchStatus: "UNMATCHED",
+      matchStatus: 'UNMATCHED',
       contractorId: null,
       contractId: null,
       score: 0,
@@ -100,7 +100,7 @@ export async function runAutoMatch(
 
   if (!contractor) {
     return {
-      matchStatus: "UNMATCHED",
+      matchStatus: 'UNMATCHED',
       contractorId: null,
       contractId: null,
       score: 0,
@@ -124,26 +124,26 @@ export async function runAutoMatch(
     where: {
       contractorId: contractor.id,
       organizationId,
-      status: { in: ["ACTIVE", "EXPIRING"] },
+      status: { in: ['ACTIVE', 'EXPIRING'] },
       deletedAt: null,
     },
   });
 
   if (contracts.length === 0) {
-    flags.push("NO_ACTIVE_CONTRACT");
+    flags.push('NO_ACTIVE_CONTRACT');
 
     // Check for expired contracts as a hint
     const expiredContract = await prisma.contract.findFirst({
       where: {
         contractorId: contractor.id,
         organizationId,
-        status: "EXPIRED",
+        status: 'EXPIRED',
         deletedAt: null,
       },
     });
 
     if (expiredContract) {
-      flags.push("EXPIRED_CONTRACT");
+      flags.push('EXPIRED_CONTRACT');
     }
   }
 
@@ -202,12 +202,12 @@ export async function runAutoMatch(
     // -----------------------------------------------------------------------
 
     if (bestContract.currency !== invoice.currency) {
-      flags.push("CURRENCY_MISMATCH");
+      flags.push('CURRENCY_MISMATCH');
     }
 
     // Time-based reconciliation (Phase 18 - D-13)
     // Warning only: does NOT change matchStatus or block approval (D-15)
-    if (bestContract.rateType === "PER_HOUR" || bestContract.rateType === "PER_DAY") {
+    if (bestContract.rateType === 'PER_HOUR' || bestContract.rateType === 'PER_DAY') {
       // Use invoice service period or fall back to issueDate +/- 30 days
       const now = new Date();
       const periodStart =
@@ -225,7 +225,7 @@ export async function runAutoMatch(
       );
 
       if (timeRecon && !timeRecon.withinThreshold) {
-        flags.push("TIME_DEVIATION");
+        flags.push('TIME_DEVIATION');
       }
     }
   }
@@ -251,7 +251,7 @@ export async function runAutoMatch(
     });
 
     if (duplicate) {
-      flags.push("DUPLICATE_SUSPECTED");
+      flags.push('DUPLICATE_SUSPECTED');
       duplicateInvoiceId = duplicate.id;
     }
   }
@@ -260,17 +260,17 @@ export async function runAutoMatch(
   // Determine match status from score
   // -------------------------------------------------------------------------
 
-  let matchStatus: MatchResult["matchStatus"];
+  let matchStatus: MatchResult['matchStatus'];
 
   // Check deviation override first
   if (amountDeltaPercent !== null && Math.abs(amountDeltaPercent) > deviationThresholdPercent) {
-    matchStatus = "DISCREPANCY";
+    matchStatus = 'DISCREPANCY';
   } else if (score >= 80) {
-    matchStatus = "MATCHED";
+    matchStatus = 'MATCHED';
   } else if (score >= 50) {
-    matchStatus = "PARTIAL";
+    matchStatus = 'PARTIAL';
   } else {
-    matchStatus = "UNMATCHED";
+    matchStatus = 'UNMATCHED';
   }
 
   return {

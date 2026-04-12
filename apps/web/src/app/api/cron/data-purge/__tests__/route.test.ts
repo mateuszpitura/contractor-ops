@@ -1,7 +1,7 @@
 /** @vitest-environment node */
 
-import { NextRequest } from "next/server";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { NextRequest } from 'next/server';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockDocumentFindMany = vi.fn();
 const mockDocumentDeleteMany = vi.fn();
@@ -11,7 +11,7 @@ const mockInvoiceDeleteMany = vi.fn();
 const mockContractDeleteMany = vi.fn();
 const mockContractorDeleteMany = vi.fn();
 
-vi.mock("@contractor-ops/db", () => ({
+vi.mock('@contractor-ops/db', () => ({
   prisma: {
     document: {
       findMany: (...args: unknown[]) => mockDocumentFindMany(...args),
@@ -35,16 +35,16 @@ vi.mock("@contractor-ops/db", () => ({
   },
 }));
 
-vi.mock("@sentry/nextjs", () => ({
+vi.mock('@sentry/nextjs', () => ({
   withMonitor: vi.fn((_name: string, fn: () => Promise<Response>) => fn()),
   captureException: vi.fn(),
 }));
 
-vi.mock("@contractor-ops/api/services/cron-monitor", () => ({
+vi.mock('@contractor-ops/api/services/cron-monitor', () => ({
   withCronMonitor: vi.fn((_name: string, fn: () => Promise<Response>) => fn()),
 }));
 
-vi.mock("@contractor-ops/logger", () => ({
+vi.mock('@contractor-ops/logger', () => ({
   createCronLogger: vi.fn(() => ({
     info: vi.fn(),
     warn: vi.fn(),
@@ -52,19 +52,19 @@ vi.mock("@contractor-ops/logger", () => ({
   })),
 }));
 
-vi.mock("@contractor-ops/logger/metrics", () => ({
+vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { gauge: vi.fn() },
 }));
 
 const mockDeleteObject = vi.fn();
 
-vi.mock("@contractor-ops/api/services/r2", () => ({
+vi.mock('@contractor-ops/api/services/r2', () => ({
   deleteObject: (...args: unknown[]) => mockDeleteObject(...args),
 }));
 
-import { GET } from "../route";
+import { GET } from '../route';
 
-describe("GET /api/cron/data-purge", () => {
+describe('GET /api/cron/data-purge', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockDeleteObject.mockResolvedValue(undefined);
@@ -77,19 +77,19 @@ describe("GET /api/cron/data-purge", () => {
     mockContractorDeleteMany.mockResolvedValue({ count: 0 });
   });
 
-  it("returns 401 when unauthorized", async () => {
-    process.env.CRON_SECRET = "s";
-    const req = new NextRequest("http://localhost/api/cron/data-purge", {
-      headers: { authorization: "Bearer bad" },
+  it('returns 401 when unauthorized', async () => {
+    process.env.CRON_SECRET = 's';
+    const req = new NextRequest('http://localhost/api/cron/data-purge', {
+      headers: { authorization: 'Bearer bad' },
     });
     const res = await GET(req);
     expect(res.status).toBe(401);
   });
 
-  it("returns 200 with purge summary when authorized", async () => {
-    process.env.CRON_SECRET = "purge-secret";
-    const req = new NextRequest("http://localhost/api/cron/data-purge", {
-      headers: { authorization: "Bearer purge-secret" },
+  it('returns 200 with purge summary when authorized', async () => {
+    process.env.CRON_SECRET = 'purge-secret';
+    const req = new NextRequest('http://localhost/api/cron/data-purge', {
+      headers: { authorization: 'Bearer purge-secret' },
     });
     const res = await GET(req);
     expect(res.status).toBe(200);
@@ -109,17 +109,17 @@ describe("GET /api/cron/data-purge", () => {
     expect(mockDocumentFindMany).toHaveBeenCalled();
   });
 
-  it("calls R2 deleteObject for expired documents with storageKey", async () => {
-    process.env.CRON_SECRET = "purge-secret";
+  it('calls R2 deleteObject for expired documents with storageKey', async () => {
+    process.env.CRON_SECRET = 'purge-secret';
     mockDocumentFindMany.mockResolvedValue([
-      { id: "doc-1", storageKey: "orgs/o/documents/f1.pdf" },
-      { id: "doc-2", storageKey: null },
+      { id: 'doc-1', storageKey: 'orgs/o/documents/f1.pdf' },
+      { id: 'doc-2', storageKey: null },
     ]);
     mockDocumentLinkDeleteMany.mockResolvedValue({ count: 1 });
     mockInvoiceFileDeleteMany.mockResolvedValue({ count: 0 });
 
-    const req = new NextRequest("http://localhost/api/cron/data-purge", {
-      headers: { authorization: "Bearer purge-secret" },
+    const req = new NextRequest('http://localhost/api/cron/data-purge', {
+      headers: { authorization: 'Bearer purge-secret' },
     });
     const res = await GET(req);
     expect(res.status).toBe(200);
@@ -128,7 +128,7 @@ describe("GET /api/cron/data-purge", () => {
       totalPurged: number;
     };
     expect(mockDeleteObject).toHaveBeenCalledTimes(1);
-    expect(mockDeleteObject).toHaveBeenCalledWith("orgs/o/documents/f1.pdf");
+    expect(mockDeleteObject).toHaveBeenCalledWith('orgs/o/documents/f1.pdf');
     expect(json.purged.r2Files).toBe(1);
     expect(json.purged.documentLinks).toBe(1);
   });

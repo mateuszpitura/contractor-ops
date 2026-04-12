@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   AlertTriangle,
@@ -7,45 +7,45 @@ import {
   FolderOpen,
   Mail,
   MessageSquare,
-} from "lucide-react";
-import { FadeUp, StaggerContainer, StaggerItem } from "./motion-wrapper";
+} from 'lucide-react';
+import { FadeUp, StaggerContainer, StaggerItem } from './motion-wrapper';
 
 const painPoints = [
   {
     icon: FileSpreadsheet,
-    tool: "Excel / Sheets",
-    problem: "Contractor list & rates scattered across multiple spreadsheets nobody owns",
-    color: "text-success",
+    tool: 'Excel / Sheets',
+    problem: 'Contractor list & rates scattered across multiple spreadsheets nobody owns',
+    color: 'text-success',
   },
   {
     icon: Mail,
-    tool: "Email / Slack",
-    problem: "Invoices buried in inboxes — lost, duplicated, or sitting unmatched for weeks",
-    color: "text-info",
+    tool: 'Email / Slack',
+    problem: 'Invoices buried in inboxes — lost, duplicated, or sitting unmatched for weeks',
+    color: 'text-info',
   },
   {
     icon: MessageSquare,
-    tool: "Slack DM",
+    tool: 'Slack DM',
     problem: '"Who was supposed to approve this?" — no ownership, no audit trail',
-    color: "text-accent-warm",
+    color: 'text-accent-warm',
   },
   {
     icon: FolderOpen,
-    tool: "Google Drive",
-    problem: "Contracts, NDAs and IP docs scattered — nothing linked, nothing enforced",
-    color: "text-primary",
+    tool: 'Google Drive',
+    problem: 'Contracts, NDAs and IP docs scattered — nothing linked, nothing enforced',
+    color: 'text-primary',
   },
   {
     icon: CreditCard,
-    tool: "Bank transfers",
-    problem: "Manual payments — missed deadlines, duplicate wires, zero reconciliation",
-    color: "text-destructive",
+    tool: 'Bank transfers',
+    problem: 'Manual payments — missed deadlines, duplicate wires, zero reconciliation',
+    color: 'text-destructive',
   },
   {
     icon: AlertTriangle,
-    tool: "Nowhere",
+    tool: 'Nowhere',
     problem: "Offboarding doesn't exist — access stays open, IP docs never signed",
-    color: "text-warning",
+    color: 'text-warning',
   },
 ];
 
@@ -66,15 +66,13 @@ export function Problem() {
 
         <StaggerContainer
           className="mt-16 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
-          staggerDelay={0.08}
-        >
-          {painPoints.map((item) => (
+          staggerDelay={0.08}>
+          {painPoints.map(item => (
             <StaggerItem key={item.tool}>
               <div className="rounded-2xl border border-border/60 bg-surface-1 p-6">
                 <div className="flex items-start gap-4">
                   <div
-                    className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted/60 ${item.color}`}
-                  >
+                    className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted/60 ${item.color}`}>
                     <item.icon className="h-5 w-5" />
                   </div>
                   <div>

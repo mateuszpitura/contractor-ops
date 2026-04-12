@@ -9,16 +9,16 @@
  *    then asserts the arguments passed to Prisma/R2 (WHERE clauses, data).
  */
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
-const ORG_ID = "clxxxxxxxxxxxxxxxxxxxxxxxxx";
-const USER_ID = "clyyyyyyyyyyyyyyyyyyyyyyyy";
-const DOC_ID = "cldocument0000000000000001";
-const DOC_ID_NEW = "cldocument0000000000000002";
+const ORG_ID = 'clxxxxxxxxxxxxxxxxxxxxxxxxx';
+const USER_ID = 'clyyyyyyyyyyyyyyyyyyyyyyyy';
+const DOC_ID = 'cldocument0000000000000001';
+const DOC_ID_NEW = 'cldocument0000000000000002';
 const STORAGE_KEY = `${ORG_ID}/${DOC_ID}/invoice.pdf`;
 
 // ---------------------------------------------------------------------------
@@ -47,14 +47,14 @@ const { mockPrisma } = vi.hoisted(() => {
     documentLink: {
       findMany: vi.fn(async () => []),
       create: vi.fn(async (opts: { data: Rec }) => ({
-        id: "link-1",
+        id: 'link-1',
         ...opts.data,
       })),
       createMany: vi.fn(async () => ({ count: 0 })),
       deleteMany: vi.fn(async () => ({ count: 0 })),
     },
     member: {
-      findFirst: vi.fn(async () => ({ role: "admin" })),
+      findFirst: vi.fn(async () => ({ role: 'admin' })),
     },
     $transaction: vi.fn(async (fn: (tx: Rec) => Promise<unknown>) => fn(mockPrisma)),
   };
@@ -66,7 +66,7 @@ const { mockPrisma } = vi.hoisted(() => {
 // Mock modules
 // ---------------------------------------------------------------------------
 
-vi.mock("@contractor-ops/auth", () => ({
+vi.mock('@contractor-ops/auth', () => ({
   auth: {
     api: {
       getSession: vi.fn(),
@@ -75,7 +75,7 @@ vi.mock("@contractor-ops/auth", () => ({
   },
 }));
 
-vi.mock("@contractor-ops/db", () => ({
+vi.mock('@contractor-ops/db', () => ({
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
@@ -87,9 +87,9 @@ vi.mock("@contractor-ops/db", () => ({
   createTenantClientFrom: vi.fn(() => mockPrisma),
 }));
 
-vi.mock("../../services/r2.js", () => ({
-  createPresignedUploadUrl: vi.fn(async () => "https://r2.example.com/upload?sig=abc"),
-  createPresignedDownloadUrl: vi.fn(async () => "https://r2.example.com/download?sig=xyz"),
+vi.mock('../../services/r2.js', () => ({
+  createPresignedUploadUrl: vi.fn(async () => 'https://r2.example.com/upload?sig=abc'),
+  createPresignedDownloadUrl: vi.fn(async () => 'https://r2.example.com/download?sig=xyz'),
   generateStorageKey: vi.fn(
     (orgId: string, docId: string, filename: string) => `${orgId}/${docId}/${filename}`,
   ),
@@ -102,30 +102,30 @@ vi.mock("../../services/r2.js", () => ({
   })),
 }));
 
-vi.mock("../../services/mime-validator.js", () => ({
+vi.mock('../../services/mime-validator.js', () => ({
   isAllowedMimeType: vi.fn(() => true),
   validateMimeType: vi.fn(async () => ({ valid: true })),
 }));
 
-vi.mock("../../services/virus-scanner.js", () => ({
+vi.mock('../../services/virus-scanner.js', () => ({
   isClamAvailable: vi.fn(async () => false),
   scanBuffer: vi.fn(async () => ({ isClean: true })),
 }));
 
-vi.mock("../../services/notification-service.js", () => ({
+vi.mock('../../services/notification-service.js', () => ({
   dispatch: vi.fn(async () => undefined),
 }));
 
-vi.mock("../../services/invoice-matching.js", () => ({
-  computeDuplicateCheckHash: vi.fn(() => "hash"),
+vi.mock('../../services/invoice-matching.js', () => ({
+  computeDuplicateCheckHash: vi.fn(() => 'hash'),
   runAutoMatch: vi.fn(async () => undefined),
 }));
 
-vi.mock("../../services/sanitize.js", () => ({
+vi.mock('../../services/sanitize.js', () => ({
   sanitizeStrings: vi.fn(<T>(v: T) => v),
 }));
 
-vi.mock("../../services/stripe-client.js", () => ({
+vi.mock('../../services/stripe-client.js', () => ({
   stripe: {
     subscriptions: { retrieve: vi.fn(), update: vi.fn(), list: vi.fn(async () => ({ data: [] })) },
     customers: { create: vi.fn(), retrieve: vi.fn() },
@@ -135,11 +135,11 @@ vi.mock("../../services/stripe-client.js", () => ({
   },
 }));
 
-vi.mock("../../services/billing-service.js", () => ({
+vi.mock('../../services/billing-service.js', () => ({
   syncSeatCountForOrg: vi.fn(async () => undefined),
 }));
 
-vi.mock("../../services/cache.js", () => ({
+vi.mock('../../services/cache.js', () => ({
   cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
   invalidate: vi.fn(async () => undefined),
   invalidateByPrefix: vi.fn(async () => undefined),
@@ -147,57 +147,57 @@ vi.mock("../../services/cache.js", () => ({
   CacheTTL: { DASHBOARD: 300 },
 }));
 
-vi.mock("../../services/bank-account-crypto.js", () => ({
+vi.mock('../../services/bank-account-crypto.js', () => ({
   encryptBankAccount: vi.fn((v: string) => `encrypted:${v}`),
 }));
 
-vi.mock("../../services/approval-engine.js", () => ({
+vi.mock('../../services/approval-engine.js', () => ({
   routeToChain: vi.fn(async () => null),
   createApprovalFlow: vi.fn(async () => ({})),
   advanceFlow: vi.fn(async () => undefined),
-  computeSlaStatus: vi.fn(() => "ON_TIME"),
+  computeSlaStatus: vi.fn(() => 'ON_TIME'),
 }));
 
-vi.mock("../../services/calendar-event-service.js", () => ({
+vi.mock('../../services/calendar-event-service.js', () => ({
   deleteCalendarEvent: vi.fn(async () => undefined),
 }));
 
-vi.mock("../../services/calendar-deadline-sync.js", () => ({
+vi.mock('../../services/calendar-deadline-sync.js', () => ({
   syncPaymentDueDeadline: vi.fn(async () => undefined),
   syncApprovalSlaDeadline: vi.fn(async () => undefined),
 }));
 
-vi.mock("../../services/report-export.js", () => ({
-  generateAuditCsv: vi.fn(async () => ({ base64: "bW9jaw==", filename: "audit-log.csv" })),
+vi.mock('../../services/report-export.js', () => ({
+  generateAuditCsv: vi.fn(async () => ({ base64: 'bW9jaw==', filename: 'audit-log.csv' })),
 }));
 
-vi.mock("../../services/payment-export.js", () => ({
-  generateCsv: vi.fn(async () => Buffer.from("csv-data")),
-  generateElixir: vi.fn(() => Buffer.from("elixir-data")),
-  generateSepaXml: vi.fn(() => Buffer.from("sepa-data")),
-  resolveTransferTitle: vi.fn(() => "FV/2025/001"),
+vi.mock('../../services/payment-export.js', () => ({
+  generateCsv: vi.fn(async () => Buffer.from('csv-data')),
+  generateElixir: vi.fn(() => Buffer.from('elixir-data')),
+  generateSepaXml: vi.fn(() => Buffer.from('sepa-data')),
+  resolveTransferTitle: vi.fn(() => 'FV/2025/001'),
 }));
 
-vi.mock("../../services/bank-statement.js", () => ({
+vi.mock('../../services/bank-statement.js', () => ({
   parseBankStatement: vi.fn(() => []),
   matchStatementToRun: vi.fn(() => []),
 }));
 
-vi.mock("../../services/credit-service.js", () => ({
+vi.mock('../../services/credit-service.js', () => ({
   deductCredits: vi.fn(async () => undefined),
   getBalance: vi.fn(async () => ({ credits: 0 })),
   hasCredits: vi.fn(async () => true),
 }));
 
-vi.mock("../../services/ocr-extraction.js", () => ({
+vi.mock('../../services/ocr-extraction.js', () => ({
   extractInvoiceData: vi.fn(async () => ({})),
 }));
 
-vi.mock("../../services/billing-webhook.js", () => ({
+vi.mock('../../services/billing-webhook.js', () => ({
   handleStripeWebhook: vi.fn(async () => undefined),
 }));
 
-vi.mock("@sentry/nextjs", () => {
+vi.mock('@sentry/nextjs', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
     startSpan: vi.fn((_o: unknown, fn: (span: typeof mockSpan) => unknown) => fn(mockSpan)),
@@ -205,11 +205,11 @@ vi.mock("@sentry/nextjs", () => {
   };
 });
 
-vi.mock("@contractor-ops/logger", () => ({
+vi.mock('@contractor-ops/logger', () => ({
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
 }));
 
-vi.mock("@contractor-ops/logger/metrics", () => ({
+vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { increment: vi.fn(), histogram: vi.fn(), distribution: vi.fn() },
 }));
 
@@ -217,15 +217,15 @@ vi.mock("@contractor-ops/logger/metrics", () => ({
 // Imports (after mocks)
 // ---------------------------------------------------------------------------
 
-import { createCallerFactory } from "../../init.js";
-import { appRouter } from "../../root.js";
-import { isAllowedMimeType } from "../../services/mime-validator.js";
+import { createCallerFactory } from '../../init.js';
+import { appRouter } from '../../root.js';
+import { isAllowedMimeType } from '../../services/mime-validator.js';
 import {
   createPresignedDownloadUrl,
   createPresignedUploadUrl,
   deleteObject,
   generateStorageKey,
-} from "../../services/r2.js";
+} from '../../services/r2.js';
 
 // ---------------------------------------------------------------------------
 // Caller helper
@@ -239,8 +239,8 @@ function makeCaller(userId: string, orgId: string) {
       id: `session-${userId}`,
       userId,
       activeOrganizationId: orgId,
-      expiresAt: new Date("2099-01-01"),
-      token: "mock-token",
+      expiresAt: new Date('2099-01-01'),
+      token: 'mock-token',
       createdAt: new Date(),
       updatedAt: new Date(),
       ipAddress: null,
@@ -248,14 +248,14 @@ function makeCaller(userId: string, orgId: string) {
     },
     user: {
       id: userId,
-      name: "Test User",
+      name: 'Test User',
       email: `${userId}@example.com`,
       emailVerified: true,
       image: null,
       banned: false,
       banReason: null,
       banExpires: null,
-      role: "admin",
+      role: 'admin',
       createdAt: new Date(),
       updatedAt: new Date(),
     },
@@ -278,15 +278,15 @@ function makeDocument(overrides: Record<string, unknown> = {}) {
     id: DOC_ID,
     organizationId: ORG_ID,
     storageKey: STORAGE_KEY,
-    originalFileName: "invoice.pdf",
-    mimeType: "application/pdf",
+    originalFileName: 'invoice.pdf',
+    mimeType: 'application/pdf',
     fileSizeBytes: 2048,
-    checksumSha256: "",
-    documentType: "INVOICE",
-    status: "ACTIVE",
-    visibility: "PRIVATE",
-    virusScanStatus: "CLEAN",
-    source: "USER_UPLOAD",
+    checksumSha256: '',
+    documentType: 'INVOICE',
+    status: 'ACTIVE',
+    visibility: 'PRIVATE',
+    virusScanStatus: 'CLEAN',
+    source: 'USER_UPLOAD',
     uploadedByUserId: USER_ID,
     deletedAt: null,
     links: [],
@@ -306,55 +306,55 @@ beforeEach(() => {
 // TESTS
 // ===========================================================================
 
-describe("document.requestUpload", () => {
+describe('document.requestUpload', () => {
   const validInput = {
-    filename: "invoice.pdf",
-    mimeType: "application/pdf",
+    filename: 'invoice.pdf',
+    mimeType: 'application/pdf',
     fileSizeBytes: 2048,
-    documentType: "INVOICE" as const,
+    documentType: 'INVOICE' as const,
   };
 
-  it("returns presigned URL and storage key", async () => {
+  it('returns presigned URL and storage key', async () => {
     mockPrisma.document.create.mockResolvedValue(makeDocument());
 
     const result = await caller.document.requestUpload(validInput);
 
-    expect(result).toHaveProperty("uploadUrl");
-    expect(result).toHaveProperty("storageKey");
-    expect(result).toHaveProperty("documentId");
+    expect(result).toHaveProperty('uploadUrl');
+    expect(result).toHaveProperty('storageKey');
+    expect(result).toHaveProperty('documentId');
 
     // Verify presigned URL was generated
     expect(createPresignedUploadUrl).toHaveBeenCalledWith(
       expect.stringContaining(ORG_ID),
-      "application/pdf",
+      'application/pdf',
       300,
     );
   });
 
-  it("generates storage key with format {orgId}/{docId}/{filename}", async () => {
+  it('generates storage key with format {orgId}/{docId}/{filename}', async () => {
     mockPrisma.document.create.mockResolvedValue(makeDocument());
 
     await caller.document.requestUpload(validInput);
 
-    expect(generateStorageKey).toHaveBeenCalledWith(ORG_ID, DOC_ID, "invoice.pdf");
+    expect(generateStorageKey).toHaveBeenCalledWith(ORG_ID, DOC_ID, 'invoice.pdf');
   });
 
-  it("validates MIME type and rejects disallowed types", async () => {
+  it('validates MIME type and rejects disallowed types', async () => {
     vi.mocked(isAllowedMimeType).mockReturnValueOnce(false);
 
     await expect(
       caller.document.requestUpload({
         ...validInput,
-        mimeType: "application/x-executable",
+        mimeType: 'application/x-executable',
       }),
-    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    ).rejects.toMatchObject({ code: 'BAD_REQUEST' });
 
-    expect(isAllowedMimeType).toHaveBeenCalledWith("application/x-executable");
+    expect(isAllowedMimeType).toHaveBeenCalledWith('application/x-executable');
   });
 });
 
-describe("document.confirmUpload", () => {
-  it("creates Document record with correct metadata update", async () => {
+describe('document.confirmUpload', () => {
+  it('creates Document record with correct metadata update', async () => {
     const doc = makeDocument({ storageKey: STORAGE_KEY });
     mockPrisma.document.findFirst.mockResolvedValue(doc);
     mockPrisma.document.update.mockResolvedValue({ ...doc, fileSizeBytes: 2048 });
@@ -362,7 +362,7 @@ describe("document.confirmUpload", () => {
     await caller.document.confirmUpload({ documentId: DOC_ID });
 
     // Verify head check on storage
-    const { headObject } = await import("../../services/r2.js");
+    const { headObject } = await import('../../services/r2.js');
     expect(headObject).toHaveBeenCalledWith(STORAGE_KEY);
 
     // Verify document update with actual file size from R2
@@ -372,7 +372,7 @@ describe("document.confirmUpload", () => {
     });
   });
 
-  it("triggers virus scan (fire-and-forget) by checking doc exists", async () => {
+  it('triggers virus scan (fire-and-forget) by checking doc exists', async () => {
     const doc = makeDocument();
     mockPrisma.document.findFirst.mockResolvedValue(doc);
     mockPrisma.document.update.mockResolvedValue(doc);
@@ -390,14 +390,14 @@ describe("document.confirmUpload", () => {
   });
 });
 
-describe("document.getDownloadUrl", () => {
-  it("returns presigned download URL, org scoped", async () => {
-    const doc = makeDocument({ virusScanStatus: "CLEAN" });
+describe('document.getDownloadUrl', () => {
+  it('returns presigned download URL, org scoped', async () => {
+    const doc = makeDocument({ virusScanStatus: 'CLEAN' });
     mockPrisma.document.findFirst.mockResolvedValue(doc);
 
     const result = await caller.document.getDownloadUrl({ documentId: DOC_ID });
 
-    expect(result).toHaveProperty("url");
+    expect(result).toHaveProperty('url');
     expect(result.expiresIn).toBe(900);
 
     // Verify download URL generated for correct storage key
@@ -413,12 +413,12 @@ describe("document.getDownloadUrl", () => {
     });
   });
 
-  it("blocks download of INFECTED files", async () => {
-    const doc = makeDocument({ virusScanStatus: "INFECTED" });
+  it('blocks download of INFECTED files', async () => {
+    const doc = makeDocument({ virusScanStatus: 'INFECTED' });
     mockPrisma.document.findFirst.mockResolvedValue(doc);
 
     await expect(caller.document.getDownloadUrl({ documentId: DOC_ID })).rejects.toMatchObject({
-      code: "FORBIDDEN",
+      code: 'FORBIDDEN',
     });
 
     // Verify presigned URL was NOT generated
@@ -426,8 +426,8 @@ describe("document.getDownloadUrl", () => {
   });
 });
 
-describe("document.list", () => {
-  it("WHERE includes organizationId and optional entity filter", async () => {
+describe('document.list', () => {
+  it('WHERE includes organizationId and optional entity filter', async () => {
     mockPrisma.document.findMany.mockResolvedValue([]);
     mockPrisma.document.count.mockResolvedValue(0);
 
@@ -440,7 +440,7 @@ describe("document.list", () => {
     });
   });
 
-  it("applies pagination", async () => {
+  it('applies pagination', async () => {
     mockPrisma.document.findMany.mockResolvedValue([]);
     mockPrisma.document.count.mockResolvedValue(0);
 
@@ -452,17 +452,17 @@ describe("document.list", () => {
   });
 });
 
-describe("document.uploadNewVersion", () => {
-  it("marks old version as SUPERSEDED", async () => {
+describe('document.uploadNewVersion', () => {
+  it('marks old version as SUPERSEDED', async () => {
     const existing = makeDocument({
       links: [
         {
-          id: "link-1",
+          id: 'link-1',
           organizationId: ORG_ID,
           documentId: DOC_ID,
-          entityType: "CONTRACTOR",
-          entityId: "c-1",
-          linkRole: "PRIMARY",
+          entityType: 'CONTRACTOR',
+          entityId: 'c-1',
+          linkRole: 'PRIMARY',
         },
       ],
     });
@@ -471,36 +471,36 @@ describe("document.uploadNewVersion", () => {
 
     await caller.document.uploadNewVersion({
       existingDocumentId: DOC_ID,
-      filename: "invoice-v2.pdf",
-      mimeType: "application/pdf",
+      filename: 'invoice-v2.pdf',
+      mimeType: 'application/pdf',
       fileSizeBytes: 3072,
     });
 
     // Verify old document was marked SUPERSEDED
     expect(mockPrisma.document.update).toHaveBeenCalledWith({
       where: { id: DOC_ID },
-      data: { status: "SUPERSEDED" },
+      data: { status: 'SUPERSEDED' },
     });
   });
 
-  it("creates new document and copies entity links", async () => {
+  it('creates new document and copies entity links', async () => {
     const existing = makeDocument({
       links: [
         {
-          id: "link-1",
+          id: 'link-1',
           organizationId: ORG_ID,
           documentId: DOC_ID,
-          entityType: "CONTRACTOR",
-          entityId: "c-1",
-          linkRole: "PRIMARY",
+          entityType: 'CONTRACTOR',
+          entityId: 'c-1',
+          linkRole: 'PRIMARY',
         },
         {
-          id: "link-2",
+          id: 'link-2',
           organizationId: ORG_ID,
           documentId: DOC_ID,
-          entityType: "CONTRACT",
-          entityId: "ct-1",
-          linkRole: "ATTACHMENT",
+          entityType: 'CONTRACT',
+          entityId: 'ct-1',
+          linkRole: 'ATTACHMENT',
         },
       ],
     });
@@ -509,8 +509,8 @@ describe("document.uploadNewVersion", () => {
 
     await caller.document.uploadNewVersion({
       existingDocumentId: DOC_ID,
-      filename: "invoice-v2.pdf",
-      mimeType: "application/pdf",
+      filename: 'invoice-v2.pdf',
+      mimeType: 'application/pdf',
       fileSizeBytes: 3072,
     });
 
@@ -519,12 +519,12 @@ describe("document.uploadNewVersion", () => {
       expect.objectContaining({
         data: expect.objectContaining({
           organizationId: ORG_ID,
-          originalFileName: "invoice-v2.pdf",
-          mimeType: "application/pdf",
+          originalFileName: 'invoice-v2.pdf',
+          mimeType: 'application/pdf',
           fileSizeBytes: 3072,
-          status: "ACTIVE",
-          virusScanStatus: "PENDING",
-          documentType: "INVOICE", // inherited from existing
+          status: 'ACTIVE',
+          virusScanStatus: 'PENDING',
+          documentType: 'INVOICE', // inherited from existing
         }),
       }),
     );
@@ -535,24 +535,24 @@ describe("document.uploadNewVersion", () => {
         {
           organizationId: ORG_ID,
           documentId: DOC_ID_NEW,
-          entityType: "CONTRACTOR",
-          entityId: "c-1",
-          linkRole: "PRIMARY",
+          entityType: 'CONTRACTOR',
+          entityId: 'c-1',
+          linkRole: 'PRIMARY',
         },
         {
           organizationId: ORG_ID,
           documentId: DOC_ID_NEW,
-          entityType: "CONTRACT",
-          entityId: "ct-1",
-          linkRole: "ATTACHMENT",
+          entityType: 'CONTRACT',
+          entityId: 'ct-1',
+          linkRole: 'ATTACHMENT',
         },
       ],
     });
   });
 });
 
-describe("document.delete", () => {
-  it("soft-deletes with deletedAt", async () => {
+describe('document.delete', () => {
+  it('soft-deletes with deletedAt', async () => {
     const doc = makeDocument();
     mockPrisma.document.findFirst.mockResolvedValue(doc);
 
@@ -567,7 +567,7 @@ describe("document.delete", () => {
     );
   });
 
-  it("deletes R2 object and removes document links", async () => {
+  it('deletes R2 object and removes document links', async () => {
     const doc = makeDocument();
     mockPrisma.document.findFirst.mockResolvedValue(doc);
 

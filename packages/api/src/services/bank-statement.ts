@@ -21,7 +21,7 @@ export interface ParsedTransaction {
 export interface MatchResult {
   transactionIndex: number;
   paymentRunItemId: string;
-  confidence: "exact" | "partial" | "unmatched";
+  confidence: 'exact' | 'partial' | 'unmatched';
   amountMatched: boolean;
   ibanMatched: boolean;
 }
@@ -37,7 +37,7 @@ export interface MatchResult {
 export function parseMt940(content: string): ParsedTransaction[] {
   // mt940js uses CommonJS; dynamic import for ESM compatibility
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { Parser } = require("mt940js") as {
+  const { Parser } = require('mt940js') as {
     Parser: new () => {
       parse: (data: string) => Array<{
         currency?: string;
@@ -57,11 +57,11 @@ export function parseMt940(content: string): ParsedTransaction[] {
   const parser = new Parser();
   const statements = parser.parse(content);
 
-  return statements.flatMap((stmt) =>
-    stmt.transactions.map((tx) => ({
+  return statements.flatMap(stmt =>
+    stmt.transactions.map(tx => ({
       amount: Math.round(Math.abs(tx.amount) * 100),
-      currency: stmt.currency ?? "PLN",
-      description: tx.description ?? "",
+      currency: stmt.currency ?? 'PLN',
+      description: tx.description ?? '',
       iban: tx.structuredDetails?.accountIdentification,
       date: tx.date ?? new Date(),
       reference: tx.reference,
@@ -80,33 +80,33 @@ export function parseMt940(content: string): ParsedTransaction[] {
 export function parseCsvStatement(content: string): ParsedTransaction[] {
   const lines = content
     .split(/\r?\n/)
-    .map((l) => l.trim())
-    .filter((l) => l.length > 0);
+    .map(l => l.trim())
+    .filter(l => l.length > 0);
 
   if (lines.length < 2) return [];
 
   // Detect delimiter (comma or semicolon)
   const headerLine = lines[0]!;
-  const delimiter = headerLine.includes(";") ? ";" : ",";
+  const delimiter = headerLine.includes(';') ? ';' : ',';
 
-  const headers = headerLine.split(delimiter).map((h) =>
+  const headers = headerLine.split(delimiter).map(h =>
     h
-      .replace(/^["']|["']$/g, "")
+      .replace(/^["']|["']$/g, '')
       .trim()
       .toLowerCase(),
   );
 
   // Find column indices by common header names
-  const amountIdx = headers.findIndex((h) => ["amount", "kwota", "value", "suma"].includes(h));
-  const ibanIdx = headers.findIndex((h) =>
-    ["iban", "account", "konto", "rachunek", "account number"].includes(h),
+  const amountIdx = headers.findIndex(h => ['amount', 'kwota', 'value', 'suma'].includes(h));
+  const ibanIdx = headers.findIndex(h =>
+    ['iban', 'account', 'konto', 'rachunek', 'account number'].includes(h),
   );
-  const dateIdx = headers.findIndex((h) =>
-    ["date", "data", "booking date", "data operacji"].includes(h),
+  const dateIdx = headers.findIndex(h =>
+    ['date', 'data', 'booking date', 'data operacji'].includes(h),
   );
-  const refIdx = headers.findIndex((h) => ["reference", "referencja", "ref"].includes(h));
-  const descIdx = headers.findIndex((h) =>
-    ["description", "opis", "tytul", "title", "details"].includes(h),
+  const refIdx = headers.findIndex(h => ['reference', 'referencja', 'ref'].includes(h));
+  const descIdx = headers.findIndex(h =>
+    ['description', 'opis', 'tytul', 'title', 'details'].includes(h),
   );
 
   if (amountIdx === -1) return [];
@@ -116,21 +116,21 @@ export function parseCsvStatement(content: string): ParsedTransaction[] {
   for (let i = 1; i < lines.length; i++) {
     const cells = splitCsvLine(lines[i]!, delimiter);
 
-    const rawAmount = cells[amountIdx]?.replace(/["']/g, "").trim() ?? "0";
+    const rawAmount = cells[amountIdx]?.replace(/["']/g, '').trim() ?? '0';
     // Handle comma decimal separator (Polish format: "1 234,56")
-    const normalizedAmount = rawAmount.replace(/\s/g, "").replace(",", ".");
+    const normalizedAmount = rawAmount.replace(/\s/g, '').replace(',', '.');
     const amount = Math.round(Math.abs(parseFloat(normalizedAmount)) * 100);
 
     if (Number.isNaN(amount) || amount === 0) continue;
 
-    const iban = ibanIdx >= 0 ? cells[ibanIdx]?.replace(/["'\s]/g, "").trim() : undefined;
-    const dateStr = dateIdx >= 0 ? cells[dateIdx]?.replace(/["']/g, "").trim() : undefined;
-    const reference = refIdx >= 0 ? cells[refIdx]?.replace(/["']/g, "").trim() : undefined;
-    const description = descIdx >= 0 ? (cells[descIdx]?.replace(/["']/g, "").trim() ?? "") : "";
+    const iban = ibanIdx >= 0 ? cells[ibanIdx]?.replace(/["'\s]/g, '').trim() : undefined;
+    const dateStr = dateIdx >= 0 ? cells[dateIdx]?.replace(/["']/g, '').trim() : undefined;
+    const reference = refIdx >= 0 ? cells[refIdx]?.replace(/["']/g, '').trim() : undefined;
+    const description = descIdx >= 0 ? (cells[descIdx]?.replace(/["']/g, '').trim() ?? '') : '';
 
     transactions.push({
       amount,
-      currency: "PLN",
+      currency: 'PLN',
       description,
       iban: iban || undefined,
       date: dateStr ? new Date(dateStr) : new Date(),
@@ -150,15 +150,15 @@ export function parseCsvStatement(content: string): ParsedTransaction[] {
  * Supports .mt940 and .csv files.
  */
 export function parseBankStatement(content: string, filename: string): ParsedTransaction[] {
-  const ext = filename.split(".").pop()?.toLowerCase();
+  const ext = filename.split('.').pop()?.toLowerCase();
 
   switch (ext) {
-    case "mt940":
-    case "sta":
-    case "mt9":
+    case 'mt940':
+    case 'sta':
+    case 'mt9':
       return parseMt940(content);
-    case "csv":
-    case "txt":
+    case 'csv':
+    case 'txt':
       return parseCsvStatement(content);
     default:
       throw new Error(
@@ -185,11 +185,11 @@ export function matchStatementToRun(
 
   for (let txIdx = 0; txIdx < transactions.length; txIdx++) {
     const tx = transactions[txIdx]!;
-    const txIban = normalizeIban(tx.iban ?? "");
+    const txIban = normalizeIban(tx.iban ?? '');
 
     let bestMatch: {
       itemId: string;
-      confidence: "exact" | "partial";
+      confidence: 'exact' | 'partial';
       amountMatched: boolean;
       ibanMatched: boolean;
     } | null = null;
@@ -207,7 +207,7 @@ export function matchStatementToRun(
       if (ibanMatched && exactAmount) {
         bestMatch = {
           itemId: item.id,
-          confidence: "exact",
+          confidence: 'exact',
           amountMatched: true,
           ibanMatched: true,
         };
@@ -217,14 +217,14 @@ export function matchStatementToRun(
       if (ibanMatched && closeAmount) {
         bestMatch = {
           itemId: item.id,
-          confidence: "partial",
+          confidence: 'partial',
           amountMatched: false,
           ibanMatched: true,
         };
       } else if (exactAmount && !bestMatch) {
         bestMatch = {
           itemId: item.id,
-          confidence: "partial",
+          confidence: 'partial',
           amountMatched: true,
           ibanMatched: false,
         };
@@ -241,8 +241,8 @@ export function matchStatementToRun(
     } else {
       results.push({
         transactionIndex: txIdx,
-        paymentRunItemId: "",
-        confidence: "unmatched",
+        paymentRunItemId: '',
+        confidence: 'unmatched',
         amountMatched: false,
         ibanMatched: false,
       });
@@ -257,7 +257,7 @@ export function matchStatementToRun(
 // ---------------------------------------------------------------------------
 
 function normalizeIban(iban: string): string {
-  return iban.replace(/[\s-]/g, "").toUpperCase();
+  return iban.replace(/[\s-]/g, '').toUpperCase();
 }
 
 /**
@@ -265,7 +265,7 @@ function normalizeIban(iban: string): string {
  */
 function splitCsvLine(line: string, delimiter: string): string[] {
   const fields: string[] = [];
-  let current = "";
+  let current = '';
   let inQuotes = false;
 
   for (let i = 0; i < line.length; i++) {
@@ -275,7 +275,7 @@ function splitCsvLine(line: string, delimiter: string): string[] {
       inQuotes = !inQuotes;
     } else if (ch === delimiter && !inQuotes) {
       fields.push(current);
-      current = "";
+      current = '';
     } else {
       current += ch;
     }

@@ -1,4 +1,4 @@
-import { defineConfig, devices } from "@playwright/test";
+import { defineConfig, devices } from '@playwright/test';
 
 /**
  * Playwright configuration for Phase 50 RTL / Arabic localization tests.
@@ -17,17 +17,17 @@ import { defineConfig, devices } from "@playwright/test";
  * Override base URL via E2E_WEB_URL env var.
  */
 export default defineConfig({
-  testDir: "./e2e/rtl",
-  testMatch: "**/*.spec.ts",
+  testDir: './e2e/rtl',
+  testMatch: '**/*.spec.ts',
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   workers: 1,
-  reporter: [["list"]],
+  reporter: [['list']],
   use: {
-    baseURL: process.env.E2E_WEB_URL ?? process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000",
-    trace: "on-first-retry",
-    screenshot: "only-on-failure",
+    baseURL: process.env.E2E_WEB_URL ?? process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:3000',
+    trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
   },
-  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
 });

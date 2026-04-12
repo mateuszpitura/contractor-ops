@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { ChevronDown, ChevronRight, Download } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { trpc } from "@/trpc/init";
+import { useQuery } from '@tanstack/react-query';
+import { ChevronDown, ChevronRight, Download } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -20,11 +20,11 @@ type VersionHistoryProps = {
 // ---------------------------------------------------------------------------
 
 function formatDate(date: string | Date): string {
-  const d = typeof date === "string" ? new Date(date) : date;
-  return d.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return d.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
   });
 }
 
@@ -33,7 +33,7 @@ function formatDate(date: string | Date): string {
 // ---------------------------------------------------------------------------
 
 export function VersionHistory({ documentId }: VersionHistoryProps) {
-  const t = useTranslations("Documents");
+  const t = useTranslations('Documents');
   const [expanded, setExpanded] = useState(false);
 
   const historyQuery = useQuery({
@@ -49,10 +49,9 @@ export function VersionHistory({ documentId }: VersionHistoryProps) {
       <button
         type="button"
         onClick={() => setExpanded(true)}
-        className="mt-1 flex items-center gap-1 text-xs text-primary hover:underline"
-      >
+        className="mt-1 flex items-center gap-1 text-xs text-primary hover:underline">
         <ChevronRight className="size-3" />
-        {t("versionHistory")}
+        {t('versionHistory')}
       </button>
     );
   }
@@ -62,10 +61,9 @@ export function VersionHistory({ documentId }: VersionHistoryProps) {
       <button
         type="button"
         onClick={() => setExpanded(true)}
-        className="mt-1 flex items-center gap-1 text-xs text-primary hover:underline"
-      >
+        className="mt-1 flex items-center gap-1 text-xs text-primary hover:underline">
         <ChevronRight className="size-3" />
-        {t("versionHistory")}
+        {t('versionHistory')}
       </button>
     );
   }
@@ -75,16 +73,15 @@ export function VersionHistory({ documentId }: VersionHistoryProps) {
       <button
         type="button"
         onClick={() => setExpanded(false)}
-        className="flex items-center gap-1 text-xs text-primary hover:underline"
-      >
+        className="flex items-center gap-1 text-xs text-primary hover:underline">
         <ChevronDown className="size-3" />
-        {t("versionHistory")}
+        {t('versionHistory')}
       </button>
 
       {historyQuery.isLoading ? (
-        <p className="mt-1 text-xs text-muted-foreground">{t("loading")}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{t('loading')}</p>
       ) : versions.length <= 1 ? (
-        <p className="mt-1 text-xs text-muted-foreground">{t("noOtherVersions")}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{t('noOtherVersions')}</p>
       ) : (
         <div className="mt-2 space-y-1">
           {versions.map(
@@ -99,18 +96,17 @@ export function VersionHistory({ documentId }: VersionHistoryProps) {
             ) => (
               <div
                 key={version.id}
-                className="flex items-center justify-between rounded-md bg-muted/50 px-2 py-1"
-              >
+                className="flex items-center justify-between rounded-md bg-muted/50 px-2 py-1">
                 <div className="min-w-0">
                   <span className="text-xs font-medium">
-                    {t("version", { n: versions.length - i })}
+                    {t('version', { n: versions.length - i })}
                   </span>
                   <span className="ms-2 text-xs text-muted-foreground">
                     {formatDate(version.createdAt)}
                   </span>
-                  {version.status === "SUPERSEDED" && (
+                  {version.status === 'SUPERSEDED' && (
                     <span className="ms-2 text-xs text-muted-foreground/60">
-                      ({t("superseded")})
+                      ({t('superseded')})
                     </span>
                   )}
                 </div>
@@ -126,14 +122,13 @@ export function VersionHistory({ documentId }: VersionHistoryProps) {
                       );
                       const data = await result.json();
                       const url = data?.result?.data?.url;
-                      if (url) window.open(url, "_blank");
+                      if (url) window.open(url, '_blank');
                     } catch {
                       // Silently fail
                     }
-                  }}
-                >
+                  }}>
                   <Download className="size-3" />
-                  <span className="sr-only">{t("download")}</span>
+                  <span className="sr-only">{t('download')}</span>
                 </Button>
               </div>
             ),

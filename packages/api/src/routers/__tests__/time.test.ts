@@ -9,18 +9,18 @@
  *    then asserts the arguments passed to Prisma or service delegates.
  */
 
-import { TRPCError } from "@trpc/server";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { TRPCError } from '@trpc/server';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
-const ORG_ID = "clxxxxxxxxxxxxxxxxxxxxxxxxx";
-const USER_ID = "clyyyyyyyyyyyyyyyyyyyyyyyy";
-const TIMESHEET_ID_1 = "clts0000000000000000000001";
-const TIMESHEET_ID_2 = "clts0000000000000000000002";
-const CONTRACTOR_ID = "clcontractor000000000001";
+const ORG_ID = 'clxxxxxxxxxxxxxxxxxxxxxxxxx';
+const USER_ID = 'clyyyyyyyyyyyyyyyyyyyyyyyy';
+const TIMESHEET_ID_1 = 'clts0000000000000000000001';
+const TIMESHEET_ID_2 = 'clts0000000000000000000002';
+const CONTRACTOR_ID = 'clcontractor000000000001';
 
 // ---------------------------------------------------------------------------
 // Mock Prisma
@@ -54,7 +54,7 @@ const { mockPrisma } = vi.hoisted(() => {
       count: vi.fn(async () => 0),
     },
     member: {
-      findFirst: vi.fn(async () => ({ role: "admin" })),
+      findFirst: vi.fn(async () => ({ role: 'admin' })),
     },
     auditLog: {
       create: vi.fn(async () => ({})),
@@ -69,7 +69,7 @@ const { mockPrisma } = vi.hoisted(() => {
 // Mock modules
 // ---------------------------------------------------------------------------
 
-vi.mock("@contractor-ops/auth", () => ({
+vi.mock('@contractor-ops/auth', () => ({
   auth: {
     api: {
       getSession: vi.fn(),
@@ -78,7 +78,7 @@ vi.mock("@contractor-ops/auth", () => ({
   },
 }));
 
-vi.mock("@contractor-ops/db", () => ({
+vi.mock('@contractor-ops/db', () => ({
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
@@ -90,75 +90,75 @@ vi.mock("@contractor-ops/db", () => ({
   createTenantClientFrom: vi.fn(() => mockPrisma),
 }));
 
-const mockApproveTimesheet = vi.fn(async () => ({ id: TIMESHEET_ID_1, status: "APPROVED" }));
-const mockRejectTimesheet = vi.fn(async () => ({ id: TIMESHEET_ID_1, status: "REJECTED" }));
+const mockApproveTimesheet = vi.fn(async () => ({ id: TIMESHEET_ID_1, status: 'APPROVED' }));
+const mockRejectTimesheet = vi.fn(async () => ({ id: TIMESHEET_ID_1, status: 'REJECTED' }));
 const mockBulkApproveTimesheets = vi.fn(async () => ({ count: 2 }));
 const mockBulkRejectTimesheets = vi.fn(async () => ({ count: 2 }));
 
-vi.mock("../../services/time-entry.js", () => ({
+vi.mock('../../services/time-entry.js', () => ({
   approveTimesheet: (...args: any[]) => (mockApproveTimesheet as any)(...args),
   rejectTimesheet: (...args: any[]) => (mockRejectTimesheet as any)(...args),
   bulkApproveTimesheets: (...args: any[]) => (mockBulkApproveTimesheets as any)(...args),
   bulkRejectTimesheets: (...args: any[]) => (mockBulkRejectTimesheets as any)(...args),
 }));
 
-vi.mock("../../services/time-reconciliation.js", () => ({
+vi.mock('../../services/time-reconciliation.js', () => ({
   computeTimeReconciliation: vi.fn(async () => null),
 }));
 
-vi.mock("../../services/r2.js", () => ({
+vi.mock('../../services/r2.js', () => ({
   createPresignedUploadUrl: vi.fn(async () => ({
-    url: "https://r2.example.com/upload",
-    key: "mock-key",
+    url: 'https://r2.example.com/upload',
+    key: 'mock-key',
   })),
-  createPresignedDownloadUrl: vi.fn(async () => "https://r2.example.com/download"),
-  generateStorageKey: vi.fn(() => "mock-storage-key"),
+  createPresignedDownloadUrl: vi.fn(async () => 'https://r2.example.com/download'),
+  generateStorageKey: vi.fn(() => 'mock-storage-key'),
   headObject: vi.fn(async () => ({ ContentLength: 1024 })),
   deleteObject: vi.fn(async () => undefined),
 }));
 
-vi.mock("../../services/notification-service.js", () => ({
+vi.mock('../../services/notification-service.js', () => ({
   dispatch: vi.fn(async () => undefined),
 }));
 
-vi.mock("../../services/invoice-matching.js", () => ({
-  computeDuplicateCheckHash: vi.fn(() => "hash"),
+vi.mock('../../services/invoice-matching.js', () => ({
+  computeDuplicateCheckHash: vi.fn(() => 'hash'),
   runAutoMatch: vi.fn(async () => undefined),
 }));
 
-vi.mock("../../services/bank-account-crypto.js", () => ({
+vi.mock('../../services/bank-account-crypto.js', () => ({
   encryptBankAccount: vi.fn((v: string) => `encrypted:${v}`),
 }));
 
-vi.mock("../../services/sanitize.js", () => ({
+vi.mock('../../services/sanitize.js', () => ({
   sanitizeStrings: vi.fn(<T>(v: T) => v),
 }));
 
-vi.mock("../../services/approval-engine.js", () => ({
+vi.mock('../../services/approval-engine.js', () => ({
   routeToChain: vi.fn(async () => null),
   createApprovalFlow: vi.fn(async () => ({})),
   advanceFlow: vi.fn(async () => undefined),
-  computeSlaStatus: vi.fn(() => "ON_TIME"),
+  computeSlaStatus: vi.fn(() => 'ON_TIME'),
 }));
 
-vi.mock("../../services/calendar-event-service.js", () => ({
+vi.mock('../../services/calendar-event-service.js', () => ({
   deleteCalendarEvent: vi.fn(async () => undefined),
 }));
 
-vi.mock("../../services/calendar-deadline-sync.js", () => ({
+vi.mock('../../services/calendar-deadline-sync.js', () => ({
   syncPaymentDueDeadline: vi.fn(async () => undefined),
   syncApprovalSlaDeadline: vi.fn(async () => undefined),
 }));
 
-vi.mock("../../services/report-export.js", () => ({
-  generateAuditCsv: vi.fn(async () => ({ base64: "bW9jaw==", filename: "audit-log.csv" })),
+vi.mock('../../services/report-export.js', () => ({
+  generateAuditCsv: vi.fn(async () => ({ base64: 'bW9jaw==', filename: 'audit-log.csv' })),
 }));
 
-vi.mock("../../services/billing-service.js", () => ({
+vi.mock('../../services/billing-service.js', () => ({
   syncSeatCountForOrg: vi.fn(async () => undefined),
 }));
 
-vi.mock("../../services/cache.js", () => ({
+vi.mock('../../services/cache.js', () => ({
   cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
   invalidate: vi.fn(async () => undefined),
   invalidateByPrefix: vi.fn(async () => undefined),
@@ -166,17 +166,17 @@ vi.mock("../../services/cache.js", () => ({
   CacheTTL: { APPROVAL_CHAINS: 300 },
 }));
 
-vi.mock("../../services/mime-validator.js", () => ({
+vi.mock('../../services/mime-validator.js', () => ({
   isAllowedMimeType: vi.fn(() => true),
   validateMimeType: vi.fn(async () => ({ valid: true })),
 }));
 
-vi.mock("../../services/virus-scanner.js", () => ({
+vi.mock('../../services/virus-scanner.js', () => ({
   isClamAvailable: vi.fn(async () => false),
   scanBuffer: vi.fn(async () => ({ clean: true })),
 }));
 
-vi.mock("../../services/stripe-client.js", () => ({
+vi.mock('../../services/stripe-client.js', () => ({
   stripe: {
     subscriptions: { retrieve: vi.fn(), update: vi.fn(), list: vi.fn(async () => ({ data: [] })) },
     customers: { create: vi.fn(), retrieve: vi.fn() },
@@ -186,43 +186,43 @@ vi.mock("../../services/stripe-client.js", () => ({
   },
 }));
 
-vi.mock("../../services/credit-service.js", () => ({
+vi.mock('../../services/credit-service.js', () => ({
   deductCredits: vi.fn(async () => undefined),
   getBalance: vi.fn(async () => ({ credits: 0 })),
   hasCredits: vi.fn(async () => true),
 }));
 
-vi.mock("../../services/ocr-extraction.js", () => ({
+vi.mock('../../services/ocr-extraction.js', () => ({
   extractInvoiceData: vi.fn(async () => ({})),
 }));
 
-vi.mock("../../services/billing-webhook.js", () => ({
+vi.mock('../../services/billing-webhook.js', () => ({
   handleStripeWebhook: vi.fn(async () => undefined),
 }));
 
-vi.mock("../../services/payment-export.js", () => ({
-  generateCsv: vi.fn(async () => Buffer.from("csv-data")),
-  generateElixir: vi.fn(() => Buffer.from("elixir-data")),
-  generateSepaXml: vi.fn(() => Buffer.from("sepa-data")),
-  resolveTransferTitle: vi.fn(() => "FV/2025/001"),
+vi.mock('../../services/payment-export.js', () => ({
+  generateCsv: vi.fn(async () => Buffer.from('csv-data')),
+  generateElixir: vi.fn(() => Buffer.from('elixir-data')),
+  generateSepaXml: vi.fn(() => Buffer.from('sepa-data')),
+  resolveTransferTitle: vi.fn(() => 'FV/2025/001'),
 }));
 
-vi.mock("../../services/bank-statement.js", () => ({
+vi.mock('../../services/bank-statement.js', () => ({
   parseBankStatement: vi.fn(() => []),
   matchStatementToRun: vi.fn(() => []),
 }));
 
-vi.mock("../../services/import-processor.js", () => ({
+vi.mock('../../services/import-processor.js', () => ({
   parseImportFile: vi.fn(async () => []),
   autoMapColumns: vi.fn(() => ({})),
   processImportFile: vi.fn(async () => ({ valid: [], invalid: [], duplicates: [] })),
 }));
 
-vi.mock("../../services/equipment-workflow.js", () => ({
+vi.mock('../../services/equipment-workflow.js', () => ({
   checkShipmentTaskCompletion: vi.fn(async () => undefined),
 }));
 
-vi.mock("@sentry/nextjs", () => {
+vi.mock('@sentry/nextjs', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
     startSpan: vi.fn((_o: unknown, fn: (span: typeof mockSpan) => unknown) => fn(mockSpan)),
@@ -230,11 +230,11 @@ vi.mock("@sentry/nextjs", () => {
   };
 });
 
-vi.mock("@contractor-ops/logger", () => ({
+vi.mock('@contractor-ops/logger', () => ({
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
 }));
 
-vi.mock("@contractor-ops/logger/metrics", () => ({
+vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { increment: vi.fn(), histogram: vi.fn(), distribution: vi.fn() },
 }));
 
@@ -242,8 +242,8 @@ vi.mock("@contractor-ops/logger/metrics", () => ({
 // Imports (after mocks)
 // ---------------------------------------------------------------------------
 
-import { createCallerFactory } from "../../init.js";
-import { appRouter } from "../../root.js";
+import { createCallerFactory } from '../../init.js';
+import { appRouter } from '../../root.js';
 
 // ---------------------------------------------------------------------------
 // Caller helper
@@ -257,8 +257,8 @@ function makeCaller(userId: string, orgId: string) {
       id: `session-${userId}`,
       userId,
       activeOrganizationId: orgId,
-      expiresAt: new Date("2099-01-01"),
-      token: "mock-token",
+      expiresAt: new Date('2099-01-01'),
+      token: 'mock-token',
       createdAt: new Date(),
       updatedAt: new Date(),
       ipAddress: null,
@@ -266,14 +266,14 @@ function makeCaller(userId: string, orgId: string) {
     },
     user: {
       id: userId,
-      name: "Test User",
+      name: 'Test User',
       email: `${userId}@example.com`,
       emailVerified: true,
       image: null,
       banned: false,
       banReason: null,
       banExpires: null,
-      role: "admin",
+      role: 'admin',
       createdAt: new Date(),
       updatedAt: new Date(),
     },
@@ -302,13 +302,13 @@ beforeEach(() => {
 // Time Router Tests
 // ===========================================================================
 
-describe("time router", () => {
+describe('time router', () => {
   // =========================================================================
   // listPending
   // =========================================================================
 
-  describe("listPending", () => {
-    it("queries SUBMITTED timesheets for the organization", async () => {
+  describe('listPending', () => {
+    it('queries SUBMITTED timesheets for the organization', async () => {
       mockPrisma.timesheet.findMany.mockResolvedValueOnce([]);
 
       await caller.time.listPending();
@@ -316,20 +316,20 @@ describe("time router", () => {
       const call = mockPrisma.timesheet.findMany.mock.calls[0]?.[0];
       expect(call.where).toMatchObject({
         organizationId: ORG_ID,
-        status: "SUBMITTED",
+        status: 'SUBMITTED',
       });
     });
 
-    it("orders by submittedAt ascending (oldest first)", async () => {
+    it('orders by submittedAt ascending (oldest first)', async () => {
       mockPrisma.timesheet.findMany.mockResolvedValueOnce([]);
 
       await caller.time.listPending();
 
       const call = mockPrisma.timesheet.findMany.mock.calls[0]?.[0];
-      expect(call.orderBy).toEqual({ submittedAt: "asc" });
+      expect(call.orderBy).toEqual({ submittedAt: 'asc' });
     });
 
-    it("includes contractor info and entry count", async () => {
+    it('includes contractor info and entry count', async () => {
       mockPrisma.timesheet.findMany.mockResolvedValueOnce([]);
 
       await caller.time.listPending();
@@ -344,8 +344,8 @@ describe("time router", () => {
   // listAll
   // =========================================================================
 
-  describe("listAll", () => {
-    it("queries all timesheets scoped to organization with pagination", async () => {
+  describe('listAll', () => {
+    it('queries all timesheets scoped to organization with pagination', async () => {
       mockPrisma.timesheet.findMany.mockResolvedValueOnce([]);
 
       await caller.time.listAll({ limit: 20 });
@@ -357,16 +357,16 @@ describe("time router", () => {
       expect(call.take).toBe(21); // limit + 1 for cursor
     });
 
-    it("applies status filter when provided", async () => {
+    it('applies status filter when provided', async () => {
       mockPrisma.timesheet.findMany.mockResolvedValueOnce([]);
 
-      await caller.time.listAll({ limit: 20, status: "APPROVED" });
+      await caller.time.listAll({ limit: 20, status: 'APPROVED' });
 
       const call = mockPrisma.timesheet.findMany.mock.calls[0]?.[0];
-      expect(call.where.status).toBe("APPROVED");
+      expect(call.where.status).toBe('APPROVED');
     });
 
-    it("applies contractorId filter when provided", async () => {
+    it('applies contractorId filter when provided', async () => {
       mockPrisma.timesheet.findMany.mockResolvedValueOnce([]);
 
       await caller.time.listAll({ limit: 20, contractorId: CONTRACTOR_ID });
@@ -375,33 +375,33 @@ describe("time router", () => {
       expect(call.where.contractorId).toBe(CONTRACTOR_ID);
     });
 
-    it("applies date range filter when from/to provided", async () => {
+    it('applies date range filter when from/to provided', async () => {
       mockPrisma.timesheet.findMany.mockResolvedValueOnce([]);
 
       await caller.time.listAll({
         limit: 20,
-        from: "2025-01-01",
-        to: "2025-01-31",
+        from: '2025-01-01',
+        to: '2025-01-31',
       });
 
       const call = mockPrisma.timesheet.findMany.mock.calls[0]?.[0];
       expect(call.where.weekStartDate).toBeDefined();
-      expect(call.where.weekStartDate.gte).toEqual(new Date("2025-01-01"));
-      expect(call.where.weekStartDate.lte).toEqual(new Date("2025-01-31"));
+      expect(call.where.weekStartDate.gte).toEqual(new Date('2025-01-01'));
+      expect(call.where.weekStartDate.lte).toEqual(new Date('2025-01-31'));
     });
 
-    it("returns nextCursor when more items exist", async () => {
+    it('returns nextCursor when more items exist', async () => {
       const items = Array.from({ length: 21 }, (_, i) => ({
         id: `ts-${i}`,
         organizationId: ORG_ID,
-        contractor: { id: CONTRACTOR_ID, legalName: "Acme", email: "a@b.com" },
+        contractor: { id: CONTRACTOR_ID, legalName: 'Acme', email: 'a@b.com' },
         _count: { entries: 3 },
       }));
       mockPrisma.timesheet.findMany.mockResolvedValueOnce(items);
 
       const result = await caller.time.listAll({ limit: 20 });
 
-      expect(result.nextCursor).toBe("ts-20");
+      expect(result.nextCursor).toBe('ts-20');
       expect(result.items).toHaveLength(20);
     });
   });
@@ -410,12 +410,12 @@ describe("time router", () => {
   // getTimesheet
   // =========================================================================
 
-  describe("getTimesheet", () => {
-    it("queries by timesheetId scoped to organization", async () => {
+  describe('getTimesheet', () => {
+    it('queries by timesheetId scoped to organization', async () => {
       mockPrisma.timesheet.findFirst.mockResolvedValueOnce({
         id: TIMESHEET_ID_1,
         organizationId: ORG_ID,
-        contractor: { id: CONTRACTOR_ID, legalName: "Acme", email: "a@b.com" },
+        contractor: { id: CONTRACTOR_ID, legalName: 'Acme', email: 'a@b.com' },
         entries: [],
       });
 
@@ -428,11 +428,11 @@ describe("time router", () => {
       });
     });
 
-    it("includes entries with contract info", async () => {
+    it('includes entries with contract info', async () => {
       mockPrisma.timesheet.findFirst.mockResolvedValueOnce({
         id: TIMESHEET_ID_1,
         organizationId: ORG_ID,
-        contractor: { id: CONTRACTOR_ID, legalName: "Acme", email: "a@b.com" },
+        contractor: { id: CONTRACTOR_ID, legalName: 'Acme', email: 'a@b.com' },
         entries: [],
       });
 
@@ -443,10 +443,10 @@ describe("time router", () => {
       expect(call.include.entries.include.contract).toBeDefined();
     });
 
-    it("throws NOT_FOUND when timesheet does not exist", async () => {
+    it('throws NOT_FOUND when timesheet does not exist', async () => {
       mockPrisma.timesheet.findFirst.mockResolvedValueOnce(null);
 
-      await expect(caller.time.getTimesheet({ timesheetId: "nonexistent" })).rejects.toThrow(
+      await expect(caller.time.getTimesheet({ timesheetId: 'nonexistent' })).rejects.toThrow(
         TRPCError,
       );
     });
@@ -456,8 +456,8 @@ describe("time router", () => {
   // approve
   // =========================================================================
 
-  describe("approve", () => {
-    it("delegates to approveTimesheet service with org scope", async () => {
+  describe('approve', () => {
+    it('delegates to approveTimesheet service with org scope', async () => {
       await caller.time.approve({ timesheetId: TIMESHEET_ID_1 });
 
       expect(mockApproveTimesheet).toHaveBeenCalledWith(
@@ -473,11 +473,11 @@ describe("time router", () => {
   // reject
   // =========================================================================
 
-  describe("reject", () => {
-    it("delegates to rejectTimesheet service with reason", async () => {
+  describe('reject', () => {
+    it('delegates to rejectTimesheet service with reason', async () => {
       await caller.time.reject({
         timesheetId: TIMESHEET_ID_1,
-        reason: "Hours do not match contract",
+        reason: 'Hours do not match contract',
       });
 
       expect(mockRejectTimesheet).toHaveBeenCalledWith(
@@ -485,7 +485,7 @@ describe("time router", () => {
         ORG_ID,
         TIMESHEET_ID_1,
         USER_ID,
-        "Hours do not match contract",
+        'Hours do not match contract',
       );
     });
   });
@@ -494,8 +494,8 @@ describe("time router", () => {
   // bulkApprove
   // =========================================================================
 
-  describe("bulkApprove", () => {
-    it("delegates to bulkApproveTimesheets service", async () => {
+  describe('bulkApprove', () => {
+    it('delegates to bulkApproveTimesheets service', async () => {
       const ids = [TIMESHEET_ID_1, TIMESHEET_ID_2];
 
       const result = await caller.time.bulkApprove({ timesheetIds: ids });
@@ -509,13 +509,13 @@ describe("time router", () => {
   // bulkReject
   // =========================================================================
 
-  describe("bulkReject", () => {
-    it("delegates to bulkRejectTimesheets service with reason", async () => {
+  describe('bulkReject', () => {
+    it('delegates to bulkRejectTimesheets service with reason', async () => {
       const ids = [TIMESHEET_ID_1, TIMESHEET_ID_2];
 
       const result = await caller.time.bulkReject({
         timesheetIds: ids,
-        reason: "Incorrect hours reported",
+        reason: 'Incorrect hours reported',
       });
 
       expect(mockBulkRejectTimesheets).toHaveBeenCalledWith(
@@ -523,7 +523,7 @@ describe("time router", () => {
         ORG_ID,
         ids,
         USER_ID,
-        "Incorrect hours reported",
+        'Incorrect hours reported',
       );
       expect(result).toEqual({ count: 2 });
     });

@@ -1,7 +1,7 @@
-import { render, screen } from "@/test/test-utils";
-import { SortableTaskList } from "../sortable-task-list";
+import { render, screen } from '@/test/test-utils';
+import { SortableTaskList } from '../sortable-task-list';
 
-vi.mock("@/i18n/navigation", () => ({
+vi.mock('@/i18n/navigation', () => ({
   Link: ({ children, href, ...props }: any) => (
     <a href={href} {...props}>
       {children}
@@ -9,7 +9,7 @@ vi.mock("@/i18n/navigation", () => ({
   ),
 }));
 
-vi.mock("@dnd-kit/core", () => ({
+vi.mock('@dnd-kit/core', () => ({
   DndContext: ({ children }: any) => <div>{children}</div>,
   closestCenter: vi.fn(),
   PointerSensor: vi.fn(),
@@ -18,7 +18,7 @@ vi.mock("@dnd-kit/core", () => ({
   useSensors: vi.fn(() => []),
 }));
 
-vi.mock("@dnd-kit/sortable", () => ({
+vi.mock('@dnd-kit/sortable', () => ({
   SortableContext: ({ children }: any) => <div>{children}</div>,
   verticalListSortingStrategy: {},
   useSortable: () => ({
@@ -32,18 +32,18 @@ vi.mock("@dnd-kit/sortable", () => ({
   sortableKeyboardCoordinates: vi.fn(),
 }));
 
-vi.mock("@dnd-kit/utilities", () => ({
+vi.mock('@dnd-kit/utilities', () => ({
   CSS: { Transform: { toString: () => null } },
 }));
 
-vi.mock("../task-card", () => ({
+vi.mock('../task-card', () => ({
   TaskCard: ({ index }: any) => <div data-testid={`task-card-${index}`}>Task {index}</div>,
 }));
 
-describe("SortableTaskList", () => {
+describe('SortableTaskList', () => {
   const mockForm = { watch: vi.fn(), register: vi.fn(), setValue: vi.fn() } as any;
 
-  it("renders empty state with add button when no fields", () => {
+  it('renders empty state with add button when no fields', () => {
     render(
       <SortableTaskList
         fields={[]}
@@ -55,39 +55,39 @@ describe("SortableTaskList", () => {
       />,
     );
     expect(screen.getByText(/Add your first task/)).toBeInTheDocument();
-    expect(screen.getByText("Add task")).toBeInTheDocument();
+    expect(screen.getByText('Add task')).toBeInTheDocument();
   });
 
-  it("renders task cards for each field", () => {
+  it('renders task cards for each field', () => {
     render(
       <SortableTaskList
-        fields={[{ id: "f1" }, { id: "f2" }]}
-        tasks={[{ title: "Task 1" } as any, { title: "Task 2" } as any]}
+        fields={[{ id: 'f1' }, { id: 'f2' }]}
+        tasks={[{ title: 'Task 1' } as any, { title: 'Task 2' } as any]}
         form={mockForm}
         onReorder={vi.fn()}
         onRemove={vi.fn()}
         onAdd={vi.fn()}
       />,
     );
-    expect(screen.getByTestId("task-card-0")).toBeInTheDocument();
-    expect(screen.getByTestId("task-card-1")).toBeInTheDocument();
+    expect(screen.getByTestId('task-card-0')).toBeInTheDocument();
+    expect(screen.getByTestId('task-card-1')).toBeInTheDocument();
   });
 
-  it("shows add task button below the list", () => {
+  it('shows add task button below the list', () => {
     render(
       <SortableTaskList
-        fields={[{ id: "f1" }]}
-        tasks={[{ title: "Task 1" } as any]}
+        fields={[{ id: 'f1' }]}
+        tasks={[{ title: 'Task 1' } as any]}
         form={mockForm}
         onReorder={vi.fn()}
         onRemove={vi.fn()}
         onAdd={vi.fn()}
       />,
     );
-    expect(screen.getByText("Add task")).toBeInTheDocument();
+    expect(screen.getByText('Add task')).toBeInTheDocument();
   });
 
-  it("calls onAdd when add button is clicked", async () => {
+  it('calls onAdd when add button is clicked', async () => {
     const onAdd = vi.fn();
     render(
       <SortableTaskList
@@ -99,7 +99,7 @@ describe("SortableTaskList", () => {
         onAdd={onAdd}
       />,
     );
-    screen.getByText("Add task").click();
+    screen.getByText('Add task').click();
     expect(onAdd).toHaveBeenCalled();
   });
 });

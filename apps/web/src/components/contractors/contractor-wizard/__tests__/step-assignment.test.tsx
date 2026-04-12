@@ -1,20 +1,20 @@
-import { useForm } from "react-hook-form";
-import { render, screen } from "@/test/test-utils";
-import { StepAssignment } from "../step-assignment";
+import { useForm } from 'react-hook-form';
+import { render, screen } from '@/test/test-utils';
+import { StepAssignment } from '../step-assignment';
 
-vi.mock("@tanstack/react-query", () => ({
+vi.mock('@tanstack/react-query', () => ({
   useQuery: () => ({
     data: [
-      { id: "u1", name: "Jan Kowalski", email: "jan@test.com" },
-      { id: "u2", name: "Anna Nowak", email: "anna@test.com" },
+      { id: 'u1', name: 'Jan Kowalski', email: 'jan@test.com' },
+      { id: 'u2', name: 'Anna Nowak', email: 'anna@test.com' },
     ],
   }),
 }));
 
-vi.mock("@/trpc/init", () => ({
+vi.mock('@/trpc/init', () => ({
   trpc: {
     user: {
-      list: { queryOptions: () => ({ queryKey: ["user", "list"] }) },
+      list: { queryOptions: () => ({ queryKey: ['user', 'list'] }) },
     },
   },
 }));
@@ -22,27 +22,27 @@ vi.mock("@/trpc/init", () => ({
 function Wrapper() {
   const form = useForm({
     defaultValues: {
-      ownerUserId: "",
-      primaryTeamId: "",
-      primaryProjectId: "",
-      defaultCostCenterId: "",
+      ownerUserId: '',
+      primaryTeamId: '',
+      primaryProjectId: '',
+      defaultCostCenterId: '',
     },
   });
   return <StepAssignment form={form as any} />;
 }
 
-describe("StepAssignment", () => {
-  it("renders owner select field", () => {
+describe('StepAssignment', () => {
+  it('renders owner select field', () => {
     render(<Wrapper />);
     // Should have labels for owner, team, project, cost center
     const labels = screen.getAllByText(/.+/);
     expect(labels.length).toBeGreaterThan(0);
   });
 
-  it("renders disabled team, project, and cost center selects", () => {
+  it('renders disabled team, project, and cost center selects', () => {
     const { container } = render(<Wrapper />);
     // Team, project, cost center selects should be disabled
-    const disabledTriggers = container.querySelectorAll("[disabled]");
+    const disabledTriggers = container.querySelectorAll('[disabled]');
     expect(disabledTriggers.length).toBeGreaterThanOrEqual(3);
   });
 });

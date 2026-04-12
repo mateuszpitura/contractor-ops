@@ -1,15 +1,15 @@
-import { describe, expect, it, vi } from "vitest";
-import { render, screen, setup } from "@/test/test-utils";
+import { describe, expect, it, vi } from 'vitest';
+import { render, screen, setup } from '@/test/test-utils';
 
-vi.mock("next-intl", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("next-intl")>();
+vi.mock('next-intl', async importOriginal => {
+  const actual = await importOriginal<typeof import('next-intl')>();
   return {
     ...actual,
     useTranslations: () => (key: string, _params?: any) => key,
   };
 });
 
-vi.mock("@tanstack/react-query", () => ({
+vi.mock('@tanstack/react-query', () => ({
   useQuery: vi.fn(),
   useMutation: () => ({
     mutate: vi.fn(),
@@ -17,7 +17,7 @@ vi.mock("@tanstack/react-query", () => ({
   }),
 }));
 
-vi.mock("@/trpc/init", () => ({
+vi.mock('@/trpc/init', () => ({
   trpc: {
     report: {
       expiringContracts: { queryOptions: (opts: any) => opts },
@@ -27,7 +27,7 @@ vi.mock("@/trpc/init", () => ({
   },
 }));
 
-vi.mock("@/i18n/navigation", () => ({
+vi.mock('@/i18n/navigation', () => ({
   Link: ({ children, href, ...props }: any) => (
     <a href={href} {...props}>
       {children}
@@ -36,15 +36,15 @@ vi.mock("@/i18n/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
 }));
 
-vi.mock("sonner", () => ({
+vi.mock('sonner', () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
 
-vi.mock("../report-chart", () => ({
+vi.mock('../report-chart', () => ({
   ReportChart: () => <div data-testid="report-chart" />,
 }));
 
-vi.mock("../report-table", () => ({
+vi.mock('../report-table', () => ({
   ReportTable: ({ data, isLoading, emptyTitle }: any) =>
     isLoading ? (
       <div data-testid="loading" />
@@ -59,29 +59,29 @@ vi.mock("../report-table", () => ({
     ),
 }));
 
-vi.mock("../export-buttons", () => ({
+vi.mock('../export-buttons', () => ({
   ExportButtons: () => <div data-testid="export-buttons" />,
   downloadBase64File: vi.fn(),
 }));
 
-import { useQuery } from "@tanstack/react-query";
-import { ExpiringContractsReport } from "../expiring-contracts-report";
+import { useQuery } from '@tanstack/react-query';
+import { ExpiringContractsReport } from '../expiring-contracts-report';
 
 const mockUseQuery = vi.mocked(useQuery);
 
-describe("ExpiringContractsReport", () => {
+describe('ExpiringContractsReport', () => {
   beforeEach(() => {
     mockUseQuery.mockReturnValue({
       data: {
         items: [
           {
-            contractId: "ct-1",
-            contractTitle: "Web Dev Contract",
-            contractorId: "c-1",
-            contractorName: "Acme",
-            endDate: "2026-04-30",
+            contractId: 'ct-1',
+            contractTitle: 'Web Dev Contract',
+            contractorId: 'c-1',
+            contractorName: 'Acme',
+            endDate: '2026-04-30',
             daysRemaining: 25,
-            status: "EXPIRING",
+            status: 'EXPIRING',
           },
         ],
         totalCount: 1,
@@ -90,47 +90,47 @@ describe("ExpiringContractsReport", () => {
     } as any);
   });
 
-  it("renders days selector buttons", () => {
+  it('renders days selector buttons', () => {
     render(<ExpiringContractsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    expect(screen.getByText("days30")).toBeInTheDocument();
-    expect(screen.getByText("days60")).toBeInTheDocument();
-    expect(screen.getByText("days90")).toBeInTheDocument();
+    expect(screen.getByText('days30')).toBeInTheDocument();
+    expect(screen.getByText('days60')).toBeInTheDocument();
+    expect(screen.getByText('days90')).toBeInTheDocument();
   });
 
-  it("renders chart", () => {
+  it('renders chart', () => {
     render(<ExpiringContractsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    expect(screen.getByTestId("report-chart")).toBeInTheDocument();
+    expect(screen.getByTestId('report-chart')).toBeInTheDocument();
   });
 
-  it("renders table with data", () => {
+  it('renders table with data', () => {
     render(<ExpiringContractsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    expect(screen.getByText("Web Dev Contract")).toBeInTheDocument();
+    expect(screen.getByText('Web Dev Contract')).toBeInTheDocument();
   });
 
-  it("renders export buttons", () => {
+  it('renders export buttons', () => {
     render(<ExpiringContractsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    expect(screen.getByTestId("export-buttons")).toBeInTheDocument();
+    expect(screen.getByTestId('export-buttons')).toBeInTheDocument();
   });
 
-  it("switches days filter on click", async () => {
+  it('switches days filter on click', async () => {
     const { user } = setup(<ExpiringContractsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    await user.click(screen.getByText("days60"));
+    await user.click(screen.getByText('days60'));
     // The 60 button should now be active (default variant)
     // We verify the component doesn't crash on state change
-    expect(screen.getByText("days60")).toBeInTheDocument();
+    expect(screen.getByText('days60')).toBeInTheDocument();
   });
 
-  it("renders empty state when no contracts in range", () => {
+  it('renders empty state when no contracts in range', () => {
     mockUseQuery.mockReturnValue({
       data: { items: [], totalCount: 0 },
       isLoading: false,
     } as any);
     render(<ExpiringContractsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    expect(screen.getByTestId("empty")).toBeInTheDocument();
-    expect(screen.getByText("emptyExpiringContracts")).toBeInTheDocument();
+    expect(screen.getByTestId('empty')).toBeInTheDocument();
+    expect(screen.getByText('emptyExpiringContracts')).toBeInTheDocument();
   });
 
-  it("shows table loading while chart query is already settled", () => {
+  it('shows table loading while chart query is already settled', () => {
     let call = 0;
     mockUseQuery.mockImplementation(() => {
       call++;
@@ -140,6 +140,6 @@ describe("ExpiringContractsReport", () => {
       return { data: [], isLoading: false };
     });
     render(<ExpiringContractsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    expect(screen.getByTestId("loading")).toBeInTheDocument();
+    expect(screen.getByTestId('loading')).toBeInTheDocument();
   });
 });

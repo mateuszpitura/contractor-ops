@@ -1,34 +1,34 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { CreditCard, Plus } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { parseAsString, useQueryState } from "nuqs";
-import { Suspense, useCallback, useMemo, useState } from "react";
-import { BankStatementDialog } from "@/components/payments/bank-statement-dialog";
-import { NewPaymentRunDialog } from "@/components/payments/new-payment-run-dialog";
-import { PaymentRunSidePanel } from "@/components/payments/payment-run-side-panel";
-import type { PaymentRunRow } from "@/components/payments/payment-run-table/columns";
-import { getColumns } from "@/components/payments/payment-run-table/columns";
-import { PaymentRunDataTable } from "@/components/payments/payment-run-table/data-table";
-import { DataTableToolbar } from "@/components/payments/payment-run-table/data-table-toolbar";
-import { AnimateIn } from "@/components/shared/animate-in";
-import { EmptyState } from "@/components/shared/empty-state";
-import { PageHeader } from "@/components/shared/page-header";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { trpc } from "@/trpc/init";
+import { useQuery } from '@tanstack/react-query';
+import { CreditCard, Plus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { parseAsString, useQueryState } from 'nuqs';
+import { Suspense, useCallback, useMemo, useState } from 'react';
+import { BankStatementDialog } from '@/components/payments/bank-statement-dialog';
+import { NewPaymentRunDialog } from '@/components/payments/new-payment-run-dialog';
+import { PaymentRunSidePanel } from '@/components/payments/payment-run-side-panel';
+import type { PaymentRunRow } from '@/components/payments/payment-run-table/columns';
+import { getColumns } from '@/components/payments/payment-run-table/columns';
+import { PaymentRunDataTable } from '@/components/payments/payment-run-table/data-table';
+import { DataTableToolbar } from '@/components/payments/payment-run-table/data-table-toolbar';
+import { AnimateIn } from '@/components/shared/animate-in';
+import { EmptyState } from '@/components/shared/empty-state';
+import { PageHeader } from '@/components/shared/page-header';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Inner content (uses nuqs, needs Suspense boundary)
 // ---------------------------------------------------------------------------
 
 function PaymentsContent() {
-  const t = useTranslations("Payments");
-  const te = useTranslations("EmptyStates");
+  const t = useTranslations('Payments');
+  const te = useTranslations('EmptyStates');
 
   // URL state via nuqs
-  const [status, setStatus] = useQueryState("status", parseAsString.withDefault("all"));
+  const [status, setStatus] = useQueryState('status', parseAsString.withDefault('all'));
 
   // Date range state (local, not URL-synced for simplicity)
   const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
@@ -50,13 +50,13 @@ function PaymentsContent() {
   const queryInput = useMemo(
     () => ({
       status:
-        status === "all"
+        status === 'all'
           ? undefined
-          : (status as "DRAFT" | "LOCKED" | "EXPORTED" | "COMPLETED" | "FAILED" | "CANCELLED"),
+          : (status as 'DRAFT' | 'LOCKED' | 'EXPORTED' | 'COMPLETED' | 'FAILED' | 'CANCELLED'),
       cursor: currentCursor,
       limit: 20,
-      sortBy: "createdAt" as const,
-      sortOrder: "desc" as const,
+      sortBy: 'createdAt' as const,
+      sortOrder: 'desc' as const,
       dateFrom: dateFrom ?? undefined,
       dateTo: dateTo ?? undefined,
     }),
@@ -99,12 +99,12 @@ function PaymentsContent() {
   // Pagination handlers
   const handleNextPage = useCallback(() => {
     if (nextCursor) {
-      setCursors((prev) => [...prev, nextCursor]);
+      setCursors(prev => [...prev, nextCursor]);
     }
   }, [nextCursor]);
 
   const handlePreviousPage = useCallback(() => {
-    setCursors((prev) => prev.slice(0, -1));
+    setCursors(prev => prev.slice(0, -1));
   }, []);
 
   // Row click
@@ -120,11 +120,11 @@ function PaymentsContent() {
         onDownloadExport: () => {
           // Download handled via side panel
         },
-        onMarkAllPaid: (run) => {
+        onMarkAllPaid: run => {
           setSelectedRunId(run.id);
           setSidePanelOpen(true);
         },
-        onCancelRun: (run) => {
+        onCancelRun: run => {
           setSelectedRunId(run.id);
           setSidePanelOpen(true);
         },
@@ -142,7 +142,7 @@ function PaymentsContent() {
   const isEmpty =
     !isLoading &&
     data.length === 0 &&
-    status === "all" &&
+    status === 'all' &&
     !dateFrom &&
     !dateTo &&
     cursors.length === 0;
@@ -152,12 +152,12 @@ function PaymentsContent() {
       {/* Page header */}
       <AnimateIn delay={0}>
         <PageHeader
-          title={t("title")}
-          description={t("pageDescription")}
+          title={t('title')}
+          description={t('pageDescription')}
           actions={
             <Button size="sm" className="gap-1.5" onClick={() => setDialogOpen(true)}>
               <Plus className="h-3.5 w-3.5" />
-              {t("newPaymentRun")}
+              {t('newPaymentRun')}
             </Button>
           }
         />
@@ -167,11 +167,11 @@ function PaymentsContent() {
         /* Empty state with smart sequencing */
         <EmptyState
           icon={CreditCard}
-          heading={te("payments.heading")}
-          body={te("payments.body")}
-          primaryAction={{ label: te("payments.cta"), href: "/invoices" }}
+          heading={te('payments.heading')}
+          body={te('payments.body')}
+          primaryAction={{ label: te('payments.cta'), href: '/invoices' }}
           prerequisiteMissing={contractorCount === 0}
-          prerequisiteAction={{ label: te("prerequisite.cta"), href: "/contractors" }}
+          prerequisiteAction={{ label: te('prerequisite.cta'), href: '/contractors' }}
         />
       ) : (
         <AnimateIn delay={1}>
@@ -203,11 +203,11 @@ function PaymentsContent() {
       <PaymentRunSidePanel
         runId={selectedRunId}
         open={sidePanelOpen}
-        onOpenChange={(open) => {
+        onOpenChange={open => {
           setSidePanelOpen(open);
           if (!open) setSelectedRunId(null);
         }}
-        onImportStatement={(runId) => setBankStatementRunId(runId)}
+        onImportStatement={runId => setBankStatementRunId(runId)}
       />
 
       {/* New payment run dialog */}
@@ -224,7 +224,7 @@ function PaymentsContent() {
         <BankStatementDialog
           runId={bankStatementRunId}
           open={!!bankStatementRunId}
-          onOpenChange={(open) => {
+          onOpenChange={open => {
             if (!open) setBankStatementRunId(null);
           }}
         />
@@ -255,8 +255,7 @@ function PaymentsLoading() {
         {Array.from({ length: 8 }).map((_, i) => (
           <div
             key={`skel-${i}`}
-            className="flex items-center gap-4 px-4 py-3 border-b last:border-b-0"
-          >
+            className="flex items-center gap-4 px-4 py-3 border-b last:border-b-0">
             <Skeleton className="h-4 w-24" />
             <Skeleton className="h-4 w-20" />
             <Skeleton className="h-4 w-16" />

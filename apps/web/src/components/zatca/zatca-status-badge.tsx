@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import { Badge } from "@/components/ui/badge";
+import { Badge } from '@/components/ui/badge';
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
 export type ZatcaBadgeStatus =
-  | "PENDING"
-  | "SUBMITTED"
-  | "CLEARED"
-  | "REPORTED"
-  | "REJECTED"
-  | "WARNING";
+  | 'PENDING'
+  | 'SUBMITTED'
+  | 'CLEARED'
+  | 'REPORTED'
+  | 'REJECTED'
+  | 'WARNING';
 
 // ---------------------------------------------------------------------------
 // Status → badge variant + label mapping (per UI-SPEC Section 2)
@@ -20,14 +20,14 @@ export type ZatcaBadgeStatus =
 
 const STATUS_CONFIG: Record<
   ZatcaBadgeStatus,
-  { variant: "warning" | "info" | "success" | "destructive"; label: string }
+  { variant: 'warning' | 'info' | 'success' | 'destructive'; label: string }
 > = {
-  PENDING: { variant: "warning", label: "ZATCA Pending" },
-  SUBMITTED: { variant: "info", label: "ZATCA Submitted" },
-  CLEARED: { variant: "success", label: "ZATCA Cleared" },
-  REPORTED: { variant: "success", label: "ZATCA Reported" },
-  REJECTED: { variant: "destructive", label: "ZATCA Rejected" },
-  WARNING: { variant: "warning", label: "ZATCA Warning" },
+  PENDING: { variant: 'warning', label: 'ZATCA Pending' },
+  SUBMITTED: { variant: 'info', label: 'ZATCA Submitted' },
+  CLEARED: { variant: 'success', label: 'ZATCA Cleared' },
+  REPORTED: { variant: 'success', label: 'ZATCA Reported' },
+  REJECTED: { variant: 'destructive', label: 'ZATCA Rejected' },
+  WARNING: { variant: 'warning', label: 'ZATCA Warning' },
 };
 
 // ---------------------------------------------------------------------------
@@ -58,8 +58,8 @@ export function ZatcaStatusBadge({ status, date, className }: ZatcaStatusBadgePr
   if (!config) return null;
 
   const ariaLabel = date
-    ? `ZATCA status: ${config.label.replace("ZATCA ", "")} on ${date}`
-    : `ZATCA status: ${config.label.replace("ZATCA ", "")}`;
+    ? `ZATCA status: ${config.label.replace('ZATCA ', '')} on ${date}`
+    : `ZATCA status: ${config.label.replace('ZATCA ', '')}`;
 
   return (
     <Badge variant={config.variant} className={className} aria-label={ariaLabel}>

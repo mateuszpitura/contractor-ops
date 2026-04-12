@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { getOrCreateTimesheet, submitTimesheet } from "../time-entry.js";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { getOrCreateTimesheet, submitTimesheet } from '../time-entry.js';
 
 const mockPrisma = {
   timesheet: {
@@ -9,9 +9,9 @@ const mockPrisma = {
   },
 } as any;
 
-const ORG_ID = "org-1";
-const CONTRACTOR_ID = "contractor-1";
-const TIMESHEET_ID = "ts-1";
+const ORG_ID = 'org-1';
+const CONTRACTOR_ID = 'contractor-1';
+const TIMESHEET_ID = 'ts-1';
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -21,9 +21,9 @@ beforeEach(() => {
 // getOrCreateTimesheet
 // ---------------------------------------------------------------------------
 
-describe("getOrCreateTimesheet", () => {
-  it("upsert where uses composite key organizationId_contractorId_weekStartDate", async () => {
-    const monday = new Date("2025-01-06T00:00:00.000Z");
+describe('getOrCreateTimesheet', () => {
+  it('upsert where uses composite key organizationId_contractorId_weekStartDate', async () => {
+    const monday = new Date('2025-01-06T00:00:00.000Z');
     mockPrisma.timesheet.upsert.mockResolvedValue({ id: TIMESHEET_ID });
 
     await getOrCreateTimesheet(mockPrisma, ORG_ID, CONTRACTOR_ID, monday);
@@ -38,8 +38,8 @@ describe("getOrCreateTimesheet", () => {
     });
   });
 
-  it("create payload has status DRAFT, totalMinutes 0, and all identity fields", async () => {
-    const monday = new Date("2025-01-06T00:00:00.000Z");
+  it('create payload has status DRAFT, totalMinutes 0, and all identity fields', async () => {
+    const monday = new Date('2025-01-06T00:00:00.000Z');
     mockPrisma.timesheet.upsert.mockResolvedValue({ id: TIMESHEET_ID });
 
     await getOrCreateTimesheet(mockPrisma, ORG_ID, CONTRACTOR_ID, monday);
@@ -49,13 +49,13 @@ describe("getOrCreateTimesheet", () => {
       organizationId: ORG_ID,
       contractorId: CONTRACTOR_ID,
       weekStartDate: monday,
-      status: "DRAFT",
+      status: 'DRAFT',
       totalMinutes: 0,
     });
   });
 
-  it("update is empty object (no-op on existing record)", async () => {
-    const monday = new Date("2025-01-06T00:00:00.000Z");
+  it('update is empty object (no-op on existing record)', async () => {
+    const monday = new Date('2025-01-06T00:00:00.000Z');
     mockPrisma.timesheet.upsert.mockResolvedValue({ id: TIMESHEET_ID });
 
     await getOrCreateTimesheet(mockPrisma, ORG_ID, CONTRACTOR_ID, monday);
@@ -64,8 +64,8 @@ describe("getOrCreateTimesheet", () => {
     expect(args.update).toEqual({});
   });
 
-  it("includes entries relation in result", async () => {
-    const monday = new Date("2025-01-06T00:00:00.000Z");
+  it('includes entries relation in result', async () => {
+    const monday = new Date('2025-01-06T00:00:00.000Z');
     mockPrisma.timesheet.upsert.mockResolvedValue({ id: TIMESHEET_ID });
 
     await getOrCreateTimesheet(mockPrisma, ORG_ID, CONTRACTOR_ID, monday);
@@ -74,36 +74,36 @@ describe("getOrCreateTimesheet", () => {
     expect(args.include).toEqual({ entries: true });
   });
 
-  it("throws BAD_REQUEST when weekStartDate is a Tuesday", async () => {
-    const tuesday = new Date("2025-01-07T00:00:00.000Z");
+  it('throws BAD_REQUEST when weekStartDate is a Tuesday', async () => {
+    const tuesday = new Date('2025-01-07T00:00:00.000Z');
 
     await expect(getOrCreateTimesheet(mockPrisma, ORG_ID, CONTRACTOR_ID, tuesday)).rejects.toThrow(
-      "weekStartDate must be a Monday",
+      'weekStartDate must be a Monday',
     );
 
     expect(mockPrisma.timesheet.upsert).not.toHaveBeenCalled();
   });
 
-  it("throws BAD_REQUEST when weekStartDate is a Sunday", async () => {
-    const sunday = new Date("2025-01-05T00:00:00.000Z");
+  it('throws BAD_REQUEST when weekStartDate is a Sunday', async () => {
+    const sunday = new Date('2025-01-05T00:00:00.000Z');
 
     await expect(getOrCreateTimesheet(mockPrisma, ORG_ID, CONTRACTOR_ID, sunday)).rejects.toThrow(
-      "weekStartDate must be a Monday",
+      'weekStartDate must be a Monday',
     );
 
     expect(mockPrisma.timesheet.upsert).not.toHaveBeenCalled();
   });
 
-  it("throws BAD_REQUEST when weekStartDate is a Saturday", async () => {
-    const saturday = new Date("2025-01-04T00:00:00.000Z");
+  it('throws BAD_REQUEST when weekStartDate is a Saturday', async () => {
+    const saturday = new Date('2025-01-04T00:00:00.000Z');
 
     await expect(getOrCreateTimesheet(mockPrisma, ORG_ID, CONTRACTOR_ID, saturday)).rejects.toThrow(
-      "weekStartDate must be a Monday",
+      'weekStartDate must be a Monday',
     );
   });
 
-  it("accepts a valid Monday date and does NOT throw", async () => {
-    const monday = new Date("2025-01-13T00:00:00.000Z"); // Monday
+  it('accepts a valid Monday date and does NOT throw', async () => {
+    const monday = new Date('2025-01-13T00:00:00.000Z'); // Monday
     mockPrisma.timesheet.upsert.mockResolvedValue({ id: TIMESHEET_ID });
 
     await expect(
@@ -111,14 +111,14 @@ describe("getOrCreateTimesheet", () => {
     ).resolves.toBeDefined();
   });
 
-  it("getISOMonday validation: Wednesday maps to Monday internally but rejects because input !== Monday", async () => {
+  it('getISOMonday validation: Wednesday maps to Monday internally but rejects because input !== Monday', async () => {
     // Wednesday 2025-01-08 -> internal getISOMonday returns 2025-01-06 (Monday)
     // Since input time !== monday time, it throws
-    const wednesday = new Date("2025-01-08T00:00:00.000Z");
+    const wednesday = new Date('2025-01-08T00:00:00.000Z');
 
     await expect(
       getOrCreateTimesheet(mockPrisma, ORG_ID, CONTRACTOR_ID, wednesday),
-    ).rejects.toThrow("weekStartDate must be a Monday");
+    ).rejects.toThrow('weekStartDate must be a Monday');
   });
 });
 
@@ -126,30 +126,30 @@ describe("getOrCreateTimesheet", () => {
 // submitTimesheet
 // ---------------------------------------------------------------------------
 
-describe("submitTimesheet", () => {
+describe('submitTimesheet', () => {
   it("updateMany where clause includes status { in: ['DRAFT', 'REJECTED'] } - both statuses", async () => {
     mockPrisma.timesheet.updateMany.mockResolvedValue({ count: 1 });
     mockPrisma.timesheet.findUniqueOrThrow.mockResolvedValue({
       id: TIMESHEET_ID,
-      status: "SUBMITTED",
+      status: 'SUBMITTED',
       entries: [],
     });
 
     await submitTimesheet(mockPrisma, ORG_ID, CONTRACTOR_ID, TIMESHEET_ID);
 
     const where = mockPrisma.timesheet.updateMany.mock.calls[0][0].where;
-    expect(where.status).toEqual({ in: ["DRAFT", "REJECTED"] });
+    expect(where.status).toEqual({ in: ['DRAFT', 'REJECTED'] });
     // Verify it's not just one status
     expect(where.status.in).toHaveLength(2);
-    expect(where.status.in).toContain("DRAFT");
-    expect(where.status.in).toContain("REJECTED");
+    expect(where.status.in).toContain('DRAFT');
+    expect(where.status.in).toContain('REJECTED');
   });
 
-  it("updateMany where includes id, organizationId, and contractorId for scoping", async () => {
+  it('updateMany where includes id, organizationId, and contractorId for scoping', async () => {
     mockPrisma.timesheet.updateMany.mockResolvedValue({ count: 1 });
     mockPrisma.timesheet.findUniqueOrThrow.mockResolvedValue({
       id: TIMESHEET_ID,
-      status: "SUBMITTED",
+      status: 'SUBMITTED',
     });
 
     await submitTimesheet(mockPrisma, ORG_ID, CONTRACTOR_ID, TIMESHEET_ID);
@@ -159,15 +159,15 @@ describe("submitTimesheet", () => {
       id: TIMESHEET_ID,
       organizationId: ORG_ID,
       contractorId: CONTRACTOR_ID,
-      status: { in: ["DRAFT", "REJECTED"] },
+      status: { in: ['DRAFT', 'REJECTED'] },
     });
   });
 
-  it("data includes submittedAt as a Date instance", async () => {
+  it('data includes submittedAt as a Date instance', async () => {
     mockPrisma.timesheet.updateMany.mockResolvedValue({ count: 1 });
     mockPrisma.timesheet.findUniqueOrThrow.mockResolvedValue({
       id: TIMESHEET_ID,
-      status: "SUBMITTED",
+      status: 'SUBMITTED',
     });
 
     const before = new Date();
@@ -181,11 +181,11 @@ describe("submitTimesheet", () => {
     expect(data.submittedAt.getTime()).toBeLessThanOrEqual(after.getTime());
   });
 
-  it("data includes rejectionReason: null to clear previous rejection", async () => {
+  it('data includes rejectionReason: null to clear previous rejection', async () => {
     mockPrisma.timesheet.updateMany.mockResolvedValue({ count: 1 });
     mockPrisma.timesheet.findUniqueOrThrow.mockResolvedValue({
       id: TIMESHEET_ID,
-      status: "SUBMITTED",
+      status: 'SUBMITTED',
     });
 
     await submitTimesheet(mockPrisma, ORG_ID, CONTRACTOR_ID, TIMESHEET_ID);
@@ -193,28 +193,28 @@ describe("submitTimesheet", () => {
     const data = mockPrisma.timesheet.updateMany.mock.calls[0][0].data;
     expect(data.rejectionReason).toBeNull();
     // Ensure it's explicitly null, not undefined or missing
-    expect(Object.keys(data)).toContain("rejectionReason");
+    expect(Object.keys(data)).toContain('rejectionReason');
   });
 
   it("data sets status to 'SUBMITTED'", async () => {
     mockPrisma.timesheet.updateMany.mockResolvedValue({ count: 1 });
     mockPrisma.timesheet.findUniqueOrThrow.mockResolvedValue({
       id: TIMESHEET_ID,
-      status: "SUBMITTED",
+      status: 'SUBMITTED',
     });
 
     await submitTimesheet(mockPrisma, ORG_ID, CONTRACTOR_ID, TIMESHEET_ID);
 
     const data = mockPrisma.timesheet.updateMany.mock.calls[0][0].data;
-    expect(data.status).toBe("SUBMITTED");
+    expect(data.status).toBe('SUBMITTED');
   });
 
-  it("returns result of findUniqueOrThrow with include { entries: true }", async () => {
+  it('returns result of findUniqueOrThrow with include { entries: true }', async () => {
     mockPrisma.timesheet.updateMany.mockResolvedValue({ count: 1 });
     const returnedTimesheet = {
       id: TIMESHEET_ID,
-      status: "SUBMITTED",
-      entries: [{ id: "e-1", minutes: 60 }],
+      status: 'SUBMITTED',
+      entries: [{ id: 'e-1', minutes: 60 }],
     };
     mockPrisma.timesheet.findUniqueOrThrow.mockResolvedValue(returnedTimesheet);
 
@@ -227,22 +227,22 @@ describe("submitTimesheet", () => {
     });
   });
 
-  it("throws PRECONDITION_FAILED when updateMany returns count: 0 (wrong status)", async () => {
+  it('throws PRECONDITION_FAILED when updateMany returns count: 0 (wrong status)', async () => {
     mockPrisma.timesheet.updateMany.mockResolvedValue({ count: 0 });
 
     await expect(submitTimesheet(mockPrisma, ORG_ID, CONTRACTOR_ID, TIMESHEET_ID)).rejects.toThrow(
-      "Timesheet cannot be submitted",
+      'Timesheet cannot be submitted',
     );
 
     // findUniqueOrThrow should NOT be called when update fails
     expect(mockPrisma.timesheet.findUniqueOrThrow).not.toHaveBeenCalled();
   });
 
-  it("uses updateMany (not update) for optimistic locking pattern", async () => {
+  it('uses updateMany (not update) for optimistic locking pattern', async () => {
     mockPrisma.timesheet.updateMany.mockResolvedValue({ count: 1 });
     mockPrisma.timesheet.findUniqueOrThrow.mockResolvedValue({
       id: TIMESHEET_ID,
-      status: "SUBMITTED",
+      status: 'SUBMITTED',
     });
 
     await submitTimesheet(mockPrisma, ORG_ID, CONTRACTOR_ID, TIMESHEET_ID);

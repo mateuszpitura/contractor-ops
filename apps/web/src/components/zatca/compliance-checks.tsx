@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { useMutation } from "@tanstack/react-query";
-import { Check, Loader2, X } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { toast } from "sonner";
+import { useMutation } from '@tanstack/react-query';
+import { Check, Loader2, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import type { ComplianceCheckResult } from "./zatca-trpc";
-import { zatcaTrpc } from "./zatca-trpc";
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import type { ComplianceCheckResult } from './zatca-trpc';
+import { zatcaTrpc } from './zatca-trpc';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -27,12 +27,12 @@ interface ComplianceChecksProps {
 
 const STATUS_BADGE: Record<
   string,
-  { variant: "success" | "destructive" | "warning"; label: string }
+  { variant: 'success' | 'destructive' | 'warning'; label: string }
 > = {
-  CLEARED: { variant: "success", label: "CLEARED" },
-  REPORTED: { variant: "success", label: "REPORTED" },
-  REJECTED: { variant: "destructive", label: "REJECTED" },
-  ERROR: { variant: "destructive", label: "ERROR" },
+  CLEARED: { variant: 'success', label: 'CLEARED' },
+  REPORTED: { variant: 'success', label: 'REPORTED' },
+  REJECTED: { variant: 'destructive', label: 'REJECTED' },
+  ERROR: { variant: 'destructive', label: 'ERROR' },
 };
 
 // ---------------------------------------------------------------------------
@@ -47,7 +47,7 @@ const STATUS_BADGE: Record<
  * Next enabled only when all 6 pass.
  */
 export function ComplianceChecks({ onSuccess, onBack }: ComplianceChecksProps) {
-  const t = useTranslations("Zatca.complianceChecks");
+  const t = useTranslations('Zatca.complianceChecks');
   const [results, setResults] = useState<ComplianceCheckResult[]>([]);
 
   const checksMutation = useMutation({
@@ -55,52 +55,51 @@ export function ComplianceChecks({ onSuccess, onBack }: ComplianceChecksProps) {
     onSuccess: (data: unknown) => {
       const typedData = data as ComplianceCheckResult[];
       setResults(typedData);
-      const allPassed = typedData.every((r) => r.status === "CLEARED" || r.status === "REPORTED");
+      const allPassed = typedData.every(r => r.status === 'CLEARED' || r.status === 'REPORTED');
       if (allPassed) {
-        toast.success(t("toast.allPassed"));
+        toast.success(t('toast.allPassed'));
       } else {
         const failedCount = typedData.filter(
-          (r) => r.status === "REJECTED" || r.status === "ERROR",
+          r => r.status === 'REJECTED' || r.status === 'ERROR',
         ).length;
-        toast.error(t("toast.someFailed", { failedCount }));
+        toast.error(t('toast.someFailed', { failedCount }));
       }
     },
     onError: (error: Error) => {
-      toast.error(error.message || t("toast.error"));
+      toast.error(error.message || t('toast.error'));
     },
   });
 
   const allPassed =
-    results.length === 6 && results.every((r) => r.status === "CLEARED" || r.status === "REPORTED");
+    results.length === 6 && results.every(r => r.status === 'CLEARED' || r.status === 'REPORTED');
   const completedCount = results.length;
   const progressValue = (completedCount / 6) * 100;
 
   // Test invoice labels
   const TEST_LABELS = [
-    t("testLabels.standardTaxInvoice"),
-    t("testLabels.standardCreditNote"),
-    t("testLabels.standardDebitNote"),
-    t("testLabels.simplifiedInvoice"),
-    t("testLabels.simplifiedCreditNote"),
-    t("testLabels.simplifiedDebitNote"),
+    t('testLabels.standardTaxInvoice'),
+    t('testLabels.standardCreditNote'),
+    t('testLabels.standardDebitNote'),
+    t('testLabels.simplifiedInvoice'),
+    t('testLabels.simplifiedCreditNote'),
+    t('testLabels.simplifiedDebitNote'),
   ];
 
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h3 className="text-base font-semibold">{t("title")}</h3>
-        <p className="text-sm text-muted-foreground">{t("description")}</p>
+        <h3 className="text-base font-semibold">{t('title')}</h3>
+        <p className="text-sm text-muted-foreground">{t('description')}</p>
       </div>
 
       {results.length === 0 && (
         <Button
           onClick={() => (checksMutation.mutate as () => void)()}
-          disabled={checksMutation.isPending}
-        >
+          disabled={checksMutation.isPending}>
           {checksMutation.isPending && (
             <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" aria-hidden="true" />
           )}
-          {t("runChecks")}
+          {t('runChecks')}
         </Button>
       )}
 
@@ -109,8 +108,7 @@ export function ComplianceChecks({ onSuccess, onBack }: ComplianceChecksProps) {
         <div
           className="space-y-3 rounded-lg border bg-muted/20 p-4"
           role="list"
-          aria-label={t("resultsLabel")}
-        >
+          aria-label={t('resultsLabel')}>
           {TEST_LABELS.map((label, i) => {
             const result = results[i];
             const isRunning = checksMutation.isPending && !result;
@@ -120,7 +118,7 @@ export function ComplianceChecks({ onSuccess, onBack }: ComplianceChecksProps) {
               <div key={label} className="flex items-center justify-between" role="listitem">
                 <div className="flex items-center gap-2 text-sm">
                   {result ? (
-                    result.status === "CLEARED" || result.status === "REPORTED" ? (
+                    result.status === 'CLEARED' || result.status === 'REPORTED' ? (
                       <Check className="h-4 w-4 text-green-600" aria-hidden="true" />
                     ) : (
                       <X className="h-4 w-4 text-destructive" aria-hidden="true" />
@@ -133,13 +131,13 @@ export function ComplianceChecks({ onSuccess, onBack }: ComplianceChecksProps) {
                       aria-label="Pending"
                     />
                   ) : null}
-                  <span className={result ? "text-foreground" : "text-muted-foreground"}>
+                  <span className={result ? 'text-foreground' : 'text-muted-foreground'}>
                     {label}
                   </span>
                 </div>
 
                 {result && (
-                  <Badge variant={STATUS_BADGE[result.status]?.variant ?? "warning"}>
+                  <Badge variant={STATUS_BADGE[result.status]?.variant ?? 'warning'}>
                     {STATUS_BADGE[result.status]?.label ?? result.status}
                   </Badge>
                 )}
@@ -161,10 +159,10 @@ export function ComplianceChecks({ onSuccess, onBack }: ComplianceChecksProps) {
       {/* Actions */}
       <div className="flex justify-end gap-2 pt-2">
         <Button type="button" variant="outline" onClick={onBack}>
-          {t("back")}
+          {t('back')}
         </Button>
         <Button onClick={onSuccess} disabled={!allPassed}>
-          {t("next")}
+          {t('next')}
         </Button>
       </div>
     </div>

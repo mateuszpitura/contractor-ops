@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, Loader2 } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { AlertTriangle, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -13,16 +13,16 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { ScrollArea } from "@/components/ui/scroll-area";
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -30,21 +30,21 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { trpc } from "@/trpc/init";
+} from '@/components/ui/table';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
 const WORKFLOW_STATUSES = [
-  { value: "TODO", label: "To Do" },
-  { value: "IN_PROGRESS", label: "In Progress" },
-  { value: "DONE", label: "Done" },
-  { value: "BLOCKED", label: "Blocked" },
-  { value: "SKIPPED", label: "Skipped" },
-  { value: "CANCELLED", label: "Cancelled" },
+  { value: 'TODO', label: 'To Do' },
+  { value: 'IN_PROGRESS', label: 'In Progress' },
+  { value: 'DONE', label: 'Done' },
+  { value: 'BLOCKED', label: 'Blocked' },
+  { value: 'SKIPPED', label: 'Skipped' },
+  { value: 'CANCELLED', label: 'Cancelled' },
 ] as const;
 
 // ---------------------------------------------------------------------------
@@ -66,7 +66,7 @@ interface LinearTeam {
   states: LinearState[];
 }
 
-type LinearStateType = "triage" | "backlog" | "unstarted" | "started" | "completed" | "cancelled";
+type LinearStateType = 'triage' | 'backlog' | 'unstarted' | 'started' | 'completed' | 'cancelled';
 
 interface MappingEntry {
   workflowStatus: string;
@@ -84,11 +84,11 @@ interface LinearStatusMappingDialogProps {
 // Smart default algorithm (D-02) -- delegates core logic to utility
 // ---------------------------------------------------------------------------
 
-import { computeSmartDefaultMappings } from "@/lib/linear-status-mapping";
+import { computeSmartDefaultMappings } from '@/lib/linear-status-mapping';
 
 function computeSmartDefaults(states: LinearState[]): MappingEntry[] {
   const smartMap = computeSmartDefaultMappings(states);
-  const stateByName = new Map(states.map((s) => [s.name, s]));
+  const stateByName = new Map(states.map(s => [s.name, s]));
 
   return Object.entries(smartMap)
     .map(([workflowStatus, stateName]) => {
@@ -109,8 +109,8 @@ function computeSmartDefaults(states: LinearState[]): MappingEntry[] {
 // ---------------------------------------------------------------------------
 
 export function LinearStatusMappingDialog({ open, onOpenChange }: LinearStatusMappingDialogProps) {
-  const t = useTranslations("Settings.integrations.linear.mapping");
-  const tI = useTranslations("Integrations.linear.statusMapping");
+  const t = useTranslations('Settings.integrations.linear.mapping');
+  const tI = useTranslations('Integrations.linear.statusMapping');
   const queryClient = useQueryClient();
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [mappings, setMappings] = useState<MappingEntry[]>([]);
@@ -133,7 +133,7 @@ export function LinearStatusMappingDialog({ open, onOpenChange }: LinearStatusMa
   // ---- Fetch existing mapping for selected team ----
   const existingMappingQuery = useQuery({
     ...trpc.linear.getStatusMapping.queryOptions({
-      teamId: selectedTeamId ?? "",
+      teamId: selectedTeamId ?? '',
     }),
     enabled: !!selectedTeamId,
   });
@@ -149,7 +149,7 @@ export function LinearStatusMappingDialog({ open, onOpenChange }: LinearStatusMa
       setInitialMappings([...serverMappings]);
     } else {
       // No existing mapping -- apply smart defaults (D-02)
-      const team = teams.find((t) => t.id === selectedTeamId);
+      const team = teams.find(t => t.id === selectedTeamId);
       if (team) {
         const defaults = computeSmartDefaults(team.states);
         setMappings(defaults);
@@ -162,14 +162,14 @@ export function LinearStatusMappingDialog({ open, onOpenChange }: LinearStatusMa
   const saveMutation = useMutation({
     ...trpc.linear.saveStatusMapping.mutationOptions(),
     onSuccess: () => {
-      toast.success(tI("toast.saved"));
+      toast.success(tI('toast.saved'));
       queryClient.invalidateQueries({
         queryKey: trpc.linear.getStatusMapping.queryKey({
-          teamId: selectedTeamId ?? "",
+          teamId: selectedTeamId ?? '',
         }),
       });
       queryClient.invalidateQueries({
-        queryKey: trpc.integration.getHealth.queryKey({ provider: "linear" }),
+        queryKey: trpc.integration.getHealth.queryKey({ provider: 'linear' }),
       });
       queryClient.invalidateQueries({
         queryKey: trpc.linear.connectionStatus.queryKey(),
@@ -177,12 +177,12 @@ export function LinearStatusMappingDialog({ open, onOpenChange }: LinearStatusMa
       onOpenChange(false);
     },
     onError: () => {
-      toast.error(tI("toast.saveFailed"));
+      toast.error(tI('toast.saveFailed'));
     },
   });
 
   // ---- Derived state ----
-  const selectedTeam = teams.find((t) => t.id === selectedTeamId);
+  const selectedTeam = teams.find(t => t.id === selectedTeamId);
 
   const hasChanges = useMemo(() => {
     if (mappings.length !== initialMappings.length) return true;
@@ -197,12 +197,12 @@ export function LinearStatusMappingDialog({ open, onOpenChange }: LinearStatusMa
 
   // ---- Handlers ----
   function handleStateSelect(workflowStatus: string, linearStateId: string) {
-    const team = teams.find((t) => t.id === selectedTeamId);
-    const linearState = team?.states.find((s) => s.id === linearStateId);
+    const team = teams.find(t => t.id === selectedTeamId);
+    const linearState = team?.states.find(s => s.id === linearStateId);
     if (!linearState) return;
 
-    setMappings((prev) => {
-      const existing = prev.findIndex((m) => m.workflowStatus === workflowStatus);
+    setMappings(prev => {
+      const existing = prev.findIndex(m => m.workflowStatus === workflowStatus);
       const entry: MappingEntry = {
         workflowStatus,
         linearStateId: linearState.id,
@@ -228,7 +228,7 @@ export function LinearStatusMappingDialog({ open, onOpenChange }: LinearStatusMa
   }
 
   function getMappedStateId(workflowStatus: string): string | undefined {
-    return mappings.find((m) => m.workflowStatus === workflowStatus)?.linearStateId;
+    return mappings.find(m => m.workflowStatus === workflowStatus)?.linearStateId;
   }
 
   const teamStates = selectedTeam?.states ?? [];
@@ -237,23 +237,23 @@ export function LinearStatusMappingDialog({ open, onOpenChange }: LinearStatusMa
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{t("title")}</DialogTitle>
+          <DialogTitle>{t('title')}</DialogTitle>
           <DialogDescription>
-            {selectedTeam ? t("description", { teamName: selectedTeam.name }) : t("selectTeam")}
+            {selectedTeam ? t('description', { teamName: selectedTeam.name }) : t('selectTeam')}
           </DialogDescription>
         </DialogHeader>
 
         {/* Team selector */}
         <div className="space-y-2">
-          <Label>{t("selectTeam")}</Label>
-          <Select value={selectedTeamId ?? undefined} onValueChange={(v) => setSelectedTeamId(v)}>
+          <Label>{t('selectTeam')}</Label>
+          <Select value={selectedTeamId ?? undefined} onValueChange={v => setSelectedTeamId(v)}>
             <SelectTrigger className="w-full">
-              <SelectValue placeholder={t("selectTeam")}>
+              <SelectValue placeholder={t('selectTeam')}>
                 {teamsQuery.isLoading && <Loader2 className="size-3.5 animate-spin" />}
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
-              {teams.map((team) => (
+              {teams.map(team => (
                 <SelectItem key={team.id} value={team.id}>
                   {team.name} ({team.key})
                 </SelectItem>
@@ -265,8 +265,8 @@ export function LinearStatusMappingDialog({ open, onOpenChange }: LinearStatusMa
         {/* No teams state */}
         {!teamsQuery.isLoading && teams.length === 0 && (
           <div className="rounded-md border border-dashed p-6 text-center">
-            <p className="text-sm font-medium">{t("noTeams")}</p>
-            <p className="mt-1 text-sm text-muted-foreground">{t("noTeamsBody")}</p>
+            <p className="text-sm font-medium">{t('noTeams')}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{t('noTeamsBody')}</p>
           </div>
         )}
 
@@ -276,12 +276,12 @@ export function LinearStatusMappingDialog({ open, onOpenChange }: LinearStatusMa
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{t("workflowStatus")}</TableHead>
-                  <TableHead>{t("linearState")}</TableHead>
+                  <TableHead>{t('workflowStatus')}</TableHead>
+                  <TableHead>{t('linearState')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {WORKFLOW_STATUSES.map((ws) => {
+                {WORKFLOW_STATUSES.map(ws => {
                   const mappedId = getMappedStateId(ws.value);
                   const isUnmapped = !mappedId;
 
@@ -296,7 +296,7 @@ export function LinearStatusMappingDialog({ open, onOpenChange }: LinearStatusMa
                                 <TooltipTrigger>
                                   <AlertTriangle className="size-3.5 text-warning" />
                                 </TooltipTrigger>
-                                <TooltipContent>{t("unmappedTooltip")}</TooltipContent>
+                                <TooltipContent>{t('unmappedTooltip')}</TooltipContent>
                               </Tooltip>
                             </TooltipProvider>
                           )}
@@ -308,15 +308,14 @@ export function LinearStatusMappingDialog({ open, onOpenChange }: LinearStatusMa
                         ) : (
                           <Select
                             value={mappedId ?? undefined}
-                            onValueChange={(v) => {
+                            onValueChange={v => {
                               if (v) handleStateSelect(ws.value, v);
-                            }}
-                          >
+                            }}>
                             <SelectTrigger className="w-full">
                               <SelectValue placeholder="Not mapped" />
                             </SelectTrigger>
                             <SelectContent>
-                              {teamStates.map((state) => (
+                              {teamStates.map(state => (
                                 <SelectItem key={state.id} value={state.id}>
                                   <div className="flex items-center gap-2">
                                     <span
@@ -344,14 +343,13 @@ export function LinearStatusMappingDialog({ open, onOpenChange }: LinearStatusMa
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            {t("discard")}
+            {t('discard')}
           </Button>
           <Button
             onClick={handleSave}
-            disabled={!hasChanges || saveMutation.isPending || !selectedTeamId}
-          >
+            disabled={!hasChanges || saveMutation.isPending || !selectedTeamId}>
             {saveMutation.isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
-            {saveMutation.isPending ? t("saving") : t("save")}
+            {saveMutation.isPending ? t('saving') : t('save')}
           </Button>
         </DialogFooter>
       </DialogContent>

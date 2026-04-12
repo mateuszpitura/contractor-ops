@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import { AlertTriangle } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
+import { AlertTriangle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import {
   Popover,
   PopoverContent,
   PopoverHeader,
   PopoverTitle,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+} from '@/components/ui/popover';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -44,10 +44,10 @@ export function ConflictResolutionPopover({
   resolvedConflicts,
   onResolve,
 }: ConflictResolutionPopoverProps) {
-  const t = useTranslations("OnboardingImport.step2");
+  const t = useTranslations('OnboardingImport.step2');
   const [customValues, setCustomValues] = useState<Record<string, string>>({});
 
-  const unresolvedCount = conflicts.filter((c) => !resolvedConflicts[c.field]).length;
+  const unresolvedCount = conflicts.filter(c => !resolvedConflicts[c.field]).length;
 
   return (
     <Popover>
@@ -58,24 +58,23 @@ export function ConflictResolutionPopover({
               <PopoverTrigger
                 render={
                   <Badge variant="warning" className="cursor-pointer" aria-expanded={false} />
-                }
-              >
+                }>
                 {unresolvedCount > 0 && <AlertTriangle className="size-3" aria-hidden="true" />}
-                {t("columnStatus")} ({unresolvedCount})
+                {t('columnStatus')} ({unresolvedCount})
               </PopoverTrigger>
             }
           />
-          <TooltipContent>{t("conflictTooltip")}</TooltipContent>
+          <TooltipContent>{t('conflictTooltip')}</TooltipContent>
         </Tooltip>
       </TooltipProvider>
 
       <PopoverContent className="w-80">
         <PopoverHeader>
-          <PopoverTitle>{t("conflictTooltip")}</PopoverTitle>
+          <PopoverTitle>{t('conflictTooltip')}</PopoverTitle>
         </PopoverHeader>
 
         <div className="space-y-4">
-          {conflicts.map((conflict) => {
+          {conflicts.map(conflict => {
             const resolved = resolvedConflicts[conflict.field];
 
             return (
@@ -83,11 +82,10 @@ export function ConflictResolutionPopover({
                 <p className="text-xs font-medium text-muted-foreground">{conflict.field}</p>
 
                 <div className="space-y-1">
-                  {conflict.values.map((cv) => (
+                  {conflict.values.map(cv => (
                     <label
                       key={`${conflict.field}-${cv.source}`}
-                      className="flex items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-muted/50"
-                    >
+                      className="flex items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-muted/50">
                       <input
                         type="radio"
                         name={`conflict-${conflict.field}`}
@@ -107,18 +105,18 @@ export function ConflictResolutionPopover({
                     <input
                       type="radio"
                       name={`conflict-${conflict.field}`}
-                      checked={!!resolved && !conflict.values.some((cv) => cv.value === resolved)}
+                      checked={!!resolved && !conflict.values.some(cv => cv.value === resolved)}
                       onChange={() => {
-                        const custom = customValues[conflict.field] ?? "";
+                        const custom = customValues[conflict.field] ?? '';
                         if (custom) onResolve(conflict.field, custom);
                       }}
                       className="accent-primary"
                     />
                     <Input
-                      placeholder={t("conflictCustom")}
-                      value={customValues[conflict.field] ?? ""}
-                      onChange={(e) => {
-                        setCustomValues((prev) => ({
+                      placeholder={t('conflictCustom')}
+                      value={customValues[conflict.field] ?? ''}
+                      onChange={e => {
+                        setCustomValues(prev => ({
                           ...prev,
                           [conflict.field]: e.target.value,
                         }));

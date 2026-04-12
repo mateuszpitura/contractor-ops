@@ -21,7 +21,7 @@ export interface SigningEnvelopeRequest {
 export interface SignerInfo {
   name: string;
   email: string;
-  role: "signer" | "countersigner";
+  role: 'signer' | 'countersigner';
   routingOrder: number;
   /** Set for embedded signing (DocuSign uses this to identify in-session signers). */
   clientUserId?: string;
@@ -59,24 +59,24 @@ export interface SignedDocumentResult {
 export interface NormalizedSigningEvent {
   externalEnvelopeId: string;
   eventType:
-    | "ENVELOPE_CREATED"
-    | "ENVELOPE_SENT"
-    | "RECIPIENT_VIEWED"
-    | "RECIPIENT_SIGNED"
-    | "RECIPIENT_DECLINED"
-    | "ENVELOPE_COMPLETED"
-    | "ENVELOPE_VOIDED"
-    | "ENVELOPE_EXPIRED";
+    | 'ENVELOPE_CREATED'
+    | 'ENVELOPE_SENT'
+    | 'RECIPIENT_VIEWED'
+    | 'RECIPIENT_SIGNED'
+    | 'RECIPIENT_DECLINED'
+    | 'ENVELOPE_COMPLETED'
+    | 'ENVELOPE_VOIDED'
+    | 'ENVELOPE_EXPIRED';
   recipientEmail?: string;
-  recipientStatus?: "PENDING" | "SENT" | "DELIVERED" | "VIEWED" | "SIGNED" | "DECLINED";
+  recipientStatus?: 'PENDING' | 'SENT' | 'DELIVERED' | 'VIEWED' | 'SIGNED' | 'DECLINED';
   envelopeStatus?:
-    | "CREATED"
-    | "SENT"
-    | "DELIVERED"
-    | "COMPLETED"
-    | "DECLINED"
-    | "VOIDED"
-    | "EXPIRED";
+    | 'CREATED'
+    | 'SENT'
+    | 'DELIVERED'
+    | 'COMPLETED'
+    | 'DECLINED'
+    | 'VOIDED'
+    | 'EXPIRED';
   actorName?: string;
   actorEmail?: string;
   description: string;

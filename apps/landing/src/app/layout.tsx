@@ -1,34 +1,34 @@
-import type { Metadata } from "next";
-import { Bricolage_Grotesque, JetBrains_Mono, Noto_Sans_Arabic, Outfit } from "next/font/google";
-import type { ReactNode } from "react";
-import { PostHogProvider } from "@/lib/posthog";
-import "./globals.css";
+import type { Metadata } from 'next';
+import { Bricolage_Grotesque, JetBrains_Mono, Noto_Sans_Arabic, Outfit } from 'next/font/google';
+import type { ReactNode } from 'react';
+import { PostHogProvider } from '@/lib/posthog';
+import './globals.css';
 
 const outfit = Outfit({
-  subsets: ["latin", "latin-ext"],
-  variable: "--font-sans",
+  subsets: ['latin', 'latin-ext'],
+  variable: '--font-sans',
 });
 
 const bricolageGrotesque = Bricolage_Grotesque({
-  subsets: ["latin", "latin-ext"],
-  variable: "--font-display",
+  subsets: ['latin', 'latin-ext'],
+  variable: '--font-display',
 });
 
 const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-mono",
+  subsets: ['latin'],
+  variable: '--font-mono',
 });
 
 const notoSansArabic = Noto_Sans_Arabic({
-  subsets: ["arabic"],
-  variable: "--font-arabic",
-  weight: ["400", "500", "600", "700", "800"],
+  subsets: ['arabic'],
+  variable: '--font-arabic',
+  weight: ['400', '500', '600', '700', '800'],
 });
 
 export const metadata: Metadata = {
-  title: "Contractor Ops — B2B Contractor Management",
+  title: 'Contractor Ops — B2B Contractor Management',
   description:
-    "Contracts, onboarding, invoices, approvals, payments and offboarding — all in one place.",
+    'Contracts, onboarding, invoices, approvals, payments and offboarding — all in one place.',
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -36,10 +36,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html
       lang="en"
       className={`${outfit.variable} ${bricolageGrotesque.variable} ${jetbrainsMono.variable} ${notoSansArabic.variable} font-sans`}
-      suppressHydrationWarning
-    >
+      suppressHydrationWarning>
       <head>
         <script
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: server-rendered theme script with no user input
           dangerouslySetInnerHTML={{
             __html: `
               try {

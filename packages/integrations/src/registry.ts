@@ -1,4 +1,4 @@
-import type { IntegrationProviderAdapter } from "./types/provider.js";
+import type { IntegrationProviderAdapter } from './types/provider.js';
 
 // ---------------------------------------------------------------------------
 // Provider Adapter Registry

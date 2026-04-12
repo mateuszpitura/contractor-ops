@@ -1,16 +1,16 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // ---------------------------------------------------------------------------
 // Prisma enum mirror (string union — validators package has no Prisma dep)
 // ---------------------------------------------------------------------------
 
 export const consentPurposeEnum = z.enum([
-  "CONTRACTOR_DATA_PROCESSING",
-  "INVOICE_PAYMENT_PROCESSING",
-  "ANALYTICS_REPORTING",
-  "CROSS_BORDER_TRANSFER",
-  "INTEGRATION_DATA_SHARING",
-  "COMMUNICATION_NOTIFICATIONS",
+  'CONTRACTOR_DATA_PROCESSING',
+  'INVOICE_PAYMENT_PROCESSING',
+  'ANALYTICS_REPORTING',
+  'CROSS_BORDER_TRANSFER',
+  'INTEGRATION_DATA_SHARING',
+  'COMMUNICATION_NOTIFICATIONS',
 ]);
 
 export type ConsentPurpose = z.infer<typeof consentPurposeEnum>;
@@ -21,16 +21,16 @@ export type ConsentPurpose = z.infer<typeof consentPurposeEnum>;
 
 /** Purposes that MUST be accepted during onboarding (blocking) */
 export const REQUIRED_PURPOSES: ConsentPurpose[] = [
-  "CONTRACTOR_DATA_PROCESSING",
-  "INVOICE_PAYMENT_PROCESSING",
-  "COMMUNICATION_NOTIFICATIONS",
+  'CONTRACTOR_DATA_PROCESSING',
+  'INVOICE_PAYMENT_PROCESSING',
+  'COMMUNICATION_NOTIFICATIONS',
 ];
 
 /** Purposes that are optional during onboarding */
 export const OPTIONAL_PURPOSES: ConsentPurpose[] = [
-  "ANALYTICS_REPORTING",
-  "CROSS_BORDER_TRANSFER",
-  "INTEGRATION_DATA_SHARING",
+  'ANALYTICS_REPORTING',
+  'CROSS_BORDER_TRANSFER',
+  'INTEGRATION_DATA_SHARING',
 ];
 
 // ---------------------------------------------------------------------------
@@ -38,7 +38,7 @@ export const OPTIONAL_PURPOSES: ConsentPurpose[] = [
 // ---------------------------------------------------------------------------
 
 /** Jurisdiction codes that trigger PDPL compliance */
-export const PDPL_JURISDICTIONS = ["AE", "SA"] as const;
+export const PDPL_JURISDICTIONS = ['AE', 'SA'] as const;
 export type PdplJurisdiction = (typeof PDPL_JURISDICTIONS)[number];
 
 /** Check if a country code requires PDPL compliance */

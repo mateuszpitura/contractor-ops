@@ -1,25 +1,25 @@
-"use client";
+'use client';
 
-import type { ConsentPurpose } from "@contractor-ops/validators";
-import { OPTIONAL_PURPOSES, REQUIRED_PURPOSES } from "@contractor-ops/validators";
-import { Download, FileText, Globe, History, Loader2 } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useCallback } from "react";
-import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { trpc } from "@/trpc/init";
-import { ConsentPurposeToggle } from "./consent-purpose-toggle";
-import { PrivacyNoticeDisplay } from "./privacy-notice-display";
+import type { ConsentPurpose } from '@contractor-ops/validators';
+import { OPTIONAL_PURPOSES, REQUIRED_PURPOSES } from '@contractor-ops/validators';
+import { Download, FileText, Globe, History, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback } from 'react';
+import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { trpc } from '@/trpc/init';
+import { ConsentPurposeToggle } from './consent-purpose-toggle';
+import { PrivacyNoticeDisplay } from './privacy-notice-display';
 
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
 export function ConsentManagementSection() {
-  const t = useTranslations("Consent");
+  const t = useTranslations('Consent');
   const utils = trpc.useUtils();
 
   // Queries
@@ -34,31 +34,31 @@ export function ConsentManagementSection() {
     onSuccess: () => {
       void utils.consent.getCurrentConsent.invalidate();
       void utils.consent.getConsentHistory.invalidate();
-      toast.success(t("settings.consentUpdated"));
+      toast.success(t('settings.consentUpdated'));
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(error.message);
     },
   });
 
   const downloadDPAMutation = trpc.consent.downloadDPA.useMutation({
-    onSuccess: (data) => {
+    onSuccess: data => {
       downloadHtml(data.content, data.filename);
-      toast.success(t("settings.dpaDownloaded"));
+      toast.success(t('settings.dpaDownloaded'));
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(error.message);
     },
   });
 
   const downloadSCCMutation = trpc.consent.downloadSCC.useMutation({
-    onSuccess: (data) => {
+    onSuccess: data => {
       downloadHtml(data.content, data.filename);
-      toast.success(t("settings.sccDownloaded"));
+      toast.success(t('settings.sccDownloaded'));
     },
-    onError: (error) => {
-      if (error.data?.code === "NOT_FOUND") {
-        toast.info(t("settings.sccNotRequired"));
+    onError: error => {
+      if (error.data?.code === 'NOT_FOUND') {
+        toast.info(t('settings.sccNotRequired'));
       } else {
         toast.error(error.message);
       }
@@ -85,7 +85,7 @@ export function ConsentManagementSection() {
     return (
       <Card>
         <CardContent className="py-8 text-center">
-          <p className="text-sm text-muted-foreground">{t("settings.notRequired")}</p>
+          <p className="text-sm text-muted-foreground">{t('settings.notRequired')}</p>
         </CardContent>
       </Card>
     );
@@ -100,10 +100,10 @@ export function ConsentManagementSection() {
 
       {/* Section B: Your Consents */}
       <div className="space-y-4">
-        <h3 className="font-display text-base font-semibold">{t("settings.yourConsents")}</h3>
+        <h3 className="font-display text-base font-semibold">{t('settings.yourConsents')}</h3>
 
         <div className="space-y-3">
-          {[...REQUIRED_PURPOSES, ...OPTIONAL_PURPOSES].map((purpose) => {
+          {[...REQUIRED_PURPOSES, ...OPTIONAL_PURPOSES].map(purpose => {
             const state = currentConsent?.[purpose];
             const isRequired = REQUIRED_PURPOSES.includes(purpose);
 
@@ -130,7 +130,7 @@ export function ConsentManagementSection() {
             <div className="flex items-center gap-2">
               <History className="h-4 w-4 text-muted-foreground" />
               <h3 className="font-display text-base font-semibold">
-                {t("settings.consentHistory")}
+                {t('settings.consentHistory')}
               </h3>
             </div>
 
@@ -139,31 +139,30 @@ export function ConsentManagementSection() {
                 <thead className="sticky top-0 bg-muted">
                   <tr>
                     <th className="px-3 py-2 text-start font-medium">
-                      {t("settings.historyPurpose")}
+                      {t('settings.historyPurpose')}
                     </th>
                     <th className="px-3 py-2 text-start font-medium">
-                      {t("settings.historyAction")}
+                      {t('settings.historyAction')}
                     </th>
                     <th className="px-3 py-2 text-start font-medium">
-                      {t("settings.historyDate")}
+                      {t('settings.historyDate')}
                     </th>
                     <th className="px-3 py-2 text-start font-medium">
-                      {t("settings.historyVersion")}
+                      {t('settings.historyVersion')}
                     </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {consentHistory.map((record) => (
+                  {consentHistory.map(record => (
                     <tr key={record.id} className="border-t border-border/50">
                       <td className="px-3 py-2 font-mono">
-                        {record.purpose.toLowerCase().replace(/_/g, " ")}
+                        {record.purpose.toLowerCase().replace(/_/g, ' ')}
                       </td>
                       <td className="px-3 py-2">
                         <Badge
-                          variant={record.granted ? "default" : "destructive"}
-                          className="text-[10px]"
-                        >
-                          {record.granted ? t("settings.granted") : t("settings.revoked")}
+                          variant={record.granted ? 'default' : 'destructive'}
+                          className="text-[10px]">
+                          {record.granted ? t('settings.granted') : t('settings.revoked')}
                         </Badge>
                       </td>
                       <td className="px-3 py-2 text-muted-foreground">
@@ -185,14 +184,14 @@ export function ConsentManagementSection() {
       <div className="space-y-3">
         <div className="flex items-center gap-2">
           <FileText className="h-4 w-4 text-muted-foreground" />
-          <h3 className="font-display text-base font-semibold">{t("settings.legalDocuments")}</h3>
+          <h3 className="font-display text-base font-semibold">{t('settings.legalDocuments')}</h3>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm">{t("settings.dpaTitle")}</CardTitle>
-              <CardDescription className="text-xs">{t("settings.dpaDescription")}</CardDescription>
+              <CardTitle className="text-sm">{t('settings.dpaTitle')}</CardTitle>
+              <CardDescription className="text-xs">{t('settings.dpaDescription')}</CardDescription>
             </CardHeader>
             <CardContent>
               <Button
@@ -200,22 +199,21 @@ export function ConsentManagementSection() {
                 size="sm"
                 onClick={() => downloadDPAMutation.mutate()}
                 disabled={downloadDPAMutation.isPending}
-                className="w-full"
-              >
+                className="w-full">
                 {downloadDPAMutation.isPending ? (
                   <Loader2 className="me-2 h-3 w-3 animate-spin" />
                 ) : (
                   <Download className="me-2 h-3 w-3" />
                 )}
-                {t("settings.downloadDPA")}
+                {t('settings.downloadDPA')}
               </Button>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm">{t("settings.sccTitle")}</CardTitle>
-              <CardDescription className="text-xs">{t("settings.sccDescription")}</CardDescription>
+              <CardTitle className="text-sm">{t('settings.sccTitle')}</CardTitle>
+              <CardDescription className="text-xs">{t('settings.sccDescription')}</CardDescription>
             </CardHeader>
             <CardContent>
               <Button
@@ -223,14 +221,13 @@ export function ConsentManagementSection() {
                 size="sm"
                 onClick={() => downloadSCCMutation.mutate()}
                 disabled={downloadSCCMutation.isPending}
-                className="w-full"
-              >
+                className="w-full">
                 {downloadSCCMutation.isPending ? (
                   <Loader2 className="me-2 h-3 w-3 animate-spin" />
                 ) : (
                   <Download className="me-2 h-3 w-3" />
                 )}
-                {t("settings.downloadSCC")}
+                {t('settings.downloadSCC')}
               </Button>
             </CardContent>
           </Card>
@@ -245,7 +242,7 @@ export function ConsentManagementSection() {
           <div className="flex items-center gap-2">
             <Globe className="h-4 w-4 text-muted-foreground" />
             <h3 className="font-display text-base font-semibold">
-              {t("settings.crossBorderTitle")}
+              {t('settings.crossBorderTitle')}
             </h3>
           </div>
 
@@ -255,18 +252,18 @@ export function ConsentManagementSection() {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <Badge variant="outline" className="text-xs">
-                      {t("settings.crossBorderDetected")}
+                      {t('settings.crossBorderDetected')}
                     </Badge>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {t("settings.crossBorderInfo", {
+                    {t('settings.crossBorderInfo', {
                       orgRegion: crossBorder.orgRegion,
                       hostingRegion: crossBorder.hostingRegion,
                     })}
                   </p>
                 </div>
               ) : (
-                <p className="text-xs text-muted-foreground">{t("settings.noCrossBorder")}</p>
+                <p className="text-xs text-muted-foreground">{t('settings.noCrossBorder')}</p>
               )}
             </CardContent>
           </Card>
@@ -281,9 +278,9 @@ export function ConsentManagementSection() {
 // ---------------------------------------------------------------------------
 
 function downloadHtml(content: string, filename: string) {
-  const blob = new Blob([content], { type: "text/html" });
+  const blob = new Blob([content], { type: 'text/html' });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
+  const a = document.createElement('a');
   a.href = url;
   a.download = filename;
   a.click();

@@ -1,10 +1,10 @@
 import {
   handleInPostWebhook,
   verifyInPostSignature,
-} from "@contractor-ops/api/services/courier/inpost-webhook-handler";
-import { prisma } from "@contractor-ops/db";
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+} from '@contractor-ops/api/services/courier/inpost-webhook-handler';
+import { prisma } from '@contractor-ops/db';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 // ---------------------------------------------------------------------------
 // POST /api/webhooks/inpost
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
   try {
     rawBody = await request.text();
   } catch {
-    return NextResponse.json({ error: "Invalid body" }, { status: 400 });
+    return NextResponse.json({ error: 'Invalid body' }, { status: 400 });
   }
 
   // Extract headers as a plain Record for verifyInPostSignature
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
 
   // Find all orgs with InPost courier config
   const configs = await prisma.courierConfig.findMany({
-    where: { carrier: "inpost" },
+    where: { carrier: 'inpost' },
     select: {
       organizationId: true,
       configJson: true,
@@ -53,8 +53,8 @@ export async function POST(request: NextRequest) {
   });
 
   if (configs.length === 0) {
-    console.warn("[inpost-webhook] No InPost courier configs found");
-    return NextResponse.json({ error: "Not configured" }, { status: 404 });
+    console.warn('[inpost-webhook] No InPost courier configs found');
+    return NextResponse.json({ error: 'Not configured' }, { status: 404 });
   }
 
   // Try to verify signature against each org's webhook secret
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
 
   for (const config of configs) {
     const configJson = config.configJson as CourierConfigJson;
-    const secret = configJson.webhookSecret ?? "";
+    const secret = configJson.webhookSecret ?? '';
 
     if (verifyInPostSignature(rawBody, headers, secret)) {
       matchedOrgId = config.organizationId;
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
     try {
       payload = JSON.parse(rawBody);
     } catch {
-      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
     }
 
     // Try to match shipment by externalId or trackingNumber
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
       const shipment = await prisma.shipment.findFirst({
         where: {
           externalId: String(payload.shipment_id),
-          carrier: "InPost",
+          carrier: 'InPost',
         },
         select: { organizationId: true },
       });
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
       const shipment = await prisma.shipment.findFirst({
         where: {
           trackingNumber: payload.tracking_number,
-          carrier: "InPost",
+          carrier: 'InPost',
         },
         select: { organizationId: true },
       });
@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!matchedOrgId) {
-      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
     }
   }
 
@@ -116,11 +116,11 @@ export async function POST(request: NextRequest) {
   try {
     payload = JSON.parse(rawBody);
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
   // Fire-and-forget: process webhook event
-  void handleInPostWebhook(prisma, matchedOrgId, payload).catch((err) =>
+  void handleInPostWebhook(prisma, matchedOrgId, payload).catch(err =>
     console.error(`[inpost-webhook] Processing failed for org=${matchedOrgId}:`, err),
   );
 

@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -11,23 +11,23 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 
 // Inline type to avoid cross-package build dependency in parallel execution
 interface CalendarTaskConfig {
   calendarEnabled: boolean;
   titleTemplate?: string;
-  duration: "30m" | "1h" | "2h" | "4h" | "full_day";
+  duration: '30m' | '1h' | '2h' | '4h' | 'full_day';
   attendees: string[];
 }
 
@@ -36,11 +36,11 @@ interface CalendarTaskConfig {
 // ---------------------------------------------------------------------------
 
 const DURATION_OPTIONS = [
-  { value: "30m", label: "30 minutes" },
-  { value: "1h", label: "1 hour" },
-  { value: "2h", label: "2 hours" },
-  { value: "4h", label: "4 hours" },
-  { value: "full_day", label: "Full day" },
+  { value: '30m', label: '30 minutes' },
+  { value: '1h', label: '1 hour' },
+  { value: '2h', label: '2 hours' },
+  { value: '4h', label: '4 hours' },
+  { value: 'full_day', label: 'Full day' },
 ] as const;
 
 // ---------------------------------------------------------------------------
@@ -61,19 +61,19 @@ export function CalendarEventConfigDialog({
   onOpenChange,
   onSave,
 }: CalendarEventConfigDialogProps) {
-  const t = useTranslations("CalendarSettings");
+  const t = useTranslations('CalendarSettings');
 
   // Local form state (same pattern as OcrReviewPanel)
-  const [titleTemplate, setTitleTemplate] = useState(config.titleTemplate ?? "");
-  const [duration, setDuration] = useState<string>(config.duration ?? "1h");
-  const [attendeesText, setAttendeesText] = useState((config.attendees ?? []).join(", "));
+  const [titleTemplate, setTitleTemplate] = useState(config.titleTemplate ?? '');
+  const [duration, setDuration] = useState<string>(config.duration ?? '1h');
+  const [attendeesText, setAttendeesText] = useState((config.attendees ?? []).join(', '));
 
   // Reset form state when dialog opens with fresh config
   function handleOpenChange(newOpen: boolean) {
     if (newOpen) {
-      setTitleTemplate(config.titleTemplate ?? "");
-      setDuration(config.duration ?? "1h");
-      setAttendeesText((config.attendees ?? []).join(", "));
+      setTitleTemplate(config.titleTemplate ?? '');
+      setDuration(config.duration ?? '1h');
+      setAttendeesText((config.attendees ?? []).join(', '));
     }
     onOpenChange(newOpen);
   }
@@ -81,14 +81,14 @@ export function CalendarEventConfigDialog({
   function handleSave() {
     // Parse attendees from comma-separated string
     const attendees: string[] = attendeesText
-      .split(",")
+      .split(',')
       .map((email: string) => email.trim())
-      .filter((email: string) => email.length > 0 && email.includes("@"));
+      .filter((email: string) => email.length > 0 && email.includes('@'));
 
     onSave({
       calendarEnabled: config.calendarEnabled,
       titleTemplate: titleTemplate || undefined,
-      duration: duration as CalendarTaskConfig["duration"],
+      duration: duration as CalendarTaskConfig['duration'],
       attendees,
     });
 
@@ -99,33 +99,33 @@ export function CalendarEventConfigDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{t("calendarEventTitle")}</DialogTitle>
-          <DialogDescription>{t("calendarEventDescription")}</DialogDescription>
+          <DialogTitle>{t('calendarEventTitle')}</DialogTitle>
+          <DialogDescription>{t('calendarEventDescription')}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           {/* Event Title */}
           <div className="space-y-2">
-            <Label htmlFor="calendar-event-title">{t("eventTitleLabel")}</Label>
+            <Label htmlFor="calendar-event-title">{t('eventTitleLabel')}</Label>
             <Input
               id="calendar-event-title"
               value={titleTemplate}
-              onChange={(e) => setTitleTemplate(e.target.value)}
-              placeholder={t("eventTitlePlaceholder")}
+              onChange={e => setTitleTemplate(e.target.value)}
+              placeholder={t('eventTitlePlaceholder')}
               maxLength={200}
             />
-            <p className="text-xs text-muted-foreground">{t("eventTitleHint")}</p>
+            <p className="text-xs text-muted-foreground">{t('eventTitleHint')}</p>
           </div>
 
           {/* Duration */}
           <div className="space-y-2">
-            <Label htmlFor="calendar-event-duration">{t("durationLabel")}</Label>
-            <Select value={duration} onValueChange={(val) => setDuration(val ?? "1h")}>
+            <Label htmlFor="calendar-event-duration">{t('durationLabel')}</Label>
+            <Select value={duration} onValueChange={val => setDuration(val ?? '1h')}>
               <SelectTrigger id="calendar-event-duration">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {DURATION_OPTIONS.map((option) => (
+                {DURATION_OPTIONS.map(option => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
                   </SelectItem>
@@ -136,23 +136,23 @@ export function CalendarEventConfigDialog({
 
           {/* Attendees */}
           <div className="space-y-2">
-            <Label htmlFor="calendar-event-attendees">{t("attendeesLabel")}</Label>
+            <Label htmlFor="calendar-event-attendees">{t('attendeesLabel')}</Label>
             <Textarea
               id="calendar-event-attendees"
               value={attendeesText}
-              onChange={(e) => setAttendeesText(e.target.value)}
-              placeholder={t("attendeesPlaceholder")}
+              onChange={e => setAttendeesText(e.target.value)}
+              placeholder={t('attendeesPlaceholder')}
               rows={3}
             />
-            <p className="text-xs text-muted-foreground">{t("attendeesHint")}</p>
+            <p className="text-xs text-muted-foreground">{t('attendeesHint')}</p>
           </div>
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            {t("cancelButton")}
+            {t('cancelButton')}
           </Button>
-          <Button onClick={handleSave}>{t("saveEventConfig")}</Button>
+          <Button onClick={handleSave}>{t('saveEventConfig')}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

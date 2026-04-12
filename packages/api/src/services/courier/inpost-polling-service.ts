@@ -1,7 +1,7 @@
-import { checkShipmentTaskCompletion } from "../equipment-workflow.js";
-import { InPostClient } from "./inpost-client.js";
-import { mapInPostStatus, NOTIFICATION_STATUSES } from "./inpost-status-mapper.js";
-import { dispatchShipmentNotification } from "./shipment-notification.js";
+import { checkShipmentTaskCompletion } from '../equipment-workflow.js';
+import { InPostClient } from './inpost-client.js';
+import { mapInPostStatus, NOTIFICATION_STATUSES } from './inpost-status-mapper.js';
+import { dispatchShipmentNotification } from './shipment-notification.js';
 
 // ---------------------------------------------------------------------------
 // InPost Polling Service
@@ -10,12 +10,12 @@ import { dispatchShipmentNotification } from "./shipment-notification.js";
 // Fetches all active InPost shipments and creates missing ShipmentEvents.
 // ---------------------------------------------------------------------------
 
-import type { DbClient } from "../types.js";
+import type { DbClient } from '../types.js';
 
 type PrismaClient = DbClient;
 
 /** Terminal statuses — no need to poll these shipments. */
-const TERMINAL_STATUSES = ["DELIVERED", "FAILED", "RETURNED"];
+const TERMINAL_STATUSES = ['DELIVERED', 'FAILED', 'RETURNED'];
 
 /**
  * Maps (shipment status, direction) to equipment status.
@@ -23,18 +23,18 @@ const TERMINAL_STATUSES = ["DELIVERED", "FAILED", "RETURNED"];
  */
 const SHIPMENT_TO_EQUIPMENT_STATUS: Record<string, Record<string, string | undefined> | undefined> =
   {
-    DELIVERED: { OUTBOUND: "DELIVERED", RETURN: "RETURNED" },
-    RETURNED: { OUTBOUND: undefined, RETURN: "RETURNED" },
+    DELIVERED: { OUTBOUND: 'DELIVERED', RETURN: 'RETURNED' },
+    RETURNED: { OUTBOUND: undefined, RETURN: 'RETURNED' },
   };
 
 const EQUIPMENT_STATUS_TRANSITIONS: Record<string, string[]> = {
-  AVAILABLE: ["ASSIGNED", "IN_TRANSIT", "RETIRED"],
-  ASSIGNED: ["AVAILABLE", "IN_TRANSIT", "RETURN_REQUESTED", "RETIRED"],
-  IN_TRANSIT: ["DELIVERED", "AVAILABLE"],
-  DELIVERED: ["ASSIGNED", "RETURN_REQUESTED", "AVAILABLE", "RETIRED"],
-  RETURN_REQUESTED: ["RETURN_IN_TRANSIT", "AVAILABLE"],
-  RETURN_IN_TRANSIT: ["RETURNED", "AVAILABLE"],
-  RETURNED: ["AVAILABLE", "RETIRED"],
+  AVAILABLE: ['ASSIGNED', 'IN_TRANSIT', 'RETIRED'],
+  ASSIGNED: ['AVAILABLE', 'IN_TRANSIT', 'RETURN_REQUESTED', 'RETIRED'],
+  IN_TRANSIT: ['DELIVERED', 'AVAILABLE'],
+  DELIVERED: ['ASSIGNED', 'RETURN_REQUESTED', 'AVAILABLE', 'RETIRED'],
+  RETURN_REQUESTED: ['RETURN_IN_TRANSIT', 'AVAILABLE'],
+  RETURN_IN_TRANSIT: ['RETURNED', 'AVAILABLE'],
+  RETURNED: ['AVAILABLE', 'RETIRED'],
   RETIRED: [],
 };
 
@@ -63,7 +63,7 @@ export async function pollInPostShipmentStatuses(
     where: {
       organizationId_carrier: {
         organizationId,
-        carrier: "inpost",
+        carrier: 'inpost',
       },
     },
   });
@@ -86,7 +86,7 @@ export async function pollInPostShipmentStatuses(
   const activeShipments = await db.shipment.findMany({
     where: {
       organizationId,
-      carrier: "InPost",
+      carrier: 'InPost',
       currentStatus: {
         notIn: TERMINAL_STATUSES,
       },
@@ -149,7 +149,7 @@ export async function pollInPostShipmentStatuses(
             currentStatus: shipment.currentStatus,
           },
           mappedStatus,
-          "InPost",
+          'InPost',
         );
       }
 
@@ -157,7 +157,7 @@ export async function pollInPostShipmentStatuses(
       void checkShipmentTaskCompletion(db, organizationId, {
         id: shipment.id,
         workflowTaskRunId: shipment.workflowTaskRunId,
-        direction: shipment.direction as "OUTBOUND" | "RETURN",
+        direction: shipment.direction as 'OUTBOUND' | 'RETURN',
         currentStatus: mappedStatus,
       }).catch(console.error);
 

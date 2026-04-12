@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { ArrowUpRight, Minus, TrendingDown, TrendingUp } from "lucide-react";
-import { motion } from "motion/react";
-import { useTranslations } from "next-intl";
-import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Link } from "@/i18n/navigation";
-import { fadeUp, springs, stagger } from "@/lib/motion";
-import { trpc } from "@/trpc/init";
+import { useQuery } from '@tanstack/react-query';
+import { ArrowUpRight, Minus, TrendingDown, TrendingUp } from 'lucide-react';
+import { motion } from 'motion/react';
+import { useTranslations } from 'next-intl';
+import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Link } from '@/i18n/navigation';
+import { fadeUp, springs, stagger } from '@/lib/motion';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -28,31 +28,31 @@ interface KpiCardConfig {
 
 const KPI_CARDS: KpiCardConfig[] = [
   {
-    key: "activeContractors",
-    labelKey: "kpi.activeContractors",
-    href: "/contractors?status=active",
+    key: 'activeContractors',
+    labelKey: 'kpi.activeContractors',
+    href: '/contractors?status=active',
   },
   {
-    key: "pendingApprovals",
-    labelKey: "kpi.pendingApprovals",
-    href: "/approvals?tab=my&status=pending",
+    key: 'pendingApprovals',
+    labelKey: 'kpi.pendingApprovals',
+    href: '/approvals?tab=my&status=pending',
   },
   {
-    key: "readyToPayTotal",
-    labelKey: "kpi.readyToPay",
-    href: "/payments?status=ready",
+    key: 'readyToPayTotal',
+    labelKey: 'kpi.readyToPay',
+    href: '/payments?status=ready',
     isCurrency: true,
     isHero: true,
   },
   {
-    key: "expiringContracts",
-    labelKey: "kpi.expiringContracts",
-    href: "/contracts?status=expiring",
+    key: 'expiringContracts',
+    labelKey: 'kpi.expiringContracts',
+    href: '/contracts?status=expiring',
   },
   {
-    key: "openTasks",
-    labelKey: "kpi.openTasks",
-    href: "/workflows?tab=my-tasks",
+    key: 'openTasks',
+    labelKey: 'kpi.openTasks',
+    href: '/workflows?tab=my-tasks',
   },
 ];
 
@@ -60,9 +60,9 @@ const KPI_CARDS: KpiCardConfig[] = [
 // Helpers
 // ---------------------------------------------------------------------------
 
-const currencyFormatter = new Intl.NumberFormat("pl-PL", {
-  style: "currency",
-  currency: "PLN",
+const currencyFormatter = new Intl.NumberFormat('pl-PL', {
+  style: 'currency',
+  currency: 'PLN',
   minimumFractionDigits: 0,
   maximumFractionDigits: 2,
 });
@@ -72,11 +72,11 @@ function formatCurrency(minor: number): string {
 }
 
 function getTrend(value: number, prevValue: number) {
-  if (prevValue === 0) return { change: 0, direction: "neutral" as const };
+  if (prevValue === 0) return { change: 0, direction: 'neutral' as const };
   const change = ((value - prevValue) / prevValue) * 100;
-  if (change > 0) return { change, direction: "up" as const };
-  if (change < 0) return { change, direction: "down" as const };
-  return { change: 0, direction: "neutral" as const };
+  if (change > 0) return { change, direction: 'up' as const };
+  if (change < 0) return { change, direction: 'down' as const };
+  return { change: 0, direction: 'neutral' as const };
 }
 
 // ---------------------------------------------------------------------------
@@ -88,39 +88,38 @@ function TrendIndicator({
   change,
   t,
 }: {
-  direction: "up" | "down" | "neutral";
+  direction: 'up' | 'down' | 'neutral';
   change: number;
   t: ReturnType<typeof useTranslations>;
 }) {
   return (
     <div className="flex items-center gap-1.5">
-      {direction === "up" && (
+      {direction === 'up' && (
         <span className="flex h-5 w-5 items-center justify-center rounded-full bg-success/10">
           <TrendingUp className="h-3 w-3 text-success" />
         </span>
       )}
-      {direction === "down" && (
+      {direction === 'down' && (
         <span className="flex h-5 w-5 items-center justify-center rounded-full bg-destructive/10">
           <TrendingDown className="h-3 w-3 text-destructive" />
         </span>
       )}
-      {direction === "neutral" && (
+      {direction === 'neutral' && (
         <span className="flex h-5 w-5 items-center justify-center rounded-full bg-muted">
           <Minus className="h-3 w-3 text-muted-foreground" />
         </span>
       )}
       <span
         className={`text-xs font-semibold ${
-          direction === "up"
-            ? "text-success"
-            : direction === "down"
-              ? "text-destructive"
-              : "text-muted-foreground"
-        }`}
-      >
-        {direction === "neutral"
-          ? t("kpi.noChange")
-          : `${change > 0 ? "+" : ""}${change.toFixed(0)}% ${t("kpi.vsLastMonth")}`}
+          direction === 'up'
+            ? 'text-success'
+            : direction === 'down'
+              ? 'text-destructive'
+              : 'text-muted-foreground'
+        }`}>
+        {direction === 'neutral'
+          ? t('kpi.noChange')
+          : `${change > 0 ? '+' : ''}${change.toFixed(0)}% ${t('kpi.vsLastMonth')}`}
       </span>
     </div>
   );
@@ -141,7 +140,7 @@ function HeroKpiCard({
   card: KpiCardConfig;
   value: number;
   displayValue: string | number;
-  direction: "up" | "down" | "neutral";
+  direction: 'up' | 'down' | 'neutral';
   change: number;
   t: ReturnType<typeof useTranslations>;
 }) {
@@ -180,16 +179,16 @@ function HeroKpiCard({
  * spanning 2 columns with animated conic border and glowing typography.
  */
 export function KpiCards() {
-  const t = useTranslations("Dashboard");
+  const t = useTranslations('Dashboard');
   const { data, isLoading } = useQuery(trpc.dashboard.kpis.queryOptions());
 
   if (isLoading) {
     return (
       <div className="bento-grid">
-        {KPI_CARDS.map((card) => (
+        {KPI_CARDS.map(card => (
           <Skeleton
             key={card.key}
-            className={`h-[120px] rounded-xl ${card.isHero ? "bento-span-2" : ""}`}
+            className={`h-[120px] rounded-xl ${card.isHero ? 'bento-span-2' : ''}`}
           />
         ))}
       </div>
@@ -201,19 +200,18 @@ export function KpiCards() {
       className="bento-grid"
       initial="hidden"
       animate="visible"
-      transition={stagger.default}
-    >
-      {KPI_CARDS.map((card) => {
+      transition={stagger.default}>
+      {KPI_CARDS.map(card => {
         const kpiData = data?.[card.key as keyof NonNullable<typeof data>];
         let value = 0;
         let prevValue = 0;
 
-        if (card.isCurrency && kpiData && "valueMinor" in kpiData) {
+        if (card.isCurrency && kpiData && 'valueMinor' in kpiData) {
           value = kpiData.valueMinor;
           prevValue = kpiData.prevValueMinor;
-        } else if (kpiData && "value" in kpiData) {
+        } else if (kpiData && 'value' in kpiData) {
           value = kpiData.value;
-          prevValue = "prevValue" in kpiData ? kpiData.prevValue : 0;
+          prevValue = 'prevValue' in kpiData ? kpiData.prevValue : 0;
         }
 
         const { change, direction } = getTrend(value, prevValue);
@@ -225,8 +223,7 @@ export function KpiCards() {
               key={card.key}
               variants={fadeUp}
               transition={springs.gentle}
-              className="bento-span-2"
-            >
+              className="bento-span-2">
               <HeroKpiCard
                 card={card}
                 value={value}

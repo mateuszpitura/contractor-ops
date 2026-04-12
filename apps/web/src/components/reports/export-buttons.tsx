@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { Download, Loader2 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { Download, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 
 interface ExportButtonsProps {
   onExportPage: () => void;
@@ -23,7 +23,7 @@ export function downloadBase64File(base64Data: string, filename: string, mimeTyp
   }
   const blob = new Blob([bytes], { type: mimeType });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
+  const a = document.createElement('a');
   a.href = url;
   a.download = filename;
   a.click();
@@ -31,7 +31,7 @@ export function downloadBase64File(base64Data: string, filename: string, mimeTyp
 }
 
 export function ExportButtons({ onExportPage, onExportAll, isExporting }: ExportButtonsProps) {
-  const t = useTranslations("Reports");
+  const t = useTranslations('Reports');
 
   return (
     <div className="flex items-center gap-2">
@@ -40,14 +40,13 @@ export function ExportButtons({ onExportPage, onExportAll, isExporting }: Export
         size="sm"
         onClick={onExportPage}
         disabled={isExporting}
-        className="h-8 gap-1.5"
-      >
+        className="h-8 gap-1.5">
         {isExporting ? (
           <Loader2 className="h-3.5 w-3.5 animate-spin" />
         ) : (
           <Download className="h-3.5 w-3.5" />
         )}
-        {t("exportPage")}
+        {t('exportPage')}
       </Button>
       <Button size="sm" onClick={onExportAll} disabled={isExporting} className="h-8 gap-1.5">
         {isExporting ? (
@@ -55,7 +54,7 @@ export function ExportButtons({ onExportPage, onExportAll, isExporting }: Export
         ) : (
           <Download className="h-3.5 w-3.5" />
         )}
-        {t("exportAll")}
+        {t('exportAll')}
       </Button>
     </div>
   );

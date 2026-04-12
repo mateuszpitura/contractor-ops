@@ -1,12 +1,12 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // ---------------------------------------------------------------------------
 // KSeF Connection Config
 // ---------------------------------------------------------------------------
 
-export const ksefAuthMethodEnum = z.enum(["token", "certificate"]);
+export const ksefAuthMethodEnum = z.enum(['token', 'certificate']);
 
-export const ksefEnvironmentEnum = z.enum(["test", "prod"]);
+export const ksefEnvironmentEnum = z.enum(['test', 'prod']);
 
 /**
  * Configuration schema for establishing a KSeF API connection.
@@ -18,30 +18,30 @@ export const ksefConnectionConfigSchema = z
     token: z.string().optional(),
     certificateBase64: z.string().optional(),
     certificatePassword: z.string().optional(),
-    environment: ksefEnvironmentEnum.default("prod"),
+    environment: ksefEnvironmentEnum.default('prod'),
   })
   .refine(
-    (data) => {
-      if (data.authMethod === "token") {
+    data => {
+      if (data.authMethod === 'token') {
         return !!data.token;
       }
       return true;
     },
     {
       message: "Token is required when authMethod is 'token'",
-      path: ["token"],
+      path: ['token'],
     },
   )
   .refine(
-    (data) => {
-      if (data.authMethod === "certificate") {
+    data => {
+      if (data.authMethod === 'certificate') {
         return !!data.certificateBase64;
       }
       return true;
     },
     {
       message: "Certificate is required when authMethod is 'certificate'",
-      path: ["certificateBase64"],
+      path: ['certificateBase64'],
     },
   );
 
@@ -55,7 +55,7 @@ const ksefPartySchema = z.object({
   nip: z
     .string()
     .length(10)
-    .regex(/^\d{10}$/, "NIP must be exactly 10 digits"),
+    .regex(/^\d{10}$/, 'NIP must be exactly 10 digits'),
   name: z.string(),
   address: z.string().optional(),
 });

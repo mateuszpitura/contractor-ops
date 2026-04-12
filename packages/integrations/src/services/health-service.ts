@@ -1,6 +1,6 @@
-import { prisma } from "@contractor-ops/db";
-import { getAllAdapters } from "../registry.js";
-import type { ProviderHealthStatus } from "../types/health.js";
+import { prisma } from '@contractor-ops/db';
+import { getAllAdapters } from '../registry.js';
+import type { ProviderHealthStatus } from '../types/health.js';
 
 // ---------------------------------------------------------------------------
 // Health Service — aggregates provider connection health from multiple sources
@@ -32,7 +32,7 @@ export async function getProviderHealth(
 
   if (!connection) {
     return {
-      status: "DISCONNECTED",
+      status: 'DISCONNECTED',
       provider: providerSlug,
       displayName: null,
       connectedAt: null,
@@ -52,7 +52,7 @@ export async function getProviderHealth(
   const [recentSyncs, recentWebhooks, errorCount] = await Promise.all([
     prisma.integrationSyncLog.findMany({
       where: { integrationConnectionId: connection.id },
-      orderBy: { startedAt: "desc" },
+      orderBy: { startedAt: 'desc' },
       take: 10,
       select: {
         id: true,
@@ -64,7 +64,7 @@ export async function getProviderHealth(
     }),
     prisma.webhookDelivery.findMany({
       where: { organizationId, provider: providerEnum },
-      orderBy: { receivedAt: "desc" },
+      orderBy: { receivedAt: 'desc' },
       take: 10,
       select: {
         id: true,
@@ -77,14 +77,14 @@ export async function getProviderHealth(
     prisma.integrationSyncLog.count({
       where: {
         integrationConnectionId: connection.id,
-        status: "FAILED",
+        status: 'FAILED',
         startedAt: { gte: twentyFourHoursAgo },
       },
     }),
   ]);
 
   return {
-    status: connection.status as ProviderHealthStatus["status"],
+    status: connection.status as ProviderHealthStatus['status'],
     provider: providerSlug,
     displayName: connection.displayName,
     connectedAt: connection.connectedAt,
@@ -110,5 +110,5 @@ export async function getAllProviderHealth(
   organizationId: string,
 ): Promise<ProviderHealthStatus[]> {
   const adapters = getAllAdapters();
-  return Promise.all(adapters.map((a) => getProviderHealth(organizationId, a.slug)));
+  return Promise.all(adapters.map(a => getProviderHealth(organizationId, a.slug)));
 }

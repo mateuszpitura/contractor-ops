@@ -2,13 +2,13 @@
  * Equipment workflow integration — task start + shipment-driven completion.
  */
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { checkShipmentTaskCompletion, handleEquipmentTaskStart } from "../equipment-workflow.js";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { checkShipmentTaskCompletion, handleEquipmentTaskStart } from '../equipment-workflow.js';
 
-const ORG_ID = "org-eq-001";
-const TASK_ID = "task-eq-001";
-const WF_RUN_ID = "wf-run-001";
-const CONTRACTOR_ID = "contractor-eq-001";
+const ORG_ID = 'org-eq-001';
+const TASK_ID = 'task-eq-001';
+const WF_RUN_ID = 'wf-run-001';
+const CONTRACTOR_ID = 'contractor-eq-001';
 
 function buildTxMock(
   overrides: {
@@ -20,7 +20,7 @@ function buildTxMock(
 ) {
   const assignments = overrides.assignments ?? [];
   const allTasksForRecompute = overrides.allTasksForRecompute ?? [
-    { status: "DONE", required: true },
+    { status: 'DONE', required: true },
   ];
 
   const workflowTaskRun = {
@@ -46,123 +46,123 @@ function buildTxMock(
   return tx;
 }
 
-describe("handleEquipmentTaskStart", () => {
+describe('handleEquipmentTaskStart', () => {
   beforeEach(() => {
-    vi.spyOn(console, "info").mockImplementation(() => undefined);
-    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    vi.spyOn(console, 'info').mockImplementation(() => undefined);
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
   });
 
-  it("no-ops when taskType is not EQUIPMENT", async () => {
+  it('no-ops when taskType is not EQUIPMENT', async () => {
     const tx = buildTxMock();
     const db = { $transaction: vi.fn(async (fn: (t: unknown) => Promise<void>) => fn(tx)) };
 
     await handleEquipmentTaskStart(
       db as never,
       ORG_ID,
-      { id: TASK_ID, taskType: "OTHER" },
+      { id: TASK_ID, taskType: 'OTHER' },
       {
         id: WF_RUN_ID,
         contractorId: CONTRACTOR_ID,
-        templateType: "ONBOARDING",
+        templateType: 'ONBOARDING',
       },
     );
 
     expect(db.$transaction).not.toHaveBeenCalled();
   });
 
-  it("skips when workflow has no contractor", async () => {
+  it('skips when workflow has no contractor', async () => {
     const db = { $transaction: vi.fn() };
 
     await handleEquipmentTaskStart(
       db as never,
       ORG_ID,
-      { id: TASK_ID, taskType: "EQUIPMENT" },
+      { id: TASK_ID, taskType: 'EQUIPMENT' },
       {
         id: WF_RUN_ID,
         contractorId: null,
-        templateType: "ONBOARDING",
+        templateType: 'ONBOARDING',
       },
     );
 
     expect(db.$transaction).not.toHaveBeenCalled();
   });
 
-  it("auto-completes task when contractor has no assigned equipment", async () => {
+  it('auto-completes task when contractor has no assigned equipment', async () => {
     const tx = buildTxMock({ assignments: [] });
     const db = { $transaction: vi.fn(async (fn: (t: typeof tx) => Promise<void>) => fn(tx)) };
 
     await handleEquipmentTaskStart(
       db as never,
       ORG_ID,
-      { id: TASK_ID, taskType: "EQUIPMENT" },
+      { id: TASK_ID, taskType: 'EQUIPMENT' },
       {
         id: WF_RUN_ID,
         contractorId: CONTRACTOR_ID,
-        templateType: "ONBOARDING",
+        templateType: 'ONBOARDING',
       },
     );
 
     expect(tx.workflowTaskRun.update).toHaveBeenCalledWith({
       where: { id: TASK_ID },
       data: expect.objectContaining({
-        status: "DONE",
+        status: 'DONE',
         resultJson: expect.objectContaining({
           autoCompleted: true,
-          reason: "no_equipment_assigned",
-          direction: "OUTBOUND",
+          reason: 'no_equipment_assigned',
+          direction: 'OUTBOUND',
         }),
       }),
     });
     expect(tx.workflowRun.update).toHaveBeenCalled();
   });
 
-  it("sets IN_PROGRESS with OUTBOUND metadata for onboarding when equipment exists", async () => {
+  it('sets IN_PROGRESS with OUTBOUND metadata for onboarding when equipment exists', async () => {
     const tx = buildTxMock({
-      assignments: [{ equipment: { id: "eq-1", name: "Laptop", status: "ASSIGNED" } }],
+      assignments: [{ equipment: { id: 'eq-1', name: 'Laptop', status: 'ASSIGNED' } }],
     });
     const db = { $transaction: vi.fn(async (fn: (t: typeof tx) => Promise<void>) => fn(tx)) };
 
     await handleEquipmentTaskStart(
       db as never,
       ORG_ID,
-      { id: TASK_ID, taskType: "EQUIPMENT" },
+      { id: TASK_ID, taskType: 'EQUIPMENT' },
       {
         id: WF_RUN_ID,
         contractorId: CONTRACTOR_ID,
-        templateType: "ONBOARDING",
+        templateType: 'ONBOARDING',
       },
     );
 
     expect(tx.workflowTaskRun.update).toHaveBeenCalledWith({
       where: { id: TASK_ID },
       data: expect.objectContaining({
-        status: "IN_PROGRESS",
-        resultJson: { equipmentIds: ["eq-1"], direction: "OUTBOUND" },
+        status: 'IN_PROGRESS',
+        resultJson: { equipmentIds: ['eq-1'], direction: 'OUTBOUND' },
       }),
     });
     expect(tx.equipment.updateMany).not.toHaveBeenCalled();
   });
 
-  it("marks equipment RETURN_REQUESTED for offboarding with assignments", async () => {
+  it('marks equipment RETURN_REQUESTED for offboarding with assignments', async () => {
     const tx = buildTxMock({
-      assignments: [{ equipment: { id: "eq-2", name: "Phone", status: "ASSIGNED" } }],
+      assignments: [{ equipment: { id: 'eq-2', name: 'Phone', status: 'ASSIGNED' } }],
     });
     const db = { $transaction: vi.fn(async (fn: (t: typeof tx) => Promise<void>) => fn(tx)) };
 
     await handleEquipmentTaskStart(
       db as never,
       ORG_ID,
-      { id: TASK_ID, taskType: "EQUIPMENT" },
+      { id: TASK_ID, taskType: 'EQUIPMENT' },
       {
         id: WF_RUN_ID,
         contractorId: CONTRACTOR_ID,
-        templateType: "OFFBOARDING",
+        templateType: 'OFFBOARDING',
       },
     );
 
     expect(tx.equipment.updateMany).toHaveBeenCalledWith({
-      where: { id: { in: ["eq-2"] }, organizationId: ORG_ID },
-      data: { status: "RETURN_REQUESTED" },
+      where: { id: { in: ['eq-2'] }, organizationId: ORG_ID },
+      data: { status: 'RETURN_REQUESTED' },
     });
   });
 });
@@ -176,7 +176,7 @@ describe("handleEquipmentTaskStart", () => {
 
 const mockCreateShipment = vi.fn();
 
-vi.mock("../courier/inpost-client.js", () => {
+vi.mock('../courier/inpost-client.js', () => {
   const MockInPostClient = vi.fn().mockImplementation(function (this: {
     createShipment: typeof mockCreateShipment;
   }) {
@@ -196,7 +196,7 @@ function buildFullTxMock(
 ) {
   const assignments = overrides.assignments ?? [];
   const allTasksForRecompute = overrides.allTasksForRecompute ?? [
-    { status: "DONE", required: true },
+    { status: 'DONE', required: true },
   ];
 
   return {
@@ -223,10 +223,10 @@ function buildFullTxMock(
       findUnique: vi.fn(async () => overrides.contractor ?? null),
     },
     organization: {
-      findUnique: vi.fn(async () => overrides.organization ?? { id: ORG_ID, name: "Test Org" }),
+      findUnique: vi.fn(async () => overrides.organization ?? { id: ORG_ID, name: 'Test Org' }),
     },
     shipment: {
-      create: vi.fn(async () => ({ id: "ship-auto-1" })),
+      create: vi.fn(async () => ({ id: 'ship-auto-1' })),
     },
     shipmentEvent: {
       create: vi.fn(async () => ({})),
@@ -237,17 +237,17 @@ function buildFullTxMock(
   };
 }
 
-describe("autoCreateInPostReturnShipment (via handleEquipmentTaskStart)", () => {
+describe('autoCreateInPostReturnShipment (via handleEquipmentTaskStart)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.spyOn(console, "info").mockImplementation(() => undefined);
-    vi.spyOn(console, "warn").mockImplementation(() => undefined);
-    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    vi.spyOn(console, 'info').mockImplementation(() => undefined);
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
   });
 
-  it("skips auto-shipment when org has no InPost courier config", async () => {
+  it('skips auto-shipment when org has no InPost courier config', async () => {
     const tx = buildFullTxMock({
-      assignments: [{ equipment: { id: "eq-1", name: "Laptop", status: "ASSIGNED" } }],
+      assignments: [{ equipment: { id: 'eq-1', name: 'Laptop', status: 'ASSIGNED' } }],
       courierConfig: null,
     });
     const db = { $transaction: vi.fn(async (fn: (t: typeof tx) => Promise<void>) => fn(tx)) };
@@ -255,11 +255,11 @@ describe("autoCreateInPostReturnShipment (via handleEquipmentTaskStart)", () => 
     await handleEquipmentTaskStart(
       db as never,
       ORG_ID,
-      { id: TASK_ID, taskType: "EQUIPMENT" },
+      { id: TASK_ID, taskType: 'EQUIPMENT' },
       {
         id: WF_RUN_ID,
         contractorId: CONTRACTOR_ID,
-        templateType: "OFFBOARDING",
+        templateType: 'OFFBOARDING',
       },
     );
 
@@ -270,14 +270,14 @@ describe("autoCreateInPostReturnShipment (via handleEquipmentTaskStart)", () => 
     expect(tx.returnRequest.create).not.toHaveBeenCalled();
   });
 
-  it("skips auto-shipment when contractor has no preferred Paczkomat", async () => {
+  it('skips auto-shipment when contractor has no preferred Paczkomat', async () => {
     const tx = buildFullTxMock({
-      assignments: [{ equipment: { id: "eq-1", name: "Laptop", status: "ASSIGNED" } }],
-      courierConfig: { id: "cc-1", carrier: "inpost", configJson: { apiKey: "key", orgId: 123 } },
+      assignments: [{ equipment: { id: 'eq-1', name: 'Laptop', status: 'ASSIGNED' } }],
+      courierConfig: { id: 'cc-1', carrier: 'inpost', configJson: { apiKey: 'key', orgId: 123 } },
       contractor: {
-        displayName: "John Doe",
-        email: "john@example.com",
-        phone: "+48123456789",
+        displayName: 'John Doe',
+        email: 'john@example.com',
+        phone: '+48123456789',
         preferredPaczkomatId: null,
         preferredPaczkomatName: null,
         preferredPaczkomatAddress: null,
@@ -288,39 +288,39 @@ describe("autoCreateInPostReturnShipment (via handleEquipmentTaskStart)", () => 
     await handleEquipmentTaskStart(
       db as never,
       ORG_ID,
-      { id: TASK_ID, taskType: "EQUIPMENT" },
+      { id: TASK_ID, taskType: 'EQUIPMENT' },
       {
         id: WF_RUN_ID,
         contractorId: CONTRACTOR_ID,
-        templateType: "OFFBOARDING",
+        templateType: 'OFFBOARDING',
       },
     );
 
     expect(tx.shipment.create).not.toHaveBeenCalled();
-    expect(console.warn).toHaveBeenCalledWith(expect.stringContaining("no preferred Paczkomat"));
+    expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('no preferred Paczkomat'));
   });
 
-  it("creates shipment, shipment events, and return request on happy path", async () => {
+  it('creates shipment, shipment events, and return request on happy path', async () => {
     mockCreateShipment.mockResolvedValue({
-      trackingNumber: "TRACK-001",
-      externalId: "ext-001",
-      labelUrl: "https://label.url/001",
+      trackingNumber: 'TRACK-001',
+      externalId: 'ext-001',
+      labelUrl: 'https://label.url/001',
     });
 
     const tx = buildFullTxMock({
-      assignments: [{ equipment: { id: "eq-1", name: "Laptop", status: "ASSIGNED" } }],
+      assignments: [{ equipment: { id: 'eq-1', name: 'Laptop', status: 'ASSIGNED' } }],
       courierConfig: {
-        id: "cc-1",
-        carrier: "inpost",
-        configJson: { apiKey: "key", organizationId: 123 },
+        id: 'cc-1',
+        carrier: 'inpost',
+        configJson: { apiKey: 'key', organizationId: 123 },
       },
       contractor: {
-        displayName: "John Doe",
-        email: "john@example.com",
-        phone: "+48123456789",
-        preferredPaczkomatId: "KRA01A",
-        preferredPaczkomatName: "Kraków Paczkomat 01A",
-        preferredPaczkomatAddress: "ul. Testowa 1, 30-001 Kraków",
+        displayName: 'John Doe',
+        email: 'john@example.com',
+        phone: '+48123456789',
+        preferredPaczkomatId: 'KRA01A',
+        preferredPaczkomatName: 'Kraków Paczkomat 01A',
+        preferredPaczkomatAddress: 'ul. Testowa 1, 30-001 Kraków',
       },
     });
     const db = { $transaction: vi.fn(async (fn: (t: typeof tx) => Promise<void>) => fn(tx)) };
@@ -328,11 +328,11 @@ describe("autoCreateInPostReturnShipment (via handleEquipmentTaskStart)", () => 
     await handleEquipmentTaskStart(
       db as never,
       ORG_ID,
-      { id: TASK_ID, taskType: "EQUIPMENT" },
+      { id: TASK_ID, taskType: 'EQUIPMENT' },
       {
         id: WF_RUN_ID,
         contractorId: CONTRACTOR_ID,
-        templateType: "OFFBOARDING",
+        templateType: 'OFFBOARDING',
       },
     );
 
@@ -340,13 +340,13 @@ describe("autoCreateInPostReturnShipment (via handleEquipmentTaskStart)", () => 
     expect(tx.shipment.create).toHaveBeenCalledWith({
       data: expect.objectContaining({
         organizationId: ORG_ID,
-        equipmentId: "eq-1",
+        equipmentId: 'eq-1',
         workflowTaskRunId: TASK_ID,
-        direction: "RETURN",
-        carrier: "InPost",
-        trackingNumber: "TRACK-001",
-        externalId: "ext-001",
-        currentStatus: "CREATED",
+        direction: 'RETURN',
+        carrier: 'InPost',
+        trackingNumber: 'TRACK-001',
+        externalId: 'ext-001',
+        currentStatus: 'CREATED',
       }),
     });
 
@@ -355,8 +355,8 @@ describe("autoCreateInPostReturnShipment (via handleEquipmentTaskStart)", () => 
 
     // Equipment status updated to RETURN_IN_TRANSIT
     expect(tx.equipment.update).toHaveBeenCalledWith({
-      where: { id: "eq-1" },
-      data: { status: "RETURN_IN_TRANSIT" },
+      where: { id: 'eq-1' },
+      data: { status: 'RETURN_IN_TRANSIT' },
     });
 
     // ReturnRequest created with SHIPMENT_CREATED status (skipping PENDING_APPROVAL)
@@ -364,30 +364,30 @@ describe("autoCreateInPostReturnShipment (via handleEquipmentTaskStart)", () => 
       data: expect.objectContaining({
         organizationId: ORG_ID,
         contractorId: CONTRACTOR_ID,
-        status: "SHIPMENT_CREATED",
-        targetPointId: "KRA01A",
-        shipmentId: "ship-auto-1",
+        status: 'SHIPMENT_CREATED',
+        targetPointId: 'KRA01A',
+        shipmentId: 'ship-auto-1',
       }),
     });
   });
 
-  it("does not fail the task start when InPost API errors", async () => {
-    mockCreateShipment.mockRejectedValue(new Error("ShipX API timeout"));
+  it('does not fail the task start when InPost API errors', async () => {
+    mockCreateShipment.mockRejectedValue(new Error('ShipX API timeout'));
 
     const tx = buildFullTxMock({
-      assignments: [{ equipment: { id: "eq-1", name: "Laptop", status: "ASSIGNED" } }],
+      assignments: [{ equipment: { id: 'eq-1', name: 'Laptop', status: 'ASSIGNED' } }],
       courierConfig: {
-        id: "cc-1",
-        carrier: "inpost",
-        configJson: { apiKey: "key", organizationId: 123 },
+        id: 'cc-1',
+        carrier: 'inpost',
+        configJson: { apiKey: 'key', organizationId: 123 },
       },
       contractor: {
-        displayName: "John Doe",
-        email: "john@example.com",
-        phone: "+48123456789",
-        preferredPaczkomatId: "KRA01A",
-        preferredPaczkomatName: "Kraków Paczkomat 01A",
-        preferredPaczkomatAddress: "ul. Testowa 1, 30-001 Kraków",
+        displayName: 'John Doe',
+        email: 'john@example.com',
+        phone: '+48123456789',
+        preferredPaczkomatId: 'KRA01A',
+        preferredPaczkomatName: 'Kraków Paczkomat 01A',
+        preferredPaczkomatAddress: 'ul. Testowa 1, 30-001 Kraków',
       },
     });
     const db = { $transaction: vi.fn(async (fn: (t: typeof tx) => Promise<void>) => fn(tx)) };
@@ -396,46 +396,46 @@ describe("autoCreateInPostReturnShipment (via handleEquipmentTaskStart)", () => 
     await handleEquipmentTaskStart(
       db as never,
       ORG_ID,
-      { id: TASK_ID, taskType: "EQUIPMENT" },
+      { id: TASK_ID, taskType: 'EQUIPMENT' },
       {
         id: WF_RUN_ID,
         contractorId: CONTRACTOR_ID,
-        templateType: "OFFBOARDING",
+        templateType: 'OFFBOARDING',
       },
     );
 
     // Task should still be set to IN_PROGRESS (the task start itself succeeds)
     expect(tx.workflowTaskRun.update).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ status: "IN_PROGRESS" }),
+        data: expect.objectContaining({ status: 'IN_PROGRESS' }),
       }),
     );
   });
 
-  it("creates shipments for multiple equipment items with same tracking number", async () => {
+  it('creates shipments for multiple equipment items with same tracking number', async () => {
     mockCreateShipment.mockResolvedValue({
-      trackingNumber: "TRACK-MULTI",
-      externalId: "ext-multi",
-      labelUrl: "https://label.url/multi",
+      trackingNumber: 'TRACK-MULTI',
+      externalId: 'ext-multi',
+      labelUrl: 'https://label.url/multi',
     });
 
     const tx = buildFullTxMock({
       assignments: [
-        { equipment: { id: "eq-1", name: "Laptop", status: "ASSIGNED" } },
-        { equipment: { id: "eq-2", name: "Phone", status: "ASSIGNED" } },
+        { equipment: { id: 'eq-1', name: 'Laptop', status: 'ASSIGNED' } },
+        { equipment: { id: 'eq-2', name: 'Phone', status: 'ASSIGNED' } },
       ],
       courierConfig: {
-        id: "cc-1",
-        carrier: "inpost",
-        configJson: { apiKey: "key", organizationId: 123 },
+        id: 'cc-1',
+        carrier: 'inpost',
+        configJson: { apiKey: 'key', organizationId: 123 },
       },
       contractor: {
-        displayName: "Jane Doe",
-        email: "jane@example.com",
-        phone: "+48987654321",
-        preferredPaczkomatId: "WAW05B",
-        preferredPaczkomatName: "Warszawa Paczkomat 05B",
-        preferredPaczkomatAddress: "ul. Przykładowa 5, 00-001 Warszawa",
+        displayName: 'Jane Doe',
+        email: 'jane@example.com',
+        phone: '+48987654321',
+        preferredPaczkomatId: 'WAW05B',
+        preferredPaczkomatName: 'Warszawa Paczkomat 05B',
+        preferredPaczkomatAddress: 'ul. Przykładowa 5, 00-001 Warszawa',
       },
     });
     const db = { $transaction: vi.fn(async (fn: (t: typeof tx) => Promise<void>) => fn(tx)) };
@@ -443,11 +443,11 @@ describe("autoCreateInPostReturnShipment (via handleEquipmentTaskStart)", () => 
     await handleEquipmentTaskStart(
       db as never,
       ORG_ID,
-      { id: TASK_ID, taskType: "EQUIPMENT" },
+      { id: TASK_ID, taskType: 'EQUIPMENT' },
       {
         id: WF_RUN_ID,
         contractorId: CONTRACTOR_ID,
-        templateType: "OFFBOARDING",
+        templateType: 'OFFBOARDING',
       },
     );
 
@@ -462,44 +462,44 @@ describe("autoCreateInPostReturnShipment (via handleEquipmentTaskStart)", () => 
   });
 });
 
-describe("checkShipmentTaskCompletion", () => {
+describe('checkShipmentTaskCompletion', () => {
   beforeEach(() => {
-    vi.spyOn(console, "info").mockImplementation(() => undefined);
-    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    vi.spyOn(console, 'info').mockImplementation(() => undefined);
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
   });
 
-  it("returns early when shipment has no workflow task link", async () => {
+  it('returns early when shipment has no workflow task link', async () => {
     const db = { shipment: { findMany: vi.fn() }, workflowTaskRun: {} };
 
     await checkShipmentTaskCompletion(db as never, ORG_ID, {
-      id: "ship-1",
+      id: 'ship-1',
       workflowTaskRunId: null,
-      direction: "OUTBOUND",
-      currentStatus: "DELIVERED",
+      direction: 'OUTBOUND',
+      currentStatus: 'DELIVERED',
     });
 
     expect(db.shipment.findMany).not.toHaveBeenCalled();
   });
 
-  it("returns early when shipment has not reached target status", async () => {
+  it('returns early when shipment has not reached target status', async () => {
     const db = { shipment: { findMany: vi.fn() }, workflowTaskRun: {} };
 
     await checkShipmentTaskCompletion(db as never, ORG_ID, {
-      id: "ship-1",
+      id: 'ship-1',
       workflowTaskRunId: TASK_ID,
-      direction: "OUTBOUND",
-      currentStatus: "IN_TRANSIT",
+      direction: 'OUTBOUND',
+      currentStatus: 'IN_TRANSIT',
     });
 
     expect(db.shipment.findMany).not.toHaveBeenCalled();
   });
 
-  it("waits until all linked shipments reach their direction-specific targets", async () => {
+  it('waits until all linked shipments reach their direction-specific targets', async () => {
     const db = {
       shipment: {
         findMany: vi.fn(async () => [
-          { id: "a", direction: "OUTBOUND", currentStatus: "DELIVERED" },
-          { id: "b", direction: "OUTBOUND", currentStatus: "IN_TRANSIT" },
+          { id: 'a', direction: 'OUTBOUND', currentStatus: 'DELIVERED' },
+          { id: 'b', direction: 'OUTBOUND', currentStatus: 'IN_TRANSIT' },
         ]),
       },
       workflowTaskRun: { updateMany: vi.fn(), findUnique: vi.fn() },
@@ -507,56 +507,56 @@ describe("checkShipmentTaskCompletion", () => {
     };
 
     await checkShipmentTaskCompletion(db as never, ORG_ID, {
-      id: "ship-a",
+      id: 'ship-a',
       workflowTaskRunId: TASK_ID,
-      direction: "OUTBOUND",
-      currentStatus: "DELIVERED",
+      direction: 'OUTBOUND',
+      currentStatus: 'DELIVERED',
     });
 
     expect(db.workflowTaskRun.updateMany).not.toHaveBeenCalled();
   });
 
-  it("completes task and recomputes workflow when all linked shipments are done", async () => {
+  it('completes task and recomputes workflow when all linked shipments are done', async () => {
     const db = {
       shipment: {
         findMany: vi.fn(async () => [
-          { id: "a", direction: "OUTBOUND", currentStatus: "DELIVERED" },
-          { id: "b", direction: "RETURN", currentStatus: "RETURNED" },
+          { id: 'a', direction: 'OUTBOUND', currentStatus: 'DELIVERED' },
+          { id: 'b', direction: 'RETURN', currentStatus: 'RETURNED' },
         ]),
       },
       workflowTaskRun: {
         updateMany: vi.fn(async () => ({ count: 1 })),
         findUnique: vi.fn(async () => ({ workflowRunId: WF_RUN_ID })),
-        findMany: vi.fn(async () => [{ status: "DONE", required: true }]),
+        findMany: vi.fn(async () => [{ status: 'DONE', required: true }]),
       },
       workflowRun: { update: vi.fn(async () => ({})) },
     };
 
     await checkShipmentTaskCompletion(db as never, ORG_ID, {
-      id: "ship-b",
+      id: 'ship-b',
       workflowTaskRunId: TASK_ID,
-      direction: "RETURN",
-      currentStatus: "RETURNED",
+      direction: 'RETURN',
+      currentStatus: 'RETURNED',
     });
 
     expect(db.workflowTaskRun.updateMany).toHaveBeenCalledWith({
       where: {
         id: TASK_ID,
         organizationId: ORG_ID,
-        status: "IN_PROGRESS",
+        status: 'IN_PROGRESS',
       },
       data: expect.objectContaining({
-        status: "DONE",
+        status: 'DONE',
       }),
     });
     expect(db.workflowRun.update).toHaveBeenCalled();
   });
 
-  it("is idempotent when task is not IN_PROGRESS", async () => {
+  it('is idempotent when task is not IN_PROGRESS', async () => {
     const db = {
       shipment: {
         findMany: vi.fn(async () => [
-          { id: "a", direction: "OUTBOUND", currentStatus: "DELIVERED" },
+          { id: 'a', direction: 'OUTBOUND', currentStatus: 'DELIVERED' },
         ]),
       },
       workflowTaskRun: {
@@ -567,10 +567,10 @@ describe("checkShipmentTaskCompletion", () => {
     };
 
     await checkShipmentTaskCompletion(db as never, ORG_ID, {
-      id: "ship-a",
+      id: 'ship-a',
       workflowTaskRunId: TASK_ID,
-      direction: "OUTBOUND",
-      currentStatus: "DELIVERED",
+      direction: 'OUTBOUND',
+      currentStatus: 'DELIVERED',
     });
 
     expect(db.workflowTaskRun.findUnique).not.toHaveBeenCalled();

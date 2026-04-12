@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { Cloud, TestTube } from "lucide-react";
-import { useState } from "react";
+import { Cloud, TestTube } from 'lucide-react';
+import { useState } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,14 +11,14 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+} from '@/components/ui/alert-dialog';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
-type ZatcaEnvironment = "sandbox" | "production";
+type ZatcaEnvironment = 'sandbox' | 'production';
 
 interface EnvironmentToggleProps {
   value: ZatcaEnvironment;
@@ -48,13 +48,13 @@ export function EnvironmentToggle({
   function handleChange(newValue: string) {
     const env = newValue as ZatcaEnvironment;
 
-    if (env === "sandbox" && value === "production") {
+    if (env === 'sandbox' && value === 'production') {
       // Production -> Sandbox requires confirmation
       setConfirmSandbox(true);
       return;
     }
 
-    if (env === "production" && !productionReady) {
+    if (env === 'production' && !productionReady) {
       // Can't switch to production without completing onboarding
       return;
     }
@@ -64,7 +64,7 @@ export function EnvironmentToggle({
 
   function confirmSwitchToSandbox() {
     setConfirmSandbox(false);
-    onChange("sandbox");
+    onChange('sandbox');
   }
 
   return (
@@ -74,16 +74,14 @@ export function EnvironmentToggle({
         <RadioGroup
           value={value}
           onValueChange={handleChange}
-          className="grid grid-cols-1 gap-3 sm:grid-cols-2"
-        >
+          className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {/* Sandbox */}
           <label
             className={`relative flex cursor-pointer items-start gap-3 rounded-lg border-2 p-4 transition-all ${
-              value === "sandbox"
-                ? "border-primary ring-2 ring-primary/20"
-                : "border-border hover:border-muted-foreground/30"
-            }`}
-          >
+              value === 'sandbox'
+                ? 'border-primary ring-2 ring-primary/20'
+                : 'border-border hover:border-muted-foreground/30'
+            }`}>
             <RadioGroupItem value="sandbox" className="mt-0.5" />
             <div className="space-y-1">
               <div className="flex items-center gap-1.5">
@@ -99,13 +97,12 @@ export function EnvironmentToggle({
           {/* Production */}
           <label
             className={`relative flex items-start gap-3 rounded-lg border-2 p-4 transition-all ${
-              !productionReady ? "cursor-not-allowed opacity-60" : "cursor-pointer"
+              !productionReady ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
             } ${
-              value === "production"
-                ? "border-primary ring-2 ring-primary/20"
-                : "border-border hover:border-muted-foreground/30"
-            }`}
-          >
+              value === 'production'
+                ? 'border-primary ring-2 ring-primary/20'
+                : 'border-border hover:border-muted-foreground/30'
+            }`}>
             <RadioGroupItem value="production" className="mt-0.5" disabled={!productionReady} />
             <div className="space-y-1">
               <div className="flex items-center gap-1.5">

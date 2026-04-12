@@ -2,8 +2,8 @@
 // PINT-AE UBL 2.1 XML Generator
 // ---------------------------------------------------------------------------
 
-import { XMLBuilder } from "fast-xml-parser";
-import type { EInvoice } from "../../types/invoice.js";
+import { XMLBuilder } from 'fast-xml-parser';
+import type { EInvoice } from '../../types/invoice.js';
 import {
   CAC_NS,
   CBC_NS,
@@ -12,12 +12,12 @@ import {
   UAE_SCHEME_ID,
   UAE_TAX_SCHEME_ID,
   UBL_INVOICE_NS,
-} from "./constants.js";
+} from './constants.js';
 
 const builder = new XMLBuilder({
   ignoreAttributes: false,
-  attributeNamePrefix: "@_",
-  textNodeName: "#text",
+  attributeNamePrefix: '@_',
+  textNodeName: '#text',
   format: true,
   suppressBooleanAttributes: false,
 });
@@ -32,38 +32,38 @@ function fromMinor(minorUnits: number): string {
 /**
  * Build a UBL party structure for PINT-AE.
  */
-function buildParty(party: EInvoice["supplier"], _currencyCode: string) {
+function buildParty(party: EInvoice['supplier'], _currencyCode: string) {
   return {
-    "cac:Party": {
-      "cac:PartyIdentification": {
-        "cbc:ID": {
-          "@_schemeID": UAE_SCHEME_ID,
-          "#text": party.id,
+    'cac:Party': {
+      'cac:PartyIdentification': {
+        'cbc:ID': {
+          '@_schemeID': UAE_SCHEME_ID,
+          '#text': party.id,
         },
       },
       ...(party.additionalIds?.tradeLicense
         ? {
-            "cac:PartyLegalEntity": {
-              "cbc:RegistrationName": party.name,
-              "cbc:CompanyID": party.additionalIds.tradeLicense,
+            'cac:PartyLegalEntity': {
+              'cbc:RegistrationName': party.name,
+              'cbc:CompanyID': party.additionalIds.tradeLicense,
             },
           }
         : {
-            "cac:PartyLegalEntity": {
-              "cbc:RegistrationName": party.name,
+            'cac:PartyLegalEntity': {
+              'cbc:RegistrationName': party.name,
             },
           }),
-      "cac:PartyName": {
-        "cbc:Name": party.name,
+      'cac:PartyName': {
+        'cbc:Name': party.name,
       },
       ...(party.address || party.country
         ? {
-            "cac:PostalAddress": {
-              ...(party.address ? { "cbc:StreetName": party.address } : {}),
+            'cac:PostalAddress': {
+              ...(party.address ? { 'cbc:StreetName': party.address } : {}),
               ...(party.country
                 ? {
-                    "cac:Country": {
-                      "cbc:IdentificationCode": party.country,
+                    'cac:Country': {
+                      'cbc:IdentificationCode': party.country,
                     },
                   }
                 : {}),
@@ -78,53 +78,53 @@ function buildParty(party: EInvoice["supplier"], _currencyCode: string) {
  * Generates a PINT-AE compliant UBL 2.1 Invoice XML from a canonical EInvoice.
  */
 export function generatePintAeXml(invoice: EInvoice): string {
-  const taxSubtotals = invoice.taxBreakdown.map((tax) => ({
-    "cbc:TaxableAmount": {
-      "@_currencyID": invoice.currencyCode,
-      "#text": fromMinor(tax.taxableAmountMinor),
+  const taxSubtotals = invoice.taxBreakdown.map(tax => ({
+    'cbc:TaxableAmount': {
+      '@_currencyID': invoice.currencyCode,
+      '#text': fromMinor(tax.taxableAmountMinor),
     },
-    "cbc:TaxAmount": {
-      "@_currencyID": invoice.currencyCode,
-      "#text": fromMinor(tax.taxAmountMinor),
+    'cbc:TaxAmount': {
+      '@_currencyID': invoice.currencyCode,
+      '#text': fromMinor(tax.taxAmountMinor),
     },
-    "cac:TaxCategory": {
-      "cbc:ID": tax.taxCategory,
-      ...(tax.percent != null ? { "cbc:Percent": tax.percent.toString() } : {}),
-      "cac:TaxScheme": {
-        "cbc:ID": UAE_TAX_SCHEME_ID,
+    'cac:TaxCategory': {
+      'cbc:ID': tax.taxCategory,
+      ...(tax.percent != null ? { 'cbc:Percent': tax.percent.toString() } : {}),
+      'cac:TaxScheme': {
+        'cbc:ID': UAE_TAX_SCHEME_ID,
       },
     },
   }));
 
   const totalTaxAmount = invoice.taxBreakdown.reduce((sum, t) => sum + t.taxAmountMinor, 0);
 
-  const invoiceLines = invoice.lines.map((line) => ({
-    "cbc:ID": String(line.lineNumber),
-    "cbc:InvoicedQuantity": {
-      "@_unitCode": line.unit ?? "EA",
-      "#text": String(line.quantity ?? 1),
+  const invoiceLines = invoice.lines.map(line => ({
+    'cbc:ID': String(line.lineNumber),
+    'cbc:InvoicedQuantity': {
+      '@_unitCode': line.unit ?? 'EA',
+      '#text': String(line.quantity ?? 1),
     },
-    "cbc:LineExtensionAmount": {
-      "@_currencyID": invoice.currencyCode,
-      "#text": fromMinor(line.netAmountMinor ?? 0),
+    'cbc:LineExtensionAmount': {
+      '@_currencyID': invoice.currencyCode,
+      '#text': fromMinor(line.netAmountMinor ?? 0),
     },
-    "cac:Item": {
-      "cbc:Name": line.description,
+    'cac:Item': {
+      'cbc:Name': line.description,
       ...(line.vatRate
         ? {
-            "cac:ClassifiedTaxCategory": {
-              "cbc:ID": line.vatRate,
-              "cac:TaxScheme": {
-                "cbc:ID": UAE_TAX_SCHEME_ID,
+            'cac:ClassifiedTaxCategory': {
+              'cbc:ID': line.vatRate,
+              'cac:TaxScheme': {
+                'cbc:ID': UAE_TAX_SCHEME_ID,
               },
             },
           }
         : {}),
     },
-    "cac:Price": {
-      "cbc:PriceAmount": {
-        "@_currencyID": invoice.currencyCode,
-        "#text": fromMinor(line.unitPriceMinor ?? line.netAmountMinor ?? 0),
+    'cac:Price': {
+      'cbc:PriceAmount': {
+        '@_currencyID': invoice.currencyCode,
+        '#text': fromMinor(line.unitPriceMinor ?? line.netAmountMinor ?? 0),
       },
     },
   }));
@@ -133,43 +133,43 @@ export function generatePintAeXml(invoice: EInvoice): string {
 
   const doc = {
     Invoice: {
-      "@_xmlns": UBL_INVOICE_NS,
-      "@_xmlns:cac": CAC_NS,
-      "@_xmlns:cbc": CBC_NS,
-      "cbc:CustomizationID": PINT_AE_CUSTOMIZATION_ID,
-      "cbc:ProfileID": PINT_AE_PROFILE_ID,
-      "cbc:ID": invoice.id,
-      "cbc:IssueDate": invoice.issueDate,
-      ...(invoice.dueDate ? { "cbc:DueDate": invoice.dueDate } : {}),
-      "cbc:InvoiceTypeCode": invoice.invoiceTypeCode,
-      "cbc:DocumentCurrencyCode": invoice.currencyCode,
-      "cbc:BuyerReference": buyerReference,
-      "cac:AccountingSupplierParty": buildParty(invoice.supplier, invoice.currencyCode),
-      "cac:AccountingCustomerParty": buildParty(invoice.customer, invoice.currencyCode),
+      '@_xmlns': UBL_INVOICE_NS,
+      '@_xmlns:cac': CAC_NS,
+      '@_xmlns:cbc': CBC_NS,
+      'cbc:CustomizationID': PINT_AE_CUSTOMIZATION_ID,
+      'cbc:ProfileID': PINT_AE_PROFILE_ID,
+      'cbc:ID': invoice.id,
+      'cbc:IssueDate': invoice.issueDate,
+      ...(invoice.dueDate ? { 'cbc:DueDate': invoice.dueDate } : {}),
+      'cbc:InvoiceTypeCode': invoice.invoiceTypeCode,
+      'cbc:DocumentCurrencyCode': invoice.currencyCode,
+      'cbc:BuyerReference': buyerReference,
+      'cac:AccountingSupplierParty': buildParty(invoice.supplier, invoice.currencyCode),
+      'cac:AccountingCustomerParty': buildParty(invoice.customer, invoice.currencyCode),
       ...(invoice.paymentMeans
         ? {
-            "cac:PaymentMeans": {
+            'cac:PaymentMeans': {
               ...(invoice.paymentMeans.code
-                ? { "cbc:PaymentMeansCode": invoice.paymentMeans.code }
+                ? { 'cbc:PaymentMeansCode': invoice.paymentMeans.code }
                 : {}),
               ...(invoice.paymentMeans.dueDate
                 ? {
-                    "cbc:PaymentDueDate": invoice.paymentMeans.dueDate,
+                    'cbc:PaymentDueDate': invoice.paymentMeans.dueDate,
                   }
                 : {}),
               ...(invoice.paymentMeans.paymentReference
                 ? {
-                    "cbc:PaymentID": invoice.paymentMeans.paymentReference,
+                    'cbc:PaymentID': invoice.paymentMeans.paymentReference,
                   }
                 : {}),
               ...(invoice.paymentMeans.bankAccount
                 ? {
-                    "cac:PayeeFinancialAccount": {
-                      "cbc:ID": invoice.paymentMeans.bankAccount,
+                    'cac:PayeeFinancialAccount': {
+                      'cbc:ID': invoice.paymentMeans.bankAccount,
                       ...(invoice.paymentMeans.bankName
                         ? {
-                            "cac:FinancialInstitutionBranch": {
-                              "cbc:Name": invoice.paymentMeans.bankName,
+                            'cac:FinancialInstitutionBranch': {
+                              'cbc:Name': invoice.paymentMeans.bankName,
                             },
                           }
                         : {}),
@@ -179,28 +179,28 @@ export function generatePintAeXml(invoice: EInvoice): string {
             },
           }
         : {}),
-      "cac:TaxTotal": {
-        "cbc:TaxAmount": {
-          "@_currencyID": invoice.currencyCode,
-          "#text": fromMinor(totalTaxAmount),
+      'cac:TaxTotal': {
+        'cbc:TaxAmount': {
+          '@_currencyID': invoice.currencyCode,
+          '#text': fromMinor(totalTaxAmount),
         },
-        "cac:TaxSubtotal": taxSubtotals,
+        'cac:TaxSubtotal': taxSubtotals,
       },
-      "cac:LegalMonetaryTotal": {
-        "cbc:TaxExclusiveAmount": {
-          "@_currencyID": invoice.currencyCode,
-          "#text": fromMinor(invoice.taxExclusiveAmount),
+      'cac:LegalMonetaryTotal': {
+        'cbc:TaxExclusiveAmount': {
+          '@_currencyID': invoice.currencyCode,
+          '#text': fromMinor(invoice.taxExclusiveAmount),
         },
-        "cbc:TaxInclusiveAmount": {
-          "@_currencyID": invoice.currencyCode,
-          "#text": fromMinor(invoice.taxInclusiveAmount),
+        'cbc:TaxInclusiveAmount': {
+          '@_currencyID': invoice.currencyCode,
+          '#text': fromMinor(invoice.taxInclusiveAmount),
         },
-        "cbc:PayableAmount": {
-          "@_currencyID": invoice.currencyCode,
-          "#text": fromMinor(invoice.payableAmount),
+        'cbc:PayableAmount': {
+          '@_currencyID': invoice.currencyCode,
+          '#text': fromMinor(invoice.payableAmount),
         },
       },
-      "cac:InvoiceLine": invoiceLines,
+      'cac:InvoiceLine': invoiceLines,
     },
   };
 

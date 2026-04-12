@@ -11,13 +11,13 @@ import {
   consentPurposeEnum,
   consentQuerySchema,
   grantConsentSchema,
-} from "@contractor-ops/validators";
-import { TRPCError } from "@trpc/server";
-import { z } from "zod";
-import { router } from "../init.js";
-import { requirePermission } from "../middleware/rbac.js";
-import { sensitiveActionProcedure } from "../middleware/sensitive.js";
-import { tenantProcedure } from "../middleware/tenant.js";
+} from '@contractor-ops/validators';
+import { TRPCError } from '@trpc/server';
+import { z } from 'zod';
+import { router } from '../init.js';
+import { requirePermission } from '../middleware/rbac.js';
+import { sensitiveActionProcedure } from '../middleware/sensitive.js';
+import { tenantProcedure } from '../middleware/tenant.js';
 import {
   bulkGrantConsent,
   getConsentHistory,
@@ -25,13 +25,13 @@ import {
   grantConsent,
   hasRequiredConsents,
   revokeConsent,
-} from "../services/consent-record.js";
+} from '../services/consent-record.js';
 import {
   detectCrossBorderTransfer,
   generateDPA,
   generateSCC,
-} from "../services/legal-document-generation.js";
-import { getPrivacyNotice } from "../services/privacy-notice.js";
+} from '../services/legal-document-generation.js';
+import { getPrivacyNotice } from '../services/privacy-notice.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -43,8 +43,8 @@ function extractClientInfo(headers: Headers): {
 } {
   return {
     ipAddress:
-      headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? headers.get("x-real-ip") ?? null,
-    userAgent: headers.get("user-agent") ?? null,
+      headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? headers.get('x-real-ip') ?? null,
+    userAgent: headers.get('user-agent') ?? null,
   };
 }
 
@@ -127,7 +127,7 @@ export const consentRouter = router({
    * Requires settings:read permission.
    */
   adminGetUserConsent: tenantProcedure
-    .use(requirePermission({ settings: ["read"] }))
+    .use(requirePermission({ settings: ['read'] }))
     .input(z.object({ userId: z.string().min(1) }))
     .query(async ({ ctx, input }) => {
       const consentMap = await getCurrentConsent(ctx.organizationId, input.userId);
@@ -139,7 +139,7 @@ export const consentRouter = router({
    * Requires settings:read permission.
    */
   adminGetUserConsentHistory: tenantProcedure
-    .use(requirePermission({ settings: ["read"] }))
+    .use(requirePermission({ settings: ['read'] }))
     .input(
       z.object({
         userId: z.string().min(1),
@@ -155,13 +155,13 @@ export const consentRouter = router({
    * Returns HTML content for client-side rendering/download.
    */
   downloadDPA: tenantProcedure
-    .use(requirePermission({ settings: ["read"] }))
+    .use(requirePermission({ settings: ['read'] }))
     .mutation(async ({ ctx }) => {
       const result = await generateDPA(ctx.organizationId);
       if (!result) {
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "DPA not available for this jurisdiction",
+          code: 'NOT_FOUND',
+          message: 'DPA not available for this jurisdiction',
         });
       }
       return result;
@@ -172,13 +172,13 @@ export const consentRouter = router({
    * Returns null-equivalent error if no cross-border transfer detected.
    */
   downloadSCC: tenantProcedure
-    .use(requirePermission({ settings: ["read"] }))
+    .use(requirePermission({ settings: ['read'] }))
     .mutation(async ({ ctx }) => {
       const result = await generateSCC(ctx.organizationId);
       if (!result) {
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "No cross-border transfer detected — SCC not required for your jurisdiction",
+          code: 'NOT_FOUND',
+          message: 'No cross-border transfer detected — SCC not required for your jurisdiction',
         });
       }
       return result;

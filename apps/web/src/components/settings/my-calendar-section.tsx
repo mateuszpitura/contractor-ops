@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { toast } from "sonner";
-import { FeatureGate } from "@/components/billing/feature-gate";
-import { GoogleCalendarIcon, OutlookCalendarIcon } from "@/components/integrations/provider-icons";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { FeatureGate } from '@/components/billing/feature-gate';
+import { GoogleCalendarIcon, OutlookCalendarIcon } from '@/components/integrations/provider-icons';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,12 +16,12 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { trpc } from "@/trpc/init";
+} from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -42,7 +42,7 @@ interface CalendarConnection {
 // ---------------------------------------------------------------------------
 
 interface CalendarProviderCardProps {
-  provider: "GOOGLE_CALENDAR" | "OUTLOOK_CALENDAR";
+  provider: 'GOOGLE_CALENDAR' | 'OUTLOOK_CALENDAR';
   displayName: string;
   icon: React.ReactNode;
   connection: CalendarConnection | undefined;
@@ -60,10 +60,10 @@ function CalendarProviderCard({
   onDisconnect,
   isDisconnecting,
 }: CalendarProviderCardProps) {
-  const t = useTranslations("CalendarSettings");
+  const t = useTranslations('CalendarSettings');
   const [disconnectDialogOpen, setDisconnectDialogOpen] = useState(false);
 
-  const isConnected = connection?.status === "CONNECTED";
+  const isConnected = connection?.status === 'CONNECTED';
 
   return (
     <>
@@ -76,11 +76,10 @@ function CalendarProviderCard({
               variant="secondary"
               className={
                 isConnected
-                  ? "bg-emerald-500/10 text-emerald-500"
-                  : "bg-muted text-muted-foreground"
-              }
-            >
-              {isConnected ? t("statusConnected") : t("statusNotConnected")}
+                  ? 'bg-emerald-500/10 text-emerald-500'
+                  : 'bg-muted text-muted-foreground'
+              }>
+              {isConnected ? t('statusConnected') : t('statusNotConnected')}
             </Badge>
           </div>
         </CardHeader>
@@ -90,13 +89,13 @@ function CalendarProviderCard({
               <div className="space-y-1 text-sm">
                 {connection.displayName && (
                   <p>
-                    <span className="text-muted-foreground">{t("connectedAccount")}:</span>{" "}
+                    <span className="text-muted-foreground">{t('connectedAccount')}:</span>{' '}
                     <span className="font-medium">{connection.displayName}</span>
                   </p>
                 )}
                 {connection.connectedAt && (
                   <p>
-                    <span className="text-muted-foreground">{t("connectedOn")}:</span>{" "}
+                    <span className="text-muted-foreground">{t('connectedOn')}:</span>{' '}
                     <span className="font-medium">
                       {new Date(connection.connectedAt).toLocaleDateString()}
                     </span>
@@ -106,15 +105,14 @@ function CalendarProviderCard({
               <Button
                 variant="outline"
                 className="text-destructive hover:text-destructive"
-                onClick={() => setDisconnectDialogOpen(true)}
-              >
-                {t("disconnectCalendar")}
+                onClick={() => setDisconnectDialogOpen(true)}>
+                {t('disconnectCalendar')}
               </Button>
             </div>
           ) : (
             <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">{t("connectDescription")}</p>
-              <Button onClick={onConnect}>{t("connectCalendar")}</Button>
+              <p className="text-sm text-muted-foreground">{t('connectDescription')}</p>
+              <Button onClick={onConnect}>{t('connectCalendar')}</Button>
             </div>
           )}
         </CardContent>
@@ -124,11 +122,11 @@ function CalendarProviderCard({
       <AlertDialog open={disconnectDialogOpen} onOpenChange={setDisconnectDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("disconnectTitle", { provider: displayName })}</AlertDialogTitle>
-            <AlertDialogDescription>{t("disconnectBody")}</AlertDialogDescription>
+            <AlertDialogTitle>{t('disconnectTitle', { provider: displayName })}</AlertDialogTitle>
+            <AlertDialogDescription>{t('disconnectBody')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t("keepConnection")}</AlertDialogCancel>
+            <AlertDialogCancel>{t('keepConnection')}</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
               disabled={isDisconnecting}
@@ -137,10 +135,9 @@ function CalendarProviderCard({
                   onDisconnect(connection.id);
                   setDisconnectDialogOpen(false);
                 }
-              }}
-            >
+              }}>
               {isDisconnecting && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
-              {t("disconnectCalendar")}
+              {t('disconnectCalendar')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -154,7 +151,7 @@ function CalendarProviderCard({
 // ---------------------------------------------------------------------------
 
 export function MyCalendarSection() {
-  const t = useTranslations("CalendarSettings");
+  const t = useTranslations('CalendarSettings');
   const queryClient = useQueryClient();
 
   // Fetch personal calendar connections
@@ -169,7 +166,7 @@ export function MyCalendarSection() {
   const disconnectMutation = useMutation(
     trpc.calendar.disconnect.mutationOptions({
       onSuccess: () => {
-        toast.success(t("disconnectedToast"));
+        toast.success(t('disconnectedToast'));
         queryClient.invalidateQueries({
           queryKey: trpc.calendar.listPersonalConnections.queryKey(),
         });
@@ -178,21 +175,21 @@ export function MyCalendarSection() {
         });
       },
       onError: () => {
-        toast.error(t("disconnectFailedToast"));
+        toast.error(t('disconnectFailedToast'));
       },
     }),
   );
 
   // Find connections for each provider
-  const googleConnection = connections.find((c) => c.provider === "GOOGLE_CALENDAR");
-  const outlookConnection = connections.find((c) => c.provider === "OUTLOOK_CALENDAR");
+  const googleConnection = connections.find(c => c.provider === 'GOOGLE_CALENDAR');
+  const outlookConnection = connections.find(c => c.provider === 'OUTLOOK_CALENDAR');
 
   // OAuth connect handlers — fetch authorization URL via tRPC and redirect
   const googleOAuthQuery = trpc.integration.getOAuthUrlGeneric.queryOptions({
-    provider: "google-calendar",
+    provider: 'google-calendar',
   });
   const outlookOAuthQuery = trpc.integration.getOAuthUrlGeneric.queryOptions({
-    provider: "outlook-calendar",
+    provider: 'outlook-calendar',
   });
 
   async function handleGoogleConnect() {
@@ -202,7 +199,7 @@ export function MyCalendarSection() {
         window.location.href = result.url;
       }
     } catch {
-      toast.error(t("connectFailedToast"));
+      toast.error(t('connectFailedToast'));
     }
   }
 
@@ -213,7 +210,7 @@ export function MyCalendarSection() {
         window.location.href = result.url;
       }
     } catch {
-      toast.error(t("connectFailedToast"));
+      toast.error(t('connectFailedToast'));
     }
   }
 
@@ -260,7 +257,7 @@ export function MyCalendarSection() {
         <div className="space-y-4">
           <CalendarProviderCard
             provider="GOOGLE_CALENDAR"
-            displayName={t("googleCalendar")}
+            displayName={t('googleCalendar')}
             icon={<GoogleCalendarIcon className="h-8 w-8" />}
             connection={googleConnection}
             onConnect={handleGoogleConnect}
@@ -269,7 +266,7 @@ export function MyCalendarSection() {
           />
           <CalendarProviderCard
             provider="OUTLOOK_CALENDAR"
-            displayName={t("outlookCalendar")}
+            displayName={t('outlookCalendar')}
             icon={<OutlookCalendarIcon className="h-8 w-8 text-[#0078D4]" />}
             connection={outlookConnection}
             onConnect={handleOutlookConnect}
@@ -280,9 +277,9 @@ export function MyCalendarSection() {
 
         {/* Active Synced Events section */}
         <div className="space-y-2">
-          <h3 className="text-sm font-semibold">{t("activeSyncedEvents")}</h3>
-          <Badge variant="secondary">{t("eventsSynced", { count: eventCount })}</Badge>
-          <p className="text-xs text-muted-foreground">{t("syncedEventsHelper")}</p>
+          <h3 className="text-sm font-semibold">{t('activeSyncedEvents')}</h3>
+          <Badge variant="secondary">{t('eventsSynced', { count: eventCount })}</Badge>
+          <p className="text-xs text-muted-foreground">{t('syncedEventsHelper')}</p>
         </div>
       </div>
     </FeatureGate>

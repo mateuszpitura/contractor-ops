@@ -3,13 +3,13 @@
  */
 
 export interface ComplianceItem {
-  health: "red" | "yellow" | "green";
+  health: 'red' | 'yellow' | 'green';
 }
 
 const HEALTH_MAP: Record<string, string> = {
-  critical: "red",
-  warning: "yellow",
-  ok: "green",
+  critical: 'red',
+  warning: 'yellow',
+  ok: 'green',
 };
 
 /**
@@ -26,5 +26,5 @@ export function filterByHealth<T extends ComplianceItem>(
 ): T[] {
   if (!drillDownHealth) return items;
   const mapped = HEALTH_MAP[drillDownHealth] ?? drillDownHealth;
-  return items.filter((item) => item.health === mapped);
+  return items.filter(item => item.health === mapped);
 }

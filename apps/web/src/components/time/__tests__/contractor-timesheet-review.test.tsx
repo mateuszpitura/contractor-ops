@@ -1,20 +1,20 @@
-import { describe, expect, it, vi } from "vitest";
-import { render, screen, setup } from "@/test/test-utils";
-import { ContractorTimesheetReview } from "../contractor-timesheet-review";
+import { describe, expect, it, vi } from 'vitest';
+import { render, screen, setup } from '@/test/test-utils';
+import { ContractorTimesheetReview } from '../contractor-timesheet-review';
 
-vi.mock("../time-entry-status-badge", () => ({
+vi.mock('../time-entry-status-badge', () => ({
   TimeEntryStatusBadge: ({ status }: { status: string }) => (
     <span data-testid="status-badge">{status}</span>
   ),
 }));
 
-vi.mock("../time-source-badge", () => ({
+vi.mock('../time-source-badge', () => ({
   TimeSourceBadge: ({ source }: { source: string }) => (
     <span data-testid="source-badge">{source}</span>
   ),
 }));
 
-vi.mock("../rejection-reason-dialog", () => ({
+vi.mock('../rejection-reason-dialog', () => ({
   RejectionReasonDialog: ({
     open,
     onConfirm,
@@ -24,40 +24,40 @@ vi.mock("../rejection-reason-dialog", () => ({
   }) =>
     open ? (
       <div data-testid="rejection-dialog">
-        <button onClick={() => onConfirm("reason text")}>confirm-reject</button>
+        <button onClick={() => onConfirm('reason text')}>confirm-reject</button>
       </div>
     ) : null,
 }));
 
 const baseTimesheet = {
-  id: "ts-1",
-  weekStartDate: "2026-01-06",
+  id: 'ts-1',
+  weekStartDate: '2026-01-06',
   totalMinutes: 2400,
-  status: "SUBMITTED" as const,
+  status: 'SUBMITTED' as const,
   entries: [
     {
-      id: "e-1",
-      contractId: "contract-1",
-      entryDate: "2026-01-06",
+      id: 'e-1',
+      contractId: 'contract-1',
+      entryDate: '2026-01-06',
       minutes: 480,
-      description: "Working on feature X",
-      source: "MANUAL" as const,
-      contract: { id: "contract-1", title: "Project Alpha" },
+      description: 'Working on feature X',
+      source: 'MANUAL' as const,
+      contract: { id: 'contract-1', title: 'Project Alpha' },
     },
     {
-      id: "e-2",
-      contractId: "contract-1",
-      entryDate: "2026-01-07",
+      id: 'e-2',
+      contractId: 'contract-1',
+      entryDate: '2026-01-07',
       minutes: 480,
       description: null,
-      source: "CLOCKIFY" as const,
-      contract: { id: "contract-1", title: "Project Alpha" },
+      source: 'CLOCKIFY' as const,
+      contract: { id: 'contract-1', title: 'Project Alpha' },
     },
   ],
   contractor: {
-    id: "c-1",
-    legalName: "Test Contractor",
-    email: "test@test.com",
+    id: 'c-1',
+    legalName: 'Test Contractor',
+    email: 'test@test.com',
   },
 };
 
@@ -68,65 +68,65 @@ const defaultProps = {
   onBack: vi.fn(),
 };
 
-describe("ContractorTimesheetReview", () => {
-  it("renders contractor name", () => {
+describe('ContractorTimesheetReview', () => {
+  it('renders contractor name', () => {
     render(<ContractorTimesheetReview {...defaultProps} />);
-    expect(screen.getByText("Test Contractor")).toBeInTheDocument();
+    expect(screen.getByText('Test Contractor')).toBeInTheDocument();
   });
 
-  it("renders total hours", () => {
+  it('renders total hours', () => {
     render(<ContractorTimesheetReview {...defaultProps} />);
     // 2400 min = 40h
-    expect(screen.getAllByText("40h").length).toBeGreaterThan(0);
+    expect(screen.getAllByText('40h').length).toBeGreaterThan(0);
   });
 
-  it("renders project name in grid", () => {
+  it('renders project name in grid', () => {
     render(<ContractorTimesheetReview {...defaultProps} />);
-    expect(screen.getByText("Project Alpha")).toBeInTheDocument();
+    expect(screen.getByText('Project Alpha')).toBeInTheDocument();
   });
 
-  it("renders status badge", () => {
+  it('renders status badge', () => {
     render(<ContractorTimesheetReview {...defaultProps} />);
-    expect(screen.getByTestId("status-badge")).toHaveTextContent("SUBMITTED");
+    expect(screen.getByTestId('status-badge')).toHaveTextContent('SUBMITTED');
   });
 
-  it("shows approve and reject buttons for SUBMITTED status", () => {
+  it('shows approve and reject buttons for SUBMITTED status', () => {
     render(<ContractorTimesheetReview {...defaultProps} />);
-    expect(screen.getByText("Approve Timesheet")).toBeInTheDocument();
-    expect(screen.getByText("Reject")).toBeInTheDocument();
+    expect(screen.getByText('Approve Timesheet')).toBeInTheDocument();
+    expect(screen.getByText('Reject')).toBeInTheDocument();
   });
 
-  it("hides approve and reject for APPROVED status", () => {
+  it('hides approve and reject for APPROVED status', () => {
     render(
       <ContractorTimesheetReview
         {...defaultProps}
-        timesheet={{ ...baseTimesheet, status: "APPROVED" }}
+        timesheet={{ ...baseTimesheet, status: 'APPROVED' }}
       />,
     );
-    expect(screen.queryByText("Approve Timesheet")).not.toBeInTheDocument();
+    expect(screen.queryByText('Approve Timesheet')).not.toBeInTheDocument();
   });
 
-  it("calls onApprove when approve clicked", async () => {
+  it('calls onApprove when approve clicked', async () => {
     const onApprove = vi.fn();
     const { user } = setup(<ContractorTimesheetReview {...defaultProps} onApprove={onApprove} />);
-    await user.click(screen.getByText("Approve Timesheet"));
+    await user.click(screen.getByText('Approve Timesheet'));
     expect(onApprove).toHaveBeenCalled();
   });
 
-  it("calls onBack when back clicked", async () => {
+  it('calls onBack when back clicked', async () => {
     const onBack = vi.fn();
     const { user } = setup(<ContractorTimesheetReview {...defaultProps} onBack={onBack} />);
-    await user.click(screen.getByText("Back to Queue"));
+    await user.click(screen.getByText('Back to Queue'));
     expect(onBack).toHaveBeenCalled();
   });
 
-  it("renders entries with descriptions", () => {
+  it('renders entries with descriptions', () => {
     render(<ContractorTimesheetReview {...defaultProps} />);
-    expect(screen.getByText("Working on feature X")).toBeInTheDocument();
+    expect(screen.getByText('Working on feature X')).toBeInTheDocument();
   });
 
-  it("shows source badge for imported entries", () => {
+  it('shows source badge for imported entries', () => {
     render(<ContractorTimesheetReview {...defaultProps} />);
-    expect(screen.getAllByTestId("source-badge").length).toBeGreaterThan(0);
+    expect(screen.getAllByTestId('source-badge').length).toBeGreaterThan(0);
   });
 });

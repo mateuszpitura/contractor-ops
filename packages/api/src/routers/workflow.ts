@@ -8,9 +8,9 @@
  * Shared utilities (condition evaluation, progress calculation, assignee resolution)
  * live in workflow-shared.ts and are re-exported here for external consumers.
  */
-import { mergeRouters } from "../init.js";
-import { workflowExecutionRouter } from "./workflow-execution.js";
-import { workflowTemplatesRouter } from "./workflow-templates.js";
+import { mergeRouters } from '../init.js';
+import { workflowExecutionRouter } from './workflow-execution.js';
+import { workflowTemplatesRouter } from './workflow-templates.js';
 
 // ---------------------------------------------------------------------------
 // Re-export shared utilities for external consumers (e.g., tests, services)
@@ -21,7 +21,7 @@ export {
   evaluateCondition,
   resolveAssignee,
   TASK_TRANSITIONS,
-} from "./workflow-shared.js";
+} from './workflow-shared.js';
 
 // ---------------------------------------------------------------------------
 // Merged workflow router

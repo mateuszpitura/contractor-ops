@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useState } from 'react';
 
 /**
  * Generic wizard step navigation with boundary clamping.
@@ -15,11 +15,11 @@ export function useWizardSteps(totalSteps: number): {
   const [currentStep, setCurrentStep] = useState(0);
 
   const goNext = useCallback(() => {
-    setCurrentStep((s) => Math.min(s + 1, totalSteps - 1));
+    setCurrentStep(s => Math.min(s + 1, totalSteps - 1));
   }, [totalSteps]);
 
   const goBack = useCallback(() => {
-    setCurrentStep((s) => Math.max(s - 1, 0));
+    setCurrentStep(s => Math.max(s - 1, 0));
   }, []);
 
   const goTo = useCallback(

@@ -1,5 +1,5 @@
-import { render, screen, setup } from "@/test/test-utils";
-import { DataTablePagination } from "../data-table-pagination";
+import { render, screen, setup } from '@/test/test-utils';
+import { DataTablePagination } from '../data-table-pagination';
 
 const createMockTable = (selectedCount = 0) =>
   ({
@@ -8,8 +8,8 @@ const createMockTable = (selectedCount = 0) =>
     }),
   }) as any;
 
-describe("DataTablePagination", () => {
-  it("renders page indicator", () => {
+describe('DataTablePagination', () => {
+  it('renders page indicator', () => {
     render(
       <DataTablePagination
         table={createMockTable()}
@@ -21,10 +21,10 @@ describe("DataTablePagination", () => {
       />,
     );
     expect(screen.getByText(/of 100/)).toBeInTheDocument();
-    expect(screen.getByText("Rows per page")).toBeInTheDocument();
+    expect(screen.getByText('Rows per page')).toBeInTheDocument();
   });
 
-  it("disables previous button on first page", () => {
+  it('disables previous button on first page', () => {
     render(
       <DataTablePagination
         table={createMockTable()}
@@ -35,11 +35,11 @@ describe("DataTablePagination", () => {
         onPageSizeChange={vi.fn()}
       />,
     );
-    const prevBtn = screen.getByLabelText("Previous page");
+    const prevBtn = screen.getByLabelText('Previous page');
     expect(prevBtn).toBeDisabled();
   });
 
-  it("disables next button on last page", () => {
+  it('disables next button on last page', () => {
     render(
       <DataTablePagination
         table={createMockTable()}
@@ -50,11 +50,11 @@ describe("DataTablePagination", () => {
         onPageSizeChange={vi.fn()}
       />,
     );
-    const nextBtn = screen.getByLabelText("Next page");
+    const nextBtn = screen.getByLabelText('Next page');
     expect(nextBtn).toBeDisabled();
   });
 
-  it("calls onPageChange when clicking next", async () => {
+  it('calls onPageChange when clicking next', async () => {
     const onPageChange = vi.fn();
     const { user } = setup(
       <DataTablePagination
@@ -66,11 +66,11 @@ describe("DataTablePagination", () => {
         onPageSizeChange={vi.fn()}
       />,
     );
-    await user.click(screen.getByLabelText("Next page"));
+    await user.click(screen.getByLabelText('Next page'));
     expect(onPageChange).toHaveBeenCalledWith(2);
   });
 
-  it("shows selected count when rows are selected", () => {
+  it('shows selected count when rows are selected', () => {
     render(
       <DataTablePagination
         table={createMockTable(3)}

@@ -1,22 +1,22 @@
-import { Noto_Sans_Arabic } from "next/font/google";
-import { NextIntlClientProvider } from "next-intl";
-import { getMessages, setRequestLocale } from "next-intl/server";
-import { ThemeProvider } from "next-themes";
-import { Toaster } from "sonner";
-import { Providers } from "@/app/providers";
-import { CookieConsentBanner } from "@/components/layout/cookie-consent-banner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { routing } from "@/i18n/routing";
-import "@/app/globals.css";
+import { Noto_Sans_Arabic } from 'next/font/google';
+import { NextIntlClientProvider } from 'next-intl';
+import { getMessages, setRequestLocale } from 'next-intl/server';
+import { ThemeProvider } from 'next-themes';
+import { Toaster } from 'sonner';
+import { Providers } from '@/app/providers';
+import { CookieConsentBanner } from '@/components/layout/cookie-consent-banner';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { routing } from '@/i18n/routing';
+import '@/app/globals.css';
 
 const notoSansArabic = Noto_Sans_Arabic({
-  subsets: ["arabic"],
-  variable: "--font-arabic",
-  display: "swap",
+  subsets: ['arabic'],
+  variable: '--font-arabic',
+  display: 'swap',
 });
 
 export function generateStaticParams() {
-  return routing.locales.map((locale) => ({ locale }));
+  return routing.locales.map(locale => ({ locale }));
 }
 
 /**
@@ -41,13 +41,14 @@ export default async function LocaleLayout({
 
   // Set lang and dir attributes on the html element for screen readers and RTL.
   // Sanitize locale to alphanumeric+hyphen only (defense in depth).
-  const safeLang = locale.replace(/[^a-zA-Z0-9-]/g, "");
-  const dir = locale === "ar" ? "rtl" : "ltr";
-  const isArabic = locale === "ar";
+  const safeLang = locale.replace(/[^a-zA-Z0-9-]/g, '');
+  const dir = locale === 'ar' ? 'rtl' : 'ltr';
+  const isArabic = locale === 'ar';
 
   return (
     <>
       <script
+        // biome-ignore lint/security/noDangerouslySetInnerHtml: server-rendered lang/dir script with sanitized locale
         dangerouslySetInnerHTML={{
           __html: `document.documentElement.lang="${safeLang}";document.documentElement.dir="${dir}";`,
         }}
@@ -57,13 +58,12 @@ export default async function LocaleLayout({
           attribute="class"
           defaultTheme="system"
           enableSystem
-          disableTransitionOnChange
-        >
+          disableTransitionOnChange>
           <Providers>
             <TooltipProvider delay={300}>
               <div className={isArabic ? notoSansArabic.variable : undefined}>{children}</div>
               <CookieConsentBanner />
-              <Toaster richColors position={dir === "rtl" ? "bottom-left" : "bottom-right"} />
+              <Toaster richColors position={dir === 'rtl' ? 'bottom-left' : 'bottom-right'} />
             </TooltipProvider>
           </Providers>
         </ThemeProvider>

@@ -1,26 +1,26 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Download } from "lucide-react";
-import { useParams } from "next/navigation";
-import { useTranslations } from "next-intl";
-import { ActivityLog } from "@/components/portal/activity-log";
-import { StatusTimeline, StatusTimelineSkeleton } from "@/components/portal/status-timeline";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Link } from "@/i18n/navigation";
-import { trpc } from "@/trpc/init";
+import { useQuery } from '@tanstack/react-query';
+import { ArrowLeft, Download } from 'lucide-react';
+import { useParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { ActivityLog } from '@/components/portal/activity-log';
+import { StatusTimeline, StatusTimelineSkeleton } from '@/components/portal/status-timeline';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Link } from '@/i18n/navigation';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
 function formatAmount(minor: number, currency: string): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
     currency,
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
@@ -28,11 +28,11 @@ function formatAmount(minor: number, currency: string): string {
 }
 
 function formatDate(date: Date | string): string {
-  const d = typeof date === "string" ? new Date(date) : date;
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
   }).format(d);
 }
 
@@ -46,22 +46,22 @@ function getStatusDisplay(
     approvalStatus: string;
     paymentStatus: string;
   },
-  t: ReturnType<typeof useTranslations<"Portal">>,
+  t: ReturnType<typeof useTranslations<'Portal'>>,
 ): {
   label: string;
-  variant: "info" | "warning" | "success" | "success-outline" | "success-solid" | "destructive";
+  variant: 'info' | 'warning' | 'success' | 'success-outline' | 'success-solid' | 'destructive';
 } {
-  if (invoice.paymentStatus === "PAID")
-    return { label: t("invoices.status.paid"), variant: "success-solid" };
-  if (invoice.paymentStatus === "IN_RUN")
-    return { label: t("invoices.status.paymentScheduled"), variant: "success-outline" };
-  if (invoice.approvalStatus === "APPROVED")
-    return { label: t("invoices.status.approved"), variant: "success" };
-  if (invoice.status === "REJECTED")
-    return { label: t("invoices.status.rejected"), variant: "destructive" };
-  if (invoice.status === "UNDER_REVIEW" || invoice.status === "APPROVAL_PENDING")
-    return { label: t("invoices.status.inReview"), variant: "warning" };
-  return { label: t("invoices.status.submitted"), variant: "info" };
+  if (invoice.paymentStatus === 'PAID')
+    return { label: t('invoices.status.paid'), variant: 'success-solid' };
+  if (invoice.paymentStatus === 'IN_RUN')
+    return { label: t('invoices.status.paymentScheduled'), variant: 'success-outline' };
+  if (invoice.approvalStatus === 'APPROVED')
+    return { label: t('invoices.status.approved'), variant: 'success' };
+  if (invoice.status === 'REJECTED')
+    return { label: t('invoices.status.rejected'), variant: 'destructive' };
+  if (invoice.status === 'UNDER_REVIEW' || invoice.status === 'APPROVAL_PENDING')
+    return { label: t('invoices.status.inReview'), variant: 'warning' };
+  return { label: t('invoices.status.submitted'), variant: 'info' };
 }
 
 // ---------------------------------------------------------------------------
@@ -108,7 +108,7 @@ function DetailSkeleton() {
 // ---------------------------------------------------------------------------
 
 export default function PortalInvoiceDetailPage() {
-  const t = useTranslations("Portal");
+  const t = useTranslations('Portal');
   const params = useParams<{ id: string }>();
 
   const { data: invoice, isLoading } = useQuery(
@@ -121,7 +121,7 @@ export default function PortalInvoiceDetailPage() {
         <Link href="/portal/invoices">
           <Button variant="ghost" size="sm">
             <ArrowLeft className="me-1.5 h-4 w-4" />
-            {t("invoiceDetail.back")}
+            {t('invoiceDetail.back')}
           </Button>
         </Link>
         <DetailSkeleton />
@@ -135,11 +135,11 @@ export default function PortalInvoiceDetailPage() {
         <Link href="/portal/invoices">
           <Button variant="ghost" size="sm">
             <ArrowLeft className="me-1.5 h-4 w-4" />
-            {t("invoiceDetail.back")}
+            {t('invoiceDetail.back')}
           </Button>
         </Link>
         <p className="py-8 text-center text-sm text-muted-foreground">
-          {t("invoiceDetail.notFound")}
+          {t('invoiceDetail.notFound')}
         </p>
       </div>
     );
@@ -148,13 +148,11 @@ export default function PortalInvoiceDetailPage() {
   const statusDisplay = getStatusDisplay(invoice, t);
 
   // Derive submitted date from activity log
-  const submittedEntry = invoice.activityLog.find((e) =>
-    e.event.toLowerCase().includes("submitted"),
-  );
+  const submittedEntry = invoice.activityLog.find(e => e.event.toLowerCase().includes('submitted'));
   const submittedDate = submittedEntry?.timestamp;
 
   // Check if rejected
-  const rejectedEntry = invoice.activityLog.find((e) => e.event.toLowerCase().includes("rejected"));
+  const rejectedEntry = invoice.activityLog.find(e => e.event.toLowerCase().includes('rejected'));
 
   return (
     <div className="space-y-6">
@@ -162,7 +160,7 @@ export default function PortalInvoiceDetailPage() {
       <Link href="/portal/invoices">
         <Button variant="ghost" size="sm">
           <ArrowLeft className="me-1.5 h-4 w-4" />
-          {t("invoiceDetail.back")}
+          {t('invoiceDetail.back')}
         </Button>
       </Link>
 
@@ -172,7 +170,7 @@ export default function PortalInvoiceDetailPage() {
         <Badge variant={statusDisplay.variant}>{statusDisplay.label}</Badge>
         {submittedDate && (
           <span className="text-[13px] text-muted-foreground">
-            {t("invoiceDetail.submitted", { date: formatDate(submittedDate) })}
+            {t('invoiceDetail.submitted', { date: formatDate(submittedDate) })}
           </span>
         )}
       </div>
@@ -188,21 +186,20 @@ export default function PortalInvoiceDetailPage() {
       {/* Details Card */}
       <Card>
         <CardHeader>
-          <CardTitle>{t("invoiceDetail.details")}</CardTitle>
+          <CardTitle>{t('invoiceDetail.details')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Contract */}
           <div className="flex items-center justify-between">
-            <span className="text-[13px] text-muted-foreground">{t("invoiceDetail.contract")}</span>
+            <span className="text-[13px] text-muted-foreground">{t('invoiceDetail.contract')}</span>
             {invoice.contract ? (
               <Link
                 href={`/portal/contracts/${invoice.contract.id}`}
-                className="text-sm text-primary hover:underline"
-              >
+                className="text-sm text-primary hover:underline">
                 {invoice.contract.title}
               </Link>
             ) : (
-              <span className="text-sm">{t("invoiceDetail.fallback")}</span>
+              <span className="text-sm">{t('invoiceDetail.fallback')}</span>
             )}
           </div>
           <Separator />
@@ -210,13 +207,13 @@ export default function PortalInvoiceDetailPage() {
           {/* Amounts */}
           <div className="flex items-center justify-between">
             <span className="text-[13px] text-muted-foreground">
-              {t("invoiceDetail.netAmount")}
+              {t('invoiceDetail.netAmount')}
             </span>
             <span className="text-sm">{formatAmount(invoice.subtotalMinor, invoice.currency)}</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-[13px] text-muted-foreground">
-              {t("invoiceDetail.grossAmount")}
+              {t('invoiceDetail.grossAmount')}
             </span>
             <span className="text-sm font-medium">
               {formatAmount(invoice.totalMinor, invoice.currency)}
@@ -227,16 +224,16 @@ export default function PortalInvoiceDetailPage() {
           {/* Dates */}
           <div className="flex items-center justify-between">
             <span className="text-[13px] text-muted-foreground">
-              {t("invoiceDetail.issueDate")}
+              {t('invoiceDetail.issueDate')}
             </span>
             <span className="text-sm">
-              {invoice.issueDate ? formatDate(invoice.issueDate) : t("invoiceDetail.fallback")}
+              {invoice.issueDate ? formatDate(invoice.issueDate) : t('invoiceDetail.fallback')}
             </span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-[13px] text-muted-foreground">{t("invoiceDetail.dueDate")}</span>
+            <span className="text-[13px] text-muted-foreground">{t('invoiceDetail.dueDate')}</span>
             <span className="text-sm">
-              {invoice.dueDate ? formatDate(invoice.dueDate) : t("invoiceDetail.fallback")}
+              {invoice.dueDate ? formatDate(invoice.dueDate) : t('invoiceDetail.fallback')}
             </span>
           </div>
           <Separator />
@@ -245,15 +242,15 @@ export default function PortalInvoiceDetailPage() {
           {invoice.files.length > 0 && (
             <div className="space-y-2">
               <span className="text-[13px] text-muted-foreground">
-                {t("invoiceDetail.attachedFiles")}
+                {t('invoiceDetail.attachedFiles')}
               </span>
-              {invoice.files.map((file) => (
+              {invoice.files.map(file => (
                 <div key={file.id} className="flex items-center justify-between">
                   <span className="text-sm">{file.name}</span>
                   <a href={file.downloadUrl} target="_blank" rel="noopener noreferrer" download>
                     <Button variant="outline" size="sm">
                       <Download className="me-1.5 h-3.5 w-3.5" />
-                      {t("invoiceDetail.download")}
+                      {t('invoiceDetail.download')}
                     </Button>
                   </a>
                 </div>
@@ -267,21 +264,21 @@ export default function PortalInvoiceDetailPage() {
       {invoice.payment && (
         <Card>
           <CardHeader>
-            <CardTitle>{t("invoiceDetail.payment")}</CardTitle>
+            <CardTitle>{t('invoiceDetail.payment')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-[13px] text-muted-foreground">
-                {t("invoiceDetail.paymentDate")}
+                {t('invoiceDetail.paymentDate')}
               </span>
               <span className="text-sm">
                 {invoice.payment.paidAt
                   ? formatDate(invoice.payment.paidAt)
-                  : t("invoiceDetail.fallback")}
+                  : t('invoiceDetail.fallback')}
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-[13px] text-muted-foreground">{t("invoiceDetail.amount")}</span>
+              <span className="text-[13px] text-muted-foreground">{t('invoiceDetail.amount')}</span>
               <span className="text-sm font-medium">
                 {formatAmount(invoice.payment.amountMinor, invoice.payment.currency)}
               </span>
@@ -292,7 +289,7 @@ export default function PortalInvoiceDetailPage() {
 
       {/* Activity Log */}
       <div className="space-y-3">
-        <h2 className="text-xl font-semibold">{t("invoiceDetail.activity")}</h2>
+        <h2 className="text-xl font-semibold">{t('invoiceDetail.activity')}</h2>
         <ActivityLog entries={invoice.activityLog} />
       </div>
     </div>

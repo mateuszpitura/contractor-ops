@@ -1,4 +1,4 @@
-import { render, screen, setup } from "@/test/test-utils";
+import { render, screen, setup } from '@/test/test-utils';
 import {
   Dialog,
   DialogClose,
@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "../dialog";
+} from '../dialog';
 
 function renderDialog({
   defaultOpen = false,
@@ -34,41 +34,41 @@ function renderDialog({
   );
 }
 
-describe("Dialog", () => {
-  it("renders the trigger", () => {
+describe('Dialog', () => {
+  it('renders the trigger', () => {
     renderDialog();
-    expect(screen.getByText("Open Dialog")).toBeInTheDocument();
+    expect(screen.getByText('Open Dialog')).toBeInTheDocument();
   });
 
-  it("does not render content when closed", () => {
+  it('does not render content when closed', () => {
     renderDialog();
-    expect(screen.queryByText("Dialog Title")).not.toBeInTheDocument();
+    expect(screen.queryByText('Dialog Title')).not.toBeInTheDocument();
   });
 
-  it("renders content when defaultOpen", () => {
+  it('renders content when defaultOpen', () => {
     renderDialog({ defaultOpen: true });
-    expect(screen.getByText("Dialog Title")).toBeInTheDocument();
-    expect(screen.getByText("Dialog description text.")).toBeInTheDocument();
-    expect(screen.getByText("Dialog body content")).toBeInTheDocument();
+    expect(screen.getByText('Dialog Title')).toBeInTheDocument();
+    expect(screen.getByText('Dialog description text.')).toBeInTheDocument();
+    expect(screen.getByText('Dialog body content')).toBeInTheDocument();
   });
 
-  it("opens dialog on trigger click", async () => {
+  it('opens dialog on trigger click', async () => {
     const { user } = renderDialog();
-    await user.click(screen.getByText("Open Dialog"));
-    expect(screen.getByText("Dialog Title")).toBeInTheDocument();
+    await user.click(screen.getByText('Open Dialog'));
+    expect(screen.getByText('Dialog Title')).toBeInTheDocument();
   });
 
-  it("renders close button with aria-label when showCloseButton is true", () => {
+  it('renders close button with aria-label when showCloseButton is true', () => {
     renderDialog({ defaultOpen: true, showCloseButton: true });
-    expect(screen.getByLabelText("Close dialog")).toBeInTheDocument();
+    expect(screen.getByLabelText('Close dialog')).toBeInTheDocument();
   });
 
-  it("does not render close button when showCloseButton is false", () => {
+  it('does not render close button when showCloseButton is false', () => {
     renderDialog({ defaultOpen: true, showCloseButton: false });
-    expect(screen.queryByLabelText("Close dialog")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Close dialog')).not.toBeInTheDocument();
   });
 
-  it("DialogHeader merges custom className", () => {
+  it('DialogHeader merges custom className', () => {
     render(
       <Dialog defaultOpen>
         <DialogContent>
@@ -79,10 +79,10 @@ describe("Dialog", () => {
       </Dialog>,
     );
     const header = document.querySelector("[data-slot='dialog-header']");
-    expect(header?.className).toContain("my-header");
+    expect(header?.className).toContain('my-header');
   });
 
-  it("DialogFooter merges custom className", () => {
+  it('DialogFooter merges custom className', () => {
     render(
       <Dialog defaultOpen>
         <DialogContent>
@@ -93,10 +93,10 @@ describe("Dialog", () => {
       </Dialog>,
     );
     const footer = document.querySelector("[data-slot='dialog-footer']");
-    expect(footer?.className).toContain("my-footer");
+    expect(footer?.className).toContain('my-footer');
   });
 
-  it("DialogTitle sets data-slot", () => {
+  it('DialogTitle sets data-slot', () => {
     render(
       <Dialog defaultOpen>
         <DialogContent>
@@ -105,11 +105,11 @@ describe("Dialog", () => {
       </Dialog>,
     );
     expect(
-      screen.getByText("Test Title").closest("[data-slot='dialog-title']"),
+      screen.getByText('Test Title').closest("[data-slot='dialog-title']"),
     ).toBeInTheDocument();
   });
 
-  it("DialogContent merges custom className", () => {
+  it('DialogContent merges custom className', () => {
     render(
       <Dialog defaultOpen>
         <DialogContent className="custom-dialog">
@@ -118,10 +118,10 @@ describe("Dialog", () => {
       </Dialog>,
     );
     const content = document.querySelector("[data-slot='dialog-content']");
-    expect(content?.className).toContain("custom-dialog");
+    expect(content?.className).toContain('custom-dialog');
   });
 
-  it("DialogFooter can render a close button via showCloseButton prop", () => {
+  it('DialogFooter can render a close button via showCloseButton prop', () => {
     render(
       <Dialog defaultOpen>
         <DialogContent showCloseButton={false}>
@@ -131,7 +131,7 @@ describe("Dialog", () => {
         </DialogContent>
       </Dialog>,
     );
-    expect(screen.getByText("Close")).toBeInTheDocument();
-    expect(screen.getByText("Save")).toBeInTheDocument();
+    expect(screen.getByText('Close')).toBeInTheDocument();
+    expect(screen.getByText('Save')).toBeInTheDocument();
   });
 });

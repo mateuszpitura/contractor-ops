@@ -1,4 +1,4 @@
-import type { HttpHandler } from "msw";
+import type { HttpHandler } from 'msw';
 
 /**
  * Configuration for simulating network conditions per-handler.

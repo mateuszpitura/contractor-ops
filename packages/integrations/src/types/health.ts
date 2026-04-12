@@ -3,7 +3,7 @@
  * Aggregates connection state, recent activity, and error counts.
  */
 export interface ProviderHealthStatus {
-  status: "CONNECTED" | "DISCONNECTED" | "ERROR" | "REAUTH_REQUIRED";
+  status: 'CONNECTED' | 'DISCONNECTED' | 'ERROR' | 'REAUTH_REQUIRED';
   provider: string;
   displayName?: string | null;
   connectedAt?: Date | null;

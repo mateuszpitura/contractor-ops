@@ -2,9 +2,9 @@
 // Government API Rate Limiter
 // ---------------------------------------------------------------------------
 
-import { Ratelimit } from "@upstash/ratelimit";
-import { Redis } from "@upstash/redis";
-import type { GovApiRateLimitConfig } from "./types.js";
+import { Ratelimit } from '@upstash/ratelimit';
+import { Redis } from '@upstash/redis';
+import type { GovApiRateLimitConfig } from './types.js';
 
 /**
  * Per-API sliding window rate limiter backed by Upstash Redis.

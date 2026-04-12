@@ -1,16 +1,17 @@
-import { storeCredentials } from "@contractor-ops/integrations";
-import { getQStashClient } from "@contractor-ops/integrations/services/qstash-client";
+import type { IntegrationConnection } from '@contractor-ops/db/generated/prisma/client';
+import { storeCredentials } from '@contractor-ops/integrations';
+import { getQStashClient } from '@contractor-ops/integrations/services/qstash-client';
 import {
   connectPeppolSchema,
   getTransmissionByInvoiceIdSchema,
   getTransmissionsSchema,
   retryTransmissionSchema,
-} from "@contractor-ops/validators";
-import { TRPCError } from "@trpc/server";
-import * as E from "../errors.js";
-import { router } from "../init.js";
-import { requirePermission } from "../middleware/rbac.js";
-import { tenantProcedure } from "../middleware/tenant.js";
+} from '@contractor-ops/validators';
+import { TRPCError } from '@trpc/server';
+import * as E from '../errors.js';
+import { router } from '../init.js';
+import { requirePermission } from '../middleware/rbac.js';
+import { tenantProcedure } from '../middleware/tenant.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -31,7 +32,7 @@ export const peppolRouter = router({
    * IntegrationConnection records, and schedules a QStash polling CRON.
    */
   connect: tenantProcedure
-    .use(requirePermission({ settings: ["update"] }))
+    .use(requirePermission({ settings: ['update'] }))
     .input(connectPeppolSchema)
     .mutation(async ({ ctx, input }) => {
       const participantId = `0192:${input.trn}`;
@@ -40,14 +41,14 @@ export const peppolRouter = router({
       const existing = await ctx.db.peppolParticipant.findFirst({
         where: {
           organizationId: ctx.organizationId,
-          status: { in: ["PENDING", "REGISTERED", "ACTIVE"] },
+          status: { in: ['PENDING', 'REGISTERED', 'ACTIVE'] },
         },
       });
 
       if (existing) {
         throw new TRPCError({
-          code: "CONFLICT",
-          message: "Organization already has an active Peppol participant. Disconnect first.",
+          code: 'CONFLICT',
+          message: 'Organization already has an active Peppol participant. Disconnect first.',
         });
       }
 
@@ -61,23 +62,23 @@ export const peppolRouter = router({
           },
         },
         ctx.organizationId,
-        "peppol",
+        'peppol',
       );
 
       // Upsert IntegrationConnection
       const existingConnection = await ctx.db.integrationConnection.findFirst({
         where: {
           organizationId: ctx.organizationId,
-          provider: "PEPPOL",
+          provider: 'PEPPOL',
         },
       });
 
-      let connection;
+      let connection: IntegrationConnection;
       if (existingConnection) {
         connection = await ctx.db.integrationConnection.update({
           where: { id: existingConnection.id },
           data: {
-            status: "CONNECTED",
+            status: 'CONNECTED',
             configJson: {
               aspProvider: input.aspProvider,
               environment: input.environment,
@@ -91,8 +92,8 @@ export const peppolRouter = router({
         connection = await ctx.db.integrationConnection.create({
           data: {
             organizationId: ctx.organizationId,
-            provider: "PEPPOL",
-            status: "CONNECTED",
+            provider: 'PEPPOL',
+            status: 'CONNECTED',
             configJson: {
               aspProvider: input.aspProvider,
               environment: input.environment,
@@ -108,10 +109,10 @@ export const peppolRouter = router({
         data: {
           organizationId: ctx.organizationId,
           participantId,
-          schemeId: "0192",
+          schemeId: '0192',
           identifierValue: input.trn,
           aspProvider: input.aspProvider,
-          status: "PENDING",
+          status: 'PENDING',
         },
       });
 
@@ -120,7 +121,7 @@ export const peppolRouter = router({
         const qstash = getQStashClient();
         const schedule = await qstash.schedules.create({
           destination: `${process.env.NEXT_PUBLIC_APP_URL}/api/peppol/poll`,
-          cron: "*/15 * * * *",
+          cron: '*/15 * * * *',
           body: JSON.stringify({
             organizationId: ctx.organizationId,
           }),
@@ -138,7 +139,7 @@ export const peppolRouter = router({
           },
         });
       } catch (error) {
-        console.error("[peppol.connect] Failed to create QStash schedule:", error);
+        console.error('[peppol.connect] Failed to create QStash schedule:', error);
         // Don't fail the connection — schedule can be retried
       }
 
@@ -150,18 +151,18 @@ export const peppolRouter = router({
    * Deregisters the participant and sets IntegrationConnection to DISCONNECTED.
    */
   disconnect: tenantProcedure
-    .use(requirePermission({ settings: ["update"] }))
+    .use(requirePermission({ settings: ['update'] }))
     .mutation(async ({ ctx }) => {
       const participant = await ctx.db.peppolParticipant.findFirst({
         where: {
           organizationId: ctx.organizationId,
-          status: { in: ["PENDING", "REGISTERED", "ACTIVE"] },
+          status: { in: ['PENDING', 'REGISTERED', 'ACTIVE'] },
         },
       });
 
       if (!participant) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: E.INTEGRATION_NOT_FOUND,
         });
       }
@@ -169,14 +170,14 @@ export const peppolRouter = router({
       // Deregister participant
       await ctx.db.peppolParticipant.update({
         where: { id: participant.id },
-        data: { status: "DEREGISTERED" },
+        data: { status: 'DEREGISTERED' },
       });
 
       // Update IntegrationConnection
       const connection = await ctx.db.integrationConnection.findFirst({
         where: {
           organizationId: ctx.organizationId,
-          provider: "PEPPOL",
+          provider: 'PEPPOL',
         },
       });
 
@@ -190,14 +191,14 @@ export const peppolRouter = router({
             const qstash = getQStashClient();
             await qstash.schedules.delete(scheduleId);
           } catch (error) {
-            console.error("[peppol.disconnect] Failed to delete QStash schedule:", error);
+            console.error('[peppol.disconnect] Failed to delete QStash schedule:', error);
           }
         }
 
         await ctx.db.integrationConnection.update({
           where: { id: connection.id },
           data: {
-            status: "DISCONNECTED",
+            status: 'DISCONNECTED',
             configJson: { ...configJson, qstashScheduleId: null },
           },
         });
@@ -211,12 +212,12 @@ export const peppolRouter = router({
    * Returns participant and connection details, or null if not connected.
    */
   getStatus: tenantProcedure
-    .use(requirePermission({ settings: ["read"] }))
+    .use(requirePermission({ settings: ['read'] }))
     .query(async ({ ctx }) => {
       const participant = await ctx.db.peppolParticipant.findFirst({
         where: {
           organizationId: ctx.organizationId,
-          status: { in: ["PENDING", "REGISTERED", "ACTIVE"] },
+          status: { in: ['PENDING', 'REGISTERED', 'ACTIVE'] },
         },
       });
 
@@ -227,7 +228,7 @@ export const peppolRouter = router({
       const connection = await ctx.db.integrationConnection.findFirst({
         where: {
           organizationId: ctx.organizationId,
-          provider: "PEPPOL",
+          provider: 'PEPPOL',
         },
         select: {
           id: true,
@@ -248,12 +249,12 @@ export const peppolRouter = router({
    * Get PeppolParticipant for the organization with transmission counts.
    */
   getParticipant: tenantProcedure
-    .use(requirePermission({ settings: ["read"] }))
+    .use(requirePermission({ settings: ['read'] }))
     .query(async ({ ctx }) => {
       const participant = await ctx.db.peppolParticipant.findFirst({
         where: {
           organizationId: ctx.organizationId,
-          status: { in: ["PENDING", "REGISTERED", "ACTIVE"] },
+          status: { in: ['PENDING', 'REGISTERED', 'ACTIVE'] },
         },
         include: {
           _count: {
@@ -274,21 +275,21 @@ export const peppolRouter = router({
           where: {
             organizationId: ctx.organizationId,
             peppolParticipantId: participant.id,
-            direction: "OUTBOUND",
+            direction: 'OUTBOUND',
           },
         }),
         ctx.db.peppolTransmission.count({
           where: {
             organizationId: ctx.organizationId,
             peppolParticipantId: participant.id,
-            direction: "INBOUND",
+            direction: 'INBOUND',
           },
         }),
         ctx.db.peppolTransmission.count({
           where: {
             organizationId: ctx.organizationId,
             peppolParticipantId: participant.id,
-            status: { in: ["FAILED", "REJECTED"] },
+            status: { in: ['FAILED', 'REJECTED'] },
           },
         }),
       ]);
@@ -309,7 +310,7 @@ export const peppolRouter = router({
    * Used by the invoice detail page to show transmission status.
    */
   getTransmissionByInvoiceId: tenantProcedure
-    .use(requirePermission({ invoice: ["read"] }))
+    .use(requirePermission({ invoice: ['read'] }))
     .input(getTransmissionByInvoiceIdSchema)
     .query(async ({ ctx, input }) => {
       const transmission = await ctx.db.peppolTransmission.findFirst({
@@ -320,7 +321,7 @@ export const peppolRouter = router({
         include: {
           participant: true,
         },
-        orderBy: { createdAt: "desc" },
+        orderBy: { createdAt: 'desc' },
       });
 
       if (!transmission) return null;
@@ -338,7 +339,7 @@ export const peppolRouter = router({
    * Supports cursor-based pagination and direction filtering.
    */
   getTransmissions: tenantProcedure
-    .use(requirePermission({ settings: ["read"] }))
+    .use(requirePermission({ settings: ['read'] }))
     .input(getTransmissionsSchema)
     .query(async ({ ctx, input }) => {
       const where: Record<string, unknown> = {
@@ -351,7 +352,7 @@ export const peppolRouter = router({
 
       const transmissions = await ctx.db.peppolTransmission.findMany({
         where,
-        orderBy: { createdAt: "desc" },
+        orderBy: { createdAt: 'desc' },
         take: input.limit + 1,
         ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
       });
@@ -370,28 +371,28 @@ export const peppolRouter = router({
    * Resets the status to PENDING so the outbound processor picks it up.
    */
   retryTransmission: tenantProcedure
-    .use(requirePermission({ settings: ["update"] }))
+    .use(requirePermission({ settings: ['update'] }))
     .input(retryTransmissionSchema)
     .mutation(async ({ ctx, input }) => {
       const transmission = await ctx.db.peppolTransmission.findFirst({
         where: {
           id: input.transmissionId,
           organizationId: ctx.organizationId,
-          status: { in: ["FAILED", "REJECTED"] },
+          status: { in: ['FAILED', 'REJECTED'] },
         },
       });
 
       if (!transmission) {
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Failed transmission not found or not in retryable state.",
+          code: 'NOT_FOUND',
+          message: 'Failed transmission not found or not in retryable state.',
         });
       }
 
       const updated = await ctx.db.peppolTransmission.update({
         where: { id: transmission.id },
         data: {
-          status: "PENDING",
+          status: 'PENDING',
           errorMessage: null,
         },
       });

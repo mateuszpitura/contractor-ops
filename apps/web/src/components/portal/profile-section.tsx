@@ -1,19 +1,19 @@
-"use client";
+'use client';
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronDown, Info, Lock, Pencil } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { z } from "zod";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { PendingChangeBanner } from "./pending-change-banner";
+import { zodResolver } from '@hookform/resolvers/zod';
+import { ChevronDown, Info, Lock, Pencil } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useMemo, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { z } from 'zod';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { PendingChangeBanner } from './pending-change-banner';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -61,13 +61,13 @@ export function ProfileSection({
   pendingChangeRequest,
   defaultOpen = true,
 }: ProfileSectionProps) {
-  const t = useTranslations("Portal.settings");
+  const t = useTranslations('Portal.settings');
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
 
   // Build Zod schema dynamically from editable fields
-  const editableFields = useMemo(() => fields.filter((f) => !f.readOnly), [fields]);
+  const editableFields = useMemo(() => fields.filter(f => !f.readOnly), [fields]);
 
   const schema = useMemo(() => {
     const shape: Record<string, z.ZodTypeAny> = {};
@@ -82,7 +82,7 @@ export function ProfileSection({
   const defaultValues = useMemo(() => {
     const values: Record<string, string | null> = {};
     for (const field of editableFields) {
-      values[field.key] = field.value ?? "";
+      values[field.key] = field.value ?? '';
     }
     return values;
   }, [editableFields]);
@@ -98,7 +98,7 @@ export function ProfileSection({
       await onSave(values as Record<string, string | null>);
       setEditing(false);
     } catch {
-      toast.error(t("errors.saveFailed"));
+      toast.error(t('errors.saveFailed'));
     } finally {
       setSaving(false);
     }
@@ -123,19 +123,18 @@ export function ProfileSection({
         {/* Trigger row */}
         <div className="flex min-h-[48px] items-center gap-3 px-4 py-3">
           <CollapsibleTrigger
-            render={(props) => (
+            render={props => (
               <button
                 {...props}
                 type="button"
-                className="flex flex-1 items-center gap-3 text-start outline-none"
-              >
+                className="flex flex-1 items-center gap-3 text-start outline-none">
                 <ChevronDown
                   className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 ${
-                    isOpen ? "rotate-180" : ""
+                    isOpen ? 'rotate-180' : ''
                   }`}
                 />
                 <span className="text-sm font-semibold">{title}</span>
-                {requiresApproval && <Badge variant="info">{t("requiresApproval")}</Badge>}
+                {requiresApproval && <Badge variant="info">{t('requiresApproval')}</Badge>}
               </button>
             )}
           />
@@ -144,10 +143,9 @@ export function ProfileSection({
               variant="ghost"
               size="sm"
               className="shrink-0 gap-1.5 text-muted-foreground"
-              onClick={handleEditClick}
-            >
+              onClick={handleEditClick}>
               <Pencil className="h-3.5 w-3.5" />
-              {t("editSection")}
+              {t('editSection')}
             </Button>
           )}
         </div>
@@ -166,14 +164,14 @@ export function ProfileSection({
               /* Edit mode */
               <form onSubmit={form.handleSubmit(handleSave)}>
                 <div className="space-y-4">
-                  {fields.map((field) => {
+                  {fields.map(field => {
                     if (field.readOnly) {
                       return (
                         <div key={field.key} className="space-y-1">
                           <Label className="text-sm text-muted-foreground">{field.label}</Label>
                           <div className="flex items-center gap-2 text-sm">
                             <Lock className="h-3.5 w-3.5 text-muted-foreground" />
-                            <span>{field.value || t("fallbackValue")}</span>
+                            <span>{field.value || t('fallbackValue')}</span>
                           </div>
                           {field.readOnlyCaption && (
                             <p className="text-xs text-muted-foreground">{field.readOnlyCaption}</p>
@@ -201,7 +199,7 @@ export function ProfileSection({
                     <div className="flex items-start gap-2 rounded-md bg-blue-500/10 p-3">
                       <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-700 dark:text-blue-400" />
                       <p className="text-sm text-blue-700 dark:text-blue-400">
-                        {t("financialApprovalNote")}
+                        {t('financialApprovalNote')}
                       </p>
                     </div>
                   )}
@@ -209,16 +207,15 @@ export function ProfileSection({
                   {/* Action buttons */}
                   <div className="flex gap-2 pt-2">
                     <Button type="submit" size="sm" disabled={saving}>
-                      {saving ? t("saving") : t("saveChanges")}
+                      {saving ? t('saving') : t('saveChanges')}
                     </Button>
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
                       onClick={handleDiscard}
-                      disabled={saving}
-                    >
-                      {t("discardChanges")}
+                      disabled={saving}>
+                      {t('discardChanges')}
                     </Button>
                   </div>
                 </div>
@@ -226,12 +223,12 @@ export function ProfileSection({
             ) : (
               /* View mode */
               <div className="space-y-4">
-                {fields.map((field) => (
+                {fields.map(field => (
                   <div key={field.key} className="space-y-1">
                     <dt className="text-sm text-muted-foreground">{field.label}</dt>
                     <dd className="flex items-center gap-2 text-sm">
                       {field.readOnly && <Lock className="h-3.5 w-3.5 text-muted-foreground" />}
-                      <span>{field.value || t("fallbackValue")}</span>
+                      <span>{field.value || t('fallbackValue')}</span>
                     </dd>
                     {field.readOnly && field.readOnlyCaption && (
                       <p className="text-xs text-muted-foreground">{field.readOnlyCaption}</p>

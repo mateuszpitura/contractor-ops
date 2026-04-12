@@ -1,5 +1,5 @@
-import { QueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { QueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 /**
  * Intercepts TIER_REQUIRED errors from requireTier middleware and shows
@@ -16,20 +16,20 @@ function handleTierError(error: unknown): boolean {
       }
     | undefined;
 
-  if (trpcErr?.data?.code !== "FORBIDDEN" || !trpcErr.message) return false;
+  if (trpcErr?.data?.code !== 'FORBIDDEN' || !trpcErr.message) return false;
 
   try {
     const parsed = JSON.parse(trpcErr.message) as {
       type?: string;
       requiredTier?: string;
     };
-    if (parsed.type === "TIER_REQUIRED" && parsed.requiredTier) {
-      const tierLabel = parsed.requiredTier === "ENTERPRISE" ? "Enterprise" : "Pro";
+    if (parsed.type === 'TIER_REQUIRED' && parsed.requiredTier) {
+      const tierLabel = parsed.requiredTier === 'ENTERPRISE' ? 'Enterprise' : 'Pro';
       toast.error(`This feature requires ${tierLabel} plan.`, {
         action: {
-          label: "Upgrade",
+          label: 'Upgrade',
           onClick: () => {
-            window.location.href = "/settings?tab=billing";
+            window.location.href = '/settings?tab=billing';
           },
         },
       });
@@ -58,7 +58,7 @@ function shouldRetry(failureCount: number, error: unknown): boolean {
 
   // Don't retry auth/permission errors by tRPC code
   const code = trpcError?.data?.code;
-  if (code === "UNAUTHORIZED" || code === "FORBIDDEN" || code === "NOT_FOUND") return false;
+  if (code === 'UNAUTHORIZED' || code === 'FORBIDDEN' || code === 'NOT_FOUND') return false;
 
   // Retry everything else (network errors, 5xx, timeouts)
   return true;
@@ -77,12 +77,12 @@ export function makeQueryClient() {
       queries: {
         staleTime: 30 * 1000,
         retry: shouldRetry,
-        retryDelay: (attemptIndex) => Math.min(1000 * 3 ** attemptIndex, 30_000),
+        retryDelay: attemptIndex => Math.min(1000 * 3 ** attemptIndex, 30_000),
       },
       mutations: {
         retry: shouldRetry,
-        retryDelay: (attemptIndex) => Math.min(1000 * 3 ** attemptIndex, 30_000),
-        onError: (error) => {
+        retryDelay: attemptIndex => Math.min(1000 * 3 ** attemptIndex, 30_000),
+        onError: error => {
           handleTierError(error);
         },
       },

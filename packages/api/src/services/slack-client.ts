@@ -1,22 +1,22 @@
-import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
-import { prisma } from "@contractor-ops/db";
-import { WebClient } from "@slack/web-api";
+import { createCipheriv, createDecipheriv, randomBytes } from 'node:crypto';
+import { prisma } from '@contractor-ops/db';
+import { WebClient } from '@slack/web-api';
 
 // ---------------------------------------------------------------------------
 // Token Encryption / Decryption (AES-256-GCM)
 // Per D-09: NEVER store raw xoxb- tokens
 // ---------------------------------------------------------------------------
 
-const ALGORITHM = "aes-256-gcm";
+const ALGORITHM = 'aes-256-gcm';
 const IV_LENGTH = 12;
 const _AUTH_TAG_LENGTH = 16;
 
 function getEncryptionKey(): Buffer {
   const key = process.env.SLACK_TOKEN_ENCRYPTION_KEY;
   if (!key) {
-    throw new Error("SLACK_TOKEN_ENCRYPTION_KEY environment variable is not set");
+    throw new Error('SLACK_TOKEN_ENCRYPTION_KEY environment variable is not set');
   }
-  return Buffer.from(key, "hex");
+  return Buffer.from(key, 'hex');
 }
 
 /**
@@ -28,33 +28,33 @@ export function encryptToken(token: string): string {
   const iv = randomBytes(IV_LENGTH);
   const cipher = createCipheriv(ALGORITHM, key, iv);
 
-  let encrypted = cipher.update(token, "utf8", "hex");
-  encrypted += cipher.final("hex");
+  let encrypted = cipher.update(token, 'utf8', 'hex');
+  encrypted += cipher.final('hex');
 
   const authTag = cipher.getAuthTag();
 
-  return `${iv.toString("hex")}:${authTag.toString("hex")}:${encrypted}`;
+  return `${iv.toString('hex')}:${authTag.toString('hex')}:${encrypted}`;
 }
 
 /**
  * Decrypts a Slack bot token encrypted with encryptToken().
  */
 export function decryptToken(encrypted: string): string {
-  const parts = encrypted.split(":");
+  const parts = encrypted.split(':');
   if (parts.length !== 3) {
-    throw new Error("Invalid encrypted token format");
+    throw new Error('Invalid encrypted token format');
   }
 
   const [ivHex, authTagHex, ciphertext] = parts as [string, string, string];
   const key = getEncryptionKey();
-  const iv = Buffer.from(ivHex, "hex");
-  const authTag = Buffer.from(authTagHex, "hex");
+  const iv = Buffer.from(ivHex, 'hex');
+  const authTag = Buffer.from(authTagHex, 'hex');
 
   const decipher = createDecipheriv(ALGORITHM, key, iv);
   decipher.setAuthTag(authTag);
 
-  let decrypted = decipher.update(ciphertext, "hex", "utf8");
-  decrypted += decipher.final("utf8");
+  let decrypted = decipher.update(ciphertext, 'hex', 'utf8');
+  decrypted += decipher.final('utf8');
 
   return decrypted;
 }
@@ -71,8 +71,8 @@ export async function getSlackClient(organizationId: string): Promise<WebClient 
   const connection = await prisma.integrationConnection.findFirst({
     where: {
       organizationId,
-      provider: "SLACK",
-      status: "CONNECTED",
+      provider: 'SLACK',
+      status: 'CONNECTED',
     },
   });
 
@@ -99,9 +99,9 @@ export async function getSlackUserIdForUser(
   const link = await prisma.externalLink.findFirst({
     where: {
       organizationId,
-      entityType: "CONTRACTOR", // ExternalLink uses EntityType enum; USER is not in enum
+      entityType: 'CONTRACTOR', // ExternalLink uses EntityType enum; USER is not in enum
       entityId: userId,
-      externalType: "SLACK_USER",
+      externalType: 'SLACK_USER',
     },
   });
 
@@ -112,7 +112,7 @@ export async function getSlackUserIdForUser(
       where: {
         organizationId,
         entityId: userId,
-        externalType: "SLACK_USER",
+        externalType: 'SLACK_USER',
       },
     });
     return altLink?.externalId ?? null;
@@ -154,57 +154,57 @@ export async function sendApprovalCard(params: ApprovalCardParams) {
 
   const blocks = [
     {
-      type: "header" as const,
+      type: 'header' as const,
       text: {
-        type: "plain_text" as const,
-        text: "Invoice Approval Request",
+        type: 'plain_text' as const,
+        text: 'Invoice Approval Request',
         emoji: true,
       },
     },
     {
-      type: "section" as const,
+      type: 'section' as const,
       fields: [
         {
-          type: "mrkdwn" as const,
+          type: 'mrkdwn' as const,
           text: `*Invoice:*\n${params.invoiceNumber}`,
         },
         {
-          type: "mrkdwn" as const,
+          type: 'mrkdwn' as const,
           text: `*Contractor:*\n${params.contractorName}`,
         },
         {
-          type: "mrkdwn" as const,
+          type: 'mrkdwn' as const,
           text: `*Amount:*\n${params.amount} ${params.currency}`,
         },
         {
-          type: "mrkdwn" as const,
+          type: 'mrkdwn' as const,
           text: `*SLA Deadline:*\n${params.slaDeadline}`,
         },
       ],
     },
     {
-      type: "actions" as const,
+      type: 'actions' as const,
       elements: [
         {
-          type: "button" as const,
+          type: 'button' as const,
           text: {
-            type: "plain_text" as const,
-            text: "Approve",
+            type: 'plain_text' as const,
+            text: 'Approve',
             emoji: true,
           },
-          style: "primary" as const,
-          action_id: "approve_invoice",
+          style: 'primary' as const,
+          action_id: 'approve_invoice',
           value: actionValue,
         },
         {
-          type: "button" as const,
+          type: 'button' as const,
           text: {
-            type: "plain_text" as const,
-            text: "Reject",
+            type: 'plain_text' as const,
+            text: 'Reject',
             emoji: true,
           },
-          style: "danger" as const,
-          action_id: "reject_invoice",
+          style: 'danger' as const,
+          action_id: 'reject_invoice',
           value: actionValue,
         },
       ],
@@ -228,7 +228,7 @@ interface UpdateMessageParams {
   organizationId: string;
   channel: string;
   ts: string;
-  result: "approved" | "rejected";
+  result: 'approved' | 'rejected';
   actorName: string;
   comment?: string;
 }
@@ -243,15 +243,15 @@ export async function updateMessageToResult(params: UpdateMessageParams) {
     throw new Error(`No Slack integration for organization ${params.organizationId}`);
   }
 
-  const icon = params.result === "approved" ? "white_check_mark" : "x";
-  const label = params.result === "approved" ? "Approved" : "Rejected";
-  const commentLine = params.comment ? `\n>_${params.comment}_` : "";
+  const icon = params.result === 'approved' ? 'white_check_mark' : 'x';
+  const label = params.result === 'approved' ? 'Approved' : 'Rejected';
+  const commentLine = params.comment ? `\n>_${params.comment}_` : '';
 
   const blocks = [
     {
-      type: "section" as const,
+      type: 'section' as const,
       text: {
-        type: "mrkdwn" as const,
+        type: 'mrkdwn' as const,
         text: `:${icon}: *${label}* by ${params.actorName}${commentLine}`,
       },
     },
@@ -313,7 +313,7 @@ export async function syncWorkspaceUsers(
 
   const result = await client.users.list({});
   const members = result.members ?? [];
-  const realMembers = members.filter((m) => !(m.is_bot || m.deleted) && m.id !== "USLACKBOT");
+  const realMembers = members.filter(m => !(m.is_bot || m.deleted) && m.id !== 'USLACKBOT');
 
   let matched = 0;
 
@@ -340,7 +340,7 @@ export async function syncWorkspaceUsers(
         organizationId,
         integrationConnectionId,
         entityId: user.id,
-        externalType: "SLACK_USER",
+        externalType: 'SLACK_USER',
       },
     });
 
@@ -349,9 +349,9 @@ export async function syncWorkspaceUsers(
         data: {
           organizationId,
           integrationConnectionId,
-          entityType: "ORGANIZATION",
+          entityType: 'ORGANIZATION',
           entityId: user.id,
-          externalType: "SLACK_USER",
+          externalType: 'SLACK_USER',
           externalId: member.id!,
           metadataJson: {
             displayName: member.profile?.display_name ?? member.real_name ?? null,

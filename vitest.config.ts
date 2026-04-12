@@ -1,4 +1,4 @@
-import { defineConfig } from "vitest/config";
+import { defineConfig } from 'vitest/config';
 
 /**
  * Monorepo workspace: one `vitest run --coverage` merges coverage across packages.
@@ -15,48 +15,48 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     projects: [
-      "apps/web",
-      "packages/api",
-      "packages/auth",
-      "packages/db",
-      "packages/integrations",
-      "packages/logger",
-      "packages/validators",
-      "packages/einvoice",
-      "packages/gov-api",
+      'apps/web',
+      'packages/api',
+      'packages/auth',
+      'packages/db',
+      'packages/integrations',
+      'packages/logger',
+      'packages/validators',
+      'packages/einvoice',
+      'packages/gov-api',
       /** Test-only harness (MSW, fixtures) — not in root coverage; run via `pnpm --filter @contractor-ops/test-utils test` */
     ],
     coverage: {
-      provider: "v8",
-      reporter: ["text", "text-summary", "json-summary", "html"],
-      reportsDirectory: "./coverage",
+      provider: 'v8',
+      reporter: ['text', 'text-summary', 'json-summary', 'html'],
+      reportsDirectory: './coverage',
       include: [
-        "apps/web/src/**/*.{ts,tsx}",
-        "packages/api/src/**/*.ts",
-        "packages/auth/src/**/*.ts",
-        "packages/db/src/**/*.ts",
-        "packages/integrations/src/**/*.ts",
-        "packages/logger/src/**/*.ts",
-        "packages/validators/src/**/*.ts",
-        "packages/gov-api/src/**/*.ts",
+        'apps/web/src/**/*.{ts,tsx}',
+        'packages/api/src/**/*.ts',
+        'packages/auth/src/**/*.ts',
+        'packages/db/src/**/*.ts',
+        'packages/integrations/src/**/*.ts',
+        'packages/logger/src/**/*.ts',
+        'packages/validators/src/**/*.ts',
+        'packages/gov-api/src/**/*.ts',
       ],
       exclude: [
-        "**/node_modules/**",
-        "**/dist/**",
-        "**/.next/**",
-        "**/coverage/**",
-        "**/.turbo/**",
+        '**/node_modules/**',
+        '**/dist/**',
+        '**/.next/**',
+        '**/coverage/**',
+        '**/.turbo/**',
         /** Prisma-generated client + default engine output — not our code to cover */
-        "**/generated/**",
-        "**/.prisma/**",
+        '**/generated/**',
+        '**/.prisma/**',
         /** MSW/fixtures package — imported only from tests; exclude if traced into other projects */
-        "**/packages/test-utils/**",
-        "**/*.d.ts",
-        "**/__tests__/**",
-        "**/*.test.ts",
-        "**/*.test.tsx",
+        '**/packages/test-utils/**',
+        '**/*.d.ts',
+        '**/__tests__/**',
+        '**/*.test.ts',
+        '**/*.test.tsx',
         /** RTL / Vitest harness (not app features) */
-        "apps/web/src/test/**",
+        'apps/web/src/test/**',
       ],
     },
   },

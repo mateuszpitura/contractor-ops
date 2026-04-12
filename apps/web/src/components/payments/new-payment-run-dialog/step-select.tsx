@@ -1,27 +1,27 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import type { RowSelectionState } from "@tanstack/react-table";
-import { CalendarIcon, FileSearch } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useQuery } from '@tanstack/react-query';
+import type { RowSelectionState } from '@tanstack/react-table';
+import { CalendarIcon, FileSearch } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { trpc } from "@/trpc/init";
-import type { ReadyInvoiceRow } from "../invoice-selection-table/columns";
-import { getColumns } from "../invoice-selection-table/columns";
-import { InvoiceSelectionDataTable } from "../invoice-selection-table/data-table";
+} from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { trpc } from '@/trpc/init';
+import type { ReadyInvoiceRow } from '../invoice-selection-table/columns';
+import { getColumns } from '../invoice-selection-table/columns';
+import { InvoiceSelectionDataTable } from '../invoice-selection-table/data-table';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -48,15 +48,15 @@ export function StepSelect({
   onCancel,
   onNext,
 }: StepSelectProps) {
-  const t = useTranslations("Payments");
+  const t = useTranslations('Payments');
 
   // Filter state
-  const [currency, setCurrency] = useState<string>("all");
+  const [currency, setCurrency] = useState<string>('all');
   const [dueDateFrom, setDueDateFrom] = useState<Date | undefined>();
   const [dueDateTo, setDueDateTo] = useState<Date | undefined>();
-  const [contractorSearch, setContractorSearch] = useState("");
+  const [contractorSearch, setContractorSearch] = useState('');
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
   useEffect(() => {
     clearTimeout(debounceRef.current);
@@ -69,7 +69,7 @@ export function StepSelect({
   // Fetch invoices
   const queryInput = useMemo(
     () => ({
-      currency: currency === "all" ? undefined : currency,
+      currency: currency === 'all' ? undefined : currency,
       dueDateFrom: dueDateFrom ?? undefined,
       dueDateTo: dueDateTo ?? undefined,
       contractorId: undefined,
@@ -90,7 +90,7 @@ export function StepSelect({
     if (!debouncedSearch) return allInvoices;
     const lower = debouncedSearch.toLowerCase();
     return allInvoices.filter(
-      (inv) => inv.contractor?.legalName?.toLowerCase().includes(lower) ?? false,
+      inv => inv.contractor?.legalName?.toLowerCase().includes(lower) ?? false,
     );
   }, [allInvoices, debouncedSearch]);
 
@@ -116,7 +116,7 @@ export function StepSelect({
 
   // Select all matching
   const handleSelectAllMatching = useCallback(() => {
-    const ids = filteredInvoices.filter((inv) => !inv._inRunNumber).map((inv) => inv.id);
+    const ids = filteredInvoices.filter(inv => !inv._inRunNumber).map(inv => inv.id);
     onSelectionChange(ids);
   }, [filteredInvoices, onSelectionChange]);
 
@@ -128,7 +128,7 @@ export function StepSelect({
 
   // Selection summary
   const selectedInvoices = useMemo(
-    () => allInvoices.filter((inv) => selectedInvoiceIds.includes(inv.id)),
+    () => allInvoices.filter(inv => selectedInvoiceIds.includes(inv.id)),
     [allInvoices, selectedInvoiceIds],
   );
 
@@ -148,12 +148,12 @@ export function StepSelect({
     <div className="flex flex-col gap-4">
       {/* Filter row */}
       <div className="flex items-center gap-2 flex-wrap">
-        <Select value={currency} onValueChange={(v) => setCurrency(v ?? "all")}>
+        <Select value={currency} onValueChange={v => setCurrency(v ?? 'all')}>
           <SelectTrigger className="w-[160px] h-8">
-            <SelectValue placeholder={t("step1.allCurrencies")} />
+            <SelectValue placeholder={t('step1.allCurrencies')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">{t("step1.allCurrencies")}</SelectItem>
+            <SelectItem value="all">{t('step1.allCurrencies')}</SelectItem>
             <SelectItem value="PLN">PLN</SelectItem>
             <SelectItem value="EUR">EUR</SelectItem>
             <SelectItem value="USD">USD</SelectItem>
@@ -165,8 +165,8 @@ export function StepSelect({
             <CalendarIcon className="h-3.5 w-3.5" />
             <span className="text-xs">
               {dueDateFrom
-                ? `${dueDateFrom.toLocaleDateString("pl-PL")}${dueDateTo ? ` - ${dueDateTo.toLocaleDateString("pl-PL")}` : ""}`
-                : t("step1.dueDate")}
+                ? `${dueDateFrom.toLocaleDateString('pl-PL')}${dueDateTo ? ` - ${dueDateTo.toLocaleDateString('pl-PL')}` : ''}`
+                : t('step1.dueDate')}
             </span>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
@@ -189,9 +189,9 @@ export function StepSelect({
         </Popover>
 
         <Input
-          placeholder={t("step1.searchContractors")}
+          placeholder={t('step1.searchContractors')}
           value={contractorSearch}
-          onChange={(e) => setContractorSearch(e.target.value)}
+          onChange={e => setContractorSearch(e.target.value)}
           className="h-8 w-[200px] text-xs"
         />
       </div>
@@ -202,10 +202,8 @@ export function StepSelect({
           <button
             type="button"
             className="text-xs text-primary hover:underline"
-            onClick={handleSelectAllMatching}
-          >
-            {t("step1.selectAllMatching")} ({filteredInvoices.filter((i) => !i._inRunNumber).length}
-            )
+            onClick={handleSelectAllMatching}>
+            {t('step1.selectAllMatching')} ({filteredInvoices.filter(i => !i._inRunNumber).length})
           </button>
         </div>
       )}
@@ -214,9 +212,9 @@ export function StepSelect({
       {isEmpty ? (
         <div className="flex flex-col items-center justify-center py-12">
           <FileSearch className="h-12 w-12 text-muted-foreground/50" />
-          <h3 className="mt-4 text-[16px] font-medium">{t("step1.noInvoicesHeading")}</h3>
+          <h3 className="mt-4 text-[16px] font-medium">{t('step1.noInvoicesHeading')}</h3>
           <p className="mt-1 max-w-sm text-center text-sm text-muted-foreground">
-            {t("step1.noInvoicesBody")}
+            {t('step1.noInvoicesBody')}
           </p>
         </div>
       ) : (
@@ -235,18 +233,18 @@ export function StepSelect({
           {/* Selection summary */}
           <p className="text-sm text-muted-foreground">
             {selectedInvoiceIds.length > 0
-              ? uniqueCurrencies.map((curr) => (
+              ? uniqueCurrencies.map(curr => (
                   <span key={curr} className="block">
-                    {selectedInvoices.filter((i) => i.currency === curr).length}{" "}
-                    {t("step1.invoicesSelected")} &mdash;{" "}
-                    {new Intl.NumberFormat("pl-PL", {
+                    {selectedInvoices.filter(i => i.currency === curr).length}{' '}
+                    {t('step1.invoicesSelected')} &mdash;{' '}
+                    {new Intl.NumberFormat('pl-PL', {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
-                    }).format((selectionSummary[curr] ?? 0) / 100)}{" "}
+                    }).format((selectionSummary[curr] ?? 0) / 100)}{' '}
                     {curr}
                   </span>
                 ))
-              : t("step1.noSelection")}
+              : t('step1.noSelection')}
           </p>
 
           {/* Group by currency toggle */}
@@ -258,10 +256,10 @@ export function StepSelect({
                 id="group-by-currency"
               />
               <Label htmlFor="group-by-currency" className="text-xs">
-                {t("step1.groupByCurrency")}
+                {t('step1.groupByCurrency')}
                 {groupByCurrency && uniqueCurrencies.length > 1 && (
                   <span className="ms-1 text-muted-foreground">
-                    ({t("step1.willCreateRuns", { count: uniqueCurrencies.length })})
+                    ({t('step1.willCreateRuns', { count: uniqueCurrencies.length })})
                   </span>
                 )}
               </Label>
@@ -271,10 +269,10 @@ export function StepSelect({
 
         <div className="flex items-center gap-2">
           <Button variant="ghost" onClick={onCancel}>
-            {t("step1.cancel")}
+            {t('step1.cancel')}
           </Button>
           <Button onClick={onNext} disabled={selectedInvoiceIds.length === 0}>
-            {t("step1.reviewSelection")}
+            {t('step1.reviewSelection')}
           </Button>
         </div>
       </div>

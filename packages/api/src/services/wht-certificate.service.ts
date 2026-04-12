@@ -1,5 +1,5 @@
-import { prisma } from "@contractor-ops/db";
-import { TRPCError } from "@trpc/server";
+import { prisma } from '@contractor-ops/db';
+import { TRPCError } from '@trpc/server';
 
 /**
  * Generate a unique certificate number: WHT-{orgShortId}-{year}-{seq}
@@ -15,7 +15,7 @@ async function generateCertificateNumber(organizationId: string): Promise<string
       },
     },
   });
-  const seq = String(count + 1).padStart(4, "0");
+  const seq = String(count + 1).padStart(4, '0');
   const orgShort = organizationId.slice(-6).toUpperCase();
   return `WHT-${orgShort}-${year}-${seq}`;
 }
@@ -40,11 +40,11 @@ export async function createWhtCertificate(params: {
   });
 
   if (!item || item.organizationId !== organizationId) {
-    throw new TRPCError({ code: "NOT_FOUND", message: "Payment run item not found" });
+    throw new TRPCError({ code: 'NOT_FOUND', message: 'Payment run item not found' });
   }
 
   if (!item.whtAmountMinor || item.whtAmountMinor === 0) {
-    throw new TRPCError({ code: "BAD_REQUEST", message: "No WHT applicable to this payment item" });
+    throw new TRPCError({ code: 'BAD_REQUEST', message: 'No WHT applicable to this payment item' });
   }
 
   const certificateNumber = await generateCertificateNumber(organizationId);
@@ -78,7 +78,7 @@ export async function createWhtCertificate(params: {
 export async function listWhtCertificates(organizationId: string) {
   return prisma.whtCertificate.findMany({
     where: { organizationId },
-    orderBy: { generatedAt: "desc" },
+    orderBy: { generatedAt: 'desc' },
     take: 100,
   });
 }

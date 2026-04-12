@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { motion } from "motion/react";
-import type { ReactNode } from "react";
-import { fadeUp, springs } from "@/lib/motion";
-import { cn } from "@/lib/utils";
+import { motion } from 'motion/react';
+import type { ReactNode } from 'react';
+import { fadeUp, springs } from '@/lib/motion';
+import { cn } from '@/lib/utils';
 
 interface AnimateInProps {
   children: ReactNode;
@@ -25,8 +25,7 @@ export function AnimateIn({ children, delay = 0, className }: AnimateInProps) {
       animate="visible"
       variants={fadeUp}
       transition={{ ...springs.gentle, delay: DELAY_MS[delay] }}
-      className={cn("min-w-0", className)}
-    >
+      className={cn('min-w-0', className)}>
       {children}
     </motion.div>
   );

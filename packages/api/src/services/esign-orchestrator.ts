@@ -1,21 +1,21 @@
-import { createHash } from "node:crypto";
-import { prisma } from "@contractor-ops/db";
+import { createHash } from 'node:crypto';
+import { prisma } from '@contractor-ops/db';
 import {
   createSigningEnvelope as createProviderEnvelope,
   downloadSignedDocument,
   getEmbeddedSigningUrl as getProviderSigningUrl,
   resendSigningNotification,
   voidSigningEnvelope as voidProviderEnvelope,
-} from "@contractor-ops/integrations/services/esign-service";
-import { TRPCError } from "@trpc/server";
-import * as E from "../errors.js";
-import { createPresignedDownloadUrl, createPresignedUploadUrl, generateStorageKey } from "./r2.js";
+} from '@contractor-ops/integrations/services/esign-service';
+import { TRPCError } from '@trpc/server';
+import * as E from '../errors.js';
+import { createPresignedDownloadUrl, createPresignedUploadUrl, generateStorageKey } from './r2.js';
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
-type ESignProvider = "DOCUSIGN" | "AUTENTI";
+type ESignProvider = 'DOCUSIGN' | 'AUTENTI';
 
 export interface SendForSignatureParams {
   organizationId: string;
@@ -27,7 +27,7 @@ export interface SendForSignatureParams {
   signers: {
     name: string;
     email: string;
-    role: "signer" | "countersigner";
+    role: 'signer' | 'countersigner';
     routingOrder: number;
   }[];
   message?: string;
@@ -77,7 +77,7 @@ async function fetchDocumentContent(
 
   if (!document) {
     throw new TRPCError({
-      code: "NOT_FOUND",
+      code: 'NOT_FOUND',
       message: E.ESIGN_DOCUMENT_NOT_FOUND,
     });
   }
@@ -88,13 +88,13 @@ async function fetchDocumentContent(
 
   if (!response.ok) {
     throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
+      code: 'INTERNAL_SERVER_ERROR',
       message: E.ESIGN_DOWNLOAD_FAILED,
     });
   }
 
   const buffer = Buffer.from(await response.arrayBuffer());
-  const documentBase64 = buffer.toString("base64");
+  const documentBase64 = buffer.toString('base64');
 
   return { document, documentBase64 };
 }
@@ -131,7 +131,7 @@ export async function sendForSignature(params: SendForSignatureParams) {
     request: {
       documentBase64,
       documentName: document.originalFileName,
-      signers: signers.map((s) => ({
+      signers: signers.map(s => ({
         name: s.name,
         email: s.email,
         role: s.role,
@@ -150,7 +150,7 @@ export async function sendForSignature(params: SendForSignatureParams) {
   const now = new Date();
 
   // Create all records in a single transaction
-  const envelope = await prisma.$transaction(async (tx) => {
+  const envelope = await prisma.$transaction(async tx => {
     // a. Create SigningEnvelope
     const env = await tx.signingEnvelope.create({
       data: {
@@ -160,7 +160,7 @@ export async function sendForSignature(params: SendForSignatureParams) {
         externalEnvelopeId: result.externalEnvelopeId,
         contractId: contractId ?? null,
         documentId,
-        status: "SENT",
+        status: 'SENT',
         message: message ?? null,
         expiresAt,
         reminderIntervalDays: reminderIntervalDays ?? null,
@@ -172,16 +172,16 @@ export async function sendForSignature(params: SendForSignatureParams) {
 
     // b. Create SigningRecipient records
     for (const signer of signers) {
-      const externalRecipient = result.signers.find((s) => s.email === signer.email);
+      const externalRecipient = result.signers.find(s => s.email === signer.email);
       await tx.signingRecipient.create({
         data: {
           signingEnvelopeId: env.id,
           externalRecipientId: externalRecipient?.externalRecipientId ?? null,
           name: signer.name,
           email: signer.email,
-          role: signer.role === "countersigner" ? "COUNTERSIGNER" : "SIGNER",
+          role: signer.role === 'countersigner' ? 'COUNTERSIGNER' : 'SIGNER',
           routingOrder: signer.routingOrder,
-          status: "SENT",
+          status: 'SENT',
         },
       });
     }
@@ -191,8 +191,8 @@ export async function sendForSignature(params: SendForSignatureParams) {
       data: {
         organizationId,
         signingEnvelopeId: env.id,
-        eventType: "ENVELOPE_CREATED",
-        description: "Signing envelope created",
+        eventType: 'ENVELOPE_CREATED',
+        description: 'Signing envelope created',
         occurredAt: now,
       },
     });
@@ -203,8 +203,8 @@ export async function sendForSignature(params: SendForSignatureParams) {
       data: {
         organizationId,
         signingEnvelopeId: env.id,
-        eventType: "ENVELOPE_SENT",
-        description: `Sent to ${firstSigner?.name ?? "recipient"} for signature`,
+        eventType: 'ENVELOPE_SENT',
+        description: `Sent to ${firstSigner?.name ?? 'recipient'} for signature`,
         occurredAt: now,
       },
     });
@@ -213,7 +213,7 @@ export async function sendForSignature(params: SendForSignatureParams) {
     if (contractId) {
       await tx.contract.update({
         where: { id: contractId },
-        data: { status: "PENDING_SIGNATURE" },
+        data: { status: 'PENDING_SIGNATURE' },
       });
     }
 
@@ -222,7 +222,7 @@ export async function sendForSignature(params: SendForSignatureParams) {
       data: {
         organizationId,
         integrationConnectionId: connectionId,
-        entityType: contractId ? "CONTRACT" : "DOCUMENT",
+        entityType: contractId ? 'CONTRACT' : 'DOCUMENT',
         entityId: contractId ?? documentId,
         externalType: `${provider}_ENVELOPE`,
         externalId: result.externalEnvelopeId,
@@ -256,14 +256,14 @@ export async function getSigningUrl(params: GetSigningUrlParams) {
 
   if (!envelope) {
     throw new TRPCError({
-      code: "NOT_FOUND",
+      code: 'NOT_FOUND',
       message: E.ESIGN_ENVELOPE_NOT_FOUND,
     });
   }
 
   if (!envelope.externalEnvelopeId) {
     throw new TRPCError({
-      code: "PRECONDITION_FAILED",
+      code: 'PRECONDITION_FAILED',
       message: E.ESIGN_NO_EXTERNAL_ID,
     });
   }
@@ -323,9 +323,9 @@ export async function handleSigningCompletion(
   });
 
   // Generate a storage key for the signed copy
-  const docBuffer = Buffer.from(signedDoc.documentBase64, "base64");
-  const checksumSha256 = createHash("sha256").update(docBuffer).digest("hex");
-  const signedFileName = signedDoc.fileName || "signed-document.pdf";
+  const docBuffer = Buffer.from(signedDoc.documentBase64, 'base64');
+  const checksumSha256 = createHash('sha256').update(docBuffer).digest('hex');
+  const signedFileName = signedDoc.fileName || 'signed-document.pdf';
   const storageKey = generateStorageKey(
     envelope.organizationId,
     `esign-${envelope.id}`,
@@ -335,12 +335,12 @@ export async function handleSigningCompletion(
   // Upload to R2 via presigned URL
   const uploadUrl = await createPresignedUploadUrl(
     storageKey,
-    signedDoc.mimeType || "application/pdf",
+    signedDoc.mimeType || 'application/pdf',
   );
   const uploadResponse = await fetch(uploadUrl, {
-    method: "PUT",
+    method: 'PUT',
     body: docBuffer,
-    headers: { "Content-Type": signedDoc.mimeType || "application/pdf" },
+    headers: { 'Content-Type': signedDoc.mimeType || 'application/pdf' },
   });
 
   if (!uploadResponse.ok) {
@@ -348,7 +348,7 @@ export async function handleSigningCompletion(
   }
 
   // Determine document type from original document if available
-  let documentType: string = "OTHER";
+  let documentType: string = 'OTHER';
   if (envelope.documentId) {
     const originalDoc = await prisma.document.findUnique({
       where: { id: envelope.documentId },
@@ -360,19 +360,19 @@ export async function handleSigningCompletion(
   }
 
   // Create Document and DocumentLink in a transaction
-  const document = await prisma.$transaction(async (tx) => {
+  const document = await prisma.$transaction(async tx => {
     // Create Document record with source = ESIGN
     const doc = await tx.document.create({
       data: {
         organizationId: envelope.organizationId,
         storageKey,
         originalFileName: signedFileName,
-        mimeType: signedDoc.mimeType || "application/pdf",
+        mimeType: signedDoc.mimeType || 'application/pdf',
         fileSizeBytes: BigInt(docBuffer.length),
         checksumSha256,
         documentType: documentType as never,
-        source: "ESIGN",
-        virusScanStatus: "CLEAN", // Signed PDFs from providers are trusted
+        source: 'ESIGN',
+        virusScanStatus: 'CLEAN', // Signed PDFs from providers are trusted
       },
     });
 
@@ -382,9 +382,9 @@ export async function handleSigningCompletion(
         data: {
           organizationId: envelope.organizationId,
           documentId: doc.id,
-          entityType: "CONTRACT",
+          entityType: 'CONTRACT',
           entityId: envelope.contractId,
-          linkRole: "SIGNED_COPY",
+          linkRole: 'SIGNED_COPY',
         },
       });
     }
@@ -394,7 +394,7 @@ export async function handleSigningCompletion(
       data: {
         organizationId: envelope.organizationId,
         signingEnvelopeId: envelope.id,
-        eventType: "SIGNED_PDF_SAVED",
+        eventType: 'SIGNED_PDF_SAVED',
         description: `Signed PDF saved as ${signedFileName}`,
         occurredAt: new Date(),
       },
@@ -422,14 +422,14 @@ export async function voidEnvelope(params: VoidEnvelopeParams) {
 
   if (!envelope) {
     throw new TRPCError({
-      code: "NOT_FOUND",
+      code: 'NOT_FOUND',
       message: E.ESIGN_ENVELOPE_NOT_FOUND,
     });
   }
 
   if (!envelope.externalEnvelopeId) {
     throw new TRPCError({
-      code: "PRECONDITION_FAILED",
+      code: 'PRECONDITION_FAILED',
       message: E.ESIGN_NO_EXTERNAL_ID,
     });
   }
@@ -444,12 +444,12 @@ export async function voidEnvelope(params: VoidEnvelopeParams) {
 
   const now = new Date();
 
-  await prisma.$transaction(async (tx) => {
+  await prisma.$transaction(async tx => {
     // Update envelope status
     await tx.signingEnvelope.update({
       where: { id: envelopeId },
       data: {
-        status: "VOIDED",
+        status: 'VOIDED',
         voidedAt: now,
         voidReason: reason,
       },
@@ -461,10 +461,10 @@ export async function voidEnvelope(params: VoidEnvelopeParams) {
         where: { id: envelope.contractId },
         select: { status: true },
       });
-      if (contract?.status === "PENDING_SIGNATURE") {
+      if (contract?.status === 'PENDING_SIGNATURE') {
         await tx.contract.update({
           where: { id: envelope.contractId },
-          data: { status: "DRAFT" },
+          data: { status: 'DRAFT' },
         });
       }
     }
@@ -474,7 +474,7 @@ export async function voidEnvelope(params: VoidEnvelopeParams) {
       data: {
         organizationId,
         signingEnvelopeId: envelopeId,
-        eventType: "ENVELOPE_VOIDED",
+        eventType: 'ENVELOPE_VOIDED',
         description: `Envelope voided: ${reason}`,
         actorName: userId,
         occurredAt: now,
@@ -499,14 +499,14 @@ export async function resendToRecipient(params: ResendToRecipientParams) {
 
   if (!envelope) {
     throw new TRPCError({
-      code: "NOT_FOUND",
+      code: 'NOT_FOUND',
       message: E.ESIGN_ENVELOPE_NOT_FOUND,
     });
   }
 
   if (!envelope.externalEnvelopeId) {
     throw new TRPCError({
-      code: "PRECONDITION_FAILED",
+      code: 'PRECONDITION_FAILED',
       message: E.ESIGN_NO_EXTERNAL_ID,
     });
   }
@@ -524,7 +524,7 @@ export async function resendToRecipient(params: ResendToRecipientParams) {
     data: {
       organizationId,
       signingEnvelopeId: envelopeId,
-      eventType: "ENVELOPE_SENT",
+      eventType: 'ENVELOPE_SENT',
       description: `Resent to ${recipientEmail}`,
       occurredAt: new Date(),
     },

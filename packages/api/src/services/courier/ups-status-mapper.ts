@@ -11,13 +11,13 @@
  * UPS uses single-letter (or two-letter) type codes in tracking responses.
  */
 export const UPS_STATUS_MAP: Record<string, string> = {
-  M: "CREATED", // Manifest/Billing info received
-  P: "PICKED_UP", // Picked up
-  I: "IN_TRANSIT", // In Transit
-  O: "OUT_FOR_DELIVERY", // Out for delivery
-  D: "DELIVERED", // Delivered
-  X: "FAILED", // Exception
-  RS: "RETURNED", // Returned to sender
+  M: 'CREATED', // Manifest/Billing info received
+  P: 'PICKED_UP', // Picked up
+  I: 'IN_TRANSIT', // In Transit
+  O: 'OUT_FOR_DELIVERY', // Out for delivery
+  D: 'DELIVERED', // Delivered
+  X: 'FAILED', // Exception
+  RS: 'RETURNED', // Returned to sender
 };
 
 /**
@@ -39,4 +39,4 @@ export function mapUpsStatus(typeCode: string): string | null {
  * Statuses that should trigger user notifications.
  * Intermediate statuses update silently; only terminal/critical events notify.
  */
-export const UPS_NOTIFICATION_STATUSES = ["DELIVERED", "FAILED", "RETURNED"] as const;
+export const UPS_NOTIFICATION_STATUSES = ['DELIVERED', 'FAILED', 'RETURNED'] as const;

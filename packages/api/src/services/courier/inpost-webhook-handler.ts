@@ -1,8 +1,8 @@
-import crypto from "node:crypto";
-import { inpostWebhookPayloadSchema } from "@contractor-ops/validators";
-import { checkShipmentTaskCompletion } from "../equipment-workflow.js";
-import { mapInPostStatus, NOTIFICATION_STATUSES } from "./inpost-status-mapper.js";
-import { dispatchShipmentNotification } from "./shipment-notification.js";
+import crypto from 'node:crypto';
+import { inpostWebhookPayloadSchema } from '@contractor-ops/validators';
+import { checkShipmentTaskCompletion } from '../equipment-workflow.js';
+import { mapInPostStatus, NOTIFICATION_STATUSES } from './inpost-status-mapper.js';
+import { dispatchShipmentNotification } from './shipment-notification.js';
 
 // ---------------------------------------------------------------------------
 // InPost Webhook Handler
@@ -16,7 +16,7 @@ import { dispatchShipmentNotification } from "./shipment-notification.js";
 // - Fires workflow task completion check
 // ---------------------------------------------------------------------------
 
-import type { DbClient } from "../types.js";
+import type { DbClient } from '../types.js';
 
 type PrismaClient = DbClient;
 
@@ -26,21 +26,21 @@ type PrismaClient = DbClient;
  */
 const SHIPMENT_TO_EQUIPMENT_STATUS: Record<string, Record<string, string | undefined> | undefined> =
   {
-    DELIVERED: { OUTBOUND: "DELIVERED", RETURN: "RETURNED" },
-    RETURNED: { OUTBOUND: undefined, RETURN: "RETURNED" },
+    DELIVERED: { OUTBOUND: 'DELIVERED', RETURN: 'RETURNED' },
+    RETURNED: { OUTBOUND: undefined, RETURN: 'RETURNED' },
   };
 
 /**
  * Valid equipment status transitions (subset relevant to shipment auto-advancement).
  */
 const EQUIPMENT_STATUS_TRANSITIONS: Record<string, string[]> = {
-  AVAILABLE: ["ASSIGNED", "IN_TRANSIT", "RETIRED"],
-  ASSIGNED: ["AVAILABLE", "IN_TRANSIT", "RETURN_REQUESTED", "RETIRED"],
-  IN_TRANSIT: ["DELIVERED", "AVAILABLE"],
-  DELIVERED: ["ASSIGNED", "RETURN_REQUESTED", "AVAILABLE", "RETIRED"],
-  RETURN_REQUESTED: ["RETURN_IN_TRANSIT", "AVAILABLE"],
-  RETURN_IN_TRANSIT: ["RETURNED", "AVAILABLE"],
-  RETURNED: ["AVAILABLE", "RETIRED"],
+  AVAILABLE: ['ASSIGNED', 'IN_TRANSIT', 'RETIRED'],
+  ASSIGNED: ['AVAILABLE', 'IN_TRANSIT', 'RETURN_REQUESTED', 'RETIRED'],
+  IN_TRANSIT: ['DELIVERED', 'AVAILABLE'],
+  DELIVERED: ['ASSIGNED', 'RETURN_REQUESTED', 'AVAILABLE', 'RETIRED'],
+  RETURN_REQUESTED: ['RETURN_IN_TRANSIT', 'AVAILABLE'],
+  RETURN_IN_TRANSIT: ['RETURNED', 'AVAILABLE'],
+  RETURNED: ['AVAILABLE', 'RETIRED'],
   RETIRED: [],
 };
 
@@ -56,16 +56,16 @@ export function verifyInPostSignature(
   secret: string,
 ): boolean {
   if (!secret) {
-    console.warn("[inpost-webhook] No webhook secret configured — skipping signature verification");
+    console.warn('[inpost-webhook] No webhook secret configured — skipping signature verification');
     return true;
   }
 
-  const expected = crypto.createHmac("sha256", secret).update(rawBody).digest("hex");
+  const expected = crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
 
-  const received = headers["x-inpost-signature"] ?? "";
+  const received = headers['x-inpost-signature'] ?? '';
 
   try {
-    return crypto.timingSafeEqual(Buffer.from(expected, "hex"), Buffer.from(received, "hex"));
+    return crypto.timingSafeEqual(Buffer.from(expected, 'hex'), Buffer.from(received, 'hex'));
   } catch {
     return false;
   }
@@ -89,7 +89,7 @@ export async function handleInPostWebhook(
   // 1. Validate payload
   const parsed = inpostWebhookPayloadSchema.safeParse(payload);
   if (!parsed.success) {
-    console.warn("[inpost-webhook] Invalid payload:", parsed.error.flatten());
+    console.warn('[inpost-webhook] Invalid payload:', parsed.error.flatten());
     return;
   }
 
@@ -115,7 +115,7 @@ export async function handleInPostWebhook(
 
   if (!shipment) {
     console.warn(
-      `[inpost-webhook] Shipment not found for org=${organizationId}, externalId=${data.shipment_id}, tracking=${data.tracking_number ?? "N/A"}`,
+      `[inpost-webhook] Shipment not found for org=${organizationId}, externalId=${data.shipment_id}, tracking=${data.tracking_number ?? 'N/A'}`,
     );
     return;
   }
@@ -171,7 +171,7 @@ export async function handleInPostWebhook(
         currentStatus: shipment.currentStatus,
       },
       mappedStatus,
-      "INPOST",
+      'INPOST',
     );
   }
 
@@ -179,7 +179,7 @@ export async function handleInPostWebhook(
   void checkShipmentTaskCompletion(db, organizationId, {
     id: shipment.id,
     workflowTaskRunId: shipment.workflowTaskRunId,
-    direction: shipment.direction as "OUTBOUND" | "RETURN",
+    direction: shipment.direction as 'OUTBOUND' | 'RETURN',
     currentStatus: mappedStatus,
   }).catch(console.error);
 

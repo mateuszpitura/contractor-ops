@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import type { ColumnDef } from "@tanstack/react-table";
-import { CheckCircle2, XCircle } from "lucide-react";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Textarea } from "@/components/ui/textarea";
-import { Link } from "@/i18n/navigation";
+import type { ColumnDef } from '@tanstack/react-table';
+import { CheckCircle2, XCircle } from 'lucide-react';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Textarea } from '@/components/ui/textarea';
+import { Link } from '@/i18n/navigation';
 
-import { formatMinorUnits } from "@/lib/format-currency";
-import { SlaBadge } from "../sla-badge";
+import { formatMinorUnits } from '@/lib/format-currency';
+import { SlaBadge } from '../sla-badge';
 
 // ---------------------------------------------------------------------------
 // Row type matching the tRPC approval.listPending response shape
@@ -70,13 +70,13 @@ function RejectPopover({
   onReject: (comment: string) => void;
   t: (key: string) => string;
 }) {
-  const [comment, setComment] = useState("");
+  const [comment, setComment] = useState('');
   const [open, setOpen] = useState(false);
 
   const handleReject = () => {
     if (comment.length >= 10) {
       onReject(comment);
-      setComment("");
+      setComment('');
       setOpen(false);
     }
   };
@@ -84,37 +84,36 @@ function RejectPopover({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
-        render={(props) => (
+        render={props => (
           <Button
             {...props}
             variant="ghost"
             size="sm"
             className="h-7 gap-1 text-destructive hover:text-destructive"
-            onClick={(e) => {
+            onClick={e => {
               e.stopPropagation();
               props.onClick?.(e);
-            }}
-          >
+            }}>
             <XCircle className="h-3.5 w-3.5" />
-            {t("actions.reject")}
+            {t('actions.reject')}
           </Button>
         )}
       />
-      <PopoverContent className="w-80 p-4" align="end" onClick={(e) => e.stopPropagation()}>
+      <PopoverContent className="w-80 p-4" align="end" onClick={e => e.stopPropagation()}>
         <div className="space-y-3">
-          <h4 className="font-medium text-sm">{t("rejectPopover.heading")}</h4>
+          <h4 className="font-medium text-sm">{t('rejectPopover.heading')}</h4>
           <div className="space-y-1.5">
             <label className="text-[12px] text-muted-foreground">
-              {t("rejectPopover.commentLabel")}
+              {t('rejectPopover.commentLabel')}
             </label>
             <Textarea
               value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder={t("rejectPopover.commentPlaceholder")}
+              onChange={e => setComment(e.target.value)}
+              placeholder={t('rejectPopover.commentPlaceholder')}
               className="min-h-[80px]"
             />
             {comment.length > 0 && comment.length < 10 && (
-              <p className="text-[12px] text-destructive">{t("rejectPopover.minChars")}</p>
+              <p className="text-[12px] text-destructive">{t('rejectPopover.minChars')}</p>
             )}
           </div>
           <div className="flex items-center gap-2 justify-end">
@@ -123,18 +122,16 @@ function RejectPopover({
               size="sm"
               onClick={() => {
                 setOpen(false);
-                setComment("");
-              }}
-            >
-              {t("rejectPopover.dismiss")}
+                setComment('');
+              }}>
+              {t('rejectPopover.dismiss')}
             </Button>
             <Button
               variant="destructive"
               size="sm"
               disabled={comment.length < 10}
-              onClick={handleReject}
-            >
-              {t("rejectPopover.confirm")}
+              onClick={handleReject}>
+              {t('rejectPopover.confirm')}
             </Button>
           </div>
         </div>
@@ -165,21 +162,21 @@ export function getColumns(
   return [
     // 1. Select checkbox
     {
-      id: "select",
+      id: 'select',
       header: ({ table }) => (
         <Checkbox
           checked={table.getIsAllPageRowsSelected()}
           indeterminate={table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()}
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label={t("columns.selectAll")}
+          onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)}
+          aria-label={t('columns.selectAll')}
         />
       ),
       cell: ({ row }) => (
         <Checkbox
           checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label={t("columns.selectRow")}
-          onClick={(e) => e.stopPropagation()}
+          onCheckedChange={value => row.toggleSelected(!!value)}
+          aria-label={t('columns.selectRow')}
+          onClick={e => e.stopPropagation()}
         />
       ),
       enableSorting: false,
@@ -189,9 +186,9 @@ export function getColumns(
 
     // 2. Invoice #
     {
-      id: "invoiceNumber",
-      accessorFn: (row) => row.invoice?.invoiceNumber ?? "",
-      header: t("columns.invoice"),
+      id: 'invoiceNumber',
+      accessorFn: row => row.invoice?.invoiceNumber ?? '',
+      header: t('columns.invoice'),
       cell: ({ row }) => {
         const invoice = row.original.invoice;
         if (!invoice) return <span className="text-muted-foreground">&mdash;</span>;
@@ -199,8 +196,7 @@ export function getColumns(
           <Link
             href={`/invoices/${row.original.approvalFlow.resourceId}`}
             className="font-mono text-sm text-primary hover:underline"
-            onClick={(e) => e.stopPropagation()}
-          >
+            onClick={e => e.stopPropagation()}>
             {invoice.invoiceNumber}
           </Link>
         );
@@ -210,21 +206,21 @@ export function getColumns(
 
     // 3. Contractor
     {
-      id: "contractorName",
-      accessorFn: (row) => row.invoice?.contractor?.legalName ?? row.invoice?.sellerName ?? "",
-      header: t("columns.contractor"),
+      id: 'contractorName',
+      accessorFn: row => row.invoice?.contractor?.legalName ?? row.invoice?.sellerName ?? '',
+      header: t('columns.contractor'),
       cell: ({ row }) => {
         const invoice = row.original.invoice;
-        const name = invoice?.contractor?.legalName ?? invoice?.sellerName ?? "";
+        const name = invoice?.contractor?.legalName ?? invoice?.sellerName ?? '';
         return <span className="text-sm">{name}</span>;
       },
     },
 
     // 4. Amount
     {
-      id: "totalMinor",
-      accessorFn: (row) => row.invoice?.totalMinor ?? 0,
-      header: () => <span className="text-end block">{t("columns.amount")}</span>,
+      id: 'totalMinor',
+      accessorFn: row => row.invoice?.totalMinor ?? 0,
+      header: () => <span className="text-end block">{t('columns.amount')}</span>,
       cell: ({ row }) => {
         const invoice = row.original.invoice;
         if (!invoice) return <span className="text-muted-foreground">&mdash;</span>;
@@ -239,9 +235,9 @@ export function getColumns(
 
     // 5. Submitted
     {
-      id: "submittedAt",
-      accessorFn: (row) => row.approvalFlow.startedAt,
-      header: t("columns.submitted"),
+      id: 'submittedAt',
+      accessorFn: row => row.approvalFlow.startedAt,
+      header: t('columns.submitted'),
       cell: ({ row }) => {
         const startedAt = row.original.approvalFlow.startedAt;
         if (!startedAt) return <span className="text-muted-foreground">&mdash;</span>;
@@ -272,9 +268,9 @@ export function getColumns(
 
     // 6. SLA remaining
     {
-      id: "slaDeadline",
-      accessorFn: (row) => row.slaDeadline,
-      header: t("columns.sla"),
+      id: 'slaDeadline',
+      accessorFn: row => row.slaDeadline,
+      header: t('columns.sla'),
       cell: ({ row }) => {
         const step = row.original;
         const slaHours = step.slaStatus?.hoursRemaining != null ? undefined : undefined;
@@ -285,30 +281,28 @@ export function getColumns(
 
     // 7. Actions (visible on hover)
     {
-      id: "actions",
+      id: 'actions',
       header: () => null,
       cell: ({ row }) => {
         const step = row.original;
-        if (step.status !== "PENDING") return null;
+        if (step.status !== 'PENDING') return null;
 
         return (
           <div
             className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
-            onClick={(e) => e.stopPropagation()}
-          >
+            onClick={e => e.stopPropagation()}>
             <Button
               variant="ghost"
               size="sm"
               className="h-7 gap-1 text-primary hover:text-primary"
-              onClick={(e) => {
+              onClick={e => {
                 e.stopPropagation();
                 callbacks.onApprove(step.id);
-              }}
-            >
+              }}>
               <CheckCircle2 className="h-3.5 w-3.5" />
-              {t("actions.approve")}
+              {t('actions.approve')}
             </Button>
-            <RejectPopover onReject={(comment) => callbacks.onReject(step.id, comment)} t={t} />
+            <RejectPopover onReject={comment => callbacks.onReject(step.id, comment)} t={t} />
           </div>
         );
       },

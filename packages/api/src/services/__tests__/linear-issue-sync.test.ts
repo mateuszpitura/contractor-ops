@@ -2,20 +2,20 @@
  * Linear issue sync — GraphQL helper, scope detection, create/sync entry paths.
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const { mockResolveLinearStateId } = vi.hoisted(() => ({
   mockResolveLinearStateId: vi.fn(),
 }));
 
-vi.mock("@contractor-ops/integrations/services/credential-service", () => ({
+vi.mock('@contractor-ops/integrations/services/credential-service', () => ({
   getCredentials: vi.fn(async () => ({
-    accessToken: "linear-access-token",
+    accessToken: 'linear-access-token',
     expiresAt: new Date(Date.now() + 3600000).toISOString(),
   })),
 }));
 
-vi.mock("../linear-status-mapping.js", () => ({
+vi.mock('../linear-status-mapping.js', () => ({
   resolveLinearStateId: mockResolveLinearStateId,
 }));
 
@@ -24,106 +24,106 @@ import {
   detectScopeExpansionNeeded,
   linearGraphQL,
   syncTaskStatusToLinear,
-} from "../linear-issue-sync.js";
+} from '../linear-issue-sync.js';
 
-const ORG_ID = "org-linear-sync-001";
-const CONN_ID = "conn-linear-sync-001";
-const TASK_RUN_ID = "clwtrun00000000000000001";
+const ORG_ID = 'org-linear-sync-001';
+const CONN_ID = 'conn-linear-sync-001';
+const TASK_RUN_ID = 'clwtrun00000000000000001';
 
-describe("detectScopeExpansionNeeded", () => {
-  it("returns false when read and write are both present", () => {
-    expect(detectScopeExpansionNeeded("read, write")).toBe(false);
-    expect(detectScopeExpansionNeeded("write, read, offline")).toBe(false);
+describe('detectScopeExpansionNeeded', () => {
+  it('returns false when read and write are both present', () => {
+    expect(detectScopeExpansionNeeded('read, write')).toBe(false);
+    expect(detectScopeExpansionNeeded('write, read, offline')).toBe(false);
   });
 
-  it("returns true when read or write is missing", () => {
-    expect(detectScopeExpansionNeeded("read")).toBe(true);
-    expect(detectScopeExpansionNeeded("write")).toBe(true);
-    expect(detectScopeExpansionNeeded("")).toBe(true);
+  it('returns true when read or write is missing', () => {
+    expect(detectScopeExpansionNeeded('read')).toBe(true);
+    expect(detectScopeExpansionNeeded('write')).toBe(true);
+    expect(detectScopeExpansionNeeded('')).toBe(true);
   });
 });
 
-describe("linearGraphQL", () => {
+describe('linearGraphQL', () => {
   const mockFetch = vi.fn();
 
   beforeEach(() => {
     mockFetch.mockReset();
-    vi.stubGlobal("fetch", mockFetch);
+    vi.stubGlobal('fetch', mockFetch);
   });
 
   afterEach(() => {
     vi.unstubAllGlobals();
   });
 
-  it("returns data on success", async () => {
+  it('returns data on success', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
-      json: async () => ({ data: { ping: "pong" } }),
+      json: async () => ({ data: { ping: 'pong' } }),
     });
 
-    const data = await linearGraphQL<{ ping: string }>("tok", "query { ping }");
+    const data = await linearGraphQL<{ ping: string }>('tok', 'query { ping }');
 
-    expect(data).toEqual({ ping: "pong" });
+    expect(data).toEqual({ ping: 'pong' });
     expect(mockFetch).toHaveBeenCalledWith(
-      "https://api.linear.app/graphql",
+      'https://api.linear.app/graphql',
       expect.objectContaining({
-        method: "POST",
+        method: 'POST',
         headers: expect.objectContaining({
-          Authorization: "Bearer tok",
+          Authorization: 'Bearer tok',
         }),
       }),
     );
   });
 
-  it("throws UNAUTHORIZED on HTTP 401", async () => {
+  it('throws UNAUTHORIZED on HTTP 401', async () => {
     mockFetch.mockResolvedValue({
       ok: false,
       status: 401,
-      text: async () => "nope",
+      text: async () => 'nope',
     });
 
-    await expect(linearGraphQL("bad", "q")).rejects.toMatchObject({
-      code: "UNAUTHORIZED",
+    await expect(linearGraphQL('bad', 'q')).rejects.toMatchObject({
+      code: 'UNAUTHORIZED',
     });
   });
 
-  it("throws when GraphQL errors array is present", async () => {
+  it('throws when GraphQL errors array is present', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
       json: async () => ({
-        errors: [{ message: "Invalid query" }],
+        errors: [{ message: 'Invalid query' }],
       }),
     });
 
-    await expect(linearGraphQL("tok", "bad")).rejects.toMatchObject({
-      code: "INTERNAL_SERVER_ERROR",
+    await expect(linearGraphQL('tok', 'bad')).rejects.toMatchObject({
+      code: 'INTERNAL_SERVER_ERROR',
     });
   });
 
-  it("throws when response has no data field", async () => {
+  it('throws when response has no data field', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
       json: async () => ({}),
     });
 
-    await expect(linearGraphQL("tok", "q")).rejects.toMatchObject({
-      code: "INTERNAL_SERVER_ERROR",
+    await expect(linearGraphQL('tok', 'q')).rejects.toMatchObject({
+      code: 'INTERNAL_SERVER_ERROR',
     });
   });
 });
 
-describe("createLinearIssue", () => {
+describe('createLinearIssue', () => {
   const baseParams = {
     organizationId: ORG_ID,
     connectionId: CONN_ID,
     taskRunId: TASK_RUN_ID,
-    title: "Task",
-    description: "Desc",
-    teamId: "team_linear",
-    teamKey: "ENG",
+    title: 'Task',
+    description: 'Desc',
+    teamId: 'team_linear',
+    teamKey: 'ENG',
   };
 
-  it("throws PRECONDITION_FAILED when connection is missing", async () => {
+  it('throws PRECONDITION_FAILED when connection is missing', async () => {
     const prisma = {
       integrationConnection: {
         findUnique: vi.fn(async () => null),
@@ -131,71 +131,71 @@ describe("createLinearIssue", () => {
     };
 
     await expect(createLinearIssue(prisma as never, baseParams)).rejects.toMatchObject({
-      code: "PRECONDITION_FAILED",
+      code: 'PRECONDITION_FAILED',
     });
   });
 
-  it("throws PRECONDITION_FAILED when connection is not CONNECTED", async () => {
+  it('throws PRECONDITION_FAILED when connection is not CONNECTED', async () => {
     const prisma = {
       integrationConnection: {
         findUnique: vi.fn(async () => ({
           id: CONN_ID,
-          status: "DISCONNECTED",
-          credentialsRef: "enc",
+          status: 'DISCONNECTED',
+          credentialsRef: 'enc',
         })),
       },
     };
 
     await expect(createLinearIssue(prisma as never, baseParams)).rejects.toMatchObject({
-      code: "PRECONDITION_FAILED",
+      code: 'PRECONDITION_FAILED',
     });
   });
 });
 
-describe("syncTaskStatusToLinear", () => {
+describe('syncTaskStatusToLinear', () => {
   beforeEach(() => {
-    vi.spyOn(console, "info").mockImplementation(() => undefined);
-    vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    vi.spyOn(console, 'info').mockImplementation(() => undefined);
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     mockResolveLinearStateId.mockReset();
   });
 
-  it("returns immediately when no LINEAR_ISSUE link exists", async () => {
+  it('returns immediately when no LINEAR_ISSUE link exists', async () => {
     const prisma = {
       externalLink: { findFirst: vi.fn(async () => null) },
     };
 
-    await syncTaskStatusToLinear(prisma as never, TASK_RUN_ID, "IN_PROGRESS");
+    await syncTaskStatusToLinear(prisma as never, TASK_RUN_ID, 'IN_PROGRESS');
 
     expect(prisma.externalLink.findFirst).toHaveBeenCalled();
   });
 
-  it("suppresses outbound sync when last origin was LINEAR within the loop window", async () => {
+  it('suppresses outbound sync when last origin was LINEAR within the loop window', async () => {
     const prisma = {
       externalLink: {
         findFirst: vi.fn(async () => ({
-          id: "el-1",
+          id: 'el-1',
           integrationConnectionId: CONN_ID,
           metadataJson: {
-            lastSyncOrigin: "LINEAR",
+            lastSyncOrigin: 'LINEAR',
             lastSyncAt: new Date().toISOString(),
           },
         })),
       },
     };
 
-    await syncTaskStatusToLinear(prisma as never, TASK_RUN_ID, "DONE");
+    await syncTaskStatusToLinear(prisma as never, TASK_RUN_ID, 'DONE');
   });
 
-  it("returns when connection is missing or not CONNECTED", async () => {
+  it('returns when connection is missing or not CONNECTED', async () => {
     const prisma = {
       externalLink: {
         findFirst: vi.fn(async () => ({
-          id: "el-1",
+          id: 'el-1',
           integrationConnectionId: CONN_ID,
           metadataJson: {
-            linearIssueId: "iss_1",
-            identifier: "ENG-1",
-            lastSyncOrigin: "APP",
+            linearIssueId: 'iss_1',
+            identifier: 'ENG-1',
+            lastSyncOrigin: 'APP',
           },
         })),
       },
@@ -204,57 +204,57 @@ describe("syncTaskStatusToLinear", () => {
       },
     };
 
-    await syncTaskStatusToLinear(prisma as never, TASK_RUN_ID, "DONE");
+    await syncTaskStatusToLinear(prisma as never, TASK_RUN_ID, 'DONE');
 
     expect(mockResolveLinearStateId).not.toHaveBeenCalled();
   });
 
-  it("returns when metadata has no linearIssueId", async () => {
+  it('returns when metadata has no linearIssueId', async () => {
     const prisma = {
       externalLink: {
         findFirst: vi.fn(async () => ({
-          id: "el-1",
+          id: 'el-1',
           integrationConnectionId: CONN_ID,
-          metadataJson: { identifier: "ENG-1" },
+          metadataJson: { identifier: 'ENG-1' },
         })),
       },
       integrationConnection: {
         findUnique: vi.fn(async () => ({
           id: CONN_ID,
-          status: "CONNECTED",
+          status: 'CONNECTED',
           organizationId: ORG_ID,
-          credentialsRef: "enc",
+          credentialsRef: 'enc',
         })),
       },
     };
 
-    await syncTaskStatusToLinear(prisma as never, TASK_RUN_ID, "DONE");
+    await syncTaskStatusToLinear(prisma as never, TASK_RUN_ID, 'DONE');
   });
 
-  it("returns when teamId cannot be resolved from template config", async () => {
+  it('returns when teamId cannot be resolved from template config', async () => {
     const prisma = {
       externalLink: {
         findFirst: vi.fn(async () => ({
-          id: "el-1",
+          id: 'el-1',
           integrationConnectionId: CONN_ID,
           metadataJson: {
-            linearIssueId: "iss_1",
-            identifier: "ENG-1",
-            lastSyncOrigin: "APP",
+            linearIssueId: 'iss_1',
+            identifier: 'ENG-1',
+            lastSyncOrigin: 'APP',
           },
         })),
       },
       integrationConnection: {
         findUnique: vi.fn(async () => ({
           id: CONN_ID,
-          status: "CONNECTED",
+          status: 'CONNECTED',
           organizationId: ORG_ID,
-          credentialsRef: "enc",
+          credentialsRef: 'enc',
         })),
       },
       workflowTaskRun: {
         findUnique: vi.fn(async () => ({
-          workflowTaskTemplateId: "tpl-1",
+          workflowTaskTemplateId: 'tpl-1',
         })),
       },
       workflowTaskTemplate: {
@@ -264,56 +264,56 @@ describe("syncTaskStatusToLinear", () => {
       },
     };
 
-    await syncTaskStatusToLinear(prisma as never, TASK_RUN_ID, "DONE");
+    await syncTaskStatusToLinear(prisma as never, TASK_RUN_ID, 'DONE');
 
     expect(mockResolveLinearStateId).not.toHaveBeenCalled();
   });
 
-  it("logs STATUS_UPDATE_UNMAPPED when no Linear state matches workflow status", async () => {
+  it('logs STATUS_UPDATE_UNMAPPED when no Linear state matches workflow status', async () => {
     mockResolveLinearStateId.mockResolvedValue(null);
 
-    const integrationSyncLog = { create: vi.fn(async () => ({ id: "log-1" })) };
+    const integrationSyncLog = { create: vi.fn(async () => ({ id: 'log-1' })) };
 
     const prisma = {
       externalLink: {
         findFirst: vi.fn(async () => ({
-          id: "el-1",
+          id: 'el-1',
           integrationConnectionId: CONN_ID,
           metadataJson: {
-            linearIssueId: "iss_1",
-            identifier: "ENG-1",
-            lastSyncOrigin: "APP",
+            linearIssueId: 'iss_1',
+            identifier: 'ENG-1',
+            lastSyncOrigin: 'APP',
           },
         })),
       },
       integrationConnection: {
         findUnique: vi.fn(async () => ({
           id: CONN_ID,
-          status: "CONNECTED",
+          status: 'CONNECTED',
           organizationId: ORG_ID,
-          credentialsRef: "enc",
+          credentialsRef: 'enc',
         })),
       },
       workflowTaskRun: {
         findUnique: vi.fn(async () => ({
-          workflowTaskTemplateId: "tpl-1",
+          workflowTaskTemplateId: 'tpl-1',
         })),
       },
       workflowTaskTemplate: {
         findUnique: vi.fn(async () => ({
-          configJson: { linearTeamId: "team_1" },
+          configJson: { linearTeamId: 'team_1' },
         })),
       },
       integrationSyncLog,
     };
 
-    await syncTaskStatusToLinear(prisma as never, TASK_RUN_ID, "CUSTOM_STATUS");
+    await syncTaskStatusToLinear(prisma as never, TASK_RUN_ID, 'CUSTOM_STATUS');
 
     expect(mockResolveLinearStateId).toHaveBeenCalled();
     expect(integrationSyncLog.create).toHaveBeenCalledWith({
       data: expect.objectContaining({
-        syncType: "STATUS_UPDATE_UNMAPPED",
-        status: "SUCCESS",
+        syncType: 'STATUS_UPDATE_UNMAPPED',
+        status: 'SUCCESS',
       }),
     });
   });

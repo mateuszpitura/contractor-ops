@@ -4,11 +4,11 @@
  * Remove after Slack app configuration is updated to use the new OAuth callback URL.
  */
 
-import { createHmac, timingSafeEqual } from "node:crypto";
-import { encryptToken, syncWorkspaceUsers } from "@contractor-ops/api/services/slack-client";
-import { prisma } from "@contractor-ops/db";
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import { createHmac, timingSafeEqual } from 'node:crypto';
+import { encryptToken, syncWorkspaceUsers } from '@contractor-ops/api/services/slack-client';
+import { prisma } from '@contractor-ops/db';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -30,18 +30,18 @@ interface OAuthState {
 function verifyState(stateParam: string): OAuthState | null {
   try {
     const decoded = JSON.parse(
-      Buffer.from(stateParam, "base64url").toString("utf-8"),
+      Buffer.from(stateParam, 'base64url').toString('utf-8'),
     ) as OAuthState;
 
     const signingSecret = process.env.SLACK_SIGNING_SECRET;
     if (!signingSecret) return null;
 
     const payload = `${decoded.orgId}:${decoded.userId}:${decoded.timestamp}`;
-    const expectedSig = createHmac("sha256", signingSecret).update(payload).digest("hex");
+    const expectedSig = createHmac('sha256', signingSecret).update(payload).digest('hex');
 
     // Timing-safe comparison
-    const sigBuffer = Buffer.from(decoded.sig, "hex");
-    const expectedBuffer = Buffer.from(expectedSig, "hex");
+    const sigBuffer = Buffer.from(decoded.sig, 'hex');
+    const expectedBuffer = Buffer.from(expectedSig, 'hex');
     if (sigBuffer.length !== expectedBuffer.length || !timingSafeEqual(sigBuffer, expectedBuffer)) {
       return null;
     }
@@ -63,40 +63,40 @@ function verifyState(stateParam: string): OAuthState | null {
 
 export async function GET(request: NextRequest) {
   const settingsUrl = (status: string) =>
-    `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/settings?tab=integrations&slack=${status}`;
+    `${process.env.NEXT_PUBLIC_APP_URL ?? ''}/settings?tab=integrations&slack=${status}`;
 
   try {
     const { searchParams } = new URL(request.url);
-    const code = searchParams.get("code");
-    const stateParam = searchParams.get("state");
+    const code = searchParams.get('code');
+    const stateParam = searchParams.get('state');
 
     if (!(code && stateParam)) {
-      return NextResponse.redirect(settingsUrl("error"));
+      return NextResponse.redirect(settingsUrl('error'));
     }
 
     // Verify HMAC-signed state (CSRF protection per pitfall 6)
     const state = verifyState(stateParam);
     if (!state) {
-      console.error("[slack-oauth] Invalid or expired state parameter");
-      return NextResponse.redirect(settingsUrl("error"));
+      console.error('[slack-oauth] Invalid or expired state parameter');
+      return NextResponse.redirect(settingsUrl('error'));
     }
 
     // Exchange code for token
     const clientId = process.env.SLACK_CLIENT_ID;
     const clientSecret = process.env.SLACK_CLIENT_SECRET;
     if (!(clientId && clientSecret)) {
-      console.error("[slack-oauth] Missing SLACK_CLIENT_ID or SLACK_CLIENT_SECRET");
-      return NextResponse.redirect(settingsUrl("error"));
+      console.error('[slack-oauth] Missing SLACK_CLIENT_ID or SLACK_CLIENT_SECRET');
+      return NextResponse.redirect(settingsUrl('error'));
     }
 
-    const tokenResponse = await fetch("https://slack.com/api/oauth.v2.access", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    const tokenResponse = await fetch('https://slack.com/api/oauth.v2.access', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
         code,
         client_id: clientId,
         client_secret: clientSecret,
-        redirect_uri: `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/api/slack/oauth`,
+        redirect_uri: `${process.env.NEXT_PUBLIC_APP_URL ?? ''}/api/slack/oauth`,
       }),
     });
 
@@ -108,20 +108,20 @@ export async function GET(request: NextRequest) {
     };
 
     if (!(data.ok && data.access_token)) {
-      console.error("[slack-oauth] Token exchange failed:", data.error);
-      return NextResponse.redirect(settingsUrl("error"));
+      console.error('[slack-oauth] Token exchange failed:', data.error);
+      return NextResponse.redirect(settingsUrl('error'));
     }
 
     // Encrypt bot token (never store raw xoxb-)
     const encryptedToken = encryptToken(data.access_token);
-    const teamName = data.team?.name ?? "Slack Workspace";
-    const teamId = data.team?.id ?? "";
+    const teamName = data.team?.name ?? 'Slack Workspace';
+    const teamId = data.team?.id ?? '';
 
     // Upsert IntegrationConnection
     const existingConnection = await prisma.integrationConnection.findFirst({
       where: {
         organizationId: state.orgId,
-        provider: "SLACK",
+        provider: 'SLACK',
       },
     });
 
@@ -131,7 +131,7 @@ export async function GET(request: NextRequest) {
       await prisma.integrationConnection.update({
         where: { id: existingConnection.id },
         data: {
-          status: "CONNECTED",
+          status: 'CONNECTED',
           displayName: teamName,
           credentialsRef: encryptedToken,
           connectedByUserId: state.userId,
@@ -146,8 +146,8 @@ export async function GET(request: NextRequest) {
       const created = await prisma.integrationConnection.create({
         data: {
           organizationId: state.orgId,
-          provider: "SLACK",
-          status: "CONNECTED",
+          provider: 'SLACK',
+          status: 'CONNECTED',
           displayName: teamName,
           credentialsRef: encryptedToken,
           connectedByUserId: state.userId,
@@ -161,12 +161,12 @@ export async function GET(request: NextRequest) {
     try {
       const _syncResult = await syncWorkspaceUsers(state.orgId, connectionId);
     } catch (syncError) {
-      console.error("[slack-oauth] User sync failed (non-blocking):", syncError);
+      console.error('[slack-oauth] User sync failed (non-blocking):', syncError);
     }
 
-    return NextResponse.redirect(settingsUrl("connected"));
+    return NextResponse.redirect(settingsUrl('connected'));
   } catch (error) {
-    console.error("[slack-oauth] Unexpected error:", error);
-    return NextResponse.redirect(settingsUrl("error"));
+    console.error('[slack-oauth] Unexpected error:', error);
+    return NextResponse.redirect(settingsUrl('error'));
   }
 }

@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { format } from "date-fns";
-import { AlertTriangle, CalendarIcon, Loader2, MoreHorizontal } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { z } from "zod";
-import { VatRateSelector } from "@/components/invoices/vat-rate-selector";
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { format } from 'date-fns';
+import { AlertTriangle, CalendarIcon, Loader2, MoreHorizontal } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { z } from 'zod';
+import { VatRateSelector } from '@/components/invoices/vat-rate-selector';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,27 +19,27 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Card, CardContent } from "@/components/ui/card";
+} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { trpc } from "@/trpc/init";
+} from '@/components/ui/select';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Local Zod schema (mirrors invoiceUpdateSchema to avoid cross-package dep)
@@ -47,16 +47,16 @@ import { trpc } from "@/trpc/init";
 
 function createInvoiceMetadataSchema(tv: (key: string) => string) {
   return z.object({
-    invoiceNumber: z.string().min(1, tv("invoiceNumberRequired")).max(100),
-    issueDate: z.string().min(1, tv("issueDateRequired")),
-    dueDate: z.string().min(1, tv("dueDateRequired")),
+    invoiceNumber: z.string().min(1, tv('invoiceNumberRequired')).max(100),
+    issueDate: z.string().min(1, tv('issueDateRequired')),
+    dueDate: z.string().min(1, tv('dueDateRequired')),
     servicePeriodStart: z.string().optional(),
     servicePeriodEnd: z.string().optional(),
     sellerTaxId: z.string().max(50).optional(),
-    subtotalMinor: z.number().int().min(1, tv("netAmountPositive")),
+    subtotalMinor: z.number().int().min(1, tv('netAmountPositive')),
     vatRate: z.string().optional(),
     vatAmountMinor: z.number().int().min(0).optional(),
-    totalMinor: z.number().int().min(1, tv("grossAmountPositive")),
+    totalMinor: z.number().int().min(1, tv('grossAmountPositive')),
     withholdingMinor: z.number().int().min(0).optional(),
     amountToPayMinor: z.number().int().min(0),
     currency: z.string().length(3),
@@ -71,21 +71,21 @@ type InvoiceMetadataValues = z.infer<ReturnType<typeof createInvoiceMetadataSche
 // ---------------------------------------------------------------------------
 
 const CURRENCY_OPTIONS = [
-  { value: "PLN", label: "PLN" },
-  { value: "EUR", label: "EUR" },
-  { value: "USD", label: "USD" },
-  { value: "GBP", label: "GBP" },
+  { value: 'PLN', label: 'PLN' },
+  { value: 'EUR', label: 'EUR' },
+  { value: 'USD', label: 'USD' },
+  { value: 'GBP', label: 'GBP' },
 ] as const;
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-import { displayToMinor, minorToDisplay } from "@/lib/currency-conversion";
+import { displayToMinor, minorToDisplay } from '@/lib/currency-conversion';
 
 /** Format a Date to ISO date string (YYYY-MM-DD) */
 function toDateString(date: Date): string {
-  return format(date, "yyyy-MM-dd");
+  return format(date, 'yyyy-MM-dd');
 }
 
 // ---------------------------------------------------------------------------
@@ -119,11 +119,11 @@ type InvoiceMetadataFormProps = {
 // ---------------------------------------------------------------------------
 
 export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: InvoiceMetadataFormProps) {
-  const t = useTranslations("Invoices");
-  const tMeta = useTranslations("Invoices.metadata");
-  const tv = useTranslations("Validation.invoice");
+  const t = useTranslations('Invoices');
+  const tMeta = useTranslations('Invoices.metadata');
+  const tv = useTranslations('Validation.invoice');
   const queryClient = useQueryClient();
-  const isEditable = invoice.status === "RECEIVED";
+  const isEditable = invoice.status === 'RECEIVED';
 
   const invoiceMetadataSchema = createInvoiceMetadataSchema((key: string) =>
     tv(key as Parameters<typeof tv>[0]),
@@ -141,8 +141,8 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
     resolver: zodResolver(invoiceMetadataSchema),
     defaultValues: {
       invoiceNumber: invoice.invoiceNumber,
-      issueDate: invoice.issueDate ?? "",
-      dueDate: invoice.dueDate ?? "",
+      issueDate: invoice.issueDate ?? '',
+      dueDate: invoice.dueDate ?? '',
       servicePeriodStart: invoice.servicePeriodStart ?? undefined,
       servicePeriodEnd: invoice.servicePeriodEnd ?? undefined,
       sellerTaxId: invoice.sellerTaxId ?? undefined,
@@ -161,8 +161,8 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
   useEffect(() => {
     reset({
       invoiceNumber: invoice.invoiceNumber,
-      issueDate: invoice.issueDate ?? "",
-      dueDate: invoice.dueDate ?? "",
+      issueDate: invoice.issueDate ?? '',
+      dueDate: invoice.dueDate ?? '',
       servicePeriodStart: invoice.servicePeriodStart ?? undefined,
       servicePeriodEnd: invoice.servicePeriodEnd ?? undefined,
       sellerTaxId: invoice.sellerTaxId ?? undefined,
@@ -178,24 +178,24 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
   }, [invoice, reset]);
 
   // Watched values for date pickers
-  const issueDateValue = watch("issueDate");
-  const dueDateValue = watch("dueDate");
-  const servicePeriodStartValue = watch("servicePeriodStart");
-  const servicePeriodEndValue = watch("servicePeriodEnd");
-  const vatRateValue = watch("vatRate");
-  const currencyValue = watch("currency");
+  const issueDateValue = watch('issueDate');
+  const dueDateValue = watch('dueDate');
+  const servicePeriodStartValue = watch('servicePeriodStart');
+  const servicePeriodEndValue = watch('servicePeriodEnd');
+  const vatRateValue = watch('vatRate');
+  const currencyValue = watch('currency');
 
   // Save draft mutation
   const saveDraftMutation = useMutation(
     trpc.invoice.update.mutationOptions({
       onSuccess: () => {
-        toast.success(t("detail.savedToast"));
+        toast.success(t('detail.savedToast'));
         queryClient.invalidateQueries({
           queryKey: trpc.invoice.getById.queryKey({ id: invoice.id }),
         });
       },
       onError: () => {
-        toast.error(t("detail.saveError"));
+        toast.error(t('detail.saveError'));
       },
     }),
   );
@@ -204,14 +204,14 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
   const submitForMatchingMutation = useMutation(
     trpc.invoice.submitForMatching.mutationOptions({
       onSuccess: () => {
-        toast.success(t("detail.submittedToast"));
+        toast.success(t('detail.submittedToast'));
         queryClient.invalidateQueries({
           queryKey: trpc.invoice.getById.queryKey({ id: invoice.id }),
         });
         onSubmittedForMatching?.();
       },
       onError: () => {
-        toast.error(t("detail.submitError"));
+        toast.error(t('detail.submitError'));
       },
     }),
   );
@@ -220,13 +220,13 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
   const voidMutation = useMutation(
     trpc.invoice.voidInvoice.mutationOptions({
       onSuccess: () => {
-        toast.success(t("detail.voidedToast"));
+        toast.success(t('detail.voidedToast'));
         queryClient.invalidateQueries({
           queryKey: trpc.invoice.getById.queryKey({ id: invoice.id }),
         });
       },
       onError: () => {
-        toast.error(t("detail.voidError"));
+        toast.error(t('detail.voidError'));
       },
     }),
   );
@@ -242,7 +242,7 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
         servicePeriodEnd: values.servicePeriodEnd || undefined,
         sellerTaxId: values.sellerTaxId || undefined,
         subtotalMinor: values.subtotalMinor,
-        vatRate: (values.vatRate as "23" | "8" | "5" | "0" | "ZW" | "NP") || undefined,
+        vatRate: (values.vatRate as '23' | '8' | '5' | '0' | 'ZW' | 'NP') || undefined,
         vatAmountMinor: values.vatAmountMinor,
         totalMinor: values.totalMinor,
         withholdingMinor: values.withholdingMinor,
@@ -266,7 +266,7 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
           servicePeriodEnd: values.servicePeriodEnd || undefined,
           sellerTaxId: values.sellerTaxId || undefined,
           subtotalMinor: values.subtotalMinor,
-          vatRate: (values.vatRate as "23" | "8" | "5" | "0" | "ZW" | "NP") || undefined,
+          vatRate: (values.vatRate as '23' | '8' | '5' | '0' | 'ZW' | 'NP') || undefined,
           vatAmountMinor: values.vatAmountMinor,
           totalMinor: values.totalMinor,
           withholdingMinor: values.withholdingMinor,
@@ -292,13 +292,13 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
           <form className="space-y-4">
             {/* Invoice number */}
             <div className="space-y-1.5">
-              <Label htmlFor="invoiceNumber">{t("detail.invoiceNumber")}</Label>
+              <Label htmlFor="invoiceNumber">{t('detail.invoiceNumber')}</Label>
               <Input
                 id="invoiceNumber"
                 className="font-mono text-[13px]"
-                placeholder={t("detail.invoiceNumberPlaceholder")}
+                placeholder={t('detail.invoiceNumberPlaceholder')}
                 disabled={!isEditable}
-                {...register("invoiceNumber")}
+                {...register('invoiceNumber')}
               />
               {errors.invoiceNumber && (
                 <p className="text-xs text-destructive">{errors.invoiceNumber.message}</p>
@@ -308,24 +308,24 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
             {/* Issue date + Due date row */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label>{t("detail.issueDate")}</Label>
+                <Label>{t('detail.issueDate')}</Label>
                 <DatePicker
                   value={issueDateValue}
-                  onChange={(date) => setValue("issueDate", date)}
+                  onChange={date => setValue('issueDate', date)}
                   disabled={!isEditable}
-                  pickDateLabel={tMeta("pickDate")}
+                  pickDateLabel={tMeta('pickDate')}
                 />
                 {errors.issueDate && (
                   <p className="text-xs text-destructive">{errors.issueDate.message}</p>
                 )}
               </div>
               <div className="space-y-1.5">
-                <Label>{t("detail.dueDate")}</Label>
+                <Label>{t('detail.dueDate')}</Label>
                 <DatePicker
                   value={dueDateValue}
-                  onChange={(date) => setValue("dueDate", date)}
+                  onChange={date => setValue('dueDate', date)}
                   disabled={!isEditable}
-                  pickDateLabel={tMeta("pickDate")}
+                  pickDateLabel={tMeta('pickDate')}
                 />
                 {errors.dueDate && (
                   <p className="text-xs text-destructive">{errors.dueDate.message}</p>
@@ -336,45 +336,45 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
             {/* Service period row */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label>{t("detail.servicePeriodStart")}</Label>
+                <Label>{t('detail.servicePeriodStart')}</Label>
                 <DatePicker
-                  value={servicePeriodStartValue ?? ""}
-                  onChange={(date) => setValue("servicePeriodStart", date || undefined)}
+                  value={servicePeriodStartValue ?? ''}
+                  onChange={date => setValue('servicePeriodStart', date || undefined)}
                   disabled={!isEditable}
-                  pickDateLabel={tMeta("pickDate")}
+                  pickDateLabel={tMeta('pickDate')}
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>{t("detail.servicePeriodEnd")}</Label>
+                <Label>{t('detail.servicePeriodEnd')}</Label>
                 <DatePicker
-                  value={servicePeriodEndValue ?? ""}
-                  onChange={(date) => setValue("servicePeriodEnd", date || undefined)}
+                  value={servicePeriodEndValue ?? ''}
+                  onChange={date => setValue('servicePeriodEnd', date || undefined)}
                   disabled={!isEditable}
-                  pickDateLabel={tMeta("pickDate")}
+                  pickDateLabel={tMeta('pickDate')}
                 />
               </div>
             </div>
 
             {/* Seller NIP */}
             <div className="space-y-1.5">
-              <Label htmlFor="sellerTaxId">{t("detail.sellerNip")}</Label>
+              <Label htmlFor="sellerTaxId">{t('detail.sellerNip')}</Label>
               <Input
                 id="sellerTaxId"
                 className="font-mono text-[13px]"
-                placeholder={t("detail.sellerNipPlaceholder")}
+                placeholder={t('detail.sellerNipPlaceholder')}
                 disabled={!isEditable}
-                {...register("sellerTaxId")}
+                {...register('sellerTaxId')}
               />
             </div>
 
             {/* Net amount + VAT rate row */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label htmlFor="netAmount">{t("detail.netAmount")}</Label>
+                <Label htmlFor="netAmount">{t('detail.netAmount')}</Label>
                 <CurrencyInput
                   id="netAmount"
-                  value={watch("subtotalMinor")}
-                  onChange={(minor) => setValue("subtotalMinor", minor)}
+                  value={watch('subtotalMinor')}
+                  onChange={minor => setValue('subtotalMinor', minor)}
                   disabled={!isEditable}
                 />
                 {errors.subtotalMinor && (
@@ -382,10 +382,10 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
                 )}
               </div>
               <div className="space-y-1.5">
-                <Label>{t("detail.vatRate")}</Label>
+                <Label>{t('detail.vatRate')}</Label>
                 <VatRateSelector
                   value={vatRateValue ?? undefined}
-                  onChange={(code) => setValue("vatRate", code)}
+                  onChange={code => setValue('vatRate', code)}
                   disabled={!isEditable}
                 />
               </div>
@@ -394,20 +394,20 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
             {/* VAT amount + Gross amount row */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label htmlFor="vatAmount">{t("detail.vatAmount")}</Label>
+                <Label htmlFor="vatAmount">{t('detail.vatAmount')}</Label>
                 <CurrencyInput
                   id="vatAmount"
-                  value={watch("vatAmountMinor") ?? 0}
-                  onChange={(minor) => setValue("vatAmountMinor", minor)}
+                  value={watch('vatAmountMinor') ?? 0}
+                  onChange={minor => setValue('vatAmountMinor', minor)}
                   disabled={!isEditable}
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="grossAmount">{t("detail.grossAmount")}</Label>
+                <Label htmlFor="grossAmount">{t('detail.grossAmount')}</Label>
                 <CurrencyInput
                   id="grossAmount"
-                  value={watch("totalMinor")}
-                  onChange={(minor) => setValue("totalMinor", minor)}
+                  value={watch('totalMinor')}
+                  onChange={minor => setValue('totalMinor', minor)}
                   disabled={!isEditable}
                 />
                 {errors.totalMinor && (
@@ -419,20 +419,20 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
             {/* Withholding + Amount to pay row */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label htmlFor="withholding">{t("detail.withholding")}</Label>
+                <Label htmlFor="withholding">{t('detail.withholding')}</Label>
                 <CurrencyInput
                   id="withholding"
-                  value={watch("withholdingMinor") ?? 0}
-                  onChange={(minor) => setValue("withholdingMinor", minor)}
+                  value={watch('withholdingMinor') ?? 0}
+                  onChange={minor => setValue('withholdingMinor', minor)}
                   disabled={!isEditable}
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="amountToPay">{t("detail.amountToPay")}</Label>
+                <Label htmlFor="amountToPay">{t('detail.amountToPay')}</Label>
                 <CurrencyInput
                   id="amountToPay"
-                  value={watch("amountToPayMinor")}
-                  onChange={(minor) => setValue("amountToPayMinor", minor)}
+                  value={watch('amountToPayMinor')}
+                  onChange={minor => setValue('amountToPayMinor', minor)}
                   disabled={!isEditable}
                 />
               </div>
@@ -441,19 +441,18 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
             {/* Currency + Bank account row */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label>{t("detail.currency")}</Label>
+                <Label>{t('detail.currency')}</Label>
                 <Select
                   value={currencyValue}
-                  onValueChange={(val) => {
-                    if (val) setValue("currency", val);
+                  onValueChange={val => {
+                    if (val) setValue('currency', val);
                   }}
-                  disabled={!isEditable}
-                >
+                  disabled={!isEditable}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {CURRENCY_OPTIONS.map((opt) => (
+                    {CURRENCY_OPTIONS.map(opt => (
                       <SelectItem key={opt.value} value={opt.value}>
                         {opt.label}
                       </SelectItem>
@@ -462,13 +461,13 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="bankAccount">{t("detail.bankAccount")}</Label>
+                <Label htmlFor="bankAccount">{t('detail.bankAccount')}</Label>
                 <Input
                   id="bankAccount"
                   className="font-mono text-[13px]"
-                  placeholder={t("detail.bankAccountPlaceholder")}
+                  placeholder={t('detail.bankAccountPlaceholder')}
                   disabled={!isEditable}
-                  {...register("sellerBankAccount")}
+                  {...register('sellerBankAccount')}
                 />
               </div>
             </div>
@@ -482,22 +481,20 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
                       type="button"
                       variant="outline"
                       disabled={isSubmitting}
-                      onClick={handleSubmit(onSaveDraft)}
-                    >
+                      onClick={handleSubmit(onSaveDraft)}>
                       {saveDraftMutation.isPending && (
                         <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
                       )}
-                      {t("detail.saveDraft")}
+                      {t('detail.saveDraft')}
                     </Button>
                     <Button
                       type="button"
                       disabled={isSubmitting}
-                      onClick={handleSubmit(onSubmitForMatching)}
-                    >
+                      onClick={handleSubmit(onSubmitForMatching)}>
                       {submitForMatchingMutation.isPending && (
                         <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
                       )}
-                      {t("detail.submitForMatching")}
+                      {t('detail.submitForMatching')}
                     </Button>
                   </>
                 )}
@@ -511,10 +508,9 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem
                     className="text-destructive focus:text-destructive"
-                    onClick={() => setVoidDialogOpen(true)}
-                  >
+                    onClick={() => setVoidDialogOpen(true)}>
                     <AlertTriangle className="me-1.5 h-3.5 w-3.5" />
-                    {t("detail.voidInvoice")}
+                    {t('detail.voidInvoice')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -527,20 +523,19 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
       <AlertDialog open={voidDialogOpen} onOpenChange={setVoidDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("detail.voidConfirmTitle")}</AlertDialogTitle>
-            <AlertDialogDescription>{t("detail.voidConfirmBody")}</AlertDialogDescription>
+            <AlertDialogTitle>{t('detail.voidConfirmTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('detail.voidConfirmBody')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t("detail.cancel")}</AlertDialogCancel>
+            <AlertDialogCancel>{t('detail.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
               onClick={() => {
                 voidMutation.mutate({ id: invoice.id });
                 setVoidDialogOpen(false);
-              }}
-            >
+              }}>
               {voidMutation.isPending && <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />}
-              {t("detail.voidInvoiceCta")}
+              {t('detail.voidInvoiceCta')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -574,20 +569,19 @@ function DatePicker({
           <Button
             variant="outline"
             className={`w-full justify-start text-start font-normal ${
-              !isValid ? "text-muted-foreground" : ""
-            } ${disabled ? "pointer-events-none opacity-50 bg-muted" : ""}`}
+              !isValid ? 'text-muted-foreground' : ''
+            } ${disabled ? 'pointer-events-none opacity-50 bg-muted' : ''}`}
             disabled={disabled}
           />
-        }
-      >
+        }>
         <CalendarIcon className="me-2 h-4 w-4" />
-        {isValid ? format(parsed, "yyyy-MM-dd") : (pickDateLabel ?? "Pick a date")}
+        {isValid ? format(parsed, 'yyyy-MM-dd') : (pickDateLabel ?? 'Pick a date')}
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
         <Calendar
           mode="single"
           selected={isValid ? parsed : undefined}
-          onSelect={(date) => {
+          onSelect={date => {
             if (date) onChange(toDateString(date));
           }}
         />
@@ -626,15 +620,15 @@ function CurrencyInput({
       className="font-mono text-[13px] text-end"
       value={displayValue}
       disabled={disabled}
-      onChange={(e) => {
+      onChange={e => {
         const raw = e.target.value;
         // Allow typing decimals
-        if (/^[0-9]*[.,]?[0-9]{0,2}$/.test(raw) || raw === "") {
+        if (/^[0-9]*[.,]?[0-9]{0,2}$/.test(raw) || raw === '') {
           setDisplayValue(raw);
         }
       }}
       onBlur={() => {
-        const minor = displayToMinor(displayValue.replace(",", "."));
+        const minor = displayToMinor(displayValue.replace(',', '.'));
         onChange(minor);
         setDisplayValue(minorToDisplay(minor));
       }}

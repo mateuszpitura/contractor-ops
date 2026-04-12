@@ -1,15 +1,15 @@
-import { render, screen } from "@/test/test-utils";
-import { SoftBlockModal } from "../soft-block-modal";
+import { render, screen } from '@/test/test-utils';
+import { SoftBlockModal } from '../soft-block-modal';
 
 // ---------------------------------------------------------------------------
 // Mocks
 // ---------------------------------------------------------------------------
 
 // Mock PlanComparisonGrid to simplify
-vi.mock("../plan-comparison-grid", () => ({
+vi.mock('../plan-comparison-grid', () => ({
   PlanComparisonGrid: ({ onSelectPlan }: any) => (
     <div data-testid="plan-grid">
-      <button onClick={() => onSelectPlan("price_pro")}>Select Pro</button>
+      <button onClick={() => onSelectPlan('price_pro')}>Select Pro</button>
     </div>
   ),
 }));
@@ -18,27 +18,27 @@ vi.mock("../plan-comparison-grid", () => ({
 // Tests
 // ---------------------------------------------------------------------------
 
-describe("SoftBlockModal", () => {
-  it("does not render content when closed", () => {
+describe('SoftBlockModal', () => {
+  it('does not render content when closed', () => {
     render(<SoftBlockModal isOpen={false} onSelectPlan={vi.fn()} />);
-    expect(screen.queryByText("Your trial has ended")).not.toBeInTheDocument();
+    expect(screen.queryByText('Your trial has ended')).not.toBeInTheDocument();
   });
 
-  it("renders title and description when open", () => {
+  it('renders title and description when open', () => {
     render(<SoftBlockModal isOpen={true} onSelectPlan={vi.fn()} />);
-    expect(screen.getByText("Your trial has ended")).toBeInTheDocument();
+    expect(screen.getByText('Your trial has ended')).toBeInTheDocument();
     expect(
-      screen.getByText("Your data is safe. Choose a plan to continue using Contractor Ops."),
+      screen.getByText('Your data is safe. Choose a plan to continue using Contractor Ops.'),
     ).toBeInTheDocument();
   });
 
-  it("renders the plan comparison grid", () => {
+  it('renders the plan comparison grid', () => {
     render(<SoftBlockModal isOpen={true} onSelectPlan={vi.fn()} />);
-    expect(screen.getByTestId("plan-grid")).toBeInTheDocument();
+    expect(screen.getByTestId('plan-grid')).toBeInTheDocument();
   });
 
-  it("has alertdialog role", () => {
+  it('has alertdialog role', () => {
     render(<SoftBlockModal isOpen={true} onSelectPlan={vi.fn()} />);
-    expect(screen.getByRole("alertdialog")).toBeInTheDocument();
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
   });
 });

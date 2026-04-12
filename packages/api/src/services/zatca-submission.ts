@@ -9,28 +9,28 @@
 // Per T-48-13: QStash: 3 retries, exponential backoff, dead letter queue.
 // ---------------------------------------------------------------------------
 
-import { createHash, randomUUID } from "node:crypto";
-import type { PrismaClient } from "@contractor-ops/db";
-import { prisma as defaultPrisma } from "@contractor-ops/db";
-import type { Prisma } from "@contractor-ops/db/generated/prisma/client";
+import { createHash, randomUUID } from 'node:crypto';
+import type { PrismaClient } from '@contractor-ops/db';
+import { prisma as defaultPrisma } from '@contractor-ops/db';
+import type { Prisma } from '@contractor-ops/db/generated/prisma/client';
 import type {
   CertificateInfo,
   EInvoice,
   EInvoiceTaxSubtotal,
   ZatcaClearanceResponse,
   ZatcaReportingResponse,
-} from "@contractor-ops/einvoice";
+} from '@contractor-ops/einvoice';
 import {
   ZATCA_PRODUCTION_URL,
   ZATCA_SANDBOX_URL,
   ZatcaApiClient,
   ZatcaApiError,
   ZatcaProfile,
-} from "@contractor-ops/einvoice";
-import { createZatcaSecretStore, ZATCA_SECRET_NAMES } from "@contractor-ops/integrations";
-import { getQStashClient } from "@contractor-ops/integrations/services/qstash-client";
-import type { PrismaLike } from "./zatca-hash-chain.js";
-import { acquireChainLock, getNextChainEntry, recordChainEntry } from "./zatca-hash-chain.js";
+} from '@contractor-ops/einvoice';
+import { createZatcaSecretStore, ZATCA_SECRET_NAMES } from '@contractor-ops/integrations';
+import { getQStashClient } from '@contractor-ops/integrations/services/qstash-client';
+import type { PrismaLike } from './zatca-hash-chain.js';
+import { acquireChainLock, getNextChainEntry, recordChainEntry } from './zatca-hash-chain.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -48,7 +48,7 @@ export interface ZatcaSubmissionJobPayload {
 }
 
 interface ZatcaConnectionConfig {
-  environment: "test" | "prod";
+  environment: 'test' | 'prod';
 }
 
 // ---------------------------------------------------------------------------
@@ -59,7 +59,7 @@ interface ZatcaConnectionConfig {
 const QSTASH_CONFIG = {
   retries: 3,
   /** Backoff intervals: 1s, 4s, 16s (exponential base 4) */
-  delay: "1s" as const,
+  delay: '1s' as const,
 };
 
 // ---------------------------------------------------------------------------
@@ -94,8 +94,8 @@ export async function submitToZatca(
   const connection = await prisma.integrationConnection.findFirst({
     where: {
       organizationId,
-      provider: "ZATCA",
-      status: "CONNECTED",
+      provider: 'ZATCA',
+      status: 'CONNECTED',
     },
   });
 
@@ -104,7 +104,7 @@ export async function submitToZatca(
   }
 
   const config = connection.configJson as unknown as ZatcaConnectionConfig;
-  const environment = config?.environment ?? "test";
+  const environment = config?.environment ?? 'test';
 
   // Retrieve certificates from Infisical
   const secretStore = createZatcaSecretStore(organizationId);
@@ -127,7 +127,7 @@ export async function submitToZatca(
   }
 
   // Step 1-5: Transaction with advisory lock
-  const chainRecord = await prisma.$transaction(async (tx) => {
+  const chainRecord = await prisma.$transaction(async tx => {
     const txClient = tx as unknown as PrismaLike;
     // Step 1: Acquire advisory lock
     await acquireChainLock(txClient, organizationId);
@@ -150,7 +150,7 @@ export async function submitToZatca(
     const signedXml = await profile.sign.sign(unsignedXml, certInfo);
 
     // Step 4b: Compute hash of signed XML
-    const invoiceHash = createHash("sha256").update(signedXml).digest("hex");
+    const invoiceHash = createHash('sha256').update(signedXml).digest('hex');
 
     // Step 4c: Generate TLV QR code
     const qrEInvoice: EInvoice = {
@@ -163,7 +163,7 @@ export async function submitToZatca(
       },
     };
     const qrBuffer = await profile.qrCode.generateQR(qrEInvoice);
-    const qrBase64 = qrBuffer.toString("base64");
+    const qrBase64 = qrBuffer.toString('base64');
 
     // Step 5: Record chain entry
     const record = await recordChainEntry(txClient, {
@@ -188,7 +188,7 @@ export async function submitToZatca(
 
   // Step 6: Submit to ZATCA (outside transaction -- network call)
   const apiClient = new ZatcaApiClient({
-    baseUrl: environment === "prod" ? ZATCA_PRODUCTION_URL : ZATCA_SANDBOX_URL,
+    baseUrl: environment === 'prod' ? ZATCA_PRODUCTION_URL : ZATCA_SANDBOX_URL,
     binarySecurityToken: certificate,
     secret: apiSecret,
   });
@@ -196,7 +196,7 @@ export async function submitToZatca(
   const payload = {
     invoiceHash: chainRecord.invoiceHash,
     uuid: chainRecord.zatcaUuid,
-    invoice: Buffer.from(chainRecord.invoiceXml).toString("base64"),
+    invoice: Buffer.from(chainRecord.invoiceXml).toString('base64'),
   };
 
   try {
@@ -223,9 +223,9 @@ export async function submitToZatca(
         zatcaStatus: mapZatcaStatus(status),
         zatcaResponse: response as unknown as Prisma.InputJsonValue,
         submittedAt: now,
-        ...(status === "CLEARED" && { clearedAt: now }),
-        ...(status === "REPORTED" && { reportedAt: now }),
-        ...(status === "REJECTED" && {
+        ...(status === 'CLEARED' && { clearedAt: now }),
+        ...(status === 'REPORTED' && { reportedAt: now }),
+        ...(status === 'REJECTED' && {
           rejectedAt: now,
           rejectionReason: extractRejectionReason(response.validationResults),
         }),
@@ -237,14 +237,14 @@ export async function submitToZatca(
     await prisma.zatcaInvoiceChain.update({
       where: { id: chainRecord.id },
       data: {
-        zatcaStatus: "REJECTED",
+        zatcaStatus: 'REJECTED',
         submittedAt: new Date(),
         rejectedAt: new Date(),
         rejectionReason: isApiError
           ? `API Error ${error.statusCode}: ${error.errorType}`
           : error instanceof Error
             ? error.message
-            : "Unknown error",
+            : 'Unknown error',
       },
     });
 
@@ -273,7 +273,7 @@ export async function handleZatcaSubmissionJob(payload: ZatcaSubmissionJobPayloa
     });
   } catch (error) {
     if (error instanceof ZatcaApiError) {
-      if (error.errorType === "non-retryable" || error.errorType === "auth") {
+      if (error.errorType === 'non-retryable' || error.errorType === 'auth') {
         // Don't retry -- log and let QStash mark as dead
         console.error(
           `[zatca-submission] Non-retryable error for invoice ${payload.invoiceId}:`,
@@ -305,7 +305,7 @@ export async function queueZatcaSubmission(
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? process.env.APP_URL;
 
   if (!appUrl) {
-    throw new Error("APP_URL or NEXT_PUBLIC_APP_URL must be set for QStash");
+    throw new Error('APP_URL or NEXT_PUBLIC_APP_URL must be set for QStash');
   }
 
   await qstash.publishJSON({
@@ -350,31 +350,31 @@ function buildEInvoiceFromPrisma(
   opts: { icv: number; pih: string; zatcaUuid: string },
 ): EInvoice {
   const metadata = (invoice.metadata ?? invoice.metadataJson ?? {}) as Record<string, unknown>;
-  const subtype = (metadata.zatcaSubtype as string) ?? "0100000";
-  const isSimplified = subtype.startsWith("02");
+  const subtype = (metadata.zatcaSubtype as string) ?? '0100000';
+  const isSimplified = subtype.startsWith('02');
 
   return {
     id: invoice.invoiceNumber,
-    issueDate: invoice.issueDate.toISOString().split("T")[0]!,
-    dueDate: invoice.dueDate ? invoice.dueDate.toISOString().split("T")[0] : undefined,
-    invoiceTypeCode: "388",
+    issueDate: invoice.issueDate.toISOString().split('T')[0]!,
+    dueDate: invoice.dueDate ? invoice.dueDate.toISOString().split('T')[0] : undefined,
+    invoiceTypeCode: '388',
     currencyCode: invoice.currency,
     supplier: {
-      id: invoice.sellerTaxId ?? "",
-      name: invoice.sellerName ?? "",
-      country: "SA",
+      id: invoice.sellerTaxId ?? '',
+      name: invoice.sellerName ?? '',
+      country: 'SA',
     },
     customer: {
-      id: invoice.buyerTaxId ?? "",
-      name: ((invoice.contractor as Record<string, unknown> | null)?.name as string) ?? "",
+      id: invoice.buyerTaxId ?? '',
+      name: ((invoice.contractor as Record<string, unknown> | null)?.name as string) ?? '',
     },
     lines: (invoice.lines ?? []).map((line: Record<string, unknown>, idx: number) => ({
       lineNumber: idx + 1,
-      description: (line.description as string) ?? "",
+      description: (line.description as string) ?? '',
       quantity: (line.quantity as number) ?? 1,
       unitPriceMinor: (line.unitPriceMinor as number) ?? 0,
       netAmountMinor: (line.netAmountMinor as number) ?? (line.amountMinor as number) ?? 0,
-      vatRate: invoice.vatRate ?? "15.00",
+      vatRate: invoice.vatRate ?? '15.00',
       vatAmountMinor: (line.vatAmountMinor as number) ?? 0,
       grossAmountMinor: (line.grossAmountMinor as number) ?? 0,
     })),
@@ -385,17 +385,17 @@ function buildEInvoiceFromPrisma(
       {
         taxableAmountMinor: invoice.subtotalMinor,
         taxAmountMinor: invoice.vatAmountMinor ?? 0,
-        taxCategory: "S",
-        percent: parseFloat(invoice.vatRate ?? "15"),
+        taxCategory: 'S',
+        percent: parseFloat(invoice.vatRate ?? '15'),
       } satisfies EInvoiceTaxSubtotal,
     ],
-    profileId: "zatca",
+    profileId: 'zatca',
     extensions: {
       icv: opts.icv,
       pih: opts.pih,
       uuid: opts.zatcaUuid,
       invoiceSubtype: subtype,
-      profileID: isSimplified ? "reporting:1.0" : "clearance:1.0",
+      profileID: isSimplified ? 'reporting:1.0' : 'clearance:1.0',
     },
   };
 }
@@ -408,33 +408,33 @@ function isStandardInvoice(invoice: Record<string, unknown>): boolean {
   const metadata = (invoice.metadata ?? invoice.metadataJson) as Record<string, unknown> | null;
   const subtype = metadata?.zatcaSubtype as string | undefined;
   // Standard subtypes start with "01", simplified with "02"
-  if (subtype) return subtype.startsWith("01");
+  if (subtype) return subtype.startsWith('01');
   // Default to standard (B2B) if not specified
   return true;
 }
 
 function mapZatcaStatus(
   status: string,
-): "CLEARED" | "REPORTED" | "REJECTED" | "WARNING" | "SUBMITTED" {
+): 'CLEARED' | 'REPORTED' | 'REJECTED' | 'WARNING' | 'SUBMITTED' {
   switch (status.toUpperCase()) {
-    case "CLEARED":
-      return "CLEARED";
-    case "REPORTED":
-      return "REPORTED";
-    case "REJECTED":
-      return "REJECTED";
-    case "WARNING":
-    case "CLEARED_WITH_WARNINGS":
-    case "REPORTED_WITH_WARNINGS":
-      return "WARNING";
+    case 'CLEARED':
+      return 'CLEARED';
+    case 'REPORTED':
+      return 'REPORTED';
+    case 'REJECTED':
+      return 'REJECTED';
+    case 'WARNING':
+    case 'CLEARED_WITH_WARNINGS':
+    case 'REPORTED_WITH_WARNINGS':
+      return 'WARNING';
     default:
-      return "SUBMITTED";
+      return 'SUBMITTED';
   }
 }
 
 function extractRejectionReason(
   validationResults: { errorMessages?: Array<{ message?: string }> } | undefined,
 ): string {
-  if (!validationResults?.errorMessages?.length) return "Unknown rejection";
-  return validationResults.errorMessages.map((e) => e.message ?? "Unknown").join("; ");
+  if (!validationResults?.errorMessages?.length) return 'Unknown rejection';
+  return validationResults.errorMessages.map(e => e.message ?? 'Unknown').join('; ');
 }

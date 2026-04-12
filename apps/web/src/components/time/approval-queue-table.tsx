@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { addDays, format, startOfISOWeek } from "date-fns";
-import { CheckCircle, XCircle } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { addDays, format, startOfISOWeek } from 'date-fns';
+import { CheckCircle, XCircle } from 'lucide-react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,9 +12,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Table,
   TableBody,
@@ -22,10 +22,10 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { cn } from "@/lib/utils";
-import { RejectionReasonDialog } from "./rejection-reason-dialog";
-import { TimeEntryStatusBadge } from "./time-entry-status-badge";
+} from '@/components/ui/table';
+import { cn } from '@/lib/utils';
+import { RejectionReasonDialog } from './rejection-reason-dialog';
+import { TimeEntryStatusBadge } from './time-entry-status-badge';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -35,7 +35,7 @@ export interface TimesheetRow {
   id: string;
   weekStartDate: string | Date;
   totalMinutes: number;
-  status: "DRAFT" | "SUBMITTED" | "APPROVED" | "REJECTED";
+  status: 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED';
   submittedAt?: string | Date | null;
   contractor: {
     id: string;
@@ -60,10 +60,10 @@ interface ApprovalQueueTableProps {
 // ---------------------------------------------------------------------------
 
 function formatPeriod(weekStart: string | Date): string {
-  const start = typeof weekStart === "string" ? new Date(weekStart) : weekStart;
+  const start = typeof weekStart === 'string' ? new Date(weekStart) : weekStart;
   const monday = startOfISOWeek(start);
   const sunday = addDays(monday, 6);
-  return `${format(monday, "MMM d")} - ${format(sunday, "MMM d")}`;
+  return `${format(monday, 'MMM d')} - ${format(sunday, 'MMM d')}`;
 }
 
 function minutesToDisplay(minutes: number): string {
@@ -72,8 +72,8 @@ function minutesToDisplay(minutes: number): string {
 }
 
 function toDateStr(d: string | Date): string {
-  if (typeof d === "string") return d.split("T")[0]!;
-  return format(d, "yyyy-MM-dd");
+  if (typeof d === 'string') return d.split('T')[0]!;
+  return format(d, 'yyyy-MM-dd');
 }
 
 // ---------------------------------------------------------------------------
@@ -107,12 +107,12 @@ export function ApprovalQueueTable({
     if (allSelected) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(timesheets.map((t) => t.id)));
+      setSelectedIds(new Set(timesheets.map(t => t.id)));
     }
   }, [allSelected, timesheets]);
 
   const toggleRow = useCallback((id: string) => {
-    setSelectedIds((prev) => {
+    setSelectedIds(prev => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
@@ -189,11 +189,10 @@ export function ApprovalQueueTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {timesheets.map((ts) => (
+            {timesheets.map(ts => (
               <TableRow
                 key={ts.id}
-                className={cn("group", selectedIds.has(ts.id) && "bg-muted/50")}
-              >
+                className={cn('group', selectedIds.has(ts.id) && 'bg-muted/50')}>
                 <TableCell>
                   <Checkbox
                     checked={selectedIds.has(ts.id)}
@@ -207,8 +206,7 @@ export function ApprovalQueueTable({
                     className="text-sm font-medium text-primary underline-offset-4 hover:underline"
                     onClick={() =>
                       onNavigateToReview(ts.contractor.id, toDateStr(ts.weekStartDate))
-                    }
-                  >
+                    }>
                     {ts.contractor.legalName}
                   </button>
                 </TableCell>
@@ -219,7 +217,7 @@ export function ApprovalQueueTable({
                   {minutesToDisplay(ts.totalMinutes)}
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground">
-                  {ts._count?.entries ?? "-"}
+                  {ts._count?.entries ?? '-'}
                 </TableCell>
                 <TableCell>
                   <TimeEntryStatusBadge status={ts.status} />
@@ -234,8 +232,7 @@ export function ApprovalQueueTable({
                       size="sm"
                       variant="outline"
                       className="text-destructive hover:bg-destructive/10"
-                      onClick={() => setRejectingId(ts.id)}
-                    >
+                      onClick={() => setRejectingId(ts.id)}>
                       <XCircle className="me-1.5 h-3.5 w-3.5" />
                       Reject
                     </Button>
@@ -252,7 +249,7 @@ export function ApprovalQueueTable({
         <div className="fixed inset-x-0 bottom-0 z-50 border-t bg-card px-6 py-3 shadow-lg animate-in slide-in-from-bottom-4">
           <div className="mx-auto flex max-w-7xl items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              {selectedArray.length} timesheet{selectedArray.length !== 1 ? "s" : ""} selected
+              {selectedArray.length} timesheet{selectedArray.length !== 1 ? 's' : ''} selected
             </p>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" onClick={() => setSelectedIds(new Set())}>
@@ -262,8 +259,7 @@ export function ApprovalQueueTable({
                 variant="outline"
                 size="sm"
                 className="text-destructive hover:bg-destructive/10"
-                onClick={() => setBulkRejectOpen(true)}
-              >
+                onClick={() => setBulkRejectOpen(true)}>
                 Reject All
               </Button>
               <Button size="sm" onClick={() => setBulkApproveOpen(true)}>
@@ -277,7 +273,7 @@ export function ApprovalQueueTable({
       {/* Single rejection dialog */}
       <RejectionReasonDialog
         open={rejectingId !== null}
-        onOpenChange={(open) => {
+        onOpenChange={open => {
           if (!open) setRejectingId(null);
         }}
         onConfirm={handleSingleReject}
@@ -299,7 +295,7 @@ export function ApprovalQueueTable({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Approve {selectedArray.length} Timesheet{selectedArray.length !== 1 ? "s" : ""}
+              Approve {selectedArray.length} Timesheet{selectedArray.length !== 1 ? 's' : ''}
             </AlertDialogTitle>
             <AlertDialogDescription>
               This will approve all selected timesheets. The contractors will be notified.

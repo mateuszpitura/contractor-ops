@@ -1,12 +1,12 @@
-import type { ComplianceStatus } from "../../types/compliance.js";
-import type { EInvoice } from "../../types/invoice.js";
-import type { EInvoiceProfile } from "../../types/profile.js";
-import type { ValidationResult } from "../../types/validation.js";
-import type { KsefConnectionData } from "./compliance.js";
-import { computeKsefComplianceStatus } from "./compliance.js";
-import { generateFa3Xml } from "./generator.js";
-import { ksefToEInvoice } from "./mapper.js";
-import { parseFa3Xml } from "./parser.js";
+import type { ComplianceStatus } from '../../types/compliance.js';
+import type { EInvoice } from '../../types/invoice.js';
+import type { EInvoiceProfile } from '../../types/profile.js';
+import type { ValidationResult } from '../../types/validation.js';
+import type { KsefConnectionData } from './compliance.js';
+import { computeKsefComplianceStatus } from './compliance.js';
+import { generateFa3Xml } from './generator.js';
+import { ksefToEInvoice } from './mapper.js';
+import { parseFa3Xml } from './parser.js';
 
 // ---------------------------------------------------------------------------
 // KSeF Country Profile
@@ -20,9 +20,9 @@ import { parseFa3Xml } from "./parser.js";
  * so both capabilities are undefined.
  */
 export class KsefProfile implements EInvoiceProfile {
-  readonly profileId = "ksef" as const;
-  readonly country = "PL" as const;
-  readonly displayName = "KSeF (Poland)";
+  readonly profileId = 'ksef' as const;
+  readonly country = 'PL' as const;
+  readonly displayName = 'KSeF (Poland)';
 
   /** KSeF does not require client-side signing (server-side) */
   readonly sign = undefined;
@@ -44,7 +44,7 @@ export class KsefProfile implements EInvoiceProfile {
   }
 
   async parse(xml: string, metadata?: Record<string, unknown>): Promise<EInvoice> {
-    const ksefRef = (metadata?.ksefReferenceNumber as string) ?? "";
+    const ksefRef = (metadata?.ksefReferenceNumber as string) ?? '';
     const upoNumber = metadata?.upoNumber as string | undefined;
     const parsed = parseFa3Xml(xml, ksefRef, upoNumber);
     return ksefToEInvoice(parsed);
@@ -52,7 +52,7 @@ export class KsefProfile implements EInvoiceProfile {
 
   async validate(xml: string): Promise<ValidationResult> {
     try {
-      parseFa3Xml(xml, "validation-check");
+      parseFa3Xml(xml, 'validation-check');
       return {
         valid: true,
         errors: [],
@@ -63,7 +63,7 @@ export class KsefProfile implements EInvoiceProfile {
       const message = error instanceof Error ? error.message : String(error);
       return {
         valid: false,
-        errors: [{ code: "PARSE_ERROR", message, severity: "error" }],
+        errors: [{ code: 'PARSE_ERROR', message, severity: 'error' }],
         warnings: [],
         profileId: this.profileId,
       };

@@ -1,6 +1,6 @@
-import { renderHook } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { usePermissions } from "../use-permissions";
+import { renderHook } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { usePermissions } from '../use-permissions';
 
 const mockUseSession = vi.fn(() => ({
   isPending: false,
@@ -8,41 +8,41 @@ const mockUseSession = vi.fn(() => ({
 }));
 
 const mockDashboard = vi.fn(() => ({
-  userRole: "finance_admin" as string | null,
+  userRole: 'finance_admin' as string | null,
 }));
 
-vi.mock("@/lib/auth-client", () => ({
+vi.mock('@/lib/auth-client', () => ({
   authClient: { useSession: () => mockUseSession() },
 }));
 
-vi.mock("@/components/layout/dashboard-context", () => ({
+vi.mock('@/components/layout/dashboard-context', () => ({
   useDashboardContext: () => mockDashboard(),
 }));
 
-describe("usePermissions", () => {
+describe('usePermissions', () => {
   beforeEach(() => {
-    mockDashboard.mockReturnValue({ userRole: "finance_admin" });
+    mockDashboard.mockReturnValue({ userRole: 'finance_admin' });
   });
 
-  it("finance_admin can approve invoices", () => {
+  it('finance_admin can approve invoices', () => {
     const { result } = renderHook(() => usePermissions());
-    expect(result.current.can("invoice", ["approve"])).toBe(true);
+    expect(result.current.can('invoice', ['approve'])).toBe(true);
   });
 
-  it("finance_admin cannot create contractors", () => {
+  it('finance_admin cannot create contractors', () => {
     const { result } = renderHook(() => usePermissions());
-    expect(result.current.can("contractor", ["create"])).toBe(false);
+    expect(result.current.can('contractor', ['create'])).toBe(false);
   });
 
-  it("returns false when role is missing", () => {
+  it('returns false when role is missing', () => {
     mockDashboard.mockReturnValue({ userRole: null });
     const { result } = renderHook(() => usePermissions());
-    expect(result.current.can("invoice", ["read"])).toBe(false);
+    expect(result.current.can('invoice', ['read'])).toBe(false);
   });
 
-  it("owner can manage equipment", () => {
-    mockDashboard.mockReturnValue({ userRole: "owner" });
+  it('owner can manage equipment', () => {
+    mockDashboard.mockReturnValue({ userRole: 'owner' });
     const { result } = renderHook(() => usePermissions());
-    expect(result.current.can("equipment", ["delete"])).toBe(true);
+    expect(result.current.can('equipment', ['delete'])).toBe(true);
   });
 });

@@ -1,30 +1,30 @@
-"use client";
+'use client';
 
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useCallback, useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useMemo, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
-import { trpc } from "@/trpc/init";
+} from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Formatters
 // ---------------------------------------------------------------------------
 
 function formatMinorUnits(minor: number): string {
-  return new Intl.NumberFormat("pl-PL", {
+  return new Intl.NumberFormat('pl-PL', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(minor / 100);
@@ -59,12 +59,12 @@ export function StepReview({
   onBack,
   onComplete,
 }: StepReviewProps) {
-  const t = useTranslations("Payments");
+  const t = useTranslations('Payments');
 
   // Optional name and description
-  const [name, setName] = useState("");
-  const [notes, setNotes] = useState("");
-  const [exportFormat, setExportFormat] = useState<string>("CSV");
+  const [name, setName] = useState('');
+  const [notes, setNotes] = useState('');
+  const [exportFormat, setExportFormat] = useState<string>('CSV');
   const [isLocking, setIsLocking] = useState(false);
 
   // Fetch selected invoices for display
@@ -72,7 +72,7 @@ export function StepReview({
 
   const allInvoices = useMemo(() => {
     const result = invoicesQuery.data;
-    return (result?.items ?? []).filter((inv) => selectedInvoiceIds.includes(inv.id));
+    return (result?.items ?? []).filter(inv => selectedInvoiceIds.includes(inv.id));
   }, [invoicesQuery.data, selectedInvoiceIds]);
 
   // Group by currency
@@ -92,8 +92,8 @@ export function StepReview({
   const grandTotal = Object.values(groupedByCurrency).reduce((sum, g) => sum + g.totalMinor, 0);
 
   // Check which formats are available
-  const hasPLN = currencies.includes("PLN");
-  const hasEUR = currencies.includes("EUR");
+  const hasPLN = currencies.includes('PLN');
+  const hasEUR = currencies.includes('EUR');
 
   // Create mutation
   const createMutation = useMutation(trpc.payment.create.mutationOptions({}));
@@ -115,13 +115,13 @@ export function StepReview({
       });
 
       const runsArray = Array.isArray(runs) ? runs : [runs];
-      if (!runsArray.length) throw new Error("No runs created");
+      if (!runsArray.length) throw new Error('No runs created');
 
       // Step 2: Lock and export the first run
       const run = runsArray[0] as Record<string, unknown>;
       const result = await lockAndExportMutation.mutateAsync({
         runId: run.id as string,
-        exportFormat: exportFormat as "CSV" | "BANK_FILE" | "SEPA_XML",
+        exportFormat: exportFormat as 'CSV' | 'BANK_FILE' | 'SEPA_XML',
       });
 
       const exportResult = result as Record<string, unknown>;
@@ -131,7 +131,7 @@ export function StepReview({
         fileName: exportResult.fileName as string,
         invoiceCount: allInvoices.length,
         totalMinor: grandTotal,
-        currency: currencies.join(", "),
+        currency: currencies.join(', '),
         exportFormat,
       });
     } catch {
@@ -158,27 +158,27 @@ export function StepReview({
       {/* Run number placeholder */}
       <div className="text-center">
         <p className="text-[20px] font-semibold">PR-{new Date().getFullYear()}-XXX</p>
-        <p className="text-xs text-muted-foreground">{t("step2.runNumberLabel")}</p>
+        <p className="text-xs text-muted-foreground">{t('step2.runNumberLabel')}</p>
       </div>
 
       {/* Optional name/description */}
       <div className="grid gap-3">
         <div className="space-y-1.5">
-          <Label className="text-xs">{t("step2.nameLabel")}</Label>
+          <Label className="text-xs">{t('step2.nameLabel')}</Label>
           <Input
-            placeholder={t("step2.namePlaceholder")}
+            placeholder={t('step2.namePlaceholder')}
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={e => setName(e.target.value)}
             maxLength={100}
             className="h-8 text-sm"
           />
         </div>
         <div className="space-y-1.5">
-          <Label className="text-xs">{t("step2.descriptionLabel")}</Label>
+          <Label className="text-xs">{t('step2.descriptionLabel')}</Label>
           <Textarea
-            placeholder={t("step2.descriptionPlaceholder")}
+            placeholder={t('step2.descriptionPlaceholder')}
             value={notes}
-            onChange={(e) => setNotes(e.target.value)}
+            onChange={e => setNotes(e.target.value)}
             maxLength={500}
             className="h-16 text-sm resize-none"
           />
@@ -189,20 +189,20 @@ export function StepReview({
 
       {/* Invoice list grouped by currency */}
       <ScrollArea className="max-h-[300px]">
-        {currencies.map((curr) => {
+        {currencies.map(curr => {
           const group = groupedByCurrency[curr]!;
           return (
             <div key={curr} className="mb-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium">
-                  {curr} &mdash; {group.invoices.length} {t("step2.invoices")}
+                  {curr} &mdash; {group.invoices.length} {t('step2.invoices')}
                 </span>
                 <span className="text-[20px] font-semibold tabular-nums">
                   {formatMinorUnits(group.totalMinor)} {curr}
                 </span>
               </div>
               <div className="space-y-1">
-                {group.invoices.slice(0, 10).map((inv) => (
+                {group.invoices.slice(0, 10).map(inv => (
                   <div key={inv.id} className="flex items-center justify-between py-1 px-2 text-xs">
                     <span className="font-medium">{inv.invoiceNumber}</span>
                     <span className="text-muted-foreground">{inv.contractor?.legalName}</span>
@@ -225,9 +225,9 @@ export function StepReview({
 
       {/* Grand total */}
       <div className="flex items-center justify-between border-t-2 pt-3">
-        <span className="text-sm font-medium">{t("step2.grandTotal")}</span>
+        <span className="text-sm font-medium">{t('step2.grandTotal')}</span>
         <div className="text-end">
-          {currencies.map((curr) => (
+          {currencies.map(curr => (
             <p key={curr} className="text-[20px] font-semibold tabular-nums">
               {formatMinorUnits(groupedByCurrency[curr]?.totalMinor ?? 0)} {curr}
             </p>
@@ -239,15 +239,15 @@ export function StepReview({
 
       {/* Export format */}
       <div className="space-y-1.5">
-        <Label className="text-xs">{t("step2.exportFormatLabel")}</Label>
-        <Select value={exportFormat} onValueChange={(v) => setExportFormat(v ?? "CSV")}>
+        <Label className="text-xs">{t('step2.exportFormatLabel')}</Label>
+        <Select value={exportFormat} onValueChange={v => setExportFormat(v ?? 'CSV')}>
           <SelectTrigger className="w-full h-8">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="CSV">{t("step2.formatCsv")}</SelectItem>
-            {hasPLN && <SelectItem value="BANK_FILE">{t("step2.formatElixir")}</SelectItem>}
-            {hasEUR && <SelectItem value="SEPA_XML">{t("step2.formatSepa")}</SelectItem>}
+            <SelectItem value="CSV">{t('step2.formatCsv')}</SelectItem>
+            {hasPLN && <SelectItem value="BANK_FILE">{t('step2.formatElixir')}</SelectItem>}
+            {hasEUR && <SelectItem value="SEPA_XML">{t('step2.formatSepa')}</SelectItem>}
           </SelectContent>
         </Select>
       </div>
@@ -255,16 +255,16 @@ export function StepReview({
       {/* Footer */}
       <div className="flex items-center justify-end gap-2 border-t pt-4">
         <Button variant="ghost" onClick={onBack} disabled={isLocking}>
-          {t("step2.back")}
+          {t('step2.back')}
         </Button>
         <Button onClick={handleLockAndExport} disabled={isLocking}>
           {isLocking ? (
             <>
               <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
-              {t("step2.locking")}
+              {t('step2.locking')}
             </>
           ) : (
-            t("step2.lockAndExport")
+            t('step2.lockAndExport')
           )}
         </Button>
       </div>

@@ -1,5 +1,5 @@
-import type { Page } from "@playwright/test";
-import { expect, test } from "@playwright/test";
+import type { Page } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 /**
  * RTL / Arabic localization behavioral tests — Phase 50.
@@ -23,7 +23,7 @@ const BASE_URL =
   process.env.E2E_WEB_URL ??
   process.env.PLAYWRIGHT_BASE_URL ??
   process.env.NEXT_PUBLIC_APP_URL ??
-  "http://127.0.0.1:3000";
+  'http://127.0.0.1:3000';
 
 async function loginAndNavigate(page: Page, targetPath: string): Promise<boolean> {
   const email = process.env.E2E_EMAIL;
@@ -33,16 +33,16 @@ async function loginAndNavigate(page: Page, targetPath: string): Promise<boolean
     return false;
   }
 
-  await page.goto(`${BASE_URL}/en/login`, { waitUntil: "domcontentloaded" });
-  await page.locator("#email").waitFor({ state: "visible", timeout: 20_000 });
-  await page.locator("#email").fill(email);
-  await page.locator("#password").fill(password);
+  await page.goto(`${BASE_URL}/en/login`, { waitUntil: 'domcontentloaded' });
+  await page.locator('#email').waitFor({ state: 'visible', timeout: 20_000 });
+  await page.locator('#email').fill(email);
+  await page.locator('#password').fill(password);
   await page.locator('button[type="submit"]').click();
   // Wait for the post-login redirect to any locale-scoped page
   await page.waitForURL(/\/(?:en|pl|ar)(\/|$)/, { timeout: 60_000 });
 
   // Navigate directly to Arabic-locale target
-  await page.goto(`${BASE_URL}${targetPath}`, { waitUntil: "domcontentloaded" });
+  await page.goto(`${BASE_URL}${targetPath}`, { waitUntil: 'domcontentloaded' });
   return true;
 }
 
@@ -52,33 +52,33 @@ async function loginAndNavigate(page: Page, targetPath: string): Promise<boolean
 // Uses the public /ar/login page — no credentials required.
 // ---------------------------------------------------------------------------
 
-test.describe("L10N-02 — RTL layout rendering", () => {
-  test("arabic locale page renders with dir=rtl on html element", async ({ page }) => {
-    await page.goto(`${BASE_URL}/ar/login`, { waitUntil: "domcontentloaded" });
+test.describe('L10N-02 — RTL layout rendering', () => {
+  test('arabic locale page renders with dir=rtl on html element', async ({ page }) => {
+    await page.goto(`${BASE_URL}/ar/login`, { waitUntil: 'domcontentloaded' });
 
     // The locale layout injects a script that sets document.documentElement.dir
     // before React hydration; also confirmed via server-rendered HTML attribute.
     const dir = await page.evaluate(() => document.documentElement.dir);
-    expect(dir).toBe("rtl");
+    expect(dir).toBe('rtl');
   });
 
-  test("arabic locale page sets lang=ar on html element", async ({ page }) => {
-    await page.goto(`${BASE_URL}/ar/login`, { waitUntil: "domcontentloaded" });
+  test('arabic locale page sets lang=ar on html element', async ({ page }) => {
+    await page.goto(`${BASE_URL}/ar/login`, { waitUntil: 'domcontentloaded' });
 
     const lang = await page.evaluate(() => document.documentElement.lang);
-    expect(lang).toBe("ar");
+    expect(lang).toBe('ar');
   });
 
-  test("authenticated arabic dashboard renders sidebar on right side", async ({ page }) => {
-    const didLogin = await loginAndNavigate(page, "/ar/v2");
+  test('authenticated arabic dashboard renders sidebar on right side', async ({ page }) => {
+    const didLogin = await loginAndNavigate(page, '/ar/v2');
     if (!didLogin) {
-      test.skip(true, "E2E_EMAIL / E2E_PASSWORD not set — skipping authenticated RTL layout test");
+      test.skip(true, 'E2E_EMAIL / E2E_PASSWORD not set — skipping authenticated RTL layout test');
       return;
     }
 
     // dir="rtl" must be present on <html> in the authenticated dashboard view
     const dir = await page.evaluate(() => document.documentElement.dir);
-    expect(dir).toBe("rtl");
+    expect(dir).toBe('rtl');
 
     // The sidebar element should be rendered; in RTL it is physically on the right.
     // We verify it exists and that the page direction is RTL (CSS handles visual side).
@@ -102,24 +102,24 @@ test.describe("L10N-02 — RTL layout rendering", () => {
 // elements in the user menu require auth; we verify DOM element presence here.
 // ---------------------------------------------------------------------------
 
-test.describe("L10N-03 — Bidi text isolation", () => {
-  test("arabic login page renders without bidi override issues", async ({ page }) => {
-    await page.goto(`${BASE_URL}/ar/login`, { waitUntil: "domcontentloaded" });
+test.describe('L10N-03 — Bidi text isolation', () => {
+  test('arabic login page renders without bidi override issues', async ({ page }) => {
+    await page.goto(`${BASE_URL}/ar/login`, { waitUntil: 'domcontentloaded' });
 
     // The page should load in RTL mode
     const dir = await page.evaluate(() => document.documentElement.dir);
-    expect(dir).toBe("rtl");
+    expect(dir).toBe('rtl');
 
     // Page body should be rendered and visible (not blank/crashed)
-    await expect(page.locator("body")).toBeVisible();
+    await expect(page.locator('body')).toBeVisible();
   });
 
-  test("authenticated user menu contains bdi elements wrapping name and email", async ({
+  test('authenticated user menu contains bdi elements wrapping name and email', async ({
     page,
   }) => {
-    const didLogin = await loginAndNavigate(page, "/ar/v2");
+    const didLogin = await loginAndNavigate(page, '/ar/v2');
     if (!didLogin) {
-      test.skip(true, "E2E_EMAIL / E2E_PASSWORD not set — skipping Bdi element presence test");
+      test.skip(true, 'E2E_EMAIL / E2E_PASSWORD not set — skipping Bdi element presence test');
       return;
     }
 
@@ -129,7 +129,7 @@ test.describe("L10N-03 — Bidi text isolation", () => {
     // The UserMenu component wraps user name and email in <bdi> elements.
     // Count <bdi> nodes inside the sidebar area.
     const bdiCount = await page.evaluate(() => {
-      return document.querySelectorAll("bdi").length;
+      return document.querySelectorAll('bdi').length;
     });
 
     // At least 2 <bdi> elements expected: one for user name, one for email
@@ -137,12 +137,12 @@ test.describe("L10N-03 — Bidi text isolation", () => {
     expect(bdiCount).toBeGreaterThanOrEqual(2);
   });
 
-  test("bdi elements in arabic locale carry no explicit dir attribute (relying on unicode bidi algorithm)", async ({
+  test('bdi elements in arabic locale carry no explicit dir attribute (relying on unicode bidi algorithm)', async ({
     page,
   }) => {
-    const didLogin = await loginAndNavigate(page, "/ar/v2");
+    const didLogin = await loginAndNavigate(page, '/ar/v2');
     if (!didLogin) {
-      test.skip(true, "E2E_EMAIL / E2E_PASSWORD not set — skipping Bdi attribute test");
+      test.skip(true, 'E2E_EMAIL / E2E_PASSWORD not set — skipping Bdi attribute test');
       return;
     }
 
@@ -152,8 +152,8 @@ test.describe("L10N-03 — Bidi text isolation", () => {
     // the unicode bidi algorithm. This verifies the Bdi component is not
     // accidentally overriding direction and defeating its own purpose.
     const hasExplicitDir = await page.evaluate(() => {
-      const bdiElements = Array.from(document.querySelectorAll("bdi"));
-      return bdiElements.some((el) => el.hasAttribute("dir"));
+      const bdiElements = Array.from(document.querySelectorAll('bdi'));
+      return bdiElements.some(el => el.hasAttribute('dir'));
     });
 
     expect(hasExplicitDir).toBe(false);
@@ -166,16 +166,16 @@ test.describe("L10N-03 — Bidi text isolation", () => {
 // Requires authentication to access the dashboard.
 // ---------------------------------------------------------------------------
 
-test.describe("L10N-04 — Chart axis mirroring in RTL", () => {
-  test("spend chart renders in arabic locale dashboard", async ({ page }) => {
-    const didLogin = await loginAndNavigate(page, "/ar/v2");
+test.describe('L10N-04 — Chart axis mirroring in RTL', () => {
+  test('spend chart renders in arabic locale dashboard', async ({ page }) => {
+    const didLogin = await loginAndNavigate(page, '/ar/v2');
     if (!didLogin) {
-      test.skip(true, "E2E_EMAIL / E2E_PASSWORD not set — skipping chart RTL test");
+      test.skip(true, 'E2E_EMAIL / E2E_PASSWORD not set — skipping chart RTL test');
       return;
     }
 
     // Wait for main content to be visible
-    await page.waitForSelector("#main-content", { timeout: 20_000 });
+    await page.waitForSelector('#main-content', { timeout: 20_000 });
 
     // The spend chart renders inside a Card. It either shows the chart SVG
     // or a loading skeleton, or the empty state.
@@ -184,24 +184,24 @@ test.describe("L10N-04 — Chart axis mirroring in RTL", () => {
     await expect(chartCard).toBeVisible({ timeout: 30_000 });
   });
 
-  test("spend chart SVG in arabic locale has rtl direction applied", async ({ page }) => {
-    const didLogin = await loginAndNavigate(page, "/ar/v2");
+  test('spend chart SVG in arabic locale has rtl direction applied', async ({ page }) => {
+    const didLogin = await loginAndNavigate(page, '/ar/v2');
     if (!didLogin) {
-      test.skip(true, "E2E_EMAIL / E2E_PASSWORD not set — skipping chart RTL direction test");
+      test.skip(true, 'E2E_EMAIL / E2E_PASSWORD not set — skipping chart RTL direction test');
       return;
     }
 
-    await page.waitForSelector("#main-content", { timeout: 20_000 });
+    await page.waitForSelector('#main-content', { timeout: 20_000 });
 
     // Wait for the recharts container (if data is available the SVG renders)
-    const rechartsContainer = page.locator(".recharts-responsive-container").first();
+    const rechartsContainer = page.locator('.recharts-responsive-container').first();
 
     // If no data exists, the chart won't render — skip gracefully
     const isVisible = await rechartsContainer.isVisible({ timeout: 15_000 }).catch(() => false);
     if (!isVisible) {
       test.skip(
         true,
-        "No chart data available — spend chart empty state shown, skipping SVG direction check",
+        'No chart data available — spend chart empty state shown, skipping SVG direction check',
       );
       return;
     }
@@ -209,13 +209,13 @@ test.describe("L10N-04 — Chart axis mirroring in RTL", () => {
     // The AreaChart receives style={{ direction: "rtl" }} from useRtlChartConfig
     // when locale === "ar". The recharts wrapper div should have this style.
     const chartStyle = await page.evaluate(() => {
-      const rechartsWrapper = document.querySelector(".recharts-wrapper");
+      const rechartsWrapper = document.querySelector('.recharts-wrapper');
       if (!rechartsWrapper) return null;
       return window.getComputedStyle(rechartsWrapper).direction;
     });
 
     // direction: rtl is either set inline or inherited from the html[dir=rtl] element
-    expect(["rtl", "inherit"]).toContain(chartStyle ?? "rtl");
+    expect(['rtl', 'inherit']).toContain(chartStyle ?? 'rtl');
   });
 });
 
@@ -225,11 +225,11 @@ test.describe("L10N-04 — Chart axis mirroring in RTL", () => {
 // Requires authentication.
 // ---------------------------------------------------------------------------
 
-test.describe("L10N-01 — Locale switcher cycles through all three locales", () => {
-  test("locale switcher button is present in user menu", async ({ page }) => {
-    const didLogin = await loginAndNavigate(page, "/en/v2");
+test.describe('L10N-01 — Locale switcher cycles through all three locales', () => {
+  test('locale switcher button is present in user menu', async ({ page }) => {
+    const didLogin = await loginAndNavigate(page, '/en/v2');
     if (!didLogin) {
-      test.skip(true, "E2E_EMAIL / E2E_PASSWORD not set — skipping locale switcher test");
+      test.skip(true, 'E2E_EMAIL / E2E_PASSWORD not set — skipping locale switcher test');
       return;
     }
 
@@ -249,13 +249,13 @@ test.describe("L10N-01 — Locale switcher cycles through all three locales", ()
 
     // Button text should show "عربي" (Arabic script) when current locale is "en"
     const buttonText = await localeButton.textContent();
-    expect(buttonText?.trim()).toBe("عربي");
+    expect(buttonText?.trim()).toBe('عربي');
   });
 
-  test("clicking locale switcher from english navigates to arabic locale url", async ({ page }) => {
-    const didLogin = await loginAndNavigate(page, "/en/v2");
+  test('clicking locale switcher from english navigates to arabic locale url', async ({ page }) => {
+    const didLogin = await loginAndNavigate(page, '/en/v2');
     if (!didLogin) {
-      test.skip(true, "E2E_EMAIL / E2E_PASSWORD not set — skipping locale switch navigation test");
+      test.skip(true, 'E2E_EMAIL / E2E_PASSWORD not set — skipping locale switch navigation test');
       return;
     }
 
@@ -274,15 +274,15 @@ test.describe("L10N-01 — Locale switcher cycles through all three locales", ()
 
     // After clicking, should navigate to /ar/... URL
     await page.waitForURL(/\/ar\//, { timeout: 30_000 });
-    expect(page.url()).toContain("/ar/");
+    expect(page.url()).toContain('/ar/');
   });
 
-  test("clicking locale switcher twice cycles from arabic back to polish locale", async ({
+  test('clicking locale switcher twice cycles from arabic back to polish locale', async ({
     page,
   }) => {
-    const didLogin = await loginAndNavigate(page, "/en/v2");
+    const didLogin = await loginAndNavigate(page, '/en/v2');
     if (!didLogin) {
-      test.skip(true, "E2E_EMAIL / E2E_PASSWORD not set — skipping locale cycle test");
+      test.skip(true, 'E2E_EMAIL / E2E_PASSWORD not set — skipping locale cycle test');
       return;
     }
 
@@ -308,11 +308,11 @@ test.describe("L10N-01 — Locale switcher cycles through all three locales", ()
     await expect(localeButtonAr).toBeVisible({ timeout: 10_000 });
 
     const arButtonText = await localeButtonAr.textContent();
-    expect(arButtonText?.trim()).toBe("PL");
+    expect(arButtonText?.trim()).toBe('PL');
 
     await localeButtonAr.click();
     // After clicking from /ar, should navigate to /pl/...
     await page.waitForURL(/\/pl\//, { timeout: 30_000 });
-    expect(page.url()).toContain("/pl/");
+    expect(page.url()).toContain('/pl/');
   });
 });

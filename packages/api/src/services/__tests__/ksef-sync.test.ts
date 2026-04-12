@@ -1,10 +1,10 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ---------------------------------------------------------------------------
 // Mocks
 // ---------------------------------------------------------------------------
 
-vi.mock("@contractor-ops/db", () => ({
+vi.mock('@contractor-ops/db', () => ({
   prisma: {
     integrationSyncLog: { create: vi.fn(), update: vi.fn() },
     integrationConnection: { findUniqueOrThrow: vi.fn(), update: vi.fn() },
@@ -24,7 +24,7 @@ const mockKsefClient = {
   terminateSession: vi.fn(),
 };
 
-vi.mock("@contractor-ops/integrations", () => {
+vi.mock('@contractor-ops/integrations', () => {
   const MockKsefApiClient = vi.fn().mockImplementation(function (this: typeof mockKsefClient) {
     Object.assign(this, mockKsefClient);
   });
@@ -33,46 +33,46 @@ vi.mock("@contractor-ops/integrations", () => {
     parseFa3Xml: vi.fn().mockReturnValue({ parsed: true }),
     mapKsefToInvoiceFields: vi.fn().mockReturnValue({
       invoice: {
-        invoiceNumber: "FV/2026/001",
-        sellerTaxId: "1234567890",
+        invoiceNumber: 'FV/2026/001',
+        sellerTaxId: '1234567890',
         totalMinor: 10000,
-        currency: "PLN",
-        issueDate: new Date("2026-03-01"),
-        dueDate: new Date("2026-03-15"),
-        source: "KSEF",
-        externalInvoiceId: "ref-001",
+        currency: 'PLN',
+        issueDate: new Date('2026-03-01'),
+        dueDate: new Date('2026-03-15'),
+        source: 'KSEF',
+        externalInvoiceId: 'ref-001',
       },
-      lines: [{ description: "Service", netMinor: 8130, vatMinor: 1870 }],
+      lines: [{ description: 'Service', netMinor: 8130, vatMinor: 1870 }],
     }),
-    decryptCredentials: vi.fn().mockReturnValue({ accessToken: "token" }),
+    decryptCredentials: vi.fn().mockReturnValue({ accessToken: 'token' }),
   };
 });
 
-vi.mock("@contractor-ops/validators", () => ({
+vi.mock('@contractor-ops/validators', () => ({
   ksefConnectionConfigSchema: {
-    parse: vi.fn().mockReturnValue({ environment: "prod", authMethod: "token" }),
+    parse: vi.fn().mockReturnValue({ environment: 'prod', authMethod: 'token' }),
   },
 }));
 
-vi.mock("../invoice-matching.js", () => ({
-  computeDuplicateCheckHash: vi.fn().mockReturnValue("hash123"),
+vi.mock('../invoice-matching.js', () => ({
+  computeDuplicateCheckHash: vi.fn().mockReturnValue('hash123'),
   runAutoMatch: vi.fn(),
 }));
 
-vi.mock("../ksef-duplicate-detection.js", () => ({
+vi.mock('../ksef-duplicate-detection.js', () => ({
   checkCrossSourceDuplicate: vi.fn().mockResolvedValue({ isDuplicate: false }),
   linkDuplicateInvoices: vi.fn(),
 }));
 
-vi.mock("../notification-service.js", () => ({ dispatch: vi.fn() }));
+vi.mock('../notification-service.js', () => ({ dispatch: vi.fn() }));
 
 // ---------------------------------------------------------------------------
 // Imports (after mocks)
 // ---------------------------------------------------------------------------
 
-import { prisma } from "@contractor-ops/db";
-import { processKsefSync } from "../ksef-sync-orchestrator.js";
-import { dispatch } from "../notification-service.js";
+import { prisma } from '@contractor-ops/db';
+import { processKsefSync } from '../ksef-sync-orchestrator.js';
+import { dispatch } from '../notification-service.js';
 
 // ---------------------------------------------------------------------------
 // Typed mock handles
@@ -105,16 +105,16 @@ const mockDispatch = dispatch as ReturnType<typeof vi.fn>;
 // Helpers
 // ---------------------------------------------------------------------------
 
-const ORG_ID = "org-1";
-const CONN_ID = "conn-1";
+const ORG_ID = 'org-1';
+const CONN_ID = 'conn-1';
 
 function makeConnection(overrides: Record<string, unknown> = {}) {
   return {
     id: CONN_ID,
     organizationId: ORG_ID,
-    credentialsRef: "enc-ref",
+    credentialsRef: 'enc-ref',
     configJson: {},
-    lastSuccessAt: new Date("2026-03-01"),
+    lastSuccessAt: new Date('2026-03-01'),
     ...overrides,
   };
 }
@@ -122,7 +122,7 @@ function makeConnection(overrides: Record<string, unknown> = {}) {
 function makeOrg(overrides: Record<string, unknown> = {}) {
   return {
     id: ORG_ID,
-    settingsJson: { taxId: "1234567890" },
+    settingsJson: { taxId: '1234567890' },
     ...overrides,
   };
 }
@@ -139,20 +139,20 @@ function setupSuccessfulSync(
   } = {},
 ) {
   const conn = makeConnection(overrides.connection);
-  const refs = overrides.invoiceRefs ?? ["ref-001"];
+  const refs = overrides.invoiceRefs ?? ['ref-001'];
 
-  db.integrationSyncLog.create.mockResolvedValue({ id: "log-1" });
+  db.integrationSyncLog.create.mockResolvedValue({ id: 'log-1' });
   db.integrationConnection.findUniqueOrThrow.mockResolvedValue(conn);
   db.organization.findUniqueOrThrow.mockResolvedValue(makeOrg());
   mockKsefClient.queryInvoices.mockResolvedValue({
     invoiceMetadataList: refs.map(invoiceMetadata),
   });
-  mockKsefClient.downloadInvoiceXml.mockResolvedValue("<xml/>");
-  db.invoice.findFirst.mockResolvedValue(overrides.alreadyExists ? { id: "existing-inv" } : null);
-  db.invoice.create.mockResolvedValue({ id: "inv-1" });
+  mockKsefClient.downloadInvoiceXml.mockResolvedValue('<xml/>');
+  db.invoice.findFirst.mockResolvedValue(overrides.alreadyExists ? { id: 'existing-inv' } : null);
+  db.invoice.create.mockResolvedValue({ id: 'inv-1' });
   db.integrationConnection.update.mockResolvedValue({});
   db.integrationSyncLog.update.mockResolvedValue({});
-  db.member.findMany.mockResolvedValue([{ userId: "user-1" }]);
+  db.member.findMany.mockResolvedValue([{ userId: 'user-1' }]);
   mockDispatch.mockResolvedValue(undefined);
   mockKsefClient.terminateSession.mockResolvedValue(undefined);
 }
@@ -161,26 +161,26 @@ function setupSuccessfulSync(
 // Tests
 // ---------------------------------------------------------------------------
 
-describe("processKsefSync", () => {
+describe('processKsefSync', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("creates IntegrationSyncLog with STARTED status at beginning", async () => {
+  it('creates IntegrationSyncLog with STARTED status at beginning', async () => {
     setupSuccessfulSync();
 
     await processKsefSync({ organizationId: ORG_ID, connectionId: CONN_ID });
 
     expect(db.integrationSyncLog.create).toHaveBeenCalledOnce();
     const createArg = db.integrationSyncLog.create.mock.calls[0]?.[0];
-    expect(createArg.data.status).toBe("STARTED");
+    expect(createArg.data.status).toBe('STARTED');
     expect(createArg.data.organizationId).toBe(ORG_ID);
     expect(createArg.data.integrationConnectionId).toBe(CONN_ID);
-    expect(createArg.data.direction).toBe("INBOUND");
+    expect(createArg.data.direction).toBe('INBOUND');
     expect(createArg.data.startedAt).toBeInstanceOf(Date);
   });
 
-  it("updates connection lastSuccessAt after successful sync", async () => {
+  it('updates connection lastSuccessAt after successful sync', async () => {
     setupSuccessfulSync();
 
     await processKsefSync({ organizationId: ORG_ID, connectionId: CONN_ID });
@@ -192,43 +192,43 @@ describe("processKsefSync", () => {
     expect(successUpdate.where).toEqual({ id: CONN_ID });
     expect(successUpdate.data.lastSyncAt).toBeInstanceOf(Date);
     expect(successUpdate.data.lastSuccessAt).toBeInstanceOf(Date);
-    expect(successUpdate.data.status).toBe("CONNECTED");
+    expect(successUpdate.data.status).toBe('CONNECTED');
   });
 
-  it("stores KSeF reference in externalInvoiceId via invoice.create", async () => {
-    setupSuccessfulSync({ invoiceRefs: ["KSEF-REF-123"] });
+  it('stores KSeF reference in externalInvoiceId via invoice.create', async () => {
+    setupSuccessfulSync({ invoiceRefs: ['KSEF-REF-123'] });
 
     await processKsefSync({ organizationId: ORG_ID, connectionId: CONN_ID });
 
     // Verify the findFirst check uses the KSeF reference number
     const findFirstCall = db.invoice.findFirst.mock.calls[0]?.[0];
-    expect(findFirstCall.where.externalInvoiceId).toBe("KSEF-REF-123");
-    expect(findFirstCall.where.source).toBe("KSEF");
+    expect(findFirstCall.where.externalInvoiceId).toBe('KSEF-REF-123');
+    expect(findFirstCall.where.source).toBe('KSEF');
   });
 
-  it("stores UPO number in sourceReference — downloadInvoiceXml called with ref", async () => {
-    setupSuccessfulSync({ invoiceRefs: ["KSEF-UPO-456"] });
+  it('stores UPO number in sourceReference — downloadInvoiceXml called with ref', async () => {
+    setupSuccessfulSync({ invoiceRefs: ['KSEF-UPO-456'] });
 
     await processKsefSync({ organizationId: ORG_ID, connectionId: CONN_ID });
 
     // downloadInvoiceXml is called with the ksefReferenceNumber
-    expect(mockKsefClient.downloadInvoiceXml).toHaveBeenCalledWith("KSEF-UPO-456");
+    expect(mockKsefClient.downloadInvoiceXml).toHaveBeenCalledWith('KSEF-UPO-456');
   });
 
-  it("dispatches KSEF_SYNC_COMPLETE notification when invoices found", async () => {
-    setupSuccessfulSync({ invoiceRefs: ["ref-001", "ref-002"] });
+  it('dispatches KSEF_SYNC_COMPLETE notification when invoices found', async () => {
+    setupSuccessfulSync({ invoiceRefs: ['ref-001', 'ref-002'] });
 
     await processKsefSync({ organizationId: ORG_ID, connectionId: CONN_ID });
 
     expect(mockDispatch).toHaveBeenCalledOnce();
     const dispatchArg = mockDispatch.mock.calls[0]?.[0];
-    expect(dispatchArg.type).toBe("KSEF_SYNC_COMPLETE");
+    expect(dispatchArg.type).toBe('KSEF_SYNC_COMPLETE');
     expect(dispatchArg.organizationId).toBe(ORG_ID);
-    expect(dispatchArg.recipientUserIds).toEqual(["user-1"]);
-    expect(dispatchArg.body).toContain("2");
+    expect(dispatchArg.recipientUserIds).toEqual(['user-1']);
+    expect(dispatchArg.body).toContain('2');
   });
 
-  it("does not dispatch notification when no new invoices", async () => {
+  it('does not dispatch notification when no new invoices', async () => {
     setupSuccessfulSync({ invoiceRefs: [] });
 
     await processKsefSync({ organizationId: ORG_ID, connectionId: CONN_ID });
@@ -236,8 +236,8 @@ describe("processKsefSync", () => {
     expect(mockDispatch).not.toHaveBeenCalled();
   });
 
-  it("skips already-fetched invoices by externalInvoiceId", async () => {
-    setupSuccessfulSync({ invoiceRefs: ["ref-001"], alreadyExists: true });
+  it('skips already-fetched invoices by externalInvoiceId', async () => {
+    setupSuccessfulSync({ invoiceRefs: ['ref-001'], alreadyExists: true });
 
     const result = await processKsefSync({
       organizationId: ORG_ID,
@@ -249,8 +249,8 @@ describe("processKsefSync", () => {
     expect(result.invoicesCreated).toBe(0);
   });
 
-  it("falls back to 90-day date range on first sync (no lastSuccessAt)", async () => {
-    const FAKE_NOW = new Date("2026-04-01T12:00:00.000Z");
+  it('falls back to 90-day date range on first sync (no lastSuccessAt)', async () => {
+    const FAKE_NOW = new Date('2026-04-01T12:00:00.000Z');
     vi.useFakeTimers({ now: FAKE_NOW });
 
     try {
@@ -264,14 +264,14 @@ describe("processKsefSync", () => {
       const queryCall = mockKsefClient.queryInvoices.mock.calls[0]!;
       const dateFrom = queryCall[1] as string;
       // 90 days before 2026-04-01 is 2026-01-01
-      expect(dateFrom).toBe("2026-01-01");
+      expect(dateFrom).toBe('2026-01-01');
     } finally {
       vi.useRealTimers();
     }
   });
 
-  it("uses lastSuccessAt as dateFrom for subsequent syncs", async () => {
-    const lastSync = new Date("2026-03-15T10:00:00.000Z");
+  it('uses lastSuccessAt as dateFrom for subsequent syncs', async () => {
+    const lastSync = new Date('2026-03-15T10:00:00.000Z');
     setupSuccessfulSync({
       connection: { lastSuccessAt: lastSync },
       invoiceRefs: [],
@@ -281,46 +281,46 @@ describe("processKsefSync", () => {
 
     const queryCall = mockKsefClient.queryInvoices.mock.calls[0]!;
     const dateFrom = queryCall[1] as string;
-    expect(dateFrom).toBe("2026-03-15");
+    expect(dateFrom).toBe('2026-03-15');
   });
 
-  it("sets connection status to ERROR when all invoices fail", async () => {
-    setupSuccessfulSync({ invoiceRefs: ["ref-fail"] });
+  it('sets connection status to ERROR when all invoices fail', async () => {
+    setupSuccessfulSync({ invoiceRefs: ['ref-fail'] });
     // Make invoice.create throw for every invoice
-    db.invoice.create.mockRejectedValue(new Error("DB constraint violation"));
+    db.invoice.create.mockRejectedValue(new Error('DB constraint violation'));
 
     await processKsefSync({ organizationId: ORG_ID, connectionId: CONN_ID });
 
     const updateCall = db.integrationConnection.update.mock.calls[0]?.[0];
-    expect(updateCall.data.status).toBe("ERROR");
-    expect(updateCall.data.lastErrorMessage).toContain("DB constraint violation");
+    expect(updateCall.data.status).toBe('ERROR');
+    expect(updateCall.data.lastErrorMessage).toContain('DB constraint violation');
   });
 
-  it("terminates KSeF session in finally block even on error", async () => {
+  it('terminates KSeF session in finally block even on error', async () => {
     setupSuccessfulSync();
     // Throw AFTER the client is constructed and authenticated (step 5: queryInvoices)
-    mockKsefClient.queryInvoices.mockRejectedValue(new Error("KSeF API unavailable"));
+    mockKsefClient.queryInvoices.mockRejectedValue(new Error('KSeF API unavailable'));
 
     await expect(
       processKsefSync({ organizationId: ORG_ID, connectionId: CONN_ID }),
-    ).rejects.toThrow("KSeF API unavailable");
+    ).rejects.toThrow('KSeF API unavailable');
 
     // terminateSession should still be called in the finally block
     expect(mockKsefClient.terminateSession).toHaveBeenCalledOnce();
   });
 
-  it("updates sync log to FAILED on unhandled error", async () => {
+  it('updates sync log to FAILED on unhandled error', async () => {
     setupSuccessfulSync();
-    db.organization.findUniqueOrThrow.mockRejectedValue(new Error("unexpected failure"));
+    db.organization.findUniqueOrThrow.mockRejectedValue(new Error('unexpected failure'));
 
     await expect(
       processKsefSync({ organizationId: ORG_ID, connectionId: CONN_ID }),
-    ).rejects.toThrow("unexpected failure");
+    ).rejects.toThrow('unexpected failure');
 
     // Sync log should be updated to FAILED
     const updateCall = db.integrationSyncLog.update.mock.calls[0]?.[0];
-    expect(updateCall.data.status).toBe("FAILED");
-    expect(updateCall.data.errorMessage).toBe("unexpected failure");
+    expect(updateCall.data.status).toBe('FAILED');
+    expect(updateCall.data.errorMessage).toBe('unexpected failure');
     expect(updateCall.data.completedAt).toBeInstanceOf(Date);
   });
 });

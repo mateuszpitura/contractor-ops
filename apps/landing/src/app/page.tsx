@@ -1,5 +1,5 @@
-import type { Metadata } from "next";
-import { defaultLocale } from "@/i18n";
+import type { Metadata } from 'next';
+import { defaultLocale } from '@/i18n';
 
 export const metadata: Metadata = {
   other: {

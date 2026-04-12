@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Link } from "@/i18n/navigation";
-import { cn } from "@/lib/utils";
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Link } from '@/i18n/navigation';
+import { cn } from '@/lib/utils';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -36,16 +36,16 @@ interface ContractCardProps {
  * Format a date to abbreviated month + year (e.g. "Jan 2026").
  */
 function formatMonthYear(date: Date | string): string {
-  const d = typeof date === "string" ? new Date(date) : date;
-  return new Intl.DateTimeFormat("en-US", { month: "short", year: "numeric" }).format(d);
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric' }).format(d);
 }
 
 /**
  * Format minor-unit amount to display currency (e.g. "12,000 PLN").
  */
 function formatAmount(minor: number, currency: string): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
     currency,
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
@@ -57,16 +57,16 @@ function formatAmount(minor: number, currency: string): string {
  */
 function ratePeriodLabel(rateType: string): string {
   switch (rateType) {
-    case "MONTHLY":
-      return "/mo";
-    case "HOURLY":
-      return "/hr";
-    case "DAILY":
-      return "/day";
-    case "FIXED":
-      return " fixed";
+    case 'MONTHLY':
+      return '/mo';
+    case 'HOURLY':
+      return '/hr';
+    case 'DAILY':
+      return '/day';
+    case 'FIXED':
+      return ' fixed';
     default:
-      return "";
+      return '';
   }
 }
 
@@ -75,14 +75,14 @@ function ratePeriodLabel(rateType: string): string {
  */
 function statusBadgeVariant(status: string) {
   switch (status) {
-    case "ACTIVE":
-      return "default" as const;
-    case "EXPIRING":
-      return "outline" as const;
-    case "EXPIRED":
-      return "secondary" as const;
+    case 'ACTIVE':
+      return 'default' as const;
+    case 'EXPIRING':
+      return 'outline' as const;
+    case 'EXPIRED':
+      return 'secondary' as const;
     default:
-      return "secondary" as const;
+      return 'secondary' as const;
   }
 }
 
@@ -99,8 +99,8 @@ function statusBadgeVariant(status: string) {
 export function ContractCard({ contract, className }: ContractCardProps) {
   const dateRange = [
     formatMonthYear(contract.startDate),
-    contract.endDate ? formatMonthYear(contract.endDate) : "Ongoing",
-  ].join(" - ");
+    contract.endDate ? formatMonthYear(contract.endDate) : 'Ongoing',
+  ].join(' - ');
 
   const rate =
     contract.rateValueMinor != null && contract.rateType
@@ -109,7 +109,7 @@ export function ContractCard({ contract, className }: ContractCardProps) {
 
   return (
     <Link href={`/portal/contracts/${contract.id}`} className="block">
-      <Card className={cn("cursor-pointer transition-colors hover:border-primary/50", className)}>
+      <Card className={cn('cursor-pointer transition-colors hover:border-primary/50', className)}>
         <CardContent className="space-y-2 p-4">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">

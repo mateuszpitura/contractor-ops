@@ -6,19 +6,19 @@
 // ConversationReferences, and card builders from the teams/cards/ module.
 // ---------------------------------------------------------------------------
 
-import { prisma } from "@contractor-ops/db";
-import type { ConversationReference, TurnContext } from "botbuilder";
-import { CardFactory, CloudAdapter, ConfigurationBotFrameworkAuthentication } from "botbuilder";
-import { buildActivityAlertCard } from "../teams/cards/activity-alert-card.js";
-import { buildApprovalCard } from "../teams/cards/approval-card.js";
-import { buildApprovalReminderCard } from "../teams/cards/approval-reminder-card.js";
-import { getConversationReference } from "../teams/teams-bot-handler.js";
+import { prisma } from '@contractor-ops/db';
+import type { ConversationReference, TurnContext } from 'botbuilder';
+import { CardFactory, CloudAdapter, ConfigurationBotFrameworkAuthentication } from 'botbuilder';
+import { buildActivityAlertCard } from '../teams/cards/activity-alert-card.js';
+import { buildApprovalCard } from '../teams/cards/approval-card.js';
+import { buildApprovalReminderCard } from '../teams/cards/approval-reminder-card.js';
+import { getConversationReference } from '../teams/teams-bot-handler.js';
 import type {
   ApprovalCardParams,
   ChannelAlertParams,
   MessagingProvider,
   ReminderDMParams,
-} from "./types.js";
+} from './types.js';
 
 // ---------------------------------------------------------------------------
 // CloudAdapter singleton
@@ -30,9 +30,9 @@ function getCloudAdapter(): CloudAdapter {
   if (adapterInstance) return adapterInstance;
 
   const auth = new ConfigurationBotFrameworkAuthentication({
-    MicrosoftAppId: process.env.AZURE_BOT_APP_ID ?? "",
-    MicrosoftAppPassword: process.env.AZURE_BOT_APP_SECRET ?? "",
-    MicrosoftAppType: "MultiTenant",
+    MicrosoftAppId: process.env.AZURE_BOT_APP_ID ?? '',
+    MicrosoftAppPassword: process.env.AZURE_BOT_APP_SECRET ?? '',
+    MicrosoftAppType: 'MultiTenant',
   });
 
   adapterInstance = new CloudAdapter(auth);
@@ -51,9 +51,9 @@ async function resolveAadObjectId(organizationId: string, userId: string): Promi
   const link = await prisma.externalLink.findFirst({
     where: {
       organizationId,
-      entityType: "USER",
+      entityType: 'USER',
       entityId: userId,
-      externalType: "TEAMS_USER",
+      externalType: 'TEAMS_USER',
     },
     select: { externalId: true },
   });
@@ -66,7 +66,7 @@ async function resolveAadObjectId(organizationId: string, userId: string): Promi
 // ---------------------------------------------------------------------------
 
 export class TeamsMessagingProvider implements MessagingProvider {
-  readonly platform = "teams" as const;
+  readonly platform = 'teams' as const;
 
   async getUserId(organizationId: string, userId: string): Promise<string | null> {
     return resolveAadObjectId(organizationId, userId);
@@ -91,11 +91,11 @@ export class TeamsMessagingProvider implements MessagingProvider {
 
     const adapter = getCloudAdapter();
     await adapter.continueConversationAsync(
-      process.env.AZURE_BOT_APP_ID ?? "",
+      process.env.AZURE_BOT_APP_ID ?? '',
       convRef,
       async (context: TurnContext) => {
         await context.sendActivity({
-          type: "message",
+          type: 'message',
           attachments: [CardFactory.adaptiveCard(card)],
         });
       },
@@ -116,20 +116,20 @@ export class TeamsMessagingProvider implements MessagingProvider {
       const card = buildApprovalReminderCard({
         overdueInDays: params.overdueInDays ?? 0,
         invoiceNumber: params.invoiceNumber,
-        contractorName: params.contractorName ?? "Unknown",
-        amount: params.amount ?? "0.00",
-        currency: params.currency ?? "PLN",
-        dueDate: params.dueDate ?? "N/A",
+        contractorName: params.contractorName ?? 'Unknown',
+        amount: params.amount ?? '0.00',
+        currency: params.currency ?? 'PLN',
+        dueDate: params.dueDate ?? 'N/A',
         invoiceId: params.invoiceId,
         flowId: params.flowId,
       });
 
       await adapter.continueConversationAsync(
-        process.env.AZURE_BOT_APP_ID ?? "",
+        process.env.AZURE_BOT_APP_ID ?? '',
         convRef,
         async (context: TurnContext) => {
           await context.sendActivity({
-            type: "message",
+            type: 'message',
             attachments: [CardFactory.adaptiveCard(card)],
           });
         },
@@ -139,10 +139,10 @@ export class TeamsMessagingProvider implements MessagingProvider {
 
     // Simple text reminder
     await adapter.continueConversationAsync(
-      process.env.AZURE_BOT_APP_ID ?? "",
+      process.env.AZURE_BOT_APP_ID ?? '',
       convRef,
       async (context: TurnContext) => {
-        await context.sendActivity({ type: "message", text: params.text });
+        await context.sendActivity({ type: 'message', text: params.text });
       },
     );
   }
@@ -152,8 +152,8 @@ export class TeamsMessagingProvider implements MessagingProvider {
     const connection = await prisma.integrationConnection.findFirst({
       where: {
         organizationId: params.organizationId,
-        provider: "MICROSOFT_TEAMS",
-        status: "CONNECTED",
+        provider: 'MICROSOFT_TEAMS',
+        status: 'CONNECTED',
       },
       select: { configJson: true },
     });
@@ -180,11 +180,11 @@ export class TeamsMessagingProvider implements MessagingProvider {
 
     const adapter = getCloudAdapter();
     await adapter.continueConversationAsync(
-      process.env.AZURE_BOT_APP_ID ?? "",
+      process.env.AZURE_BOT_APP_ID ?? '',
       channelRef as ConversationReference,
       async (context: TurnContext) => {
         await context.sendActivity({
-          type: "message",
+          type: 'message',
           attachments: [CardFactory.adaptiveCard(card)],
         });
       },

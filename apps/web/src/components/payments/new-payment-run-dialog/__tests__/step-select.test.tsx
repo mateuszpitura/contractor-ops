@@ -1,17 +1,17 @@
-import { render, screen } from "@/test/test-utils";
-import { StepSelect } from "../step-select";
+import { render, screen } from '@/test/test-utils';
+import { StepSelect } from '../step-select';
 
-vi.mock("@tanstack/react-query", () => ({
+vi.mock('@tanstack/react-query', () => ({
   useQuery: () => ({
     data: { items: [] },
     isLoading: false,
   }),
 }));
 
-vi.mock("@/trpc/init", () => ({
+vi.mock('@/trpc/init', () => ({
   trpc: {
     payment: {
-      readyForPayment: { queryOptions: () => ({ queryKey: ["payment.ready"] }) },
+      readyForPayment: { queryOptions: () => ({ queryKey: ['payment.ready'] }) },
     },
   },
 }));
@@ -28,39 +28,39 @@ function makeProps(overrides: Partial<Parameters<typeof StepSelect>[0]> = {}) {
   };
 }
 
-describe("StepSelect", () => {
-  it("renders empty state when no invoices", () => {
+describe('StepSelect', () => {
+  it('renders empty state when no invoices', () => {
     render(<StepSelect {...makeProps()} />);
 
-    expect(screen.getByText("No approved invoices")).toBeInTheDocument();
+    expect(screen.getByText('No approved invoices')).toBeInTheDocument();
   });
 
-  it("renders currency filter and search input", () => {
+  it('renders currency filter and search input', () => {
     render(<StepSelect {...makeProps()} />);
 
-    expect(screen.getByRole("textbox")).toBeInTheDocument();
+    expect(screen.getByRole('textbox')).toBeInTheDocument();
   });
 
-  it("cancel button works", async () => {
-    const { setup: userSetup } = await import("@/test/test-utils");
+  it('cancel button works', async () => {
+    const { setup: userSetup } = await import('@/test/test-utils');
     const onCancel = vi.fn();
     const { user } = userSetup(<StepSelect {...makeProps({ onCancel })} />);
 
-    await user.click(screen.getByRole("button", { name: /cancel/i }));
+    await user.click(screen.getByRole('button', { name: /cancel/i }));
     expect(onCancel).toHaveBeenCalledTimes(1);
   });
 
-  it("next button is disabled when no invoices selected", () => {
+  it('next button is disabled when no invoices selected', () => {
     render(<StepSelect {...makeProps()} />);
 
-    const nextBtn = screen.getByRole("button", { name: /review/i });
+    const nextBtn = screen.getByRole('button', { name: /review/i });
     expect(nextBtn).toBeDisabled();
   });
 
-  it("next button is enabled when invoices are selected", () => {
-    render(<StepSelect {...makeProps({ selectedInvoiceIds: ["inv-1"] })} />);
+  it('next button is enabled when invoices are selected', () => {
+    render(<StepSelect {...makeProps({ selectedInvoiceIds: ['inv-1'] })} />);
 
-    const nextBtn = screen.getByRole("button", { name: /review/i });
+    const nextBtn = screen.getByRole('button', { name: /review/i });
     expect(nextBtn).toBeEnabled();
   });
 });

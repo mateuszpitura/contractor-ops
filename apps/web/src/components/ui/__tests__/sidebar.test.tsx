@@ -1,4 +1,4 @@
-import { render, screen, setup } from "@/test/test-utils";
+import { render, screen, setup } from '@/test/test-utils';
 import {
   Sidebar,
   SidebarContent,
@@ -22,9 +22,9 @@ import {
   SidebarSeparator,
   SidebarTrigger,
   useSidebar,
-} from "../sidebar";
+} from '../sidebar';
 
-vi.mock("@/hooks/use-mobile", () => ({
+vi.mock('@/hooks/use-mobile', () => ({
   useIsMobile: () => false,
 }));
 
@@ -66,51 +66,51 @@ function renderSidebar({ defaultOpen = true }: { defaultOpen?: boolean } = {}) {
   );
 }
 
-describe("SidebarProvider", () => {
-  it("renders children", () => {
+describe('SidebarProvider', () => {
+  it('renders children', () => {
     renderSidebar();
-    expect(screen.getByText("Main content")).toBeInTheDocument();
+    expect(screen.getByText('Main content')).toBeInTheDocument();
   });
 
-  it("sets data-slot on wrapper", () => {
+  it('sets data-slot on wrapper', () => {
     renderSidebar();
     const wrapper = document.querySelector("[data-slot='sidebar-wrapper']");
     expect(wrapper).toBeInTheDocument();
   });
 
-  it("sets CSS custom properties on wrapper", () => {
+  it('sets CSS custom properties on wrapper', () => {
     renderSidebar();
     const wrapper = document.querySelector("[data-slot='sidebar-wrapper']") as HTMLElement;
-    expect(wrapper.style.getPropertyValue("--sidebar-width")).toBe("16rem");
+    expect(wrapper.style.getPropertyValue('--sidebar-width')).toBe('16rem');
   });
 });
 
-describe("Sidebar", () => {
-  it("renders sidebar content", () => {
+describe('Sidebar', () => {
+  it('renders sidebar content', () => {
     renderSidebar();
-    expect(screen.getByText("Logo")).toBeInTheDocument();
-    expect(screen.getByText("Footer")).toBeInTheDocument();
+    expect(screen.getByText('Logo')).toBeInTheDocument();
+    expect(screen.getByText('Footer')).toBeInTheDocument();
   });
 
-  it("sets data-slot on sidebar", () => {
+  it('sets data-slot on sidebar', () => {
     renderSidebar();
     const sidebar = document.querySelector("[data-slot='sidebar']");
     expect(sidebar).toBeInTheDocument();
   });
 
-  it("sets data-state to expanded when open", () => {
+  it('sets data-state to expanded when open', () => {
     renderSidebar({ defaultOpen: true });
     const sidebar = document.querySelector("[data-slot='sidebar']");
-    expect(sidebar).toHaveAttribute("data-state", "expanded");
+    expect(sidebar).toHaveAttribute('data-state', 'expanded');
   });
 
-  it("sets data-state to collapsed when closed", () => {
+  it('sets data-state to collapsed when closed', () => {
     renderSidebar({ defaultOpen: false });
     const sidebar = document.querySelector("[data-slot='sidebar']");
-    expect(sidebar).toHaveAttribute("data-state", "collapsed");
+    expect(sidebar).toHaveAttribute('data-state', 'collapsed');
   });
 
-  it("renders non-collapsible sidebar without state", () => {
+  it('renders non-collapsible sidebar without state', () => {
     render(
       <SidebarProvider>
         <Sidebar collapsible="none">
@@ -118,116 +118,116 @@ describe("Sidebar", () => {
         </Sidebar>
       </SidebarProvider>,
     );
-    expect(screen.getByText("Static sidebar")).toBeInTheDocument();
+    expect(screen.getByText('Static sidebar')).toBeInTheDocument();
     const sidebar = document.querySelector("[data-slot='sidebar']");
-    expect(sidebar).not.toHaveAttribute("data-state");
+    expect(sidebar).not.toHaveAttribute('data-state');
   });
 });
 
-describe("SidebarHeader", () => {
-  it("sets data-slot", () => {
+describe('SidebarHeader', () => {
+  it('sets data-slot', () => {
     renderSidebar();
     const header = document.querySelector("[data-slot='sidebar-header']");
     expect(header).toBeInTheDocument();
   });
 });
 
-describe("SidebarFooter", () => {
-  it("sets data-slot", () => {
+describe('SidebarFooter', () => {
+  it('sets data-slot', () => {
     renderSidebar();
     const footer = document.querySelector("[data-slot='sidebar-footer']");
     expect(footer).toBeInTheDocument();
   });
 });
 
-describe("SidebarContent", () => {
-  it("sets data-slot", () => {
+describe('SidebarContent', () => {
+  it('sets data-slot', () => {
     renderSidebar();
     const content = document.querySelector("[data-slot='sidebar-content']");
     expect(content).toBeInTheDocument();
   });
 });
 
-describe("SidebarGroup", () => {
-  it("sets data-slot", () => {
+describe('SidebarGroup', () => {
+  it('sets data-slot', () => {
     renderSidebar();
     const group = document.querySelector("[data-slot='sidebar-group']");
     expect(group).toBeInTheDocument();
   });
 });
 
-describe("SidebarGroupLabel", () => {
-  it("renders label text", () => {
+describe('SidebarGroupLabel', () => {
+  it('renders label text', () => {
     renderSidebar();
-    expect(screen.getByText("Navigation")).toBeInTheDocument();
+    expect(screen.getByText('Navigation')).toBeInTheDocument();
   });
 });
 
-describe("SidebarMenu", () => {
-  it("sets data-slot", () => {
+describe('SidebarMenu', () => {
+  it('sets data-slot', () => {
     renderSidebar();
     const menu = document.querySelector("[data-slot='sidebar-menu']");
     expect(menu).toBeInTheDocument();
   });
 });
 
-describe("SidebarMenuItem", () => {
-  it("sets data-slot", () => {
+describe('SidebarMenuItem', () => {
+  it('sets data-slot', () => {
     renderSidebar();
     const items = document.querySelectorAll("[data-slot='sidebar-menu-item']");
     expect(items.length).toBe(2);
   });
 });
 
-describe("SidebarMenuButton", () => {
-  it("renders button text", () => {
+describe('SidebarMenuButton', () => {
+  it('renders button text', () => {
     renderSidebar();
-    expect(screen.getByText("Dashboard")).toBeInTheDocument();
-    expect(screen.getByText("Settings")).toBeInTheDocument();
+    expect(screen.getByText('Dashboard')).toBeInTheDocument();
+    expect(screen.getByText('Settings')).toBeInTheDocument();
   });
 });
 
-describe("SidebarMenuBadge", () => {
-  it("renders badge content", () => {
+describe('SidebarMenuBadge', () => {
+  it('renders badge content', () => {
     renderSidebar();
-    expect(screen.getByText("3")).toBeInTheDocument();
+    expect(screen.getByText('3')).toBeInTheDocument();
     const badge = document.querySelector("[data-slot='sidebar-menu-badge']");
     expect(badge).toBeInTheDocument();
   });
 });
 
-describe("SidebarSeparator", () => {
-  it("sets data-slot", () => {
+describe('SidebarSeparator', () => {
+  it('sets data-slot', () => {
     renderSidebar();
     const sep = document.querySelector("[data-slot='sidebar-separator']");
     expect(sep).toBeInTheDocument();
   });
 });
 
-describe("SidebarInset", () => {
-  it("sets data-slot on main element", () => {
+describe('SidebarInset', () => {
+  it('sets data-slot on main element', () => {
     renderSidebar();
     const inset = document.querySelector("[data-slot='sidebar-inset']");
     expect(inset).toBeInTheDocument();
-    expect(inset?.tagName).toBe("MAIN");
+    expect(inset?.tagName).toBe('MAIN');
   });
 });
 
-describe("SidebarTrigger", () => {
-  it("renders toggle button with sr-only text", () => {
+describe('SidebarTrigger', () => {
+  it('renders toggle button with sr-only text', () => {
     renderSidebar();
-    expect(screen.getByText("Toggle sidebar")).toBeInTheDocument();
+    expect(screen.getByText('Toggle sidebar')).toBeInTheDocument();
   });
 
-  it("sets data-slot on trigger", () => {
+  it('sets data-slot on trigger', () => {
     renderSidebar();
     const trigger = document.querySelector("[data-slot='sidebar-trigger']");
     expect(trigger).toBeInTheDocument();
   });
 });
 
-describe("SidebarMenuSkeleton", () => {
-  it("renders skeleton with data-slot", () => {
+describe('SidebarMenuSkeleton', () => {
+  it('renders skeleton with data-slot', () => {
     render(
       <SidebarProvider>
         <Sidebar>
@@ -245,7 +245,7 @@ describe("SidebarMenuSkeleton", () => {
     expect(skeleton).toBeInTheDocument();
   });
 
-  it("renders icon skeleton when showIcon is true", () => {
+  it('renders icon skeleton when showIcon is true', () => {
     render(
       <SidebarProvider>
         <Sidebar>
@@ -264,17 +264,17 @@ describe("SidebarMenuSkeleton", () => {
   });
 });
 
-describe("useSidebar", () => {
-  it("throws when used outside SidebarProvider", () => {
+describe('useSidebar', () => {
+  it('throws when used outside SidebarProvider', () => {
     function BadComponent() {
       useSidebar();
       return null;
     }
 
-    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     try {
       expect(() => render(<BadComponent />)).toThrow(
-        "useSidebar must be used within a SidebarProvider.",
+        'useSidebar must be used within a SidebarProvider.',
       );
     } finally {
       consoleSpy.mockRestore();
@@ -282,64 +282,64 @@ describe("useSidebar", () => {
   });
 });
 
-describe("Sidebar collapsed state", () => {
-  it("sets collapsed width CSS variable when closed", () => {
+describe('Sidebar collapsed state', () => {
+  it('sets collapsed width CSS variable when closed', () => {
     renderSidebar({ defaultOpen: false });
     const wrapper = document.querySelector("[data-slot='sidebar-wrapper']") as HTMLElement;
-    expect(wrapper.style.getPropertyValue("--sidebar-width")).toBe("16rem");
+    expect(wrapper.style.getPropertyValue('--sidebar-width')).toBe('16rem');
   });
 
-  it("sidebar is collapsed when defaultOpen is false", () => {
+  it('sidebar is collapsed when defaultOpen is false', () => {
     renderSidebar({ defaultOpen: false });
     const sidebar = document.querySelector("[data-slot='sidebar']");
-    expect(sidebar).toHaveAttribute("data-state", "collapsed");
+    expect(sidebar).toHaveAttribute('data-state', 'collapsed');
   });
 
-  it("menu items are still in DOM when collapsed", () => {
+  it('menu items are still in DOM when collapsed', () => {
     renderSidebar({ defaultOpen: false });
-    expect(screen.getByText("Dashboard")).toBeInTheDocument();
-    expect(screen.getByText("Settings")).toBeInTheDocument();
+    expect(screen.getByText('Dashboard')).toBeInTheDocument();
+    expect(screen.getByText('Settings')).toBeInTheDocument();
   });
 });
 
-describe("SidebarTrigger toggle", () => {
-  it("clicking trigger toggles sidebar state", async () => {
+describe('SidebarTrigger toggle', () => {
+  it('clicking trigger toggles sidebar state', async () => {
     const { user } = renderSidebar({ defaultOpen: true });
     const sidebar = document.querySelector("[data-slot='sidebar']");
-    expect(sidebar).toHaveAttribute("data-state", "expanded");
-    const triggerBtn = screen.getByText("Toggle sidebar").closest("button")!;
+    expect(sidebar).toHaveAttribute('data-state', 'expanded');
+    const triggerBtn = screen.getByText('Toggle sidebar').closest('button')!;
     await user.click(triggerBtn);
-    expect(sidebar).toHaveAttribute("data-state", "collapsed");
+    expect(sidebar).toHaveAttribute('data-state', 'collapsed');
   });
 
-  it("clicking trigger twice returns to expanded", async () => {
+  it('clicking trigger twice returns to expanded', async () => {
     const { user } = renderSidebar({ defaultOpen: true });
     const sidebar = document.querySelector("[data-slot='sidebar']");
-    const triggerBtn = screen.getByText("Toggle sidebar").closest("button")!;
+    const triggerBtn = screen.getByText('Toggle sidebar').closest('button')!;
     await user.click(triggerBtn);
     await user.click(triggerBtn);
-    expect(sidebar).toHaveAttribute("data-state", "expanded");
+    expect(sidebar).toHaveAttribute('data-state', 'expanded');
   });
 });
 
-describe("SidebarGroupContent", () => {
-  it("sets data-slot on group content", () => {
+describe('SidebarGroupContent', () => {
+  it('sets data-slot on group content', () => {
     renderSidebar();
     const content = document.querySelector("[data-slot='sidebar-group-content']");
     expect(content).toBeInTheDocument();
   });
 });
 
-describe("SidebarMenuButton variants", () => {
-  it("renders menu button with data-slot", () => {
+describe('SidebarMenuButton variants', () => {
+  it('renders menu button with data-slot', () => {
     renderSidebar();
     const buttons = document.querySelectorAll("[data-slot='sidebar-menu-button']");
     expect(buttons.length).toBe(2);
   });
 });
 
-describe("SidebarProvider controlled open", () => {
-  it("supports controlled open prop", () => {
+describe('SidebarProvider controlled open', () => {
+  it('supports controlled open prop', () => {
     const onOpenChange = vi.fn();
     render(
       <SidebarProvider open={true} onOpenChange={onOpenChange}>
@@ -354,10 +354,10 @@ describe("SidebarProvider controlled open", () => {
       </SidebarProvider>,
     );
     const sidebar = document.querySelector("[data-slot='sidebar']");
-    expect(sidebar).toHaveAttribute("data-state", "expanded");
+    expect(sidebar).toHaveAttribute('data-state', 'expanded');
   });
 
-  it("calls onOpenChange when controlled and trigger is clicked", async () => {
+  it('calls onOpenChange when controlled and trigger is clicked', async () => {
     const onOpenChange = vi.fn();
     const { user } = setup(
       <SidebarProvider open={true} onOpenChange={onOpenChange}>
@@ -371,14 +371,14 @@ describe("SidebarProvider controlled open", () => {
         </SidebarInset>
       </SidebarProvider>,
     );
-    const triggerBtn = screen.getByText("Toggle sidebar").closest("button")!;
+    const triggerBtn = screen.getByText('Toggle sidebar').closest('button')!;
     await user.click(triggerBtn);
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 });
 
-describe("SidebarRail", () => {
-  it("renders rail with toggle sidebar aria label", () => {
+describe('SidebarRail', () => {
+  it('renders rail with toggle sidebar aria label', () => {
     render(
       <SidebarProvider>
         <Sidebar>
@@ -391,10 +391,10 @@ describe("SidebarRail", () => {
     );
     const rail = document.querySelector("[data-slot='sidebar-rail']");
     expect(rail).toBeInTheDocument();
-    expect(rail).toHaveAttribute("aria-label", "Toggle sidebar");
+    expect(rail).toHaveAttribute('aria-label', 'Toggle sidebar');
   });
 
-  it("toggles sidebar when rail is clicked", async () => {
+  it('toggles sidebar when rail is clicked', async () => {
     const { user } = setup(
       <SidebarProvider defaultOpen={true}>
         <Sidebar>
@@ -408,12 +408,12 @@ describe("SidebarRail", () => {
     const rail = document.querySelector("[data-slot='sidebar-rail']") as HTMLElement;
     await user.click(rail);
     const sidebar = document.querySelector("[data-slot='sidebar']");
-    expect(sidebar).toHaveAttribute("data-state", "collapsed");
+    expect(sidebar).toHaveAttribute('data-state', 'collapsed');
   });
 });
 
-describe("SidebarInput", () => {
-  it("renders input with data-slot", () => {
+describe('SidebarInput', () => {
+  it('renders input with data-slot', () => {
     render(
       <SidebarProvider>
         <Sidebar>
@@ -428,8 +428,8 @@ describe("SidebarInput", () => {
   });
 });
 
-describe("SidebarMenuSub", () => {
-  it("renders menu sub with data-slot", () => {
+describe('SidebarMenuSub', () => {
+  it('renders menu sub with data-slot', () => {
     render(
       <SidebarProvider>
         <Sidebar>
@@ -450,12 +450,12 @@ describe("SidebarMenuSub", () => {
     );
     const sub = document.querySelector("[data-slot='sidebar-menu-sub']");
     expect(sub).toBeInTheDocument();
-    expect(screen.getByText("Child")).toBeInTheDocument();
+    expect(screen.getByText('Child')).toBeInTheDocument();
   });
 });
 
-describe("SidebarTrigger onClick passthrough", () => {
-  it("calls custom onClick in addition to toggling", async () => {
+describe('SidebarTrigger onClick passthrough', () => {
+  it('calls custom onClick in addition to toggling', async () => {
     const customClick = vi.fn();
     const { user } = setup(
       <SidebarProvider defaultOpen={true}>
@@ -469,16 +469,16 @@ describe("SidebarTrigger onClick passthrough", () => {
         </SidebarInset>
       </SidebarProvider>,
     );
-    const triggerBtn = screen.getByText("Toggle sidebar").closest("button")!;
+    const triggerBtn = screen.getByText('Toggle sidebar').closest('button')!;
     await user.click(triggerBtn);
     expect(customClick).toHaveBeenCalledTimes(1);
     const sidebar = document.querySelector("[data-slot='sidebar']");
-    expect(sidebar).toHaveAttribute("data-state", "collapsed");
+    expect(sidebar).toHaveAttribute('data-state', 'collapsed');
   });
 });
 
-describe("Sidebar variants", () => {
-  it("renders floating variant with data-variant", () => {
+describe('Sidebar variants', () => {
+  it('renders floating variant with data-variant', () => {
     render(
       <SidebarProvider>
         <Sidebar variant="floating">
@@ -492,7 +492,7 @@ describe("Sidebar variants", () => {
     expect(sidebar).toBeInTheDocument();
   });
 
-  it("renders inset variant with data-variant", () => {
+  it('renders inset variant with data-variant', () => {
     render(
       <SidebarProvider>
         <Sidebar variant="inset">
@@ -506,7 +506,7 @@ describe("Sidebar variants", () => {
     expect(sidebar).toBeInTheDocument();
   });
 
-  it("renders right side with data-side", () => {
+  it('renders right side with data-side', () => {
     render(
       <SidebarProvider>
         <Sidebar side="right">

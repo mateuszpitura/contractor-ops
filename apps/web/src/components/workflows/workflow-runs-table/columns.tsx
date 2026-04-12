@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import type { ColumnDef } from "@tanstack/react-table";
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
+import type { ColumnDef } from '@tanstack/react-table';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 
 // ---------------------------------------------------------------------------
 // Row type matching the tRPC workflow.listRuns response shape
@@ -36,12 +36,12 @@ export type WorkflowRunRow = {
 // ---------------------------------------------------------------------------
 
 const statusBadgeColors: Record<string, string> = {
-  NOT_STARTED: "bg-muted text-muted-foreground border border-border",
-  IN_PROGRESS: "bg-primary/10 text-primary",
-  COMPLETED: "bg-green-500/10 text-green-600 dark:text-green-400",
-  CANCELLED: "bg-muted text-muted-foreground border border-border",
-  BLOCKED: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
-  OVERDUE: "bg-red-500/10 text-red-600 dark:text-red-400",
+  NOT_STARTED: 'bg-muted text-muted-foreground border border-border',
+  IN_PROGRESS: 'bg-primary/10 text-primary',
+  COMPLETED: 'bg-green-500/10 text-green-600 dark:text-green-400',
+  CANCELLED: 'bg-muted text-muted-foreground border border-border',
+  BLOCKED: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+  OVERDUE: 'bg-red-500/10 text-red-600 dark:text-red-400',
 };
 
 // ---------------------------------------------------------------------------
@@ -49,11 +49,11 @@ const statusBadgeColors: Record<string, string> = {
 // ---------------------------------------------------------------------------
 
 const templateTypeBadgeColors: Record<string, string> = {
-  ONBOARDING: "bg-primary/10 text-primary",
-  OFFBOARDING: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
-  DOCUMENT_COLLECTION: "bg-muted text-muted-foreground",
-  COMPLIANCE_REVIEW: "bg-muted text-muted-foreground",
-  CUSTOM: "bg-muted text-muted-foreground",
+  ONBOARDING: 'bg-primary/10 text-primary',
+  OFFBOARDING: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+  DOCUMENT_COLLECTION: 'bg-muted text-muted-foreground',
+  COMPLIANCE_REVIEW: 'bg-muted text-muted-foreground',
+  CUSTOM: 'bg-muted text-muted-foreground',
 };
 
 // ---------------------------------------------------------------------------
@@ -70,21 +70,21 @@ export function getColumns(t: TranslateFunction): ColumnDef<WorkflowRunRow>[] {
   return [
     // 1. Select checkbox
     {
-      id: "select",
+      id: 'select',
       header: ({ table }) => (
         <Checkbox
           checked={table.getIsAllPageRowsSelected()}
           indeterminate={table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()}
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label={t("columns.selectAll")}
+          onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)}
+          aria-label={t('columns.selectAll')}
         />
       ),
       cell: ({ row }) => (
         <Checkbox
           checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label={t("columns.selectRow")}
-          onClick={(e) => e.stopPropagation()}
+          onCheckedChange={value => row.toggleSelected(!!value)}
+          aria-label={t('columns.selectRow')}
+          onClick={e => e.stopPropagation()}
         />
       ),
       enableSorting: false,
@@ -94,9 +94,9 @@ export function getColumns(t: TranslateFunction): ColumnDef<WorkflowRunRow>[] {
 
     // 2. Workflow name (template name)
     {
-      id: "workflowName",
-      accessorFn: (row) => row.workflowTemplate.name,
-      header: t("columns.workflowName"),
+      id: 'workflowName',
+      accessorFn: row => row.workflowTemplate.name,
+      header: t('columns.workflowName'),
       cell: ({ row }) => (
         <div className="min-w-[160px]">
           <span className="font-medium">{row.original.workflowTemplate.name}</span>
@@ -107,9 +107,9 @@ export function getColumns(t: TranslateFunction): ColumnDef<WorkflowRunRow>[] {
 
     // 3. Contractor
     {
-      id: "contractor",
-      accessorFn: (row) => row.contractor.displayName ?? row.contractor.legalName,
-      header: t("columns.contractor"),
+      id: 'contractor',
+      accessorFn: row => row.contractor.displayName ?? row.contractor.legalName,
+      header: t('columns.contractor'),
       cell: ({ row }) => (
         <span className="text-sm">
           {row.original.contractor.displayName ?? row.original.contractor.legalName}
@@ -119,14 +119,13 @@ export function getColumns(t: TranslateFunction): ColumnDef<WorkflowRunRow>[] {
 
     // 4. Template type
     {
-      id: "templateType",
-      accessorFn: (row) => row.workflowTemplate.type,
-      header: t("columns.templateType"),
+      id: 'templateType',
+      accessorFn: row => row.workflowTemplate.type,
+      header: t('columns.templateType'),
       cell: ({ row }) => (
         <Badge
           variant="secondary"
-          className={templateTypeBadgeColors[row.original.workflowTemplate.type] ?? ""}
-        >
+          className={templateTypeBadgeColors[row.original.workflowTemplate.type] ?? ''}>
           {t(`templateType.${row.original.workflowTemplate.type}`)}
         </Badge>
       ),
@@ -135,12 +134,12 @@ export function getColumns(t: TranslateFunction): ColumnDef<WorkflowRunRow>[] {
 
     // 5. Status
     {
-      accessorKey: "status",
-      header: t("columns.status"),
+      accessorKey: 'status',
+      header: t('columns.status'),
       cell: ({ row }) => {
         const status = row.original.status;
         return (
-          <Badge variant="secondary" className={statusBadgeColors[status] ?? ""}>
+          <Badge variant="secondary" className={statusBadgeColors[status] ?? ''}>
             {t(`runStatus.${status}`)}
           </Badge>
         );
@@ -149,8 +148,8 @@ export function getColumns(t: TranslateFunction): ColumnDef<WorkflowRunRow>[] {
 
     // 6. Progress (X/Y)
     {
-      id: "progress",
-      header: t("columns.progress"),
+      id: 'progress',
+      header: t('columns.progress'),
       cell: ({ row }) => {
         const { done, total } = row.original.progress;
         return (
@@ -164,13 +163,13 @@ export function getColumns(t: TranslateFunction): ColumnDef<WorkflowRunRow>[] {
 
     // 7. Started date
     {
-      accessorKey: "startedAt",
-      header: t("columns.startedAt"),
+      accessorKey: 'startedAt',
+      header: t('columns.startedAt'),
       cell: ({ row }) => {
         const startedAt = row.original.startedAt;
         if (!startedAt) return <span className="text-muted-foreground">&mdash;</span>;
         try {
-          return <span className="text-sm">{new Date(startedAt).toLocaleDateString("pl-PL")}</span>;
+          return <span className="text-sm">{new Date(startedAt).toLocaleDateString('pl-PL')}</span>;
         } catch {
           return <span className="text-muted-foreground">&mdash;</span>;
         }
@@ -179,8 +178,8 @@ export function getColumns(t: TranslateFunction): ColumnDef<WorkflowRunRow>[] {
 
     // 8. Due date (destructive color if overdue)
     {
-      accessorKey: "dueAt",
-      header: t("columns.dueAt"),
+      accessorKey: 'dueAt',
+      header: t('columns.dueAt'),
       cell: ({ row }) => {
         const dueAt = row.original.dueAt;
         if (!dueAt) return <span className="text-muted-foreground">&mdash;</span>;
@@ -188,12 +187,12 @@ export function getColumns(t: TranslateFunction): ColumnDef<WorkflowRunRow>[] {
           const date = new Date(dueAt);
           const isOverdue =
             date < new Date() &&
-            row.original.status !== "COMPLETED" &&
-            row.original.status !== "CANCELLED";
+            row.original.status !== 'COMPLETED' &&
+            row.original.status !== 'CANCELLED';
 
           return (
-            <span className={`text-sm ${isOverdue ? "text-destructive font-medium" : ""}`}>
-              {date.toLocaleDateString("pl-PL")}
+            <span className={`text-sm ${isOverdue ? 'text-destructive font-medium' : ''}`}>
+              {date.toLocaleDateString('pl-PL')}
             </span>
           );
         } catch {

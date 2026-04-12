@@ -1,22 +1,22 @@
-"use client";
+'use client';
 
-import { useMutation, useQuery } from "@tanstack/react-query";
-import type { ColumnDef } from "@tanstack/react-table";
-import { UsersRound } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useMemo, useState } from "react";
-import { toast } from "sonner";
+import { useMutation, useQuery } from '@tanstack/react-query';
+import type { ColumnDef } from '@tanstack/react-table';
+import { UsersRound } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useMemo, useState } from 'react';
+import { toast } from 'sonner';
 
-import { trpc } from "@/trpc/init";
-import { DrillDownBreadcrumb } from "./drill-down-breadcrumb";
-import { downloadBase64File, ExportButtons } from "./export-buttons";
-import { ReportChart } from "./report-chart";
-import { ReportTable } from "./report-table";
+import { trpc } from '@/trpc/init';
+import { DrillDownBreadcrumb } from './drill-down-breadcrumb';
+import { downloadBase64File, ExportButtons } from './export-buttons';
+import { ReportChart } from './report-chart';
+import { ReportTable } from './report-table';
 
 function formatCurrency(minor: number): string {
-  return new Intl.NumberFormat("pl-PL", {
-    style: "currency",
-    currency: "PLN",
+  return new Intl.NumberFormat('pl-PL', {
+    style: 'currency',
+    currency: 'PLN',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(minor / 100);
@@ -36,11 +36,11 @@ type TeamSpendRow = {
 };
 
 export function SpendTeamReport({ dateFrom, dateTo }: SpendTeamReportProps) {
-  const t = useTranslations("Reports");
+  const t = useTranslations('Reports');
 
   const [page, setPage] = useState(1);
-  const [sortBy, setSortBy] = useState("totalSpend");
-  const [sortOrder, setSortOrder] = useState("desc");
+  const [sortBy, setSortBy] = useState('totalSpend');
+  const [sortOrder, setSortOrder] = useState('desc');
   const [drillDownTeamId, setDrillDownTeamId] = useState<string | null>(null);
 
   const tableQuery = useQuery(
@@ -49,8 +49,8 @@ export function SpendTeamReport({ dateFrom, dateTo }: SpendTeamReportProps) {
       dateTo,
       page,
       pageSize: 20,
-      sortBy: sortBy as "totalSpend" | "invoiceCount" | "teamName",
-      sortOrder: sortOrder as "asc" | "desc",
+      sortBy: sortBy as 'totalSpend' | 'invoiceCount' | 'teamName',
+      sortOrder: sortOrder as 'asc' | 'desc',
     }),
   );
 
@@ -58,17 +58,17 @@ export function SpendTeamReport({ dateFrom, dateTo }: SpendTeamReportProps) {
 
   const exportMutation = useMutation(
     trpc.report.exportSpendByTeam.mutationOptions({
-      onSuccess: (data) => {
+      onSuccess: data => {
         const result = data as {
           data: string;
           filename: string;
           mimeType: string;
         };
         downloadBase64File(result.data, result.filename, result.mimeType);
-        toast.success(t("exportSuccess", { count: tableData.length }));
+        toast.success(t('exportSuccess', { count: tableData.length }));
       },
       onError: () => {
-        toast.error(t("exportError"));
+        toast.error(t('exportError'));
       },
     }),
   );
@@ -89,16 +89,16 @@ export function SpendTeamReport({ dateFrom, dateTo }: SpendTeamReportProps) {
       teamName: string | null;
       totalMinor: number;
     }>;
-    return raw.map((item) => ({
+    return raw.map(item => ({
       ...item,
-      teamName: item.teamName ?? t("unassignedTeam"),
+      teamName: item.teamName ?? t('unassignedTeam'),
     }));
   }, [chartQuery.data, t]);
 
   const drillDownName = useMemo(() => {
     if (!drillDownTeamId) return null;
-    const item = tableData.find((d) => d.teamId === drillDownTeamId);
-    return item?.teamName ?? t("unassignedTeam");
+    const item = tableData.find(d => d.teamId === drillDownTeamId);
+    return item?.teamName ?? t('unassignedTeam');
   }, [drillDownTeamId, tableData, t]);
 
   const grandTotal = useMemo(() => {
@@ -108,31 +108,31 @@ export function SpendTeamReport({ dateFrom, dateTo }: SpendTeamReportProps) {
   const columns: ColumnDef<TeamSpendRow>[] = useMemo(
     () => [
       {
-        accessorKey: "teamName",
-        header: t("team"),
+        accessorKey: 'teamName',
+        header: t('team'),
         enableSorting: true,
-        cell: ({ getValue }) => getValue<string | null>() ?? t("unassignedTeam"),
+        cell: ({ getValue }) => getValue<string | null>() ?? t('unassignedTeam'),
       },
       {
-        accessorKey: "contractorCount",
-        header: t("contractors"),
+        accessorKey: 'contractorCount',
+        header: t('contractors'),
         enableSorting: false,
       },
       {
-        accessorKey: "invoiceCount",
-        header: t("invoices"),
+        accessorKey: 'invoiceCount',
+        header: t('invoices'),
         enableSorting: true,
       },
       {
-        accessorKey: "totalMinor",
-        header: t("totalSpend"),
+        accessorKey: 'totalMinor',
+        header: t('totalSpend'),
         enableSorting: true,
         cell: ({ getValue }) => formatCurrency(getValue<number>()),
       },
       {
-        id: "budgetPercent",
-        header: t("budgetPercent"),
-        cell: () => "-",
+        id: 'budgetPercent',
+        header: t('budgetPercent'),
+        cell: () => '-',
       },
     ],
     [t],
@@ -169,7 +169,7 @@ export function SpendTeamReport({ dateFrom, dateTo }: SpendTeamReportProps) {
 
       <DrillDownBreadcrumb
         segments={[
-          { label: t("all") },
+          { label: t('all') },
           ...(drillDownName ? [{ label: drillDownName, id: drillDownTeamId! }] : []),
         ]}
         onClear={handleClearDrillDown}
@@ -187,9 +187,9 @@ export function SpendTeamReport({ dateFrom, dateTo }: SpendTeamReportProps) {
         sortOrder={sortOrder}
         isLoading={tableQuery.isLoading}
         emptyIcon={<UsersRound className="mx-auto h-10 w-10 text-muted-foreground/50" />}
-        emptyTitle={t("emptySpendTeam")}
-        emptyDescription={t("emptySpendTeamBody")}
-        grandTotalLabel={t("grandTotal")}
+        emptyTitle={t('emptySpendTeam')}
+        emptyDescription={t('emptySpendTeamBody')}
+        grandTotalLabel={t('grandTotal')}
         grandTotalValue={formatCurrency(grandTotal)}
       />
 

@@ -1,16 +1,16 @@
-export type { Prisma } from "../generated/prisma/client/index.js";
-export { createPrismaClientForUrl, PrismaClient, prisma } from "./client.js";
-export type { DataRegion } from "./region.js";
-export { getRegionalClient, preWarmRegionalClients, SUPPORTED_REGIONS } from "./region.js";
-export type { RlsContext } from "./rls.js";
-export { withRlsSession } from "./rls.js";
-export { withSoftDelete } from "./soft-delete.js";
-export { tenantStore, withTenantScope } from "./tenant.js";
+export type { Prisma } from '../generated/prisma/client/index.js';
+export { createPrismaClientForUrl, PrismaClient, prisma } from './client.js';
+export type { DataRegion } from './region.js';
+export { getRegionalClient, preWarmRegionalClients, SUPPORTED_REGIONS } from './region.js';
+export type { RlsContext } from './rls.js';
+export { withRlsSession } from './rls.js';
+export { withSoftDelete } from './soft-delete.js';
+export { tenantStore, withTenantScope } from './tenant.js';
 
-import { prisma as basePrisma } from "./client.js";
-import { withSoftDelete } from "./soft-delete.js";
-import type { PrismaExtensible } from "./tenant.js";
-import { withTenantScope } from "./tenant.js";
+import { prisma as basePrisma } from './client.js';
+import { withSoftDelete } from './soft-delete.js';
+import type { PrismaExtensible } from './tenant.js';
+import { withTenantScope } from './tenant.js';
 
 /**
  * Creates a tenant-scoped Prisma client with soft-delete support.

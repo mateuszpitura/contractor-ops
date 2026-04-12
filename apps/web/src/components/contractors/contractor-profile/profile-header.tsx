@@ -1,25 +1,25 @@
-"use client";
+'use client';
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { FilePlus, MoreHorizontal, Pencil, Play } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { toast } from "sonner";
-import { ContractWizardDialog } from "@/components/contracts/contract-wizard/wizard-dialog";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { FilePlus, MoreHorizontal, Pencil, Play } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { ContractWizardDialog } from '@/components/contracts/contract-wizard/wizard-dialog';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { TemplatePicker } from "@/components/workflows/template-picker-dialog";
-import { getAvatarInitials } from "@/lib/avatar-initials";
-import { trpc } from "@/trpc/init";
+} from '@/components/ui/dropdown-menu';
+import { TemplatePicker } from '@/components/workflows/template-picker-dialog';
+import { getAvatarInitials } from '@/lib/avatar-initials';
+import { trpc } from '@/trpc/init';
 
-type LifecycleStage = "DRAFT" | "ONBOARDING" | "ACTIVE" | "OFFBOARDING" | "ENDED";
+type LifecycleStage = 'DRAFT' | 'ONBOARDING' | 'ACTIVE' | 'OFFBOARDING' | 'ENDED';
 
 type ProfileHeaderProps = {
   contractor: {
@@ -33,20 +33,20 @@ type ProfileHeaderProps = {
 };
 
 const lifecycleBadgeStyles: Record<string, string> = {
-  DRAFT: "bg-muted text-muted-foreground border-border",
-  ONBOARDING: "bg-blue-500/10 text-blue-500",
-  ACTIVE: "bg-green-600/10 text-green-600",
-  OFFBOARDING: "bg-amber-500/10 text-amber-600",
-  ENDED: "bg-muted text-muted-foreground border-border",
+  DRAFT: 'bg-muted text-muted-foreground border-border',
+  ONBOARDING: 'bg-blue-500/10 text-blue-500',
+  ACTIVE: 'bg-green-600/10 text-green-600',
+  OFFBOARDING: 'bg-amber-500/10 text-amber-600',
+  ENDED: 'bg-muted text-muted-foreground border-border',
 };
 
 // Lifecycle labels are now served from translations: ContractorProfile.lifecycle.*
 
 export function ProfileHeader({ contractor }: ProfileHeaderProps) {
-  const t = useTranslations("ContractorProfile");
-  const tc = useTranslations("Contractors");
-  const tToast = useTranslations("ContractorProfile.toast");
-  const tCommon = useTranslations("Common");
+  const t = useTranslations('ContractorProfile');
+  const tc = useTranslations('Contractors');
+  const tToast = useTranslations('ContractorProfile.toast');
+  const tCommon = useTranslations('Common');
   const queryClient = useQueryClient();
   const [wizardOpen, setWizardOpen] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -55,17 +55,17 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
   const lifecycleMutation = useMutation(
     trpc.contractor.updateLifecycleStage.mutationOptions({
       onSuccess: (_data, variables) => {
-        toast.success(t("lifecycle.transitioned", { stage: variables.stage }));
+        toast.success(t('lifecycle.transitioned', { stage: variables.stage }));
         queryClient.invalidateQueries({
           queryKey: trpc.contractor.getById.queryKey(),
         });
       },
       onError: (error: unknown) => {
         const message =
-          typeof error === "object" && error && "message" in error
-            ? String((error as { message?: unknown }).message ?? "")
-            : "";
-        toast.error(message || tToast("statusFailed"));
+          typeof error === 'object' && error && 'message' in error
+            ? String((error as { message?: unknown }).message ?? '')
+            : '';
+        toast.error(message || tToast('statusFailed'));
       },
     }),
   );
@@ -73,17 +73,17 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
   const archiveMutation = useMutation(
     trpc.contractor.archive.mutationOptions({
       onSuccess: () => {
-        toast.success(t("lifecycle.archived"));
+        toast.success(t('lifecycle.archived'));
         queryClient.invalidateQueries({
           queryKey: trpc.contractor.getById.queryKey(),
         });
       },
       onError: (error: unknown) => {
         const message =
-          typeof error === "object" && error && "message" in error
-            ? String((error as { message?: unknown }).message ?? "")
-            : "";
-        toast.error(message || tToast("archiveFailed"));
+          typeof error === 'object' && error && 'message' in error
+            ? String((error as { message?: unknown }).message ?? '')
+            : '';
+        toast.error(message || tToast('archiveFailed'));
       },
     }),
   );
@@ -105,7 +105,7 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-[20px] font-semibold leading-tight">{contractor.displayName}</h1>
-            <Badge variant="secondary" className={lifecycleBadgeStyles[stage] ?? ""}>
+            <Badge variant="secondary" className={lifecycleBadgeStyles[stage] ?? ''}>
               {t(`lifecycle.${stage}` as Parameters<typeof t>[0]) ?? stage}
             </Badge>
             <Badge variant="secondary" className="bg-secondary text-secondary-foreground">
@@ -116,12 +116,12 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
             <div className="mt-1 flex items-center gap-1.5">
               <Avatar size="sm">
                 {contractor.owner.image && (
-                  <AvatarImage src={contractor.owner.image} alt={contractor.owner.name ?? ""} />
+                  <AvatarImage src={contractor.owner.image} alt={contractor.owner.name ?? ''} />
                 )}
                 <AvatarFallback>{getAvatarInitials(contractor.owner.name)}</AvatarFallback>
               </Avatar>
               <span className="text-sm text-muted-foreground">
-                {contractor.owner.name ?? t("unknown")}
+                {contractor.owner.name ?? t('unknown')}
               </span>
             </div>
           )}
@@ -129,97 +129,90 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
       </div>
 
       <div className="flex items-center gap-2">
-        <Button variant="outline" size="sm" onClick={() => toast.info(t("actions.editComingSoon"))}>
+        <Button variant="outline" size="sm" onClick={() => toast.info(t('actions.editComingSoon'))}>
           <Pencil className="me-1.5 size-3.5" />
-          {t("actions.edit")}
+          {t('actions.edit')}
         </Button>
 
         <Button variant="outline" size="sm" onClick={() => setWizardOpen(true)}>
           <FilePlus className="me-1.5 size-3.5" />
-          {t("actions.addContract")}
+          {t('actions.addContract')}
         </Button>
 
-        {(stage === "DRAFT" || stage === "ONBOARDING") && (
+        {(stage === 'DRAFT' || stage === 'ONBOARDING') && (
           <Button
             variant="outline"
             size="sm"
             onClick={() => {
-              setPickerType("ONBOARDING");
+              setPickerType('ONBOARDING');
               setPickerOpen(true);
-            }}
-          >
+            }}>
             <Play className="me-1.5 size-3.5" />
-            {t("actions.startOnboarding")}
+            {t('actions.startOnboarding')}
           </Button>
         )}
 
-        {(stage === "ACTIVE" || stage === "OFFBOARDING") && (
+        {(stage === 'ACTIVE' || stage === 'OFFBOARDING') && (
           <Button
             variant="outline"
             size="sm"
             onClick={() => {
-              setPickerType("OFFBOARDING");
+              setPickerType('OFFBOARDING');
               setPickerOpen(true);
-            }}
-          >
+            }}>
             <Play className="me-1.5 size-3.5" />
-            {t("actions.startOffboarding")}
+            {t('actions.startOffboarding')}
           </Button>
         )}
 
         <DropdownMenu>
           <DropdownMenuTrigger
-            render={(props) => (
+            render={props => (
               <Button {...props} variant="outline" size="icon-sm">
                 <MoreHorizontal className="size-4" />
-                <span className="sr-only">{tCommon("srOnly.moreActions")}</span>
+                <span className="sr-only">{tCommon('srOnly.moreActions')}</span>
               </Button>
             )}
           />
           <DropdownMenuContent align="end">
-            {stage === "DRAFT" && (
+            {stage === 'DRAFT' && (
               <DropdownMenuItem
                 disabled={isPending}
-                onSelect={() => handleLifecycleAction("ONBOARDING")}
-              >
-                {t("actions.startOnboarding")}
+                onSelect={() => handleLifecycleAction('ONBOARDING')}>
+                {t('actions.startOnboarding')}
               </DropdownMenuItem>
             )}
-            {stage === "ONBOARDING" && (
+            {stage === 'ONBOARDING' && (
               <DropdownMenuItem
                 disabled={isPending}
-                onSelect={() => handleLifecycleAction("ACTIVE")}
-              >
-                {t("actions.activate")}
+                onSelect={() => handleLifecycleAction('ACTIVE')}>
+                {t('actions.activate')}
               </DropdownMenuItem>
             )}
-            {stage === "ACTIVE" && (
+            {stage === 'ACTIVE' && (
               <>
                 <DropdownMenuItem
                   disabled={isPending}
-                  onSelect={() => handleLifecycleAction("OFFBOARDING")}
-                >
-                  {t("actions.startOffboarding")}
+                  onSelect={() => handleLifecycleAction('OFFBOARDING')}>
+                  {t('actions.startOffboarding')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   disabled={isPending}
-                  onSelect={() => handleLifecycleAction("ENDED")}
-                >
-                  {t("actions.markInactive")}
+                  onSelect={() => handleLifecycleAction('ENDED')}>
+                  {t('actions.markInactive')}
                 </DropdownMenuItem>
               </>
             )}
-            {stage === "OFFBOARDING" && (
+            {stage === 'OFFBOARDING' && (
               <DropdownMenuItem
                 disabled={isPending}
-                onSelect={() => handleLifecycleAction("ENDED")}
-              >
-                {t("actions.completeOffboarding")}
+                onSelect={() => handleLifecycleAction('ENDED')}>
+                {t('actions.completeOffboarding')}
               </DropdownMenuItem>
             )}
-            {stage === "ENDED" && (
+            {stage === 'ENDED' && (
               <DropdownMenuItem disabled={isPending} variant="destructive" onSelect={handleArchive}>
-                {t("actions.archive")}
+                {t('actions.archive')}
               </DropdownMenuItem>
             )}
           </DropdownMenuContent>

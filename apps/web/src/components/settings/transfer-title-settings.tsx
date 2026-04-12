@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Save } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useEffect, useMemo } from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { z } from "zod";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { trpc } from "@/trpc/init";
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Loader2, Save } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useEffect, useMemo } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { z } from 'zod';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Schema
@@ -28,10 +28,10 @@ type TransferTitleFormValues = z.infer<typeof transferTitleSchema>;
 // ---------------------------------------------------------------------------
 
 const EXAMPLE_VALUES: Record<string, string> = {
-  invoice_number: "FV/2026/03/001",
-  billing_period: "2026-03",
-  contractor_name: "Acme Sp. z o.o.",
-  contract_number: "C-001",
+  invoice_number: 'FV/2026/03/001',
+  billing_period: '2026-03',
+  contractor_name: 'Acme Sp. z o.o.',
+  contract_number: 'C-001',
 };
 
 function resolvePreview(template: string): string {
@@ -45,7 +45,7 @@ function resolvePreview(template: string): string {
 // ---------------------------------------------------------------------------
 
 export function TransferTitleSettings() {
-  const t = useTranslations("Payments");
+  const t = useTranslations('Payments');
   const queryClient = useQueryClient();
 
   // Load current settings
@@ -54,7 +54,7 @@ export function TransferTitleSettings() {
   const metadata = orgData?.metadata as Record<string, unknown> | undefined;
   const settingsJson = (metadata?.settingsJson as Record<string, unknown>) ?? {};
   const currentTemplate: string =
-    (settingsJson.paymentTransferTitleTemplate as string) ?? "{invoice_number}";
+    (settingsJson.paymentTransferTitleTemplate as string) ?? '{invoice_number}';
 
   const {
     register,
@@ -65,7 +65,7 @@ export function TransferTitleSettings() {
   } = useForm<TransferTitleFormValues>({
     resolver: zodResolver(transferTitleSchema),
     defaultValues: {
-      template: "{invoice_number}",
+      template: '{invoice_number}',
     },
   });
 
@@ -76,19 +76,19 @@ export function TransferTitleSettings() {
     }
   }, [currentTemplate, reset]);
 
-  const watchTemplate = watch("template");
+  const watchTemplate = watch('template');
   const preview = useMemo(() => resolvePreview(watchTemplate), [watchTemplate]);
 
   const updateMutation = useMutation(
     trpc.settings.update.mutationOptions({
       onSuccess: () => {
-        toast.success(t("toastTransferTitleSaved"));
+        toast.success(t('toastTransferTitleSaved'));
         queryClient.invalidateQueries({
           queryKey: trpc.settings.get.queryKey(),
         });
       },
       onError: () => {
-        toast.error(t("errorExport"));
+        toast.error(t('errorExport'));
       },
     }),
   );
@@ -109,28 +109,28 @@ export function TransferTitleSettings() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t("settingsHeading")}</CardTitle>
-        <CardDescription>{t("settingsDescription")}</CardDescription>
+        <CardTitle>{t('settingsHeading')}</CardTitle>
+        <CardDescription>{t('settingsDescription')}</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <label htmlFor="transfer-title-template" className="text-sm font-medium">
-              {t("templateLabel")}
+              {t('templateLabel')}
             </label>
             <Input
               id="transfer-title-template"
-              placeholder={t("templatePlaceholder")}
-              {...register("template")}
+              placeholder={t('templatePlaceholder')}
+              {...register('template')}
             />
-            <p className="text-xs text-muted-foreground">{t("templateHelper")}</p>
+            <p className="text-xs text-muted-foreground">{t('templateHelper')}</p>
             {errors.template && (
               <p className="text-xs text-destructive">{errors.template.message}</p>
             )}
           </div>
 
           {/* Live preview */}
-          <p className="text-xs text-muted-foreground">{t("preview", { value: preview })}</p>
+          <p className="text-xs text-muted-foreground">{t('preview', { value: preview })}</p>
 
           <Button type="submit" size="sm" disabled={!isDirty || updateMutation.isPending}>
             {updateMutation.isPending ? (
@@ -138,7 +138,7 @@ export function TransferTitleSettings() {
             ) : (
               <Save className="me-1.5 size-3.5" />
             )}
-            {t("save")}
+            {t('save')}
           </Button>
         </form>
       </CardContent>

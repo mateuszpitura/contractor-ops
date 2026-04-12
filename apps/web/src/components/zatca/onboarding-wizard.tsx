@@ -1,19 +1,19 @@
-"use client";
+'use client';
 
-import type { ZatcaOnboardingState } from "@contractor-ops/einvoice";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-import { useCallback, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ComplianceChecks } from "./compliance-checks";
-import { ComplianceCsid } from "./compliance-csid";
-import { CsrGeneration } from "./csr-generation";
-import { ProductionCertificate } from "./production-certificate";
-import type { StepDefinition } from "./stepper";
-import { Stepper } from "./stepper";
-import { TaxDetailsForm } from "./tax-details-form";
-import { zatcaTrpc } from "./zatca-trpc";
+import type { ZatcaOnboardingState } from '@contractor-ops/einvoice';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+import { useCallback, useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { ComplianceChecks } from './compliance-checks';
+import { ComplianceCsid } from './compliance-csid';
+import { CsrGeneration } from './csr-generation';
+import { ProductionCertificate } from './production-certificate';
+import type { StepDefinition } from './stepper';
+import { Stepper } from './stepper';
+import { TaxDetailsForm } from './tax-details-form';
+import { zatcaTrpc } from './zatca-trpc';
 
 // ---------------------------------------------------------------------------
 // Step definitions
@@ -21,21 +21,21 @@ import { zatcaTrpc } from "./zatca-trpc";
 
 // Step definitions are built inside the component to use translations
 const STEP_IDS = [
-  "tax_details",
-  "csr_generation",
-  "compliance_csid",
-  "compliance_checks",
-  "production_certificate",
+  'tax_details',
+  'csr_generation',
+  'compliance_csid',
+  'compliance_checks',
+  'production_certificate',
 ] as const;
 
 const STEP_TRANSLATION_KEYS: Record<string, { label: string; shortLabel: string }> = {
-  tax_details: { label: "steps.taxDetails", shortLabel: "steps.taxDetailsShort" },
-  csr_generation: { label: "steps.csrGeneration", shortLabel: "steps.csrGenerationShort" },
-  compliance_csid: { label: "steps.complianceCsid", shortLabel: "steps.complianceCsidShort" },
-  compliance_checks: { label: "steps.complianceChecks", shortLabel: "steps.complianceChecksShort" },
+  tax_details: { label: 'steps.taxDetails', shortLabel: 'steps.taxDetailsShort' },
+  csr_generation: { label: 'steps.csrGeneration', shortLabel: 'steps.csrGenerationShort' },
+  compliance_csid: { label: 'steps.complianceCsid', shortLabel: 'steps.complianceCsidShort' },
+  compliance_checks: { label: 'steps.complianceChecks', shortLabel: 'steps.complianceChecksShort' },
   production_certificate: {
-    label: "steps.productionCertificate",
-    shortLabel: "steps.productionCertificateShort",
+    label: 'steps.productionCertificate',
+    shortLabel: 'steps.productionCertificateShort',
   },
 };
 
@@ -67,10 +67,10 @@ interface OnboardingWizardProps {
  * Back navigation allowed to any completed step.
  */
 export function OnboardingWizard({ onComplete, onCancel }: OnboardingWizardProps) {
-  const t = useTranslations("Zatca.onboarding");
+  const t = useTranslations('Zatca.onboarding');
   const queryClient = useQueryClient();
 
-  const onboardingSteps: StepDefinition[] = STEP_IDS.map((id) => {
+  const onboardingSteps: StepDefinition[] = STEP_IDS.map(id => {
     const keys = STEP_TRANSLATION_KEYS[id];
     return {
       id,
@@ -90,7 +90,7 @@ export function OnboardingWizard({ onComplete, onCancel }: OnboardingWizardProps
   const activeStep = currentStep ?? serverStep;
 
   const goNext = useCallback(() => {
-    setCurrentStep((prev) => {
+    setCurrentStep(prev => {
       const current = prev ?? serverStep;
       return Math.min(current + 1, onboardingSteps.length - 1);
     });
@@ -101,7 +101,7 @@ export function OnboardingWizard({ onComplete, onCancel }: OnboardingWizardProps
   }, [serverStep, queryClient, onboardingSteps.length]);
 
   const goBack = useCallback(() => {
-    setCurrentStep((prev) => {
+    setCurrentStep(prev => {
       const current = prev ?? serverStep;
       return Math.max(current - 1, 0);
     });
@@ -134,7 +134,7 @@ export function OnboardingWizard({ onComplete, onCancel }: OnboardingWizardProps
   return (
     <Card>
       <CardHeader className="space-y-4 border-b">
-        <CardTitle className="text-base font-semibold">{t("title")}</CardTitle>
+        <CardTitle className="text-base font-semibold">{t('title')}</CardTitle>
         <Stepper steps={onboardingSteps} currentStep={activeStep} onStepClick={goToStep} />
       </CardHeader>
 

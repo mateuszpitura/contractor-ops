@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { ArrowRight } from "lucide-react";
-import { FadeUp } from "./motion-wrapper";
+import { ArrowRight } from 'lucide-react';
+import { FadeUp } from './motion-wrapper';
 
 export function CTA() {
   return (
@@ -23,15 +23,13 @@ export function CTA() {
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <a
                 href="#"
-                className="group inline-flex items-center gap-2.5 rounded-2xl bg-primary px-10 py-4 text-base font-semibold text-primary-foreground shadow-lg transition-all hover:bg-primary/90 hover:shadow-xl active:scale-[0.98]"
-              >
+                className="group inline-flex items-center gap-2.5 rounded-2xl bg-primary px-10 py-4 text-base font-semibold text-primary-foreground shadow-lg transition-all hover:bg-primary/90 hover:shadow-xl active:scale-[0.98]">
                 Start your free trial
                 <ArrowRight className="h-4.5 w-4.5 transition-transform group-hover:translate-x-1" />
               </a>
               <a
                 href="#"
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground underline underline-offset-4"
-              >
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground underline underline-offset-4">
                 Book a demo instead
               </a>
             </div>

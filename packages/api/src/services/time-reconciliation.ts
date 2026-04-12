@@ -1,4 +1,4 @@
-import type { DbClient } from "./types.js";
+import type { DbClient } from './types.js';
 
 type PrismaClient = DbClient;
 
@@ -52,7 +52,7 @@ export async function computeTimeReconciliation(
   // Only compute for PER_HOUR and PER_DAY contracts
   // MONTHLY_FIXED: skip (expected = fixed rate regardless of hours)
   // PER_MILESTONE/PER_DELIVERABLE: skip (not time-based)
-  if (contract.rateType !== "PER_HOUR" && contract.rateType !== "PER_DAY") {
+  if (contract.rateType !== 'PER_HOUR' && contract.rateType !== 'PER_DAY') {
     return null;
   }
 
@@ -63,7 +63,7 @@ export async function computeTimeReconciliation(
       organizationId,
       contractId,
       entryDate: { gte: periodStart, lte: periodEnd },
-      timesheet: { status: "APPROVED" },
+      timesheet: { status: 'APPROVED' },
     },
     _sum: { minutes: true },
   });
@@ -78,16 +78,16 @@ export async function computeTimeReconciliation(
   });
   const settings = (org.settingsJson as Record<string, unknown>) ?? {};
   const thresholdPercent =
-    typeof settings.timeDeviationThresholdPercent === "number"
+    typeof settings.timeDeviationThresholdPercent === 'number'
       ? settings.timeDeviationThresholdPercent
       : 10;
-  const hoursPerDay = typeof settings.timeHoursPerDay === "number" ? settings.timeHoursPerDay : 8;
+  const hoursPerDay = typeof settings.timeHoursPerDay === 'number' ? settings.timeHoursPerDay : 8;
 
   // 4. Calculate expected amount
   //    PER_HOUR: (minutes * rateMinor) / 60
   //    PER_DAY: (minutes / (hoursPerDay * 60)) * rateMinor
   let expectedAmountMinor: number;
-  if (contract.rateType === "PER_HOUR") {
+  if (contract.rateType === 'PER_HOUR') {
     expectedAmountMinor = Math.round((approvedMinutes * contract.rateValueMinor) / 60);
   } else {
     // PER_DAY

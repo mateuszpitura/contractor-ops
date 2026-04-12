@@ -1,37 +1,37 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { FileText } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { parseAsString, useQueryState } from "nuqs";
-import { Suspense, useEffect, useState } from "react";
-import { ContractSidePanel } from "@/components/contracts/contract-side-panel";
-import type { ContractRow } from "@/components/contracts/contract-table/columns";
-import { ContractDataTable } from "@/components/contracts/contract-table/data-table";
-import { ContractWizardDialog } from "@/components/contracts/contract-wizard/wizard-dialog";
-import { ImportWizardDialog } from "@/components/import/import-wizard-dialog";
-import { AnimateIn } from "@/components/shared/animate-in";
-import { EmptyState } from "@/components/shared/empty-state";
-import { PageHeader } from "@/components/shared/page-header";
-import { Skeleton } from "@/components/ui/skeleton";
-import { trpc } from "@/trpc/init";
+import { useQuery } from '@tanstack/react-query';
+import { FileText } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { parseAsString, useQueryState } from 'nuqs';
+import { Suspense, useEffect, useState } from 'react';
+import { ContractSidePanel } from '@/components/contracts/contract-side-panel';
+import type { ContractRow } from '@/components/contracts/contract-table/columns';
+import { ContractDataTable } from '@/components/contracts/contract-table/data-table';
+import { ContractWizardDialog } from '@/components/contracts/contract-wizard/wizard-dialog';
+import { ImportWizardDialog } from '@/components/import/import-wizard-dialog';
+import { AnimateIn } from '@/components/shared/animate-in';
+import { EmptyState } from '@/components/shared/empty-state';
+import { PageHeader } from '@/components/shared/page-header';
+import { Skeleton } from '@/components/ui/skeleton';
+import { trpc } from '@/trpc/init';
 
 /**
  * Inner contract page content that uses nuqs (requires useSearchParams).
  * Wrapped in Suspense at the page level.
  */
 function ContractsContent() {
-  const t = useTranslations("Contracts");
-  const te = useTranslations("EmptyStates");
+  const t = useTranslations('Contracts');
+  const te = useTranslations('EmptyStates');
 
   const [selectedContract, setSelectedContract] = useState<ContractRow | null>(null);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [importWizardOpen, setImportWizardOpen] = useState(false);
-  const [action, setAction] = useQueryState("action", parseAsString);
+  const [action, setAction] = useQueryState('action', parseAsString);
 
   useEffect(() => {
-    if (action === "new") {
+    if (action === 'new') {
       setWizardOpen(true);
       void setAction(null);
     }
@@ -60,14 +60,14 @@ function ContractsContent() {
   if (!isCountLoading && contractTotal === 0) {
     return (
       <div className="space-y-6">
-        <PageHeader title={t("pageTitle")} description={t("pageDescription")} />
+        <PageHeader title={t('pageTitle')} description={t('pageDescription')} />
         <EmptyState
           icon={FileText}
-          heading={te("contracts.heading")}
-          body={te("contracts.body")}
-          primaryAction={{ label: te("contracts.cta"), onClick: handleNewContract }}
+          heading={te('contracts.heading')}
+          body={te('contracts.body')}
+          primaryAction={{ label: te('contracts.cta'), onClick: handleNewContract }}
           prerequisiteMissing={contractorCount === 0}
-          prerequisiteAction={{ label: te("prerequisite.cta"), href: "/contractors" }}
+          prerequisiteAction={{ label: te('prerequisite.cta'), href: '/contractors' }}
         />
         <ContractWizardDialog open={wizardOpen} onOpenChange={setWizardOpen} />
       </div>
@@ -78,7 +78,7 @@ function ContractsContent() {
     <div className="space-y-6">
       {/* Page header */}
       <AnimateIn delay={0}>
-        <PageHeader title={t("pageTitle")} description={t("pageDescription")} />
+        <PageHeader title={t('pageTitle')} description={t('pageDescription')} />
       </AnimateIn>
 
       {/* Data table */}
@@ -126,8 +126,7 @@ function ContractsLoading() {
           {Array.from({ length: 8 }).map((_, i) => (
             <div
               key={`skel-${i}`}
-              className="flex items-center gap-4 px-4 py-3 border-b last:border-b-0"
-            >
+              className="flex items-center gap-4 px-4 py-3 border-b last:border-b-0">
               <Skeleton className="h-4 w-4" />
               <Skeleton className="h-4 w-40" />
               <Skeleton className="h-4 w-24" />

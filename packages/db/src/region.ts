@@ -1,11 +1,11 @@
-import type { PrismaClient } from "../generated/prisma/client/index.js";
-import { createPrismaClientForUrl } from "./client.js";
+import type { PrismaClient } from '../generated/prisma/client/index.js';
+import { createPrismaClientForUrl } from './client.js';
 
 // ---------------------------------------------------------------------------
 // Supported Regions
 // ---------------------------------------------------------------------------
 
-export const SUPPORTED_REGIONS = ["EU", "ME"] as const;
+export const SUPPORTED_REGIONS = ['EU', 'ME'] as const;
 export type DataRegion = (typeof SUPPORTED_REGIONS)[number];
 
 // ---------------------------------------------------------------------------
@@ -13,8 +13,8 @@ export type DataRegion = (typeof SUPPORTED_REGIONS)[number];
 // ---------------------------------------------------------------------------
 
 const REGION_ENV_MAP: Record<DataRegion, string> = {
-  EU: "DATABASE_URL_EU",
-  ME: "DATABASE_URL_ME",
+  EU: 'DATABASE_URL_EU',
+  ME: 'DATABASE_URL_ME',
 };
 
 // ---------------------------------------------------------------------------
@@ -42,7 +42,7 @@ function getClientPool(): Map<DataRegion, PrismaClient> {
 export function getRegionalClient(region: string): PrismaClient {
   if (!SUPPORTED_REGIONS.includes(region as DataRegion)) {
     throw new Error(
-      `Unsupported data region: ${region}. Supported: ${SUPPORTED_REGIONS.join(", ")}`,
+      `Unsupported data region: ${region}. Supported: ${SUPPORTED_REGIONS.join(', ')}`,
     );
   }
 

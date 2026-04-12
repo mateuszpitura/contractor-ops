@@ -10,7 +10,7 @@
  * use `trpc.peppol` directly.
  */
 
-import { trpc } from "@/trpc/init";
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Types matching tRPC router output

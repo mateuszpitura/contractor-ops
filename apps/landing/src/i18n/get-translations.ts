@@ -1,4 +1,4 @@
-import type { Locale } from "./config";
+import type { Locale } from './config';
 
 /**
  * Load translations for a given locale.

@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { trpc } from "@/trpc/init";
-import { JiraProjectMappingDialog } from "./jira-project-mapping-dialog";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { trpc } from '@/trpc/init';
+import { JiraProjectMappingDialog } from './jira-project-mapping-dialog';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -32,7 +32,7 @@ interface JiraTaskConfigProps {
 // ---------------------------------------------------------------------------
 
 export function JiraTaskConfig({ taskTemplateId }: JiraTaskConfigProps) {
-  const t = useTranslations("Integrations.jira.taskConfig");
+  const t = useTranslations('Integrations.jira.taskConfig');
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [jiraEnabled, setJiraEnabled] = useState(false);
@@ -64,13 +64,13 @@ export function JiraTaskConfig({ taskTemplateId }: JiraTaskConfigProps) {
   const saveMutation = useMutation({
     ...trpc.jira.saveTaskConfig.mutationOptions(),
     onSuccess: () => {
-      toast.success(t("configSaved"));
+      toast.success(t('configSaved'));
       queryClient.invalidateQueries({
         queryKey: trpc.jira.getTaskConfig.queryKey({ taskTemplateId }),
       });
     },
     onError: () => {
-      toast.error(t("configSaveFailed"));
+      toast.error(t('configSaveFailed'));
       // Revert toggle
       setJiraEnabled(config?.jiraEnabled ?? false);
     },
@@ -83,7 +83,7 @@ export function JiraTaskConfig({ taskTemplateId }: JiraTaskConfigProps) {
   const mappingSummary =
     hasMappingConfigured && config?.jiraProjectName && config?.jiraIssueTypeName
       ? `${config.jiraProjectName} / ${config.jiraIssueTypeName}`
-      : t("notConfigured");
+      : t('notConfigured');
 
   function handleToggle(checked: boolean) {
     if (!hasMappingConfigured) return;
@@ -113,18 +113,18 @@ export function JiraTaskConfig({ taskTemplateId }: JiraTaskConfigProps) {
             disabled={!hasMappingConfigured || saveMutation.isPending}
           />
           <Label htmlFor={`jira-toggle-${taskTemplateId}`} className="cursor-pointer text-sm">
-            {t("enableToggle")}
+            {t('enableToggle')}
           </Label>
         </div>
 
         {/* Mapping summary */}
-        <span className={`flex-1 text-sm ${hasMappingConfigured ? "" : "text-muted-foreground"}`}>
+        <span className={`flex-1 text-sm ${hasMappingConfigured ? '' : 'text-muted-foreground'}`}>
           {mappingSummary}
         </span>
 
         {/* Configure button */}
         <Button variant="ghost" size="sm" onClick={() => setDialogOpen(true)}>
-          {t("configure")}
+          {t('configure')}
         </Button>
       </div>
 

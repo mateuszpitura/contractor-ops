@@ -1,23 +1,23 @@
-import type { HttpHandler } from "msw";
-import type { HandlerOptions } from "../types.js";
-import { autentiHandlers } from "./autenti.js";
-import { claudeOcrHandlers } from "./claude-ocr.js";
-import { clockifyHandlers } from "./clockify.js";
-import { confluenceHandlers } from "./confluence.js";
-import { docusignHandlers } from "./docusign.js";
-import { googleCalendarHandlers } from "./google-calendar.js";
-import { googleWorkspaceHandlers } from "./google-workspace.js";
-import { jiraHandlers } from "./jira.js";
-import { ksefHandlers } from "./ksef.js";
-import { linearHandlers } from "./linear.js";
-import { notionHandlers } from "./notion.js";
-import { outlookCalendarHandlers } from "./outlook-calendar.js";
-import { qstashHandlers } from "./qstash.js";
-import { r2Handlers } from "./r2.js";
-import { resendHandlers } from "./resend.js";
-import { slackHandlers } from "./slack.js";
-import { stripeHandlers } from "./stripe.js";
-import { upstashRedisHandlers } from "./upstash-redis.js";
+import type { HttpHandler } from 'msw';
+import type { HandlerOptions } from '../types.js';
+import { autentiHandlers } from './autenti.js';
+import { claudeOcrHandlers } from './claude-ocr.js';
+import { clockifyHandlers } from './clockify.js';
+import { confluenceHandlers } from './confluence.js';
+import { docusignHandlers } from './docusign.js';
+import { googleCalendarHandlers } from './google-calendar.js';
+import { googleWorkspaceHandlers } from './google-workspace.js';
+import { jiraHandlers } from './jira.js';
+import { ksefHandlers } from './ksef.js';
+import { linearHandlers } from './linear.js';
+import { notionHandlers } from './notion.js';
+import { outlookCalendarHandlers } from './outlook-calendar.js';
+import { qstashHandlers } from './qstash.js';
+import { r2Handlers } from './r2.js';
+import { resendHandlers } from './resend.js';
+import { slackHandlers } from './slack.js';
+import { stripeHandlers } from './stripe.js';
+import { upstashRedisHandlers } from './upstash-redis.js';
 
 /**
  * All handler factories indexed by provider name.
@@ -50,7 +50,7 @@ export type ProviderName = keyof typeof handlersByProvider;
  * Get all handlers from all providers.
  */
 export function allHandlers(options?: HandlerOptions): HttpHandler[] {
-  return Object.values(handlersByProvider).flatMap((factory) => factory(options));
+  return Object.values(handlersByProvider).flatMap(factory => factory(options));
 }
 
 /**
@@ -61,10 +61,10 @@ export function allHandlers(options?: HandlerOptions): HttpHandler[] {
  * ```
  */
 export function selectHandlers(providers: ProviderName[], options?: HandlerOptions): HttpHandler[] {
-  return providers.flatMap((name) => handlersByProvider[name](options));
+  return providers.flatMap(name => handlersByProvider[name](options));
 }
 
-export { clearRedisStore } from "./upstash-redis.js";
+export { clearRedisStore } from './upstash-redis.js';
 // Re-export individual factories for direct use
 export {
   autentiHandlers,

@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { ChevronDown, Info } from "lucide-react";
-import { toast } from "sonner";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
+import { ChevronDown, Info } from 'lucide-react';
+import { toast } from 'sonner';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { trpc } from "@/trpc/init";
+} from '@/components/ui/dropdown-menu';
+import { trpc } from '@/trpc/init';
 
 interface ReverseChargeBannerProps {
   invoiceId: string;
@@ -25,7 +25,7 @@ export function ReverseChargeBanner({
 }: ReverseChargeBannerProps) {
   const toggleMutation = trpc.invoice.toggleReverseCharge.useMutation({
     onSuccess: (_, vars) => {
-      toast.success(vars.isReverseCharge ? "Reverse charge applied" : "Reverse charge removed");
+      toast.success(vars.isReverseCharge ? 'Reverse charge applied' : 'Reverse charge removed');
       onToggle?.(vars.isReverseCharge);
     },
   });
@@ -53,8 +53,7 @@ export function ReverseChargeBanner({
                   invoiceId,
                   isReverseCharge: false,
                 })
-              }
-            >
+              }>
               Remove reverse charge
             </DropdownMenuItem>
             <DropdownMenuItem disabled>Keep reverse charge</DropdownMenuItem>

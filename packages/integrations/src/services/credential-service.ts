@@ -1,12 +1,12 @@
-import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
-import type { CredentialBlob } from "../types/credentials.js";
+import { createCipheriv, createDecipheriv, randomBytes } from 'node:crypto';
+import type { CredentialBlob } from '../types/credentials.js';
 
 // ---------------------------------------------------------------------------
 // AES-256-GCM Credential Encryption
 // Per D-01/D-02: Per-provider encryption keys for credential blobs
 // ---------------------------------------------------------------------------
 
-const ALGORITHM = "aes-256-gcm";
+const ALGORITHM = 'aes-256-gcm';
 const IV_LENGTH = 12;
 const _AUTH_TAG_LENGTH = 16;
 
@@ -28,7 +28,7 @@ export function getProviderEncryptionKey(providerSlug: string): Buffer {
         `Each integration provider requires its own encryption key.`,
     );
   }
-  return Buffer.from(key, "hex");
+  return Buffer.from(key, 'hex');
 }
 
 /**
@@ -45,12 +45,12 @@ export function encryptCredentials(blob: CredentialBlob, providerSlug: string): 
   const plaintext = JSON.stringify(blob);
 
   const cipher = createCipheriv(ALGORITHM, key, iv);
-  let encrypted = cipher.update(plaintext, "utf8", "hex");
-  encrypted += cipher.final("hex");
+  let encrypted = cipher.update(plaintext, 'utf8', 'hex');
+  encrypted += cipher.final('hex');
 
   const authTag = cipher.getAuthTag();
 
-  return `${iv.toString("hex")}:${authTag.toString("hex")}:${encrypted}`;
+  return `${iv.toString('hex')}:${authTag.toString('hex')}:${encrypted}`;
 }
 
 /**
@@ -63,21 +63,21 @@ export function encryptCredentials(blob: CredentialBlob, providerSlug: string): 
  * @throws Error if the format is invalid or decryption fails
  */
 export function decryptCredentials(encrypted: string, providerSlug: string): CredentialBlob {
-  const parts = encrypted.split(":");
+  const parts = encrypted.split(':');
   if (parts.length !== 3) {
-    throw new Error("Invalid encrypted credentials format. Expected iv:authTag:ciphertext");
+    throw new Error('Invalid encrypted credentials format. Expected iv:authTag:ciphertext');
   }
 
   const [ivHex, authTagHex, ciphertext] = parts as [string, string, string];
   const key = getProviderEncryptionKey(providerSlug);
-  const iv = Buffer.from(ivHex, "hex");
-  const authTag = Buffer.from(authTagHex, "hex");
+  const iv = Buffer.from(ivHex, 'hex');
+  const authTag = Buffer.from(authTagHex, 'hex');
 
   const decipher = createDecipheriv(ALGORITHM, key, iv);
   decipher.setAuthTag(authTag);
 
-  let decrypted = decipher.update(ciphertext, "hex", "utf8");
-  decrypted += decipher.final("utf8");
+  let decrypted = decipher.update(ciphertext, 'hex', 'utf8');
+  decrypted += decipher.final('utf8');
 
   return JSON.parse(decrypted) as CredentialBlob;
 }

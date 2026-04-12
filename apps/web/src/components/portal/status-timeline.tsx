@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { Check, X } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
+import { Check, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -11,11 +11,11 @@ import { cn } from "@/lib/utils";
 
 function getSteps(t: (key: string) => string) {
   return [
-    { key: "submitted", label: t("submitted") },
-    { key: "review", label: t("inReview") },
-    { key: "approved", label: t("approved") },
-    { key: "scheduled", label: t("paymentScheduled") },
-    { key: "paid", label: t("paid") },
+    { key: 'submitted', label: t('submitted') },
+    { key: 'review', label: t('inReview') },
+    { key: 'approved', label: t('approved') },
+    { key: 'scheduled', label: t('paymentScheduled') },
+    { key: 'paid', label: t('paid') },
   ] as const;
 }
 
@@ -35,10 +35,10 @@ interface StatusTimelineProps {
 // ---------------------------------------------------------------------------
 
 function getActiveStep(props: StatusTimelineProps): number {
-  if (props.paymentStatus === "PAID") return 4;
-  if (props.paymentStatus === "IN_RUN") return 3;
-  if (props.approvalStatus === "APPROVED") return 2;
-  if (props.status === "UNDER_REVIEW" || props.status === "APPROVAL_PENDING") return 1;
+  if (props.paymentStatus === 'PAID') return 4;
+  if (props.paymentStatus === 'IN_RUN') return 3;
+  if (props.approvalStatus === 'APPROVED') return 2;
+  if (props.status === 'UNDER_REVIEW' || props.status === 'APPROVAL_PENDING') return 1;
   return 0; // RECEIVED = submitted
 }
 
@@ -106,25 +106,24 @@ function DesktopTimeline({
   rejected: boolean;
   steps: ReturnType<typeof getSteps>;
 }) {
-  const tAria = useTranslations("Common.aria");
+  const tAria = useTranslations('Common.aria');
   return (
-    <div className="hidden items-center md:flex" role="list" aria-label={tAria("statusTimeline")}>
+    <div className="hidden items-center md:flex" role="list" aria-label={tAria('statusTimeline')}>
       {steps.map((step, i) => (
         <div key={step.key} className="flex items-center" role="listitem">
           <div className="flex flex-col items-center gap-1.5">
             <StepCircle index={i} activeIndex={activeIndex} rejected={rejected} />
             <span
               className={cn(
-                "text-[13px] whitespace-nowrap",
+                'text-[13px] whitespace-nowrap',
                 rejected && i === 1
-                  ? "text-destructive font-medium"
+                  ? 'text-destructive font-medium'
                   : i < activeIndex
-                    ? "text-green-700 dark:text-green-400"
+                    ? 'text-green-700 dark:text-green-400'
                     : i === activeIndex && !rejected
-                      ? "text-primary font-medium"
-                      : "text-muted-foreground",
-              )}
-            >
+                      ? 'text-primary font-medium'
+                      : 'text-muted-foreground',
+              )}>
               {step.label}
             </span>
           </div>
@@ -132,8 +131,8 @@ function DesktopTimeline({
           {i < steps.length - 1 && (
             <div
               className={cn(
-                "mx-2 h-0.5 w-12 flex-1 min-w-8",
-                i < activeIndex ? "bg-green-600" : "bg-border",
+                'mx-2 h-0.5 w-12 flex-1 min-w-8',
+                i < activeIndex ? 'bg-green-600' : 'bg-border',
               )}
             />
           )}
@@ -156,9 +155,9 @@ function MobileTimeline({
   rejected: boolean;
   steps: ReturnType<typeof getSteps>;
 }) {
-  const tAria = useTranslations("Common.aria");
+  const tAria = useTranslations('Common.aria');
   return (
-    <div className="flex flex-col md:hidden" role="list" aria-label={tAria("statusTimeline")}>
+    <div className="flex flex-col md:hidden" role="list" aria-label={tAria('statusTimeline')}>
       {steps.map((step, i) => (
         <div key={step.key} className="flex items-start" role="listitem">
           <div className="flex flex-col items-center">
@@ -166,22 +165,21 @@ function MobileTimeline({
             {/* Vertical connector line */}
             {i < steps.length - 1 && (
               <div
-                className={cn("my-1 w-0.5 h-6", i < activeIndex ? "bg-green-600" : "bg-border")}
+                className={cn('my-1 w-0.5 h-6', i < activeIndex ? 'bg-green-600' : 'bg-border')}
               />
             )}
           </div>
           <span
             className={cn(
-              "ms-3 mt-0.5 text-[13px]",
+              'ms-3 mt-0.5 text-[13px]',
               rejected && i === 1
-                ? "text-destructive font-medium"
+                ? 'text-destructive font-medium'
                 : i < activeIndex
-                  ? "text-green-700 dark:text-green-400"
+                  ? 'text-green-700 dark:text-green-400'
                   : i === activeIndex && !rejected
-                    ? "text-primary font-medium"
-                    : "text-muted-foreground",
-            )}
-          >
+                    ? 'text-primary font-medium'
+                    : 'text-muted-foreground',
+            )}>
             {step.label}
           </span>
         </div>
@@ -195,7 +193,7 @@ function MobileTimeline({
 // ---------------------------------------------------------------------------
 
 export function StatusTimeline(props: StatusTimelineProps) {
-  const t = useTranslations("Portal.statusTimeline");
+  const t = useTranslations('Portal.statusTimeline');
   const activeIndex = getActiveStep(props);
   const rejected = isRejected(props);
   const steps = getSteps(t);

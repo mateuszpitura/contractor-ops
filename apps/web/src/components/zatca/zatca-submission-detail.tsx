@@ -1,22 +1,22 @@
-"use client";
+'use client';
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ChevronDown, Copy, FileCode, Loader2, RefreshCw } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { ChevronDown, Copy, FileCode, Loader2, RefreshCw } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
-import { Button } from "@/components/ui/button";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Button } from '@/components/ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import type { ZatcaBadgeStatus } from "./zatca-status-badge";
-import { ZatcaStatusBadge } from "./zatca-status-badge";
-import { zatcaTrpc } from "./zatca-trpc";
+} from '@/components/ui/dialog';
+import type { ZatcaBadgeStatus } from './zatca-status-badge';
+import { ZatcaStatusBadge } from './zatca-status-badge';
+import { zatcaTrpc } from './zatca-trpc';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -50,14 +50,14 @@ interface ZatcaSubmissionDetailProps {
 // ---------------------------------------------------------------------------
 
 function truncateHash(hash?: string | null, length = 8): string {
-  if (!hash) return "N/A";
+  if (!hash) return 'N/A';
   return hash.length > length ? `${hash.slice(0, length)}...` : hash;
 }
 
 function copyToClipboard(text: string, label: string) {
   navigator.clipboard.writeText(text).then(
     () => toast.success(`${label} copied to clipboard`),
-    () => toast.error("Failed to copy"),
+    () => toast.error('Failed to copy'),
   );
 }
 
@@ -84,13 +84,13 @@ export function ZatcaSubmissionDetail({
   const resubmitMutation = useMutation({
     ...zatcaTrpc.resubmit.mutationOptions(),
     onSuccess: () => {
-      toast.success("Invoice queued for ZATCA resubmission");
+      toast.success('Invoice queued for ZATCA resubmission');
       queryClient.invalidateQueries({
         queryKey: zatcaTrpc.getStatus.queryKey(),
       });
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Failed to resubmit");
+      toast.error(error.message || 'Failed to resubmit');
     },
   });
 
@@ -100,15 +100,15 @@ export function ZatcaSubmissionDetail({
     submission.rejectedAt ??
     submission.submittedAt;
 
-  const isRejected = submission.zatcaStatus === "REJECTED";
+  const isRejected = submission.zatcaStatus === 'REJECTED';
 
   // Determine invoice type label
   const responseData = submission.zatcaResponse as Record<string, unknown> | undefined;
   const invoiceType = responseData?.invoiceType as string | undefined;
-  const isB2B = invoiceType === "standard" || submission.zatcaStatus === "CLEARED";
+  const isB2B = invoiceType === 'standard' || submission.zatcaStatus === 'CLEARED';
   const typeLabel = isB2B
-    ? "Standard Tax Invoice (B2B clearance)"
-    : "Simplified Tax Invoice (B2C reporting)";
+    ? 'Standard Tax Invoice (B2B clearance)'
+    : 'Simplified Tax Invoice (B2C reporting)';
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
@@ -116,7 +116,7 @@ export function ZatcaSubmissionDetail({
         <CollapsibleTrigger className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium hover:bg-muted/50 transition-colors">
           <span>ZATCA Submission Details</span>
           <ChevronDown
-            className={`h-4 w-4 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`}
+            className={`h-4 w-4 text-muted-foreground transition-transform ${open ? 'rotate-180' : ''}`}
             aria-hidden="true"
           />
         </CollapsibleTrigger>
@@ -131,16 +131,14 @@ export function ZatcaSubmissionDetail({
               <dd className="flex items-center gap-1.5">
                 <span
                   className="font-mono text-xs break-all"
-                  aria-label={`Invoice UUID: ${submission.zatcaUuid}`}
-                >
+                  aria-label={`Invoice UUID: ${submission.zatcaUuid}`}>
                   {submission.zatcaUuid}
                 </span>
                 <button
                   type="button"
-                  onClick={() => copyToClipboard(submission.zatcaUuid, "UUID")}
+                  onClick={() => copyToClipboard(submission.zatcaUuid, 'UUID')}
                   className="shrink-0 text-muted-foreground hover:text-foreground"
-                  aria-label="Copy UUID"
-                >
+                  aria-label="Copy UUID">
                   <Copy className="h-3 w-3" />
                 </button>
               </dd>
@@ -183,10 +181,9 @@ export function ZatcaSubmissionDetail({
                       </span>
                       <button
                         type="button"
-                        onClick={() => copyToClipboard(submission.previousHash!, "Previous hash")}
+                        onClick={() => copyToClipboard(submission.previousHash!, 'Previous hash')}
                         className="shrink-0 text-muted-foreground hover:text-foreground"
-                        aria-label="Copy previous hash"
-                      >
+                        aria-label="Copy previous hash">
                         <Copy className="h-3 w-3" />
                       </button>
                     </div>
@@ -204,10 +201,9 @@ export function ZatcaSubmissionDetail({
                       </span>
                       <button
                         type="button"
-                        onClick={() => copyToClipboard(submission.invoiceHash!, "Invoice hash")}
+                        onClick={() => copyToClipboard(submission.invoiceHash!, 'Invoice hash')}
                         className="shrink-0 text-muted-foreground hover:text-foreground"
-                        aria-label="Copy invoice hash"
-                      >
+                        aria-label="Copy invoice hash">
                         <Copy className="h-3 w-3" />
                       </button>
                     </div>
@@ -268,7 +264,7 @@ export function ZatcaSubmissionDetail({
                   <pre className="overflow-x-auto rounded-lg bg-muted/30 p-4 font-mono text-xs">
                     {responseData?.signedXml
                       ? String(responseData.signedXml)
-                      : "Signed XML not available. The XML is generated during submission processing."}
+                      : 'Signed XML not available. The XML is generated during submission processing.'}
                   </pre>
                 </DialogContent>
               </Dialog>
@@ -283,8 +279,7 @@ export function ZatcaSubmissionDetail({
                       invoiceId,
                     })
                   }
-                  disabled={resubmitMutation.isPending}
-                >
+                  disabled={resubmitMutation.isPending}>
                   {resubmitMutation.isPending ? (
                     <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" aria-hidden="true" />
                   ) : (

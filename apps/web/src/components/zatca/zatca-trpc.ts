@@ -10,7 +10,7 @@
  * use `trpc.zatca` directly.
  */
 
-import { trpc } from "@/trpc/init";
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Types matching tRPC router output
@@ -29,7 +29,7 @@ export interface ComplianceCheckResult {
   type: string;
   invoiceTypeCode: string;
   subtype: string;
-  status: "CLEARED" | "REPORTED" | "REJECTED" | "ERROR";
+  status: 'CLEARED' | 'REPORTED' | 'REJECTED' | 'ERROR';
   message?: string;
 }
 

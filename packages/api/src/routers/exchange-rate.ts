@@ -2,11 +2,11 @@ import {
   exchangeRateConvertSchema,
   exchangeRateLatestSchema,
   exchangeRateQuerySchema,
-} from "@contractor-ops/validators";
-import { router } from "../init.js";
-import { cronProcedure } from "../middleware/cron-trpc.js";
-import { tenantProcedure } from "../middleware/tenant.js";
-import { convertAmount, fetchAndStoreRates, getRate } from "../services/exchange-rate.js";
+} from '@contractor-ops/validators';
+import { router } from '../init.js';
+import { cronProcedure } from '../middleware/cron-trpc.js';
+import { tenantProcedure } from '../middleware/tenant.js';
+import { convertAmount, fetchAndStoreRates, getRate } from '../services/exchange-rate.js';
 
 export const exchangeRateRouter = router({
   /**
@@ -22,9 +22,9 @@ export const exchangeRateRouter = router({
           ...(input.dateTo ? { lte: input.dateTo } : {}),
         },
       },
-      orderBy: { date: "desc" },
+      orderBy: { date: 'desc' },
     });
-    return rates.map((r) => ({
+    return rates.map(r => ({
       date: r.date.toISOString().slice(0, 10),
       base: r.base,
       target: r.target,

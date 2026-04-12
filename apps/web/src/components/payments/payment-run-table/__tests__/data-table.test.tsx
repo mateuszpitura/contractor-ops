@@ -1,32 +1,32 @@
-import { render, screen, setup } from "@/test/test-utils";
-import type { PaymentRunRow } from "../columns";
-import { getColumns } from "../columns";
-import { PaymentRunDataTable } from "../data-table";
+import { render, screen, setup } from '@/test/test-utils';
+import type { PaymentRunRow } from '../columns';
+import { getColumns } from '../columns';
+import { PaymentRunDataTable } from '../data-table';
 
-vi.mock("../payment-run-badge", () => ({
+vi.mock('../payment-run-badge', () => ({
   PaymentRunBadge: ({ status }: any) => <span>{status}</span>,
 }));
 
 function makeRow(overrides: Partial<PaymentRunRow> = {}): PaymentRunRow {
   return {
-    id: "run-1",
-    runNumber: "PR-2026-001",
-    status: "DRAFT",
+    id: 'run-1',
+    runNumber: 'PR-2026-001',
+    status: 'DRAFT',
     createdAt: new Date().toISOString(),
     invoiceCount: 3,
     totalMinor: 300000,
-    currency: "PLN",
+    currency: 'PLN',
     exportFormat: null,
     exportedAt: null,
     ...overrides,
   };
 }
 
-describe("PaymentRunDataTable", () => {
+describe('PaymentRunDataTable', () => {
   const t = (key: string) => key;
   const columns = getColumns(t, {});
 
-  it("renders skeleton rows when loading", () => {
+  it('renders skeleton rows when loading', () => {
     render(
       <PaymentRunDataTable
         data={[]}
@@ -41,11 +41,11 @@ describe("PaymentRunDataTable", () => {
     );
 
     // Header row + 8 skeleton rows
-    const rows = screen.getAllByRole("row");
+    const rows = screen.getAllByRole('row');
     expect(rows.length).toBeGreaterThanOrEqual(9);
   });
 
-  it("renders data rows when not loading", () => {
+  it('renders data rows when not loading', () => {
     render(
       <PaymentRunDataTable
         data={[makeRow()]}
@@ -59,10 +59,10 @@ describe("PaymentRunDataTable", () => {
       />,
     );
 
-    expect(screen.getByText("PR-2026-001")).toBeInTheDocument();
+    expect(screen.getByText('PR-2026-001')).toBeInTheDocument();
   });
 
-  it("calls onRowClick when a row is clicked", async () => {
+  it('calls onRowClick when a row is clicked', async () => {
     const onRowClick = vi.fn();
     const row = makeRow();
     const { user } = setup(
@@ -78,11 +78,11 @@ describe("PaymentRunDataTable", () => {
       />,
     );
 
-    await user.click(screen.getByText("PR-2026-001"));
+    await user.click(screen.getByText('PR-2026-001'));
     expect(onRowClick).toHaveBeenCalledWith(row);
   });
 
-  it("shows pagination when hasNextPage or hasPreviousPage", () => {
+  it('shows pagination when hasNextPage or hasPreviousPage', () => {
     render(
       <PaymentRunDataTable
         data={[makeRow()]}
@@ -96,11 +96,11 @@ describe("PaymentRunDataTable", () => {
       />,
     );
 
-    expect(screen.getByRole("button", { name: /next/i })).toBeEnabled();
-    expect(screen.getByRole("button", { name: /previous/i })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /next/i })).toBeEnabled();
+    expect(screen.getByRole('button', { name: /previous/i })).toBeDisabled();
   });
 
-  it("hides pagination when no pages", () => {
+  it('hides pagination when no pages', () => {
     render(
       <PaymentRunDataTable
         data={[makeRow()]}
@@ -114,6 +114,6 @@ describe("PaymentRunDataTable", () => {
       />,
     );
 
-    expect(screen.queryByRole("button", { name: /next/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /next/i })).not.toBeInTheDocument();
   });
 });

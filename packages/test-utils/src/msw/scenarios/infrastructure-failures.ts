@@ -1,4 +1,4 @@
-import { delay, HttpResponse, http } from "msw";
+import { delay, HttpResponse, http } from 'msw';
 
 /**
  * Infrastructure failure scenarios for cache, storage, email, and OCR.
@@ -15,12 +15,12 @@ import { delay, HttpResponse, http } from "msw";
  */
 export function redisTimeoutHandlers() {
   return [
-    http.post("https://*.upstash.io", async () => {
+    http.post('https://*.upstash.io', async () => {
       await delay(30_000); // 30s timeout — will exceed any reasonable timeout
       return HttpResponse.json({ result: null });
     }),
 
-    http.post("https://*.upstash.io/pipeline", async () => {
+    http.post('https://*.upstash.io/pipeline', async () => {
       await delay(30_000);
       return HttpResponse.json([]);
     }),
@@ -33,11 +33,11 @@ export function redisTimeoutHandlers() {
  */
 export function redisCorruptResponseHandlers() {
   return [
-    http.post("https://*.upstash.io", async () => {
+    http.post('https://*.upstash.io', async () => {
       // Return non-JSON, malformed response
-      return new HttpResponse("WRONGTYPE Operation against a key holding the wrong kind of value", {
+      return new HttpResponse('WRONGTYPE Operation against a key holding the wrong kind of value', {
         status: 200,
-        headers: { "Content-Type": "text/plain" },
+        headers: { 'Content-Type': 'text/plain' },
       });
     }),
   ];
@@ -48,11 +48,11 @@ export function redisCorruptResponseHandlers() {
  */
 export function redisDownHandlers() {
   return [
-    http.post("https://*.upstash.io", () => {
-      return HttpResponse.json({ error: "Connection refused" }, { status: 503 });
+    http.post('https://*.upstash.io', () => {
+      return HttpResponse.json({ error: 'Connection refused' }, { status: 503 });
     }),
-    http.post("https://*.upstash.io/pipeline", () => {
-      return HttpResponse.json({ error: "Connection refused" }, { status: 503 });
+    http.post('https://*.upstash.io/pipeline', () => {
+      return HttpResponse.json({ error: 'Connection refused' }, { status: 503 });
     }),
   ];
 }
@@ -66,13 +66,13 @@ export function redisDownHandlers() {
  */
 export function r2ForbiddenHandlers() {
   return [
-    http.put("https://*.r2.cloudflarestorage.com/*", () => {
+    http.put('https://*.r2.cloudflarestorage.com/*', () => {
       return HttpResponse.xml(
         `<?xml version="1.0" encoding="UTF-8"?><Error><Code>AccessDenied</Code><Message>Access Denied</Message></Error>`,
         { status: 403 },
       );
     }),
-    http.get("https://*.r2.cloudflarestorage.com/*", () => {
+    http.get('https://*.r2.cloudflarestorage.com/*', () => {
       return HttpResponse.xml(
         `<?xml version="1.0" encoding="UTF-8"?><Error><Code>AccessDenied</Code><Message>Access Denied</Message></Error>`,
         { status: 403 },
@@ -86,21 +86,21 @@ export function r2ForbiddenHandlers() {
  */
 export function r2EmptyObjectHandlers() {
   return [
-    http.get("https://*.r2.cloudflarestorage.com/*", () => {
+    http.get('https://*.r2.cloudflarestorage.com/*', () => {
       return new HttpResponse(new Uint8Array(0), {
         status: 200,
         headers: {
-          "Content-Type": "application/pdf",
-          "Content-Length": "0",
+          'Content-Type': 'application/pdf',
+          'Content-Length': '0',
         },
       });
     }),
-    http.head("https://*.r2.cloudflarestorage.com/*", () => {
+    http.head('https://*.r2.cloudflarestorage.com/*', () => {
       return new HttpResponse(null, {
         status: 200,
         headers: {
-          "Content-Type": "application/pdf",
-          "Content-Length": "0",
+          'Content-Type': 'application/pdf',
+          'Content-Length': '0',
         },
       });
     }),
@@ -112,13 +112,13 @@ export function r2EmptyObjectHandlers() {
  */
 export function r2NotFoundHandlers() {
   return [
-    http.get("https://*.r2.cloudflarestorage.com/*", () => {
+    http.get('https://*.r2.cloudflarestorage.com/*', () => {
       return HttpResponse.xml(
         `<?xml version="1.0" encoding="UTF-8"?><Error><Code>NoSuchKey</Code><Message>The specified key does not exist.</Message></Error>`,
         { status: 404 },
       );
     }),
-    http.head("https://*.r2.cloudflarestorage.com/*", () => {
+    http.head('https://*.r2.cloudflarestorage.com/*', () => {
       return new HttpResponse(null, { status: 404 });
     }),
   ];
@@ -133,12 +133,12 @@ export function r2NotFoundHandlers() {
  */
 export function resendInvalidEmailHandlers() {
   return [
-    http.post("https://api.resend.com/emails", () => {
+    http.post('https://api.resend.com/emails', () => {
       return HttpResponse.json(
         {
           statusCode: 400,
-          message: "Invalid `to` field. The email address is not valid.",
-          name: "validation_error",
+          message: 'Invalid `to` field. The email address is not valid.',
+          name: 'validation_error',
         },
         { status: 400 },
       );
@@ -151,12 +151,12 @@ export function resendInvalidEmailHandlers() {
  */
 export function resendUnauthorizedHandlers() {
   return [
-    http.post("https://api.resend.com/emails", () => {
+    http.post('https://api.resend.com/emails', () => {
       return HttpResponse.json(
         {
           statusCode: 401,
-          message: "API key is invalid",
-          name: "authentication_error",
+          message: 'API key is invalid',
+          name: 'authentication_error',
         },
         { status: 401 },
       );
@@ -170,19 +170,19 @@ export function resendUnauthorizedHandlers() {
 export function resendBatchRateLimitHandlers() {
   let callCount = 0;
   return [
-    http.post("https://api.resend.com/emails", () => {
+    http.post('https://api.resend.com/emails', () => {
       callCount++;
       if (callCount > 1) {
         return HttpResponse.json(
           {
             statusCode: 429,
-            message: "Too many requests",
-            name: "rate_limit_exceeded",
+            message: 'Too many requests',
+            name: 'rate_limit_exceeded',
           },
-          { status: 429, headers: { "Retry-After": "10" } },
+          { status: 429, headers: { 'Retry-After': '10' } },
         );
       }
-      return HttpResponse.json({ id: "email-first-ok" });
+      return HttpResponse.json({ id: 'email-first-ok' });
     }),
   ];
 }
@@ -196,10 +196,10 @@ export function resendBatchRateLimitHandlers() {
  */
 export function ocrTimeoutHandlers() {
   return [
-    http.post("https://api.anthropic.com/v1/messages", async () => {
+    http.post('https://api.anthropic.com/v1/messages', async () => {
       await delay(120_000); // 2 min timeout
       return HttpResponse.json(
-        { type: "error", error: { type: "overloaded_error", message: "Overloaded" } },
+        { type: 'error', error: { type: 'overloaded_error', message: 'Overloaded' } },
         { status: 529 },
       );
     }),
@@ -211,14 +211,14 @@ export function ocrTimeoutHandlers() {
  */
 export function ocrCorruptPdfHandlers() {
   return [
-    http.post("https://api.anthropic.com/v1/messages", () => {
+    http.post('https://api.anthropic.com/v1/messages', () => {
       return HttpResponse.json(
         {
-          type: "error",
+          type: 'error',
           error: {
-            type: "invalid_request_error",
+            type: 'invalid_request_error',
             message:
-              "Could not process the provided document. The file appears to be corrupted or in an unsupported format.",
+              'Could not process the provided document. The file appears to be corrupted or in an unsupported format.',
           },
         },
         { status: 400 },
@@ -232,17 +232,17 @@ export function ocrCorruptPdfHandlers() {
  */
 export function ocrBlankPageHandlers() {
   return [
-    http.post("https://api.anthropic.com/v1/messages", () => {
+    http.post('https://api.anthropic.com/v1/messages', () => {
       return HttpResponse.json({
-        id: "msg_blank",
-        type: "message",
-        role: "assistant",
-        model: "claude-sonnet-4-5-20250514",
+        id: 'msg_blank',
+        type: 'message',
+        role: 'assistant',
+        model: 'claude-sonnet-4-5-20250514',
         content: [
           {
-            type: "tool_use",
-            id: "toolu_blank",
-            name: "extract_invoice_data",
+            type: 'tool_use',
+            id: 'toolu_blank',
+            name: 'extract_invoice_data',
             input: {
               invoiceNumber: { value: null, confidence: 0.0 },
               issueDate: { value: null, confidence: 0.0 },
@@ -260,7 +260,7 @@ export function ocrBlankPageHandlers() {
             },
           },
         ],
-        stop_reason: "tool_use",
+        stop_reason: 'tool_use',
         usage: { input_tokens: 100, output_tokens: 50 },
       });
     }),
@@ -276,9 +276,9 @@ export function ocrBlankPageHandlers() {
  */
 export function ksefAuthFailureHandlers() {
   return [
-    http.post("https://ksef-test.mf.gov.pl/api/v2/auth/challenge", () => {
+    http.post('https://ksef-test.mf.gov.pl/api/v2/auth/challenge', () => {
       return HttpResponse.json(
-        { error: "Invalid NIP", code: "AUTH_CHALLENGE_FAILED" },
+        { error: 'Invalid NIP', code: 'AUTH_CHALLENGE_FAILED' },
         { status: 400 },
       );
     }),
@@ -290,13 +290,13 @@ export function ksefAuthFailureHandlers() {
  */
 export function ksefQueryTimeoutHandlers() {
   return [
-    http.post("https://ksef-test.mf.gov.pl/api/v2/invoices/query/metadata", () => {
-      return HttpResponse.json({ queryId: "query-stuck" });
+    http.post('https://ksef-test.mf.gov.pl/api/v2/invoices/query/metadata', () => {
+      return HttpResponse.json({ queryId: 'query-stuck' });
     }),
-    http.get("https://ksef-test.mf.gov.pl/api/v2/invoices/query/:queryId/status", () => {
+    http.get('https://ksef-test.mf.gov.pl/api/v2/invoices/query/:queryId/status', () => {
       // Never completes — always PROCESSING
       return HttpResponse.json({
-        status: "PROCESSING",
+        status: 'PROCESSING',
         processingCode: 102,
       });
     }),
@@ -308,12 +308,12 @@ export function ksefQueryTimeoutHandlers() {
  */
 export function ksefQueryFailedHandlers() {
   return [
-    http.post("https://ksef-test.mf.gov.pl/api/v2/invoices/query/metadata", () => {
-      return HttpResponse.json({ queryId: "query-fail" });
+    http.post('https://ksef-test.mf.gov.pl/api/v2/invoices/query/metadata', () => {
+      return HttpResponse.json({ queryId: 'query-fail' });
     }),
-    http.get("https://ksef-test.mf.gov.pl/api/v2/invoices/query/:queryId/status", () => {
+    http.get('https://ksef-test.mf.gov.pl/api/v2/invoices/query/:queryId/status', () => {
       return HttpResponse.json({
-        status: "FAILED",
+        status: 'FAILED',
         processingCode: 500,
       });
     }),

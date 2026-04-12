@@ -1,5 +1,5 @@
-import { HttpResponse, http } from "msw";
-import { mockId, pastDate } from "../utils.js";
+import { HttpResponse, http } from 'msw';
+import { mockId, pastDate } from '../utils.js';
 
 /**
  * Handlers for testing pagination edge cases:
@@ -17,9 +17,9 @@ export function jiraPaginatedWithTokenExpiry() {
   let page2Attempts = 0;
 
   return [
-    http.get("https://api.atlassian.com/ex/jira/:cloudId/rest/api/3/search", ({ request }) => {
+    http.get('https://api.atlassian.com/ex/jira/:cloudId/rest/api/3/search', ({ request }) => {
       const url = new URL(request.url);
-      const startAt = parseInt(url.searchParams.get("startAt") ?? "0", 10);
+      const startAt = parseInt(url.searchParams.get('startAt') ?? '0', 10);
 
       // Page 1: success
       if (startAt === 0) {
@@ -32,7 +32,7 @@ export function jiraPaginatedWithTokenExpiry() {
             key: `TEST-${i + 1}`,
             fields: {
               summary: `Issue ${i + 1}`,
-              status: { id: "1", name: "To Do", statusCategory: { key: "new" } },
+              status: { id: '1', name: 'To Do', statusCategory: { key: 'new' } },
             },
           })),
         });
@@ -42,7 +42,7 @@ export function jiraPaginatedWithTokenExpiry() {
       if (startAt === 10) {
         page2Attempts++;
         if (page2Attempts === 1) {
-          return HttpResponse.json({ message: "Token expired" }, { status: 401 });
+          return HttpResponse.json({ message: 'Token expired' }, { status: 401 });
         }
         return HttpResponse.json({
           total: 30,
@@ -53,7 +53,7 @@ export function jiraPaginatedWithTokenExpiry() {
             key: `TEST-${i + 11}`,
             fields: {
               summary: `Issue ${i + 11}`,
-              status: { id: "3", name: "In Progress", statusCategory: { key: "indeterminate" } },
+              status: { id: '3', name: 'In Progress', statusCategory: { key: 'indeterminate' } },
             },
           })),
         });
@@ -69,19 +69,19 @@ export function jiraPaginatedWithTokenExpiry() {
           key: `TEST-${i + 21}`,
           fields: {
             summary: `Issue ${i + 21}`,
-            status: { id: "5", name: "Done", statusCategory: { key: "done" } },
+            status: { id: '5', name: 'Done', statusCategory: { key: 'done' } },
           },
         })),
       });
     }),
 
     // Token refresh succeeds
-    http.post("https://auth.atlassian.com/oauth/token", () => {
+    http.post('https://auth.atlassian.com/oauth/token', () => {
       return HttpResponse.json({
         access_token: `refreshed_${mockId()}`,
         refresh_token: `new_refresh_${mockId()}`,
         expires_in: 3600,
-        token_type: "Bearer",
+        token_type: 'Bearer',
       });
     }),
   ];
@@ -93,7 +93,7 @@ export function jiraPaginatedWithTokenExpiry() {
  */
 export function jiraEmptyPagesWithNonZeroTotal() {
   return [
-    http.get("https://api.atlassian.com/ex/jira/:cloudId/rest/api/3/search", () => {
+    http.get('https://api.atlassian.com/ex/jira/:cloudId/rest/api/3/search', () => {
       return HttpResponse.json({
         total: 5,
         startAt: 0,
@@ -111,10 +111,10 @@ export function jiraEmptyPagesWithNonZeroTotal() {
 export function clockifyPaginated() {
   return [
     http.get(
-      "https://api.clockify.me/api/v1/workspaces/:workspaceId/user/:userId/time-entries",
+      'https://api.clockify.me/api/v1/workspaces/:workspaceId/user/:userId/time-entries',
       ({ request }) => {
         const url = new URL(request.url);
-        const page = parseInt(url.searchParams.get("page") ?? "1", 10);
+        const page = parseInt(url.searchParams.get('page') ?? '1', 10);
 
         if (page <= 2) {
           return HttpResponse.json(
@@ -124,14 +124,14 @@ export function clockifyPaginated() {
               timeInterval: {
                 start: pastDate(page * 24 + i),
                 end: pastDate(page * 24 + i - 1),
-                duration: "PT1H0M0S",
+                duration: 'PT1H0M0S',
               },
-              projectId: "proj-001",
-              project: { name: "Test Project" },
+              projectId: 'proj-001',
+              project: { name: 'Test Project' },
               taskId: null,
               billable: true,
-              userId: "user-001",
-              workspaceId: "ws-001",
+              userId: 'user-001',
+              workspaceId: 'ws-001',
             })),
           );
         }
@@ -149,30 +149,30 @@ export function clockifyPaginated() {
  */
 export function googleWorkspacePaginated() {
   return [
-    http.get("https://admin.googleapis.com/admin/directory/v1/users", ({ request }) => {
+    http.get('https://admin.googleapis.com/admin/directory/v1/users', ({ request }) => {
       const url = new URL(request.url);
-      const pageToken = url.searchParams.get("pageToken");
+      const pageToken = url.searchParams.get('pageToken');
 
       if (!pageToken) {
         // Page 1
         return HttpResponse.json({
           users: [
             {
-              id: "user-001",
-              primaryEmail: "alice@company.com",
-              name: { givenName: "Alice", familyName: "A", fullName: "Alice A" },
+              id: 'user-001',
+              primaryEmail: 'alice@company.com',
+              name: { givenName: 'Alice', familyName: 'A', fullName: 'Alice A' },
               suspended: false,
               isAdmin: false,
             },
             {
-              id: "user-002",
-              primaryEmail: "bob@company.com",
-              name: { givenName: "Bob", familyName: "B", fullName: "Bob B" },
+              id: 'user-002',
+              primaryEmail: 'bob@company.com',
+              name: { givenName: 'Bob', familyName: 'B', fullName: 'Bob B' },
               suspended: false,
               isAdmin: false,
             },
           ],
-          nextPageToken: "page2token",
+          nextPageToken: 'page2token',
         });
       }
 
@@ -180,9 +180,9 @@ export function googleWorkspacePaginated() {
       return HttpResponse.json({
         users: [
           {
-            id: "user-003",
-            primaryEmail: "carol@company.com",
-            name: { givenName: "Carol", familyName: "C", fullName: "Carol C" },
+            id: 'user-003',
+            primaryEmail: 'carol@company.com',
+            name: { givenName: 'Carol', familyName: 'C', fullName: 'Carol C' },
             suspended: true,
             isAdmin: false,
           },
@@ -198,8 +198,8 @@ export function googleWorkspacePaginated() {
  */
 export function googleWorkspaceGroupsNotFound() {
   return [
-    http.get("https://admin.googleapis.com/admin/directory/v1/groups", () => {
-      return HttpResponse.json({ error: { code: 404, message: "Not Found" } }, { status: 404 });
+    http.get('https://admin.googleapis.com/admin/directory/v1/groups', () => {
+      return HttpResponse.json({ error: { code: 404, message: 'Not Found' } }, { status: 404 });
     }),
   ];
 }

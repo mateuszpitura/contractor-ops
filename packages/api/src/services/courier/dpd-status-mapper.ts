@@ -12,15 +12,15 @@
  * to the same ShipmentStatus.
  */
 export const DPD_STATUS_MAP: Record<string, string> = {
-  DEP_ACCEPTED: "CREATED",
-  DEP_COLLECTED: "PICKED_UP",
-  DEP_IN_TRANSIT: "IN_TRANSIT",
-  DEP_IN_DELIVERY: "OUT_FOR_DELIVERY",
-  DEP_DELIVERED: "DELIVERED",
-  DEP_RETURNED: "RETURNED",
-  DEP_REFUSED: "FAILED",
-  DEP_LOST: "FAILED",
-  DEP_PICKUP_ARRANGED: "LABEL_GENERATED",
+  DEP_ACCEPTED: 'CREATED',
+  DEP_COLLECTED: 'PICKED_UP',
+  DEP_IN_TRANSIT: 'IN_TRANSIT',
+  DEP_IN_DELIVERY: 'OUT_FOR_DELIVERY',
+  DEP_DELIVERED: 'DELIVERED',
+  DEP_RETURNED: 'RETURNED',
+  DEP_REFUSED: 'FAILED',
+  DEP_LOST: 'FAILED',
+  DEP_PICKUP_ARRANGED: 'LABEL_GENERATED',
 };
 
 /**
@@ -42,4 +42,4 @@ export function mapDpdStatus(rawStatus: string): string | null {
  * Statuses that should trigger user notifications.
  * Intermediate statuses update silently; only terminal/critical events notify.
  */
-export const DPD_NOTIFICATION_STATUSES = ["DELIVERED", "FAILED", "RETURNED"] as const;
+export const DPD_NOTIFICATION_STATUSES = ['DELIVERED', 'FAILED', 'RETURNED'] as const;

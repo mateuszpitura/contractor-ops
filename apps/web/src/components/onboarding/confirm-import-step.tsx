@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import type { FetchProjectsOutput, MergedPerson } from "@contractor-ops/validators";
-import { useMutation } from "@tanstack/react-query";
-import { FolderKanban, Users } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useCallback, useMemo } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { trpc } from "@/trpc/init";
-import { ImportProgressTracker } from "./import-progress-tracker";
-import type { PersonSelection, ProjectSelection } from "./import-wizard";
+import type { FetchProjectsOutput, MergedPerson } from '@contractor-ops/validators';
+import { useMutation } from '@tanstack/react-query';
+import { FolderKanban, Users } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useMemo } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { trpc } from '@/trpc/init';
+import { ImportProgressTracker } from './import-progress-tracker';
+import type { PersonSelection, ProjectSelection } from './import-wizard';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -36,13 +36,13 @@ export function ConfirmImportStep({
   jobId,
   onJobIdChange,
 }: ConfirmImportStepProps) {
-  const t = useTranslations("OnboardingImport.step4");
+  const t = useTranslations('OnboardingImport.step4');
 
   // Compute people to import (not skipped, not existing)
   const peopleToImport = useMemo(() => {
-    return mergedPeople.filter((p) => {
+    return mergedPeople.filter(p => {
       const sel = personSelections.get(p.email);
-      return sel && !sel.skip && p.status !== "exists";
+      return sel && !sel.skip && p.status !== 'exists';
     });
   }, [mergedPeople, personSelections]);
 
@@ -51,7 +51,7 @@ export function ConfirmImportStep({
     const counts = new Map<string, number>();
     for (const person of peopleToImport) {
       const sel = personSelections.get(person.email);
-      const role = sel?.role ?? "member";
+      const role = sel?.role ?? 'member';
       counts.set(role, (counts.get(role) ?? 0) + 1);
     }
     return Array.from(counts.entries()).map(([role, count]) => ({
@@ -62,7 +62,7 @@ export function ConfirmImportStep({
 
   // Projects to import (not skipped)
   const projectsToImport = useMemo(() => {
-    return projects.filter((p) => {
+    return projects.filter(p => {
       const key = `${p.sourceProvider}-${p.externalId}`;
       const sel = projectSelections.get(key);
       return sel && !sel.skip;
@@ -83,23 +83,23 @@ export function ConfirmImportStep({
   // Start import mutation
   const startImportMutation = useMutation({
     ...trpc.onboardingImport.startImport.mutationOptions(),
-    onSuccess: (data) => {
+    onSuccess: data => {
       onJobIdChange(data.jobId);
     },
   });
 
   const handleStartImport = useCallback(() => {
-    const people = peopleToImport.map((p) => {
+    const people = peopleToImport.map(p => {
       const sel = personSelections.get(p.email);
       return {
         email: p.email,
         name: p.name,
-        role: sel?.role ?? "member",
+        role: sel?.role ?? 'member',
         skip: false,
       };
     });
 
-    const projectsPayload = projectsToImport.map((p) => {
+    const projectsPayload = projectsToImport.map(p => {
       const key = `${p.sourceProvider}-${p.externalId}`;
       const sel = projectSelections.get(key);
       return {
@@ -126,8 +126,8 @@ export function ConfirmImportStep({
     <div className="space-y-6">
       {/* Heading */}
       <div>
-        <h2 className="font-display text-xl font-semibold leading-[1.2]">{t("heading")}</h2>
-        <p className="mt-1 text-sm text-muted-foreground">{t("subtitle")}</p>
+        <h2 className="font-display text-xl font-semibold leading-[1.2]">{t('heading')}</h2>
+        <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
       </div>
 
       {/* Summary cards */}
@@ -137,7 +137,7 @@ export function ConfirmImportStep({
           <CardHeader>
             <div className="flex items-center gap-2">
               <Users className="size-5 text-primary" aria-hidden="true" />
-              <CardTitle>{t("peopleCard")}</CardTitle>
+              <CardTitle>{t('peopleCard')}</CardTitle>
             </div>
           </CardHeader>
           <CardContent>
@@ -159,7 +159,7 @@ export function ConfirmImportStep({
           <CardHeader>
             <div className="flex items-center gap-2">
               <FolderKanban className="size-5 text-primary" aria-hidden="true" />
-              <CardTitle>{t("projectsCard")}</CardTitle>
+              <CardTitle>{t('projectsCard')}</CardTitle>
             </div>
           </CardHeader>
           <CardContent>
@@ -177,9 +177,8 @@ export function ConfirmImportStep({
           disabled={
             startImportMutation.isPending ||
             (peopleToImport.length === 0 && projectsToImport.length === 0)
-          }
-        >
-          {startImportMutation.isPending ? "Starting..." : t("startImport")}
+          }>
+          {startImportMutation.isPending ? 'Starting...' : t('startImport')}
         </Button>
       </div>
     </div>

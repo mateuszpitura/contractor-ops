@@ -4,15 +4,15 @@
  * Tests listEquipment, getReturnStatus endpoints on the portal router.
  */
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
-const ORG_ID = "org-portal-eq-001";
-const CONTRACTOR_ID = "contractor-portal-eq-001";
-const SESSION_TOKEN = "portal-session-token-equipment";
+const ORG_ID = 'org-portal-eq-001';
+const CONTRACTOR_ID = 'contractor-portal-eq-001';
+const SESSION_TOKEN = 'portal-session-token-equipment';
 
 // ---------------------------------------------------------------------------
 // Mock Prisma via vi.hoisted
@@ -70,7 +70,7 @@ const { mockPrisma } = vi.hoisted(() => {
 // Module mocks
 // ---------------------------------------------------------------------------
 
-vi.mock("@contractor-ops/auth", () => ({
+vi.mock('@contractor-ops/auth', () => ({
   auth: {
     api: {
       getSession: vi.fn(),
@@ -79,7 +79,7 @@ vi.mock("@contractor-ops/auth", () => ({
   },
 }));
 
-vi.mock("@contractor-ops/db", () => ({
+vi.mock('@contractor-ops/db', () => ({
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
@@ -87,41 +87,41 @@ vi.mock("@contractor-ops/db", () => ({
   },
 }));
 
-vi.mock("../../services/portal-session.js", () => ({
+vi.mock('../../services/portal-session.js', () => ({
   validatePortalSession: vi.fn(async (token: string) => {
     if (token !== SESSION_TOKEN) return null;
     return {
       contractorId: CONTRACTOR_ID,
       organizationId: ORG_ID,
-      contractor: { id: CONTRACTOR_ID, email: "contractor@test.com" },
+      contractor: { id: CONTRACTOR_ID, email: 'contractor@test.com' },
     };
   }),
   createPortalSession: vi.fn(),
   deletePortalSession: vi.fn(),
 }));
 
-vi.mock("../../services/portal-magic-link.js", () => ({
+vi.mock('../../services/portal-magic-link.js', () => ({
   createMagicLinkToken: vi.fn(),
   verifyMagicLinkToken: vi.fn(),
   findContractorsByEmail: vi.fn(),
   sendPortalMagicLink: vi.fn(),
 }));
 
-vi.mock("../../services/r2.js", () => ({
-  createPresignedUploadUrl: vi.fn(async () => ({ url: "https://r2.test/upload", key: "k" })),
-  createPresignedDownloadUrl: vi.fn(async () => "https://r2.test/download"),
-  generateStorageKey: vi.fn(() => "mock-key"),
+vi.mock('../../services/r2.js', () => ({
+  createPresignedUploadUrl: vi.fn(async () => ({ url: 'https://r2.test/upload', key: 'k' })),
+  createPresignedDownloadUrl: vi.fn(async () => 'https://r2.test/download'),
+  generateStorageKey: vi.fn(() => 'mock-key'),
 }));
 
-vi.mock("../../services/portal-change-request.js", () => ({
+vi.mock('../../services/portal-change-request.js', () => ({
   createChangeRequest: vi.fn(),
 }));
 
-vi.mock("../../services/bank-account-crypto.js", () => ({
+vi.mock('../../services/bank-account-crypto.js', () => ({
   encryptBankAccount: vi.fn((v: string) => `encrypted:${v}`),
 }));
 
-vi.mock("../../services/stripe-client.js", () => ({
+vi.mock('../../services/stripe-client.js', () => ({
   stripe: {
     checkout: { sessions: { create: vi.fn() } },
     billingPortal: { sessions: { create: vi.fn() } },
@@ -132,34 +132,34 @@ vi.mock("../../services/stripe-client.js", () => ({
   },
 }));
 
-vi.mock("../../services/notification-service.js", () => ({
-  dispatch: vi.fn(async () => {}),
+vi.mock('../../services/notification-service.js', () => ({
+  dispatch: vi.fn(async () => undefined),
 }));
 
-vi.mock("../../services/courier/inpost-client.js", () => ({
+vi.mock('../../services/courier/inpost-client.js', () => ({
   InPostClient: vi.fn().mockImplementation(() => ({
     createShipment: vi.fn(async () => ({
-      externalId: "ext-123",
-      trackingNumber: "TRACK123",
-      status: "created",
-      labelUrl: "https://shipx.test/label",
+      externalId: 'ext-123',
+      trackingNumber: 'TRACK123',
+      status: 'created',
+      labelUrl: 'https://shipx.test/label',
     })),
-    getLabel: vi.fn(async () => Buffer.from("pdf-content")),
+    getLabel: vi.fn(async () => Buffer.from('pdf-content')),
     getStatus: vi.fn(),
     cancelShipment: vi.fn(),
   })),
 }));
 
-vi.mock("@contractor-ops/logger", () => ({
+vi.mock('@contractor-ops/logger', () => ({
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
 
-vi.mock("@contractor-ops/logger/metrics", () => ({
+vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { increment: vi.fn(), histogram: vi.fn(), distribution: vi.fn() },
 }));
 
-vi.mock("@sentry/nextjs", () => {
+vi.mock('@sentry/nextjs', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
     startSpan: vi.fn((_o: unknown, fn: (span: typeof mockSpan) => unknown) => fn(mockSpan)),
@@ -168,18 +168,18 @@ vi.mock("@sentry/nextjs", () => {
 });
 
 // Mock Teams dependencies that may not be installed
-vi.mock("@microsoft/microsoft-graph-client", () => ({
+vi.mock('@microsoft/microsoft-graph-client', () => ({
   Client: { init: vi.fn() },
 }));
 
-vi.mock("botbuilder", () => ({
+vi.mock('botbuilder', () => ({
   TeamsActivityHandler: class {},
   TurnContext: class {},
   CloudAdapter: class {},
   ConfigurationBotFrameworkAuthentication: class {},
 }));
 
-vi.mock("botframework-connector", () => ({
+vi.mock('botframework-connector', () => ({
   MicrosoftAppCredentials: { trustServiceUrl: vi.fn() },
   ConnectorClient: class {},
 }));
@@ -188,8 +188,8 @@ vi.mock("botframework-connector", () => ({
 // Imports (after mocks)
 // ---------------------------------------------------------------------------
 
-import { createCallerFactory } from "../../init.js";
-import { appRouter } from "../../root.js";
+import { createCallerFactory } from '../../init.js';
+import { appRouter } from '../../root.js';
 
 // ---------------------------------------------------------------------------
 // Caller setup
@@ -209,29 +209,29 @@ function portalCaller() {
 // Tests
 // ---------------------------------------------------------------------------
 
-describe("portal.listEquipment", () => {
+describe('portal.listEquipment', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("returns assigned equipment for authenticated contractor with latest shipment status", async () => {
+  it('returns assigned equipment for authenticated contractor with latest shipment status', async () => {
     mockPrisma.equipmentAssignment.findMany.mockResolvedValueOnce([
       {
-        id: "assign-1",
-        assignedAt: new Date("2026-01-01"),
+        id: 'assign-1',
+        assignedAt: new Date('2026-01-01'),
         equipment: {
-          id: "eq-1",
-          name: "MacBook Pro",
-          serialNumber: "SN001",
-          type: "LAPTOP",
-          status: "DELIVERED",
+          id: 'eq-1',
+          name: 'MacBook Pro',
+          serialNumber: 'SN001',
+          type: 'LAPTOP',
+          status: 'DELIVERED',
           shipments: [
             {
-              id: "ship-1",
-              direction: "OUTBOUND",
-              carrier: "InPost",
-              trackingNumber: "TRACK001",
-              currentStatus: "DELIVERED",
+              id: 'ship-1',
+              direction: 'OUTBOUND',
+              carrier: 'InPost',
+              trackingNumber: 'TRACK001',
+              currentStatus: 'DELIVERED',
               expectedDeliveryAt: null,
             },
           ],
@@ -244,24 +244,24 @@ describe("portal.listEquipment", () => {
 
     expect(result).toHaveLength(1);
     expect(result[0]).toMatchObject({
-      assignmentId: "assign-1",
+      assignmentId: 'assign-1',
       equipment: {
-        id: "eq-1",
-        name: "MacBook Pro",
-        serialNumber: "SN001",
-        type: "LAPTOP",
-        status: "DELIVERED",
+        id: 'eq-1',
+        name: 'MacBook Pro',
+        serialNumber: 'SN001',
+        type: 'LAPTOP',
+        status: 'DELIVERED',
       },
     });
     expect(result[0]?.latestShipment).toMatchObject({
-      direction: "OUTBOUND",
-      carrier: "InPost",
-      trackingNumber: "TRACK001",
-      currentStatus: "DELIVERED",
+      direction: 'OUTBOUND',
+      carrier: 'InPost',
+      trackingNumber: 'TRACK001',
+      currentStatus: 'DELIVERED',
     });
   });
 
-  it("returns empty array for contractor with no assignments", async () => {
+  it('returns empty array for contractor with no assignments', async () => {
     mockPrisma.equipmentAssignment.findMany.mockResolvedValueOnce([]);
 
     const caller = portalCaller();
@@ -272,19 +272,19 @@ describe("portal.listEquipment", () => {
   });
 });
 
-describe("portal.getReturnStatus", () => {
+describe('portal.getReturnStatus', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("returns current ReturnRequest status for contractor", async () => {
+  it('returns current ReturnRequest status for contractor', async () => {
     mockPrisma.returnRequest.findFirst.mockResolvedValueOnce({
-      id: "rr-1",
-      status: "PENDING_APPROVAL",
-      targetPointId: "KRA001",
-      targetPointName: "Krakow Paczkomat",
-      targetPointAddress: "ul. Testowa 1",
-      createdAt: new Date("2026-04-01"),
+      id: 'rr-1',
+      status: 'PENDING_APPROVAL',
+      targetPointId: 'KRA001',
+      targetPointName: 'Krakow Paczkomat',
+      targetPointAddress: 'ul. Testowa 1',
+      createdAt: new Date('2026-04-01'),
       shipment: null,
     });
 
@@ -292,9 +292,9 @@ describe("portal.getReturnStatus", () => {
     const result = await caller.portal.getReturnStatus();
 
     expect(result).toMatchObject({
-      id: "rr-1",
-      status: "PENDING_APPROVAL",
-      targetPointId: "KRA001",
+      id: 'rr-1',
+      status: 'PENDING_APPROVAL',
+      targetPointId: 'KRA001',
     });
   });
 });

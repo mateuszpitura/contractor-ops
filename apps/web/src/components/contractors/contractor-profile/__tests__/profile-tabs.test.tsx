@@ -1,13 +1,13 @@
-import { render, screen } from "@/test/test-utils";
-import { ProfileTabs } from "../profile-tabs";
+import { render, screen } from '@/test/test-utils';
+import { ProfileTabs } from '../profile-tabs';
 
-vi.mock("next/navigation", () => ({
-  useSearchParams: () => new URLSearchParams(""),
+vi.mock('next/navigation', () => ({
+  useSearchParams: () => new URLSearchParams(''),
   useRouter: () => ({ replace: vi.fn() }),
-  usePathname: () => "/contractors/c1",
+  usePathname: () => '/contractors/c1',
 }));
 
-describe("ProfileTabs", () => {
+describe('ProfileTabs', () => {
   const defaultProps = {
     overviewContent: <div>Overview content</div>,
     complianceContent: <div>Compliance content</div>,
@@ -20,15 +20,15 @@ describe("ProfileTabs", () => {
     equipmentContent: <div>Equipment content</div>,
   };
 
-  it("renders all tab triggers", () => {
+  it('renders all tab triggers', () => {
     render(<ProfileTabs {...defaultProps} />);
     // There should be 9 tabs
-    const tabs = screen.getAllByRole("tab");
+    const tabs = screen.getAllByRole('tab');
     expect(tabs).toHaveLength(9);
   });
 
-  it("shows overview content by default", () => {
+  it('shows overview content by default', () => {
     render(<ProfileTabs {...defaultProps} />);
-    expect(screen.getByText("Overview content")).toBeInTheDocument();
+    expect(screen.getByText('Overview content')).toBeInTheDocument();
   });
 });

@@ -1,6 +1,6 @@
-import type { CredentialBlob } from "./credentials.js";
-import type { ProviderHealthStatus } from "./health.js";
-import type { WebhookVerificationResult } from "./webhook.js";
+import type { CredentialBlob } from './credentials.js';
+import type { ProviderHealthStatus } from './health.js';
+import type { WebhookVerificationResult } from './webhook.js';
 
 /**
  * OAuth configuration for providers that support OAuth 2.0 authorization.

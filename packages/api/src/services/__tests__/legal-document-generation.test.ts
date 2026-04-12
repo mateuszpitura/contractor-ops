@@ -1,6 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock("@contractor-ops/db", () => ({
+vi.mock('@contractor-ops/db', () => ({
   prisma: {
     organization: {
       findUniqueOrThrow: vi.fn(),
@@ -15,12 +15,12 @@ vi.mock("@contractor-ops/db", () => ({
   },
 }));
 
-import { prisma } from "@contractor-ops/db";
+import { prisma } from '@contractor-ops/db';
 import {
   detectCrossBorderTransfer,
   generateDPA,
   generateSCC,
-} from "../legal-document-generation.js";
+} from '../legal-document-generation.js';
 
 const mockPrisma = prisma as unknown as {
   organization: {
@@ -35,91 +35,91 @@ const mockPrisma = prisma as unknown as {
   };
 };
 
-const ORG_ID = "org_legal_test_001";
+const ORG_ID = 'org_legal_test_001';
 
 beforeEach(() => {
   vi.clearAllMocks();
   // Reset DATA_HOSTING_REGION to default
-  process.env.DATA_HOSTING_REGION = "EU";
+  process.env.DATA_HOSTING_REGION = 'EU';
 });
 
-describe("legal-document-generation", () => {
-  describe("detectCrossBorderTransfer", () => {
-    it("returns isCrossBorder=true for AE org with EU hosting", () => {
-      const result = detectCrossBorderTransfer("AE");
+describe('legal-document-generation', () => {
+  describe('detectCrossBorderTransfer', () => {
+    it('returns isCrossBorder=true for AE org with EU hosting', () => {
+      const result = detectCrossBorderTransfer('AE');
 
       expect(result.isCrossBorder).toBe(true);
-      expect(result.orgRegion).toBe("GCC");
-      expect(result.hostingRegion).toBe("EU");
+      expect(result.orgRegion).toBe('GCC');
+      expect(result.hostingRegion).toBe('EU');
     });
 
-    it("returns isCrossBorder=false for PL org with EU hosting", () => {
-      const result = detectCrossBorderTransfer("PL");
+    it('returns isCrossBorder=false for PL org with EU hosting', () => {
+      const result = detectCrossBorderTransfer('PL');
 
       expect(result.isCrossBorder).toBe(false);
-      expect(result.orgRegion).toBe("EU");
-      expect(result.hostingRegion).toBe("EU");
+      expect(result.orgRegion).toBe('EU');
+      expect(result.hostingRegion).toBe('EU');
     });
 
-    it("returns isCrossBorder=true for SA org with EU hosting (default)", () => {
-      const result = detectCrossBorderTransfer("SA");
+    it('returns isCrossBorder=true for SA org with EU hosting (default)', () => {
+      const result = detectCrossBorderTransfer('SA');
 
       expect(result.isCrossBorder).toBe(true);
-      expect(result.orgRegion).toBe("GCC");
-      expect(result.hostingRegion).toBe("EU");
+      expect(result.orgRegion).toBe('GCC');
+      expect(result.hostingRegion).toBe('EU');
     });
 
-    it("returns OTHER region for unknown country", () => {
-      const result = detectCrossBorderTransfer("XX");
+    it('returns OTHER region for unknown country', () => {
+      const result = detectCrossBorderTransfer('XX');
 
-      expect(result.orgRegion).toBe("OTHER");
+      expect(result.orgRegion).toBe('OTHER');
     });
   });
 
-  describe("generateDPA", () => {
-    it("returns DPA content for AE org", async () => {
+  describe('generateDPA', () => {
+    it('returns DPA content for AE org', async () => {
       mockPrisma.organization.findUniqueOrThrow.mockResolvedValue({
-        name: "Test Corp",
-        countryCode: "AE",
+        name: 'Test Corp',
+        countryCode: 'AE',
       });
       mockPrisma.member.findFirst.mockResolvedValue({
-        userId: "user_1",
+        userId: 'user_1',
       });
       mockPrisma.consentRecord.findMany.mockResolvedValue([
-        { purpose: "CONTRACTOR_DATA_PROCESSING", granted: true, version: 1, createdAt: new Date() },
+        { purpose: 'CONTRACTOR_DATA_PROCESSING', granted: true, version: 1, createdAt: new Date() },
       ]);
 
       const result = await generateDPA(ORG_ID);
 
       expect(result).not.toBeNull();
-      expect(result?.content).toContain("Federal Decree-Law No. 45/2021");
-      expect(result?.content).toContain("Test Corp");
-      expect(result?.filename).toContain("AE");
-      expect(result?.jurisdiction).toBe("AE");
+      expect(result?.content).toContain('Federal Decree-Law No. 45/2021');
+      expect(result?.content).toContain('Test Corp');
+      expect(result?.filename).toContain('AE');
+      expect(result?.jurisdiction).toBe('AE');
     });
 
-    it("returns DPA content for SA org", async () => {
+    it('returns DPA content for SA org', async () => {
       mockPrisma.organization.findUniqueOrThrow.mockResolvedValue({
-        name: "Saudi Co",
-        countryCode: "SA",
+        name: 'Saudi Co',
+        countryCode: 'SA',
       });
       mockPrisma.member.findFirst.mockResolvedValue({
-        userId: "user_1",
+        userId: 'user_1',
       });
       mockPrisma.consentRecord.findMany.mockResolvedValue([]);
 
       const result = await generateDPA(ORG_ID);
 
       expect(result).not.toBeNull();
-      expect(result?.content).toContain("Royal Decree M/19");
-      expect(result?.content).toContain("Saudi Co");
-      expect(result?.jurisdiction).toBe("SA");
+      expect(result?.content).toContain('Royal Decree M/19');
+      expect(result?.content).toContain('Saudi Co');
+      expect(result?.jurisdiction).toBe('SA');
     });
 
-    it("returns null for non-PDPL jurisdiction", async () => {
+    it('returns null for non-PDPL jurisdiction', async () => {
       mockPrisma.organization.findUniqueOrThrow.mockResolvedValue({
-        name: "Polish Co",
-        countryCode: "PL",
+        name: 'Polish Co',
+        countryCode: 'PL',
       });
 
       const result = await generateDPA(ORG_ID);
@@ -127,37 +127,37 @@ describe("legal-document-generation", () => {
     });
   });
 
-  describe("generateSCC", () => {
-    it("returns null when org is in same region as hosting (EU org, EU hosting)", async () => {
+  describe('generateSCC', () => {
+    it('returns null when org is in same region as hosting (EU org, EU hosting)', async () => {
       mockPrisma.organization.findUniqueOrThrow.mockResolvedValue({
-        name: "Polish Corp",
-        countryCode: "PL",
+        name: 'Polish Corp',
+        countryCode: 'PL',
       });
 
       const result = await generateSCC(ORG_ID);
       expect(result).toBeNull();
     });
 
-    it("returns SCC content for cross-border AE org", async () => {
-      process.env.DATA_HOSTING_REGION = "EU";
+    it('returns SCC content for cross-border AE org', async () => {
+      process.env.DATA_HOSTING_REGION = 'EU';
       mockPrisma.organization.findUniqueOrThrow.mockResolvedValue({
-        name: "UAE Corp",
-        countryCode: "AE",
+        name: 'UAE Corp',
+        countryCode: 'AE',
       });
 
       const result = await generateSCC(ORG_ID);
 
       expect(result).not.toBeNull();
-      expect(result?.content).toContain("Standard Contractual Clauses");
-      expect(result?.content).toContain("GCC");
-      expect(result?.content).toContain("EU");
-      expect(result?.content).toContain("UAE Corp");
-      expect(result?.filename).toContain("GCC-to-EU");
+      expect(result?.content).toContain('Standard Contractual Clauses');
+      expect(result?.content).toContain('GCC');
+      expect(result?.content).toContain('EU');
+      expect(result?.content).toContain('UAE Corp');
+      expect(result?.filename).toContain('GCC-to-EU');
     });
 
-    it("returns null for org without countryCode", async () => {
+    it('returns null for org without countryCode', async () => {
       mockPrisma.organization.findUniqueOrThrow.mockResolvedValue({
-        name: "No Country",
+        name: 'No Country',
         countryCode: null,
       });
 

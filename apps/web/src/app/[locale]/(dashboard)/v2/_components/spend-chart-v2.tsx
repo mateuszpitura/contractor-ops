@@ -1,59 +1,58 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-import { useEffect, useMemo, useState } from "react";
-import { trpc } from "@/trpc/init";
-import { plnFmt } from "./dashboard-primitives";
+import { useQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+import { useEffect, useMemo, useState } from 'react';
+import { trpc } from '@/trpc/init';
+import { plnFmt } from './dashboard-primitives';
 
 // =============================================================================
 // SPEND CHART V2
 // =============================================================================
 
-type RechartsBundle = typeof import("recharts");
+type RechartsBundle = typeof import('recharts');
 
 export function SpendChartV2() {
-  const t = useTranslations("Dashboard");
+  const t = useTranslations('Dashboard');
   const [RC, setRC] = useState<RechartsBundle | null>(null);
   useEffect(() => {
-    import("recharts").then(setRC);
+    import('recharts').then(setRC);
   }, []);
 
-  const [range, setRange] = useState<"6" | "12" | "ytd">("6");
+  const [range, setRange] = useState<'6' | '12' | 'ytd'>('6');
   const { data, isLoading } = useQuery(trpc.dashboard.spendTrend.queryOptions({ months: range }));
 
   const chartData = useMemo(() => {
     if (!data?.length) return [];
     const m = new Map<string, { month: string; PLN: number; EUR: number }>();
     for (const r of data) {
-      const label = new Date(r.month).toLocaleDateString("en-US", { month: "short" });
+      const label = new Date(r.month).toLocaleDateString('en-US', { month: 'short' });
       const ex = m.get(label) ?? { month: label, PLN: 0, EUR: 0 };
-      if (r.currency === "PLN") ex.PLN = r.totalMinor;
-      else if (r.currency === "EUR") ex.EUR = r.totalMinor;
+      if (r.currency === 'PLN') ex.PLN = r.totalMinor;
+      else if (r.currency === 'EUR') ex.EUR = r.totalMinor;
       m.set(label, ex);
     }
     return Array.from(m.values());
   }, [data]);
 
-  const hasEur = chartData.some((d) => d.EUR > 0);
+  const hasEur = chartData.some(d => d.EUR > 0);
 
   return (
     <div>
       <div className="mb-5 flex items-center justify-between">
-        <h3 className="font-display text-[15px] font-bold">{t("spend.title")}</h3>
+        <h3 className="font-display text-[15px] font-bold">{t('spend.title')}</h3>
         <div className="flex gap-0.5 rounded-xl border border-border/30 p-0.5">
-          {(["6", "12", "ytd"] as const).map((r) => (
+          {(['6', '12', 'ytd'] as const).map(r => (
             <button
               key={r}
               type="button"
               onClick={() => setRange(r)}
               className={`rounded-lg px-3 py-1 text-[9px] font-bold uppercase tracking-[0.1em] transition-all ${
                 range === r
-                  ? "bg-primary text-primary-foreground shadow-md shadow-primary/25"
-                  : "text-muted-foreground/50 hover:text-foreground"
-              }`}
-            >
-              {r === "ytd" ? "YTD" : `${r}M`}
+                  ? 'bg-primary text-primary-foreground shadow-md shadow-primary/25'
+                  : 'text-muted-foreground/50 hover:text-foreground'
+              }`}>
+              {r === 'ytd' ? 'YTD' : `${r}M`}
             </button>
           ))}
         </div>
@@ -65,7 +64,7 @@ export function SpendChartV2() {
         </div>
       ) : chartData.length === 0 ? (
         <div className="flex h-[280px] items-center justify-center text-xs text-muted-foreground">
-          {t("spend.empty")}
+          {t('spend.empty')}
         </div>
       ) : (
         <RC.ResponsiveContainer width="100%" height={280}>
@@ -103,12 +102,12 @@ export function SpendChartV2() {
             />
             <RC.Tooltip
               contentStyle={{
-                background: "var(--color-popover)",
-                border: "1px solid var(--color-border)",
-                borderRadius: "14px",
+                background: 'var(--color-popover)',
+                border: '1px solid var(--color-border)',
+                borderRadius: '14px',
                 fontSize: 11,
-                boxShadow: "0 16px 48px rgba(0,0,0,0.16)",
-                backdropFilter: "blur(16px)",
+                boxShadow: '0 16px 48px rgba(0,0,0,0.16)',
+                backdropFilter: 'blur(16px)',
               }}
               formatter={(value: unknown, name: unknown) => [
                 plnFmt.format(Number(value) / 100),
@@ -126,8 +125,8 @@ export function SpendChartV2() {
               activeDot={{
                 r: 5,
                 strokeWidth: 2,
-                stroke: "var(--color-card)",
-                fill: "var(--color-chart-1)",
+                stroke: 'var(--color-card)',
+                fill: 'var(--color-chart-1)',
               }}
             />
             {hasEur && (

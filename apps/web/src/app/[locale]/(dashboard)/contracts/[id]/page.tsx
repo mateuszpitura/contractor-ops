@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { useParams } from "next/navigation";
-import { useTranslations } from "next-intl";
-import { Suspense } from "react";
-import { ContractDetailTabs } from "@/components/contracts/contract-detail/contract-detail-tabs";
-import { DetailHeader } from "@/components/contracts/contract-detail/detail-header";
-import { SigningProgressBar } from "@/components/contracts/contract-detail/signing-progress-bar";
-import { useBreadcrumbOverride } from "@/components/layout/breadcrumb-context";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Link } from "@/i18n/navigation";
-import { trpc } from "@/trpc/init";
+import { useQuery } from '@tanstack/react-query';
+import { useParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { Suspense } from 'react';
+import { ContractDetailTabs } from '@/components/contracts/contract-detail/contract-detail-tabs';
+import { DetailHeader } from '@/components/contracts/contract-detail/detail-header';
+import { SigningProgressBar } from '@/components/contracts/contract-detail/signing-progress-bar';
+import { useBreadcrumbOverride } from '@/components/layout/breadcrumb-context';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Link } from '@/i18n/navigation';
+import { trpc } from '@/trpc/init';
 
 function HeaderSkeleton() {
   return (
@@ -54,7 +54,7 @@ function TabContentSkeleton() {
 
 export default function ContractDetailPage() {
   const params = useParams<{ id: string }>();
-  const t = useTranslations("ContractDetail");
+  const t = useTranslations('ContractDetail');
 
   const contractQuery = useQuery(trpc.contract.getById.queryOptions({ id: params.id }));
 
@@ -72,19 +72,19 @@ export default function ContractDetailPage() {
     trpc.esign.listEnvelopes.queryOptions({ contractId: params.id }, { enabled: !!params.id }),
   );
   const envelopes = envelopesQuery.data ?? [];
-  const activeEnvelope = envelopes.find((e) => ["SENT", "DELIVERED", "CREATED"].includes(e.status));
+  const activeEnvelope = envelopes.find(e => ['SENT', 'DELIVERED', 'CREATED'].includes(e.status));
 
   if (contractQuery.isError) {
     const isNotFound =
-      contractQuery.error?.message?.includes("not found") ||
-      (contractQuery.error as { data?: { code?: string } })?.data?.code === "NOT_FOUND";
+      contractQuery.error?.message?.includes('not found') ||
+      (contractQuery.error as { data?: { code?: string } })?.data?.code === 'NOT_FOUND';
 
     if (isNotFound) {
       return (
         <div className="flex min-h-[400px] flex-col items-center justify-center gap-3 text-center">
-          <h2 className="text-lg font-medium">{t("error.notFound")}</h2>
+          <h2 className="text-lg font-medium">{t('error.notFound')}</h2>
           <Button variant="outline" render={<Link href="/contracts" />}>
-            {t("error.backToList")}
+            {t('error.backToList')}
           </Button>
         </div>
       );
@@ -92,9 +92,9 @@ export default function ContractDetailPage() {
 
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center gap-3 text-center">
-        <h2 className="text-lg font-medium">{t("error.loadFailed")}</h2>
+        <h2 className="text-lg font-medium">{t('error.loadFailed')}</h2>
         <Button variant="outline" onClick={() => contractQuery.refetch()}>
-          {t("error.retry")}
+          {t('error.retry')}
         </Button>
       </div>
     );
@@ -115,8 +115,8 @@ export default function ContractDetailPage() {
               ? [
                   {
                     name: contract.contractor.displayName,
-                    email: contract.contractor.email ?? "",
-                    role: "signer" as const,
+                    email: contract.contractor.email ?? '',
+                    role: 'signer' as const,
                   },
                 ]
               : [],
@@ -129,7 +129,7 @@ export default function ContractDetailPage() {
       {activeEnvelope && (
         <SigningProgressBar
           envelope={
-            activeEnvelope as unknown as Parameters<typeof SigningProgressBar>[0]["envelope"]
+            activeEnvelope as unknown as Parameters<typeof SigningProgressBar>[0]['envelope']
           }
         />
       )}

@@ -1,8 +1,8 @@
-import { prisma } from "@contractor-ops/db";
-import type { CredentialBlob } from "../types/credentials.js";
-import type { ProviderHealthStatus } from "../types/health.js";
-import type { OAuthConfig } from "../types/provider.js";
-import { BaseAdapter } from "./base-adapter.js";
+import { prisma } from '@contractor-ops/db';
+import type { CredentialBlob } from '../types/credentials.js';
+import type { ProviderHealthStatus } from '../types/health.js';
+import type { OAuthConfig } from '../types/provider.js';
+import { BaseAdapter } from './base-adapter.js';
 
 // ---------------------------------------------------------------------------
 // Notion OAuth 2.0 Configuration
@@ -22,24 +22,24 @@ import { BaseAdapter } from "./base-adapter.js";
  * - NOTION_ENCRYPTION_KEY — for credential encryption at rest
  */
 const NOTION_OAUTH_CONFIG: OAuthConfig = {
-  clientIdEnvVar: "NOTION_CLIENT_ID",
-  clientSecretEnvVar: "NOTION_CLIENT_SECRET",
-  authorizationUrl: "https://api.notion.com/v1/oauth/authorize",
-  tokenUrl: "https://api.notion.com/v1/oauth/token",
+  clientIdEnvVar: 'NOTION_CLIENT_ID',
+  clientSecretEnvVar: 'NOTION_CLIENT_SECRET',
+  authorizationUrl: 'https://api.notion.com/v1/oauth/authorize',
+  tokenUrl: 'https://api.notion.com/v1/oauth/token',
   scopes: [], // Notion uses integration capabilities, not scopes (Pitfall 2)
-  redirectPath: "/api/oauth/notion/callback",
+  redirectPath: '/api/oauth/notion/callback',
 };
 
 /** Notion API version header — pinned to stable version (Pitfall 7) */
-const NOTION_API_VERSION = "2022-06-28";
+const NOTION_API_VERSION = '2022-06-28';
 
 // ---------------------------------------------------------------------------
 // Notion Adapter
 // ---------------------------------------------------------------------------
 
 export class NotionAdapter extends BaseAdapter {
-  readonly slug = "notion";
-  readonly displayName = "Notion";
+  readonly slug = 'notion';
+  readonly displayName = 'Notion';
   readonly supportsOAuth = true;
   readonly supportsWebhooks = false;
 
@@ -64,18 +64,18 @@ export class NotionAdapter extends BaseAdapter {
 
     if (!(clientId && clientSecret)) {
       throw new Error(
-        "NOTION_CLIENT_ID and NOTION_CLIENT_SECRET environment variables are required",
+        'NOTION_CLIENT_ID and NOTION_CLIENT_SECRET environment variables are required',
       );
     }
 
-    const response = await fetch("https://api.notion.com/v1/oauth/token", {
-      method: "POST",
+    const response = await fetch('https://api.notion.com/v1/oauth/token', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
-        Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`,
+        'Content-Type': 'application/json',
+        Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
       },
       body: JSON.stringify({
-        grant_type: "authorization_code",
+        grant_type: 'authorization_code',
         code,
         redirect_uri: redirectUri,
       }),
@@ -119,22 +119,22 @@ export class NotionAdapter extends BaseAdapter {
 
     if (!(clientId && clientSecret)) {
       throw new Error(
-        "NOTION_CLIENT_ID and NOTION_CLIENT_SECRET environment variables are required",
+        'NOTION_CLIENT_ID and NOTION_CLIENT_SECRET environment variables are required',
       );
     }
 
     if (!credentials.refreshToken) {
-      throw new Error("No refresh token available for Notion");
+      throw new Error('No refresh token available for Notion');
     }
 
-    const response = await fetch("https://api.notion.com/v1/oauth/token", {
-      method: "POST",
+    const response = await fetch('https://api.notion.com/v1/oauth/token', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
-        Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`,
+        'Content-Type': 'application/json',
+        Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
       },
       body: JSON.stringify({
-        grant_type: "refresh_token",
+        grant_type: 'refresh_token',
         refresh_token: credentials.refreshToken,
       }),
     });
@@ -181,16 +181,16 @@ export class NotionAdapter extends BaseAdapter {
       url: string;
     }>
   > {
-    const response = await fetch("https://api.notion.com/v1/search", {
-      method: "POST",
+    const response = await fetch('https://api.notion.com/v1/search', {
+      method: 'POST',
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-        "Notion-Version": NOTION_API_VERSION,
+        'Content-Type': 'application/json',
+        'Notion-Version': NOTION_API_VERSION,
       },
       body: JSON.stringify({
         query,
-        filter: { property: "object", value: "page" },
+        filter: { property: 'object', value: 'page' },
         page_size: 10,
       }),
     });
@@ -214,18 +214,18 @@ export class NotionAdapter extends BaseAdapter {
       }>;
     };
 
-    return data.results.map((page) => {
+    return data.results.map(page => {
       const titleProp = page.properties?.title?.title;
-      const title = titleProp?.[0]?.plain_text ?? "Untitled";
+      const title = titleProp?.[0]?.plain_text ?? 'Untitled';
 
       let icon: string | null = null;
-      if (page.icon?.type === "emoji") {
+      if (page.icon?.type === 'emoji') {
         icon = page.icon.emoji ?? null;
-      } else if (page.icon?.type === "external") {
+      } else if (page.icon?.type === 'external') {
         icon = page.icon.external?.url ?? null;
       }
 
-      const url = `https://notion.so/${page.id.replace(/-/g, "")}`;
+      const url = `https://notion.so/${page.id.replace(/-/g, '')}`;
 
       return {
         id: page.id,
@@ -259,8 +259,8 @@ export class NotionAdapter extends BaseAdapter {
 
     if (!connection) {
       return {
-        status: "DISCONNECTED",
-        provider: "notion",
+        status: 'DISCONNECTED',
+        provider: 'notion',
         recentSyncs: [],
         recentWebhooks: [],
         errorCountLast24h: 0,
@@ -269,7 +269,7 @@ export class NotionAdapter extends BaseAdapter {
 
     const recentSyncs = await prisma.integrationSyncLog.findMany({
       where: { integrationConnectionId: connectionId },
-      orderBy: { startedAt: "desc" },
+      orderBy: { startedAt: 'desc' },
       take: 5,
       select: {
         id: true,
@@ -284,27 +284,27 @@ export class NotionAdapter extends BaseAdapter {
     const errorCountLast24h = await prisma.integrationSyncLog.count({
       where: {
         integrationConnectionId: connectionId,
-        status: "FAILED",
+        status: 'FAILED',
         startedAt: { gte: oneDayAgo },
       },
     });
 
-    let status: ProviderHealthStatus["status"];
-    if (connection.status !== "CONNECTED") {
-      status = "DISCONNECTED";
+    let status: ProviderHealthStatus['status'];
+    if (connection.status !== 'CONNECTED') {
+      status = 'DISCONNECTED';
     } else if (connection.lastErrorAt && !connection.lastSuccessAt) {
-      status = "ERROR";
+      status = 'ERROR';
     } else if (connection.tokenExpiresAt && connection.tokenExpiresAt < new Date()) {
-      status = "REAUTH_REQUIRED";
-    } else if (recentSyncs[0]?.status === "FAILED") {
-      status = "ERROR";
+      status = 'REAUTH_REQUIRED';
+    } else if (recentSyncs[0]?.status === 'FAILED') {
+      status = 'ERROR';
     } else {
-      status = "CONNECTED";
+      status = 'CONNECTED';
     }
 
     return {
       status,
-      provider: "notion",
+      provider: 'notion',
       displayName: connection.displayName,
       connectedAt: connection.connectedAt,
       lastSyncAt: connection.lastSyncAt,
@@ -312,7 +312,7 @@ export class NotionAdapter extends BaseAdapter {
       lastErrorAt: connection.lastErrorAt,
       lastErrorMessage: connection.lastErrorMessage,
       tokenExpiresAt: connection.tokenExpiresAt,
-      recentSyncs: recentSyncs.map((s) => ({
+      recentSyncs: recentSyncs.map(s => ({
         id: s.id,
         syncType: s.syncType,
         status: s.status,

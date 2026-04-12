@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { Loader2, Search } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Loader2, Search } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -31,7 +31,7 @@ export function DataTableToolbar({
   isSearching,
   onStartWorkflow,
 }: DataTableToolbarProps) {
-  const t = useTranslations("Workflows");
+  const t = useTranslations('Workflows');
 
   // Debounced search
   const [localSearch, setLocalSearch] = useState(search);
@@ -46,7 +46,7 @@ export function DataTableToolbar({
       setLocalSearch(value);
       clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
-        onSearchChange(value.length >= 2 ? value : "");
+        onSearchChange(value.length >= 2 ? value : '');
       }, 300);
     },
     [onSearchChange],
@@ -58,9 +58,9 @@ export function DataTableToolbar({
       <div className="relative flex-1 max-w-sm">
         <Search className="absolute start-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder={t("searchPlaceholder")}
+          placeholder={t('searchPlaceholder')}
           value={localSearch}
-          onChange={(e) => handleSearchInput(e.target.value)}
+          onChange={e => handleSearchInput(e.target.value)}
           className="h-9 ps-9 pe-8"
         />
         {isSearching && (
@@ -73,7 +73,7 @@ export function DataTableToolbar({
 
       {/* Start workflow CTA */}
       <Button size="lg" onClick={onStartWorkflow}>
-        {t("startWorkflow")}
+        {t('startWorkflow')}
       </Button>
     </div>
   );

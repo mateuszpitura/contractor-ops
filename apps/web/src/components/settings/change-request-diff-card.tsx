@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { useMutation } from "@tanstack/react-query";
-import { formatDistanceToNow } from "date-fns";
-import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { useMutation } from '@tanstack/react-query';
+import { formatDistanceToNow } from 'date-fns';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -15,26 +15,26 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import { trpc } from "@/trpc/init";
+} from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Field label key mapping
 // ---------------------------------------------------------------------------
 
 const FIELD_LABEL_KEYS: Record<string, string> = {
-  bankAccountNumber: "bankAccount",
-  bankName: "bankName",
-  swiftBic: "swiftBic",
-  taxId: "taxId",
-  displayName: "displayName",
-  phone: "phone",
-  addressLine1: "addressLine1",
-  addressLine2: "addressLine2",
-  city: "city",
-  postalCode: "postalCode",
-  countryCode: "country",
+  bankAccountNumber: 'bankAccount',
+  bankName: 'bankName',
+  swiftBic: 'swiftBic',
+  taxId: 'taxId',
+  displayName: 'displayName',
+  phone: 'phone',
+  addressLine1: 'addressLine1',
+  addressLine2: 'addressLine2',
+  city: 'city',
+  postalCode: 'postalCode',
+  countryCode: 'country',
 };
 
 // ---------------------------------------------------------------------------
@@ -42,9 +42,9 @@ const FIELD_LABEL_KEYS: Record<string, string> = {
 // ---------------------------------------------------------------------------
 
 const STATUS_BADGE_VARIANTS = {
-  PENDING: "warning" as const,
-  APPROVED: "success" as const,
-  REJECTED: "destructive" as const,
+  PENDING: 'warning' as const,
+  APPROVED: 'success' as const,
+  REJECTED: 'destructive' as const,
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -59,7 +59,7 @@ interface ChangeRequestDiffCardProps {
     requestedChanges: Record<string, unknown>;
     previousValues: Record<string, unknown>;
     createdAt: Date | string;
-    status: "PENDING" | "APPROVED" | "REJECTED";
+    status: 'PENDING' | 'APPROVED' | 'REJECTED';
   };
   onApproved?: () => void;
   onRejected?: () => void;
@@ -81,9 +81,9 @@ export function ChangeRequestDiffCard({
   onApproved,
   onRejected,
 }: ChangeRequestDiffCardProps) {
-  const t = useTranslations("Settings.changeRequest");
+  const t = useTranslations('Settings.changeRequest');
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
-  const [rejectComment, setRejectComment] = useState("");
+  const [rejectComment, setRejectComment] = useState('');
 
   // -------------------------------------------------------------------------
   // Mutations
@@ -92,11 +92,11 @@ export function ChangeRequestDiffCard({
   const approveMutation = useMutation(
     trpc.settings.reviewChangeRequest.mutationOptions({
       onSuccess: () => {
-        toast.success(t("toast.approved"));
+        toast.success(t('toast.approved'));
         onApproved?.();
       },
       onError: () => {
-        toast.error(t("toast.approveFailed"));
+        toast.error(t('toast.approveFailed'));
       },
     }),
   );
@@ -104,13 +104,13 @@ export function ChangeRequestDiffCard({
   const rejectMutation = useMutation(
     trpc.settings.reviewChangeRequest.mutationOptions({
       onSuccess: () => {
-        toast.success(t("toast.rejected"));
+        toast.success(t('toast.rejected'));
         setRejectDialogOpen(false);
-        setRejectComment("");
+        setRejectComment('');
         onRejected?.();
       },
       onError: () => {
-        toast.error(t("toast.rejectFailed"));
+        toast.error(t('toast.rejectFailed'));
       },
     }),
   );
@@ -122,14 +122,14 @@ export function ChangeRequestDiffCard({
   const handleApprove = () => {
     approveMutation.mutate({
       requestId: request.id,
-      action: "approve",
+      action: 'approve',
     });
   };
 
   const handleRejectConfirm = () => {
     rejectMutation.mutate({
       requestId: request.id,
-      action: "reject",
+      action: 'reject',
       comment: rejectComment || undefined,
     });
   };
@@ -140,7 +140,7 @@ export function ChangeRequestDiffCard({
 
   const changedFields = Object.keys(request.requestedChanges);
   const createdAt =
-    typeof request.createdAt === "string" ? new Date(request.createdAt) : request.createdAt;
+    typeof request.createdAt === 'string' ? new Date(request.createdAt) : request.createdAt;
   const statusVariant = STATUS_BADGE_VARIANTS[request.status];
 
   function getFieldLabel(key: string): string {
@@ -148,7 +148,7 @@ export function ChangeRequestDiffCard({
     if (labelKey) {
       return t(`fieldLabels.${labelKey}` as Parameters<typeof t>[0]);
     }
-    return key.replace(/([A-Z])/g, " $1").trim();
+    return key.replace(/([A-Z])/g, ' $1').trim();
   }
 
   // -------------------------------------------------------------------------
@@ -161,7 +161,7 @@ export function ChangeRequestDiffCard({
         <CardHeader>
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h4 className="text-sm font-semibold">{t("title")}</h4>
+              <h4 className="text-sm font-semibold">{t('title')}</h4>
               <p className="text-sm text-muted-foreground">
                 {request.contractorName} &middot; {request.contractorEmail}
               </p>
@@ -169,7 +169,7 @@ export function ChangeRequestDiffCard({
                 {formatDistanceToNow(createdAt, { addSuffix: true })}
               </p>
             </div>
-            {request.status !== "PENDING" && (
+            {request.status !== 'PENDING' && (
               <Badge variant={statusVariant}>{t(`status.${request.status}`)}</Badge>
             )}
           </div>
@@ -182,31 +182,28 @@ export function ChangeRequestDiffCard({
                 <tr className="border-b bg-muted/30">
                   <th
                     scope="col"
-                    className="px-3 py-2 text-start text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-                  >
-                    {t("table.field")}
+                    className="px-3 py-2 text-start text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    {t('table.field')}
                   </th>
                   <th
                     scope="col"
-                    className="px-3 py-2 text-start text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-                  >
-                    {t("table.currentValue")}
+                    className="px-3 py-2 text-start text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    {t('table.currentValue')}
                   </th>
                   <th
                     scope="col"
-                    className="px-3 py-2 text-start text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-                  >
-                    {t("table.requestedValue")}
+                    className="px-3 py-2 text-start text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    {t('table.requestedValue')}
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {changedFields.map((key) => (
+                {changedFields.map(key => (
                   <tr key={key} className="border-b last:border-b-0 bg-muted">
                     <td className="px-3 py-2 text-muted-foreground">{getFieldLabel(key)}</td>
-                    <td className="px-3 py-2">{String(request.previousValues[key] ?? "-")}</td>
+                    <td className="px-3 py-2">{String(request.previousValues[key] ?? '-')}</td>
                     <td className="px-3 py-2 font-semibold">
-                      {String(request.requestedChanges[key] ?? "-")}
+                      {String(request.requestedChanges[key] ?? '-')}
                     </td>
                   </tr>
                 ))}
@@ -215,21 +212,19 @@ export function ChangeRequestDiffCard({
           </div>
 
           {/* Action buttons (only for PENDING) */}
-          {request.status === "PENDING" && (
+          {request.status === 'PENDING' && (
             <div className="flex items-center gap-2">
               <Button
                 onClick={handleApprove}
-                disabled={approveMutation.isPending || rejectMutation.isPending}
-              >
-                {approveMutation.isPending ? t("approving") : t("approveChanges")}
+                disabled={approveMutation.isPending || rejectMutation.isPending}>
+                {approveMutation.isPending ? t('approving') : t('approveChanges')}
               </Button>
               <Button
                 variant="outline"
                 className="text-destructive hover:text-destructive"
                 onClick={() => setRejectDialogOpen(true)}
-                disabled={approveMutation.isPending || rejectMutation.isPending}
-              >
-                {t("rejectChanges")}
+                disabled={approveMutation.isPending || rejectMutation.isPending}>
+                {t('rejectChanges')}
               </Button>
             </div>
           )}
@@ -240,22 +235,21 @@ export function ChangeRequestDiffCard({
       <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("rejectTitle")}</DialogTitle>
-            <DialogDescription>{t("rejectDescription")}</DialogDescription>
+            <DialogTitle>{t('rejectTitle')}</DialogTitle>
+            <DialogDescription>{t('rejectDescription')}</DialogDescription>
           </DialogHeader>
           <Textarea
-            placeholder={t("rejectPlaceholder")}
+            placeholder={t('rejectPlaceholder')}
             value={rejectComment}
-            onChange={(e) => setRejectComment(e.target.value)}
+            onChange={e => setRejectComment(e.target.value)}
             rows={3}
           />
           <DialogFooter>
             <Button
               variant="destructive"
               onClick={handleRejectConfirm}
-              disabled={rejectMutation.isPending}
-            >
-              {rejectMutation.isPending ? t("rejecting") : t("confirmRejection")}
+              disabled={rejectMutation.isPending}>
+              {rejectMutation.isPending ? t('rejecting') : t('confirmRejection')}
             </Button>
           </DialogFooter>
         </DialogContent>

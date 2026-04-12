@@ -1,17 +1,17 @@
-import { calendarTaskConfigSchema } from "@contractor-ops/validators";
-import { TRPCError } from "@trpc/server";
-import { z } from "zod";
-import { router } from "../init.js";
-import { requirePermission } from "../middleware/rbac.js";
-import { tenantProcedure } from "../middleware/tenant.js";
-import { requireTier } from "../middleware/tier.js";
+import { calendarTaskConfigSchema } from '@contractor-ops/validators';
+import { TRPCError } from '@trpc/server';
+import { z } from 'zod';
+import { router } from '../init.js';
+import { requirePermission } from '../middleware/rbac.js';
+import { tenantProcedure } from '../middleware/tenant.js';
+import { requireTier } from '../middleware/tier.js';
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
-const CALENDAR_PROVIDERS = ["GOOGLE_CALENDAR", "OUTLOOK_CALENDAR"] as const;
-const CALENDAR_EVENT_TYPES = ["GOOGLE_CALENDAR_EVENT", "OUTLOOK_CALENDAR_EVENT"] as const;
+const CALENDAR_PROVIDERS = ['GOOGLE_CALENDAR', 'OUTLOOK_CALENDAR'] as const;
+const CALENDAR_EVENT_TYPES = ['GOOGLE_CALENDAR_EVENT', 'OUTLOOK_CALENDAR_EVENT'] as const;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -50,7 +50,7 @@ export const calendarRouter = router({
         userId: true,
         tokenExpiresAt: true,
       },
-      orderBy: { connectedAt: "desc" },
+      orderBy: { connectedAt: 'desc' },
     });
 
     return plain(connections);
@@ -75,7 +75,7 @@ export const calendarRouter = router({
         userId: true,
         tokenExpiresAt: true,
       },
-      orderBy: { connectedAt: "desc" },
+      orderBy: { connectedAt: 'desc' },
     });
 
     return plain(connections);
@@ -89,7 +89,7 @@ export const calendarRouter = router({
    * Existing calendar events are NOT removed (per UI spec).
    */
   disconnect: tenantProcedure
-    .use(requireTier("PRO"))
+    .use(requireTier('PRO'))
     .input(z.object({ connectionId: z.string().cuid() }))
     .mutation(async ({ ctx, input }) => {
       const connection = await ctx.db.integrationConnection.findFirst({
@@ -102,8 +102,8 @@ export const calendarRouter = router({
 
       if (!connection) {
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "INTEGRATION_NOT_FOUND",
+          code: 'NOT_FOUND',
+          message: 'INTEGRATION_NOT_FOUND',
         });
       }
 
@@ -111,14 +111,14 @@ export const calendarRouter = router({
       // Org-level connections (userId = null) require settings:update permission
       if (connection.userId !== null && connection.userId !== ctx.user?.id) {
         throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "PERMISSION_DENIED",
+          code: 'FORBIDDEN',
+          message: 'PERMISSION_DENIED',
         });
       }
 
       await ctx.db.integrationConnection.update({
         where: { id: connection.id },
-        data: { status: "DISCONNECTED" },
+        data: { status: 'DISCONNECTED' },
       });
 
       return { success: true };
@@ -163,14 +163,14 @@ export const calendarRouter = router({
       });
 
       if (!template?.configJson) {
-        return { calendarEnabled: false, duration: "1h" as const, attendees: [] };
+        return { calendarEnabled: false, duration: '1h' as const, attendees: [] };
       }
 
       const config = template.configJson as Record<string, unknown>;
       const parsed = calendarTaskConfigSchema.safeParse(config);
       return parsed.success
         ? parsed.data
-        : { calendarEnabled: false, duration: "1h" as const, attendees: [] };
+        : { calendarEnabled: false, duration: '1h' as const, attendees: [] };
     }),
 
   /**
@@ -178,8 +178,8 @@ export const calendarRouter = router({
    * Merges with existing configJson to preserve Jira and other config fields.
    */
   saveTaskConfig: tenantProcedure
-    .use(requirePermission({ workflow: ["update"] }))
-    .use(requireTier("PRO"))
+    .use(requirePermission({ workflow: ['update'] }))
+    .use(requireTier('PRO'))
     .input(
       z.object({
         taskTemplateId: z.string().cuid(),
@@ -197,8 +197,8 @@ export const calendarRouter = router({
 
       if (!template) {
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "WORKFLOW_TEMPLATE_NOT_FOUND",
+          code: 'NOT_FOUND',
+          message: 'WORKFLOW_TEMPLATE_NOT_FOUND',
         });
       }
 

@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { Download, Loader2 } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { Download, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useEffect, useState } from 'react';
 
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -23,7 +23,7 @@ type PdfPreviewProps = {
 // ---------------------------------------------------------------------------
 
 export function PdfPreview({ documentId, filename, open, onOpenChange }: PdfPreviewProps) {
-  const t = useTranslations("Documents");
+  const t = useTranslations('Documents');
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -67,9 +67,9 @@ export function PdfPreview({ documentId, filename, open, onOpenChange }: PdfPrev
         <DialogHeader className="flex flex-row items-center justify-between gap-4">
           <DialogTitle className="truncate">{filename}</DialogTitle>
           {pdfUrl && (
-            <Button variant="outline" size="sm" onClick={() => window.open(pdfUrl, "_blank")}>
+            <Button variant="outline" size="sm" onClick={() => window.open(pdfUrl, '_blank')}>
               <Download className="me-1.5 size-3.5" />
-              {t("download")}
+              {t('download')}
             </Button>
           )}
         </DialogHeader>
@@ -82,12 +82,12 @@ export function PdfPreview({ documentId, filename, open, onOpenChange }: PdfPrev
           ) : pdfUrl ? (
             <object data={pdfUrl} type="application/pdf" className="h-full min-h-[480px] w-full">
               <div className="flex h-full min-h-[480px] items-center justify-center">
-                <p className="text-sm text-muted-foreground">{t("pdfFallback")}</p>
+                <p className="text-sm text-muted-foreground">{t('pdfFallback')}</p>
               </div>
             </object>
           ) : (
             <div className="flex h-full min-h-[480px] items-center justify-center">
-              <p className="text-sm text-muted-foreground">{t("pdfLoadError")}</p>
+              <p className="text-sm text-muted-foreground">{t('pdfLoadError')}</p>
             </div>
           )}
         </div>

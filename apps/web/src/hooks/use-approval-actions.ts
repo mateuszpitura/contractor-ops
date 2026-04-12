@@ -1,8 +1,8 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useCallback } from "react";
-import { toast } from "sonner";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useCallback } from 'react';
+import { toast } from 'sonner';
 
-import { trpc } from "@/trpc/init";
+import { trpc } from '@/trpc/init';
 
 /**
  * Encapsulates approval queue action mutations (approve, reject, delegate,
@@ -22,19 +22,19 @@ export function useApprovalActions(
 
   const invalidate = useCallback(() => {
     void queryClient.invalidateQueries({
-      queryKey: [["approval", "listPending"]],
+      queryKey: [['approval', 'listPending']],
     });
   }, [queryClient]);
 
   const approveMutation = useMutation(
     trpc.approval.approve.mutationOptions({
       onSuccess: () => {
-        toast.success("Approved");
+        toast.success('Approved');
         invalidate();
         onSuccess();
       },
       onError: () => {
-        toast.error("Failed to approve");
+        toast.error('Failed to approve');
       },
     }),
   );
@@ -42,12 +42,12 @@ export function useApprovalActions(
   const rejectMutation = useMutation(
     trpc.approval.reject.mutationOptions({
       onSuccess: () => {
-        toast.success("Rejected");
+        toast.success('Rejected');
         invalidate();
         onSuccess();
       },
       onError: () => {
-        toast.error("Failed to reject");
+        toast.error('Failed to reject');
       },
     }),
   );
@@ -55,12 +55,12 @@ export function useApprovalActions(
   const clarifyMutation = useMutation(
     trpc.approval.requestClarification.mutationOptions({
       onSuccess: () => {
-        toast.success("Clarification requested");
+        toast.success('Clarification requested');
         invalidate();
         onSuccess();
       },
       onError: () => {
-        toast.error("Failed to request clarification");
+        toast.error('Failed to request clarification');
       },
     }),
   );
@@ -68,12 +68,12 @@ export function useApprovalActions(
   const delegateMutation = useMutation(
     trpc.approval.delegate.mutationOptions({
       onSuccess: () => {
-        toast.success("Delegated");
+        toast.success('Delegated');
         invalidate();
         onSuccess();
       },
       onError: () => {
-        toast.error("Failed to delegate");
+        toast.error('Failed to delegate');
       },
     }),
   );

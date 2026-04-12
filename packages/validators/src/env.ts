@@ -1,150 +1,150 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 const hex32 = z
   .string()
-  .regex(/^[0-9a-f]{64}$/i, "Must be a 32-byte hex string (64 hex characters)");
+  .regex(/^[0-9a-f]{64}$/i, 'Must be a 32-byte hex string (64 hex characters)');
 
 const optionalUrl = z.string().url().optional();
 
 // ── Core ────────────────────────────────────────────────────────────────────
 
 const coreSchema = z.object({
-  NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
-  NEXT_PUBLIC_APP_URL: z.string().url().default("http://localhost:3000"),
-  APP_URL: z.string().url().default("http://localhost:3000"),
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  NEXT_PUBLIC_APP_URL: z.string().url().default('http://localhost:3000'),
+  APP_URL: z.string().url().default('http://localhost:3000'),
 });
 
 // ── Database ────────────────────────────────────────────────────────────────
 
 const databaseSchema = z.object({
-  DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
-  DATABASE_URL_EU: z.string().min(1, "DATABASE_URL_EU is required"),
-  DATABASE_URL_ME: z.string().min(1, "DATABASE_URL_ME is required"),
+  DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
+  DATABASE_URL_EU: z.string().min(1, 'DATABASE_URL_EU is required'),
+  DATABASE_URL_ME: z.string().min(1, 'DATABASE_URL_ME is required'),
 });
 
 // ── Auth ────────────────────────────────────────────────────────────────────
 
 const authSchema = z.object({
-  BETTER_AUTH_SECRET: z.string().min(16, "Auth secret must be at least 16 characters"),
-  BETTER_AUTH_URL: z.string().url().default("http://localhost:3000"),
-  GOOGLE_CLIENT_ID: z.string().min(1, "GOOGLE_CLIENT_ID is required"),
-  GOOGLE_CLIENT_SECRET: z.string().min(1, "GOOGLE_CLIENT_SECRET is required"),
-  MICROSOFT_CLIENT_ID: z.string().min(1, "MICROSOFT_CLIENT_ID is required"),
-  MICROSOFT_CLIENT_SECRET: z.string().min(1, "MICROSOFT_CLIENT_SECRET is required"),
+  BETTER_AUTH_SECRET: z.string().min(16, 'Auth secret must be at least 16 characters'),
+  BETTER_AUTH_URL: z.string().url().default('http://localhost:3000'),
+  GOOGLE_CLIENT_ID: z.string().min(1, 'GOOGLE_CLIENT_ID is required'),
+  GOOGLE_CLIENT_SECRET: z.string().min(1, 'GOOGLE_CLIENT_SECRET is required'),
+  MICROSOFT_CLIENT_ID: z.string().min(1, 'MICROSOFT_CLIENT_ID is required'),
+  MICROSOFT_CLIENT_SECRET: z.string().min(1, 'MICROSOFT_CLIENT_SECRET is required'),
 });
 
 // ── Stripe ──────────────────────────────────────────────────────────────────
 
 const stripeSchema = z.object({
-  STRIPE_SECRET_KEY: z.string().startsWith("sk_", "Must start with sk_"),
-  STRIPE_WEBHOOK_SECRET: z.string().startsWith("whsec_", "Must start with whsec_"),
-  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().startsWith("pk_", "Must start with pk_"),
-  STRIPE_PRICE_STARTER: z.string().startsWith("price_", "Must be a valid Stripe price ID"),
-  STRIPE_PRICE_PRO: z.string().startsWith("price_", "Must be a valid Stripe price ID"),
-  STRIPE_PRICE_ENTERPRISE: z.string().startsWith("price_", "Must be a valid Stripe price ID"),
+  STRIPE_SECRET_KEY: z.string().startsWith('sk_', 'Must start with sk_'),
+  STRIPE_WEBHOOK_SECRET: z.string().startsWith('whsec_', 'Must start with whsec_'),
+  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().startsWith('pk_', 'Must start with pk_'),
+  STRIPE_PRICE_STARTER: z.string().startsWith('price_', 'Must be a valid Stripe price ID'),
+  STRIPE_PRICE_PRO: z.string().startsWith('price_', 'Must be a valid Stripe price ID'),
+  STRIPE_PRICE_ENTERPRISE: z.string().startsWith('price_', 'Must be a valid Stripe price ID'),
   NEXT_PUBLIC_STRIPE_PRICE_TOPUP_10: z
     .string()
-    .startsWith("price_", "Must be a valid Stripe price ID"),
+    .startsWith('price_', 'Must be a valid Stripe price ID'),
   NEXT_PUBLIC_STRIPE_PRICE_TOPUP_25: z
     .string()
-    .startsWith("price_", "Must be a valid Stripe price ID"),
+    .startsWith('price_', 'Must be a valid Stripe price ID'),
   NEXT_PUBLIC_STRIPE_PRICE_TOPUP_50: z
     .string()
-    .startsWith("price_", "Must be a valid Stripe price ID"),
+    .startsWith('price_', 'Must be a valid Stripe price ID'),
 });
 
 // ── Email (Resend) ──────────────────────────────────────────────────────────
 
 const emailSchema = z.object({
-  RESEND_API_KEY: z.string().min(1, "RESEND_API_KEY is required"),
-  RESEND_WEBHOOK_SECRET: z.string().min(1, "RESEND_WEBHOOK_SECRET is required"),
-  EMAIL_FROM: z.string().email().default("noreply@contractor-ops.com"),
+  RESEND_API_KEY: z.string().min(1, 'RESEND_API_KEY is required'),
+  RESEND_WEBHOOK_SECRET: z.string().min(1, 'RESEND_WEBHOOK_SECRET is required'),
+  EMAIL_FROM: z.string().email().default('noreply@contractor-ops.com'),
 });
 
 // ── Cloudflare R2 ───────────────────────────────────────────────────────────
 
 const r2Schema = z.object({
-  R2_ACCOUNT_ID: z.string().min(1, "R2_ACCOUNT_ID is required"),
-  R2_ACCESS_KEY_ID: z.string().min(1, "R2_ACCESS_KEY_ID is required"),
-  R2_SECRET_ACCESS_KEY: z.string().min(1, "R2_SECRET_ACCESS_KEY is required"),
+  R2_ACCOUNT_ID: z.string().min(1, 'R2_ACCOUNT_ID is required'),
+  R2_ACCESS_KEY_ID: z.string().min(1, 'R2_ACCESS_KEY_ID is required'),
+  R2_SECRET_ACCESS_KEY: z.string().min(1, 'R2_SECRET_ACCESS_KEY is required'),
   R2_BUCKET_NAME: z.string().optional(),
-  R2_BUCKET_NAME_EU: z.string().default("contractor-ops-documents-eu"),
-  R2_BUCKET_NAME_ME: z.string().default("contractor-ops-documents-me"),
+  R2_BUCKET_NAME_EU: z.string().default('contractor-ops-documents-eu'),
+  R2_BUCKET_NAME_ME: z.string().default('contractor-ops-documents-me'),
   R2_PUBLIC_URL: optionalUrl,
 });
 
 // ── ClamAV ──────────────────────────────────────────────────────────────────
 
 const clamavSchema = z.object({
-  CLAMAV_HOST: z.string().default("127.0.0.1"),
+  CLAMAV_HOST: z.string().default('127.0.0.1'),
   CLAMAV_PORT: z.coerce.number().int().positive().default(3310),
 });
 
 // ── Slack ────────────────────────────────────────────────────────────────────
 
 const slackSchema = z.object({
-  SLACK_CLIENT_ID: z.string().min(1, "SLACK_CLIENT_ID is required"),
-  SLACK_CLIENT_SECRET: z.string().min(1, "SLACK_CLIENT_SECRET is required"),
-  SLACK_SIGNING_SECRET: z.string().min(1, "SLACK_SIGNING_SECRET is required"),
+  SLACK_CLIENT_ID: z.string().min(1, 'SLACK_CLIENT_ID is required'),
+  SLACK_CLIENT_SECRET: z.string().min(1, 'SLACK_CLIENT_SECRET is required'),
+  SLACK_SIGNING_SECRET: z.string().min(1, 'SLACK_SIGNING_SECRET is required'),
   SLACK_REDIRECT_URI: optionalUrl,
 });
 
 // ── Jira ────────────────────────────────────────────────────────────────────
 
 const jiraSchema = z.object({
-  JIRA_CLIENT_ID: z.string().min(1, "JIRA_CLIENT_ID is required"),
-  JIRA_CLIENT_SECRET: z.string().min(1, "JIRA_CLIENT_SECRET is required"),
+  JIRA_CLIENT_ID: z.string().min(1, 'JIRA_CLIENT_ID is required'),
+  JIRA_CLIENT_SECRET: z.string().min(1, 'JIRA_CLIENT_SECRET is required'),
 });
 
 // ── DocuSign ────────────────────────────────────────────────────────────────
 
 const docusignSchema = z.object({
-  DOCUSIGN_CLIENT_ID: z.string().min(1, "DOCUSIGN_CLIENT_ID is required"),
-  DOCUSIGN_CLIENT_SECRET: z.string().min(1, "DOCUSIGN_CLIENT_SECRET is required"),
+  DOCUSIGN_CLIENT_ID: z.string().min(1, 'DOCUSIGN_CLIENT_ID is required'),
+  DOCUSIGN_CLIENT_SECRET: z.string().min(1, 'DOCUSIGN_CLIENT_SECRET is required'),
   DOCUSIGN_WEBHOOK_SECRET: z.string().optional(),
 });
 
 // ── Autenti ─────────────────────────────────────────────────────────────────
 
 const autentiSchema = z.object({
-  AUTENTI_CLIENT_ID: z.string().min(1, "AUTENTI_CLIENT_ID is required"),
-  AUTENTI_CLIENT_SECRET: z.string().min(1, "AUTENTI_CLIENT_SECRET is required"),
+  AUTENTI_CLIENT_ID: z.string().min(1, 'AUTENTI_CLIENT_ID is required'),
+  AUTENTI_CLIENT_SECRET: z.string().min(1, 'AUTENTI_CLIENT_SECRET is required'),
   AUTENTI_WEBHOOK_SECRET: z.string().optional(),
 });
 
 // ── Notion ──────────────────────────────────────────────────────────────────
 
 const notionSchema = z.object({
-  NOTION_CLIENT_ID: z.string().min(1, "NOTION_CLIENT_ID is required"),
-  NOTION_CLIENT_SECRET: z.string().min(1, "NOTION_CLIENT_SECRET is required"),
+  NOTION_CLIENT_ID: z.string().min(1, 'NOTION_CLIENT_ID is required'),
+  NOTION_CLIENT_SECRET: z.string().min(1, 'NOTION_CLIENT_SECRET is required'),
 });
 
 // ── Confluence ──────────────────────────────────────────────────────────────
 
 const confluenceSchema = z.object({
-  CONFLUENCE_CLIENT_ID: z.string().min(1, "CONFLUENCE_CLIENT_ID is required"),
-  CONFLUENCE_CLIENT_SECRET: z.string().min(1, "CONFLUENCE_CLIENT_SECRET is required"),
+  CONFLUENCE_CLIENT_ID: z.string().min(1, 'CONFLUENCE_CLIENT_ID is required'),
+  CONFLUENCE_CLIENT_SECRET: z.string().min(1, 'CONFLUENCE_CLIENT_SECRET is required'),
 });
 
 // ── Google Calendar ─────────────────────────────────────────────────────────
 
 const googleCalendarSchema = z.object({
-  GOOGLE_CALENDAR_CLIENT_ID: z.string().min(1, "GOOGLE_CALENDAR_CLIENT_ID is required"),
-  GOOGLE_CALENDAR_CLIENT_SECRET: z.string().min(1, "GOOGLE_CALENDAR_CLIENT_SECRET is required"),
+  GOOGLE_CALENDAR_CLIENT_ID: z.string().min(1, 'GOOGLE_CALENDAR_CLIENT_ID is required'),
+  GOOGLE_CALENDAR_CLIENT_SECRET: z.string().min(1, 'GOOGLE_CALENDAR_CLIENT_SECRET is required'),
 });
 
 // ── Outlook Calendar ────────────────────────────────────────────────────────
 
 const outlookCalendarSchema = z.object({
-  OUTLOOK_CALENDAR_CLIENT_ID: z.string().min(1, "OUTLOOK_CALENDAR_CLIENT_ID is required"),
-  OUTLOOK_CALENDAR_CLIENT_SECRET: z.string().min(1, "OUTLOOK_CALENDAR_CLIENT_SECRET is required"),
+  OUTLOOK_CALENDAR_CLIENT_ID: z.string().min(1, 'OUTLOOK_CALENDAR_CLIENT_ID is required'),
+  OUTLOOK_CALENDAR_CLIENT_SECRET: z.string().min(1, 'OUTLOOK_CALENDAR_CLIENT_SECRET is required'),
 });
 
 // ── Linear ──────────────────────────────────────────────────────────────────
 
 const linearSchema = z.object({
-  LINEAR_CLIENT_ID: z.string().min(1, "LINEAR_CLIENT_ID is required"),
-  LINEAR_CLIENT_SECRET: z.string().min(1, "LINEAR_CLIENT_SECRET is required"),
+  LINEAR_CLIENT_ID: z.string().min(1, 'LINEAR_CLIENT_ID is required'),
+  LINEAR_CLIENT_SECRET: z.string().min(1, 'LINEAR_CLIENT_SECRET is required'),
   LINEAR_WEBHOOK_SECRET: z.string().optional(),
 });
 
@@ -157,27 +157,27 @@ const bankEncryptionSchema = z.object({
 // ── OCR (Claude Vision) ────────────────────────────────────────────────────
 
 const ocrSchema = z.object({
-  ANTHROPIC_API_KEY: z.string().min(1, "ANTHROPIC_API_KEY is required"),
+  ANTHROPIC_API_KEY: z.string().min(1, 'ANTHROPIC_API_KEY is required'),
 });
 
 // ── QStash ──────────────────────────────────────────────────────────────────
 
 const qstashSchema = z.object({
-  QSTASH_TOKEN: z.string().min(1, "QSTASH_TOKEN is required"),
-  QSTASH_CURRENT_SIGNING_KEY: z.string().min(1, "QSTASH_CURRENT_SIGNING_KEY is required"),
-  QSTASH_NEXT_SIGNING_KEY: z.string().min(1, "QSTASH_NEXT_SIGNING_KEY is required"),
+  QSTASH_TOKEN: z.string().min(1, 'QSTASH_TOKEN is required'),
+  QSTASH_CURRENT_SIGNING_KEY: z.string().min(1, 'QSTASH_CURRENT_SIGNING_KEY is required'),
+  QSTASH_NEXT_SIGNING_KEY: z.string().min(1, 'QSTASH_NEXT_SIGNING_KEY is required'),
 });
 
 // ── Cron ────────────────────────────────────────────────────────────────────
 
 const cronSchema = z.object({
-  CRON_SECRET: z.string().min(16, "CRON_SECRET must be at least 16 characters"),
+  CRON_SECRET: z.string().min(16, 'CRON_SECRET must be at least 16 characters'),
 });
 
 // ── Portal ──────────────────────────────────────────────────────────────────
 
 const portalSchema = z.object({
-  PORTAL_BASE_DOMAIN: z.string().default("portal.localhost:3000"),
+  PORTAL_BASE_DOMAIN: z.string().default('portal.localhost:3000'),
 });
 
 // ── Observability ──────────────────────────────────────────────────────────
@@ -188,8 +188,8 @@ const observabilitySchema = z.object({
   SENTRY_PROJECT: z.string().optional(),
   SENTRY_AUTH_TOKEN: z.string().optional(),
   AXIOM_TOKEN: z.string().optional(),
-  AXIOM_DATASET: z.string().default("contractor-ops"),
-  LOG_LEVEL: z.enum(["trace", "debug", "info", "warn", "error", "fatal"]).optional(),
+  AXIOM_DATASET: z.string().default('contractor-ops'),
+  LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).optional(),
 });
 
 // ── Full server env (all variables) ─────────────────────────────────────────
@@ -220,11 +220,11 @@ export const serverEnvSchema = coreSchema
 // ── Client env (NEXT_PUBLIC_ only) ──────────────────────────────────────────
 
 export const clientEnvSchema = z.object({
-  NEXT_PUBLIC_APP_URL: z.string().url().default("http://localhost:3000"),
-  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().startsWith("pk_").optional(),
-  NEXT_PUBLIC_STRIPE_PRICE_TOPUP_10: z.string().startsWith("price_").optional(),
-  NEXT_PUBLIC_STRIPE_PRICE_TOPUP_25: z.string().startsWith("price_").optional(),
-  NEXT_PUBLIC_STRIPE_PRICE_TOPUP_50: z.string().startsWith("price_").optional(),
+  NEXT_PUBLIC_APP_URL: z.string().url().default('http://localhost:3000'),
+  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().startsWith('pk_').optional(),
+  NEXT_PUBLIC_STRIPE_PRICE_TOPUP_10: z.string().startsWith('price_').optional(),
+  NEXT_PUBLIC_STRIPE_PRICE_TOPUP_25: z.string().startsWith('price_').optional(),
+  NEXT_PUBLIC_STRIPE_PRICE_TOPUP_50: z.string().startsWith('price_').optional(),
   NEXT_PUBLIC_SENTRY_DSN: z.string().url().optional(),
 });
 
@@ -240,7 +240,7 @@ export function validateServerEnv(
 ): ServerEnv {
   const result = serverEnvSchema.safeParse(env);
   if (!result.success) {
-    const errors = result.error.issues.map((i) => `  ${i.path.join(".")}: ${i.message}`).join("\n");
+    const errors = result.error.issues.map(i => `  ${i.path.join('.')}: ${i.message}`).join('\n');
     throw new Error(`Environment validation failed:\n${errors}`);
   }
   return result.data;
@@ -254,7 +254,7 @@ export function validateClientEnv(
 ): ClientEnv {
   const result = clientEnvSchema.safeParse(env);
   if (!result.success) {
-    const errors = result.error.issues.map((i) => `  ${i.path.join(".")}: ${i.message}`).join("\n");
+    const errors = result.error.issues.map(i => `  ${i.path.join('.')}: ${i.message}`).join('\n');
     throw new Error(`Client environment validation failed:\n${errors}`);
   }
   return result.data;

@@ -1,19 +1,19 @@
-import { decryptCredentials } from "@contractor-ops/integrations/services/credential-service";
+import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
 import {
   jiraTaskConfigSchema,
   saveJiraStatusMappingInputSchema,
   saveJiraTaskConfigInputSchema,
-} from "@contractor-ops/validators";
-import { TRPCError } from "@trpc/server";
-import { z } from "zod";
-import * as E from "../errors.js";
-import { router } from "../init.js";
-import { requirePermission } from "../middleware/rbac.js";
-import { tenantProcedure } from "../middleware/tenant.js";
-import { requireTier } from "../middleware/tier.js";
-import { detectScopeExpansionNeeded } from "../services/jira-issue-sync.js";
-import { getStatusMapping, saveStatusMapping } from "../services/jira-status-mapping.js";
-import { deregisterJiraWebhooks, registerJiraWebhooks } from "../services/jira-webhook-handler.js";
+} from '@contractor-ops/validators';
+import { TRPCError } from '@trpc/server';
+import { z } from 'zod';
+import * as E from '../errors.js';
+import { router } from '../init.js';
+import { requirePermission } from '../middleware/rbac.js';
+import { tenantProcedure } from '../middleware/tenant.js';
+import { requireTier } from '../middleware/tier.js';
+import { detectScopeExpansionNeeded } from '../services/jira-issue-sync.js';
+import { getStatusMapping, saveStatusMapping } from '../services/jira-status-mapping.js';
+import { deregisterJiraWebhooks, registerJiraWebhooks } from '../services/jira-webhook-handler.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -41,19 +41,19 @@ function buildJiraApiContext(
 
   if (!config?.cloudId) {
     throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: "Jira connection is missing cloudId. Please reconnect your Jira integration.",
+      code: 'BAD_REQUEST',
+      message: 'Jira connection is missing cloudId. Please reconnect your Jira integration.',
     });
   }
 
-  const credentials = decryptCredentials(credentialsRef, "jira");
+  const credentials = decryptCredentials(credentialsRef, 'jira');
 
   return {
     baseUrl: `https://api.atlassian.com/ex/jira/${config.cloudId}/rest/api/3`,
     authHeaders: {
       Authorization: `Bearer ${credentials.accessToken}`,
-      Accept: "application/json",
-      "Content-Type": "application/json",
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
     },
   };
 }
@@ -66,9 +66,9 @@ async function loadConnection(connectionId: string, organizationId: string) {
     where: { id: connectionId, organizationId },
   });
 
-  if (!connection || connection.status !== "CONNECTED") {
+  if (!connection || connection.status !== 'CONNECTED') {
     throw new TRPCError({
-      code: "PRECONDITION_FAILED",
+      code: 'PRECONDITION_FAILED',
       message: E.INTEGRATION_NOT_CONNECTED,
     });
   }
@@ -90,12 +90,12 @@ export const jiraRouter = router({
    * Returns connection details including scope expansion detection.
    */
   connectionStatus: tenantProcedure
-    .use(requirePermission({ settings: ["read"] }))
+    .use(requirePermission({ settings: ['read'] }))
     .query(async ({ ctx }) => {
       const connection = await ctx.db.integrationConnection.findFirst({
         where: {
           organizationId: ctx.organizationId,
-          provider: "JIRA",
+          provider: 'JIRA',
         },
         select: {
           id: true,
@@ -114,7 +114,7 @@ export const jiraRouter = router({
       let scopeExpansionNeeded = false;
       if (connection.credentialsRef) {
         try {
-          const creds = decryptCredentials(connection.credentialsRef, "jira");
+          const creds = decryptCredentials(connection.credentialsRef, 'jira');
           if (creds.scope) {
             scopeExpansionNeeded = detectScopeExpansionNeeded(creds.scope);
           }
@@ -139,7 +139,7 @@ export const jiraRouter = router({
    * List all Jira projects accessible via the connected account.
    */
   listProjects: tenantProcedure
-    .use(requirePermission({ settings: ["read"] }))
+    .use(requirePermission({ settings: ['read'] }))
     .input(z.object({ connectionId: z.string() }))
     .query(async ({ ctx, input }) => {
       const connection = await loadConnection(input.connectionId, ctx.organizationId);
@@ -155,7 +155,7 @@ export const jiraRouter = router({
       if (!response.ok) {
         const text = await response.text();
         throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
+          code: 'INTERNAL_SERVER_ERROR',
           message: `Failed to list Jira projects: ${text}`,
         });
       }
@@ -166,14 +166,14 @@ export const jiraRouter = router({
         name: string;
       }>;
 
-      return projects.map((p) => ({ id: p.id, key: p.key, name: p.name }));
+      return projects.map(p => ({ id: p.id, key: p.key, name: p.name }));
     }),
 
   /**
    * List issue types for a specific Jira project.
    */
   listIssueTypes: tenantProcedure
-    .use(requirePermission({ settings: ["read"] }))
+    .use(requirePermission({ settings: ['read'] }))
     .input(
       z.object({
         connectionId: z.string(),
@@ -194,7 +194,7 @@ export const jiraRouter = router({
       if (!response.ok) {
         const text = await response.text();
         throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
+          code: 'INTERNAL_SERVER_ERROR',
           message: `Failed to list Jira issue types: ${text}`,
         });
       }
@@ -203,7 +203,7 @@ export const jiraRouter = router({
         issueTypes?: Array<{ id: string; name: string }>;
       };
 
-      return (project.issueTypes ?? []).map((t) => ({
+      return (project.issueTypes ?? []).map(t => ({
         id: t.id,
         name: t.name,
       }));
@@ -213,7 +213,7 @@ export const jiraRouter = router({
    * List project-level statuses with transition info.
    */
   listProjectStatuses: tenantProcedure
-    .use(requirePermission({ settings: ["read"] }))
+    .use(requirePermission({ settings: ['read'] }))
     .input(
       z.object({
         connectionId: z.string(),
@@ -234,7 +234,7 @@ export const jiraRouter = router({
       if (!response.ok) {
         const text = await response.text();
         throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
+          code: 'INTERNAL_SERVER_ERROR',
           message: `Failed to list Jira project statuses: ${text}`,
         });
       }
@@ -252,7 +252,7 @@ export const jiraRouter = router({
    * Get saved status mapping for a Jira project.
    */
   getStatusMapping: tenantProcedure
-    .use(requirePermission({ settings: ["read"] }))
+    .use(requirePermission({ settings: ['read'] }))
     .input(
       z.object({
         connectionId: z.string(),
@@ -269,7 +269,7 @@ export const jiraRouter = router({
    * Get Jira configuration for a workflow task template.
    */
   getTaskConfig: tenantProcedure
-    .use(requirePermission({ workflow: ["read"] }))
+    .use(requirePermission({ workflow: ['read'] }))
     .input(z.object({ taskTemplateId: z.string() }))
     .query(async ({ input }) => {
       const template = await ctx.db.workflowTaskTemplate.findUnique({
@@ -291,18 +291,18 @@ export const jiraRouter = router({
   linkedIssues: tenantProcedure
     .input(
       z.object({
-        entityType: z.enum(["WORKFLOW_TASK_RUN", "WORKFLOW_RUN"]),
+        entityType: z.enum(['WORKFLOW_TASK_RUN', 'WORKFLOW_RUN']),
         entityId: z.string(),
       }),
     )
     .query(async ({ ctx, input }) => {
-      if (input.entityType === "WORKFLOW_TASK_RUN") {
+      if (input.entityType === 'WORKFLOW_TASK_RUN') {
         const links = await ctx.db.externalLink.findMany({
           where: {
             organizationId: ctx.organizationId,
-            entityType: "WORKFLOW_TASK_RUN",
+            entityType: 'WORKFLOW_TASK_RUN',
             entityId: input.entityId,
-            externalType: "JIRA_ISSUE",
+            externalType: 'JIRA_ISSUE',
           },
           select: {
             id: true,
@@ -329,9 +329,9 @@ export const jiraRouter = router({
       const links = await ctx.db.externalLink.findMany({
         where: {
           organizationId: ctx.organizationId,
-          entityType: "WORKFLOW_TASK_RUN",
-          entityId: { in: taskRuns.map((t) => t.id) },
-          externalType: "JIRA_ISSUE",
+          entityType: 'WORKFLOW_TASK_RUN',
+          entityId: { in: taskRuns.map(t => t.id) },
+          externalType: 'JIRA_ISSUE',
         },
         select: {
           id: true,
@@ -369,7 +369,7 @@ export const jiraRouter = router({
       // Get all task run IDs
       const taskRuns = await ctx.db.workflowTaskRun.findMany({
         where: {
-          workflowRunId: { in: runs.map((r) => r.id) },
+          workflowRunId: { in: runs.map(r => r.id) },
         },
         select: { id: true },
       });
@@ -380,11 +380,11 @@ export const jiraRouter = router({
       const links = await ctx.db.externalLink.findMany({
         where: {
           organizationId: ctx.organizationId,
-          entityType: "WORKFLOW_TASK_RUN",
-          entityId: { in: taskRuns.map((t) => t.id) },
-          externalType: "JIRA_ISSUE",
+          entityType: 'WORKFLOW_TASK_RUN',
+          entityId: { in: taskRuns.map(t => t.id) },
+          externalType: 'JIRA_ISSUE',
         },
-        orderBy: { updatedAt: "desc" },
+        orderBy: { updatedAt: 'desc' },
         take: input.limit,
         select: {
           id: true,
@@ -407,8 +407,8 @@ export const jiraRouter = router({
    * After saving, registers/updates webhooks for all projects with mappings.
    */
   saveStatusMapping: tenantProcedure
-    .use(requirePermission({ settings: ["update"] }))
-    .use(requireTier("PRO"))
+    .use(requirePermission({ settings: ['update'] }))
+    .use(requireTier('PRO'))
     .input(saveJiraStatusMappingInputSchema)
     .mutation(async ({ ctx, input }) => {
       const connection = await loadConnection(input.connectionId, ctx.organizationId);
@@ -432,7 +432,7 @@ export const jiraRouter = router({
           // For now, use the project IDs directly in JQL (Jira accepts both)
           await registerJiraWebhooks(prisma, input.connectionId, projectKeys);
         } catch (error) {
-          console.error("[jira.saveStatusMapping] Failed to register webhooks:", error);
+          console.error('[jira.saveStatusMapping] Failed to register webhooks:', error);
           // Don't fail the save — webhooks can be retried
         }
       }
@@ -444,8 +444,8 @@ export const jiraRouter = router({
    * Save Jira configuration for a workflow task template.
    */
   saveTaskConfig: tenantProcedure
-    .use(requirePermission({ workflow: ["update"] }))
-    .use(requireTier("PRO"))
+    .use(requirePermission({ workflow: ['update'] }))
+    .use(requireTier('PRO'))
     .input(saveJiraTaskConfigInputSchema)
     .mutation(async ({ ctx, input }) => {
       const template = await ctx.db.workflowTaskTemplate.findFirst({
@@ -458,7 +458,7 @@ export const jiraRouter = router({
 
       if (!template) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: E.WORKFLOW_TEMPLATE_NOT_FOUND,
         });
       }
@@ -483,21 +483,21 @@ export const jiraRouter = router({
    * Deregisters webhooks and sets connection status to DISCONNECTED.
    */
   disconnect: tenantProcedure
-    .use(requirePermission({ settings: ["update"] }))
-    .use(requireTier("PRO"))
+    .use(requirePermission({ settings: ['update'] }))
+    .use(requireTier('PRO'))
     .input(z.object({ connectionId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const connection = await ctx.db.integrationConnection.findFirst({
         where: {
           id: input.connectionId,
           organizationId: ctx.organizationId,
-          provider: "JIRA",
+          provider: 'JIRA',
         },
       });
 
       if (!connection) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: E.INTEGRATION_NOT_FOUND,
         });
       }
@@ -506,12 +506,12 @@ export const jiraRouter = router({
       try {
         await deregisterJiraWebhooks(prisma, input.connectionId);
       } catch (error) {
-        console.error("[jira.disconnect] Failed to deregister webhooks:", error);
+        console.error('[jira.disconnect] Failed to deregister webhooks:', error);
       }
 
       await ctx.db.integrationConnection.update({
         where: { id: connection.id },
-        data: { status: "DISCONNECTED" },
+        data: { status: 'DISCONNECTED' },
       });
 
       return { success: true };

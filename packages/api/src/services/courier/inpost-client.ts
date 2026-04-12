@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 import type {
   CourierClient,
@@ -7,7 +7,7 @@ import type {
   InPostShipmentParams,
   LabelFormat,
   ShipmentParams,
-} from "./courier-client.js";
+} from './courier-client.js';
 
 // ---------------------------------------------------------------------------
 // InPost ShipX API Client
@@ -16,8 +16,8 @@ import type {
 // Uses globalThis.fetch for test mockability.
 // ---------------------------------------------------------------------------
 
-const SHIPX_SANDBOX_URL = "https://sandbox-api-shipx-pl.easypack24.net";
-const SHIPX_PRODUCTION_URL = "https://api-shipx-pl.easypack24.net";
+const SHIPX_SANDBOX_URL = 'https://sandbox-api-shipx-pl.easypack24.net';
+const SHIPX_PRODUCTION_URL = 'https://api-shipx-pl.easypack24.net';
 
 /** Zod schema for ShipX create-shipment response validation. */
 const shipxCreateResponseSchema = z.object({
@@ -59,7 +59,7 @@ export class InPostClient implements CourierClient {
   private get headers(): Record<string, string> {
     return {
       Authorization: `Bearer ${this.apiToken}`,
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     };
   }
 
@@ -69,8 +69,8 @@ export class InPostClient implements CourierClient {
    * POST /v1/organizations/{orgId}/shipments
    */
   async createShipment(params: ShipmentParams): Promise<CourierShipmentResult> {
-    if (!("targetPoint" in params)) {
-      throw new Error("[InPostClient] createShipment requires targetPoint (Paczkomat ID)");
+    if (!('targetPoint' in params)) {
+      throw new Error('[InPostClient] createShipment requires targetPoint (Paczkomat ID)');
     }
     const inpostParams = params as InPostShipmentParams;
 
@@ -85,21 +85,21 @@ export class InPostClient implements CourierClient {
       parcels: [{ template: inpostParams.parcelSize }],
       custom_attributes: {
         target_point: inpostParams.targetPoint,
-        sending_method: "dispatch_order",
+        sending_method: 'dispatch_order',
       },
-      service: "inpost_locker_standard",
+      service: 'inpost_locker_standard',
       reference: inpostParams.reference,
       external_customer_id: inpostParams.organizationId,
     };
 
     const response = await globalThis.fetch(url, {
-      method: "POST",
+      method: 'POST',
       headers: this.headers,
       body: JSON.stringify(body),
     });
 
     if (!response.ok) {
-      const errorBody = await response.text().catch(() => "unknown");
+      const errorBody = await response.text().catch(() => 'unknown');
       throw new Error(
         `[InPostClient] createShipment failed: HTTP ${response.status} — ${errorBody}`,
       );
@@ -121,12 +121,12 @@ export class InPostClient implements CourierClient {
    *
    * GET /v1/shipments/{id}/label
    */
-  async getLabel(shipmentExternalId: string, format: LabelFormat = "pdf"): Promise<Buffer> {
+  async getLabel(shipmentExternalId: string, format: LabelFormat = 'pdf'): Promise<Buffer> {
     const url = `${this.baseUrl}/v1/shipments/${shipmentExternalId}/label`;
-    const accept = format === "zpl" ? "application/zpl" : "application/pdf";
+    const accept = format === 'zpl' ? 'application/zpl' : 'application/pdf';
 
     const response = await globalThis.fetch(url, {
-      method: "GET",
+      method: 'GET',
       headers: {
         Authorization: `Bearer ${this.apiToken}`,
         Accept: accept,
@@ -134,7 +134,7 @@ export class InPostClient implements CourierClient {
     });
 
     if (!response.ok) {
-      const errorBody = await response.text().catch(() => "unknown");
+      const errorBody = await response.text().catch(() => 'unknown');
       throw new Error(`[InPostClient] getLabel failed: HTTP ${response.status} — ${errorBody}`);
     }
 
@@ -151,12 +151,12 @@ export class InPostClient implements CourierClient {
     const url = `${this.baseUrl}/v1/shipments/${shipmentExternalId}`;
 
     const response = await globalThis.fetch(url, {
-      method: "GET",
+      method: 'GET',
       headers: this.headers,
     });
 
     if (!response.ok) {
-      const errorBody = await response.text().catch(() => "unknown");
+      const errorBody = await response.text().catch(() => 'unknown');
       throw new Error(`[InPostClient] getStatus failed: HTTP ${response.status} — ${errorBody}`);
     }
 
@@ -180,12 +180,12 @@ export class InPostClient implements CourierClient {
     const url = `${this.baseUrl}/v1/shipments/${shipmentExternalId}`;
 
     const response = await globalThis.fetch(url, {
-      method: "DELETE",
+      method: 'DELETE',
       headers: this.headers,
     });
 
     if (!response.ok) {
-      const errorBody = await response.text().catch(() => "unknown");
+      const errorBody = await response.text().catch(() => 'unknown');
       throw new Error(
         `[InPostClient] cancelShipment failed: HTTP ${response.status} — ${errorBody}`,
       );

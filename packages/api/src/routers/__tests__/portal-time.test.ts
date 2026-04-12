@@ -3,13 +3,13 @@
  * Mocks portal session, Prisma, and time/sync services.
  */
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const ORG_ID = "org-portal-time-001";
-const CONTRACTOR_ID = "contractor-portal-time-001";
-const SESSION_TOKEN = "portal-session-token-time";
-const TS_ID = "cltimesheet000000000000001";
-const CONTRACT_ID = "clcontract000000000000001";
+const ORG_ID = 'org-portal-time-001';
+const CONTRACTOR_ID = 'contractor-portal-time-001';
+const SESSION_TOKEN = 'portal-session-token-time';
+const TS_ID = 'cltimesheet000000000000001';
+const CONTRACT_ID = 'clcontract000000000000001';
 
 const {
   mockPrisma,
@@ -24,15 +24,15 @@ const {
 
   const mockGetOrCreateTimesheet = vi.fn(async () => ({
     id: TS_ID,
-    weekStartDate: new Date("2026-04-06T00:00:00.000Z"),
+    weekStartDate: new Date('2026-04-06T00:00:00.000Z'),
     organizationId: ORG_ID,
     contractorId: CONTRACTOR_ID,
-    status: "DRAFT",
+    status: 'DRAFT',
     totalMinutes: 0,
   }));
 
   const mockSaveDraftEntries = vi.fn(async () => ({ updated: 1 }));
-  const mockSubmitTimesheet = vi.fn(async () => ({ status: "SUBMITTED" }));
+  const mockSubmitTimesheet = vi.fn(async () => ({ status: 'SUBMITTED' }));
   const mockSyncClockify = vi.fn(async () => ({ imported: 2 }));
   const mockSyncJira = vi.fn(async () => ({ imported: 1 }));
 
@@ -63,21 +63,21 @@ const {
   };
 });
 
-vi.mock("../../services/time-entry.js", () => ({
+vi.mock('../../services/time-entry.js', () => ({
   getOrCreateTimesheet: mockGetOrCreateTimesheet,
   saveDraftEntries: mockSaveDraftEntries,
   submitTimesheet: mockSubmitTimesheet,
 }));
 
-vi.mock("../../services/clockify-sync.js", () => ({
+vi.mock('../../services/clockify-sync.js', () => ({
   syncClockifyEntries: mockSyncClockify,
 }));
 
-vi.mock("../../services/jira-worklog-sync.js", () => ({
+vi.mock('../../services/jira-worklog-sync.js', () => ({
   syncJiraWorklogs: mockSyncJira,
 }));
 
-vi.mock("@contractor-ops/auth", () => ({
+vi.mock('@contractor-ops/auth', () => ({
   auth: {
     api: {
       getSession: vi.fn(),
@@ -86,7 +86,7 @@ vi.mock("@contractor-ops/auth", () => ({
   },
 }));
 
-vi.mock("@contractor-ops/db", () => ({
+vi.mock('@contractor-ops/db', () => ({
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
@@ -94,29 +94,29 @@ vi.mock("@contractor-ops/db", () => ({
   },
 }));
 
-vi.mock("../../services/portal-session.js", () => ({
+vi.mock('../../services/portal-session.js', () => ({
   validatePortalSession: vi.fn(async (token: string) => {
     if (token !== SESSION_TOKEN) return null;
     return {
       contractorId: CONTRACTOR_ID,
       organizationId: ORG_ID,
-      contractor: { id: CONTRACTOR_ID, email: "contractor@test.com" },
+      contractor: { id: CONTRACTOR_ID, email: 'contractor@test.com' },
     };
   }),
   createPortalSession: vi.fn(),
   deletePortalSession: vi.fn(),
 }));
 
-vi.mock("@contractor-ops/logger", () => ({
+vi.mock('@contractor-ops/logger', () => ({
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
 
-vi.mock("@contractor-ops/logger/metrics", () => ({
+vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { increment: vi.fn(), histogram: vi.fn(), distribution: vi.fn() },
 }));
 
-vi.mock("@sentry/nextjs", () => {
+vi.mock('@sentry/nextjs', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
     startSpan: vi.fn((_o: unknown, fn: (span: typeof mockSpan) => unknown) => fn(mockSpan)),
@@ -124,8 +124,8 @@ vi.mock("@sentry/nextjs", () => {
   };
 });
 
-import { createCallerFactory } from "../../init.js";
-import { portalTimeRouter } from "../portal-time.js";
+import { createCallerFactory } from '../../init.js';
+import { portalTimeRouter } from '../portal-time.js';
 
 const createCaller = createCallerFactory(portalTimeRouter);
 
@@ -143,18 +143,18 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-describe("portalTimeRouter", () => {
-  it("getTimesheet loads entries scoped to org and timesheet", async () => {
+describe('portalTimeRouter', () => {
+  it('getTimesheet loads entries scoped to org and timesheet', async () => {
     mockPrisma.timeEntry.findMany.mockResolvedValueOnce([
       {
-        id: "e1",
+        id: 'e1',
         timesheetId: TS_ID,
         organizationId: ORG_ID,
-        contract: { id: CONTRACT_ID, title: "MSA" },
+        contract: { id: CONTRACT_ID, title: 'MSA' },
       },
     ]);
 
-    const out = await caller.getTimesheet({ weekStartDate: "2026-04-06" });
+    const out = await caller.getTimesheet({ weekStartDate: '2026-04-06' });
 
     expect(mockGetOrCreateTimesheet).toHaveBeenCalledWith(
       mockPrisma,
@@ -173,9 +173,9 @@ describe("portalTimeRouter", () => {
     expect(out.entries).toHaveLength(1);
   });
 
-  it("getActiveContracts lists ACTIVE contracts for contractor", async () => {
+  it('getActiveContracts lists ACTIVE contracts for contractor', async () => {
     mockPrisma.contract.findMany.mockResolvedValueOnce([
-      { id: CONTRACT_ID, title: "MSA", rateType: "HOURLY", rateValueMinor: 10000 },
+      { id: CONTRACT_ID, title: 'MSA', rateType: 'HOURLY', rateValueMinor: 10000 },
     ]);
 
     const rows = await caller.getActiveContracts();
@@ -184,7 +184,7 @@ describe("portalTimeRouter", () => {
       where: {
         organizationId: ORG_ID,
         contractorId: CONTRACTOR_ID,
-        status: "ACTIVE",
+        status: 'ACTIVE',
         deletedAt: null,
       },
       select: {
@@ -193,18 +193,18 @@ describe("portalTimeRouter", () => {
         rateType: true,
         rateValueMinor: true,
       },
-      orderBy: { title: "asc" },
+      orderBy: { title: 'asc' },
     });
     expect(rows).toHaveLength(1);
   });
 
-  it("saveDraftEntries delegates to service", async () => {
+  it('saveDraftEntries delegates to service', async () => {
     await caller.saveDraftEntries({
       timesheetId: TS_ID,
       entries: [
         {
           contractId: CONTRACT_ID,
-          entryDate: "2026-04-08",
+          entryDate: '2026-04-08',
           minutes: 60,
         },
       ],
@@ -219,18 +219,18 @@ describe("portalTimeRouter", () => {
     );
   });
 
-  it("submitTimesheet delegates to service", async () => {
+  it('submitTimesheet delegates to service', async () => {
     await caller.submitTimesheet({ timesheetId: TS_ID });
 
     expect(mockSubmitTimesheet).toHaveBeenCalledWith(mockPrisma, ORG_ID, CONTRACTOR_ID, TS_ID);
   });
 
-  it("listTimesheets paginates with cursor and filters", async () => {
+  it('listTimesheets paginates with cursor and filters', async () => {
     mockPrisma.timesheet.findMany.mockResolvedValueOnce([
       {
-        id: "t1",
-        weekStartDate: new Date("2026-04-06"),
-        status: "DRAFT",
+        id: 't1',
+        weekStartDate: new Date('2026-04-06'),
+        status: 'DRAFT',
         totalMinutes: 0,
         submittedAt: null,
         reviewedAt: null,
@@ -238,9 +238,9 @@ describe("portalTimeRouter", () => {
     ]);
 
     const out = await caller.listTimesheets({
-      status: "DRAFT",
-      from: "2026-01-01",
-      to: "2026-12-31",
+      status: 'DRAFT',
+      from: '2026-01-01',
+      to: '2026-12-31',
       limit: 5,
     });
 
@@ -249,53 +249,53 @@ describe("portalTimeRouter", () => {
     expect(out.nextCursor).toBeUndefined();
   });
 
-  it("getConnectedProviders maps Clockify and Jira connections", async () => {
+  it('getConnectedProviders maps Clockify and Jira connections', async () => {
     mockPrisma.integrationConnection.findMany.mockResolvedValueOnce([
-      { provider: "CLOCKIFY" },
-      { provider: "JIRA" },
+      { provider: 'CLOCKIFY' },
+      { provider: 'JIRA' },
     ]);
 
     const rows = await caller.getConnectedProviders();
 
-    expect(rows.map((r) => r.provider)).toEqual(["CLOCKIFY", "JIRA"]);
-    expect(rows[0]?.displayName).toBe("Clockify");
-    expect(rows[1]?.displayName).toBe("Jira");
+    expect(rows.map(r => r.provider)).toEqual(['CLOCKIFY', 'JIRA']);
+    expect(rows[0]?.displayName).toBe('Clockify');
+    expect(rows[1]?.displayName).toBe('Jira');
   });
 
-  it("syncExternal throws NOT_FOUND when integration is missing", async () => {
+  it('syncExternal throws NOT_FOUND when integration is missing', async () => {
     mockPrisma.integrationConnection.findFirst.mockResolvedValueOnce(null);
 
     await expect(
       caller.syncExternal({
-        provider: "CLOCKIFY",
-        startDate: "2026-04-01",
-        endDate: "2026-04-07",
+        provider: 'CLOCKIFY',
+        startDate: '2026-04-01',
+        endDate: '2026-04-07',
       }),
-    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+    ).rejects.toMatchObject({ code: 'NOT_FOUND' });
     expect(mockSyncClockify).not.toHaveBeenCalled();
   });
 
-  it("syncExternal throws PRECONDITION_FAILED when no active contract", async () => {
-    mockPrisma.integrationConnection.findFirst.mockResolvedValueOnce({ id: "int-1" });
+  it('syncExternal throws PRECONDITION_FAILED when no active contract', async () => {
+    mockPrisma.integrationConnection.findFirst.mockResolvedValueOnce({ id: 'int-1' });
     mockPrisma.contract.findFirst.mockResolvedValueOnce(null);
 
     await expect(
       caller.syncExternal({
-        provider: "CLOCKIFY",
-        startDate: "2026-04-01",
-        endDate: "2026-04-07",
+        provider: 'CLOCKIFY',
+        startDate: '2026-04-01',
+        endDate: '2026-04-07',
       }),
-    ).rejects.toMatchObject({ code: "PRECONDITION_FAILED" });
+    ).rejects.toMatchObject({ code: 'PRECONDITION_FAILED' });
   });
 
-  it("syncExternal routes CLOCKIFY to syncClockifyEntries", async () => {
-    mockPrisma.integrationConnection.findFirst.mockResolvedValueOnce({ id: "int-1" });
+  it('syncExternal routes CLOCKIFY to syncClockifyEntries', async () => {
+    mockPrisma.integrationConnection.findFirst.mockResolvedValueOnce({ id: 'int-1' });
     mockPrisma.contract.findFirst.mockResolvedValueOnce({ id: CONTRACT_ID });
 
     await caller.syncExternal({
-      provider: "CLOCKIFY",
-      startDate: "2026-04-01",
-      endDate: "2026-04-07",
+      provider: 'CLOCKIFY',
+      startDate: '2026-04-01',
+      endDate: '2026-04-07',
     });
 
     expect(mockSyncClockify).toHaveBeenCalledWith(
@@ -304,20 +304,20 @@ describe("portalTimeRouter", () => {
       CONTRACTOR_ID,
       CONTRACT_ID,
       TS_ID,
-      "int-1",
-      "2026-04-01",
-      "2026-04-07",
+      'int-1',
+      '2026-04-01',
+      '2026-04-07',
     );
   });
 
-  it("syncExternal routes JIRA to syncJiraWorklogs", async () => {
-    mockPrisma.integrationConnection.findFirst.mockResolvedValueOnce({ id: "int-jira" });
+  it('syncExternal routes JIRA to syncJiraWorklogs', async () => {
+    mockPrisma.integrationConnection.findFirst.mockResolvedValueOnce({ id: 'int-jira' });
     mockPrisma.contract.findFirst.mockResolvedValueOnce({ id: CONTRACT_ID });
 
     await caller.syncExternal({
-      provider: "JIRA",
-      startDate: "2026-04-01",
-      endDate: "2026-04-07",
+      provider: 'JIRA',
+      startDate: '2026-04-01',
+      endDate: '2026-04-07',
     });
 
     expect(mockSyncJira).toHaveBeenCalledWith(
@@ -326,9 +326,9 @@ describe("portalTimeRouter", () => {
       CONTRACTOR_ID,
       CONTRACT_ID,
       TS_ID,
-      "int-jira",
-      "2026-04-01",
-      "2026-04-07",
+      'int-jira',
+      '2026-04-01',
+      '2026-04-07',
     );
   });
 });

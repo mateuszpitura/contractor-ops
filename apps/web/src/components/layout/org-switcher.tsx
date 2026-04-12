@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import { Building2, ChevronsUpDown, Plus } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { toast } from "sonner";
-import { useDashboardContext } from "@/components/layout/dashboard-context";
-import { Button } from "@/components/ui/button";
+import { Building2, ChevronsUpDown, Plus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { useDashboardContext } from '@/components/layout/dashboard-context';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,11 +20,11 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { SidebarMenuButton, useSidebar } from "@/components/ui/sidebar";
-import { authClient } from "@/lib/auth-client";
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { SidebarMenuButton, useSidebar } from '@/components/ui/sidebar';
+import { authClient } from '@/lib/auth-client';
 
 /**
  * Organization switcher dropdown at the top of the sidebar.
@@ -33,12 +33,12 @@ import { authClient } from "@/lib/auth-client";
  * Includes "Add organization" button that opens a creation dialog.
  */
 export function OrgSwitcher() {
-  const t = useTranslations("Common.orgSwitcher");
+  const t = useTranslations('Common.orgSwitcher');
   const { isMobile } = useSidebar();
   const { activeOrg: serverOrg } = useDashboardContext();
   const { data: orgList } = authClient.useListOrganizations();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [newOrgName, setNewOrgName] = useState("");
+  const [newOrgName, setNewOrgName] = useState('');
   const [isCreating, setIsCreating] = useState(false);
 
   const currentOrg = serverOrg;
@@ -57,20 +57,20 @@ export function OrgSwitcher() {
     try {
       const slug = name
         .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-|-$/g, "");
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
       const { error } = await authClient.organization.create({ name, slug });
 
       if (error) {
-        toast.error(error.message ?? t("createFailed"));
+        toast.error(error.message ?? t('createFailed'));
         return;
       }
 
       setDialogOpen(false);
-      setNewOrgName("");
+      setNewOrgName('');
       window.location.reload();
     } catch {
-      toast.error(t("createFailed"));
+      toast.error(t('createFailed'));
     } finally {
       setIsCreating(false);
     }
@@ -85,31 +85,28 @@ export function OrgSwitcher() {
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             />
-          }
-        >
+          }>
           <div className="org-logo-gradient flex aspect-square size-8 items-center justify-center rounded-lg text-primary-foreground font-display text-sm font-bold shadow-sm">
-            {currentOrg?.name?.charAt(0)?.toUpperCase() ?? "O"}
+            {currentOrg?.name?.charAt(0)?.toUpperCase() ?? 'O'}
           </div>
           <div className="grid flex-1 text-start text-sm leading-tight">
-            <span className="truncate font-semibold">{currentOrg?.name ?? t("selectOrg")}</span>
+            <span className="truncate font-semibold">{currentOrg?.name ?? t('selectOrg')}</span>
           </div>
           <ChevronsUpDown className="ms-auto size-4" />
         </DropdownMenuTrigger>
         <DropdownMenuContent
           className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
           align="start"
-          side={isMobile ? "bottom" : "right"}
-          sideOffset={4}
-        >
+          side={isMobile ? 'bottom' : 'right'}
+          sideOffset={4}>
           <DropdownMenuLabel className="text-xs text-muted-foreground">
-            {t("orgsLabel")}
+            {t('orgsLabel')}
           </DropdownMenuLabel>
-          {organizations.map((org) => (
+          {organizations.map(org => (
             <DropdownMenuItem
               key={org.id}
               onClick={() => handleOrgSwitch(org.id)}
-              className="gap-2 p-2"
-            >
+              className="gap-2 p-2">
               <div className="flex size-6 items-center justify-center rounded-sm border">
                 <Building2 className="size-4 shrink-0" />
               </div>
@@ -121,7 +118,7 @@ export function OrgSwitcher() {
             <div className="flex size-6 items-center justify-center rounded-md border bg-background">
               <Plus className="size-3.5" />
             </div>
-            <span>{t("addOrg")}</span>
+            <span>{t('addOrg')}</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -129,23 +126,22 @@ export function OrgSwitcher() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-[400px]">
           <DialogHeader>
-            <DialogTitle>{t("createTitle")}</DialogTitle>
-            <DialogDescription>{t("createDescription")}</DialogDescription>
+            <DialogTitle>{t('createTitle')}</DialogTitle>
+            <DialogDescription>{t('createDescription')}</DialogDescription>
           </DialogHeader>
           <form
-            onSubmit={(e) => {
+            onSubmit={e => {
               e.preventDefault();
               handleCreateOrg();
             }}
-            className="space-y-4"
-          >
+            className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="org-name">{t("nameLabel")}</Label>
+              <Label htmlFor="org-name">{t('nameLabel')}</Label>
               <Input
                 id="org-name"
                 value={newOrgName}
-                onChange={(e) => setNewOrgName(e.target.value)}
-                placeholder={t("namePlaceholder")}
+                onChange={e => setNewOrgName(e.target.value)}
+                placeholder={t('namePlaceholder')}
                 disabled={isCreating}
                 autoFocus
               />
@@ -155,12 +151,11 @@ export function OrgSwitcher() {
                 type="button"
                 variant="outline"
                 onClick={() => setDialogOpen(false)}
-                disabled={isCreating}
-              >
-                {t("cancel")}
+                disabled={isCreating}>
+                {t('cancel')}
               </Button>
               <Button type="submit" disabled={isCreating || !newOrgName.trim()}>
-                {isCreating ? t("creating") : t("create")}
+                {isCreating ? t('creating') : t('create')}
               </Button>
             </div>
           </form>

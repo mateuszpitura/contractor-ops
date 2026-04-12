@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Ban, FilePlus, MoreHorizontal, Pencil, Replace, Upload } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { toast } from "sonner";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Ban, FilePlus, MoreHorizontal, Pencil, Replace, Upload } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,19 +14,19 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+} from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Link } from "@/i18n/navigation";
-import { trpc } from "@/trpc/init";
-import { SendForSignatureButton } from "./send-for-signature-button";
+} from '@/components/ui/dropdown-menu';
+import { Link } from '@/i18n/navigation';
+import { trpc } from '@/trpc/init';
+import { SendForSignatureButton } from './send-for-signature-button';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -51,7 +51,7 @@ type DetailHeaderProps = {
     _contractParties?: Array<{
       name: string;
       email: string;
-      role: "signer" | "countersigner";
+      role: 'signer' | 'countersigner';
     }>;
     /** First document ID for pre-selection */
     _firstDocumentId?: string;
@@ -63,29 +63,29 @@ type DetailHeaderProps = {
 // ---------------------------------------------------------------------------
 
 const statusBadgeStyles: Record<string, string> = {
-  DRAFT: "bg-muted text-muted-foreground border-border",
-  PENDING_SIGNATURE: "bg-amber-500/10 text-amber-600",
-  ACTIVE: "bg-green-600/10 text-green-600",
-  EXPIRING: "bg-amber-500/10 text-amber-600",
-  EXPIRED: "bg-red-500/10 text-red-500",
-  TERMINATED: "bg-muted text-muted-foreground border-border",
-  SUPERSEDED: "bg-muted/50 text-muted-foreground/60 border-border/50",
-  ARCHIVED: "bg-muted text-muted-foreground border-border",
-  SIGNATURE_DECLINED: "bg-red-500/10 text-red-500",
-  SIGNATURE_EXPIRED: "bg-red-500/10 text-red-500",
+  DRAFT: 'bg-muted text-muted-foreground border-border',
+  PENDING_SIGNATURE: 'bg-amber-500/10 text-amber-600',
+  ACTIVE: 'bg-green-600/10 text-green-600',
+  EXPIRING: 'bg-amber-500/10 text-amber-600',
+  EXPIRED: 'bg-red-500/10 text-red-500',
+  TERMINATED: 'bg-muted text-muted-foreground border-border',
+  SUPERSEDED: 'bg-muted/50 text-muted-foreground/60 border-border/50',
+  ARCHIVED: 'bg-muted text-muted-foreground border-border',
+  SIGNATURE_DECLINED: 'bg-red-500/10 text-red-500',
+  SIGNATURE_EXPIRED: 'bg-red-500/10 text-red-500',
 };
 
 const _statusLabels: Record<string, string> = {
-  DRAFT: "Draft",
-  PENDING_SIGNATURE: "Pending Signature",
-  ACTIVE: "Active",
-  EXPIRING: "Expiring",
-  EXPIRED: "Expired",
-  TERMINATED: "Terminated",
-  SUPERSEDED: "Superseded",
-  ARCHIVED: "Archived",
-  SIGNATURE_DECLINED: "Signature Declined",
-  SIGNATURE_EXPIRED: "Signature Expired",
+  DRAFT: 'Draft',
+  PENDING_SIGNATURE: 'Pending Signature',
+  ACTIVE: 'Active',
+  EXPIRING: 'Expiring',
+  EXPIRED: 'Expired',
+  TERMINATED: 'Terminated',
+  SUPERSEDED: 'Superseded',
+  ARCHIVED: 'Archived',
+  SIGNATURE_DECLINED: 'Signature Declined',
+  SIGNATURE_EXPIRED: 'Signature Expired',
 };
 
 // ---------------------------------------------------------------------------
@@ -93,15 +93,15 @@ const _statusLabels: Record<string, string> = {
 // ---------------------------------------------------------------------------
 
 export function DetailHeader({ contract }: DetailHeaderProps) {
-  const t = useTranslations("ContractDetail");
-  const tEnum = useTranslations("Contracts");
+  const t = useTranslations('ContractDetail');
+  const tEnum = useTranslations('Contracts');
   const queryClient = useQueryClient();
   const [terminateOpen, setTerminateOpen] = useState(false);
 
   const terminateMutation = useMutation(
     trpc.contract.transitionStatus.mutationOptions({
       onSuccess: () => {
-        toast.success(t("actions.terminateSuccess"));
+        toast.success(t('actions.terminateSuccess'));
         queryClient.invalidateQueries({
           queryKey: trpc.contract.getById.queryKey(),
         });
@@ -109,10 +109,10 @@ export function DetailHeader({ contract }: DetailHeaderProps) {
       },
       onError: (error: unknown) => {
         const message =
-          typeof error === "object" && error && "message" in error
-            ? String((error as { message?: unknown }).message ?? "")
-            : "";
-        toast.error(message || t("actions.terminateError"));
+          typeof error === 'object' && error && 'message' in error
+            ? String((error as { message?: unknown }).message ?? '')
+            : '';
+        toast.error(message || t('actions.terminateError'));
       },
     }),
   );
@@ -120,34 +120,34 @@ export function DetailHeader({ contract }: DetailHeaderProps) {
   const supersedeMutation = useMutation(
     trpc.contract.transitionStatus.mutationOptions({
       onSuccess: () => {
-        toast.success(t("actions.supersedeSuccess"));
+        toast.success(t('actions.supersedeSuccess'));
         queryClient.invalidateQueries({
           queryKey: trpc.contract.getById.queryKey(),
         });
       },
       onError: (error: unknown) => {
         const message =
-          typeof error === "object" && error && "message" in error
-            ? String((error as { message?: unknown }).message ?? "")
-            : "";
-        toast.error(message || t("actions.supersedeError"));
+          typeof error === 'object' && error && 'message' in error
+            ? String((error as { message?: unknown }).message ?? '')
+            : '';
+        toast.error(message || t('actions.supersedeError'));
       },
     }),
   );
 
-  const canTerminate = ["DRAFT", "ACTIVE", "EXPIRING", "EXPIRED", "PENDING_SIGNATURE"].includes(
+  const canTerminate = ['DRAFT', 'ACTIVE', 'EXPIRING', 'EXPIRED', 'PENDING_SIGNATURE'].includes(
     contract.status,
   );
-  const canSupersede = ["ACTIVE", "EXPIRING", "EXPIRED"].includes(contract.status);
+  const canSupersede = ['ACTIVE', 'EXPIRING', 'EXPIRED'].includes(contract.status);
 
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <div className="flex items-center gap-2">
           <h1 className="text-[20px] font-semibold leading-tight">
-            {contract.title ?? t("untitled")}
+            {contract.title ?? t('untitled')}
           </h1>
-          <Badge variant="secondary" className={statusBadgeStyles[contract.status] ?? ""}>
+          <Badge variant="secondary" className={statusBadgeStyles[contract.status] ?? ''}>
             {tEnum(`status.${contract.status}` as Parameters<typeof tEnum>[0])}
           </Badge>
         </div>
@@ -155,8 +155,7 @@ export function DetailHeader({ contract }: DetailHeaderProps) {
           <div className="mt-1">
             <Link
               href={`/contractors/${contract.contractor.id}`}
-              className="text-sm text-primary hover:underline"
-            >
+              className="text-sm text-primary hover:underline">
               {contract.contractor.displayName}
             </Link>
           </div>
@@ -174,25 +173,25 @@ export function DetailHeader({ contract }: DetailHeaderProps) {
         />
         <DropdownMenu>
           <DropdownMenuTrigger
-            render={(props) => (
+            render={props => (
               <Button {...props} variant="outline" size="sm">
                 <MoreHorizontal className="me-1.5 size-3.5" />
-                {t("actions.label")}
+                {t('actions.label')}
               </Button>
             )}
           />
           <DropdownMenuContent align="end">
             <DropdownMenuItem disabled>
               <Pencil className="me-2 size-3.5" />
-              {t("actions.edit")}
+              {t('actions.edit')}
             </DropdownMenuItem>
             <DropdownMenuItem disabled>
               <FilePlus className="me-2 size-3.5" />
-              {t("actions.addAmendment")}
+              {t('actions.addAmendment')}
             </DropdownMenuItem>
             <DropdownMenuItem disabled>
               <Upload className="me-2 size-3.5" />
-              {t("actions.uploadDocument")}
+              {t('actions.uploadDocument')}
             </DropdownMenuItem>
 
             {(canTerminate || canSupersede) && <DropdownMenuSeparator />}
@@ -201,10 +200,9 @@ export function DetailHeader({ contract }: DetailHeaderProps) {
               <DropdownMenuItem
                 variant="destructive"
                 onSelect={() => setTerminateOpen(true)}
-                disabled={terminateMutation.isPending}
-              >
+                disabled={terminateMutation.isPending}>
                 <Ban className="me-2 size-3.5" />
-                {t("actions.terminate")}
+                {t('actions.terminate')}
               </DropdownMenuItem>
             )}
 
@@ -214,13 +212,12 @@ export function DetailHeader({ contract }: DetailHeaderProps) {
                 onSelect={() =>
                   supersedeMutation.mutate({
                     id: contract.id,
-                    targetStatus: "SUPERSEDED",
+                    targetStatus: 'SUPERSEDED',
                   })
                 }
-                disabled={supersedeMutation.isPending}
-              >
+                disabled={supersedeMutation.isPending}>
                 <Replace className="me-2 size-3.5" />
-                {t("actions.supersede")}
+                {t('actions.supersede')}
               </DropdownMenuItem>
             )}
           </DropdownMenuContent>
@@ -232,23 +229,22 @@ export function DetailHeader({ contract }: DetailHeaderProps) {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {t("actions.terminateTitle", { title: contract.title ?? "" })}
+              {t('actions.terminateTitle', { title: contract.title ?? '' })}
             </AlertDialogTitle>
-            <AlertDialogDescription>{t("actions.terminateBody")}</AlertDialogDescription>
+            <AlertDialogDescription>{t('actions.terminateBody')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t("actions.cancel")}</AlertDialogCancel>
+            <AlertDialogCancel>{t('actions.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
               onClick={() =>
                 terminateMutation.mutate({
                   id: contract.id,
-                  targetStatus: "TERMINATED",
+                  targetStatus: 'TERMINATED',
                 })
               }
-              disabled={terminateMutation.isPending}
-            >
-              {t("actions.terminateConfirm")}
+              disabled={terminateMutation.isPending}>
+              {t('actions.terminateConfirm')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

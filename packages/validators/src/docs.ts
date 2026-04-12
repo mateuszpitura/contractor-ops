@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // Doc link metadata cached in ExternalLink.metadataJson (D-04)
 export const notionPageMetadataSchema = z.object({
@@ -24,7 +24,7 @@ export const docSearchResultSchema = z.object({
   icon: z.string().nullable().optional(),
   subtitle: z.string(), // workspace name or space name
   url: z.string(),
-  provider: z.enum(["notion", "confluence"]),
+  provider: z.enum(['notion', 'confluence']),
 });
 export type DocSearchResult = z.infer<typeof docSearchResultSchema>;
 
@@ -33,7 +33,7 @@ export const attachDocInputSchema = z.object({
   workflowTaskRunId: z.string().cuid(),
   externalId: z.string(),
   externalUrl: z.string().url(),
-  externalType: z.enum(["NOTION_PAGE", "CONFLUENCE_PAGE"]),
+  externalType: z.enum(['NOTION_PAGE', 'CONFLUENCE_PAGE']),
   metadata: z.union([notionPageMetadataSchema, confluencePageMetadataSchema]),
 });
 export type AttachDocInput = z.infer<typeof attachDocInputSchema>;
@@ -41,6 +41,6 @@ export type AttachDocInput = z.infer<typeof attachDocInputSchema>;
 // Search input
 export const docSearchInputSchema = z.object({
   query: z.string().min(1).max(200),
-  provider: z.enum(["notion", "confluence", "all"]).default("all"),
+  provider: z.enum(['notion', 'confluence', 'all']).default('all'),
 });
 export type DocSearchInput = z.infer<typeof docSearchInputSchema>;

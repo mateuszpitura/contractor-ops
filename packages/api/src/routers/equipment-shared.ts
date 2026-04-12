@@ -11,12 +11,12 @@
 export const NOTIFICATION_KEYS = {
   equipment: {
     returnApproved: {
-      title: "notifications.equipment.returnApproved.title",
-      body: "notifications.equipment.returnApproved.body",
+      title: 'notifications.equipment.returnApproved.title',
+      body: 'notifications.equipment.returnApproved.body',
     },
     returnRejected: {
-      title: "notifications.equipment.returnRejected.title",
-      body: "notifications.equipment.returnRejected.body",
+      title: 'notifications.equipment.returnRejected.title',
+      body: 'notifications.equipment.returnRejected.body',
     },
   },
 } as const;
@@ -43,13 +43,13 @@ export function plain<T>(data: T): T {
  * statuses it can transition to.
  */
 export const EQUIPMENT_STATUS_TRANSITIONS: Record<string, string[]> = {
-  AVAILABLE: ["ASSIGNED", "IN_TRANSIT", "RETIRED"],
-  ASSIGNED: ["AVAILABLE", "IN_TRANSIT", "RETURN_REQUESTED", "RETIRED"],
-  IN_TRANSIT: ["DELIVERED", "AVAILABLE"],
-  DELIVERED: ["ASSIGNED", "RETURN_REQUESTED", "AVAILABLE", "RETIRED"],
-  RETURN_REQUESTED: ["RETURN_IN_TRANSIT", "AVAILABLE"],
-  RETURN_IN_TRANSIT: ["RETURNED", "AVAILABLE"],
-  RETURNED: ["AVAILABLE", "RETIRED"],
+  AVAILABLE: ['ASSIGNED', 'IN_TRANSIT', 'RETIRED'],
+  ASSIGNED: ['AVAILABLE', 'IN_TRANSIT', 'RETURN_REQUESTED', 'RETIRED'],
+  IN_TRANSIT: ['DELIVERED', 'AVAILABLE'],
+  DELIVERED: ['ASSIGNED', 'RETURN_REQUESTED', 'AVAILABLE', 'RETIRED'],
+  RETURN_REQUESTED: ['RETURN_IN_TRANSIT', 'AVAILABLE'],
+  RETURN_IN_TRANSIT: ['RETURNED', 'AVAILABLE'],
+  RETURNED: ['AVAILABLE', 'RETIRED'],
   RETIRED: [],
 };
 
@@ -62,12 +62,12 @@ export const SHIPMENT_TO_EQUIPMENT_STATUS: Record<
   Record<string, string | undefined> | undefined
 > = {
   DELIVERED: {
-    OUTBOUND: "DELIVERED",
-    RETURN: "RETURNED",
+    OUTBOUND: 'DELIVERED',
+    RETURN: 'RETURNED',
   },
   RETURNED: {
     OUTBOUND: undefined,
-    RETURN: "RETURNED",
+    RETURN: 'RETURNED',
   },
 };
 
@@ -75,10 +75,10 @@ export const SHIPMENT_TO_EQUIPMENT_STATUS: Record<
 // Error constants
 // ---------------------------------------------------------------------------
 
-export const EQUIPMENT_NOT_FOUND = "EQUIPMENT_NOT_FOUND";
-export const EQUIPMENT_NOT_AVAILABLE = "EQUIPMENT_NOT_AVAILABLE";
-export const EQUIPMENT_NOT_ASSIGNED = "EQUIPMENT_NOT_ASSIGNED";
-export const EQUIPMENT_CURRENTLY_ASSIGNED = "EQUIPMENT_CURRENTLY_ASSIGNED";
-export const CONTRACTOR_NOT_FOUND = "CONTRACTOR_NOT_FOUND";
-export const SHIPMENT_NOT_FOUND = "SHIPMENT_NOT_FOUND";
-export const SHIPMENT_CANNOT_DELETE = "SHIPMENT_CANNOT_DELETE";
+export const EQUIPMENT_NOT_FOUND = 'EQUIPMENT_NOT_FOUND';
+export const EQUIPMENT_NOT_AVAILABLE = 'EQUIPMENT_NOT_AVAILABLE';
+export const EQUIPMENT_NOT_ASSIGNED = 'EQUIPMENT_NOT_ASSIGNED';
+export const EQUIPMENT_CURRENTLY_ASSIGNED = 'EQUIPMENT_CURRENTLY_ASSIGNED';
+export const CONTRACTOR_NOT_FOUND = 'CONTRACTOR_NOT_FOUND';
+export const SHIPMENT_NOT_FOUND = 'SHIPMENT_NOT_FOUND';
+export const SHIPMENT_CANNOT_DELETE = 'SHIPMENT_CANNOT_DELETE';

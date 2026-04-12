@@ -1,11 +1,11 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { CLOCKIFY_REGIONS, ClockifyAdapter } from "../clockify-adapter.js";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { CLOCKIFY_REGIONS, ClockifyAdapter } from '../clockify-adapter.js';
 
 const mockFindUnique = vi.fn();
 const mockFindMany = vi.fn();
 const mockCount = vi.fn();
 
-vi.mock("@contractor-ops/db", () => ({
+vi.mock('@contractor-ops/db', () => ({
   prisma: {
     integrationConnection: {
       findUnique: (...args: unknown[]) => mockFindUnique(...args),
@@ -17,7 +17,7 @@ vi.mock("@contractor-ops/db", () => ({
   },
 }));
 
-describe("ClockifyAdapter", () => {
+describe('ClockifyAdapter', () => {
   let adapter: ClockifyAdapter;
 
   beforeEach(() => {
@@ -27,104 +27,104 @@ describe("ClockifyAdapter", () => {
     mockFindMany.mockResolvedValue([]);
   });
 
-  it("exposes regional API base URLs", () => {
-    expect(CLOCKIFY_REGIONS.global).toContain("api.clockify.me");
-    expect(CLOCKIFY_REGIONS.eu).toContain("euc1.clockify.me");
+  it('exposes regional API base URLs', () => {
+    expect(CLOCKIFY_REGIONS.global).toContain('api.clockify.me');
+    expect(CLOCKIFY_REGIONS.eu).toContain('euc1.clockify.me');
   });
 
-  it("returns DISCONNECTED when connection is missing", async () => {
+  it('returns DISCONNECTED when connection is missing', async () => {
     mockFindUnique.mockResolvedValue(null);
 
-    const h = await adapter.getHealthStatus("missing");
+    const h = await adapter.getHealthStatus('missing');
 
-    expect(h.status).toBe("DISCONNECTED");
-    expect(h.provider).toBe("clockify");
+    expect(h.status).toBe('DISCONNECTED');
+    expect(h.provider).toBe('clockify');
   });
 
-  it("returns CONNECTED when status is CONNECTED and no failure signals", async () => {
+  it('returns CONNECTED when status is CONNECTED and no failure signals', async () => {
     mockFindUnique.mockResolvedValue({
-      provider: "CLOCKIFY",
-      displayName: "Clockify",
+      provider: 'CLOCKIFY',
+      displayName: 'Clockify',
       connectedAt: new Date(),
       lastSyncAt: new Date(),
       lastSuccessAt: new Date(),
       lastErrorAt: null,
       lastErrorMessage: null,
-      status: "CONNECTED",
+      status: 'CONNECTED',
     });
     mockFindMany.mockResolvedValue([
       {
-        id: "log-1",
-        syncType: "TIME",
-        status: "SUCCESS",
+        id: 'log-1',
+        syncType: 'TIME',
+        status: 'SUCCESS',
         startedAt: new Date(),
         completedAt: new Date(),
       },
     ]);
 
-    const h = await adapter.getHealthStatus("conn-1");
+    const h = await adapter.getHealthStatus('conn-1');
 
-    expect(h.status).toBe("CONNECTED");
-    expect(h.displayName).toBe("Clockify");
+    expect(h.status).toBe('CONNECTED');
+    expect(h.displayName).toBe('Clockify');
   });
 
-  it("returns ERROR when connected but only lastError and no success", async () => {
+  it('returns ERROR when connected but only lastError and no success', async () => {
     mockFindUnique.mockResolvedValue({
-      provider: "CLOCKIFY",
-      displayName: "Clockify",
+      provider: 'CLOCKIFY',
+      displayName: 'Clockify',
       connectedAt: new Date(),
       lastSyncAt: null,
       lastSuccessAt: null,
       lastErrorAt: new Date(),
-      lastErrorMessage: "fail",
-      status: "CONNECTED",
+      lastErrorMessage: 'fail',
+      status: 'CONNECTED',
     });
 
-    const h = await adapter.getHealthStatus("conn-1");
+    const h = await adapter.getHealthStatus('conn-1');
 
-    expect(h.status).toBe("ERROR");
+    expect(h.status).toBe('ERROR');
   });
 
-  it("returns DISCONNECTED when connection status is not CONNECTED", async () => {
+  it('returns DISCONNECTED when connection status is not CONNECTED', async () => {
     mockFindUnique.mockResolvedValue({
-      provider: "CLOCKIFY",
-      displayName: "Clockify",
+      provider: 'CLOCKIFY',
+      displayName: 'Clockify',
       connectedAt: new Date(),
       lastSyncAt: null,
       lastSuccessAt: null,
       lastErrorAt: null,
       lastErrorMessage: null,
-      status: "PENDING_MAPPING",
+      status: 'PENDING_MAPPING',
     });
 
-    const h = await adapter.getHealthStatus("conn-1");
+    const h = await adapter.getHealthStatus('conn-1');
 
-    expect(h.status).toBe("DISCONNECTED");
+    expect(h.status).toBe('DISCONNECTED');
   });
 
-  it("returns ERROR when latest sync log is FAILED (even if connection has prior success)", async () => {
+  it('returns ERROR when latest sync log is FAILED (even if connection has prior success)', async () => {
     mockFindUnique.mockResolvedValue({
-      provider: "CLOCKIFY",
-      displayName: "Clockify",
+      provider: 'CLOCKIFY',
+      displayName: 'Clockify',
       connectedAt: new Date(),
       lastSyncAt: new Date(),
       lastSuccessAt: new Date(),
       lastErrorAt: null,
       lastErrorMessage: null,
-      status: "CONNECTED",
+      status: 'CONNECTED',
     });
     mockFindMany.mockResolvedValue([
       {
-        id: "log-fail",
-        syncType: "TIME",
-        status: "FAILED",
+        id: 'log-fail',
+        syncType: 'TIME',
+        status: 'FAILED',
         startedAt: new Date(),
         completedAt: new Date(),
       },
     ]);
 
-    const h = await adapter.getHealthStatus("conn-1");
+    const h = await adapter.getHealthStatus('conn-1');
 
-    expect(h.status).toBe("ERROR");
+    expect(h.status).toBe('ERROR');
   });
 });

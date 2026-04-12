@@ -1,4 +1,4 @@
-import { render, screen } from "@/test/test-utils";
+import { render, screen } from '@/test/test-utils';
 import {
   Table,
   TableBody,
@@ -8,7 +8,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../table";
+} from '../table';
 
 function renderFullTable() {
   return render(
@@ -40,31 +40,31 @@ function renderFullTable() {
   );
 }
 
-describe("Table", () => {
-  it("renders a table element", () => {
+describe('Table', () => {
+  it('renders a table element', () => {
     render(<Table />);
-    expect(screen.getByRole("table")).toBeInTheDocument();
+    expect(screen.getByRole('table')).toBeInTheDocument();
   });
 
-  it("sets data-slot=table", () => {
+  it('sets data-slot=table', () => {
     render(<Table />);
-    expect(screen.getByRole("table")).toHaveAttribute("data-slot", "table");
+    expect(screen.getByRole('table')).toHaveAttribute('data-slot', 'table');
   });
 
-  it("wraps table in a container div", () => {
+  it('wraps table in a container div', () => {
     render(<Table data-testid="tbl" />);
-    const table = screen.getByTestId("tbl");
-    expect(table.parentElement).toHaveAttribute("data-slot", "table-container");
+    const table = screen.getByTestId('tbl');
+    expect(table.parentElement).toHaveAttribute('data-slot', 'table-container');
   });
 
-  it("merges custom className on table element", () => {
+  it('merges custom className on table element', () => {
     render(<Table className="striped" />);
-    expect(screen.getByRole("table").className).toContain("striped");
+    expect(screen.getByRole('table').className).toContain('striped');
   });
 });
 
-describe("TableHeader", () => {
-  it("renders thead with data-slot", () => {
+describe('TableHeader', () => {
+  it('renders thead with data-slot', () => {
     render(
       <Table>
         <TableHeader data-testid="thead">
@@ -74,13 +74,13 @@ describe("TableHeader", () => {
         </TableHeader>
       </Table>,
     );
-    expect(screen.getByTestId("thead").tagName).toBe("THEAD");
-    expect(screen.getByTestId("thead")).toHaveAttribute("data-slot", "table-header");
+    expect(screen.getByTestId('thead').tagName).toBe('THEAD');
+    expect(screen.getByTestId('thead')).toHaveAttribute('data-slot', 'table-header');
   });
 });
 
-describe("TableBody", () => {
-  it("renders tbody with data-slot", () => {
+describe('TableBody', () => {
+  it('renders tbody with data-slot', () => {
     render(
       <Table>
         <TableBody data-testid="tbody">
@@ -90,13 +90,13 @@ describe("TableBody", () => {
         </TableBody>
       </Table>,
     );
-    expect(screen.getByTestId("tbody").tagName).toBe("TBODY");
-    expect(screen.getByTestId("tbody")).toHaveAttribute("data-slot", "table-body");
+    expect(screen.getByTestId('tbody').tagName).toBe('TBODY');
+    expect(screen.getByTestId('tbody')).toHaveAttribute('data-slot', 'table-body');
   });
 });
 
-describe("TableFooter", () => {
-  it("renders tfoot with data-slot", () => {
+describe('TableFooter', () => {
+  it('renders tfoot with data-slot', () => {
     render(
       <Table>
         <TableFooter data-testid="tfoot">
@@ -106,13 +106,13 @@ describe("TableFooter", () => {
         </TableFooter>
       </Table>,
     );
-    expect(screen.getByTestId("tfoot").tagName).toBe("TFOOT");
-    expect(screen.getByTestId("tfoot")).toHaveAttribute("data-slot", "table-footer");
+    expect(screen.getByTestId('tfoot').tagName).toBe('TFOOT');
+    expect(screen.getByTestId('tfoot')).toHaveAttribute('data-slot', 'table-footer');
   });
 });
 
-describe("TableRow", () => {
-  it("renders tr with data-slot", () => {
+describe('TableRow', () => {
+  it('renders tr with data-slot', () => {
     render(
       <Table>
         <TableBody>
@@ -122,11 +122,11 @@ describe("TableRow", () => {
         </TableBody>
       </Table>,
     );
-    expect(screen.getByTestId("row").tagName).toBe("TR");
-    expect(screen.getByTestId("row")).toHaveAttribute("data-slot", "table-row");
+    expect(screen.getByTestId('row').tagName).toBe('TR');
+    expect(screen.getByTestId('row')).toHaveAttribute('data-slot', 'table-row');
   });
 
-  it("merges custom className", () => {
+  it('merges custom className', () => {
     render(
       <Table>
         <TableBody>
@@ -136,12 +136,12 @@ describe("TableRow", () => {
         </TableBody>
       </Table>,
     );
-    expect(screen.getByTestId("row").className).toContain("highlighted");
+    expect(screen.getByTestId('row').className).toContain('highlighted');
   });
 });
 
-describe("TableHead", () => {
-  it("renders th with data-slot", () => {
+describe('TableHead', () => {
+  it('renders th with data-slot', () => {
     render(
       <Table>
         <TableHeader>
@@ -151,11 +151,11 @@ describe("TableHead", () => {
         </TableHeader>
       </Table>,
     );
-    const th = screen.getByRole("columnheader", { name: "Name" });
-    expect(th).toHaveAttribute("data-slot", "table-head");
+    const th = screen.getByRole('columnheader', { name: 'Name' });
+    expect(th).toHaveAttribute('data-slot', 'table-head');
   });
 
-  it("defaults scope to col", () => {
+  it('defaults scope to col', () => {
     render(
       <Table>
         <TableHeader>
@@ -165,10 +165,10 @@ describe("TableHead", () => {
         </TableHeader>
       </Table>,
     );
-    expect(screen.getByRole("columnheader")).toHaveAttribute("scope", "col");
+    expect(screen.getByRole('columnheader')).toHaveAttribute('scope', 'col');
   });
 
-  it("accepts custom scope", () => {
+  it('accepts custom scope', () => {
     render(
       <Table>
         <TableHeader>
@@ -179,12 +179,12 @@ describe("TableHead", () => {
       </Table>,
     );
     // scope="row" changes the ARIA role to "rowheader"
-    expect(screen.getByRole("rowheader")).toHaveAttribute("scope", "row");
+    expect(screen.getByRole('rowheader')).toHaveAttribute('scope', 'row');
   });
 });
 
-describe("TableCell", () => {
-  it("renders td with data-slot", () => {
+describe('TableCell', () => {
+  it('renders td with data-slot', () => {
     render(
       <Table>
         <TableBody>
@@ -194,10 +194,10 @@ describe("TableCell", () => {
         </TableBody>
       </Table>,
     );
-    expect(screen.getByRole("cell", { name: "Value" })).toHaveAttribute("data-slot", "table-cell");
+    expect(screen.getByRole('cell', { name: 'Value' })).toHaveAttribute('data-slot', 'table-cell');
   });
 
-  it("merges custom className", () => {
+  it('merges custom className', () => {
     render(
       <Table>
         <TableBody>
@@ -207,32 +207,32 @@ describe("TableCell", () => {
         </TableBody>
       </Table>,
     );
-    expect(screen.getByRole("cell").className).toContain("font-bold");
+    expect(screen.getByRole('cell').className).toContain('font-bold');
   });
 });
 
-describe("TableCaption", () => {
-  it("renders caption with data-slot", () => {
+describe('TableCaption', () => {
+  it('renders caption with data-slot', () => {
     render(
       <Table>
         <TableCaption>My caption</TableCaption>
       </Table>,
     );
-    expect(screen.getByText("My caption").tagName).toBe("CAPTION");
-    expect(screen.getByText("My caption")).toHaveAttribute("data-slot", "table-caption");
+    expect(screen.getByText('My caption').tagName).toBe('CAPTION');
+    expect(screen.getByText('My caption')).toHaveAttribute('data-slot', 'table-caption');
   });
 });
 
-describe("Table composition", () => {
-  it("renders a complete table with all sub-components", () => {
+describe('Table composition', () => {
+  it('renders a complete table with all sub-components', () => {
     renderFullTable();
 
-    expect(screen.getByText("A list of items")).toBeInTheDocument();
-    expect(screen.getByText("Name")).toBeInTheDocument();
-    expect(screen.getByText("Value")).toBeInTheDocument();
-    expect(screen.getByText("Item A")).toBeInTheDocument();
-    expect(screen.getByText("Item B")).toBeInTheDocument();
-    expect(screen.getByText("Total")).toBeInTheDocument();
-    expect(screen.getByText("300")).toBeInTheDocument();
+    expect(screen.getByText('A list of items')).toBeInTheDocument();
+    expect(screen.getByText('Name')).toBeInTheDocument();
+    expect(screen.getByText('Value')).toBeInTheDocument();
+    expect(screen.getByText('Item A')).toBeInTheDocument();
+    expect(screen.getByText('Item B')).toBeInTheDocument();
+    expect(screen.getByText('Total')).toBeInTheDocument();
+    expect(screen.getByText('300')).toBeInTheDocument();
   });
 });

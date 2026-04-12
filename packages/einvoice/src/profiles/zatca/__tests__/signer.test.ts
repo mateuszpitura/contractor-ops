@@ -2,13 +2,13 @@
 // ZatcaXAdESSigner Tests -- XAdES-BES enveloped digital signatures
 // ---------------------------------------------------------------------------
 
-import { execSync } from "node:child_process";
-import fs from "node:fs";
-import os from "node:os";
-import path from "node:path";
-import { beforeAll, describe, expect, it } from "vitest";
-import type { CertificateInfo } from "../../../types/profile.js";
-import { ZatcaXAdESSigner } from "../signer.js";
+import { execSync } from 'node:child_process';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { beforeAll, describe, expect, it } from 'vitest';
+import type { CertificateInfo } from '../../../types/profile.js';
+import { ZatcaXAdESSigner } from '../signer.js';
 
 // ---------------------------------------------------------------------------
 // Test Fixtures
@@ -22,33 +22,33 @@ function generateTestCertificate(): {
   certificateBase64: string;
   privateKeyPem: string;
 } {
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "zatca-test-"));
-  const keyPath = path.join(tmpDir, "key.pem");
-  const certPath = path.join(tmpDir, "cert.pem");
-  const certDerPath = path.join(tmpDir, "cert.der");
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'zatca-test-'));
+  const keyPath = path.join(tmpDir, 'key.pem');
+  const certPath = path.join(tmpDir, 'cert.pem');
+  const certDerPath = path.join(tmpDir, 'cert.der');
 
   try {
     // Generate ECDSA P-256 key
     execSync(`openssl ecparam -genkey -name prime256v1 -noout -out "${keyPath}"`, {
-      stdio: "pipe",
+      stdio: 'pipe',
     });
 
     // Generate self-signed certificate
     execSync(
       `openssl req -new -x509 -key "${keyPath}" -out "${certPath}" -days 365 -subj "/CN=ZATCA Test/O=Test Org/OU=300075588700003/C=SA"`,
-      { stdio: "pipe" },
+      { stdio: 'pipe' },
     );
 
     // Convert cert to DER for base64 encoding
     execSync(`openssl x509 -in "${certPath}" -outform DER -out "${certDerPath}"`, {
-      stdio: "pipe",
+      stdio: 'pipe',
     });
 
     const certDer = fs.readFileSync(certDerPath);
-    const privateKeyPem = fs.readFileSync(keyPath, "utf-8");
+    const privateKeyPem = fs.readFileSync(keyPath, 'utf-8');
 
     return {
-      certificateBase64: certDer.toString("base64"),
+      certificateBase64: certDer.toString('base64'),
       privateKeyPem,
     };
   } finally {
@@ -103,7 +103,7 @@ const TEST_INVOICE_XML = `<?xml version="1.0" encoding="UTF-8"?>
 // Tests
 // ---------------------------------------------------------------------------
 
-describe("ZatcaXAdESSigner", () => {
+describe('ZatcaXAdESSigner', () => {
   let signer: ZatcaXAdESSigner;
   let testCert: CertificateInfo;
 
@@ -117,45 +117,45 @@ describe("ZatcaXAdESSigner", () => {
   });
 
   // Test 1: sign() produces XML containing <ds:Signature> inside UBLExtensions
-  it("sign() produces XML containing ds:Signature inside UBLExtensions", async () => {
+  it('sign() produces XML containing ds:Signature inside UBLExtensions', async () => {
     const signedXml = await signer.sign(TEST_INVOICE_XML, testCert);
 
-    expect(signedXml).toContain("<ds:Signature");
-    expect(signedXml).toContain("ext:ExtensionContent");
+    expect(signedXml).toContain('<ds:Signature');
+    expect(signedXml).toContain('ext:ExtensionContent');
     // Signature should be inside UBLExtensions
-    const extIdx = signedXml.indexOf("ext:ExtensionContent");
-    const sigIdx = signedXml.indexOf("<ds:Signature");
+    const extIdx = signedXml.indexOf('ext:ExtensionContent');
+    const sigIdx = signedXml.indexOf('<ds:Signature');
     expect(sigIdx).toBeGreaterThan(extIdx);
   });
 
   // Test 2: sign() includes xades:SignedProperties with SigningTime and SigningCertificate
-  it("sign() includes xades:SignedProperties with SigningTime and SigningCertificateV2", async () => {
+  it('sign() includes xades:SignedProperties with SigningTime and SigningCertificateV2', async () => {
     const signedXml = await signer.sign(TEST_INVOICE_XML, testCert);
 
-    expect(signedXml).toContain("xades:SignedProperties");
-    expect(signedXml).toContain("xades:SigningTime");
-    expect(signedXml).toContain("xades:SigningCertificate");
-    expect(signedXml).toContain("xades:CertDigest");
-    expect(signedXml).toContain("xades:IssuerSerial");
+    expect(signedXml).toContain('xades:SignedProperties');
+    expect(signedXml).toContain('xades:SigningTime');
+    expect(signedXml).toContain('xades:SigningCertificate');
+    expect(signedXml).toContain('xades:CertDigest');
+    expect(signedXml).toContain('xades:IssuerSerial');
   });
 
   // Test 3: sign() uses Exclusive XML Canonicalization
-  it("sign() uses Exclusive XML Canonicalization", async () => {
+  it('sign() uses Exclusive XML Canonicalization', async () => {
     const signedXml = await signer.sign(TEST_INVOICE_XML, testCert);
 
-    expect(signedXml).toContain("http://www.w3.org/2001/10/xml-exc-c14n#");
+    expect(signedXml).toContain('http://www.w3.org/2001/10/xml-exc-c14n#');
   });
 
   // Test 4: sign() uses SHA-256 digest and ECDSA-SHA256 signature algorithm
-  it("sign() uses SHA-256 digest and ECDSA-SHA256 signature algorithm", async () => {
+  it('sign() uses SHA-256 digest and ECDSA-SHA256 signature algorithm', async () => {
     const signedXml = await signer.sign(TEST_INVOICE_XML, testCert);
 
-    expect(signedXml).toContain("http://www.w3.org/2001/04/xmlenc#sha256");
-    expect(signedXml).toContain("http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha256");
+    expect(signedXml).toContain('http://www.w3.org/2001/04/xmlenc#sha256');
+    expect(signedXml).toContain('http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha256');
   });
 
   // Test 5: verify() returns valid=true for correctly signed XML
-  it("verify() returns valid=true for correctly signed XML", async () => {
+  it('verify() returns valid=true for correctly signed XML', async () => {
     const signedXml = await signer.sign(TEST_INVOICE_XML, testCert);
     const result = await signer.verify(signedXml);
 
@@ -165,10 +165,10 @@ describe("ZatcaXAdESSigner", () => {
   });
 
   // Test 6: verify() returns valid=false for tampered XML
-  it("verify() returns valid=false for tampered XML", async () => {
+  it('verify() returns valid=false for tampered XML', async () => {
     const signedXml = await signer.sign(TEST_INVOICE_XML, testCert);
     // Tamper with the invoice amount
-    const tamperedXml = signedXml.replace("27600.00", "99999.99");
+    const tamperedXml = signedXml.replace('27600.00', '99999.99');
     const result = await signer.verify(tamperedXml);
 
     expect(result.valid).toBe(false);
@@ -177,13 +177,13 @@ describe("ZatcaXAdESSigner", () => {
   });
 
   // Test 7: Private key does not appear in signed XML output
-  it("private key does not appear in signed XML output", async () => {
+  it('private key does not appear in signed XML output', async () => {
     const signedXml = await signer.sign(TEST_INVOICE_XML, testCert);
 
     // Extract the raw key data (between PEM headers) for checking
     const keyLines = testCert.privateKey
-      ?.split("\n")
-      .filter((l) => l.trim() !== "" && !l.includes("-----BEGIN") && !l.includes("-----END"));
+      ?.split('\n')
+      .filter(l => l.trim() !== '' && !l.includes('-----BEGIN') && !l.includes('-----END'));
 
     // The private key base64 content should not appear in output
     for (const line of keyLines) {
@@ -193,18 +193,18 @@ describe("ZatcaXAdESSigner", () => {
       }
     }
     // Also check for PEM markers
-    expect(signedXml).not.toContain("PRIVATE KEY");
+    expect(signedXml).not.toContain('PRIVATE KEY');
   });
 
   // Test 8: sign() throws when privateKey is missing
-  it("sign() throws when privateKey is missing", async () => {
+  it('sign() throws when privateKey is missing', async () => {
     const noPkCert: CertificateInfo = {
       certificate: testCert.certificate,
       // No privateKey
     };
 
     await expect(signer.sign(TEST_INVOICE_XML, noPkCert)).rejects.toThrow(
-      "ZATCA signing requires privateKey in CertificateInfo",
+      'ZATCA signing requires privateKey in CertificateInfo',
     );
   });
 });

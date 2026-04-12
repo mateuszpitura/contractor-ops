@@ -1,9 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
-import { render, screen } from "@/test/test-utils";
-import { WorkflowRunsDataTable } from "../data-table";
+import { useQuery } from '@tanstack/react-query';
+import { render, screen } from '@/test/test-utils';
+import { WorkflowRunsDataTable } from '../data-table';
 
-vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual("@tanstack/react-query");
+vi.mock('@tanstack/react-query', async () => {
+  const actual = await vi.importActual('@tanstack/react-query');
   return {
     ...actual,
     useQuery: vi.fn(),
@@ -11,16 +11,16 @@ vi.mock("@tanstack/react-query", async () => {
   };
 });
 
-vi.mock("@/trpc/init", () => ({
+vi.mock('@/trpc/init', () => ({
   trpc: {
     workflow: {
-      listRuns: { queryOptions: () => ({ queryKey: ["workflow", "listRuns"] }) },
-      listTemplates: { queryOptions: () => ({ queryKey: ["workflow", "listTemplates"] }) },
+      listRuns: { queryOptions: () => ({ queryKey: ['workflow', 'listRuns'] }) },
+      listTemplates: { queryOptions: () => ({ queryKey: ['workflow', 'listTemplates'] }) },
     },
   },
 }));
 
-vi.mock("@/i18n/navigation", () => ({
+vi.mock('@/i18n/navigation', () => ({
   Link: ({ children, href, ...props }: any) => (
     <a href={href} {...props}>
       {children}
@@ -28,14 +28,14 @@ vi.mock("@/i18n/navigation", () => ({
   ),
 }));
 
-vi.mock("../use-workflow-filters", () => ({
+vi.mock('../use-workflow-filters', () => ({
   useWorkflowFilters: () => [
     {
       page: 1,
       pageSize: 25,
-      search: "",
-      sortBy: "dueAt",
-      sortOrder: "asc",
+      search: '',
+      sortBy: 'dueAt',
+      sortOrder: 'asc',
       status: [],
       templateId: [],
       overdueOnly: false,
@@ -46,8 +46,8 @@ vi.mock("../use-workflow-filters", () => ({
 
 const mockedUseQuery = vi.mocked(useQuery);
 
-describe("WorkflowRunsDataTable", () => {
-  it("renders toolbar with search and start workflow button", () => {
+describe('WorkflowRunsDataTable', () => {
+  it('renders toolbar with search and start workflow button', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: [], total: 0 },
       isLoading: false,
@@ -55,10 +55,10 @@ describe("WorkflowRunsDataTable", () => {
       isFetching: false,
     } as any);
     render(<WorkflowRunsDataTable onRowClick={vi.fn()} onStartWorkflow={vi.fn()} />);
-    expect(screen.getAllByText("Start workflow").length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Start workflow').length).toBeGreaterThan(0);
   });
 
-  it("renders empty state when no runs exist", () => {
+  it('renders empty state when no runs exist', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: [], total: 0 },
       isLoading: false,
@@ -66,10 +66,10 @@ describe("WorkflowRunsDataTable", () => {
       isFetching: false,
     } as any);
     render(<WorkflowRunsDataTable onRowClick={vi.fn()} onStartWorkflow={vi.fn()} />);
-    expect(screen.getByText("No active workflows")).toBeInTheDocument();
+    expect(screen.getByText('No active workflows')).toBeInTheDocument();
   });
 
-  it("shows skeleton rows while loading", () => {
+  it('shows skeleton rows while loading', () => {
     mockedUseQuery.mockReturnValue({
       data: undefined,
       isLoading: true,
@@ -82,7 +82,7 @@ describe("WorkflowRunsDataTable", () => {
     expect(container.querySelectorAll("[data-slot='skeleton']").length).toBeGreaterThan(0);
   });
 
-  it("renders filter button", () => {
+  it('renders filter button', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: [], total: 0 },
       isLoading: false,
@@ -90,6 +90,6 @@ describe("WorkflowRunsDataTable", () => {
       isFetching: false,
     } as any);
     render(<WorkflowRunsDataTable onRowClick={vi.fn()} onStartWorkflow={vi.fn()} />);
-    expect(screen.getByText("Filters")).toBeInTheDocument();
+    expect(screen.getByText('Filters')).toBeInTheDocument();
   });
 });

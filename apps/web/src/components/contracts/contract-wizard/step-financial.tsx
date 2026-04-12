@@ -1,45 +1,45 @@
-"use client";
+'use client';
 
-import { useTranslations } from "next-intl";
-import React from "react";
-import type { UseFormReturn } from "react-hook-form";
+import { useTranslations } from 'next-intl';
+import React from 'react';
+import type { UseFormReturn } from 'react-hook-form';
 
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 
-import type { ContractWizardFormValues } from "./wizard-dialog";
+import type { ContractWizardFormValues } from './wizard-dialog';
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
-const CURRENCIES = ["PLN", "EUR", "USD"] as const;
+const CURRENCIES = ['PLN', 'EUR', 'USD'] as const;
 
 const BILLING_MODELS = [
-  "MONTHLY_RETAINER",
-  "HOURLY",
-  "DAILY",
-  "MILESTONE",
-  "DELIVERABLE_BASED",
-  "MIXED",
+  'MONTHLY_RETAINER',
+  'HOURLY',
+  'DAILY',
+  'MILESTONE',
+  'DELIVERABLE_BASED',
+  'MIXED',
 ] as const;
 
 const RATE_TYPES = [
-  "MONTHLY_FIXED",
-  "PER_HOUR",
-  "PER_DAY",
-  "PER_MILESTONE",
-  "PER_DELIVERABLE",
+  'MONTHLY_FIXED',
+  'PER_HOUR',
+  'PER_DAY',
+  'PER_MILESTONE',
+  'PER_DELIVERABLE',
 ] as const;
 
-const INVOICE_CYCLES = ["WEEKLY", "BIWEEKLY", "MONTHLY", "ON_DELIVERABLE", "AD_HOC"] as const;
+const INVOICE_CYCLES = ['WEEKLY', 'BIWEEKLY', 'MONTHLY', 'ON_DELIVERABLE', 'AD_HOC'] as const;
 
 // ---------------------------------------------------------------------------
 // Props
@@ -56,19 +56,19 @@ interface StepFinancialProps {
  * payment terms, invoice cycle. Shows pre-fill hint when applicable.
  */
 export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
-  const t = useTranslations("Contracts.wizard");
+  const t = useTranslations('Contracts.wizard');
 
-  const billingModelItems = BILLING_MODELS.map((m) => ({
+  const billingModelItems = BILLING_MODELS.map(m => ({
     value: m,
     label: t(`billingModelOptions.${m}`),
   }));
 
-  const rateTypeItems = RATE_TYPES.map((rt) => ({
+  const rateTypeItems = RATE_TYPES.map(rt => ({
     value: rt,
     label: t(`rateTypeOptions.${rt}`),
   }));
 
-  const invoiceCycleItems = INVOICE_CYCLES.map((c) => ({
+  const invoiceCycleItems = INVOICE_CYCLES.map(c => ({
     value: c,
     label: t(`invoiceCycleOptions.${c}`),
   }));
@@ -80,27 +80,27 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
     formState: { errors },
   } = form;
 
-  const rateValueMinor = watch("rateValueMinor");
-  const currency = watch("currency") ?? "PLN";
+  const rateValueMinor = watch('rateValueMinor');
+  const currency = watch('currency') ?? 'PLN';
 
   // Local state for rate input — prevents cursor jumping during typing.
   // Syncs to form (minor units) on blur only.
   const [rateLocal, setRateLocal] = React.useState(() =>
-    typeof rateValueMinor === "number" && rateValueMinor > 0
+    typeof rateValueMinor === 'number' && rateValueMinor > 0
       ? (rateValueMinor / 100).toString()
-      : "",
+      : '',
   );
 
   // Sync from form → local when form value changes externally (e.g. pre-fill)
   React.useEffect(() => {
     const fromForm =
-      typeof rateValueMinor === "number" && rateValueMinor > 0
+      typeof rateValueMinor === 'number' && rateValueMinor > 0
         ? (rateValueMinor / 100).toString()
-        : "";
-    setRateLocal((prev) => {
+        : '';
+    setRateLocal(prev => {
       // Only overwrite if the form value is substantially different
       // (avoids clobbering user mid-typing)
-      const prevMinor = Math.round(parseFloat(prev || "0") * 100);
+      const prevMinor = Math.round(parseFloat(prev || '0') * 100);
       if (prevMinor !== rateValueMinor) return fromForm;
       return prev;
     });
@@ -109,17 +109,17 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
   const handleRateBlur = () => {
     const value = parseFloat(rateLocal);
     if (!Number.isNaN(value) && value >= 0) {
-      setValue("rateValueMinor", Math.round(value * 100), {
+      setValue('rateValueMinor', Math.round(value * 100), {
         shouldDirty: true,
         shouldValidate: true,
       });
       setRateLocal(value.toFixed(2));
     } else {
-      setValue("rateValueMinor", 0, {
+      setValue('rateValueMinor', 0, {
         shouldDirty: true,
         shouldValidate: true,
       });
-      setRateLocal("");
+      setRateLocal('');
     }
   };
 
@@ -130,7 +130,7 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
       {/* Rate */}
       <div className="space-y-2">
         <Label htmlFor="rate" className="text-[13px]">
-          {t("fields.rate")}
+          {t('fields.rate')}
         </Label>
         <div className="relative">
           <Input
@@ -140,15 +140,15 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
             min="0"
             className="font-mono pe-16"
             value={rateLocal}
-            onChange={(e) => setRateLocal(e.target.value)}
+            onChange={e => setRateLocal(e.target.value)}
             onBlur={handleRateBlur}
           />
           <span className="absolute end-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
             {currency}
           </span>
         </div>
-        {isPreFilled("rateValueMinor") && (
-          <p className="text-xs text-muted-foreground">{t("preFilled")}</p>
+        {isPreFilled('rateValueMinor') && (
+          <p className="text-xs text-muted-foreground">{t('preFilled')}</p>
         )}
         {errors.rateValueMinor && (
           <p className="text-sm text-destructive">{errors.rateValueMinor.message}</p>
@@ -157,59 +157,57 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
 
       {/* Currency */}
       <div className="space-y-2">
-        <Label className="text-[13px]">{t("fields.currency")}</Label>
+        <Label className="text-[13px]">{t('fields.currency')}</Label>
         <Select
           value={currency}
-          onValueChange={(value) =>
-            setValue("currency", value ?? "PLN", {
+          onValueChange={value =>
+            setValue('currency', value ?? 'PLN', {
               shouldDirty: true,
               shouldValidate: true,
             })
-          }
-        >
+          }>
           <SelectTrigger className="w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {CURRENCIES.map((c) => (
+            {CURRENCIES.map(c => (
               <SelectItem key={c} value={c}>
                 {c}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
-        {isPreFilled("currency") && (
-          <p className="text-xs text-muted-foreground">{t("preFilled")}</p>
+        {isPreFilled('currency') && (
+          <p className="text-xs text-muted-foreground">{t('preFilled')}</p>
         )}
         {errors.currency && <p className="text-sm text-destructive">{errors.currency.message}</p>}
       </div>
 
       {/* Billing model */}
       <div className="space-y-2">
-        <Label className="text-[13px]">{t("fields.billingModel")}</Label>
+        <Label className="text-[13px]">{t('fields.billingModel')}</Label>
         <Select
-          value={watch("billingModel") ?? ""}
-          onValueChange={(value) =>
-            setValue("billingModel", (value ?? "") as ContractWizardFormValues["billingModel"], {
+          value={watch('billingModel') ?? ''}
+          onValueChange={value =>
+            setValue('billingModel', (value ?? '') as ContractWizardFormValues['billingModel'], {
               shouldDirty: true,
               shouldValidate: true,
             })
           }
-          items={billingModelItems}
-        >
+          items={billingModelItems}>
           <SelectTrigger className="w-full">
-            <SelectValue placeholder={t("fields.billingModelPlaceholder")} />
+            <SelectValue placeholder={t('fields.billingModelPlaceholder')} />
           </SelectTrigger>
           <SelectContent>
-            {billingModelItems.map((model) => (
+            {billingModelItems.map(model => (
               <SelectItem key={model.value} value={model.value}>
                 {model.label}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
-        {isPreFilled("billingModel") && (
-          <p className="text-xs text-muted-foreground">{t("preFilled")}</p>
+        {isPreFilled('billingModel') && (
+          <p className="text-xs text-muted-foreground">{t('preFilled')}</p>
         )}
         {errors.billingModel && (
           <p className="text-sm text-destructive">{errors.billingModel.message}</p>
@@ -218,22 +216,21 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
 
       {/* Rate type */}
       <div className="space-y-2">
-        <Label className="text-[13px]">{t("fields.rateType")}</Label>
+        <Label className="text-[13px]">{t('fields.rateType')}</Label>
         <Select
-          value={watch("rateType") ?? ""}
-          onValueChange={(value) =>
-            setValue("rateType", (value ?? "") as ContractWizardFormValues["rateType"], {
+          value={watch('rateType') ?? ''}
+          onValueChange={value =>
+            setValue('rateType', (value ?? '') as ContractWizardFormValues['rateType'], {
               shouldDirty: true,
               shouldValidate: true,
             })
           }
-          items={rateTypeItems}
-        >
+          items={rateTypeItems}>
           <SelectTrigger className="w-full">
-            <SelectValue placeholder={t("fields.rateTypePlaceholder")} />
+            <SelectValue placeholder={t('fields.rateTypePlaceholder')} />
           </SelectTrigger>
           <SelectContent>
-            {rateTypeItems.map((rt) => (
+            {rateTypeItems.map(rt => (
               <SelectItem key={rt.value} value={rt.value}>
                 {rt.label}
               </SelectItem>
@@ -246,14 +243,14 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
       {/* Payment terms */}
       <div className="space-y-2">
         <Label htmlFor="paymentTermsDays" className="text-[13px]">
-          {t("fields.paymentTerms")}
+          {t('fields.paymentTerms')}
         </Label>
         <Input
           id="paymentTermsDays"
           type="number"
           min="1"
           placeholder="30"
-          {...register("paymentTermsDays", { valueAsNumber: true })}
+          {...register('paymentTermsDays', { valueAsNumber: true })}
         />
         {errors.paymentTermsDays && (
           <p className="text-sm text-destructive">{errors.paymentTermsDays.message}</p>
@@ -262,22 +259,21 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
 
       {/* Invoice cycle */}
       <div className="space-y-2">
-        <Label className="text-[13px]">{t("fields.invoiceCycle")}</Label>
+        <Label className="text-[13px]">{t('fields.invoiceCycle')}</Label>
         <Select
-          value={watch("invoiceCycle") ?? ""}
-          onValueChange={(value) =>
-            setValue("invoiceCycle", (value ?? "") as ContractWizardFormValues["invoiceCycle"], {
+          value={watch('invoiceCycle') ?? ''}
+          onValueChange={value =>
+            setValue('invoiceCycle', (value ?? '') as ContractWizardFormValues['invoiceCycle'], {
               shouldDirty: true,
               shouldValidate: true,
             })
           }
-          items={invoiceCycleItems}
-        >
+          items={invoiceCycleItems}>
           <SelectTrigger className="w-full">
-            <SelectValue placeholder={t("fields.invoiceCyclePlaceholder")} />
+            <SelectValue placeholder={t('fields.invoiceCyclePlaceholder')} />
           </SelectTrigger>
           <SelectContent>
-            {invoiceCycleItems.map((cycle) => (
+            {invoiceCycleItems.map(cycle => (
               <SelectItem key={cycle.value} value={cycle.value}>
                 {cycle.label}
               </SelectItem>

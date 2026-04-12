@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   Banknote,
@@ -11,12 +11,12 @@ import {
   Package,
   Receipt,
   Settings,
-} from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+} from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,24 +24,24 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { getAvatarInitials } from "@/lib/avatar-initials";
-import { cn } from "@/lib/utils";
-import { PortalMobileMenu } from "./portal-mobile-menu";
+} from '@/components/ui/dropdown-menu';
+import { getAvatarInitials } from '@/lib/avatar-initials';
+import { cn } from '@/lib/utils';
+import { PortalMobileMenu } from './portal-mobile-menu';
 
 // ---------------------------------------------------------------------------
 // Navigation items
 // ---------------------------------------------------------------------------
 
 const NAV_ITEMS = [
-  { label: "Overview", href: "/portal", icon: LayoutDashboard },
-  { label: "Contracts", href: "/portal/contracts", icon: FileText },
-  { label: "Invoices", href: "/portal/invoices", icon: Receipt },
-  { label: "Documents", href: "/portal/documents", icon: FolderOpen },
-  { label: "Time", href: "/portal/time", icon: Clock },
-  { label: "Equipment", href: "/portal/equipment", icon: Package },
-  { label: "Payments", href: "/portal/payments", icon: Banknote },
-  { label: "Settings", href: "/portal/settings", icon: Settings },
+  { label: 'Overview', href: '/portal', icon: LayoutDashboard },
+  { label: 'Contracts', href: '/portal/contracts', icon: FileText },
+  { label: 'Invoices', href: '/portal/invoices', icon: Receipt },
+  { label: 'Documents', href: '/portal/documents', icon: FolderOpen },
+  { label: 'Time', href: '/portal/time', icon: Clock },
+  { label: 'Equipment', href: '/portal/equipment', icon: Package },
+  { label: 'Payments', href: '/portal/payments', icon: Banknote },
+  { label: 'Settings', href: '/portal/settings', icon: Settings },
 ] as const;
 
 // ---------------------------------------------------------------------------
@@ -55,10 +55,10 @@ const NAV_ITEMS = [
  */
 function isNavActive(href: string, pathname: string): boolean {
   // Strip locale prefix (e.g., /en/portal -> /portal)
-  const path = pathname.replace(/^\/[a-z]{2}(?=\/)/, "");
+  const path = pathname.replace(/^\/[a-z]{2}(?=\/)/, '');
 
-  if (href === "/portal") {
-    return path === "/portal" || path === "/portal/";
+  if (href === '/portal') {
+    return path === '/portal' || path === '/portal/';
   }
   return path.startsWith(href);
 }
@@ -95,16 +95,16 @@ export function PortalTopBar({
   contractorName,
   contractorEmail,
 }: PortalTopBarProps) {
-  const tAria = useTranslations("Common.aria");
+  const tAria = useTranslations('Common.aria');
   const pathname = usePathname();
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
-      await fetch("/api/portal/clear-session", { method: "POST" });
+      await fetch('/api/portal/clear-session', { method: 'POST' });
     } finally {
-      router.push("/portal/login");
+      router.push('/portal/login');
     }
   };
 
@@ -122,21 +122,19 @@ export function PortalTopBar({
         {/* Center: Desktop nav links */}
         <nav
           className="hidden md:flex items-center gap-6 flex-1 justify-center"
-          aria-label={tAria("portalNavigation")}
-        >
-          {NAV_ITEMS.map((item) => {
+          aria-label={tAria('portalNavigation')}>
+          {NAV_ITEMS.map(item => {
             const active = isNavActive(item.href, pathname);
             return (
               <a
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "inline-flex items-center gap-1.5 border-b-2 pb-[calc(theme(spacing.4)-2px)] pt-4 text-[13px] font-normal transition-colors",
+                  'inline-flex items-center gap-1.5 border-b-2 pb-[calc(theme(spacing.4)-2px)] pt-4 text-[13px] font-normal transition-colors',
                   active
-                    ? "border-primary text-foreground"
-                    : "border-transparent text-muted-foreground hover:text-foreground",
-                )}
-              >
+                    ? 'border-primary text-foreground'
+                    : 'border-transparent text-muted-foreground hover:text-foreground',
+                )}>
                 <item.icon className="h-4 w-4" />
                 {item.label}
               </a>
@@ -154,8 +152,7 @@ export function PortalTopBar({
               render={
                 <button
                   type="button"
-                  className="flex items-center gap-2 rounded-md p-1 hover:bg-accent transition-colors outline-none"
-                >
+                  className="flex items-center gap-2 rounded-md p-1 hover:bg-accent transition-colors outline-none">
                   <Avatar size="sm">
                     <AvatarFallback>{getAvatarInitials(contractorName)}</AvatarFallback>
                   </Avatar>
@@ -184,8 +181,7 @@ export function PortalTopBar({
           size="icon"
           className="md:hidden"
           onClick={() => setMobileMenuOpen(true)}
-          aria-label={tAria("openNavigationMenu")}
-        >
+          aria-label={tAria('openNavigationMenu')}>
           <Menu className="h-5 w-5" />
         </Button>
 

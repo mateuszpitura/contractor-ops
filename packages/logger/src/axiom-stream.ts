@@ -1,5 +1,5 @@
-import { Writable } from "node:stream";
-import { Axiom } from "@axiomhq/js";
+import { Writable } from 'node:stream';
+import { Axiom } from '@axiomhq/js';
 
 /**
  * Pino-compatible writable stream that sends logs to Axiom.
@@ -15,7 +15,7 @@ export function createAxiomStream(opts: { dataset: string; token: string }): Wri
     objectMode: true,
     write(chunk: Buffer | string, _encoding, callback) {
       try {
-        const line = typeof chunk === "string" ? chunk : chunk.toString();
+        const line = typeof chunk === 'string' ? chunk : chunk.toString();
         const parsed = JSON.parse(line);
         axiom.ingest(dataset, [parsed]);
         callback();
@@ -36,10 +36,12 @@ export function createAxiomStream(opts: { dataset: string; token: string }): Wri
   // Use once() instead of on() to prevent listener accumulation when
   // createAxiomStream is called multiple times (e.g. hot reloads).
   const flush = () => {
-    axiom.flush().catch(() => {});
+    axiom.flush().catch(() => {
+      /* ignored */
+    });
   };
-  process.once("beforeExit", flush);
-  process.once("SIGTERM", flush);
+  process.once('beforeExit', flush);
+  process.once('SIGTERM', flush);
 
   return stream;
 }

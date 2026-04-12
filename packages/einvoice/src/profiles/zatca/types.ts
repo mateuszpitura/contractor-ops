@@ -3,10 +3,10 @@
 // ---------------------------------------------------------------------------
 
 /** Standard (B2B clearance) or Simplified (B2C reporting) invoice type */
-export type ZatcaInvoiceType = "standard" | "simplified";
+export type ZatcaInvoiceType = 'standard' | 'simplified';
 
 /** UBL invoice type codes per ZATCA spec */
-export type ZatcaInvoiceTypeCode = "388" | "381" | "383";
+export type ZatcaInvoiceTypeCode = '388' | '381' | '383';
 
 /**
  * Invoice subtype codes per ZATCA specification.
@@ -15,18 +15,18 @@ export type ZatcaInvoiceTypeCode = "388" | "381" | "383";
  * - 0200000: Simplified tax invoice
  * - 0200001: Simplified third-party invoice
  */
-export type ZatcaInvoiceSubtype = "0100000" | "0100001" | "0200000" | "0200001";
+export type ZatcaInvoiceSubtype = '0100000' | '0100001' | '0200000' | '0200001';
 
 /** ZATCA profile identifiers for B2B clearance and B2C reporting */
-export type ZatcaProfileId = "reporting:1.0" | "clearance:1.0";
+export type ZatcaProfileId = 'reporting:1.0' | 'clearance:1.0';
 
 /** Steps in the ZATCA device onboarding flow */
 export type ZatcaOnboardingStep =
-  | "tax_details"
-  | "csr_generation"
-  | "compliance_csid"
-  | "compliance_checks"
-  | "production_certificate";
+  | 'tax_details'
+  | 'csr_generation'
+  | 'compliance_csid'
+  | 'compliance_checks'
+  | 'production_certificate';
 
 /** State tracked during ZATCA device onboarding */
 export interface ZatcaOnboardingState {

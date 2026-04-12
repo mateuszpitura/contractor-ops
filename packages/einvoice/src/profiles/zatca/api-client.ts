@@ -14,18 +14,18 @@ import type {
   GovApiAuditLogger,
   GovApiConfig,
   GovApiEnvironment,
-} from "@contractor-ops/gov-api";
-import { GovApiClient } from "@contractor-ops/gov-api";
+} from '@contractor-ops/gov-api';
+import { GovApiClient } from '@contractor-ops/gov-api';
 
 // ---------------------------------------------------------------------------
 // URLs
 // ---------------------------------------------------------------------------
 
 /** ZATCA Developer Portal (sandbox) base URL */
-export const ZATCA_SANDBOX_URL = "https://gw-fatoora.zatca.gov.sa/e-invoicing/developer-portal";
+export const ZATCA_SANDBOX_URL = 'https://gw-fatoora.zatca.gov.sa/e-invoicing/developer-portal';
 
 /** ZATCA Production base URL */
-export const ZATCA_PRODUCTION_URL = "https://gw-fatoora.zatca.gov.sa/e-invoicing/core";
+export const ZATCA_PRODUCTION_URL = 'https://gw-fatoora.zatca.gov.sa/e-invoicing/core';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -97,7 +97,7 @@ export interface ZatcaComplianceResponse {
 }
 
 /** Error classification for retry logic */
-export type ZatcaErrorType = "retryable" | "non-retryable" | "auth";
+export type ZatcaErrorType = 'retryable' | 'non-retryable' | 'auth';
 
 // ---------------------------------------------------------------------------
 // Default GovApiConfig for ZATCA
@@ -126,13 +126,13 @@ export class ZatcaApiClient extends GovApiClient {
   constructor(config: ZatcaApiClientConfig) {
     const govConfig = config.govConfig ?? DEFAULT_ZATCA_CONFIG;
     const env: GovApiEnvironment =
-      config.govEnvironment ?? (config.baseUrl === ZATCA_SANDBOX_URL ? "sandbox" : "production");
+      config.govEnvironment ?? (config.baseUrl === ZATCA_SANDBOX_URL ? 'sandbox' : 'production');
     super(govConfig, env);
 
     // Per ZATCA spec: Basic auth with Base64({binarySecurityToken}:{secret})
     this.authHeader = `Basic ${Buffer.from(
       `${config.binarySecurityToken}:${config.secret}`,
-    ).toString("base64")}`;
+    ).toString('base64')}`;
     this.auditLogger = config.auditLogger ?? null;
   }
 
@@ -141,7 +141,7 @@ export class ZatcaApiClient extends GovApiClient {
   // -------------------------------------------------------------------------
 
   getApiName(): string {
-    return "zatca";
+    return 'zatca';
   }
 
   /**
@@ -166,7 +166,7 @@ export class ZatcaApiClient extends GovApiClient {
     payload: ZatcaSubmissionPayload,
     organizationId?: string,
   ): Promise<ZatcaClearanceResponse> {
-    return this.post<ZatcaClearanceResponse>("/invoices/clearance/single", payload, organizationId);
+    return this.post<ZatcaClearanceResponse>('/invoices/clearance/single', payload, organizationId);
   }
 
   /**
@@ -177,7 +177,7 @@ export class ZatcaApiClient extends GovApiClient {
     payload: ZatcaSubmissionPayload,
     organizationId?: string,
   ): Promise<ZatcaReportingResponse> {
-    return this.post<ZatcaReportingResponse>("/invoices/reporting/single", payload, organizationId);
+    return this.post<ZatcaReportingResponse>('/invoices/reporting/single', payload, organizationId);
   }
 
   // -------------------------------------------------------------------------
@@ -192,13 +192,13 @@ export class ZatcaApiClient extends GovApiClient {
    */
   async requestComplianceCsid(csrBase64: string, otp: string): Promise<ZatcaCsidResponse> {
     const response = await this.fetch(
-      "/compliance",
+      '/compliance',
       {
-        method: "POST",
+        method: 'POST',
         headers: {
-          Accept: "application/json",
+          Accept: 'application/json',
           OTP: otp,
-          "Accept-Version": "V2",
+          'Accept-Version': 'V2',
         },
         body: JSON.stringify({ csr: csrBase64 }),
       },
@@ -206,7 +206,7 @@ export class ZatcaApiClient extends GovApiClient {
     );
 
     if (!response.ok) {
-      throw await this.createError(response, "requestComplianceCsid");
+      throw await this.createError(response, 'requestComplianceCsid');
     }
     return response.json() as Promise<ZatcaCsidResponse>;
   }
@@ -216,7 +216,7 @@ export class ZatcaApiClient extends GovApiClient {
    * Step 5 of the ZATCA device onboarding flow.
    */
   async requestProductionCsid(requestId: string): Promise<ZatcaCsidResponse> {
-    return this.post<ZatcaCsidResponse>("/production/csids", { requestID: requestId });
+    return this.post<ZatcaCsidResponse>('/production/csids', { requestID: requestId });
   }
 
   /**
@@ -224,7 +224,7 @@ export class ZatcaApiClient extends GovApiClient {
    * Uses compliance credentials (not production).
    */
   async submitComplianceInvoice(payload: ZatcaSubmissionPayload): Promise<ZatcaComplianceResponse> {
-    return this.post<ZatcaComplianceResponse>("/compliance/invoices", payload);
+    return this.post<ZatcaComplianceResponse>('/compliance/invoices', payload);
   }
 
   // -------------------------------------------------------------------------
@@ -238,9 +238,9 @@ export class ZatcaApiClient extends GovApiClient {
    * - 4xx: non-retryable (fix invoice data)
    */
   static classifyError(statusCode: number): ZatcaErrorType {
-    if (statusCode === 401 || statusCode === 403) return "auth";
-    if (statusCode === 429 || statusCode >= 500) return "retryable";
-    return "non-retryable";
+    if (statusCode === 401 || statusCode === 403) return 'auth';
+    if (statusCode === 429 || statusCode >= 500) return 'retryable';
+    return 'non-retryable';
   }
 
   // -------------------------------------------------------------------------
@@ -259,12 +259,12 @@ export class ZatcaApiClient extends GovApiClient {
     const response = await this.fetch(
       path,
       {
-        method: "POST",
+        method: 'POST',
         headers: {
-          Accept: "application/json",
+          Accept: 'application/json',
           Authorization: this.authHeader,
-          "Accept-Language": "en",
-          "Accept-Version": "V2",
+          'Accept-Language': 'en',
+          'Accept-Version': 'V2',
         },
         body: JSON.stringify(body),
       },
@@ -283,7 +283,7 @@ export class ZatcaApiClient extends GovApiClient {
     try {
       body = await response.text();
     } catch {
-      body = "";
+      body = '';
     }
 
     // T-48-09: Never include auth header in error details
@@ -312,7 +312,7 @@ export class ZatcaApiError extends Error {
     responseBody: string,
   ) {
     super(message);
-    this.name = "ZatcaApiError";
+    this.name = 'ZatcaApiError';
     this.statusCode = statusCode;
     this.errorType = errorType;
     this.responseBody = responseBody;

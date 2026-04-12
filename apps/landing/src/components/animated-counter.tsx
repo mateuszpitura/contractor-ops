@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useInView, useReducedMotion } from "motion/react";
-import { useEffect, useRef, useState } from "react";
+import { useInView, useReducedMotion } from 'motion/react';
+import { useEffect, useRef, useState } from 'react';
 
 /**
  * Animated number counter that counts up when scrolled into view.
@@ -9,8 +9,8 @@ import { useEffect, useRef, useState } from "react";
  */
 export function AnimatedCounter({
   value,
-  suffix = "",
-  prefix = "",
+  suffix = '',
+  prefix = '',
   duration = 1.6,
   className,
 }: {
@@ -21,7 +21,7 @@ export function AnimatedCounter({
   className?: string;
 }) {
   const ref = useRef<HTMLSpanElement>(null);
-  const isInView = useInView(ref, { once: true, margin: "-60px" });
+  const isInView = useInView(ref, { once: true, margin: '-60px' });
   const reduced = useReducedMotion();
   const [display, setDisplay] = useState(0);
   const hasAnimated = useRef(false);

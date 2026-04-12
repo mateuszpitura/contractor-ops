@@ -1,42 +1,42 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // ---------------------------------------------------------------------------
 // Prisma enum mirrors (string unions — validators package has no Prisma dep)
 // ---------------------------------------------------------------------------
 
 export const equipmentTypeEnum = z.enum([
-  "LAPTOP",
-  "MONITOR",
-  "PHONE",
-  "HEADSET",
-  "KEYBOARD",
-  "MOUSE",
-  "OTHER",
+  'LAPTOP',
+  'MONITOR',
+  'PHONE',
+  'HEADSET',
+  'KEYBOARD',
+  'MOUSE',
+  'OTHER',
 ]);
 
 export const equipmentStatusEnum = z.enum([
-  "AVAILABLE",
-  "ASSIGNED",
-  "IN_TRANSIT",
-  "DELIVERED",
-  "RETURN_REQUESTED",
-  "RETURN_IN_TRANSIT",
-  "RETURNED",
-  "RETIRED",
+  'AVAILABLE',
+  'ASSIGNED',
+  'IN_TRANSIT',
+  'DELIVERED',
+  'RETURN_REQUESTED',
+  'RETURN_IN_TRANSIT',
+  'RETURNED',
+  'RETIRED',
 ]);
 
 export const shipmentStatusEnum = z.enum([
-  "CREATED",
-  "LABEL_GENERATED",
-  "PICKED_UP",
-  "IN_TRANSIT",
-  "OUT_FOR_DELIVERY",
-  "DELIVERED",
-  "FAILED",
-  "RETURNED",
+  'CREATED',
+  'LABEL_GENERATED',
+  'PICKED_UP',
+  'IN_TRANSIT',
+  'OUT_FOR_DELIVERY',
+  'DELIVERED',
+  'FAILED',
+  'RETURNED',
 ]);
 
-export const shipmentDirectionEnum = z.enum(["OUTBOUND", "RETURN"]);
+export const shipmentDirectionEnum = z.enum(['OUTBOUND', 'RETURN']);
 
 // ---------------------------------------------------------------------------
 // Equipment CRUD schemas
@@ -46,7 +46,7 @@ export const shipmentDirectionEnum = z.enum(["OUTBOUND", "RETURN"]);
  * Schema for creating a new equipment item.
  */
 export const equipmentCreateSchema = z.object({
-  name: z.string().min(1, "Name is required").max(200),
+  name: z.string().min(1, 'Name is required').max(200),
   serialNumber: z.string().max(100).optional(),
   type: equipmentTypeEnum,
   customType: z.string().max(100).optional(),
@@ -75,8 +75,8 @@ export const equipmentListSchema = z.object({
   status: z.array(equipmentStatusEnum).optional(),
   type: z.array(equipmentTypeEnum).optional(),
   assignedContractorId: z.string().optional(),
-  sortBy: z.enum(["name", "type", "status", "createdAt"]).default("createdAt"),
-  sortOrder: z.enum(["asc", "desc"]).default("desc"),
+  sortBy: z.enum(['name', 'type', 'status', 'createdAt']).default('createdAt'),
+  sortOrder: z.enum(['asc', 'desc']).default('desc'),
 });
 
 export type EquipmentListInput = z.infer<typeof equipmentListSchema>;
@@ -116,7 +116,7 @@ export type EquipmentUnassignInput = z.infer<typeof equipmentUnassignSchema>;
 export const shipmentCreateSchema = z.object({
   equipmentId: z.string().min(1),
   direction: shipmentDirectionEnum,
-  carrier: z.string().min(1, "Carrier is required"),
+  carrier: z.string().min(1, 'Carrier is required'),
   carrierCustom: z.string().max(100).optional(),
   trackingNumber: z.string().max(100).optional(),
   expectedDeliveryAt: z.coerce.date().optional(),
@@ -156,11 +156,11 @@ export type EquipmentTaskConfig = z.infer<typeof equipmentTaskConfigSchema>;
 // ---------------------------------------------------------------------------
 
 export const returnRequestStatusEnum = z.enum([
-  "PENDING_APPROVAL",
-  "APPROVED",
-  "REJECTED",
-  "SHIPMENT_CREATED",
-  "CANCELLED",
+  'PENDING_APPROVAL',
+  'APPROVED',
+  'REJECTED',
+  'SHIPMENT_CREATED',
+  'CANCELLED',
 ]);
 
 export type ReturnRequestStatus = z.infer<typeof returnRequestStatusEnum>;
@@ -181,7 +181,7 @@ export type ReturnRequestCreateInput = z.infer<typeof returnRequestCreateSchema>
  */
 export const returnRequestApproveSchema = z.object({
   id: z.string().min(1),
-  parcelSize: z.enum(["small", "medium", "large"]).default("large"),
+  parcelSize: z.enum(['small', 'medium', 'large']).default('large'),
 });
 
 export type ReturnRequestApproveInput = z.infer<typeof returnRequestApproveSchema>;
@@ -208,7 +208,7 @@ export const inpostShipmentCreateSchema = z.object({
   targetPointId: z.string().min(1),
   targetPointName: z.string().min(1),
   targetPointAddress: z.string().min(1),
-  parcelSize: z.enum(["small", "medium", "large"]),
+  parcelSize: z.enum(['small', 'medium', 'large']),
   direction: shipmentDirectionEnum,
   workflowTaskRunId: z.string().optional(),
   notes: z.string().max(2000).optional(),
@@ -236,10 +236,10 @@ export type CourierConfigInput = z.infer<typeof courierConfigSchema>;
 
 /** Delivery address sub-schema for DPD/UPS. */
 export const deliveryAddressSchema = z.object({
-  street: z.string().min(1, "Street is required").max(200),
-  city: z.string().min(1, "City is required").max(100),
-  postalCode: z.string().min(1, "Postal code is required").max(20),
-  countryCode: z.string().length(2, "Country code must be 2 characters").default("PL"),
+  street: z.string().min(1, 'Street is required').max(200),
+  city: z.string().min(1, 'City is required').max(100),
+  postalCode: z.string().min(1, 'Postal code is required').max(20),
+  countryCode: z.string().length(2, 'Country code must be 2 characters').default('PL'),
 });
 
 export type DeliveryAddressInput = z.infer<typeof deliveryAddressSchema>;
@@ -250,7 +250,7 @@ export type DeliveryAddressInput = z.infer<typeof deliveryAddressSchema>;
 export const dpdShipmentCreateSchema = z.object({
   equipmentIds: z.array(z.string().min(1)).min(1),
   deliveryAddress: deliveryAddressSchema,
-  parcelSize: z.enum(["small", "medium", "large"]),
+  parcelSize: z.enum(['small', 'medium', 'large']),
   direction: shipmentDirectionEnum,
   workflowTaskRunId: z.string().optional(),
   notes: z.string().max(2000).optional(),
@@ -262,7 +262,7 @@ export type DpdShipmentCreateInput = z.infer<typeof dpdShipmentCreateSchema>;
  * Schema for DPD courier configuration.
  */
 export const dpdConfigSchema = z.object({
-  carrier: z.literal("dpd"),
+  carrier: z.literal('dpd'),
   username: z.string().min(1),
   password: z.string().min(1),
   fid: z.string().min(1),
@@ -277,8 +277,8 @@ export type DpdConfigInput = z.infer<typeof dpdConfigSchema>;
 export const upsShipmentCreateSchema = z.object({
   equipmentIds: z.array(z.string().min(1)).min(1),
   deliveryAddress: deliveryAddressSchema,
-  parcelSize: z.enum(["small", "medium", "large"]),
-  serviceCode: z.enum(["11", "65", "07"]).default("11"),
+  parcelSize: z.enum(['small', 'medium', 'large']),
+  serviceCode: z.enum(['11', '65', '07']).default('11'),
   direction: shipmentDirectionEnum,
   workflowTaskRunId: z.string().optional(),
   notes: z.string().max(2000).optional(),
@@ -290,7 +290,7 @@ export type UpsShipmentCreateInput = z.infer<typeof upsShipmentCreateSchema>;
  * Schema for UPS courier configuration.
  */
 export const upsConfigSchema = z.object({
-  carrier: z.literal("ups"),
+  carrier: z.literal('ups'),
   clientId: z.string().min(1),
   clientSecret: z.string().min(1),
   accountNumber: z.string().min(1),

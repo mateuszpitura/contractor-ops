@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { Skeleton } from "@/components/ui/skeleton";
-import { trpc } from "@/trpc/init";
-import { JiraIssueChip } from "./jira-issue-chip";
-import { JiraLogo } from "./jira-logo";
+import { useQuery } from '@tanstack/react-query';
+import { Skeleton } from '@/components/ui/skeleton';
+import { trpc } from '@/trpc/init';
+import { JiraIssueChip } from './jira-issue-chip';
+import { JiraLogo } from './jira-logo';
 
 // ---------------------------------------------------------------------------
 // Relative time helper
@@ -16,7 +16,7 @@ function relativeTime(dateStr: string): string {
   const diffMs = now - then;
 
   const minutes = Math.floor(diffMs / 60_000);
-  if (minutes < 1) return "just now";
+  if (minutes < 1) return 'just now';
   if (minutes < 60) return `${minutes}m ago`;
 
   const hours = Math.floor(minutes / 60);
@@ -41,7 +41,7 @@ interface RecentActivityItem {
     key: string;
     summary: string;
     status: string;
-    statusCategory: "new" | "indeterminate" | "done";
+    statusCategory: 'new' | 'indeterminate' | 'done';
     url: string;
   };
   updatedAt: string;
@@ -96,7 +96,7 @@ export function JiraActivitySummary({ contractorId }: JiraActivitySummaryProps) 
 
       {/* Activity list */}
       <div className="space-y-2">
-        {items.map((item) => (
+        {items.map(item => (
           <div key={item.id} className="flex items-center gap-2">
             <JiraIssueChip
               issueKey={item.metadataJson.key}

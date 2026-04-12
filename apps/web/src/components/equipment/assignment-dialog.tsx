@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 import {
   Command,
   CommandEmpty,
@@ -13,7 +13,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
+} from '@/components/ui/command';
 import {
   Dialog,
   DialogContent,
@@ -21,8 +21,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { trpc } from "@/trpc/init";
+} from '@/components/ui/dialog';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -48,11 +48,11 @@ export function AssignmentDialog({
   equipmentId,
   equipmentName,
 }: AssignmentDialogProps) {
-  const t = useTranslations("Equipment");
+  const t = useTranslations('Equipment');
   const queryClient = useQueryClient();
   const [selectedContractorId, setSelectedContractorId] = useState<string | null>(null);
-  const [selectedContractorName, setSelectedContractorName] = useState<string>("");
-  const [search, setSearch] = useState("");
+  const [selectedContractorName, setSelectedContractorName] = useState<string>('');
+  const [search, setSearch] = useState('');
 
   // Fetch contractors
   const contractorsQuery = useQuery(
@@ -73,7 +73,7 @@ export function AssignmentDialog({
   const assignMutation = useMutation(
     trpc.equipment.assign.mutationOptions({
       onSuccess: () => {
-        toast.success(t("toast.assigned", { name: selectedContractorName }));
+        toast.success(t('toast.assigned', { name: selectedContractorName }));
         queryClient.invalidateQueries({
           queryKey: trpc.equipment.list.queryKey(),
         });
@@ -82,11 +82,11 @@ export function AssignmentDialog({
         });
         onOpenChange(false);
         setSelectedContractorId(null);
-        setSelectedContractorName("");
-        setSearch("");
+        setSelectedContractorName('');
+        setSearch('');
       },
       onError: () => {
-        toast.error(t("error.actionFailed"));
+        toast.error(t('error.actionFailed'));
       },
     }),
   );
@@ -102,18 +102,17 @@ export function AssignmentDialog({
   return (
     <Dialog
       open={open}
-      onOpenChange={(v) => {
+      onOpenChange={v => {
         onOpenChange(v);
         if (!v) {
           setSelectedContractorId(null);
-          setSelectedContractorName("");
-          setSearch("");
+          setSelectedContractorName('');
+          setSearch('');
         }
-      }}
-    >
+      }}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{t("detail.assignToContractor")}</DialogTitle>
+          <DialogTitle>{t('detail.assignToContractor')}</DialogTitle>
           <DialogDescription>{equipmentName}</DialogDescription>
         </DialogHeader>
 
@@ -130,11 +129,11 @@ export function AssignmentDialog({
                   <Loader2 className="h-4 w-4 animate-spin" />
                 </div>
               ) : (
-                "No contractors found."
+                'No contractors found.'
               )}
             </CommandEmpty>
             <CommandGroup>
-              {contractors.map((contractor) => (
+              {contractors.map(contractor => (
                 <CommandItem
                   key={contractor.id}
                   value={contractor.id}
@@ -142,8 +141,7 @@ export function AssignmentDialog({
                     setSelectedContractorId(contractor.id);
                     setSelectedContractorName(contractor.displayName ?? contractor.legalName);
                   }}
-                  className={selectedContractorId === contractor.id ? "bg-accent" : ""}
-                >
+                  className={selectedContractorId === contractor.id ? 'bg-accent' : ''}>
                   <span>{contractor.displayName ?? contractor.legalName}</span>
                 </CommandItem>
               ))}
@@ -156,16 +154,14 @@ export function AssignmentDialog({
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
-            disabled={assignMutation.isPending}
-          >
-            {t("form.cancel")}
+            disabled={assignMutation.isPending}>
+            {t('form.cancel')}
           </Button>
           <Button
             onClick={handleAssign}
-            disabled={!selectedContractorId || assignMutation.isPending}
-          >
+            disabled={!selectedContractorId || assignMutation.isPending}>
             {assignMutation.isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
-            {t("detail.assignToContractor")}
+            {t('detail.assignToContractor')}
           </Button>
         </DialogFooter>
       </DialogContent>

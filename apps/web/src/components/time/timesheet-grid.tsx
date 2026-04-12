@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { addDays, format, startOfISOWeek } from "date-fns";
-import { AlertTriangle } from "lucide-react";
-import { useCallback, useMemo, useRef, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
-import { TimeSourceBadge } from "./time-source-badge";
+import { addDays, format, startOfISOWeek } from 'date-fns';
+import { AlertTriangle } from 'lucide-react';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils';
+import { TimeSourceBadge } from './time-source-badge';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -19,7 +19,7 @@ interface TimeEntry {
   entryDate: string | Date;
   minutes: number;
   description?: string | null;
-  source: "MANUAL" | "CLOCKIFY" | "JIRA";
+  source: 'MANUAL' | 'CLOCKIFY' | 'JIRA';
   externalId?: string | null;
   createdAt?: string | Date;
   contract?: { id: string; title: string } | null;
@@ -54,15 +54,15 @@ interface TimesheetGridProps {
 // Helpers
 // ---------------------------------------------------------------------------
 
-const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 function getDateForDay(weekStart: Date, dayIndex: number): string {
   const date = addDays(startOfISOWeek(weekStart), dayIndex);
-  return format(date, "yyyy-MM-dd");
+  return format(date, 'yyyy-MM-dd');
 }
 
 function minutesToHours(minutes: number): string {
-  if (minutes === 0) return "";
+  if (minutes === 0) return '';
   const hours = minutes / 60;
   return hours % 1 === 0 ? hours.toFixed(0) : hours.toFixed(2);
 }
@@ -74,8 +74,8 @@ function hoursToMinutes(hours: string): number {
 }
 
 function toDateStr(d: string | Date): string {
-  if (typeof d === "string") return d.split("T")[0]!;
-  return format(d, "yyyy-MM-dd");
+  if (typeof d === 'string') return d.split('T')[0]!;
+  return format(d, 'yyyy-MM-dd');
 }
 
 // ---------------------------------------------------------------------------
@@ -122,28 +122,31 @@ export function TimesheetGrid({
   const [localValues, setLocalValues] = useState<Record<string, string>>({});
   const inputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
 
-  const getCellKey = (contractId: string, dayIndex: number) => `${contractId}-${dayIndex}`;
+  const getCellKey = useCallback(
+    (contractId: string, dayIndex: number) => `${contractId}-${dayIndex}`,
+    [],
+  );
 
   const getCellValue = (contractId: string, dayIndex: number): string => {
     const key = getCellKey(contractId, dayIndex);
     if (key in localValues) return localValues[key]!;
     const entry = entryMap.get(contractId)?.get(dayIndex);
-    return entry ? minutesToHours(entry.minutes) : "";
+    return entry ? minutesToHours(entry.minutes) : '';
   };
 
   const isCellImported = (contractId: string, dayIndex: number): boolean => {
     const entry = entryMap.get(contractId)?.get(dayIndex);
-    return entry ? entry.source !== "MANUAL" : false;
+    return entry ? entry.source !== 'MANUAL' : false;
   };
 
-  const getCellSource = (contractId: string, dayIndex: number): TimeEntry["source"] | null => {
+  const getCellSource = (contractId: string, dayIndex: number): TimeEntry['source'] | null => {
     const entry = entryMap.get(contractId)?.get(dayIndex);
     return entry?.source ?? null;
   };
 
   const handleCellChange = (contractId: string, dayIndex: number, value: string) => {
     const key = getCellKey(contractId, dayIndex);
-    setLocalValues((prev) => ({ ...prev, [key]: value }));
+    setLocalValues(prev => ({ ...prev, [key]: value }));
   };
 
   const handleCellBlur = useCallback(
@@ -159,7 +162,7 @@ export function TimesheetGrid({
       // Only save if value actually changed
       if (existingEntry && existingEntry.minutes === minutes) {
         // Clear local value, no save needed
-        setLocalValues((prev) => {
+        setLocalValues(prev => {
           const next = { ...prev };
           delete next[key];
           return next;
@@ -178,7 +181,7 @@ export function TimesheetGrid({
       ]);
 
       // Clear local override after save
-      setLocalValues((prev) => {
+      setLocalValues(prev => {
         const next = { ...prev };
         delete next[key];
         return next;
@@ -194,14 +197,14 @@ export function TimesheetGrid({
     dayIndex: number,
     contractIndex: number,
   ) => {
-    if (e.key === "Tab" || e.key === "Enter") {
+    if (e.key === 'Tab' || e.key === 'Enter') {
       e.preventDefault();
       handleCellBlur(contractId, dayIndex);
 
       let nextContractIdx = contractIndex;
       let nextDayIdx = dayIndex;
 
-      if (e.key === "Enter") {
+      if (e.key === 'Enter') {
         // Move down same column
         nextContractIdx = (contractIndex + 1) % contracts.length;
       } else {
@@ -287,11 +290,10 @@ export function TimesheetGrid({
                   {DAY_LABELS.map((day, i) => (
                     <th
                       key={day}
-                      className="w-16 min-w-[64px] px-1 py-3 text-center text-sm font-semibold"
-                    >
+                      className="w-16 min-w-[64px] px-1 py-3 text-center text-sm font-semibold">
                       <div>{day}</div>
                       <div className="text-xs font-normal text-muted-foreground">
-                        {format(addDays(startOfISOWeek(weekStartDate), i), "d")}
+                        {format(addDays(startOfISOWeek(weekStartDate), i), 'd')}
                       </div>
                     </th>
                   ))}
@@ -309,8 +311,7 @@ export function TimesheetGrid({
                       <td className="px-4 py-2">
                         <span
                           className="block max-w-[200px] truncate text-sm"
-                          title={contract.title}
-                        >
+                          title={contract.title}>
                           {contract.title}
                         </span>
                       </td>
@@ -321,10 +322,10 @@ export function TimesheetGrid({
                         const cellDisabled = disabled || imported;
 
                         return (
-                          <td key={dayIdx} className={cn("px-1 py-1.5", imported && "bg-muted/50")}>
+                          <td key={dayIdx} className={cn('px-1 py-1.5', imported && 'bg-muted/50')}>
                             <div className="relative">
                               <Input
-                                ref={(el) => {
+                                ref={el => {
                                   if (el) inputRefs.current.set(cellKey, el);
                                   else inputRefs.current.delete(cellKey);
                                 }}
@@ -334,17 +335,15 @@ export function TimesheetGrid({
                                 max="24"
                                 className="h-10 w-16 text-center text-sm [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                                 value={getCellValue(contract.id, dayIdx)}
-                                onChange={(e) =>
+                                onChange={e =>
                                   handleCellChange(contract.id, dayIdx, e.target.value)
                                 }
                                 onBlur={() => handleCellBlur(contract.id, dayIdx)}
-                                onKeyDown={(e) =>
-                                  handleKeyDown(e, contract.id, dayIdx, contractIdx)
-                                }
+                                onKeyDown={e => handleKeyDown(e, contract.id, dayIdx, contractIdx)}
                                 disabled={cellDisabled}
                                 aria-label={`Hours for ${contract.title} on ${DAY_LABELS[dayIdx]}`}
                               />
-                              {source && source !== "MANUAL" && (
+                              {source && source !== 'MANUAL' && (
                                 <div className="absolute -top-1 -end-1">
                                   <TimeSourceBadge
                                     source={source}
@@ -357,7 +356,7 @@ export function TimesheetGrid({
                         );
                       })}
                       <td className="px-2 py-2 text-center text-sm font-medium">
-                        {minutesToHours(rowTotal) || "0"}
+                        {minutesToHours(rowTotal) || '0'}
                       </td>
                     </tr>
                   );
@@ -372,12 +371,12 @@ export function TimesheetGrid({
                     const colTotal = getColumnTotal(dayIdx);
                     return (
                       <td key={dayIdx} className="px-1 py-3 text-center text-sm font-semibold">
-                        {minutesToHours(colTotal) || "0"}
+                        {minutesToHours(colTotal) || '0'}
                       </td>
                     );
                   })}
                   <td className="px-2 py-3 text-center text-sm font-semibold text-primary">
-                    {minutesToHours(grandTotal) || "0"}
+                    {minutesToHours(grandTotal) || '0'}
                   </td>
                 </tr>
               </tfoot>

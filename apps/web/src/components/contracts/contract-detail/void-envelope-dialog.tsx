@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useMutation } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { toast } from "sonner";
+import { useMutation } from '@tanstack/react-query';
+import { Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,10 +14,10 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { trpc } from "@/trpc/init";
+} from '@/components/ui/alert-dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -44,20 +44,20 @@ export function VoidEnvelopeDialog({
   onOpenChange,
   onVoided,
 }: VoidEnvelopeDialogProps) {
-  const t = useTranslations("ContractDetail.signing.voidDialog");
-  const tToast = useTranslations("ContractDetail.signing.toast");
-  const [reason, setReason] = useState("");
+  const t = useTranslations('ContractDetail.signing.voidDialog');
+  const tToast = useTranslations('ContractDetail.signing.toast');
+  const [reason, setReason] = useState('');
 
   const voidMutation = useMutation(
     trpc.esign.voidEnvelope.mutationOptions({
       onSuccess: () => {
-        toast.success(tToast("voidSuccess"));
+        toast.success(tToast('voidSuccess'));
         onOpenChange(false);
-        setReason("");
+        setReason('');
         onVoided();
       },
       onError: () => {
-        toast.error(tToast("voidFailed"));
+        toast.error(tToast('voidFailed'));
       },
     }),
   );
@@ -65,7 +65,7 @@ export function VoidEnvelopeDialog({
   function handleConfirm() {
     voidMutation.mutate({
       envelopeId,
-      reason: reason.trim() || t("defaultReason"),
+      reason: reason.trim() || t('defaultReason'),
     });
   }
 
@@ -73,35 +73,34 @@ export function VoidEnvelopeDialog({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{t("title")}</AlertDialogTitle>
-          <AlertDialogDescription>{t("description")}</AlertDialogDescription>
+          <AlertDialogTitle>{t('title')}</AlertDialogTitle>
+          <AlertDialogDescription>{t('description')}</AlertDialogDescription>
         </AlertDialogHeader>
 
         <div className="space-y-2 py-2">
-          <Label htmlFor="void-reason">{t("reasonLabel")}</Label>
+          <Label htmlFor="void-reason">{t('reasonLabel')}</Label>
           <Textarea
             id="void-reason"
             rows={2}
-            placeholder={t("reasonPlaceholder")}
+            placeholder={t('reasonPlaceholder')}
             value={reason}
-            onChange={(e) => setReason(e.target.value)}
+            onChange={e => setReason(e.target.value)}
           />
         </div>
 
         <AlertDialogFooter>
-          <AlertDialogCancel>{t("keepActive")}</AlertDialogCancel>
+          <AlertDialogCancel>{t('keepActive')}</AlertDialogCancel>
           <AlertDialogAction
             variant="destructive"
             onClick={handleConfirm}
-            disabled={voidMutation.isPending}
-          >
+            disabled={voidMutation.isPending}>
             {voidMutation.isPending ? (
               <>
                 <Loader2 className="me-1.5 size-4 animate-spin" />
-                {t("voiding")}
+                {t('voiding')}
               </>
             ) : (
-              t("voidEnvelope")
+              t('voidEnvelope')
             )}
           </AlertDialogAction>
         </AlertDialogFooter>

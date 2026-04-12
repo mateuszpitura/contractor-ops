@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   CheckCircle2,
   ClipboardCheck,
@@ -10,15 +10,15 @@ import {
   FileWarning,
   Loader2,
   UserCheck,
-} from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useEffect } from "react";
-import { Controller, useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { z } from "zod";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Switch } from "@/components/ui/switch";
+} from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useEffect } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { z } from 'zod';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Switch } from '@/components/ui/switch';
 import {
   Table,
   TableBody,
@@ -26,21 +26,21 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { trpc } from "@/trpc/init";
+} from '@/components/ui/table';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
 const NOTIFICATION_TYPES = [
-  "APPROVAL_REQUEST",
-  "APPROVAL_DECISION",
-  "TASK_ASSIGNED",
-  "TASK_OVERDUE",
-  "CONTRACT_EXPIRING",
-  "INVOICE_RECEIVED",
+  'APPROVAL_REQUEST',
+  'APPROVAL_DECISION',
+  'TASK_ASSIGNED',
+  'TASK_OVERDUE',
+  'CONTRACT_EXPIRING',
+  'INVOICE_RECEIVED',
 ] as const;
 
 type NotificationType = (typeof NOTIFICATION_TYPES)[number];
@@ -56,39 +56,39 @@ const EVENT_CONFIG: Record<
 > = {
   APPROVAL_REQUEST: {
     icon: ClipboardCheck,
-    labelKey: "eventApprovalRequest",
-    iconClass: "text-primary",
-    bgClass: "bg-primary/10",
+    labelKey: 'eventApprovalRequest',
+    iconClass: 'text-primary',
+    bgClass: 'bg-primary/10',
   },
   APPROVAL_DECISION: {
     icon: CheckCircle2,
-    labelKey: "eventApprovalDecision",
-    iconClass: "text-emerald-500",
-    bgClass: "bg-emerald-500/10",
+    labelKey: 'eventApprovalDecision',
+    iconClass: 'text-emerald-500',
+    bgClass: 'bg-emerald-500/10',
   },
   TASK_ASSIGNED: {
     icon: UserCheck,
-    labelKey: "eventTaskAssigned",
-    iconClass: "text-blue-500",
-    bgClass: "bg-blue-500/10",
+    labelKey: 'eventTaskAssigned',
+    iconClass: 'text-blue-500',
+    bgClass: 'bg-blue-500/10',
   },
   TASK_OVERDUE: {
     icon: Clock,
-    labelKey: "eventTaskOverdue",
-    iconClass: "text-amber-500",
-    bgClass: "bg-amber-500/10",
+    labelKey: 'eventTaskOverdue',
+    iconClass: 'text-amber-500',
+    bgClass: 'bg-amber-500/10',
   },
   CONTRACT_EXPIRING: {
     icon: FileWarning,
-    labelKey: "eventContractExpiring",
-    iconClass: "text-amber-500",
-    bgClass: "bg-amber-500/10",
+    labelKey: 'eventContractExpiring',
+    iconClass: 'text-amber-500',
+    bgClass: 'bg-amber-500/10',
   },
   INVOICE_RECEIVED: {
     icon: FileText,
-    labelKey: "eventInvoiceReceived",
-    iconClass: "text-primary",
-    bgClass: "bg-primary/10",
+    labelKey: 'eventInvoiceReceived',
+    iconClass: 'text-primary',
+    bgClass: 'bg-primary/10',
   },
 };
 
@@ -114,24 +114,24 @@ type PreferenceFormValues = z.infer<typeof preferenceFormSchema>;
 // ---------------------------------------------------------------------------
 
 export function NotificationPreferences() {
-  const t = useTranslations("Settings");
-  const tAria = useTranslations("Common.aria");
+  const t = useTranslations('Settings');
+  const tAria = useTranslations('Common.aria');
   const queryClient = useQueryClient();
 
   const preferencesQuery = useQuery(trpc.notification.getPreferences.queryOptions());
   const slackStatusQuery = useQuery(trpc.integration.getSlackStatus.queryOptions());
   const teamsHealthQuery = useQuery(
-    trpc.integration.getHealth.queryOptions({ provider: "microsoft_teams" }),
+    trpc.integration.getHealth.queryOptions({ provider: 'microsoft_teams' }),
   );
 
   const isSlackConnected = slackStatusQuery.data?.connected === true;
   const isTeamsConnected =
-    (teamsHealthQuery.data as { status?: string } | null | undefined)?.status === "CONNECTED";
+    (teamsHealthQuery.data as { status?: string } | null | undefined)?.status === 'CONNECTED';
 
   const form = useForm<PreferenceFormValues>({
     resolver: zodResolver(preferenceFormSchema),
     defaultValues: {
-      preferences: NOTIFICATION_TYPES.map((type) => ({
+      preferences: NOTIFICATION_TYPES.map(type => ({
         notificationType: type,
         channelEmail: true,
         channelSlack: true,
@@ -145,7 +145,7 @@ export function NotificationPreferences() {
     if (preferencesQuery.data) {
       const prefs = preferencesQuery.data;
       form.reset({
-        preferences: NOTIFICATION_TYPES.map((type) => {
+        preferences: NOTIFICATION_TYPES.map(type => {
           const pref = prefs.find((p: { notificationType: string }) => p.notificationType === type);
           return {
             notificationType: type,
@@ -161,13 +161,13 @@ export function NotificationPreferences() {
   const updateMutation = useMutation(
     trpc.notification.updatePreferences.mutationOptions({
       onSuccess: () => {
-        toast.success(t("notifications.preferencesSaved"));
+        toast.success(t('notifications.preferencesSaved'));
         queryClient.invalidateQueries({
           queryKey: trpc.notification.getPreferences.queryKey(),
         });
       },
       onError: () => {
-        toast.error(t("notifications.preferencesSaveFailed"));
+        toast.error(t('notifications.preferencesSaveFailed'));
       },
     }),
   );
@@ -204,20 +204,20 @@ export function NotificationPreferences() {
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-base font-semibold">{t("notifications.heading")}</h3>
-        <p className="text-sm text-muted-foreground">{t("notifications.description")}</p>
+        <h3 className="text-base font-semibold">{t('notifications.heading')}</h3>
+        <p className="text-sm text-muted-foreground">{t('notifications.description')}</p>
       </div>
 
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-auto">{t("notifications.columnEvent")}</TableHead>
-              <TableHead className="w-20 text-center">{t("notifications.columnInApp")}</TableHead>
-              <TableHead className="w-20 text-center">{t("notifications.columnEmail")}</TableHead>
-              <TableHead className="w-20 text-center">{t("notifications.columnSlack")}</TableHead>
+              <TableHead className="w-auto">{t('notifications.columnEvent')}</TableHead>
+              <TableHead className="w-20 text-center">{t('notifications.columnInApp')}</TableHead>
+              <TableHead className="w-20 text-center">{t('notifications.columnEmail')}</TableHead>
+              <TableHead className="w-20 text-center">{t('notifications.columnSlack')}</TableHead>
               <TableHead className="w-20 text-center">
-                {t("notifications.columnTeams" as Parameters<typeof t>[0])}
+                {t('notifications.columnTeams' as Parameters<typeof t>[0])}
               </TableHead>
             </TableRow>
           </TableHeader>
@@ -231,8 +231,7 @@ export function NotificationPreferences() {
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <div
-                        className={`flex size-8 items-center justify-center rounded-full ${config.bgClass}`}
-                      >
+                        className={`flex size-8 items-center justify-center rounded-full ${config.bgClass}`}>
                         <Icon className={`size-4 ${config.iconClass}`} />
                       </div>
                       <span className="text-sm font-medium">
@@ -245,9 +244,9 @@ export function NotificationPreferences() {
                   <TableCell className="text-center">
                     <Tooltip>
                       <TooltipTrigger render={<div className="inline-flex" />}>
-                        <Switch checked disabled aria-label={tAria("inApp")} />
+                        <Switch checked disabled aria-label={tAria('inApp')} />
                       </TooltipTrigger>
-                      <TooltipContent>{t("notifications.inAppTooltip")}</TooltipContent>
+                      <TooltipContent>{t('notifications.inAppTooltip')}</TooltipContent>
                     </Tooltip>
                   </TableCell>
 
@@ -260,7 +259,7 @@ export function NotificationPreferences() {
                         <Switch
                           checked={field.value}
                           onCheckedChange={field.onChange}
-                          aria-label={tAria("email")}
+                          aria-label={tAria('email')}
                         />
                       )}
                     />
@@ -276,16 +275,16 @@ export function NotificationPreferences() {
                           <Switch
                             checked={field.value}
                             onCheckedChange={field.onChange}
-                            aria-label={tAria("slack")}
+                            aria-label={tAria('slack')}
                           />
                         )}
                       />
                     ) : (
                       <Tooltip>
                         <TooltipTrigger render={<div className="inline-flex" />}>
-                          <Switch checked={false} disabled aria-label={tAria("slack")} />
+                          <Switch checked={false} disabled aria-label={tAria('slack')} />
                         </TooltipTrigger>
-                        <TooltipContent>{t("notifications.slackDisabledTooltip")}</TooltipContent>
+                        <TooltipContent>{t('notifications.slackDisabledTooltip')}</TooltipContent>
                       </Tooltip>
                     )}
                   </TableCell>
@@ -300,7 +299,7 @@ export function NotificationPreferences() {
                           <Switch
                             checked={field.value}
                             onCheckedChange={field.onChange}
-                            aria-label={tAria("teams" as Parameters<typeof tAria>[0])}
+                            aria-label={tAria('teams' as Parameters<typeof tAria>[0])}
                           />
                         )}
                       />
@@ -310,11 +309,11 @@ export function NotificationPreferences() {
                           <Switch
                             checked={false}
                             disabled
-                            aria-label={tAria("teams" as Parameters<typeof tAria>[0])}
+                            aria-label={tAria('teams' as Parameters<typeof tAria>[0])}
                           />
                         </TooltipTrigger>
                         <TooltipContent>
-                          {t("notifications.teamsDisabledTooltip" as Parameters<typeof t>[0])}
+                          {t('notifications.teamsDisabledTooltip' as Parameters<typeof t>[0])}
                         </TooltipContent>
                       </Tooltip>
                     )}
@@ -328,7 +327,7 @@ export function NotificationPreferences() {
         <div className="mt-4">
           <Button type="submit" disabled={!form.formState.isDirty || updateMutation.isPending}>
             {updateMutation.isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
-            {t("notifications.savePreferences")}
+            {t('notifications.savePreferences')}
           </Button>
         </div>
       </form>

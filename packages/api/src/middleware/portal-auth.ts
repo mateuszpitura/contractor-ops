@@ -1,7 +1,7 @@
-import { tenantStore } from "@contractor-ops/db";
-import { TRPCError } from "@trpc/server";
-import { publicProcedure, t } from "../init.js";
-import { validatePortalSession } from "../services/portal-session.js";
+import { tenantStore } from '@contractor-ops/db';
+import { TRPCError } from '@trpc/server';
+import { publicProcedure, t } from '../init.js';
+import { validatePortalSession } from '../services/portal-session.js';
 
 // ---------------------------------------------------------------------------
 // Cookie parsing
@@ -12,10 +12,10 @@ import { validatePortalSession } from "../services/portal-session.js";
  * Uses manual parsing to avoid pulling in a cookie-parsing dependency.
  */
 function parsePortalCookie(cookieHeader: string): string | null {
-  const cookies = cookieHeader.split("; ");
+  const cookies = cookieHeader.split('; ');
   for (const cookie of cookies) {
-    if (cookie.startsWith("portal_session=")) {
-      return cookie.slice("portal_session=".length);
+    if (cookie.startsWith('portal_session=')) {
+      return cookie.slice('portal_session='.length);
     }
   }
   return null;
@@ -38,28 +38,28 @@ function parsePortalCookie(cookieHeader: string): string | null {
  * Throws UNAUTHORIZED if no cookie is present or session is invalid/expired.
  */
 const portalAuthMiddleware = t.middleware(async ({ ctx, next }) => {
-  const cookieHeader = ctx.headers.get("cookie");
+  const cookieHeader = ctx.headers.get('cookie');
 
   if (!cookieHeader) {
-    throw new TRPCError({ code: "UNAUTHORIZED" });
+    throw new TRPCError({ code: 'UNAUTHORIZED' });
   }
 
   const rawToken = parsePortalCookie(cookieHeader);
 
   if (!rawToken) {
-    throw new TRPCError({ code: "UNAUTHORIZED" });
+    throw new TRPCError({ code: 'UNAUTHORIZED' });
   }
 
   const session = await validatePortalSession(rawToken);
 
   if (!session) {
-    throw new TRPCError({ code: "UNAUTHORIZED" });
+    throw new TRPCError({ code: 'UNAUTHORIZED' });
   }
 
   // Read subdomain header set by Next.js middleware (supplementary context)
   // Session.organizationId remains authoritative for tenantStore scoping.
   // The subdomain is passed as context metadata for logging/audit/rate-limiting.
-  const portalSubdomain = ctx.headers.get("x-portal-org-subdomain") ?? null;
+  const portalSubdomain = ctx.headers.get('x-portal-org-subdomain') ?? null;
 
   return tenantStore.run({ organizationId: session.organizationId }, () =>
     next({

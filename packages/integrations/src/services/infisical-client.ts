@@ -7,7 +7,7 @@
 // Per T-48-14: Never log secret values. Path /zatca/{orgId} isolates orgs.
 // ---------------------------------------------------------------------------
 
-import type { SecretStore } from "@contractor-ops/secrets";
+import type { SecretStore } from '@contractor-ops/secrets';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -28,10 +28,10 @@ export interface InfisicalConfig {
 
 /** Well-known ZATCA secret names stored per organization */
 export const ZATCA_SECRET_NAMES = {
-  X509_CERTIFICATE: "X509_CERTIFICATE",
-  PRIVATE_KEY: "PRIVATE_KEY",
-  API_SECRET: "API_SECRET",
-  COMPLIANCE_REQUEST_ID: "COMPLIANCE_REQUEST_ID",
+  X509_CERTIFICATE: 'X509_CERTIFICATE',
+  PRIVATE_KEY: 'PRIVATE_KEY',
+  API_SECRET: 'API_SECRET',
+  COMPLIANCE_REQUEST_ID: 'COMPLIANCE_REQUEST_ID',
 } as const;
 
 export type ZatcaSecretName = (typeof ZATCA_SECRET_NAMES)[keyof typeof ZATCA_SECRET_NAMES];
@@ -46,7 +46,7 @@ export class SecretStoreError extends Error {
 
   constructor(message: string, operation: string, path?: string, cause?: unknown) {
     super(message);
-    this.name = "SecretStoreError";
+    this.name = 'SecretStoreError';
     this.operation = operation;
     this.path = path;
     this.cause = cause;
@@ -66,12 +66,12 @@ export class SecretStoreError extends Error {
  */
 export class InfisicalSecretStore implements SecretStore {
   private readonly config: Required<InfisicalConfig>;
-  private sdk: import("@infisical/sdk").InfisicalSDK | null = null;
+  private sdk: import('@infisical/sdk').InfisicalSDK | null = null;
   private initPromise: Promise<void> | null = null;
 
   constructor(config: InfisicalConfig) {
     this.config = {
-      siteUrl: config.siteUrl ?? "https://app.infisical.com",
+      siteUrl: config.siteUrl ?? 'https://app.infisical.com',
       clientId: config.clientId,
       clientSecret: config.clientSecret,
       projectId: config.projectId,
@@ -97,7 +97,7 @@ export class InfisicalSecretStore implements SecretStore {
         return null;
       }
       console.error(`[infisical] Failed to get secret at path: ${path}`);
-      throw new SecretStoreError(`Failed to retrieve secret`, "get", path, error);
+      throw new SecretStoreError(`Failed to retrieve secret`, 'get', path, error);
     }
   }
 
@@ -129,7 +129,7 @@ export class InfisicalSecretStore implements SecretStore {
     } catch (error) {
       if (error instanceof SecretStoreError) throw error;
       console.error(`[infisical] Failed to set secret at path: ${path}`);
-      throw new SecretStoreError(`Failed to store secret`, "set", path, error);
+      throw new SecretStoreError(`Failed to store secret`, 'set', path, error);
     }
   }
 
@@ -147,7 +147,7 @@ export class InfisicalSecretStore implements SecretStore {
       // Deleting non-existent secret is a no-op
       if (this.isNotFoundError(error)) return;
       console.error(`[infisical] Failed to delete secret at path: ${path}`);
-      throw new SecretStoreError(`Failed to delete secret`, "delete", path, error);
+      throw new SecretStoreError(`Failed to delete secret`, 'delete', path, error);
     }
   }
 
@@ -160,10 +160,10 @@ export class InfisicalSecretStore implements SecretStore {
    * { folderPath: "/zatca/org_123", secretName: "X509_CERTIFICATE" }
    */
   private parsePath(path: string): { secretName: string; folderPath: string } {
-    const normalized = path.startsWith("/") ? path : `/${path}`;
-    const lastSlash = normalized.lastIndexOf("/");
+    const normalized = path.startsWith('/') ? path : `/${path}`;
+    const lastSlash = normalized.lastIndexOf('/');
     if (lastSlash <= 0) {
-      return { secretName: normalized.slice(1), folderPath: "/" };
+      return { secretName: normalized.slice(1), folderPath: '/' };
     }
     return {
       folderPath: normalized.slice(0, lastSlash),
@@ -188,7 +188,7 @@ export class InfisicalSecretStore implements SecretStore {
 
   private async initialize(): Promise<void> {
     try {
-      const { InfisicalSDK } = await import("@infisical/sdk");
+      const { InfisicalSDK } = await import('@infisical/sdk');
       this.sdk = new InfisicalSDK({
         siteUrl: this.config.siteUrl,
       });
@@ -198,15 +198,15 @@ export class InfisicalSecretStore implements SecretStore {
       });
     } catch (error) {
       this.initPromise = null; // Allow retry
-      console.error("[infisical] Failed to initialize SDK");
-      throw new SecretStoreError("Failed to initialize Infisical SDK", "init", undefined, error);
+      console.error('[infisical] Failed to initialize SDK');
+      throw new SecretStoreError('Failed to initialize Infisical SDK', 'init', undefined, error);
     }
   }
 
   private isNotFoundError(error: unknown): boolean {
     if (error instanceof Error) {
       const msg = error.message.toLowerCase();
-      return msg.includes("not found") || msg.includes("404") || msg.includes("doesn't exist");
+      return msg.includes('not found') || msg.includes('404') || msg.includes("doesn't exist");
     }
     return false;
   }
@@ -231,11 +231,11 @@ export class InfisicalSecretStore implements SecretStore {
  */
 export function createZatcaSecretStore(organizationId: string): SecretStore {
   const config: InfisicalConfig = {
-    siteUrl: process.env.INFISICAL_SITE_URL ?? "https://app.infisical.com",
-    clientId: process.env.INFISICAL_CLIENT_ID ?? "",
-    clientSecret: process.env.INFISICAL_CLIENT_SECRET ?? "",
-    projectId: process.env.INFISICAL_PROJECT_ID ?? "",
-    environment: process.env.INFISICAL_ENVIRONMENT ?? "production",
+    siteUrl: process.env.INFISICAL_SITE_URL ?? 'https://app.infisical.com',
+    clientId: process.env.INFISICAL_CLIENT_ID ?? '',
+    clientSecret: process.env.INFISICAL_CLIENT_SECRET ?? '',
+    projectId: process.env.INFISICAL_PROJECT_ID ?? '',
+    environment: process.env.INFISICAL_ENVIRONMENT ?? 'production',
   };
 
   const backing = new InfisicalSecretStore(config);

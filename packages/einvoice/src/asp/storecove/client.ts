@@ -2,13 +2,13 @@ import {
   storecoveLegalEntitySchema,
   storecoveReceivedDocumentSchema,
   storecoveSubmissionResponseSchema,
-} from "./schemas.js";
+} from './schemas.js';
 import type {
   StorecoveConfig,
   StorecoveDocumentSubmission,
   StorecoveLegalEntity,
   StorecoveReceivedDocument,
-} from "./types.js";
+} from './types.js';
 
 // ---------------------------------------------------------------------------
 // Storecove REST Client
@@ -25,10 +25,10 @@ export class StorecoveClient {
   private readonly headers: Record<string, string>;
 
   constructor(config: StorecoveConfig) {
-    this.baseUrl = config.baseUrl.replace(/\/$/, "");
+    this.baseUrl = config.baseUrl.replace(/\/$/, '');
     this.headers = {
       Authorization: `Bearer ${config.apiKey}`,
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     };
   }
 
@@ -43,7 +43,7 @@ export class StorecoveClient {
     documentType: string;
   }): Promise<StorecoveDocumentSubmission> {
     const response = await fetch(`${this.baseUrl}/document_submissions`, {
-      method: "POST",
+      method: 'POST',
       headers: this.headers,
       body: JSON.stringify({
         legal_entity_id: params.senderLegalEntityId,
@@ -73,7 +73,7 @@ export class StorecoveClient {
    */
   async getSubmission(guid: string): Promise<StorecoveDocumentSubmission> {
     const response = await fetch(`${this.baseUrl}/document_submissions/${guid}`, {
-      method: "GET",
+      method: 'GET',
       headers: this.headers,
       signal: AbortSignal.timeout(30_000),
     });
@@ -91,7 +91,7 @@ export class StorecoveClient {
     scheme: string;
   }): Promise<StorecoveLegalEntity> {
     const response = await fetch(`${this.baseUrl}/legal_entities`, {
-      method: "POST",
+      method: 'POST',
       headers: this.headers,
       body: JSON.stringify({
         party_name: params.partyName,
@@ -99,7 +99,7 @@ export class StorecoveClient {
           {
             identifier: params.identifier,
             scheme: params.scheme,
-            superscheme: "iso6523-actorid-upis",
+            superscheme: 'iso6523-actorid-upis',
           },
         ],
       }),
@@ -115,7 +115,7 @@ export class StorecoveClient {
    */
   async getLegalEntity(id: number): Promise<StorecoveLegalEntity> {
     const response = await fetch(`${this.baseUrl}/legal_entities/${id}`, {
-      method: "GET",
+      method: 'GET',
       headers: this.headers,
       signal: AbortSignal.timeout(30_000),
     });
@@ -131,7 +131,7 @@ export class StorecoveClient {
     const response = await fetch(
       `${this.baseUrl}/received_documents?since=${since.toISOString()}`,
       {
-        method: "GET",
+        method: 'GET',
         headers: this.headers,
         signal: AbortSignal.timeout(30_000),
       },
@@ -159,7 +159,7 @@ export class StorecoveClient {
     try {
       return JSON.parse(body);
     } catch {
-      throw new StorecoveApiError("Storecove API returned invalid JSON", response.status, body);
+      throw new StorecoveApiError('Storecove API returned invalid JSON', response.status, body);
     }
   }
 }
@@ -174,6 +174,6 @@ export class StorecoveApiError extends Error {
     public readonly responseBody: string,
   ) {
     super(message);
-    this.name = "StorecoveApiError";
+    this.name = 'StorecoveApiError';
   }
 }

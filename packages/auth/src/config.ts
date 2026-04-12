@@ -1,13 +1,13 @@
-import { prisma } from "@contractor-ops/db";
-import { betterAuth } from "better-auth";
-import { prismaAdapter } from "better-auth/adapters/prisma";
-import { APIError, createAuthMiddleware } from "better-auth/api";
-import { nextCookies } from "better-auth/next-js";
-import { admin } from "better-auth/plugins/admin";
-import { magicLink } from "better-auth/plugins/magic-link";
-import { organization } from "better-auth/plugins/organization";
-import { ac } from "./permissions.js";
-import { roles } from "./roles.js";
+import { prisma } from '@contractor-ops/db';
+import { betterAuth } from 'better-auth';
+import { prismaAdapter } from 'better-auth/adapters/prisma';
+import { APIError, createAuthMiddleware } from 'better-auth/api';
+import { nextCookies } from 'better-auth/next-js';
+import { admin } from 'better-auth/plugins/admin';
+import { magicLink } from 'better-auth/plugins/magic-link';
+import { organization } from 'better-auth/plugins/organization';
+import { ac } from './permissions.js';
+import { roles } from './roles.js';
 
 /** Maximum failed login attempts before account is locked */
 const MAX_LOGIN_ATTEMPTS = 5;
@@ -16,7 +16,7 @@ const LOCKOUT_DURATION_MIN = 15;
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
-    provider: "postgresql",
+    provider: 'postgresql',
   }),
 
   emailAndPassword: {
@@ -38,15 +38,15 @@ export const auth = betterAuth({
   account: {
     accountLinking: {
       enabled: true,
-      trustedProviders: ["microsoft", "google"],
+      trustedProviders: ['microsoft', 'google'],
     },
   },
 
   advanced: {
     defaultCookieAttributes: {
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      path: '/',
     },
   },
 
@@ -56,9 +56,9 @@ export const auth = betterAuth({
   },
 
   hooks: {
-    before: createAuthMiddleware(async (ctx) => {
+    before: createAuthMiddleware(async ctx => {
       // Account lockout: block sign-in if user is locked
-      if (ctx.path === "/sign-in/email" && ctx.body?.email) {
+      if (ctx.path === '/sign-in/email' && ctx.body?.email) {
         const user = await prisma.user.findUnique({
           where: { email: ctx.body.email },
           select: { lockedUntil: true },
@@ -66,15 +66,15 @@ export const auth = betterAuth({
 
         if (user?.lockedUntil && user.lockedUntil > new Date()) {
           const minutesLeft = Math.ceil((user.lockedUntil.getTime() - Date.now()) / 60_000);
-          throw new APIError("TOO_MANY_REQUESTS", {
-            message: `Account locked. Try again in ${minutesLeft} minute${minutesLeft === 1 ? "" : "s"}.`,
+          throw new APIError('TOO_MANY_REQUESTS', {
+            message: `Account locked. Try again in ${minutesLeft} minute${minutesLeft === 1 ? '' : 's'}.`,
           });
         }
       }
     }),
-    after: createAuthMiddleware(async (ctx) => {
+    after: createAuthMiddleware(async ctx => {
       // Track failed/successful sign-in attempts
-      if (ctx.path === "/sign-in/email" && ctx.body?.email) {
+      if (ctx.path === '/sign-in/email' && ctx.body?.email) {
         const email = ctx.body.email as string;
 
         if (ctx.context.newSession) {
@@ -127,18 +127,18 @@ export const auth = betterAuth({
         readonly: roles.readonly,
       },
       async sendInvitationEmail(_data) {
-        if (process.env.NODE_ENV === "development") {
+        if (process.env.NODE_ENV === 'development') {
           return;
         }
-        throw new Error("Production email sending not configured — integrate Resend adapter");
+        throw new Error('Production email sending not configured — integrate Resend adapter');
       },
     }),
     magicLink({
       sendMagicLink: async ({ email, url }) => {
-        if (process.env.NODE_ENV === "development") {
+        if (process.env.NODE_ENV === 'development') {
           return;
         }
-        throw new Error("Production email sending not configured — integrate Resend adapter");
+        throw new Error('Production email sending not configured — integrate Resend adapter');
       },
     }),
     admin(),

@@ -1,8 +1,8 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
-import { prisma } from "@contractor-ops/db";
-import { decryptCredentials } from "../services/credential-service.js";
-import { handleSigningWebhook } from "../services/esign-webhook-handler.js";
-import type { CredentialBlob } from "../types/credentials.js";
+import { createHmac, timingSafeEqual } from 'node:crypto';
+import { prisma } from '@contractor-ops/db';
+import { decryptCredentials } from '../services/credential-service.js';
+import { handleSigningWebhook } from '../services/esign-webhook-handler.js';
+import type { CredentialBlob } from '../types/credentials.js';
 import type {
   EmbeddedSigningUrlResult,
   ESignAdapter,
@@ -10,16 +10,16 @@ import type {
   SignedDocumentResult,
   SigningEnvelopeRequest,
   SigningEnvelopeResult,
-} from "../types/esign.js";
-import type { OAuthConfig } from "../types/provider.js";
-import type { WebhookVerificationResult } from "../types/webhook.js";
-import { BaseAdapter } from "./base-adapter.js";
+} from '../types/esign.js';
+import type { OAuthConfig } from '../types/provider.js';
+import type { WebhookVerificationResult } from '../types/webhook.js';
+import { BaseAdapter } from './base-adapter.js';
 
 // ---------------------------------------------------------------------------
 // Autenti API Base URL
 // ---------------------------------------------------------------------------
 
-const AUTENTI_API_BASE = "https://api.autenti.com/api/v2";
+const AUTENTI_API_BASE = 'https://api.autenti.com/api/v2';
 
 // ---------------------------------------------------------------------------
 // Autenti Adapter
@@ -41,8 +41,8 @@ const AUTENTI_API_BASE = "https://api.autenti.com/api/v2";
  * - AUTENTI_ENCRYPTION_KEY — for credential encryption
  */
 export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
-  readonly slug = "autenti";
-  readonly displayName = "Autenti";
+  readonly slug = 'autenti';
+  readonly displayName = 'Autenti';
   readonly supportsOAuth = true;
   readonly supportsWebhooks = true;
   readonly supportsEmbeddedSigning = false;
@@ -53,12 +53,12 @@ export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
 
   getOAuthConfig(): OAuthConfig {
     return {
-      clientIdEnvVar: "AUTENTI_CLIENT_ID",
-      clientSecretEnvVar: "AUTENTI_CLIENT_SECRET",
-      authorizationUrl: "https://api.autenti.com/api/v2/auth/authorize",
-      tokenUrl: "https://api.autenti.com/api/v2/auth/token",
-      scopes: ["document-process:write", "document-process:read"],
-      redirectPath: "/api/oauth/autenti/callback",
+      clientIdEnvVar: 'AUTENTI_CLIENT_ID',
+      clientSecretEnvVar: 'AUTENTI_CLIENT_SECRET',
+      authorizationUrl: 'https://api.autenti.com/api/v2/auth/authorize',
+      tokenUrl: 'https://api.autenti.com/api/v2/auth/token',
+      scopes: ['document-process:write', 'document-process:read'],
+      redirectPath: '/api/oauth/autenti/callback',
     };
   }
 
@@ -68,15 +68,15 @@ export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
 
     if (!(clientId && clientSecret)) {
       throw new Error(
-        "AUTENTI_CLIENT_ID and AUTENTI_CLIENT_SECRET environment variables are required",
+        'AUTENTI_CLIENT_ID and AUTENTI_CLIENT_SECRET environment variables are required',
       );
     }
 
-    const response = await fetch("https://api.autenti.com/api/v2/auth/token", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    const response = await fetch('https://api.autenti.com/api/v2/auth/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
-        grant_type: "authorization_code",
+        grant_type: 'authorization_code',
         client_id: clientId,
         client_secret: clientSecret,
         code,
@@ -100,7 +100,7 @@ export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
       accessToken: data.access_token,
       refreshToken: data.refresh_token,
       tokenType: data.token_type,
-      scope: "document-process:write,document-process:read",
+      scope: 'document-process:write,document-process:read',
       expiresAt: new Date(Date.now() + data.expires_in * 1000).toISOString(),
     };
   }
@@ -111,19 +111,19 @@ export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
 
     if (!(clientId && clientSecret)) {
       throw new Error(
-        "AUTENTI_CLIENT_ID and AUTENTI_CLIENT_SECRET environment variables are required",
+        'AUTENTI_CLIENT_ID and AUTENTI_CLIENT_SECRET environment variables are required',
       );
     }
 
     if (!credentials.refreshToken) {
-      throw new Error("No refresh token available for Autenti");
+      throw new Error('No refresh token available for Autenti');
     }
 
-    const response = await fetch("https://api.autenti.com/api/v2/auth/token", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    const response = await fetch('https://api.autenti.com/api/v2/auth/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
-        grant_type: "refresh_token",
+        grant_type: 'refresh_token',
         client_id: clientId,
         client_secret: clientSecret,
         refresh_token: credentials.refreshToken,
@@ -160,28 +160,28 @@ export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
     request: SigningEnvelopeRequest,
   ): Promise<SigningEnvelopeResult> {
     // Step 1: Create document process
-    const createResult = (await this.autentiFetch(connectionId, "/document-processes", {
-      method: "POST",
+    const createResult = (await this.autentiFetch(connectionId, '/document-processes', {
+      method: 'POST',
       body: JSON.stringify({
         title: request.documentName,
-        description: request.message ?? "",
-        processLanguage: "pl",
+        description: request.message ?? '',
+        processLanguage: 'pl',
       }),
     })) as { id: string; status: string };
 
     const processId = createResult.id;
 
     // Step 2: Upload document file
-    const fileBuffer = Buffer.from(request.documentBase64, "base64");
+    const fileBuffer = Buffer.from(request.documentBase64, 'base64');
     const formData = new FormData();
     formData.append(
-      "file",
-      new Blob([fileBuffer], { type: "application/pdf" }),
-      request.documentName.endsWith(".pdf") ? request.documentName : `${request.documentName}.pdf`,
+      'file',
+      new Blob([fileBuffer], { type: 'application/pdf' }),
+      request.documentName.endsWith('.pdf') ? request.documentName : `${request.documentName}.pdf`,
     );
 
     await this.autentiFetch(connectionId, `/document-processes/${processId}/files`, {
-      method: "POST",
+      method: 'POST',
       body: formData,
       skipContentType: true,
     });
@@ -198,18 +198,18 @@ export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
         connectionId,
         `/document-processes/${processId}/participants`,
         {
-          method: "POST",
+          method: 'POST',
           body: JSON.stringify({
             party: {
-              firstName: signer.name.split(" ")[0] ?? signer.name,
-              lastName: signer.name.split(" ").slice(1).join(" ") || signer.name,
+              firstName: signer.name.split(' ')[0] ?? signer.name,
+              lastName: signer.name.split(' ').slice(1).join(' ') || signer.name,
               email: signer.email,
             },
-            role: "signer",
+            role: 'signer',
             constraints: [
               {
-                constrainedActions: ["SIGN"],
-                classifiers: ["SIGNATURE_BASIC_AUTENTI"],
+                constrainedActions: ['SIGN'],
+                classifiers: ['SIGNATURE_BASIC_AUTENTI'],
               },
             ],
           }),
@@ -219,19 +219,19 @@ export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
       signerResults.push({
         externalRecipientId: participant.id,
         email: signer.email,
-        status: "pending",
+        status: 'pending',
       });
     }
 
     // Step 4: Send the document process
     await this.autentiFetch(connectionId, `/document-processes/${processId}/actions`, {
-      method: "POST",
-      body: JSON.stringify({ event_type: "SEND" }),
+      method: 'POST',
+      body: JSON.stringify({ event_type: 'SEND' }),
     });
 
     return {
       externalEnvelopeId: processId,
-      status: "sent",
+      status: 'sent',
       signers: signerResults,
     };
   }
@@ -242,7 +242,7 @@ export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
     _recipientEmail: string,
     _returnUrl: string,
   ): Promise<EmbeddedSigningUrlResult> {
-    throw new Error("Autenti does not support embedded signing. Use redirect flow.");
+    throw new Error('Autenti does not support embedded signing. Use redirect flow.');
   }
 
   async getSignedDocument(connectionId: string, envelopeId: string): Promise<SignedDocumentResult> {
@@ -266,8 +266,8 @@ export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
     )) as ArrayBuffer;
 
     return {
-      documentBase64: Buffer.from(fileData).toString("base64"),
-      mimeType: "application/pdf",
+      documentBase64: Buffer.from(fileData).toString('base64'),
+      mimeType: 'application/pdf',
       fileName: firstFile.fileName ?? `signed-${envelopeId}.pdf`,
     };
   }
@@ -285,19 +285,19 @@ export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
       externalEnvelopeId: process.id,
       status: this.mapAutentiStatusToInternal(process.status),
       signers: (process.participants ?? [])
-        .filter((p) => p.role === "signer")
-        .map((p) => ({
+        .filter(p => p.role === 'signer')
+        .map(p => ({
           externalRecipientId: p.id,
-          email: p.party?.email ?? "",
-          status: this.mapAutentiParticipantStatus(p.status ?? ""),
+          email: p.party?.email ?? '',
+          status: this.mapAutentiParticipantStatus(p.status ?? ''),
         })),
     };
   }
 
   async voidEnvelope(connectionId: string, envelopeId: string, _reason: string): Promise<void> {
     await this.autentiFetch(connectionId, `/document-processes/${envelopeId}/actions`, {
-      method: "POST",
-      body: JSON.stringify({ event_type: "WITHDRAW" }),
+      method: 'POST',
+      body: JSON.stringify({ event_type: 'WITHDRAW' }),
     });
   }
 
@@ -308,8 +308,8 @@ export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
   ): Promise<void> {
     try {
       await this.autentiFetch(connectionId, `/document-processes/${envelopeId}/actions`, {
-        method: "POST",
-        body: JSON.stringify({ event_type: "REMIND" }),
+        method: 'POST',
+        body: JSON.stringify({ event_type: 'REMIND' }),
       });
     } catch {
       // REMIND action may not be supported for all process states — log and no-op
@@ -326,8 +326,8 @@ export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
   normalizeWebhookEvent(payload: unknown): NormalizedSigningEvent {
     const data = payload as AutentiWebhookPayload;
 
-    const processId = data.documentProcessId ?? data.id ?? "";
-    const status = data.status ?? "";
+    const processId = data.documentProcessId ?? data.id ?? '';
+    const status = data.status ?? '';
 
     return {
       externalEnvelopeId: processId,
@@ -348,12 +348,12 @@ export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
       return { valid: false };
     }
 
-    const signature = headers["x-autenti-signature"] ?? headers["x-webhook-signature"] ?? "";
+    const signature = headers['x-autenti-signature'] ?? headers['x-webhook-signature'] ?? '';
     if (!signature) {
       return { valid: false };
     }
 
-    const expectedSignature = createHmac("sha256", secret).update(rawBody).digest("hex");
+    const expectedSignature = createHmac('sha256', secret).update(rawBody).digest('hex');
 
     const expectedBuffer = Buffer.from(expectedSignature);
     const receivedBuffer = Buffer.from(signature);
@@ -368,7 +368,7 @@ export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
 
     return {
       valid: true,
-      eventType: "document-change",
+      eventType: 'document-change',
     };
   }
 
@@ -394,24 +394,24 @@ export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
       throw new Error(`Integration connection not found: ${connectionId}`);
     }
 
-    if (connection.status !== "CONNECTED") {
+    if (connection.status !== 'CONNECTED') {
       throw new Error(
         `Integration connection ${connectionId} is not active (status: ${connection.status})`,
       );
     }
 
-    const credentials = decryptCredentials(connection.credentialsRef, "autenti");
+    const credentials = decryptCredentials(connection.credentialsRef, 'autenti');
 
     const fetchHeaders: Record<string, string> = {
       Authorization: `Bearer ${credentials.accessToken}`,
     };
 
     if (!(options?.skipContentType || options?.body instanceof FormData)) {
-      fetchHeaders["Content-Type"] = "application/json";
+      fetchHeaders['Content-Type'] = 'application/json';
     }
 
     const response = await fetch(`${AUTENTI_API_BASE}${path}`, {
-      method: options?.method ?? "GET",
+      method: options?.method ?? 'GET',
       headers: fetchHeaders,
       body: options?.body,
     });
@@ -426,8 +426,8 @@ export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
     }
 
     // Some endpoints return no content
-    const contentType = response.headers.get("content-type") ?? "";
-    if (contentType.includes("application/json")) {
+    const contentType = response.headers.get('content-type') ?? '';
+    if (contentType.includes('application/json')) {
       return await response.json();
     }
 
@@ -436,50 +436,50 @@ export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
 
   private mapAutentiStatusToInternal(status: string): string {
     const mapping: Record<string, string> = {
-      DRAFT: "created",
-      IN_PROGRESS: "sent",
-      SIGNED: "completed",
-      REJECTED: "declined",
-      EXPIRED: "expired",
-      WITHDRAWN: "voided",
+      DRAFT: 'created',
+      IN_PROGRESS: 'sent',
+      SIGNED: 'completed',
+      REJECTED: 'declined',
+      EXPIRED: 'expired',
+      WITHDRAWN: 'voided',
     };
     return mapping[status] ?? status.toLowerCase();
   }
 
   private mapAutentiParticipantStatus(status: string): string {
     const mapping: Record<string, string> = {
-      WAITING: "pending",
-      NOTIFIED: "sent",
-      VIEWED: "delivered",
-      SIGNED: "completed",
-      REJECTED: "declined",
+      WAITING: 'pending',
+      NOTIFIED: 'sent',
+      VIEWED: 'delivered',
+      SIGNED: 'completed',
+      REJECTED: 'declined',
     };
     return mapping[status] ?? status.toLowerCase();
   }
 
-  private mapAutentiWebhookEventType(status: string): NormalizedSigningEvent["eventType"] {
-    const mapping: Record<string, NormalizedSigningEvent["eventType"]> = {
-      IN_PROGRESS: "ENVELOPE_SENT",
-      SIGNED: "ENVELOPE_COMPLETED",
-      REJECTED: "RECIPIENT_DECLINED",
-      EXPIRED: "ENVELOPE_EXPIRED",
-      WITHDRAWN: "ENVELOPE_VOIDED",
+  private mapAutentiWebhookEventType(status: string): NormalizedSigningEvent['eventType'] {
+    const mapping: Record<string, NormalizedSigningEvent['eventType']> = {
+      IN_PROGRESS: 'ENVELOPE_SENT',
+      SIGNED: 'ENVELOPE_COMPLETED',
+      REJECTED: 'RECIPIENT_DECLINED',
+      EXPIRED: 'ENVELOPE_EXPIRED',
+      WITHDRAWN: 'ENVELOPE_VOIDED',
     };
-    return mapping[status] ?? "ENVELOPE_SENT";
+    return mapping[status] ?? 'ENVELOPE_SENT';
   }
 
   private mapAutentiStatusToEnvelopeStatus(
     status: string,
-  ): NormalizedSigningEvent["envelopeStatus"] {
-    const mapping: Record<string, NormalizedSigningEvent["envelopeStatus"]> = {
-      DRAFT: "CREATED",
-      IN_PROGRESS: "SENT",
-      SIGNED: "COMPLETED",
-      REJECTED: "DECLINED",
-      EXPIRED: "EXPIRED",
-      WITHDRAWN: "VOIDED",
+  ): NormalizedSigningEvent['envelopeStatus'] {
+    const mapping: Record<string, NormalizedSigningEvent['envelopeStatus']> = {
+      DRAFT: 'CREATED',
+      IN_PROGRESS: 'SENT',
+      SIGNED: 'COMPLETED',
+      REJECTED: 'DECLINED',
+      EXPIRED: 'EXPIRED',
+      WITHDRAWN: 'VOIDED',
     };
-    return mapping[status] ?? "SENT";
+    return mapping[status] ?? 'SENT';
   }
 
   // -------------------------------------------------------------------------
@@ -497,7 +497,7 @@ export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
     connectionId: string,
   ): Promise<{ envelopeId: string; completed: boolean }> {
     return handleSigningWebhook({
-      provider: "AUTENTI",
+      provider: 'AUTENTI',
       payload,
       organizationId,
       connectionId,

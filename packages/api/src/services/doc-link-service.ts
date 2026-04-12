@@ -1,9 +1,9 @@
-import { ConfluenceAdapter } from "@contractor-ops/integrations/adapters/confluence-adapter";
-import { NotionAdapter } from "@contractor-ops/integrations/adapters/notion-adapter";
-import { decryptCredentials } from "@contractor-ops/integrations/services/credential-service";
-import type { DocSearchResult } from "@contractor-ops/validators";
-import { TRPCError } from "@trpc/server";
-import type { DbClient } from "./types.js";
+import { ConfluenceAdapter } from '@contractor-ops/integrations/adapters/confluence-adapter';
+import { NotionAdapter } from '@contractor-ops/integrations/adapters/notion-adapter';
+import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
+import type { DocSearchResult } from '@contractor-ops/validators';
+import { TRPCError } from '@trpc/server';
+import type { DbClient } from './types.js';
 
 type PrismaClient = DbClient;
 
@@ -25,7 +25,7 @@ const MAX_RESULTS_PER_PROVIDER = 10;
 const METADATA_STALENESS_MS = 24 * 60 * 60 * 1000;
 
 /** Doc link external types */
-const DOC_EXTERNAL_TYPES = ["NOTION_PAGE", "CONFLUENCE_PAGE"] as const;
+const DOC_EXTERNAL_TYPES = ['NOTION_PAGE', 'CONFLUENCE_PAGE'] as const;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -37,7 +37,7 @@ interface AttachDocLinkInput {
   workflowTaskRunId: string;
   externalId: string;
   externalUrl: string;
-  externalType: "NOTION_PAGE" | "CONFLUENCE_PAGE";
+  externalType: 'NOTION_PAGE' | 'CONFLUENCE_PAGE';
   metadata: Record<string, unknown>;
 }
 
@@ -54,7 +54,7 @@ interface GetDocLinksInput {
 interface SearchDocsInput {
   organizationId: string;
   query: string;
-  provider: "notion" | "confluence" | "all";
+  provider: 'notion' | 'confluence' | 'all';
   prisma: PrismaClient;
 }
 
@@ -83,7 +83,7 @@ export async function attachDocLink(prisma: PrismaClient, input: AttachDocLinkIn
     data: {
       organizationId: input.organizationId,
       integrationConnectionId: input.integrationConnectionId,
-      entityType: "WORKFLOW_TASK_RUN",
+      entityType: 'WORKFLOW_TASK_RUN',
       entityId: input.workflowTaskRunId,
       externalType: input.externalType,
       externalId: input.externalId,
@@ -121,8 +121,8 @@ export async function detachDocLink(
 
   if (!link) {
     throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "Doc link not found",
+      code: 'NOT_FOUND',
+      message: 'Doc link not found',
     });
   }
 
@@ -148,12 +148,12 @@ export async function detachDocLink(
 export async function getDocLinks(prisma: PrismaClient, input: GetDocLinksInput) {
   const links = await prisma.externalLink.findMany({
     where: {
-      entityType: "WORKFLOW_TASK_RUN",
+      entityType: 'WORKFLOW_TASK_RUN',
       entityId: input.workflowTaskRunId,
       organizationId: input.organizationId,
       externalType: { in: [...DOC_EXTERNAL_TYPES] },
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: { createdAt: 'desc' },
   });
 
   return links;
@@ -181,13 +181,13 @@ export async function searchDocs(input: SearchDocsInput): Promise<DocSearchResul
   const results: DocSearchResult[] = [];
 
   // Search Notion
-  if (provider === "notion" || provider === "all") {
+  if (provider === 'notion' || provider === 'all') {
     const notionResults = await searchNotionPages(prisma, organizationId, query);
     results.push(...notionResults);
   }
 
   // Search Confluence
-  if (provider === "confluence" || provider === "all") {
+  if (provider === 'confluence' || provider === 'all') {
     const confluenceResults = await searchConfluencePages(prisma, organizationId, query);
     results.push(...confluenceResults);
   }
@@ -207,15 +207,15 @@ async function searchNotionPages(
   const connection = await prisma.integrationConnection.findFirst({
     where: {
       organizationId,
-      provider: "NOTION",
-      status: "CONNECTED",
+      provider: 'NOTION',
+      status: 'CONNECTED',
     },
   });
 
   if (!connection) return [];
 
   try {
-    const credentials = decryptCredentials(connection.credentialsRef, "notion");
+    const credentials = decryptCredentials(connection.credentialsRef, 'notion');
     const pages = await notionAdapter.searchPages(credentials.accessToken, query);
 
     return pages
@@ -232,14 +232,14 @@ async function searchNotionPages(
           title: page.title,
           icon: page.icon,
           subtitle: credentials.extra
-            ? ((credentials.extra as Record<string, string>).workspaceName ?? "Notion")
-            : "Notion",
+            ? ((credentials.extra as Record<string, string>).workspaceName ?? 'Notion')
+            : 'Notion',
           url: page.url,
-          provider: "notion" as const,
+          provider: 'notion' as const,
         }),
       );
   } catch (error) {
-    console.error("[doc-link-service] Notion search failed:", error);
+    console.error('[doc-link-service] Notion search failed:', error);
     return [];
   }
 }
@@ -252,8 +252,8 @@ async function searchConfluencePages(
   const connection = await prisma.integrationConnection.findFirst({
     where: {
       organizationId,
-      provider: "CONFLUENCE",
-      status: "CONNECTED",
+      provider: 'CONFLUENCE',
+      status: 'CONNECTED',
     },
   });
 
@@ -263,12 +263,12 @@ async function searchConfluencePages(
   const cloudId = config?.cloudId;
 
   if (!cloudId) {
-    console.error("[doc-link-service] Confluence connection missing cloudId");
+    console.error('[doc-link-service] Confluence connection missing cloudId');
     return [];
   }
 
   try {
-    const credentials = decryptCredentials(connection.credentialsRef, "confluence");
+    const credentials = decryptCredentials(connection.credentialsRef, 'confluence');
     const pages = await confluenceAdapter.searchPages(credentials.accessToken, cloudId, query);
 
     return pages
@@ -286,11 +286,11 @@ async function searchConfluencePages(
           icon: null,
           subtitle: page.spaceName || page.spaceKey,
           url: page.url,
-          provider: "confluence" as const,
+          provider: 'confluence' as const,
         }),
       );
   } catch (error) {
-    console.error("[doc-link-service] Confluence search failed:", error);
+    console.error('[doc-link-service] Confluence search failed:', error);
     return [];
   }
 }
@@ -326,8 +326,8 @@ export async function refreshDocMetadata(
 
   if (!link) {
     throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "Doc link not found",
+      code: 'NOT_FOUND',
+      message: 'Doc link not found',
     });
   }
 
@@ -352,7 +352,7 @@ export async function refreshDocMetadata(
     where: {
       id: link.integrationConnectionId,
       organizationId,
-      status: "CONNECTED",
+      status: 'CONNECTED',
     },
   });
 
@@ -361,14 +361,14 @@ export async function refreshDocMetadata(
   }
 
   try {
-    if (link.externalType === "NOTION_PAGE") {
-      const credentials = decryptCredentials(connection.credentialsRef, "notion");
+    if (link.externalType === 'NOTION_PAGE') {
+      const credentials = decryptCredentials(connection.credentialsRef, 'notion');
 
       // Re-fetch the page via Notion API
       const response = await fetch(`https://api.notion.com/v1/pages/${link.externalId}`, {
         headers: {
           Authorization: `Bearer ${credentials.accessToken}`,
-          "Notion-Version": "2022-06-28",
+          'Notion-Version': '2022-06-28',
         },
       });
 
@@ -386,12 +386,12 @@ export async function refreshDocMetadata(
         };
 
         const titleProp = page.properties?.title?.title;
-        const title = titleProp?.[0]?.plain_text ?? metadata.title ?? "Untitled";
+        const title = titleProp?.[0]?.plain_text ?? metadata.title ?? 'Untitled';
 
         let icon: string | null = null;
-        if (page.icon?.type === "emoji") {
+        if (page.icon?.type === 'emoji') {
           icon = page.icon.emoji ?? null;
-        } else if (page.icon?.type === "external") {
+        } else if (page.icon?.type === 'external') {
           icon = page.icon.external?.url ?? null;
         }
 
@@ -409,8 +409,8 @@ export async function refreshDocMetadata(
 
         return updated;
       }
-    } else if (link.externalType === "CONFLUENCE_PAGE") {
-      const credentials = decryptCredentials(connection.credentialsRef, "confluence");
+    } else if (link.externalType === 'CONFLUENCE_PAGE') {
+      const credentials = decryptCredentials(connection.credentialsRef, 'confluence');
       const config = connection.configJson as ConnectionConfig | null;
       const cloudId = config?.cloudId;
 
@@ -420,7 +420,7 @@ export async function refreshDocMetadata(
           {
             headers: {
               Authorization: `Bearer ${credentials.accessToken}`,
-              Accept: "application/json",
+              Accept: 'application/json',
             },
           },
         );
@@ -450,7 +450,7 @@ export async function refreshDocMetadata(
       }
     }
   } catch (error) {
-    console.error("[doc-link-service] Metadata refresh failed:", error);
+    console.error('[doc-link-service] Metadata refresh failed:', error);
   }
 
   // Return existing link if refresh failed

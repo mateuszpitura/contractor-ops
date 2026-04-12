@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from 'vitest';
 
 import {
   deliveryAddressSchema,
@@ -6,71 +6,71 @@ import {
   dpdShipmentCreateSchema,
   upsConfigSchema,
   upsShipmentCreateSchema,
-} from "../equipment";
+} from '../equipment';
 
 // ---------------------------------------------------------------------------
 // DPD & UPS Equipment Validator Tests
 // ---------------------------------------------------------------------------
 
-describe("deliveryAddressSchema", () => {
-  it("validates a correct address", () => {
+describe('deliveryAddressSchema', () => {
+  it('validates a correct address', () => {
     const result = deliveryAddressSchema.safeParse({
-      street: "ul. Testowa 1",
-      city: "Warszawa",
-      postalCode: "00-001",
-      countryCode: "PL",
+      street: 'ul. Testowa 1',
+      city: 'Warszawa',
+      postalCode: '00-001',
+      countryCode: 'PL',
     });
     expect(result.success).toBe(true);
   });
 
-  it("rejects missing street", () => {
+  it('rejects missing street', () => {
     const result = deliveryAddressSchema.safeParse({
-      city: "Warszawa",
-      postalCode: "00-001",
-      countryCode: "PL",
+      city: 'Warszawa',
+      postalCode: '00-001',
+      countryCode: 'PL',
     });
     expect(result.success).toBe(false);
   });
 
-  it("rejects invalid country code length", () => {
+  it('rejects invalid country code length', () => {
     const result = deliveryAddressSchema.safeParse({
-      street: "ul. Testowa 1",
-      city: "Warszawa",
-      postalCode: "00-001",
-      countryCode: "POL",
+      street: 'ul. Testowa 1',
+      city: 'Warszawa',
+      postalCode: '00-001',
+      countryCode: 'POL',
     });
     expect(result.success).toBe(false);
   });
 });
 
-describe("dpdShipmentCreateSchema", () => {
+describe('dpdShipmentCreateSchema', () => {
   const validInput = {
-    equipmentIds: ["eq-1", "eq-2"],
+    equipmentIds: ['eq-1', 'eq-2'],
     deliveryAddress: {
-      street: "ul. Testowa 1",
-      city: "Warszawa",
-      postalCode: "00-001",
-      countryCode: "PL",
+      street: 'ul. Testowa 1',
+      city: 'Warszawa',
+      postalCode: '00-001',
+      countryCode: 'PL',
     },
-    parcelSize: "medium" as const,
-    direction: "OUTBOUND" as const,
+    parcelSize: 'medium' as const,
+    direction: 'OUTBOUND' as const,
   };
 
-  it("validates correct DPD shipment input", () => {
+  it('validates correct DPD shipment input', () => {
     const result = dpdShipmentCreateSchema.safeParse(validInput);
     expect(result.success).toBe(true);
   });
 
-  it("accepts optional fields", () => {
+  it('accepts optional fields', () => {
     const result = dpdShipmentCreateSchema.safeParse({
       ...validInput,
-      workflowTaskRunId: "wftr-1",
-      notes: "Handle with care",
+      workflowTaskRunId: 'wftr-1',
+      notes: 'Handle with care',
     });
     expect(result.success).toBe(true);
   });
 
-  it("rejects empty equipmentIds", () => {
+  it('rejects empty equipmentIds', () => {
     const result = dpdShipmentCreateSchema.safeParse({
       ...validInput,
       equipmentIds: [],
@@ -78,47 +78,47 @@ describe("dpdShipmentCreateSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("rejects missing deliveryAddress.street", () => {
+  it('rejects missing deliveryAddress.street', () => {
     const result = dpdShipmentCreateSchema.safeParse({
       ...validInput,
       deliveryAddress: {
-        city: "Warszawa",
-        postalCode: "00-001",
-        countryCode: "PL",
+        city: 'Warszawa',
+        postalCode: '00-001',
+        countryCode: 'PL',
       },
     });
     expect(result.success).toBe(false);
   });
 
-  it("rejects invalid direction", () => {
+  it('rejects invalid direction', () => {
     const result = dpdShipmentCreateSchema.safeParse({
       ...validInput,
-      direction: "INVALID",
+      direction: 'INVALID',
     });
     expect(result.success).toBe(false);
   });
 });
 
-describe("dpdConfigSchema", () => {
+describe('dpdConfigSchema', () => {
   const validConfig = {
-    carrier: "dpd",
-    username: "dpd-user",
-    password: "dpd-pass",
-    fid: "FID123",
+    carrier: 'dpd',
+    username: 'dpd-user',
+    password: 'dpd-pass',
+    fid: 'FID123',
     sandbox: true,
   };
 
-  it("validates correct DPD config", () => {
+  it('validates correct DPD config', () => {
     const result = dpdConfigSchema.safeParse(validConfig);
     expect(result.success).toBe(true);
   });
 
-  it("defaults sandbox to true", () => {
+  it('defaults sandbox to true', () => {
     const result = dpdConfigSchema.safeParse({
-      carrier: "dpd",
-      username: "dpd-user",
-      password: "dpd-pass",
-      fid: "FID123",
+      carrier: 'dpd',
+      username: 'dpd-user',
+      password: 'dpd-pass',
+      fid: 'FID123',
     });
     expect(result.success).toBe(true);
     if (result.success) {
@@ -126,23 +126,23 @@ describe("dpdConfigSchema", () => {
     }
   });
 
-  it("rejects wrong carrier literal", () => {
+  it('rejects wrong carrier literal', () => {
     const result = dpdConfigSchema.safeParse({
       ...validConfig,
-      carrier: "ups",
+      carrier: 'ups',
     });
     expect(result.success).toBe(false);
   });
 
-  it("rejects empty username", () => {
+  it('rejects empty username', () => {
     const result = dpdConfigSchema.safeParse({
       ...validConfig,
-      username: "",
+      username: '',
     });
     expect(result.success).toBe(false);
   });
 
-  it("rejects missing fid", () => {
+  it('rejects missing fid', () => {
     const { fid, ...noFid } = validConfig;
     const result = dpdConfigSchema.safeParse(noFid);
     expect(result.success).toBe(false);
@@ -153,51 +153,51 @@ describe("dpdConfigSchema", () => {
 // UPS Schemas
 // ---------------------------------------------------------------------------
 
-describe("upsShipmentCreateSchema", () => {
+describe('upsShipmentCreateSchema', () => {
   const validInput = {
-    equipmentIds: ["eq-1"],
+    equipmentIds: ['eq-1'],
     deliveryAddress: {
-      street: "ul. Testowa 1",
-      city: "Warszawa",
-      postalCode: "00-001",
-      countryCode: "PL",
+      street: 'ul. Testowa 1',
+      city: 'Warszawa',
+      postalCode: '00-001',
+      countryCode: 'PL',
     },
-    parcelSize: "large" as const,
-    serviceCode: "11" as const,
-    direction: "OUTBOUND" as const,
+    parcelSize: 'large' as const,
+    serviceCode: '11' as const,
+    direction: 'OUTBOUND' as const,
   };
 
-  it("validates correct UPS shipment input", () => {
+  it('validates correct UPS shipment input', () => {
     const result = upsShipmentCreateSchema.safeParse(validInput);
     expect(result.success).toBe(true);
   });
 
-  it("defaults serviceCode to 11", () => {
+  it('defaults serviceCode to 11', () => {
     const { serviceCode, ...noCode } = validInput;
     const result = upsShipmentCreateSchema.safeParse(noCode);
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.serviceCode).toBe("11");
+      expect(result.data.serviceCode).toBe('11');
     }
   });
 
-  it("validates serviceCode against enum (11, 65, 07)", () => {
+  it('validates serviceCode against enum (11, 65, 07)', () => {
     const result = upsShipmentCreateSchema.safeParse({
       ...validInput,
-      serviceCode: "65",
+      serviceCode: '65',
     });
     expect(result.success).toBe(true);
   });
 
-  it("rejects invalid serviceCode", () => {
+  it('rejects invalid serviceCode', () => {
     const result = upsShipmentCreateSchema.safeParse({
       ...validInput,
-      serviceCode: "99",
+      serviceCode: '99',
     });
     expect(result.success).toBe(false);
   });
 
-  it("rejects empty equipmentIds", () => {
+  it('rejects empty equipmentIds', () => {
     const result = upsShipmentCreateSchema.safeParse({
       ...validInput,
       equipmentIds: [],
@@ -205,36 +205,36 @@ describe("upsShipmentCreateSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("accepts optional fields", () => {
+  it('accepts optional fields', () => {
     const result = upsShipmentCreateSchema.safeParse({
       ...validInput,
-      workflowTaskRunId: "wftr-1",
-      notes: "Express delivery",
+      workflowTaskRunId: 'wftr-1',
+      notes: 'Express delivery',
     });
     expect(result.success).toBe(true);
   });
 });
 
-describe("upsConfigSchema", () => {
+describe('upsConfigSchema', () => {
   const validConfig = {
-    carrier: "ups",
-    clientId: "ups-client-id",
-    clientSecret: "ups-client-secret",
-    accountNumber: "ACC123",
+    carrier: 'ups',
+    clientId: 'ups-client-id',
+    clientSecret: 'ups-client-secret',
+    accountNumber: 'ACC123',
     sandbox: true,
   };
 
-  it("validates correct UPS config", () => {
+  it('validates correct UPS config', () => {
     const result = upsConfigSchema.safeParse(validConfig);
     expect(result.success).toBe(true);
   });
 
-  it("defaults sandbox to true", () => {
+  it('defaults sandbox to true', () => {
     const result = upsConfigSchema.safeParse({
-      carrier: "ups",
-      clientId: "ups-client-id",
-      clientSecret: "ups-client-secret",
-      accountNumber: "ACC123",
+      carrier: 'ups',
+      clientId: 'ups-client-id',
+      clientSecret: 'ups-client-secret',
+      accountNumber: 'ACC123',
     });
     expect(result.success).toBe(true);
     if (result.success) {
@@ -242,23 +242,23 @@ describe("upsConfigSchema", () => {
     }
   });
 
-  it("rejects wrong carrier literal", () => {
+  it('rejects wrong carrier literal', () => {
     const result = upsConfigSchema.safeParse({
       ...validConfig,
-      carrier: "dpd",
+      carrier: 'dpd',
     });
     expect(result.success).toBe(false);
   });
 
-  it("rejects empty clientId", () => {
+  it('rejects empty clientId', () => {
     const result = upsConfigSchema.safeParse({
       ...validConfig,
-      clientId: "",
+      clientId: '',
     });
     expect(result.success).toBe(false);
   });
 
-  it("rejects missing accountNumber", () => {
+  it('rejects missing accountNumber', () => {
     const { accountNumber, ...noAcc } = validConfig;
     const result = upsConfigSchema.safeParse(noAcc);
     expect(result.success).toBe(false);

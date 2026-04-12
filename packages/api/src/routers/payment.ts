@@ -1,3 +1,4 @@
+import type { PaymentRun } from '@contractor-ops/db/generated/prisma/client';
 import {
   bankStatementConfirmSchema,
   markAllPaidSchema,
@@ -8,23 +9,23 @@ import {
   paymentRunLockSchema,
   readyForPaymentListSchema,
   removeFromRunSchema,
-} from "@contractor-ops/validators";
-import { TRPCError } from "@trpc/server";
-import { z } from "zod";
-import * as E from "../errors.js";
-import { router } from "../init.js";
-import { requirePermission } from "../middleware/rbac.js";
-import { tenantProcedure } from "../middleware/tenant.js";
-import { matchStatementToRun, parseBankStatement } from "../services/bank-statement.js";
-import type { ExportItem, OrgBankInfo } from "../services/payment-export.js";
+} from '@contractor-ops/validators';
+import { TRPCError } from '@trpc/server';
+import { z } from 'zod';
+import * as E from '../errors.js';
+import { router } from '../init.js';
+import { requirePermission } from '../middleware/rbac.js';
+import { tenantProcedure } from '../middleware/tenant.js';
+import { matchStatementToRun, parseBankStatement } from '../services/bank-statement.js';
+import type { ExportItem, OrgBankInfo } from '../services/payment-export.js';
 import {
   generateCsv,
   generateElixir,
   generateSepaXml,
   generateSwiftXml,
   resolveTransferTitle,
-} from "../services/payment-export.js";
-import { calculateWht } from "../services/tax-rate.service.js";
+} from '../services/payment-export.js';
+import { calculateWht } from '../services/tax-rate.service.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -48,13 +49,13 @@ function plain<T>(data: T): T {
 const IDEMPOTENCY_TTL_MS = 24 * 60 * 60_000;
 
 /** Maps "orgId:idempotencyKey" → { runIds, expiresAt } or "PENDING" sentinel */
-const idempotencyCache = new Map<string, { result: unknown; expiresAt: number } | "PENDING">();
+const idempotencyCache = new Map<string, { result: unknown; expiresAt: number } | 'PENDING'>();
 
-if (typeof globalThis !== "undefined") {
+if (typeof globalThis !== 'undefined') {
   const cleanup = () => {
     const now = Date.now();
     for (const [key, entry] of idempotencyCache) {
-      if (entry === "PENDING") continue;
+      if (entry === 'PENDING') continue;
       if (now > entry.expiresAt) idempotencyCache.delete(key);
     }
   };
@@ -66,11 +67,11 @@ if (typeof globalThis !== "undefined") {
 // ---------------------------------------------------------------------------
 
 const VALID_TRANSITIONS: Record<string, string[]> = {
-  DRAFT: ["LOCKED", "CANCELLED"],
-  LOCKED: ["EXPORTED", "CANCELLED"],
-  EXPORTED: ["COMPLETED", "FAILED", "CANCELLED"],
+  DRAFT: ['LOCKED', 'CANCELLED'],
+  LOCKED: ['EXPORTED', 'CANCELLED'],
+  EXPORTED: ['COMPLETED', 'FAILED', 'CANCELLED'],
   COMPLETED: [],
-  FAILED: ["DRAFT"],
+  FAILED: ['DRAFT'],
   CANCELLED: [],
 };
 
@@ -84,13 +85,13 @@ export const paymentRouter = router({
   // =========================================================================
 
   readyForPayment: tenantProcedure
-    .use(requirePermission({ payment: ["read"] }))
+    .use(requirePermission({ payment: ['read'] }))
     .input(readyForPaymentListSchema)
     .query(async ({ ctx, input }) => {
       // biome-ignore lint/suspicious/noExplicitAny: dynamically built Prisma where clause requires flexible property assignment for nested filter operators (e.g. { gte, lte })
       const where: Record<string, any> = {
         organizationId: ctx.organizationId,
-        paymentStatus: "READY",
+        paymentStatus: 'READY',
         deletedAt: null,
       };
 
@@ -115,7 +116,7 @@ export const paymentRouter = router({
       const items = await ctx.db.invoice.findMany({
         where,
         take: input.limit + 1,
-        orderBy: { dueDate: "asc" },
+        orderBy: { dueDate: 'asc' },
         include: {
           contractor: {
             select: { id: true, legalName: true, taxId: true },
@@ -149,7 +150,7 @@ export const paymentRouter = router({
   // =========================================================================
 
   create: tenantProcedure
-    .use(requirePermission({ payment: ["create"] }))
+    .use(requirePermission({ payment: ['create'] }))
     .input(paymentRunCreateSchema)
     .mutation(async ({ ctx, input }) => {
       // Idempotency check: return cached result if same key was used recently
@@ -159,22 +160,22 @@ export const paymentRouter = router({
 
       if (cacheKey) {
         const cached = idempotencyCache.get(cacheKey);
-        if (cached === "PENDING") {
+        if (cached === 'PENDING') {
           throw new TRPCError({
-            code: "CONFLICT",
-            message: "Payment run creation in progress",
+            code: 'CONFLICT',
+            message: 'Payment run creation in progress',
           });
         }
         if (cached && Date.now() < cached.expiresAt) {
           return cached.result as ReturnType<typeof plain>;
         }
         // Reserve the key immediately to prevent concurrent requests
-        idempotencyCache.set(cacheKey, "PENDING");
+        idempotencyCache.set(cacheKey, 'PENDING');
       }
 
-      let result;
+      let result: PaymentRun[];
       try {
-        result = await ctx.db.$transaction(async (tx) => {
+        result = await ctx.db.$transaction(async tx => {
           // Fetch all invoices with their data
           const invoices = await tx.invoice.findMany({
             where: {
@@ -188,17 +189,17 @@ export const paymentRouter = router({
           });
 
           // Verify all invoices have paymentStatus READY
-          const notReady = invoices.filter((inv) => inv.paymentStatus !== "READY");
+          const notReady = invoices.filter(inv => inv.paymentStatus !== 'READY');
           if (notReady.length > 0) {
             throw new TRPCError({
-              code: "BAD_REQUEST",
+              code: 'BAD_REQUEST',
               message: E.PAYMENT_INVOICES_NOT_READY,
             });
           }
 
           if (invoices.length !== input.invoiceIds.length) {
             throw new TRPCError({
-              code: "NOT_FOUND",
+              code: 'NOT_FOUND',
               message: E.PAYMENT_INVOICES_NOT_FOUND,
             });
           }
@@ -213,17 +214,17 @@ export const paymentRouter = router({
             }
           } else {
             // Validate all invoices share the same currency
-            const currencies = new Set(invoices.map((inv) => inv.currency));
+            const currencies = new Set(invoices.map(inv => inv.currency));
             if (currencies.size > 1) {
               throw new TRPCError({
-                code: "BAD_REQUEST",
+                code: 'BAD_REQUEST',
                 message: E.PAYMENT_MIXED_CURRENCIES,
               });
             }
-            groups.set(input.currency ?? invoices[0]?.currency ?? "PLN", invoices);
+            groups.set(input.currency ?? invoices[0]?.currency ?? 'PLN', invoices);
           }
 
-          const runs = [];
+          const runs: PaymentRun[] = [];
 
           for (const [currency, groupInvoices] of groups) {
             // Generate sequential run number
@@ -235,15 +236,15 @@ export const paymentRouter = router({
                 organizationId: ctx.organizationId,
                 runNumber: { startsWith: prefix },
               },
-              orderBy: { runNumber: "desc" },
+              orderBy: { runNumber: 'desc' },
               select: { runNumber: true },
             });
 
             const seq = lastRun?.runNumber
-              ? parseInt(lastRun.runNumber.replace(prefix, ""), 10) + 1
+              ? parseInt(lastRun.runNumber.replace(prefix, ''), 10) + 1
               : 1;
 
-            const runNumber = `${prefix}${String(seq).padStart(3, "0")}`;
+            const runNumber = `${prefix}${String(seq).padStart(3, '0')}`;
 
             // Calculate totals
             const totalMinor = groupInvoices.reduce((sum, inv) => sum + inv.amountToPayMinor, 0);
@@ -254,7 +255,7 @@ export const paymentRouter = router({
                 organizationId: ctx.organizationId,
                 runNumber,
                 name: input.name ?? null,
-                status: "DRAFT",
+                status: 'DRAFT',
                 currency,
                 createdByUserId: ctx.user?.id,
                 totalMinor,
@@ -265,7 +266,7 @@ export const paymentRouter = router({
 
             // Batch-create items and update invoice statuses
             await tx.paymentRunItem.createMany({
-              data: groupInvoices.map((inv) => ({
+              data: groupInvoices.map(inv => ({
                 organizationId: ctx.organizationId,
                 paymentRunId: run.id,
                 invoiceId: inv.id,
@@ -273,7 +274,7 @@ export const paymentRouter = router({
                 billingProfileId: inv.billingProfileId ?? null,
                 amountMinor: inv.amountToPayMinor,
                 currency: inv.currency,
-                status: "PENDING" as const,
+                status: 'PENDING' as const,
               })),
             });
 
@@ -282,7 +283,7 @@ export const paymentRouter = router({
               where: { id: ctx.organizationId },
               select: { countryCode: true },
             });
-            if (org.countryCode === "SA") {
+            if (org.countryCode === 'SA') {
               const items = await tx.paymentRunItem.findMany({
                 where: { paymentRunId: run.id },
                 include: { contractor: { select: { countryCode: true } } },
@@ -291,7 +292,7 @@ export const paymentRouter = router({
                 const whtResult = await calculateWht(
                   org.countryCode,
                   item.contractor.countryCode,
-                  "technical_services",
+                  'technical_services',
                   item.amountMinor,
                 );
                 if (whtResult) {
@@ -304,7 +305,7 @@ export const paymentRouter = router({
                       whtRate: whtResult.whtRate,
                       whtTreatyApplied: whtResult.treatyApplied,
                       whtTreatyReference: whtResult.treatyReference,
-                      whtServiceType: "technical_services",
+                      whtServiceType: 'technical_services',
                     },
                   });
                   await tx.invoice.update({
@@ -316,8 +317,8 @@ export const paymentRouter = router({
             }
 
             await tx.invoice.updateMany({
-              where: { id: { in: groupInvoices.map((inv) => inv.id) } },
-              data: { paymentStatus: "IN_RUN" },
+              where: { id: { in: groupInvoices.map(inv => inv.id) } },
+              data: { paymentStatus: 'IN_RUN' },
             });
 
             runs.push(run);
@@ -351,7 +352,7 @@ export const paymentRouter = router({
   // =========================================================================
 
   get: tenantProcedure
-    .use(requirePermission({ payment: ["read"] }))
+    .use(requirePermission({ payment: ['read'] }))
     .input(z.object({ runId: z.string().cuid() }))
     .query(async ({ ctx, input }) => {
       const run = await ctx.db.paymentRun.findFirst({
@@ -383,7 +384,7 @@ export const paymentRouter = router({
 
       if (!run) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: E.PAYMENT_RUN_NOT_FOUND,
         });
       }
@@ -396,7 +397,7 @@ export const paymentRouter = router({
   // =========================================================================
 
   list: tenantProcedure
-    .use(requirePermission({ payment: ["read"] }))
+    .use(requirePermission({ payment: ['read'] }))
     .input(paymentRunListSchema)
     .query(async ({ ctx, input }) => {
       // biome-ignore lint/suspicious/noExplicitAny: dynamically built Prisma where clause requires flexible property assignment for nested filter operators (e.g. { gte, lte })
@@ -441,10 +442,10 @@ export const paymentRouter = router({
   // =========================================================================
 
   lockAndExport: tenantProcedure
-    .use(requirePermission({ payment: ["export"] }))
+    .use(requirePermission({ payment: ['export'] }))
     .input(paymentRunLockSchema)
     .mutation(async ({ ctx, input }) => {
-      const result = await ctx.db.$transaction(async (tx) => {
+      const result = await ctx.db.$transaction(async tx => {
         const run = await tx.paymentRun.findFirst({
           where: {
             id: input.runId,
@@ -481,13 +482,13 @@ export const paymentRouter = router({
 
         if (!run) {
           throw new TRPCError({
-            code: "NOT_FOUND",
+            code: 'NOT_FOUND',
             message: E.PAYMENT_RUN_NOT_FOUND,
           });
         }
 
         // Idempotent: if already LOCKED or EXPORTED, return existing run
-        if (run.status === "LOCKED" || run.status === "EXPORTED") {
+        if (run.status === 'LOCKED' || run.status === 'EXPORTED') {
           return {
             run,
             fileBase64: null,
@@ -499,37 +500,35 @@ export const paymentRouter = router({
         // Validate transition
         if (
           !(
-            VALID_TRANSITIONS[run.status]?.includes("LOCKED") ||
-            VALID_TRANSITIONS[run.status]?.includes("EXPORTED")
+            VALID_TRANSITIONS[run.status]?.includes('LOCKED') ||
+            VALID_TRANSITIONS[run.status]?.includes('EXPORTED')
           )
         ) {
           throw new TRPCError({
-            code: "BAD_REQUEST",
+            code: 'BAD_REQUEST',
             message: E.PAYMENT_RUN_INVALID_STATUS,
           });
         }
 
         // Re-validate currency consistency at lock time
         const itemCurrencies = await tx.paymentRunItem.findMany({
-          where: { paymentRunId: run.id, status: { not: "SKIPPED" } },
+          where: { paymentRunId: run.id, status: { not: 'SKIPPED' } },
           select: { currency: true },
-          distinct: ["currency"],
+          distinct: ['currency'],
         });
 
-        const mismatchedCurrencies = itemCurrencies.filter(
-          (item) => item.currency !== run.currency,
-        );
+        const mismatchedCurrencies = itemCurrencies.filter(item => item.currency !== run.currency);
 
         if (mismatchedCurrencies.length > 0) {
           throw new TRPCError({
-            code: "BAD_REQUEST",
+            code: 'BAD_REQUEST',
             message: E.PAYMENT_MIXED_CURRENCIES,
           });
         }
 
         // Recalculate totals from actual items to ensure export uses fresh data
         const itemsAgg = await tx.paymentRunItem.aggregate({
-          where: { paymentRunId: run.id, status: { not: "SKIPPED" } },
+          where: { paymentRunId: run.id, status: { not: 'SKIPPED' } },
           _sum: { amountMinor: true },
           _count: true,
         });
@@ -549,15 +548,15 @@ export const paymentRouter = router({
         const settingsJson = (parsedMetadata?.settingsJson ?? {}) as Record<string, unknown>;
         const bankAccount = (settingsJson.bankAccount ?? {}) as Record<string, unknown>;
         const transferTitleTemplate =
-          (settingsJson.paymentTransferTitleTemplate as string | undefined) ?? "{invoice_number}";
+          (settingsJson.paymentTransferTitleTemplate as string | undefined) ?? '{invoice_number}';
         const orgBank: OrgBankInfo = {
-          name: org?.name ?? "",
-          iban: (bankAccount.iban as string | undefined) ?? "",
-          bic: (bankAccount.bic as string | undefined) ?? "",
+          name: org?.name ?? '',
+          iban: (bankAccount.iban as string | undefined) ?? '',
+          bic: (bankAccount.bic as string | undefined) ?? '',
         };
 
         // Build ExportItems
-        const exportItems: ExportItem[] = run.items.map((item) => {
+        const exportItems: ExportItem[] = run.items.map(item => {
           const billingPeriod =
             item.invoice.servicePeriodStart && item.invoice.servicePeriodEnd
               ? `${item.invoice.servicePeriodStart.toISOString().slice(0, 10)} - ${item.invoice.servicePeriodEnd.toISOString().slice(0, 10)}`
@@ -571,7 +570,7 @@ export const paymentRouter = router({
 
           return {
             contractorName: item.contractor.legalName,
-            iban: item.billingProfile?.bankAccountMasked ?? "",
+            iban: item.billingProfile?.bankAccountMasked ?? '',
             amountMinor: item.amountMinor,
             currency: item.currency,
             invoiceNumber: item.invoice.invoiceNumber,
@@ -587,25 +586,25 @@ export const paymentRouter = router({
         let fileBuffer: Buffer;
         let ext: string;
 
-        if (input.exportFormat === "CSV") {
+        if (input.exportFormat === 'CSV') {
           fileBuffer = await generateCsv(exportItems);
-          ext = "csv";
-        } else if (input.exportFormat === "BANK_FILE") {
+          ext = 'csv';
+        } else if (input.exportFormat === 'BANK_FILE') {
           fileBuffer = generateElixir(exportItems, orgBank);
-          ext = "txt";
-        } else if (input.exportFormat === "SWIFT_XML") {
+          ext = 'txt';
+        } else if (input.exportFormat === 'SWIFT_XML') {
           fileBuffer = generateSwiftXml(exportItems, orgBank, run.runNumber ?? run.id);
-          ext = "xml";
+          ext = 'xml';
         } else {
           fileBuffer = generateSepaXml(exportItems, orgBank, run.runNumber ?? run.id);
-          ext = "xml";
+          ext = 'xml';
         }
 
         // Update run status to EXPORTED with fresh totals
         const updatedRun = await tx.paymentRun.update({
           where: { id: run.id },
           data: {
-            status: "EXPORTED",
+            status: 'EXPORTED',
             exportFormat: input.exportFormat,
             exportedAt: new Date(),
             totalMinor: freshTotalMinor,
@@ -619,14 +618,14 @@ export const paymentRouter = router({
             organizationId: ctx.organizationId,
             paymentRunId: run.id,
             format: input.exportFormat,
-            status: "GENERATED",
+            status: 'GENERATED',
             generatedByUserId: ctx.user?.id,
           },
         });
 
         return {
           run: updatedRun,
-          fileBase64: fileBuffer.toString("base64"),
+          fileBase64: fileBuffer.toString('base64'),
           fileName: `${run.runNumber ?? run.id}.${ext}`,
         };
       });
@@ -639,10 +638,10 @@ export const paymentRouter = router({
   // =========================================================================
 
   updateItemStatus: tenantProcedure
-    .use(requirePermission({ payment: ["create"] }))
+    .use(requirePermission({ payment: ['create'] }))
     .input(paymentRunItemStatusSchema)
     .mutation(async ({ ctx, input }) => {
-      const result = await ctx.db.$transaction(async (tx) => {
+      const result = await ctx.db.$transaction(async tx => {
         const item = await tx.paymentRunItem.findFirst({
           where: {
             id: input.itemId,
@@ -653,7 +652,7 @@ export const paymentRouter = router({
 
         if (!item) {
           throw new TRPCError({
-            code: "NOT_FOUND",
+            code: 'NOT_FOUND',
             message: E.PAYMENT_RUN_ITEM_NOT_FOUND,
           });
         }
@@ -664,22 +663,22 @@ export const paymentRouter = router({
           data: {
             status: input.status,
             paymentReference: input.paymentReference ?? null,
-            failureReason: input.status === "FAILED" ? input.failureReason : null,
-            markedPaidAt: input.status === "PAID" ? new Date() : null,
+            failureReason: input.status === 'FAILED' ? input.failureReason : null,
+            markedPaidAt: input.status === 'PAID' ? new Date() : null,
           },
         });
 
         // Update invoice paymentStatus
-        if (input.status === "PAID") {
+        if (input.status === 'PAID') {
           await tx.invoice.update({
             where: { id: item.invoiceId },
-            data: { paymentStatus: "PAID", paidAt: new Date() },
+            data: { paymentStatus: 'PAID', paidAt: new Date() },
           });
-        } else if (input.status === "FAILED") {
+        } else if (input.status === 'FAILED') {
           // Auto-release: failed items go back to READY (D-11)
           await tx.invoice.update({
             where: { id: item.invoiceId },
-            data: { paymentStatus: "READY" },
+            data: { paymentStatus: 'READY' },
           });
         }
 
@@ -687,7 +686,7 @@ export const paymentRouter = router({
         const remaining = await tx.paymentRunItem.count({
           where: {
             paymentRunId: item.paymentRunId,
-            status: { in: ["PENDING", "EXPORTED"] },
+            status: { in: ['PENDING', 'EXPORTED'] },
           },
         });
 
@@ -695,14 +694,14 @@ export const paymentRouter = router({
           const failedCount = await tx.paymentRunItem.count({
             where: {
               paymentRunId: item.paymentRunId,
-              status: "FAILED",
+              status: 'FAILED',
             },
           });
 
           await tx.paymentRun.update({
             where: { id: item.paymentRunId },
             data: {
-              status: failedCount > 0 ? "FAILED" : "COMPLETED",
+              status: failedCount > 0 ? 'FAILED' : 'COMPLETED',
               completedAt: new Date(),
             },
           });
@@ -719,10 +718,10 @@ export const paymentRouter = router({
   // =========================================================================
 
   markAllPaid: tenantProcedure
-    .use(requirePermission({ payment: ["create"] }))
+    .use(requirePermission({ payment: ['create'] }))
     .input(markAllPaidSchema)
     .mutation(async ({ ctx, input }) => {
-      const result = await ctx.db.$transaction(async (tx) => {
+      const result = await ctx.db.$transaction(async tx => {
         const run = await tx.paymentRun.findFirst({
           where: {
             id: input.runId,
@@ -730,27 +729,27 @@ export const paymentRouter = router({
           },
           include: {
             items: {
-              where: { status: { in: ["PENDING", "EXPORTED"] } },
+              where: { status: { in: ['PENDING', 'EXPORTED'] } },
             },
           },
         });
 
         if (!run) {
           throw new TRPCError({
-            code: "NOT_FOUND",
+            code: 'NOT_FOUND',
             message: E.PAYMENT_RUN_NOT_FOUND,
           });
         }
 
         const now = new Date();
-        const itemIds = run.items.map((i) => i.id);
-        const invoiceIds = run.items.map((i) => i.invoiceId);
+        const itemIds = run.items.map(i => i.id);
+        const invoiceIds = run.items.map(i => i.invoiceId);
 
         // Batch update all pending items to PAID
         await tx.paymentRunItem.updateMany({
           where: { id: { in: itemIds } },
           data: {
-            status: "PAID",
+            status: 'PAID',
             paymentReference: input.batchReference ?? null,
             markedPaidAt: now,
           },
@@ -759,14 +758,14 @@ export const paymentRouter = router({
         // Batch update all linked invoices to PAID
         await tx.invoice.updateMany({
           where: { id: { in: invoiceIds } },
-          data: { paymentStatus: "PAID", paidAt: now },
+          data: { paymentStatus: 'PAID', paidAt: now },
         });
 
         // Mark run as completed
         const updatedRun = await tx.paymentRun.update({
           where: { id: run.id },
           data: {
-            status: "COMPLETED",
+            status: 'COMPLETED',
             completedAt: now,
           },
         });
@@ -782,10 +781,10 @@ export const paymentRouter = router({
   // =========================================================================
 
   cancel: tenantProcedure
-    .use(requirePermission({ payment: ["create"] }))
+    .use(requirePermission({ payment: ['create'] }))
     .input(paymentRunCancelSchema)
     .mutation(async ({ ctx, input }) => {
-      const result = await ctx.db.$transaction(async (tx) => {
+      const result = await ctx.db.$transaction(async tx => {
         const run = await tx.paymentRun.findFirst({
           where: {
             id: input.runId,
@@ -796,21 +795,21 @@ export const paymentRouter = router({
 
         if (!run) {
           throw new TRPCError({
-            code: "NOT_FOUND",
+            code: 'NOT_FOUND',
             message: E.PAYMENT_RUN_NOT_FOUND,
           });
         }
 
         // Check valid transition
-        if (!VALID_TRANSITIONS[run.status]?.includes("CANCELLED")) {
+        if (!VALID_TRANSITIONS[run.status]?.includes('CANCELLED')) {
           throw new TRPCError({
-            code: "BAD_REQUEST",
+            code: 'BAD_REQUEST',
             message: E.PAYMENT_RUN_INVALID_STATUS,
           });
         }
 
         // EXPORTED runs require admin role (D-15)
-        if (run.status === "EXPORTED") {
+        if (run.status === 'EXPORTED') {
           const member = await tx.member.findFirst({
             where: {
               organizationId: ctx.organizationId,
@@ -819,31 +818,31 @@ export const paymentRouter = router({
             select: { role: true },
           });
 
-          if (member?.role !== "admin") {
+          if (member?.role !== 'admin') {
             throw new TRPCError({
-              code: "FORBIDDEN",
+              code: 'FORBIDDEN',
               message:
-                "Only administrators can cancel exported payment runs. Ensure the export was NOT submitted to your bank before cancelling.",
+                'Only administrators can cancel exported payment runs. Ensure the export was NOT submitted to your bank before cancelling.',
             });
           }
         }
 
         // Batch release all non-paid items' invoices back to READY
         const unpaidInvoiceIds = run.items
-          .filter((item) => item.status !== "PAID")
-          .map((item) => item.invoiceId);
+          .filter(item => item.status !== 'PAID')
+          .map(item => item.invoiceId);
 
         if (unpaidInvoiceIds.length > 0) {
           await tx.invoice.updateMany({
             where: { id: { in: unpaidInvoiceIds } },
-            data: { paymentStatus: "READY" },
+            data: { paymentStatus: 'READY' },
           });
         }
 
         // Cancel the run
         const updatedRun = await tx.paymentRun.update({
           where: { id: run.id },
-          data: { status: "CANCELLED" },
+          data: { status: 'CANCELLED' },
         });
 
         return updatedRun;
@@ -857,7 +856,7 @@ export const paymentRouter = router({
   // =========================================================================
 
   importStatement: tenantProcedure
-    .use(requirePermission({ payment: ["create"] }))
+    .use(requirePermission({ payment: ['create'] }))
     .input(
       z.object({
         runId: z.string().cuid(),
@@ -884,15 +883,15 @@ export const paymentRouter = router({
 
       if (!run) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: E.PAYMENT_RUN_NOT_FOUND,
         });
       }
 
-      if (run.status !== "EXPORTED") {
+      if (run.status !== 'EXPORTED') {
         throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Bank statement can only be imported for exported payment runs",
+          code: 'BAD_REQUEST',
+          message: 'Bank statement can only be imported for exported payment runs',
         });
       }
 
@@ -900,10 +899,10 @@ export const paymentRouter = router({
       const transactions = parseBankStatement(input.fileContent, input.fileName);
 
       // Build items for matching
-      const matchItems = run.items.map((item) => ({
+      const matchItems = run.items.map(item => ({
         id: item.id,
         amountMinor: item.amountMinor,
-        iban: item.billingProfile?.bankAccountMasked ?? "",
+        iban: item.billingProfile?.bankAccountMasked ?? '',
       }));
 
       const matches = matchStatementToRun(transactions, matchItems);
@@ -916,10 +915,10 @@ export const paymentRouter = router({
   // =========================================================================
 
   confirmStatementMatches: tenantProcedure
-    .use(requirePermission({ payment: ["create"] }))
+    .use(requirePermission({ payment: ['create'] }))
     .input(bankStatementConfirmSchema)
     .mutation(async ({ ctx, input }) => {
-      const result = await ctx.db.$transaction(async (tx) => {
+      const result = await ctx.db.$transaction(async tx => {
         const run = await tx.paymentRun.findFirst({
           where: {
             id: input.runId,
@@ -929,7 +928,7 @@ export const paymentRouter = router({
 
         if (!run) {
           throw new TRPCError({
-            code: "NOT_FOUND",
+            code: 'NOT_FOUND',
             message: E.PAYMENT_RUN_NOT_FOUND,
           });
         }
@@ -937,7 +936,7 @@ export const paymentRouter = router({
         const now = new Date();
 
         // Batch-verify all matched items exist in this run
-        const matchedItemIds = input.matches.map((m) => m.itemId);
+        const matchedItemIds = input.matches.map(m => m.itemId);
         const validItems = await tx.paymentRunItem.findMany({
           where: {
             id: { in: matchedItemIds },
@@ -948,19 +947,19 @@ export const paymentRouter = router({
         });
 
         if (validItems.length > 0) {
-          const validItemIds = validItems.map((i) => i.id);
-          const invoiceIds = validItems.map((i) => i.invoiceId);
+          const validItemIds = validItems.map(i => i.id);
+          const invoiceIds = validItems.map(i => i.invoiceId);
 
           // Batch-update all matched items to PAID
           await tx.paymentRunItem.updateMany({
             where: { id: { in: validItemIds } },
-            data: { status: "PAID", markedPaidAt: now },
+            data: { status: 'PAID', markedPaidAt: now },
           });
 
           // Batch-update all linked invoices to PAID
           await tx.invoice.updateMany({
             where: { id: { in: invoiceIds } },
-            data: { paymentStatus: "PAID", paidAt: now },
+            data: { paymentStatus: 'PAID', paidAt: now },
           });
         }
 
@@ -968,7 +967,7 @@ export const paymentRouter = router({
         const remaining = await tx.paymentRunItem.count({
           where: {
             paymentRunId: run.id,
-            status: { in: ["PENDING", "EXPORTED"] },
+            status: { in: ['PENDING', 'EXPORTED'] },
           },
         });
 
@@ -976,14 +975,14 @@ export const paymentRouter = router({
           const failedCount = await tx.paymentRunItem.count({
             where: {
               paymentRunId: run.id,
-              status: "FAILED",
+              status: 'FAILED',
             },
           });
 
           await tx.paymentRun.update({
             where: { id: run.id },
             data: {
-              status: failedCount > 0 ? "FAILED" : "COMPLETED",
+              status: failedCount > 0 ? 'FAILED' : 'COMPLETED',
               completedAt: now,
             },
           });
@@ -1006,11 +1005,11 @@ export const paymentRouter = router({
   // =========================================================================
 
   removeFromRun: tenantProcedure
-    .use(requirePermission({ payment: ["create"] }))
+    .use(requirePermission({ payment: ['create'] }))
     .input(removeFromRunSchema)
     .mutation(async ({ ctx, input }) => {
       const result = await ctx.db.$transaction(
-        async (tx) => {
+        async tx => {
           const run = await tx.paymentRun.findFirst({
             where: {
               id: input.runId,
@@ -1020,14 +1019,14 @@ export const paymentRouter = router({
 
           if (!run) {
             throw new TRPCError({
-              code: "NOT_FOUND",
+              code: 'NOT_FOUND',
               message: E.PAYMENT_RUN_NOT_FOUND,
             });
           }
 
-          if (run.status !== "DRAFT") {
+          if (run.status !== 'DRAFT') {
             throw new TRPCError({
-              code: "BAD_REQUEST",
+              code: 'BAD_REQUEST',
               message: E.PAYMENT_RUN_NOT_DRAFT,
             });
           }
@@ -1043,7 +1042,7 @@ export const paymentRouter = router({
 
           if (!item) {
             throw new TRPCError({
-              code: "NOT_FOUND",
+              code: 'NOT_FOUND',
               message: E.PAYMENT_INVOICE_NOT_IN_RUN,
             });
           }
@@ -1056,12 +1055,12 @@ export const paymentRouter = router({
           // Release invoice back to READY
           await tx.invoice.update({
             where: { id: input.invoiceId },
-            data: { paymentStatus: "READY" },
+            data: { paymentStatus: 'READY' },
           });
 
           // Recalculate run totals from actual remaining items (not cached values)
           const remainingAgg = await tx.paymentRunItem.aggregate({
-            where: { paymentRunId: run.id, status: { not: "SKIPPED" } },
+            where: { paymentRunId: run.id, status: { not: 'SKIPPED' } },
             _sum: { amountMinor: true },
             _count: true,
           });
@@ -1076,7 +1075,7 @@ export const paymentRouter = router({
               data: {
                 totalMinor: 0,
                 invoiceCount: 0,
-                status: "CANCELLED",
+                status: 'CANCELLED',
               },
             });
           }
@@ -1089,7 +1088,7 @@ export const paymentRouter = router({
             },
           });
         },
-        { isolationLevel: "Serializable" },
+        { isolationLevel: 'Serializable' },
       );
 
       return plain(result);
@@ -1100,7 +1099,7 @@ export const paymentRouter = router({
   // =========================================================================
 
   listByContractor: tenantProcedure
-    .use(requirePermission({ payment: ["read"] }))
+    .use(requirePermission({ payment: ['read'] }))
     .input(z.object({ contractorId: z.string().cuid() }))
     .query(async ({ ctx, input }) => {
       const items = await ctx.db.paymentRunItem.findMany({
@@ -1116,7 +1115,7 @@ export const paymentRouter = router({
             select: { invoiceNumber: true, dueDate: true },
           },
         },
-        orderBy: { createdAt: "desc" },
+        orderBy: { createdAt: 'desc' },
         take: 100,
       });
 

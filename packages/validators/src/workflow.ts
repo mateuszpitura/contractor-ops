@@ -1,69 +1,69 @@
-import { z } from "zod";
-import { optionalFk, optionalString } from "./helpers.js";
+import { z } from 'zod';
+import { optionalFk, optionalString } from './helpers.js';
 
 // ---------------------------------------------------------------------------
 // Prisma enum mirrors (string unions — validators package has no Prisma dep)
 // ---------------------------------------------------------------------------
 
 export const workflowTemplateTypeEnum = z.enum([
-  "ONBOARDING",
-  "OFFBOARDING",
-  "DOCUMENT_COLLECTION",
-  "COMPLIANCE_REVIEW",
-  "CUSTOM",
+  'ONBOARDING',
+  'OFFBOARDING',
+  'DOCUMENT_COLLECTION',
+  'COMPLIANCE_REVIEW',
+  'CUSTOM',
 ]);
 
-export const workflowTemplateStatusEnum = z.enum(["DRAFT", "ACTIVE", "ARCHIVED"]);
+export const workflowTemplateStatusEnum = z.enum(['DRAFT', 'ACTIVE', 'ARCHIVED']);
 
 export const workflowTaskTypeEnum = z.enum([
-  "DOCUMENT_COLLECTION",
-  "APPROVAL",
-  "ACCESS_GRANT",
-  "ACCESS_REVOKE",
-  "FINANCE_SETUP",
-  "EQUIPMENT",
-  "KNOWLEDGE_TRANSFER",
-  "MEETING",
-  "MANUAL",
-  "NOTIFICATION",
+  'DOCUMENT_COLLECTION',
+  'APPROVAL',
+  'ACCESS_GRANT',
+  'ACCESS_REVOKE',
+  'FINANCE_SETUP',
+  'EQUIPMENT',
+  'KNOWLEDGE_TRANSFER',
+  'MEETING',
+  'MANUAL',
+  'NOTIFICATION',
 ]);
 
 export const assigneeModeEnum = z.enum([
-  "FIXED_USER",
-  "ROLE_BASED",
-  "CONTRACTOR_OWNER",
-  "CONTRACT_OWNER",
-  "PROJECT_MANAGER",
+  'FIXED_USER',
+  'ROLE_BASED',
+  'CONTRACTOR_OWNER',
+  'CONTRACT_OWNER',
+  'PROJECT_MANAGER',
 ]);
 
 export const workflowRunStatusEnum = z.enum([
-  "NOT_STARTED",
-  "IN_PROGRESS",
-  "COMPLETED",
-  "CANCELLED",
-  "BLOCKED",
-  "OVERDUE",
+  'NOT_STARTED',
+  'IN_PROGRESS',
+  'COMPLETED',
+  'CANCELLED',
+  'BLOCKED',
+  'OVERDUE',
 ]);
 
 export const workflowTaskStatusEnum = z.enum([
-  "TODO",
-  "IN_PROGRESS",
-  "DONE",
-  "BLOCKED",
-  "SKIPPED",
-  "CANCELLED",
-  "OVERDUE",
+  'TODO',
+  'IN_PROGRESS',
+  'DONE',
+  'BLOCKED',
+  'SKIPPED',
+  'CANCELLED',
+  'OVERDUE',
 ]);
 
 export const userRoleEnum = z.enum([
-  "ORG_ADMIN",
-  "FINANCE_ADMIN",
-  "OPS_MANAGER",
-  "TEAM_MANAGER",
-  "LEGAL_VIEWER",
-  "IT_ADMIN",
-  "ACCOUNTANT",
-  "READ_ONLY",
+  'ORG_ADMIN',
+  'FINANCE_ADMIN',
+  'OPS_MANAGER',
+  'TEAM_MANAGER',
+  'LEGAL_VIEWER',
+  'IT_ADMIN',
+  'ACCOUNTANT',
+  'READ_ONLY',
 ]);
 
 // ---------------------------------------------------------------------------
@@ -72,12 +72,12 @@ export const userRoleEnum = z.enum([
 
 export const conditionRuleSchema = z.object({
   field: z.string().min(1),
-  operator: z.enum(["equals", "notEquals", "contains", "startsWith"]),
+  operator: z.enum(['equals', 'notEquals', 'contains', 'startsWith']),
   value: z.string().min(1),
 });
 
 export const conditionGroupSchema = z.object({
-  combinator: z.enum(["AND", "OR"]),
+  combinator: z.enum(['AND', 'OR']),
   rules: z.array(conditionRuleSchema).min(1),
 });
 
@@ -97,7 +97,7 @@ export const taskTemplateInputSchema = z.object({
   dueOffsetDays: z.number().int().nonnegative().optional(),
   dueOffsetHours: z.number().int().nonnegative().optional(),
   dependsOnTaskTemplateId: optionalFk,
-  externalUrl: z.string().url().optional().or(z.literal("")),
+  externalUrl: z.string().url().optional().or(z.literal('')),
   conditions: conditionGroupSchema.nullable().optional(),
 });
 
@@ -150,8 +150,8 @@ export const workflowRunListSchema = z.object({
   page: z.number().min(1).default(1),
   pageSize: z.number().min(10).max(50).default(25),
   search: z.string().optional(),
-  sortBy: z.enum(["createdAt", "dueAt", "status", "startedAt"]).default("dueAt"),
-  sortOrder: z.enum(["asc", "desc"]).default("asc"),
+  sortBy: z.enum(['createdAt', 'dueAt', 'status', 'startedAt']).default('dueAt'),
+  sortOrder: z.enum(['asc', 'desc']).default('asc'),
   contractorId: z.string().optional(),
   filters: z
     .object({

@@ -1,33 +1,33 @@
-"use client";
+'use client';
 
-import { useMutation, useQuery } from "@tanstack/react-query";
-import type { ColumnDef } from "@tanstack/react-table";
-import { DollarSign } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useMemo, useState } from "react";
-import { toast } from "sonner";
-import { useRouter } from "@/i18n/navigation";
-import { trpc } from "@/trpc/init";
-import { DrillDownBreadcrumb } from "./drill-down-breadcrumb";
-import { downloadBase64File, ExportButtons } from "./export-buttons";
-import { ReportChart } from "./report-chart";
-import { ReportTable } from "./report-table";
+import { useMutation, useQuery } from '@tanstack/react-query';
+import type { ColumnDef } from '@tanstack/react-table';
+import { DollarSign } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useMemo, useState } from 'react';
+import { toast } from 'sonner';
+import { useRouter } from '@/i18n/navigation';
+import { trpc } from '@/trpc/init';
+import { DrillDownBreadcrumb } from './drill-down-breadcrumb';
+import { downloadBase64File, ExportButtons } from './export-buttons';
+import { ReportChart } from './report-chart';
+import { ReportTable } from './report-table';
 
 function formatCurrency(minor: number): string {
-  return new Intl.NumberFormat("pl-PL", {
-    style: "currency",
-    currency: "PLN",
+  return new Intl.NumberFormat('pl-PL', {
+    style: 'currency',
+    currency: 'PLN',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(minor / 100);
 }
 
 function formatDate(iso: string | null): string {
-  if (!iso) return "-";
-  return new Intl.DateTimeFormat("pl-PL", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
+  if (!iso) return '-';
+  return new Intl.DateTimeFormat('pl-PL', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
   }).format(new Date(iso));
 }
 
@@ -46,12 +46,12 @@ type SpendRow = {
 };
 
 export function SpendContractorReport({ dateFrom, dateTo }: SpendContractorReportProps) {
-  const t = useTranslations("Reports");
+  const t = useTranslations('Reports');
   const router = useRouter();
 
   const [page, setPage] = useState(1);
-  const [sortBy, setSortBy] = useState("totalSpend");
-  const [sortOrder, setSortOrder] = useState("desc");
+  const [sortBy, setSortBy] = useState('totalSpend');
+  const [sortOrder, setSortOrder] = useState('desc');
   const [drillDownContractorId, setDrillDownContractorId] = useState<string | null>(null);
 
   const tableQuery = useQuery(
@@ -60,8 +60,8 @@ export function SpendContractorReport({ dateFrom, dateTo }: SpendContractorRepor
       dateTo,
       page,
       pageSize: 20,
-      sortBy: sortBy as "totalSpend" | "invoiceCount" | "contractorName",
-      sortOrder: sortOrder as "asc" | "desc",
+      sortBy: sortBy as 'totalSpend' | 'invoiceCount' | 'contractorName',
+      sortOrder: sortOrder as 'asc' | 'desc',
       contractorId: drillDownContractorId ?? undefined,
     }),
   );
@@ -72,17 +72,17 @@ export function SpendContractorReport({ dateFrom, dateTo }: SpendContractorRepor
 
   const exportMutation = useMutation(
     trpc.report.exportSpendByContractor.mutationOptions({
-      onSuccess: (data) => {
+      onSuccess: data => {
         const result = data as {
           data: string;
           filename: string;
           mimeType: string;
         };
         downloadBase64File(result.data, result.filename, result.mimeType);
-        toast.success(t("exportSuccess", { count: tableData.length }));
+        toast.success(t('exportSuccess', { count: tableData.length }));
       },
       onError: () => {
-        toast.error(t("exportError"));
+        toast.error(t('exportError'));
       },
     }),
   );
@@ -107,7 +107,7 @@ export function SpendContractorReport({ dateFrom, dateTo }: SpendContractorRepor
 
   const drillDownName = useMemo(() => {
     if (!drillDownContractorId) return null;
-    const item = chartData.find((d) => d.contractorId === drillDownContractorId);
+    const item = chartData.find(d => d.contractorId === drillDownContractorId);
     return item?.contractorName ?? drillDownContractorId;
   }, [drillDownContractorId, chartData]);
 
@@ -118,29 +118,29 @@ export function SpendContractorReport({ dateFrom, dateTo }: SpendContractorRepor
   const columns: ColumnDef<SpendRow>[] = useMemo(
     () => [
       {
-        accessorKey: "contractorName",
-        header: t("contractor"),
+        accessorKey: 'contractorName',
+        header: t('contractor'),
         enableSorting: true,
       },
       {
-        accessorKey: "invoiceCount",
-        header: t("invoices"),
+        accessorKey: 'invoiceCount',
+        header: t('invoices'),
         enableSorting: true,
       },
       {
-        accessorKey: "totalMinor",
-        header: t("totalSpend"),
+        accessorKey: 'totalMinor',
+        header: t('totalSpend'),
         enableSorting: true,
         cell: ({ getValue }) => formatCurrency(getValue<number>()),
       },
       {
-        accessorKey: "avgMinor",
-        header: t("avgInvoice"),
+        accessorKey: 'avgMinor',
+        header: t('avgInvoice'),
         cell: ({ getValue }) => formatCurrency(getValue<number>()),
       },
       {
-        accessorKey: "lastPaidAt",
-        header: t("lastPayment"),
+        accessorKey: 'lastPaidAt',
+        header: t('lastPayment'),
         cell: ({ getValue }) => formatDate(getValue<string | null>()),
       },
     ],
@@ -178,7 +178,7 @@ export function SpendContractorReport({ dateFrom, dateTo }: SpendContractorRepor
 
       <DrillDownBreadcrumb
         segments={[
-          { label: t("all") },
+          { label: t('all') },
           ...(drillDownName ? [{ label: drillDownName, id: drillDownContractorId! }] : []),
         ]}
         onClear={handleClearDrillDown}
@@ -194,12 +194,12 @@ export function SpendContractorReport({ dateFrom, dateTo }: SpendContractorRepor
         onSortChange={handleSortChange}
         sortBy={sortBy}
         sortOrder={sortOrder}
-        onRowClick={(row) => router.push(`/contractors/${row.contractorId}`)}
+        onRowClick={row => router.push(`/contractors/${row.contractorId}`)}
         isLoading={tableQuery.isLoading}
         emptyIcon={<DollarSign className="mx-auto h-10 w-10 text-muted-foreground/50" />}
-        emptyTitle={t("emptySpendContractor")}
-        emptyDescription={t("emptySpendContractorBody")}
-        grandTotalLabel={t("grandTotal")}
+        emptyTitle={t('emptySpendContractor')}
+        emptyDescription={t('emptySpendContractorBody')}
+        grandTotalLabel={t('grandTotal')}
         grandTotalValue={formatCurrency(grandTotal)}
       />
 

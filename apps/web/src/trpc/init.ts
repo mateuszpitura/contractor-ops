@@ -1,10 +1,10 @@
-import type { AppRouter } from "@contractor-ops/api";
-import { createTRPCClient, httpBatchLink, httpLink } from "@trpc/client";
-import { createTRPCOptionsProxy } from "@trpc/tanstack-react-query";
-import superjson from "superjson";
-import { makeQueryClient } from "./query-client";
+import type { AppRouter } from '@contractor-ops/api';
+import { createTRPCClient, httpBatchLink, httpLink } from '@trpc/client';
+import { createTRPCOptionsProxy } from '@trpc/tanstack-react-query';
+import superjson from 'superjson';
+import { makeQueryClient } from './query-client';
 
-const isDev = process.env.NODE_ENV === "development";
+const isDev = process.env.NODE_ENV === 'development';
 
 const url = `${process.env.NEXT_PUBLIC_APP_URL}/api/trpc`;
 
@@ -26,7 +26,7 @@ const fetchWithTimeout: typeof fetch = (input, init) => {
     if (callerSignal.aborted) {
       controller.abort(callerSignal.reason);
     } else {
-      callerSignal.addEventListener("abort", () => controller.abort(callerSignal.reason), {
+      callerSignal.addEventListener('abort', () => controller.abort(callerSignal.reason), {
         once: true,
       });
     }

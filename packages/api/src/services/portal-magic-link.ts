@@ -1,6 +1,6 @@
-import { createHash, randomBytes } from "node:crypto";
-import { prisma } from "@contractor-ops/db";
-import { Resend } from "resend";
+import { createHash, randomBytes } from 'node:crypto';
+import { prisma } from '@contractor-ops/db';
+import { Resend } from 'resend';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -32,8 +32,8 @@ function getResend(): Resend {
 export async function createMagicLinkToken(
   email: string,
 ): Promise<{ token: string; expiresAt: Date }> {
-  const rawToken = randomBytes(32).toString("base64url");
-  const hashedToken = createHash("sha256").update(rawToken).digest("hex");
+  const rawToken = randomBytes(32).toString('base64url');
+  const hashedToken = createHash('sha256').update(rawToken).digest('hex');
   const expiresAt = new Date(Date.now() + MAGIC_LINK_EXPIRY_MS);
 
   await prisma.portalMagicToken.create({
@@ -54,7 +54,7 @@ export async function createMagicLinkToken(
  * Returns null for invalid, expired, or already-used tokens.
  */
 export async function verifyMagicLinkToken(rawToken: string): Promise<{ email: string } | null> {
-  const hashedToken = createHash("sha256").update(rawToken).digest("hex");
+  const hashedToken = createHash('sha256').update(rawToken).digest('hex');
 
   // Atomic find-and-mark-used to prevent race conditions (two concurrent
   // requests both reading usedAt as null before either marks it).
@@ -97,7 +97,7 @@ export async function findContractorsByEmail(email: string) {
   return prisma.contractor.findMany({
     where: {
       email: email.toLowerCase().trim(),
-      status: "ACTIVE",
+      status: 'ACTIVE',
       deletedAt: null,
     },
     include: {
@@ -129,9 +129,9 @@ export async function sendPortalMagicLink(opts: {
   if (process.env.RESEND_API_KEY) {
     const resend = getResend();
     await resend.emails.send({
-      from: process.env.EMAIL_FROM ?? "noreply@contractor-ops.com",
+      from: process.env.EMAIL_FROM ?? 'noreply@contractor-ops.com',
       to: opts.email,
-      subject: "Sign in to Contractor Portal",
+      subject: 'Sign in to Contractor Portal',
       html: `
         <p>Click the link below to sign in to the Contractor Portal:</p>
         <p><a href="${magicLinkUrl}">Sign in to Portal</a></p>
@@ -139,6 +139,5 @@ export async function sendPortalMagicLink(opts: {
         <p>If you did not request this, you can safely ignore this email.</p>
       `.trim(),
     });
-  } else {
   }
 }

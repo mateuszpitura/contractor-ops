@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { Download, FileText } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { EmptyState } from "@/components/shared/empty-state";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useQuery } from '@tanstack/react-query';
+import { Download, FileText } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { EmptyState } from '@/components/shared/empty-state';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -14,27 +14,27 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { trpc } from "@/trpc/init";
+} from '@/components/ui/table';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
 function formatDate(date: Date | string): string {
-  const d = typeof date === "string" ? new Date(date) : date;
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
   }).format(d);
 }
 
 function formatDocType(type: string): string {
   return type
-    .replace(/_/g, " ")
+    .replace(/_/g, ' ')
     .toLowerCase()
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+    .replace(/\b\w/g, c => c.toUpperCase());
 }
 
 // ---------------------------------------------------------------------------
@@ -50,30 +50,30 @@ function formatDocType(type: string): string {
  * - Empty state with specific copy from UI-SPEC
  */
 export default function PortalDocumentsPage() {
-  const t = useTranslations("Portal");
+  const t = useTranslations('Portal');
   const documentsQuery = useQuery(trpc.portal.listDocuments.queryOptions());
   const documents = documentsQuery.data;
   const isLoading = documentsQuery.isPending;
 
   function formatFileSize(bytes: number): string {
-    if (bytes < 1024) return t("fileSize.bytes", { size: bytes });
-    if (bytes < 1024 * 1024) return t("fileSize.kilobytes", { size: (bytes / 1024).toFixed(1) });
-    return t("fileSize.megabytes", { size: (bytes / (1024 * 1024)).toFixed(1) });
+    if (bytes < 1024) return t('fileSize.bytes', { size: bytes });
+    if (bytes < 1024 * 1024) return t('fileSize.kilobytes', { size: (bytes / 1024).toFixed(1) });
+    return t('fileSize.megabytes', { size: (bytes / (1024 * 1024)).toFixed(1) });
   }
 
   return (
     <div>
-      <h1 className="text-xl font-semibold">{t("documents.title")}</h1>
+      <h1 className="text-xl font-semibold">{t('documents.title')}</h1>
 
       {isLoading ? (
         <div className="mt-6">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>{t("documents.columns.documentName")}</TableHead>
-                <TableHead>{t("documents.columns.type")}</TableHead>
-                <TableHead>{t("documents.columns.dateAdded")}</TableHead>
-                <TableHead className="text-end">{t("documents.columns.actions")}</TableHead>
+                <TableHead>{t('documents.columns.documentName')}</TableHead>
+                <TableHead>{t('documents.columns.type')}</TableHead>
+                <TableHead>{t('documents.columns.dateAdded')}</TableHead>
+                <TableHead className="text-end">{t('documents.columns.actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -101,14 +101,14 @@ export default function PortalDocumentsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>{t("documents.columns.documentName")}</TableHead>
-                <TableHead>{t("documents.columns.type")}</TableHead>
-                <TableHead>{t("documents.columns.dateAdded")}</TableHead>
-                <TableHead className="text-end">{t("documents.columns.actions")}</TableHead>
+                <TableHead>{t('documents.columns.documentName')}</TableHead>
+                <TableHead>{t('documents.columns.type')}</TableHead>
+                <TableHead>{t('documents.columns.dateAdded')}</TableHead>
+                <TableHead className="text-end">{t('documents.columns.actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {documents.map((doc) => (
+              {documents.map(doc => (
                 <TableRow key={doc.id}>
                   <TableCell>
                     <div>
@@ -120,7 +120,7 @@ export default function PortalDocumentsPage() {
                   </TableCell>
                   <TableCell>
                     <Badge variant="secondary">
-                      {formatDocType(doc.type ?? t("documents.documentFallback"))}
+                      {formatDocType(doc.type ?? t('documents.documentFallback'))}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-sm">{formatDate(doc.addedAt)}</TableCell>
@@ -128,10 +128,9 @@ export default function PortalDocumentsPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => window.open(doc.downloadUrl, "_blank")}
-                    >
+                      onClick={() => window.open(doc.downloadUrl, '_blank')}>
                       <Download className="me-1 h-4 w-4" />
-                      {t("documents.download")}
+                      {t('documents.download')}
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -142,8 +141,8 @@ export default function PortalDocumentsPage() {
       ) : (
         <EmptyState
           icon={FileText}
-          heading={t("documents.emptyTitle")}
-          body={t("documents.emptyBody")}
+          heading={t('documents.emptyTitle')}
+          body={t('documents.emptyBody')}
         />
       )}
     </div>

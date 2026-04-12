@@ -1,7 +1,7 @@
-import { prisma } from "@contractor-ops/db";
-import { SlackMessagingProvider } from "./slack-messaging-provider.js";
-import { TeamsMessagingProvider } from "./teams-messaging-provider.js";
-import type { MessagingProvider } from "./types.js";
+import { prisma } from '@contractor-ops/db';
+import { SlackMessagingProvider } from './slack-messaging-provider.js';
+import { TeamsMessagingProvider } from './teams-messaging-provider.js';
+import type { MessagingProvider } from './types.js';
 
 // ---------------------------------------------------------------------------
 // Provider Factory
@@ -23,8 +23,8 @@ export async function getConnectedMessagingProviders(
   const connections = await prisma.integrationConnection.findMany({
     where: {
       organizationId,
-      provider: { in: ["SLACK", "MICROSOFT_TEAMS"] },
-      status: "CONNECTED",
+      provider: { in: ['SLACK', 'MICROSOFT_TEAMS'] },
+      status: 'CONNECTED',
     },
     select: { provider: true },
   });
@@ -33,10 +33,10 @@ export async function getConnectedMessagingProviders(
 
   for (const conn of connections) {
     switch (conn.provider) {
-      case "SLACK":
+      case 'SLACK':
         providers.push(new SlackMessagingProvider());
         break;
-      case "MICROSOFT_TEAMS":
+      case 'MICROSOFT_TEAMS':
         providers.push(new TeamsMessagingProvider());
         break;
     }
@@ -51,4 +51,4 @@ export type {
   ChannelAlertParams,
   MessagingProvider,
   ReminderDMParams,
-} from "./types.js";
+} from './types.js';

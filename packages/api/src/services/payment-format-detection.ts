@@ -5,7 +5,7 @@
  * Per D-03: payment run picks format based on currency/destination.
  */
 
-import type { ExportItem } from "./payment-export.js";
+import type { ExportItem } from './payment-export.js';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -17,44 +17,44 @@ import type { ExportItem } from "./payment-export.js";
  */
 export const EU_IBAN_COUNTRIES = new Set([
   // EU-27
-  "AT",
-  "BE",
-  "BG",
-  "HR",
-  "CY",
-  "CZ",
-  "DK",
-  "EE",
-  "FI",
-  "FR",
-  "DE",
-  "GR",
-  "HU",
-  "IE",
-  "IT",
-  "LV",
-  "LT",
-  "LU",
-  "MT",
-  "NL",
-  "PL",
-  "PT",
-  "RO",
-  "SK",
-  "SI",
-  "ES",
-  "SE",
+  'AT',
+  'BE',
+  'BG',
+  'HR',
+  'CY',
+  'CZ',
+  'DK',
+  'EE',
+  'FI',
+  'FR',
+  'DE',
+  'GR',
+  'HU',
+  'IE',
+  'IT',
+  'LV',
+  'LT',
+  'LU',
+  'MT',
+  'NL',
+  'PL',
+  'PT',
+  'RO',
+  'SK',
+  'SI',
+  'ES',
+  'SE',
   // EEA
-  "IS",
-  "LI",
-  "NO",
+  'IS',
+  'LI',
+  'NO',
 ]);
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
-type ExportFormat = "SEPA_XML" | "SWIFT_XML" | "BANK_FILE" | "CSV";
+type ExportFormat = 'SEPA_XML' | 'SWIFT_XML' | 'BANK_FILE' | 'CSV';
 
 // ---------------------------------------------------------------------------
 // Detection
@@ -69,20 +69,20 @@ type ExportFormat = "SEPA_XML" | "SWIFT_XML" | "BANK_FILE" | "CSV";
  * 3. Everything else -> SWIFT_XML (international)
  */
 export function detectFormat(currency: string, iban: string): ExportFormat {
-  const ibanCountry = iban.replace(/\s/g, "").substring(0, 2).toUpperCase();
+  const ibanCountry = iban.replace(/\s/g, '').substring(0, 2).toUpperCase();
 
   // Polish domestic: PLN + PL IBAN
-  if (currency === "PLN" && ibanCountry === "PL") {
-    return "BANK_FILE";
+  if (currency === 'PLN' && ibanCountry === 'PL') {
+    return 'BANK_FILE';
   }
 
   // SEPA: EUR + EU/EEA country
-  if (currency === "EUR" && EU_IBAN_COUNTRIES.has(ibanCountry)) {
-    return "SEPA_XML";
+  if (currency === 'EUR' && EU_IBAN_COUNTRIES.has(ibanCountry)) {
+    return 'SEPA_XML';
   }
 
   // Everything else: SWIFT international
-  return "SWIFT_XML";
+  return 'SWIFT_XML';
 }
 
 // ---------------------------------------------------------------------------

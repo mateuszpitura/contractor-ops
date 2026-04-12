@@ -1,12 +1,12 @@
-import { render, screen } from "@/test/test-utils";
-import { SendForSignatureButton } from "../send-for-signature-button";
+import { render, screen } from '@/test/test-utils';
+import { SendForSignatureButton } from '../send-for-signature-button';
 
-vi.mock("../send-for-signature-dialog", () => ({
+vi.mock('../send-for-signature-dialog', () => ({
   SendForSignatureDialog: () => null,
 }));
 
-describe("SendForSignatureButton", () => {
-  it("returns null for non-DRAFT/ACTIVE statuses", () => {
+describe('SendForSignatureButton', () => {
+  it('returns null for non-DRAFT/ACTIVE statuses', () => {
     const { container } = render(
       <SendForSignatureButton
         contractId="ct1"
@@ -15,10 +15,10 @@ describe("SendForSignatureButton", () => {
         hasConnectedProvider={true}
       />,
     );
-    expect(container.innerHTML).toBe("");
+    expect(container.innerHTML).toBe('');
   });
 
-  it("renders disabled button when no document", () => {
+  it('renders disabled button when no document', () => {
     render(
       <SendForSignatureButton
         contractId="ct1"
@@ -27,11 +27,11 @@ describe("SendForSignatureButton", () => {
         hasConnectedProvider={true}
       />,
     );
-    const button = screen.getByRole("button");
+    const button = screen.getByRole('button');
     expect(button).toBeDisabled();
   });
 
-  it("renders disabled button when no provider", () => {
+  it('renders disabled button when no provider', () => {
     render(
       <SendForSignatureButton
         contractId="ct1"
@@ -40,11 +40,11 @@ describe("SendForSignatureButton", () => {
         hasConnectedProvider={false}
       />,
     );
-    const button = screen.getByRole("button");
+    const button = screen.getByRole('button');
     expect(button).toBeDisabled();
   });
 
-  it("renders enabled button when document and provider available", () => {
+  it('renders enabled button when document and provider available', () => {
     render(
       <SendForSignatureButton
         contractId="ct1"
@@ -53,11 +53,11 @@ describe("SendForSignatureButton", () => {
         hasConnectedProvider={true}
       />,
     );
-    const button = screen.getByRole("button");
+    const button = screen.getByRole('button');
     expect(button).not.toBeDisabled();
   });
 
-  it("shows button text", () => {
+  it('shows button text', () => {
     render(
       <SendForSignatureButton
         contractId="ct1"
@@ -66,6 +66,6 @@ describe("SendForSignatureButton", () => {
         hasConnectedProvider={true}
       />,
     );
-    expect(screen.getByText("Send for Signature")).toBeInTheDocument();
+    expect(screen.getByText('Send for Signature')).toBeInTheDocument();
   });
 });

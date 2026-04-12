@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { formatDistanceToNow } from "date-fns";
-import { ShieldCheck } from "lucide-react";
+import { formatDistanceToNow } from 'date-fns';
+import { ShieldCheck } from 'lucide-react';
 
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -20,7 +20,7 @@ interface KsefSourceBadgeProps {
 export function KsefSourceBadge({ fetchedAt }: KsefSourceBadgeProps) {
   const tooltipText = fetchedAt
     ? `Fetched from KSeF ${formatDistanceToNow(new Date(fetchedAt), { addSuffix: true })}`
-    : "Fetched from KSeF";
+    : 'Fetched from KSeF';
 
   return (
     <TooltipProvider>

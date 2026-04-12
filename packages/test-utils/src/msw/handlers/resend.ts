@@ -1,25 +1,25 @@
-import { HttpResponse, http } from "msw";
-import type { HandlerOptions } from "../types.js";
-import { applyNetworkConditions, mockId } from "../utils.js";
+import { HttpResponse, http } from 'msw';
+import type { HandlerOptions } from '../types.js';
+import { applyNetworkConditions, mockId } from '../utils.js';
 
 export function resendHandlers(options?: HandlerOptions) {
   const net = options?.network;
 
   return [
     // --- Send Email ---
-    http.post("https://api.resend.com/emails", async () => {
+    http.post('https://api.resend.com/emails', async () => {
       const err = await applyNetworkConditions(net);
       if (err) return err;
       return HttpResponse.json({
         id: mockId(),
-        from: "noreply@contractorhub.io",
-        to: ["contractor@example.com"],
+        from: 'noreply@contractorhub.io',
+        to: ['contractor@example.com'],
         created_at: new Date().toISOString(),
       });
     }),
 
     // --- Send Batch Emails ---
-    http.post("https://api.resend.com/emails/batch", async () => {
+    http.post('https://api.resend.com/emails/batch', async () => {
       const err = await applyNetworkConditions(net);
       if (err) return err;
       return HttpResponse.json({
@@ -28,16 +28,16 @@ export function resendHandlers(options?: HandlerOptions) {
     }),
 
     // --- Get Email ---
-    http.get("https://api.resend.com/emails/:id", async ({ params }) => {
+    http.get('https://api.resend.com/emails/:id', async ({ params }) => {
       const err = await applyNetworkConditions(net);
       if (err) return err;
       return HttpResponse.json({
         id: params.id,
-        from: "noreply@contractorhub.io",
-        to: ["contractor@example.com"],
-        subject: "Test Email",
+        from: 'noreply@contractorhub.io',
+        to: ['contractor@example.com'],
+        subject: 'Test Email',
         created_at: new Date().toISOString(),
-        last_event: "delivered",
+        last_event: 'delivered',
       });
     }),
   ];

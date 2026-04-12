@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 import type {
   CourierClient,
@@ -7,7 +7,7 @@ import type {
   LabelFormat,
   ShipmentParams,
   UPSShipmentParams,
-} from "./courier-client.js";
+} from './courier-client.js';
 
 // ---------------------------------------------------------------------------
 // UPS REST API Client
@@ -17,36 +17,36 @@ import type {
 // Uses globalThis.fetch for test mockability.
 // ---------------------------------------------------------------------------
 
-const UPS_SANDBOX_URL = "https://wwwcie.ups.com";
-const UPS_PRODUCTION_URL = "https://onlinetools.ups.com";
+const UPS_SANDBOX_URL = 'https://wwwcie.ups.com';
+const UPS_PRODUCTION_URL = 'https://onlinetools.ups.com';
 
 /** Map abstract parcel sizes to UPS weight/dimensions. */
 const UPS_SIZE_MAP = {
   small: {
-    weight: { value: "2", unitOfMeasurement: { code: "KGS" } },
+    weight: { value: '2', unitOfMeasurement: { code: 'KGS' } },
     dimensions: {
-      length: "30",
-      width: "20",
-      height: "10",
-      unitOfMeasurement: { code: "CM" },
+      length: '30',
+      width: '20',
+      height: '10',
+      unitOfMeasurement: { code: 'CM' },
     },
   },
   medium: {
-    weight: { value: "5", unitOfMeasurement: { code: "KGS" } },
+    weight: { value: '5', unitOfMeasurement: { code: 'KGS' } },
     dimensions: {
-      length: "40",
-      width: "30",
-      height: "20",
-      unitOfMeasurement: { code: "CM" },
+      length: '40',
+      width: '30',
+      height: '20',
+      unitOfMeasurement: { code: 'CM' },
     },
   },
   large: {
-    weight: { value: "10", unitOfMeasurement: { code: "KGS" } },
+    weight: { value: '10', unitOfMeasurement: { code: 'KGS' } },
     dimensions: {
-      length: "60",
-      width: "40",
-      height: "30",
-      unitOfMeasurement: { code: "CM" },
+      length: '60',
+      width: '40',
+      height: '30',
+      unitOfMeasurement: { code: 'CM' },
     },
   },
 } as const;
@@ -131,16 +131,16 @@ export class UPSClient implements CourierClient {
     }
 
     const res = await globalThis.fetch(`${this.baseUrl}/security/v1/oauth/token`, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        Authorization: `Basic ${Buffer.from(`${this.clientId}:${this.clientSecret}`).toString("base64")}`,
-        "Content-Type": "application/x-www-form-urlencoded",
+        Authorization: `Basic ${Buffer.from(`${this.clientId}:${this.clientSecret}`).toString('base64')}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: "grant_type=client_credentials",
+      body: 'grant_type=client_credentials',
     });
 
     if (!res.ok) {
-      const errorBody = await res.text().catch(() => "unknown");
+      const errorBody = await res.text().catch(() => 'unknown');
       throw new Error(`[ups-client] OAuth failed: HTTP ${res.status} — ${errorBody}`);
     }
 
@@ -159,7 +159,7 @@ export class UPSClient implements CourierClient {
     const token = await this.getToken();
     return {
       Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     };
   }
 
@@ -169,9 +169,9 @@ export class UPSClient implements CourierClient {
    * POST /api/shipments/v2409/ship
    */
   async createShipment(params: ShipmentParams): Promise<CourierShipmentResult> {
-    if (!("deliveryAddress" in params && "serviceCode" in params)) {
+    if (!('deliveryAddress' in params && 'serviceCode' in params)) {
       throw new Error(
-        "[ups-client] createShipment requires deliveryAddress and serviceCode for UPS shipments",
+        '[ups-client] createShipment requires deliveryAddress and serviceCode for UPS shipments',
       );
     }
     const upsParams = params as UPSShipmentParams;
@@ -183,7 +183,7 @@ export class UPSClient implements CourierClient {
     const body = {
       ShipmentRequest: {
         Shipment: {
-          Description: upsParams.reference ?? "Equipment shipment",
+          Description: upsParams.reference ?? 'Equipment shipment',
           Shipper: {
             Name: upsParams.sender.name,
             ShipperNumber: this.accountNumber,
@@ -208,7 +208,7 @@ export class UPSClient implements CourierClient {
           Service: { Code: upsParams.serviceCode },
           Package: [
             {
-              PackagingType: { Code: "02" }, // Customer Supplied Package
+              PackagingType: { Code: '02' }, // Customer Supplied Package
               PackageWeight: size.weight,
               Dimensions: size.dimensions,
             },
@@ -216,26 +216,26 @@ export class UPSClient implements CourierClient {
           PaymentInformation: {
             ShipmentCharge: [
               {
-                Type: "01", // Transportation
+                Type: '01', // Transportation
                 BillShipper: { AccountNumber: this.accountNumber },
               },
             ],
           },
         },
         LabelSpecification: {
-          LabelImageFormat: { Code: "PDF" },
+          LabelImageFormat: { Code: 'PDF' },
         },
       },
     };
 
     const response = await globalThis.fetch(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(body),
     });
 
     if (!response.ok) {
-      const errorBody = await response.text().catch(() => "unknown");
+      const errorBody = await response.text().catch(() => 'unknown');
       throw new Error(`[ups-client] createShipment failed: HTTP ${response.status} — ${errorBody}`);
     }
 
@@ -247,7 +247,7 @@ export class UPSClient implements CourierClient {
     return {
       externalId: results.ShipmentIdentificationNumber,
       trackingNumber: pkg.TrackingNumber,
-      status: "CREATED",
+      status: 'CREATED',
       labelUrl: undefined, // Label is embedded as base64, not URL
     };
   }
@@ -258,17 +258,17 @@ export class UPSClient implements CourierClient {
    * For UPS, labels are returned in createShipment response as base64.
    * This method re-fetches via the tracking/label endpoint.
    */
-  async getLabel(shipmentExternalId: string, _format: LabelFormat = "pdf"): Promise<Buffer> {
+  async getLabel(shipmentExternalId: string, _format: LabelFormat = 'pdf'): Promise<Buffer> {
     const url = `${this.baseUrl}/api/shipments/v2409/label/${shipmentExternalId}`;
     const headers = await this.authHeaders();
 
     const response = await globalThis.fetch(url, {
-      method: "GET",
-      headers: { ...headers, Accept: "application/pdf" },
+      method: 'GET',
+      headers: { ...headers, Accept: 'application/pdf' },
     });
 
     if (!response.ok) {
-      const errorBody = await response.text().catch(() => "unknown");
+      const errorBody = await response.text().catch(() => 'unknown');
       throw new Error(`[ups-client] getLabel failed: HTTP ${response.status} — ${errorBody}`);
     }
 
@@ -286,12 +286,12 @@ export class UPSClient implements CourierClient {
     const headers = await this.authHeaders();
 
     const response = await globalThis.fetch(url, {
-      method: "GET",
+      method: 'GET',
       headers,
     });
 
     if (!response.ok) {
-      const errorBody = await response.text().catch(() => "unknown");
+      const errorBody = await response.text().catch(() => 'unknown');
       throw new Error(`[ups-client] getStatus failed: HTTP ${response.status} — ${errorBody}`);
     }
 
@@ -317,12 +317,12 @@ export class UPSClient implements CourierClient {
     const headers = await this.authHeaders();
 
     const response = await globalThis.fetch(url, {
-      method: "DELETE",
+      method: 'DELETE',
       headers,
     });
 
     if (!response.ok) {
-      const errorBody = await response.text().catch(() => "unknown");
+      const errorBody = await response.text().catch(() => 'unknown');
       throw new Error(`[ups-client] cancelShipment failed: HTTP ${response.status} — ${errorBody}`);
     }
   }

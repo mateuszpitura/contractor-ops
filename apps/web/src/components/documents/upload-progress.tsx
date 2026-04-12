@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   FileSpreadsheet,
@@ -9,24 +9,24 @@ import {
   ShieldCheck,
   ShieldQuestion,
   X,
-} from "lucide-react";
-import { useTranslations } from "next-intl";
+} from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
 export type UploadStatus =
-  | "uploading"
-  | "confirming"
-  | "scanning"
-  | "clean"
-  | "infected"
-  | "failed"
-  | "error";
+  | 'uploading'
+  | 'confirming'
+  | 'scanning'
+  | 'clean'
+  | 'infected'
+  | 'failed'
+  | 'error';
 
 export interface UploadingFile {
   id: string;
@@ -46,14 +46,14 @@ type UploadProgressProps = {
 // ---------------------------------------------------------------------------
 
 function formatFileSizeData(bytes: number): { key: string; size: string } {
-  if (bytes < 1024) return { key: "bytes", size: String(bytes) };
-  if (bytes < 1024 * 1024) return { key: "kilobytes", size: (bytes / 1024).toFixed(1) };
-  return { key: "megabytes", size: (bytes / (1024 * 1024)).toFixed(1) };
+  if (bytes < 1024) return { key: 'bytes', size: String(bytes) };
+  if (bytes < 1024 * 1024) return { key: 'kilobytes', size: (bytes / 1024).toFixed(1) };
+  return { key: 'megabytes', size: (bytes / (1024 * 1024)).toFixed(1) };
 }
 
 function getFileIcon(mimeType: string) {
-  if (mimeType.startsWith("image/")) return Image;
-  if (mimeType.includes("spreadsheet") || mimeType.includes("xlsx")) return FileSpreadsheet;
+  if (mimeType.startsWith('image/')) return Image;
+  if (mimeType.includes('spreadsheet') || mimeType.includes('xlsx')) return FileSpreadsheet;
   return FileText;
 }
 
@@ -62,40 +62,40 @@ function getFileIcon(mimeType: string) {
 // ---------------------------------------------------------------------------
 
 function ScanStatusBadge({ status }: { status: UploadStatus }) {
-  const t = useTranslations("Documents.scan");
+  const t = useTranslations('Documents.scan');
 
   switch (status) {
-    case "scanning":
-    case "confirming":
+    case 'scanning':
+    case 'confirming':
       return (
         <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
           <Loader2 className="size-3 animate-spin" />
-          {t("scanning")}
+          {t('scanning')}
         </span>
       );
-    case "clean":
+    case 'clean':
       return (
         <span className="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
           <ShieldCheck className="size-3" />
-          {t("clean")}
+          {t('clean')}
         </span>
       );
-    case "infected":
+    case 'infected':
       return (
         <span className="inline-flex items-center gap-1 text-xs text-destructive">
           <ShieldAlert className="size-3" />
-          {t("infected")}
+          {t('infected')}
         </span>
       );
-    case "failed":
+    case 'failed':
       return (
         <span className="inline-flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400">
           <ShieldQuestion className="size-3" />
-          {t("failed")}
+          {t('failed')}
         </span>
       );
-    case "error":
-      return <span className="text-xs text-destructive">{t("uploadError")}</span>;
+    case 'error':
+      return <span className="text-xs text-destructive">{t('uploadError')}</span>;
     default:
       return null;
   }
@@ -106,7 +106,7 @@ function ScanStatusBadge({ status }: { status: UploadStatus }) {
 // ---------------------------------------------------------------------------
 
 export function UploadProgress({ file, onRemove }: UploadProgressProps) {
-  const tCommon = useTranslations("Common");
+  const tCommon = useTranslations('Common');
   const FileIcon = getFileIcon(file.file.type);
 
   return (
@@ -121,7 +121,7 @@ export function UploadProgress({ file, onRemove }: UploadProgressProps) {
               return tCommon(`fileSize.${key}` as Parameters<typeof tCommon>[0], { size });
             })()}
           </span>
-          {file.status === "uploading" ? (
+          {file.status === 'uploading' ? (
             <Progress value={file.progress} className="h-1.5 max-w-[120px] flex-1" />
           ) : (
             <ScanStatusBadge status={file.status} />
@@ -130,7 +130,7 @@ export function UploadProgress({ file, onRemove }: UploadProgressProps) {
       </div>
       <Button type="button" variant="ghost" size="icon-sm" className="shrink-0" onClick={onRemove}>
         <X className="size-3.5" />
-        <span className="sr-only">{tCommon("srOnly.remove")}</span>
+        <span className="sr-only">{tCommon('srOnly.remove')}</span>
       </Button>
     </div>
   );

@@ -1,8 +1,8 @@
-import { prisma } from "@contractor-ops/db";
-import type { CredentialBlob } from "../types/credentials.js";
-import type { ProviderHealthStatus } from "../types/health.js";
-import type { OAuthConfig } from "../types/provider.js";
-import { BaseAdapter } from "./base-adapter.js";
+import { prisma } from '@contractor-ops/db';
+import type { CredentialBlob } from '../types/credentials.js';
+import type { ProviderHealthStatus } from '../types/health.js';
+import type { OAuthConfig } from '../types/provider.js';
+import { BaseAdapter } from './base-adapter.js';
 
 // ---------------------------------------------------------------------------
 // Confluence OAuth 2.0 Configuration
@@ -19,12 +19,12 @@ import { BaseAdapter } from "./base-adapter.js";
  * - CONFLUENCE_ENCRYPTION_KEY — for credential encryption at rest
  */
 const CONFLUENCE_OAUTH_CONFIG: OAuthConfig = {
-  clientIdEnvVar: "CONFLUENCE_CLIENT_ID",
-  clientSecretEnvVar: "CONFLUENCE_CLIENT_SECRET",
-  authorizationUrl: "https://auth.atlassian.com/authorize",
-  tokenUrl: "https://auth.atlassian.com/oauth/token",
-  scopes: ["search:confluence", "read:confluence-content.summary", "offline_access"],
-  redirectPath: "/api/oauth/confluence/callback",
+  clientIdEnvVar: 'CONFLUENCE_CLIENT_ID',
+  clientSecretEnvVar: 'CONFLUENCE_CLIENT_SECRET',
+  authorizationUrl: 'https://auth.atlassian.com/authorize',
+  tokenUrl: 'https://auth.atlassian.com/oauth/token',
+  scopes: ['search:confluence', 'read:confluence-content.summary', 'offline_access'],
+  redirectPath: '/api/oauth/confluence/callback',
 };
 
 /**
@@ -33,8 +33,8 @@ const CONFLUENCE_OAUTH_CONFIG: OAuthConfig = {
  * - prompt: Forces consent screen to ensure refresh token is returned
  */
 export const CONFLUENCE_EXTRA_AUTH_PARAMS: Record<string, string> = {
-  audience: "api.atlassian.com",
-  prompt: "consent",
+  audience: 'api.atlassian.com',
+  prompt: 'consent',
 };
 
 // ---------------------------------------------------------------------------
@@ -42,8 +42,8 @@ export const CONFLUENCE_EXTRA_AUTH_PARAMS: Record<string, string> = {
 // ---------------------------------------------------------------------------
 
 export class ConfluenceAdapter extends BaseAdapter {
-  readonly slug = "confluence";
-  readonly displayName = "Confluence";
+  readonly slug = 'confluence';
+  readonly displayName = 'Confluence';
   readonly supportsOAuth = true;
   readonly supportsWebhooks = false;
 
@@ -61,17 +61,17 @@ export class ConfluenceAdapter extends BaseAdapter {
 
     if (!(clientId && clientSecret)) {
       throw new Error(
-        "CONFLUENCE_CLIENT_ID and CONFLUENCE_CLIENT_SECRET environment variables are required",
+        'CONFLUENCE_CLIENT_ID and CONFLUENCE_CLIENT_SECRET environment variables are required',
       );
     }
 
-    const response = await fetch("https://auth.atlassian.com/oauth/token", {
-      method: "POST",
+    const response = await fetch('https://auth.atlassian.com/oauth/token', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        grant_type: "authorization_code",
+        grant_type: 'authorization_code',
         client_id: clientId,
         client_secret: clientSecret,
         code,
@@ -107,21 +107,21 @@ export class ConfluenceAdapter extends BaseAdapter {
 
     if (!(clientId && clientSecret)) {
       throw new Error(
-        "CONFLUENCE_CLIENT_ID and CONFLUENCE_CLIENT_SECRET environment variables are required",
+        'CONFLUENCE_CLIENT_ID and CONFLUENCE_CLIENT_SECRET environment variables are required',
       );
     }
 
     if (!credentials.refreshToken) {
-      throw new Error("No refresh token available for Confluence");
+      throw new Error('No refresh token available for Confluence');
     }
 
-    const response = await fetch("https://auth.atlassian.com/oauth/token", {
-      method: "POST",
+    const response = await fetch('https://auth.atlassian.com/oauth/token', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        grant_type: "refresh_token",
+        grant_type: 'refresh_token',
         client_id: clientId,
         client_secret: clientSecret,
         refresh_token: credentials.refreshToken,
@@ -167,10 +167,10 @@ export class ConfluenceAdapter extends BaseAdapter {
   async discoverCloudId(
     accessToken: string,
   ): Promise<{ cloudId: string; siteName: string; siteUrl: string }> {
-    const response = await fetch("https://api.atlassian.com/oauth/token/accessible-resources", {
+    const response = await fetch('https://api.atlassian.com/oauth/token/accessible-resources', {
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        Accept: "application/json",
+        Accept: 'application/json',
       },
     });
 
@@ -188,7 +188,7 @@ export class ConfluenceAdapter extends BaseAdapter {
 
     if (resources.length === 0) {
       throw new Error(
-        "No accessible Confluence Cloud sites found. The authorized user may not have access to any Confluence instances.",
+        'No accessible Confluence Cloud sites found. The authorized user may not have access to any Confluence instances.',
       );
     }
 
@@ -231,7 +231,7 @@ export class ConfluenceAdapter extends BaseAdapter {
     const response = await fetch(searchUrl, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        Accept: "application/json",
+        Accept: 'application/json',
       },
     });
 
@@ -257,11 +257,11 @@ export class ConfluenceAdapter extends BaseAdapter {
 
     const baseUrl = data._links?.base ?? `https://${cloudId}.atlassian.net/wiki`;
 
-    return data.results.map((r) => {
+    return data.results.map(r => {
       const spaceKey =
-        r.resultGlobalContainer?.displayUrl?.split("/spaces/")?.[1]?.split("/")?.[0] ?? "";
-      const spaceName = r.resultGlobalContainer?.title ?? "";
-      const webui = r.content._links?.webui ?? "";
+        r.resultGlobalContainer?.displayUrl?.split('/spaces/')?.[1]?.split('/')?.[0] ?? '';
+      const spaceName = r.resultGlobalContainer?.title ?? '';
+      const webui = r.content._links?.webui ?? '';
 
       return {
         id: r.content.id,
@@ -295,8 +295,8 @@ export class ConfluenceAdapter extends BaseAdapter {
 
     if (!connection) {
       return {
-        status: "DISCONNECTED",
-        provider: "confluence",
+        status: 'DISCONNECTED',
+        provider: 'confluence',
         recentSyncs: [],
         recentWebhooks: [],
         errorCountLast24h: 0,
@@ -305,7 +305,7 @@ export class ConfluenceAdapter extends BaseAdapter {
 
     const recentSyncs = await prisma.integrationSyncLog.findMany({
       where: { integrationConnectionId: connectionId },
-      orderBy: { startedAt: "desc" },
+      orderBy: { startedAt: 'desc' },
       take: 5,
       select: {
         id: true,
@@ -320,27 +320,27 @@ export class ConfluenceAdapter extends BaseAdapter {
     const errorCountLast24h = await prisma.integrationSyncLog.count({
       where: {
         integrationConnectionId: connectionId,
-        status: "FAILED",
+        status: 'FAILED',
         startedAt: { gte: oneDayAgo },
       },
     });
 
-    let status: ProviderHealthStatus["status"];
-    if (connection.status !== "CONNECTED") {
-      status = "DISCONNECTED";
+    let status: ProviderHealthStatus['status'];
+    if (connection.status !== 'CONNECTED') {
+      status = 'DISCONNECTED';
     } else if (connection.lastErrorAt && !connection.lastSuccessAt) {
-      status = "ERROR";
+      status = 'ERROR';
     } else if (connection.tokenExpiresAt && connection.tokenExpiresAt < new Date()) {
-      status = "REAUTH_REQUIRED";
-    } else if (recentSyncs[0]?.status === "FAILED") {
-      status = "ERROR";
+      status = 'REAUTH_REQUIRED';
+    } else if (recentSyncs[0]?.status === 'FAILED') {
+      status = 'ERROR';
     } else {
-      status = "CONNECTED";
+      status = 'CONNECTED';
     }
 
     return {
       status,
-      provider: "confluence",
+      provider: 'confluence',
       displayName: connection.displayName,
       connectedAt: connection.connectedAt,
       lastSyncAt: connection.lastSyncAt,
@@ -348,7 +348,7 @@ export class ConfluenceAdapter extends BaseAdapter {
       lastErrorAt: connection.lastErrorAt,
       lastErrorMessage: connection.lastErrorMessage,
       tokenExpiresAt: connection.tokenExpiresAt,
-      recentSyncs: recentSyncs.map((s) => ({
+      recentSyncs: recentSyncs.map(s => ({
         id: s.id,
         syncType: s.syncType,
         status: s.status,

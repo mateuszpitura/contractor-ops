@@ -12,33 +12,33 @@
  */
 export function buildRejectModalCard(invoiceId: string, flowId: string): Record<string, unknown> {
   return {
-    type: "AdaptiveCard",
-    $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
-    version: "1.4",
+    type: 'AdaptiveCard',
+    $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
+    version: '1.4',
     body: [
       {
-        type: "TextBlock",
-        text: "Reject Invoice",
-        weight: "Bolder",
-        size: "Medium",
+        type: 'TextBlock',
+        text: 'Reject Invoice',
+        weight: 'Bolder',
+        size: 'Medium',
         wrap: true,
       },
       {
-        type: "Input.Text",
-        id: "comment",
-        label: "Reason for rejection (required)",
+        type: 'Input.Text',
+        id: 'comment',
+        label: 'Reason for rejection (required)',
         isRequired: true,
         isMultiline: true,
-        placeholder: "Explain why this invoice is being rejected...",
+        placeholder: 'Explain why this invoice is being rejected...',
       },
     ],
     actions: [
       {
-        type: "Action.Submit",
-        title: "Reject Invoice",
-        style: "destructive",
+        type: 'Action.Submit',
+        title: 'Reject Invoice',
+        style: 'destructive',
         data: {
-          action: "submit_rejection",
+          action: 'submit_rejection',
           invoiceId,
           flowId,
         },

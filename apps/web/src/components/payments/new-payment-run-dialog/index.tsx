@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { useQueryClient } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-import { useCallback, useState } from "react";
+import { useQueryClient } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+import { useCallback, useState } from 'react';
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { StepConfirmation } from "./step-confirmation";
-import { StepReview } from "./step-review";
-import { StepSelect } from "./step-select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { StepConfirmation } from './step-confirmation';
+import { StepReview } from './step-review';
+import { StepSelect } from './step-select';
 
 // ---------------------------------------------------------------------------
 // Step indicator
@@ -16,11 +16,11 @@ import { StepSelect } from "./step-select";
 function StepIndicator({ currentStep }: { currentStep: number }) {
   return (
     <div className="flex items-center justify-center gap-4 mt-2">
-      {[1, 2, 3].map((step) => (
+      {[1, 2, 3].map(step => (
         <div
           key={step}
           className={`h-2 w-2 rounded-full transition-colors ${
-            step <= currentStep ? "bg-primary" : "bg-muted"
+            step <= currentStep ? 'bg-primary' : 'bg-muted'
           }`}
         />
       ))}
@@ -43,7 +43,7 @@ interface NewPaymentRunDialogProps {
 // ---------------------------------------------------------------------------
 
 export function NewPaymentRunDialog({ open, onOpenChange, onViewRun }: NewPaymentRunDialogProps) {
-  const t = useTranslations("Payments");
+  const t = useTranslations('Payments');
   const queryClient = useQueryClient();
 
   // Step state
@@ -87,7 +87,7 @@ export function NewPaymentRunDialog({ open, onOpenChange, onViewRun }: NewPaymen
       setStep(3);
       // Invalidate payment queries to refresh the list
       void queryClient.invalidateQueries({
-        queryKey: [["payment"]],
+        queryKey: [['payment']],
       });
     },
     [queryClient],
@@ -100,7 +100,7 @@ export function NewPaymentRunDialog({ open, onOpenChange, onViewRun }: NewPaymen
         // Prevent close during locking (Step 2 handles this internally)
       >
         <DialogHeader>
-          <DialogTitle>{t("dialog.title")}</DialogTitle>
+          <DialogTitle>{t('dialog.title')}</DialogTitle>
           <StepIndicator currentStep={step} />
         </DialogHeader>
 

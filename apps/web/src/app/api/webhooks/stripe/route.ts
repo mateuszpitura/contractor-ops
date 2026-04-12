@@ -1,13 +1,14 @@
-import { routeStripeEvent } from "@contractor-ops/api/services/billing-webhook";
-import { stripe } from "@contractor-ops/api/services/stripe-client";
-import { prisma } from "@contractor-ops/db";
-import { createWebhookLogger } from "@contractor-ops/logger";
-import { metrics } from "@contractor-ops/logger/metrics";
-import * as Sentry from "@sentry/nextjs";
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import { routeStripeEvent } from '@contractor-ops/api/services/billing-webhook';
+import { stripe } from '@contractor-ops/api/services/stripe-client';
+import { prisma } from '@contractor-ops/db';
+import { createWebhookLogger } from '@contractor-ops/logger';
+import { metrics } from '@contractor-ops/logger/metrics';
+import * as Sentry from '@sentry/nextjs';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import type Stripe from 'stripe';
 
-const log = createWebhookLogger("stripe");
+const log = createWebhookLogger('stripe');
 
 // ---------------------------------------------------------------------------
 // POST /api/webhooks/stripe
@@ -28,22 +29,22 @@ export async function POST(request: NextRequest) {
   try {
     rawBody = await request.text();
   } catch {
-    return NextResponse.json({ error: "Invalid body" }, { status: 400 });
+    return NextResponse.json({ error: 'Invalid body' }, { status: 400 });
   }
 
-  const signature = request.headers.get("stripe-signature");
+  const signature = request.headers.get('stripe-signature');
 
   if (!signature) {
-    return NextResponse.json({ error: "Missing stripe-signature header" }, { status: 400 });
+    return NextResponse.json({ error: 'Missing stripe-signature header' }, { status: 400 });
   }
 
   // Step 1: Verify webhook signature
-  let event;
+  let event: Stripe.Event;
   try {
     event = stripe.webhooks.constructEvent(rawBody, signature, process.env.STRIPE_WEBHOOK_SECRET!);
   } catch (error) {
-    log.warn({ err: error }, "signature verification failed");
-    return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
+    log.warn({ err: error }, 'signature verification failed');
+    return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
   }
 
   try {
@@ -51,7 +52,7 @@ export async function POST(request: NextRequest) {
     // This prevents the race condition where two concurrent webhook deliveries
     // both see processedAt=null and both proceed to process the event.
     await prisma.$transaction(
-      async (tx) => {
+      async tx => {
         // Upsert the event record and check if already processed
         const existing = await tx.stripeEvent.findUnique({
           where: { stripeEventId: event.id },
@@ -84,29 +85,29 @@ export async function POST(request: NextRequest) {
         });
       },
       {
-        isolationLevel: "Serializable",
+        isolationLevel: 'Serializable',
         timeout: 30_000,
       },
     );
 
-    log.info({ eventId: event.id, eventType: event.type }, "event processed");
-    metrics.increment("webhook.processed", 1, {
-      provider: "stripe",
+    log.info({ eventId: event.id, eventType: event.type }, 'event processed');
+    metrics.increment('webhook.processed', 1, {
+      provider: 'stripe',
       eventType: event.type,
     });
 
     return NextResponse.json({ received: true });
   } catch (error) {
-    log.error({ err: error, eventId: event.id, eventType: event.type }, "processing failed");
+    log.error({ err: error, eventId: event.id, eventType: event.type }, 'processing failed');
     Sentry.captureException(error, {
-      tags: { "webhook.provider": "stripe", "webhook.event_type": event.type },
+      tags: { 'webhook.provider': 'stripe', 'webhook.event_type': event.type },
       extra: { eventId: event.id },
     });
-    metrics.increment("webhook.failed", 1, {
-      provider: "stripe",
+    metrics.increment('webhook.failed', 1, {
+      provider: 'stripe',
       eventType: event.type,
     });
     // Return 500 so Stripe retries the webhook
-    return NextResponse.json({ error: "Webhook processing failed" }, { status: 500 });
+    return NextResponse.json({ error: 'Webhook processing failed' }, { status: 500 });
   }
 }

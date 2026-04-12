@@ -3,7 +3,7 @@
 // ---------------------------------------------------------------------------
 
 /** Deployment environment for government API endpoints. */
-export type GovApiEnvironment = "sandbox" | "production";
+export type GovApiEnvironment = 'sandbox' | 'production';
 
 /** Configuration for HTTP retry behavior. */
 export interface GovApiRetryConfig {

@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { Check, X } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import { Check, X } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -20,7 +20,7 @@ interface PlanTier {
   description: string;
 }
 
-export type PlanCtaMode = "choose" | "upgrade" | "change" | "current";
+export type PlanCtaMode = 'choose' | 'upgrade' | 'change' | 'current';
 
 interface PlanCardProps {
   tier: PlanTier;
@@ -39,11 +39,11 @@ function formatPLN(minor: number): string {
   return String(minor / 100);
 }
 
-const CTA_CONFIG: Record<PlanCtaMode, { label: string; variant: "default" | "outline" }> = {
-  choose: { label: "Choose a plan", variant: "default" },
-  upgrade: { label: "Upgrade plan", variant: "default" },
-  change: { label: "Change plan", variant: "outline" },
-  current: { label: "Current plan", variant: "outline" },
+const CTA_CONFIG: Record<PlanCtaMode, { label: string; variant: 'default' | 'outline' }> = {
+  choose: { label: 'Choose a plan', variant: 'default' },
+  upgrade: { label: 'Upgrade plan', variant: 'default' },
+  change: { label: 'Change plan', variant: 'outline' },
+  current: { label: 'Current plan', variant: 'outline' },
 };
 
 // ---------------------------------------------------------------------------
@@ -58,7 +58,7 @@ export function PlanCard({
   disabled,
   compact,
 }: PlanCardProps) {
-  const isCurrentPlan = ctaMode === "current";
+  const isCurrentPlan = ctaMode === 'current';
   const cta = CTA_CONFIG[ctaMode];
 
   return (
@@ -67,18 +67,17 @@ export function PlanCard({
       aria-checked={isCurrentPlan}
       tabIndex={0}
       className={cn(
-        "flex flex-col transition-shadow",
-        isCurrentPlan && "ring-2 ring-primary",
-        isRecommended && !isCurrentPlan && "ring-2 ring-primary/50",
-        compact && "py-3",
+        'flex flex-col transition-shadow',
+        isCurrentPlan && 'ring-2 ring-primary',
+        isRecommended && !isCurrentPlan && 'ring-2 ring-primary/50',
+        compact && 'py-3',
       )}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
+      onKeyDown={e => {
+        if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           if (!(isCurrentPlan || disabled)) onSelect();
         }
-      }}
-    >
+      }}>
       <CardHeader>
         <div className="flex items-center gap-2">
           <span className="text-sm font-semibold">{tier.name}</span>
@@ -107,14 +106,14 @@ export function PlanCard({
 
         {/* Feature list */}
         <ul className="flex flex-col gap-2">
-          {tier.features.map((feature) => (
+          {tier.features.map(feature => (
             <li key={feature} className="flex items-start gap-2 text-sm">
               <Check size={16} className="mt-0.5 shrink-0 text-primary" aria-hidden="true" />
               {feature}
             </li>
           ))}
           {!compact &&
-            tier.excludedFeatures.map((feature) => (
+            tier.excludedFeatures.map(feature => (
               <li key={feature} className="flex items-start gap-2 text-sm text-muted-foreground">
                 <X size={16} className="mt-0.5 shrink-0 text-muted-foreground" aria-hidden="true" />
                 {feature}
@@ -128,8 +127,7 @@ export function PlanCard({
           variant={cta.variant}
           className="w-full"
           disabled={isCurrentPlan || disabled}
-          onClick={onSelect}
-        >
+          onClick={onSelect}>
           {cta.label}
         </Button>
       </CardFooter>

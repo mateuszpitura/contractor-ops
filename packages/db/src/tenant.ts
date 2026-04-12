@@ -1,5 +1,5 @@
-import { AsyncLocalStorage } from "node:async_hooks";
-import type { Prisma } from "../generated/prisma/client/index.js";
+import { AsyncLocalStorage } from 'node:async_hooks';
+import type { Prisma } from '../generated/prisma/client/index.js';
 
 interface TenantContext {
   organizationId: string;
@@ -9,7 +9,7 @@ interface TenantContext {
 export const tenantStore = new AsyncLocalStorage<TenantContext>();
 
 export type PrismaExtensible = {
-  $extends: Prisma.DefaultPrismaClient["$extends"];
+  $extends: Prisma.DefaultPrismaClient['$extends'];
 };
 
 type QueryHookParams = {
@@ -24,17 +24,17 @@ type QueryHookParams = {
  * These models do not have an organizationId field.
  */
 const globalModels = new Set([
-  "User",
-  "Session",
-  "Account",
-  "Verification",
-  "PortalSession",
-  "PortalMagicToken",
+  'User',
+  'Session',
+  'Account',
+  'Verification',
+  'PortalSession',
+  'PortalMagicToken',
   // Better Auth organization models — have their own organizationId
   // but must NOT be auto-scoped (queried cross-org in layout, auth flows)
-  "Organization",
-  "Member",
-  "Invitation",
+  'Organization',
+  'Member',
+  'Invitation',
 ]);
 
 /**
@@ -52,7 +52,7 @@ export function withTenantScope<T extends PrismaExtensible>(prisma: T) {
 
         if (!ctx) {
           throw new Error(
-            "Tenant context not initialized. Wrap your code in tenantStore.run({ organizationId }, callback).",
+            'Tenant context not initialized. Wrap your code in tenantStore.run({ organizationId }, callback).',
           );
         }
 
@@ -61,7 +61,7 @@ export function withTenantScope<T extends PrismaExtensible>(prisma: T) {
           return await query(args);
         }
 
-        if (args == null || typeof args !== "object") {
+        if (args == null || typeof args !== 'object') {
           return await query(args);
         }
 
@@ -70,14 +70,14 @@ export function withTenantScope<T extends PrismaExtensible>(prisma: T) {
         // Read operations — inject organizationId into where clause
         if (
           [
-            "findMany",
-            "findFirst",
-            "findUnique",
-            "findFirstOrThrow",
-            "findUniqueOrThrow",
-            "count",
-            "aggregate",
-            "groupBy",
+            'findMany',
+            'findFirst',
+            'findUnique',
+            'findFirstOrThrow',
+            'findUniqueOrThrow',
+            'count',
+            'aggregate',
+            'groupBy',
           ].includes(operation)
         ) {
           const where = (argsObj.where ?? {}) as Record<string, unknown>;
@@ -85,15 +85,15 @@ export function withTenantScope<T extends PrismaExtensible>(prisma: T) {
         }
 
         // Create operations — inject organizationId into data
-        if (operation === "create") {
+        if (operation === 'create') {
           const data = (argsObj.data ?? {}) as Record<string, unknown>;
           argsObj.data = { ...data, organizationId: ctx.organizationId };
         }
 
-        if (operation === "createMany" || operation === "createManyAndReturn") {
+        if (operation === 'createMany' || operation === 'createManyAndReturn') {
           const data = argsObj.data;
           if (Array.isArray(data)) {
-            argsObj.data = data.map((item) => ({
+            argsObj.data = data.map(item => ({
               ...(item as Record<string, unknown>),
               organizationId: ctx.organizationId,
             }));
@@ -104,13 +104,13 @@ export function withTenantScope<T extends PrismaExtensible>(prisma: T) {
         }
 
         // Update/delete operations — inject organizationId into where clause
-        if (["update", "updateMany", "delete", "deleteMany"].includes(operation)) {
+        if (['update', 'updateMany', 'delete', 'deleteMany'].includes(operation)) {
           const where = (argsObj.where ?? {}) as Record<string, unknown>;
           argsObj.where = { ...where, organizationId: ctx.organizationId };
         }
 
         // Upsert — inject organizationId into where, create, and update
-        if (operation === "upsert") {
+        if (operation === 'upsert') {
           const where = (argsObj.where ?? {}) as Record<string, unknown>;
           argsObj.where = { ...where, organizationId: ctx.organizationId };
 

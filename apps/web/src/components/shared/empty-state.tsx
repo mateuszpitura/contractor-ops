@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import type { LucideIcon } from "lucide-react";
+import type { LucideIcon } from 'lucide-react';
 
-import { Button } from "@/components/ui/button";
-import { Link } from "@/i18n/navigation";
+import { Button } from '@/components/ui/button';
+import { Link } from '@/i18n/navigation';
 
 type EmptyStateAction = {
   label: string;
@@ -25,10 +25,10 @@ type EmptyStateProps = {
 
 function ActionButton({
   action,
-  variant = "default",
+  variant = 'default',
 }: {
   action: EmptyStateAction;
-  variant?: "default" | "outline";
+  variant?: 'default' | 'outline';
 }) {
   if (action.href) {
     return (

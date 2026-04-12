@@ -1,11 +1,11 @@
-import { auth } from "@contractor-ops/auth";
+import { auth } from '@contractor-ops/auth';
 import {
   createOrganizationSchema,
   updateOrganizationSettingsSchema,
-} from "@contractor-ops/validators";
-import { publicProcedure, router } from "../init.js";
-import { adminProcedure } from "../middleware/rbac.js";
-import { tenantProcedure } from "../middleware/tenant.js";
+} from '@contractor-ops/validators';
+import { publicProcedure, router } from '../init.js';
+import { adminProcedure } from '../middleware/rbac.js';
+import { tenantProcedure } from '../middleware/tenant.js';
 
 export const organizationRouter = router({
   /**
@@ -18,7 +18,7 @@ export const organizationRouter = router({
       headers: ctx.headers,
       body: {
         name: input.name,
-        slug: input.name.toLowerCase().replace(/\s+/g, "-"),
+        slug: input.name.toLowerCase().replace(/\s+/g, '-'),
         metadata: {
           countryCode: input.countryCode,
           defaultCurrency: input.defaultCurrency,

@@ -1,7 +1,7 @@
-import { Loader2 } from "lucide-react";
+import { Loader2 } from 'lucide-react';
 
-import { Progress } from "@/components/ui/progress";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface OcrProcessingOverlayProps {
   progress?: number;

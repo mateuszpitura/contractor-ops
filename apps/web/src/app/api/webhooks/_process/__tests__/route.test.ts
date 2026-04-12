@@ -1,7 +1,7 @@
 /** @vitest-environment node */
 
-import { NextRequest } from "next/server";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { NextRequest } from 'next/server';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const { mockGetAdapter, mockFindUnique, mockUpdate } = vi.hoisted(() => ({
   mockGetAdapter: vi.fn(),
@@ -9,19 +9,19 @@ const { mockGetAdapter, mockFindUnique, mockUpdate } = vi.hoisted(() => ({
   mockUpdate: vi.fn(),
 }));
 
-vi.mock("@upstash/qstash/nextjs", () => ({
+vi.mock('@upstash/qstash/nextjs', () => ({
   verifySignatureAppRouter: (fn: (req: NextRequest) => Promise<Response>) => fn,
 }));
 
-vi.mock("@contractor-ops/integrations/adapters/register-all", () => ({
+vi.mock('@contractor-ops/integrations/adapters/register-all', () => ({
   registerAllAdapters: vi.fn(),
 }));
 
-vi.mock("@contractor-ops/integrations/registry", () => ({
+vi.mock('@contractor-ops/integrations/registry', () => ({
   getAdapter: (...args: unknown[]) => mockGetAdapter(...args),
 }));
 
-vi.mock("@contractor-ops/db", () => ({
+vi.mock('@contractor-ops/db', () => ({
   prisma: {
     webhookDelivery: {
       findUnique: (...args: unknown[]) => mockFindUnique(...args),
@@ -35,11 +35,11 @@ const { mockHandleSigningCompletion, mockProcessJiraWebhook } = vi.hoisted(() =>
   mockProcessJiraWebhook: vi.fn(async () => undefined),
 }));
 
-vi.mock("@contractor-ops/api/services/esign-orchestrator", () => ({
+vi.mock('@contractor-ops/api/services/esign-orchestrator', () => ({
   handleSigningCompletion: mockHandleSigningCompletion,
 }));
 
-vi.mock("@contractor-ops/api/services/jira-webhook-handler", () => ({
+vi.mock('@contractor-ops/api/services/jira-webhook-handler', () => ({
   processJiraWebhook: mockProcessJiraWebhook,
 }));
 
@@ -47,21 +47,21 @@ const { mockProcessLinearWebhook } = vi.hoisted(() => ({
   mockProcessLinearWebhook: vi.fn(async () => undefined),
 }));
 
-vi.mock("@contractor-ops/api/services/linear-webhook-handler", () => ({
+vi.mock('@contractor-ops/api/services/linear-webhook-handler', () => ({
   processLinearWebhook: mockProcessLinearWebhook,
 }));
 
-import { POST } from "../route";
+import { POST } from '../route';
 
 function postJson(body: unknown) {
-  return new NextRequest("http://localhost/api/webhooks/_process", {
-    method: "POST",
+  return new NextRequest('http://localhost/api/webhooks/_process', {
+    method: 'POST',
     body: JSON.stringify(body),
-    headers: { "content-type": "application/json" },
+    headers: { 'content-type': 'application/json' },
   });
 }
 
-describe("POST /api/webhooks/_process", () => {
+describe('POST /api/webhooks/_process', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetAdapter.mockReturnValue(null);
@@ -69,189 +69,189 @@ describe("POST /api/webhooks/_process", () => {
     mockUpdate.mockResolvedValue({});
   });
 
-  it("returns 400 when deliveryId or provider is missing", async () => {
-    const res = await POST(postJson({ deliveryId: "d1" }));
+  it('returns 400 when deliveryId or provider is missing', async () => {
+    const res = await POST(postJson({ deliveryId: 'd1' }));
     expect(res.status).toBe(400);
     const json = (await res.json()) as { error: string };
-    expect(json.error).toContain("Missing");
+    expect(json.error).toContain('Missing');
   });
 
-  it("returns 404 when adapter has no handleWebhook", async () => {
+  it('returns 404 when adapter has no handleWebhook', async () => {
     mockGetAdapter.mockReturnValue({ handleWebhook: undefined });
 
-    const res = await POST(postJson({ deliveryId: "d1", provider: "stripe" }));
+    const res = await POST(postJson({ deliveryId: 'd1', provider: 'stripe' }));
     expect(res.status).toBe(404);
     expect(mockFindUnique).not.toHaveBeenCalled();
   });
 
-  it("returns 404 when delivery record does not exist", async () => {
+  it('returns 404 when delivery record does not exist', async () => {
     mockGetAdapter.mockReturnValue({
       handleWebhook: vi.fn(async () => undefined),
     });
     mockFindUnique.mockResolvedValue(null);
 
-    const res = await POST(postJson({ deliveryId: "missing", provider: "stripe" }));
+    const res = await POST(postJson({ deliveryId: 'missing', provider: 'stripe' }));
     expect(res.status).toBe(404);
   });
 
-  it("runs handleWebhook and marks delivery PROCESSED", async () => {
+  it('runs handleWebhook and marks delivery PROCESSED', async () => {
     const handleWebhook = vi.fn(async () => ({ ok: true }));
 
     mockGetAdapter.mockReturnValue({ handleWebhook });
     mockFindUnique.mockResolvedValue({
-      id: "del-1",
-      organizationId: "org-1",
-      integrationConnectionId: "conn-1",
-      payloadJson: { type: "test" },
+      id: 'del-1',
+      organizationId: 'org-1',
+      integrationConnectionId: 'conn-1',
+      payloadJson: { type: 'test' },
     });
 
-    const res = await POST(postJson({ deliveryId: "del-1", provider: "stripe" }));
+    const res = await POST(postJson({ deliveryId: 'del-1', provider: 'stripe' }));
 
     expect(res.status).toBe(200);
     const json = (await res.json()) as { processed: boolean };
     expect(json.processed).toBe(true);
 
-    expect(handleWebhook).toHaveBeenCalledWith({ type: "test" }, "org-1", "conn-1");
+    expect(handleWebhook).toHaveBeenCalledWith({ type: 'test' }, 'org-1', 'conn-1');
     expect(mockUpdate).toHaveBeenCalledWith({
-      where: { id: "del-1" },
+      where: { id: 'del-1' },
       data: expect.objectContaining({
-        deliveryStatus: "PROCESSED",
+        deliveryStatus: 'PROCESSED',
       }),
     });
   });
 
-  it("marks delivery FAILED when handleWebhook throws", async () => {
+  it('marks delivery FAILED when handleWebhook throws', async () => {
     mockGetAdapter.mockReturnValue({
       handleWebhook: vi.fn(async () => {
-        throw new Error("boom");
+        throw new Error('boom');
       }),
     });
     mockFindUnique.mockResolvedValue({
-      id: "del-2",
-      organizationId: "org-1",
+      id: 'del-2',
+      organizationId: 'org-1',
       integrationConnectionId: null,
       payloadJson: {},
     });
 
-    const res = await POST(postJson({ deliveryId: "del-2", provider: "stripe" }));
+    const res = await POST(postJson({ deliveryId: 'del-2', provider: 'stripe' }));
 
     expect(res.status).toBe(500);
     expect(mockUpdate).toHaveBeenCalledWith({
-      where: { id: "del-2" },
+      where: { id: 'del-2' },
       data: expect.objectContaining({
-        deliveryStatus: "FAILED",
-        errorMessage: "boom",
+        deliveryStatus: 'FAILED',
+        errorMessage: 'boom',
       }),
     });
   });
 
-  it("dispatches to processJiraWebhook for jira provider", async () => {
+  it('dispatches to processJiraWebhook for jira provider', async () => {
     const handleWebhook = vi.fn(async () => ({ ok: true }));
 
     mockGetAdapter.mockReturnValue({ handleWebhook });
     mockFindUnique.mockResolvedValue({
-      id: "del-jira-1",
-      organizationId: "org-jira",
-      integrationConnectionId: "conn-jira",
-      payloadJson: { issue: { key: "PROJ-1" } },
+      id: 'del-jira-1',
+      organizationId: 'org-jira',
+      integrationConnectionId: 'conn-jira',
+      payloadJson: { issue: { key: 'PROJ-1' } },
     });
 
-    const res = await POST(postJson({ deliveryId: "del-jira-1", provider: "jira" }));
+    const res = await POST(postJson({ deliveryId: 'del-jira-1', provider: 'jira' }));
 
     expect(res.status).toBe(200);
     expect(mockProcessJiraWebhook).toHaveBeenCalledWith(
       expect.anything(),
-      "org-jira",
-      "conn-jira",
-      { issue: { key: "PROJ-1" } },
+      'org-jira',
+      'conn-jira',
+      { issue: { key: 'PROJ-1' } },
     );
     expect(mockUpdate).toHaveBeenCalledWith({
-      where: { id: "del-jira-1" },
-      data: expect.objectContaining({ deliveryStatus: "PROCESSED" }),
+      where: { id: 'del-jira-1' },
+      data: expect.objectContaining({ deliveryStatus: 'PROCESSED' }),
     });
   });
 
-  it("dispatches to handleSigningCompletion for docusign provider when completed", async () => {
+  it('dispatches to handleSigningCompletion for docusign provider when completed', async () => {
     const handleWebhook = vi.fn(async () => ({
-      envelopeId: "env-123",
+      envelopeId: 'env-123',
       completed: true,
     }));
 
     mockGetAdapter.mockReturnValue({ handleWebhook });
     mockFindUnique.mockResolvedValue({
-      id: "del-ds-1",
-      organizationId: "org-ds",
-      integrationConnectionId: "conn-ds",
-      payloadJson: { event: "envelope-completed" },
+      id: 'del-ds-1',
+      organizationId: 'org-ds',
+      integrationConnectionId: 'conn-ds',
+      payloadJson: { event: 'envelope-completed' },
     });
 
-    const res = await POST(postJson({ deliveryId: "del-ds-1", provider: "docusign" }));
+    const res = await POST(postJson({ deliveryId: 'del-ds-1', provider: 'docusign' }));
 
     expect(res.status).toBe(200);
-    expect(mockHandleSigningCompletion).toHaveBeenCalledWith("env-123", "conn-ds", "DOCUSIGN");
+    expect(mockHandleSigningCompletion).toHaveBeenCalledWith('env-123', 'conn-ds', 'DOCUSIGN');
   });
 
-  it("dispatches to handleSigningCompletion for autenti provider when completed", async () => {
+  it('dispatches to handleSigningCompletion for autenti provider when completed', async () => {
     const handleWebhook = vi.fn(async () => ({
-      envelopeId: "env-456",
+      envelopeId: 'env-456',
       completed: true,
     }));
 
     mockGetAdapter.mockReturnValue({ handleWebhook });
     mockFindUnique.mockResolvedValue({
-      id: "del-au-1",
-      organizationId: "org-au",
-      integrationConnectionId: "conn-au",
-      payloadJson: { status: "signed" },
+      id: 'del-au-1',
+      organizationId: 'org-au',
+      integrationConnectionId: 'conn-au',
+      payloadJson: { status: 'signed' },
     });
 
-    const res = await POST(postJson({ deliveryId: "del-au-1", provider: "autenti" }));
+    const res = await POST(postJson({ deliveryId: 'del-au-1', provider: 'autenti' }));
 
     expect(res.status).toBe(200);
-    expect(mockHandleSigningCompletion).toHaveBeenCalledWith("env-456", "conn-au", "AUTENTI");
+    expect(mockHandleSigningCompletion).toHaveBeenCalledWith('env-456', 'conn-au', 'AUTENTI');
   });
 
-  it("dispatches to processLinearWebhook for linear provider", async () => {
+  it('dispatches to processLinearWebhook for linear provider', async () => {
     const handleWebhook = vi.fn(async () => ({ ok: true }));
 
     mockGetAdapter.mockReturnValue({ handleWebhook });
     mockFindUnique.mockResolvedValue({
-      id: "del-linear-1",
-      organizationId: "org-linear",
-      integrationConnectionId: "conn-linear",
-      payloadJson: { action: "update", type: "Issue" },
+      id: 'del-linear-1',
+      organizationId: 'org-linear',
+      integrationConnectionId: 'conn-linear',
+      payloadJson: { action: 'update', type: 'Issue' },
     });
 
-    const res = await POST(postJson({ deliveryId: "del-linear-1", provider: "linear" }));
+    const res = await POST(postJson({ deliveryId: 'del-linear-1', provider: 'linear' }));
 
     expect(res.status).toBe(200);
     expect(mockProcessLinearWebhook).toHaveBeenCalledWith(
       expect.anything(),
-      "org-linear",
-      "conn-linear",
-      { action: "update", type: "Issue" },
+      'org-linear',
+      'conn-linear',
+      { action: 'update', type: 'Issue' },
     );
     expect(mockUpdate).toHaveBeenCalledWith({
-      where: { id: "del-linear-1" },
-      data: expect.objectContaining({ deliveryStatus: "PROCESSED" }),
+      where: { id: 'del-linear-1' },
+      data: expect.objectContaining({ deliveryStatus: 'PROCESSED' }),
     });
   });
 
-  it("does not call handleSigningCompletion for e-sign provider when not completed", async () => {
+  it('does not call handleSigningCompletion for e-sign provider when not completed', async () => {
     const handleWebhook = vi.fn(async () => ({
-      envelopeId: "env-789",
+      envelopeId: 'env-789',
       completed: false,
     }));
 
     mockGetAdapter.mockReturnValue({ handleWebhook });
     mockFindUnique.mockResolvedValue({
-      id: "del-ds-2",
-      organizationId: "org-ds",
-      integrationConnectionId: "conn-ds",
-      payloadJson: { event: "envelope-sent" },
+      id: 'del-ds-2',
+      organizationId: 'org-ds',
+      integrationConnectionId: 'conn-ds',
+      payloadJson: { event: 'envelope-sent' },
     });
 
-    const res = await POST(postJson({ deliveryId: "del-ds-2", provider: "docusign" }));
+    const res = await POST(postJson({ deliveryId: 'del-ds-2', provider: 'docusign' }));
 
     expect(res.status).toBe(200);
     expect(mockHandleSigningCompletion).not.toHaveBeenCalled();

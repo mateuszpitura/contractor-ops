@@ -2,11 +2,11 @@
  * Slack client — WebClient factory, user mapping, DMs, workspace sync.
  */
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const ORG_ID = "org-slack-001";
-const USER_ID = "user-slack-001";
-const CONN_ID = "conn-slack-001";
+const ORG_ID = 'org-slack-001';
+const USER_ID = 'user-slack-001';
+const CONN_ID = 'conn-slack-001';
 
 const { mockPostMessage, mockUpdate, mockUsersList, mockPrisma, mockGetCredentials } = vi.hoisted(
   () => {
@@ -30,14 +30,14 @@ const { mockPostMessage, mockUpdate, mockUsersList, mockPrisma, mockGetCredentia
     };
 
     const mockGetCredentials = vi.fn(async () => ({
-      accessToken: "xoxb-mock-token",
+      accessToken: 'xoxb-mock-token',
     }));
 
     return { mockPostMessage, mockUpdate, mockUsersList, mockPrisma, mockGetCredentials };
   },
 );
 
-vi.mock("@slack/web-api", () => ({
+vi.mock('@slack/web-api', () => ({
   WebClient: class WebClient {
     chat = {
       postMessage: (...args: unknown[]) => mockPostMessage(...args),
@@ -49,11 +49,11 @@ vi.mock("@slack/web-api", () => ({
   },
 }));
 
-vi.mock("@contractor-ops/db", () => ({
+vi.mock('@contractor-ops/db', () => ({
   prisma: mockPrisma,
 }));
 
-vi.mock("@contractor-ops/integrations/services/credential-service", () => ({
+vi.mock('@contractor-ops/integrations/services/credential-service', () => ({
   getCredentials: mockGetCredentials,
 }));
 
@@ -62,9 +62,9 @@ import {
   getSlackUserIdForUser,
   sendReminderDM,
   syncWorkspaceUsers,
-} from "../slack-client.js";
+} from '../slack-client.js';
 
-describe("slack-client", () => {
+describe('slack-client', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockPrisma.integrationConnection.findFirst.mockReset();
@@ -73,19 +73,19 @@ describe("slack-client", () => {
     mockPrisma.user.findFirst.mockReset();
     mockPrisma.integrationConnection.findFirst.mockResolvedValue(null);
     mockUsersList.mockResolvedValue({ members: [] });
-    mockGetCredentials.mockResolvedValue({ accessToken: "xoxb-mock-token" });
+    mockGetCredentials.mockResolvedValue({ accessToken: 'xoxb-mock-token' });
   });
 
-  it("getSlackClient returns null when no connected integration", async () => {
+  it('getSlackClient returns null when no connected integration', async () => {
     const client = await getSlackClient(ORG_ID);
     expect(client).toBeNull();
   });
 
-  it("getSlackClient returns WebClient when Slack is connected", async () => {
+  it('getSlackClient returns WebClient when Slack is connected', async () => {
     mockPrisma.integrationConnection.findFirst.mockResolvedValueOnce({
       id: CONN_ID,
-      credentialsRef: "org-slack-001/slack",
-      status: "CONNECTED",
+      credentialsRef: 'org-slack-001/slack',
+      status: 'CONNECTED',
     });
 
     const client = await getSlackClient(ORG_ID);
@@ -94,85 +94,85 @@ describe("slack-client", () => {
     expect(mockPrisma.integrationConnection.findFirst).toHaveBeenCalledWith({
       where: {
         organizationId: ORG_ID,
-        provider: "SLACK",
-        status: "CONNECTED",
+        provider: 'SLACK',
+        status: 'CONNECTED',
       },
     });
-    expect(mockGetCredentials).toHaveBeenCalledWith("org-slack-001/slack", "slack");
+    expect(mockGetCredentials).toHaveBeenCalledWith('org-slack-001/slack', 'slack');
   });
 
-  it("getSlackUserIdForUser returns externalId from SLACK_USER link", async () => {
+  it('getSlackUserIdForUser returns externalId from SLACK_USER link', async () => {
     mockPrisma.externalLink.findFirst.mockResolvedValueOnce({
-      externalId: "U123",
+      externalId: 'U123',
     });
 
     const sid = await getSlackUserIdForUser(ORG_ID, USER_ID);
 
-    expect(sid).toBe("U123");
+    expect(sid).toBe('U123');
   });
 
-  it("getSlackUserIdForUser falls back to second query when entityType filter misses", async () => {
+  it('getSlackUserIdForUser falls back to second query when entityType filter misses', async () => {
     mockPrisma.externalLink.findFirst
       .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce({ externalId: "U999" });
+      .mockResolvedValueOnce({ externalId: 'U999' });
 
     const sid = await getSlackUserIdForUser(ORG_ID, USER_ID);
 
-    expect(sid).toBe("U999");
+    expect(sid).toBe('U999');
     expect(mockPrisma.externalLink.findFirst).toHaveBeenCalledTimes(2);
   });
 
-  it("sendReminderDM returns null when Slack is not configured", async () => {
+  it('sendReminderDM returns null when Slack is not configured', async () => {
     const out = await sendReminderDM({
       organizationId: ORG_ID,
-      slackUserId: "U1",
-      text: "hello",
+      slackUserId: 'U1',
+      text: 'hello',
     });
 
     expect(out).toBeNull();
     expect(mockPostMessage).not.toHaveBeenCalled();
   });
 
-  it("sendReminderDM posts DM when client exists", async () => {
+  it('sendReminderDM posts DM when client exists', async () => {
     mockPrisma.integrationConnection.findFirst.mockResolvedValueOnce({
-      credentialsRef: "org-slack-001/slack",
+      credentialsRef: 'org-slack-001/slack',
     });
 
     await sendReminderDM({
       organizationId: ORG_ID,
-      slackUserId: "U1",
-      text: "Reminder",
+      slackUserId: 'U1',
+      text: 'Reminder',
     });
 
     expect(mockPostMessage).toHaveBeenCalledWith(
       expect.objectContaining({
-        channel: "U1",
-        text: "Reminder",
+        channel: 'U1',
+        text: 'Reminder',
       }),
     );
   });
 
-  it("syncWorkspaceUsers returns zeros when Slack is not connected", async () => {
+  it('syncWorkspaceUsers returns zeros when Slack is not connected', async () => {
     const stats = await syncWorkspaceUsers(ORG_ID, CONN_ID);
 
     expect(stats).toEqual({ matched: 0, total: 0 });
     expect(mockUsersList).not.toHaveBeenCalled();
   });
 
-  it("syncWorkspaceUsers links users by email and creates ExternalLink rows", async () => {
+  it('syncWorkspaceUsers links users by email and creates ExternalLink rows', async () => {
     mockPrisma.integrationConnection.findFirst.mockResolvedValueOnce({
-      credentialsRef: "org-slack-001/slack",
+      credentialsRef: 'org-slack-001/slack',
     });
     mockUsersList.mockResolvedValueOnce({
       members: [
         {
-          id: "USLACK1",
+          id: 'USLACK1',
           is_bot: false,
           deleted: false,
-          profile: { email: "match@example.com" },
+          profile: { email: 'match@example.com' },
         },
         {
-          id: "USLACKBOT",
+          id: 'USLACKBOT',
           is_bot: true,
           deleted: false,
         },
@@ -189,8 +189,8 @@ describe("slack-client", () => {
         organizationId: ORG_ID,
         integrationConnectionId: CONN_ID,
         entityId: USER_ID,
-        externalType: "SLACK_USER",
-        externalId: "USLACK1",
+        externalType: 'SLACK_USER',
+        externalId: 'USLACK1',
       }),
     });
   });

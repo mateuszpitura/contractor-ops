@@ -1,23 +1,23 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { ShieldCheck } from "lucide-react";
+import { useQuery } from '@tanstack/react-query';
+import { ShieldCheck } from 'lucide-react';
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Skeleton } from "@/components/ui/skeleton";
-import type { ComplianceStats } from "./zatca-trpc";
-import { zatcaTrpc } from "./zatca-trpc";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
+import type { ComplianceStats } from './zatca-trpc';
+import { zatcaTrpc } from './zatca-trpc';
 
 // ---------------------------------------------------------------------------
 // Status dot color mapping
 // ---------------------------------------------------------------------------
 
 const STATUS_DOTS: Record<string, string> = {
-  production: "bg-green-500",
-  sandbox: "bg-amber-500",
-  error: "bg-red-500",
-  disconnected: "bg-muted-foreground/30",
+  production: 'bg-green-500',
+  sandbox: 'bg-amber-500',
+  error: 'bg-red-500',
+  disconnected: 'bg-muted-foreground/30',
 };
 
 // ---------------------------------------------------------------------------
@@ -39,8 +39,8 @@ interface ZatcaComplianceWidgetProps {
  * - Health bar: percentage of successful submissions
  */
 export function ZatcaComplianceWidget({
-  connectionStatus = "production",
-  environment = "Production",
+  connectionStatus = 'production',
+  environment = 'Production',
   certificateExpiresAt,
 }: ZatcaComplianceWidgetProps) {
   const statsQuery = useQuery(zatcaTrpc.getComplianceStats.queryOptions());
@@ -48,14 +48,14 @@ export function ZatcaComplianceWidget({
 
   // Certificate expiry calculation
   let expiryDays: number | null = null;
-  let expiryColor = "text-muted-foreground";
+  let expiryColor = 'text-muted-foreground';
   if (certificateExpiresAt) {
     const diff = new Date(certificateExpiresAt).getTime() - Date.now();
     expiryDays = Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
     if (expiryDays < 7) {
-      expiryColor = "text-red-600 dark:text-red-400";
+      expiryColor = 'text-red-600 dark:text-red-400';
     } else if (expiryDays < 30) {
-      expiryColor = "text-amber-600 dark:text-amber-400";
+      expiryColor = 'text-amber-600 dark:text-amber-400';
     }
   }
 

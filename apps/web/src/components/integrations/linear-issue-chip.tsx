@@ -1,17 +1,17 @@
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 
 // ---------------------------------------------------------------------------
 // Status dot color mapping (per UI-SPEC D-09, Linear state types)
 // ---------------------------------------------------------------------------
 
 const dotColorMap: Record<string, string> = {
-  triage: "bg-muted-foreground",
-  backlog: "bg-muted-foreground",
-  unstarted: "bg-muted-foreground",
-  started: "bg-info",
-  completed: "bg-success",
-  cancelled: "bg-destructive",
+  triage: 'bg-muted-foreground',
+  backlog: 'bg-muted-foreground',
+  unstarted: 'bg-muted-foreground',
+  started: 'bg-info',
+  completed: 'bg-success',
+  cancelled: 'bg-destructive',
 };
 
 // ---------------------------------------------------------------------------
@@ -26,7 +26,7 @@ interface LinearIssueChipProps {
   /** State name for display */
   status: string;
   /** Linear state type category */
-  statusType: "triage" | "backlog" | "unstarted" | "started" | "completed" | "cancelled";
+  statusType: 'triage' | 'backlog' | 'unstarted' | 'started' | 'completed' | 'cancelled';
   /** Linear issue URL */
   url: string;
   className?: string;
@@ -54,19 +54,18 @@ export function LinearIssueChip({
             rel="noopener noreferrer"
             aria-label={`Open Linear issue ${identifier} in new tab`}
             className={cn(
-              "inline-flex items-center gap-1 rounded-md border px-2 py-1 max-w-[200px] transition-colors duration-150",
-              "bg-[oklch(0.58_0.14_290/8%)] border-[oklch(0.58_0.14_290/20%)] hover:bg-[oklch(0.58_0.14_290/14%)]",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              'inline-flex items-center gap-1 rounded-md border px-2 py-1 max-w-[200px] transition-colors duration-150',
+              'bg-[oklch(0.58_0.14_290/8%)] border-[oklch(0.58_0.14_290/20%)] hover:bg-[oklch(0.58_0.14_290/14%)]',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
               className,
             )}
           />
-        }
-      >
+        }>
         {/* Status dot */}
         <span
           className={cn(
-            "size-1.5 shrink-0 rounded-full",
-            dotColorMap[statusType] ?? "bg-muted-foreground",
+            'size-1.5 shrink-0 rounded-full',
+            dotColorMap[statusType] ?? 'bg-muted-foreground',
           )}
           aria-hidden="true"
         />

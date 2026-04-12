@@ -1,19 +1,19 @@
-"use client";
+'use client';
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-import { useMemo, useState } from "react";
-import { toast } from "sonner";
-import { DeactivateDialog } from "@/components/settings/deactivate-dialog";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+import { useMemo, useState } from 'react';
+import { toast } from 'sonner';
+import { DeactivateDialog } from '@/components/settings/deactivate-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Skeleton } from "@/components/ui/skeleton";
+} from '@/components/ui/dropdown-menu';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -21,9 +21,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { usePermissions } from "@/hooks/use-permissions";
-import { trpc } from "@/trpc/init";
+} from '@/components/ui/table';
+import { usePermissions } from '@/hooks/use-permissions';
+import { trpc } from '@/trpc/init';
 
 type Member = {
   id?: string;
@@ -36,54 +36,54 @@ type Member = {
 };
 
 const roleBadgeColors: Record<string, string> = {
-  admin: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300",
-  finance_admin: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300",
-  ops_manager: "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300",
-  team_manager: "bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-300",
+  admin: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300',
+  finance_admin: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300',
+  ops_manager: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
+  team_manager: 'bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-300',
   legal_compliance_viewer:
-    "bg-violet-100 text-violet-800 dark:bg-violet-900/40 dark:text-violet-300",
-  it_admin: "bg-slate-100 text-slate-800 dark:bg-slate-900/40 dark:text-slate-300",
-  external_accountant: "bg-teal-100 text-teal-800 dark:bg-teal-900/40 dark:text-teal-300",
-  readonly: "bg-gray-100 text-gray-800 dark:bg-gray-900/40 dark:text-gray-300",
-  owner: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300",
-  member: "bg-gray-100 text-gray-800 dark:bg-gray-900/40 dark:text-gray-300",
+    'bg-violet-100 text-violet-800 dark:bg-violet-900/40 dark:text-violet-300',
+  it_admin: 'bg-slate-100 text-slate-800 dark:bg-slate-900/40 dark:text-slate-300',
+  external_accountant: 'bg-teal-100 text-teal-800 dark:bg-teal-900/40 dark:text-teal-300',
+  readonly: 'bg-gray-100 text-gray-800 dark:bg-gray-900/40 dark:text-gray-300',
+  owner: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300',
+  member: 'bg-gray-100 text-gray-800 dark:bg-gray-900/40 dark:text-gray-300',
 };
 
 const statusColors: Record<string, string> = {
-  active: "bg-success/10 text-success",
-  invited: "bg-info/10 text-info",
-  disabled: "bg-destructive/10 text-destructive",
-  banned: "bg-destructive/10 text-destructive",
+  active: 'bg-success/10 text-success',
+  invited: 'bg-info/10 text-info',
+  disabled: 'bg-destructive/10 text-destructive',
+  banned: 'bg-destructive/10 text-destructive',
 };
 
 const assignableRoles = [
-  "admin",
-  "finance_admin",
-  "ops_manager",
-  "team_manager",
-  "legal_compliance_viewer",
-  "it_admin",
-  "external_accountant",
-  "readonly",
+  'admin',
+  'finance_admin',
+  'ops_manager',
+  'team_manager',
+  'legal_compliance_viewer',
+  'it_admin',
+  'external_accountant',
+  'readonly',
 ] as const;
 
 function displayName(member: Member) {
-  return member.name?.trim() || member.email?.trim() || "\u2014";
+  return member.name?.trim() || member.email?.trim() || '\u2014';
 }
 
 function displayStatus(member: Member): string {
-  const s = member.status?.toLowerCase() ?? "active";
-  if (s === "banned") return "disabled";
+  const s = member.status?.toLowerCase() ?? 'active';
+  if (s === 'banned') return 'disabled';
   return s;
 }
 
 export function UsersTable() {
-  const t = useTranslations("Users");
-  const tToast = useTranslations("Settings.toast");
+  const t = useTranslations('Users');
+  const tToast = useTranslations('Settings.toast');
   const queryClient = useQueryClient();
   const { can } = usePermissions();
-  const canManageMembers = can("member", ["update"]);
-  const canDeleteMembers = can("member", ["delete"]);
+  const canManageMembers = can('member', ['update']);
+  const canDeleteMembers = can('member', ['delete']);
 
   const [deactivateTarget, setDeactivateTarget] = useState<{
     userId: string;
@@ -101,15 +101,15 @@ export function UsersTable() {
   const updateRoleMutation = useMutation(
     trpc.user.updateRole.mutationOptions({
       onSuccess: () => {
-        toast.success(t("roleUpdated"));
+        toast.success(t('roleUpdated'));
         queryClient.invalidateQueries({ queryKey: trpc.user.list.queryKey() });
       },
       onError: (error: unknown) => {
         const message =
-          typeof error === "object" && error && "message" in error
-            ? String((error as { message?: unknown }).message ?? "")
-            : "";
-        toast.error(message || tToast("updateRoleFailed"));
+          typeof error === 'object' && error && 'message' in error
+            ? String((error as { message?: unknown }).message ?? '')
+            : '';
+        toast.error(message || tToast('updateRoleFailed'));
       },
     }),
   );
@@ -117,15 +117,15 @@ export function UsersTable() {
   const reactivateMutation = useMutation(
     trpc.user.reactivate.mutationOptions({
       onSuccess: () => {
-        toast.success(t("memberReactivated"));
+        toast.success(t('memberReactivated'));
         queryClient.invalidateQueries({ queryKey: trpc.user.list.queryKey() });
       },
       onError: (error: unknown) => {
         const message =
-          typeof error === "object" && error && "message" in error
-            ? String((error as { message?: unknown }).message ?? "")
-            : "";
-        toast.error(message || tToast("reactivateFailed"));
+          typeof error === 'object' && error && 'message' in error
+            ? String((error as { message?: unknown }).message ?? '')
+            : '';
+        toast.error(message || tToast('reactivateFailed'));
       },
     }),
   );
@@ -136,12 +136,12 @@ export function UsersTable() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>{t("columns.name")}</TableHead>
-              <TableHead>{t("columns.email")}</TableHead>
-              <TableHead>{t("columns.role")}</TableHead>
-              <TableHead>{t("columns.status")}</TableHead>
+              <TableHead>{t('columns.name')}</TableHead>
+              <TableHead>{t('columns.email')}</TableHead>
+              <TableHead>{t('columns.role')}</TableHead>
+              <TableHead>{t('columns.status')}</TableHead>
               {(canManageMembers || canDeleteMembers) && (
-                <TableHead className="text-end">{t("columns.actions")}</TableHead>
+                <TableHead className="text-end">{t('columns.actions')}</TableHead>
               )}
             </TableRow>
           </TableHeader>
@@ -176,8 +176,8 @@ export function UsersTable() {
   if (members.length === 0) {
     return (
       <div className="rounded-xl border bg-background py-16 text-center">
-        <h3 className="text-[16px] font-medium">{t("emptyState.heading")}</h3>
-        <p className="mt-1 text-sm text-muted-foreground">{t("emptyState.body")}</p>
+        <h3 className="text-[16px] font-medium">{t('emptyState.heading')}</h3>
+        <p className="mt-1 text-sm text-muted-foreground">{t('emptyState.body')}</p>
       </div>
     );
   }
@@ -193,41 +193,39 @@ export function UsersTable() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>{t("columns.name")}</TableHead>
-              <TableHead>{t("columns.email")}</TableHead>
-              <TableHead>{t("columns.role")}</TableHead>
-              <TableHead>{t("columns.status")}</TableHead>
+              <TableHead>{t('columns.name')}</TableHead>
+              <TableHead>{t('columns.email')}</TableHead>
+              <TableHead>{t('columns.role')}</TableHead>
+              <TableHead>{t('columns.status')}</TableHead>
               {(canManageMembers || canDeleteMembers) && (
-                <TableHead className="text-end">{t("columns.actions")}</TableHead>
+                <TableHead className="text-end">{t('columns.actions')}</TableHead>
               )}
             </TableRow>
           </TableHeader>
           <TableBody>
             {members.map((m, idx) => {
               const status = displayStatus(m);
-              const memberId = m.id ?? m.userId ?? "";
-              const isDisabled = status === "disabled";
+              const memberId = m.id ?? m.userId ?? '';
+              const isDisabled = status === 'disabled';
 
               return (
                 <TableRow key={memberId || String(idx)}>
                   <TableCell className="font-medium">{displayName(m)}</TableCell>
-                  <TableCell className="text-muted-foreground">{m.email ?? "\u2014"}</TableCell>
+                  <TableCell className="text-muted-foreground">{m.email ?? '\u2014'}</TableCell>
                   <TableCell>
                     {canManageMembers ? (
                       <DropdownMenu>
                         <DropdownMenuTrigger
                           className="cursor-pointer focus:outline-none"
-                          disabled={updateRoleMutation.isPending}
-                        >
+                          disabled={updateRoleMutation.isPending}>
                           <Badge
                             variant="secondary"
-                            className={`${roleBadgeColors[m.role ?? ""] ?? ""} cursor-pointer hover:opacity-80 transition-opacity`}
-                          >
-                            {roleLabel(m.role ?? "")}
+                            className={`${roleBadgeColors[m.role ?? ''] ?? ''} cursor-pointer hover:opacity-80 transition-opacity`}>
+                            {roleLabel(m.role ?? '')}
                           </Badge>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="start">
-                          {assignableRoles.map((role) => (
+                          {assignableRoles.map(role => (
                             <DropdownMenuItem
                               key={role}
                               onSelect={() => {
@@ -238,21 +236,20 @@ export function UsersTable() {
                                   });
                                 }
                               }}
-                              className={role === m.role ? "font-semibold" : ""}
-                            >
+                              className={role === m.role ? 'font-semibold' : ''}>
                               {roleLabel(role)}
                             </DropdownMenuItem>
                           ))}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     ) : (
-                      <Badge variant="secondary" className={roleBadgeColors[m.role ?? ""] ?? ""}>
-                        {roleLabel(m.role ?? "")}
+                      <Badge variant="secondary" className={roleBadgeColors[m.role ?? ''] ?? ''}>
+                        {roleLabel(m.role ?? '')}
                       </Badge>
                     )}
                   </TableCell>
                   <TableCell>
-                    <Badge variant="secondary" className={statusColors[status] ?? ""}>
+                    <Badge variant="secondary" className={statusColors[status] ?? ''}>
                       {statusLabel(status)}
                     </Badge>
                   </TableCell>
@@ -263,9 +260,8 @@ export function UsersTable() {
                           variant="outline"
                           size="sm"
                           onClick={() => reactivateMutation.mutate({ userId: memberId })}
-                          disabled={reactivateMutation.isPending}
-                        >
-                          {t("actions.reactivate")}
+                          disabled={reactivateMutation.isPending}>
+                          {t('actions.reactivate')}
                         </Button>
                       ) : !isDisabled && canDeleteMembers ? (
                         <Button
@@ -276,9 +272,8 @@ export function UsersTable() {
                               userId: memberId,
                               name: displayName(m),
                             })
-                          }
-                        >
-                          {t("actions.deactivate")}
+                          }>
+                          {t('actions.deactivate')}
                         </Button>
                       ) : null}
                     </TableCell>
@@ -293,7 +288,7 @@ export function UsersTable() {
       {deactivateTarget && (
         <DeactivateDialog
           open={!!deactivateTarget}
-          onOpenChange={(open) => {
+          onOpenChange={open => {
             if (!open) setDeactivateTarget(null);
           }}
           userId={deactivateTarget.userId}

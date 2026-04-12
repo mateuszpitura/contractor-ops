@@ -1,33 +1,33 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { Truck } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { useQuery } from '@tanstack/react-query';
+import { Truck } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle as DialogTitleComponent,
-} from "@/components/ui/dialog";
-import { trpc } from "@/trpc/init";
-import { CarrierCredentialForm } from "./carrier-credential-form";
+} from '@/components/ui/dialog';
+import { trpc } from '@/trpc/init';
+import { CarrierCredentialForm } from './carrier-credential-form';
 
 // ---------------------------------------------------------------------------
 // UpsProviderSection
 // ---------------------------------------------------------------------------
 
 export function UpsProviderSection() {
-  const t = useTranslations("Equipment.carrier");
-  const tCarriers = useTranslations("Settings.carriers");
+  const t = useTranslations('Equipment.carrier');
+  const tCarriers = useTranslations('Settings.carriers');
   const [configOpen, setConfigOpen] = useState(false);
 
   const configsQuery = useQuery(trpc.equipment.getCourierConfigs.queryOptions());
   const configs = (configsQuery.data ?? []) as unknown as Array<{ carrier: string }>;
-  const isConfigured = configs.some((c) => c.carrier.toLowerCase() === "ups");
+  const isConfigured = configs.some(c => c.carrier.toLowerCase() === 'ups');
 
   return (
     <div className="space-y-4">
@@ -36,22 +36,22 @@ export function UpsProviderSection() {
           <Truck className="size-8 text-amber-700" />
           <div className="flex-1">
             <CardTitle className="text-base">UPS</CardTitle>
-            <p className="text-sm text-muted-foreground">{t("upsDescription")}</p>
+            <p className="text-sm text-muted-foreground">{t('upsDescription')}</p>
           </div>
-          <Badge variant={isConfigured ? "default" : "secondary"}>
-            {isConfigured ? tCarriers("connected") : tCarriers("notConfigured")}
+          <Badge variant={isConfigured ? 'default' : 'secondary'}>
+            {isConfigured ? tCarriers('connected') : tCarriers('notConfigured')}
           </Badge>
         </CardHeader>
       </Card>
 
       <Button variant="outline" size="sm" onClick={() => setConfigOpen(true)}>
-        {t("configureUps")}
+        {t('configureUps')}
       </Button>
 
       <Dialog open={configOpen} onOpenChange={setConfigOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitleComponent>{t("configureUps")}</DialogTitleComponent>
+            <DialogTitleComponent>{t('configureUps')}</DialogTitleComponent>
           </DialogHeader>
           <CarrierCredentialForm carrier="ups" carrierLabel="UPS" />
         </DialogContent>

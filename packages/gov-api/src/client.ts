@@ -2,13 +2,13 @@
 // Government API Client — Abstract Base Class
 // ---------------------------------------------------------------------------
 
-import type { SecretStore } from "@contractor-ops/secrets";
+import type { SecretStore } from '@contractor-ops/secrets';
 import type {
   GovApiAuditEntry,
   GovApiConfig,
   GovApiEnvironment,
   GovApiRetryConfig,
-} from "./types.js";
+} from './types.js';
 
 const DEFAULT_RETRY: GovApiRetryConfig = {
   maxRetries: 3,
@@ -65,10 +65,10 @@ export abstract class GovApiClient {
   protected async loadCertificate(secretPath?: string): Promise<string> {
     const path = secretPath ?? this.config.certSecretPath;
     if (!path) {
-      throw new Error("No certificate secret path configured");
+      throw new Error('No certificate secret path configured');
     }
     if (!this.secretStore) {
-      throw new Error("SecretStore not set — call setSecretStore() first");
+      throw new Error('SecretStore not set — call setSecretStore() first');
     }
     if (this.certificate) return this.certificate;
 
@@ -102,7 +102,7 @@ export abstract class GovApiClient {
     for (let attempt = 0; attempt <= retry.maxRetries; attempt++) {
       if (attempt > 0) {
         const delay = Math.min(retry.baseDelayMs * 2 ** (attempt - 1), retry.maxDelayMs);
-        await new Promise((r) => setTimeout(r, delay));
+        await new Promise(r => setTimeout(r, delay));
       }
 
       const controller = new AbortController();
@@ -110,11 +110,11 @@ export abstract class GovApiClient {
 
       try {
         const headers = new Headers(options.headers);
-        if (this.certificate && !headers.has("Authorization")) {
-          headers.set("Authorization", `Bearer ${this.certificate}`);
+        if (this.certificate && !headers.has('Authorization')) {
+          headers.set('Authorization', `Bearer ${this.certificate}`);
         }
-        if (!headers.has("Content-Type")) {
-          headers.set("Content-Type", "application/json");
+        if (!headers.has('Content-Type')) {
+          headers.set('Content-Type', 'application/json');
         }
 
         const startMs = Date.now();
@@ -131,7 +131,7 @@ export abstract class GovApiClient {
             apiName: this.getApiName(),
             organizationId: opts.organizationId,
             endpoint: path,
-            method: options.method ?? "GET",
+            method: options.method ?? 'GET',
             responseStatus: response.status,
             responseTimeMs,
           });

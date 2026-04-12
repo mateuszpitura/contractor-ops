@@ -1,9 +1,9 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { render, screen } from "@/test/test-utils";
-import { OnboardingChecklist } from "../onboarding-checklist";
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { render, screen } from '@/test/test-utils';
+import { OnboardingChecklist } from '../onboarding-checklist';
 
-vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual("@tanstack/react-query");
+vi.mock('@tanstack/react-query', async () => {
+  const actual = await vi.importActual('@tanstack/react-query');
   return {
     ...actual,
     useQuery: vi.fn(),
@@ -12,20 +12,20 @@ vi.mock("@tanstack/react-query", async () => {
   };
 });
 
-vi.mock("@/trpc/init", () => ({
+vi.mock('@/trpc/init', () => ({
   trpc: {
     settings: {
-      get: { queryOptions: () => ({ queryKey: ["settings", "get"] }) },
+      get: { queryOptions: () => ({ queryKey: ['settings', 'get'] }) },
       update: { mutationOptions: () => ({}) },
     },
   },
 }));
 
-vi.mock("@/hooks/use-permissions", () => ({
+vi.mock('@/hooks/use-permissions', () => ({
   usePermissions: () => ({ can: () => true, isLoading: false }),
 }));
 
-vi.mock("@/i18n/navigation", () => ({
+vi.mock('@/i18n/navigation', () => ({
   Link: ({ children, href, ...props }: any) => (
     <a href={href} {...props}>
       {children}
@@ -36,49 +36,49 @@ vi.mock("@/i18n/navigation", () => ({
 const mockedUseQuery = vi.mocked(useQuery);
 const mockedUseMutation = vi.mocked(useMutation);
 
-describe("OnboardingChecklist", () => {
+describe('OnboardingChecklist', () => {
   beforeEach(() => {
     mockedUseMutation.mockReturnValue({ mutate: vi.fn(), isPending: false } as any);
   });
 
-  it("returns null when loading", () => {
+  it('returns null when loading', () => {
     mockedUseQuery.mockReturnValue({ data: undefined, isLoading: true } as any);
     const { container } = render(<OnboardingChecklist />);
-    expect(container.innerHTML).toBe("");
+    expect(container.innerHTML).toBe('');
   });
 
-  it("renders widget when steps remain", () => {
+  it('renders widget when steps remain', () => {
     mockedUseQuery.mockReturnValue({
       data: {
-        metadata: { onboardingCompletedSteps: ["org-details"], onboardingDismissed: false },
+        metadata: { onboardingCompletedSteps: ['org-details'], onboardingDismissed: false },
       },
       isLoading: false,
     } as any);
     render(<OnboardingChecklist />);
-    expect(screen.getByText("Setup guide")).toBeInTheDocument();
+    expect(screen.getByText('Setup guide')).toBeInTheDocument();
   });
 
-  it("returns null when all steps completed", () => {
+  it('returns null when all steps completed', () => {
     mockedUseQuery.mockReturnValue({
       data: {
         metadata: {
           onboardingCompletedSteps: [
-            "org-details",
-            "invite-team",
-            "add-contractor",
-            "configure-approvals",
-            "connect-slack",
-            "privacyConsent",
+            'org-details',
+            'invite-team',
+            'add-contractor',
+            'configure-approvals',
+            'connect-slack',
+            'privacyConsent',
           ],
         },
       },
       isLoading: false,
     } as any);
     const { container } = render(<OnboardingChecklist />);
-    expect(container.innerHTML).toBe("");
+    expect(container.innerHTML).toBe('');
   });
 
-  it("shows dismiss button", () => {
+  it('shows dismiss button', () => {
     mockedUseQuery.mockReturnValue({
       data: {
         metadata: { onboardingCompletedSteps: [], onboardingDismissed: false },
@@ -86,6 +86,6 @@ describe("OnboardingChecklist", () => {
       isLoading: false,
     } as any);
     render(<OnboardingChecklist />);
-    expect(screen.getByText("Dismiss")).toBeInTheDocument();
+    expect(screen.getByText('Dismiss')).toBeInTheDocument();
   });
 });

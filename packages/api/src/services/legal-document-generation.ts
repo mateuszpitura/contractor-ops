@@ -9,52 +9,52 @@
  * org jurisdiction differs from data hosting region.
  */
 
-import { prisma } from "@contractor-ops/db";
-import { getCurrentConsent } from "./consent-record.js";
+import { prisma } from '@contractor-ops/db';
+import { getCurrentConsent } from './consent-record.js';
 
 // ---------------------------------------------------------------------------
 // Cross-border transfer detection
 // ---------------------------------------------------------------------------
 
 /** Static hosting region — becomes dynamic in Phase 52 (Multi-Region Infrastructure) */
-const DATA_HOSTING_REGION = process.env.DATA_HOSTING_REGION ?? "EU";
+const DATA_HOSTING_REGION = process.env.DATA_HOSTING_REGION ?? 'EU';
 
 const COUNTRY_TO_REGION: Record<string, string> = {
   // GCC
-  AE: "GCC",
-  SA: "GCC",
-  BH: "GCC",
-  KW: "GCC",
-  OM: "GCC",
-  QA: "GCC",
+  AE: 'GCC',
+  SA: 'GCC',
+  BH: 'GCC',
+  KW: 'GCC',
+  OM: 'GCC',
+  QA: 'GCC',
   // EU
-  PL: "EU",
-  DE: "EU",
-  FR: "EU",
-  IT: "EU",
-  ES: "EU",
-  NL: "EU",
-  BE: "EU",
-  AT: "EU",
-  IE: "EU",
-  PT: "EU",
-  GR: "EU",
-  FI: "EU",
-  SE: "EU",
-  DK: "EU",
-  CZ: "EU",
-  RO: "EU",
-  BG: "EU",
-  HR: "EU",
-  SK: "EU",
-  HU: "EU",
-  LT: "EU",
-  LV: "EU",
-  EE: "EU",
-  SI: "EU",
-  CY: "EU",
-  LU: "EU",
-  MT: "EU",
+  PL: 'EU',
+  DE: 'EU',
+  FR: 'EU',
+  IT: 'EU',
+  ES: 'EU',
+  NL: 'EU',
+  BE: 'EU',
+  AT: 'EU',
+  IE: 'EU',
+  PT: 'EU',
+  GR: 'EU',
+  FI: 'EU',
+  SE: 'EU',
+  DK: 'EU',
+  CZ: 'EU',
+  RO: 'EU',
+  BG: 'EU',
+  HR: 'EU',
+  SK: 'EU',
+  HU: 'EU',
+  LT: 'EU',
+  LV: 'EU',
+  EE: 'EU',
+  SI: 'EU',
+  CY: 'EU',
+  LU: 'EU',
+  MT: 'EU',
 };
 
 export interface CrossBorderResult {
@@ -64,7 +64,7 @@ export interface CrossBorderResult {
 }
 
 export function detectCrossBorderTransfer(orgCountryCode: string): CrossBorderResult {
-  const orgRegion = COUNTRY_TO_REGION[orgCountryCode] ?? "OTHER";
+  const orgRegion = COUNTRY_TO_REGION[orgCountryCode] ?? 'OTHER';
   return {
     isCrossBorder: orgRegion !== DATA_HOSTING_REGION,
     orgRegion,
@@ -96,25 +96,25 @@ export async function generateDPA(organizationId: string): Promise<LegalDocument
     },
   });
 
-  if (!org.countryCode || (org.countryCode !== "AE" && org.countryCode !== "SA")) {
+  if (!org.countryCode || (org.countryCode !== 'AE' && org.countryCode !== 'SA')) {
     return null;
   }
 
   // Get accepted consent purposes for this org's admin
   const consentState = await getOrgConsentSummary(organizationId);
 
-  const date = new Date().toISOString().split("T")[0];
+  const date = new Date().toISOString().split('T')[0];
   const jurisdiction = org.countryCode;
 
   const legalRef =
-    jurisdiction === "AE"
-      ? "UAE Federal Decree-Law No. 45/2021 on the Protection of Personal Data"
-      : "Kingdom of Saudi Arabia Personal Data Protection Law (Royal Decree M/19)";
+    jurisdiction === 'AE'
+      ? 'UAE Federal Decree-Law No. 45/2021 on the Protection of Personal Data'
+      : 'Kingdom of Saudi Arabia Personal Data Protection Law (Royal Decree M/19)';
 
   const governingLaw =
-    jurisdiction === "AE"
-      ? "the laws of the United Arab Emirates"
-      : "the laws of the Kingdom of Saudi Arabia";
+    jurisdiction === 'AE'
+      ? 'the laws of the United Arab Emirates'
+      : 'the laws of the Kingdom of Saudi Arabia';
 
   const content = `
 <!DOCTYPE html>
@@ -137,7 +137,7 @@ export async function generateDPA(organizationId: string): Promise<LegalDocument
 
 <h2>1. Parties</h2>
 <div class="parties">
-  <p><strong>Data Controller:</strong> ${escapeHtml(org.name)} (${jurisdiction === "AE" ? "UAE" : "Saudi Arabia"})</p>
+  <p><strong>Data Controller:</strong> ${escapeHtml(org.name)} (${jurisdiction === 'AE' ? 'UAE' : 'Saudi Arabia'})</p>
   <p><strong>Data Processor:</strong> Contractor Ops Platform</p>
   <p><strong>Effective Date:</strong> ${date}</p>
 </div>
@@ -146,7 +146,7 @@ export async function generateDPA(organizationId: string): Promise<LegalDocument
 <div class="section">
   <p>This agreement governs the processing of personal data by the Data Processor on behalf of the Data Controller for the following purposes:</p>
   <ul>
-    ${consentState.map((p) => `<li>${formatPurpose(p)}</li>`).join("\n    ")}
+    ${consentState.map(p => `<li>${formatPurpose(p)}</li>`).join('\n    ')}
   </ul>
 </div>
 
@@ -212,7 +212,7 @@ export async function generateDPA(organizationId: string): Promise<LegalDocument
     content,
     filename: `DPA-${sanitizeFilename(org.name)}-${jurisdiction}-${date}.html`,
     jurisdiction,
-    contentType: "text/html",
+    contentType: 'text/html',
   };
 }
 
@@ -235,7 +235,7 @@ export async function generateSCC(organizationId: string): Promise<LegalDocument
   const crossBorder = detectCrossBorderTransfer(org.countryCode);
   if (!crossBorder.isCrossBorder) return null;
 
-  const date = new Date().toISOString().split("T")[0];
+  const date = new Date().toISOString().split('T')[0];
 
   const content = `
 <!DOCTYPE html>
@@ -258,7 +258,7 @@ export async function generateSCC(organizationId: string): Promise<LegalDocument
 <h2>1. Data Exporter</h2>
 <div class="section">
   <p><strong>Name:</strong> ${escapeHtml(org.name)}</p>
-  <p><strong>Jurisdiction:</strong> ${org.countryCode === "AE" ? "United Arab Emirates" : org.countryCode === "SA" ? "Kingdom of Saudi Arabia" : org.countryCode}</p>
+  <p><strong>Jurisdiction:</strong> ${org.countryCode === 'AE' ? 'United Arab Emirates' : org.countryCode === 'SA' ? 'Kingdom of Saudi Arabia' : org.countryCode}</p>
   <p><strong>Region:</strong> ${crossBorder.orgRegion}</p>
 </div>
 
@@ -304,7 +304,7 @@ export async function generateSCC(organizationId: string): Promise<LegalDocument
 
 <h2>7. Governing Law</h2>
 <div class="section">
-  <p>These clauses shall be governed by the law of the Data Exporter's jurisdiction (${org.countryCode === "AE" ? "United Arab Emirates" : org.countryCode === "SA" ? "Kingdom of Saudi Arabia" : org.countryCode}).</p>
+  <p>These clauses shall be governed by the law of the Data Exporter's jurisdiction (${org.countryCode === 'AE' ? 'United Arab Emirates' : org.countryCode === 'SA' ? 'Kingdom of Saudi Arabia' : org.countryCode}).</p>
 </div>
 
 <div class="footer">
@@ -317,7 +317,7 @@ export async function generateSCC(organizationId: string): Promise<LegalDocument
     content,
     filename: `SCC-${sanitizeFilename(org.name)}-${crossBorder.orgRegion}-to-${crossBorder.hostingRegion}-${date}.html`,
     jurisdiction: org.countryCode,
-    contentType: "text/html",
+    contentType: 'text/html',
   };
 }
 
@@ -327,25 +327,25 @@ export async function generateSCC(organizationId: string): Promise<LegalDocument
 
 function escapeHtml(str: string): string {
   return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
 function sanitizeFilename(str: string): string {
-  return str.replace(/[^a-zA-Z0-9-_]/g, "_").substring(0, 50);
+  return str.replace(/[^a-zA-Z0-9-_]/g, '_').substring(0, 50);
 }
 
 function formatPurpose(purpose: string): string {
   const labels: Record<string, string> = {
-    CONTRACTOR_DATA_PROCESSING: "Contractor data processing and management",
-    INVOICE_PAYMENT_PROCESSING: "Invoice processing and payment execution",
-    ANALYTICS_REPORTING: "Analytics, reporting, and business intelligence",
-    CROSS_BORDER_TRANSFER: "Cross-border data transfer",
-    INTEGRATION_DATA_SHARING: "Third-party integration data sharing",
-    COMMUNICATION_NOTIFICATIONS: "Communications, notifications, and reminders",
+    CONTRACTOR_DATA_PROCESSING: 'Contractor data processing and management',
+    INVOICE_PAYMENT_PROCESSING: 'Invoice processing and payment execution',
+    ANALYTICS_REPORTING: 'Analytics, reporting, and business intelligence',
+    CROSS_BORDER_TRANSFER: 'Cross-border data transfer',
+    INTEGRATION_DATA_SHARING: 'Third-party integration data sharing',
+    COMMUNICATION_NOTIFICATIONS: 'Communications, notifications, and reminders',
   };
   return labels[purpose] ?? purpose;
 }
@@ -353,11 +353,11 @@ function formatPurpose(purpose: string): string {
 async function getOrgConsentSummary(organizationId: string): Promise<string[]> {
   // Get consent from org members — use first admin as representative
   const member = await prisma.member.findFirst({
-    where: { organizationId, role: "owner" },
+    where: { organizationId, role: 'owner' },
     select: { userId: true },
   });
 
-  if (!member) return ["CONTRACTOR_DATA_PROCESSING", "INVOICE_PAYMENT_PROCESSING"];
+  if (!member) return ['CONTRACTOR_DATA_PROCESSING', 'INVOICE_PAYMENT_PROCESSING'];
 
   const consentMap = await getCurrentConsent(organizationId, member.userId);
   const grantedPurposes: string[] = [];
@@ -369,5 +369,5 @@ async function getOrgConsentSummary(organizationId: string): Promise<string[]> {
 
   return grantedPurposes.length > 0
     ? grantedPurposes
-    : ["CONTRACTOR_DATA_PROCESSING", "INVOICE_PAYMENT_PROCESSING"];
+    : ['CONTRACTOR_DATA_PROCESSING', 'INVOICE_PAYMENT_PROCESSING'];
 }

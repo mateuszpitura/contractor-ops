@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useTranslations } from "next-intl";
-import { Card, CardContent } from "@/components/ui/card";
+import { useTranslations } from 'next-intl';
+import { Card, CardContent } from '@/components/ui/card';
 
 // ---------------------------------------------------------------------------
 // DirectorySummaryBar
@@ -20,18 +20,17 @@ export function DirectorySummaryBar({
   newUsers,
   selected,
 }: DirectorySummaryBarProps) {
-  const t = useTranslations("GoogleWorkspace.import");
+  const t = useTranslations('GoogleWorkspace.import');
 
   return (
     <Card>
       <CardContent
         className="flex flex-wrap items-center gap-x-4 gap-y-1 py-2 px-4"
         role="status"
-        aria-live="polite"
-      >
+        aria-live="polite">
         <span className="text-sm text-muted-foreground">
-          <span className="font-semibold text-foreground">{total}</span>{" "}
-          {t("summaryFound", { total })}
+          <span className="font-semibold text-foreground">{total}</span>{' '}
+          {t('summaryFound', { total })}
         </span>
 
         <span className="text-sm text-muted-foreground" aria-hidden="true">
@@ -39,8 +38,8 @@ export function DirectorySummaryBar({
         </span>
 
         <span className="text-sm text-muted-foreground">
-          <span className="font-semibold text-foreground">{alreadyImported}</span>{" "}
-          {t("summaryExisting", { count: alreadyImported })}
+          <span className="font-semibold text-foreground">{alreadyImported}</span>{' '}
+          {t('summaryExisting', { count: alreadyImported })}
         </span>
 
         <span className="text-sm text-muted-foreground" aria-hidden="true">
@@ -48,8 +47,8 @@ export function DirectorySummaryBar({
         </span>
 
         <span className="text-sm text-muted-foreground">
-          <span className="font-semibold text-foreground">{newUsers}</span>{" "}
-          {t("summaryNew", { count: newUsers })}
+          <span className="font-semibold text-foreground">{newUsers}</span>{' '}
+          {t('summaryNew', { count: newUsers })}
         </span>
 
         {selected > 0 && (
@@ -58,7 +57,7 @@ export function DirectorySummaryBar({
               |
             </span>
             <span className="text-sm text-primary font-semibold">
-              {t("summarySelected", { count: selected })}
+              {t('summarySelected', { count: selected })}
             </span>
           </>
         )}

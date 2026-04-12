@@ -1,9 +1,9 @@
-import { decryptCredentials } from "@contractor-ops/integrations/services/credential-service";
-import type { JiraIssueMetadata } from "@contractor-ops/validators";
-import { jiraWebhookPayloadSchema } from "@contractor-ops/validators";
-import { TRPCError } from "@trpc/server";
-import { lookupWorkflowStatus } from "./jira-status-mapping.js";
-import type { DbClient } from "./types.js";
+import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
+import type { JiraIssueMetadata } from '@contractor-ops/validators';
+import { jiraWebhookPayloadSchema } from '@contractor-ops/validators';
+import { TRPCError } from '@trpc/server';
+import { lookupWorkflowStatus } from './jira-status-mapping.js';
+import type { DbClient } from './types.js';
 
 type PrismaClient = DbClient;
 
@@ -41,19 +41,19 @@ function buildJiraApiContext(
 
   if (!config?.cloudId) {
     throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: "Jira connection is missing cloudId.",
+      code: 'BAD_REQUEST',
+      message: 'Jira connection is missing cloudId.',
     });
   }
 
-  const credentials = decryptCredentials(credentialsRef, "jira");
+  const credentials = decryptCredentials(credentialsRef, 'jira');
 
   return {
     baseUrl: `https://api.atlassian.com/ex/jira/${config.cloudId}/rest/api/3`,
     authHeaders: {
       Authorization: `Bearer ${credentials.accessToken}`,
-      Accept: "application/json",
-      "Content-Type": "application/json",
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
     },
   };
 }
@@ -96,9 +96,9 @@ export async function processJiraWebhook(
       data: {
         organizationId,
         integrationConnectionId: connectionId,
-        direction: "INBOUND",
-        syncType: "webhook-invalid",
-        status: "FAILED",
+        direction: 'INBOUND',
+        syncType: 'webhook-invalid',
+        status: 'FAILED',
         completedAt: new Date(),
         errorMessage: `Invalid Jira webhook payload: ${parsed.error.message}`,
       },
@@ -109,7 +109,7 @@ export async function processJiraWebhook(
   const webhookPayload = parsed.data;
 
   // 2. Extract status change from changelog
-  const statusChange = webhookPayload.changelog.items.find((item) => item.field === "status");
+  const statusChange = webhookPayload.changelog.items.find(item => item.field === 'status');
 
   if (!statusChange) {
     // Not a status change — ignore
@@ -117,13 +117,13 @@ export async function processJiraWebhook(
   }
 
   const issueKey = webhookPayload.issue.key;
-  const newJiraStatusName = statusChange.toString ?? "";
+  const newJiraStatusName = statusChange.toString ?? '';
 
   // 3. Find ExternalLink by issue key
   const externalLink = await prisma.externalLink.findFirst({
     where: {
       organizationId,
-      externalType: "JIRA_ISSUE",
+      externalType: 'JIRA_ISSUE',
       externalId: issueKey,
     },
   });
@@ -134,14 +134,14 @@ export async function processJiraWebhook(
       data: {
         organizationId,
         integrationConnectionId: connectionId,
-        direction: "INBOUND",
-        syncType: "webhook-unlinked",
-        status: "SUCCESS",
+        direction: 'INBOUND',
+        syncType: 'webhook-unlinked',
+        status: 'SUCCESS',
         completedAt: new Date(),
         responsePayloadJson: {
           issueKey,
           newStatus: newJiraStatusName,
-          reason: "No ExternalLink found for this Jira issue",
+          reason: 'No ExternalLink found for this Jira issue',
         },
       },
     });
@@ -153,7 +153,7 @@ export async function processJiraWebhook(
   const lastSyncOrigin = metadata.lastSyncOrigin as string | undefined;
   const lastSyncAt = metadata.lastSyncAt as string | undefined;
 
-  if (lastSyncOrigin === "APP" && lastSyncAt) {
+  if (lastSyncOrigin === 'APP' && lastSyncAt) {
     const syncAge = Date.now() - new Date(lastSyncAt).getTime();
     if (syncAge < LOOP_PREVENTION_WINDOW_MS) {
       // This is a bounce-back from our own change — skip processing
@@ -161,9 +161,9 @@ export async function processJiraWebhook(
         data: {
           organizationId,
           integrationConnectionId: connectionId,
-          direction: "INBOUND",
-          syncType: "webhook-loop-suppressed",
-          status: "SUCCESS",
+          direction: 'INBOUND',
+          syncType: 'webhook-loop-suppressed',
+          status: 'SUCCESS',
           completedAt: new Date(),
           responsePayloadJson: {
             issueKey,
@@ -182,15 +182,15 @@ export async function processJiraWebhook(
     where: {
       organizationId,
       integrationConnectionId: connectionId,
-      direction: "INBOUND",
-      syncType: "issue-status-change",
+      direction: 'INBOUND',
+      syncType: 'issue-status-change',
       startedAt: { gte: deduplicationCutoff },
       responsePayloadJson: {
-        path: ["issueKey"],
+        path: ['issueKey'],
         equals: issueKey,
       },
     },
-    orderBy: { startedAt: "desc" },
+    orderBy: { startedAt: 'desc' },
   });
 
   if (recentDuplicate) {
@@ -216,17 +216,17 @@ export async function processJiraWebhook(
       data: {
         organizationId,
         integrationConnectionId: connectionId,
-        direction: "INBOUND",
-        syncType: "webhook-status-unmapped",
-        entityType: "WORKFLOW_TASK_RUN",
+        direction: 'INBOUND',
+        syncType: 'webhook-status-unmapped',
+        entityType: 'WORKFLOW_TASK_RUN',
         entityId: externalLink.entityId,
-        status: "SUCCESS",
+        status: 'SUCCESS',
         completedAt: new Date(),
         responsePayloadJson: {
           issueKey,
           jiraStatus: newJiraStatusName,
           projectId,
-          reason: "No workflow status mapping found for this Jira status",
+          reason: 'No workflow status mapping found for this Jira status',
         },
       },
     });
@@ -238,11 +238,11 @@ export async function processJiraWebhook(
     data: {
       organizationId,
       integrationConnectionId: connectionId,
-      direction: "INBOUND",
-      syncType: "issue-status-change",
-      entityType: "WORKFLOW_TASK_RUN",
+      direction: 'INBOUND',
+      syncType: 'issue-status-change',
+      entityType: 'WORKFLOW_TASK_RUN',
       entityId: externalLink.entityId,
-      status: "STARTED",
+      status: 'STARTED',
       requestPayloadJson: {
         issueKey,
         fromStatus: statusChange.fromString,
@@ -267,8 +267,8 @@ export async function processJiraWebhook(
       summary: webhookPayload.issue.fields.summary,
       status: newJiraStatusName,
       statusCategory: webhookPayload.issue.fields.status.statusCategory.key,
-      url: (metadata.url as string) ?? externalLink.externalUrl ?? "",
-      lastSyncOrigin: "JIRA",
+      url: (metadata.url as string) ?? externalLink.externalUrl ?? '',
+      lastSyncOrigin: 'JIRA',
       lastSyncAt: new Date().toISOString(),
     };
 
@@ -283,7 +283,7 @@ export async function processJiraWebhook(
     await prisma.integrationSyncLog.update({
       where: { id: syncLog.id },
       data: {
-        status: "SUCCESS",
+        status: 'SUCCESS',
         completedAt: new Date(),
         responsePayloadJson: {
           issueKey,
@@ -297,16 +297,16 @@ export async function processJiraWebhook(
     await prisma.integrationSyncLog.update({
       where: { id: syncLog.id },
       data: {
-        status: "FAILED",
+        status: 'FAILED',
         completedAt: new Date(),
-        errorMessage: error instanceof Error ? error.message : "Unknown error",
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
       },
     });
 
     if (error instanceof TRPCError) throw error;
     throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "Failed to process Jira webhook",
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'Failed to process Jira webhook',
       cause: error,
     });
   }
@@ -336,10 +336,10 @@ export async function registerJiraWebhooks(
     where: { id: connectionId },
   });
 
-  if (!connection || connection.status !== "CONNECTED") {
+  if (!connection || connection.status !== 'CONNECTED') {
     throw new TRPCError({
-      code: "PRECONDITION_FAILED",
-      message: "Jira connection is not active",
+      code: 'PRECONDITION_FAILED',
+      message: 'Jira connection is not active',
     });
   }
 
@@ -351,8 +351,8 @@ export async function registerJiraWebhooks(
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? process.env.APP_URL;
   if (!appUrl) {
     throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "NEXT_PUBLIC_APP_URL environment variable is required for webhook registration",
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'NEXT_PUBLIC_APP_URL environment variable is required for webhook registration',
     });
   }
 
@@ -360,20 +360,20 @@ export async function registerJiraWebhooks(
   const jqlFilter =
     projectKeys.length === 1
       ? `project = ${projectKeys[0]}`
-      : `project IN (${projectKeys.join(", ")})`;
+      : `project IN (${projectKeys.join(', ')})`;
 
   const webhookBody = {
     url: `${appUrl}/api/webhooks/jira`,
     webhooks: [
       {
         jqlFilter,
-        events: ["jira:issue_updated"],
+        events: ['jira:issue_updated'],
       },
     ],
   };
 
   const response = await fetch(`${baseUrl}/webhook`, {
-    method: "POST",
+    method: 'POST',
     headers: authHeaders,
     body: JSON.stringify(webhookBody),
   });
@@ -381,7 +381,7 @@ export async function registerJiraWebhooks(
   if (!response.ok) {
     const text = await response.text();
     throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
+      code: 'INTERNAL_SERVER_ERROR',
       message: `Failed to register Jira webhook: ${text}`,
     });
   }
@@ -392,7 +392,7 @@ export async function registerJiraWebhooks(
 
   // Store webhook IDs in connection config
   const config = (connection.configJson as JiraConnectionConfig) ?? {};
-  const webhookIds = result.webhookRegistrationResult.map((r) => r.createdWebhookId);
+  const webhookIds = result.webhookRegistrationResult.map(r => r.createdWebhookId);
 
   await prisma.integrationConnection.update({
     where: { id: connectionId },
@@ -452,7 +452,7 @@ export async function deregisterJiraWebhooks(
   for (const webhookId of webhookIds) {
     try {
       await fetch(`${baseUrl}/webhook`, {
-        method: "DELETE",
+        method: 'DELETE',
         headers: authHeaders,
         body: JSON.stringify({ webhookIds: [webhookId] }),
       });
@@ -485,7 +485,7 @@ export async function refreshJiraWebhooks(
     where: { id: connectionId },
   });
 
-  if (!connection || connection.status !== "CONNECTED") return;
+  if (!connection || connection.status !== 'CONNECTED') return;
 
   const config = (connection.configJson as JiraConnectionConfig) ?? {};
   const webhookIds = config.webhookIds ?? [];
@@ -498,7 +498,7 @@ export async function refreshJiraWebhooks(
   );
 
   const response = await fetch(`${baseUrl}/webhook/refresh`, {
-    method: "PUT",
+    method: 'PUT',
     headers: authHeaders,
     body: JSON.stringify({ webhookIds }),
   });
@@ -506,7 +506,7 @@ export async function refreshJiraWebhooks(
   if (!response.ok) {
     const text = await response.text();
     throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
+      code: 'INTERNAL_SERVER_ERROR',
       message: `Failed to refresh Jira webhooks: ${text}`,
     });
   }

@@ -5,29 +5,29 @@
 // and builds the 6 compliance test invoices required for device onboarding.
 // ---------------------------------------------------------------------------
 
-import crypto from "node:crypto";
-import forge from "node-forge";
-import type { EInvoice } from "../../types/invoice.js";
-import type { ZatcaCsrAttributes, ZatcaTaxDetails } from "./schemas.js";
+import crypto from 'node:crypto';
+import forge from 'node-forge';
+import type { EInvoice } from '../../types/invoice.js';
+import type { ZatcaCsrAttributes, ZatcaTaxDetails } from './schemas.js';
 
 // ---------------------------------------------------------------------------
 // ASN.1 OIDs for Subject Attributes
 // ---------------------------------------------------------------------------
 
 const OID = {
-  commonName: "2.5.4.3",
-  organizationName: "2.5.4.10",
-  organizationalUnitName: "2.5.4.11",
-  countryName: "2.5.4.6",
-  serialNumber: "2.5.4.5",
-  uid: "0.9.2342.19200300.100.1.1",
-  title: "2.5.4.12",
-  registeredAddress: "2.5.4.26",
-  businessCategory: "2.5.4.15",
+  commonName: '2.5.4.3',
+  organizationName: '2.5.4.10',
+  organizationalUnitName: '2.5.4.11',
+  countryName: '2.5.4.6',
+  serialNumber: '2.5.4.5',
+  uid: '0.9.2342.19200300.100.1.1',
+  title: '2.5.4.12',
+  registeredAddress: '2.5.4.26',
+  businessCategory: '2.5.4.15',
   // EC key OIDs
-  ecPublicKey: "1.2.840.10045.2.1",
-  prime256v1: "1.2.840.10045.3.1.7",
-  ecdsaWithSha256: "1.2.840.10045.4.3.2",
+  ecPublicKey: '1.2.840.10045.2.1',
+  prime256v1: '1.2.840.10045.3.1.7',
+  ecdsaWithSha256: '1.2.840.10045.4.3.2',
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -50,10 +50,10 @@ export function generateZatcaCsr(attributes: ZatcaCsrAttributes): {
   privateKey: string;
 } {
   // 1. Generate ECDSA P-256 key pair using Node.js crypto
-  const { publicKey, privateKey } = crypto.generateKeyPairSync("ec", {
-    namedCurve: "prime256v1",
-    publicKeyEncoding: { type: "spki", format: "der" },
-    privateKeyEncoding: { type: "pkcs8", format: "pem" },
+  const { publicKey, privateKey } = crypto.generateKeyPairSync('ec', {
+    namedCurve: 'prime256v1',
+    publicKeyEncoding: { type: 'spki', format: 'der' },
+    privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
   });
 
   // 2. Build CSR ASN.1 structure manually (forge.pki doesn't support EC keys)
@@ -111,7 +111,7 @@ function buildEcdsaCsr(
   ]);
 
   // SubjectPublicKeyInfo — use the DER bytes directly from Node.js crypto
-  const spkiAsn1 = asn1.fromDer(forge.util.createBuffer(spkiDer.toString("binary")));
+  const spkiAsn1 = asn1.fromDer(forge.util.createBuffer(spkiDer.toString('binary')));
 
   // CertificationRequestInfo
   const certReqInfo = asn1.create(Class.UNIVERSAL, Type.SEQUENCE, true, [
@@ -127,10 +127,10 @@ function buildEcdsaCsr(
 
   // DER-encode the CertificationRequestInfo for signing
   const tbsDer = asn1.toDer(certReqInfo);
-  const tbsBuffer = Buffer.from(tbsDer.getBytes(), "binary");
+  const tbsBuffer = Buffer.from(tbsDer.getBytes(), 'binary');
 
   // Sign with ECDSA-SHA256 using Node.js crypto
-  const signer = crypto.createSign("SHA256");
+  const signer = crypto.createSign('SHA256');
   signer.update(tbsBuffer);
   const signature = signer.sign(privateKeyPem);
 
@@ -146,7 +146,7 @@ function buildEcdsaCsr(
       Class.UNIVERSAL,
       Type.BITSTRING,
       false,
-      String.fromCharCode(0) + signature.toString("binary"),
+      String.fromCharCode(0) + signature.toString('binary'),
     ),
   ]);
 
@@ -159,7 +159,7 @@ function buildEcdsaCsr(
     lines.push(base64.substring(i, i + 64));
   }
 
-  return `-----BEGIN CERTIFICATE REQUEST-----\n${lines.join("\n")}\n-----END CERTIFICATE REQUEST-----`;
+  return `-----BEGIN CERTIFICATE REQUEST-----\n${lines.join('\n')}\n-----END CERTIFICATE REQUEST-----`;
 }
 
 // ---------------------------------------------------------------------------
@@ -172,45 +172,45 @@ function buildEcdsaCsr(
  */
 const COMPLIANCE_INVOICE_SPECS = [
   {
-    invoiceTypeCode: "388" as const,
-    invoiceSubtype: "0100000",
-    invoiceType: "standard" as const,
-    label: "Standard Tax Invoice",
+    invoiceTypeCode: '388' as const,
+    invoiceSubtype: '0100000',
+    invoiceType: 'standard' as const,
+    label: 'Standard Tax Invoice',
   },
   {
-    invoiceTypeCode: "381" as const,
-    invoiceSubtype: "0100000",
-    invoiceType: "standard" as const,
-    label: "Standard Credit Note",
+    invoiceTypeCode: '381' as const,
+    invoiceSubtype: '0100000',
+    invoiceType: 'standard' as const,
+    label: 'Standard Credit Note',
   },
   {
-    invoiceTypeCode: "383" as const,
-    invoiceSubtype: "0100000",
-    invoiceType: "standard" as const,
-    label: "Standard Debit Note",
+    invoiceTypeCode: '383' as const,
+    invoiceSubtype: '0100000',
+    invoiceType: 'standard' as const,
+    label: 'Standard Debit Note',
   },
   {
-    invoiceTypeCode: "388" as const,
-    invoiceSubtype: "0200000",
-    invoiceType: "simplified" as const,
-    label: "Simplified Tax Invoice",
+    invoiceTypeCode: '388' as const,
+    invoiceSubtype: '0200000',
+    invoiceType: 'simplified' as const,
+    label: 'Simplified Tax Invoice',
   },
   {
-    invoiceTypeCode: "381" as const,
-    invoiceSubtype: "0200000",
-    invoiceType: "simplified" as const,
-    label: "Simplified Credit Note",
+    invoiceTypeCode: '381' as const,
+    invoiceSubtype: '0200000',
+    invoiceType: 'simplified' as const,
+    label: 'Simplified Credit Note',
   },
   {
-    invoiceTypeCode: "383" as const,
-    invoiceSubtype: "0200000",
-    invoiceType: "simplified" as const,
-    label: "Simplified Debit Note",
+    invoiceTypeCode: '383' as const,
+    invoiceSubtype: '0200000',
+    invoiceType: 'simplified' as const,
+    label: 'Simplified Debit Note',
   },
 ] as const;
 
 /** SHA-256 hash of the string "0" — used as PIH for the first invoice in a chain */
-const INITIAL_PIH = crypto.createHash("sha256").update("0").digest("hex");
+const INITIAL_PIH = crypto.createHash('sha256').update('0').digest('hex');
 
 /**
  * Build 6 compliance test invoices required for ZATCA device onboarding (step 3).
@@ -225,7 +225,7 @@ const INITIAL_PIH = crypto.createHash("sha256").update("0").digest("hex");
  * @returns Array of 6 EInvoice objects ready for XML generation and signing
  */
 export function buildComplianceTestInvoices(taxDetails: ZatcaTaxDetails): EInvoice[] {
-  const issueDate = new Date().toISOString().split("T")[0]!;
+  const issueDate = new Date().toISOString().split('T')[0]!;
   const formattedAddress = `${taxDetails.street}, ${taxDetails.district}, ${taxDetails.city} ${taxDetails.postalCode}`;
 
   return COMPLIANCE_INVOICE_SPECS.map((spec, index) => {
@@ -233,30 +233,30 @@ export function buildComplianceTestInvoices(taxDetails: ZatcaTaxDetails): EInvoi
       id: `COMPLIANCE-${index + 1}`,
       issueDate,
       invoiceTypeCode: spec.invoiceTypeCode,
-      currencyCode: "SAR",
-      profileId: "zatca",
+      currencyCode: 'SAR',
+      profileId: 'zatca',
 
       supplier: {
         id: taxDetails.vatNumber,
         name: taxDetails.orgNameArabic,
         address: formattedAddress,
-        country: "SA",
+        country: 'SA',
       },
 
       customer: {
-        id: "300000000000003",
-        name: "Test Buyer",
-        country: "SA",
+        id: '300000000000003',
+        name: 'Test Buyer',
+        country: 'SA',
       },
 
       lines: [
         {
           lineNumber: 1,
-          description: "Test Item",
+          description: 'Test Item',
           quantity: 1,
           unitPriceMinor: 10000,
           netAmountMinor: 10000,
-          vatRate: "15",
+          vatRate: '15',
           vatAmountMinor: 1500,
           grossAmountMinor: 11500,
         },
@@ -270,7 +270,7 @@ export function buildComplianceTestInvoices(taxDetails: ZatcaTaxDetails): EInvoi
         {
           taxableAmountMinor: 10000,
           taxAmountMinor: 1500,
-          taxCategory: "S",
+          taxCategory: 'S',
           percent: 15,
         },
       ],

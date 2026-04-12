@@ -1,15 +1,16 @@
-"use client";
+'use client';
 
-import { Download } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Download } from 'lucide-react';
+import { useLocale } from 'next-intl';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { formatMinorUnits } from "@/lib/format-currency";
+} from '@/components/ui/dialog';
+import { formatMinorUnits } from '@/lib/format-currency';
 
 interface WhtCertificatePreviewProps {
   open: boolean;
@@ -38,10 +39,11 @@ export function WhtCertificatePreviewDialog({
   certificate,
   onDownload,
 }: WhtCertificatePreviewProps) {
+  const locale = useLocale();
   if (!certificate) return null;
 
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+    <Dialog open={open} onOpenChange={o => !o && onClose()}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>WHT Certificate Preview</DialogTitle>
@@ -79,20 +81,20 @@ export function WhtCertificatePreviewDialog({
             <div className="grid grid-cols-2 gap-2 text-sm">
               <span className="text-muted-foreground">Gross Amount</span>
               <span className="font-mono font-semibold">
-                {certificate.currency}{" "}
-                {formatMinorUnits(certificate.grossAmountMinor, certificate.currency)}
+                {certificate.currency}{' '}
+                {formatMinorUnits(certificate.grossAmountMinor, certificate.currency, locale)}
               </span>
               <span className="text-muted-foreground">WHT Rate</span>
               <span className="font-semibold">{certificate.whtRate}%</span>
               <span className="text-muted-foreground">WHT Amount</span>
               <span className="font-mono font-semibold">
-                {certificate.currency}{" "}
-                {formatMinorUnits(certificate.whtAmountMinor, certificate.currency)}
+                {certificate.currency}{' '}
+                {formatMinorUnits(certificate.whtAmountMinor, certificate.currency, locale)}
               </span>
               <span className="text-muted-foreground">Net Paid</span>
               <span className="font-mono font-semibold">
-                {certificate.currency}{" "}
-                {formatMinorUnits(certificate.netAmountMinor, certificate.currency)}
+                {certificate.currency}{' '}
+                {formatMinorUnits(certificate.netAmountMinor, certificate.currency, locale)}
               </span>
             </div>
 

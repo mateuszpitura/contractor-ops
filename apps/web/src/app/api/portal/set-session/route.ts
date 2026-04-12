@@ -1,14 +1,14 @@
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
-import { z } from "zod";
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { z } from 'zod';
 
 // ---------------------------------------------------------------------------
 // Schema
 // ---------------------------------------------------------------------------
 
 const setSessionSchema = z.object({
-  token: z.string().min(1, "Token is required"),
-  expiresAt: z.string().min(1, "Expiration date is required"),
+  token: z.string().min(1, 'Token is required'),
+  expiresAt: z.string().min(1, 'Expiration date is required'),
 });
 
 // ---------------------------------------------------------------------------
@@ -35,22 +35,22 @@ export async function POST(req: NextRequest) {
     const parsed = setSessionSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
     }
 
     const { token, expiresAt } = parsed.data;
     const response = NextResponse.json({ success: true });
 
-    response.cookies.set("portal_session", token, {
+    response.cookies.set('portal_session', token, {
       httpOnly: true,
       secure: true,
-      sameSite: "strict",
-      path: "/",
+      sameSite: 'strict',
+      path: '/',
       expires: new Date(expiresAt),
     });
 
     return response;
   } catch {
-    return NextResponse.json({ error: "Failed to set session" }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to set session' }, { status: 500 });
   }
 }

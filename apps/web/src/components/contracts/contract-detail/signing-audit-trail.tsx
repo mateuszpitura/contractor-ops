@@ -1,26 +1,26 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { Ban, CheckCircle2, Eye, FileDown, PenLine, Send, XCircle } from "lucide-react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { trpc } from "@/trpc/init";
+import { useQuery } from '@tanstack/react-query';
+import { Ban, CheckCircle2, Eye, FileDown, PenLine, Send, XCircle } from 'lucide-react';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Event Type to Icon/Color Mapping
 // ---------------------------------------------------------------------------
 
 const EVENT_CONFIG: Record<string, { icon: typeof Send; className: string }> = {
-  ENVELOPE_CREATED: { icon: Send, className: "text-muted-foreground" },
-  ENVELOPE_SENT: { icon: Send, className: "text-muted-foreground" },
-  RECIPIENT_VIEWED: { icon: Eye, className: "text-muted-foreground" },
-  RECIPIENT_SIGNED: { icon: PenLine, className: "text-green-600" },
-  RECIPIENT_DECLINED: { icon: XCircle, className: "text-red-500" },
-  ENVELOPE_VOIDED: { icon: Ban, className: "text-red-500" },
-  ENVELOPE_COMPLETED: { icon: CheckCircle2, className: "text-green-600" },
-  ENVELOPE_EXPIRED: { icon: XCircle, className: "text-red-500" },
-  SIGNED_PDF_SAVED: { icon: FileDown, className: "text-muted-foreground" },
+  ENVELOPE_CREATED: { icon: Send, className: 'text-muted-foreground' },
+  ENVELOPE_SENT: { icon: Send, className: 'text-muted-foreground' },
+  RECIPIENT_VIEWED: { icon: Eye, className: 'text-muted-foreground' },
+  RECIPIENT_SIGNED: { icon: PenLine, className: 'text-green-600' },
+  RECIPIENT_DECLINED: { icon: XCircle, className: 'text-red-500' },
+  ENVELOPE_VOIDED: { icon: Ban, className: 'text-red-500' },
+  ENVELOPE_COMPLETED: { icon: CheckCircle2, className: 'text-green-600' },
+  ENVELOPE_EXPIRED: { icon: XCircle, className: 'text-red-500' },
+  SIGNED_PDF_SAVED: { icon: FileDown, className: 'text-muted-foreground' },
 };
 
 // ---------------------------------------------------------------------------
@@ -28,32 +28,32 @@ const EVENT_CONFIG: Record<string, { icon: typeof Send; className: string }> = {
 // ---------------------------------------------------------------------------
 
 function formatRelativeTime(date: Date | string): string {
-  const d = typeof date === "string" ? new Date(date) : date;
+  const d = typeof date === 'string' ? new Date(date) : date;
   const now = new Date();
   const diffMs = now.getTime() - d.getTime();
   const diffMinutes = Math.floor(diffMs / (1000 * 60));
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-  if (diffMinutes < 1) return "Just now";
+  if (diffMinutes < 1) return 'Just now';
   if (diffMinutes < 60) return `${diffMinutes}m ago`;
   if (diffHours < 24) return `${diffHours}h ago`;
   if (diffDays < 30) return `${diffDays}d ago`;
-  return d.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
+  return d.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
   });
 }
 
 function formatFullDateTime(date: Date | string): string {
-  const d = typeof date === "string" ? new Date(date) : date;
-  return d.toLocaleString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return d.toLocaleString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
   });
 }
 
@@ -118,25 +118,24 @@ export function SigningAuditTrail({ envelopeId, open, onOpenChange }: SigningAud
             </div>
           ) : (
             <div className="space-y-0">
-              {events.map((event) => {
+              {events.map(event => {
                 const config = EVENT_CONFIG[event.eventType] ?? {
                   icon: Send,
-                  className: "text-muted-foreground",
+                  className: 'text-muted-foreground',
                 };
                 const Icon = config.icon;
 
                 return (
                   <div
                     key={event.id}
-                    className="flex items-start gap-3 border-b py-2 last:border-0"
-                  >
+                    className="flex items-start gap-3 border-b py-2 last:border-0">
                     <Icon className={`mt-0.5 size-4 shrink-0 ${config.className}`} />
                     <div className="min-w-0 flex-1">
                       <p className="text-sm">{event.description}</p>
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger
-                            render={(props) => (
+                            render={props => (
                               <p {...props} className="text-sm text-muted-foreground">
                                 {formatRelativeTime(event.occurredAt)}
                               </p>

@@ -2,10 +2,10 @@
 // E-Invoice Engine
 // ---------------------------------------------------------------------------
 
-import { getProfile, listProfiles } from "../registry.js";
-import type { ComplianceStatus } from "../types/compliance.js";
-import type { EInvoice } from "../types/invoice.js";
-import type { ValidationResult } from "../types/validation.js";
+import { getProfile, listProfiles } from '../registry.js';
+import type { ComplianceStatus } from '../types/compliance.js';
+import type { EInvoice } from '../types/invoice.js';
+import type { ValidationResult } from '../types/validation.js';
 
 /**
  * E-Invoice Engine — orchestrates country profiles for invoice operations.
@@ -55,6 +55,6 @@ export class EInvoiceEngine {
    */
   async getComplianceStatuses(organizationId: string): Promise<ComplianceStatus[]> {
     const profiles = listProfiles();
-    return Promise.all(profiles.map((p) => p.getComplianceStatus(organizationId)));
+    return Promise.all(profiles.map(p => p.getComplianceStatus(organizationId)));
   }
 }

@@ -1,14 +1,14 @@
-import { render, screen } from "@/test/test-utils";
-import { DataTableToolbar } from "../data-table-toolbar";
+import { render, screen } from '@/test/test-utils';
+import { DataTableToolbar } from '../data-table-toolbar';
 
-vi.mock("@tanstack/react-query", () => ({
+vi.mock('@tanstack/react-query', () => ({
   useQuery: () => ({ data: [] }),
 }));
 
-vi.mock("@/trpc/init", () => ({
+vi.mock('@/trpc/init', () => ({
   trpc: {
     user: {
-      list: { queryOptions: () => ({ queryKey: ["user", "list"] }) },
+      list: { queryOptions: () => ({ queryKey: ['user', 'list'] }) },
     },
   },
 }));
@@ -18,13 +18,13 @@ const emptyFilters = {
   type: [],
   billingModel: [],
   ownerUserId: [],
-  endDateFrom: "",
-  endDateTo: "",
+  endDateFrom: '',
+  endDateTo: '',
   complianceRiskLevel: [],
 };
 
-describe("DataTableToolbar (contracts)", () => {
-  it("renders search input", () => {
+describe('DataTableToolbar (contracts)', () => {
+  it('renders search input', () => {
     render(
       <DataTableToolbar
         search=""
@@ -34,10 +34,10 @@ describe("DataTableToolbar (contracts)", () => {
         onNewContract={vi.fn()}
       />,
     );
-    expect(screen.getByRole("textbox")).toBeInTheDocument();
+    expect(screen.getByRole('textbox')).toBeInTheDocument();
   });
 
-  it("renders new contract button", () => {
+  it('renders new contract button', () => {
     render(
       <DataTableToolbar
         search=""
@@ -47,11 +47,11 @@ describe("DataTableToolbar (contracts)", () => {
         onNewContract={vi.fn()}
       />,
     );
-    const buttons = screen.getAllByRole("button");
+    const buttons = screen.getAllByRole('button');
     expect(buttons.length).toBeGreaterThan(0);
   });
 
-  it("renders import button when onImport provided", () => {
+  it('renders import button when onImport provided', () => {
     render(
       <DataTableToolbar
         search=""
@@ -62,7 +62,7 @@ describe("DataTableToolbar (contracts)", () => {
         onImport={vi.fn()}
       />,
     );
-    const buttons = screen.getAllByRole("button");
+    const buttons = screen.getAllByRole('button');
     expect(buttons.length).toBeGreaterThan(1);
   });
 });

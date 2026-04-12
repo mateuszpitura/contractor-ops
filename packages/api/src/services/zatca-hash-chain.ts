@@ -7,7 +7,7 @@
 // First invoice PIH = SHA-256 of literal string "0".
 // ---------------------------------------------------------------------------
 
-import crypto from "node:crypto";
+import crypto from 'node:crypto';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -52,7 +52,7 @@ export interface RecordChainData {
  * SHA-256 hash of the literal string "0".
  * Used as PIH for the first invoice in an organization's chain.
  */
-const GENESIS_PIH = crypto.createHash("sha256").update("0").digest("hex");
+const GENESIS_PIH = crypto.createHash('sha256').update('0').digest('hex');
 
 // ---------------------------------------------------------------------------
 // Functions
@@ -68,7 +68,7 @@ const GENESIS_PIH = crypto.createHash("sha256").update("0").digest("hex");
  * T-48-10: Combined with @@unique([orgId, icv]) prevents concurrent/duplicate entries.
  */
 export async function acquireChainLock(prisma: PrismaLike, organizationId: string): Promise<void> {
-  await prisma.$executeRawUnsafe("SELECT pg_advisory_xact_lock(hashtext($1))", organizationId);
+  await prisma.$executeRawUnsafe('SELECT pg_advisory_xact_lock(hashtext($1))', organizationId);
 }
 
 /**
@@ -85,7 +85,7 @@ export async function getNextChainEntry(
 ): Promise<ChainEntry> {
   const lastEntry = await prisma.zatcaInvoiceChain.findFirst({
     where: { organizationId },
-    orderBy: { icv: "desc" },
+    orderBy: { icv: 'desc' },
     select: { icv: true, invoiceHash: true },
   });
 
@@ -117,7 +117,7 @@ export async function recordChainEntry(
       invoiceHash: data.invoiceHash,
       previousHash: data.previousHash,
       zatcaUuid: data.zatcaUuid,
-      zatcaStatus: "PENDING",
+      zatcaStatus: 'PENDING',
     },
   });
 }

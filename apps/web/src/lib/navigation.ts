@@ -1,4 +1,4 @@
-import type { LucideIcon } from "lucide-react";
+import type { LucideIcon } from 'lucide-react';
 import {
   Banknote,
   BarChart3,
@@ -13,7 +13,7 @@ import {
   Receipt,
   Settings,
   Users,
-} from "lucide-react";
+} from 'lucide-react';
 
 /**
  * Navigation item definition for the sidebar.
@@ -39,113 +39,113 @@ export interface NavGroup {
 
 export const navigationGroups: NavGroup[] = [
   {
-    key: "overview",
+    key: 'overview',
     items: [
       {
-        key: "dashboard",
-        label: "Dashboard",
-        href: "/",
+        key: 'dashboard',
+        label: 'Dashboard',
+        href: '/',
         icon: LayoutDashboard,
         permission: null,
       },
     ],
   },
   {
-    key: "operations",
+    key: 'operations',
     items: [
       {
-        key: "contractors",
-        label: "Contractors",
-        href: "/contractors",
+        key: 'contractors',
+        label: 'Contractors',
+        href: '/contractors',
         icon: Users,
-        permission: { resource: "contractor", actions: ["read"] },
+        permission: { resource: 'contractor', actions: ['read'] },
       },
       {
-        key: "contracts",
-        label: "Contracts",
-        href: "/contracts",
+        key: 'contracts',
+        label: 'Contracts',
+        href: '/contracts',
         icon: FileText,
-        permission: { resource: "contract", actions: ["read"] },
+        permission: { resource: 'contract', actions: ['read'] },
       },
       {
-        key: "workflows",
-        label: "Workflows",
-        href: "/workflows",
+        key: 'workflows',
+        label: 'Workflows',
+        href: '/workflows',
         icon: GitBranch,
-        permission: { resource: "workflow", actions: ["read"] },
+        permission: { resource: 'workflow', actions: ['read'] },
       },
       {
-        key: "equipment",
-        label: "Equipment",
-        href: "/equipment",
+        key: 'equipment',
+        label: 'Equipment',
+        href: '/equipment',
         icon: Package,
-        permission: { resource: "equipment", actions: ["read"] },
+        permission: { resource: 'equipment', actions: ['read'] },
       },
     ],
   },
   {
-    key: "finance",
+    key: 'finance',
     items: [
       {
-        key: "invoices",
-        label: "Invoices",
-        href: "/invoices",
+        key: 'invoices',
+        label: 'Invoices',
+        href: '/invoices',
         icon: Receipt,
-        permission: { resource: "invoice", actions: ["read"] },
+        permission: { resource: 'invoice', actions: ['read'] },
       },
       {
-        key: "approvals",
-        label: "Approvals",
-        href: "/approvals",
+        key: 'approvals',
+        label: 'Approvals',
+        href: '/approvals',
         icon: CheckCircle,
-        permission: { resource: "invoice", actions: ["approve"] },
+        permission: { resource: 'invoice', actions: ['approve'] },
       },
       {
-        key: "time",
-        label: "Time",
-        href: "/time",
+        key: 'time',
+        label: 'Time',
+        href: '/time',
         icon: Clock,
-        permission: { resource: "time", actions: ["read"] },
+        permission: { resource: 'time', actions: ['read'] },
       },
       {
-        key: "payments",
-        label: "Payments",
-        href: "/payments",
+        key: 'payments',
+        label: 'Payments',
+        href: '/payments',
         icon: Banknote,
-        permission: { resource: "payment", actions: ["read"] },
+        permission: { resource: 'payment', actions: ['read'] },
       },
       {
-        key: "reports",
-        label: "Reports",
-        href: "/reports",
+        key: 'reports',
+        label: 'Reports',
+        href: '/reports',
         icon: BarChart3,
-        permission: { resource: "report", actions: ["read"] },
+        permission: { resource: 'report', actions: ['read'] },
       },
     ],
   },
   {
-    key: "system",
+    key: 'system',
     items: [
       {
-        key: "integrations",
-        label: "Integrations",
-        href: "/settings?tab=integrations",
+        key: 'integrations',
+        label: 'Integrations',
+        href: '/settings?tab=integrations',
         icon: Plug,
-        permission: { resource: "integration", actions: ["read"] },
+        permission: { resource: 'integration', actions: ['read'] },
       },
       {
-        key: "notifications",
-        label: "Notifications",
-        href: "/notifications",
+        key: 'notifications',
+        label: 'Notifications',
+        href: '/notifications',
         icon: Bell,
         permission: null,
       },
       {
-        key: "settings",
-        label: "Settings",
-        href: "/settings",
+        key: 'settings',
+        label: 'Settings',
+        href: '/settings',
         icon: Settings,
-        permission: { resource: "settings", actions: ["read"] },
+        permission: { resource: 'settings', actions: ['read'] },
       },
     ],
   },
@@ -154,4 +154,4 @@ export const navigationGroups: NavGroup[] = [
 /**
  * Flat list of all navigation items (for backward compatibility).
  */
-export const navigationItems: NavItem[] = navigationGroups.flatMap((group) => group.items);
+export const navigationItems: NavItem[] = navigationGroups.flatMap(group => group.items);

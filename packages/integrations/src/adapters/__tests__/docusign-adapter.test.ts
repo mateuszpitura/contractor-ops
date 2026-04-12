@@ -1,9 +1,9 @@
-import { createHmac } from "node:crypto";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { createHmac } from 'node:crypto';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockFindUnique = vi.fn();
 
-vi.mock("@contractor-ops/db", () => ({
+vi.mock('@contractor-ops/db', () => ({
   prisma: {
     integrationConnection: {
       findUnique: (...args: unknown[]) => mockFindUnique(...args),
@@ -11,41 +11,45 @@ vi.mock("@contractor-ops/db", () => ({
   },
 }));
 
-vi.mock("../../services/credential-service.js", () => ({
+vi.mock('../../services/credential-service.js', () => ({
   decryptCredentials: vi.fn(() => ({
-    accessToken: "access-token",
-    refreshToken: "refresh-token",
+    accessToken: 'access-token',
+    refreshToken: 'refresh-token',
   })),
 }));
 
 const mockCreateEnvelope = vi.fn(async () => ({
-  envelopeId: "env-abc",
-  status: "sent",
+  envelopeId: 'env-abc',
+  status: 'sent',
 }));
 const mockCreateRecipientView = vi.fn(async () => ({
-  url: "https://apps-d.docusign.com/signing/xyz",
+  url: 'https://apps-d.docusign.com/signing/xyz',
 }));
-const mockGetDocument = vi.fn(async () => Buffer.from("%PDF-1.4 fake"));
+const mockGetDocument = vi.fn(async () => Buffer.from('%PDF-1.4 fake'));
 const mockUpdateEnvelope = vi.fn(async () => undefined);
 const mockGetEnvelope = vi.fn(async () => ({
-  envelopeId: "env-abc",
-  status: "completed",
+  envelopeId: 'env-abc',
+  status: 'completed',
 }));
 const mockListRecipients = vi.fn(async () => ({
   signers: [
     {
-      recipientId: "1",
-      email: "signer@example.com",
-      status: "completed",
+      recipientId: '1',
+      email: 'signer@example.com',
+      status: 'completed',
     },
   ],
 }));
 
-vi.mock("docusign-esign", () => {
+vi.mock('docusign-esign', () => {
   const docusignEsign = {
     ApiClient: class ApiClient {
-      setBasePath() {}
-      addDefaultHeader() {}
+      setBasePath() {
+        /* no-op */
+      }
+      addDefaultHeader() {
+        /* no-op */
+      }
     },
     EnvelopesApi: class EnvelopesApi {
       createEnvelope = mockCreateEnvelope;
@@ -68,33 +72,33 @@ vi.mock("docusign-esign", () => {
   return { ...docusignEsign, default: docusignEsign };
 });
 
-import { DocuSignAdapter } from "../docusign-adapter.js";
+import { DocuSignAdapter } from '../docusign-adapter.js';
 
 function mockFetch(ok: boolean, body: unknown, status = 200) {
   return vi.fn().mockResolvedValue({
     ok,
     status,
-    text: () => Promise.resolve(typeof body === "string" ? body : JSON.stringify(body)),
+    text: () => Promise.resolve(typeof body === 'string' ? body : JSON.stringify(body)),
     json: () => Promise.resolve(body),
   });
 }
 
-describe("DocuSignAdapter", () => {
+describe('DocuSignAdapter', () => {
   let adapter: DocuSignAdapter;
 
   beforeEach(() => {
     adapter = new DocuSignAdapter();
     vi.clearAllMocks();
     mockFindUnique.mockResolvedValue({
-      id: "conn-1",
-      status: "CONNECTED",
-      credentialsRef: "enc",
+      id: 'conn-1',
+      status: 'CONNECTED',
+      credentialsRef: 'enc',
       configJson: {
-        accountId: "acc-1",
-        basePath: "https://demo.docusign.net/restapi",
+        accountId: 'acc-1',
+        basePath: 'https://demo.docusign.net/restapi',
       },
     });
-    process.env.APP_URL = "http://localhost:3000";
+    process.env.APP_URL = 'http://localhost:3000';
   });
 
   afterEach(() => {
@@ -106,177 +110,177 @@ describe("DocuSignAdapter", () => {
     delete process.env.APP_URL;
   });
 
-  it("exposes slug, displayName, OAuth and webhook flags, embedded signing", () => {
-    expect(adapter.slug).toBe("docusign");
-    expect(adapter.displayName).toBe("DocuSign");
+  it('exposes slug, displayName, OAuth and webhook flags, embedded signing', () => {
+    expect(adapter.slug).toBe('docusign');
+    expect(adapter.displayName).toBe('DocuSign');
     expect(adapter.supportsOAuth).toBe(true);
     expect(adapter.supportsWebhooks).toBe(true);
     expect(adapter.supportsEmbeddedSigning).toBe(true);
   });
 
-  it("getOAuthConfig points to DocuSign OAuth and signature scope", () => {
+  it('getOAuthConfig points to DocuSign OAuth and signature scope', () => {
     const c = adapter.getOAuthConfig();
-    expect(c.authorizationUrl).toContain("docusign.com/oauth/auth");
-    expect(c.tokenUrl).toContain("docusign.com/oauth/token");
-    expect(c.scopes).toContain("signature");
+    expect(c.authorizationUrl).toContain('docusign.com/oauth/auth');
+    expect(c.tokenUrl).toContain('docusign.com/oauth/token');
+    expect(c.scopes).toContain('signature');
   });
 
-  it("exchangeCodeForTokens posts to token URL and maps response", async () => {
-    process.env.DOCUSIGN_CLIENT_ID = "id";
-    process.env.DOCUSIGN_CLIENT_SECRET = "secret";
+  it('exchangeCodeForTokens posts to token URL and maps response', async () => {
+    process.env.DOCUSIGN_CLIENT_ID = 'id';
+    process.env.DOCUSIGN_CLIENT_SECRET = 'secret';
 
     const fetchMock = mockFetch(true, {
-      access_token: "at",
-      refresh_token: "rt",
+      access_token: 'at',
+      refresh_token: 'rt',
       expires_in: 3600,
-      token_type: "Bearer",
+      token_type: 'Bearer',
     });
-    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal('fetch', fetchMock);
 
-    const out = await adapter.exchangeCodeForTokens("code", "http://localhost/cb");
+    const out = await adapter.exchangeCodeForTokens('code', 'http://localhost/cb');
 
-    expect(out.accessToken).toBe("at");
-    expect(out.refreshToken).toBe("rt");
-    expect(out.tokenType).toBe("Bearer");
+    expect(out.accessToken).toBe('at');
+    expect(out.refreshToken).toBe('rt');
+    expect(out.tokenType).toBe('Bearer');
     expect(fetchMock).toHaveBeenCalled();
     const [, init] = fetchMock.mock.calls[0]!;
-    expect((init as RequestInit).method).toBe("POST");
+    expect((init as RequestInit).method).toBe('POST');
   });
 
-  it("exchangeCodeForTokens throws on non-ok response", async () => {
-    process.env.DOCUSIGN_CLIENT_ID = "id";
-    process.env.DOCUSIGN_CLIENT_SECRET = "secret";
-    vi.stubGlobal("fetch", mockFetch(false, "bad", 401));
+  it('exchangeCodeForTokens throws on non-ok response', async () => {
+    process.env.DOCUSIGN_CLIENT_ID = 'id';
+    process.env.DOCUSIGN_CLIENT_SECRET = 'secret';
+    vi.stubGlobal('fetch', mockFetch(false, 'bad', 401));
 
-    await expect(adapter.exchangeCodeForTokens("code", "http://localhost/cb")).rejects.toThrow(
+    await expect(adapter.exchangeCodeForTokens('code', 'http://localhost/cb')).rejects.toThrow(
       /DocuSign OAuth exchange failed/,
     );
   });
 
-  it("refreshToken posts refresh_token grant", async () => {
-    process.env.DOCUSIGN_CLIENT_ID = "id";
-    process.env.DOCUSIGN_CLIENT_SECRET = "secret";
+  it('refreshToken posts refresh_token grant', async () => {
+    process.env.DOCUSIGN_CLIENT_ID = 'id';
+    process.env.DOCUSIGN_CLIENT_SECRET = 'secret';
     const fetchMock = mockFetch(true, {
-      access_token: "at2",
-      refresh_token: "rt2",
+      access_token: 'at2',
+      refresh_token: 'rt2',
       expires_in: 7200,
-      token_type: "Bearer",
+      token_type: 'Bearer',
     });
-    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal('fetch', fetchMock);
 
     await adapter.refreshToken({
-      accessToken: "old",
-      refreshToken: "rt",
-      tokenType: "Bearer",
-      scope: "signature",
+      accessToken: 'old',
+      refreshToken: 'rt',
+      tokenType: 'Bearer',
+      scope: 'signature',
     });
 
     const [, init] = fetchMock.mock.calls[0]!;
     const body = new URLSearchParams((init as RequestInit).body as string);
-    expect(body.get("grant_type")).toBe("refresh_token");
+    expect(body.get('grant_type')).toBe('refresh_token');
   });
 
-  it("createEnvelope calls SDK and returns external envelope id", async () => {
+  it('createEnvelope calls SDK and returns external envelope id', async () => {
     const req = {
-      documentBase64: Buffer.from("%PDF").toString("base64"),
-      documentName: "contract.pdf",
+      documentBase64: Buffer.from('%PDF').toString('base64'),
+      documentName: 'contract.pdf',
       signers: [
         {
-          name: "Jane Doe",
-          email: "jane@example.com",
-          role: "signer" as const,
+          name: 'Jane Doe',
+          email: 'jane@example.com',
+          role: 'signer' as const,
           routingOrder: 1,
         },
       ],
     };
 
-    const result = await adapter.createEnvelope("conn-1", req);
+    const result = await adapter.createEnvelope('conn-1', req);
 
     expect(mockCreateEnvelope).toHaveBeenCalled();
-    expect(result.externalEnvelopeId).toBe("env-abc");
-    expect(result.status).toBe("sent");
-    expect(result.signers[0]?.email).toBe("jane@example.com");
+    expect(result.externalEnvelopeId).toBe('env-abc');
+    expect(result.status).toBe('sent');
+    expect(result.signers[0]?.email).toBe('jane@example.com');
   });
 
-  it("getEmbeddedSigningUrl returns recipient view url", async () => {
+  it('getEmbeddedSigningUrl returns recipient view url', async () => {
     const out = await adapter.getEmbeddedSigningUrl(
-      "conn-1",
-      "env-abc",
-      "signer@example.com",
-      "http://localhost/done",
+      'conn-1',
+      'env-abc',
+      'signer@example.com',
+      'http://localhost/done',
     );
-    expect(out.url).toContain("docusign.com");
+    expect(out.url).toContain('docusign.com');
     expect(mockCreateRecipientView).toHaveBeenCalled();
   });
 
-  it("getSignedDocument returns base64 pdf", async () => {
-    const out = await adapter.getSignedDocument("conn-1", "env-abc");
-    expect(out.mimeType).toBe("application/pdf");
+  it('getSignedDocument returns base64 pdf', async () => {
+    const out = await adapter.getSignedDocument('conn-1', 'env-abc');
+    expect(out.mimeType).toBe('application/pdf');
     expect(out.documentBase64.length).toBeGreaterThan(0);
-    expect(mockGetDocument).toHaveBeenCalledWith("acc-1", "env-abc", "combined");
+    expect(mockGetDocument).toHaveBeenCalledWith('acc-1', 'env-abc', 'combined');
   });
 
-  it("voidEnvelope updates envelope to voided", async () => {
-    await adapter.voidEnvelope("conn-1", "env-abc", "wrong terms");
+  it('voidEnvelope updates envelope to voided', async () => {
+    await adapter.voidEnvelope('conn-1', 'env-abc', 'wrong terms');
     expect(mockUpdateEnvelope).toHaveBeenCalled();
   });
 
-  describe("normalizeWebhookEvent", () => {
-    it("maps recipient completed to RECIPIENT_SIGNED", () => {
+  describe('normalizeWebhookEvent', () => {
+    it('maps recipient completed to RECIPIENT_SIGNED', () => {
       const ev = adapter.normalizeWebhookEvent({
-        envelopeId: "env-x",
+        envelopeId: 'env-x',
         data: {
-          envelopeId: "env-x",
+          envelopeId: 'env-x',
           envelopeSummary: {
-            status: "sent",
+            status: 'sent',
             recipients: {
               signers: [
                 {
-                  email: "a@b.com",
-                  name: "A",
-                  status: "completed",
+                  email: 'a@b.com',
+                  name: 'A',
+                  status: 'completed',
                 },
               ],
             },
           },
         },
       });
-      expect(ev.eventType).toBe("RECIPIENT_SIGNED");
-      expect(ev.recipientEmail).toBe("a@b.com");
-      expect(ev.externalEnvelopeId).toBe("env-x");
+      expect(ev.eventType).toBe('RECIPIENT_SIGNED');
+      expect(ev.recipientEmail).toBe('a@b.com');
+      expect(ev.externalEnvelopeId).toBe('env-x');
     });
 
-    it("maps envelope-level completed when no recipient row", () => {
+    it('maps envelope-level completed when no recipient row', () => {
       const ev = adapter.normalizeWebhookEvent({
-        status: "completed",
-        envelopeId: "env-9",
+        status: 'completed',
+        envelopeId: 'env-9',
       });
-      expect(ev.eventType).toBe("ENVELOPE_COMPLETED");
-      expect(ev.envelopeStatus).toBe("COMPLETED");
+      expect(ev.eventType).toBe('ENVELOPE_COMPLETED');
+      expect(ev.envelopeStatus).toBe('COMPLETED');
     });
   });
 
-  describe("verifyWebhookSignature", () => {
-    it("returns valid when HMAC matches", () => {
-      process.env.DOCUSIGN_WEBHOOK_SECRET = "whsec";
+  describe('verifyWebhookSignature', () => {
+    it('returns valid when HMAC matches', () => {
+      process.env.DOCUSIGN_WEBHOOK_SECRET = 'whsec';
       const raw = '{"test":true}';
-      const sig = createHmac("sha256", "whsec").update(raw).digest("base64");
+      const sig = createHmac('sha256', 'whsec').update(raw).digest('base64');
       const result = adapter.verifyWebhookSignature(raw, {
-        "x-docusign-signature-1": sig,
+        'x-docusign-signature-1': sig,
       });
-      expect(result).toEqual({ valid: true, eventType: "docusign-connect" });
+      expect(result).toEqual({ valid: true, eventType: 'docusign-connect' });
     });
 
-    it("returns invalid when secret missing", () => {
-      const result = adapter.verifyWebhookSignature("{}", {
-        "x-docusign-signature-1": "x",
+    it('returns invalid when secret missing', () => {
+      const result = adapter.verifyWebhookSignature('{}', {
+        'x-docusign-signature-1': 'x',
       });
       expect(result.valid).toBe(false);
     });
 
-    it("returns invalid when signature header missing", () => {
-      process.env.DOCUSIGN_WEBHOOK_SECRET = "whsec";
-      expect(adapter.verifyWebhookSignature("{}", {}).valid).toBe(false);
+    it('returns invalid when signature header missing', () => {
+      process.env.DOCUSIGN_WEBHOOK_SECRET = 'whsec';
+      expect(adapter.verifyWebhookSignature('{}', {}).valid).toBe(false);
     });
   });
 });

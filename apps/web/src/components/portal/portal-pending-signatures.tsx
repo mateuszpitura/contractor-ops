@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { EmbeddedSigningModal } from "@/components/contracts/contract-detail/embedded-signing-modal";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { trpc } from "@/trpc/init";
+import { useQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { EmbeddedSigningModal } from '@/components/contracts/contract-detail/embedded-signing-modal';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -18,21 +18,21 @@ function formatRelativeTime(
   date: Date | string,
   t: (key: string, values?: Record<string, string | number | Date>) => string,
 ): string {
-  const d = typeof date === "string" ? new Date(date) : date;
+  const d = typeof date === 'string' ? new Date(date) : date;
   const now = new Date();
   const diffMs = now.getTime() - d.getTime();
   const diffMinutes = Math.floor(diffMs / (1000 * 60));
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-  if (diffMinutes < 1) return t("time.justNow");
-  if (diffMinutes < 60) return t("time.minutesAgo", { minutes: diffMinutes });
-  if (diffHours < 24) return t("time.hoursAgo", { hours: diffHours });
-  if (diffDays < 30) return t("time.daysAgo", { days: diffDays });
-  return d.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
+  if (diffMinutes < 1) return t('time.justNow');
+  if (diffMinutes < 60) return t('time.minutesAgo', { minutes: diffMinutes });
+  if (diffHours < 24) return t('time.hoursAgo', { hours: diffHours });
+  if (diffDays < 30) return t('time.daysAgo', { days: diffDays });
+  return d.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
   });
 }
 
@@ -68,7 +68,7 @@ type SigningTarget = {
  * Hidden when count is 0. Max 5 items shown.
  */
 export function PortalPendingSignatures() {
-  const t = useTranslations("Portal");
+  const t = useTranslations('Portal');
   const [signingTarget, setSigningTarget] = useState<SigningTarget | null>(null);
 
   const pendingQuery = useQuery(trpc.esign.listPendingForContractor.queryOptions());
@@ -88,7 +88,7 @@ export function PortalPendingSignatures() {
       <div className="space-y-3">
         {/* Section heading */}
         <div className="flex items-center gap-2">
-          <h2 className="text-sm font-semibold">{t("pendingSignatures.title")}</h2>
+          <h2 className="text-sm font-semibold">{t('pendingSignatures.title')}</h2>
           {!pendingQuery.isPending && items.length > 0 && (
             <Badge variant="secondary">{items.length}</Badge>
           )}
@@ -111,16 +111,16 @@ export function PortalPendingSignatures() {
           </div>
         ) : (
           <div className="space-y-3">
-            {displayItems.map((item) => (
+            {displayItems.map(item => (
               <Card key={item.envelopeId} className="p-4">
                 <div className="flex items-center justify-between gap-4">
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-semibold">
-                      Contract #{item.contractId?.slice(-6) ?? t("pendingSignatures.na")}
+                      Contract #{item.contractId?.slice(-6) ?? t('pendingSignatures.na')}
                     </p>
                     {item.sentAt && (
                       <p className="text-sm text-muted-foreground">
-                        {t("pendingSignatures.sent", { time: formatRelativeTime(item.sentAt, t) })}
+                        {t('pendingSignatures.sent', { time: formatRelativeTime(item.sentAt, t) })}
                       </p>
                     )}
                   </div>
@@ -130,11 +130,10 @@ export function PortalPendingSignatures() {
                       setSigningTarget({
                         envelopeId: item.envelopeId,
                         recipientEmail: item.recipientEmail,
-                        documentTitle: `Contract #${item.contractId?.slice(-6) ?? t("pendingSignatures.na")}`,
+                        documentTitle: `Contract #${item.contractId?.slice(-6) ?? t('pendingSignatures.na')}`,
                       })
-                    }
-                  >
-                    {t("pendingSignatures.signNow")}
+                    }>
+                    {t('pendingSignatures.signNow')}
                   </Button>
                 </div>
               </Card>
@@ -142,7 +141,7 @@ export function PortalPendingSignatures() {
 
             {hasMore && (
               <a href="/portal/signatures" className="text-sm text-primary hover:underline">
-                {t("pendingSignatures.viewAll")}
+                {t('pendingSignatures.viewAll')}
               </a>
             )}
           </div>
@@ -158,7 +157,7 @@ export function PortalPendingSignatures() {
           provider="DOCUSIGN"
           usePortalAuth
           open={!!signingTarget}
-          onOpenChange={(open) => {
+          onOpenChange={open => {
             if (!open) setSigningTarget(null);
           }}
           onComplete={() => {

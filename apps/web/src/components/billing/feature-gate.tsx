@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import type { ReactNode } from "react";
-import { trpc } from "@/trpc/init";
-import { UpgradeInlineBanner } from "./upgrade-inline-banner";
+import { useQuery } from '@tanstack/react-query';
+import type { ReactNode } from 'react';
+import { trpc } from '@/trpc/init';
+import { UpgradeInlineBanner } from './upgrade-inline-banner';
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
 interface FeatureGateProps {
-  requiredTier: "Pro" | "Enterprise";
+  requiredTier: 'Pro' | 'Enterprise';
   featureName: string;
   children: ReactNode;
 }
@@ -26,8 +26,8 @@ const TIER_RANK: Record<string, number> = {
 };
 
 const PROP_TO_KEY: Record<string, string> = {
-  Pro: "PRO",
-  Enterprise: "ENTERPRISE",
+  Pro: 'PRO',
+  Enterprise: 'ENTERPRISE',
 };
 
 // ---------------------------------------------------------------------------
@@ -42,7 +42,7 @@ export function FeatureGate({ requiredTier, featureName, children }: FeatureGate
     return <>{children}</>;
   }
 
-  const requiredTierKey = PROP_TO_KEY[requiredTier] ?? "PRO";
+  const requiredTierKey = PROP_TO_KEY[requiredTier] ?? 'PRO';
   const currentRank = subscription?.tier ? (TIER_RANK[subscription.tier as string] ?? 0) : 0;
   const requiredRank = TIER_RANK[requiredTierKey] ?? 0;
 

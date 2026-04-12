@@ -1,4 +1,4 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
+import { createHmac, timingSafeEqual } from 'node:crypto';
 
 // ---------------------------------------------------------------------------
 // OAuth State — HMAC-signed CSRF protection with cross-provider validation
@@ -34,10 +34,10 @@ export function generateOAuthState(
 ): string {
   const timestamp = Date.now();
   const dataToSign = `${provider}:${orgId}:${userId}:${timestamp}`;
-  const sig = createHmac("sha256", signingSecret).update(dataToSign).digest("hex");
+  const sig = createHmac('sha256', signingSecret).update(dataToSign).digest('hex');
 
   const payload = { provider, orgId, userId, timestamp, sig };
-  return Buffer.from(JSON.stringify(payload)).toString("base64url");
+  return Buffer.from(JSON.stringify(payload)).toString('base64url');
 }
 
 /**
@@ -55,7 +55,7 @@ export function verifyOAuthState(
   signingSecret: string,
 ): OAuthStatePayload | null {
   try {
-    const decoded = JSON.parse(Buffer.from(stateParam, "base64url").toString("utf-8")) as {
+    const decoded = JSON.parse(Buffer.from(stateParam, 'base64url').toString('utf-8')) as {
       provider: string;
       orgId: string;
       userId: string;
@@ -68,10 +68,10 @@ export function verifyOAuthState(
 
     // Recompute HMAC and compare with timing-safe equality
     const dataToSign = `${decoded.provider}:${decoded.orgId}:${decoded.userId}:${decoded.timestamp}`;
-    const expectedSig = createHmac("sha256", signingSecret).update(dataToSign).digest("hex");
+    const expectedSig = createHmac('sha256', signingSecret).update(dataToSign).digest('hex');
 
-    const sigBuffer = Buffer.from(decoded.sig, "hex");
-    const expectedBuffer = Buffer.from(expectedSig, "hex");
+    const sigBuffer = Buffer.from(decoded.sig, 'hex');
+    const expectedBuffer = Buffer.from(expectedSig, 'hex');
     if (sigBuffer.length !== expectedBuffer.length || !timingSafeEqual(sigBuffer, expectedBuffer)) {
       return null;
     }

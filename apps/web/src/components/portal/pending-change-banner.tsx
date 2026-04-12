@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { ChevronDown, Clock } from "lucide-react";
-import { useState } from "react";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ChevronDown, Clock } from 'lucide-react';
+import { useState } from 'react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -20,18 +20,18 @@ interface PendingChangeBannerProps {
 // ---------------------------------------------------------------------------
 
 const FIELD_LABELS: Record<string, string> = {
-  bankAccountNumber: "Bank Account Number",
-  bankName: "Bank Name",
-  swiftBic: "SWIFT/BIC Code",
-  taxId: "Tax ID (NIP)",
+  bankAccountNumber: 'Bank Account Number',
+  bankName: 'Bank Name',
+  swiftBic: 'SWIFT/BIC Code',
+  taxId: 'Tax ID (NIP)',
 };
 
 function formatDate(date: Date | string): string {
-  const d = typeof date === "string" ? new Date(date) : date;
-  return new Intl.DateTimeFormat("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
   }).format(d);
 }
 
@@ -68,15 +68,14 @@ export function PendingChangeBanner({ pendingChangeRequest }: PendingChangeBanne
           {changeEntries.length > 0 && (
             <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>
               <CollapsibleTrigger
-                render={(props) => (
+                render={props => (
                   <button
                     {...props}
                     type="button"
-                    className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-amber-700 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-300"
-                  >
+                    className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-amber-700 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-300">
                     <ChevronDown
                       className={`h-4 w-4 transition-transform duration-200 ${
-                        detailsOpen ? "rotate-180" : ""
+                        detailsOpen ? 'rotate-180' : ''
                       }`}
                     />
                     View submitted changes

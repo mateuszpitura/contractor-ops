@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ClipboardCopy, Loader2, Save } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { ClipboardCopy, Loader2, Save } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -13,23 +13,23 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { trpc } from "@/trpc/init";
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
 export function InvoiceMatchingSettings() {
-  const t = useTranslations("Settings");
-  const tToast = useTranslations("Settings.toast");
+  const t = useTranslations('Settings');
+  const tToast = useTranslations('Settings.toast');
   const queryClient = useQueryClient();
 
   // Load org data for slug (email address)
   const settingsQuery = useQuery(trpc.settings.get.queryOptions());
   const orgData = settingsQuery.data;
-  const orgSlug = orgData?.slug ?? "org";
+  const orgSlug = orgData?.slug ?? 'org';
   const emailAddress = `invoices@${orgSlug}.contractorhub.io`;
 
   // Load current deviation threshold
@@ -47,13 +47,13 @@ export function InvoiceMatchingSettings() {
   const updateMutation = useMutation(
     trpc.settings.updateInvoiceSettings.mutationOptions({
       onSuccess: () => {
-        toast.success(t("invoiceSettingsSaved"));
+        toast.success(t('invoiceSettingsSaved'));
         queryClient.invalidateQueries({
           queryKey: trpc.settings.getInvoiceSettings.queryKey(),
         });
       },
       onError: () => {
-        toast.error(tToast("invoiceSettingsFailed"));
+        toast.error(tToast('invoiceSettingsFailed'));
       },
     }),
   );
@@ -61,7 +61,7 @@ export function InvoiceMatchingSettings() {
   const handleCopyEmail = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(emailAddress);
-      toast.success(t("emailCopied"));
+      toast.success(t('emailCopied'));
     } catch {
       // Fallback: select text for manual copy
     }
@@ -77,14 +77,14 @@ export function InvoiceMatchingSettings() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t("invoiceEmailInbox")}</CardTitle>
-        <CardDescription>{t("invoiceEmailBody")}</CardDescription>
+        <CardTitle>{t('invoiceEmailInbox')}</CardTitle>
+        <CardDescription>{t('invoiceEmailBody')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Email inbox address */}
         <div className="space-y-2">
           <label htmlFor="invoice-email" className="text-sm font-medium">
-            {t("invoiceEmailInbox")}
+            {t('invoiceEmailInbox')}
           </label>
           <div className="flex items-center gap-2">
             <Input id="invoice-email" value={emailAddress} readOnly className="font-mono text-sm" />
@@ -93,18 +93,17 @@ export function InvoiceMatchingSettings() {
               variant="outline"
               size="icon"
               onClick={handleCopyEmail}
-              aria-label={t("copyEmail")}
-            >
+              aria-label={t('copyEmail')}>
               <ClipboardCopy className="size-4" />
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">{t("invoiceEmailBody")}</p>
+          <p className="text-xs text-muted-foreground">{t('invoiceEmailBody')}</p>
         </div>
 
         {/* Deviation threshold */}
         <div className="space-y-2">
           <label htmlFor="deviation-threshold" className="text-sm font-medium">
-            {t("deviationThreshold")}
+            {t('deviationThreshold')}
           </label>
           <Input
             id="deviation-threshold"
@@ -112,10 +111,10 @@ export function InvoiceMatchingSettings() {
             min={1}
             max={100}
             value={threshold}
-            onChange={(e) => setThreshold(Number(e.target.value))}
+            onChange={e => setThreshold(Number(e.target.value))}
             className="max-w-[120px]"
           />
-          <p className="text-xs text-muted-foreground">{t("deviationThresholdHelp")}</p>
+          <p className="text-xs text-muted-foreground">{t('deviationThresholdHelp')}</p>
         </div>
       </CardContent>
       <CardFooter>
@@ -125,7 +124,7 @@ export function InvoiceMatchingSettings() {
           ) : (
             <Save className="me-1.5 size-3.5" />
           )}
-          {t("saveCta")}
+          {t('saveCta')}
         </Button>
       </CardFooter>
     </Card>

@@ -1,26 +1,26 @@
-import { auth } from "@contractor-ops/auth";
-import type { Prisma } from "@contractor-ops/db/generated/prisma/client";
+import { auth } from '@contractor-ops/auth';
+import type { Prisma } from '@contractor-ops/db/generated/prisma/client';
 import {
   orgExpiryReminderDefaultsSchema,
   updateOrganizationSettingsSchema,
-} from "@contractor-ops/validators";
-import { TRPCError } from "@trpc/server";
-import { z } from "zod";
-import * as E from "../errors.js";
-import { router } from "../init.js";
-import { requirePermission } from "../middleware/rbac.js";
-import { sensitiveActionProcedure } from "../middleware/sensitive.js";
-import { tenantProcedure } from "../middleware/tenant.js";
-import { CacheKeys, CacheTTL, cached, invalidateByPrefix } from "../services/cache.js";
-import { approveChangeRequest, rejectChangeRequest } from "../services/portal-change-request.js";
-import { createRegionalPresignedUploadUrl } from "../services/regional-storage.js";
+} from '@contractor-ops/validators';
+import { TRPCError } from '@trpc/server';
+import { z } from 'zod';
+import * as E from '../errors.js';
+import { router } from '../init.js';
+import { requirePermission } from '../middleware/rbac.js';
+import { sensitiveActionProcedure } from '../middleware/sensitive.js';
+import { tenantProcedure } from '../middleware/tenant.js';
+import { CacheKeys, CacheTTL, cached, invalidateByPrefix } from '../services/cache.js';
+import { approveChangeRequest, rejectChangeRequest } from '../services/portal-change-request.js';
+import { createRegionalPresignedUploadUrl } from '../services/regional-storage.js';
 
 export const settingsRouter = router({
   /**
    * Get organization settings.
    * Returns fiscal year, branding, notification defaults, and language.
    */
-  get: tenantProcedure.use(requirePermission({ settings: ["read"] })).query(async ({ ctx }) => {
+  get: tenantProcedure.use(requirePermission({ settings: ['read'] })).query(async ({ ctx }) => {
     return cached(CacheKeys.orgSettings(ctx.organizationId), CacheTTL.ORG_SETTINGS, async () => {
       const org = await auth.api.getFullOrganization({
         headers: ctx.headers,
@@ -41,7 +41,7 @@ export const settingsRouter = router({
    * Sensitive action: requires re-authentication if session > 5 minutes old.
    */
   update: sensitiveActionProcedure
-    .use(requirePermission({ settings: ["update"] }))
+    .use(requirePermission({ settings: ['update'] }))
     .input(updateOrganizationSettingsSchema)
     .mutation(async ({ ctx, input }) => {
       const metadataUpdates: Record<string, unknown> = {};
@@ -92,10 +92,10 @@ export const settingsRouter = router({
    * Falls back to [30, 60, 90] if not configured.
    */
   getExpiryReminderDefaults: tenantProcedure
-    .use(requirePermission({ settings: ["read"] }))
+    .use(requirePermission({ settings: ['read'] }))
     .query(async ({ ctx }) => {
       return cached(
-        CacheKeys.orgSettingsJson(ctx.organizationId, "expiry"),
+        CacheKeys.orgSettingsJson(ctx.organizationId, 'expiry'),
         CacheTTL.ORG_SETTINGS_JSON,
         async () => {
           const org = await ctx.db.organization.findUnique({
@@ -117,7 +117,7 @@ export const settingsRouter = router({
    * Update org-level default expiry reminder intervals for contracts.
    */
   updateExpiryReminderDefaults: tenantProcedure
-    .use(requirePermission({ settings: ["update"] }))
+    .use(requirePermission({ settings: ['update'] }))
     .input(orgExpiryReminderDefaultsSchema)
     .mutation(async ({ ctx, input }) => {
       const org = await ctx.db.organization.findUnique({
@@ -149,10 +149,10 @@ export const settingsRouter = router({
    * Falls back to 10% if not configured.
    */
   getInvoiceSettings: tenantProcedure
-    .use(requirePermission({ settings: ["read"] }))
+    .use(requirePermission({ settings: ['read'] }))
     .query(async ({ ctx }) => {
       return cached(
-        CacheKeys.orgSettingsJson(ctx.organizationId, "invoice"),
+        CacheKeys.orgSettingsJson(ctx.organizationId, 'invoice'),
         CacheTTL.ORG_SETTINGS_JSON,
         async () => {
           const org = await ctx.db.organization.findUnique({
@@ -173,7 +173,7 @@ export const settingsRouter = router({
    * Update invoice matching settings (deviation threshold).
    */
   updateInvoiceSettings: tenantProcedure
-    .use(requirePermission({ settings: ["update"] }))
+    .use(requirePermission({ settings: ['update'] }))
     .input(
       z.object({
         invoiceDeviationThresholdPercent: z.number().int().min(1).max(100),
@@ -215,7 +215,7 @@ export const settingsRouter = router({
    * Used by admin branding section to populate form.
    */
   getBranding: tenantProcedure
-    .use(requirePermission({ settings: ["read"] }))
+    .use(requirePermission({ settings: ['read'] }))
     .query(async ({ ctx }) => {
       return cached(CacheKeys.orgBranding(ctx.organizationId), CacheTTL.ORG_BRANDING, async () => {
         const org = await ctx.db.organization.findUnique({
@@ -237,24 +237,24 @@ export const settingsRouter = router({
    * Accepts image/png, image/jpeg, image/svg+xml. Max 2MB enforced client-side.
    */
   getLogoUploadUrl: tenantProcedure
-    .use(requirePermission({ settings: ["update"] }))
+    .use(requirePermission({ settings: ['update'] }))
     .input(
       z.object({
         filename: z.string(),
         contentType: z
           .string()
           .refine(
-            (ct) => ["image/png", "image/jpeg", "image/svg+xml"].includes(ct),
-            "Must be PNG, JPEG, or SVG",
+            ct => ['image/png', 'image/jpeg', 'image/svg+xml'].includes(ct),
+            'Must be PNG, JPEG, or SVG',
           ),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const ext = input.filename.split(".").pop() ?? "png";
+      const ext = input.filename.split('.').pop() ?? 'png';
       const key = `orgs/${ctx.organizationId}/branding/logo.${ext}`;
       const uploadUrl = await createRegionalPresignedUploadUrl(key, input.contentType);
       // Public URL for R2 (bucket public access)
-      const publicUrl = `${process.env.R2_PUBLIC_URL ?? ""}/${key}`;
+      const publicUrl = `${process.env.R2_PUBLIC_URL ?? ''}/${key}`;
       return { uploadUrl, publicUrl, storageKey: key };
     }),
 
@@ -264,12 +264,12 @@ export const settingsRouter = router({
    * Per D-09, D-11.
    */
   updateBranding: tenantProcedure
-    .use(requirePermission({ settings: ["update"] }))
+    .use(requirePermission({ settings: ['update'] }))
     .input(
       z.object({
         brandColor: z
           .string()
-          .regex(/^#[0-9a-fA-F]{6}$/, "Must be a valid hex color")
+          .regex(/^#[0-9a-fA-F]{6}$/, 'Must be a valid hex color')
           .optional()
           .nullable(),
         logoUrl: z.string().url().optional().nullable(),
@@ -324,7 +324,7 @@ export const settingsRouter = router({
    * Get the current portal subdomain and custom domain for the organization.
    */
   getPortalDomain: tenantProcedure
-    .use(requirePermission({ settings: ["read"] }))
+    .use(requirePermission({ settings: ['read'] }))
     .query(async ({ ctx }) => {
       const org = await ctx.db.organization.findUnique({
         where: { id: ctx.organizationId },
@@ -344,16 +344,16 @@ export const settingsRouter = router({
    * Per D-10, PORT-08.
    */
   updatePortalDomain: tenantProcedure
-    .use(requirePermission({ settings: ["update"] }))
+    .use(requirePermission({ settings: ['update'] }))
     .input(
       z.object({
         portalSubdomain: z
           .string()
-          .min(3, "Subdomain must be at least 3 characters")
-          .max(63, "Subdomain must be at most 63 characters")
+          .min(3, 'Subdomain must be at least 3 characters')
+          .max(63, 'Subdomain must be at most 63 characters')
           .regex(
             /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/,
-            "Subdomain must contain only lowercase letters, numbers, and hyphens, and must start/end with alphanumeric",
+            'Subdomain must contain only lowercase letters, numbers, and hyphens, and must start/end with alphanumeric',
           )
           .optional()
           .nullable(),
@@ -370,7 +370,7 @@ export const settingsRouter = router({
         });
         if (existing) {
           throw new TRPCError({
-            code: "CONFLICT",
+            code: 'CONFLICT',
             message: E.SETTINGS_SUBDOMAIN_TAKEN,
           });
         }
@@ -394,11 +394,11 @@ export const settingsRouter = router({
    * Per D-03.
    */
   listChangeRequests: tenantProcedure
-    .use(requirePermission({ settings: ["read"] }))
+    .use(requirePermission({ settings: ['read'] }))
     .input(
       z
         .object({
-          status: z.enum(["PENDING", "APPROVED", "REJECTED"]).optional(),
+          status: z.enum(['PENDING', 'APPROVED', 'REJECTED']).optional(),
         })
         .optional(),
     )
@@ -420,10 +420,10 @@ export const settingsRouter = router({
             select: { name: true, email: true },
           },
         },
-        orderBy: { createdAt: "desc" },
+        orderBy: { createdAt: 'desc' },
       });
 
-      return requests.map((r) => ({
+      return requests.map(r => ({
         id: r.id,
         contractorId: r.contractorId,
         contractorName: r.contractor.displayName,
@@ -444,11 +444,11 @@ export const settingsRouter = router({
    * Per D-02, D-03.
    */
   reviewChangeRequest: tenantProcedure
-    .use(requirePermission({ settings: ["update"] }))
+    .use(requirePermission({ settings: ['update'] }))
     .input(
       z.object({
         requestId: z.string(),
-        action: z.enum(["approve", "reject"]),
+        action: z.enum(['approve', 'reject']),
         comment: z.string().optional(),
       }),
     )
@@ -456,7 +456,7 @@ export const settingsRouter = router({
       // tenantProcedure guarantees user is non-null
       const reviewerId = ctx.user?.id;
 
-      if (input.action === "approve") {
+      if (input.action === 'approve') {
         await approveChangeRequest(input.requestId, ctx.organizationId, reviewerId, input.comment);
       } else {
         await rejectChangeRequest(input.requestId, ctx.organizationId, reviewerId, input.comment);

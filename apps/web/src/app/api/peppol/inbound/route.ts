@@ -1,10 +1,10 @@
-import { PeppolOrchestrator } from "@contractor-ops/api/services/peppol-orchestrator";
-import { prisma } from "@contractor-ops/db";
-import { StorecoveAdapter } from "@contractor-ops/einvoice";
-import { getCredentials } from "@contractor-ops/integrations";
-import { verifySignatureAppRouter } from "@upstash/qstash/nextjs";
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import { PeppolOrchestrator } from '@contractor-ops/api/services/peppol-orchestrator';
+import { prisma } from '@contractor-ops/db';
+import { StorecoveAdapter } from '@contractor-ops/einvoice';
+import { getCredentials } from '@contractor-ops/integrations';
+import { verifySignatureAppRouter } from '@upstash/qstash/nextjs';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 // ---------------------------------------------------------------------------
 // POST /api/peppol/inbound
@@ -24,7 +24,7 @@ async function handler(request: NextRequest) {
   };
 
   if (!(deliveryId && organizationId)) {
-    return NextResponse.json({ error: "Missing deliveryId or organizationId" }, { status: 400 });
+    return NextResponse.json({ error: 'Missing deliveryId or organizationId' }, { status: 400 });
   }
 
   try {
@@ -37,26 +37,26 @@ async function handler(request: NextRequest) {
     const connection = await prisma.integrationConnection.findFirst({
       where: {
         organizationId,
-        provider: "PEPPOL",
-        status: "CONNECTED",
+        provider: 'PEPPOL',
+        status: 'CONNECTED',
       },
     });
 
     if (!connection) {
       console.error(`[peppol/inbound] No active Peppol connection for org ${organizationId}`);
-      return NextResponse.json({ error: "No Peppol connection" });
+      return NextResponse.json({ error: 'No Peppol connection' });
     }
 
-    const credentials = await getCredentials(connection.credentialsRef, "peppol");
+    const credentials = await getCredentials(connection.credentialsRef, 'peppol');
     const config = (connection.configJson as Record<string, unknown>) ?? {};
     const environment = config.environment as string;
 
     const adapter = new StorecoveAdapter({
       apiKey: credentials.accessToken,
       baseUrl:
-        environment === "production"
-          ? "https://api.storecove.com/api/v2"
-          : "https://api-sandbox.storecove.com/api/v2",
+        environment === 'production'
+          ? 'https://api.storecove.com/api/v2'
+          : 'https://api-sandbox.storecove.com/api/v2',
       webhookSecret: (config.webhookSecret as string) ?? undefined,
     });
 
@@ -73,7 +73,7 @@ async function handler(request: NextRequest) {
     await prisma.webhookDelivery.update({
       where: { id: deliveryId },
       data: {
-        deliveryStatus: "PROCESSED",
+        deliveryStatus: 'PROCESSED',
         processedAt: new Date(),
       },
     });
@@ -91,13 +91,15 @@ async function handler(request: NextRequest) {
       .update({
         where: { id: deliveryId },
         data: {
-          deliveryStatus: "FAILED",
-          errorMessage: error instanceof Error ? error.message : "Inbound processing failed",
+          deliveryStatus: 'FAILED',
+          errorMessage: error instanceof Error ? error.message : 'Inbound processing failed',
         },
       })
-      .catch(() => {});
+      .catch(() => {
+        /* ignored */
+      });
 
-    return NextResponse.json({ error: "Inbound processing failed" }, { status: 500 });
+    return NextResponse.json({ error: 'Inbound processing failed' }, { status: 500 });
   }
 }
 

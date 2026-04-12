@@ -1,44 +1,44 @@
-import { render, screen } from "@/test/test-utils";
-import { Label } from "../label";
+import { render, screen } from '@/test/test-utils';
+import { Label } from '../label';
 
-describe("Label", () => {
-  it("renders a label element", () => {
+describe('Label', () => {
+  it('renders a label element', () => {
     render(<Label>Username</Label>);
-    const el = screen.getByText("Username");
-    expect(el.tagName).toBe("LABEL");
+    const el = screen.getByText('Username');
+    expect(el.tagName).toBe('LABEL');
   });
 
-  it("sets data-slot=label", () => {
+  it('sets data-slot=label', () => {
     render(<Label>Username</Label>);
-    expect(screen.getByText("Username")).toHaveAttribute("data-slot", "label");
+    expect(screen.getByText('Username')).toHaveAttribute('data-slot', 'label');
   });
 
-  it("forwards htmlFor prop", () => {
+  it('forwards htmlFor prop', () => {
     render(<Label htmlFor="email">Email</Label>);
-    expect(screen.getByText("Email")).toHaveAttribute("for", "email");
+    expect(screen.getByText('Email')).toHaveAttribute('for', 'email');
   });
 
-  it("merges custom className", () => {
+  it('merges custom className', () => {
     render(<Label className="required">Name</Label>);
-    expect(screen.getByText("Name").className).toContain("required");
+    expect(screen.getByText('Name').className).toContain('required');
   });
 
-  it("renders children elements", () => {
+  it('renders children elements', () => {
     render(
       <Label>
         <span data-testid="icon">*</span> Required
       </Label>,
     );
-    expect(screen.getByTestId("icon")).toBeInTheDocument();
-    expect(screen.getByText("Required")).toBeInTheDocument();
+    expect(screen.getByTestId('icon')).toBeInTheDocument();
+    expect(screen.getByText('Required')).toBeInTheDocument();
   });
 
-  it("forwards HTML attributes", () => {
+  it('forwards HTML attributes', () => {
     render(
       <Label data-testid="lbl" id="my-label">
         Test
       </Label>,
     );
-    expect(screen.getByTestId("lbl")).toHaveAttribute("id", "my-label");
+    expect(screen.getByTestId('lbl')).toHaveAttribute('id', 'my-label');
   });
 });

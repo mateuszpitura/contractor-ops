@@ -14,18 +14,18 @@ import {
   GetObjectCommand,
   HeadObjectCommand,
   PutObjectCommand,
-} from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { tenantStore } from "@contractor-ops/db";
-import { createR2Client } from "./r2.js";
+} from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { tenantStore } from '@contractor-ops/db';
+import { createR2Client } from './r2.js';
 
 // ---------------------------------------------------------------------------
 // Region → bucket env var mapping
 // ---------------------------------------------------------------------------
 
 const REGION_BUCKET_MAP: Record<string, string> = {
-  EU: "R2_BUCKET_NAME_EU",
-  ME: "R2_BUCKET_NAME_ME",
+  EU: 'R2_BUCKET_NAME_EU',
+  ME: 'R2_BUCKET_NAME_ME',
 };
 
 /**
@@ -38,7 +38,7 @@ export function getRegionalBucket(region: string): string {
   const envVar = REGION_BUCKET_MAP[region];
   if (!envVar) {
     throw new Error(
-      `Unsupported storage region: ${region}. Supported: ${Object.keys(REGION_BUCKET_MAP).join(", ")}`,
+      `Unsupported storage region: ${region}. Supported: ${Object.keys(REGION_BUCKET_MAP).join(', ')}`,
     );
   }
   const bucket = process.env[envVar];
@@ -56,7 +56,7 @@ function resolveRegion(explicitRegion?: string): string {
   if (explicitRegion) return explicitRegion;
   const ctx = tenantStore.getStore();
   if (!ctx?.region) {
-    throw new Error("No region in tenant context and no explicit region provided");
+    throw new Error('No region in tenant context and no explicit region provided');
   }
   return ctx.region;
 }
@@ -103,7 +103,7 @@ export async function createRegionalPresignedDownloadUrl(
   const command = new GetObjectCommand({
     Bucket: bucket,
     Key: key,
-    ResponseContentDisposition: "attachment",
+    ResponseContentDisposition: 'attachment',
   });
   return getSignedUrl(client, command, { expiresIn });
 }

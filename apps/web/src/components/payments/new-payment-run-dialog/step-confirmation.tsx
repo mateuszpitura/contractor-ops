@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import { CheckCircle2 } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useCallback } from "react";
+import { CheckCircle2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback } from 'react';
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 
 // ---------------------------------------------------------------------------
 // Formatters
 // ---------------------------------------------------------------------------
 
 function formatMinorUnits(minor: number): string {
-  return new Intl.NumberFormat("pl-PL", {
+  return new Intl.NumberFormat('pl-PL', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(minor / 100);
@@ -48,7 +48,7 @@ export function StepConfirmation({
   onViewRun,
   onClose,
 }: StepConfirmationProps) {
-  const t = useTranslations("Payments");
+  const t = useTranslations('Payments');
 
   const handleDownload = useCallback(() => {
     try {
@@ -59,11 +59,11 @@ export function StepConfirmation({
         byteNumbers[i] = byteCharacters.charCodeAt(i);
       }
       const byteArray = new Uint8Array(byteNumbers);
-      const blob = new Blob([byteArray], { type: "application/octet-stream" });
+      const blob = new Blob([byteArray], { type: 'application/octet-stream' });
 
       // Create download link
       const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
+      const a = document.createElement('a');
       a.href = url;
       a.download = fileName;
       document.body.appendChild(a);
@@ -80,7 +80,7 @@ export function StepConfirmation({
   }, [fileBase64, fileName]);
 
   const formatLabel =
-    exportFormat === "CSV" ? "CSV" : exportFormat === "BANK_FILE" ? "Elixir" : "SEPA XML";
+    exportFormat === 'CSV' ? 'CSV' : exportFormat === 'BANK_FILE' ? 'Elixir' : 'SEPA XML';
 
   return (
     <div className="flex flex-col items-center gap-6 py-4">
@@ -89,36 +89,36 @@ export function StepConfirmation({
 
       {/* Heading */}
       <h3 className="text-[20px] font-semibold text-center">
-        {t("step3.successHeading", { runNumber })}
+        {t('step3.successHeading', { runNumber })}
       </h3>
 
       {/* Summary stats */}
       <div className="text-center space-y-1">
         <p className="text-sm text-muted-foreground">
-          {invoiceCount} {t("step3.invoices")}
+          {invoiceCount} {t('step3.invoices')}
         </p>
         <p className="text-sm text-muted-foreground">
-          {t("step3.total")}: {formatMinorUnits(totalMinor)} {currency}
+          {t('step3.total')}: {formatMinorUnits(totalMinor)} {currency}
         </p>
         <p className="text-sm text-muted-foreground">
-          {t("step3.format")}: {formatLabel}
+          {t('step3.format')}: {formatLabel}
         </p>
       </div>
 
       {/* Download button */}
       <Button variant="outline" onClick={handleDownload}>
-        {t("step3.downloadExport")}
+        {t('step3.downloadExport')}
       </Button>
 
       {/* View run link */}
       <button type="button" className="text-sm text-primary hover:underline" onClick={onViewRun}>
-        {t("step3.viewPaymentRun")}
+        {t('step3.viewPaymentRun')}
       </button>
 
       {/* Close */}
       <div className="w-full border-t pt-4 flex justify-end">
         <Button variant="ghost" onClick={onClose}>
-          {t("step3.close")}
+          {t('step3.close')}
         </Button>
       </div>
     </div>

@@ -1,28 +1,28 @@
-import { randomUUID } from "node:crypto";
-import { prisma } from "@contractor-ops/db";
-import { returnRequestCreateSchema } from "@contractor-ops/validators";
-import { TRPCError } from "@trpc/server";
-import { z } from "zod";
-import * as E from "../errors.js";
-import { router } from "../init.js";
-import { portalProcedure, portalPublicProcedure } from "../middleware/portal-auth.js";
-import { encryptBankAccount } from "../services/bank-account-crypto.js";
-import type { InPostClientConfig } from "../services/courier/inpost-client.js";
-import { InPostClient } from "../services/courier/inpost-client.js";
-import { dispatch } from "../services/notification-service.js";
-import { createChangeRequest } from "../services/portal-change-request.js";
+import { randomUUID } from 'node:crypto';
+import { prisma } from '@contractor-ops/db';
+import { returnRequestCreateSchema } from '@contractor-ops/validators';
+import { TRPCError } from '@trpc/server';
+import { z } from 'zod';
+import * as E from '../errors.js';
+import { router } from '../init.js';
+import { portalProcedure, portalPublicProcedure } from '../middleware/portal-auth.js';
+import { encryptBankAccount } from '../services/bank-account-crypto.js';
+import type { InPostClientConfig } from '../services/courier/inpost-client.js';
+import { InPostClient } from '../services/courier/inpost-client.js';
+import { dispatch } from '../services/notification-service.js';
+import { createChangeRequest } from '../services/portal-change-request.js';
 import {
   createMagicLinkToken,
   findContractorsByEmail,
   sendPortalMagicLink,
   verifyMagicLinkToken,
-} from "../services/portal-magic-link.js";
-import { createPortalSession, deletePortalSession } from "../services/portal-session.js";
-import { generateStorageKey } from "../services/r2.js";
+} from '../services/portal-magic-link.js';
+import { createPortalSession, deletePortalSession } from '../services/portal-session.js';
+import { generateStorageKey } from '../services/r2.js';
 import {
   createRegionalPresignedDownloadUrl,
   createRegionalPresignedUploadUrl,
-} from "../services/regional-storage.js";
+} from '../services/regional-storage.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -42,12 +42,12 @@ function plain<T>(data: T): T {
  * Used by logout to identify the session to delete.
  */
 function extractPortalToken(headers: Headers): string | null {
-  const cookieHeader = headers.get("cookie");
+  const cookieHeader = headers.get('cookie');
   if (!cookieHeader) return null;
-  const cookies = cookieHeader.split("; ");
+  const cookies = cookieHeader.split('; ');
   for (const cookie of cookies) {
-    if (cookie.startsWith("portal_session=")) {
-      return cookie.slice("portal_session=".length);
+    if (cookie.startsWith('portal_session=')) {
+      return cookie.slice('portal_session='.length);
     }
   }
   return null;
@@ -57,17 +57,17 @@ function extractPortalToken(headers: Headers): string | null {
  * Derive base URL from request headers for magic link emails.
  */
 function deriveBaseUrl(headers: Headers): string {
-  const origin = headers.get("origin");
+  const origin = headers.get('origin');
   if (origin) return origin;
 
-  const forwardedHost = headers.get("x-forwarded-host");
-  const proto = headers.get("x-forwarded-proto") ?? "https";
+  const forwardedHost = headers.get('x-forwarded-host');
+  const proto = headers.get('x-forwarded-proto') ?? 'https';
   if (forwardedHost) return `${proto}://${forwardedHost}`;
 
-  const host = headers.get("host");
+  const host = headers.get('host');
   if (host) return `${proto}://${host}`;
 
-  return "https://localhost:3000";
+  return 'https://localhost:3000';
 }
 
 // ---------------------------------------------------------------------------
@@ -120,7 +120,7 @@ export const portalRouter = router({
 
       if (!result) {
         throw new TRPCError({
-          code: "BAD_REQUEST",
+          code: 'BAD_REQUEST',
           message: E.PORTAL_INVALID_LINK,
         });
       }
@@ -128,14 +128,14 @@ export const portalRouter = router({
       const contractors = await findContractorsByEmail(result.email);
 
       if (contractors.length === 0) {
-        throw new TRPCError({ code: "NOT_FOUND" });
+        throw new TRPCError({ code: 'NOT_FOUND' });
       }
 
       // Single org -- auto-create session
       if (contractors.length === 1) {
         const c = contractors[0]!;
-        const ipAddress = ctx.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? undefined;
-        const userAgent = ctx.headers.get("user-agent") ?? undefined;
+        const ipAddress = ctx.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? undefined;
+        const userAgent = ctx.headers.get('user-agent') ?? undefined;
 
         const session = await createPortalSession({
           contractorId: c.id,
@@ -158,7 +158,7 @@ export const portalRouter = router({
 
       return plain({
         session: null,
-        orgs: contractors.map((c) => ({
+        orgs: contractors.map(c => ({
           contractorId: c.id,
           organizationId: c.organizationId,
           orgName: c.organization.name,
@@ -176,7 +176,7 @@ export const portalRouter = router({
   selectOrg: portalPublicProcedure
     .input(
       z.object({
-        verificationNonce: z.string().min(1, "Verification token required"),
+        verificationNonce: z.string().min(1, 'Verification token required'),
         contractorId: z.string(),
         organizationId: z.string(),
       }),
@@ -188,7 +188,7 @@ export const portalRouter = router({
 
       if (!verification) {
         throw new TRPCError({
-          code: "UNAUTHORIZED",
+          code: 'UNAUTHORIZED',
           message: E.PORTAL_INVALID_VERIFICATION,
         });
       }
@@ -201,20 +201,20 @@ export const portalRouter = router({
           id: input.contractorId,
           organizationId: input.organizationId,
           email,
-          status: "ACTIVE",
+          status: 'ACTIVE',
           deletedAt: null,
         },
       });
 
       if (!contractor) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: E.CONTRACTOR_NOT_FOUND,
         });
       }
 
-      const ipAddress = ctx.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? undefined;
-      const userAgent = ctx.headers.get("user-agent") ?? undefined;
+      const ipAddress = ctx.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? undefined;
+      const userAgent = ctx.headers.get('user-agent') ?? undefined;
 
       const session = await createPortalSession({
         contractorId: input.contractorId,
@@ -253,7 +253,7 @@ export const portalRouter = router({
     const activeContracts = await prisma.contract.count({
       where: {
         contractorId,
-        status: { in: ["ACTIVE", "EXPIRING"] },
+        status: { in: ['ACTIVE', 'EXPIRING'] },
       },
     });
 
@@ -261,7 +261,7 @@ export const portalRouter = router({
     const pendingInvoices = await prisma.invoice.count({
       where: {
         contractorId,
-        status: { in: ["RECEIVED", "UNDER_REVIEW", "APPROVAL_PENDING"] },
+        status: { in: ['RECEIVED', 'UNDER_REVIEW', 'APPROVAL_PENDING'] },
         deletedAt: null,
       },
     });
@@ -273,7 +273,7 @@ export const portalRouter = router({
     const recentPaidInvoices = await prisma.invoice.findMany({
       where: {
         contractorId,
-        paymentStatus: "PAID",
+        paymentStatus: 'PAID',
         paidAt: { gte: ninetyDaysAgo },
         deletedAt: null,
       },
@@ -281,26 +281,26 @@ export const portalRouter = router({
     });
 
     const recentPaymentsMinor = recentPaidInvoices.reduce((sum, inv) => sum + inv.totalMinor, 0);
-    const recentPaymentsCurrency = recentPaidInvoices[0]?.currency ?? "PLN";
+    const recentPaymentsCurrency = recentPaidInvoices[0]?.currency ?? 'PLN';
 
     // Upcoming deadline: earliest due date from unpaid invoices or earliest end date from expiring contracts
     const nextUnpaidInvoice = await prisma.invoice.findFirst({
       where: {
         contractorId,
-        paymentStatus: { not: "PAID" },
+        paymentStatus: { not: 'PAID' },
         deletedAt: null,
       },
-      orderBy: { dueDate: "asc" },
+      orderBy: { dueDate: 'asc' },
       select: { dueDate: true },
     });
 
     const nextExpiringContract = await prisma.contract.findFirst({
       where: {
         contractorId,
-        status: "EXPIRING",
+        status: 'EXPIRING',
         endDate: { not: null },
       },
-      orderBy: { endDate: "asc" },
+      orderBy: { endDate: 'asc' },
       select: { endDate: true },
     });
 
@@ -315,7 +315,7 @@ export const portalRouter = router({
     // Recent activity: last 5 invoices with their status-derived events
     const recentInvoices = await prisma.invoice.findMany({
       where: { contractorId, deletedAt: null },
-      orderBy: { updatedAt: "desc" },
+      orderBy: { updatedAt: 'desc' },
       take: 5,
       select: {
         id: true,
@@ -384,7 +384,7 @@ export const portalRouter = router({
     const contracts = await prisma.contract.findMany({
       where: {
         contractorId: ctx.contractorId,
-        status: { in: ["ACTIVE", "EXPIRING", "EXPIRED"] },
+        status: { in: ['ACTIVE', 'EXPIRING', 'EXPIRED'] },
       },
       select: {
         id: true,
@@ -399,7 +399,7 @@ export const portalRouter = router({
         rateType: true,
         rateValueMinor: true,
       },
-      orderBy: { startDate: "desc" },
+      orderBy: { startDate: 'desc' },
     });
 
     return plain(contracts);
@@ -440,12 +440,12 @@ export const portalRouter = router({
     });
 
     if (!contract) {
-      throw new TRPCError({ code: "NOT_FOUND" });
+      throw new TRPCError({ code: 'NOT_FOUND' });
     }
 
     // Fetch attached documents via DocumentLink
     const docLinks = await prisma.documentLink.findMany({
-      where: { entityType: "CONTRACT", entityId: input.id },
+      where: { entityType: 'CONTRACT', entityId: input.id },
       include: {
         document: {
           select: {
@@ -461,7 +461,7 @@ export const portalRouter = router({
     });
 
     const documents = await Promise.all(
-      docLinks.map(async (link) => {
+      docLinks.map(async link => {
         const downloadUrl = await createRegionalPresignedDownloadUrl(link.document.storageKey);
         return {
           id: link.document.id,
@@ -498,7 +498,7 @@ export const portalRouter = router({
         paidAt: true,
         contract: { select: { title: true } },
       },
-      orderBy: { receivedAt: "desc" },
+      orderBy: { receivedAt: 'desc' },
     });
 
     return plain(invoices);
@@ -540,12 +540,12 @@ export const portalRouter = router({
     });
 
     if (!invoice) {
-      throw new TRPCError({ code: "NOT_FOUND" });
+      throw new TRPCError({ code: 'NOT_FOUND' });
     }
 
     // Generate download URLs for attached files
     const files = await Promise.all(
-      invoice.files.map(async (f) => {
+      invoice.files.map(async f => {
         const downloadUrl = await createRegionalPresignedDownloadUrl(f.document.storageKey);
         return {
           id: f.document.id,
@@ -560,7 +560,7 @@ export const portalRouter = router({
       where: {
         invoiceId: input.id,
         contractorId: ctx.contractorId,
-        status: "PAID",
+        status: 'PAID',
       },
       select: {
         markedPaidAt: true,
@@ -583,32 +583,32 @@ export const portalRouter = router({
     if (invoice.receivedAt) {
       activityLog.push({
         timestamp: invoice.receivedAt,
-        event: "Invoice submitted",
+        event: 'Invoice submitted',
       });
     }
     if (invoice.reviewedAt) {
       activityLog.push({
         timestamp: invoice.reviewedAt,
-        event: "Under review",
+        event: 'Under review',
       });
     }
     if (invoice.approvedAt) {
       activityLog.push({
         timestamp: invoice.approvedAt,
-        event: "Invoice approved",
+        event: 'Invoice approved',
       });
     }
     if (invoice.rejectedAt) {
       activityLog.push({
         timestamp: invoice.rejectedAt,
-        event: "Invoice rejected",
+        event: 'Invoice rejected',
         detail: invoice.rejectionReason,
       });
     }
     if (invoice.paidAt) {
       activityLog.push({
         timestamp: invoice.paidAt,
-        event: "Payment completed",
+        event: 'Payment completed',
       });
     }
 
@@ -643,7 +643,7 @@ export const portalRouter = router({
     // Documents linked directly to the contractor
     const contractorDocLinks = await prisma.documentLink.findMany({
       where: {
-        entityType: "CONTRACTOR",
+        entityType: 'CONTRACTOR',
         entityId: ctx.contractorId,
       },
       include: {
@@ -666,13 +666,13 @@ export const portalRouter = router({
       where: { contractorId: ctx.contractorId },
       select: { id: true },
     });
-    const contractIdList = contractIds.map((c) => c.id);
+    const contractIdList = contractIds.map(c => c.id);
 
     const contractDocLinks =
       contractIdList.length > 0
         ? await prisma.documentLink.findMany({
             where: {
-              entityType: "CONTRACT",
+              entityType: 'CONTRACT',
               entityId: { in: contractIdList },
             },
             include: {
@@ -697,12 +697,12 @@ export const portalRouter = router({
 
     const documents = await Promise.all(
       allLinks
-        .filter((link) => {
+        .filter(link => {
           if (seenIds.has(link.document.id)) return false;
           seenIds.add(link.document.id);
           return true;
         })
-        .map(async (link) => {
+        .map(async link => {
           const downloadUrl = await createRegionalPresignedDownloadUrl(link.document.storageKey);
           return {
             id: link.document.id,
@@ -727,7 +727,7 @@ export const portalRouter = router({
     const items = await prisma.paymentRunItem.findMany({
       where: {
         contractorId: ctx.contractorId,
-        status: "PAID",
+        status: 'PAID',
       },
       select: {
         id: true,
@@ -737,11 +737,11 @@ export const portalRouter = router({
         markedPaidAt: true,
         invoice: { select: { invoiceNumber: true } },
       },
-      orderBy: { markedPaidAt: "desc" },
+      orderBy: { markedPaidAt: 'desc' },
     });
 
     return plain(
-      items.map((item) => ({
+      items.map(item => ({
         id: item.id,
         invoiceNumber: item.invoice.invoiceNumber,
         amountMinor: item.amountMinor,
@@ -763,7 +763,7 @@ export const portalRouter = router({
     .input(
       z.object({
         filename: z.string(),
-        contentType: z.string().refine((ct) => ct === "application/pdf", "Only PDF files"),
+        contentType: z.string().refine(ct => ct === 'application/pdf', 'Only PDF files'),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -801,13 +801,13 @@ export const portalRouter = router({
         where: {
           id: input.contractId,
           contractorId: ctx.contractorId,
-          status: "ACTIVE",
+          status: 'ACTIVE',
         },
       });
 
       if (!contract) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: E.PORTAL_CONTRACT_NOT_FOUND,
         });
       }
@@ -819,11 +819,11 @@ export const portalRouter = router({
           organizationId: ctx.organizationId,
           storageKey: input.storageKey,
           originalFileName: input.originalFileName,
-          mimeType: "application/pdf",
+          mimeType: 'application/pdf',
           fileSizeBytes: input.fileSizeBytes,
-          documentType: "INVOICE",
-          source: "USER_UPLOAD",
-          checksumSha256: input.checksumSha256 ?? "",
+          documentType: 'INVOICE',
+          source: 'USER_UPLOAD',
+          checksumSha256: input.checksumSha256 ?? '',
         },
       });
 
@@ -834,17 +834,17 @@ export const portalRouter = router({
           contractorId: ctx.contractorId,
           contractId: input.contractId,
           invoiceNumber: input.invoiceNumber,
-          source: "PORTAL",
+          source: 'PORTAL',
           issueDate: input.issueDate,
           dueDate: input.dueDate,
           subtotalMinor: input.netAmountMinor,
           totalMinor: input.grossAmountMinor,
           amountToPayMinor: input.grossAmountMinor,
           currency: contract.currency,
-          status: "RECEIVED",
-          matchStatus: "UNMATCHED",
-          approvalStatus: "NOT_STARTED",
-          paymentStatus: "NOT_READY",
+          status: 'RECEIVED',
+          matchStatus: 'UNMATCHED',
+          approvalStatus: 'NOT_STARTED',
+          paymentStatus: 'NOT_READY',
           submittedByEmail: ctx.portalSession.email,
         },
       });
@@ -855,7 +855,7 @@ export const portalRouter = router({
           organizationId: ctx.organizationId,
           invoiceId: invoice.id,
           documentId: input.documentId,
-          role: "SOURCE_ORIGINAL",
+          role: 'SOURCE_ORIGINAL',
         },
       });
 
@@ -871,7 +871,7 @@ export const portalRouter = router({
    */
   getActiveContracts: portalProcedure.query(async ({ ctx }) => {
     const contracts = await prisma.contract.findMany({
-      where: { contractorId: ctx.contractorId, status: "ACTIVE" },
+      where: { contractorId: ctx.contractorId, status: 'ACTIVE' },
       select: {
         id: true,
         title: true,
@@ -903,7 +903,7 @@ export const portalRouter = router({
       },
       organization: {
         id: ctx.organizationId,
-        name: org?.name ?? "",
+        name: org?.name ?? '',
         logo: org?.logo ?? null,
       },
     });
@@ -936,7 +936,7 @@ export const portalRouter = router({
     });
 
     if (!contractor) {
-      throw new TRPCError({ code: "NOT_FOUND" });
+      throw new TRPCError({ code: 'NOT_FOUND' });
     }
 
     // Get default billing profile — NEVER select bankAccountEncrypted
@@ -960,7 +960,7 @@ export const portalRouter = router({
       where: {
         contractorId: ctx.contractorId,
         organizationId: ctx.organizationId,
-        status: "PENDING",
+        status: 'PENDING',
       },
       select: {
         id: true,
@@ -1059,7 +1059,7 @@ export const portalRouter = router({
       const requestedChanges: Record<string, unknown> = {};
 
       if (input.bankAccountNumber !== undefined) {
-        const cleaned = input.bankAccountNumber.replace(/\s/g, "");
+        const cleaned = input.bankAccountNumber.replace(/\s/g, '');
         requestedChanges.bankAccountEncrypted = encryptBankAccount(cleaned);
         requestedChanges.bankAccountMasked = `****${cleaned.slice(-4)}`;
       }
@@ -1075,7 +1075,7 @@ export const portalRouter = router({
 
       if (Object.keys(requestedChanges).length === 0) {
         throw new TRPCError({
-          code: "BAD_REQUEST",
+          code: 'BAD_REQUEST',
           message: E.PORTAL_NO_CHANGES,
         });
       }
@@ -1100,11 +1100,11 @@ export const portalRouter = router({
    */
   getNotificationPreferences: portalProcedure.query(async ({ ctx }) => {
     const CATEGORIES = [
-      "INVOICE_UPDATES",
-      "PAYMENT_CONFIRMATIONS",
-      "CONTRACT_CHANGES",
-      "DOCUMENT_UPLOADS",
-      "SECURITY_ALERTS",
+      'INVOICE_UPDATES',
+      'PAYMENT_CONFIRMATIONS',
+      'CONTRACT_CHANGES',
+      'DOCUMENT_UPLOADS',
+      'SECURITY_ALERTS',
     ] as const;
 
     const existing = await prisma.contractorNotificationPreference.findMany({
@@ -1118,10 +1118,10 @@ export const portalRouter = router({
       },
     });
 
-    const existingMap = new Map(existing.map((p) => [p.category, p.emailEnabled]));
+    const existingMap = new Map(existing.map(p => [p.category, p.emailEnabled]));
 
     // Return all 5 categories, defaulting to true for missing rows
-    const preferences = CATEGORIES.map((category) => ({
+    const preferences = CATEGORIES.map(category => ({
       category,
       emailEnabled: existingMap.get(category) ?? true,
     }));
@@ -1137,20 +1137,20 @@ export const portalRouter = router({
     .input(
       z.object({
         category: z.enum([
-          "INVOICE_UPDATES",
-          "PAYMENT_CONFIRMATIONS",
-          "CONTRACT_CHANGES",
-          "DOCUMENT_UPLOADS",
-          "SECURITY_ALERTS",
+          'INVOICE_UPDATES',
+          'PAYMENT_CONFIRMATIONS',
+          'CONTRACT_CHANGES',
+          'DOCUMENT_UPLOADS',
+          'SECURITY_ALERTS',
         ]),
         emailEnabled: z.boolean(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       // Security alerts cannot be disabled
-      if (input.category === "SECURITY_ALERTS" && !input.emailEnabled) {
+      if (input.category === 'SECURITY_ALERTS' && !input.emailEnabled) {
         throw new TRPCError({
-          code: "BAD_REQUEST",
+          code: 'BAD_REQUEST',
           message: E.PORTAL_SECURITY_ALERTS_LOCKED,
         });
       }
@@ -1199,7 +1199,7 @@ export const portalRouter = router({
         equipment: {
           include: {
             shipments: {
-              orderBy: { createdAt: "desc" as const },
+              orderBy: { createdAt: 'desc' as const },
               take: 1,
               select: {
                 id: true,
@@ -1215,7 +1215,7 @@ export const portalRouter = router({
       },
     });
 
-    const items = assignments.map((a) => ({
+    const items = assignments.map(a => ({
       assignmentId: a.id,
       assignedAt: a.assignedAt,
       equipment: {
@@ -1241,10 +1241,10 @@ export const portalRouter = router({
         contractorId: ctx.contractorId,
         organizationId: ctx.organizationId,
         status: {
-          notIn: ["CANCELLED", "REJECTED"],
+          notIn: ['CANCELLED', 'REJECTED'],
         },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: 'desc' },
       include: {
         shipment: {
           select: {
@@ -1282,8 +1282,8 @@ export const portalRouter = router({
 
       if (assignments.length === 0) {
         throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "NO_EQUIPMENT_ASSIGNED",
+          code: 'BAD_REQUEST',
+          message: 'NO_EQUIPMENT_ASSIGNED',
         });
       }
 
@@ -1293,25 +1293,25 @@ export const portalRouter = router({
           contractorId: ctx.contractorId,
           organizationId: ctx.organizationId,
           status: {
-            in: ["PENDING_APPROVAL", "APPROVED", "SHIPMENT_CREATED"],
+            in: ['PENDING_APPROVAL', 'APPROVED', 'SHIPMENT_CREATED'],
           },
         },
       });
 
       if (existingReturn) {
         throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "RETURN_ALREADY_PENDING",
+          code: 'BAD_REQUEST',
+          message: 'RETURN_ALREADY_PENDING',
         });
       }
 
-      const result = await prisma.$transaction(async (tx) => {
+      const result = await prisma.$transaction(async tx => {
         // Create return request
         const returnRequest = await tx.returnRequest.create({
           data: {
             organizationId: ctx.organizationId,
             contractorId: ctx.contractorId,
-            status: "PENDING_APPROVAL",
+            status: 'PENDING_APPROVAL',
             targetPointId: input.targetPointId,
             targetPointName: input.targetPointName,
             targetPointAddress: input.targetPointAddress,
@@ -1319,24 +1319,24 @@ export const portalRouter = router({
         });
 
         // Update all assigned equipment to RETURN_REQUESTED
-        const equipmentIds = assignments.map((a) => a.equipment.id);
+        const equipmentIds = assignments.map(a => a.equipment.id);
         await tx.equipment.updateMany({
           where: {
             id: { in: equipmentIds },
             organizationId: ctx.organizationId,
           },
-          data: { status: "RETURN_REQUESTED" },
+          data: { status: 'RETURN_REQUESTED' },
         });
 
         // Audit log
         await tx.auditLog.create({
           data: {
             organizationId: ctx.organizationId,
-            actorType: "CONTRACTOR",
+            actorType: 'CONTRACTOR',
             actorId: ctx.contractorId,
-            actorName: ctx.contractor?.email ?? "contractor",
-            action: "returnRequest.create",
-            resourceType: "RETURN_REQUEST",
+            actorName: ctx.contractor?.email ?? 'contractor',
+            action: 'returnRequest.create',
+            resourceType: 'RETURN_REQUEST',
             resourceId: returnRequest.id,
             newValuesJson: {
               targetPointId: input.targetPointId,
@@ -1352,18 +1352,18 @@ export const portalRouter = router({
       // Fire-and-forget: notify admins about pending return request
       void dispatch({
         organizationId: ctx.organizationId,
-        type: "EQUIPMENT_RETURN_REQUESTED",
+        type: 'EQUIPMENT_RETURN_REQUESTED',
         recipientUserIds: [],
-        title: "notifications.equipment.returnRequested.title",
-        body: "notifications.equipment.returnRequested.body",
-        entityType: "RETURN_REQUEST",
+        title: 'notifications.equipment.returnRequested.title',
+        body: 'notifications.equipment.returnRequested.body',
+        entityType: 'RETURN_REQUEST',
         entityId: result.id,
         metadata: {
           contractorId: ctx.contractorId,
           targetPoint: input.targetPointName,
         },
-      }).catch((err) =>
-        console.error("[portal] Failed to dispatch return request notification:", err),
+      }).catch(err =>
+        console.error('[portal] Failed to dispatch return request notification:', err),
       );
 
       return plain(result);
@@ -1386,29 +1386,29 @@ export const portalRouter = router({
 
       if (!returnRequest) {
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "RETURN_REQUEST_NOT_FOUND",
+          code: 'NOT_FOUND',
+          message: 'RETURN_REQUEST_NOT_FOUND',
         });
       }
 
-      if (returnRequest.status !== "PENDING_APPROVAL") {
+      if (returnRequest.status !== 'PENDING_APPROVAL') {
         throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "RETURN_CANNOT_CANCEL",
+          code: 'BAD_REQUEST',
+          message: 'RETURN_CANNOT_CANCEL',
         });
       }
 
-      const result = await prisma.$transaction(async (tx) => {
+      const result = await prisma.$transaction(async tx => {
         const updated = await tx.returnRequest.update({
           where: { id: input.id },
-          data: { status: "CANCELLED" },
+          data: { status: 'CANCELLED' },
         });
 
         // Revert equipment statuses from RETURN_REQUESTED back to ASSIGNED
         await tx.equipment.updateMany({
           where: {
             organizationId: ctx.organizationId,
-            status: "RETURN_REQUESTED",
+            status: 'RETURN_REQUESTED',
             assignments: {
               some: {
                 contractorId: ctx.contractorId,
@@ -1416,20 +1416,20 @@ export const portalRouter = router({
               },
             },
           },
-          data: { status: "ASSIGNED" },
+          data: { status: 'ASSIGNED' },
         });
 
         // Audit log
         await tx.auditLog.create({
           data: {
             organizationId: ctx.organizationId,
-            actorType: "CONTRACTOR",
+            actorType: 'CONTRACTOR',
             actorId: ctx.contractorId,
-            actorName: ctx.contractor?.email ?? "contractor",
-            action: "returnRequest.cancel",
-            resourceType: "RETURN_REQUEST",
+            actorName: ctx.contractor?.email ?? 'contractor',
+            action: 'returnRequest.cancel',
+            resourceType: 'RETURN_REQUEST',
             resourceId: input.id,
-            newValuesJson: { status: "CANCELLED" },
+            newValuesJson: { status: 'CANCELLED' },
           },
         });
 
@@ -1456,15 +1456,15 @@ export const portalRouter = router({
 
       if (!returnRequest) {
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "RETURN_REQUEST_NOT_FOUND",
+          code: 'NOT_FOUND',
+          message: 'RETURN_REQUEST_NOT_FOUND',
         });
       }
 
-      if (returnRequest.status !== "SHIPMENT_CREATED" || !returnRequest.shipmentId) {
+      if (returnRequest.status !== 'SHIPMENT_CREATED' || !returnRequest.shipmentId) {
         throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "RETURN_LABEL_NOT_AVAILABLE",
+          code: 'BAD_REQUEST',
+          message: 'RETURN_LABEL_NOT_AVAILABLE',
         });
       }
 
@@ -1475,10 +1475,10 @@ export const portalRouter = router({
         },
       });
 
-      if (!shipment || shipment.carrier !== "InPost" || !shipment.externalId) {
+      if (!shipment || shipment.carrier !== 'InPost' || !shipment.externalId) {
         throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "SHIPMENT_NO_INPOST_LABEL",
+          code: 'BAD_REQUEST',
+          message: 'SHIPMENT_NO_INPOST_LABEL',
         });
       }
 
@@ -1486,26 +1486,26 @@ export const portalRouter = router({
         where: {
           organizationId_carrier: {
             organizationId: ctx.organizationId,
-            carrier: "inpost",
+            carrier: 'inpost',
           },
         },
       });
 
       if (!courierConfig) {
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "COURIER_CONFIG_NOT_FOUND",
+          code: 'NOT_FOUND',
+          message: 'COURIER_CONFIG_NOT_FOUND',
         });
       }
 
       const configJson = courierConfig.configJson as unknown as InPostClientConfig;
       const client = new InPostClient(configJson);
 
-      const labelBuffer = await client.getLabel(shipment.externalId, "pdf");
+      const labelBuffer = await client.getLabel(shipment.externalId, 'pdf');
 
       return {
-        data: labelBuffer.toString("base64"),
-        contentType: "application/pdf",
+        data: labelBuffer.toString('base64'),
+        contentType: 'application/pdf',
         filename: `return-label-${shipment.trackingNumber ?? shipment.externalId}.pdf`,
       };
     }),

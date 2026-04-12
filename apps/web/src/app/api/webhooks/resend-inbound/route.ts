@@ -4,19 +4,19 @@
  * Remove after Resend webhook URL is updated to /api/webhooks/resend.
  */
 
-import { randomUUID } from "node:crypto";
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { prisma } from "@contractor-ops/db";
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
-import type { WebhookEventPayload } from "resend";
-import { Resend } from "resend";
+import { randomUUID } from 'node:crypto';
+import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { prisma } from '@contractor-ops/db';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import type { WebhookEventPayload } from 'resend';
+import { Resend } from 'resend';
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
-const EMAIL_DOMAIN_SUFFIX = ".contractorhub.io";
+const EMAIL_DOMAIN_SUFFIX = '.contractorhub.io';
 
 // ---------------------------------------------------------------------------
 // Email intake rate limiting (per-org, 100 emails/hour)
@@ -28,11 +28,11 @@ const EMAIL_RATE_MAX = 100;
 const emailIntakeMap = new Map<string, { timestamps: number[] }>();
 
 // Periodic cleanup
-if (typeof globalThis !== "undefined") {
+if (typeof globalThis !== 'undefined') {
   const cleanup = () => {
     const now = Date.now();
     for (const [key, entry] of emailIntakeMap) {
-      entry.timestamps = entry.timestamps.filter((ts) => now - ts < EMAIL_RATE_WINDOW_MS);
+      entry.timestamps = entry.timestamps.filter(ts => now - ts < EMAIL_RATE_WINDOW_MS);
       if (entry.timestamps.length === 0) emailIntakeMap.delete(key);
     }
   };
@@ -45,7 +45,7 @@ function checkEmailIntakeLimit(orgId: string): {
 } {
   const now = Date.now();
   const entry = emailIntakeMap.get(orgId) ?? { timestamps: [] };
-  entry.timestamps = entry.timestamps.filter((ts) => now - ts < EMAIL_RATE_WINDOW_MS);
+  entry.timestamps = entry.timestamps.filter(ts => now - ts < EMAIL_RATE_WINDOW_MS);
 
   if (entry.timestamps.length >= EMAIL_RATE_MAX) {
     return { allowed: false, remaining: 0 };
@@ -73,7 +73,7 @@ function parseOrgSlugFromEmail(toAddress: string): string | null {
   const bracketMatch = toAddress.match(/<([^>]+)>/);
   const email = bracketMatch ? bracketMatch[1]! : toAddress.trim();
 
-  const atIndex = email.indexOf("@");
+  const atIndex = email.indexOf('@');
   if (atIndex === -1) return null;
 
   const domain = email.substring(atIndex + 1).toLowerCase();
@@ -82,7 +82,7 @@ function parseOrgSlugFromEmail(toAddress: string): string | null {
 
   // Extract slug: everything before the suffix in the domain
   const slug = domain.slice(0, -EMAIL_DOMAIN_SUFFIX.length);
-  if (!slug || slug.includes(".")) return null;
+  if (!slug || slug.includes('.')) return null;
 
   return slug;
 }
@@ -96,7 +96,7 @@ let r2Client: S3Client | null = null;
 function getR2Client(): S3Client {
   if (!r2Client) {
     r2Client = new S3Client({
-      region: "auto",
+      region: 'auto',
       endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
       credentials: {
         accessKeyId: process.env.R2_ACCESS_KEY_ID!,
@@ -117,13 +117,13 @@ export async function POST(request: NextRequest) {
 
   // Fail loudly if webhook secret is not configured
   if (!webhookSecret) {
-    console.error("[resend-inbound] RESEND_WEBHOOK_SECRET is not set");
-    return NextResponse.json({ error: "Webhook secret not configured" }, { status: 500 });
+    console.error('[resend-inbound] RESEND_WEBHOOK_SECRET is not set');
+    return NextResponse.json({ error: 'Webhook secret not configured' }, { status: 500 });
   }
 
   if (!apiKey) {
-    console.error("[resend-inbound] RESEND_API_KEY is not set");
-    return NextResponse.json({ error: "Resend API key not configured" }, { status: 500 });
+    console.error('[resend-inbound] RESEND_API_KEY is not set');
+    return NextResponse.json({ error: 'Resend API key not configured' }, { status: 500 });
   }
 
   const resend = new Resend(apiKey);
@@ -131,12 +131,12 @@ export async function POST(request: NextRequest) {
   // ---------- Step 1: Verify webhook signature ----------
 
   const rawBody = await request.text();
-  const svixId = request.headers.get("svix-id");
-  const svixTimestamp = request.headers.get("svix-timestamp");
-  const svixSignature = request.headers.get("svix-signature");
+  const svixId = request.headers.get('svix-id');
+  const svixTimestamp = request.headers.get('svix-timestamp');
+  const svixSignature = request.headers.get('svix-signature');
 
   if (!(svixId && svixTimestamp && svixSignature)) {
-    return NextResponse.json({ error: "Missing webhook signature headers" }, { status: 401 });
+    return NextResponse.json({ error: 'Missing webhook signature headers' }, { status: 401 });
   }
 
   let event: WebhookEventPayload;
@@ -151,13 +151,13 @@ export async function POST(request: NextRequest) {
       webhookSecret,
     });
   } catch (error) {
-    console.warn("[resend-inbound] Invalid webhook signature:", error);
-    return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+    console.warn('[resend-inbound] Invalid webhook signature:', error);
+    return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
   }
 
   // ---------- Step 2: Check event type ----------
 
-  if (event.type !== "email.received") {
+  if (event.type !== 'email.received') {
     return NextResponse.json({ received: true });
   }
 
@@ -175,8 +175,8 @@ export async function POST(request: NextRequest) {
 
   if (!orgSlug) {
     console.warn(
-      "[resend-inbound] Could not parse org slug from recipients: %s",
-      toAddresses.join(", "),
+      '[resend-inbound] Could not parse org slug from recipients: %s',
+      toAddresses.join(', '),
     );
     return NextResponse.json({ received: true });
   }
@@ -186,7 +186,7 @@ export async function POST(request: NextRequest) {
   });
 
   if (!organization) {
-    console.warn("[resend-inbound] No organization found for slug: %s", orgSlug);
+    console.warn('[resend-inbound] No organization found for slug: %s', orgSlug);
     return NextResponse.json({ received: true });
   }
 
@@ -195,12 +195,12 @@ export async function POST(request: NextRequest) {
   const { allowed: emailAllowed } = checkEmailIntakeLimit(organization.id);
   if (!emailAllowed) {
     console.warn(
-      "[resend-inbound] Rate limit exceeded for org %s (%s): %d emails/hour max",
+      '[resend-inbound] Rate limit exceeded for org %s (%s): %d emails/hour max',
       organization.id,
       orgSlug,
       EMAIL_RATE_MAX,
     );
-    return NextResponse.json({ error: "Email intake rate limit exceeded" }, { status: 429 });
+    return NextResponse.json({ error: 'Email intake rate limit exceeded' }, { status: 429 });
   }
 
   // ---------- Step 4: Fetch attachments via Resend Receiving API ----------
@@ -209,11 +209,11 @@ export async function POST(request: NextRequest) {
 
   // Separate PDF vs non-PDF based on webhook event data
   const pdfAttachmentIds = webhookAttachments
-    .filter((att) => att.content_type === "application/pdf")
-    .map((att) => att.id);
+    .filter(att => att.content_type === 'application/pdf')
+    .map(att => att.id);
   const nonPdfAttachmentIds = webhookAttachments
-    .filter((att) => att.content_type !== "application/pdf")
-    .map((att) => att.id);
+    .filter(att => att.content_type !== 'application/pdf')
+    .map(att => att.id);
 
   if (pdfAttachmentIds.length === 0) {
     return NextResponse.json({ received: true });
@@ -226,7 +226,7 @@ export async function POST(request: NextRequest) {
   const bucketName = process.env.R2_BUCKET_NAME!;
 
   const results = await Promise.all(
-    pdfAttachmentIds.map(async (attachmentId) => {
+    pdfAttachmentIds.map(async attachmentId => {
       try {
         // Fetch attachment details (includes download_url)
         const attResponse = await resend.emails.receiving.attachments.get({
@@ -235,7 +235,7 @@ export async function POST(request: NextRequest) {
         });
 
         if (!attResponse.data) {
-          console.error("[resend-inbound] No data returned for attachment %s", attachmentId);
+          console.error('[resend-inbound] No data returned for attachment %s', attachmentId);
           return null;
         }
 
@@ -245,7 +245,7 @@ export async function POST(request: NextRequest) {
         const pdfResponse = await fetch(attData.download_url);
         if (!pdfResponse.ok) {
           console.error(
-            "[resend-inbound] Failed to download attachment %s: %d",
+            '[resend-inbound] Failed to download attachment %s: %d',
             attachmentId,
             pdfResponse.status,
           );
@@ -264,7 +264,7 @@ export async function POST(request: NextRequest) {
             Bucket: bucketName,
             Key: storageKey,
             Body: pdfBuffer,
-            ContentType: "application/pdf",
+            ContentType: 'application/pdf',
           }),
         );
 
@@ -274,13 +274,13 @@ export async function POST(request: NextRequest) {
             organizationId: orgId,
             storageKey,
             originalFileName: attData.filename ?? `invoice-${fileId}.pdf`,
-            mimeType: "application/pdf",
+            mimeType: 'application/pdf',
             fileSizeBytes: attData.size ?? pdfBuffer.length,
-            checksumSha256: "",
-            documentType: "INVOICE",
-            status: "ACTIVE",
-            virusScanStatus: "PENDING",
-            source: "EMAIL_INTAKE",
+            checksumSha256: '',
+            documentType: 'INVOICE',
+            status: 'ACTIVE',
+            virusScanStatus: 'PENDING',
+            source: 'EMAIL_INTAKE',
           },
         });
 
@@ -288,18 +288,18 @@ export async function POST(request: NextRequest) {
         const invoice = await prisma.invoice.create({
           data: {
             organizationId: orgId,
-            invoiceNumber: "",
-            source: "EMAIL_INTAKE",
-            status: "RECEIVED",
-            matchStatus: "UNMATCHED",
-            approvalStatus: "NOT_STARTED",
-            paymentStatus: "NOT_READY",
+            invoiceNumber: '',
+            source: 'EMAIL_INTAKE',
+            status: 'RECEIVED',
+            matchStatus: 'UNMATCHED',
+            approvalStatus: 'NOT_STARTED',
+            paymentStatus: 'NOT_READY',
             submittedByEmail: emailData.from,
             receivedAt: new Date(),
             // Required monetary fields default to 0 until OCR/manual entry
             issueDate: new Date(),
             dueDate: new Date(),
-            currency: "PLN",
+            currency: 'PLN',
             subtotalMinor: 0,
             totalMinor: 0,
             amountToPayMinor: 0,
@@ -312,7 +312,7 @@ export async function POST(request: NextRequest) {
             organizationId: orgId,
             invoiceId: invoice.id,
             documentId: document.id,
-            role: "SOURCE_ORIGINAL",
+            role: 'SOURCE_ORIGINAL',
           },
         });
 
@@ -321,9 +321,9 @@ export async function POST(request: NextRequest) {
           data: {
             organizationId: orgId,
             documentId: document.id,
-            entityType: "INVOICE",
+            entityType: 'INVOICE',
             entityId: invoice.id,
-            linkRole: "PRIMARY",
+            linkRole: 'PRIMARY',
           },
         });
 
@@ -343,7 +343,7 @@ export async function POST(request: NextRequest) {
 
             const nonPdfBuffer = Buffer.from(await downloadResp.arrayBuffer());
             const nonPdfFileId = randomUUID();
-            const ext = nonPdfData.filename?.split(".").pop()?.toLowerCase() ?? "bin";
+            const ext = nonPdfData.filename?.split('.').pop()?.toLowerCase() ?? 'bin';
             const nonPdfKey = `orgs/${orgId}/invoices/${nonPdfFileId}.${ext}`;
 
             await client.send(
@@ -362,11 +362,11 @@ export async function POST(request: NextRequest) {
                 originalFileName: nonPdfData.filename ?? `attachment-${nonPdfFileId}.${ext}`,
                 mimeType: nonPdfData.content_type,
                 fileSizeBytes: nonPdfData.size ?? nonPdfBuffer.length,
-                checksumSha256: "",
-                documentType: "OTHER",
-                status: "ACTIVE",
-                virusScanStatus: "PENDING",
-                source: "EMAIL_INTAKE",
+                checksumSha256: '',
+                documentType: 'OTHER',
+                status: 'ACTIVE',
+                virusScanStatus: 'PENDING',
+                source: 'EMAIL_INTAKE',
               },
             });
 
@@ -375,7 +375,7 @@ export async function POST(request: NextRequest) {
                 organizationId: orgId,
                 invoiceId: invoice.id,
                 documentId: supportingDoc.id,
-                role: "SUPPORTING_ATTACHMENT",
+                role: 'SUPPORTING_ATTACHMENT',
               },
             });
 
@@ -383,14 +383,14 @@ export async function POST(request: NextRequest) {
               data: {
                 organizationId: orgId,
                 documentId: supportingDoc.id,
-                entityType: "INVOICE",
+                entityType: 'INVOICE',
                 entityId: invoice.id,
-                linkRole: "SUPPORTING",
+                linkRole: 'SUPPORTING',
               },
             });
           } catch (nonPdfError) {
             console.error(
-              "[resend-inbound] Failed to process non-PDF attachment %s:",
+              '[resend-inbound] Failed to process non-PDF attachment %s:',
               nonPdfId,
               nonPdfError,
             );
@@ -399,7 +399,7 @@ export async function POST(request: NextRequest) {
 
         return invoice.id;
       } catch (error) {
-        console.error("[resend-inbound] Failed to process PDF attachment %s:", attachmentId, error);
+        console.error('[resend-inbound] Failed to process PDF attachment %s:', attachmentId, error);
         return null;
       }
     }),

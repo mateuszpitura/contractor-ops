@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useMutation } from "@tanstack/react-query";
-import { AlertCircle, Loader2 } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
-import { OrgPicker } from "@/components/portal/org-picker";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { trpc } from "@/trpc/init";
+import { useMutation } from '@tanstack/react-query';
+import { AlertCircle, Loader2 } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
+import { OrgPicker } from '@/components/portal/org-picker';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -23,10 +23,10 @@ interface OrgInfo {
 }
 
 type VerifyState =
-  | { status: "verifying" }
-  | { status: "error"; message: string }
+  | { status: 'verifying' }
+  | { status: 'error'; message: string }
   | {
-      status: "org-picker";
+      status: 'org-picker';
       orgs: OrgInfo[];
       email: string;
       verificationNonce: string;
@@ -41,14 +41,14 @@ type VerifyState =
  * This ensures the cookie is httpOnly and secure in production.
  */
 async function setSessionCookie(token: string, expiresAt: string): Promise<void> {
-  const response = await fetch("/api/portal/set-session", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+  const response = await fetch('/api/portal/set-session', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ token, expiresAt }),
   });
 
   if (!response.ok) {
-    throw new Error("Failed to set session cookie");
+    throw new Error('Failed to set session cookie');
   }
 }
 
@@ -69,13 +69,13 @@ async function setSessionCookie(token: string, expiresAt: string): Promise<void>
  * 5. On error: shows error state with link back to login.
  */
 export default function PortalVerifyPage() {
-  const t = useTranslations("Portal");
+  const t = useTranslations('Portal');
   const searchParams = useSearchParams();
   const router = useRouter();
-  const token = searchParams.get("token");
+  const token = searchParams.get('token');
   const verifiedRef = useRef(false);
 
-  const [state, setState] = useState<VerifyState>({ status: "verifying" });
+  const [state, setState] = useState<VerifyState>({ status: 'verifying' });
 
   const verifyMagicLink = useMutation(trpc.portal.verifyMagicLink.mutationOptions());
 
@@ -88,44 +88,44 @@ export default function PortalVerifyPage() {
 
     if (!token) {
       setState({
-        status: "error",
-        message: t("verify.errors.noToken"),
+        status: 'error',
+        message: t('verify.errors.noToken'),
       });
       return;
     }
 
     verifyMagicLink.mutateAsync({ token }).then(
-      async (result) => {
+      async result => {
         if (!result.needsOrgPicker && result.session) {
           // Single org: set cookie and redirect
           try {
             await setSessionCookie(result.session.rawToken, result.session.expiresAt.toISOString());
-            router.push("/portal");
+            router.push('/portal');
           } catch {
             setState({
-              status: "error",
-              message: t("verify.errors.sessionFailed"),
+              status: 'error',
+              message: t('verify.errors.sessionFailed'),
             });
           }
         } else if (result.needsOrgPicker && result.orgs) {
           // Multi-org: show org picker with verification nonce
           setState({
-            status: "org-picker",
+            status: 'org-picker',
             orgs: result.orgs,
-            email: result.email ?? "",
-            verificationNonce: (result as { verificationNonce?: string }).verificationNonce ?? "",
+            email: result.email ?? '',
+            verificationNonce: (result as { verificationNonce?: string }).verificationNonce ?? '',
           });
         } else {
           setState({
-            status: "error",
-            message: t("verify.errors.unexpectedResponse"),
+            status: 'error',
+            message: t('verify.errors.unexpectedResponse'),
           });
         }
       },
       () => {
         setState({
-          status: "error",
-          message: t("verify.errors.linkExpired"),
+          status: 'error',
+          message: t('verify.errors.linkExpired'),
         });
       },
     );
@@ -135,32 +135,32 @@ export default function PortalVerifyPage() {
   // Handle org selection
   const handleOrgSelect = useCallback(
     async (contractorId: string, organizationId: string) => {
-      if (state.status !== "org-picker") return;
+      if (state.status !== 'org-picker') return;
 
       try {
         const result = await selectOrg.mutateAsync({
-          verificationNonce: state.status === "org-picker" ? state.verificationNonce : "",
+          verificationNonce: state.status === 'org-picker' ? state.verificationNonce : '',
           contractorId,
           organizationId,
         } as unknown as Parameters<typeof selectOrg.mutateAsync>[0]);
 
         await setSessionCookie(result.rawToken, result.expiresAt.toISOString());
-        router.push("/portal");
+        router.push('/portal');
       } catch {
-        toast.error(t("verify.errors.orgSelectFailed"));
+        toast.error(t('verify.errors.orgSelectFailed'));
       }
     },
     [state, selectOrg, router, t],
   );
 
   // ----- Verifying state -----
-  if (state.status === "verifying") {
+  if (state.status === 'verifying') {
     return (
       <div className="flex min-h-screen items-center justify-center bg-muted/30 p-4">
         <Card className="w-full max-w-[400px]">
           <CardContent className="flex flex-col items-center gap-3 py-12">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">{t("verify.verifying")}</p>
+            <p className="text-sm text-muted-foreground">{t('verify.verifying')}</p>
           </CardContent>
         </Card>
       </div>
@@ -168,7 +168,7 @@ export default function PortalVerifyPage() {
   }
 
   // ----- Error state -----
-  if (state.status === "error") {
+  if (state.status === 'error') {
     return (
       <div className="flex min-h-screen items-center justify-center bg-muted/30 p-4">
         <Card className="w-full max-w-[400px]">
@@ -177,8 +177,8 @@ export default function PortalVerifyPage() {
               <AlertCircle className="h-6 w-6 text-destructive" />
             </div>
             <p className="text-sm text-muted-foreground">{state.message}</p>
-            <Button variant="outline" className="mt-2" onClick={() => router.push("/portal/login")}>
-              {t("verify.backToLogin")}
+            <Button variant="outline" className="mt-2" onClick={() => router.push('/portal/login')}>
+              {t('verify.backToLogin')}
             </Button>
           </CardContent>
         </Card>

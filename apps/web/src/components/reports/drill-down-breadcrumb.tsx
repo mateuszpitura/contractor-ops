@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { X } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -9,8 +9,8 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { Button } from "@/components/ui/button";
+} from '@/components/ui/breadcrumb';
+import { Button } from '@/components/ui/button';
 
 interface DrillDownBreadcrumbProps {
   segments: Array<{ label: string; id?: string }>;
@@ -18,7 +18,7 @@ interface DrillDownBreadcrumbProps {
 }
 
 export function DrillDownBreadcrumb({ segments, onClear }: DrillDownBreadcrumbProps) {
-  const t = useTranslations("Reports");
+  const t = useTranslations('Reports');
 
   // Only render when a drill-down is active (more than 1 segment)
   if (segments.length <= 1) return null;
@@ -29,14 +29,13 @@ export function DrillDownBreadcrumb({ segments, onClear }: DrillDownBreadcrumbPr
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink
-              render={(props) => (
+              render={props => (
                 <button
                   {...props}
                   type="button"
                   onClick={onClear}
-                  className="cursor-pointer text-sm transition-colors hover:text-foreground"
-                >
-                  {t("all")}
+                  className="cursor-pointer text-sm transition-colors hover:text-foreground">
+                  {t('all')}
                 </button>
               )}
             />
@@ -54,10 +53,9 @@ export function DrillDownBreadcrumb({ segments, onClear }: DrillDownBreadcrumbPr
         variant="ghost"
         size="sm"
         onClick={onClear}
-        className="h-6 gap-1 px-2 text-xs text-muted-foreground"
-      >
+        className="h-6 gap-1 px-2 text-xs text-muted-foreground">
         <X className="h-3 w-3" />
-        {t("clearFilter")}
+        {t('clearFilter')}
       </Button>
     </div>
   );

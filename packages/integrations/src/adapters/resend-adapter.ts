@@ -1,12 +1,12 @@
-import { Resend } from "resend";
-import type { WebhookVerificationResult } from "../types/webhook.js";
-import { BaseAdapter } from "./base-adapter.js";
+import { Resend } from 'resend';
+import type { WebhookVerificationResult } from '../types/webhook.js';
+import { BaseAdapter } from './base-adapter.js';
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
-const EMAIL_DOMAIN_SUFFIX = ".contractorhub.io";
+const EMAIL_DOMAIN_SUFFIX = '.contractorhub.io';
 
 // ---------------------------------------------------------------------------
 // Resend Adapter
@@ -26,8 +26,8 @@ const EMAIL_DOMAIN_SUFFIX = ".contractorhub.io";
  * - RESEND_API_KEY — for Resend SDK initialization
  */
 export class ResendAdapter extends BaseAdapter {
-  readonly slug = "resend";
-  readonly displayName = "Resend";
+  readonly slug = 'resend';
+  readonly displayName = 'Resend';
   readonly supportsOAuth = false;
   readonly supportsWebhooks = true;
 
@@ -53,9 +53,9 @@ export class ResendAdapter extends BaseAdapter {
       return { valid: false };
     }
 
-    const svixId = headers["svix-id"];
-    const svixTimestamp = headers["svix-timestamp"];
-    const svixSignature = headers["svix-signature"];
+    const svixId = headers['svix-id'];
+    const svixTimestamp = headers['svix-timestamp'];
+    const svixSignature = headers['svix-signature'];
 
     if (!(svixId && svixTimestamp && svixSignature)) {
       return { valid: false };
@@ -74,7 +74,7 @@ export class ResendAdapter extends BaseAdapter {
       });
 
       // Extract event type
-      const eventType = (event as { type?: string }).type ?? "unknown";
+      const eventType = (event as { type?: string }).type ?? 'unknown';
 
       // Attempt to resolve organizationId from recipient email domain
       let organizationId: string | undefined;
@@ -136,7 +136,7 @@ function parseOrgSlugFromEmail(toAddress: string): string | null {
   const bracketMatch = toAddress.match(/<([^>]+)>/);
   const email = bracketMatch ? bracketMatch[1]! : toAddress.trim();
 
-  const atIndex = email.indexOf("@");
+  const atIndex = email.indexOf('@');
   if (atIndex === -1) return null;
 
   const domain = email.substring(atIndex + 1).toLowerCase();
@@ -144,7 +144,7 @@ function parseOrgSlugFromEmail(toAddress: string): string | null {
   if (!domain.endsWith(EMAIL_DOMAIN_SUFFIX)) return null;
 
   const slug = domain.slice(0, -EMAIL_DOMAIN_SUFFIX.length);
-  if (!slug || slug.includes(".")) return null;
+  if (!slug || slug.includes('.')) return null;
 
   return slug;
 }

@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import { endOfISOWeek, format, startOfISOWeek } from "date-fns";
-import { CalendarDays, Clock, Loader2, Ticket } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Label } from "@/components/ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { endOfISOWeek, format, startOfISOWeek } from 'date-fns';
+import { CalendarDays, Clock, Loader2, Ticket } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
 interface ExternalSyncButtonProps {
-  provider: "CLOCKIFY" | "JIRA";
+  provider: 'CLOCKIFY' | 'JIRA';
   connected: boolean;
   onSync: (startDate: string, endDate: string) => Promise<{ imported: number; skipped: number }>;
   isSyncing: boolean;
@@ -28,11 +28,11 @@ interface ExternalSyncButtonProps {
 const PROVIDER_CONFIG = {
   CLOCKIFY: {
     icon: Clock,
-    label: "Clockify",
+    label: 'Clockify',
   },
   JIRA: {
     icon: Ticket,
-    label: "Jira",
+    label: 'Jira',
   },
 } as const;
 
@@ -66,7 +66,7 @@ export function ExternalSyncButton({
   const handleImport = async () => {
     setPopoverOpen(false);
     try {
-      const result = await onSync(format(fromDate, "yyyy-MM-dd"), format(toDate, "yyyy-MM-dd"));
+      const result = await onSync(format(fromDate, 'yyyy-MM-dd'), format(toDate, 'yyyy-MM-dd'));
 
       if (result.imported > 0) {
         toast.success(`${result.imported} entries imported from ${config.label}`);
@@ -126,14 +126,14 @@ export function ExternalSyncButton({
               <PopoverTrigger asChild>
                 <Button variant="outline" size="sm" className="w-full justify-start font-normal">
                   <CalendarDays className="me-2 h-3.5 w-3.5" />
-                  {format(fromDate, "MMM d, yyyy")}
+                  {format(fromDate, 'MMM d, yyyy')}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
                   mode="single"
                   selected={fromDate}
-                  onSelect={(d) => {
+                  onSelect={d => {
                     if (d) setFromDate(d);
                     setFromCalendarOpen(false);
                   }}
@@ -150,14 +150,14 @@ export function ExternalSyncButton({
               <PopoverTrigger asChild>
                 <Button variant="outline" size="sm" className="w-full justify-start font-normal">
                   <CalendarDays className="me-2 h-3.5 w-3.5" />
-                  {format(toDate, "MMM d, yyyy")}
+                  {format(toDate, 'MMM d, yyyy')}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
                   mode="single"
                   selected={toDate}
-                  onSelect={(d) => {
+                  onSelect={d => {
                     if (d) setToDate(d);
                     setToCalendarOpen(false);
                   }}

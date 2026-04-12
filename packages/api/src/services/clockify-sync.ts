@@ -1,8 +1,8 @@
-import type { ClockifyRegion } from "@contractor-ops/integrations/adapters/clockify-adapter";
-import { CLOCKIFY_REGIONS } from "@contractor-ops/integrations/adapters/clockify-adapter";
-import { decryptCredentials } from "@contractor-ops/integrations/services/credential-service";
-import { TRPCError } from "@trpc/server";
-import type { DbClient } from "./types.js";
+import type { ClockifyRegion } from '@contractor-ops/integrations/adapters/clockify-adapter';
+import { CLOCKIFY_REGIONS } from '@contractor-ops/integrations/adapters/clockify-adapter';
+import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
+import { TRPCError } from '@trpc/server';
+import type { DbClient } from './types.js';
 
 type PrismaClient = DbClient;
 
@@ -45,9 +45,9 @@ interface ClockifyConnectionConfig {
 export function parseDurationToMinutes(duration: string): number {
   const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
   if (!match) return 0;
-  const hours = parseInt(match[1] || "0", 10);
-  const minutes = parseInt(match[2] || "0", 10);
-  const seconds = parseInt(match[3] || "0", 10);
+  const hours = parseInt(match[1] || '0', 10);
+  const minutes = parseInt(match[2] || '0', 10);
+  const seconds = parseInt(match[3] || '0', 10);
   return hours * 60 + minutes + (seconds >= 30 ? 1 : 0);
 }
 
@@ -92,30 +92,30 @@ export async function syncClockifyEntries(
 
   if (!connection) {
     throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "Clockify connection not found",
+      code: 'NOT_FOUND',
+      message: 'Clockify connection not found',
     });
   }
 
-  if (connection.status !== "CONNECTED") {
+  if (connection.status !== 'CONNECTED') {
     throw new TRPCError({
-      code: "PRECONDITION_FAILED",
+      code: 'PRECONDITION_FAILED',
       message: `Clockify connection is not active (status: ${connection.status})`,
     });
   }
 
-  const credentials = decryptCredentials(connection.credentialsRef, "clockify");
+  const credentials = decryptCredentials(connection.credentialsRef, 'clockify');
   const config = connection.configJson as unknown as ClockifyConnectionConfig;
 
   if (!(config?.workspaceId && config?.userId)) {
     throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: "Clockify connection is missing workspaceId or userId in config",
+      code: 'BAD_REQUEST',
+      message: 'Clockify connection is missing workspaceId or userId in config',
     });
   }
 
   // 2. Build base URL from region
-  const region = config.region || "global";
+  const region = config.region || 'global';
   const baseUrl = CLOCKIFY_REGIONS[region] ?? CLOCKIFY_REGIONS.global;
 
   // 3. Create sync log
@@ -123,9 +123,9 @@ export async function syncClockifyEntries(
     data: {
       organizationId,
       integrationConnectionId: connectionId,
-      direction: "INBOUND",
-      syncType: "time_entries",
-      status: "STARTED",
+      direction: 'INBOUND',
+      syncType: 'time_entries',
+      status: 'STARTED',
     },
   });
 
@@ -143,31 +143,31 @@ export async function syncClockifyEntries(
       const url = new URL(
         `${baseUrl}/workspaces/${config.workspaceId}/user/${config.userId}/time-entries`,
       );
-      url.searchParams.set("start", `${startDate}T00:00:00Z`);
-      url.searchParams.set("end", `${endDate}T23:59:59Z`);
-      url.searchParams.set("page", String(page));
-      url.searchParams.set("page-size", String(pageSize));
+      url.searchParams.set('start', `${startDate}T00:00:00Z`);
+      url.searchParams.set('end', `${endDate}T23:59:59Z`);
+      url.searchParams.set('page', String(page));
+      url.searchParams.set('page-size', String(pageSize));
 
       const response = await fetch(url.toString(), {
         headers: {
-          "X-Api-Key": credentials.accessToken,
-          Accept: "application/json",
+          'X-Api-Key': credentials.accessToken,
+          Accept: 'application/json',
         },
       });
 
       if (response.status === 401) {
         throw new TRPCError({
-          code: "UNAUTHORIZED",
+          code: 'UNAUTHORIZED',
           message:
-            "Clockify API key is invalid or expired. Please reconnect your Clockify integration.",
+            'Clockify API key is invalid or expired. Please reconnect your Clockify integration.',
         });
       }
 
       if (response.status === 429) {
-        const retryAfter = response.headers.get("Retry-After");
+        const retryAfter = response.headers.get('Retry-After');
         throw new TRPCError({
-          code: "TOO_MANY_REQUESTS",
-          message: `Clockify API rate limit exceeded. Retry after ${retryAfter ?? "60"} seconds.`,
+          code: 'TOO_MANY_REQUESTS',
+          message: `Clockify API rate limit exceeded. Retry after ${retryAfter ?? '60'} seconds.`,
         });
       }
 
@@ -187,7 +187,7 @@ export async function syncClockifyEntries(
     // 5. Upsert entries into TimeEntry table
     for (const entry of allEntries) {
       const minutes = parseDurationToMinutes(entry.timeInterval.duration);
-      const entryDate = entry.timeInterval.start.split("T")[0]!; // Date portion
+      const entryDate = entry.timeInterval.start.split('T')[0]!; // Date portion
 
       // Skip entries with zero duration
       if (minutes === 0) {
@@ -199,7 +199,7 @@ export async function syncClockifyEntries(
         where: {
           organizationId,
           contractorId,
-          source: "CLOCKIFY",
+          source: 'CLOCKIFY',
           externalId: entry.id,
         },
         select: { id: true },
@@ -231,7 +231,7 @@ export async function syncClockifyEntries(
             entryDate: new Date(entryDate),
             minutes,
             description: entry.description || null,
-            source: "CLOCKIFY",
+            source: 'CLOCKIFY',
             externalId: entry.id,
             metadataJson: {
               clockifyProjectId: entry.projectId,
@@ -267,7 +267,7 @@ export async function syncClockifyEntries(
     await prisma.integrationSyncLog.update({
       where: { id: syncLog.id },
       data: {
-        status: "SUCCESS",
+        status: 'SUCCESS',
         completedAt: new Date(),
         responsePayloadJson: {
           totalFetched: allEntries.length,
@@ -281,9 +281,9 @@ export async function syncClockifyEntries(
     await prisma.integrationSyncLog.update({
       where: { id: syncLog.id },
       data: {
-        status: "FAILED",
+        status: 'FAILED',
         completedAt: new Date(),
-        errorMessage: error instanceof Error ? error.message : "Unknown error",
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
       },
     });
 
@@ -291,15 +291,15 @@ export async function syncClockifyEntries(
       where: { id: connectionId },
       data: {
         lastErrorAt: new Date(),
-        lastErrorMessage: error instanceof Error ? error.message : "Unknown error",
+        lastErrorMessage: error instanceof Error ? error.message : 'Unknown error',
       },
     });
 
     // Re-throw TRPCErrors as-is, wrap others
     if (error instanceof TRPCError) throw error;
     throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "Failed to sync Clockify time entries",
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'Failed to sync Clockify time entries',
       cause: error,
     });
   }

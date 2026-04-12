@@ -1,15 +1,15 @@
-import { describe, expect, it, vi } from "vitest";
-import { render, screen } from "@/test/test-utils";
+import { describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@/test/test-utils';
 
-vi.mock("next-intl", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("next-intl")>();
+vi.mock('next-intl', async importOriginal => {
+  const actual = await importOriginal<typeof import('next-intl')>();
   return {
     ...actual,
     useTranslations: () => (key: string, _params?: any) => key,
   };
 });
 
-vi.mock("@tanstack/react-query", () => ({
+vi.mock('@tanstack/react-query', () => ({
   useQuery: vi.fn(),
   useMutation: () => ({
     mutate: vi.fn(),
@@ -17,7 +17,7 @@ vi.mock("@tanstack/react-query", () => ({
   }),
 }));
 
-vi.mock("@/trpc/init", () => ({
+vi.mock('@/trpc/init', () => ({
   trpc: {
     report: {
       overdueInvoices: { queryOptions: (opts: any) => opts },
@@ -26,7 +26,7 @@ vi.mock("@/trpc/init", () => ({
   },
 }));
 
-vi.mock("@/i18n/navigation", () => ({
+vi.mock('@/i18n/navigation', () => ({
   Link: ({ children, href, ...props }: any) => (
     <a href={href} {...props}>
       {children}
@@ -35,11 +35,11 @@ vi.mock("@/i18n/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
 }));
 
-vi.mock("sonner", () => ({
+vi.mock('sonner', () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
 
-vi.mock("../report-table", () => ({
+vi.mock('../report-table', () => ({
   ReportTable: ({ data, emptyTitle, isLoading }: any) =>
     isLoading ? (
       <div data-testid="loading" />
@@ -54,31 +54,31 @@ vi.mock("../report-table", () => ({
     ),
 }));
 
-vi.mock("../export-buttons", () => ({
+vi.mock('../export-buttons', () => ({
   ExportButtons: () => <div data-testid="export-buttons" />,
   downloadBase64File: vi.fn(),
 }));
 
-import { useQuery } from "@tanstack/react-query";
-import { OverdueInvoicesReport } from "../overdue-invoices-report";
+import { useQuery } from '@tanstack/react-query';
+import { OverdueInvoicesReport } from '../overdue-invoices-report';
 
 const mockUseQuery = vi.mocked(useQuery);
 
-describe("OverdueInvoicesReport", () => {
+describe('OverdueInvoicesReport', () => {
   beforeEach(() => {
     mockUseQuery.mockReturnValue({
       data: {
         items: [
           {
-            invoiceId: "inv-1",
-            invoiceNumber: "FV/001",
-            contractorId: "c-1",
-            contractorName: "Acme",
+            invoiceId: 'inv-1',
+            invoiceNumber: 'FV/001',
+            contractorId: 'c-1',
+            contractorName: 'Acme',
             amountMinor: 500000,
-            currency: "PLN",
-            dueDate: "2026-03-01",
+            currency: 'PLN',
+            dueDate: '2026-03-01',
             daysOverdue: 35,
-            status: "OVERDUE",
+            status: 'OVERDUE',
           },
         ],
         totalCount: 1,
@@ -87,37 +87,37 @@ describe("OverdueInvoicesReport", () => {
     } as any);
   });
 
-  it("renders table with data", () => {
+  it('renders table with data', () => {
     render(<OverdueInvoicesReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    expect(screen.getByText("FV/001")).toBeInTheDocument();
+    expect(screen.getByText('FV/001')).toBeInTheDocument();
   });
 
-  it("renders export buttons", () => {
+  it('renders export buttons', () => {
     render(<OverdueInvoicesReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    expect(screen.getByTestId("export-buttons")).toBeInTheDocument();
+    expect(screen.getByTestId('export-buttons')).toBeInTheDocument();
   });
 
-  it("renders empty state when no data", () => {
+  it('renders empty state when no data', () => {
     mockUseQuery.mockReturnValue({
       data: { items: [], totalCount: 0 },
       isLoading: false,
     } as any);
     render(<OverdueInvoicesReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    expect(screen.getByTestId("empty")).toBeInTheDocument();
-    expect(screen.getByText("emptyOverdueInvoices")).toBeInTheDocument();
+    expect(screen.getByTestId('empty')).toBeInTheDocument();
+    expect(screen.getByText('emptyOverdueInvoices')).toBeInTheDocument();
   });
 
-  it("renders table loading when query is loading", () => {
+  it('renders table loading when query is loading', () => {
     mockUseQuery.mockReturnValue({
       data: undefined,
       isLoading: true,
     } as any);
     render(<OverdueInvoicesReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    expect(screen.getByTestId("loading")).toBeInTheDocument();
+    expect(screen.getByTestId('loading')).toBeInTheDocument();
   });
 
-  it("does not render chart (table-only report)", () => {
+  it('does not render chart (table-only report)', () => {
     render(<OverdueInvoicesReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    expect(screen.queryByTestId("report-chart")).not.toBeInTheDocument();
+    expect(screen.queryByTestId('report-chart')).not.toBeInTheDocument();
   });
 });

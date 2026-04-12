@@ -1,6 +1,6 @@
-import { prisma } from "@contractor-ops/db";
-import type { ProviderHealthStatus } from "../types/health.js";
-import { BaseAdapter } from "./base-adapter.js";
+import { prisma } from '@contractor-ops/db';
+import type { ProviderHealthStatus } from '../types/health.js';
+import { BaseAdapter } from './base-adapter.js';
 
 // ---------------------------------------------------------------------------
 // Clockify Regional Base URLs (Pitfall 3 from RESEARCH.md)
@@ -11,11 +11,11 @@ import { BaseAdapter } from "./base-adapter.js";
  * during connection setup — API keys are region-specific.
  */
 export const CLOCKIFY_REGIONS: Record<string, string> = {
-  global: "https://api.clockify.me/api/v1",
-  eu: "https://euc1.clockify.me/api/v1",
-  us: "https://use2.clockify.me/api/v1",
-  uk: "https://euw2.clockify.me/api/v1",
-  au: "https://apse2.clockify.me/api/v1",
+  global: 'https://api.clockify.me/api/v1',
+  eu: 'https://euc1.clockify.me/api/v1',
+  us: 'https://use2.clockify.me/api/v1',
+  uk: 'https://euw2.clockify.me/api/v1',
+  au: 'https://apse2.clockify.me/api/v1',
 };
 
 export type ClockifyRegion = keyof typeof CLOCKIFY_REGIONS;
@@ -37,8 +37,8 @@ export type ClockifyRegion = keyof typeof CLOCKIFY_REGIONS;
  * - CLOCKIFY_ENCRYPTION_KEY — for credential encryption at rest
  */
 export class ClockifyAdapter extends BaseAdapter {
-  readonly slug = "clockify";
-  readonly displayName = "Clockify";
+  readonly slug = 'clockify';
+  readonly displayName = 'Clockify';
   readonly supportsOAuth = false;
   readonly supportsWebhooks = false;
 
@@ -63,8 +63,8 @@ export class ClockifyAdapter extends BaseAdapter {
 
     if (!connection) {
       return {
-        status: "DISCONNECTED",
-        provider: "clockify",
+        status: 'DISCONNECTED',
+        provider: 'clockify',
         recentSyncs: [],
         recentWebhooks: [],
         errorCountLast24h: 0,
@@ -74,7 +74,7 @@ export class ClockifyAdapter extends BaseAdapter {
     // Fetch recent sync logs
     const recentSyncs = await prisma.integrationSyncLog.findMany({
       where: { integrationConnectionId: connectionId },
-      orderBy: { startedAt: "desc" },
+      orderBy: { startedAt: 'desc' },
       take: 5,
       select: {
         id: true,
@@ -90,33 +90,33 @@ export class ClockifyAdapter extends BaseAdapter {
     const errorCountLast24h = await prisma.integrationSyncLog.count({
       where: {
         integrationConnectionId: connectionId,
-        status: "FAILED",
+        status: 'FAILED',
         startedAt: { gte: oneDayAgo },
       },
     });
 
     // Determine status
-    let status: ProviderHealthStatus["status"];
-    if (connection.status !== "CONNECTED") {
-      status = "DISCONNECTED";
+    let status: ProviderHealthStatus['status'];
+    if (connection.status !== 'CONNECTED') {
+      status = 'DISCONNECTED';
     } else if (connection.lastErrorAt && !connection.lastSuccessAt) {
-      status = "ERROR";
-    } else if (recentSyncs[0]?.status === "FAILED") {
-      status = "ERROR";
+      status = 'ERROR';
+    } else if (recentSyncs[0]?.status === 'FAILED') {
+      status = 'ERROR';
     } else {
-      status = "CONNECTED";
+      status = 'CONNECTED';
     }
 
     return {
       status,
-      provider: "clockify",
+      provider: 'clockify',
       displayName: connection.displayName,
       connectedAt: connection.connectedAt,
       lastSyncAt: connection.lastSyncAt,
       lastSuccessAt: connection.lastSuccessAt,
       lastErrorAt: connection.lastErrorAt,
       lastErrorMessage: connection.lastErrorMessage,
-      recentSyncs: recentSyncs.map((s) => ({
+      recentSyncs: recentSyncs.map(s => ({
         id: s.id,
         syncType: s.syncType,
         status: s.status,

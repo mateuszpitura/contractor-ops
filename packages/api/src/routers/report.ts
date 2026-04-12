@@ -1,14 +1,14 @@
-import { Prisma } from "@contractor-ops/db/generated/prisma/client";
-import { z } from "zod";
-import { router } from "../init.js";
-import { requirePermission } from "../middleware/rbac.js";
-import { tenantProcedure } from "../middleware/tenant.js";
+import { Prisma } from '@contractor-ops/db/generated/prisma/client';
+import { z } from 'zod';
+import { router } from '../init.js';
+import { requirePermission } from '../middleware/rbac.js';
+import { tenantProcedure } from '../middleware/tenant.js';
 import {
   generateComplianceCsv,
   generateContractsCsv,
   generateInvoicesCsv,
   generateSpendCsv,
-} from "../services/report-export.js";
+} from '../services/report-export.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -18,7 +18,7 @@ function _plain<T>(data: T): T {
   return JSON.parse(JSON.stringify(data)) as T;
 }
 
-const reportRead = requirePermission({ report: ["read"] });
+const reportRead = requirePermission({ report: ['read'] });
 
 // ---------------------------------------------------------------------------
 // Shared input schemas
@@ -27,7 +27,7 @@ const reportRead = requirePermission({ report: ["read"] });
 const paginationInput = {
   page: z.number().min(1).default(1),
   pageSize: z.number().min(1).max(100).default(20),
-  sortOrder: z.enum(["asc", "desc"]).default("desc"),
+  sortOrder: z.enum(['asc', 'desc']).default('desc'),
 };
 
 const dateRangeInput = {
@@ -50,7 +50,7 @@ export const reportRouter = router({
       z.object({
         ...dateRangeInput,
         ...paginationInput,
-        sortBy: z.enum(["totalSpend", "invoiceCount", "contractorName"]).default("totalSpend"),
+        sortBy: z.enum(['totalSpend', 'invoiceCount', 'contractorName']).default('totalSpend'),
         contractorId: z.string().optional(),
       }),
     )
@@ -66,7 +66,7 @@ export const reportRouter = router({
         contractorName: '"contractorName"',
       };
       const orderCol = sortMap[input.sortBy] ?? '"totalMinor"';
-      const orderDir = input.sortOrder === "asc" ? "ASC" : "DESC";
+      const orderDir = input.sortOrder === 'asc' ? 'ASC' : 'DESC';
 
       // Build optional contractor filter
       const contractorFilter = input.contractorId
@@ -116,7 +116,7 @@ export const reportRouter = router({
       `;
 
       return {
-        items: items.map((r) => ({
+        items: items.map(r => ({
           ...r,
           invoiceCount: Number(r.invoiceCount),
           totalMinor: Number(r.totalMinor),
@@ -136,7 +136,7 @@ export const reportRouter = router({
       z.object({
         ...dateRangeInput,
         ...paginationInput,
-        sortBy: z.enum(["totalSpend", "invoiceCount", "teamName"]).default("totalSpend"),
+        sortBy: z.enum(['totalSpend', 'invoiceCount', 'teamName']).default('totalSpend'),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -150,7 +150,7 @@ export const reportRouter = router({
         teamName: '"teamName"',
       };
       const orderCol = sortMap[input.sortBy] ?? '"totalMinor"';
-      const orderDir = input.sortOrder === "asc" ? "ASC" : "DESC";
+      const orderDir = input.sortOrder === 'asc' ? 'ASC' : 'DESC';
 
       const items = await ctx.db.$queryRaw<
         Array<{
@@ -193,7 +193,7 @@ export const reportRouter = router({
       `;
 
       return {
-        items: items.map((r) => ({
+        items: items.map(r => ({
           teamId: r.teamId,
           teamName: r.teamName,
           contractorCount: Number(r.contractorCount),
@@ -211,9 +211,9 @@ export const reportRouter = router({
     .use(reportRead)
     .input(
       z.object({
-        days: z.enum(["30", "60", "90"]).default("30"),
+        days: z.enum(['30', '60', '90']).default('30'),
         ...paginationInput,
-        sortBy: z.enum(["endDate", "contractorName", "title"]).default("endDate"),
+        sortBy: z.enum(['endDate', 'contractorName', 'title']).default('endDate'),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -222,13 +222,13 @@ export const reportRouter = router({
       const futureDate = new Date(now.getTime() + daysNum * 24 * 60 * 60 * 1000);
 
       const orderBy: Prisma.ContractOrderByWithRelationInput =
-        input.sortBy === "contractorName"
+        input.sortBy === 'contractorName'
           ? { contractor: { legalName: input.sortOrder } }
           : { [input.sortBy]: input.sortOrder };
 
       const where = {
         organizationId: ctx.organizationId,
-        status: { in: ["ACTIVE", "EXPIRING"] as ("ACTIVE" | "EXPIRING")[] },
+        status: { in: ['ACTIVE', 'EXPIRING'] as ('ACTIVE' | 'EXPIRING')[] },
         endDate: { gte: now, lte: futureDate },
         deletedAt: null,
       };
@@ -251,7 +251,7 @@ export const reportRouter = router({
       const msPerDay = 24 * 60 * 60 * 1000;
 
       return {
-        items: contracts.map((c) => ({
+        items: contracts.map(c => ({
           contractId: c.id,
           contractTitle: c.title,
           contractorId: c.contractor.id,
@@ -272,23 +272,23 @@ export const reportRouter = router({
     .input(
       z.object({
         ...paginationInput,
-        sortBy: z.enum(["dueDate", "amount", "contractorName"]).default("dueDate"),
+        sortBy: z.enum(['dueDate', 'amount', 'contractorName']).default('dueDate'),
       }),
     )
     .query(async ({ ctx, input }) => {
       const now = new Date();
 
       const orderBy: Prisma.InvoiceOrderByWithRelationInput =
-        input.sortBy === "contractorName"
+        input.sortBy === 'contractorName'
           ? { contractor: { legalName: input.sortOrder } }
-          : input.sortBy === "amount"
+          : input.sortBy === 'amount'
             ? { amountToPayMinor: input.sortOrder }
             : { dueDate: input.sortOrder };
 
       const where = {
         organizationId: ctx.organizationId,
         dueDate: { lt: now },
-        paymentStatus: { notIn: ["PAID"] as "PAID"[] },
+        paymentStatus: { notIn: ['PAID'] as 'PAID'[] },
         deletedAt: null,
       };
 
@@ -310,11 +310,11 @@ export const reportRouter = router({
       const msPerDay = 24 * 60 * 60 * 1000;
 
       return {
-        items: invoices.map((inv) => ({
+        items: invoices.map(inv => ({
           invoiceId: inv.id,
           invoiceNumber: inv.invoiceNumber,
           contractorId: inv.contractor?.id ?? null,
-          contractorName: inv.contractor?.legalName ?? "Unknown",
+          contractorName: inv.contractor?.legalName ?? 'Unknown',
           amountMinor: inv.amountToPayMinor,
           currency: inv.currency,
           dueDate: inv.dueDate.toISOString(),
@@ -333,7 +333,7 @@ export const reportRouter = router({
     .input(
       z.object({
         ...paginationInput,
-        sortBy: z.enum(["health", "contractorName", "missingDocs"]).default("health"),
+        sortBy: z.enum(['health', 'contractorName', 'missingDocs']).default('health'),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -341,7 +341,7 @@ export const reportRouter = router({
       const contractors = await ctx.db.contractor.findMany({
         where: {
           organizationId: ctx.organizationId,
-          status: "ACTIVE",
+          status: 'ACTIVE',
           deletedAt: null,
         },
         include: {
@@ -355,7 +355,7 @@ export const reportRouter = router({
           _count: {
             select: {
               complianceItems: {
-                where: { status: { in: ["MISSING", "EXPIRED"] } },
+                where: { status: { in: ['MISSING', 'EXPIRED'] } },
               },
             },
           },
@@ -369,30 +369,30 @@ export const reportRouter = router({
         missingDocuments: number;
         contractStatus: string;
         overdueTasks: number;
-        health: "red" | "yellow" | "green";
+        health: 'red' | 'yellow' | 'green';
       };
 
       const items: GapItem[] = [];
 
       for (const c of contractors) {
         const missingOrExpired = c._count.complianceItems;
-        const hasPending = c.complianceItems.some((ci) => ci.status === "PENDING");
-        const hasActiveContract = c.contracts.some((con) => con.status === "ACTIVE");
+        const hasPending = c.complianceItems.some(ci => ci.status === 'PENDING');
+        const hasActiveContract = c.contracts.some(con => con.status === 'ACTIVE');
 
-        let health: "red" | "yellow" | "green" = "green";
+        let health: 'red' | 'yellow' | 'green' = 'green';
         if (missingOrExpired > 0 || !hasActiveContract) {
-          health = "red";
+          health = 'red';
         } else if (hasPending) {
-          health = "yellow";
+          health = 'yellow';
         }
 
         // Only include non-green
-        if (health !== "green") {
+        if (health !== 'green') {
           items.push({
             contractorId: c.id,
             contractorName: c.legalName,
             missingDocuments: missingOrExpired,
-            contractStatus: hasActiveContract ? "ACTIVE" : "NONE",
+            contractStatus: hasActiveContract ? 'ACTIVE' : 'NONE',
             overdueTasks: 0,
             health,
           });
@@ -401,18 +401,18 @@ export const reportRouter = router({
 
       // Sort
       const sortFn = (a: GapItem, b: GapItem) => {
-        if (input.sortBy === "health") {
+        if (input.sortBy === 'health') {
           const order = { red: 0, yellow: 1, green: 2 };
           const diff = order[a.health] - order[b.health];
-          return input.sortOrder === "asc" ? diff : -diff;
+          return input.sortOrder === 'asc' ? diff : -diff;
         }
-        if (input.sortBy === "contractorName") {
+        if (input.sortBy === 'contractorName') {
           const cmp = a.contractorName.localeCompare(b.contractorName);
-          return input.sortOrder === "asc" ? cmp : -cmp;
+          return input.sortOrder === 'asc' ? cmp : -cmp;
         }
         // missingDocs
         const diff = a.missingDocuments - b.missingDocuments;
-        return input.sortOrder === "asc" ? diff : -diff;
+        return input.sortOrder === 'asc' ? diff : -diff;
       };
 
       items.sort(sortFn);
@@ -461,7 +461,7 @@ export const reportRouter = router({
         LIMIT 10
       `;
 
-      return items.map((r) => ({
+      return items.map(r => ({
         contractorId: r.contractorId,
         contractorName: r.contractorName,
         totalMinor: Number(r.totalMinor),
@@ -501,7 +501,7 @@ export const reportRouter = router({
         ORDER BY "totalMinor" DESC
       `;
 
-      return items.map((r) => ({
+      return items.map(r => ({
         teamId: r.teamId,
         teamName: r.teamName,
         totalMinor: Number(r.totalMinor),
@@ -513,7 +513,7 @@ export const reportRouter = router({
    */
   expiringContractsChart: tenantProcedure
     .use(reportRead)
-    .input(z.object({ days: z.enum(["30", "60", "90"]).default("30") }))
+    .input(z.object({ days: z.enum(['30', '60', '90']).default('30') }))
     .query(async ({ ctx, input }) => {
       const now = new Date();
       const daysNum = parseInt(input.days, 10);
@@ -523,7 +523,7 @@ export const reportRouter = router({
       const contracts = await ctx.db.contract.findMany({
         where: {
           organizationId: ctx.organizationId,
-          status: { in: ["ACTIVE", "EXPIRING"] },
+          status: { in: ['ACTIVE', 'EXPIRING'] },
           endDate: {
             gte: now,
             lte: new Date(now.getTime() + daysNum * msPerDay),
@@ -540,7 +540,7 @@ export const reportRouter = router({
         const to = new Date(now.getTime() + (i + 1) * 30 * msPerDay);
         const label = `${i * 30 + 1}-${(i + 1) * 30} days`;
 
-        const count = contracts.filter((c) => {
+        const count = contracts.filter(c => {
           if (!c.endDate) return false;
           return c.endDate >= from && c.endDate < to;
         }).length;
@@ -558,7 +558,7 @@ export const reportRouter = router({
     const contractors = await ctx.db.contractor.findMany({
       where: {
         organizationId: ctx.organizationId,
-        status: "ACTIVE",
+        status: 'ACTIVE',
         deletedAt: null,
       },
       include: {
@@ -572,7 +572,7 @@ export const reportRouter = router({
         _count: {
           select: {
             complianceItems: {
-              where: { status: { in: ["MISSING", "EXPIRED"] } },
+              where: { status: { in: ['MISSING', 'EXPIRED'] } },
             },
           },
         },
@@ -585,8 +585,8 @@ export const reportRouter = router({
 
     for (const c of contractors) {
       const missingOrExpired = c._count.complianceItems;
-      const hasPending = c.complianceItems.some((ci) => ci.status === "PENDING");
-      const hasActiveContract = c.contracts.some((con) => con.status === "ACTIVE");
+      const hasPending = c.complianceItems.some(ci => ci.status === 'PENDING');
+      const hasActiveContract = c.contracts.some(con => con.status === 'ACTIVE');
 
       if (missingOrExpired > 0 || !hasActiveContract) {
         critical++;
@@ -646,7 +646,7 @@ export const reportRouter = router({
       `;
 
       const csv = await generateSpendCsv(
-        items.map((r) => ({
+        items.map(r => ({
           ...r,
           invoiceCount: Number(r.invoiceCount),
           totalMinor: Number(r.totalMinor),
@@ -700,8 +700,8 @@ export const reportRouter = router({
 
       // Reuse generateSpendCsv with adapted data
       const csv = await generateSpendCsv(
-        items.map((r) => ({
-          contractorName: r.teamName ?? "",
+        items.map(r => ({
+          contractorName: r.teamName ?? '',
           invoiceCount: Number(r.invoiceCount),
           totalMinor: Number(r.totalMinor),
           avgMinor: 0,
@@ -722,7 +722,7 @@ export const reportRouter = router({
    */
   exportExpiringContracts: tenantProcedure
     .use(reportRead)
-    .input(z.object({ days: z.enum(["30", "60", "90"]).default("30") }))
+    .input(z.object({ days: z.enum(['30', '60', '90']).default('30') }))
     .mutation(async ({ ctx, input }) => {
       const now = new Date();
       const daysNum = parseInt(input.days, 10);
@@ -732,18 +732,18 @@ export const reportRouter = router({
       const contracts = await ctx.db.contract.findMany({
         where: {
           organizationId: ctx.organizationId,
-          status: { in: ["ACTIVE", "EXPIRING"] as ("ACTIVE" | "EXPIRING")[] },
+          status: { in: ['ACTIVE', 'EXPIRING'] as ('ACTIVE' | 'EXPIRING')[] },
           endDate: { gte: now, lte: futureDate },
           deletedAt: null,
         },
         include: {
           contractor: { select: { legalName: true } },
         },
-        orderBy: { endDate: "asc" },
+        orderBy: { endDate: 'asc' },
       });
 
       const csv = await generateContractsCsv(
-        contracts.map((c) => ({
+        contracts.map(c => ({
           contractTitle: c.title,
           contractorName: c.contractor.legalName,
           endDate: c.endDate?.toISOString().slice(0, 10),
@@ -771,19 +771,19 @@ export const reportRouter = router({
       where: {
         organizationId: ctx.organizationId,
         dueDate: { lt: now },
-        paymentStatus: { notIn: ["PAID"] as "PAID"[] },
+        paymentStatus: { notIn: ['PAID'] as 'PAID'[] },
         deletedAt: null,
       },
       include: {
         contractor: { select: { legalName: true } },
       },
-      orderBy: { dueDate: "asc" },
+      orderBy: { dueDate: 'asc' },
     });
 
     const csv = await generateInvoicesCsv(
-      invoices.map((inv) => ({
+      invoices.map(inv => ({
         invoiceNumber: inv.invoiceNumber,
-        contractorName: inv.contractor?.legalName ?? "Unknown",
+        contractorName: inv.contractor?.legalName ?? 'Unknown',
         amountMinor: inv.amountToPayMinor,
         currency: inv.currency,
         dueDate: inv.dueDate.toISOString().slice(0, 10),
@@ -807,7 +807,7 @@ export const reportRouter = router({
     const contractors = await ctx.db.contractor.findMany({
       where: {
         organizationId: ctx.organizationId,
-        status: "ACTIVE",
+        status: 'ACTIVE',
         deletedAt: null,
       },
       include: {
@@ -819,7 +819,7 @@ export const reportRouter = router({
         _count: {
           select: {
             complianceItems: {
-              where: { status: { in: ["MISSING", "EXPIRED"] } },
+              where: { status: { in: ['MISSING', 'EXPIRED'] } },
             },
           },
         },
@@ -838,21 +838,21 @@ export const reportRouter = router({
 
     for (const c of contractors) {
       const missingOrExpired = c._count.complianceItems;
-      const hasPending = c.complianceItems.some((ci) => ci.status === "PENDING");
-      const hasActiveContract = c.contracts.some((con) => con.status === "ACTIVE");
+      const hasPending = c.complianceItems.some(ci => ci.status === 'PENDING');
+      const hasActiveContract = c.contracts.some(con => con.status === 'ACTIVE');
 
-      let health = "green";
+      let health = 'green';
       if (missingOrExpired > 0 || !hasActiveContract) {
-        health = "red";
+        health = 'red';
       } else if (hasPending) {
-        health = "yellow";
+        health = 'yellow';
       }
 
-      if (health !== "green") {
+      if (health !== 'green') {
         items.push({
           contractorName: c.legalName,
           missingDocuments: missingOrExpired,
-          contractStatus: hasActiveContract ? "ACTIVE" : "NONE",
+          contractStatus: hasActiveContract ? 'ACTIVE' : 'NONE',
           overdueTasks: 0,
           health,
         });

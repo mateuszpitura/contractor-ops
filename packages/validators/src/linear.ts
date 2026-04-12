@@ -1,16 +1,16 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // ---------------------------------------------------------------------------
 // Linear State Type Enum
 // ---------------------------------------------------------------------------
 
 export const linearStateTypeEnum = z.enum([
-  "triage",
-  "backlog",
-  "unstarted",
-  "started",
-  "completed",
-  "cancelled",
+  'triage',
+  'backlog',
+  'unstarted',
+  'started',
+  'completed',
+  'cancelled',
 ]);
 
 export type LinearStateType = z.infer<typeof linearStateTypeEnum>;
@@ -20,8 +20,8 @@ export type LinearStateType = z.infer<typeof linearStateTypeEnum>;
 // ---------------------------------------------------------------------------
 
 export const linearWebhookPayloadSchema = z.object({
-  action: z.enum(["create", "update", "remove"]),
-  type: z.literal("Issue"),
+  action: z.enum(['create', 'update', 'remove']),
+  type: z.literal('Issue'),
   organizationId: z.string(),
   webhookTimestamp: z.number(),
   webhookId: z.string(),
@@ -94,7 +94,7 @@ export const linearIssueMetadataSchema = z.object({
   status: z.string(),
   statusType: linearStateTypeEnum,
   url: z.string().url(),
-  lastSyncOrigin: z.enum(["APP", "LINEAR"]).optional(),
+  lastSyncOrigin: z.enum(['APP', 'LINEAR']).optional(),
   lastSyncAt: z.string().datetime().optional(),
 });
 

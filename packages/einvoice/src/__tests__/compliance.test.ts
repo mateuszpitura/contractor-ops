@@ -1,65 +1,65 @@
-import { describe, expect, it } from "vitest";
-import type { KsefConnectionData } from "../profiles/ksef/compliance.js";
-import { computeKsefComplianceStatus } from "../profiles/ksef/compliance.js";
+import { describe, expect, it } from 'vitest';
+import type { KsefConnectionData } from '../profiles/ksef/compliance.js';
+import { computeKsefComplianceStatus } from '../profiles/ksef/compliance.js';
 
-describe("computeKsefComplianceStatus", () => {
-  it("returns not_connected when no connection exists", () => {
+describe('computeKsefComplianceStatus', () => {
+  it('returns not_connected when no connection exists', () => {
     const result = computeKsefComplianceStatus(null);
-    expect(result.state).toBe("not_connected");
-    expect(result.profileId).toBe("ksef");
+    expect(result.state).toBe('not_connected');
+    expect(result.profileId).toBe('ksef');
     expect(result.healthScore).toBe(0);
   });
 
-  it("returns active when connection is CONNECTED with successful syncs", () => {
+  it('returns active when connection is CONNECTED with successful syncs', () => {
     const connection: KsefConnectionData = {
-      status: "CONNECTED",
-      configJson: { environment: "prod" },
+      status: 'CONNECTED',
+      configJson: { environment: 'prod' },
       lastSyncAt: new Date(),
       lastSuccessAt: new Date(),
       lastErrorAt: null,
       lastErrorMessage: null,
       connectedAt: new Date(),
-      recentSyncStatuses: ["SUCCESS", "SUCCESS", "SUCCESS"],
+      recentSyncStatuses: ['SUCCESS', 'SUCCESS', 'SUCCESS'],
     };
     const result = computeKsefComplianceStatus(connection);
-    expect(result.state).toBe("active");
+    expect(result.state).toBe('active');
     expect(result.healthScore).toBe(100);
   });
 
-  it("returns degraded when connection has recent errors", () => {
+  it('returns degraded when connection has recent errors', () => {
     const connection: KsefConnectionData = {
-      status: "CONNECTED",
-      configJson: { environment: "prod" },
+      status: 'CONNECTED',
+      configJson: { environment: 'prod' },
       lastSyncAt: new Date(),
       lastSuccessAt: new Date(),
       lastErrorAt: new Date(),
-      lastErrorMessage: "Timeout",
+      lastErrorMessage: 'Timeout',
       connectedAt: new Date(),
-      recentSyncStatuses: ["SUCCESS", "FAILED", "SUCCESS"],
+      recentSyncStatuses: ['SUCCESS', 'FAILED', 'SUCCESS'],
     };
     const result = computeKsefComplianceStatus(connection);
-    expect(result.state).toBe("degraded");
+    expect(result.state).toBe('degraded');
     expect(result.healthScore).toBe(67);
   });
 
-  it("returns error when connection status is ERROR", () => {
+  it('returns error when connection status is ERROR', () => {
     const connection: KsefConnectionData = {
-      status: "ERROR",
+      status: 'ERROR',
       configJson: null,
       lastSyncAt: new Date(),
       lastSuccessAt: null,
       lastErrorAt: new Date(),
-      lastErrorMessage: "Auth failed",
+      lastErrorMessage: 'Auth failed',
       connectedAt: new Date(),
-      recentSyncStatuses: ["FAILED"],
+      recentSyncStatuses: ['FAILED'],
     };
     const result = computeKsefComplianceStatus(connection);
-    expect(result.state).toBe("error");
+    expect(result.state).toBe('error');
   });
 
-  it("returns suspended when connection is DISCONNECTED", () => {
+  it('returns suspended when connection is DISCONNECTED', () => {
     const connection: KsefConnectionData = {
-      status: "DISCONNECTED",
+      status: 'DISCONNECTED',
       configJson: null,
       lastSyncAt: null,
       lastSuccessAt: null,
@@ -69,56 +69,56 @@ describe("computeKsefComplianceStatus", () => {
       recentSyncStatuses: [],
     };
     const result = computeKsefComplianceStatus(connection);
-    expect(result.state).toBe("suspended");
+    expect(result.state).toBe('suspended');
   });
 
-  it("returns sandbox when config environment is test", () => {
+  it('returns sandbox when config environment is test', () => {
     const connection: KsefConnectionData = {
-      status: "CONNECTED",
-      configJson: { environment: "test" },
+      status: 'CONNECTED',
+      configJson: { environment: 'test' },
       lastSyncAt: new Date(),
       lastSuccessAt: new Date(),
       lastErrorAt: null,
       lastErrorMessage: null,
       connectedAt: new Date(),
-      recentSyncStatuses: ["SUCCESS"],
+      recentSyncStatuses: ['SUCCESS'],
     };
     const result = computeKsefComplianceStatus(connection);
-    expect(result.state).toBe("sandbox");
+    expect(result.state).toBe('sandbox');
   });
 
-  it("returns error when connection status is REAUTH_REQUIRED", () => {
+  it('returns error when connection status is REAUTH_REQUIRED', () => {
     const connection: KsefConnectionData = {
-      status: "REAUTH_REQUIRED",
+      status: 'REAUTH_REQUIRED',
       configJson: null,
       lastSyncAt: new Date(),
       lastSuccessAt: null,
       lastErrorAt: new Date(),
-      lastErrorMessage: "Token expired",
+      lastErrorMessage: 'Token expired',
       connectedAt: new Date(),
       recentSyncStatuses: [],
     };
     const result = computeKsefComplianceStatus(connection);
-    expect(result.state).toBe("error");
+    expect(result.state).toBe('error');
   });
 
-  it("healthScore is 0 when all syncs failed", () => {
+  it('healthScore is 0 when all syncs failed', () => {
     const connection: KsefConnectionData = {
-      status: "CONNECTED",
-      configJson: { environment: "prod" },
+      status: 'CONNECTED',
+      configJson: { environment: 'prod' },
       lastSyncAt: new Date(),
       lastSuccessAt: null,
       lastErrorAt: new Date(),
-      lastErrorMessage: "Error",
+      lastErrorMessage: 'Error',
       connectedAt: new Date(),
-      recentSyncStatuses: ["FAILED", "FAILED", "FAILED"],
+      recentSyncStatuses: ['FAILED', 'FAILED', 'FAILED'],
     };
     const result = computeKsefComplianceStatus(connection);
     expect(result.healthScore).toBe(0);
-    expect(result.state).toBe("degraded");
+    expect(result.state).toBe('degraded');
   });
 
-  it("capabilities reflect KSeF — canSign and canQRCode are false", () => {
+  it('capabilities reflect KSeF — canSign and canQRCode are false', () => {
     const result = computeKsefComplianceStatus(null);
     expect(result.capabilities.canGenerate).toBe(true);
     expect(result.capabilities.canParse).toBe(true);

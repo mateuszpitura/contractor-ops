@@ -1,4 +1,4 @@
-import { constants, createDecipheriv, createPublicKey, publicEncrypt } from "node:crypto";
+import { constants, createDecipheriv, createPublicKey, publicEncrypt } from 'node:crypto';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -42,11 +42,11 @@ export class KsefApiClient {
   private readonly baseUrl: string;
   private session: KsefSession | null = null;
 
-  constructor(environment: "test" | "prod" = "prod") {
+  constructor(environment: 'test' | 'prod' = 'prod') {
     this.baseUrl =
-      environment === "test"
-        ? "https://ksef-test.mf.gov.pl/api/v2"
-        : "https://ksef.mf.gov.pl/api/v2";
+      environment === 'test'
+        ? 'https://ksef-test.mf.gov.pl/api/v2'
+        : 'https://ksef.mf.gov.pl/api/v2';
   }
 
   // -------------------------------------------------------------------------
@@ -66,8 +66,8 @@ export class KsefApiClient {
   async authenticate(token: string, nip: string): Promise<KsefSession> {
     // Step 1: Get public key
     const publicKeyResponse = await this.fetchWithRetry(`${this.baseUrl}/auth/public-key`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
     });
     const publicKeyData = (await publicKeyResponse.json()) as {
       publicKey: string;
@@ -75,11 +75,11 @@ export class KsefApiClient {
 
     // Step 2: Request challenge
     const challengeResponse = await this.fetchWithRetry(`${this.baseUrl}/auth/challenge`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         // KSeF API 2.x: AuthenticationContextIdentifierType enum is PascalCase (Nip, InternalId, …).
-        contextIdentifier: { type: "Nip", value: nip },
+        contextIdentifier: { type: 'Nip', value: nip },
       }),
     });
     const challengeData = (await challengeResponse.json()) as {
@@ -94,18 +94,18 @@ export class KsefApiClient {
       {
         key: rsaKey,
         padding: constants.RSA_PKCS1_OAEP_PADDING,
-        oaepHash: "sha256",
+        oaepHash: 'sha256',
       },
       plaintext,
     );
 
     // Step 4: Redeem encrypted token
     const redeemResponse = await this.fetchWithRetry(`${this.baseUrl}/auth/token/redeem`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         challenge: challengeData.challenge,
-        encryptedToken: encrypted.toString("base64"),
+        encryptedToken: encrypted.toString('base64'),
       }),
     });
     const redeemData = (await redeemResponse.json()) as {
@@ -120,9 +120,9 @@ export class KsefApiClient {
       const statusResponse = await this.fetchWithRetry(
         `${this.baseUrl}/auth/${redeemData.referenceNumber}`,
         {
-          method: "GET",
+          method: 'GET',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
             Authorization: `Bearer ${redeemData.jwt}`,
           },
         },
@@ -132,12 +132,12 @@ export class KsefApiClient {
         processingCode?: number;
       };
 
-      if (statusData.status === "READY" || statusData.processingCode === 200) {
+      if (statusData.status === 'READY' || statusData.processingCode === 200) {
         ready = true;
         break;
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 1000));
     }
 
     if (!ready) {
@@ -147,7 +147,7 @@ export class KsefApiClient {
     }
 
     const encryptionKey = redeemData.encryptionKey
-      ? Buffer.from(redeemData.encryptionKey, "base64")
+      ? Buffer.from(redeemData.encryptionKey, 'base64')
       : Buffer.alloc(32);
 
     this.session = {
@@ -172,7 +172,7 @@ export class KsefApiClient {
     _nip: string,
   ): Promise<KsefSession> {
     throw new Error(
-      "Certificate-based KSeF authentication is not supported. Use token-based auth.",
+      'Certificate-based KSeF authentication is not supported. Use token-based auth.',
     );
   }
 
@@ -193,9 +193,9 @@ export class KsefApiClient {
     const queryStartResponse = await this.fetchWithRetry(
       `${this.baseUrl}/invoices/query/metadata`,
       {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${this.session?.jwt}`,
         },
         body: JSON.stringify({
@@ -203,7 +203,7 @@ export class KsefApiClient {
             subjectNip: nip,
             invoicingDateFrom: dateFrom,
             invoicingDateTo: dateTo,
-            subjectType: "subject2",
+            subjectType: 'subject2',
           },
         }),
       },
@@ -218,9 +218,9 @@ export class KsefApiClient {
       const statusResponse = await this.fetchWithRetry(
         `${this.baseUrl}/invoices/query/${queryStartData.queryId}/status`,
         {
-          method: "GET",
+          method: 'GET',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
             Authorization: `Bearer ${this.session?.jwt}`,
           },
         },
@@ -233,7 +233,7 @@ export class KsefApiClient {
         pageToken?: string;
       };
 
-      if (statusData.status === "COMPLETED" || statusData.processingCode === 200) {
+      if (statusData.status === 'COMPLETED' || statusData.processingCode === 200) {
         queryResult = {
           invoiceMetadataList: statusData.invoiceMetadataList ?? [],
           hasMore: statusData.hasMore ?? false,
@@ -242,11 +242,11 @@ export class KsefApiClient {
         break;
       }
 
-      if (statusData.status === "FAILED") {
+      if (statusData.status === 'FAILED') {
         throw new Error(`KSeF query failed (queryId: ${queryStartData.queryId})`);
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 2000));
     }
 
     if (!queryResult) {
@@ -270,16 +270,16 @@ export class KsefApiClient {
     const response = await this.fetchWithRetry(
       `${this.baseUrl}/invoices/ksef/${ksefReferenceNumber}`,
       {
-        method: "GET",
+        method: 'GET',
         headers: {
           Authorization: `Bearer ${this.session?.jwt}`,
         },
       },
     );
 
-    const contentType = response.headers.get("content-type") ?? "";
+    const contentType = response.headers.get('content-type') ?? '';
 
-    if (contentType.includes("application/octet-stream")) {
+    if (contentType.includes('application/octet-stream')) {
       // AES-256 encrypted response — decrypt
       const encryptedBuffer = Buffer.from(await response.arrayBuffer());
 
@@ -288,12 +288,12 @@ export class KsefApiClient {
       const authTag = encryptedBuffer.subarray(encryptedBuffer.length - 16);
       const ciphertext = encryptedBuffer.subarray(12, encryptedBuffer.length - 16);
 
-      const decipher = createDecipheriv("aes-256-gcm", this.session?.encryptionKey, iv);
+      const decipher = createDecipheriv('aes-256-gcm', this.session?.encryptionKey, iv);
       decipher.setAuthTag(authTag);
 
       const decrypted = Buffer.concat([decipher.update(ciphertext), decipher.final()]);
 
-      return decrypted.toString("utf-8");
+      return decrypted.toString('utf-8');
     }
 
     return await response.text();
@@ -327,9 +327,9 @@ export class KsefApiClient {
 
     try {
       await this.fetchWithRetry(`${this.baseUrl}/auth/session/terminate`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${this.session.jwt}`,
         },
       });
@@ -344,7 +344,7 @@ export class KsefApiClient {
 
   private requireSession(): void {
     if (!this.session) {
-      throw new Error("KSeF session not established. Call authenticate() first.");
+      throw new Error('KSeF session not established. Call authenticate() first.');
     }
   }
 
@@ -366,38 +366,38 @@ export class KsefApiClient {
         }
 
         if (response.status === 429) {
-          const retryAfter = response.headers.get("retry-after");
+          const retryAfter = response.headers.get('retry-after');
           const waitMs = retryAfter
             ? parseInt(retryAfter, 10) * 1000
             : Math.min(1000 * 2 ** attempt, 10000);
 
           if (attempt < retries) {
-            await new Promise((resolve) => setTimeout(resolve, waitMs));
+            await new Promise(resolve => setTimeout(resolve, waitMs));
             continue;
           }
         }
 
         if (response.status >= 500 && attempt < retries) {
           const waitMs = Math.min(1000 * 2 ** attempt, 10000);
-          await new Promise((resolve) => setTimeout(resolve, waitMs));
+          await new Promise(resolve => setTimeout(resolve, waitMs));
           continue;
         }
 
         // Non-retryable error
-        const errorBody = await response.text().catch(() => "");
+        const errorBody = await response.text().catch(() => '');
         throw new Error(`KSeF API error ${response.status}: ${errorBody || response.statusText}`);
       } catch (error) {
-        if (error instanceof Error && error.message.startsWith("KSeF API error")) {
+        if (error instanceof Error && error.message.startsWith('KSeF API error')) {
           throw error;
         }
         lastError = error instanceof Error ? error : new Error(String(error));
         if (attempt < retries) {
           const waitMs = Math.min(1000 * 2 ** attempt, 10000);
-          await new Promise((resolve) => setTimeout(resolve, waitMs));
+          await new Promise(resolve => setTimeout(resolve, waitMs));
         }
       }
     }
 
-    throw lastError ?? new Error("KSeF API request failed after retries");
+    throw lastError ?? new Error('KSeF API request failed after retries');
   }
 }

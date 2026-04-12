@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 
 /**
  * Google Workspace brand icon — a simplified 4-color Google "G" SVG.
@@ -11,9 +11,8 @@ export function GoogleWorkspaceLogo({ className }: { className?: string }) {
     <svg
       viewBox="0 0 24 24"
       fill="none"
-      className={cn("size-8 shrink-0", className)}
-      aria-hidden="true"
-    >
+      className={cn('size-8 shrink-0', className)}
+      aria-hidden="true">
       {/* Google "G" multi-color mark */}
       <path
         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1Z"

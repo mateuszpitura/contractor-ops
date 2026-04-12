@@ -1,7 +1,7 @@
-import type { Prisma } from "../generated/prisma/client/index.js";
+import type { Prisma } from '../generated/prisma/client/index.js';
 
 type PrismaExtensible = {
-  $extends: Prisma.DefaultPrismaClient["$extends"];
+  $extends: Prisma.DefaultPrismaClient['$extends'];
 };
 
 type ModelQueryHookParams = {
@@ -21,7 +21,7 @@ type DelegateWithSoftDelete = {
  * an update that sets deletedAt to the current timestamp.
  * Read operations automatically filter out soft-deleted records.
  */
-const softDeleteModels = new Set(["Organization", "Contractor", "Contract", "Invoice", "Document"]);
+const softDeleteModels = new Set(['Organization', 'Contractor', 'Contract', 'Invoice', 'Document']);
 
 /**
  * Wraps a PrismaClient with soft-delete behavior.
@@ -73,7 +73,7 @@ export function withSoftDelete<T extends PrismaExtensible>(prisma: T) {
             return await query(args);
           }
 
-          if (args == null || typeof args !== "object") {
+          if (args == null || typeof args !== 'object') {
             return await query(args);
           }
 
@@ -88,7 +88,7 @@ export function withSoftDelete<T extends PrismaExtensible>(prisma: T) {
             return await query(args);
           }
 
-          if (args == null || typeof args !== "object") {
+          if (args == null || typeof args !== 'object') {
             return await query(args);
           }
 
@@ -103,7 +103,7 @@ export function withSoftDelete<T extends PrismaExtensible>(prisma: T) {
             return await query(args);
           }
 
-          if (args == null || typeof args !== "object") {
+          if (args == null || typeof args !== 'object') {
             return await query(args);
           }
 
@@ -118,7 +118,7 @@ export function withSoftDelete<T extends PrismaExtensible>(prisma: T) {
             return await query(args);
           }
 
-          if (args == null || typeof args !== "object") {
+          if (args == null || typeof args !== 'object') {
             return await query(args);
           }
 

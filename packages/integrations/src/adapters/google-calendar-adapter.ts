@@ -1,8 +1,8 @@
-import { prisma } from "@contractor-ops/db";
-import type { CredentialBlob } from "../types/credentials.js";
-import type { ProviderHealthStatus } from "../types/health.js";
-import type { OAuthConfig } from "../types/provider.js";
-import { BaseAdapter } from "./base-adapter.js";
+import { prisma } from '@contractor-ops/db';
+import type { CredentialBlob } from '../types/credentials.js';
+import type { ProviderHealthStatus } from '../types/health.js';
+import type { OAuthConfig } from '../types/provider.js';
+import { BaseAdapter } from './base-adapter.js';
 
 // ---------------------------------------------------------------------------
 // Google Calendar OAuth 2.0 Configuration
@@ -19,15 +19,15 @@ import { BaseAdapter } from "./base-adapter.js";
  * - GOOGLE_CALENDAR_ENCRYPTION_KEY — for credential encryption at rest
  */
 const GOOGLE_CALENDAR_OAUTH_CONFIG: OAuthConfig = {
-  clientIdEnvVar: "GOOGLE_CALENDAR_CLIENT_ID",
-  clientSecretEnvVar: "GOOGLE_CALENDAR_CLIENT_SECRET",
-  authorizationUrl: "https://accounts.google.com/o/oauth2/v2/auth",
-  tokenUrl: "https://oauth2.googleapis.com/token",
-  scopes: ["https://www.googleapis.com/auth/calendar.events"],
-  redirectPath: "/api/oauth/google-calendar/callback",
+  clientIdEnvVar: 'GOOGLE_CALENDAR_CLIENT_ID',
+  clientSecretEnvVar: 'GOOGLE_CALENDAR_CLIENT_SECRET',
+  authorizationUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
+  tokenUrl: 'https://oauth2.googleapis.com/token',
+  scopes: ['https://www.googleapis.com/auth/calendar.events'],
+  redirectPath: '/api/oauth/google-calendar/callback',
   extraAuthParams: {
-    access_type: "offline",
-    prompt: "consent",
+    access_type: 'offline',
+    prompt: 'consent',
   },
 };
 
@@ -38,8 +38,8 @@ const GOOGLE_CALENDAR_OAUTH_CONFIG: OAuthConfig = {
  * @deprecated Use OAuthConfig.extraAuthParams instead
  */
 export const GOOGLE_CALENDAR_EXTRA_AUTH_PARAMS: Record<string, string> = {
-  access_type: "offline",
-  prompt: "consent",
+  access_type: 'offline',
+  prompt: 'consent',
 };
 
 // ---------------------------------------------------------------------------
@@ -47,8 +47,8 @@ export const GOOGLE_CALENDAR_EXTRA_AUTH_PARAMS: Record<string, string> = {
 // ---------------------------------------------------------------------------
 
 export class GoogleCalendarAdapter extends BaseAdapter {
-  readonly slug = "google-calendar";
-  readonly displayName = "Google Calendar";
+  readonly slug = 'google-calendar';
+  readonly displayName = 'Google Calendar';
   readonly supportsOAuth = true;
   readonly supportsWebhooks = false;
 
@@ -66,17 +66,17 @@ export class GoogleCalendarAdapter extends BaseAdapter {
 
     if (!(clientId && clientSecret)) {
       throw new Error(
-        "GOOGLE_CALENDAR_CLIENT_ID and GOOGLE_CALENDAR_CLIENT_SECRET environment variables are required",
+        'GOOGLE_CALENDAR_CLIENT_ID and GOOGLE_CALENDAR_CLIENT_SECRET environment variables are required',
       );
     }
 
-    const response = await fetch("https://oauth2.googleapis.com/token", {
-      method: "POST",
+    const response = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        grant_type: "authorization_code",
+        grant_type: 'authorization_code',
         client_id: clientId,
         client_secret: clientSecret,
         code,
@@ -112,21 +112,21 @@ export class GoogleCalendarAdapter extends BaseAdapter {
 
     if (!(clientId && clientSecret)) {
       throw new Error(
-        "GOOGLE_CALENDAR_CLIENT_ID and GOOGLE_CALENDAR_CLIENT_SECRET environment variables are required",
+        'GOOGLE_CALENDAR_CLIENT_ID and GOOGLE_CALENDAR_CLIENT_SECRET environment variables are required',
       );
     }
 
     if (!credentials.refreshToken) {
-      throw new Error("No refresh token available for Google Calendar");
+      throw new Error('No refresh token available for Google Calendar');
     }
 
-    const response = await fetch("https://oauth2.googleapis.com/token", {
-      method: "POST",
+    const response = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        grant_type: "refresh_token",
+        grant_type: 'refresh_token',
         client_id: clientId,
         client_secret: clientSecret,
         refresh_token: credentials.refreshToken,
@@ -178,22 +178,22 @@ export class GoogleCalendarAdapter extends BaseAdapter {
     const body: Record<string, unknown> = {
       summary: event.summary,
       description: event.description,
-      start: { dateTime: event.startDateTime, timeZone: "UTC" },
-      end: { dateTime: event.endDateTime, timeZone: "UTC" },
+      start: { dateTime: event.startDateTime, timeZone: 'UTC' },
+      end: { dateTime: event.endDateTime, timeZone: 'UTC' },
       reminders: { useDefault: true },
     };
 
     if (event.attendees?.length) {
-      body.attendees = event.attendees.map((email) => ({ email }));
+      body.attendees = event.attendees.map(email => ({ email }));
     }
 
     const response = await fetch(
-      "https://www.googleapis.com/calendar/v3/calendars/primary/events",
+      'https://www.googleapis.com/calendar/v3/calendars/primary/events',
       {
-        method: "POST",
+        method: 'POST',
         headers: {
           Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(body),
       },
@@ -245,23 +245,23 @@ export class GoogleCalendarAdapter extends BaseAdapter {
     if (event.summary !== undefined) body.summary = event.summary;
     if (event.description !== undefined) body.description = event.description;
     if (event.startDateTime) {
-      body.start = { dateTime: event.startDateTime, timeZone: "UTC" };
+      body.start = { dateTime: event.startDateTime, timeZone: 'UTC' };
     }
     if (event.endDateTime) {
-      body.end = { dateTime: event.endDateTime, timeZone: "UTC" };
+      body.end = { dateTime: event.endDateTime, timeZone: 'UTC' };
     }
     if (event.attendees?.length) {
-      body.attendees = event.attendees.map((email) => ({ email }));
+      body.attendees = event.attendees.map(email => ({ email }));
     }
 
     const response = await fetch(
       `https://www.googleapis.com/calendar/v3/calendars/primary/events/${eventId}`,
       {
-        method: "PATCH",
+        method: 'PATCH',
         headers: {
           Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-          "If-Match": etag,
+          'Content-Type': 'application/json',
+          'If-Match': etag,
         },
         body: JSON.stringify(body),
       },
@@ -295,7 +295,7 @@ export class GoogleCalendarAdapter extends BaseAdapter {
     const response = await fetch(
       `https://www.googleapis.com/calendar/v3/calendars/primary/events/${eventId}`,
       {
-        method: "DELETE",
+        method: 'DELETE',
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -330,8 +330,8 @@ export class GoogleCalendarAdapter extends BaseAdapter {
 
     if (!connection) {
       return {
-        status: "DISCONNECTED",
-        provider: "google-calendar",
+        status: 'DISCONNECTED',
+        provider: 'google-calendar',
         recentSyncs: [],
         recentWebhooks: [],
         errorCountLast24h: 0,
@@ -340,7 +340,7 @@ export class GoogleCalendarAdapter extends BaseAdapter {
 
     const recentSyncs = await prisma.integrationSyncLog.findMany({
       where: { integrationConnectionId: connectionId },
-      orderBy: { startedAt: "desc" },
+      orderBy: { startedAt: 'desc' },
       take: 5,
       select: {
         id: true,
@@ -355,27 +355,27 @@ export class GoogleCalendarAdapter extends BaseAdapter {
     const errorCountLast24h = await prisma.integrationSyncLog.count({
       where: {
         integrationConnectionId: connectionId,
-        status: "FAILED",
+        status: 'FAILED',
         startedAt: { gte: oneDayAgo },
       },
     });
 
-    let status: ProviderHealthStatus["status"];
-    if (connection.status !== "CONNECTED") {
-      status = "DISCONNECTED";
+    let status: ProviderHealthStatus['status'];
+    if (connection.status !== 'CONNECTED') {
+      status = 'DISCONNECTED';
     } else if (connection.lastErrorAt && !connection.lastSuccessAt) {
-      status = "ERROR";
+      status = 'ERROR';
     } else if (connection.tokenExpiresAt && connection.tokenExpiresAt < new Date()) {
-      status = "REAUTH_REQUIRED";
-    } else if (recentSyncs[0]?.status === "FAILED") {
-      status = "ERROR";
+      status = 'REAUTH_REQUIRED';
+    } else if (recentSyncs[0]?.status === 'FAILED') {
+      status = 'ERROR';
     } else {
-      status = "CONNECTED";
+      status = 'CONNECTED';
     }
 
     return {
       status,
-      provider: "google-calendar",
+      provider: 'google-calendar',
       displayName: connection.displayName,
       connectedAt: connection.connectedAt,
       lastSyncAt: connection.lastSyncAt,
@@ -383,7 +383,7 @@ export class GoogleCalendarAdapter extends BaseAdapter {
       lastErrorAt: connection.lastErrorAt,
       lastErrorMessage: connection.lastErrorMessage,
       tokenExpiresAt: connection.tokenExpiresAt,
-      recentSyncs: recentSyncs.map((s) => ({
+      recentSyncs: recentSyncs.map(s => ({
         id: s.id,
         syncType: s.syncType,
         status: s.status,

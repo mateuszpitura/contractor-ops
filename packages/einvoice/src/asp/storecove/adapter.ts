@@ -1,5 +1,5 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
-import type { GovApiAuditLogger, GovApiRateLimiter } from "@contractor-ops/gov-api";
+import { createHmac, timingSafeEqual } from 'node:crypto';
+import type { GovApiAuditLogger, GovApiRateLimiter } from '@contractor-ops/gov-api';
 import type {
   ASPAdapter,
   ASPHealthStatus,
@@ -11,10 +11,10 @@ import type {
   TransmissionStatus,
   TransmitInvoiceParams,
   WebhookVerification,
-} from "../types.js";
-import { StorecoveApiError, StorecoveClient } from "./client.js";
-import { storecoveWebhookPayloadSchema } from "./schemas.js";
-import type { StorecoveConfig } from "./types.js";
+} from '../types.js';
+import { StorecoveApiError, StorecoveClient } from './client.js';
+import { storecoveWebhookPayloadSchema } from './schemas.js';
+import type { StorecoveConfig } from './types.js';
 
 // ---------------------------------------------------------------------------
 // Dependency injection for gov-api framework
@@ -42,8 +42,8 @@ export interface StorecoveAdapterDeps {
  * for rate limiting and compliance audit trails.
  */
 export class StorecoveAdapter implements ASPAdapter {
-  readonly providerId = "storecove" as const;
-  readonly displayName = "Storecove";
+  readonly providerId = 'storecove' as const;
+  readonly displayName = 'Storecove';
 
   private readonly client: StorecoveClient;
   private readonly webhookSecret: string | undefined;
@@ -90,7 +90,7 @@ export class StorecoveAdapter implements ASPAdapter {
   ): void {
     if (!this.auditLogger) return;
     void this.auditLogger.log({
-      apiName: "storecove-peppol",
+      apiName: 'storecove-peppol',
       organizationId,
       endpoint,
       method,
@@ -105,7 +105,7 @@ export class StorecoveAdapter implements ASPAdapter {
   // -------------------------------------------------------------------------
 
   async registerParticipant(params: RegisterParticipantParams): Promise<ParticipantRegistration> {
-    const orgId = params.organizationId ?? "unknown";
+    const orgId = params.organizationId ?? 'unknown';
     await this.checkRateLimit(orgId);
 
     const startMs = Date.now();
@@ -116,20 +116,20 @@ export class StorecoveAdapter implements ASPAdapter {
         scheme: params.schemeId,
       });
 
-      this.emitAudit(orgId, "/legal_entities", "POST", 200, Date.now() - startMs);
+      this.emitAudit(orgId, '/legal_entities', 'POST', 200, Date.now() - startMs);
 
       return {
         registrationId: String(entity.id),
         participantId: params.participantId,
-        status: "registered",
+        status: 'registered',
         registeredAt: new Date(),
       };
     } catch (error) {
       if (error instanceof StorecoveApiError) {
         this.emitAudit(
           orgId,
-          "/legal_entities",
-          "POST",
+          '/legal_entities',
+          'POST',
           error.statusCode,
           Date.now() - startMs,
           error.message,
@@ -145,16 +145,16 @@ export class StorecoveAdapter implements ASPAdapter {
     // The participantId is used as a lookup key on the caller side.
     return {
       participantId,
-      status: "active",
+      status: 'active',
     };
   }
 
   async transmitInvoice(params: TransmitInvoiceParams): Promise<TransmissionResult> {
-    const orgId = params.organizationId ?? "unknown";
+    const orgId = params.organizationId ?? 'unknown';
     await this.checkRateLimit(orgId);
 
     // Parse receiver participant ID "scheme:identifier"
-    const [receiverScheme, receiverIdentifier] = params.receiverParticipantId.split(":");
+    const [receiverScheme, receiverIdentifier] = params.receiverParticipantId.split(':');
     const startMs = Date.now();
 
     try {
@@ -162,23 +162,23 @@ export class StorecoveAdapter implements ASPAdapter {
         xml: params.xml,
         senderLegalEntityId: 0, // Caller should resolve this from participant data
         receiverIdentifier: receiverIdentifier ?? params.receiverParticipantId,
-        receiverScheme: receiverScheme ?? "0192",
+        receiverScheme: receiverScheme ?? '0192',
         documentType: params.documentTypeId,
       });
 
-      this.emitAudit(orgId, "/document_submissions", "POST", 200, Date.now() - startMs);
+      this.emitAudit(orgId, '/document_submissions', 'POST', 200, Date.now() - startMs);
 
       return {
         transmissionId: submission.guid,
-        status: "accepted",
+        status: 'accepted',
         timestamp: new Date(submission.created_at),
       };
     } catch (error) {
       if (error instanceof StorecoveApiError) {
         this.emitAudit(
           orgId,
-          "/document_submissions",
-          "POST",
+          '/document_submissions',
+          'POST',
           error.statusCode,
           Date.now() - startMs,
           error.message,
@@ -190,14 +190,14 @@ export class StorecoveAdapter implements ASPAdapter {
             const parsed = JSON.parse(error.responseBody);
             errors = Array.isArray(parsed.errors)
               ? parsed.errors
-              : [{ code: "VALIDATION_ERROR", message: error.responseBody }];
+              : [{ code: 'VALIDATION_ERROR', message: error.responseBody }];
           } catch {
-            errors = [{ code: "VALIDATION_ERROR", message: error.responseBody }];
+            errors = [{ code: 'VALIDATION_ERROR', message: error.responseBody }];
           }
 
           return {
-            transmissionId: "",
-            status: "rejected",
+            transmissionId: '',
+            status: 'rejected',
             timestamp: new Date(),
             errors,
           };
@@ -210,19 +210,19 @@ export class StorecoveAdapter implements ASPAdapter {
   async getTransmissionStatus(transmissionId: string): Promise<TransmissionStatus> {
     const submission = await this.client.getSubmission(transmissionId);
 
-    const statusMap: Record<string, TransmissionStatus["status"]> = {
-      sent: "transmitted",
-      delivered: "delivered",
-      error: "failed",
-      failed: "failed",
+    const statusMap: Record<string, TransmissionStatus['status']> = {
+      sent: 'transmitted',
+      delivered: 'delivered',
+      error: 'failed',
+      failed: 'failed',
     };
 
     return {
       transmissionId: submission.guid,
-      status: statusMap[submission.status] ?? "pending",
-      deliveredAt: submission.status === "delivered" ? new Date(submission.created_at) : undefined,
+      status: statusMap[submission.status] ?? 'pending',
+      deliveredAt: submission.status === 'delivered' ? new Date(submission.created_at) : undefined,
       failureReason:
-        submission.status === "error" || submission.status === "failed"
+        submission.status === 'error' || submission.status === 'failed'
           ? `Storecove status: ${submission.status}`
           : undefined,
     };
@@ -233,14 +233,14 @@ export class StorecoveAdapter implements ASPAdapter {
       return { valid: false };
     }
 
-    const signature = headers["storecove-signature"] ?? headers["Storecove-Signature"];
+    const signature = headers['storecove-signature'] ?? headers['Storecove-Signature'];
     if (!signature) {
       return { valid: false };
     }
 
-    const computed = createHmac("sha256", this.webhookSecret).update(rawBody).digest("hex");
+    const computed = createHmac('sha256', this.webhookSecret).update(rawBody).digest('hex');
 
-    const valid = timingSafeEqual(Buffer.from(computed, "hex"), Buffer.from(signature, "hex"));
+    const valid = timingSafeEqual(Buffer.from(computed, 'hex'), Buffer.from(signature, 'hex'));
 
     if (!valid) {
       return { valid: false };
@@ -266,9 +266,9 @@ export class StorecoveAdapter implements ASPAdapter {
 
     return {
       documentId: parsed.document_guid ?? parsed.guid,
-      senderParticipantId: "", // Extracted from XML by caller if needed
-      receiverParticipantId: "",
-      xml: parsed.document ?? "",
+      senderParticipantId: '', // Extracted from XML by caller if needed
+      receiverParticipantId: '',
+      xml: parsed.document ?? '',
       receivedAt: new Date(),
       metadata: {
         event: parsed.event,
@@ -289,13 +289,13 @@ export class StorecoveAdapter implements ASPAdapter {
     const documents = await this.client.getReceivedDocuments(since);
 
     if (organizationId) {
-      this.emitAudit(organizationId, "/received_documents", "GET", 200, Date.now() - startMs);
+      this.emitAudit(organizationId, '/received_documents', 'GET', 200, Date.now() - startMs);
     }
 
-    return documents.map((doc) => ({
+    return documents.map(doc => ({
       documentId: doc.guid,
       senderParticipantId: `${doc.sender.scheme}:${doc.sender.identifier}`,
-      receiverParticipantId: "",
+      receiverParticipantId: '',
       xml: doc.document,
       receivedAt: new Date(doc.created_at),
       metadata: {
@@ -334,7 +334,7 @@ export class StorecoveAdapter implements ASPAdapter {
         healthy: false,
         latencyMs: Date.now() - start,
         lastCheckedAt: new Date(),
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   }

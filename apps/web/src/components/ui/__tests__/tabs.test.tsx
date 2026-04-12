@@ -1,7 +1,7 @@
-import { render, screen, setup } from "@/test/test-utils";
-import { Tabs, TabsContent, TabsList, TabsTrigger, tabsListVariants } from "../tabs";
+import { render, screen, setup } from '@/test/test-utils';
+import { Tabs, TabsContent, TabsList, TabsTrigger, tabsListVariants } from '../tabs';
 
-function renderTabs({ defaultValue = "tab1" }: { defaultValue?: string } = {}) {
+function renderTabs({ defaultValue = 'tab1' }: { defaultValue?: string } = {}) {
   return setup(
     <Tabs defaultValue={defaultValue}>
       <TabsList>
@@ -18,50 +18,50 @@ function renderTabs({ defaultValue = "tab1" }: { defaultValue?: string } = {}) {
   );
 }
 
-describe("Tabs", () => {
-  it("renders all tab triggers", () => {
+describe('Tabs', () => {
+  it('renders all tab triggers', () => {
     renderTabs();
-    expect(screen.getByText("Tab 1")).toBeInTheDocument();
-    expect(screen.getByText("Tab 2")).toBeInTheDocument();
-    expect(screen.getByText("Tab 3")).toBeInTheDocument();
+    expect(screen.getByText('Tab 1')).toBeInTheDocument();
+    expect(screen.getByText('Tab 2')).toBeInTheDocument();
+    expect(screen.getByText('Tab 3')).toBeInTheDocument();
   });
 
-  it("renders active tab content by default", () => {
+  it('renders active tab content by default', () => {
     renderTabs();
-    expect(screen.getByText("Content 1")).toBeInTheDocument();
+    expect(screen.getByText('Content 1')).toBeInTheDocument();
   });
 
-  it("switches content on tab click", async () => {
+  it('switches content on tab click', async () => {
     const { user } = renderTabs();
-    await user.click(screen.getByText("Tab 2"));
-    expect(screen.getByText("Content 2")).toBeInTheDocument();
+    await user.click(screen.getByText('Tab 2'));
+    expect(screen.getByText('Content 2')).toBeInTheDocument();
   });
 
-  it("sets data-slot on tabs container", () => {
+  it('sets data-slot on tabs container', () => {
     renderTabs();
     const tabs = document.querySelector("[data-slot='tabs']");
     expect(tabs).toBeInTheDocument();
   });
 
-  it("sets data-slot on tabs list", () => {
+  it('sets data-slot on tabs list', () => {
     renderTabs();
     const list = document.querySelector("[data-slot='tabs-list']");
     expect(list).toBeInTheDocument();
   });
 
-  it("sets data-slot on tab trigger", () => {
+  it('sets data-slot on tab trigger', () => {
     renderTabs();
     const trigger = document.querySelector("[data-slot='tabs-trigger']");
     expect(trigger).toBeInTheDocument();
   });
 
-  it("sets data-slot on tab content", () => {
+  it('sets data-slot on tab content', () => {
     renderTabs();
     const content = document.querySelector("[data-slot='tabs-content']");
     expect(content).toBeInTheDocument();
   });
 
-  it("Tabs merges custom className", () => {
+  it('Tabs merges custom className', () => {
     render(
       <Tabs defaultValue="a" className="custom-tabs">
         <TabsList>
@@ -71,10 +71,10 @@ describe("Tabs", () => {
       </Tabs>,
     );
     const tabs = document.querySelector("[data-slot='tabs']");
-    expect(tabs?.className).toContain("custom-tabs");
+    expect(tabs?.className).toContain('custom-tabs');
   });
 
-  it("TabsList supports variant prop", () => {
+  it('TabsList supports variant prop', () => {
     render(
       <Tabs defaultValue="a">
         <TabsList variant="line">
@@ -84,16 +84,16 @@ describe("Tabs", () => {
       </Tabs>,
     );
     const list = document.querySelector("[data-slot='tabs-list']");
-    expect(list).toHaveAttribute("data-variant", "line");
+    expect(list).toHaveAttribute('data-variant', 'line');
   });
 
-  it("TabsTrigger supports disabled", () => {
+  it('TabsTrigger supports disabled', () => {
     renderTabs();
-    const tab3 = screen.getByText("Tab 3");
-    expect(tab3).toHaveAttribute("aria-disabled", "true");
+    const tab3 = screen.getByText('Tab 3');
+    expect(tab3).toHaveAttribute('aria-disabled', 'true');
   });
 
-  it("sets data-orientation on tabs", () => {
+  it('sets data-orientation on tabs', () => {
     render(
       <Tabs defaultValue="a" orientation="vertical">
         <TabsList>
@@ -103,12 +103,12 @@ describe("Tabs", () => {
       </Tabs>,
     );
     const tabs = document.querySelector("[data-slot='tabs']");
-    expect(tabs).toHaveAttribute("data-orientation", "vertical");
+    expect(tabs).toHaveAttribute('data-orientation', 'vertical');
   });
 
-  it("exports tabsListVariants", () => {
-    expect(typeof tabsListVariants).toBe("function");
-    const classes = tabsListVariants({ variant: "line" });
-    expect(classes).toContain("bg-transparent");
+  it('exports tabsListVariants', () => {
+    expect(typeof tabsListVariants).toBe('function');
+    const classes = tabsListVariants({ variant: 'line' });
+    expect(classes).toContain('bg-transparent');
   });
 });

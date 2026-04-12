@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   Dialog,
@@ -6,8 +6,8 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { PlanComparisonGrid } from "./plan-comparison-grid";
+} from '@/components/ui/dialog';
+import { PlanComparisonGrid } from './plan-comparison-grid';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -30,9 +30,8 @@ export function SoftBlockModal({ isOpen, onSelectPlan }: SoftBlockModalProps) {
         role="alertdialog"
         showCloseButton={false}
         className="max-w-4xl"
-        onPointerDownOutside={(e) => e.preventDefault()}
-        onEscapeKeyDown={(e) => e.preventDefault()}
-      >
+        onPointerDownOutside={e => e.preventDefault()}
+        onEscapeKeyDown={e => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle className="font-display text-[28px] font-semibold leading-tight">
             Your trial has ended

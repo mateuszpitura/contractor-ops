@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { Clock } from "lucide-react";
-import { DeviationFlag } from "@/components/time/deviation-flag";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Clock } from 'lucide-react';
+import { DeviationFlag } from '@/components/time/deviation-flag';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -30,9 +30,9 @@ interface ReconciliationCardProps {
 // ---------------------------------------------------------------------------
 
 function formatMinorUnits(minor: number): string {
-  return new Intl.NumberFormat("pl-PL", {
-    style: "currency",
-    currency: "PLN",
+  return new Intl.NumberFormat('pl-PL', {
+    style: 'currency',
+    currency: 'PLN',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(minor / 100);
@@ -44,7 +44,7 @@ function formatHours(minutes: number): string {
 }
 
 function formatRate(minor: number): string {
-  return new Intl.NumberFormat("pl-PL", {
+  return new Intl.NumberFormat('pl-PL', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(minor / 100);
@@ -56,12 +56,12 @@ function formatRate(minor: number): string {
 
 function getBorderColor(deviationPercent: number, thresholdPercent: number): string {
   if (deviationPercent <= thresholdPercent) {
-    return "border-s-green-600 dark:border-s-green-500";
+    return 'border-s-green-600 dark:border-s-green-500';
   }
   if (deviationPercent <= 2 * thresholdPercent) {
-    return "border-s-amber-500 dark:border-s-amber-400";
+    return 'border-s-amber-500 dark:border-s-amber-400';
   }
-  return "border-s-destructive";
+  return 'border-s-destructive';
 }
 
 // ---------------------------------------------------------------------------

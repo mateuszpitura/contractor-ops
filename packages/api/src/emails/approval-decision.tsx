@@ -1,5 +1,5 @@
-import { Text } from "@react-email/components";
-import { BaseLayout } from "./base-layout.js";
+import { Text } from '@react-email/components';
+import { BaseLayout } from './base-layout.js';
 
 interface ApprovalDecisionLabels {
   decision?: string;
@@ -29,17 +29,17 @@ export function ApprovalDecisionEmail({
   labels,
 }: ApprovalDecisionEmailProps) {
   const l = {
-    decision: labels?.decision ?? "Decision",
-    by: labels?.by ?? "By",
-    comment: labels?.comment ?? "Comment",
+    decision: labels?.decision ?? 'Decision',
+    by: labels?.by ?? 'By',
+    comment: labels?.comment ?? 'Comment',
   };
 
   return (
     <BaseLayout ctaUrl={ctaUrl} preferencesUrl={preferencesUrl}>
-      <Text style={{ fontSize: "20px", fontWeight: "600", color: "#1a1a1a" }}>{title}</Text>
-      <Text style={{ fontSize: "14px", color: "#4a4a4a", lineHeight: "24px" }}>{body}</Text>
+      <Text style={{ fontSize: '20px', fontWeight: '600', color: '#1a1a1a' }}>{title}</Text>
+      <Text style={{ fontSize: '14px', color: '#4a4a4a', lineHeight: '24px' }}>{body}</Text>
       {decision && (
-        <Text style={{ fontSize: "14px", color: "#6b7280" }}>
+        <Text style={{ fontSize: '14px', color: '#6b7280' }}>
           <strong>{l.decision}:</strong> {decision}
           {approverName && (
             <>

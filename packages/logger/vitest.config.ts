@@ -1,12 +1,12 @@
-import { defineConfig } from "vitest/config";
+import { defineConfig } from 'vitest/config';
 
-import { vitestProject } from "../../vitest.monorepo";
+import { vitestProject } from '../../vitest.monorepo';
 
 export default defineConfig({
   test: {
     name: vitestProject.logger.name,
-    environment: "node",
-    include: ["src/**/__tests__/**/*.test.ts"],
+    environment: 'node',
+    include: ['src/**/__tests__/**/*.test.ts'],
     sequence: { groupOrder: vitestProject.logger.groupOrder },
   },
 });

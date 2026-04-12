@@ -1,37 +1,37 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { GitBranch } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { parseAsString, useQueryState } from "nuqs";
-import { Suspense, useEffect, useState } from "react";
-import { AnimateIn } from "@/components/shared/animate-in";
-import { EmptyState } from "@/components/shared/empty-state";
-import { PageHeader } from "@/components/shared/page-header";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MyTasksList } from "@/components/workflows/my-tasks-list";
-import { TemplatePicker } from "@/components/workflows/template-picker-dialog";
-import { TemplatesTable } from "@/components/workflows/templates-table";
-import type { WorkflowRunRow } from "@/components/workflows/workflow-runs-table/columns";
-import { WorkflowRunsDataTable } from "@/components/workflows/workflow-runs-table/data-table";
-import { WorkflowSidePanel } from "@/components/workflows/workflow-side-panel";
-import { usePermissions } from "@/hooks/use-permissions";
-import { Link } from "@/i18n/navigation";
-import { trpc } from "@/trpc/init";
+import { useQuery } from '@tanstack/react-query';
+import { GitBranch } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { parseAsString, useQueryState } from 'nuqs';
+import { Suspense, useEffect, useState } from 'react';
+import { AnimateIn } from '@/components/shared/animate-in';
+import { EmptyState } from '@/components/shared/empty-state';
+import { PageHeader } from '@/components/shared/page-header';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { MyTasksList } from '@/components/workflows/my-tasks-list';
+import { TemplatePicker } from '@/components/workflows/template-picker-dialog';
+import { TemplatesTable } from '@/components/workflows/templates-table';
+import type { WorkflowRunRow } from '@/components/workflows/workflow-runs-table/columns';
+import { WorkflowRunsDataTable } from '@/components/workflows/workflow-runs-table/data-table';
+import { WorkflowSidePanel } from '@/components/workflows/workflow-side-panel';
+import { usePermissions } from '@/hooks/use-permissions';
+import { Link } from '@/i18n/navigation';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Inner content (uses nuqs, needs Suspense)
 // ---------------------------------------------------------------------------
 
 function WorkflowsContent() {
-  const t = useTranslations("Workflows");
-  const te = useTranslations("EmptyStates");
+  const t = useTranslations('Workflows');
+  const te = useTranslations('EmptyStates');
   const { can } = usePermissions();
 
   // Tab state synced to URL
-  const [tab, setTab] = useQueryState("tab", parseAsString.withDefault("runs"));
+  const [tab, setTab] = useQueryState('tab', parseAsString.withDefault('runs'));
 
   // Side panel state
   const [selectedRun, setSelectedRun] = useState<WorkflowRunRow | null>(null);
@@ -41,10 +41,10 @@ function WorkflowsContent() {
   const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
 
   // Action param for Cmd+K quick action
-  const [action, setAction] = useQueryState("action", parseAsString);
+  const [action, setAction] = useQueryState('action', parseAsString);
 
   useEffect(() => {
-    if (action === "start") {
+    if (action === 'start') {
       setTemplatePickerOpen(true);
       void setAction(null);
     }
@@ -68,32 +68,32 @@ function WorkflowsContent() {
   const contractorCount = (contractorCountQuery.data as { total: number } | undefined)?.total ?? 0;
   const isCountLoading = runsCountQuery.isLoading;
 
-  const canManageTemplates = can("workflow", ["create"]);
+  const canManageTemplates = can('workflow', ['create']);
 
   // Show empty state when no workflow runs exist
   if (!isCountLoading && runsTotal === 0) {
     return (
       <div className="space-y-6">
         <PageHeader
-          title={t("pageTitle")}
-          description={t("pageDescription")}
+          title={t('pageTitle')}
+          description={t('pageDescription')}
           actions={
             <Button size="sm" onClick={handleStartWorkflow}>
-              {t("startWorkflow")}
+              {t('startWorkflow')}
             </Button>
           }
         />
         <EmptyState
           icon={GitBranch}
-          heading={te("workflows.heading")}
-          body={te("workflows.body")}
+          heading={te('workflows.heading')}
+          body={te('workflows.body')}
           primaryAction={
             canManageTemplates
-              ? { label: t("templates.newTemplate"), href: "/workflows/templates/new" }
-              : { label: te("workflows.cta"), onClick: handleStartWorkflow }
+              ? { label: t('templates.newTemplate'), href: '/workflows/templates/new' }
+              : { label: te('workflows.cta'), onClick: handleStartWorkflow }
           }
           prerequisiteMissing={contractorCount === 0}
-          prerequisiteAction={{ label: te("prerequisite.cta"), href: "/contractors" }}
+          prerequisiteAction={{ label: te('prerequisite.cta'), href: '/contractors' }}
         />
         <TemplatePicker open={templatePickerOpen} onOpenChange={setTemplatePickerOpen} />
       </div>
@@ -105,11 +105,11 @@ function WorkflowsContent() {
       {/* Page header */}
       <AnimateIn delay={0}>
         <PageHeader
-          title={t("pageTitle")}
-          description={t("pageDescription")}
+          title={t('pageTitle')}
+          description={t('pageDescription')}
           actions={
             <Button size="sm" onClick={handleStartWorkflow}>
-              {t("startWorkflow")}
+              {t('startWorkflow')}
             </Button>
           }
         />
@@ -117,11 +117,11 @@ function WorkflowsContent() {
 
       {/* Tabs */}
       <AnimateIn delay={1}>
-        <Tabs value={tab} onValueChange={(value) => void setTab(value)}>
+        <Tabs value={tab} onValueChange={value => void setTab(value)}>
           <TabsList>
-            <TabsTrigger value="runs">{t("tabRuns")}</TabsTrigger>
-            <TabsTrigger value="tasks">{t("tabMyTasks")}</TabsTrigger>
-            {canManageTemplates && <TabsTrigger value="templates">{t("tabTemplates")}</TabsTrigger>}
+            <TabsTrigger value="runs">{t('tabRuns')}</TabsTrigger>
+            <TabsTrigger value="tasks">{t('tabMyTasks')}</TabsTrigger>
+            {canManageTemplates && <TabsTrigger value="templates">{t('tabTemplates')}</TabsTrigger>}
           </TabsList>
 
           <TabsContent value="runs" className="mt-4">
@@ -139,7 +139,7 @@ function WorkflowsContent() {
             <TabsContent value="templates" className="mt-4">
               <div className="flex items-center justify-end mb-4">
                 <Button size="sm" render={<Link href="/workflows/templates/new" />}>
-                  {t("templates.newTemplate")}
+                  {t('templates.newTemplate')}
                 </Button>
               </div>
               <TemplatesTable />
@@ -184,8 +184,7 @@ function WorkflowsLoading() {
           {Array.from({ length: 8 }).map((_, i) => (
             <div
               key={`skel-${i}`}
-              className="flex items-center gap-4 px-4 py-3 border-b last:border-b-0"
-            >
+              className="flex items-center gap-4 px-4 py-3 border-b last:border-b-0">
               <Skeleton className="h-4 w-4" />
               <Skeleton className="h-4 w-40" />
               <Skeleton className="h-4 w-24" />

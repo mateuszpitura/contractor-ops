@@ -1,6 +1,6 @@
-import { createHmac } from "node:crypto";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { JIRA_EXTRA_AUTH_PARAMS, JiraAdapter } from "../jira-adapter.js";
+import { createHmac } from 'node:crypto';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { JIRA_EXTRA_AUTH_PARAMS, JiraAdapter } from '../jira-adapter.js';
 
 function mockFetch(response: { ok: boolean; status?: number; body: unknown }) {
   return vi.fn().mockResolvedValue({
@@ -9,12 +9,12 @@ function mockFetch(response: { ok: boolean; status?: number; body: unknown }) {
     json: () => Promise.resolve(response.body),
     text: () =>
       Promise.resolve(
-        typeof response.body === "string" ? response.body : JSON.stringify(response.body),
+        typeof response.body === 'string' ? response.body : JSON.stringify(response.body),
       ),
   });
 }
 
-describe("JiraAdapter", () => {
+describe('JiraAdapter', () => {
   let adapter: JiraAdapter;
 
   beforeEach(() => {
@@ -28,118 +28,118 @@ describe("JiraAdapter", () => {
     delete process.env.JIRA_CLIENT_SECRET;
   });
 
-  it("exposes Atlassian audience in extra auth params", () => {
-    expect(JIRA_EXTRA_AUTH_PARAMS.audience).toBe("api.atlassian.com");
-    expect(JIRA_EXTRA_AUTH_PARAMS.prompt).toBe("consent");
+  it('exposes Atlassian audience in extra auth params', () => {
+    expect(JIRA_EXTRA_AUTH_PARAMS.audience).toBe('api.atlassian.com');
+    expect(JIRA_EXTRA_AUTH_PARAMS.prompt).toBe('consent');
   });
 
-  it("getOAuthConfig points to Atlassian OAuth", () => {
+  it('getOAuthConfig points to Atlassian OAuth', () => {
     const c = adapter.getOAuthConfig();
-    expect(c.authorizationUrl).toContain("atlassian.com");
-    expect(c.tokenUrl).toContain("atlassian.com");
-    expect(c.scopes).toContain("read:jira-work");
+    expect(c.authorizationUrl).toContain('atlassian.com');
+    expect(c.tokenUrl).toContain('atlassian.com');
+    expect(c.scopes).toContain('read:jira-work');
   });
 
-  it("exchangeCodeForTokens throws when env vars missing", async () => {
-    await expect(adapter.exchangeCodeForTokens("c", "http://localhost/cb")).rejects.toThrow(
+  it('exchangeCodeForTokens throws when env vars missing', async () => {
+    await expect(adapter.exchangeCodeForTokens('c', 'http://localhost/cb')).rejects.toThrow(
       /JIRA_CLIENT_ID/,
     );
   });
 
-  it("exchangeCodeForTokens maps tokens on success", async () => {
-    process.env.JIRA_CLIENT_ID = "id";
-    process.env.JIRA_CLIENT_SECRET = "sec";
+  it('exchangeCodeForTokens maps tokens on success', async () => {
+    process.env.JIRA_CLIENT_ID = 'id';
+    process.env.JIRA_CLIENT_SECRET = 'sec';
     const fetchMock = mockFetch({
       ok: true,
       body: {
-        access_token: "at",
-        refresh_token: "rt",
+        access_token: 'at',
+        refresh_token: 'rt',
         expires_in: 3600,
-        token_type: "Bearer",
-        scope: "read:jira-work",
+        token_type: 'Bearer',
+        scope: 'read:jira-work',
       },
     });
-    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal('fetch', fetchMock);
 
-    const out = await adapter.exchangeCodeForTokens("code", "http://localhost/cb");
+    const out = await adapter.exchangeCodeForTokens('code', 'http://localhost/cb');
 
-    expect(out.accessToken).toBe("at");
-    expect(out.refreshToken).toBe("rt");
+    expect(out.accessToken).toBe('at');
+    expect(out.refreshToken).toBe('rt');
     const [, opts] = fetchMock.mock.calls[0]!;
-    expect((opts as { method: string }).method).toBe("POST");
+    expect((opts as { method: string }).method).toBe('POST');
   });
 
-  it("refreshToken throws without refresh token in blob", async () => {
-    process.env.JIRA_CLIENT_ID = "id";
-    process.env.JIRA_CLIENT_SECRET = "sec";
+  it('refreshToken throws without refresh token in blob', async () => {
+    process.env.JIRA_CLIENT_ID = 'id';
+    process.env.JIRA_CLIENT_SECRET = 'sec';
     await expect(
       adapter.refreshToken({
-        accessToken: "a",
-        tokenType: "Bearer",
-        scope: "",
+        accessToken: 'a',
+        tokenType: 'Bearer',
+        scope: '',
         expiresAt: new Date().toISOString(),
       }),
     ).rejects.toThrow(/No refresh token/);
   });
 
-  it("verifyWebhookSignature allows when no secret header", () => {
-    const body = JSON.stringify({ webhookEvent: "jira:issue_updated" });
+  it('verifyWebhookSignature allows when no secret header', () => {
+    const body = JSON.stringify({ webhookEvent: 'jira:issue_updated' });
     const r = adapter.verifyWebhookSignature(body, {});
     expect(r.valid).toBe(true);
-    expect(r.eventType).toBe("jira:issue_updated");
+    expect(r.eventType).toBe('jira:issue_updated');
   });
 
-  it("verifyWebhookSignature allows without secret when body is not valid JSON", () => {
-    const r = adapter.verifyWebhookSignature("{not-json", {});
+  it('verifyWebhookSignature allows without secret when body is not valid JSON', () => {
+    const r = adapter.verifyWebhookSignature('{not-json', {});
     expect(r.valid).toBe(true);
     expect(r.eventType).toBeUndefined();
   });
 
-  it("verifyWebhookSignature rejects when secret is set but hub signature header is missing", () => {
-    const r = adapter.verifyWebhookSignature("{}", {
-      "x-webhook-secret": "whsec",
+  it('verifyWebhookSignature rejects when secret is set but hub signature header is missing', () => {
+    const r = adapter.verifyWebhookSignature('{}', {
+      'x-webhook-secret': 'whsec',
     });
     expect(r.valid).toBe(false);
   });
 
-  it("verifyWebhookSignature rejects when signature method is not sha256", () => {
-    const r = adapter.verifyWebhookSignature("{}", {
-      "x-webhook-secret": "whsec",
-      "x-hub-signature": "md5=abc",
+  it('verifyWebhookSignature rejects when signature method is not sha256', () => {
+    const r = adapter.verifyWebhookSignature('{}', {
+      'x-webhook-secret': 'whsec',
+      'x-hub-signature': 'md5=abc',
     });
     expect(r.valid).toBe(false);
   });
 
-  it("verifyWebhookSignature rejects bad HMAC", () => {
-    const secret = "whsec";
-    const body = "{}";
-    const _sig = createHmac("sha256", secret).update(body).digest("hex");
+  it('verifyWebhookSignature rejects bad HMAC', () => {
+    const secret = 'whsec';
+    const body = '{}';
+    const _sig = createHmac('sha256', secret).update(body).digest('hex');
     const r = adapter.verifyWebhookSignature(body, {
-      "x-webhook-secret": secret,
-      "x-hub-signature": "sha256=deadbeef",
+      'x-webhook-secret': secret,
+      'x-hub-signature': 'sha256=deadbeef',
     });
     expect(r.valid).toBe(false);
   });
 
-  it("verifyWebhookSignature accepts valid HMAC", () => {
-    const secret = "whsec";
-    const body = JSON.stringify({ webhookEvent: "issue_created" });
-    const sig = createHmac("sha256", secret).update(body).digest("hex");
+  it('verifyWebhookSignature accepts valid HMAC', () => {
+    const secret = 'whsec';
+    const body = JSON.stringify({ webhookEvent: 'issue_created' });
+    const sig = createHmac('sha256', secret).update(body).digest('hex');
     const r = adapter.verifyWebhookSignature(body, {
-      "x-webhook-secret": secret,
-      "x-hub-signature": `sha256=${sig}`,
+      'x-webhook-secret': secret,
+      'x-hub-signature': `sha256=${sig}`,
     });
     expect(r.valid).toBe(true);
-    expect(r.eventType).toBe("issue_created");
+    expect(r.eventType).toBe('issue_created');
   });
 
-  it("verifyWebhookSignature accepts valid HMAC but omits eventType when body is not JSON", () => {
-    const secret = "whsec";
-    const body = "plain-text-payload";
-    const sig = createHmac("sha256", secret).update(body).digest("hex");
+  it('verifyWebhookSignature accepts valid HMAC but omits eventType when body is not JSON', () => {
+    const secret = 'whsec';
+    const body = 'plain-text-payload';
+    const sig = createHmac('sha256', secret).update(body).digest('hex');
     const r = adapter.verifyWebhookSignature(body, {
-      "x-webhook-secret": secret,
-      "x-hub-signature": `sha256=${sig}`,
+      'x-webhook-secret': secret,
+      'x-hub-signature': `sha256=${sig}`,
     });
     expect(r.valid).toBe(true);
     expect(r.eventType).toBeUndefined();

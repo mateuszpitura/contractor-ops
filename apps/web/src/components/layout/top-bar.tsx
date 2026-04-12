@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { FilePlus, Search, Upload, UserPlus } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { ContractWizardDialog } from "@/components/contracts/contract-wizard/wizard-dialog";
-import { useBreadcrumbContext } from "@/components/layout/breadcrumb-context";
-import { NotificationPopover } from "@/components/notifications/notification-popover";
-import { CommandPalette } from "@/components/search/command-palette";
-import { useSearch } from "@/components/search/search-provider";
+import { FilePlus, Search, Upload, UserPlus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { ContractWizardDialog } from '@/components/contracts/contract-wizard/wizard-dialog';
+import { useBreadcrumbContext } from '@/components/layout/breadcrumb-context';
+import { NotificationPopover } from '@/components/notifications/notification-popover';
+import { CommandPalette } from '@/components/search/command-palette';
+import { useSearch } from '@/components/search/search-provider';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -15,13 +15,13 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Link, usePathname, useRouter } from "@/i18n/navigation";
+} from '@/components/ui/breadcrumb';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { SidebarTrigger } from '@/components/ui/sidebar';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Link, usePathname, useRouter } from '@/i18n/navigation';
 
 /**
  * Top bar above main content area.
@@ -30,17 +30,17 @@ import { Link, usePathname, useRouter } from "@/i18n/navigation";
  */
 export function TopBar() {
   const pathname = usePathname();
-  const t = useTranslations("TopBar");
+  const t = useTranslations('TopBar');
   const router = useRouter();
   const { setOpen: setSearchOpen } = useSearch();
 
   const [contractWizardOpen, setContractWizardOpen] = useState(false);
 
   const { overrides } = useBreadcrumbContext();
-  const tNav = useTranslations("Navigation");
+  const tNav = useTranslations('Navigation');
 
   // Build breadcrumb segments from pathname (locale already stripped by next-intl)
-  const segments = pathname.split("/").filter(Boolean);
+  const segments = pathname.split('/').filter(Boolean);
 
   /** Detect UUID/CUID segments that need an override to display properly */
   const isIdSegment = (segment: string): boolean => /^[a-zA-Z0-9_-]{20,}$/.test(segment);
@@ -58,7 +58,7 @@ export function TopBar() {
     if (tNav.has(segment)) return tNav(segment);
 
     // 4. Fallback: capitalize the URL segment
-    return segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, " ");
+    return segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, ' ');
   };
 
   return (
@@ -73,7 +73,7 @@ export function TopBar() {
             {segments.map((segment, index) => {
               const isLast = index === segments.length - 1;
               const label = breadcrumbLabel(segment);
-              const href = `/${segments.slice(0, index + 1).join("/")}`;
+              const href = `/${segments.slice(0, index + 1).join('/')}`;
 
               return (
                 <span key={`${segment}-${index}`} className="contents">
@@ -84,7 +84,7 @@ export function TopBar() {
                     ) : isLast ? (
                       <BreadcrumbPage>{label}</BreadcrumbPage>
                     ) : (
-                      <BreadcrumbLink render={(props) => <Link {...props} href={href} />}>
+                      <BreadcrumbLink render={props => <Link {...props} href={href} />}>
                         {label}
                       </BreadcrumbLink>
                     )}
@@ -107,14 +107,13 @@ export function TopBar() {
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8"
-                  onClick={() => router.push("/contractors?action=new")}
+                  onClick={() => router.push('/contractors?action=new')}
                 />
-              }
-            >
+              }>
               <UserPlus className="h-4 w-4" />
-              <span className="sr-only">{t("addContractor")}</span>
+              <span className="sr-only">{t('addContractor')}</span>
             </TooltipTrigger>
-            <TooltipContent>{t("addContractor")}</TooltipContent>
+            <TooltipContent>{t('addContractor')}</TooltipContent>
           </Tooltip>
 
           <Tooltip>
@@ -126,12 +125,11 @@ export function TopBar() {
                   className="h-8 w-8"
                   onClick={() => setContractWizardOpen(true)}
                 />
-              }
-            >
+              }>
               <FilePlus className="h-4 w-4" />
-              <span className="sr-only">{t("newContract")}</span>
+              <span className="sr-only">{t('newContract')}</span>
             </TooltipTrigger>
-            <TooltipContent>{t("newContract")}</TooltipContent>
+            <TooltipContent>{t('newContract')}</TooltipContent>
           </Tooltip>
 
           <Tooltip>
@@ -141,26 +139,24 @@ export function TopBar() {
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8"
-                  onClick={() => router.push("/invoices?action=upload")}
+                  onClick={() => router.push('/invoices?action=upload')}
                 />
-              }
-            >
+              }>
               <Upload className="h-4 w-4" />
-              <span className="sr-only">{t("uploadInvoice")}</span>
+              <span className="sr-only">{t('uploadInvoice')}</span>
             </TooltipTrigger>
-            <TooltipContent>{t("uploadInvoice")}</TooltipContent>
+            <TooltipContent>{t('uploadInvoice')}</TooltipContent>
           </Tooltip>
 
           {/* Search bar trigger */}
           <button
             type="button"
             onClick={() => setSearchOpen(true)}
-            className="search-trigger hidden md:flex h-9 w-[240px] items-center gap-2 rounded-lg border bg-background px-3 text-sm text-muted-foreground"
-          >
+            className="search-trigger hidden md:flex h-9 w-[240px] items-center gap-2 rounded-lg border bg-background px-3 text-sm text-muted-foreground">
             <Search className="h-4 w-4" />
-            <span>{t("search")}...</span>
+            <span>{t('search')}...</span>
             <kbd className="ms-auto rounded-md border border-border/60 bg-muted/60 px-1.5 py-0.5 text-[11px] font-mono font-medium text-muted-foreground shadow-[0_1px_0_0] shadow-border/40">
-              {"\u2318"}K
+              {'\u2318'}K
             </kbd>
           </button>
 
@@ -174,12 +170,11 @@ export function TopBar() {
                   className="h-8 w-8 md:hidden"
                   onClick={() => setSearchOpen(true)}
                 />
-              }
-            >
+              }>
               <Search className="h-4 w-4" />
-              <span className="sr-only">{t("search")}</span>
+              <span className="sr-only">{t('search')}</span>
             </TooltipTrigger>
-            <TooltipContent>{t("search")}</TooltipContent>
+            <TooltipContent>{t('search')}</TooltipContent>
           </Tooltip>
 
           <NotificationPopover />

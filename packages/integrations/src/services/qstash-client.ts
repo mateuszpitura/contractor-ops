@@ -1,4 +1,4 @@
-import { Client } from "@upstash/qstash";
+import { Client } from '@upstash/qstash';
 
 // ---------------------------------------------------------------------------
 // QStash Client Singleton
@@ -14,7 +14,7 @@ export function getQStashClient(): Client {
   if (!client) {
     const token = process.env.QSTASH_TOKEN;
     if (!token) {
-      throw new Error("QSTASH_TOKEN environment variable is not set");
+      throw new Error('QSTASH_TOKEN environment variable is not set');
     }
     client = new Client({ token });
   }

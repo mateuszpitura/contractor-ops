@@ -1,8 +1,8 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const normalizeSigningEvent = vi.fn();
 
-vi.mock("../esign-service.js", () => ({
+vi.mock('../esign-service.js', () => ({
   normalizeSigningEvent: (...args: unknown[]) => normalizeSigningEvent(...args),
 }));
 
@@ -16,7 +16,7 @@ const mockSigningRecipientUpdate = vi.fn();
 const mockSigningEnvelopeUpdate = vi.fn();
 const mockContractUpdate = vi.fn();
 
-vi.mock("@contractor-ops/db", () => ({
+vi.mock('@contractor-ops/db', () => ({
   prisma: {
     signingEnvelope: {
       findFirst: (...args: unknown[]) => mockSigningEnvelopeFindFirst(...args),
@@ -28,25 +28,25 @@ vi.mock("@contractor-ops/db", () => ({
   },
 }));
 
-import type { NormalizedSigningEvent } from "../../types/esign.js";
-import { handleSigningWebhook } from "../esign-webhook-handler.js";
+import type { NormalizedSigningEvent } from '../../types/esign.js';
+import { handleSigningWebhook } from '../esign-webhook-handler.js';
 
 function baseEnvelope() {
   return {
-    id: "se-internal",
-    externalEnvelopeId: "ext-env-1",
-    organizationId: "org-1",
-    contractId: "contract-1",
+    id: 'se-internal',
+    externalEnvelopeId: 'ext-env-1',
+    organizationId: 'org-1',
+    contractId: 'contract-1',
   };
 }
 
 function baseNormalized(over: Partial<NormalizedSigningEvent> = {}) {
   return {
-    externalEnvelopeId: "ext-env-1",
-    eventType: "ENVELOPE_SENT" as const,
-    description: "unit test event",
-    occurredAt: new Date("2026-04-04T12:00:00.000Z"),
-    providerEventId: "prov-evt-1",
+    externalEnvelopeId: 'ext-env-1',
+    eventType: 'ENVELOPE_SENT' as const,
+    description: 'unit test event',
+    occurredAt: new Date('2026-04-04T12:00:00.000Z'),
+    providerEventId: 'prov-evt-1',
     ...over,
   };
 }
@@ -69,140 +69,140 @@ beforeEach(() => {
   });
 });
 
-describe("handleSigningWebhook", () => {
-  it("creates SigningEvent record inside transaction", async () => {
+describe('handleSigningWebhook', () => {
+  it('creates SigningEvent record inside transaction', async () => {
     normalizeSigningEvent.mockReturnValue(baseNormalized());
 
     await handleSigningWebhook({
-      provider: "DOCUSIGN",
+      provider: 'DOCUSIGN',
       payload: { mock: true },
-      organizationId: "org-1",
-      connectionId: "conn-1",
+      organizationId: 'org-1',
+      connectionId: 'conn-1',
     });
 
-    expect(normalizeSigningEvent).toHaveBeenCalledWith("DOCUSIGN", { mock: true });
+    expect(normalizeSigningEvent).toHaveBeenCalledWith('DOCUSIGN', { mock: true });
     expect(mockTransaction).toHaveBeenCalledTimes(1);
     expect(mockSigningEventCreate).toHaveBeenCalledWith({
       data: expect.objectContaining({
-        organizationId: "org-1",
-        signingEnvelopeId: "se-internal",
-        eventType: "ENVELOPE_SENT",
-        providerEventId: "prov-evt-1",
+        organizationId: 'org-1',
+        signingEnvelopeId: 'se-internal',
+        eventType: 'ENVELOPE_SENT',
+        providerEventId: 'prov-evt-1',
       }),
     });
   });
 
-  it("returns early without transaction when providerEventId is duplicate", async () => {
-    normalizeSigningEvent.mockReturnValue(baseNormalized({ providerEventId: "dup-1" }));
-    mockSigningEventFindFirst.mockResolvedValue({ id: "existing-event" });
+  it('returns early without transaction when providerEventId is duplicate', async () => {
+    normalizeSigningEvent.mockReturnValue(baseNormalized({ providerEventId: 'dup-1' }));
+    mockSigningEventFindFirst.mockResolvedValue({ id: 'existing-event' });
 
     const out = await handleSigningWebhook({
-      provider: "AUTENTI",
+      provider: 'AUTENTI',
       payload: {},
-      organizationId: "org-1",
-      connectionId: "conn-1",
+      organizationId: 'org-1',
+      connectionId: 'conn-1',
     });
 
-    expect(out).toEqual({ envelopeId: "se-internal", completed: false });
+    expect(out).toEqual({ envelopeId: 'se-internal', completed: false });
     expect(mockTransaction).not.toHaveBeenCalled();
   });
 
-  it("updates SigningRecipient on RECIPIENT_SIGNED", async () => {
+  it('updates SigningRecipient on RECIPIENT_SIGNED', async () => {
     normalizeSigningEvent.mockReturnValue(
       baseNormalized({
-        eventType: "RECIPIENT_SIGNED",
-        recipientEmail: "signer@example.com",
-        recipientStatus: "SIGNED",
+        eventType: 'RECIPIENT_SIGNED',
+        recipientEmail: 'signer@example.com',
+        recipientStatus: 'SIGNED',
       }),
     );
     mockSigningRecipientFindFirst.mockResolvedValue({
-      id: "rec-1",
-      email: "signer@example.com",
+      id: 'rec-1',
+      email: 'signer@example.com',
     });
 
     await handleSigningWebhook({
-      provider: "DOCUSIGN",
+      provider: 'DOCUSIGN',
       payload: {},
-      organizationId: "org-1",
-      connectionId: "conn-1",
+      organizationId: 'org-1',
+      connectionId: 'conn-1',
     });
 
     expect(mockSigningRecipientUpdate).toHaveBeenCalledWith({
-      where: { id: "rec-1" },
+      where: { id: 'rec-1' },
       data: expect.objectContaining({
-        status: "SIGNED",
+        status: 'SIGNED',
         signedAt: expect.any(Date),
       }),
     });
   });
 
-  it("updates SigningEnvelope on ENVELOPE_COMPLETED and returns completed true (orchestrator should fetch PDF)", async () => {
+  it('updates SigningEnvelope on ENVELOPE_COMPLETED and returns completed true (orchestrator should fetch PDF)', async () => {
     normalizeSigningEvent.mockReturnValue(
       baseNormalized({
-        eventType: "ENVELOPE_COMPLETED",
-        envelopeStatus: "COMPLETED",
+        eventType: 'ENVELOPE_COMPLETED',
+        envelopeStatus: 'COMPLETED',
       }),
     );
 
     const out = await handleSigningWebhook({
-      provider: "DOCUSIGN",
+      provider: 'DOCUSIGN',
       payload: {},
-      organizationId: "org-1",
-      connectionId: "conn-1",
+      organizationId: 'org-1',
+      connectionId: 'conn-1',
     });
 
     expect(mockSigningEnvelopeUpdate).toHaveBeenCalledWith({
-      where: { id: "se-internal" },
+      where: { id: 'se-internal' },
       data: expect.objectContaining({
-        status: "COMPLETED",
+        status: 'COMPLETED',
         completedAt: expect.any(Date),
       }),
     });
     expect(mockContractUpdate).toHaveBeenCalledWith({
-      where: { id: "contract-1" },
+      where: { id: 'contract-1' },
       data: expect.objectContaining({
-        status: "ACTIVE",
+        status: 'ACTIVE',
         signedAt: expect.any(Date),
       }),
     });
     expect(out.completed).toBe(true);
-    expect(out.envelopeId).toBe("se-internal");
+    expect(out.envelopeId).toBe('se-internal');
   });
 
-  it("sets contract to SIGNATURE_DECLINED when envelopeStatus is DECLINED", async () => {
+  it('sets contract to SIGNATURE_DECLINED when envelopeStatus is DECLINED', async () => {
     normalizeSigningEvent.mockReturnValue(
       baseNormalized({
-        eventType: "RECIPIENT_DECLINED",
-        envelopeStatus: "DECLINED",
-        recipientEmail: "signer@example.com",
-        recipientStatus: "DECLINED",
+        eventType: 'RECIPIENT_DECLINED',
+        envelopeStatus: 'DECLINED',
+        recipientEmail: 'signer@example.com',
+        recipientStatus: 'DECLINED',
       }),
     );
-    mockSigningRecipientFindFirst.mockResolvedValue({ id: "rec-1" });
+    mockSigningRecipientFindFirst.mockResolvedValue({ id: 'rec-1' });
 
     await handleSigningWebhook({
-      provider: "DOCUSIGN",
+      provider: 'DOCUSIGN',
       payload: {},
-      organizationId: "org-1",
-      connectionId: "conn-1",
+      organizationId: 'org-1',
+      connectionId: 'conn-1',
     });
 
     expect(mockContractUpdate).toHaveBeenCalledWith({
-      where: { id: "contract-1" },
-      data: { status: "SIGNATURE_DECLINED" },
+      where: { id: 'contract-1' },
+      data: { status: 'SIGNATURE_DECLINED' },
     });
   });
 
-  it("throws when SigningEnvelope is missing", async () => {
+  it('throws when SigningEnvelope is missing', async () => {
     mockSigningEnvelopeFindFirst.mockResolvedValue(null);
-    normalizeSigningEvent.mockReturnValue(baseNormalized({ externalEnvelopeId: "unknown" }));
+    normalizeSigningEvent.mockReturnValue(baseNormalized({ externalEnvelopeId: 'unknown' }));
 
     await expect(
       handleSigningWebhook({
-        provider: "DOCUSIGN",
+        provider: 'DOCUSIGN',
         payload: {},
-        organizationId: "org-1",
-        connectionId: "conn-1",
+        organizationId: 'org-1',
+        connectionId: 'conn-1',
       }),
     ).rejects.toThrow(/SigningEnvelope not found/);
   });

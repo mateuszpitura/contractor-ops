@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import type { ColumnDef } from "@tanstack/react-table";
+import type { ColumnDef } from '@tanstack/react-table';
 import {
   AlertCircle,
   AlertTriangle,
@@ -12,11 +12,11 @@ import {
   Mail,
   Upload,
   XCircle,
-} from "lucide-react";
-import { KsefSourceBadge } from "@/components/invoices/ksef-badge";
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Link } from "@/i18n/navigation";
+} from 'lucide-react';
+import { KsefSourceBadge } from '@/components/invoices/ksef-badge';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Link } from '@/i18n/navigation';
 
 // ---------------------------------------------------------------------------
 // Row type matching the tRPC invoice.list response shape
@@ -48,47 +48,47 @@ const statusBadgeConfig: Record<
   { className: string; Icon: React.ComponentType<{ className?: string }> }
 > = {
   RECEIVED: {
-    className: "bg-muted text-muted-foreground",
+    className: 'bg-muted text-muted-foreground',
     Icon: Inbox,
   },
   MATCHED: {
-    className: "bg-green-500/10 text-green-600 dark:text-green-400",
+    className: 'bg-green-500/10 text-green-600 dark:text-green-400',
     Icon: CheckCircle2,
   },
   UNMATCHED: {
-    className: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+    className: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
     Icon: AlertCircle,
   },
   DISCREPANCY: {
-    className: "bg-red-500/10 text-red-600 dark:text-red-400",
+    className: 'bg-red-500/10 text-red-600 dark:text-red-400',
     Icon: AlertTriangle,
   },
   APPROVAL_PENDING: {
-    className: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+    className: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
     Icon: Clock,
   },
   APPROVED: {
-    className: "bg-green-500/10 text-green-600 dark:text-green-400",
+    className: 'bg-green-500/10 text-green-600 dark:text-green-400',
     Icon: CheckCircle2,
   },
   REJECTED: {
-    className: "bg-red-500/10 text-red-600 dark:text-red-400",
+    className: 'bg-red-500/10 text-red-600 dark:text-red-400',
     Icon: XCircle,
   },
   READY_FOR_PAYMENT: {
-    className: "bg-primary/10 text-primary",
+    className: 'bg-primary/10 text-primary',
     Icon: Banknote,
   },
   PAID: {
-    className: "bg-muted text-muted-foreground",
+    className: 'bg-muted text-muted-foreground',
     Icon: Check,
   },
   UNDER_REVIEW: {
-    className: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+    className: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
     Icon: Clock,
   },
   VOID: {
-    className: "bg-muted text-muted-foreground",
+    className: 'bg-muted text-muted-foreground',
     Icon: XCircle,
   },
 };
@@ -98,11 +98,11 @@ const statusBadgeConfig: Record<
 // ---------------------------------------------------------------------------
 
 const matchStatusConfig: Record<string, { dotClass: string; label: string }> = {
-  MATCHED: { dotClass: "bg-green-500", label: "strongMatch" },
-  PARTIAL: { dotClass: "bg-amber-500", label: "partialMatch" },
-  DISCREPANCY: { dotClass: "bg-red-500", label: "discrepancy" },
-  UNMATCHED: { dotClass: "bg-muted-foreground", label: "unmatched" },
-  MANUALLY_CONFIRMED: { dotClass: "bg-blue-500", label: "manualMatch" },
+  MATCHED: { dotClass: 'bg-green-500', label: 'strongMatch' },
+  PARTIAL: { dotClass: 'bg-amber-500', label: 'partialMatch' },
+  DISCREPANCY: { dotClass: 'bg-red-500', label: 'discrepancy' },
+  UNMATCHED: { dotClass: 'bg-muted-foreground', label: 'unmatched' },
+  MANUALLY_CONFIRMED: { dotClass: 'bg-blue-500', label: 'manualMatch' },
 };
 
 // ---------------------------------------------------------------------------
@@ -110,7 +110,7 @@ const matchStatusConfig: Record<string, { dotClass: string; label: string }> = {
 // ---------------------------------------------------------------------------
 
 function formatMinorUnits(minor: number): string {
-  return new Intl.NumberFormat("pl-PL", {
+  return new Intl.NumberFormat('pl-PL', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(minor / 100);
@@ -120,7 +120,7 @@ function formatMinorUnits(minor: number): string {
 // Overdue detection
 // ---------------------------------------------------------------------------
 
-const NON_OVERDUE_STATUSES = new Set(["PAID", "VOID"]);
+const NON_OVERDUE_STATUSES = new Set(['PAID', 'VOID']);
 
 function isOverdue(dueDate: string | null, status: string): boolean {
   if (!dueDate || NON_OVERDUE_STATUSES.has(status)) return false;
@@ -141,21 +141,21 @@ export function getColumns(t: TranslateFunction): ColumnDef<InvoiceRow>[] {
   return [
     // 1. Select checkbox
     {
-      id: "select",
+      id: 'select',
       header: ({ table }) => (
         <Checkbox
           checked={table.getIsAllPageRowsSelected()}
           indeterminate={table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()}
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label={t("columns.selectAll")}
+          onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)}
+          aria-label={t('columns.selectAll')}
         />
       ),
       cell: ({ row }) => (
         <Checkbox
           checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label={t("columns.selectRow")}
-          onClick={(e) => e.stopPropagation()}
+          onCheckedChange={value => row.toggleSelected(!!value)}
+          aria-label={t('columns.selectRow')}
+          onClick={e => e.stopPropagation()}
         />
       ),
       enableSorting: false,
@@ -165,8 +165,8 @@ export function getColumns(t: TranslateFunction): ColumnDef<InvoiceRow>[] {
 
     // 2. Invoice number (monospace)
     {
-      accessorKey: "invoiceNumber",
-      header: t("columns.invoiceNumber"),
+      accessorKey: 'invoiceNumber',
+      header: t('columns.invoiceNumber'),
       cell: ({ row }) => (
         <span className="font-mono text-[13px]">{row.original.invoiceNumber}</span>
       ),
@@ -175,9 +175,9 @@ export function getColumns(t: TranslateFunction): ColumnDef<InvoiceRow>[] {
 
     // 3. Contractor (link)
     {
-      id: "contractor",
-      accessorFn: (row) => row.contractor?.legalName ?? "",
-      header: t("columns.contractor"),
+      id: 'contractor',
+      accessorFn: row => row.contractor?.legalName ?? '',
+      header: t('columns.contractor'),
       cell: ({ row }) => {
         const contractor = row.original.contractor;
         if (!contractor) return <span className="text-muted-foreground">&mdash;</span>;
@@ -185,8 +185,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<InvoiceRow>[] {
           <Link
             href={`/contractors/${contractor.id}`}
             className="text-sm text-primary hover:underline"
-            onClick={(e) => e.stopPropagation()}
-          >
+            onClick={e => e.stopPropagation()}>
             {contractor.legalName}
           </Link>
         );
@@ -195,13 +194,13 @@ export function getColumns(t: TranslateFunction): ColumnDef<InvoiceRow>[] {
 
     // 4. Issue date
     {
-      accessorKey: "issueDate",
-      header: t("columns.issueDate"),
+      accessorKey: 'issueDate',
+      header: t('columns.issueDate'),
       cell: ({ row }) => {
         const issueDate = row.original.issueDate;
         if (!issueDate) return <span className="text-muted-foreground">&mdash;</span>;
         try {
-          return <span className="text-sm">{new Date(issueDate).toLocaleDateString("pl-PL")}</span>;
+          return <span className="text-sm">{new Date(issueDate).toLocaleDateString('pl-PL')}</span>;
         } catch {
           return <span className="text-muted-foreground">&mdash;</span>;
         }
@@ -210,16 +209,16 @@ export function getColumns(t: TranslateFunction): ColumnDef<InvoiceRow>[] {
 
     // 5. Due date (destructive if overdue)
     {
-      accessorKey: "dueDate",
-      header: t("columns.dueDate"),
+      accessorKey: 'dueDate',
+      header: t('columns.dueDate'),
       cell: ({ row }) => {
         const dueDate = row.original.dueDate;
         if (!dueDate) return <span className="text-muted-foreground">&mdash;</span>;
         try {
           const overdue = isOverdue(dueDate, row.original.status);
           return (
-            <span className={`text-sm ${overdue ? "text-destructive font-medium" : ""}`}>
-              {new Date(dueDate).toLocaleDateString("pl-PL")}
+            <span className={`text-sm ${overdue ? 'text-destructive font-medium' : ''}`}>
+              {new Date(dueDate).toLocaleDateString('pl-PL')}
             </span>
           );
         } catch {
@@ -230,8 +229,8 @@ export function getColumns(t: TranslateFunction): ColumnDef<InvoiceRow>[] {
 
     // 6. Net amount (right-aligned)
     {
-      accessorKey: "subtotalMinor",
-      header: () => <span className="text-end block">{t("columns.netAmount")}</span>,
+      accessorKey: 'subtotalMinor',
+      header: () => <span className="text-end block">{t('columns.netAmount')}</span>,
       cell: ({ row }) => (
         <span className="font-mono text-sm tabular-nums text-end block">
           {formatMinorUnits(row.original.subtotalMinor)}
@@ -241,8 +240,8 @@ export function getColumns(t: TranslateFunction): ColumnDef<InvoiceRow>[] {
 
     // 7. Gross amount (right-aligned)
     {
-      accessorKey: "totalMinor",
-      header: () => <span className="text-end block">{t("columns.grossAmount")}</span>,
+      accessorKey: 'totalMinor',
+      header: () => <span className="text-end block">{t('columns.grossAmount')}</span>,
       cell: ({ row }) => (
         <span className="font-mono text-sm tabular-nums text-end block">
           {formatMinorUnits(row.original.totalMinor)}
@@ -252,15 +251,15 @@ export function getColumns(t: TranslateFunction): ColumnDef<InvoiceRow>[] {
 
     // 8. Currency
     {
-      accessorKey: "currency",
-      header: t("columns.currency"),
+      accessorKey: 'currency',
+      header: t('columns.currency'),
       cell: ({ row }) => <span className="text-sm">{row.original.currency}</span>,
     },
 
     // 9. Status badge
     {
-      accessorKey: "status",
-      header: t("columns.status"),
+      accessorKey: 'status',
+      header: t('columns.status'),
       cell: ({ row }) => {
         const status = row.original.status;
         const config = statusBadgeConfig[status];
@@ -279,8 +278,8 @@ export function getColumns(t: TranslateFunction): ColumnDef<InvoiceRow>[] {
 
     // 10. Match status (dot + label)
     {
-      accessorKey: "matchStatus",
-      header: t("columns.matchStatus"),
+      accessorKey: 'matchStatus',
+      header: t('columns.matchStatus'),
       cell: ({ row }) => {
         const matchStatus = row.original.matchStatus;
         const config = matchStatusConfig[matchStatus];
@@ -299,17 +298,17 @@ export function getColumns(t: TranslateFunction): ColumnDef<InvoiceRow>[] {
 
     // 11. Source (icon only, KSeF badge for KSEF source)
     {
-      accessorKey: "source",
-      header: t("columns.source"),
+      accessorKey: 'source',
+      header: t('columns.source'),
       cell: ({ row }) => {
         const source = row.original.source;
-        if (source === "KSEF") {
+        if (source === 'KSEF') {
           return <KsefSourceBadge />;
         }
-        if (source === "MANUAL_UPLOAD") {
+        if (source === 'MANUAL_UPLOAD') {
           return <Upload className="h-4 w-4 text-muted-foreground" />;
         }
-        if (source === "EMAIL_INTAKE") {
+        if (source === 'EMAIL_INTAKE') {
           return <Mail className="h-4 w-4 text-muted-foreground" />;
         }
         return <span className="text-muted-foreground">&mdash;</span>;

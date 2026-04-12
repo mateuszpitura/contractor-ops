@@ -1,34 +1,34 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { CheckCircle2, FileCheck, XCircle } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { trpc } from "@/trpc/init";
+import { useQuery } from '@tanstack/react-query';
+import { CheckCircle2, FileCheck, XCircle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // State → visual mapping
 // ---------------------------------------------------------------------------
 
-const stateBadgeVariant: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-  active: "default",
-  sandbox: "secondary",
-  degraded: "secondary",
-  onboarding: "secondary",
-  suspended: "outline",
-  error: "destructive",
-  not_connected: "outline",
+const stateBadgeVariant: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+  active: 'default',
+  sandbox: 'secondary',
+  degraded: 'secondary',
+  onboarding: 'secondary',
+  suspended: 'outline',
+  error: 'destructive',
+  not_connected: 'outline',
 };
 
 const stateLabels: Record<string, string> = {
-  active: "Active",
-  sandbox: "Sandbox",
-  degraded: "Degraded",
-  onboarding: "Onboarding",
-  suspended: "Suspended",
-  error: "Error",
-  not_connected: "Not Connected",
+  active: 'Active',
+  sandbox: 'Sandbox',
+  degraded: 'Degraded',
+  onboarding: 'Onboarding',
+  suspended: 'Suspended',
+  error: 'Error',
+  not_connected: 'Not Connected',
 };
 
 // ---------------------------------------------------------------------------
@@ -36,11 +36,11 @@ const stateLabels: Record<string, string> = {
 // ---------------------------------------------------------------------------
 
 function formatTimeAgo(date: Date | string | undefined): string {
-  if (!date) return "Never";
-  const d = typeof date === "string" ? new Date(date) : date;
+  if (!date) return 'Never';
+  const d = typeof date === 'string' ? new Date(date) : date;
   const diffMs = Date.now() - d.getTime();
   const diffMins = Math.floor(diffMs / 60_000);
-  if (diffMins < 1) return "Just now";
+  if (diffMins < 1) return 'Just now';
   if (diffMins < 60) return `${diffMins}m ago`;
   const diffHours = Math.floor(diffMins / 60);
   if (diffHours < 24) return `${diffHours}h ago`;
@@ -49,7 +49,7 @@ function formatTimeAgo(date: Date | string | undefined): string {
 }
 
 function HealthBar({ score }: { score: number }) {
-  const color = score >= 80 ? "bg-emerald-500" : score >= 50 ? "bg-amber-500" : "bg-red-500";
+  const color = score >= 80 ? 'bg-emerald-500' : score >= 50 ? 'bg-amber-500' : 'bg-red-500';
   return (
     <div className="flex items-center gap-2">
       <div className="h-1.5 flex-1 rounded-full bg-muted">
@@ -67,9 +67,8 @@ function CapabilityItem({ label, enabled }: { label: string; enabled: boolean })
   return (
     <div
       className={`flex items-center gap-1.5 text-xs ${
-        enabled ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground/40"
-      }`}
-    >
+        enabled ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground/40'
+      }`}>
       {enabled ? <CheckCircle2 className="h-3.5 w-3.5" /> : <XCircle className="h-3.5 w-3.5" />}
       {label}
     </div>
@@ -119,8 +118,8 @@ export function EInvoiceComplianceDetail() {
         </Card>
       ) : (
         <div className="space-y-4">
-          {statuses.map((status) => {
-            const badgeVariant = stateBadgeVariant[status.state] ?? "outline";
+          {statuses.map(status => {
+            const badgeVariant = stateBadgeVariant[status.state] ?? 'outline';
             const label = stateLabels[status.state] ?? status.state;
 
             return (
@@ -144,7 +143,7 @@ export function EInvoiceComplianceDetail() {
                   {/* Metadata grid */}
                   <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
                     <div>
-                      <span className="font-medium text-muted-foreground">Last Sync:</span>{" "}
+                      <span className="font-medium text-muted-foreground">Last Sync:</span>{' '}
                       {formatTimeAgo(status.lastSyncAt as Date | undefined)}
                     </div>
                     {status.lastErrorMessage && (

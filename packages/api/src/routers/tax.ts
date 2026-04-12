@@ -1,14 +1,14 @@
-import { whtServiceTypeEnum } from "@contractor-ops/validators";
-import { TRPCError } from "@trpc/server";
-import { z } from "zod";
-import { router } from "../init.js";
-import { tenantProcedure } from "../middleware/tenant.js";
+import { whtServiceTypeEnum } from '@contractor-ops/validators';
+import { TRPCError } from '@trpc/server';
+import { z } from 'zod';
+import { router } from '../init.js';
+import { tenantProcedure } from '../middleware/tenant.js';
 import {
   calculateWht,
   getTaxRatesForCountry,
   validateVatRateCode,
-} from "../services/tax-rate.service.js";
-import { createWhtCertificate, listWhtCertificates } from "../services/wht-certificate.service.js";
+} from '../services/tax-rate.service.js';
+import { createWhtCertificate, listWhtCertificates } from '../services/wht-certificate.service.js';
 
 export const taxRouter = router({
   /** Get active tax rates for the tenant org's country */
@@ -88,7 +88,7 @@ export const taxRouter = router({
         where: { id: input.certificateId },
       });
       if (!cert || cert.organizationId !== ctx.organizationId) {
-        throw new TRPCError({ code: "NOT_FOUND" });
+        throw new TRPCError({ code: 'NOT_FOUND' });
       }
       return cert;
     }),
@@ -104,7 +104,7 @@ export const taxRouter = router({
       where: {
         organizationId: ctx.organizationId,
         issueDate: { gte: startOfPeriod, lte: endOfPeriod },
-        status: { in: ["APPROVED", "READY_FOR_PAYMENT", "PAID", "PARTIALLY_PAID"] },
+        status: { in: ['APPROVED', 'READY_FOR_PAYMENT', 'PAID', 'PARTIALLY_PAID'] },
         vatAmountMinor: { not: null },
       },
       _sum: { vatAmountMinor: true },
@@ -115,7 +115,7 @@ export const taxRouter = router({
       where: {
         organizationId: ctx.organizationId,
         issueDate: { gte: startOfPeriod, lte: endOfPeriod },
-        status: { in: ["RECEIVED", "UNDER_REVIEW", "APPROVAL_PENDING"] },
+        status: { in: ['RECEIVED', 'UNDER_REVIEW', 'APPROVAL_PENDING'] },
         vatAmountMinor: { not: null },
       },
       _sum: { vatAmountMinor: true },

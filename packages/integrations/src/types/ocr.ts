@@ -41,7 +41,7 @@ export interface OcrLineItem {
  * Complete extraction result from an OCR adapter.
  */
 export interface OcrExtractionResult {
-  status: "EXTRACTED" | "PARTIAL" | "FAILED";
+  status: 'EXTRACTED' | 'PARTIAL' | 'FAILED';
   fields: Record<string, OcrExtractionField>;
   lineItems: OcrLineItem[];
   rawResponse?: unknown;
@@ -73,7 +73,7 @@ export interface OcrAdapter {
  * A remainder of 10 means the NIP is invalid.
  */
 export function validateNip(nip: string): { valid: boolean; formatted: string } {
-  const digits = nip.replace(/[\s-]/g, "");
+  const digits = nip.replace(/[\s-]/g, '');
 
   if (!/^\d{10}$/.test(digits)) {
     return { valid: false, formatted: digits };
@@ -115,7 +115,7 @@ export function adjustConfidences(result: OcrExtractionResult): OcrExtractionRes
     const expectedGross = Math.round((net + tax) * 100) / 100;
     if (Math.abs(expectedGross - gross) > 0.01) {
       // Amounts don't add up -- lower confidence on all amount fields
-      for (const key of ["totalNet", "totalTax", "totalGross"]) {
+      for (const key of ['totalNet', 'totalTax', 'totalGross']) {
         const field = fields[key];
         if (field) {
           fields[key] = {
@@ -128,9 +128,9 @@ export function adjustConfidences(result: OcrExtractionResult): OcrExtractionRes
   }
 
   // Validate NIP checksums
-  for (const key of ["sellerNip", "buyerNip"]) {
+  for (const key of ['sellerNip', 'buyerNip']) {
     const nipField = fields[key];
-    if (nipField?.value && typeof nipField.value === "string") {
+    if (nipField?.value && typeof nipField.value === 'string') {
       const { valid } = validateNip(nipField.value);
       if (!valid) {
         fields[key] = {

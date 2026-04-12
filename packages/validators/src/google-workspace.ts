@@ -1,18 +1,18 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // ---------------------------------------------------------------------------
 // Shared role enum (must match Better Auth organization roles)
 // ---------------------------------------------------------------------------
 
 export const directoryRoleEnum = z.enum([
-  "admin",
-  "finance_admin",
-  "ops_manager",
-  "team_manager",
-  "legal_compliance_viewer",
-  "it_admin",
-  "external_accountant",
-  "readonly",
+  'admin',
+  'finance_admin',
+  'ops_manager',
+  'team_manager',
+  'legal_compliance_viewer',
+  'it_admin',
+  'external_accountant',
+  'readonly',
 ]);
 
 export type DirectoryRole = z.infer<typeof directoryRoleEnum>;

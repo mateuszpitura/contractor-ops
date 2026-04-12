@@ -1,6 +1,6 @@
-import { prisma } from "@contractor-ops/db";
-import type { MergedPerson } from "@contractor-ops/validators";
-import { linearGraphQL } from "./linear-issue-sync.js";
+import { prisma } from '@contractor-ops/db';
+import type { MergedPerson } from '@contractor-ops/validators';
+import { linearGraphQL } from './linear-issue-sync.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -9,7 +9,7 @@ import { linearGraphQL } from "./linear-issue-sync.js";
 export type SourcePerson = {
   email: string;
   name: string;
-  source: "JIRA" | "LINEAR" | "GOOGLE_WORKSPACE" | "SLACK";
+  source: 'JIRA' | 'LINEAR' | 'GOOGLE_WORKSPACE' | 'SLACK';
   avatarUrl?: string;
   metadata?: Record<string, unknown>;
 };
@@ -36,13 +36,13 @@ export async function fetchUsersFromSource(
   metadata: unknown,
 ): Promise<SourcePerson[]> {
   switch (provider) {
-    case "JIRA":
+    case 'JIRA':
       return fetchJiraUsers(accessToken, metadata);
-    case "LINEAR":
+    case 'LINEAR':
       return fetchLinearUsers(accessToken);
-    case "GOOGLE_WORKSPACE":
+    case 'GOOGLE_WORKSPACE':
       return fetchGoogleWorkspaceUsers(accessToken);
-    case "SLACK":
+    case 'SLACK':
       return fetchSlackUsers(accessToken);
     default:
       return [];
@@ -60,7 +60,7 @@ async function fetchJiraUsers(accessToken: string, metadata: unknown): Promise<S
   const baseUrl = `https://api.atlassian.com/ex/jira/${config.cloudId}/rest/api/3`;
   const headers = {
     Authorization: `Bearer ${accessToken}`,
-    Accept: "application/json",
+    Accept: 'application/json',
   };
 
   const users: SourcePerson[] = [];
@@ -90,8 +90,8 @@ async function fetchJiraUsers(accessToken: string, metadata: unknown): Promise<S
       users.push({
         email: user.emailAddress,
         name: user.displayName ?? user.emailAddress,
-        source: "JIRA",
-        avatarUrl: user.avatarUrls?.["48x48"],
+        source: 'JIRA',
+        avatarUrl: user.avatarUrls?.['48x48'],
         metadata: { self: user.self },
       });
     }
@@ -123,11 +123,11 @@ async function fetchLinearUsers(accessToken: string): Promise<SourcePerson[]> {
   }>(accessToken, `{ organization { users { nodes { id name email active avatarUrl } } } }`);
 
   return data.organization.users.nodes
-    .filter((u) => u.active)
-    .map((u) => ({
+    .filter(u => u.active)
+    .map(u => ({
       email: u.email,
       name: u.name,
-      source: "LINEAR" as const,
+      source: 'LINEAR' as const,
       avatarUrl: u.avatarUrl,
       metadata: { linearId: u.id },
     }));
@@ -140,11 +140,11 @@ async function fetchLinearUsers(accessToken: string): Promise<SourcePerson[]> {
 async function fetchGoogleWorkspaceUsers(accessToken: string): Promise<SourcePerson[]> {
   // Use Google Admin SDK Directory API
   const response = await fetch(
-    "https://admin.googleapis.com/admin/directory/v1/users?customer=my_customer&maxResults=500",
+    'https://admin.googleapis.com/admin/directory/v1/users?customer=my_customer&maxResults=500',
     {
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        Accept: "application/json",
+        Accept: 'application/json',
       },
     },
   );
@@ -160,10 +160,10 @@ async function fetchGoogleWorkspaceUsers(accessToken: string): Promise<SourcePer
     }>;
   };
 
-  return (data.users ?? []).map((u) => ({
+  return (data.users ?? []).map(u => ({
     email: u.primaryEmail,
     name: u.name.fullName,
-    source: "GOOGLE_WORKSPACE" as const,
+    source: 'GOOGLE_WORKSPACE' as const,
     avatarUrl: u.thumbnailPhotoUrl,
     metadata: { googleId: u.id },
   }));
@@ -179,9 +179,9 @@ async function fetchSlackUsers(accessToken: string): Promise<SourcePerson[]> {
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    const url = new URL("https://slack.com/api/users.list");
-    url.searchParams.set("limit", "1000");
-    if (cursor) url.searchParams.set("cursor", cursor);
+    const url = new URL('https://slack.com/api/users.list');
+    url.searchParams.set('limit', '1000');
+    if (cursor) url.searchParams.set('cursor', cursor);
 
     const response = await fetch(url.toString(), {
       headers: { Authorization: `Bearer ${accessToken}` },
@@ -212,13 +212,13 @@ async function fetchSlackUsers(accessToken: string): Promise<SourcePerson[]> {
       if (member.is_bot) continue;
       if (member.deleted) continue;
       if (member.is_app_user) continue;
-      if (member.id === "USLACKBOT") continue;
+      if (member.id === 'USLACKBOT') continue;
       if (!member.profile.email) continue;
 
       users.push({
         email: member.profile.email,
         name: member.profile.real_name ?? member.profile.email,
-        source: "SLACK",
+        source: 'SLACK',
         avatarUrl: member.profile.image_72,
       });
     }
@@ -275,24 +275,24 @@ export function mergeByEmail(
   const merged: MergedPerson[] = [];
 
   for (const [email, data] of byEmail) {
-    const uniqueNames = [...new Set(data.sources.map((s) => s.name))];
+    const uniqueNames = [...new Set(data.sources.map(s => s.name))];
     const isExisting = existingEmails.has(email);
     const hasConflict = uniqueNames.length > 1;
 
-    let status: "new" | "conflict" | "exists";
+    let status: 'new' | 'conflict' | 'exists';
     if (isExisting) {
-      status = "exists";
+      status = 'exists';
     } else if (hasConflict) {
-      status = "conflict";
+      status = 'conflict';
     } else {
-      status = "new";
+      status = 'new';
     }
 
     const conflicts = hasConflict
       ? [
           {
-            field: "name",
-            values: data.sources.map((s) => ({
+            field: 'name',
+            values: data.sources.map(s => ({
               source: s.source,
               value: s.name,
             })),
@@ -303,8 +303,8 @@ export function mergeByEmail(
     merged.push({
       email,
       name: data.sources[0]?.name,
-      sources: data.sources.map((s) => ({
-        source: s.source as "JIRA" | "LINEAR" | "GOOGLE_WORKSPACE" | "SLACK",
+      sources: data.sources.map(s => ({
+        source: s.source as 'JIRA' | 'LINEAR' | 'GOOGLE_WORKSPACE' | 'SLACK',
         name: s.name,
         avatarUrl: s.avatarUrl,
         metadata: s.metadata,
@@ -350,11 +350,11 @@ export async function createWorkflowTemplatesFromProjects(params: {
       data: {
         organizationId,
         name: `${project.name} Onboarding`,
-        type: "CUSTOM",
+        type: 'CUSTOM',
         description: `Auto-imported from ${project.sourceProvider}: ${project.name}`,
         version: 1,
-        status: "DRAFT",
-        appliesToEntityType: "CONTRACTOR",
+        status: 'DRAFT',
+        appliesToEntityType: 'CONTRACTOR',
         createdByUserId,
       },
     });
@@ -362,14 +362,14 @@ export async function createWorkflowTemplatesFromProjects(params: {
     // Create task templates from steps
     if (project.steps.length > 0) {
       await prisma.workflowTaskTemplate.createMany({
-        data: project.steps.map((step) => ({
+        data: project.steps.map(step => ({
           organizationId,
           workflowTemplateId: template.id,
           title: step.name,
-          taskType: "MANUAL",
+          taskType: 'MANUAL',
           sortOrder: step.sortOrder,
           required: true,
-          assigneeMode: "ROLE_BASED",
+          assigneeMode: 'ROLE_BASED',
         })),
       });
     }

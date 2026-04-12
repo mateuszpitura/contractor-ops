@@ -1,5 +1,5 @@
-import { XMLBuilder } from "fast-xml-parser";
-import type { EInvoice } from "../../types/invoice.js";
+import { XMLBuilder } from 'fast-xml-parser';
+import type { EInvoice } from '../../types/invoice.js';
 
 // ---------------------------------------------------------------------------
 // FA(3) XML Generator
@@ -7,8 +7,8 @@ import type { EInvoice } from "../../types/invoice.js";
 
 const builder = new XMLBuilder({
   ignoreAttributes: false,
-  attributeNamePrefix: "@_",
-  textNodeName: "#text",
+  attributeNamePrefix: '@_',
+  textNodeName: '#text',
   format: true,
   suppressBooleanAttributes: false,
 });
@@ -18,10 +18,10 @@ const builder = new XMLBuilder({
  */
 function mapInvoiceType(code: string): string {
   switch (code) {
-    case "381":
-      return "KOR";
+    case '381':
+      return 'KOR';
     default:
-      return "VAT";
+      return 'VAT';
   }
 }
 
@@ -42,7 +42,7 @@ function fromMinorUnits(minorUnits: number): string {
  * @returns Well-formed FA(3) XML string
  */
 export function generateFa3Xml(invoice: EInvoice): string {
-  const lines = invoice.lines.map((line) => ({
+  const lines = invoice.lines.map(line => ({
     NrWierszaFa: line.lineNumber,
     P_7: line.description,
     ...(line.quantity != null ? { P_8B: line.quantity } : {}),

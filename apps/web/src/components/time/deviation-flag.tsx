@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { Badge } from "@/components/ui/badge";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -21,7 +21,7 @@ interface DeviationFlagProps {
 // ---------------------------------------------------------------------------
 
 function formatMinorUnits(minor: number): string {
-  return new Intl.NumberFormat("pl-PL", {
+  return new Intl.NumberFormat('pl-PL', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(minor / 100);
@@ -68,17 +68,17 @@ export function DeviationFlag({
 
   const tooltipText = `Expected: ${rate}/h x ${hours}h = ${expected}. Invoiced: ${actual}. Difference: ${delta}.`;
 
-  let variant: "secondary" | "success" | "warning" | "destructive";
+  let variant: 'secondary' | 'success' | 'warning' | 'destructive';
   let label: string;
 
   if (deviationPercent <= thresholdPercent) {
-    variant = "success";
+    variant = 'success';
     label = `Within ${thresholdPercent}%`;
   } else if (deviationPercent <= 2 * thresholdPercent) {
-    variant = "warning";
+    variant = 'warning';
     label = `+${deviationPercent.toFixed(1)}% over expected`;
   } else {
-    variant = "destructive";
+    variant = 'destructive';
     label = `+${deviationPercent.toFixed(1)}% deviation`;
   }
 

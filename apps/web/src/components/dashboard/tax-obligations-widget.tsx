@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { AlertCircle, Check, Clock } from "lucide-react";
-import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { trpc } from "@/trpc/init";
+import { AlertCircle, Check, Clock } from 'lucide-react';
+import Link from 'next/link';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { trpc } from '@/trpc/init';
 
 function formatMoney(minor: number): string {
   const major = minor / 100;
-  return major.toLocaleString("en-US", {
+  return major.toLocaleString('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
@@ -38,8 +38,7 @@ export function TaxObligationsWidget() {
                 <span className="font-mono">{formatMoney(data.vatCollectedMinor)}</span>
                 <Badge
                   variant="outline"
-                  className="border-green-500/20 bg-green-500/5 text-green-600 text-xs"
-                >
+                  className="border-green-500/20 bg-green-500/5 text-green-600 text-xs">
                   <Check className="me-1 h-3 w-3" /> Filed
                 </Badge>
               </span>
@@ -50,8 +49,7 @@ export function TaxObligationsWidget() {
                 <span className="font-mono">{formatMoney(data.vatOwedMinor)}</span>
                 <Badge
                   variant="outline"
-                  className="border-amber-500/20 bg-amber-500/5 text-amber-600 text-xs"
-                >
+                  className="border-amber-500/20 bg-amber-500/5 text-amber-600 text-xs">
                   <Clock className="me-1 h-3 w-3" /> Pending
                 </Badge>
               </span>
@@ -72,8 +70,7 @@ export function TaxObligationsWidget() {
                 <span className="font-mono">{formatMoney(data.whtWithheldMinor)}</span>
                 <Badge
                   variant="outline"
-                  className="border-green-500/20 bg-green-500/5 text-green-600 text-xs"
-                >
+                  className="border-green-500/20 bg-green-500/5 text-green-600 text-xs">
                   <Check className="me-1 h-3 w-3" /> {data.whtCertCount} certs
                 </Badge>
               </span>
@@ -85,8 +82,7 @@ export function TaxObligationsWidget() {
                   <span className="font-mono">{formatMoney(data.whtPendingMinor)}</span>
                   <Badge
                     variant="outline"
-                    className="border-amber-500/20 bg-amber-500/5 text-amber-600 text-xs"
-                  >
+                    className="border-amber-500/20 bg-amber-500/5 text-amber-600 text-xs">
                     <AlertCircle className="me-1 h-3 w-3" /> {data.whtPendingCount} items
                   </Badge>
                 </span>
@@ -97,8 +93,7 @@ export function TaxObligationsWidget() {
 
         <Link
           href="/settings/compliance"
-          className="mt-2 inline-block text-sm text-primary hover:underline"
-        >
+          className="mt-2 inline-block text-sm text-primary hover:underline">
           View Details &rarr;
         </Link>
       </CardContent>

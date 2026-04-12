@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ---------------------------------------------------------------------------
 // Integration Tests: Shipment Task Completion
@@ -10,14 +10,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock only external courier clients -- NOT equipment-workflow
 const mockInPostGetStatus = vi.fn();
-vi.mock("../inpost-client", () => ({
+vi.mock('../inpost-client', () => ({
   InPostClient: class MockInPostClient {
     getStatus = mockInPostGetStatus;
   },
 }));
 
-import { pollInPostShipmentStatuses } from "../inpost-polling-service";
-import { handleInPostWebhook } from "../inpost-webhook-handler";
+import { pollInPostShipmentStatuses } from '../inpost-polling-service';
+import { handleInPostWebhook } from '../inpost-webhook-handler';
 
 /**
  * Create a mock DB with state tracking for integration tests.
@@ -41,7 +41,7 @@ function createIntegrationMockDb(opts: {
     currentStatus: string;
   }>;
 }) {
-  let taskStatus = "IN_PROGRESS";
+  let taskStatus = 'IN_PROGRESS';
 
   return {
     shipment: {
@@ -55,7 +55,7 @@ function createIntegrationMockDb(opts: {
       update: vi.fn(async (args: any) => {
         const updated = { ...opts.shipment, ...args.data };
         // Reflect status change in allLinkedShipments
-        const linked = opts.allLinkedShipments.find((s) => s.id === opts.shipment.id);
+        const linked = opts.allLinkedShipments.find(s => s.id === opts.shipment.id);
         if (linked && args.data?.currentStatus) {
           linked.currentStatus = args.data.currentStatus;
         }
@@ -70,7 +70,7 @@ function createIntegrationMockDb(opts: {
       findMany: vi.fn(async () => []),
       findUnique: vi.fn(async () => ({
         id: opts.shipment.equipmentId,
-        status: "IN_TRANSIT",
+        status: 'IN_TRANSIT',
       })),
       update: vi.fn(async () => ({})),
       updateMany: vi.fn(async () => ({ count: 0 })),
@@ -79,186 +79,186 @@ function createIntegrationMockDb(opts: {
       findUnique: vi.fn(async () => ({
         carrier: opts.shipment.carrier,
         configJson: {
-          apiToken: "token",
-          shipxOrganizationId: "org-shipx",
+          apiToken: 'token',
+          shipxOrganizationId: 'org-shipx',
           sandbox: true,
         },
       })),
     },
     workflowTaskRun: {
       updateMany: vi.fn(async () => {
-        taskStatus = "DONE";
+        taskStatus = 'DONE';
         return { count: 1 };
       }),
-      findUnique: vi.fn(async () => ({ workflowRunId: "wf-run-1" })),
+      findUnique: vi.fn(async () => ({ workflowRunId: 'wf-run-1' })),
       findMany: vi.fn(async () => [{ status: taskStatus, required: true }]),
     },
     workflowRun: {
       update: vi.fn(async () => ({})),
     },
     organization: {
-      findMany: vi.fn(async () => [{ id: "org-1" }]),
+      findMany: vi.fn(async () => [{ id: 'org-1' }]),
     },
   };
 }
 
-describe("Shipment Task Completion Integration", () => {
+describe('Shipment Task Completion Integration', () => {
   beforeEach(() => {
     mockInPostGetStatus.mockReset();
-    vi.spyOn(console, "info").mockImplementation(() => {});
-    vi.spyOn(console, "warn").mockImplementation(() => {});
-    vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.spyOn(console, 'info').mockImplementation(() => undefined);
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
   });
 
-  it("webhook path -- InPost DELIVERED triggers task completion end-to-end", async () => {
+  it('webhook path -- InPost DELIVERED triggers task completion end-to-end', async () => {
     const db = createIntegrationMockDb({
       shipment: {
-        id: "ship-1",
-        workflowTaskRunId: "task-1",
-        direction: "OUTBOUND",
-        currentStatus: "IN_TRANSIT",
-        carrier: "INPOST",
-        externalId: "12345678",
-        trackingNumber: "620123456789012345678",
-        equipmentId: "equip-1",
-        organizationId: "org-1",
+        id: 'ship-1',
+        workflowTaskRunId: 'task-1',
+        direction: 'OUTBOUND',
+        currentStatus: 'IN_TRANSIT',
+        carrier: 'INPOST',
+        externalId: '12345678',
+        trackingNumber: '620123456789012345678',
+        equipmentId: 'equip-1',
+        organizationId: 'org-1',
       },
-      allLinkedShipments: [{ id: "ship-1", direction: "OUTBOUND", currentStatus: "IN_TRANSIT" }],
+      allLinkedShipments: [{ id: 'ship-1', direction: 'OUTBOUND', currentStatus: 'IN_TRANSIT' }],
     });
 
     const webhookPayload = {
       id: 1,
-      shipment_id: "12345678",
-      status: "delivered",
-      tracking_number: "620123456789012345678",
-      created_at: "2026-04-04T10:00:00Z",
+      shipment_id: '12345678',
+      status: 'delivered',
+      tracking_number: '620123456789012345678',
+      created_at: '2026-04-04T10:00:00Z',
     };
 
-    await handleInPostWebhook(db as any, "org-1", webhookPayload);
+    await handleInPostWebhook(db as any, 'org-1', webhookPayload);
 
     // Wait for fire-and-forget to execute
-    await new Promise((r) => setTimeout(r, 50));
+    await new Promise(r => setTimeout(r, 50));
 
     expect(db.workflowTaskRun.updateMany).toHaveBeenCalledWith({
       where: {
-        id: "task-1",
-        organizationId: "org-1",
-        status: "IN_PROGRESS",
+        id: 'task-1',
+        organizationId: 'org-1',
+        status: 'IN_PROGRESS',
       },
-      data: expect.objectContaining({ status: "DONE" }),
+      data: expect.objectContaining({ status: 'DONE' }),
     });
 
     expect(db.workflowRun.update).toHaveBeenCalled();
   });
 
-  it("polling path -- InPost polling DELIVERED triggers task completion end-to-end", async () => {
+  it('polling path -- InPost polling DELIVERED triggers task completion end-to-end', async () => {
     const db = createIntegrationMockDb({
       shipment: {
-        id: "ship-1",
-        workflowTaskRunId: "task-1",
-        direction: "OUTBOUND",
-        currentStatus: "IN_TRANSIT",
-        carrier: "InPost",
-        externalId: "ext-1",
-        trackingNumber: "T1",
-        equipmentId: "equip-1",
-        organizationId: "org-1",
+        id: 'ship-1',
+        workflowTaskRunId: 'task-1',
+        direction: 'OUTBOUND',
+        currentStatus: 'IN_TRANSIT',
+        carrier: 'InPost',
+        externalId: 'ext-1',
+        trackingNumber: 'T1',
+        equipmentId: 'equip-1',
+        organizationId: 'org-1',
       },
-      allLinkedShipments: [{ id: "ship-1", direction: "OUTBOUND", currentStatus: "IN_TRANSIT" }],
+      allLinkedShipments: [{ id: 'ship-1', direction: 'OUTBOUND', currentStatus: 'IN_TRANSIT' }],
     });
 
     mockInPostGetStatus.mockResolvedValue({
-      externalId: "ext-1",
-      status: "delivered",
-      trackingNumber: "T1",
+      externalId: 'ext-1',
+      status: 'delivered',
+      trackingNumber: 'T1',
     });
 
-    await pollInPostShipmentStatuses(db as any, "org-1");
+    await pollInPostShipmentStatuses(db as any, 'org-1');
 
     // Wait for fire-and-forget to execute
-    await new Promise((r) => setTimeout(r, 50));
+    await new Promise(r => setTimeout(r, 50));
 
     expect(db.workflowTaskRun.updateMany).toHaveBeenCalledWith({
       where: {
-        id: "task-1",
-        organizationId: "org-1",
-        status: "IN_PROGRESS",
+        id: 'task-1',
+        organizationId: 'org-1',
+        status: 'IN_PROGRESS',
       },
-      data: expect.objectContaining({ status: "DONE" }),
+      data: expect.objectContaining({ status: 'DONE' }),
     });
 
     expect(db.workflowRun.update).toHaveBeenCalled();
   });
 
-  it("webhook path -- RETURNED triggers task completion for return shipment", async () => {
+  it('webhook path -- RETURNED triggers task completion for return shipment', async () => {
     const db = createIntegrationMockDb({
       shipment: {
-        id: "ship-1",
-        workflowTaskRunId: "task-1",
-        direction: "RETURN",
-        currentStatus: "IN_TRANSIT",
-        carrier: "INPOST",
-        externalId: "12345678",
-        trackingNumber: "620123456789012345678",
-        equipmentId: "equip-1",
-        organizationId: "org-1",
+        id: 'ship-1',
+        workflowTaskRunId: 'task-1',
+        direction: 'RETURN',
+        currentStatus: 'IN_TRANSIT',
+        carrier: 'INPOST',
+        externalId: '12345678',
+        trackingNumber: '620123456789012345678',
+        equipmentId: 'equip-1',
+        organizationId: 'org-1',
       },
-      allLinkedShipments: [{ id: "ship-1", direction: "RETURN", currentStatus: "IN_TRANSIT" }],
+      allLinkedShipments: [{ id: 'ship-1', direction: 'RETURN', currentStatus: 'IN_TRANSIT' }],
     });
 
     // "returned_to_sender" maps to RETURNED via mapInPostStatus
     const webhookPayload = {
       id: 1,
-      shipment_id: "12345678",
-      status: "returned_to_sender",
-      tracking_number: "620123456789012345678",
-      created_at: "2026-04-04T10:00:00Z",
+      shipment_id: '12345678',
+      status: 'returned_to_sender',
+      tracking_number: '620123456789012345678',
+      created_at: '2026-04-04T10:00:00Z',
     };
 
-    await handleInPostWebhook(db as any, "org-1", webhookPayload);
+    await handleInPostWebhook(db as any, 'org-1', webhookPayload);
 
     // Wait for fire-and-forget to execute
-    await new Promise((r) => setTimeout(r, 50));
+    await new Promise(r => setTimeout(r, 50));
 
     expect(db.workflowTaskRun.updateMany).toHaveBeenCalledWith({
       where: {
-        id: "task-1",
-        organizationId: "org-1",
-        status: "IN_PROGRESS",
+        id: 'task-1',
+        organizationId: 'org-1',
+        status: 'IN_PROGRESS',
       },
-      data: expect.objectContaining({ status: "DONE" }),
+      data: expect.objectContaining({ status: 'DONE' }),
     });
   });
 
-  it("polling path -- task NOT completed when other linked shipments still in transit", async () => {
+  it('polling path -- task NOT completed when other linked shipments still in transit', async () => {
     const db = createIntegrationMockDb({
       shipment: {
-        id: "ship-1",
-        workflowTaskRunId: "task-1",
-        direction: "OUTBOUND",
-        currentStatus: "IN_TRANSIT",
-        carrier: "InPost",
-        externalId: "ext-1",
-        trackingNumber: "T1",
-        equipmentId: "equip-1",
-        organizationId: "org-1",
+        id: 'ship-1',
+        workflowTaskRunId: 'task-1',
+        direction: 'OUTBOUND',
+        currentStatus: 'IN_TRANSIT',
+        carrier: 'InPost',
+        externalId: 'ext-1',
+        trackingNumber: 'T1',
+        equipmentId: 'equip-1',
+        organizationId: 'org-1',
       },
       allLinkedShipments: [
-        { id: "ship-1", direction: "OUTBOUND", currentStatus: "IN_TRANSIT" },
-        { id: "ship-2", direction: "OUTBOUND", currentStatus: "IN_TRANSIT" },
+        { id: 'ship-1', direction: 'OUTBOUND', currentStatus: 'IN_TRANSIT' },
+        { id: 'ship-2', direction: 'OUTBOUND', currentStatus: 'IN_TRANSIT' },
       ],
     });
 
     mockInPostGetStatus.mockResolvedValue({
-      externalId: "ext-1",
-      status: "delivered",
-      trackingNumber: "T1",
+      externalId: 'ext-1',
+      status: 'delivered',
+      trackingNumber: 'T1',
     });
 
-    await pollInPostShipmentStatuses(db as any, "org-1");
+    await pollInPostShipmentStatuses(db as any, 'org-1');
 
     // Wait for fire-and-forget to execute
-    await new Promise((r) => setTimeout(r, 50));
+    await new Promise(r => setTimeout(r, 50));
 
     // ship-1 becomes DELIVERED but ship-2 is still IN_TRANSIT
     // Task should NOT be completed

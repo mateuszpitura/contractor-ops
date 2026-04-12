@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import type { EquipmentCreateInput } from "@contractor-ops/validators";
-import { equipmentCreateSchema } from "@contractor-ops/validators";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import type { EquipmentCreateInput } from '@contractor-ops/validators';
+import { equipmentCreateSchema } from '@contractor-ops/validators';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -17,32 +17,32 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { trpc } from "@/trpc/init";
-import { EquipmentTypeIcon } from "./equipment-type-icon";
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { trpc } from '@/trpc/init';
+import { EquipmentTypeIcon } from './equipment-type-icon';
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
 const EQUIPMENT_TYPES = [
-  "LAPTOP",
-  "MONITOR",
-  "PHONE",
-  "HEADSET",
-  "KEYBOARD",
-  "MOUSE",
-  "OTHER",
+  'LAPTOP',
+  'MONITOR',
+  'PHONE',
+  'HEADSET',
+  'KEYBOARD',
+  'MOUSE',
+  'OTHER',
 ] as const;
 
 interface EquipmentFormProps {
@@ -65,18 +65,18 @@ interface EquipmentFormProps {
 // ---------------------------------------------------------------------------
 
 export function EquipmentForm({ open, onOpenChange, equipment }: EquipmentFormProps) {
-  const t = useTranslations("Equipment");
+  const t = useTranslations('Equipment');
   const queryClient = useQueryClient();
   const isEdit = !!equipment;
 
   const form = useForm<EquipmentCreateInput>({
     resolver: zodResolver(equipmentCreateSchema),
     defaultValues: {
-      name: "",
-      serialNumber: "",
-      type: "LAPTOP",
-      customType: "",
-      notes: "",
+      name: '',
+      serialNumber: '',
+      type: 'LAPTOP',
+      customType: '',
+      notes: '',
       purchaseDate: undefined,
     },
   });
@@ -86,19 +86,19 @@ export function EquipmentForm({ open, onOpenChange, equipment }: EquipmentFormPr
     if (open && equipment) {
       form.reset({
         name: equipment.name,
-        serialNumber: equipment.serialNumber ?? "",
-        type: equipment.type as EquipmentCreateInput["type"],
-        customType: equipment.customType ?? "",
-        notes: equipment.notes ?? "",
+        serialNumber: equipment.serialNumber ?? '',
+        type: equipment.type as EquipmentCreateInput['type'],
+        customType: equipment.customType ?? '',
+        notes: equipment.notes ?? '',
         purchaseDate: equipment.purchaseDate ? new Date(equipment.purchaseDate) : undefined,
       });
     } else if (open && !equipment) {
       form.reset({
-        name: "",
-        serialNumber: "",
-        type: "LAPTOP",
-        customType: "",
-        notes: "",
+        name: '',
+        serialNumber: '',
+        type: 'LAPTOP',
+        customType: '',
+        notes: '',
         purchaseDate: undefined,
       });
     }
@@ -107,14 +107,14 @@ export function EquipmentForm({ open, onOpenChange, equipment }: EquipmentFormPr
   const createMutation = useMutation(
     trpc.equipment.create.mutationOptions({
       onSuccess: () => {
-        toast.success(t("toast.created"));
+        toast.success(t('toast.created'));
         queryClient.invalidateQueries({
           queryKey: trpc.equipment.list.queryKey(),
         });
         onOpenChange(false);
       },
       onError: () => {
-        toast.error(t("error.actionFailed"));
+        toast.error(t('error.actionFailed'));
       },
     }),
   );
@@ -122,7 +122,7 @@ export function EquipmentForm({ open, onOpenChange, equipment }: EquipmentFormPr
   const updateMutation = useMutation(
     trpc.equipment.update.mutationOptions({
       onSuccess: () => {
-        toast.success(t("toast.updated"));
+        toast.success(t('toast.updated'));
         queryClient.invalidateQueries({
           queryKey: trpc.equipment.list.queryKey(),
         });
@@ -132,14 +132,14 @@ export function EquipmentForm({ open, onOpenChange, equipment }: EquipmentFormPr
         onOpenChange(false);
       },
       onError: () => {
-        toast.error(t("error.actionFailed"));
+        toast.error(t('error.actionFailed'));
       },
     }),
   );
 
   const isPending = createMutation.isPending || updateMutation.isPending;
 
-  const onSubmit = form.handleSubmit((data) => {
+  const onSubmit = form.handleSubmit(data => {
     if (isEdit && equipment) {
       updateMutation.mutate({ id: equipment.id, ...data });
     } else {
@@ -147,26 +147,26 @@ export function EquipmentForm({ open, onOpenChange, equipment }: EquipmentFormPr
     }
   });
 
-  const watchedType = form.watch("type");
+  const watchedType = form.watch('type');
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{isEdit ? t("form.editTitle") : t("form.createTitle")}</DialogTitle>
+          <DialogTitle>{isEdit ? t('form.editTitle') : t('form.createTitle')}</DialogTitle>
           <DialogDescription>
-            {isEdit ? t("form.editTitle") : t("form.createTitle")}
+            {isEdit ? t('form.editTitle') : t('form.createTitle')}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={onSubmit} className="space-y-4">
           {/* Name */}
           <div className="space-y-2">
-            <Label htmlFor="eq-name">{t("form.name")}</Label>
+            <Label htmlFor="eq-name">{t('form.name')}</Label>
             <Input
               id="eq-name"
-              placeholder={t("form.namePlaceholder")}
-              {...form.register("name")}
+              placeholder={t('form.namePlaceholder')}
+              {...form.register('name')}
               aria-invalid={!!form.formState.errors.name}
             />
             {form.formState.errors.name && (
@@ -176,29 +176,28 @@ export function EquipmentForm({ open, onOpenChange, equipment }: EquipmentFormPr
 
           {/* Serial Number */}
           <div className="space-y-2">
-            <Label htmlFor="eq-serial">{t("form.serialNumber")}</Label>
+            <Label htmlFor="eq-serial">{t('form.serialNumber')}</Label>
             <Input
               id="eq-serial"
-              placeholder={t("form.serialNumberPlaceholder")}
+              placeholder={t('form.serialNumberPlaceholder')}
               className="font-mono"
-              {...form.register("serialNumber")}
+              {...form.register('serialNumber')}
             />
           </div>
 
           {/* Type */}
           <div className="space-y-2">
-            <Label>{t("form.type")}</Label>
+            <Label>{t('form.type')}</Label>
             <Select
               value={watchedType}
-              onValueChange={(val) =>
-                val && form.setValue("type", val as EquipmentCreateInput["type"])
-              }
-            >
+              onValueChange={val =>
+                val && form.setValue('type', val as EquipmentCreateInput['type'])
+              }>
               <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {EQUIPMENT_TYPES.map((type) => (
+                {EQUIPMENT_TYPES.map(type => (
                   <SelectItem key={type} value={type}>
                     <div className="flex items-center gap-2">
                       <EquipmentTypeIcon type={type} />
@@ -211,24 +210,24 @@ export function EquipmentForm({ open, onOpenChange, equipment }: EquipmentFormPr
           </div>
 
           {/* Custom type (shown when OTHER) */}
-          {watchedType === "OTHER" && (
+          {watchedType === 'OTHER' && (
             <div className="space-y-2">
-              <Label htmlFor="eq-custom-type">{t("form.customType")}</Label>
+              <Label htmlFor="eq-custom-type">{t('form.customType')}</Label>
               <Input
                 id="eq-custom-type"
-                placeholder={t("form.customTypePlaceholder")}
-                {...form.register("customType")}
+                placeholder={t('form.customTypePlaceholder')}
+                {...form.register('customType')}
               />
             </div>
           )}
 
           {/* Purchase Date */}
           <div className="space-y-2">
-            <Label htmlFor="eq-purchase-date">{t("form.purchaseDate")}</Label>
+            <Label htmlFor="eq-purchase-date">{t('form.purchaseDate')}</Label>
             <Input
               id="eq-purchase-date"
               type="date"
-              {...form.register("purchaseDate", {
+              {...form.register('purchaseDate', {
                 setValueAs: (v: string) => (v ? new Date(v) : undefined),
               })}
             />
@@ -236,8 +235,8 @@ export function EquipmentForm({ open, onOpenChange, equipment }: EquipmentFormPr
 
           {/* Notes */}
           <div className="space-y-2">
-            <Label htmlFor="eq-notes">{t("form.notes")}</Label>
-            <Textarea id="eq-notes" rows={3} {...form.register("notes")} />
+            <Label htmlFor="eq-notes">{t('form.notes')}</Label>
+            <Textarea id="eq-notes" rows={3} {...form.register('notes')} />
           </div>
 
           <DialogFooter>
@@ -245,13 +244,12 @@ export function EquipmentForm({ open, onOpenChange, equipment }: EquipmentFormPr
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
-              disabled={isPending}
-            >
-              {t("form.cancel")}
+              disabled={isPending}>
+              {t('form.cancel')}
             </Button>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
-              {t("form.save")}
+              {t('form.save')}
             </Button>
           </DialogFooter>
         </form>

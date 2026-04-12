@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import type { ColumnDef } from "@tanstack/react-table";
-import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
-import { ArrowDown, ArrowUp, ArrowUpDown, GitBranch, Loader2 } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useCallback, useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import type { ColumnDef } from '@tanstack/react-table';
+import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { ArrowDown, ArrowUp, ArrowUpDown, GitBranch, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useMemo, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -15,14 +15,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { trpc } from "@/trpc/init";
-import type { WorkflowRunRow } from "./columns";
-import { getColumns } from "./columns";
-import { DataTableFilters } from "./data-table-filters";
-import { DataTablePagination } from "./data-table-pagination";
-import { DataTableToolbar } from "./data-table-toolbar";
-import { useWorkflowFilters } from "./use-workflow-filters";
+} from '@/components/ui/table';
+import { trpc } from '@/trpc/init';
+import type { WorkflowRunRow } from './columns';
+import { getColumns } from './columns';
+import { DataTableFilters } from './data-table-filters';
+import { DataTablePagination } from './data-table-pagination';
+import { DataTableToolbar } from './data-table-toolbar';
+import { useWorkflowFilters } from './use-workflow-filters';
 
 interface WorkflowRunsDataTableProps {
   onRowClick: (run: WorkflowRunRow) => void;
@@ -35,8 +35,8 @@ interface WorkflowRunsDataTableProps {
  * URL state is managed by nuqs for shareable filtered views.
  */
 export function WorkflowRunsDataTable({ onRowClick, onStartWorkflow }: WorkflowRunsDataTableProps) {
-  const t = useTranslations("Workflows");
-  const tAria = useTranslations("Common.aria");
+  const t = useTranslations('Workflows');
+  const tAria = useTranslations('Common.aria');
 
   // URL-synced filter state
   const [filters, setFilters] = useWorkflowFilters();
@@ -50,8 +50,8 @@ export function WorkflowRunsDataTable({ onRowClick, onStartWorkflow }: WorkflowR
       page: filters.page,
       pageSize: filters.pageSize,
       search: filters.search || undefined,
-      sortBy: (filters.sortBy as "createdAt" | "dueAt" | "status" | "startedAt") || "dueAt",
-      sortOrder: (filters.sortOrder as "asc" | "desc") || "asc",
+      sortBy: (filters.sortBy as 'createdAt' | 'dueAt' | 'status' | 'startedAt') || 'dueAt',
+      sortOrder: (filters.sortOrder as 'asc' | 'desc') || 'asc',
       filters: {
         status: filters.status.length ? filters.status : undefined,
         templateId: filters.templateId.length ? filters.templateId : undefined,
@@ -93,26 +93,26 @@ export function WorkflowRunsDataTable({ onRowClick, onStartWorkflow }: WorkflowR
       sorting: [
         {
           id: filters.sortBy,
-          desc: filters.sortOrder === "desc",
+          desc: filters.sortOrder === 'desc',
         },
       ],
     },
     onRowSelectionChange: setRowSelection,
-    onSortingChange: (updater) => {
+    onSortingChange: updater => {
       const next =
-        typeof updater === "function"
-          ? updater([{ id: filters.sortBy, desc: filters.sortOrder === "desc" }])
+        typeof updater === 'function'
+          ? updater([{ id: filters.sortBy, desc: filters.sortOrder === 'desc' }])
           : updater;
       const first = next[0];
       if (first) {
         void setFilters({
           sortBy: first.id,
-          sortOrder: first.desc ? "desc" : "asc",
+          sortOrder: first.desc ? 'desc' : 'asc',
           page: 1,
         });
       } else {
         // Sort removed — reset to default
-        void setFilters({ sortBy: "dueAt", sortOrder: "asc", page: 1 });
+        void setFilters({ sortBy: 'dueAt', sortOrder: 'asc', page: 1 });
       }
     },
     enableSortingRemoval: true,
@@ -121,7 +121,7 @@ export function WorkflowRunsDataTable({ onRowClick, onStartWorkflow }: WorkflowR
     manualSorting: true,
     manualFiltering: true,
     enableRowSelection: true,
-    getRowId: (row) => row.id,
+    getRowId: row => row.id,
   });
 
   // Filter change handler
@@ -162,7 +162,7 @@ export function WorkflowRunsDataTable({ onRowClick, onStartWorkflow }: WorkflowR
   // Clear filters for "no results" CTA
   const clearFilters = useCallback(() => {
     void setFilters({
-      search: "",
+      search: '',
       status: [],
       templateId: [],
       overdueOnly: false,
@@ -182,7 +182,7 @@ export function WorkflowRunsDataTable({ onRowClick, onStartWorkflow }: WorkflowR
    * Determine if a row is overdue for background highlighting.
    */
   const isRowOverdue = (row: WorkflowRunRow) => {
-    if (row.status === "COMPLETED" || row.status === "CANCELLED") return false;
+    if (row.status === 'COMPLETED' || row.status === 'CANCELLED') return false;
     if (!row.dueAt) return false;
     return new Date(row.dueAt) < new Date();
   };
@@ -217,9 +217,9 @@ export function WorkflowRunsDataTable({ onRowClick, onStartWorkflow }: WorkflowR
         )}
         <Table>
           <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
+            {table.getHeaderGroups().map(headerGroup => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
+                {headerGroup.headers.map(header => (
                   <TableHead
                     key={header.id}
                     style={
@@ -228,29 +228,27 @@ export function WorkflowRunsDataTable({ onRowClick, onStartWorkflow }: WorkflowR
                         : undefined
                     }
                     aria-sort={
-                      header.column.getIsSorted() === "asc"
-                        ? "ascending"
-                        : header.column.getIsSorted() === "desc"
-                          ? "descending"
+                      header.column.getIsSorted() === 'asc'
+                        ? 'ascending'
+                        : header.column.getIsSorted() === 'desc'
+                          ? 'descending'
                           : undefined
-                    }
-                  >
+                    }>
                     {header.isPlaceholder ? null : header.column.getCanSort() ? (
                       <button
                         type="button"
                         className="flex items-center gap-1 uppercase hover:text-foreground"
                         onClick={header.column.getToggleSortingHandler()}
-                        aria-label={tAria("sortBy", {
+                        aria-label={tAria('sortBy', {
                           column:
-                            typeof header.column.columnDef.header === "string"
+                            typeof header.column.columnDef.header === 'string'
                               ? header.column.columnDef.header
                               : header.id,
-                        })}
-                      >
+                        })}>
                         {flexRender(header.column.columnDef.header, header.getContext())}
-                        {header.column.getIsSorted() === "asc" ? (
+                        {header.column.getIsSorted() === 'asc' ? (
                           <ArrowUp className="h-3 w-3" />
-                        ) : header.column.getIsSorted() === "desc" ? (
+                        ) : header.column.getIsSorted() === 'desc' ? (
                           <ArrowDown className="h-3 w-3" />
                         ) : (
                           <ArrowUpDown className="h-3 w-3 opacity-40" />
@@ -269,7 +267,7 @@ export function WorkflowRunsDataTable({ onRowClick, onStartWorkflow }: WorkflowR
               // Skeleton loading rows
               Array.from({ length: 8 }).map((_, i) => (
                 <TableRow key={`skeleton-${i}`}>
-                  {table.getVisibleLeafColumns().map((col) => (
+                  {table.getVisibleLeafColumns().map(col => (
                     <TableCell key={col.id}>
                       <Skeleton className="h-4 w-full max-w-[120px]" />
                     </TableCell>
@@ -277,16 +275,15 @@ export function WorkflowRunsDataTable({ onRowClick, onStartWorkflow }: WorkflowR
                 </TableRow>
               ))
             ) : table.getRowModel().rows.length > 0 ? (
-              table.getRowModel().rows.map((row) => (
+              table.getRowModel().rows.map(row => (
                 <TableRow
                   key={row.id}
-                  data-state={row.getIsSelected() ? "selected" : undefined}
+                  data-state={row.getIsSelected() ? 'selected' : undefined}
                   className={`cursor-pointer ${
-                    isRowOverdue(row.original) ? "bg-destructive/5" : ""
+                    isRowOverdue(row.original) ? 'bg-destructive/5' : ''
                   }`}
-                  onClick={() => onRowClick(row.original)}
-                >
-                  {row.getVisibleCells().map((cell) => (
+                  onClick={() => onRowClick(row.original)}>
+                  {row.getVisibleCells().map(cell => (
                     <TableCell key={cell.id}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
@@ -298,12 +295,11 @@ export function WorkflowRunsDataTable({ onRowClick, onStartWorkflow }: WorkflowR
               <TableRow>
                 <TableCell
                   colSpan={table.getVisibleLeafColumns().length}
-                  className="py-16 text-center"
-                >
-                  <h3 className="text-[16px] font-medium">{t("noResults.heading")}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">{t("noResults.body")}</p>
+                  className="py-16 text-center">
+                  <h3 className="text-[16px] font-medium">{t('noResults.heading')}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">{t('noResults.body')}</p>
                   <Button variant="outline" className="mt-4" onClick={clearFilters}>
-                    {t("noResults.cta")}
+                    {t('noResults.cta')}
                   </Button>
                 </TableCell>
               </TableRow>
@@ -312,13 +308,12 @@ export function WorkflowRunsDataTable({ onRowClick, onStartWorkflow }: WorkflowR
               <TableRow>
                 <TableCell
                   colSpan={table.getVisibleLeafColumns().length}
-                  className="py-16 text-center"
-                >
+                  className="py-16 text-center">
                   <GitBranch className="mx-auto h-10 w-10 text-muted-foreground/50" />
-                  <h3 className="mt-3 text-[16px] font-medium">{t("empty.heading")}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">{t("empty.body")}</p>
+                  <h3 className="mt-3 text-[16px] font-medium">{t('empty.heading')}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">{t('empty.body')}</p>
                   <Button className="mt-4" onClick={onStartWorkflow}>
-                    {t("empty.cta")}
+                    {t('empty.cta')}
                   </Button>
                 </TableCell>
               </TableRow>

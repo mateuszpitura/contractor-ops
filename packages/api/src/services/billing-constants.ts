@@ -1,4 +1,4 @@
-import type { SubscriptionTier } from "@contractor-ops/db/generated/prisma/client";
+import type { SubscriptionTier } from '@contractor-ops/db/generated/prisma/client';
 
 /** Monthly OCR credit allowance per tier for active subscriptions (D-06) */
 export const TIER_CREDIT_ALLOWANCE: Record<SubscriptionTier, number> = {
@@ -18,9 +18,9 @@ export const TRIAL_CREDIT_ALLOWANCE = 5;
 export const PRICE_TO_TIER_MAP: Record<string, SubscriptionTier> = Object.fromEntries(
   (
     [
-      [process.env.STRIPE_PRICE_STARTER, "STARTER"],
-      [process.env.STRIPE_PRICE_PRO, "PRO"],
-      [process.env.STRIPE_PRICE_ENTERPRISE, "ENTERPRISE"],
+      [process.env.STRIPE_PRICE_STARTER, 'STARTER'],
+      [process.env.STRIPE_PRICE_PRO, 'PRO'],
+      [process.env.STRIPE_PRICE_ENTERPRISE, 'ENTERPRISE'],
     ] as const
   ).filter(([key]) => key),
 ) as Record<string, SubscriptionTier>;

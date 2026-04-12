@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { AlertTriangle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { AlertTriangle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -20,8 +20,7 @@ export function CreditExhaustedInline({ onUpgrade, onBuyCredits }: CreditExhaust
   return (
     <div
       role="alert"
-      className="flex flex-col items-start gap-3 rounded-lg border border-destructive/20 bg-destructive/5 p-4"
-    >
+      className="flex flex-col items-start gap-3 rounded-lg border border-destructive/20 bg-destructive/5 p-4">
       <div className="flex items-start gap-3">
         <AlertTriangle size={20} className="mt-0.5 shrink-0 text-destructive" aria-hidden="true" />
         <div className="space-y-1">

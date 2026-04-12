@@ -1,6 +1,6 @@
-import { HttpResponse, http } from "msw";
-import type { HandlerOptions } from "../types.js";
-import { applyNetworkConditions } from "../utils.js";
+import { HttpResponse, http } from 'msw';
+import type { HandlerOptions } from '../types.js';
+import { applyNetworkConditions } from '../utils.js';
 
 /**
  * In-memory key-value store for simulating Upstash Redis REST API.
@@ -23,7 +23,7 @@ export function upstashRedisHandlers(options?: HandlerOptions) {
 
   return [
     // --- Single Command (matches any Upstash URL) ---
-    http.post("https://*.upstash.io", async ({ request }) => {
+    http.post('https://*.upstash.io', async ({ request }) => {
       const err = await applyNetworkConditions(net);
       if (err) return err;
 
@@ -31,7 +31,7 @@ export function upstashRedisHandlers(options?: HandlerOptions) {
       const command = body[0]?.toUpperCase();
 
       switch (command) {
-        case "GET": {
+        case 'GET': {
           const key = body[1]!;
           const entry = store.get(key);
           if (!entry || (entry.expiresAt && entry.expiresAt < Date.now())) {
@@ -40,18 +40,18 @@ export function upstashRedisHandlers(options?: HandlerOptions) {
           }
           return HttpResponse.json({ result: entry.value });
         }
-        case "SET": {
+        case 'SET': {
           const key = body[1]!;
           const value = body[2];
           let expiresAt: number | undefined;
-          const exIdx = body.findIndex((b) => b.toUpperCase() === "EX");
+          const exIdx = body.findIndex(b => b.toUpperCase() === 'EX');
           if (exIdx !== -1 && body[exIdx + 1]) {
             expiresAt = Date.now() + parseInt(body[exIdx + 1]!, 10) * 1000;
           }
           store.set(key, { value, expiresAt });
-          return HttpResponse.json({ result: "OK" });
+          return HttpResponse.json({ result: 'OK' });
         }
-        case "DEL": {
+        case 'DEL': {
           const keys = body.slice(1);
           let deleted = 0;
           for (const k of keys) {
@@ -59,29 +59,29 @@ export function upstashRedisHandlers(options?: HandlerOptions) {
           }
           return HttpResponse.json({ result: deleted });
         }
-        case "SCAN": {
+        case 'SCAN': {
           const pattern = body[3]; // ["SCAN", cursor, "MATCH", pattern, "COUNT", count]
           const allKeys = [...store.keys()];
           const matched = pattern
-            ? allKeys.filter((k) => {
-                const regex = new RegExp(`^${pattern.replace(/\*/g, ".*")}$`);
+            ? allKeys.filter(k => {
+                const regex = new RegExp(`^${pattern.replace(/\*/g, '.*')}$`);
                 return regex.test(k);
               })
             : allKeys;
-          return HttpResponse.json({ result: ["0", matched] });
+          return HttpResponse.json({ result: ['0', matched] });
         }
         default:
-          return HttpResponse.json({ result: "OK" });
+          return HttpResponse.json({ result: 'OK' });
       }
     }),
 
     // --- Pipeline (batch commands) ---
-    http.post("https://*.upstash.io/pipeline", async ({ request }) => {
+    http.post('https://*.upstash.io/pipeline', async ({ request }) => {
       const err = await applyNetworkConditions(net);
       if (err) return err;
 
       const commands = (await request.json()) as string[][];
-      const results = commands.map(() => ({ result: "OK" }));
+      const results = commands.map(() => ({ result: 'OK' }));
       return HttpResponse.json(results);
     }),
   ];

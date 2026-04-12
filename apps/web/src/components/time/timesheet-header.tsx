@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { addWeeks, endOfISOWeek, format, startOfISOWeek, subWeeks } from "date-fns";
-import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { TimeEntryStatusBadge } from "./time-entry-status-badge";
+import { addWeeks, endOfISOWeek, format, startOfISOWeek, subWeeks } from 'date-fns';
+import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { TimeEntryStatusBadge } from './time-entry-status-badge';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -14,7 +14,7 @@ import { TimeEntryStatusBadge } from "./time-entry-status-badge";
 
 interface TimesheetHeaderProps {
   weekStartDate: Date;
-  status: "DRAFT" | "SUBMITTED" | "APPROVED" | "REJECTED";
+  status: 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED';
   totalMinutes: number;
   onWeekChange: (date: Date) => void;
   onSubmit: () => void;
@@ -43,11 +43,11 @@ export function TimesheetHeader({
   const [calendarOpen, setCalendarOpen] = useState(false);
 
   const weekEnd = endOfISOWeek(weekStartDate);
-  const weekLabel = `${format(weekStartDate, "MMM d")} - ${format(weekEnd, "MMM d, yyyy")}`;
+  const weekLabel = `${format(weekStartDate, 'MMM d')} - ${format(weekEnd, 'MMM d, yyyy')}`;
   const totalHours = totalMinutes / 60;
   const displayHours = totalHours % 1 === 0 ? totalHours.toFixed(0) : totalHours.toFixed(1);
 
-  const canSubmit = totalMinutes > 0 && (status === "DRAFT" || status === "REJECTED");
+  const canSubmit = totalMinutes > 0 && (status === 'DRAFT' || status === 'REJECTED');
 
   const handlePrevWeek = () => {
     onWeekChange(subWeeks(weekStartDate, 1));
@@ -107,7 +107,7 @@ export function TimesheetHeader({
           </span>
         </div>
         <Button onClick={onSubmit} disabled={!canSubmit || isSubmitting}>
-          {isSubmitting ? "Submitting..." : "Submit Timesheet"}
+          {isSubmitting ? 'Submitting...' : 'Submit Timesheet'}
         </Button>
       </div>
     </div>

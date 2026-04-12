@@ -1,55 +1,55 @@
-"use client";
+'use client';
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckSquare, ClipboardCheck } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
-import type { ApprovalQueueRow } from "@/components/approvals/approval-queue/columns";
-import { getColumns } from "@/components/approvals/approval-queue/columns";
-import { ApprovalQueueTable } from "@/components/approvals/approval-queue/data-table";
-import { ApprovalQueueToolbar } from "@/components/approvals/approval-queue/data-table-toolbar";
-import { ApprovalSidePanel } from "@/components/approvals/approval-queue/side-panel";
-import { ChangeRequestDiffCard } from "@/components/settings/change-request-diff-card";
-import { AnimateIn } from "@/components/shared/animate-in";
-import { EmptyState } from "@/components/shared/empty-state";
-import { PageHeader } from "@/components/shared/page-header";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { usePermissions } from "@/hooks/use-permissions";
-import { trpc } from "@/trpc/init";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { CheckSquare, ClipboardCheck } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { parseAsInteger, parseAsString, useQueryState } from 'nuqs';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
+import type { ApprovalQueueRow } from '@/components/approvals/approval-queue/columns';
+import { getColumns } from '@/components/approvals/approval-queue/columns';
+import { ApprovalQueueTable } from '@/components/approvals/approval-queue/data-table';
+import { ApprovalQueueToolbar } from '@/components/approvals/approval-queue/data-table-toolbar';
+import { ApprovalSidePanel } from '@/components/approvals/approval-queue/side-panel';
+import { ChangeRequestDiffCard } from '@/components/settings/change-request-diff-card';
+import { AnimateIn } from '@/components/shared/animate-in';
+import { EmptyState } from '@/components/shared/empty-state';
+import { PageHeader } from '@/components/shared/page-header';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { usePermissions } from '@/hooks/use-permissions';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Inner content (uses nuqs, needs Suspense boundary)
 // ---------------------------------------------------------------------------
 
 function ApprovalsContent() {
-  const t = useTranslations("Approvals");
-  const te = useTranslations("EmptyStates");
+  const t = useTranslations('Approvals');
+  const te = useTranslations('EmptyStates');
   const { can } = usePermissions();
   const queryClient = useQueryClient();
 
   // URL state via nuqs
-  const [tab, setTab] = useQueryState("tab", parseAsString.withDefault("my"));
-  const [status, setStatus] = useQueryState("status", parseAsString.withDefault("all"));
-  const [search, setSearch] = useQueryState("search", parseAsString.withDefault(""));
-  const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
-  const [pageSize, setPageSize] = useQueryState("pageSize", parseAsInteger.withDefault(10));
+  const [tab, setTab] = useQueryState('tab', parseAsString.withDefault('my'));
+  const [status, setStatus] = useQueryState('status', parseAsString.withDefault('all'));
+  const [search, setSearch] = useQueryState('search', parseAsString.withDefault(''));
+  const [page, setPage] = useQueryState('page', parseAsInteger.withDefault(1));
+  const [pageSize, setPageSize] = useQueryState('pageSize', parseAsInteger.withDefault(10));
 
   // Side panel state
   const [selectedStep, setSelectedStep] = useState<ApprovalQueueRow | null>(null);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
 
   // Admin-only "All" tab visibility
-  const isAdmin = can("settings", ["read"]);
+  const isAdmin = can('settings', ['read']);
 
   // -------------------------------------------------------------------------
   // Change request query (admin only)
   // -------------------------------------------------------------------------
 
   const changeRequestsQuery = useQuery({
-    ...trpc.settings.listChangeRequests.queryOptions({ status: "PENDING" }),
+    ...trpc.settings.listChangeRequests.queryOptions({ status: 'PENDING' }),
     enabled: isAdmin,
     refetchInterval: 30000,
   });
@@ -61,7 +61,7 @@ function ApprovalsContent() {
     requestedChanges: Record<string, unknown>;
     previousValues: Record<string, unknown>;
     createdAt: string;
-    status: "PENDING" | "APPROVED" | "REJECTED";
+    status: 'PENDING' | 'APPROVED' | 'REJECTED';
   }>;
 
   const pendingCount = changeRequests.length;
@@ -69,13 +69,13 @@ function ApprovalsContent() {
   // Build query input
   const queryInput = useMemo(
     () => ({
-      tab: tab as "my" | "all",
-      status: status as "all" | "pending" | "overdue" | "approved" | "rejected",
+      tab: tab as 'my' | 'all',
+      status: status as 'all' | 'pending' | 'overdue' | 'approved' | 'rejected',
       search: search || undefined,
       page,
       pageSize,
-      sortBy: "slaDeadline" as const,
-      sortOrder: "asc" as const,
+      sortBy: 'slaDeadline' as const,
+      sortOrder: 'asc' as const,
     }),
     [tab, status, search, page, pageSize],
   );
@@ -104,13 +104,13 @@ function ApprovalsContent() {
   const approveMutation = useMutation(
     trpc.approval.approve.mutationOptions({
       onSuccess: () => {
-        toast.success(t("toast.approved"));
+        toast.success(t('toast.approved'));
         void queryClient.invalidateQueries({
-          queryKey: [["approval", "listPending"]],
+          queryKey: [['approval', 'listPending']],
         });
       },
       onError: () => {
-        toast.error(t("errors.failedToApprove"));
+        toast.error(t('errors.failedToApprove'));
       },
     }),
   );
@@ -119,13 +119,13 @@ function ApprovalsContent() {
   const rejectMutation = useMutation(
     trpc.approval.reject.mutationOptions({
       onSuccess: () => {
-        toast.success(t("toast.rejected"));
+        toast.success(t('toast.rejected'));
         void queryClient.invalidateQueries({
-          queryKey: [["approval", "listPending"]],
+          queryKey: [['approval', 'listPending']],
         });
       },
       onError: () => {
-        toast.error(t("errors.failedToReject"));
+        toast.error(t('errors.failedToReject'));
       },
     }),
   );
@@ -134,7 +134,7 @@ function ApprovalsContent() {
   const columns = useMemo(
     () =>
       getColumns((key: string) => t(key as Parameters<typeof t>[0]), {
-        onApprove: (stepId) => approveMutation.mutate({ stepId }),
+        onApprove: stepId => approveMutation.mutate({ stepId }),
         onReject: (stepId, comment) => rejectMutation.mutate({ stepId, comment }),
       }),
     [t, approveMutation, rejectMutation],
@@ -188,13 +188,13 @@ function ApprovalsContent() {
 
   // Render queue content (shared between tabs)
   const renderQueue = () => {
-    if (isEmpty && status === "all" && !search) {
+    if (isEmpty && status === 'all' && !search) {
       // True empty state - informational only, no CTA
       return (
         <EmptyState
           icon={CheckSquare}
-          heading={te("approvals.heading")}
-          body={te("approvals.body")}
+          heading={te('approvals.heading')}
+          body={te('approvals.body')}
         />
       );
     }
@@ -230,24 +230,23 @@ function ApprovalsContent() {
     <div className="space-y-6">
       {/* Page header */}
       <AnimateIn delay={0}>
-        <PageHeader title={t("pageTitle")} description={t("pageDescription")} />
+        <PageHeader title={t('pageTitle')} description={t('pageDescription')} />
       </AnimateIn>
 
       {/* Tabs */}
       <AnimateIn delay={1}>
         <Tabs
           value={tab}
-          onValueChange={(value) => {
+          onValueChange={value => {
             void setTab(value);
             void setPage(1);
-          }}
-        >
+          }}>
           <TabsList>
-            <TabsTrigger value="my">{t("tabMy")}</TabsTrigger>
-            {isAdmin && <TabsTrigger value="all">{t("tabAll")}</TabsTrigger>}
+            <TabsTrigger value="my">{t('tabMy')}</TabsTrigger>
+            {isAdmin && <TabsTrigger value="all">{t('tabAll')}</TabsTrigger>}
             {isAdmin && (
               <TabsTrigger value="profile-changes">
-                {t("tabProfileChanges")}
+                {t('tabProfileChanges')}
                 {pendingCount > 0 && (
                   <span className="ms-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-medium text-primary-foreground">
                     {pendingCount}
@@ -278,12 +277,12 @@ function ApprovalsContent() {
               ) : changeRequests.length === 0 ? (
                 <EmptyState
                   icon={ClipboardCheck}
-                  heading={t("changeRequests.noPendingHeading")}
-                  body={t("changeRequests.noPendingBody")}
+                  heading={t('changeRequests.noPendingHeading')}
+                  body={t('changeRequests.noPendingBody')}
                 />
               ) : (
                 <div className="space-y-4">
-                  {changeRequests.map((req) => (
+                  {changeRequests.map(req => (
                     <ChangeRequestDiffCard
                       key={req.id}
                       request={req}
@@ -310,7 +309,7 @@ function ApprovalsContent() {
       <ApprovalSidePanel
         step={sidePanelOpen ? selectedStep : null}
         open={sidePanelOpen}
-        onOpenChange={(open) => {
+        onOpenChange={open => {
           setSidePanelOpen(open);
           if (!open) setSelectedStep(null);
         }}
@@ -338,8 +337,7 @@ function ApprovalsLoading() {
         {Array.from({ length: 8 }).map((_, i) => (
           <div
             key={`skel-${i}`}
-            className="flex items-center gap-4 px-4 py-3 border-b last:border-b-0"
-          >
+            className="flex items-center gap-4 px-4 py-3 border-b last:border-b-0">
             <Skeleton className="h-4 w-4" />
             <Skeleton className="h-4 w-24" />
             <Skeleton className="h-4 w-32" />

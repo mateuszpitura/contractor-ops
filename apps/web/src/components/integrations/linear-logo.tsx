@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
 /**
  * Linear product mark — see `brand-icons.tsx`.
  */
-export { LinearBrandIcon as LinearLogo } from "./brand-icons";
+export { LinearBrandIcon as LinearLogo } from './brand-icons';

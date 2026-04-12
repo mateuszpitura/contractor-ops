@@ -1,24 +1,24 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { Truck } from "lucide-react";
-import { useParams } from "next/navigation";
-import { useTranslations } from "next-intl";
-import { Suspense, useState } from "react";
-import { AssignmentDialog } from "@/components/equipment/assignment-dialog";
-import { CarrierShipmentForm } from "@/components/equipment/carrier-shipment-form";
-import { EquipmentDetailHeader } from "@/components/equipment/equipment-detail/equipment-detail-header";
-import { EquipmentDetailTabs } from "@/components/equipment/equipment-detail/equipment-detail-tabs";
-import { TabAssignments } from "@/components/equipment/equipment-detail/tab-assignments";
-import { TabInfo } from "@/components/equipment/equipment-detail/tab-info";
-import { TabShipments } from "@/components/equipment/equipment-detail/tab-shipments";
-import { EquipmentForm } from "@/components/equipment/equipment-form";
-import { ShipmentForm } from "@/components/equipment/shipment-form";
-import { useBreadcrumbOverride } from "@/components/layout/breadcrumb-context";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Link } from "@/i18n/navigation";
-import { trpc } from "@/trpc/init";
+import { useQuery } from '@tanstack/react-query';
+import { Truck } from 'lucide-react';
+import { useParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { Suspense, useState } from 'react';
+import { AssignmentDialog } from '@/components/equipment/assignment-dialog';
+import { CarrierShipmentForm } from '@/components/equipment/carrier-shipment-form';
+import { EquipmentDetailHeader } from '@/components/equipment/equipment-detail/equipment-detail-header';
+import { EquipmentDetailTabs } from '@/components/equipment/equipment-detail/equipment-detail-tabs';
+import { TabAssignments } from '@/components/equipment/equipment-detail/tab-assignments';
+import { TabInfo } from '@/components/equipment/equipment-detail/tab-info';
+import { TabShipments } from '@/components/equipment/equipment-detail/tab-shipments';
+import { EquipmentForm } from '@/components/equipment/equipment-form';
+import { ShipmentForm } from '@/components/equipment/shipment-form';
+import { useBreadcrumbOverride } from '@/components/layout/breadcrumb-context';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Link } from '@/i18n/navigation';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Skeleton
@@ -58,7 +58,7 @@ function DetailSkeleton() {
 
 export default function EquipmentDetailPage() {
   const params = useParams<{ id: string }>();
-  const t = useTranslations("Equipment");
+  const t = useTranslations('Equipment');
 
   const [formOpen, setFormOpen] = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
@@ -72,7 +72,7 @@ export default function EquipmentDetailPage() {
   // Query pending return requests for the current equipment's contractor
   const returnRequestsQuery = useQuery({
     ...trpc.equipment.listReturnRequests.queryOptions({
-      status: "PENDING_APPROVAL",
+      status: 'PENDING_APPROVAL',
     }),
     enabled: !!equipment?.currentAssignment,
   });
@@ -89,11 +89,11 @@ export default function EquipmentDetailPage() {
   // Query configured carriers for carrier shipment form
   const courierConfigsQuery = useQuery(trpc.equipment.getCourierConfigs.queryOptions());
   const courierConfigs = (courierConfigsQuery.data ?? []) as unknown as Array<{ carrier: string }>;
-  const configuredCarriers = courierConfigs.map((c) => c.carrier);
+  const configuredCarriers = courierConfigs.map(c => c.carrier);
 
   // Find pending return for current contractor
   const pendingReturn = equipment?.currentAssignment
-    ? returnRequests.find((r) => r.contractorId === equipment.currentAssignment?.contractorId)
+    ? returnRequests.find(r => r.contractorId === equipment.currentAssignment?.contractorId)
     : null;
 
   const pendingReturnData = pendingReturn
@@ -104,9 +104,9 @@ export default function EquipmentDetailPage() {
           pendingReturn.contractor?.legalName ??
           equipment?.currentAssignment?.contractor?.displayName ??
           equipment?.currentAssignment?.contractor?.legalName ??
-          "",
+          '',
         itemCount: pendingReturn.itemCount ?? 1,
-        targetPointName: pendingReturn.targetPointName ?? "",
+        targetPointName: pendingReturn.targetPointName ?? '',
         createdAt: pendingReturn.createdAt,
       }
     : null;
@@ -117,8 +117,8 @@ export default function EquipmentDetailPage() {
   // Error state
   if (equipmentQuery.isError) {
     const isNotFound =
-      equipmentQuery.error?.message?.includes("NOT_FOUND") ||
-      (equipmentQuery.error as { data?: { code?: string } })?.data?.code === "NOT_FOUND";
+      equipmentQuery.error?.message?.includes('NOT_FOUND') ||
+      (equipmentQuery.error as { data?: { code?: string } })?.data?.code === 'NOT_FOUND';
 
     if (isNotFound) {
       return (
@@ -133,7 +133,7 @@ export default function EquipmentDetailPage() {
 
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center gap-3 text-center">
-        <h2 className="text-lg font-medium">{t("error.loadFailed")}</h2>
+        <h2 className="text-lg font-medium">{t('error.loadFailed')}</h2>
         <Button variant="outline" onClick={() => equipmentQuery.refetch()}>
           Retry
         </Button>
@@ -155,11 +155,11 @@ export default function EquipmentDetailPage() {
         onCreateShipment={() => setShipmentOpen(true)}
       />
 
-      {configuredCarriers.length > 0 && !equipment.status?.includes("RETIRED") && (
+      {configuredCarriers.length > 0 && !equipment.status?.includes('RETIRED') && (
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => setCarrierShipmentOpen(true)}>
             <Truck className="me-1.5 size-4" />
-            {t("carrier.shipViaCarrier")}
+            {t('carrier.shipViaCarrier')}
           </Button>
         </div>
       )}
@@ -208,7 +208,7 @@ export default function EquipmentDetailPage() {
         contractorName={
           equipment.currentAssignment?.contractor?.displayName ??
           equipment.currentAssignment?.contractor?.legalName ??
-          ""
+          ''
         }
         direction="OUTBOUND"
         configuredCarriers={configuredCarriers}

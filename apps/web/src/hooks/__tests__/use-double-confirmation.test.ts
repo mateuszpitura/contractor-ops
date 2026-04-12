@@ -1,8 +1,8 @@
-import { act, renderHook } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { useDoubleConfirmation } from "../use-double-confirmation";
+import { act, renderHook } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { useDoubleConfirmation } from '../use-double-confirmation';
 
-describe("useDoubleConfirmation", () => {
+describe('useDoubleConfirmation', () => {
   beforeEach(() => {
     vi.useFakeTimers();
   });
@@ -11,13 +11,13 @@ describe("useDoubleConfirmation", () => {
     vi.useRealTimers();
   });
 
-  it("starts with isConfirming = false", () => {
+  it('starts with isConfirming = false', () => {
     const onConfirm = vi.fn();
     const { result } = renderHook(() => useDoubleConfirmation(onConfirm));
     expect(result.current.isConfirming).toBe(false);
   });
 
-  it("first click sets isConfirming to true without calling onConfirm", () => {
+  it('first click sets isConfirming to true without calling onConfirm', () => {
     const onConfirm = vi.fn();
     const { result } = renderHook(() => useDoubleConfirmation(onConfirm));
 
@@ -29,7 +29,7 @@ describe("useDoubleConfirmation", () => {
     expect(onConfirm).not.toHaveBeenCalled();
   });
 
-  it("second click within timeout calls onConfirm and resets", () => {
+  it('second click within timeout calls onConfirm and resets', () => {
     const onConfirm = vi.fn();
     const { result } = renderHook(() => useDoubleConfirmation(onConfirm));
 
@@ -44,7 +44,7 @@ describe("useDoubleConfirmation", () => {
     expect(result.current.isConfirming).toBe(false);
   });
 
-  it("resets isConfirming after timeout expires", () => {
+  it('resets isConfirming after timeout expires', () => {
     const onConfirm = vi.fn();
     const { result } = renderHook(() => useDoubleConfirmation(onConfirm, 2000));
 
@@ -61,7 +61,7 @@ describe("useDoubleConfirmation", () => {
     expect(onConfirm).not.toHaveBeenCalled();
   });
 
-  it("cancel resets isConfirming immediately", () => {
+  it('cancel resets isConfirming immediately', () => {
     const onConfirm = vi.fn();
     const { result } = renderHook(() => useDoubleConfirmation(onConfirm));
 
@@ -78,7 +78,7 @@ describe("useDoubleConfirmation", () => {
     expect(onConfirm).not.toHaveBeenCalled();
   });
 
-  it("uses default delay of 3000ms", () => {
+  it('uses default delay of 3000ms', () => {
     const onConfirm = vi.fn();
     const { result } = renderHook(() => useDoubleConfirmation(onConfirm));
 

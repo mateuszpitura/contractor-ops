@@ -1,5 +1,5 @@
-import type { EInvoice, EInvoiceTaxSubtotal } from "../../types/invoice.js";
-import type { KsefParsedInvoice } from "./schemas.js";
+import type { EInvoice, EInvoiceTaxSubtotal } from '../../types/invoice.js';
+import type { KsefParsedInvoice } from './schemas.js';
 
 // ---------------------------------------------------------------------------
 // KSeF → Prisma Invoice Model Mapper
@@ -29,7 +29,7 @@ export function mapKsefToInvoiceFields(parsed: KsefParsedInvoice) {
   const invoice = {
     invoiceNumber: parsed.invoiceNumber,
     externalInvoiceId: parsed.ksefReferenceNumber,
-    source: "KSEF" as const,
+    source: 'KSEF' as const,
     sourceReference: parsed.upoNumber ?? null,
     issueDate: new Date(parsed.issueDate),
     dueDate: parsed.payment?.dueDate ? new Date(parsed.payment.dueDate) : null,
@@ -45,7 +45,7 @@ export function mapKsefToInvoiceFields(parsed: KsefParsedInvoice) {
     buyerTaxId: parsed.buyer.nip,
   };
 
-  const lines = parsed.lines.map((line) => ({
+  const lines = parsed.lines.map(line => ({
     lineNumber: line.lineNumber,
     description: line.description,
     quantity: line.quantity ?? null,
@@ -69,13 +69,13 @@ export function mapKsefToInvoiceFields(parsed: KsefParsedInvoice) {
  */
 function mapInvoiceTypeCode(ksefType: string): string {
   switch (ksefType.toUpperCase()) {
-    case "VAT":
-      return "380";
-    case "CORRECTIVE":
-    case "KOR":
-      return "381";
+    case 'VAT':
+      return '380';
+    case 'CORRECTIVE':
+    case 'KOR':
+      return '381';
     default:
-      return "380";
+      return '380';
   }
 }
 
@@ -85,9 +85,9 @@ function mapInvoiceTypeCode(ksefType: string): string {
 function mapPaymentMethodCode(method: string | undefined): string | undefined {
   if (!method) return;
   const upper = method.toUpperCase();
-  if (upper.includes("PRZELEW") || upper.includes("TRANSFER")) return "30"; // Credit transfer
-  if (upper.includes("GOTOWKA") || upper.includes("CASH")) return "10"; // Cash
-  if (upper.includes("KARTA") || upper.includes("CARD")) return "48"; // Bank card
+  if (upper.includes('PRZELEW') || upper.includes('TRANSFER')) return '30'; // Credit transfer
+  if (upper.includes('GOTOWKA') || upper.includes('CASH')) return '10'; // Cash
+  if (upper.includes('KARTA') || upper.includes('CARD')) return '48'; // Bank card
   return;
 }
 
@@ -100,18 +100,18 @@ export function ksefToEInvoice(parsed: KsefParsedInvoice): EInvoice {
   // Build tax breakdown by grouping lines by vatRate
   const taxGroups = new Map<string, { taxable: number; tax: number; rate: number }>();
   for (const line of parsed.lines) {
-    const key = line.vatRate ?? "0";
+    const key = line.vatRate ?? '0';
     const existing = taxGroups.get(key) ?? { taxable: 0, tax: 0, rate: 0 };
     existing.taxable += line.netAmountMinor ?? 0;
     existing.tax += line.vatAmountMinor ?? 0;
-    existing.rate = key !== "0" ? parseFloat(key) || 0 : 0;
+    existing.rate = key !== '0' ? parseFloat(key) || 0 : 0;
     taxGroups.set(key, existing);
   }
 
   const taxBreakdown: EInvoiceTaxSubtotal[] = Array.from(taxGroups.entries()).map(([, group]) => ({
     taxableAmountMinor: group.taxable,
     taxAmountMinor: group.tax,
-    taxCategory: group.rate > 0 ? "S" : "Z",
+    taxCategory: group.rate > 0 ? 'S' : 'Z',
     percent: group.rate,
   }));
 
@@ -125,14 +125,14 @@ export function ksefToEInvoice(parsed: KsefParsedInvoice): EInvoice {
       id: parsed.seller.nip,
       name: parsed.seller.name,
       address: parsed.seller.address,
-      country: "PL",
+      country: 'PL',
     },
     customer: {
       id: parsed.buyer.nip,
       name: parsed.buyer.name,
-      country: "PL",
+      country: 'PL',
     },
-    lines: parsed.lines.map((line) => ({
+    lines: parsed.lines.map(line => ({
       lineNumber: line.lineNumber,
       description: line.description,
       quantity: line.quantity,
@@ -154,7 +154,7 @@ export function ksefToEInvoice(parsed: KsefParsedInvoice): EInvoice {
           code: mapPaymentMethodCode(parsed.payment.method),
         }
       : undefined,
-    profileId: "ksef",
+    profileId: 'ksef',
     externalReference: parsed.ksefReferenceNumber,
   };
 }

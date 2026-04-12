@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import type { ColumnDef } from "@tanstack/react-table";
-import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
-import { ArrowDown, ArrowUp, ArrowUpDown, Loader2 } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useMemo } from "react";
+import type { ColumnDef } from '@tanstack/react-table';
+import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { ArrowDown, ArrowUp, ArrowUpDown, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useMemo } from 'react';
 
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -15,7 +15,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 
 interface ReportTableProps<TData> {
   columns: ColumnDef<TData>[];
@@ -56,21 +56,21 @@ export function ReportTable<TData>({
   grandTotalLabel,
   grandTotalValue,
 }: ReportTableProps<TData>) {
-  const tAria = useTranslations("Common.aria");
+  const tAria = useTranslations('Common.aria');
   const pageCount = Math.ceil(totalCount / pageSize);
 
-  const sorting = useMemo(() => [{ id: sortBy, desc: sortOrder === "desc" }], [sortBy, sortOrder]);
+  const sorting = useMemo(() => [{ id: sortBy, desc: sortOrder === 'desc' }], [sortBy, sortOrder]);
 
   const table = useReactTable({
     data,
     columns,
     pageCount,
     state: { sorting },
-    onSortingChange: (updater) => {
-      const next = typeof updater === "function" ? updater(sorting) : updater;
+    onSortingChange: updater => {
+      const next = typeof updater === 'function' ? updater(sorting) : updater;
       const first = next[0];
       if (first) {
-        onSortChange(first.id, first.desc ? "desc" : "asc");
+        onSortChange(first.id, first.desc ? 'desc' : 'asc');
       }
     },
     getCoreRowModel: getCoreRowModel(),
@@ -88,35 +88,33 @@ export function ReportTable<TData>({
       )}
       <Table>
         <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
+          {table.getHeaderGroups().map(headerGroup => (
             <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => (
+              {headerGroup.headers.map(header => (
                 <TableHead
                   key={header.id}
                   aria-sort={
-                    header.column.getIsSorted() === "asc"
-                      ? "ascending"
-                      : header.column.getIsSorted() === "desc"
-                        ? "descending"
+                    header.column.getIsSorted() === 'asc'
+                      ? 'ascending'
+                      : header.column.getIsSorted() === 'desc'
+                        ? 'descending'
                         : undefined
-                  }
-                >
+                  }>
                   {header.isPlaceholder ? null : header.column.getCanSort() ? (
                     <button
                       type="button"
                       className="flex items-center gap-1 uppercase hover:text-foreground"
                       onClick={header.column.getToggleSortingHandler()}
-                      aria-label={tAria("sortBy", {
+                      aria-label={tAria('sortBy', {
                         column:
-                          typeof header.column.columnDef.header === "string"
+                          typeof header.column.columnDef.header === 'string'
                             ? header.column.columnDef.header
                             : header.id,
-                      })}
-                    >
+                      })}>
                       {flexRender(header.column.columnDef.header, header.getContext())}
-                      {header.column.getIsSorted() === "asc" ? (
+                      {header.column.getIsSorted() === 'asc' ? (
                         <ArrowUp className="h-3 w-3" />
-                      ) : header.column.getIsSorted() === "desc" ? (
+                      ) : header.column.getIsSorted() === 'desc' ? (
                         <ArrowDown className="h-3 w-3" />
                       ) : (
                         <ArrowUpDown className="h-3 w-3 opacity-40" />
@@ -143,13 +141,12 @@ export function ReportTable<TData>({
             ))
           ) : data.length > 0 ? (
             <>
-              {table.getRowModel().rows.map((row) => (
+              {table.getRowModel().rows.map(row => (
                 <TableRow
                   key={row.id}
-                  className={onRowClick ? "cursor-pointer" : ""}
-                  onClick={() => onRowClick?.(row.original)}
-                >
-                  {row.getVisibleCells().map((cell) => (
+                  className={onRowClick ? 'cursor-pointer' : ''}
+                  onClick={() => onRowClick?.(row.original)}>
+                  {row.getVisibleCells().map(cell => (
                     <TableCell key={cell.id}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
@@ -169,7 +166,7 @@ export function ReportTable<TData>({
             <TableRow>
               <TableCell colSpan={columns.length} className="py-16 text-center">
                 {emptyIcon}
-                <h3 className="mt-3 text-[16px] font-medium">{emptyTitle ?? "No data"}</h3>
+                <h3 className="mt-3 text-[16px] font-medium">{emptyTitle ?? 'No data'}</h3>
                 {emptyDescription && (
                   <p className="mt-1 text-sm text-muted-foreground">{emptyDescription}</p>
                 )}
@@ -190,16 +187,14 @@ export function ReportTable<TData>({
               variant="outline"
               size="sm"
               onClick={() => onPageChange(page - 1)}
-              disabled={page <= 1}
-            >
+              disabled={page <= 1}>
               Previous
             </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={() => onPageChange(page + 1)}
-              disabled={page >= pageCount}
-            >
+              disabled={page >= pageCount}>
               Next
             </Button>
           </div>

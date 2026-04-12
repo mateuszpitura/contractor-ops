@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import type { ReactNode } from "react";
-import { useEffect, useRef } from "react";
-import { posthog } from "@/lib/posthog";
+import type { ReactNode } from 'react';
+import { useEffect, useRef } from 'react';
+import { posthog } from '@/lib/posthog';
 
 /**
  * Wraps a landing page section and fires a PostHog event
@@ -33,12 +33,12 @@ export function SectionTracker({
         if (entry.isIntersecting) {
           if (!hasFired.current) {
             hasFired.current = true;
-            posthog.capture("section_viewed", { section: name });
+            posthog.capture('section_viewed', { section: name });
           }
           enteredAt.current = Date.now();
         } else if (enteredAt.current) {
           const dwell = Math.round((Date.now() - enteredAt.current) / 1000);
-          posthog.capture("section_left", {
+          posthog.capture('section_left', {
             section: name,
             dwell_seconds: dwell,
           });

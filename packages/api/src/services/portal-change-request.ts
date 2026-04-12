@@ -1,7 +1,7 @@
-import { prisma } from "@contractor-ops/db";
-import type { Prisma } from "@contractor-ops/db/generated/prisma/client";
-import { TRPCError } from "@trpc/server";
-import * as E from "../errors.js";
+import { prisma } from '@contractor-ops/db';
+import type { Prisma } from '@contractor-ops/db/generated/prisma/client';
+import { TRPCError } from '@trpc/server';
+import * as E from '../errors.js';
 
 type InputJsonValue = Prisma.InputJsonValue;
 
@@ -34,12 +34,12 @@ export async function createChangeRequest(
 ) {
   // Check for existing PENDING request (duplicate guard)
   const existing = await prisma.contractorChangeRequest.findFirst({
-    where: { contractorId, organizationId, status: "PENDING" },
+    where: { contractorId, organizationId, status: 'PENDING' },
   });
 
   if (existing) {
     throw new TRPCError({
-      code: "CONFLICT",
+      code: 'CONFLICT',
       message: E.PORTAL_PENDING_CHANGE_EXISTS,
     });
   }
@@ -74,19 +74,19 @@ export async function approveChangeRequest(
   comment?: string,
 ) {
   const request = await prisma.contractorChangeRequest.findFirst({
-    where: { id: requestId, organizationId, status: "PENDING" },
+    where: { id: requestId, organizationId, status: 'PENDING' },
   });
 
   if (!request) {
     throw new TRPCError({
-      code: "NOT_FOUND",
+      code: 'NOT_FOUND',
       message: E.PORTAL_CHANGE_REQUEST_NOT_FOUND,
     });
   }
 
   const changes = request.requestedChanges as FinancialChangeFields;
 
-  await prisma.$transaction(async (tx) => {
+  await prisma.$transaction(async tx => {
     // Re-read current billing profile to avoid stale-state overwrites
     const billingProfile = await tx.contractorBillingProfile.findFirst({
       where: {
@@ -98,7 +98,7 @@ export async function approveChangeRequest(
 
     if (!billingProfile) {
       throw new TRPCError({
-        code: "NOT_FOUND",
+        code: 'NOT_FOUND',
         message: E.PORTAL_BILLING_PROFILE_NOT_FOUND,
       });
     }
@@ -125,7 +125,7 @@ export async function approveChangeRequest(
     await tx.contractorChangeRequest.update({
       where: { id: requestId },
       data: {
-        status: "APPROVED",
+        status: 'APPROVED',
         reviewedById: reviewerId,
         reviewedAt: new Date(),
         reviewComment: comment ?? null,
@@ -148,12 +148,12 @@ export async function rejectChangeRequest(
   comment?: string,
 ) {
   const request = await prisma.contractorChangeRequest.findFirst({
-    where: { id: requestId, organizationId, status: "PENDING" },
+    where: { id: requestId, organizationId, status: 'PENDING' },
   });
 
   if (!request) {
     throw new TRPCError({
-      code: "NOT_FOUND",
+      code: 'NOT_FOUND',
       message: E.PORTAL_CHANGE_REQUEST_NOT_FOUND,
     });
   }
@@ -161,7 +161,7 @@ export async function rejectChangeRequest(
   await prisma.contractorChangeRequest.update({
     where: { id: requestId },
     data: {
-      status: "REJECTED",
+      status: 'REJECTED',
       reviewedById: reviewerId,
       reviewedAt: new Date(),
       reviewComment: comment ?? null,

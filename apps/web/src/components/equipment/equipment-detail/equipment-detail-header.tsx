@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Archive, MoreHorizontal, Pencil, Truck, UserMinus, UserPlus } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Archive, MoreHorizontal, Pencil, Truck, UserMinus, UserPlus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -14,16 +14,16 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { trpc } from "@/trpc/init";
-import { EquipmentStatusBadge } from "../equipment-status-badge";
-import { EquipmentTypeIcon } from "../equipment-type-icon";
+} from '@/components/ui/dropdown-menu';
+import { trpc } from '@/trpc/init';
+import { EquipmentStatusBadge } from '../equipment-status-badge';
+import { EquipmentTypeIcon } from '../equipment-type-icon';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -64,20 +64,20 @@ export function EquipmentDetailHeader({
   onAssign,
   onCreateShipment,
 }: EquipmentDetailHeaderProps) {
-  const t = useTranslations("Equipment");
-  const tCommon = useTranslations("Common");
+  const t = useTranslations('Equipment');
+  const tCommon = useTranslations('Common');
   const queryClient = useQueryClient();
 
   const [retireDialogOpen, setRetireDialogOpen] = useState(false);
   const [unassignDialogOpen, setUnassignDialogOpen] = useState(false);
 
-  const isAssigned = equipment.status === "ASSIGNED";
-  const isRetired = equipment.status === "RETIRED";
+  const isAssigned = equipment.status === 'ASSIGNED';
+  const isRetired = equipment.status === 'RETIRED';
 
   const retireMutation = useMutation(
     trpc.equipment.retire.mutationOptions({
       onSuccess: () => {
-        toast.success(t("toast.retired"));
+        toast.success(t('toast.retired'));
         queryClient.invalidateQueries({
           queryKey: trpc.equipment.getById.queryKey(),
         });
@@ -87,7 +87,7 @@ export function EquipmentDetailHeader({
         setRetireDialogOpen(false);
       },
       onError: () => {
-        toast.error(t("error.actionFailed"));
+        toast.error(t('error.actionFailed'));
       },
     }),
   );
@@ -95,7 +95,7 @@ export function EquipmentDetailHeader({
   const unassignMutation = useMutation(
     trpc.equipment.unassign.mutationOptions({
       onSuccess: () => {
-        toast.success(t("toast.unassigned"));
+        toast.success(t('toast.unassigned'));
         queryClient.invalidateQueries({
           queryKey: trpc.equipment.getById.queryKey(),
         });
@@ -105,7 +105,7 @@ export function EquipmentDetailHeader({
         setUnassignDialogOpen(false);
       },
       onError: () => {
-        toast.error(t("error.actionFailed"));
+        toast.error(t('error.actionFailed'));
       },
     }),
   );
@@ -113,7 +113,7 @@ export function EquipmentDetailHeader({
   const contractorName =
     equipment.currentAssignment?.contractor.displayName ??
     equipment.currentAssignment?.contractor.legalName ??
-    "";
+    '';
 
   return (
     <>
@@ -139,37 +139,37 @@ export function EquipmentDetailHeader({
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={onEdit}>
             <Pencil className="me-1.5 size-3.5" />
-            {t("detail.edit")}
+            {t('detail.edit')}
           </Button>
 
           {!(isRetired || isAssigned) && (
             <Button variant="outline" size="sm" onClick={onAssign}>
               <UserPlus className="me-1.5 size-3.5" />
-              {t("detail.assignToContractor")}
+              {t('detail.assignToContractor')}
             </Button>
           )}
 
           {isAssigned && (
             <Button variant="outline" size="sm" onClick={() => setUnassignDialogOpen(true)}>
               <UserMinus className="me-1.5 size-3.5" />
-              {t("detail.unassignEquipment")}
+              {t('detail.unassignEquipment')}
             </Button>
           )}
 
           {!isRetired && (
             <Button variant="outline" size="sm" onClick={onCreateShipment}>
               <Truck className="me-1.5 size-3.5" />
-              {t("detail.createShipment")}
+              {t('detail.createShipment')}
             </Button>
           )}
 
           <DropdownMenu>
             <DropdownMenuTrigger
-              render={(props) => (
+              render={props => (
                 <Button {...props} variant="outline" size="icon-sm">
                   <MoreHorizontal className="size-4" />
                   <span className="sr-only">
-                    {tCommon("srOnly.moreActions" as Parameters<typeof tCommon>[0])}
+                    {tCommon('srOnly.moreActions' as Parameters<typeof tCommon>[0])}
                   </span>
                 </Button>
               )}
@@ -178,7 +178,7 @@ export function EquipmentDetailHeader({
               {!(isRetired || isAssigned) && (
                 <DropdownMenuItem variant="destructive" onSelect={() => setRetireDialogOpen(true)}>
                   <Archive className="me-2 h-3.5 w-3.5" />
-                  {t("detail.retire")}
+                  {t('detail.retire')}
                 </DropdownMenuItem>
               )}
             </DropdownMenuContent>
@@ -190,23 +190,21 @@ export function EquipmentDetailHeader({
       <Dialog open={retireDialogOpen} onOpenChange={setRetireDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("detail.retireConfirmTitle")}</DialogTitle>
-            <DialogDescription>{t("detail.retireConfirmDescription")}</DialogDescription>
+            <DialogTitle>{t('detail.retireConfirmTitle')}</DialogTitle>
+            <DialogDescription>{t('detail.retireConfirmDescription')}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button
               variant="outline"
               onClick={() => setRetireDialogOpen(false)}
-              disabled={retireMutation.isPending}
-            >
-              {t("form.cancel")}
+              disabled={retireMutation.isPending}>
+              {t('form.cancel')}
             </Button>
             <Button
               variant="destructive"
               onClick={() => retireMutation.mutate({ id: equipment.id })}
-              disabled={retireMutation.isPending}
-            >
-              {t("detail.retire")}
+              disabled={retireMutation.isPending}>
+              {t('detail.retire')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -216,9 +214,9 @@ export function EquipmentDetailHeader({
       <Dialog open={unassignDialogOpen} onOpenChange={setUnassignDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("detail.unassignConfirmTitle")}</DialogTitle>
+            <DialogTitle>{t('detail.unassignConfirmTitle')}</DialogTitle>
             <DialogDescription>
-              {t("detail.unassignConfirmDescription", {
+              {t('detail.unassignConfirmDescription', {
                 contractorName,
               })}
             </DialogDescription>
@@ -227,16 +225,14 @@ export function EquipmentDetailHeader({
             <Button
               variant="outline"
               onClick={() => setUnassignDialogOpen(false)}
-              disabled={unassignMutation.isPending}
-            >
-              {t("form.cancel")}
+              disabled={unassignMutation.isPending}>
+              {t('form.cancel')}
             </Button>
             <Button
               variant="destructive"
               onClick={() => unassignMutation.mutate({ equipmentId: equipment.id })}
-              disabled={unassignMutation.isPending}
-            >
-              {t("detail.unassignEquipment")}
+              disabled={unassignMutation.isPending}>
+              {t('detail.unassignEquipment')}
             </Button>
           </DialogFooter>
         </DialogContent>

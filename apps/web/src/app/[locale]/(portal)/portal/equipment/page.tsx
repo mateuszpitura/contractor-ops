@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { PortalEquipmentTab } from "@/components/portal/portal-equipment-tab";
+import { PortalEquipmentTab } from '@/components/portal/portal-equipment-tab';
 
 // ---------------------------------------------------------------------------
 // Portal Equipment Page

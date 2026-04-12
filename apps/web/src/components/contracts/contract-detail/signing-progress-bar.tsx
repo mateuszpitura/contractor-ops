@@ -1,22 +1,22 @@
-"use client";
+'use client';
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Ban, Check, MoreVertical, RefreshCw, X } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Ban, Check, MoreVertical, RefreshCw, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils";
-import { trpc } from "@/trpc/init";
-import { SigningAuditTrail } from "./signing-audit-trail";
-import { VoidEnvelopeDialog } from "./void-envelope-dialog";
+} from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
+import { trpc } from '@/trpc/init';
+import { SigningAuditTrail } from './signing-audit-trail';
+import { VoidEnvelopeDialog } from './void-envelope-dialog';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -47,7 +47,7 @@ function StepIndicator({ recipient, isCurrent }: { recipient: Recipient; isCurre
   const initial = recipient.name.charAt(0).toUpperCase();
   const status = recipient.status;
 
-  if (status === "SIGNED") {
+  if (status === 'SIGNED') {
     return (
       <div className="flex size-8 items-center justify-center rounded-full bg-green-600 text-white">
         <Check className="size-4" />
@@ -55,7 +55,7 @@ function StepIndicator({ recipient, isCurrent }: { recipient: Recipient; isCurre
     );
   }
 
-  if (status === "DECLINED") {
+  if (status === 'DECLINED') {
     return (
       <div className="flex size-8 items-center justify-center rounded-full bg-red-500 text-white">
         <X className="size-4" />
@@ -84,7 +84,7 @@ function StepIndicator({ recipient, isCurrent }: { recipient: Recipient; isCurre
 // ---------------------------------------------------------------------------
 
 function ConnectorLine({ completed }: { completed: boolean }) {
-  return <div className={cn("h-0.5 w-6 flex-shrink-0", completed ? "bg-green-600" : "bg-muted")} />;
+  return <div className={cn('h-0.5 w-6 flex-shrink-0', completed ? 'bg-green-600' : 'bg-muted')} />;
 }
 
 // ---------------------------------------------------------------------------
@@ -97,50 +97,48 @@ function ConnectorLine({ completed }: { completed: boolean }) {
  * Per UI-SPEC D-08.
  */
 export function SigningProgressBar({ envelope }: SigningProgressBarProps) {
-  const t = useTranslations("ContractDetail.signing.progress");
-  const tToast = useTranslations("ContractDetail.signing.toast");
-  const tCommon = useTranslations("Common");
+  const t = useTranslations('ContractDetail.signing.progress');
+  const tToast = useTranslations('ContractDetail.signing.toast');
+  const tCommon = useTranslations('Common');
   const queryClient = useQueryClient();
   const [auditOpen, setAuditOpen] = useState(false);
   const [voidOpen, setVoidOpen] = useState(false);
 
   const sortedRecipients = [...envelope.recipients].sort((a, b) => a.routingOrder - b.routingOrder);
 
-  const signedCount = sortedRecipients.filter((r) => r.status === "SIGNED").length;
+  const signedCount = sortedRecipients.filter(r => r.status === 'SIGNED').length;
   const totalCount = sortedRecipients.length;
   const allSigned = signedCount === totalCount && totalCount > 0;
 
   // Find the current signer (first non-signed, non-declined)
-  const currentIndex = sortedRecipients.findIndex(
-    (r) => !["SIGNED", "DECLINED"].includes(r.status),
-  );
+  const currentIndex = sortedRecipients.findIndex(r => !['SIGNED', 'DECLINED'].includes(r.status));
 
   // Resend mutation
   const resendMutation = useMutation(
     trpc.esign.resendToRecipient.mutationOptions({
       onSuccess: (_data, variables) => {
-        toast.success(tToast("reminderSent", { email: variables.recipientEmail }));
+        toast.success(tToast('reminderSent', { email: variables.recipientEmail }));
       },
       onError: () => {
-        toast.error(tToast("resendFailed"));
+        toast.error(tToast('resendFailed'));
       },
     }),
   );
 
   // Status text
-  let statusText = t("signedCount", { signed: signedCount, total: totalCount });
+  let statusText = t('signedCount', { signed: signedCount, total: totalCount });
   if (allSigned) {
-    statusText = t("allSigned");
+    statusText = t('allSigned');
   } else if (currentIndex >= 0) {
     const currentRecipient = sortedRecipients[currentIndex];
     if (currentRecipient) {
-      statusText = t("waitingFor", { name: currentRecipient.name });
+      statusText = t('waitingFor', { name: currentRecipient.name });
     }
   }
 
   // Pending recipients for resend
   const pendingRecipients = sortedRecipients.filter(
-    (r) => !["SIGNED", "DECLINED"].includes(r.status),
+    r => !['SIGNED', 'DECLINED'].includes(r.status),
   );
 
   return (
@@ -152,7 +150,7 @@ export function SigningProgressBar({ envelope }: SigningProgressBarProps) {
             {sortedRecipients.map((recipient, idx) => (
               <div key={recipient.id} className="flex items-center gap-1">
                 {idx > 0 && (
-                  <ConnectorLine completed={sortedRecipients[idx - 1]?.status === "SIGNED"} />
+                  <ConnectorLine completed={sortedRecipients[idx - 1]?.status === 'SIGNED'} />
                 )}
                 <StepIndicator recipient={recipient} isCurrent={idx === currentIndex} />
               </div>
@@ -164,20 +162,20 @@ export function SigningProgressBar({ envelope }: SigningProgressBarProps) {
             <p className="text-sm text-muted-foreground">{statusText}</p>
 
             <Button variant="ghost" size="sm" onClick={() => setAuditOpen(true)}>
-              {t("viewHistory")}
+              {t('viewHistory')}
             </Button>
 
             <DropdownMenu>
               <DropdownMenuTrigger
-                render={(props) => (
+                render={props => (
                   <Button {...props} variant="ghost" size="icon-sm">
                     <MoreVertical className="size-4" />
-                    <span className="sr-only">{tCommon("srOnly.signingActions")}</span>
+                    <span className="sr-only">{tCommon('srOnly.signingActions')}</span>
                   </Button>
                 )}
               />
               <DropdownMenuContent align="end">
-                {pendingRecipients.map((r) => (
+                {pendingRecipients.map(r => (
                   <DropdownMenuItem
                     key={r.id}
                     onClick={() =>
@@ -186,15 +184,14 @@ export function SigningProgressBar({ envelope }: SigningProgressBarProps) {
                         recipientEmail: r.email,
                       })
                     }
-                    disabled={resendMutation.isPending}
-                  >
+                    disabled={resendMutation.isPending}>
                     <RefreshCw className="me-2 size-3.5" />
-                    {t("resendTo", { name: r.name })}
+                    {t('resendTo', { name: r.name })}
                   </DropdownMenuItem>
                 ))}
                 <DropdownMenuItem variant="destructive" onClick={() => setVoidOpen(true)}>
                   <Ban className="me-2 size-3.5" />
-                  {t("voidEnvelope")}
+                  {t('voidEnvelope')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery } from '@tanstack/react-query';
 import {
   Banknote,
   Bell,
@@ -14,31 +14,31 @@ import {
   GripVertical,
   KeyRound,
   Monitor,
-} from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useCallback, useState } from "react";
-import type { UseFormReturn } from "react-hook-form";
-import { JiraTaskConfig } from "@/components/integrations/jira-task-config";
-import { LinearTaskConfig } from "@/components/integrations/linear-task-config";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useState } from 'react';
+import type { UseFormReturn } from 'react-hook-form';
+import { JiraTaskConfig } from '@/components/integrations/jira-task-config';
+import { LinearTaskConfig } from '@/components/integrations/linear-task-config';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
-import { CalendarTaskConfig } from "@/components/workflow/calendar-task-config";
-import { trpc } from "@/trpc/init";
-import { ConditionBuilder, getConditionSummary } from "./condition-builder";
-import type { TaskFormValues, TemplateFormValues } from "./use-template-form";
+} from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
+import { CalendarTaskConfig } from '@/components/workflow/calendar-task-config';
+import { trpc } from '@/trpc/init';
+import { ConditionBuilder, getConditionSummary } from './condition-builder';
+import type { TaskFormValues, TemplateFormValues } from './use-template-form';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -73,35 +73,35 @@ const TASK_TYPE_ICONS: Record<string, React.ComponentType<{ className?: string }
 };
 
 const TASK_TYPES = [
-  "DOCUMENT_COLLECTION",
-  "APPROVAL",
-  "ACCESS_GRANT",
-  "ACCESS_REVOKE",
-  "FINANCE_SETUP",
-  "EQUIPMENT",
-  "KNOWLEDGE_TRANSFER",
-  "MEETING",
-  "MANUAL",
-  "NOTIFICATION",
+  'DOCUMENT_COLLECTION',
+  'APPROVAL',
+  'ACCESS_GRANT',
+  'ACCESS_REVOKE',
+  'FINANCE_SETUP',
+  'EQUIPMENT',
+  'KNOWLEDGE_TRANSFER',
+  'MEETING',
+  'MANUAL',
+  'NOTIFICATION',
 ] as const;
 
 const ASSIGNEE_MODES = [
-  "FIXED_USER",
-  "ROLE_BASED",
-  "CONTRACTOR_OWNER",
-  "CONTRACT_OWNER",
-  "PROJECT_MANAGER",
+  'FIXED_USER',
+  'ROLE_BASED',
+  'CONTRACTOR_OWNER',
+  'CONTRACT_OWNER',
+  'PROJECT_MANAGER',
 ] as const;
 
 const USER_ROLES = [
-  "ORG_ADMIN",
-  "FINANCE_ADMIN",
-  "OPS_MANAGER",
-  "TEAM_MANAGER",
-  "LEGAL_VIEWER",
-  "IT_ADMIN",
-  "ACCOUNTANT",
-  "READ_ONLY",
+  'ORG_ADMIN',
+  'FINANCE_ADMIN',
+  'OPS_MANAGER',
+  'TEAM_MANAGER',
+  'LEGAL_VIEWER',
+  'IT_ADMIN',
+  'ACCOUNTANT',
+  'READ_ONLY',
 ] as const;
 
 // ---------------------------------------------------------------------------
@@ -109,13 +109,13 @@ const USER_ROLES = [
 // ---------------------------------------------------------------------------
 
 export function TaskCard({ index, onRemove, allTasks, form, dragHandleProps }: TaskCardProps) {
-  const t = useTranslations("Workflows");
+  const t = useTranslations('Workflows');
   const [isOpen, setIsOpen] = useState(false);
 
   const task = form.watch(`tasks.${index}`);
-  const taskType = task?.taskType ?? "MANUAL";
-  const assigneeMode = task?.assigneeMode ?? "ROLE_BASED";
-  const title = task?.title ?? "";
+  const taskType = task?.taskType ?? 'MANUAL';
+  const assigneeMode = task?.assigneeMode ?? 'ROLE_BASED';
+  const title = task?.title ?? '';
   const conditions = task?.conditions ?? null;
 
   const TypeIcon = TASK_TYPE_ICONS[taskType] ?? ClipboardList;
@@ -123,27 +123,27 @@ export function TaskCard({ index, onRemove, allTasks, form, dragHandleProps }: T
   // Fetch users for FIXED_USER mode
   const usersQuery = useQuery({
     ...trpc.user.list.queryOptions(),
-    enabled: assigneeMode === "FIXED_USER",
+    enabled: assigneeMode === 'FIXED_USER',
   });
 
   const users = usersQuery.data ?? [];
 
-  const taskTypeItems = TASK_TYPES.map((type) => ({
+  const taskTypeItems = TASK_TYPES.map(type => ({
     value: type,
     label: t(`taskType_${type}`),
   }));
 
-  const assigneeModeItems = ASSIGNEE_MODES.map((mode) => ({
+  const assigneeModeItems = ASSIGNEE_MODES.map(mode => ({
     value: mode,
     label: t(`assigneeMode_${mode}`),
   }));
 
-  const userRoleItems = USER_ROLES.map((role) => ({
+  const userRoleItems = USER_ROLES.map(role => ({
     value: role,
     label: role
-      .split("_")
-      .map((w) => w.charAt(0) + w.slice(1).toLowerCase())
-      .join(" "),
+      .split('_')
+      .map(w => w.charAt(0) + w.slice(1).toLowerCase())
+      .join(' '),
   }));
 
   const conditionSummary = getConditionSummary(
@@ -176,15 +176,14 @@ export function TaskCard({ index, onRemove, allTasks, form, dragHandleProps }: T
             type="button"
             className="flex cursor-grab items-center justify-center text-muted-foreground hover:text-foreground active:cursor-grabbing"
             {...(dragHandleProps?.attributes as React.HTMLAttributes<HTMLButtonElement>)}
-            {...(dragHandleProps?.listeners as React.HTMLAttributes<HTMLButtonElement>)}
-          >
+            {...(dragHandleProps?.listeners as React.HTMLAttributes<HTMLButtonElement>)}>
             <GripVertical className="size-5" />
           </button>
 
           {/* Title + badges */}
           <CollapsibleTrigger className="flex min-w-0 flex-1 items-center gap-2">
-            <span className={`truncate text-sm ${title ? "font-medium" : "text-muted-foreground"}`}>
-              {title || t("untitledTask")}
+            <span className={`truncate text-sm ${title ? 'font-medium' : 'text-muted-foreground'}`}>
+              {title || t('untitledTask')}
             </span>
 
             <Badge variant="secondary" className="shrink-0 gap-1 text-xs">
@@ -201,13 +200,13 @@ export function TaskCard({ index, onRemove, allTasks, form, dragHandleProps }: T
             {task?.dueOffsetDays ? (
               <span className="hidden text-xs text-muted-foreground sm:inline">
                 {task.dueOffsetDays}
-                {t("dueOffsetDays")}
+                {t('dueOffsetDays')}
               </span>
             ) : null}
 
             {task?.required && (
               <Badge variant="default" className="shrink-0 text-xs">
-                {t("requiredTask")}
+                {t('requiredTask')}
               </Badge>
             )}
 
@@ -228,31 +227,30 @@ export function TaskCard({ index, onRemove, allTasks, form, dragHandleProps }: T
           <div className="space-y-4 border-t px-4 py-4">
             {/* Title */}
             <div className="space-y-1.5">
-              <Label htmlFor={`task-title-${index}`}>{t("taskTitle")}</Label>
+              <Label htmlFor={`task-title-${index}`}>{t('taskTitle')}</Label>
               <Input
                 id={`task-title-${index}`}
-                placeholder={t("taskTitlePlaceholder")}
+                placeholder={t('taskTitlePlaceholder')}
                 {...form.register(`tasks.${index}.title`)}
               />
             </div>
 
             {/* Task type */}
             <div className="space-y-1.5">
-              <Label htmlFor={`task-type-${index}`}>{t("taskType")}</Label>
+              <Label htmlFor={`task-type-${index}`}>{t('taskType')}</Label>
               <Select
                 value={taskType}
-                onValueChange={(val) =>
+                onValueChange={val =>
                   form.setValue(`tasks.${index}.taskType`, val as typeof taskType, {
                     shouldDirty: true,
                   })
                 }
-                items={taskTypeItems}
-              >
+                items={taskTypeItems}>
                 <SelectTrigger id={`task-type-${index}`} className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {taskTypeItems.map((item) => {
+                  {taskTypeItems.map(item => {
                     const Icon = TASK_TYPE_ICONS[item.value] ?? ClipboardList;
                     return (
                       <SelectItem key={item.value} value={item.value}>
@@ -267,10 +265,10 @@ export function TaskCard({ index, onRemove, allTasks, form, dragHandleProps }: T
 
             {/* Description */}
             <div className="space-y-1.5">
-              <Label htmlFor={`task-desc-${index}`}>{t("taskDescription")}</Label>
+              <Label htmlFor={`task-desc-${index}`}>{t('taskDescription')}</Label>
               <Textarea
                 id={`task-desc-${index}`}
-                placeholder={t("descriptionPlaceholder")}
+                placeholder={t('descriptionPlaceholder')}
                 rows={2}
                 {...form.register(`tasks.${index}.description`)}
               />
@@ -278,21 +276,20 @@ export function TaskCard({ index, onRemove, allTasks, form, dragHandleProps }: T
 
             {/* Assignee mode */}
             <div className="space-y-1.5">
-              <Label htmlFor={`task-assignee-${index}`}>{t("assignedTo")}</Label>
+              <Label htmlFor={`task-assignee-${index}`}>{t('assignedTo')}</Label>
               <Select
                 value={assigneeMode}
-                onValueChange={(val) =>
+                onValueChange={val =>
                   form.setValue(`tasks.${index}.assigneeMode`, val as typeof assigneeMode, {
                     shouldDirty: true,
                   })
                 }
-                items={assigneeModeItems}
-              >
+                items={assigneeModeItems}>
                 <SelectTrigger id={`task-assignee-${index}`} className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {assigneeModeItems.map((item) => (
+                  {assigneeModeItems.map(item => (
                     <SelectItem key={item.value} value={item.value}>
                       {item.label}
                     </SelectItem>
@@ -302,25 +299,24 @@ export function TaskCard({ index, onRemove, allTasks, form, dragHandleProps }: T
             </div>
 
             {/* Conditional: Role select (when ROLE_BASED) */}
-            {assigneeMode === "ROLE_BASED" && (
+            {assigneeMode === 'ROLE_BASED' && (
               <div className="space-y-1.5">
-                <Label htmlFor={`task-role-${index}`}>{t("roleField")}</Label>
+                <Label htmlFor={`task-role-${index}`}>{t('roleField')}</Label>
                 <Select
-                  value={task?.assigneeRole ?? ""}
-                  onValueChange={(val) =>
+                  value={task?.assigneeRole ?? ''}
+                  onValueChange={val =>
                     form.setValue(
                       `tasks.${index}.assigneeRole`,
                       val as (typeof USER_ROLES)[number],
                       { shouldDirty: true },
                     )
                   }
-                  items={userRoleItems}
-                >
+                  items={userRoleItems}>
                   <SelectTrigger id={`task-role-${index}`} className="w-full">
-                    <SelectValue placeholder={t("rolePlaceholder")} />
+                    <SelectValue placeholder={t('rolePlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>
-                    {userRoleItems.map((item) => (
+                    {userRoleItems.map(item => (
                       <SelectItem key={item.value} value={item.value}>
                         {item.label}
                       </SelectItem>
@@ -331,26 +327,25 @@ export function TaskCard({ index, onRemove, allTasks, form, dragHandleProps }: T
             )}
 
             {/* Conditional: User select (when FIXED_USER) */}
-            {assigneeMode === "FIXED_USER" && (
+            {assigneeMode === 'FIXED_USER' && (
               <div className="space-y-1.5">
-                <Label htmlFor={`task-user-${index}`}>{t("userField")}</Label>
+                <Label htmlFor={`task-user-${index}`}>{t('userField')}</Label>
                 {(() => {
-                  const userItems = users.map((user) => ({
+                  const userItems = users.map(user => ({
                     value: user.id as string,
-                    label: ((user.name ?? user.email) as string) ?? "",
+                    label: ((user.name ?? user.email) as string) ?? '',
                   }));
                   return (
                     <Select
-                      value={task?.assigneeUserId ?? ""}
-                      onValueChange={(val) =>
+                      value={task?.assigneeUserId ?? ''}
+                      onValueChange={val =>
                         form.setValue(`tasks.${index}.assigneeUserId`, val as string, {
                           shouldDirty: true,
                         })
                       }
-                      items={userItems}
-                    >
+                      items={userItems}>
                       <SelectTrigger id={`task-user-${index}`} className="w-full">
-                        <SelectValue placeholder={t("userPlaceholder")} />
+                        <SelectValue placeholder={t('userPlaceholder')} />
                       </SelectTrigger>
                       <SelectContent>
                         {userItems.map((item: { value: string; label: string }) => (
@@ -367,12 +362,11 @@ export function TaskCard({ index, onRemove, allTasks, form, dragHandleProps }: T
 
             {/* Due offset */}
             <div className="space-y-1.5">
-              <Label id={`task-due-label-${index}`}>{t("dueOffset")}</Label>
+              <Label id={`task-due-label-${index}`}>{t('dueOffset')}</Label>
               <div
                 className="flex items-center gap-2"
                 role="group"
-                aria-labelledby={`task-due-label-${index}`}
-              >
+                aria-labelledby={`task-due-label-${index}`}>
                 <Input
                   id={`task-due-days-${index}`}
                   type="number"
@@ -382,9 +376,9 @@ export function TaskCard({ index, onRemove, allTasks, form, dragHandleProps }: T
                   {...form.register(`tasks.${index}.dueOffsetDays`, {
                     valueAsNumber: true,
                   })}
-                  aria-label={t("dueOffsetDays")}
+                  aria-label={t('dueOffsetDays')}
                 />
-                <span className="text-sm text-muted-foreground">{t("dueOffsetDays")}</span>
+                <span className="text-sm text-muted-foreground">{t('dueOffsetDays')}</span>
                 <Input
                   id={`task-due-hours-${index}`}
                   type="number"
@@ -394,9 +388,9 @@ export function TaskCard({ index, onRemove, allTasks, form, dragHandleProps }: T
                   {...form.register(`tasks.${index}.dueOffsetHours`, {
                     valueAsNumber: true,
                   })}
-                  aria-label={t("dueOffsetHours")}
+                  aria-label={t('dueOffsetHours')}
                 />
-                <span className="text-sm text-muted-foreground">{t("dueOffsetHours")}</span>
+                <span className="text-sm text-muted-foreground">{t('dueOffsetHours')}</span>
               </div>
             </div>
 
@@ -405,40 +399,39 @@ export function TaskCard({ index, onRemove, allTasks, form, dragHandleProps }: T
               <Switch
                 id={`task-required-${index}`}
                 checked={task?.required ?? false}
-                onCheckedChange={(checked) =>
+                onCheckedChange={checked =>
                   form.setValue(`tasks.${index}.required`, !!checked, {
                     shouldDirty: true,
                   })
                 }
               />
-              <Label htmlFor={`task-required-${index}`}>{t("requiredTask")}</Label>
+              <Label htmlFor={`task-required-${index}`}>{t('requiredTask')}</Label>
             </div>
 
             {/* Dependency */}
             <div className="space-y-1.5">
-              <Label htmlFor={`task-depends-${index}`}>{t("dependsOn")}</Label>
+              <Label htmlFor={`task-depends-${index}`}>{t('dependsOn')}</Label>
               {(() => {
                 const depItems = [
-                  { value: "__none__", label: t("noDependency") },
+                  { value: '__none__', label: t('noDependency') },
                   ...dependencyOptions,
                 ];
                 return (
                   <Select
-                    value={task?.dependsOnTaskTemplateId ?? ""}
-                    onValueChange={(val) =>
+                    value={task?.dependsOnTaskTemplateId ?? ''}
+                    onValueChange={val =>
                       form.setValue(
                         `tasks.${index}.dependsOnTaskTemplateId`,
-                        val === "__none__" ? undefined : (val as string),
+                        val === '__none__' ? undefined : (val as string),
                         { shouldDirty: true },
                       )
                     }
-                    items={depItems}
-                  >
+                    items={depItems}>
                     <SelectTrigger id={`task-depends-${index}`} className="w-full">
-                      <SelectValue placeholder={t("dependsOnPlaceholder")} />
+                      <SelectValue placeholder={t('dependsOnPlaceholder')} />
                     </SelectTrigger>
                     <SelectContent>
-                      {depItems.map((item) => (
+                      {depItems.map(item => (
                         <SelectItem key={item.value} value={item.value}>
                           {item.label}
                         </SelectItem>
@@ -451,9 +444,9 @@ export function TaskCard({ index, onRemove, allTasks, form, dragHandleProps }: T
 
             {/* Conditions */}
             <div className="space-y-1.5">
-              <Label>{t("conditions")}</Label>
+              <Label>{t('conditions')}</Label>
               <ConditionBuilder
-                value={conditions as Parameters<typeof ConditionBuilder>[0]["value"]}
+                value={conditions as Parameters<typeof ConditionBuilder>[0]['value']}
                 onChange={handleConditionsChange}
               />
             </div>
@@ -472,12 +465,11 @@ export function TaskCard({ index, onRemove, allTasks, form, dragHandleProps }: T
               <button
                 type="button"
                 className="text-sm text-destructive hover:underline"
-                onClick={() => onRemove(index)}
-              >
-                {t("removeTask")}
+                onClick={() => onRemove(index)}>
+                {t('removeTask')}
               </button>
               <Button type="button" variant="secondary" size="sm" onClick={() => setIsOpen(false)}>
-                {t("doneEditing")}
+                {t('doneEditing')}
               </Button>
             </div>
           </div>

@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { ArrowLeft, ArrowRight, Check, Sparkles } from "lucide-react";
-import { TrackClick } from "@/components/analytics/track-click";
-import { FadeUp, StaggerContainer, StaggerItem } from "@/components/motion-wrapper";
-import { useLocale } from "@/i18n";
-import type { PricingPlan } from "@/lib/stripe";
-import { formatPrice } from "@/lib/stripe";
+import { ArrowLeft, ArrowRight, Check, Sparkles } from 'lucide-react';
+import { TrackClick } from '@/components/analytics/track-click';
+import { FadeUp, StaggerContainer, StaggerItem } from '@/components/motion-wrapper';
+import { useLocale } from '@/i18n';
+import type { PricingPlan } from '@/lib/stripe';
+import { formatPrice } from '@/lib/stripe';
 
 export function PricingHero({ plans }: { plans: PricingPlan[] }) {
   const locale = useLocale();
@@ -21,8 +21,7 @@ export function PricingHero({ plans }: { plans: PricingPlan[] }) {
         <FadeUp>
           <a
             href={`/${locale}`}
-            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground mb-10"
-          >
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground mb-10">
             <ArrowLeft className="h-3.5 w-3.5" />
             Back to home
           </a>
@@ -42,15 +41,13 @@ export function PricingHero({ plans }: { plans: PricingPlan[] }) {
         {/* Plan cards — data from Stripe API at build time */}
         <StaggerContainer
           className="mt-14 grid grid-cols-1 gap-5 md:grid-cols-3 items-stretch max-w-4xl mx-auto"
-          staggerDelay={0.1}
-        >
-          {plans.map((plan) => (
+          staggerDelay={0.1}>
+          {plans.map(plan => (
             <StaggerItem key={plan.id}>
               <div
                 className={`card-glow relative flex h-full flex-col rounded-2xl border bg-surface-1/70 p-7 backdrop-blur-sm ${
-                  plan.popular ? "border-primary/40 shadow-lg" : "border-border/50"
-                }`}
-              >
+                  plan.popular ? 'border-primary/40 shadow-lg' : 'border-border/50'
+                }`}>
                 {plan.popular && (
                   <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-1 text-xs font-semibold text-primary-foreground shadow-md">
                     <Sparkles className="h-3 w-3" />
@@ -82,7 +79,7 @@ export function PricingHero({ plans }: { plans: PricingPlan[] }) {
                 </div>
 
                 <ul className="mb-8 flex-1 space-y-3">
-                  {plan.features.map((feature) => (
+                  {plan.features.map(feature => (
                     <li key={feature} className="flex items-start gap-2.5">
                       <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                       <span className="text-sm text-foreground/85">{feature}</span>
@@ -95,15 +92,14 @@ export function PricingHero({ plans }: { plans: PricingPlan[] }) {
                     href={plan.ctaHref}
                     className={`group inline-flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition-all active:scale-[0.98] ${
                       plan.popular
-                        ? "bg-primary text-primary-foreground shadow-md hover:bg-primary/90"
-                        : "border border-border bg-surface-1 text-foreground hover:bg-muted/50"
-                    }`}
-                  >
+                        ? 'bg-primary text-primary-foreground shadow-md hover:bg-primary/90'
+                        : 'border border-border bg-surface-1 text-foreground hover:bg-muted/50'
+                    }`}>
                     {plan.monthlyPrice === 0
-                      ? "Start free"
+                      ? 'Start free'
                       : plan.monthlyPrice === null
-                        ? "Talk to sales"
-                        : "Start 14-day trial"}
+                        ? 'Talk to sales'
+                        : 'Start 14-day trial'}
                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                   </a>
                 </TrackClick>

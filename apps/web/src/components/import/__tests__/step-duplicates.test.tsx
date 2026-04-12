@@ -1,15 +1,15 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, setup } from "@/test/test-utils";
-import type { ImportRow } from "../import-wizard-dialog";
-import { StepDuplicates } from "../step-duplicates";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { render, screen, setup } from '@/test/test-utils';
+import type { ImportRow } from '../import-wizard-dialog';
+import { StepDuplicates } from '../step-duplicates';
 
 // ---------------------------------------------------------------------------
 // Mocks
 // ---------------------------------------------------------------------------
 
-const usePermissionsMock = vi.fn(() => ({ role: "admin" }));
+const usePermissionsMock = vi.fn(() => ({ role: 'admin' }));
 
-vi.mock("@/hooks/use-permissions", () => ({
+vi.mock('@/hooks/use-permissions', () => ({
   usePermissions: () => usePermissionsMock(),
 }));
 
@@ -24,25 +24,25 @@ const duplicateRow = (
 ): ImportRow => ({
   rowNumber,
   data,
-  status: "duplicate",
+  status: 'duplicate',
   errors: [],
   duplicateOf,
 });
 
-const ROW_1 = duplicateRow(1, { taxId: "1234567890", legalName: "New Corp" }, "Existing Ltd");
+const ROW_1 = duplicateRow(1, { taxId: '1234567890', legalName: 'New Corp' }, 'Existing Ltd');
 
-const ROW_2 = duplicateRow(2, { contractorTaxId: "9988776655", title: "Alt title" }, "Other Co");
+const ROW_2 = duplicateRow(2, { contractorTaxId: '9988776655', title: 'Alt title' }, 'Other Co');
 
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
 
-describe("StepDuplicates", () => {
+describe('StepDuplicates', () => {
   beforeEach(() => {
-    usePermissionsMock.mockReturnValue({ role: "admin" });
+    usePermissionsMock.mockReturnValue({ role: 'admin' });
   });
 
-  it("renders duplicate count in the banner", () => {
+  it('renders duplicate count in the banner', () => {
     const onActionsChange = vi.fn();
     render(
       <StepDuplicates
@@ -57,7 +57,7 @@ describe("StepDuplicates", () => {
     ).toBeInTheDocument();
   });
 
-  it("Skip all duplicates sets skip for every row", async () => {
+  it('Skip all duplicates sets skip for every row', async () => {
     const onActionsChange = vi.fn();
     const { user } = setup(
       <StepDuplicates
@@ -67,15 +67,15 @@ describe("StepDuplicates", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: "Skip all duplicates" }));
+    await user.click(screen.getByRole('button', { name: 'Skip all duplicates' }));
 
     expect(onActionsChange).toHaveBeenCalledWith({
-      "1": "skip",
-      "2": "skip",
+      '1': 'skip',
+      '2': 'skip',
     });
   });
 
-  it("Update all duplicates sets update for every row", async () => {
+  it('Update all duplicates sets update for every row', async () => {
     const onActionsChange = vi.fn();
     const { user } = setup(
       <StepDuplicates
@@ -85,51 +85,51 @@ describe("StepDuplicates", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: "Update all" }));
+    await user.click(screen.getByRole('button', { name: 'Update all' }));
 
     expect(onActionsChange).toHaveBeenCalledWith({
-      "1": "update",
-      "2": "update",
+      '1': 'update',
+      '2': 'update',
     });
   });
 
-  it("merges per-row action into duplicateActions", async () => {
+  it('merges per-row action into duplicateActions', async () => {
     const onActionsChange = vi.fn();
     const { user } = setup(
       <StepDuplicates
         duplicateRows={[ROW_1, ROW_2]}
-        duplicateActions={{ "1": "skip" }}
+        duplicateActions={{ '1': 'skip' }}
         onActionsChange={onActionsChange}
       />,
     );
 
-    const updateRadios = screen.getAllByRole("radio", { name: "Update existing" });
+    const updateRadios = screen.getAllByRole('radio', { name: 'Update existing' });
     await user.click(updateRadios[1]!);
 
     expect(onActionsChange).toHaveBeenCalledWith({
-      "1": "skip",
-      "2": "update",
+      '1': 'skip',
+      '2': 'update',
     });
   });
 
-  it("masks tax ID for roles without sensitive PII access", () => {
-    usePermissionsMock.mockReturnValue({ role: "readonly" });
+  it('masks tax ID for roles without sensitive PII access', () => {
+    usePermissionsMock.mockReturnValue({ role: 'readonly' });
 
     render(
       <StepDuplicates duplicateRows={[ROW_1]} duplicateActions={{}} onActionsChange={vi.fn()} />,
     );
 
-    expect(screen.getByText("12••••••90")).toBeInTheDocument();
-    expect(screen.queryByText("1234567890")).not.toBeInTheDocument();
+    expect(screen.getByText('12••••••90')).toBeInTheDocument();
+    expect(screen.queryByText('1234567890')).not.toBeInTheDocument();
   });
 
-  it("shows full tax ID for privileged roles", () => {
-    usePermissionsMock.mockReturnValue({ role: "admin" });
+  it('shows full tax ID for privileged roles', () => {
+    usePermissionsMock.mockReturnValue({ role: 'admin' });
 
     render(
       <StepDuplicates duplicateRows={[ROW_1]} duplicateActions={{}} onActionsChange={vi.fn()} />,
     );
 
-    expect(screen.getByText("1234567890")).toBeInTheDocument();
+    expect(screen.getByText('1234567890')).toBeInTheDocument();
   });
 });

@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { Banknote } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
-import { EmptyState } from "@/components/shared/empty-state";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useQuery } from '@tanstack/react-query';
+import { Banknote } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { EmptyState } from '@/components/shared/empty-state';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -14,16 +14,16 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { trpc } from "@/trpc/init";
+} from '@/components/ui/table';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
 function formatAmount(minor: number, currency: string): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
     currency,
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
@@ -45,35 +45,35 @@ function formatAmount(minor: number, currency: string): string {
  * - Empty state with specific copy from UI-SPEC
  */
 export default function PortalPaymentsPage() {
-  const t = useTranslations("Portal");
+  const t = useTranslations('Portal');
   const router = useRouter();
   const paymentsQuery = useQuery(trpc.portal.listPayments.queryOptions());
   const payments = paymentsQuery.data;
   const isLoading = paymentsQuery.isPending;
 
   function formatDate(date: Date | string | null): string {
-    if (!date) return t("time.na");
-    const d = typeof date === "string" ? new Date(date) : date;
-    return new Intl.DateTimeFormat("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
+    if (!date) return t('time.na');
+    const d = typeof date === 'string' ? new Date(date) : date;
+    return new Intl.DateTimeFormat('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
     }).format(d);
   }
 
   return (
     <div>
-      <h1 className="text-xl font-semibold">{t("payments.title")}</h1>
+      <h1 className="text-xl font-semibold">{t('payments.title')}</h1>
 
       {isLoading ? (
         <div className="mt-6">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>{t("payments.columns.invoiceNumber")}</TableHead>
-                <TableHead>{t("payments.columns.amount")}</TableHead>
-                <TableHead>{t("payments.columns.paymentDate")}</TableHead>
-                <TableHead>{t("payments.columns.status")}</TableHead>
+                <TableHead>{t('payments.columns.invoiceNumber')}</TableHead>
+                <TableHead>{t('payments.columns.amount')}</TableHead>
+                <TableHead>{t('payments.columns.paymentDate')}</TableHead>
+                <TableHead>{t('payments.columns.status')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -101,26 +101,25 @@ export default function PortalPaymentsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>{t("payments.columns.invoiceNumber")}</TableHead>
-                <TableHead>{t("payments.columns.amount")}</TableHead>
-                <TableHead>{t("payments.columns.paymentDate")}</TableHead>
-                <TableHead>{t("payments.columns.status")}</TableHead>
+                <TableHead>{t('payments.columns.invoiceNumber')}</TableHead>
+                <TableHead>{t('payments.columns.amount')}</TableHead>
+                <TableHead>{t('payments.columns.paymentDate')}</TableHead>
+                <TableHead>{t('payments.columns.status')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {payments.map((payment) => (
+              {payments.map(payment => (
                 <TableRow
                   key={payment.id}
                   className="cursor-pointer"
-                  onClick={() => router.push(`/portal/invoices/${payment.id}`)}
-                >
+                  onClick={() => router.push(`/portal/invoices/${payment.id}`)}>
                   <TableCell className="text-sm font-medium">{payment.invoiceNumber}</TableCell>
                   <TableCell className="text-sm">
                     {formatAmount(payment.amountMinor, payment.currency)}
                   </TableCell>
                   <TableCell className="text-sm">{formatDate(payment.paidAt)}</TableCell>
                   <TableCell>
-                    <Badge variant="default">{t("payments.paid")}</Badge>
+                    <Badge variant="default">{t('payments.paid')}</Badge>
                   </TableCell>
                 </TableRow>
               ))}
@@ -130,8 +129,8 @@ export default function PortalPaymentsPage() {
       ) : (
         <EmptyState
           icon={Banknote}
-          heading={t("payments.emptyTitle")}
-          body={t("payments.emptyBody")}
+          heading={t('payments.emptyTitle')}
+          body={t('payments.emptyBody')}
         />
       )}
     </div>

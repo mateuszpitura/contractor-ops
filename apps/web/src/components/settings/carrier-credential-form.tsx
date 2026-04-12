@@ -1,24 +1,24 @@
-"use client";
+'use client';
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Eye, EyeOff, Loader2, Truck } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useCallback, useState } from "react";
-import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { trpc } from "@/trpc/init";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Eye, EyeOff, Loader2, Truck } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useState } from 'react';
+import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
 interface CarrierCredentialFormProps {
-  carrier: "dpd" | "ups";
+  carrier: 'dpd' | 'ups';
   carrierLabel: string;
 }
 
@@ -58,9 +58,9 @@ function PasswordField({
       <Label className="text-sm">{label}</Label>
       <div className="relative">
         <Input
-          type={visible ? "text" : "password"}
+          type={visible ? 'text' : 'password'}
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={e => onChange(e.target.value)}
           placeholder={placeholder}
           className="pe-10"
         />
@@ -68,8 +68,7 @@ function PasswordField({
           type="button"
           className="absolute end-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
           onClick={() => setVisible(!visible)}
-          aria-label={visible ? "Hide" : "Show"}
-        >
+          aria-label={visible ? 'Hide' : 'Show'}>
           {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
         </button>
       </div>
@@ -87,27 +86,27 @@ function PasswordField({
  * Uses saveCourierConfig and getCourierConfigs from the equipment router.
  */
 export function CarrierCredentialForm({ carrier, carrierLabel }: CarrierCredentialFormProps) {
-  const t = useTranslations("Settings.carriers");
+  const t = useTranslations('Settings.carriers');
   const queryClient = useQueryClient();
 
   // Check if this carrier is already configured
   const configsQuery = useQuery(trpc.equipment.getCourierConfigs.queryOptions());
   const configs = (configsQuery.data ?? []) as unknown as Array<{ carrier: string }>;
-  const isConnected = configs.some((c) => c.carrier.toLowerCase() === carrier);
+  const isConnected = configs.some(c => c.carrier.toLowerCase() === carrier);
 
   // DPD credentials state
   const [dpdCreds, setDpdCreds] = useState<DpdCredentials>({
-    username: "",
-    password: "",
-    fid: "",
+    username: '',
+    password: '',
+    fid: '',
     sandbox: false,
   });
 
   // UPS credentials state
   const [upsCreds, setUpsCreds] = useState<UpsCredentials>({
-    clientId: "",
-    clientSecret: "",
-    accountNumber: "",
+    clientId: '',
+    clientSecret: '',
+    accountNumber: '',
     sandbox: false,
   });
 
@@ -115,13 +114,13 @@ export function CarrierCredentialForm({ carrier, carrierLabel }: CarrierCredenti
   const saveMutation = useMutation(
     trpc.equipment.saveCourierConfig.mutationOptions({
       onSuccess: () => {
-        toast.success(t("credentialsSaved"));
+        toast.success(t('credentialsSaved'));
         queryClient.invalidateQueries({
           queryKey: trpc.equipment.getCourierConfigs.queryKey(),
         });
       },
       onError: () => {
-        toast.error(t("saveFailed"));
+        toast.error(t('saveFailed'));
       },
     }),
   );
@@ -130,27 +129,27 @@ export function CarrierCredentialForm({ carrier, carrierLabel }: CarrierCredenti
   const testMutation = useMutation(
     trpc.equipment.testCourierConnection.mutationOptions({
       onSuccess: () => {
-        toast.success(t("connectionVerified"));
+        toast.success(t('connectionVerified'));
       },
       onError: () => {
-        toast.error(t("connectionFailed"));
+        toast.error(t('connectionFailed'));
       },
     }),
   );
 
   const handleSave = useCallback(() => {
     const credentials =
-      carrier === "dpd"
-        ? { carrier: "dpd" as const, ...dpdCreds }
-        : { carrier: "ups" as const, ...upsCreds };
+      carrier === 'dpd'
+        ? { carrier: 'dpd' as const, ...dpdCreds }
+        : { carrier: 'ups' as const, ...upsCreds };
     saveMutation.mutate(credentials);
   }, [carrier, dpdCreds, upsCreds, saveMutation]);
 
   const handleTest = useCallback(() => {
     const credentials =
-      carrier === "dpd"
-        ? { carrier: "dpd" as const, ...dpdCreds }
-        : { carrier: "ups" as const, ...upsCreds };
+      carrier === 'dpd'
+        ? { carrier: 'dpd' as const, ...dpdCreds }
+        : { carrier: 'ups' as const, ...upsCreds };
     testMutation.mutate(credentials);
   }, [carrier, dpdCreds, upsCreds, testMutation]);
 
@@ -166,71 +165,71 @@ export function CarrierCredentialForm({ carrier, carrierLabel }: CarrierCredenti
           <div className="flex-1">
             <CardTitle>{carrierLabel}</CardTitle>
           </div>
-          <Badge variant={isConnected ? "success" : "secondary"}>
-            {isConnected ? t("connected") : t("notConfigured")}
+          <Badge variant={isConnected ? 'success' : 'secondary'}>
+            {isConnected ? t('connected') : t('notConfigured')}
           </Badge>
         </div>
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {carrier === "dpd" ? (
+        {carrier === 'dpd' ? (
           <>
             <PasswordField
-              label={t("username")}
+              label={t('username')}
               value={dpdCreds.username}
-              onChange={(v) => setDpdCreds((prev) => ({ ...prev, username: v }))}
+              onChange={v => setDpdCreds(prev => ({ ...prev, username: v }))}
             />
             <PasswordField
-              label={t("password")}
+              label={t('password')}
               value={dpdCreds.password}
-              onChange={(v) => setDpdCreds((prev) => ({ ...prev, password: v }))}
+              onChange={v => setDpdCreds(prev => ({ ...prev, password: v }))}
             />
             <PasswordField
-              label={t("fid")}
+              label={t('fid')}
               value={dpdCreds.fid}
-              onChange={(v) => setDpdCreds((prev) => ({ ...prev, fid: v }))}
+              onChange={v => setDpdCreds(prev => ({ ...prev, fid: v }))}
             />
             <label className="flex cursor-pointer items-center gap-2">
               <Checkbox
                 checked={dpdCreds.sandbox}
-                onCheckedChange={(checked) =>
-                  setDpdCreds((prev) => ({
+                onCheckedChange={checked =>
+                  setDpdCreds(prev => ({
                     ...prev,
                     sandbox: checked === true,
                   }))
                 }
               />
-              <span className="text-sm">{t("sandbox")}</span>
+              <span className="text-sm">{t('sandbox')}</span>
             </label>
           </>
         ) : (
           <>
             <PasswordField
-              label={t("clientId")}
+              label={t('clientId')}
               value={upsCreds.clientId}
-              onChange={(v) => setUpsCreds((prev) => ({ ...prev, clientId: v }))}
+              onChange={v => setUpsCreds(prev => ({ ...prev, clientId: v }))}
             />
             <PasswordField
-              label={t("clientSecret")}
+              label={t('clientSecret')}
               value={upsCreds.clientSecret}
-              onChange={(v) => setUpsCreds((prev) => ({ ...prev, clientSecret: v }))}
+              onChange={v => setUpsCreds(prev => ({ ...prev, clientSecret: v }))}
             />
             <PasswordField
-              label={t("accountNumber")}
+              label={t('accountNumber')}
               value={upsCreds.accountNumber}
-              onChange={(v) => setUpsCreds((prev) => ({ ...prev, accountNumber: v }))}
+              onChange={v => setUpsCreds(prev => ({ ...prev, accountNumber: v }))}
             />
             <label className="flex cursor-pointer items-center gap-2">
               <Checkbox
                 checked={upsCreds.sandbox}
-                onCheckedChange={(checked) =>
-                  setUpsCreds((prev) => ({
+                onCheckedChange={checked =>
+                  setUpsCreds(prev => ({
                     ...prev,
                     sandbox: checked === true,
                   }))
                 }
               />
-              <span className="text-sm">{t("sandbox")}</span>
+              <span className="text-sm">{t('sandbox')}</span>
             </label>
           </>
         )}
@@ -238,11 +237,11 @@ export function CarrierCredentialForm({ carrier, carrierLabel }: CarrierCredenti
         <div className="flex justify-end gap-2 pt-2">
           <Button variant="outline" size="sm" onClick={handleTest} disabled={isPending}>
             {testMutation.isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
-            {t("testConnection")}
+            {t('testConnection')}
           </Button>
           <Button size="sm" onClick={handleSave} disabled={isPending}>
             {saveMutation.isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
-            {t("saveCredentials")}
+            {t('saveCredentials')}
           </Button>
         </div>
       </CardContent>

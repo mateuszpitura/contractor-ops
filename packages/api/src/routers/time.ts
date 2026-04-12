@@ -1,4 +1,4 @@
-import type { Prisma } from "@contractor-ops/db";
+import type { Prisma } from '@contractor-ops/db';
 import {
   approveTimesheetSchema,
   bulkApproveTimesheetsSchema,
@@ -6,19 +6,19 @@ import {
   listTimesheetsSchema,
   rejectTimesheetSchema,
   timeReconciliationSchema,
-} from "@contractor-ops/validators";
-import { TRPCError } from "@trpc/server";
-import { z } from "zod";
-import { router } from "../init.js";
-import { requirePermission } from "../middleware/rbac.js";
-import { tenantProcedure } from "../middleware/tenant.js";
+} from '@contractor-ops/validators';
+import { TRPCError } from '@trpc/server';
+import { z } from 'zod';
+import { router } from '../init.js';
+import { requirePermission } from '../middleware/rbac.js';
+import { tenantProcedure } from '../middleware/tenant.js';
 import {
   approveTimesheet,
   bulkApproveTimesheets,
   bulkRejectTimesheets,
   rejectTimesheet,
-} from "../services/time-entry.js";
-import { computeTimeReconciliation } from "../services/time-reconciliation.js";
+} from '../services/time-entry.js';
+import { computeTimeReconciliation } from '../services/time-reconciliation.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -51,13 +51,13 @@ export const timeRouter = router({
    * List pending (SUBMITTED) timesheets for manager review.
    * Ordered by submittedAt ASC (oldest first).
    */
-  listPending: tenantProcedure.use(requirePermission({ time: ["read"] })).query(async ({ ctx }) => {
+  listPending: tenantProcedure.use(requirePermission({ time: ['read'] })).query(async ({ ctx }) => {
     const timesheets = await ctx.db.timesheet.findMany({
       where: {
         organizationId: ctx.organizationId,
-        status: "SUBMITTED",
+        status: 'SUBMITTED',
       },
-      orderBy: { submittedAt: "asc" },
+      orderBy: { submittedAt: 'asc' },
       include: {
         contractor: {
           select: {
@@ -80,7 +80,7 @@ export const timeRouter = router({
    * Cursor-based pagination, ordered by weekStartDate DESC.
    */
   listAll: tenantProcedure
-    .use(requirePermission({ time: ["read"] }))
+    .use(requirePermission({ time: ['read'] }))
     .input(listTimesheetsSchema)
     .query(async ({ ctx, input }) => {
       const where: Prisma.TimesheetWhereInput = {
@@ -99,7 +99,7 @@ export const timeRouter = router({
         where,
         take: input.limit + 1,
         ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
-        orderBy: { weekStartDate: "desc" },
+        orderBy: { weekStartDate: 'desc' },
         include: {
           contractor: {
             select: {
@@ -128,7 +128,7 @@ export const timeRouter = router({
    * Used for the per-contractor review detail view.
    */
   getTimesheet: tenantProcedure
-    .use(requirePermission({ time: ["read"] }))
+    .use(requirePermission({ time: ['read'] }))
     .input(z.object({ timesheetId: z.string().min(1) }))
     .query(async ({ ctx, input }) => {
       const timesheet = await ctx.db.timesheet.findFirst({
@@ -145,7 +145,7 @@ export const timeRouter = router({
             },
           },
           entries: {
-            orderBy: { entryDate: "asc" },
+            orderBy: { entryDate: 'asc' },
             include: {
               contract: {
                 select: { id: true, title: true },
@@ -157,8 +157,8 @@ export const timeRouter = router({
 
       if (!timesheet) {
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Timesheet not found",
+          code: 'NOT_FOUND',
+          message: 'Timesheet not found',
         });
       }
 
@@ -170,7 +170,7 @@ export const timeRouter = router({
    * Used for the admin time overview.
    */
   listContractors: tenantProcedure
-    .use(requirePermission({ time: ["read"] }))
+    .use(requirePermission({ time: ['read'] }))
     .query(async ({ ctx }) => {
       // Get contractors with timesheets via a grouped query
       // Get all contractors in the org
@@ -187,10 +187,10 @@ export const timeRouter = router({
 
       // Get pending counts per contractor
       const pendingCounts = await ctx.db.timesheet.groupBy({
-        by: ["contractorId"],
+        by: ['contractorId'],
         where: {
           organizationId: ctx.organizationId,
-          status: "SUBMITTED",
+          status: 'SUBMITTED',
         },
         _count: true,
       });
@@ -204,7 +204,7 @@ export const timeRouter = router({
 
       // Get contractors who have at least one timesheet
       const contractorWithTimesheets = await ctx.db.timesheet.groupBy({
-        by: ["contractorId"],
+        by: ['contractorId'],
         where: {
           organizationId: ctx.organizationId,
         },
@@ -219,10 +219,10 @@ export const timeRouter = router({
       const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
 
       const monthlyStats = await ctx.db.timesheet.groupBy({
-        by: ["contractorId"],
+        by: ['contractorId'],
         where: {
           organizationId: ctx.organizationId,
-          status: "APPROVED",
+          status: 'APPROVED',
           weekStartDate: { gte: monthStart },
         },
         _sum: { totalMinutes: true },
@@ -236,8 +236,8 @@ export const timeRouter = router({
       );
 
       const result = contractors
-        .filter((c) => hasTimesheetSet.has(c.id))
-        .map((c) => ({
+        .filter(c => hasTimesheetSet.has(c.id))
+        .map(c => ({
           id: c.id,
           legalName: c.legalName,
           email: c.email,
@@ -256,7 +256,7 @@ export const timeRouter = router({
    * Approve a single timesheet. D-08: standalone approval.
    */
   approve: tenantProcedure
-    .use(requirePermission({ time: ["approve"] }))
+    .use(requirePermission({ time: ['approve'] }))
     .input(approveTimesheetSchema)
     .mutation(async ({ ctx, input }) => {
       const result = await approveTimesheet(
@@ -272,7 +272,7 @@ export const timeRouter = router({
    * Reject a single timesheet with required reason. D-07.
    */
   reject: tenantProcedure
-    .use(requirePermission({ time: ["approve"] }))
+    .use(requirePermission({ time: ['approve'] }))
     .input(rejectTimesheetSchema)
     .mutation(async ({ ctx, input }) => {
       const result = await rejectTimesheet(
@@ -289,7 +289,7 @@ export const timeRouter = router({
    * Bulk approve multiple timesheets.
    */
   bulkApprove: tenantProcedure
-    .use(requirePermission({ time: ["approve"] }))
+    .use(requirePermission({ time: ['approve'] }))
     .input(bulkApproveTimesheetsSchema)
     .mutation(async ({ ctx, input }) => {
       const result = await bulkApproveTimesheets(
@@ -305,7 +305,7 @@ export const timeRouter = router({
    * Bulk reject multiple timesheets with shared reason.
    */
   bulkReject: tenantProcedure
-    .use(requirePermission({ time: ["approve"] }))
+    .use(requirePermission({ time: ['approve'] }))
     .input(bulkRejectTimesheetsSchema)
     .mutation(async ({ ctx, input }) => {
       const result = await bulkRejectTimesheets(
@@ -327,7 +327,7 @@ export const timeRouter = router({
    * Returns null for non-hourly/daily contracts or when no approved time exists.
    */
   getReconciliation: tenantProcedure
-    .use(requirePermission({ time: ["read"] }))
+    .use(requirePermission({ time: ['read'] }))
     .input(timeReconciliationSchema)
     .query(async ({ ctx, input }) => {
       const result = await computeTimeReconciliation(
@@ -347,7 +347,7 @@ export const timeRouter = router({
    * servicePeriodStart/End or issueDate, and computes reconciliation.
    */
   getInvoiceReconciliation: tenantProcedure
-    .use(requirePermission({ time: ["read"] }))
+    .use(requirePermission({ time: ['read'] }))
     .input(z.object({ invoiceId: z.string().min(1) }))
     .query(async ({ ctx, input }) => {
       const invoice = await ctx.db.invoice.findFirst({
@@ -394,7 +394,7 @@ export const timeRouter = router({
    * Sorted by deviation percentage descending (highest first per UI-SPEC).
    */
   listReconciliations: tenantProcedure
-    .use(requirePermission({ time: ["read"] }))
+    .use(requirePermission({ time: ['read'] }))
     .input(
       z.object({
         from: z.string().date().optional(),
@@ -409,7 +409,7 @@ export const timeRouter = router({
         deletedAt: null,
         contractId: { not: null },
         contract: {
-          rateType: { in: ["PER_HOUR", "PER_DAY"] },
+          rateType: { in: ['PER_HOUR', 'PER_DAY'] },
         },
       };
 
@@ -423,7 +423,7 @@ export const timeRouter = router({
         where: invoiceWhere,
         take: input.limit + 1,
         ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
-        orderBy: { issueDate: "desc" },
+        orderBy: { issueDate: 'desc' },
         include: {
           contractor: {
             select: { id: true, legalName: true },
@@ -447,7 +447,7 @@ export const timeRouter = router({
 
       // Compute reconciliation for each invoice
       const items = await Promise.all(
-        invoices.map(async (inv) => {
+        invoices.map(async inv => {
           if (!inv.contractId) return null;
 
           const issueDate = inv.issueDate;

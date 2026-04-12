@@ -1,10 +1,10 @@
-import type { Prisma } from "@contractor-ops/db";
-import { z } from "zod";
-import { router } from "../init.js";
-import { requirePermission } from "../middleware/rbac.js";
-import { tenantProcedure } from "../middleware/tenant.js";
-import { requireTier } from "../middleware/tier.js";
-import { generateAuditCsv } from "../services/report-export.js";
+import type { Prisma } from '@contractor-ops/db';
+import { z } from 'zod';
+import { router } from '../init.js';
+import { requirePermission } from '../middleware/rbac.js';
+import { tenantProcedure } from '../middleware/tenant.js';
+import { requireTier } from '../middleware/tier.js';
+import { generateAuditCsv } from '../services/report-export.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -14,7 +14,7 @@ function plain<T>(data: T): T {
   return JSON.parse(JSON.stringify(data)) as T;
 }
 
-const settingsRead = requirePermission({ settings: ["read"] });
+const settingsRead = requirePermission({ settings: ['read'] });
 
 // ---------------------------------------------------------------------------
 // Shared filter schema
@@ -45,7 +45,7 @@ export const auditRouter = router({
         .object({
           page: z.number().min(1).default(1),
           pageSize: z.number().min(1).max(100).default(25),
-          sortOrder: z.enum(["asc", "desc"]).default("desc"),
+          sortOrder: z.enum(['asc', 'desc']).default('desc'),
         })
         .merge(auditFilterSchema),
     )
@@ -57,9 +57,9 @@ export const auditRouter = router({
       // Search: OR across actorName, resourceName, action (case-insensitive)
       if (input.search) {
         where.OR = [
-          { actorName: { contains: input.search, mode: "insensitive" } },
-          { resourceName: { contains: input.search, mode: "insensitive" } },
-          { action: { contains: input.search, mode: "insensitive" } },
+          { actorName: { contains: input.search, mode: 'insensitive' } },
+          { resourceName: { contains: input.search, mode: 'insensitive' } },
+          { action: { contains: input.search, mode: 'insensitive' } },
         ];
       }
 
@@ -103,13 +103,13 @@ export const auditRouter = router({
   actors: tenantProcedure.use(settingsRead).query(async ({ ctx }) => {
     const actors = await ctx.db.auditLog.findMany({
       where: { organizationId: ctx.organizationId },
-      distinct: ["actorId"],
+      distinct: ['actorId'],
       select: { actorId: true, actorName: true },
     });
 
     return actors
-      .filter((a) => a.actorId !== null)
-      .map((a) => ({
+      .filter(a => a.actorId !== null)
+      .map(a => ({
         id: a.actorId!,
         name: a.actorName ?? a.actorId!,
       }));
@@ -122,7 +122,7 @@ export const auditRouter = router({
    */
   export: tenantProcedure
     .use(settingsRead)
-    .use(requireTier("ENTERPRISE"))
+    .use(requireTier('ENTERPRISE'))
     .input(auditFilterSchema)
     .mutation(async ({ ctx, input }) => {
       const where: Prisma.AuditLogWhereInput = {
@@ -131,9 +131,9 @@ export const auditRouter = router({
 
       if (input.search) {
         where.OR = [
-          { actorName: { contains: input.search, mode: "insensitive" } },
-          { resourceName: { contains: input.search, mode: "insensitive" } },
-          { action: { contains: input.search, mode: "insensitive" } },
+          { actorName: { contains: input.search, mode: 'insensitive' } },
+          { resourceName: { contains: input.search, mode: 'insensitive' } },
+          { action: { contains: input.search, mode: 'insensitive' } },
         ];
       }
       if (input.actorId) {
@@ -154,7 +154,7 @@ export const auditRouter = router({
 
       const items = await ctx.db.auditLog.findMany({
         where,
-        orderBy: { createdAt: "desc" },
+        orderBy: { createdAt: 'desc' },
         take: 10000,
       });
 

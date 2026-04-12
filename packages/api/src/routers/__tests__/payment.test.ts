@@ -9,19 +9,19 @@
  *    then asserts the arguments passed to Prisma (WHERE clauses, data).
  */
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
-const ORG_ID = "clxxxxxxxxxxxxxxxxxxxxxxxxx";
-const USER_ID = "clyyyyyyyyyyyyyyyyyyyyyyyy";
-const INVOICE_ID_1 = "clinvoice00000000000000001";
-const INVOICE_ID_2 = "clinvoice00000000000000002";
-const CONTRACTOR_ID = "clcontractor000000000001";
-const RUN_ID = "clrun000000000000000000001";
-const ITEM_ID = "clitem00000000000000000001";
+const ORG_ID = 'clxxxxxxxxxxxxxxxxxxxxxxxxx';
+const USER_ID = 'clyyyyyyyyyyyyyyyyyyyyyyyy';
+const INVOICE_ID_1 = 'clinvoice00000000000000001';
+const INVOICE_ID_2 = 'clinvoice00000000000000002';
+const CONTRACTOR_ID = 'clcontractor000000000001';
+const RUN_ID = 'clrun000000000000000000001';
+const ITEM_ID = 'clitem00000000000000000001';
 
 // ---------------------------------------------------------------------------
 // Mock Prisma
@@ -73,23 +73,23 @@ const { mockPrisma } = vi.hoisted(() => {
     },
     paymentExport: {
       create: vi.fn(async (opts: { data: Rec }) => ({
-        id: "export-1",
+        id: 'export-1',
         ...opts.data,
       })),
     },
     organization: {
       findUnique: vi.fn(async () => ({
-        name: "Test Org",
+        name: 'Test Org',
         metadata: {
           settingsJson: {
-            paymentTransferTitleTemplate: "{invoice_number}",
-            bankAccount: { iban: "PL00000000000000000000000000", bic: "BREXPLPW" },
+            paymentTransferTitleTemplate: '{invoice_number}',
+            bankAccount: { iban: 'PL00000000000000000000000000', bic: 'BREXPLPW' },
           },
         },
       })),
     },
     member: {
-      findFirst: vi.fn(async () => ({ role: "admin" })),
+      findFirst: vi.fn(async () => ({ role: 'admin' })),
     },
     $transaction: vi.fn(async (fn: (tx: Rec) => Promise<unknown>) => fn(mockPrisma)),
   };
@@ -101,7 +101,7 @@ const { mockPrisma } = vi.hoisted(() => {
 // Mock modules
 // ---------------------------------------------------------------------------
 
-vi.mock("@contractor-ops/auth", () => ({
+vi.mock('@contractor-ops/auth', () => ({
   auth: {
     api: {
       getSession: vi.fn(),
@@ -110,7 +110,7 @@ vi.mock("@contractor-ops/auth", () => ({
   },
 }));
 
-vi.mock("@contractor-ops/db", () => ({
+vi.mock('@contractor-ops/db', () => ({
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
@@ -122,62 +122,62 @@ vi.mock("@contractor-ops/db", () => ({
   createTenantClientFrom: vi.fn(() => mockPrisma),
 }));
 
-vi.mock("../../services/r2.js", () => ({
+vi.mock('../../services/r2.js', () => ({
   createPresignedUploadUrl: vi.fn(async () => ({
-    url: "https://r2.example.com/upload",
-    key: "mock-key",
+    url: 'https://r2.example.com/upload',
+    key: 'mock-key',
   })),
-  createPresignedDownloadUrl: vi.fn(async () => "https://r2.example.com/download"),
-  generateStorageKey: vi.fn(() => "mock-storage-key"),
+  createPresignedDownloadUrl: vi.fn(async () => 'https://r2.example.com/download'),
+  generateStorageKey: vi.fn(() => 'mock-storage-key'),
   headObject: vi.fn(async () => ({ ContentLength: 1024 })),
   deleteObject: vi.fn(async () => undefined),
 }));
 
-vi.mock("../../services/notification-service.js", () => ({
+vi.mock('../../services/notification-service.js', () => ({
   dispatch: vi.fn(async () => undefined),
 }));
 
-vi.mock("../../services/invoice-matching.js", () => ({
-  computeDuplicateCheckHash: vi.fn(() => "hash"),
+vi.mock('../../services/invoice-matching.js', () => ({
+  computeDuplicateCheckHash: vi.fn(() => 'hash'),
   runAutoMatch: vi.fn(async () => undefined),
 }));
 
-vi.mock("../../services/bank-account-crypto.js", () => ({
+vi.mock('../../services/bank-account-crypto.js', () => ({
   encryptBankAccount: vi.fn((v: string) => `encrypted:${v}`),
 }));
 
-vi.mock("../../services/sanitize.js", () => ({
+vi.mock('../../services/sanitize.js', () => ({
   sanitizeStrings: vi.fn(<T>(v: T) => v),
 }));
 
-vi.mock("../../services/approval-engine.js", () => ({
+vi.mock('../../services/approval-engine.js', () => ({
   routeToChain: vi.fn(async () => null),
   createApprovalFlow: vi.fn(async () => ({})),
   advanceFlow: vi.fn(async () => undefined),
-  computeSlaStatus: vi.fn(() => "ON_TIME"),
+  computeSlaStatus: vi.fn(() => 'ON_TIME'),
 }));
 
-vi.mock("../../services/calendar-event-service.js", () => ({
+vi.mock('../../services/calendar-event-service.js', () => ({
   deleteCalendarEvent: vi.fn(async () => undefined),
 }));
 
-vi.mock("../../services/calendar-deadline-sync.js", () => ({
+vi.mock('../../services/calendar-deadline-sync.js', () => ({
   syncPaymentDueDeadline: vi.fn(async () => undefined),
   syncApprovalSlaDeadline: vi.fn(async () => undefined),
 }));
 
-vi.mock("../../services/report-export.js", () => ({
+vi.mock('../../services/report-export.js', () => ({
   generateAuditCsv: vi.fn(async () => ({
-    base64: "bW9jaw==",
-    filename: "audit-log-2025-01-01.csv",
+    base64: 'bW9jaw==',
+    filename: 'audit-log-2025-01-01.csv',
   })),
 }));
 
-vi.mock("../../services/billing-service.js", () => ({
+vi.mock('../../services/billing-service.js', () => ({
   syncSeatCountForOrg: vi.fn(async () => undefined),
 }));
 
-vi.mock("../../services/cache.js", () => ({
+vi.mock('../../services/cache.js', () => ({
   cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
   invalidate: vi.fn(async () => undefined),
   invalidateByPrefix: vi.fn(async () => undefined),
@@ -185,17 +185,17 @@ vi.mock("../../services/cache.js", () => ({
   CacheTTL: { APPROVAL_CHAINS: 300 },
 }));
 
-vi.mock("../../services/mime-validator.js", () => ({
+vi.mock('../../services/mime-validator.js', () => ({
   isAllowedMimeType: vi.fn(() => true),
   validateMimeType: vi.fn(async () => ({ valid: true })),
 }));
 
-vi.mock("../../services/virus-scanner.js", () => ({
+vi.mock('../../services/virus-scanner.js', () => ({
   isClamAvailable: vi.fn(async () => false),
   scanBuffer: vi.fn(async () => ({ clean: true })),
 }));
 
-vi.mock("../../services/stripe-client.js", () => ({
+vi.mock('../../services/stripe-client.js', () => ({
   stripe: {
     subscriptions: { retrieve: vi.fn(), update: vi.fn(), list: vi.fn(async () => ({ data: [] })) },
     customers: { create: vi.fn(), retrieve: vi.fn() },
@@ -205,35 +205,35 @@ vi.mock("../../services/stripe-client.js", () => ({
   },
 }));
 
-vi.mock("../../services/credit-service.js", () => ({
+vi.mock('../../services/credit-service.js', () => ({
   deductCredits: vi.fn(async () => undefined),
   getBalance: vi.fn(async () => ({ credits: 0 })),
   hasCredits: vi.fn(async () => true),
 }));
 
-vi.mock("../../services/ocr-extraction.js", () => ({
+vi.mock('../../services/ocr-extraction.js', () => ({
   extractInvoiceData: vi.fn(async () => ({})),
 }));
 
-vi.mock("../../services/billing-webhook.js", () => ({
+vi.mock('../../services/billing-webhook.js', () => ({
   handleStripeWebhook: vi.fn(async () => undefined),
 }));
 
-vi.mock("../../services/payment-export.js", () => ({
-  generateCsv: vi.fn(async () => Buffer.from("csv-data")),
-  generateElixir: vi.fn(() => Buffer.from("elixir-data")),
-  generateSepaXml: vi.fn(() => Buffer.from("sepa-data")),
-  resolveTransferTitle: vi.fn(() => "FV/2025/001"),
+vi.mock('../../services/payment-export.js', () => ({
+  generateCsv: vi.fn(async () => Buffer.from('csv-data')),
+  generateElixir: vi.fn(() => Buffer.from('elixir-data')),
+  generateSepaXml: vi.fn(() => Buffer.from('sepa-data')),
+  resolveTransferTitle: vi.fn(() => 'FV/2025/001'),
 }));
 
-vi.mock("../../services/bank-statement.js", () => ({
-  parseBankStatement: vi.fn(() => [{ amount: 100000, iban: "PL1234", reference: "FV/2025/001" }]),
+vi.mock('../../services/bank-statement.js', () => ({
+  parseBankStatement: vi.fn(() => [{ amount: 100000, iban: 'PL1234', reference: 'FV/2025/001' }]),
   matchStatementToRun: vi.fn(() => [
-    { itemId: "clitem00000000000000000001", transactionIndex: 0, confidence: 1 },
+    { itemId: 'clitem00000000000000000001', transactionIndex: 0, confidence: 1 },
   ]),
 }));
 
-vi.mock("@sentry/nextjs", () => {
+vi.mock('@sentry/nextjs', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
     startSpan: vi.fn((_o: unknown, fn: (span: typeof mockSpan) => unknown) => fn(mockSpan)),
@@ -241,11 +241,11 @@ vi.mock("@sentry/nextjs", () => {
   };
 });
 
-vi.mock("@contractor-ops/logger", () => ({
+vi.mock('@contractor-ops/logger', () => ({
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
 }));
 
-vi.mock("@contractor-ops/logger/metrics", () => ({
+vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { increment: vi.fn(), histogram: vi.fn(), distribution: vi.fn() },
 }));
 
@@ -253,9 +253,9 @@ vi.mock("@contractor-ops/logger/metrics", () => ({
 // Imports (after mocks)
 // ---------------------------------------------------------------------------
 
-import { createCallerFactory } from "../../init.js";
-import { appRouter } from "../../root.js";
-import { matchStatementToRun, parseBankStatement } from "../../services/bank-statement.js";
+import { createCallerFactory } from '../../init.js';
+import { appRouter } from '../../root.js';
+import { matchStatementToRun, parseBankStatement } from '../../services/bank-statement.js';
 
 // ---------------------------------------------------------------------------
 // Caller helper
@@ -269,8 +269,8 @@ function makeCaller(userId: string, orgId: string) {
       id: `session-${userId}`,
       userId,
       activeOrganizationId: orgId,
-      expiresAt: new Date("2099-01-01"),
-      token: "mock-token",
+      expiresAt: new Date('2099-01-01'),
+      token: 'mock-token',
       createdAt: new Date(),
       updatedAt: new Date(),
       ipAddress: null,
@@ -278,14 +278,14 @@ function makeCaller(userId: string, orgId: string) {
     },
     user: {
       id: userId,
-      name: "Test User",
+      name: 'Test User',
       email: `${userId}@example.com`,
       emailVerified: true,
       image: null,
       banned: false,
       banReason: null,
       banExpires: null,
-      role: "admin",
+      role: 'admin',
       createdAt: new Date(),
       updatedAt: new Date(),
     },
@@ -308,16 +308,16 @@ function makeInvoice(overrides: Record<string, unknown> = {}) {
     id: INVOICE_ID_1,
     organizationId: ORG_ID,
     contractorId: CONTRACTOR_ID,
-    billingProfileId: "bp-1",
-    invoiceNumber: "FV/2025/001",
-    paymentStatus: "READY",
+    billingProfileId: 'bp-1',
+    invoiceNumber: 'FV/2025/001',
+    paymentStatus: 'READY',
     amountToPayMinor: 100000,
-    currency: "PLN",
+    currency: 'PLN',
     deletedAt: null,
-    dueDate: new Date("2025-06-01"),
-    billingProfile: { id: "bp-1", preferredCurrency: "PLN" },
-    contractor: { id: CONTRACTOR_ID, legalName: "Acme", taxId: "1234567890" },
-    contract: { id: "contract-1", contractNumber: "C/2025/001" },
+    dueDate: new Date('2025-06-01'),
+    billingProfile: { id: 'bp-1', preferredCurrency: 'PLN' },
+    contractor: { id: CONTRACTOR_ID, legalName: 'Acme', taxId: '1234567890' },
+    contract: { id: 'contract-1', contractNumber: 'C/2025/001' },
     ...overrides,
   };
 }
@@ -326,9 +326,9 @@ function makeRun(overrides: Record<string, unknown> = {}) {
   return {
     id: RUN_ID,
     organizationId: ORG_ID,
-    runNumber: "PR-2025-001",
-    status: "DRAFT",
-    currency: "PLN",
+    runNumber: 'PR-2025-001',
+    status: 'DRAFT',
+    currency: 'PLN',
     totalMinor: 100000,
     invoiceCount: 1,
     items: [],
@@ -343,10 +343,10 @@ function makeItem(overrides: Record<string, unknown> = {}) {
     paymentRunId: RUN_ID,
     invoiceId: INVOICE_ID_1,
     contractorId: CONTRACTOR_ID,
-    billingProfileId: "bp-1",
+    billingProfileId: 'bp-1',
     amountMinor: 100000,
-    currency: "PLN",
-    status: "PENDING",
+    currency: 'PLN',
+    status: 'PENDING',
     paymentRun: makeRun(),
     ...overrides,
   };
@@ -367,9 +367,9 @@ beforeEach(() => {
 // readyForPayment
 // ===========================================================================
 
-describe("payment router", () => {
-  describe("readyForPayment", () => {
-    it("queries with paymentStatus READY and organizationId", async () => {
+describe('payment router', () => {
+  describe('readyForPayment', () => {
+    it('queries with paymentStatus READY and organizationId', async () => {
       mockPrisma.invoice.findMany.mockResolvedValueOnce([]);
 
       await caller.payment.readyForPayment({ limit: 10 });
@@ -377,24 +377,24 @@ describe("payment router", () => {
       const call = mockPrisma.invoice.findMany.mock.calls[0]?.[0];
       expect(call.where).toMatchObject({
         organizationId: ORG_ID,
-        paymentStatus: "READY",
+        paymentStatus: 'READY',
         deletedAt: null,
       });
     });
 
-    it("applies currency filter when provided", async () => {
+    it('applies currency filter when provided', async () => {
       mockPrisma.invoice.findMany.mockResolvedValueOnce([]);
 
-      await caller.payment.readyForPayment({ limit: 10, currency: "EUR" });
+      await caller.payment.readyForPayment({ limit: 10, currency: 'EUR' });
 
       const call = mockPrisma.invoice.findMany.mock.calls[0]?.[0];
       expect(call.where).toMatchObject({
-        currency: "EUR",
-        paymentStatus: "READY",
+        currency: 'EUR',
+        paymentStatus: 'READY',
       });
     });
 
-    it("applies contractorId filter when provided", async () => {
+    it('applies contractorId filter when provided', async () => {
       mockPrisma.invoice.findMany.mockResolvedValueOnce([]);
 
       await caller.payment.readyForPayment({
@@ -405,7 +405,7 @@ describe("payment router", () => {
       const call = mockPrisma.invoice.findMany.mock.calls[0]?.[0];
       expect(call.where).toMatchObject({
         contractorId: CONTRACTOR_ID,
-        paymentStatus: "READY",
+        paymentStatus: 'READY',
       });
     });
   });
@@ -414,12 +414,12 @@ describe("payment router", () => {
   // create
   // =========================================================================
 
-  describe("create", () => {
-    it("creates a DRAFT run and sets invoice paymentStatus to IN_RUN", async () => {
+  describe('create', () => {
+    it('creates a DRAFT run and sets invoice paymentStatus to IN_RUN', async () => {
       const invoice1 = makeInvoice();
       const invoice2 = makeInvoice({
         id: INVOICE_ID_2,
-        invoiceNumber: "FV/2025/002",
+        invoiceNumber: 'FV/2025/002',
         amountToPayMinor: 200000,
       });
 
@@ -434,7 +434,7 @@ describe("payment router", () => {
       const createCall = mockPrisma.paymentRun.create.mock.calls[0]?.[0];
       expect(createCall.data).toMatchObject({
         organizationId: ORG_ID,
-        status: "DRAFT",
+        status: 'DRAFT',
         totalMinor: 300000,
         invoiceCount: 2,
       });
@@ -442,11 +442,11 @@ describe("payment router", () => {
       // Verify invoices updated to IN_RUN
       const invoiceUpdates = mockPrisma.invoice.update.mock.calls;
       expect(invoiceUpdates).toHaveLength(2);
-      expect(invoiceUpdates[0][0].data).toMatchObject({ paymentStatus: "IN_RUN" });
-      expect(invoiceUpdates[1][0].data).toMatchObject({ paymentStatus: "IN_RUN" });
+      expect(invoiceUpdates[0][0].data).toMatchObject({ paymentStatus: 'IN_RUN' });
+      expect(invoiceUpdates[1][0].data).toMatchObject({ paymentStatus: 'IN_RUN' });
     });
 
-    it("generates run number with year prefix PR-{year}-{seq}", async () => {
+    it('generates run number with year prefix PR-{year}-{seq}', async () => {
       const invoice = makeInvoice();
       mockPrisma.invoice.findMany.mockResolvedValueOnce([invoice]);
       mockPrisma.paymentRun.findFirst.mockResolvedValueOnce({
@@ -460,23 +460,23 @@ describe("payment router", () => {
       expect(createCall.data.runNumber).toBe(`PR-${year}-006`);
     });
 
-    it("rejects invoices not in READY status", async () => {
-      const invoice = makeInvoice({ paymentStatus: "IN_RUN" });
+    it('rejects invoices not in READY status', async () => {
+      const invoice = makeInvoice({ paymentStatus: 'IN_RUN' });
       mockPrisma.invoice.findMany.mockResolvedValueOnce([invoice]);
 
       await expect(caller.payment.create({ invoiceIds: [INVOICE_ID_1] })).rejects.toMatchObject({
-        code: "BAD_REQUEST",
-        message: "PAYMENT_INVOICES_NOT_READY",
+        code: 'BAD_REQUEST',
+        message: 'PAYMENT_INVOICES_NOT_READY',
       });
     });
 
-    it("groups by currency when groupByCurrency is true", async () => {
-      const invoicePLN = makeInvoice({ currency: "PLN", amountToPayMinor: 100000 });
+    it('groups by currency when groupByCurrency is true', async () => {
+      const invoicePLN = makeInvoice({ currency: 'PLN', amountToPayMinor: 100000 });
       const invoiceEUR = makeInvoice({
         id: INVOICE_ID_2,
-        currency: "EUR",
+        currency: 'EUR',
         amountToPayMinor: 50000,
-        billingProfile: { id: "bp-2", preferredCurrency: "EUR" },
+        billingProfile: { id: 'bp-2', preferredCurrency: 'EUR' },
       });
 
       mockPrisma.invoice.findMany.mockResolvedValueOnce([invoicePLN, invoiceEUR]);
@@ -495,7 +495,7 @@ describe("payment router", () => {
       const secondRunData = mockPrisma.paymentRun.create.mock.calls[1][0].data;
 
       const currencies = [firstRunData.currency, secondRunData.currency].sort();
-      expect(currencies).toEqual(["EUR", "PLN"]);
+      expect(currencies).toEqual(['EUR', 'PLN']);
     });
   });
 
@@ -503,8 +503,8 @@ describe("payment router", () => {
   // removeFromRun
   // =========================================================================
 
-  describe("removeFromRun", () => {
-    it("resets invoice paymentStatus to READY and recalculates totals", async () => {
+  describe('removeFromRun', () => {
+    it('resets invoice paymentStatus to READY and recalculates totals', async () => {
       const run = makeRun({ invoiceCount: 2, totalMinor: 300000 });
       const item = makeItem();
       mockPrisma.paymentRun.findFirst.mockResolvedValueOnce(run);
@@ -519,7 +519,7 @@ describe("payment router", () => {
       // Invoice reset to READY
       const invoiceUpdate = mockPrisma.invoice.update.mock.calls[0][0];
       expect(invoiceUpdate.where).toEqual({ id: INVOICE_ID_1 });
-      expect(invoiceUpdate.data).toMatchObject({ paymentStatus: "READY" });
+      expect(invoiceUpdate.data).toMatchObject({ paymentStatus: 'READY' });
 
       // Item deleted
       expect(mockPrisma.paymentRunItem.delete).toHaveBeenCalledWith({
@@ -534,8 +534,8 @@ describe("payment router", () => {
       });
     });
 
-    it("rejects removal from non-DRAFT runs", async () => {
-      const run = makeRun({ status: "EXPORTED" });
+    it('rejects removal from non-DRAFT runs', async () => {
+      const run = makeRun({ status: 'EXPORTED' });
       mockPrisma.paymentRun.findFirst.mockResolvedValueOnce(run);
 
       await expect(
@@ -544,12 +544,12 @@ describe("payment router", () => {
           invoiceId: INVOICE_ID_1,
         }),
       ).rejects.toMatchObject({
-        code: "BAD_REQUEST",
-        message: "PAYMENT_RUN_NOT_DRAFT",
+        code: 'BAD_REQUEST',
+        message: 'PAYMENT_RUN_NOT_DRAFT',
       });
     });
 
-    it("auto-cancels run when last item is removed", async () => {
+    it('auto-cancels run when last item is removed', async () => {
       const run = makeRun();
       const item = makeItem();
       mockPrisma.paymentRun.findFirst.mockResolvedValueOnce(run);
@@ -565,7 +565,7 @@ describe("payment router", () => {
       expect(runUpdate.data).toMatchObject({
         totalMinor: 0,
         invoiceCount: 0,
-        status: "CANCELLED",
+        status: 'CANCELLED',
       });
     });
   });
@@ -574,26 +574,26 @@ describe("payment router", () => {
   // lockAndExport
   // =========================================================================
 
-  describe("lockAndExport", () => {
-    it("transitions DRAFT to EXPORTED and returns file base64", async () => {
+  describe('lockAndExport', () => {
+    it('transitions DRAFT to EXPORTED and returns file base64', async () => {
       const run = makeRun({
-        status: "DRAFT",
+        status: 'DRAFT',
         items: [
           {
             id: ITEM_ID,
             amountMinor: 100000,
-            currency: "PLN",
+            currency: 'PLN',
             invoice: {
-              invoiceNumber: "FV/2025/001",
-              dueDate: new Date("2025-06-01"),
+              invoiceNumber: 'FV/2025/001',
+              dueDate: new Date('2025-06-01'),
               servicePeriodStart: null,
               servicePeriodEnd: null,
             },
-            contractor: { legalName: "Acme", taxId: "1234567890" },
+            contractor: { legalName: 'Acme', taxId: '1234567890' },
             billingProfile: {
-              bankAccountMasked: "PL12345678901234567890123456",
-              swiftBic: "BREXPLPW",
-              bankName: "Test Bank",
+              bankAccountMasked: 'PL12345678901234567890123456',
+              swiftBic: 'BREXPLPW',
+              bankName: 'Test Bank',
             },
           },
         ],
@@ -603,14 +603,14 @@ describe("payment router", () => {
 
       const result = await caller.payment.lockAndExport({
         runId: RUN_ID,
-        exportFormat: "CSV",
+        exportFormat: 'CSV',
       });
 
       // Run updated to EXPORTED
       const updateCall = mockPrisma.paymentRun.update.mock.calls[0][0];
       expect(updateCall.data).toMatchObject({
-        status: "EXPORTED",
-        exportFormat: "CSV",
+        status: 'EXPORTED',
+        exportFormat: 'CSV',
       });
       expect(updateCall.data.exportedAt).toBeInstanceOf(Date);
 
@@ -618,28 +618,28 @@ describe("payment router", () => {
       expect(mockPrisma.paymentExport.create).toHaveBeenCalledTimes(1);
       const exportData = mockPrisma.paymentExport.create.mock.calls[0][0].data;
       expect(exportData).toMatchObject({
-        format: "CSV",
-        status: "GENERATED",
+        format: 'CSV',
+        status: 'GENERATED',
         organizationId: ORG_ID,
       });
 
       // Returns base64 content
-      expect(result.fileBase64).toBe(Buffer.from("csv-data").toString("base64"));
-      expect(result.fileName).toContain(".csv");
+      expect(result.fileBase64).toBe(Buffer.from('csv-data').toString('base64'));
+      expect(result.fileName).toContain('.csv');
     });
 
-    it("rejects transition from COMPLETED status", async () => {
-      const run = makeRun({ status: "COMPLETED" });
+    it('rejects transition from COMPLETED status', async () => {
+      const run = makeRun({ status: 'COMPLETED' });
       mockPrisma.paymentRun.findFirst.mockResolvedValueOnce(run);
 
       await expect(
         caller.payment.lockAndExport({
           runId: RUN_ID,
-          exportFormat: "CSV",
+          exportFormat: 'CSV',
         }),
       ).rejects.toMatchObject({
-        code: "BAD_REQUEST",
-        message: "PAYMENT_RUN_INVALID_STATUS",
+        code: 'BAD_REQUEST',
+        message: 'PAYMENT_RUN_INVALID_STATUS',
       });
     });
   });
@@ -648,8 +648,8 @@ describe("payment router", () => {
   // updateItemStatus
   // =========================================================================
 
-  describe("updateItemStatus", () => {
-    it("marks item as PAID and updates invoice paymentStatus to PAID", async () => {
+  describe('updateItemStatus', () => {
+    it('marks item as PAID and updates invoice paymentStatus to PAID', async () => {
       const item = makeItem();
       mockPrisma.paymentRunItem.findFirst.mockResolvedValueOnce(item);
       mockPrisma.paymentRunItem.count
@@ -658,15 +658,15 @@ describe("payment router", () => {
 
       await caller.payment.updateItemStatus({
         itemId: ITEM_ID,
-        status: "PAID",
-        paymentReference: "REF-001",
+        status: 'PAID',
+        paymentReference: 'REF-001',
       });
 
       // Item updated to PAID
       const itemUpdate = mockPrisma.paymentRunItem.update.mock.calls[0][0];
       expect(itemUpdate.data).toMatchObject({
-        status: "PAID",
-        paymentReference: "REF-001",
+        status: 'PAID',
+        paymentReference: 'REF-001',
         failureReason: null,
       });
       expect(itemUpdate.data.markedPaidAt).toBeInstanceOf(Date);
@@ -674,11 +674,11 @@ describe("payment router", () => {
       // Invoice updated to PAID
       const invoiceUpdate = mockPrisma.invoice.update.mock.calls[0][0];
       expect(invoiceUpdate.where).toEqual({ id: INVOICE_ID_1 });
-      expect(invoiceUpdate.data).toMatchObject({ paymentStatus: "PAID" });
+      expect(invoiceUpdate.data).toMatchObject({ paymentStatus: 'PAID' });
       expect(invoiceUpdate.data.paidAt).toBeInstanceOf(Date);
     });
 
-    it("marks item as FAILED and releases invoice to READY", async () => {
+    it('marks item as FAILED and releases invoice to READY', async () => {
       const item = makeItem();
       mockPrisma.paymentRunItem.findFirst.mockResolvedValueOnce(item);
       mockPrisma.paymentRunItem.count
@@ -687,28 +687,28 @@ describe("payment router", () => {
 
       await caller.payment.updateItemStatus({
         itemId: ITEM_ID,
-        status: "FAILED",
-        failureReason: "Bank rejected transfer",
+        status: 'FAILED',
+        failureReason: 'Bank rejected transfer',
       });
 
       // Item updated to FAILED
       const itemUpdate = mockPrisma.paymentRunItem.update.mock.calls[0][0];
       expect(itemUpdate.data).toMatchObject({
-        status: "FAILED",
-        failureReason: "Bank rejected transfer",
+        status: 'FAILED',
+        failureReason: 'Bank rejected transfer',
       });
       expect(itemUpdate.data.markedPaidAt).toBeNull();
 
       // Invoice released back to READY
       const invoiceUpdate = mockPrisma.invoice.update.mock.calls[0][0];
-      expect(invoiceUpdate.data).toMatchObject({ paymentStatus: "READY" });
+      expect(invoiceUpdate.data).toMatchObject({ paymentStatus: 'READY' });
     });
 
-    it("requires failureReason when status is FAILED", async () => {
+    it('requires failureReason when status is FAILED', async () => {
       await expect(
         caller.payment.updateItemStatus({
           itemId: ITEM_ID,
-          status: "FAILED",
+          status: 'FAILED',
           // no failureReason
         }),
       ).rejects.toThrow(); // Zod validation rejects at input level
@@ -719,13 +719,13 @@ describe("payment router", () => {
   // markAllPaid
   // =========================================================================
 
-  describe("markAllPaid", () => {
-    it("updates all pending items to PAID and invoices to PAID", async () => {
+  describe('markAllPaid', () => {
+    it('updates all pending items to PAID and invoices to PAID', async () => {
       const run = makeRun({
-        status: "EXPORTED",
+        status: 'EXPORTED',
         items: [
-          makeItem({ id: "item-1", invoiceId: INVOICE_ID_1, status: "PENDING" }),
-          makeItem({ id: "item-2", invoiceId: INVOICE_ID_2, status: "PENDING" }),
+          makeItem({ id: 'item-1', invoiceId: INVOICE_ID_1, status: 'PENDING' }),
+          makeItem({ id: 'item-2', invoiceId: INVOICE_ID_2, status: 'PENDING' }),
         ],
       });
 
@@ -733,16 +733,16 @@ describe("payment router", () => {
 
       await caller.payment.markAllPaid({
         runId: RUN_ID,
-        batchReference: "BATCH-001",
+        batchReference: 'BATCH-001',
       });
 
       // Items batch-updated to PAID via updateMany
       expect(mockPrisma.paymentRunItem.updateMany).toHaveBeenCalledTimes(1);
       const itemUpdate = mockPrisma.paymentRunItem.updateMany.mock.calls[0][0];
-      expect(itemUpdate.where.id.in).toEqual(["item-1", "item-2"]);
+      expect(itemUpdate.where.id.in).toEqual(['item-1', 'item-2']);
       expect(itemUpdate.data).toMatchObject({
-        status: "PAID",
-        paymentReference: "BATCH-001",
+        status: 'PAID',
+        paymentReference: 'BATCH-001',
       });
       expect(itemUpdate.data.markedPaidAt).toBeInstanceOf(Date);
 
@@ -750,14 +750,14 @@ describe("payment router", () => {
       expect(mockPrisma.invoice.updateMany).toHaveBeenCalledTimes(1);
       const invUpdate = mockPrisma.invoice.updateMany.mock.calls[0][0];
       expect(invUpdate.where.id.in).toEqual([INVOICE_ID_1, INVOICE_ID_2]);
-      expect(invUpdate.data).toMatchObject({ paymentStatus: "PAID" });
+      expect(invUpdate.data).toMatchObject({ paymentStatus: 'PAID' });
       expect(invUpdate.data.paidAt).toBeInstanceOf(Date);
     });
 
-    it("sets run status to COMPLETED", async () => {
+    it('sets run status to COMPLETED', async () => {
       const run = makeRun({
-        status: "EXPORTED",
-        items: [makeItem({ status: "PENDING" })],
+        status: 'EXPORTED',
+        items: [makeItem({ status: 'PENDING' })],
       });
 
       mockPrisma.paymentRun.findFirst.mockResolvedValueOnce(run);
@@ -766,7 +766,7 @@ describe("payment router", () => {
 
       // Run marked COMPLETED
       const runUpdate = mockPrisma.paymentRun.update.mock.calls[0][0];
-      expect(runUpdate.data).toMatchObject({ status: "COMPLETED" });
+      expect(runUpdate.data).toMatchObject({ status: 'COMPLETED' });
       expect(runUpdate.data.completedAt).toBeInstanceOf(Date);
     });
   });
@@ -775,13 +775,13 @@ describe("payment router", () => {
   // cancel
   // =========================================================================
 
-  describe("cancel", () => {
-    it("cancels DRAFT run and releases invoices to READY", async () => {
+  describe('cancel', () => {
+    it('cancels DRAFT run and releases invoices to READY', async () => {
       const run = makeRun({
-        status: "DRAFT",
+        status: 'DRAFT',
         items: [
-          makeItem({ id: "item-1", invoiceId: INVOICE_ID_1, status: "PENDING" }),
-          makeItem({ id: "item-2", invoiceId: INVOICE_ID_2, status: "PENDING" }),
+          makeItem({ id: 'item-1', invoiceId: INVOICE_ID_1, status: 'PENDING' }),
+          makeItem({ id: 'item-2', invoiceId: INVOICE_ID_2, status: 'PENDING' }),
         ],
       });
 
@@ -793,30 +793,30 @@ describe("payment router", () => {
       expect(mockPrisma.invoice.updateMany).toHaveBeenCalledTimes(1);
       const invUpdate = mockPrisma.invoice.updateMany.mock.calls[0][0];
       expect(invUpdate.where.id.in).toEqual([INVOICE_ID_1, INVOICE_ID_2]);
-      expect(invUpdate.data).toMatchObject({ paymentStatus: "READY" });
+      expect(invUpdate.data).toMatchObject({ paymentStatus: 'READY' });
 
       // Run set to CANCELLED
       const runUpdate = mockPrisma.paymentRun.update.mock.calls[0][0];
-      expect(runUpdate.data).toMatchObject({ status: "CANCELLED" });
+      expect(runUpdate.data).toMatchObject({ status: 'CANCELLED' });
     });
 
-    it("requires admin role to cancel EXPORTED run", async () => {
-      const run = makeRun({ status: "EXPORTED", items: [] });
+    it('requires admin role to cancel EXPORTED run', async () => {
+      const run = makeRun({ status: 'EXPORTED', items: [] });
       mockPrisma.paymentRun.findFirst.mockResolvedValueOnce(run);
-      mockPrisma.member.findFirst.mockResolvedValueOnce({ role: "member" });
+      mockPrisma.member.findFirst.mockResolvedValueOnce({ role: 'member' });
 
       await expect(caller.payment.cancel({ runId: RUN_ID })).rejects.toMatchObject({
-        code: "FORBIDDEN",
+        code: 'FORBIDDEN',
       });
     });
 
-    it("rejects cancellation of COMPLETED run", async () => {
-      const run = makeRun({ status: "COMPLETED", items: [] });
+    it('rejects cancellation of COMPLETED run', async () => {
+      const run = makeRun({ status: 'COMPLETED', items: [] });
       mockPrisma.paymentRun.findFirst.mockResolvedValueOnce(run);
 
       await expect(caller.payment.cancel({ runId: RUN_ID })).rejects.toMatchObject({
-        code: "BAD_REQUEST",
-        message: "PAYMENT_RUN_INVALID_STATUS",
+        code: 'BAD_REQUEST',
+        message: 'PAYMENT_RUN_INVALID_STATUS',
       });
     });
   });
@@ -825,8 +825,8 @@ describe("payment router", () => {
   // listByContractor
   // =========================================================================
 
-  describe("listByContractor", () => {
-    it("queries with contractorId and organizationId", async () => {
+  describe('listByContractor', () => {
+    it('queries with contractorId and organizationId', async () => {
       mockPrisma.paymentRunItem.findMany.mockResolvedValueOnce([]);
 
       await caller.payment.listByContractor({ contractorId: CONTRACTOR_ID });
@@ -843,13 +843,13 @@ describe("payment router", () => {
   // importStatement
   // =========================================================================
 
-  describe("importStatement", () => {
-    it("calls parseBankStatement with file content and name", async () => {
+  describe('importStatement', () => {
+    it('calls parseBankStatement with file content and name', async () => {
       const run = makeRun({
-        status: "EXPORTED",
+        status: 'EXPORTED',
         items: [
           makeItem({
-            billingProfile: { bankAccountMasked: "PL12345" },
+            billingProfile: { bankAccountMasked: 'PL12345' },
           }),
         ],
       });
@@ -857,25 +857,25 @@ describe("payment router", () => {
 
       await caller.payment.importStatement({
         runId: RUN_ID,
-        fileContent: "MT940-content-here",
-        fileName: "statement.mt940",
+        fileContent: 'MT940-content-here',
+        fileName: 'statement.mt940',
       });
 
-      expect(parseBankStatement).toHaveBeenCalledWith("MT940-content-here", "statement.mt940");
+      expect(parseBankStatement).toHaveBeenCalledWith('MT940-content-here', 'statement.mt940');
       expect(matchStatementToRun).toHaveBeenCalledTimes(1);
     });
 
-    it("rejects import for non-EXPORTED runs", async () => {
-      const run = makeRun({ status: "DRAFT" });
+    it('rejects import for non-EXPORTED runs', async () => {
+      const run = makeRun({ status: 'DRAFT' });
       mockPrisma.paymentRun.findFirst.mockResolvedValueOnce(run);
 
       await expect(
         caller.payment.importStatement({
           runId: RUN_ID,
-          fileContent: "data",
-          fileName: "stmt.csv",
+          fileContent: 'data',
+          fileName: 'stmt.csv',
         }),
-      ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+      ).rejects.toMatchObject({ code: 'BAD_REQUEST' });
     });
   });
 
@@ -883,9 +883,9 @@ describe("payment router", () => {
   // confirmStatementMatches
   // =========================================================================
 
-  describe("confirmStatementMatches", () => {
-    it("marks matched items as PAID and updates invoices", async () => {
-      const run = makeRun({ status: "EXPORTED" });
+  describe('confirmStatementMatches', () => {
+    it('marks matched items as PAID and updates invoices', async () => {
+      const run = makeRun({ status: 'EXPORTED' });
       const item = makeItem();
 
       mockPrisma.paymentRun.findFirst.mockResolvedValueOnce(run);
@@ -896,8 +896,8 @@ describe("payment router", () => {
         .mockResolvedValueOnce(0); // failed count
       mockPrisma.paymentRun.findUnique.mockResolvedValueOnce({
         ...run,
-        status: "COMPLETED",
-        items: [{ ...item, status: "PAID" }],
+        status: 'COMPLETED',
+        items: [{ ...item, status: 'PAID' }],
       });
 
       await caller.payment.confirmStatementMatches({
@@ -907,16 +907,16 @@ describe("payment router", () => {
 
       // Item updated to PAID
       const itemUpdate = mockPrisma.paymentRunItem.update.mock.calls[0][0];
-      expect(itemUpdate.data).toMatchObject({ status: "PAID" });
+      expect(itemUpdate.data).toMatchObject({ status: 'PAID' });
       expect(itemUpdate.data.markedPaidAt).toBeInstanceOf(Date);
 
       // Invoice updated to PAID
       const invoiceUpdate = mockPrisma.invoice.update.mock.calls[0][0];
-      expect(invoiceUpdate.data).toMatchObject({ paymentStatus: "PAID" });
+      expect(invoiceUpdate.data).toMatchObject({ paymentStatus: 'PAID' });
     });
 
-    it("auto-completes run when all items are terminal", async () => {
-      const run = makeRun({ status: "EXPORTED" });
+    it('auto-completes run when all items are terminal', async () => {
+      const run = makeRun({ status: 'EXPORTED' });
       const item = makeItem();
 
       mockPrisma.paymentRun.findFirst.mockResolvedValueOnce(run);
@@ -927,8 +927,8 @@ describe("payment router", () => {
         .mockResolvedValueOnce(0); // failed
       mockPrisma.paymentRun.findUnique.mockResolvedValueOnce({
         ...run,
-        status: "COMPLETED",
-        items: [{ ...item, status: "PAID" }],
+        status: 'COMPLETED',
+        items: [{ ...item, status: 'PAID' }],
       });
 
       await caller.payment.confirmStatementMatches({
@@ -939,10 +939,10 @@ describe("payment router", () => {
       // Run auto-completed (second update call is the auto-complete)
       const runUpdateCalls = mockPrisma.paymentRun.update.mock.calls;
       const completionCall = runUpdateCalls.find(
-        (c: Array<{ data: Record<string, unknown> }>) => c[0].data.status === "COMPLETED",
+        (c: Array<{ data: Record<string, unknown> }>) => c[0].data.status === 'COMPLETED',
       );
       expect(completionCall).toBeDefined();
-      expect(completionCall?.[0].data).toMatchObject({ status: "COMPLETED" });
+      expect(completionCall?.[0].data).toMatchObject({ status: 'COMPLETED' });
       expect(completionCall?.[0].data.completedAt).toBeInstanceOf(Date);
     });
   });

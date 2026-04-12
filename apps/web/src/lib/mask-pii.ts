@@ -6,18 +6,18 @@
  */
 export function maskTaxId(taxId: string | null | undefined): string | null {
   if (!taxId) return null;
-  const cleaned = taxId.replace(/\s/g, "");
-  if (cleaned.length <= 4) return "••••";
-  return `${cleaned.slice(0, 2)}${"•".repeat(cleaned.length - 4)}${cleaned.slice(-2)}`;
+  const cleaned = taxId.replace(/\s/g, '');
+  if (cleaned.length <= 4) return '••••';
+  return `${cleaned.slice(0, 2)}${'•'.repeat(cleaned.length - 4)}${cleaned.slice(-2)}`;
 }
 
 /** Roles that are permitted to see unmasked PII (tax IDs, etc.) */
 const PII_PERMITTED_ROLES = new Set([
-  "owner",
-  "admin",
-  "finance_admin",
-  "ops_manager",
-  "external_accountant",
+  'owner',
+  'admin',
+  'finance_admin',
+  'ops_manager',
+  'external_accountant',
 ]);
 
 /**

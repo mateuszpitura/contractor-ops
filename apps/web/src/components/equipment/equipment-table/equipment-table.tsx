@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
-import { ArrowDown, ArrowUp, ArrowUpDown, Loader2, Package } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useCallback, useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { ArrowDown, ArrowUp, ArrowUpDown, Loader2, Package } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useMemo, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -14,11 +14,11 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { trpc } from "@/trpc/init";
-import type { EquipmentRow } from "./equipment-columns";
-import { getEquipmentColumns } from "./equipment-columns";
-import { EquipmentToolbar } from "./equipment-toolbar";
+} from '@/components/ui/table';
+import { trpc } from '@/trpc/init';
+import type { EquipmentRow } from './equipment-columns';
+import { getEquipmentColumns } from './equipment-columns';
+import { EquipmentToolbar } from './equipment-toolbar';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -48,16 +48,16 @@ export function EquipmentTable({
   onRetire,
   onAddEquipment,
 }: EquipmentTableProps) {
-  const t = useTranslations("Equipment");
-  const tCommon = useTranslations("Common");
+  const t = useTranslations('Equipment');
+  const tCommon = useTranslations('Common');
 
   // Filter/sort state
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [page, setPage] = useState(1);
-  const [sortBy, setSortBy] = useState<string>("createdAt");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [sortBy, setSortBy] = useState<string>('createdAt');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const perPage = 25;
 
   // Build query input
@@ -68,22 +68,22 @@ export function EquipmentTable({
       search: search || undefined,
       type: typeFilter.length
         ? (typeFilter as Array<
-            "LAPTOP" | "MONITOR" | "PHONE" | "HEADSET" | "KEYBOARD" | "MOUSE" | "OTHER"
+            'LAPTOP' | 'MONITOR' | 'PHONE' | 'HEADSET' | 'KEYBOARD' | 'MOUSE' | 'OTHER'
           >)
         : undefined,
       status: statusFilter.length
         ? (statusFilter as Array<
-            | "AVAILABLE"
-            | "ASSIGNED"
-            | "IN_TRANSIT"
-            | "DELIVERED"
-            | "RETURN_REQUESTED"
-            | "RETURN_IN_TRANSIT"
-            | "RETURNED"
-            | "RETIRED"
+            | 'AVAILABLE'
+            | 'ASSIGNED'
+            | 'IN_TRANSIT'
+            | 'DELIVERED'
+            | 'RETURN_REQUESTED'
+            | 'RETURN_IN_TRANSIT'
+            | 'RETURNED'
+            | 'RETIRED'
           >)
         : undefined,
-      sortBy: sortBy as "name" | "type" | "status" | "createdAt",
+      sortBy: sortBy as 'name' | 'type' | 'status' | 'createdAt',
       sortOrder,
     }),
     [page, search, typeFilter, statusFilter, sortBy, sortOrder],
@@ -122,21 +122,21 @@ export function EquipmentTable({
     columns,
     pageCount: Math.ceil(totalRows / perPage),
     state: {
-      sorting: [{ id: sortBy, desc: sortOrder === "desc" }],
+      sorting: [{ id: sortBy, desc: sortOrder === 'desc' }],
     },
-    onSortingChange: (updater) => {
+    onSortingChange: updater => {
       const next =
-        typeof updater === "function"
-          ? updater([{ id: sortBy, desc: sortOrder === "desc" }])
+        typeof updater === 'function'
+          ? updater([{ id: sortBy, desc: sortOrder === 'desc' }])
           : updater;
       const first = next[0];
       if (first) {
         setSortBy(first.id);
-        setSortOrder(first.desc ? "desc" : "asc");
+        setSortOrder(first.desc ? 'desc' : 'asc');
         setPage(1);
       } else {
-        setSortBy("createdAt");
-        setSortOrder("desc");
+        setSortBy('createdAt');
+        setSortOrder('desc');
         setPage(1);
       }
     },
@@ -145,7 +145,7 @@ export function EquipmentTable({
     manualPagination: true,
     manualSorting: true,
     manualFiltering: true,
-    getRowId: (row) => row.id,
+    getRowId: row => row.id,
   });
 
   // Filter handlers
@@ -164,7 +164,7 @@ export function EquipmentTable({
   );
 
   const clearFilters = useCallback(() => {
-    setSearch("");
+    setSearch('');
     setTypeFilter([]);
     setStatusFilter([]);
     setPage(1);
@@ -196,34 +196,32 @@ export function EquipmentTable({
 
         <Table>
           <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
+            {table.getHeaderGroups().map(headerGroup => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
+                {headerGroup.headers.map(header => (
                   <TableHead
                     key={header.id}
                     aria-sort={
-                      header.column.getIsSorted() === "asc"
-                        ? "ascending"
-                        : header.column.getIsSorted() === "desc"
-                          ? "descending"
+                      header.column.getIsSorted() === 'asc'
+                        ? 'ascending'
+                        : header.column.getIsSorted() === 'desc'
+                          ? 'descending'
                           : undefined
                     }
                     style={
                       header.column.getSize() !== 150
                         ? { width: header.column.getSize() }
                         : undefined
-                    }
-                  >
+                    }>
                     {header.isPlaceholder ? null : header.column.getCanSort() ? (
                       <button
                         type="button"
                         className="flex items-center gap-1 uppercase hover:text-foreground"
-                        onClick={header.column.getToggleSortingHandler()}
-                      >
+                        onClick={header.column.getToggleSortingHandler()}>
                         {flexRender(header.column.columnDef.header, header.getContext())}
-                        {header.column.getIsSorted() === "asc" ? (
+                        {header.column.getIsSorted() === 'asc' ? (
                           <ArrowUp className="h-3 w-3" />
-                        ) : header.column.getIsSorted() === "desc" ? (
+                        ) : header.column.getIsSorted() === 'desc' ? (
                           <ArrowDown className="h-3 w-3" />
                         ) : (
                           <ArrowUpDown className="h-3 w-3 opacity-40" />
@@ -241,7 +239,7 @@ export function EquipmentTable({
             {isLoading ? (
               Array.from({ length: 8 }).map((_, i) => (
                 <TableRow key={`skeleton-${i}`}>
-                  {table.getVisibleLeafColumns().map((col) => (
+                  {table.getVisibleLeafColumns().map(col => (
                     <TableCell key={col.id}>
                       <Skeleton className="h-4 w-full max-w-[120px]" />
                     </TableCell>
@@ -249,9 +247,9 @@ export function EquipmentTable({
                 </TableRow>
               ))
             ) : table.getRowModel().rows.length > 0 ? (
-              table.getRowModel().rows.map((row) => (
+              table.getRowModel().rows.map(row => (
                 <TableRow key={row.id}>
-                  {row.getVisibleCells().map((cell) => (
+                  {row.getVisibleCells().map(cell => (
                     <TableCell key={cell.id}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
@@ -262,8 +260,7 @@ export function EquipmentTable({
               <TableRow>
                 <TableCell
                   colSpan={table.getVisibleLeafColumns().length}
-                  className="py-16 text-center"
-                >
+                  className="py-16 text-center">
                   <h3 className="text-[16px] font-medium">No results found</h3>
                   <p className="mt-1 text-sm text-muted-foreground">
                     Try adjusting your search or filters.
@@ -277,13 +274,12 @@ export function EquipmentTable({
               <TableRow>
                 <TableCell
                   colSpan={table.getVisibleLeafColumns().length}
-                  className="py-16 text-center"
-                >
+                  className="py-16 text-center">
                   <Package className="mx-auto h-10 w-10 text-muted-foreground/50" />
-                  <h3 className="mt-3 text-[16px] font-medium">{t("list.emptyTitle")}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">{t("list.emptyDescription")}</p>
+                  <h3 className="mt-3 text-[16px] font-medium">{t('list.emptyTitle')}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">{t('list.emptyDescription')}</p>
                   <Button className="mt-4" onClick={onAddEquipment}>
-                    {t("addEquipment")}
+                    {t('addEquipment')}
                   </Button>
                 </TableCell>
               </TableRow>
@@ -295,15 +291,14 @@ export function EquipmentTable({
         {!isLoading && totalRows > 0 && (
           <div className="flex items-center justify-between border-t px-4 py-3">
             <p className="text-sm text-muted-foreground">
-              {totalRows} item{totalRows !== 1 ? "s" : ""}
+              {totalRows} item{totalRows !== 1 ? 's' : ''}
             </p>
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
                 size="sm"
                 disabled={page <= 1}
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-              >
+                onClick={() => setPage(p => Math.max(1, p - 1))}>
                 Previous
               </Button>
               <span className="text-sm text-muted-foreground">
@@ -313,8 +308,7 @@ export function EquipmentTable({
                 variant="outline"
                 size="sm"
                 disabled={page >= totalPages}
-                onClick={() => setPage((p) => p + 1)}
-              >
+                onClick={() => setPage(p => p + 1)}>
                 Next
               </Button>
             </div>

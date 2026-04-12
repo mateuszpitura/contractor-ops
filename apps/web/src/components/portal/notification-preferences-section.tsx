@@ -1,27 +1,27 @@
-"use client";
+'use client';
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { LucideIcon } from "lucide-react";
-import { Banknote, ChevronDown, FileText, FolderOpen, Receipt, Shield } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { toast } from "sonner";
-import { Card } from "@/components/ui/card";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Switch } from "@/components/ui/switch";
-import { trpc } from "@/trpc/init";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { LucideIcon } from 'lucide-react';
+import { Banknote, ChevronDown, FileText, FolderOpen, Receipt, Shield } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { Card } from '@/components/ui/card';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Switch } from '@/components/ui/switch';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Category config
 // ---------------------------------------------------------------------------
 
 type NotificationCategory =
-  | "INVOICE_UPDATES"
-  | "PAYMENT_CONFIRMATIONS"
-  | "CONTRACT_CHANGES"
-  | "DOCUMENT_UPLOADS"
-  | "SECURITY_ALERTS";
+  | 'INVOICE_UPDATES'
+  | 'PAYMENT_CONFIRMATIONS'
+  | 'CONTRACT_CHANGES'
+  | 'DOCUMENT_UPLOADS'
+  | 'SECURITY_ALERTS';
 
 interface CategoryConfig {
   category: NotificationCategory;
@@ -34,34 +34,34 @@ interface CategoryConfig {
 function getCategories(t: (key: string) => string): CategoryConfig[] {
   return [
     {
-      category: "INVOICE_UPDATES",
+      category: 'INVOICE_UPDATES',
       icon: Receipt,
-      label: t("categories.invoiceUpdates"),
-      description: t("categories.invoiceUpdatesDesc"),
+      label: t('categories.invoiceUpdates'),
+      description: t('categories.invoiceUpdatesDesc'),
     },
     {
-      category: "PAYMENT_CONFIRMATIONS",
+      category: 'PAYMENT_CONFIRMATIONS',
       icon: Banknote,
-      label: t("categories.paymentConfirmations"),
-      description: t("categories.paymentConfirmationsDesc"),
+      label: t('categories.paymentConfirmations'),
+      description: t('categories.paymentConfirmationsDesc'),
     },
     {
-      category: "CONTRACT_CHANGES",
+      category: 'CONTRACT_CHANGES',
       icon: FileText,
-      label: t("categories.contractChanges"),
-      description: t("categories.contractChangesDesc"),
+      label: t('categories.contractChanges'),
+      description: t('categories.contractChangesDesc'),
     },
     {
-      category: "DOCUMENT_UPLOADS",
+      category: 'DOCUMENT_UPLOADS',
       icon: FolderOpen,
-      label: t("categories.documentUploads"),
-      description: t("categories.documentUploadsDesc"),
+      label: t('categories.documentUploads'),
+      description: t('categories.documentUploadsDesc'),
     },
     {
-      category: "SECURITY_ALERTS",
+      category: 'SECURITY_ALERTS',
       icon: Shield,
-      label: t("categories.securityAlerts"),
-      description: t("categories.securityAlertsDesc"),
+      label: t('categories.securityAlerts'),
+      description: t('categories.securityAlertsDesc'),
       locked: true,
     },
   ];
@@ -102,7 +102,7 @@ function PreferencesSkeleton() {
  * Per D-06, D-07, and UI-SPEC.
  */
 export function NotificationPreferencesSection() {
-  const t = useTranslations("Portal.notificationPreferences");
+  const t = useTranslations('Portal.notificationPreferences');
   const [isOpen, setIsOpen] = useState(true);
   const queryClient = useQueryClient();
 
@@ -125,8 +125,8 @@ export function NotificationPreferencesSection() {
 
       queryClient.setQueryData<PreferenceItem[]>(
         queryKey,
-        (old) =>
-          old?.map((p) =>
+        old =>
+          old?.map(p =>
             p.category === newPref.category ? { ...p, emailEnabled: newPref.emailEnabled } : p,
           ) ?? [],
       );
@@ -141,7 +141,7 @@ export function NotificationPreferencesSection() {
       if (context?.previousPrefs) {
         queryClient.setQueryData<PreferenceItem[]>(queryKey, context.previousPrefs);
       }
-      toast.error(t("errors.updateFailed"));
+      toast.error(t('errors.updateFailed'));
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey });
@@ -151,7 +151,7 @@ export function NotificationPreferencesSection() {
   const preferences = prefsQuery.data;
 
   const getChecked = (category: NotificationCategory): boolean => {
-    const pref = preferences?.find((p) => p.category === category);
+    const pref = preferences?.find(p => p.category === category);
     return pref?.emailEnabled ?? true;
   };
 
@@ -164,18 +164,17 @@ export function NotificationPreferencesSection() {
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         {/* Trigger row */}
         <CollapsibleTrigger
-          render={(props) => (
+          render={props => (
             <button
               {...props}
               type="button"
-              className="flex min-h-[48px] w-full items-center gap-3 px-4 py-3 text-start outline-none"
-            >
+              className="flex min-h-[48px] w-full items-center gap-3 px-4 py-3 text-start outline-none">
               <ChevronDown
                 className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 ${
-                  isOpen ? "rotate-180" : ""
+                  isOpen ? 'rotate-180' : ''
                 }`}
               />
-              <span className="text-sm font-semibold">{t("title")}</span>
+              <span className="text-sm font-semibold">{t('title')}</span>
             </button>
           )}
         />
@@ -187,15 +186,14 @@ export function NotificationPreferencesSection() {
               <PreferencesSkeleton />
             ) : (
               <div className="divide-y">
-                {CATEGORIES.map((cat) => {
+                {CATEGORIES.map(cat => {
                   const Icon = cat.icon;
                   const checked = cat.locked ? true : getChecked(cat.category);
 
                   return (
                     <div
                       key={cat.category}
-                      className="flex min-h-[48px] items-center justify-between gap-4 px-4 py-3"
-                    >
+                      className="flex min-h-[48px] items-center justify-between gap-4 px-4 py-3">
                       <div className="flex items-center gap-3">
                         <Icon className="h-5 w-5 shrink-0 text-muted-foreground" />
                         <div>
@@ -206,13 +204,13 @@ export function NotificationPreferencesSection() {
                       <div className="shrink-0">
                         <Switch
                           checked={checked}
-                          onCheckedChange={(val) => handleToggle(cat.category, val)}
+                          onCheckedChange={val => handleToggle(cat.category, val)}
                           disabled={cat.locked}
                           aria-label={cat.label}
                         />
                         {cat.locked && (
                           <p className="mt-1 text-end text-xs text-muted-foreground">
-                            {t("securityLocked")}
+                            {t('securityLocked')}
                           </p>
                         )}
                       </div>

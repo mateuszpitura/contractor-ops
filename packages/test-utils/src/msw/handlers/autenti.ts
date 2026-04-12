@@ -1,8 +1,8 @@
-import { HttpResponse, http } from "msw";
-import type { HandlerOptions } from "../types.js";
-import { applyNetworkConditions, mockId } from "../utils.js";
+import { HttpResponse, http } from 'msw';
+import type { HandlerOptions } from '../types.js';
+import { applyNetworkConditions, mockId } from '../utils.js';
 
-const API_BASE = "https://api.autenti.com/api/v2";
+const API_BASE = 'https://api.autenti.com/api/v2';
 
 export function autentiHandlers(options?: HandlerOptions) {
   const net = options?.network;
@@ -16,7 +16,7 @@ export function autentiHandlers(options?: HandlerOptions) {
         access_token: `autenti_mock_${mockId()}`,
         refresh_token: `autenti_refresh_${mockId()}`,
         expires_in: 3600,
-        token_type: "Bearer",
+        token_type: 'Bearer',
       });
     }),
 
@@ -27,8 +27,8 @@ export function autentiHandlers(options?: HandlerOptions) {
       const processId = mockId();
       return HttpResponse.json({
         id: processId,
-        title: "Test Contract",
-        status: "DRAFT",
+        title: 'Test Contract',
+        status: 'DRAFT',
         createdAt: new Date().toISOString(),
       });
     }),
@@ -39,9 +39,9 @@ export function autentiHandlers(options?: HandlerOptions) {
       if (err) return err;
       return HttpResponse.json({
         id: mockId(),
-        fileName: "contract.pdf",
-        filePurpose: "ORIGINAL",
-        mimeType: "application/pdf",
+        fileName: 'contract.pdf',
+        filePurpose: 'ORIGINAL',
+        mimeType: 'application/pdf',
       });
     }),
 
@@ -51,11 +51,11 @@ export function autentiHandlers(options?: HandlerOptions) {
       if (err) return err;
       return HttpResponse.json({
         id: mockId(),
-        role: "signer",
+        role: 'signer',
         party: {
-          firstName: "Test",
-          lastName: "Contractor",
-          email: "contractor@example.com",
+          firstName: 'Test',
+          lastName: 'Contractor',
+          email: 'contractor@example.com',
         },
       });
     }),
@@ -73,20 +73,20 @@ export function autentiHandlers(options?: HandlerOptions) {
       if (err) return err;
       return HttpResponse.json({
         id: params.processId,
-        title: "Test Contract",
-        status: "COMPLETED",
+        title: 'Test Contract',
+        status: 'COMPLETED',
         createdAt: new Date().toISOString(),
         completedAt: new Date().toISOString(),
         participants: [
           {
             id: mockId(),
-            role: "signer",
+            role: 'signer',
             party: {
-              firstName: "Test",
-              lastName: "Contractor",
-              email: "contractor@example.com",
+              firstName: 'Test',
+              lastName: 'Contractor',
+              email: 'contractor@example.com',
             },
-            status: "SIGNED",
+            status: 'SIGNED',
           },
         ],
       });
@@ -98,10 +98,10 @@ export function autentiHandlers(options?: HandlerOptions) {
       if (err) return err;
       return HttpResponse.json([
         {
-          id: "signed-file-001",
-          fileName: "contract-signed.pdf",
-          filePurpose: "SIGNED",
-          mimeType: "application/pdf",
+          id: 'signed-file-001',
+          fileName: 'contract-signed.pdf',
+          filePurpose: 'SIGNED',
+          mimeType: 'application/pdf',
         },
       ]);
     }),
@@ -111,7 +111,7 @@ export function autentiHandlers(options?: HandlerOptions) {
       const err = await applyNetworkConditions(net);
       if (err) return err;
       return new HttpResponse(new Uint8Array([37, 80, 68, 70]), {
-        headers: { "Content-Type": "application/pdf" },
+        headers: { 'Content-Type': 'application/pdf' },
       });
     }),
   ];

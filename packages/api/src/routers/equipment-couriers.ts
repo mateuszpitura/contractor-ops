@@ -2,35 +2,35 @@
  * Equipment courier integration procedures: InPost, DPD, UPS shipment
  * creation, courier config management, connection testing, and label retrieval.
  */
-import type { Prisma } from "@contractor-ops/db/generated/prisma/client";
+import type { Prisma, Shipment } from '@contractor-ops/db/generated/prisma/client';
 import {
   dpdConfigSchema,
   dpdShipmentCreateSchema,
   inpostShipmentCreateSchema,
   upsConfigSchema,
   upsShipmentCreateSchema,
-} from "@contractor-ops/validators";
-import { TRPCError } from "@trpc/server";
-import { z } from "zod";
-import { router } from "../init.js";
-import { adminProcedure, requirePermission } from "../middleware/rbac.js";
-import { tenantProcedure } from "../middleware/tenant.js";
-import { requireTier } from "../middleware/tier.js";
-import { getCourierClient } from "../services/courier/carrier-factory.js";
-import type { DPDClientConfig } from "../services/courier/dpd-client.js";
-import { DPDClient } from "../services/courier/dpd-client.js";
-import type { InPostClientConfig } from "../services/courier/inpost-client.js";
-import { InPostClient } from "../services/courier/inpost-client.js";
-import type { UPSClientConfig } from "../services/courier/ups-client.js";
-import { UPSClient } from "../services/courier/ups-client.js";
-import { checkShipmentTaskCompletion } from "../services/equipment-workflow.js";
+} from '@contractor-ops/validators';
+import { TRPCError } from '@trpc/server';
+import { z } from 'zod';
+import { router } from '../init.js';
+import { adminProcedure, requirePermission } from '../middleware/rbac.js';
+import { tenantProcedure } from '../middleware/tenant.js';
+import { requireTier } from '../middleware/tier.js';
+import { getCourierClient } from '../services/courier/carrier-factory.js';
+import type { DPDClientConfig } from '../services/courier/dpd-client.js';
+import { DPDClient } from '../services/courier/dpd-client.js';
+import type { InPostClientConfig } from '../services/courier/inpost-client.js';
+import { InPostClient } from '../services/courier/inpost-client.js';
+import type { UPSClientConfig } from '../services/courier/ups-client.js';
+import { UPSClient } from '../services/courier/ups-client.js';
+import { checkShipmentTaskCompletion } from '../services/equipment-workflow.js';
 import {
   EQUIPMENT_NOT_ASSIGNED,
   EQUIPMENT_NOT_FOUND,
   EQUIPMENT_STATUS_TRANSITIONS,
   plain,
   SHIPMENT_NOT_FOUND,
-} from "./equipment-shared.js";
+} from './equipment-shared.js';
 
 // ---------------------------------------------------------------------------
 // Equipment Couriers sub-router
@@ -44,7 +44,7 @@ export const equipmentCouriersRouter = router({
    * Creates Shipment + ShipmentEvent records and auto-advances equipment status.
    */
   createInPostShipment: tenantProcedure
-    .use(requirePermission({ equipment: ["create"] }))
+    .use(requirePermission({ equipment: ['create'] }))
     .input(inpostShipmentCreateSchema)
     .mutation(async ({ ctx, input }) => {
       // Load courier config for InPost
@@ -52,15 +52,15 @@ export const equipmentCouriersRouter = router({
         where: {
           organizationId_carrier: {
             organizationId: ctx.organizationId,
-            carrier: "inpost",
+            carrier: 'inpost',
           },
         },
       });
 
       if (!courierConfig) {
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "COURIER_CONFIG_NOT_FOUND",
+          code: 'NOT_FOUND',
+          message: 'COURIER_CONFIG_NOT_FOUND',
         });
       }
 
@@ -96,7 +96,7 @@ export const equipmentCouriersRouter = router({
 
       if (equipmentItems.length !== input.equipmentIds.length) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: EQUIPMENT_NOT_FOUND,
         });
       }
@@ -107,7 +107,7 @@ export const equipmentCouriersRouter = router({
 
       if (!contractor) {
         throw new TRPCError({
-          code: "BAD_REQUEST",
+          code: 'BAD_REQUEST',
           message: EQUIPMENT_NOT_ASSIGNED,
         });
       }
@@ -124,13 +124,13 @@ export const equipmentCouriersRouter = router({
         direction: input.direction,
         receiver: {
           name: contractor.displayName,
-          email: contractor.email ?? "",
-          phone: contractor.phone ?? "",
+          email: contractor.email ?? '',
+          phone: contractor.phone ?? '',
         },
         sender: {
-          name: org?.name ?? "Organization",
-          email: "",
-          phone: "",
+          name: org?.name ?? 'Organization',
+          email: '',
+          phone: '',
         },
         targetPoint: input.targetPointId,
         parcelSize: input.parcelSize,
@@ -139,11 +139,11 @@ export const equipmentCouriersRouter = router({
 
       // Determine new equipment status
       const newEquipmentStatus =
-        input.direction === "OUTBOUND" ? "IN_TRANSIT" : "RETURN_IN_TRANSIT";
+        input.direction === 'OUTBOUND' ? 'IN_TRANSIT' : 'RETURN_IN_TRANSIT';
 
       // Create shipment records for each equipment item
-      const shipments = await ctx.db.$transaction(async (tx) => {
-        const created = [];
+      const shipments = await ctx.db.$transaction(async tx => {
+        const created: Shipment[] = [];
 
         for (const eq of equipmentItems) {
           const shipment = await tx.shipment.create({
@@ -152,11 +152,11 @@ export const equipmentCouriersRouter = router({
               equipmentId: eq.id,
               workflowTaskRunId: input.workflowTaskRunId ?? null,
               direction: input.direction,
-              carrier: "InPost",
+              carrier: 'InPost',
               trackingNumber: shipmentResult.trackingNumber,
               externalId: shipmentResult.externalId,
               labelUrl: shipmentResult.labelUrl ?? null,
-              currentStatus: "CREATED",
+              currentStatus: 'CREATED',
               createdByUserId: ctx.user?.id,
             },
           });
@@ -166,7 +166,7 @@ export const equipmentCouriersRouter = router({
             data: {
               organizationId: ctx.organizationId,
               shipmentId: shipment.id,
-              status: "CREATED",
+              status: 'CREATED',
               notes: input.notes ?? null,
               createdByUserId: ctx.user?.id,
             },
@@ -177,8 +177,8 @@ export const equipmentCouriersRouter = router({
             data: {
               organizationId: ctx.organizationId,
               shipmentId: shipment.id,
-              status: "LABEL_GENERATED",
-              notes: "Label auto-generated by ShipX on shipment creation",
+              status: 'LABEL_GENERATED',
+              notes: 'Label auto-generated by ShipX on shipment creation',
               createdByUserId: ctx.user?.id,
             },
           });
@@ -193,7 +193,7 @@ export const equipmentCouriersRouter = router({
         }
 
         // Update contractor's preferred Paczkomat on outbound shipments (D-03)
-        if (input.direction === "OUTBOUND" && contractor) {
+        if (input.direction === 'OUTBOUND' && contractor) {
           await tx.contractor.update({
             where: { id: contractor.id },
             data: {
@@ -211,12 +211,12 @@ export const equipmentCouriersRouter = router({
       await ctx.db.auditLog.create({
         data: {
           organizationId: ctx.organizationId,
-          actorType: "USER",
+          actorType: 'USER',
           actorId: ctx.user?.id,
           actorName: ctx.user?.name,
-          action: "shipment.createInPost",
-          resourceType: "SHIPMENT",
-          resourceId: shipments[0]?.id ?? "",
+          action: 'shipment.createInPost',
+          resourceType: 'SHIPMENT',
+          resourceId: shipments[0]?.id ?? '',
           newValuesJson: {
             equipmentIds: input.equipmentIds,
             direction: input.direction,
@@ -230,10 +230,10 @@ export const equipmentCouriersRouter = router({
       // Fetch created shipments with events
       const result = await ctx.db.shipment.findMany({
         where: {
-          id: { in: shipments.map((s) => s.id) },
+          id: { in: shipments.map(s => s.id) },
         },
         include: {
-          events: { orderBy: { occurredAt: "asc" } },
+          events: { orderBy: { occurredAt: 'asc' } },
         },
       });
 
@@ -248,8 +248,8 @@ export const equipmentCouriersRouter = router({
    * auto-advances equipment status.
    */
   createDpdShipment: tenantProcedure
-    .use(requirePermission({ equipment: ["create"] }))
-    .use(requireTier("PRO"))
+    .use(requirePermission({ equipment: ['create'] }))
+    .use(requireTier('PRO'))
     .input(dpdShipmentCreateSchema)
     .mutation(async ({ ctx, input }) => {
       // 1. Load courier config for DPD
@@ -257,15 +257,15 @@ export const equipmentCouriersRouter = router({
         where: {
           organizationId_carrier: {
             organizationId: ctx.organizationId,
-            carrier: "dpd",
+            carrier: 'dpd',
           },
         },
       });
 
       if (!courierConfig) {
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "COURIER_CONFIG_NOT_FOUND",
+          code: 'NOT_FOUND',
+          message: 'COURIER_CONFIG_NOT_FOUND',
         });
       }
 
@@ -298,7 +298,7 @@ export const equipmentCouriersRouter = router({
 
       if (equipmentItems.length !== input.equipmentIds.length) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: EQUIPMENT_NOT_FOUND,
         });
       }
@@ -306,7 +306,7 @@ export const equipmentCouriersRouter = router({
       const contractor = equipmentItems[0]?.assignments[0]?.contractor;
       if (!contractor) {
         throw new TRPCError({
-          code: "BAD_REQUEST",
+          code: 'BAD_REQUEST',
           message: EQUIPMENT_NOT_ASSIGNED,
         });
       }
@@ -323,13 +323,13 @@ export const equipmentCouriersRouter = router({
         direction: input.direction,
         receiver: {
           name: contractor.displayName,
-          email: contractor.email ?? "",
-          phone: contractor.phone ?? "",
+          email: contractor.email ?? '',
+          phone: contractor.phone ?? '',
         },
         sender: {
-          name: org?.name ?? "Organization",
-          email: "",
-          phone: "",
+          name: org?.name ?? 'Organization',
+          email: '',
+          phone: '',
           street: input.deliveryAddress.street,
           city: input.deliveryAddress.city,
           postalCode: input.deliveryAddress.postalCode,
@@ -342,10 +342,10 @@ export const equipmentCouriersRouter = router({
 
       // 4. Create DB records for each equipment item
       const newEquipmentStatus =
-        input.direction === "OUTBOUND" ? "IN_TRANSIT" : "RETURN_IN_TRANSIT";
+        input.direction === 'OUTBOUND' ? 'IN_TRANSIT' : 'RETURN_IN_TRANSIT';
 
-      const shipments = await ctx.db.$transaction(async (tx) => {
-        const created = [];
+      const shipments = await ctx.db.$transaction(async tx => {
+        const created: Shipment[] = [];
 
         for (const item of equipmentItems) {
           // Validate equipment status transition
@@ -357,10 +357,10 @@ export const equipmentCouriersRouter = router({
               organizationId: ctx.organizationId,
               equipmentId: item.id,
               direction: input.direction,
-              carrier: "DPD",
+              carrier: 'DPD',
               externalId: shipmentResult.externalId,
               trackingNumber: shipmentResult.trackingNumber,
-              currentStatus: "CREATED",
+              currentStatus: 'CREATED',
               workflowTaskRunId: input.workflowTaskRunId ?? null,
               createdByUserId: ctx.user?.id,
             },
@@ -370,7 +370,7 @@ export const equipmentCouriersRouter = router({
             data: {
               organizationId: ctx.organizationId,
               shipmentId: shipment.id,
-              status: "CREATED",
+              status: 'CREATED',
               notes: `DPD shipment created: ${shipmentResult.trackingNumber}`,
               createdByUserId: ctx.user?.id,
             },
@@ -391,15 +391,15 @@ export const equipmentCouriersRouter = router({
       await ctx.db.auditLog.create({
         data: {
           organizationId: ctx.organizationId,
-          actorType: "USER",
+          actorType: 'USER',
           actorId: ctx.user?.id,
           actorName: ctx.user?.name,
-          action: "shipment.createDpd",
-          resourceType: "SHIPMENT",
-          resourceId: shipments[0]?.id ?? "",
+          action: 'shipment.createDpd',
+          resourceType: 'SHIPMENT',
+          resourceId: shipments[0]?.id ?? '',
           newValuesJson: {
             equipmentIds: input.equipmentIds,
-            carrier: "DPD",
+            carrier: 'DPD',
             trackingNumber: shipmentResult.trackingNumber,
             direction: input.direction,
           },
@@ -412,14 +412,14 @@ export const equipmentCouriersRouter = router({
           id: shipments[0].id,
           workflowTaskRunId: input.workflowTaskRunId,
           direction: input.direction,
-          currentStatus: "CREATED",
+          currentStatus: 'CREATED',
         }).catch(console.error);
       }
 
       // Fetch created shipments with events
       const result = await ctx.db.shipment.findMany({
-        where: { id: { in: shipments.map((s) => s.id) } },
-        include: { events: { orderBy: { occurredAt: "asc" } } },
+        where: { id: { in: shipments.map(s => s.id) } },
+        include: { events: { orderBy: { occurredAt: 'asc' } } },
       });
 
       return plain(result);
@@ -433,8 +433,8 @@ export const equipmentCouriersRouter = router({
    * auto-advances equipment status.
    */
   createUpsShipment: tenantProcedure
-    .use(requirePermission({ equipment: ["create"] }))
-    .use(requireTier("PRO"))
+    .use(requirePermission({ equipment: ['create'] }))
+    .use(requireTier('PRO'))
     .input(upsShipmentCreateSchema)
     .mutation(async ({ ctx, input }) => {
       // 1. Load courier config for UPS
@@ -442,15 +442,15 @@ export const equipmentCouriersRouter = router({
         where: {
           organizationId_carrier: {
             organizationId: ctx.organizationId,
-            carrier: "ups",
+            carrier: 'ups',
           },
         },
       });
 
       if (!courierConfig) {
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "COURIER_CONFIG_NOT_FOUND",
+          code: 'NOT_FOUND',
+          message: 'COURIER_CONFIG_NOT_FOUND',
         });
       }
 
@@ -483,7 +483,7 @@ export const equipmentCouriersRouter = router({
 
       if (equipmentItems.length !== input.equipmentIds.length) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: EQUIPMENT_NOT_FOUND,
         });
       }
@@ -491,7 +491,7 @@ export const equipmentCouriersRouter = router({
       const contractor = equipmentItems[0]?.assignments[0]?.contractor;
       if (!contractor) {
         throw new TRPCError({
-          code: "BAD_REQUEST",
+          code: 'BAD_REQUEST',
           message: EQUIPMENT_NOT_ASSIGNED,
         });
       }
@@ -508,13 +508,13 @@ export const equipmentCouriersRouter = router({
         direction: input.direction,
         receiver: {
           name: contractor.displayName,
-          email: contractor.email ?? "",
-          phone: contractor.phone ?? "",
+          email: contractor.email ?? '',
+          phone: contractor.phone ?? '',
         },
         sender: {
-          name: org?.name ?? "Organization",
-          email: "",
-          phone: "",
+          name: org?.name ?? 'Organization',
+          email: '',
+          phone: '',
           street: input.deliveryAddress.street,
           city: input.deliveryAddress.city,
           postalCode: input.deliveryAddress.postalCode,
@@ -528,10 +528,10 @@ export const equipmentCouriersRouter = router({
 
       // 4. Create DB records for each equipment item
       const newEquipmentStatus =
-        input.direction === "OUTBOUND" ? "IN_TRANSIT" : "RETURN_IN_TRANSIT";
+        input.direction === 'OUTBOUND' ? 'IN_TRANSIT' : 'RETURN_IN_TRANSIT';
 
-      const shipments = await ctx.db.$transaction(async (tx) => {
-        const created = [];
+      const shipments = await ctx.db.$transaction(async tx => {
+        const created: Shipment[] = [];
 
         for (const item of equipmentItems) {
           // Validate equipment status transition
@@ -543,10 +543,10 @@ export const equipmentCouriersRouter = router({
               organizationId: ctx.organizationId,
               equipmentId: item.id,
               direction: input.direction,
-              carrier: "UPS",
+              carrier: 'UPS',
               externalId: shipmentResult.externalId,
               trackingNumber: shipmentResult.trackingNumber,
-              currentStatus: "CREATED",
+              currentStatus: 'CREATED',
               workflowTaskRunId: input.workflowTaskRunId ?? null,
               createdByUserId: ctx.user?.id,
             },
@@ -556,7 +556,7 @@ export const equipmentCouriersRouter = router({
             data: {
               organizationId: ctx.organizationId,
               shipmentId: shipment.id,
-              status: "CREATED",
+              status: 'CREATED',
               notes: `UPS shipment created: ${shipmentResult.trackingNumber}`,
               createdByUserId: ctx.user?.id,
             },
@@ -577,15 +577,15 @@ export const equipmentCouriersRouter = router({
       await ctx.db.auditLog.create({
         data: {
           organizationId: ctx.organizationId,
-          actorType: "USER",
+          actorType: 'USER',
           actorId: ctx.user?.id,
           actorName: ctx.user?.name,
-          action: "shipment.createUps",
-          resourceType: "SHIPMENT",
-          resourceId: shipments[0]?.id ?? "",
+          action: 'shipment.createUps',
+          resourceType: 'SHIPMENT',
+          resourceId: shipments[0]?.id ?? '',
           newValuesJson: {
             equipmentIds: input.equipmentIds,
-            carrier: "UPS",
+            carrier: 'UPS',
             trackingNumber: shipmentResult.trackingNumber,
             direction: input.direction,
             serviceCode: input.serviceCode,
@@ -599,14 +599,14 @@ export const equipmentCouriersRouter = router({
           id: shipments[0].id,
           workflowTaskRunId: input.workflowTaskRunId,
           direction: input.direction,
-          currentStatus: "CREATED",
+          currentStatus: 'CREATED',
         }).catch(console.error);
       }
 
       // Fetch created shipments with events
       const result = await ctx.db.shipment.findMany({
-        where: { id: { in: shipments.map((s) => s.id) } },
-        include: { events: { orderBy: { occurredAt: "asc" } } },
+        where: { id: { in: shipments.map(s => s.id) } },
+        include: { events: { orderBy: { occurredAt: 'asc' } } },
       });
 
       return plain(result);
@@ -643,11 +643,11 @@ export const equipmentCouriersRouter = router({
       await ctx.db.auditLog.create({
         data: {
           organizationId: ctx.organizationId,
-          actorType: "USER",
+          actorType: 'USER',
           actorId: ctx.user?.id,
           actorName: ctx.user?.name,
-          action: "courierConfig.save",
-          resourceType: "ORGANIZATION",
+          action: 'courierConfig.save',
+          resourceType: 'ORGANIZATION',
           resourceId: carrier,
           newValuesJson: { carrier, updated: true } as Prisma.InputJsonValue,
         },
@@ -684,18 +684,18 @@ export const equipmentCouriersRouter = router({
         // getStatus with a dummy ID will authenticate and return an error
         // about the shipment not existing (not an auth error).
         // If auth fails, it throws before reaching the API response.
-        await client.getStatus("TEST_CONNECTION_PROBE");
+        await client.getStatus('TEST_CONNECTION_PROBE');
         return { success: true as const };
       } catch (error) {
         // If the error is about the shipment not being found, that means
         // auth succeeded -- the API accepted our credentials.
         const msg = error instanceof Error ? error.message : String(error);
-        if (msg.includes("not found") || msg.includes("NOT_FOUND") || msg.includes("404")) {
+        if (msg.includes('not found') || msg.includes('NOT_FOUND') || msg.includes('404')) {
           return { success: true as const };
         }
         return {
           success: false as const,
-          error: "Connection failed. Check your credentials.",
+          error: 'Connection failed. Check your credentials.',
         };
       }
     }),
@@ -705,7 +705,7 @@ export const equipmentCouriersRouter = router({
    * Fetches from ShipX API using the shipment's externalId.
    */
   getShipmentLabel: tenantProcedure
-    .use(requirePermission({ equipment: ["read"] }))
+    .use(requirePermission({ equipment: ['read'] }))
     .input(z.object({ shipmentId: z.string() }))
     .query(async ({ ctx, input }) => {
       const shipment = await ctx.db.shipment.findFirst({
@@ -717,15 +717,15 @@ export const equipmentCouriersRouter = router({
 
       if (!shipment) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: SHIPMENT_NOT_FOUND,
         });
       }
 
-      if (shipment.carrier !== "InPost" || !shipment.externalId) {
+      if (shipment.carrier !== 'InPost' || !shipment.externalId) {
         throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "SHIPMENT_NO_INPOST_LABEL",
+          code: 'BAD_REQUEST',
+          message: 'SHIPMENT_NO_INPOST_LABEL',
         });
       }
 
@@ -734,26 +734,26 @@ export const equipmentCouriersRouter = router({
         where: {
           organizationId_carrier: {
             organizationId: ctx.organizationId,
-            carrier: "inpost",
+            carrier: 'inpost',
           },
         },
       });
 
       if (!courierConfig) {
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "COURIER_CONFIG_NOT_FOUND",
+          code: 'NOT_FOUND',
+          message: 'COURIER_CONFIG_NOT_FOUND',
         });
       }
 
       const configJson = courierConfig.configJson as unknown as InPostClientConfig;
       const client = new InPostClient(configJson);
 
-      const labelBuffer = await client.getLabel(shipment.externalId, "pdf");
+      const labelBuffer = await client.getLabel(shipment.externalId, 'pdf');
 
       return {
-        data: labelBuffer.toString("base64"),
-        contentType: "application/pdf",
+        data: labelBuffer.toString('base64'),
+        contentType: 'application/pdf',
         filename: `inpost-label-${shipment.trackingNumber ?? shipment.externalId}.pdf`,
       };
     }),

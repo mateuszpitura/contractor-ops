@@ -1,5 +1,5 @@
-import type Stripe from "stripe";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import type Stripe from 'stripe';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ---------------------------------------------------------------------------
 // Hoisted mocks (vi.hoisted runs before vi.mock factories)
@@ -25,30 +25,30 @@ const {
 // Module mocks
 // ---------------------------------------------------------------------------
 
-vi.mock("@contractor-ops/db", () => ({
+vi.mock('@contractor-ops/db', () => ({
   prisma: {},
 }));
 
-vi.mock("../stripe-client.js", () => ({
+vi.mock('../stripe-client.js', () => ({
   stripe: { subscriptions: { retrieve: mockStripeSubscriptionsRetrieve } },
 }));
 
-vi.mock("../billing-constants.js", () => ({
+vi.mock('../billing-constants.js', () => ({
   TIER_CREDIT_ALLOWANCE: { STARTER: 20, PRO: 100, ENTERPRISE: 500 },
   TRIAL_CREDIT_ALLOWANCE: 5,
   resolveTierFromPriceId: (...args: unknown[]) => mockResolveTierFromPriceId(...args),
   resolveTopUpCredits: (...args: unknown[]) => mockResolveTopUpCredits(...args),
 }));
 
-vi.mock("../credit-service.js", () => ({
+vi.mock('../credit-service.js', () => ({
   allocateTopUpCredits: vi.fn(),
 }));
 
-vi.mock("../notification-service.js", () => ({
+vi.mock('../notification-service.js', () => ({
   dispatch: (...args: unknown[]) => mockDispatch(...args),
 }));
 
-vi.mock("../cache.js", () => ({
+vi.mock('../cache.js', () => ({
   invalidate: (...args: unknown[]) => mockInvalidate(...args),
   CacheKeys: {
     subscription: (id: string) => `sub:${id}`,
@@ -56,7 +56,7 @@ vi.mock("../cache.js", () => ({
   },
 }));
 
-vi.mock("@contractor-ops/logger", () => ({
+vi.mock('@contractor-ops/logger', () => ({
   createLogger: vi.fn(() => ({
     info: vi.fn(),
     warn: vi.fn(),
@@ -64,11 +64,11 @@ vi.mock("@contractor-ops/logger", () => ({
   })),
 }));
 
-vi.mock("@contractor-ops/logger/metrics", () => ({
+vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { increment: vi.fn() },
 }));
 
-vi.mock("resend", () => {
+vi.mock('resend', () => {
   class MockResend {
     emails = { send: (...args: unknown[]) => mockEmailSend(...args) };
   }
@@ -79,7 +79,7 @@ vi.mock("resend", () => {
 // Import after mocks
 // ---------------------------------------------------------------------------
 
-import { routeStripeEvent } from "../billing-webhook.js";
+import { routeStripeEvent } from '../billing-webhook.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -113,21 +113,21 @@ function makeEvent(type: string, dataObject: Record<string, unknown>): Stripe.Ev
 
 function makeSubscription(overrides: Record<string, unknown> = {}) {
   return {
-    id: "sub_123",
-    status: "active",
-    customer: "cus_abc",
+    id: 'sub_123',
+    status: 'active',
+    customer: 'cus_abc',
     cancel_at_period_end: false,
     trial_end: null,
     start_date: 1700000000,
     current_period_start: 1700000000,
     current_period_end: 1702592000,
-    metadata: { organizationId: "org_1" },
+    metadata: { organizationId: 'org_1' },
     items: {
       data: [
         {
-          id: "si_item1",
+          id: 'si_item1',
           quantity: 3,
-          price: { id: "price_pro" },
+          price: { id: 'price_pro' },
         },
       ],
     },
@@ -137,11 +137,11 @@ function makeSubscription(overrides: Record<string, unknown> = {}) {
 
 function makeInvoice(overrides: Record<string, unknown> = {}) {
   return {
-    id: "inv_456",
-    billing_reason: "subscription_cycle",
+    id: 'inv_456',
+    billing_reason: 'subscription_cycle',
     parent: {
       subscription_details: {
-        subscription: "sub_123",
+        subscription: 'sub_123',
       },
     },
     ...overrides,
@@ -150,9 +150,9 @@ function makeInvoice(overrides: Record<string, unknown> = {}) {
 
 function makeCheckoutSession(overrides: Record<string, unknown> = {}) {
   return {
-    id: "cs_session_1",
-    mode: "subscription",
-    subscription: "sub_123",
+    id: 'cs_session_1',
+    mode: 'subscription',
+    subscription: 'sub_123',
     metadata: {},
     ...overrides,
   };
@@ -162,109 +162,109 @@ function makeCheckoutSession(overrides: Record<string, unknown> = {}) {
 // Tests
 // ---------------------------------------------------------------------------
 
-describe("billing-webhook", () => {
+describe('billing-webhook', () => {
   let tx: ReturnType<typeof createMockTx>;
 
   beforeEach(() => {
     vi.clearAllMocks();
     tx = createMockTx();
-    mockResolveTierFromPriceId.mockReturnValue("PRO");
+    mockResolveTierFromPriceId.mockReturnValue('PRO');
   });
 
   // =========================================================================
   // routeStripeEvent routing
   // =========================================================================
 
-  describe("routeStripeEvent routing", () => {
-    it("routes checkout.session.completed (mode=subscription) to handleCheckoutCompleted", async () => {
-      const sub = makeSubscription({ status: "active" });
+  describe('routeStripeEvent routing', () => {
+    it('routes checkout.session.completed (mode=subscription) to handleCheckoutCompleted', async () => {
+      const sub = makeSubscription({ status: 'active' });
       mockStripeSubscriptionsRetrieve.mockResolvedValue(sub);
       tx.subscription.findUnique.mockResolvedValue(null);
 
-      const event = makeEvent("checkout.session.completed", makeCheckoutSession());
+      const event = makeEvent('checkout.session.completed', makeCheckoutSession());
 
       await routeStripeEvent(event, tx);
 
-      expect(mockStripeSubscriptionsRetrieve).toHaveBeenCalledWith("sub_123");
+      expect(mockStripeSubscriptionsRetrieve).toHaveBeenCalledWith('sub_123');
       // handleSubscriptionUpdated is called internally, which calls upsert
       expect(tx.subscription.upsert).toHaveBeenCalled();
     });
 
-    it("routes customer.subscription.updated to handleSubscriptionUpdated", async () => {
+    it('routes customer.subscription.updated to handleSubscriptionUpdated', async () => {
       tx.subscription.findUnique.mockResolvedValue(null);
 
-      const event = makeEvent("customer.subscription.updated", makeSubscription());
+      const event = makeEvent('customer.subscription.updated', makeSubscription());
 
       await routeStripeEvent(event, tx);
 
       expect(tx.subscription.upsert).toHaveBeenCalled();
     });
 
-    it("routes customer.subscription.deleted to handleSubscriptionDeleted", async () => {
+    it('routes customer.subscription.deleted to handleSubscriptionDeleted', async () => {
       tx.subscription.findUnique.mockResolvedValue({
-        id: "db_sub_1",
-        organizationId: "org_1",
+        id: 'db_sub_1',
+        organizationId: 'org_1',
       });
 
-      const event = makeEvent("customer.subscription.deleted", makeSubscription());
+      const event = makeEvent('customer.subscription.deleted', makeSubscription());
 
       await routeStripeEvent(event, tx);
 
       expect(tx.subscription.update).toHaveBeenCalledWith({
-        where: { stripeSubscriptionId: "sub_123" },
-        data: { status: "CANCELED" },
+        where: { stripeSubscriptionId: 'sub_123' },
+        data: { status: 'CANCELED' },
       });
     });
 
-    it("routes invoice.paid to handleInvoicePaid", async () => {
-      mockResolveTierFromPriceId.mockReturnValue("STARTER");
+    it('routes invoice.paid to handleInvoicePaid', async () => {
+      mockResolveTierFromPriceId.mockReturnValue('STARTER');
       tx.ocrCreditLedger.findFirst.mockResolvedValue(null);
       tx.subscription.findUnique.mockResolvedValue({
-        organizationId: "org_1",
-        stripePriceId: "price_starter",
-        currentPeriodStart: new Date("2024-01-01"),
-        currentPeriodEnd: new Date("2024-02-01"),
+        organizationId: 'org_1',
+        stripePriceId: 'price_starter',
+        currentPeriodStart: new Date('2024-01-01'),
+        currentPeriodEnd: new Date('2024-02-01'),
       });
 
-      const event = makeEvent("invoice.paid", makeInvoice());
+      const event = makeEvent('invoice.paid', makeInvoice());
 
       await routeStripeEvent(event, tx);
 
       expect(tx.ocrCreditLedger.create).toHaveBeenCalled();
     });
 
-    it("routes invoice.payment_failed to handlePaymentFailed", async () => {
+    it('routes invoice.payment_failed to handlePaymentFailed', async () => {
       tx.subscription.findUnique.mockResolvedValue({
-        organizationId: "org_1",
-        organization: { id: "org_1", billingEmail: null },
+        organizationId: 'org_1',
+        organization: { id: 'org_1', billingEmail: null },
       });
 
-      const event = makeEvent("invoice.payment_failed", makeInvoice());
+      const event = makeEvent('invoice.payment_failed', makeInvoice());
 
       await routeStripeEvent(event, tx);
 
       expect(tx.subscription.update).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: { status: "PAST_DUE" },
+          data: { status: 'PAST_DUE' },
         }),
       );
     });
 
-    it("routes customer.subscription.trial_will_end to handleTrialWillEnd", async () => {
+    it('routes customer.subscription.trial_will_end to handleTrialWillEnd', async () => {
       tx.subscription.findUnique.mockResolvedValue({
-        organization: { id: "org_1", billingEmail: "billing@test.com" },
+        organization: { id: 'org_1', billingEmail: 'billing@test.com' },
       });
-      tx.member.findMany.mockResolvedValue([{ userId: "usr_1" }]);
+      tx.member.findMany.mockResolvedValue([{ userId: 'usr_1' }]);
 
-      const event = makeEvent("customer.subscription.trial_will_end", makeSubscription());
+      const event = makeEvent('customer.subscription.trial_will_end', makeSubscription());
 
       await routeStripeEvent(event, tx);
 
-      expect(mockDispatch).toHaveBeenCalledWith(expect.objectContaining({ type: "TRIAL_ENDING" }));
+      expect(mockDispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'TRIAL_ENDING' }));
     });
 
-    it("does not throw on unhandled event type", async () => {
-      const event = makeEvent("some.unknown.event", {});
+    it('does not throw on unhandled event type', async () => {
+      const event = makeEvent('some.unknown.event', {});
 
       await expect(routeStripeEvent(event, tx)).resolves.toBeUndefined();
     });
@@ -274,29 +274,29 @@ describe("billing-webhook", () => {
   // handleSubscriptionUpdated
   // =========================================================================
 
-  describe("handleSubscriptionUpdated", () => {
-    it("upserts subscription with correct mapped fields", async () => {
+  describe('handleSubscriptionUpdated', () => {
+    it('upserts subscription with correct mapped fields', async () => {
       tx.subscription.findUnique.mockResolvedValue(null); // no previous sub
-      mockResolveTierFromPriceId.mockReturnValue("PRO");
+      mockResolveTierFromPriceId.mockReturnValue('PRO');
 
       const sub = makeSubscription({
-        status: "trialing",
+        status: 'trialing',
         trial_end: 1701000000,
       });
-      const event = makeEvent("customer.subscription.updated", sub);
+      const event = makeEvent('customer.subscription.updated', sub);
 
       await routeStripeEvent(event, tx);
 
       expect(tx.subscription.upsert).toHaveBeenCalledWith({
-        where: { stripeSubscriptionId: "sub_123" },
+        where: { stripeSubscriptionId: 'sub_123' },
         create: expect.objectContaining({
-          stripeSubscriptionId: "sub_123",
-          organizationId: "org_1",
-          stripeCustomerId: "cus_abc",
-          stripeSubscriptionItemId: "si_item1",
-          stripePriceId: "price_pro",
-          tier: "PRO",
-          status: "TRIALING",
+          stripeSubscriptionId: 'sub_123',
+          organizationId: 'org_1',
+          stripeCustomerId: 'cus_abc',
+          stripeSubscriptionItemId: 'si_item1',
+          stripePriceId: 'price_pro',
+          tier: 'PRO',
+          status: 'TRIALING',
           currentPeriodStart: new Date(1700000000 * 1000),
           currentPeriodEnd: new Date(1702592000 * 1000),
           trialEnd: new Date(1701000000 * 1000),
@@ -304,31 +304,31 @@ describe("billing-webhook", () => {
           seatCount: 3,
         }),
         update: expect.objectContaining({
-          organizationId: "org_1",
-          status: "TRIALING",
-          tier: "PRO",
-          stripeCustomerId: "cus_abc",
+          organizationId: 'org_1',
+          status: 'TRIALING',
+          tier: 'PRO',
+          stripeCustomerId: 'cus_abc',
         }),
       });
     });
 
-    it("maps Stripe status correctly (trialing->TRIALING, active->ACTIVE)", async () => {
+    it('maps Stripe status correctly (trialing->TRIALING, active->ACTIVE)', async () => {
       tx.subscription.findUnique.mockResolvedValue(null);
 
       for (const [stripeStatus, dbStatus] of [
-        ["trialing", "TRIALING"],
-        ["active", "ACTIVE"],
-        ["past_due", "PAST_DUE"],
-        ["canceled", "CANCELED"],
-        ["unpaid", "UNPAID"],
+        ['trialing', 'TRIALING'],
+        ['active', 'ACTIVE'],
+        ['past_due', 'PAST_DUE'],
+        ['canceled', 'CANCELED'],
+        ['unpaid', 'UNPAID'],
       ] as const) {
         vi.clearAllMocks();
         tx = createMockTx();
         tx.subscription.findUnique.mockResolvedValue(null);
-        mockResolveTierFromPriceId.mockReturnValue("PRO");
+        mockResolveTierFromPriceId.mockReturnValue('PRO');
 
         const sub = makeSubscription({ status: stripeStatus });
-        const event = makeEvent("customer.subscription.updated", sub);
+        const event = makeEvent('customer.subscription.updated', sub);
 
         await routeStripeEvent(event, tx);
 
@@ -340,45 +340,45 @@ describe("billing-webhook", () => {
       }
     });
 
-    it("returns early when organizationId is missing from metadata", async () => {
+    it('returns early when organizationId is missing from metadata', async () => {
       const sub = makeSubscription({ metadata: {} });
-      const event = makeEvent("customer.subscription.updated", sub);
+      const event = makeEvent('customer.subscription.updated', sub);
 
       await routeStripeEvent(event, tx);
 
       expect(tx.subscription.upsert).not.toHaveBeenCalled();
     });
 
-    it("defaults to STARTER tier when resolveTierFromPriceId throws", async () => {
+    it('defaults to STARTER tier when resolveTierFromPriceId throws', async () => {
       tx.subscription.findUnique.mockResolvedValue(null);
       mockResolveTierFromPriceId.mockImplementation(() => {
-        throw new Error("Unknown price ID");
+        throw new Error('Unknown price ID');
       });
 
       const sub = makeSubscription();
-      const event = makeEvent("customer.subscription.updated", sub);
+      const event = makeEvent('customer.subscription.updated', sub);
 
       await routeStripeEvent(event, tx);
 
       expect(tx.subscription.upsert).toHaveBeenCalledWith(
         expect.objectContaining({
-          update: expect.objectContaining({ tier: "STARTER" }),
+          update: expect.objectContaining({ tier: 'STARTER' }),
         }),
       );
     });
 
-    it("extracts customer ID from string customer field", async () => {
+    it('extracts customer ID from string customer field', async () => {
       tx.subscription.findUnique.mockResolvedValue(null);
 
-      const sub = makeSubscription({ customer: "cus_string_id" });
-      const event = makeEvent("customer.subscription.updated", sub);
+      const sub = makeSubscription({ customer: 'cus_string_id' });
+      const event = makeEvent('customer.subscription.updated', sub);
 
       await routeStripeEvent(event, tx);
 
       expect(tx.subscription.upsert).toHaveBeenCalledWith(
         expect.objectContaining({
           update: expect.objectContaining({
-            stripeCustomerId: "cus_string_id",
+            stripeCustomerId: 'cus_string_id',
           }),
         }),
       );
@@ -389,28 +389,28 @@ describe("billing-webhook", () => {
   // handleSubscriptionDeleted
   // =========================================================================
 
-  describe("handleSubscriptionDeleted", () => {
-    it("sets status to CANCELED on existing subscription", async () => {
+  describe('handleSubscriptionDeleted', () => {
+    it('sets status to CANCELED on existing subscription', async () => {
       tx.subscription.findUnique.mockResolvedValue({
-        id: "db_sub_1",
-        organizationId: "org_1",
+        id: 'db_sub_1',
+        organizationId: 'org_1',
       });
 
-      const event = makeEvent("customer.subscription.deleted", makeSubscription());
+      const event = makeEvent('customer.subscription.deleted', makeSubscription());
 
       await routeStripeEvent(event, tx);
 
       expect(tx.subscription.update).toHaveBeenCalledWith({
-        where: { stripeSubscriptionId: "sub_123" },
-        data: { status: "CANCELED" },
+        where: { stripeSubscriptionId: 'sub_123' },
+        data: { status: 'CANCELED' },
       });
-      expect(mockInvalidate).toHaveBeenCalledWith("sub:org_1", "credit:org_1");
+      expect(mockInvalidate).toHaveBeenCalledWith('sub:org_1', 'credit:org_1');
     });
 
-    it("skips update when subscription is not found in DB", async () => {
+    it('skips update when subscription is not found in DB', async () => {
       tx.subscription.findUnique.mockResolvedValue(null);
 
-      const event = makeEvent("customer.subscription.deleted", makeSubscription());
+      const event = makeEvent('customer.subscription.deleted', makeSubscription());
 
       await routeStripeEvent(event, tx);
 
@@ -422,60 +422,60 @@ describe("billing-webhook", () => {
   // handleCheckoutCompleted - trial credits
   // =========================================================================
 
-  describe("handleCheckoutCompleted - trial credits", () => {
+  describe('handleCheckoutCompleted - trial credits', () => {
     beforeEach(() => {
       // handleCheckoutCompleted retrieves the subscription from Stripe
-      mockStripeSubscriptionsRetrieve.mockResolvedValue(makeSubscription({ status: "trialing" }));
+      mockStripeSubscriptionsRetrieve.mockResolvedValue(makeSubscription({ status: 'trialing' }));
       // handleSubscriptionUpdated (called first) needs findUnique for tier change check
       tx.subscription.findUnique.mockResolvedValue(null);
       // No existing trial entry
       tx.ocrCreditLedger.findFirst.mockResolvedValue(null);
     });
 
-    it("creates trial credit ledger entry with credits=5 and reason=TRIAL_ALLOWANCE", async () => {
+    it('creates trial credit ledger entry with credits=5 and reason=TRIAL_ALLOWANCE', async () => {
       const event = makeEvent(
-        "checkout.session.completed",
-        makeCheckoutSession({ id: "cs_sess_abc" }),
+        'checkout.session.completed',
+        makeCheckoutSession({ id: 'cs_sess_abc' }),
       );
 
       await routeStripeEvent(event, tx);
 
       expect(tx.ocrCreditLedger.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
-          organizationId: "org_1",
+          organizationId: 'org_1',
           credits: 5,
-          reason: "TRIAL_ALLOWANCE",
-          stripeEventId: "trial_cs_sess_abc",
+          reason: 'TRIAL_ALLOWANCE',
+          stripeEventId: 'trial_cs_sess_abc',
           periodStart: expect.any(Date),
           periodEnd: expect.any(Date),
         }),
       });
     });
 
-    it("deduplicates trial credits by stripeEventId (trial_{sessionId})", async () => {
+    it('deduplicates trial credits by stripeEventId (trial_{sessionId})', async () => {
       // Simulate existing trial entry
-      tx.ocrCreditLedger.findFirst.mockResolvedValue({ id: "existing_id" });
+      tx.ocrCreditLedger.findFirst.mockResolvedValue({ id: 'existing_id' });
 
       const event = makeEvent(
-        "checkout.session.completed",
-        makeCheckoutSession({ id: "cs_sess_dup" }),
+        'checkout.session.completed',
+        makeCheckoutSession({ id: 'cs_sess_dup' }),
       );
 
       await routeStripeEvent(event, tx);
 
       // findFirst should have been called with the dedup ID
       expect(tx.ocrCreditLedger.findFirst).toHaveBeenCalledWith({
-        where: { stripeEventId: "trial_cs_sess_dup" },
+        where: { stripeEventId: 'trial_cs_sess_dup' },
         select: { id: true },
       });
       // create should NOT be called since duplicate found
       expect(tx.ocrCreditLedger.create).not.toHaveBeenCalled();
     });
 
-    it("skips trial credits when subscription is active (not trialing)", async () => {
-      mockStripeSubscriptionsRetrieve.mockResolvedValue(makeSubscription({ status: "active" }));
+    it('skips trial credits when subscription is active (not trialing)', async () => {
+      mockStripeSubscriptionsRetrieve.mockResolvedValue(makeSubscription({ status: 'active' }));
 
-      const event = makeEvent("checkout.session.completed", makeCheckoutSession());
+      const event = makeEvent('checkout.session.completed', makeCheckoutSession());
 
       await routeStripeEvent(event, tx);
 
@@ -484,18 +484,18 @@ describe("billing-webhook", () => {
       expect(tx.ocrCreditLedger.create).not.toHaveBeenCalled();
     });
 
-    it("converts period timestamps from unix to Date objects", async () => {
+    it('converts period timestamps from unix to Date objects', async () => {
       mockStripeSubscriptionsRetrieve.mockResolvedValue(
         makeSubscription({
-          status: "trialing",
+          status: 'trialing',
           current_period_start: 1700000000,
           current_period_end: 1702592000,
         }),
       );
 
       const event = makeEvent(
-        "checkout.session.completed",
-        makeCheckoutSession({ id: "cs_period" }),
+        'checkout.session.completed',
+        makeCheckoutSession({ id: 'cs_period' }),
       );
 
       await routeStripeEvent(event, tx);
@@ -513,42 +513,42 @@ describe("billing-webhook", () => {
   // handleInvoicePaid - credit allocation
   // =========================================================================
 
-  describe("handleInvoicePaid - credit allocation", () => {
-    it("creates monthly credit ledger entry based on tier (STARTER=20)", async () => {
-      mockResolveTierFromPriceId.mockReturnValue("STARTER");
+  describe('handleInvoicePaid - credit allocation', () => {
+    it('creates monthly credit ledger entry based on tier (STARTER=20)', async () => {
+      mockResolveTierFromPriceId.mockReturnValue('STARTER');
       tx.ocrCreditLedger.findFirst.mockResolvedValue(null);
       tx.subscription.findUnique.mockResolvedValue({
-        organizationId: "org_1",
-        stripePriceId: "price_starter",
-        currentPeriodStart: new Date("2024-01-01"),
-        currentPeriodEnd: new Date("2024-02-01"),
+        organizationId: 'org_1',
+        stripePriceId: 'price_starter',
+        currentPeriodStart: new Date('2024-01-01'),
+        currentPeriodEnd: new Date('2024-02-01'),
       });
 
-      const event = makeEvent("invoice.paid", makeInvoice({ id: "inv_s1" }));
+      const event = makeEvent('invoice.paid', makeInvoice({ id: 'inv_s1' }));
 
       await routeStripeEvent(event, tx);
 
       expect(tx.ocrCreditLedger.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
-          organizationId: "org_1",
+          organizationId: 'org_1',
           credits: 20,
-          reason: "MONTHLY_ALLOWANCE",
-          stripeEventId: "inv_s1",
+          reason: 'MONTHLY_ALLOWANCE',
+          stripeEventId: 'inv_s1',
         }),
       });
     });
 
-    it("allocates PRO credits (100) for PRO tier", async () => {
-      mockResolveTierFromPriceId.mockReturnValue("PRO");
+    it('allocates PRO credits (100) for PRO tier', async () => {
+      mockResolveTierFromPriceId.mockReturnValue('PRO');
       tx.ocrCreditLedger.findFirst.mockResolvedValue(null);
       tx.subscription.findUnique.mockResolvedValue({
-        organizationId: "org_1",
-        stripePriceId: "price_pro",
-        currentPeriodStart: new Date("2024-01-01"),
-        currentPeriodEnd: new Date("2024-02-01"),
+        organizationId: 'org_1',
+        stripePriceId: 'price_pro',
+        currentPeriodStart: new Date('2024-01-01'),
+        currentPeriodEnd: new Date('2024-02-01'),
       });
 
-      const event = makeEvent("invoice.paid", makeInvoice({ id: "inv_p1" }));
+      const event = makeEvent('invoice.paid', makeInvoice({ id: 'inv_p1' }));
 
       await routeStripeEvent(event, tx);
 
@@ -557,17 +557,17 @@ describe("billing-webhook", () => {
       });
     });
 
-    it("allocates ENTERPRISE credits (500) for ENTERPRISE tier", async () => {
-      mockResolveTierFromPriceId.mockReturnValue("ENTERPRISE");
+    it('allocates ENTERPRISE credits (500) for ENTERPRISE tier', async () => {
+      mockResolveTierFromPriceId.mockReturnValue('ENTERPRISE');
       tx.ocrCreditLedger.findFirst.mockResolvedValue(null);
       tx.subscription.findUnique.mockResolvedValue({
-        organizationId: "org_1",
-        stripePriceId: "price_ent",
-        currentPeriodStart: new Date("2024-01-01"),
-        currentPeriodEnd: new Date("2024-02-01"),
+        organizationId: 'org_1',
+        stripePriceId: 'price_ent',
+        currentPeriodStart: new Date('2024-01-01'),
+        currentPeriodEnd: new Date('2024-02-01'),
       });
 
-      const event = makeEvent("invoice.paid", makeInvoice({ id: "inv_e1" }));
+      const event = makeEvent('invoice.paid', makeInvoice({ id: 'inv_e1' }));
 
       await routeStripeEvent(event, tx);
 
@@ -576,10 +576,10 @@ describe("billing-webhook", () => {
       });
     });
 
-    it("skips credit allocation for subscription_create billing_reason", async () => {
+    it('skips credit allocation for subscription_create billing_reason', async () => {
       const event = makeEvent(
-        "invoice.paid",
-        makeInvoice({ billing_reason: "subscription_create" }),
+        'invoice.paid',
+        makeInvoice({ billing_reason: 'subscription_create' }),
       );
 
       await routeStripeEvent(event, tx);
@@ -588,35 +588,35 @@ describe("billing-webhook", () => {
       expect(tx.subscription.findUnique).not.toHaveBeenCalled();
     });
 
-    it("deduplicates by invoice ID", async () => {
+    it('deduplicates by invoice ID', async () => {
       tx.ocrCreditLedger.findFirst.mockResolvedValue({
-        id: "existing_ledger",
+        id: 'existing_ledger',
       });
 
-      const event = makeEvent("invoice.paid", makeInvoice({ id: "inv_dup" }));
+      const event = makeEvent('invoice.paid', makeInvoice({ id: 'inv_dup' }));
 
       await routeStripeEvent(event, tx);
 
       expect(tx.ocrCreditLedger.findFirst).toHaveBeenCalledWith({
-        where: { stripeEventId: "inv_dup" },
+        where: { stripeEventId: 'inv_dup' },
         select: { id: true },
       });
       expect(tx.ocrCreditLedger.create).not.toHaveBeenCalled();
     });
 
-    it("uses subscription period dates in ledger entry", async () => {
-      const periodStart = new Date("2024-03-01");
-      const periodEnd = new Date("2024-04-01");
-      mockResolveTierFromPriceId.mockReturnValue("PRO");
+    it('uses subscription period dates in ledger entry', async () => {
+      const periodStart = new Date('2024-03-01');
+      const periodEnd = new Date('2024-04-01');
+      mockResolveTierFromPriceId.mockReturnValue('PRO');
       tx.ocrCreditLedger.findFirst.mockResolvedValue(null);
       tx.subscription.findUnique.mockResolvedValue({
-        organizationId: "org_1",
-        stripePriceId: "price_pro",
+        organizationId: 'org_1',
+        stripePriceId: 'price_pro',
         currentPeriodStart: periodStart,
         currentPeriodEnd: periodEnd,
       });
 
-      const event = makeEvent("invoice.paid", makeInvoice({ id: "inv_period" }));
+      const event = makeEvent('invoice.paid', makeInvoice({ id: 'inv_period' }));
 
       await routeStripeEvent(event, tx);
 
@@ -633,64 +633,64 @@ describe("billing-webhook", () => {
   // handleTrialWillEnd - notifications
   // =========================================================================
 
-  describe("handleTrialWillEnd - notifications", () => {
-    it("dispatches in-app notification to admin users", async () => {
+  describe('handleTrialWillEnd - notifications', () => {
+    it('dispatches in-app notification to admin users', async () => {
       tx.subscription.findUnique.mockResolvedValue({
-        organization: { id: "org_1", billingEmail: "billing@test.com" },
+        organization: { id: 'org_1', billingEmail: 'billing@test.com' },
       });
-      tx.member.findMany.mockResolvedValue([{ userId: "usr_admin1" }, { userId: "usr_admin2" }]);
+      tx.member.findMany.mockResolvedValue([{ userId: 'usr_admin1' }, { userId: 'usr_admin2' }]);
 
-      const event = makeEvent("customer.subscription.trial_will_end", makeSubscription());
+      const event = makeEvent('customer.subscription.trial_will_end', makeSubscription());
 
       await routeStripeEvent(event, tx);
 
       expect(mockDispatch).toHaveBeenCalledWith(
         expect.objectContaining({
-          organizationId: "org_1",
-          type: "TRIAL_ENDING",
-          recipientUserIds: ["usr_admin1", "usr_admin2"],
-          title: "Trial ending soon",
-          body: "Your trial ends in 3 days. Choose a plan to continue without interruption.",
-          entityType: "ORGANIZATION",
-          entityId: "org_1",
+          organizationId: 'org_1',
+          type: 'TRIAL_ENDING',
+          recipientUserIds: ['usr_admin1', 'usr_admin2'],
+          title: 'Trial ending soon',
+          body: 'Your trial ends in 3 days. Choose a plan to continue without interruption.',
+          entityType: 'ORGANIZATION',
+          entityId: 'org_1',
         }),
       );
 
       // Verify member query targets owners and admins
       expect(tx.member.findMany).toHaveBeenCalledWith({
         where: {
-          organizationId: "org_1",
-          role: { in: ["owner", "admin"] },
+          organizationId: 'org_1',
+          role: { in: ['owner', 'admin'] },
         },
         select: { userId: true },
       });
     });
 
-    it("sends email to billingEmail", async () => {
+    it('sends email to billingEmail', async () => {
       tx.subscription.findUnique.mockResolvedValue({
-        organization: { id: "org_1", billingEmail: "billing@acme.com" },
+        organization: { id: 'org_1', billingEmail: 'billing@acme.com' },
       });
-      tx.member.findMany.mockResolvedValue([{ userId: "usr_1" }]);
+      tx.member.findMany.mockResolvedValue([{ userId: 'usr_1' }]);
 
-      const event = makeEvent("customer.subscription.trial_will_end", makeSubscription());
+      const event = makeEvent('customer.subscription.trial_will_end', makeSubscription());
 
       await routeStripeEvent(event, tx);
 
       expect(mockEmailSend).toHaveBeenCalledWith(
         expect.objectContaining({
-          to: "billing@acme.com",
-          subject: "Your Contractor Ops trial ends in 3 days",
+          to: 'billing@acme.com',
+          subject: 'Your Contractor Ops trial ends in 3 days',
         }),
       );
     });
 
-    it("skips email when billingEmail is null", async () => {
+    it('skips email when billingEmail is null', async () => {
       tx.subscription.findUnique.mockResolvedValue({
-        organization: { id: "org_1", billingEmail: null },
+        organization: { id: 'org_1', billingEmail: null },
       });
-      tx.member.findMany.mockResolvedValue([{ userId: "usr_1" }]);
+      tx.member.findMany.mockResolvedValue([{ userId: 'usr_1' }]);
 
-      const event = makeEvent("customer.subscription.trial_will_end", makeSubscription());
+      const event = makeEvent('customer.subscription.trial_will_end', makeSubscription());
 
       await routeStripeEvent(event, tx);
 
@@ -705,50 +705,50 @@ describe("billing-webhook", () => {
   // handlePaymentFailed
   // =========================================================================
 
-  describe("handlePaymentFailed", () => {
+  describe('handlePaymentFailed', () => {
     beforeEach(() => {
       tx.subscription.findUnique.mockResolvedValue({
-        organizationId: "org_1",
-        organization: { id: "org_1", billingEmail: "billing@acme.com" },
+        organizationId: 'org_1',
+        organization: { id: 'org_1', billingEmail: 'billing@acme.com' },
       });
-      tx.member.findMany.mockResolvedValue([{ userId: "usr_admin1" }, { userId: "usr_admin2" }]);
+      tx.member.findMany.mockResolvedValue([{ userId: 'usr_admin1' }, { userId: 'usr_admin2' }]);
     });
 
-    it("sets subscription status to PAST_DUE", async () => {
-      const event = makeEvent("invoice.payment_failed", makeInvoice());
+    it('sets subscription status to PAST_DUE', async () => {
+      const event = makeEvent('invoice.payment_failed', makeInvoice());
 
       await routeStripeEvent(event, tx);
 
       expect(tx.subscription.update).toHaveBeenCalledWith({
-        where: { stripeSubscriptionId: "sub_123" },
-        data: { status: "PAST_DUE" },
+        where: { stripeSubscriptionId: 'sub_123' },
+        data: { status: 'PAST_DUE' },
       });
     });
 
-    it("dispatches in-app notification and sends email to admins", async () => {
-      const event = makeEvent("invoice.payment_failed", makeInvoice());
+    it('dispatches in-app notification and sends email to admins', async () => {
+      const event = makeEvent('invoice.payment_failed', makeInvoice());
 
       await routeStripeEvent(event, tx);
 
       expect(mockDispatch).toHaveBeenCalledWith(
         expect.objectContaining({
-          organizationId: "org_1",
-          type: "PAYMENT_FAILED",
-          recipientUserIds: ["usr_admin1", "usr_admin2"],
-          title: "Payment failed",
+          organizationId: 'org_1',
+          type: 'PAYMENT_FAILED',
+          recipientUserIds: ['usr_admin1', 'usr_admin2'],
+          title: 'Payment failed',
         }),
       );
     });
 
-    it("sends email to organization billingEmail", async () => {
-      const event = makeEvent("invoice.payment_failed", makeInvoice());
+    it('sends email to organization billingEmail', async () => {
+      const event = makeEvent('invoice.payment_failed', makeInvoice());
 
       await routeStripeEvent(event, tx);
 
       expect(mockEmailSend).toHaveBeenCalledWith(
         expect.objectContaining({
-          to: "billing@acme.com",
-          subject: "Payment failed - action required",
+          to: 'billing@acme.com',
+          subject: 'Payment failed - action required',
         }),
       );
     });

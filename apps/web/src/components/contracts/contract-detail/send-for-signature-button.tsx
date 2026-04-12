@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { PenLine } from "lucide-react";
-import { useState } from "react";
+import { PenLine } from 'lucide-react';
+import { useState } from 'react';
 
-import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { SendForSignatureDialog } from "./send-for-signature-dialog";
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { SendForSignatureDialog } from './send-for-signature-dialog';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -22,7 +22,7 @@ type SendForSignatureButtonProps = {
   contractParties?: Array<{
     name: string;
     email: string;
-    role: "signer" | "countersigner";
+    role: 'signer' | 'countersigner';
   }>;
 };
 
@@ -46,15 +46,15 @@ export function SendForSignatureButton({
   const [dialogOpen, setDialogOpen] = useState(false);
 
   // Only show for DRAFT or ACTIVE contracts
-  if (!["DRAFT", "ACTIVE"].includes(contractStatus)) {
+  if (!['DRAFT', 'ACTIVE'].includes(contractStatus)) {
     return null;
   }
 
   const isDisabled = !(hasDocument && hasConnectedProvider);
   const tooltipMessage = !hasDocument
-    ? "Upload a document first"
+    ? 'Upload a document first'
     : !hasConnectedProvider
-      ? "Connect a signing provider in Settings"
+      ? 'Connect a signing provider in Settings'
       : undefined;
 
   if (isDisabled && tooltipMessage) {
@@ -62,7 +62,7 @@ export function SendForSignatureButton({
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger
-            render={(props) => (
+            render={props => (
               <Button {...props} variant="default" size="sm" disabled>
                 <PenLine className="me-1.5 size-4" />
                 Send for Signature
@@ -86,7 +86,7 @@ export function SendForSignatureButton({
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         contractId={contractId}
-        documentId={documentId ?? ""}
+        documentId={documentId ?? ''}
         contractParties={contractParties}
       />
     </>

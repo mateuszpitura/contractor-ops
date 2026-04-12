@@ -2,16 +2,16 @@
 // ZATCA (Saudi Arabia) Country Profile
 // ---------------------------------------------------------------------------
 
-import type { ComplianceStatus } from "../../types/compliance.js";
-import type { EInvoice } from "../../types/invoice.js";
-import type { EInvoiceProfile } from "../../types/profile.js";
-import type { ValidationResult } from "../../types/validation.js";
-import type { ZatcaConnectionData } from "./compliance.js";
-import { computeZatcaComplianceStatus } from "./compliance.js";
-import { generateZatcaXml } from "./generator.js";
-import { parseZatcaXml } from "./parser.js";
-import { ZatcaTLVQRCode } from "./qr-code.js";
-import { ZatcaXAdESSigner } from "./signer.js";
+import type { ComplianceStatus } from '../../types/compliance.js';
+import type { EInvoice } from '../../types/invoice.js';
+import type { EInvoiceProfile } from '../../types/profile.js';
+import type { ValidationResult } from '../../types/validation.js';
+import type { ZatcaConnectionData } from './compliance.js';
+import { computeZatcaComplianceStatus } from './compliance.js';
+import { generateZatcaXml } from './generator.js';
+import { parseZatcaXml } from './parser.js';
+import { ZatcaTLVQRCode } from './qr-code.js';
+import { ZatcaXAdESSigner } from './signer.js';
 
 // ---------------------------------------------------------------------------
 // ZatcaProfile
@@ -26,9 +26,9 @@ import { ZatcaXAdESSigner } from "./signer.js";
  * Plan 03 wires the ZatcaTLVQRCode (QRCodeable).
  */
 export class ZatcaProfile implements EInvoiceProfile {
-  readonly profileId = "zatca" as const;
-  readonly country = "SA" as const;
-  readonly displayName = "ZATCA (Saudi Arabia)";
+  readonly profileId = 'zatca' as const;
+  readonly country = 'SA' as const;
+  readonly displayName = 'ZATCA (Saudi Arabia)';
 
   /** XAdES-BES enveloped digital signature (Plan 02) */
   readonly sign = new ZatcaXAdESSigner();
@@ -66,7 +66,7 @@ export class ZatcaProfile implements EInvoiceProfile {
       const message = error instanceof Error ? error.message : String(error);
       return {
         valid: false,
-        errors: [{ code: "PARSE_ERROR", message, severity: "error" }],
+        errors: [{ code: 'PARSE_ERROR', message, severity: 'error' }],
         warnings: [],
         profileId: this.profileId,
       };

@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { useParams } from "next/navigation";
-import { useTranslations } from "next-intl";
-import { useBreadcrumbOverride } from "@/components/layout/breadcrumb-context";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { RunHeader } from "@/components/workflows/workflow-run/run-header";
-import { TaskChecklist } from "@/components/workflows/workflow-run/task-checklist";
-import { Link } from "@/i18n/navigation";
-import { authClient } from "@/lib/auth-client";
-import { trpc } from "@/trpc/init";
+import { useQuery } from '@tanstack/react-query';
+import { useParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { useBreadcrumbOverride } from '@/components/layout/breadcrumb-context';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { RunHeader } from '@/components/workflows/workflow-run/run-header';
+import { TaskChecklist } from '@/components/workflows/workflow-run/task-checklist';
+import { Link } from '@/i18n/navigation';
+import { authClient } from '@/lib/auth-client';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Skeleton
@@ -52,7 +52,7 @@ function RunDetailSkeleton() {
 
 export default function WorkflowRunDetailPage() {
   const params = useParams<{ id: string }>();
-  const t = useTranslations("Workflows");
+  const t = useTranslations('Workflows');
 
   const session = authClient.useSession();
   const currentUserId = session?.data?.user?.id ?? null;
@@ -66,15 +66,15 @@ export default function WorkflowRunDetailPage() {
   // Error states
   if (runQuery.isError) {
     const isNotFound =
-      runQuery.error?.message?.includes("not found") ||
-      (runQuery.error as { data?: { code?: string } })?.data?.code === "NOT_FOUND";
+      runQuery.error?.message?.includes('not found') ||
+      (runQuery.error as { data?: { code?: string } })?.data?.code === 'NOT_FOUND';
 
     if (isNotFound) {
       return (
         <div className="flex min-h-[400px] flex-col items-center justify-center gap-3 text-center">
-          <h2 className="text-lg font-medium">{t("notFound")}</h2>
+          <h2 className="text-lg font-medium">{t('notFound')}</h2>
           <Button variant="outline" render={<Link href="/workflows" />}>
-            {t("backToWorkflows")}
+            {t('backToWorkflows')}
           </Button>
         </div>
       );
@@ -82,9 +82,9 @@ export default function WorkflowRunDetailPage() {
 
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center gap-3 text-center">
-        <h2 className="text-lg font-medium">{t("errors.failedToLoadWorkflowDetail")}</h2>
+        <h2 className="text-lg font-medium">{t('errors.failedToLoadWorkflowDetail')}</h2>
         <Button variant="outline" onClick={() => runQuery.refetch()}>
-          {t("errors.retry")}
+          {t('errors.retry')}
         </Button>
       </div>
     );

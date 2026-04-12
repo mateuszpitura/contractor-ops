@@ -1,25 +1,25 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-import { FeatureGate } from "@/components/billing/feature-gate";
-import { ProviderConnectionCard } from "@/components/settings/provider-connection-card";
-import { trpc } from "@/trpc/init";
-import { TeamsChannelMappingCard } from "./teams-channel-mapping-card";
-import { TeamsLogo } from "./teams-logo";
+import { useQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+import { FeatureGate } from '@/components/billing/feature-gate';
+import { ProviderConnectionCard } from '@/components/settings/provider-connection-card';
+import { trpc } from '@/trpc/init';
+import { TeamsChannelMappingCard } from './teams-channel-mapping-card';
+import { TeamsLogo } from './teams-logo';
 
 // ---------------------------------------------------------------------------
 // TeamsProviderSection
 // ---------------------------------------------------------------------------
 
 export function TeamsProviderSection() {
-  const t = useTranslations("Settings.integrations.teams");
+  const t = useTranslations('Settings.integrations.teams');
 
   const healthQuery = useQuery(
-    trpc.integration.getHealth.queryOptions({ provider: "microsoft_teams" }),
+    trpc.integration.getHealth.queryOptions({ provider: 'microsoft_teams' }),
   );
   const health = healthQuery.data as { status: string; connectionId?: string } | null | undefined;
-  const isConnected = health?.status === "CONNECTED";
+  const isConnected = health?.status === 'CONNECTED';
 
   return (
     <FeatureGate requiredTier="Pro" featureName="Microsoft Teams integration">
@@ -28,7 +28,7 @@ export function TeamsProviderSection() {
           provider="microsoft_teams"
           displayName="Microsoft Teams"
           icon={<TeamsLogo className="size-8" />}
-          description={isConnected ? t("descriptionConnected") : t("descriptionDisconnected")}
+          description={isConnected ? t('descriptionConnected') : t('descriptionDisconnected')}
         />
 
         {isConnected && <TeamsChannelMappingCard />}

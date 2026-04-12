@@ -1,22 +1,22 @@
-import type { Prisma } from "@contractor-ops/db";
+import type { Prisma } from '@contractor-ops/db';
 import {
   invoiceCreateSchema,
   invoiceListSchema,
   invoiceManualMatchSchema,
   invoiceUpdateSchema,
-} from "@contractor-ops/validators";
-import { TRPCError } from "@trpc/server";
-import { z } from "zod";
-import * as E from "../errors.js";
-import { router } from "../init.js";
-import { requirePermission } from "../middleware/rbac.js";
-import { tenantProcedure } from "../middleware/tenant.js";
-import { CacheKeys, invalidateByPrefix } from "../services/cache.js";
-import { deleteCalendarEvent } from "../services/calendar-event-service.js";
-import { computeDuplicateCheckHash, runAutoMatch } from "../services/invoice-matching.js";
-import { dispatch } from "../services/notification-service.js";
-import { applyReverseCharge } from "../services/reverse-charge.service.js";
-import { sanitizeStrings } from "../services/sanitize.js";
+} from '@contractor-ops/validators';
+import { TRPCError } from '@trpc/server';
+import { z } from 'zod';
+import * as E from '../errors.js';
+import { router } from '../init.js';
+import { requirePermission } from '../middleware/rbac.js';
+import { tenantProcedure } from '../middleware/tenant.js';
+import { CacheKeys, invalidateByPrefix } from '../services/cache.js';
+import { deleteCalendarEvent } from '../services/calendar-event-service.js';
+import { computeDuplicateCheckHash, runAutoMatch } from '../services/invoice-matching.js';
+import { dispatch } from '../services/notification-service.js';
+import { applyReverseCharge } from '../services/reverse-charge.service.js';
+import { sanitizeStrings } from '../services/sanitize.js';
 
 // ---------------------------------------------------------------------------
 // Finance team helper
@@ -29,11 +29,11 @@ async function getFinanceTeamUserIds(orgId: string): Promise<string[]> {
   const members = await ctx.db.member.findMany({
     where: {
       organizationId: orgId,
-      role: "FINANCE_ADMIN",
+      role: 'FINANCE_ADMIN',
     },
     select: { userId: true },
   });
-  return members.map((m) => m.userId);
+  return members.map(m => m.userId);
 }
 
 // ---------------------------------------------------------------------------
@@ -60,7 +60,7 @@ export const invoiceRouter = router({
    * Computes duplicate check hash when sellerTaxId is available.
    */
   create: tenantProcedure
-    .use(requirePermission({ invoice: ["create"] }))
+    .use(requirePermission({ invoice: ['create'] }))
     .input(invoiceCreateSchema)
     .mutation(async ({ ctx, input: rawInput }) => {
       const input = sanitizeStrings(rawInput);
@@ -85,13 +85,13 @@ export const invoiceRouter = router({
 
         if (existing) {
           throw new TRPCError({
-            code: "CONFLICT",
+            code: 'CONFLICT',
             message: E.INVOICE_DUPLICATE,
           });
         }
       }
 
-      const invoice = await ctx.db.$transaction(async (tx) => {
+      const invoice = await ctx.db.$transaction(async tx => {
         // Create invoice record
         const inv = await tx.invoice.create({
           data: {
@@ -117,9 +117,9 @@ export const invoiceRouter = router({
             sellerBankAccount: invoiceData.sellerBankAccount ?? null,
             isReverseCharge: invoiceData.isReverseCharge ?? false,
             reverseChargeOverride: invoiceData.reverseChargeOverride ?? null,
-            status: "RECEIVED",
-            matchStatus: "UNMATCHED",
-            source: "MANUAL_UPLOAD",
+            status: 'RECEIVED',
+            matchStatus: 'UNMATCHED',
+            source: 'MANUAL_UPLOAD',
             duplicateCheckHash,
           },
         });
@@ -127,11 +127,11 @@ export const invoiceRouter = router({
         // Create InvoiceFile records linking each document
         if (documentIds.length > 0) {
           await tx.invoiceFile.createMany({
-            data: documentIds.map((documentId) => ({
+            data: documentIds.map(documentId => ({
               organizationId: ctx.organizationId,
               invoiceId: inv.id,
               documentId,
-              role: "SOURCE_ORIGINAL" as const,
+              role: 'SOURCE_ORIGINAL' as const,
             })),
           });
         }
@@ -139,12 +139,12 @@ export const invoiceRouter = router({
         // Create DocumentLink records with entityType INVOICE
         if (documentIds.length > 0) {
           await tx.documentLink.createMany({
-            data: documentIds.map((documentId) => ({
+            data: documentIds.map(documentId => ({
               organizationId: ctx.organizationId,
               documentId,
-              entityType: "INVOICE" as const,
+              entityType: 'INVOICE' as const,
               entityId: inv.id,
-              linkRole: "PRIMARY" as const,
+              linkRole: 'PRIMARY' as const,
             })),
           });
         }
@@ -157,19 +157,19 @@ export const invoiceRouter = router({
       if (financeUserIds.length > 0) {
         dispatch({
           organizationId: ctx.organizationId,
-          type: "INVOICE_RECEIVED",
+          type: 'INVOICE_RECEIVED',
           recipientUserIds: financeUserIds,
           title: `New invoice received: ${invoice.invoiceNumber}`,
-          body: `From ${invoiceData.sellerName ?? "Unknown"} - ${(invoiceData.totalMinor / 100).toFixed(2)} ${invoiceData.currency}`,
-          entityType: "INVOICE",
+          body: `From ${invoiceData.sellerName ?? 'Unknown'} - ${(invoiceData.totalMinor / 100).toFixed(2)} ${invoiceData.currency}`,
+          entityType: 'INVOICE',
           entityId: invoice.id,
           metadata: {
             invoiceNumber: invoice.invoiceNumber,
-            contractorName: invoiceData.sellerName ?? "Unknown",
+            contractorName: invoiceData.sellerName ?? 'Unknown',
             amount: (invoiceData.totalMinor / 100).toFixed(2),
             currency: invoiceData.currency,
           },
-        }).catch((err) => console.error("[invoice] dispatch INVOICE_RECEIVED failed:", err));
+        }).catch(err => console.error('[invoice] dispatch INVOICE_RECEIVED failed:', err));
       }
 
       void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
@@ -181,7 +181,7 @@ export const invoiceRouter = router({
    * Get an invoice by ID with full relations (contractor, contract, files, match results).
    */
   getById: tenantProcedure
-    .use(requirePermission({ invoice: ["read"] }))
+    .use(requirePermission({ invoice: ['read'] }))
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
       const invoice = await ctx.db.invoice.findFirst({
@@ -219,14 +219,14 @@ export const invoiceRouter = router({
             },
           },
           matchResults: {
-            orderBy: { createdAt: "desc" },
+            orderBy: { createdAt: 'desc' },
           },
         },
       });
 
       if (!invoice) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: E.INVOICE_NOT_FOUND,
         });
       }
@@ -240,7 +240,7 @@ export const invoiceRouter = router({
    * Recomputes duplicate check hash on relevant field changes.
    */
   update: tenantProcedure
-    .use(requirePermission({ invoice: ["update"] }))
+    .use(requirePermission({ invoice: ['update'] }))
     .input(z.object({ id: z.string(), data: invoiceUpdateSchema }))
     .mutation(async ({ ctx, input: rawInput }) => {
       const input = sanitizeStrings(rawInput);
@@ -254,14 +254,14 @@ export const invoiceRouter = router({
 
       if (!existing) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: E.INVOICE_NOT_FOUND,
         });
       }
 
-      if (existing.status !== "RECEIVED") {
+      if (existing.status !== 'RECEIVED') {
         throw new TRPCError({
-          code: "BAD_REQUEST",
+          code: 'BAD_REQUEST',
           message: E.INVOICE_NOT_RECEIVED_STATUS,
         });
       }
@@ -292,8 +292,8 @@ export const invoiceRouter = router({
         (updateData.servicePeriodEnd as Date | undefined) ?? existing.servicePeriodEnd;
       if (effectiveStart && effectiveEnd && effectiveEnd < effectiveStart) {
         throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Service period end date must be on or after the start date.",
+          code: 'BAD_REQUEST',
+          message: 'Service period end date must be on or after the start date.',
         });
       }
 
@@ -317,13 +317,13 @@ export const invoiceRouter = router({
           effective.subtotalMinor + effective.vatAmountMinor - effective.withholdingMinor;
         if (effective.totalMinor !== expectedTotal) {
           throw new TRPCError({
-            code: "BAD_REQUEST",
+            code: 'BAD_REQUEST',
             message: E.INVOICE_AMOUNT_MISMATCH,
           });
         }
         if (effective.amountToPayMinor !== effective.totalMinor) {
           throw new TRPCError({
-            code: "BAD_REQUEST",
+            code: 'BAD_REQUEST',
             message: E.INVOICE_AMOUNT_MISMATCH,
           });
         }
@@ -386,7 +386,7 @@ export const invoiceRouter = router({
    * Search covers invoiceNumber and contractor legalName (case-insensitive).
    */
   list: tenantProcedure
-    .use(requirePermission({ invoice: ["read"] }))
+    .use(requirePermission({ invoice: ['read'] }))
     .input(invoiceListSchema)
     .query(async ({ ctx, input }) => {
       const { page, pageSize, search, sortBy, sortOrder, filters } = input;
@@ -413,10 +413,10 @@ export const invoiceRouter = router({
       // Search via invoiceNumber OR contractor legalName (case-insensitive)
       if (search && search.length >= 1) {
         where.OR = [
-          { invoiceNumber: { contains: search, mode: "insensitive" } },
+          { invoiceNumber: { contains: search, mode: 'insensitive' } },
           {
             contractor: {
-              legalName: { contains: search, mode: "insensitive" },
+              legalName: { contains: search, mode: 'insensitive' },
             },
           },
         ];
@@ -445,11 +445,11 @@ export const invoiceRouter = router({
    * Returns grouped counts for dashboard widgets.
    */
   statusCounts: tenantProcedure
-    .use(requirePermission({ invoice: ["read"] }))
+    .use(requirePermission({ invoice: ['read'] }))
     .query(async ({ ctx }) => {
       const [statusGroups, matchStatusGroups] = await Promise.all([
         ctx.db.invoice.groupBy({
-          by: ["status"],
+          by: ['status'],
           where: {
             organizationId: ctx.organizationId,
             deletedAt: null,
@@ -457,7 +457,7 @@ export const invoiceRouter = router({
           _count: { id: true },
         }),
         ctx.db.invoice.groupBy({
-          by: ["matchStatus"],
+          by: ['matchStatus'],
           where: {
             organizationId: ctx.organizationId,
             deletedAt: null,
@@ -486,7 +486,7 @@ export const invoiceRouter = router({
    * Uses a transaction for atomicity.
    */
   submitForMatching: tenantProcedure
-    .use(requirePermission({ invoice: ["update"] }))
+    .use(requirePermission({ invoice: ['update'] }))
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const invoice = await ctx.db.invoice.findFirst({
@@ -499,14 +499,14 @@ export const invoiceRouter = router({
 
       if (!invoice) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: E.INVOICE_NOT_FOUND,
         });
       }
 
-      if (invoice.status !== "RECEIVED") {
+      if (invoice.status !== 'RECEIVED') {
         throw new TRPCError({
-          code: "BAD_REQUEST",
+          code: 'BAD_REQUEST',
           message: E.INVOICE_NOT_RECEIVED_STATUS,
         });
       }
@@ -549,7 +549,7 @@ export const invoiceRouter = router({
       }
 
       // Create match result record and update invoice in a transaction
-      const updated = await ctx.db.$transaction(async (tx) => {
+      const updated = await ctx.db.$transaction(async tx => {
         await tx.invoiceMatchResult.create({
           data: {
             organizationId: ctx.organizationId,
@@ -560,7 +560,7 @@ export const invoiceRouter = router({
             expectedAmountMinor: matchResult.expectedAmountMinor,
             amountDeltaMinor: matchResult.amountDeltaMinor,
             amountDeltaPercent: matchResult.amountDeltaPercent,
-            matchedBy: "RULE_ENGINE",
+            matchedBy: 'RULE_ENGINE',
             status: matchResult.matchStatus,
             explanationJson: {
               flags: matchResult.flags,
@@ -576,7 +576,7 @@ export const invoiceRouter = router({
             contractorId: matchResult.contractorId,
             contractId: matchResult.contractId,
             matchStatus: matchResult.matchStatus,
-            status: "UNDER_REVIEW",
+            status: 'UNDER_REVIEW',
             flagsJson: matchResult.flags.length > 0 ? matchResult.flags : undefined,
             ...reverseChargeUpdate,
           },
@@ -595,7 +595,7 @@ export const invoiceRouter = router({
    * Creates a MANUALLY_CONFIRMED match result.
    */
   manualMatch: tenantProcedure
-    .use(requirePermission({ invoice: ["update"] }))
+    .use(requirePermission({ invoice: ['update'] }))
     .input(invoiceManualMatchSchema)
     .mutation(async ({ ctx, input }) => {
       const invoice = await ctx.db.invoice.findFirst({
@@ -608,7 +608,7 @@ export const invoiceRouter = router({
 
       if (!invoice) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: E.INVOICE_NOT_FOUND,
         });
       }
@@ -624,7 +624,7 @@ export const invoiceRouter = router({
 
       if (!contractor) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: E.INVOICE_CONTRACTOR_NOT_FOUND,
         });
       }
@@ -641,7 +641,7 @@ export const invoiceRouter = router({
 
         if (!contract) {
           throw new TRPCError({
-            code: "NOT_FOUND",
+            code: 'NOT_FOUND',
             message: E.INVOICE_CONTRACT_NOT_FOUND,
           });
         }
@@ -653,7 +653,7 @@ export const invoiceRouter = router({
         contractorId: input.contractorId,
       });
 
-      const updated = await ctx.db.$transaction(async (tx) => {
+      const updated = await ctx.db.$transaction(async tx => {
         // Create manual match result
         await tx.invoiceMatchResult.create({
           data: {
@@ -662,8 +662,8 @@ export const invoiceRouter = router({
             matchedContractId: input.contractId ?? null,
             matchedContractorId: input.contractorId,
             matchScore: 100,
-            matchedBy: "MANUAL",
-            status: "MANUALLY_CONFIRMED",
+            matchedBy: 'MANUAL',
+            status: 'MANUALLY_CONFIRMED',
             createdByUserId: ctx.user?.id,
           },
         });
@@ -673,7 +673,7 @@ export const invoiceRouter = router({
           data: {
             contractorId: input.contractorId,
             contractId: input.contractId ?? null,
-            matchStatus: "MANUALLY_CONFIRMED",
+            matchStatus: 'MANUALLY_CONFIRMED',
             isReverseCharge: rcResult.isReverseCharge,
           },
         });
@@ -688,7 +688,7 @@ export const invoiceRouter = router({
    * Void an invoice (soft status transition to VOID).
    */
   voidInvoice: tenantProcedure
-    .use(requirePermission({ invoice: ["delete"] }))
+    .use(requirePermission({ invoice: ['delete'] }))
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const invoice = await ctx.db.invoice.findFirst({
@@ -701,22 +701,22 @@ export const invoiceRouter = router({
 
       if (!invoice) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: E.INVOICE_NOT_FOUND,
         });
       }
 
       const updated = await ctx.db.invoice.update({
         where: { id: input.id },
-        data: { status: "VOID" },
+        data: { status: 'VOID' },
       });
 
       // Calendar cleanup: remove payment deadline event (D-08)
       void deleteCalendarEvent(prisma, {
         organizationId: ctx.organizationId,
-        entityType: "INVOICE",
+        entityType: 'INVOICE',
         entityId: input.id,
-      }).catch((err) => console.error("[invoice] calendar event cleanup on void failed:", err));
+      }).catch(err => console.error('[invoice] calendar event cleanup on void failed:', err));
 
       void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
 
@@ -728,7 +728,7 @@ export const invoiceRouter = router({
    * Removes DUPLICATE_SUSPECTED from the flags array.
    */
   dismissDuplicate: tenantProcedure
-    .use(requirePermission({ invoice: ["update"] }))
+    .use(requirePermission({ invoice: ['update'] }))
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const invoice = await ctx.db.invoice.findFirst({
@@ -741,13 +741,13 @@ export const invoiceRouter = router({
 
       if (!invoice) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: E.INVOICE_NOT_FOUND,
         });
       }
 
       const currentFlags = Array.isArray(invoice.flagsJson) ? (invoice.flagsJson as string[]) : [];
-      const updatedFlags = currentFlags.filter((f) => f !== "DUPLICATE_SUSPECTED");
+      const updatedFlags = currentFlags.filter(f => f !== 'DUPLICATE_SUSPECTED');
 
       const updated = await ctx.db.invoice.update({
         where: { id: input.id },
@@ -764,7 +764,7 @@ export const invoiceRouter = router({
    * Case-insensitive, limit 10 results.
    */
   searchContractors: tenantProcedure
-    .use(requirePermission({ invoice: ["read"] }))
+    .use(requirePermission({ invoice: ['read'] }))
     .input(z.object({ query: z.string().min(1) }))
     .query(async ({ ctx, input }) => {
       const contractors = await ctx.db.contractor.findMany({
@@ -773,10 +773,10 @@ export const invoiceRouter = router({
           deletedAt: null,
           OR: [
             {
-              legalName: { contains: input.query, mode: "insensitive" },
+              legalName: { contains: input.query, mode: 'insensitive' },
             },
             {
-              taxId: { contains: input.query, mode: "insensitive" },
+              taxId: { contains: input.query, mode: 'insensitive' },
             },
           ],
         },
@@ -796,14 +796,14 @@ export const invoiceRouter = router({
    * Get active/expiring contracts for a given contractor (for manual matching UI).
    */
   contractsForContractor: tenantProcedure
-    .use(requirePermission({ invoice: ["read"] }))
+    .use(requirePermission({ invoice: ['read'] }))
     .input(z.object({ contractorId: z.string() }))
     .query(async ({ ctx, input }) => {
       const contracts = await ctx.db.contract.findMany({
         where: {
           contractorId: input.contractorId,
           organizationId: ctx.organizationId,
-          status: { in: ["ACTIVE", "EXPIRING"] },
+          status: { in: ['ACTIVE', 'EXPIRING'] },
           deletedAt: null,
         },
         select: {
@@ -824,7 +824,7 @@ export const invoiceRouter = router({
    * Records the override so audit trail distinguishes auto-detected from manual.
    */
   toggleReverseCharge: tenantProcedure
-    .use(requirePermission({ invoice: ["update"] }))
+    .use(requirePermission({ invoice: ['update'] }))
     .input(
       z.object({
         invoiceId: z.string(),

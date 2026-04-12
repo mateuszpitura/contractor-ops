@@ -1,13 +1,13 @@
-import type { Prisma } from "@contractor-ops/db";
-import { decryptCredentials } from "@contractor-ops/integrations/services/credential-service";
-import { TRPCError } from "@trpc/server";
-import { z } from "zod";
-import * as E from "../errors.js";
-import { router } from "../init.js";
-import { requirePermission } from "../middleware/rbac.js";
-import { tenantProcedure } from "../middleware/tenant.js";
-import { requireTier } from "../middleware/tier.js";
-import { getJoinedTeams, getTeamsChannels } from "../services/teams/teams-graph-client.js";
+import type { Prisma } from '@contractor-ops/db';
+import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
+import { TRPCError } from '@trpc/server';
+import { z } from 'zod';
+import * as E from '../errors.js';
+import { router } from '../init.js';
+import { requirePermission } from '../middleware/rbac.js';
+import { tenantProcedure } from '../middleware/tenant.js';
+import { requireTier } from '../middleware/tier.js';
+import { getJoinedTeams, getTeamsChannels } from '../services/teams/teams-graph-client.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -28,14 +28,14 @@ async function loadTeamsConnection(organizationId: string) {
   const connection = await ctx.db.integrationConnection.findFirst({
     where: {
       organizationId,
-      provider: "MICROSOFT_TEAMS",
-      status: "CONNECTED",
+      provider: 'MICROSOFT_TEAMS',
+      status: 'CONNECTED',
     },
   });
 
   if (!connection) {
     throw new TRPCError({
-      code: "NOT_FOUND",
+      code: 'NOT_FOUND',
       message: E.INTEGRATION_NOT_FOUND,
     });
   }
@@ -47,7 +47,7 @@ async function loadTeamsConnection(organizationId: string) {
  * Decrypts Teams credentials and returns the access token.
  */
 function getTeamsAccessToken(credentialsRef: string): string {
-  const credentials = decryptCredentials(credentialsRef, "microsoft_teams");
+  const credentials = decryptCredentials(credentialsRef, 'microsoft_teams');
   return credentials.accessToken;
 }
 
@@ -57,7 +57,7 @@ function getTeamsAccessToken(credentialsRef: string): string {
 
 const channelMappingSchema = z.object({
   mapping: z.record(
-    z.enum(["approvals", "invoices", "contracts", "tasks", "equipment"]),
+    z.enum(['approvals', 'invoices', 'contracts', 'tasks', 'equipment']),
     z.string(),
   ),
 });
@@ -76,7 +76,7 @@ export const teamsRouter = router({
     const connection = await ctx.db.integrationConnection.findFirst({
       where: {
         organizationId: ctx.organizationId,
-        provider: "MICROSOFT_TEAMS",
+        provider: 'MICROSOFT_TEAMS',
       },
       select: {
         id: true,
@@ -135,8 +135,8 @@ export const teamsRouter = router({
    * Maps notification categories (approvals, invoices, etc.) to channel IDs.
    */
   saveChannelMapping: tenantProcedure
-    .use(requirePermission({ settings: ["update"] }))
-    .use(requireTier("PRO"))
+    .use(requirePermission({ settings: ['update'] }))
+    .use(requireTier('PRO'))
     .input(channelMappingSchema)
     .mutation(async ({ ctx, input }) => {
       const connection = await loadTeamsConnection(ctx.organizationId);

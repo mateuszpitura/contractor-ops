@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { FileText } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { Skeleton } from "@/components/ui/skeleton";
-import { trpc } from "@/trpc/init";
-import { DocumentCard } from "./document-card";
+import { useQuery } from '@tanstack/react-query';
+import { FileText } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { Skeleton } from '@/components/ui/skeleton';
+import { trpc } from '@/trpc/init';
+import { DocumentCard } from './document-card';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -21,11 +21,11 @@ type DocumentListProps = {
 // ---------------------------------------------------------------------------
 
 export function DocumentList({ entityType, entityId }: DocumentListProps) {
-  const t = useTranslations("Documents");
+  const t = useTranslations('Documents');
 
   const documentsQuery = useQuery(
     trpc.document.list.queryOptions({
-      entityType: entityType as "CONTRACT" | "CONTRACTOR",
+      entityType: entityType as 'CONTRACT' | 'CONTRACTOR',
       entityId,
       page: 1,
       pageSize: 50,
@@ -64,8 +64,8 @@ export function DocumentList({ entityType, entityId }: DocumentListProps) {
     return (
       <div className="flex min-h-[200px] flex-col items-center justify-center gap-2 text-center">
         <FileText className="size-8 text-muted-foreground/50" />
-        <h4 className="text-sm font-medium text-muted-foreground">{t("empty.title")}</h4>
-        <p className="max-w-sm text-sm text-muted-foreground">{t("empty.description")}</p>
+        <h4 className="text-sm font-medium text-muted-foreground">{t('empty.title')}</h4>
+        <p className="max-w-sm text-sm text-muted-foreground">{t('empty.description')}</p>
       </div>
     );
   }

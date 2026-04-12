@@ -1,8 +1,8 @@
-import { createTrpcLogger } from "@contractor-ops/logger";
-import { metrics } from "@contractor-ops/logger/metrics";
-import * as Sentry from "@sentry/nextjs";
-import type { AnyMiddlewareFunction } from "@trpc/server";
-import type { Context } from "../context.js";
+import { createTrpcLogger } from '@contractor-ops/logger';
+import { metrics } from '@contractor-ops/logger/metrics';
+import * as Sentry from '@sentry/nextjs';
+import type { AnyMiddlewareFunction } from '@trpc/server';
+import type { Context } from '../context.js';
 
 /**
  * Raw observability middleware handler for tRPC procedures.
@@ -15,7 +15,7 @@ import type { Context } from "../context.js";
  * - Logs procedure execution with duration and context
  * - Tracks custom metrics (call count, duration, errors)
  */
-export const observabilityMiddleware: AnyMiddlewareFunction = async (opts) => {
+export const observabilityMiddleware: AnyMiddlewareFunction = async opts => {
   const { path, type, ctx, next } = opts;
   const start = performance.now();
   const requestId = crypto.randomUUID();
@@ -33,20 +33,20 @@ export const observabilityMiddleware: AnyMiddlewareFunction = async (opts) => {
     requestId,
   });
 
-  log.info("procedure started");
+  log.info('procedure started');
 
   return Sentry.startSpan(
     {
       name: `trpc/${path}`,
-      op: "trpc.procedure",
+      op: 'trpc.procedure',
       attributes: {
-        "trpc.procedure": path,
-        "trpc.type": type,
-        ...(userId && { "user.id": userId }),
-        ...(organizationId && { "org.id": organizationId }),
+        'trpc.procedure': path,
+        'trpc.type': type,
+        ...(userId && { 'user.id': userId }),
+        ...(organizationId && { 'org.id': organizationId }),
       },
     },
-    async (span) => {
+    async span => {
       try {
         const result = await next({
           ctx: { ...context, requestId },
@@ -54,17 +54,17 @@ export const observabilityMiddleware: AnyMiddlewareFunction = async (opts) => {
 
         const durationMs = Math.round(performance.now() - start);
 
-        log.info({ durationMs }, "procedure completed");
+        log.info({ durationMs }, 'procedure completed');
 
         // Custom metrics
-        metrics.distribution("trpc.duration", durationMs, {
-          unit: "millisecond",
+        metrics.distribution('trpc.duration', durationMs, {
+          unit: 'millisecond',
           tags: { procedure: path, type },
         });
-        metrics.increment("trpc.calls", 1, {
+        metrics.increment('trpc.calls', 1, {
           procedure: path,
           type,
-          status: "ok",
+          status: 'ok',
         });
 
         span.setStatus({ code: 1 }); // OK
@@ -73,23 +73,23 @@ export const observabilityMiddleware: AnyMiddlewareFunction = async (opts) => {
       } catch (error) {
         const durationMs = Math.round(performance.now() - start);
 
-        log.error({ err: error, durationMs }, "procedure failed");
+        log.error({ err: error, durationMs }, 'procedure failed');
 
         Sentry.captureException(error, {
           tags: {
-            "trpc.procedure": path,
-            "trpc.type": type,
+            'trpc.procedure': path,
+            'trpc.type': type,
           },
           extra: { requestId, userId, organizationId },
         });
 
-        metrics.increment("trpc.calls", 1, {
+        metrics.increment('trpc.calls', 1, {
           procedure: path,
           type,
-          status: "error",
+          status: 'error',
         });
 
-        span.setStatus({ code: 2, message: "internal_error" }); // ERROR
+        span.setStatus({ code: 2, message: 'internal_error' }); // ERROR
 
         throw error;
       }

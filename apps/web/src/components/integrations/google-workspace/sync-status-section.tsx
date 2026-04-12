@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { formatDistanceToNow } from "date-fns";
-import { Loader2 } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { trpc } from "@/trpc/init";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { formatDistanceToNow } from 'date-fns';
+import { Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // SyncStatusSection
@@ -19,7 +19,7 @@ interface SyncStatusSectionProps {
 }
 
 export function SyncStatusSection({ onImportClick }: SyncStatusSectionProps) {
-  const t = useTranslations("GoogleWorkspace.sync");
+  const t = useTranslations('GoogleWorkspace.sync');
   const queryClient = useQueryClient();
 
   const syncStatusQuery = useQuery(trpc.googleWorkspace.syncStatus.queryOptions());
@@ -28,13 +28,13 @@ export function SyncStatusSection({ onImportClick }: SyncStatusSectionProps) {
   const triggerSyncMutation = useMutation({
     ...trpc.googleWorkspace.triggerSync.mutationOptions(),
     onSuccess: () => {
-      toast.success(t("syncStarted"));
+      toast.success(t('syncStarted'));
       void queryClient.invalidateQueries({
         queryKey: trpc.googleWorkspace.syncStatus.queryKey(),
       });
     },
     onError: () => {
-      toast.error(t("syncError"));
+      toast.error(t('syncError'));
     },
   });
 
@@ -55,7 +55,7 @@ export function SyncStatusSection({ onImportClick }: SyncStatusSectionProps) {
   if (!syncStatus?.connected) return null;
 
   const lastSyncLabel = syncStatus.lastSyncAt
-    ? t("lastSynced", {
+    ? t('lastSynced', {
         time: formatDistanceToNow(new Date(syncStatus.lastSyncAt), {
           addSuffix: true,
         }),
@@ -67,7 +67,7 @@ export function SyncStatusSection({ onImportClick }: SyncStatusSectionProps) {
       <CardContent className="flex flex-wrap items-center gap-4 py-3">
         <div className="flex-1 space-y-0.5 text-sm">
           {lastSyncLabel && <p className="text-muted-foreground">{lastSyncLabel}</p>}
-          <p className="text-muted-foreground">{t("nextSync")}</p>
+          <p className="text-muted-foreground">{t('nextSync')}</p>
         </div>
 
         <div className="flex gap-2">
@@ -75,16 +75,15 @@ export function SyncStatusSection({ onImportClick }: SyncStatusSectionProps) {
             variant="outline"
             size="sm"
             onClick={() => (triggerSyncMutation.mutate as () => void)()}
-            disabled={triggerSyncMutation.isPending}
-          >
+            disabled={triggerSyncMutation.isPending}>
             {triggerSyncMutation.isPending && (
               <Loader2 className="me-1.5 size-3.5 animate-spin" aria-hidden="true" />
             )}
-            {triggerSyncMutation.isPending ? t("syncing") : t("syncNow")}
+            {triggerSyncMutation.isPending ? t('syncing') : t('syncNow')}
           </Button>
 
           <Button variant="outline" size="sm" onClick={onImportClick}>
-            {t("importUsers")}
+            {t('importUsers')}
           </Button>
         </div>
       </CardContent>

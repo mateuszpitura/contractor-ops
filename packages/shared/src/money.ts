@@ -8,9 +8,9 @@
  * @module money
  */
 
-import type { Dinero, DineroCurrency } from "dinero.js";
-import { add, allocate, dinero, multiply, subtract, toDecimal, toSnapshot } from "dinero.js";
-import { AED, EUR, GBP, PLN, SAR, USD } from "dinero.js/currencies";
+import type { Dinero, DineroCurrency } from 'dinero.js';
+import { add, allocate, dinero, multiply, subtract, toDecimal, toSnapshot } from 'dinero.js';
+import { AED, EUR, GBP, PLN, SAR, USD } from 'dinero.js/currencies';
 
 // ---------------------------------------------------------------------------
 // Currency Registry
@@ -41,7 +41,7 @@ export function currencyOf(code: string): DineroCurrency<number> {
   const currency = CURRENCY_MAP[code];
   if (!currency) {
     throw new Error(
-      `Unsupported currency code: ${code}. Supported: ${Object.keys(CURRENCY_MAP).join(", ")}`,
+      `Unsupported currency code: ${code}. Supported: ${Object.keys(CURRENCY_MAP).join(', ')}`,
     );
   }
   return currency;
@@ -107,10 +107,10 @@ export function allocateMoney(d: Dinero<number>, ratios: number[]): Dinero<numbe
  * Format a Dinero object as a locale-aware currency string.
  * Uses Intl.NumberFormat for localization.
  */
-export function formatMoney(d: Dinero<number>, locale: string = "en-US"): string {
+export function formatMoney(d: Dinero<number>, locale: string = 'en-US'): string {
   return toDecimal(d, ({ value, currency }) => {
     return Number(value).toLocaleString(locale, {
-      style: "currency",
+      style: 'currency',
       currency: currency.code as string,
     });
   });

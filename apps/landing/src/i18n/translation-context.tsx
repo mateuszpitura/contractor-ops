@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import type { ReactNode } from "react";
-import { createContext, useContext } from "react";
-import type { Locale } from "./config";
-import type { TranslationMessages } from "./get-translations";
+import type { ReactNode } from 'react';
+import { createContext, useContext } from 'react';
+import type { Locale } from './config';
+import type { TranslationMessages } from './get-translations';
 
 interface TranslationContextValue {
   t: TranslationMessages;
@@ -35,7 +35,7 @@ export function TranslationProvider({
 export function useTranslations(): TranslationMessages {
   const ctx = useContext(TranslationContext);
   if (!ctx) {
-    throw new Error("useTranslations must be used within TranslationProvider");
+    throw new Error('useTranslations must be used within TranslationProvider');
   }
   return ctx.t;
 }
@@ -46,7 +46,7 @@ export function useTranslations(): TranslationMessages {
 export function useLocale(): Locale {
   const ctx = useContext(TranslationContext);
   if (!ctx) {
-    throw new Error("useLocale must be used within TranslationProvider");
+    throw new Error('useLocale must be used within TranslationProvider');
   }
   return ctx.locale;
 }

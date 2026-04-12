@@ -1,21 +1,21 @@
-import { auth } from "@contractor-ops/auth";
-import type { Prisma } from "@contractor-ops/db";
+import { auth } from '@contractor-ops/auth';
+import type { Prisma } from '@contractor-ops/db';
 import {
   decryptCredentials,
   encryptCredentials,
   getAdapter,
   registerAllAdapters,
-} from "@contractor-ops/integrations";
-import type { GoogleWorkspaceAdapter } from "@contractor-ops/integrations/adapters/google-workspace-adapter";
-import { getQStashClient } from "@contractor-ops/integrations/services/qstash-client";
-import type { DirectoryRole } from "@contractor-ops/validators";
-import { directoryImportInputSchema } from "@contractor-ops/validators";
-import { TRPCError } from "@trpc/server";
-import { z } from "zod";
-import { router } from "../init.js";
-import { requirePermission } from "../middleware/rbac.js";
-import { tenantProcedure } from "../middleware/tenant.js";
-import { requireTier } from "../middleware/tier.js";
+} from '@contractor-ops/integrations';
+import type { GoogleWorkspaceAdapter } from '@contractor-ops/integrations/adapters/google-workspace-adapter';
+import { getQStashClient } from '@contractor-ops/integrations/services/qstash-client';
+import type { DirectoryRole } from '@contractor-ops/validators';
+import { directoryImportInputSchema } from '@contractor-ops/validators';
+import { TRPCError } from '@trpc/server';
+import { z } from 'zod';
+import { router } from '../init.js';
+import { requirePermission } from '../middleware/rbac.js';
+import { tenantProcedure } from '../middleware/tenant.js';
+import { requireTier } from '../middleware/tier.js';
 
 // Ensure adapters are registered before any procedure runs
 registerAllAdapters();
@@ -32,32 +32,32 @@ async function getGoogleWorkspaceConnection(organizationId: string) {
   const connection = await ctx.db.integrationConnection.findFirst({
     where: {
       organizationId,
-      provider: "GOOGLE_WORKSPACE",
-      status: "CONNECTED",
+      provider: 'GOOGLE_WORKSPACE',
+      status: 'CONNECTED',
     },
   });
 
   if (!connection) {
     throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "Google Workspace not connected",
+      code: 'NOT_FOUND',
+      message: 'Google Workspace not connected',
     });
   }
 
-  const adapter = getAdapter("google_workspace") as GoogleWorkspaceAdapter;
+  const adapter = getAdapter('google_workspace') as GoogleWorkspaceAdapter;
   if (!adapter) {
     throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "Google Workspace adapter not registered",
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'Google Workspace adapter not registered',
     });
   }
 
-  let credentials = decryptCredentials(connection.credentialsRef, "google_workspace");
+  let credentials = decryptCredentials(connection.credentialsRef, 'google_workspace');
 
   // Refresh token if expired
   if (credentials.expiresAt && new Date(credentials.expiresAt) < new Date()) {
     credentials = await adapter.refreshToken(credentials);
-    const encrypted = encryptCredentials(credentials, "google_workspace");
+    const encrypted = encryptCredentials(credentials, 'google_workspace');
     await ctx.db.integrationConnection.update({
       where: { id: connection.id },
       data: {
@@ -89,7 +89,7 @@ async function ensureSyncCronSchedule(connectionId: string, organizationId: stri
     const schedule = await qstashClient.schedules.create({
       destination: `${process.env.NEXT_PUBLIC_APP_URL}/api/google-workspace/_sync`,
       body: JSON.stringify({ organizationId, connectionId }),
-      cron: "0 2 * * *", // Daily at 2 AM
+      cron: '0 2 * * *', // Daily at 2 AM
       scheduleId,
     });
 
@@ -103,7 +103,7 @@ async function ensureSyncCronSchedule(connectionId: string, organizationId: stri
       },
     });
   } catch (error) {
-    console.error("[google-workspace] Failed to create sync cron schedule:", error);
+    console.error('[google-workspace] Failed to create sync cron schedule:', error);
     // Don't fail the operation — schedule can be retried
   }
 }
@@ -152,7 +152,7 @@ export const googleWorkspaceRouter = router({
    * Marks users that already exist as org members.
    */
   listDirectory: tenantProcedure
-    .use(requirePermission({ member: ["read"] }))
+    .use(requirePermission({ member: ['read'] }))
     .query(async ({ ctx }) => {
       const { credentials, adapter } = await getGoogleWorkspaceConnection(ctx.organizationId);
 
@@ -167,11 +167,11 @@ export const googleWorkspaceRouter = router({
       const existingEmails = new Set(
         (org?.members ?? []).map(
           (m: Record<string, unknown>) =>
-            ((m.user as Record<string, unknown>)?.email as string) ?? "",
+            ((m.user as Record<string, unknown>)?.email as string) ?? '',
         ),
       );
 
-      const users = googleUsers.map((user) => ({
+      const users = googleUsers.map(user => ({
         id: user.id,
         primaryEmail: user.primaryEmail,
         name: {
@@ -182,14 +182,14 @@ export const googleWorkspaceRouter = router({
         thumbnailPhotoUrl: user.thumbnailPhotoUrl ?? null,
         orgUnitPath: user.orgUnitPath ?? null,
         department:
-          user.organizations?.find((o) => o.primary)?.department ??
+          user.organizations?.find(o => o.primary)?.department ??
           user.organizations?.[0]?.department ??
           null,
         isAdmin: user.isAdmin ?? false,
         alreadyExists: existingEmails.has(user.primaryEmail),
       }));
 
-      const alreadyImported = users.filter((u) => u.alreadyExists).length;
+      const alreadyImported = users.filter(u => u.alreadyExists).length;
 
       return {
         users,
@@ -206,8 +206,8 @@ export const googleWorkspaceRouter = router({
    * Returns deduplicated groups with member emails.
    */
   listUserGroups: tenantProcedure
-    .use(requirePermission({ member: ["read"] }))
-    .use(requireTier("PRO"))
+    .use(requirePermission({ member: ['read'] }))
+    .use(requireTier('PRO'))
     .input(
       z.object({
         userEmails: z.array(z.string().email()).min(1).max(500),
@@ -256,8 +256,8 @@ export const googleWorkspaceRouter = router({
    * SECURITY: Re-fetches group memberships server-side for RBAC role resolution.
    */
   bulkImport: tenantProcedure
-    .use(requirePermission({ member: ["create"] }))
-    .use(requireTier("PRO"))
+    .use(requirePermission({ member: ['create'] }))
+    .use(requireTier('PRO'))
     .input(directoryImportInputSchema)
     .mutation(async ({ ctx, input }) => {
       const { connection, credentials, adapter } = await getGoogleWorkspaceConnection(
@@ -268,7 +268,7 @@ export const googleWorkspaceRouter = router({
       const serverGroupMemberships: Record<string, string[]> = {};
       for (const user of input.users) {
         const groups = await adapter.listUserGroups(credentials.accessToken, user.email);
-        serverGroupMemberships[user.email] = groups.map((g) => g.email);
+        serverGroupMemberships[user.email] = groups.map(g => g.email);
       }
 
       const succeeded: Array<{ email: string; role: string }> = [];
@@ -295,7 +295,7 @@ export const googleWorkspaceRouter = router({
 
           succeeded.push({ email: user.email, role });
         } catch (error) {
-          const message = error instanceof Error ? error.message : "Unknown error";
+          const message = error instanceof Error ? error.message : 'Unknown error';
           failed.push({ email: user.email, error: message });
         }
       }
@@ -324,8 +324,8 @@ export const googleWorkspaceRouter = router({
    * Ensures cron schedule exists, then publishes immediate sync job.
    */
   triggerSync: tenantProcedure
-    .use(requirePermission({ member: ["read"] }))
-    .use(requireTier("PRO"))
+    .use(requirePermission({ member: ['read'] }))
+    .use(requireTier('PRO'))
     .mutation(async ({ ctx }) => {
       const { connection } = await getGoogleWorkspaceConnection(ctx.organizationId);
 
@@ -350,12 +350,12 @@ export const googleWorkspaceRouter = router({
    * Returns connection info and last sync log, or null if not connected.
    */
   syncStatus: tenantProcedure
-    .use(requirePermission({ member: ["read"] }))
+    .use(requirePermission({ member: ['read'] }))
     .query(async ({ ctx }) => {
       const connection = await ctx.db.integrationConnection.findFirst({
         where: {
           organizationId: ctx.organizationId,
-          provider: "GOOGLE_WORKSPACE",
+          provider: 'GOOGLE_WORKSPACE',
         },
         select: {
           id: true,
@@ -371,7 +371,7 @@ export const googleWorkspaceRouter = router({
 
       const lastSync = await ctx.db.integrationSyncLog.findFirst({
         where: { integrationConnectionId: connection.id },
-        orderBy: { startedAt: "desc" },
+        orderBy: { startedAt: 'desc' },
         select: {
           status: true,
           startedAt: true,

@@ -1,6 +1,6 @@
-import { prisma } from "@contractor-ops/db";
-import { CacheKeys, CacheTTL, cached } from "./cache.js";
-import { stripe } from "./stripe-client.js";
+import { prisma } from '@contractor-ops/db';
+import { CacheKeys, CacheTTL, cached } from './cache.js';
+import { stripe } from './stripe-client.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -56,7 +56,7 @@ function assertNonEmpty(value: string, name: string): void {
  * Cached in Redis for 15 minutes, invalidated by Stripe webhooks.
  */
 export async function getSubscription(organizationId: string) {
-  assertNonEmpty(organizationId, "organizationId");
+  assertNonEmpty(organizationId, 'organizationId');
 
   return cached(CacheKeys.subscription(organizationId), CacheTTL.SUBSCRIPTION, () =>
     prisma.subscription.findUnique({ where: { organizationId } }),
@@ -71,21 +71,21 @@ export async function getSubscription(organizationId: string) {
 export async function createCheckoutSession(
   params: CreateCheckoutSessionParams,
 ): Promise<{ sessionUrl: string }> {
-  assertNonEmpty(params.organizationId, "organizationId");
-  assertNonEmpty(params.priceId, "priceId");
-  assertNonEmpty(params.stripeCustomerId, "stripeCustomerId");
-  assertNonEmpty(params.successUrl, "successUrl");
-  assertNonEmpty(params.cancelUrl, "cancelUrl");
+  assertNonEmpty(params.organizationId, 'organizationId');
+  assertNonEmpty(params.priceId, 'priceId');
+  assertNonEmpty(params.stripeCustomerId, 'stripeCustomerId');
+  assertNonEmpty(params.successUrl, 'successUrl');
+  assertNonEmpty(params.cancelUrl, 'cancelUrl');
 
   if (params.quantity < 1) {
-    throw new Error("[billing-service] quantity must be at least 1");
+    throw new Error('[billing-service] quantity must be at least 1');
   }
 
   try {
     const session = await stripe.checkout.sessions.create({
-      mode: "subscription",
+      mode: 'subscription',
       customer: params.stripeCustomerId,
-      currency: "pln",
+      currency: 'pln',
       line_items: [
         {
           price: params.priceId,
@@ -103,12 +103,12 @@ export async function createCheckoutSession(
     });
 
     if (!session.url) {
-      throw new Error("[billing-service] Checkout session URL is null");
+      throw new Error('[billing-service] Checkout session URL is null');
     }
 
     return { sessionUrl: session.url };
   } catch (error) {
-    console.error("[billing-service] createCheckoutSession failed:", error);
+    console.error('[billing-service] createCheckoutSession failed:', error);
     throw error;
   }
 }
@@ -121,10 +121,10 @@ export async function getProrationPreview(params: ProrationPreviewParams): Promi
   lines: Array<{ description: string; amountMinor: number }>;
   totalMinor: number;
 }> {
-  assertNonEmpty(params.stripeCustomerId, "stripeCustomerId");
-  assertNonEmpty(params.stripeSubscriptionId, "stripeSubscriptionId");
-  assertNonEmpty(params.stripeSubscriptionItemId, "stripeSubscriptionItemId");
-  assertNonEmpty(params.newPriceId, "newPriceId");
+  assertNonEmpty(params.stripeCustomerId, 'stripeCustomerId');
+  assertNonEmpty(params.stripeSubscriptionId, 'stripeSubscriptionId');
+  assertNonEmpty(params.stripeSubscriptionItemId, 'stripeSubscriptionItemId');
+  assertNonEmpty(params.newPriceId, 'newPriceId');
 
   try {
     const preview = await stripe.invoices.createPreview({
@@ -137,12 +137,12 @@ export async function getProrationPreview(params: ProrationPreviewParams): Promi
             price: params.newPriceId,
           },
         ],
-        proration_behavior: "create_prorations",
+        proration_behavior: 'create_prorations',
       },
     });
 
-    const lines = (preview.lines?.data ?? []).map((line) => ({
-      description: line.description ?? "",
+    const lines = (preview.lines?.data ?? []).map(line => ({
+      description: line.description ?? '',
       amountMinor: line.amount,
     }));
 
@@ -151,7 +151,7 @@ export async function getProrationPreview(params: ProrationPreviewParams): Promi
       totalMinor: preview.total,
     };
   } catch (error) {
-    console.error("[billing-service] getProrationPreview failed:", error);
+    console.error('[billing-service] getProrationPreview failed:', error);
     throw error;
   }
 }
@@ -163,8 +163,8 @@ export async function createPortalSession(params: {
   stripeCustomerId: string;
   returnUrl: string;
 }): Promise<{ url: string }> {
-  assertNonEmpty(params.stripeCustomerId, "stripeCustomerId");
-  assertNonEmpty(params.returnUrl, "returnUrl");
+  assertNonEmpty(params.stripeCustomerId, 'stripeCustomerId');
+  assertNonEmpty(params.returnUrl, 'returnUrl');
 
   try {
     const session = await stripe.billingPortal.sessions.create({
@@ -174,7 +174,7 @@ export async function createPortalSession(params: {
 
     return { url: session.url };
   } catch (error) {
-    console.error("[billing-service] createPortalSession failed:", error);
+    console.error('[billing-service] createPortalSession failed:', error);
     throw error;
   }
 }
@@ -186,17 +186,17 @@ export async function createPortalSession(params: {
 export async function createTopUpCheckoutSession(
   params: CreateTopUpCheckoutParams,
 ): Promise<{ sessionUrl: string }> {
-  assertNonEmpty(params.organizationId, "organizationId");
-  assertNonEmpty(params.priceId, "priceId");
-  assertNonEmpty(params.stripeCustomerId, "stripeCustomerId");
-  assertNonEmpty(params.successUrl, "successUrl");
-  assertNonEmpty(params.cancelUrl, "cancelUrl");
+  assertNonEmpty(params.organizationId, 'organizationId');
+  assertNonEmpty(params.priceId, 'priceId');
+  assertNonEmpty(params.stripeCustomerId, 'stripeCustomerId');
+  assertNonEmpty(params.successUrl, 'successUrl');
+  assertNonEmpty(params.cancelUrl, 'cancelUrl');
 
   try {
     const session = await stripe.checkout.sessions.create({
-      mode: "payment",
+      mode: 'payment',
       customer: params.stripeCustomerId,
-      currency: "pln",
+      currency: 'pln',
       line_items: [
         {
           price: params.priceId,
@@ -205,7 +205,7 @@ export async function createTopUpCheckoutSession(
       ],
       metadata: {
         organizationId: params.organizationId,
-        type: "top_up",
+        type: 'top_up',
         priceId: params.priceId,
       },
       success_url: params.successUrl,
@@ -213,12 +213,12 @@ export async function createTopUpCheckoutSession(
     });
 
     if (!session.url) {
-      throw new Error("[billing-service] Top-up checkout session URL is null");
+      throw new Error('[billing-service] Top-up checkout session URL is null');
     }
 
     return { sessionUrl: session.url };
   } catch (error) {
-    console.error("[billing-service] createTopUpCheckoutSession failed:", error);
+    console.error('[billing-service] createTopUpCheckoutSession failed:', error);
     throw error;
   }
 }
@@ -233,11 +233,11 @@ export async function updateSubscriptionSeatCount(params: {
   stripeSubscriptionItemId: string;
   newQuantity: number;
 }): Promise<void> {
-  assertNonEmpty(params.stripeSubscriptionId, "stripeSubscriptionId");
-  assertNonEmpty(params.stripeSubscriptionItemId, "stripeSubscriptionItemId");
+  assertNonEmpty(params.stripeSubscriptionId, 'stripeSubscriptionId');
+  assertNonEmpty(params.stripeSubscriptionItemId, 'stripeSubscriptionItemId');
 
   if (params.newQuantity < 1) {
-    throw new Error("[billing-service] seat quantity must be at least 1");
+    throw new Error('[billing-service] seat quantity must be at least 1');
   }
 
   try {
@@ -248,7 +248,7 @@ export async function updateSubscriptionSeatCount(params: {
           quantity: params.newQuantity,
         },
       ],
-      proration_behavior: "create_prorations",
+      proration_behavior: 'create_prorations',
     });
   } catch (error) {
     console.error(
@@ -276,12 +276,12 @@ export async function syncSeatCountForOrg(organizationId: string): Promise<void>
       },
     });
 
-    if (!sub?.stripeSubscriptionItemId || (sub.status !== "ACTIVE" && sub.status !== "TRIALING")) {
+    if (!sub?.stripeSubscriptionItemId || (sub.status !== 'ACTIVE' && sub.status !== 'TRIALING')) {
       return;
     }
 
     const contractorCount = await prisma.contractor.count({
-      where: { organizationId, status: "ACTIVE" },
+      where: { organizationId, status: 'ACTIVE' },
     });
     const newQuantity = Math.max(1, contractorCount);
 
@@ -294,7 +294,7 @@ export async function syncSeatCountForOrg(organizationId: string): Promise<void>
           quantity: newQuantity,
         },
       ],
-      proration_behavior: "create_prorations",
+      proration_behavior: 'create_prorations',
     });
 
     // Update local DB to keep in sync (don't wait for webhook)
@@ -313,9 +313,9 @@ export async function syncSeatCountForOrg(organizationId: string): Promise<void>
  * Otherwise, creates a new Stripe customer.
  */
 export async function ensureStripeCustomer(params: EnsureStripeCustomerParams): Promise<string> {
-  assertNonEmpty(params.organizationId, "organizationId");
-  assertNonEmpty(params.email, "email");
-  assertNonEmpty(params.name, "name");
+  assertNonEmpty(params.organizationId, 'organizationId');
+  assertNonEmpty(params.email, 'email');
+  assertNonEmpty(params.name, 'name');
 
   // Check if org already has a subscription with a customer ID
   const existing = await prisma.subscription.findUnique({
@@ -345,7 +345,7 @@ export async function ensureStripeCustomer(params: EnsureStripeCustomerParams): 
 
     return customer.id;
   } catch (error) {
-    console.error("[billing-service] ensureStripeCustomer failed:", error);
+    console.error('[billing-service] ensureStripeCustomer failed:', error);
     throw error;
   }
 }

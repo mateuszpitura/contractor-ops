@@ -1,37 +1,37 @@
-import { render, screen } from "@/test/test-utils";
-import { Separator } from "../separator";
+import { render, screen } from '@/test/test-utils';
+import { Separator } from '../separator';
 
-describe("Separator", () => {
-  it("renders a separator", () => {
+describe('Separator', () => {
+  it('renders a separator', () => {
     render(<Separator />);
-    expect(screen.getByRole("separator")).toBeInTheDocument();
+    expect(screen.getByRole('separator')).toBeInTheDocument();
   });
 
-  it("sets data-slot=separator", () => {
+  it('sets data-slot=separator', () => {
     render(<Separator />);
-    expect(screen.getByRole("separator")).toHaveAttribute("data-slot", "separator");
+    expect(screen.getByRole('separator')).toHaveAttribute('data-slot', 'separator');
   });
 
-  it("defaults to horizontal orientation", () => {
+  it('defaults to horizontal orientation', () => {
     render(<Separator />);
-    const el = screen.getByRole("separator");
+    const el = screen.getByRole('separator');
     // base-ui may or may not set aria-orientation for horizontal (the default)
-    const orientation = el.getAttribute("aria-orientation");
-    expect(orientation === null || orientation === "horizontal").toBe(true);
+    const orientation = el.getAttribute('aria-orientation');
+    expect(orientation === null || orientation === 'horizontal').toBe(true);
   });
 
-  it("accepts vertical orientation", () => {
+  it('accepts vertical orientation', () => {
     render(<Separator orientation="vertical" />);
-    expect(screen.getByRole("separator")).toHaveAttribute("aria-orientation", "vertical");
+    expect(screen.getByRole('separator')).toHaveAttribute('aria-orientation', 'vertical');
   });
 
-  it("merges custom className", () => {
+  it('merges custom className', () => {
     render(<Separator className="my-sep" />);
-    expect(screen.getByRole("separator").className).toContain("my-sep");
+    expect(screen.getByRole('separator').className).toContain('my-sep');
   });
 
-  it("forwards HTML attributes", () => {
+  it('forwards HTML attributes', () => {
     render(<Separator data-testid="sep" id="main-sep" />);
-    expect(screen.getByTestId("sep")).toHaveAttribute("id", "main-sep");
+    expect(screen.getByTestId('sep')).toHaveAttribute('id', 'main-sep');
   });
 });

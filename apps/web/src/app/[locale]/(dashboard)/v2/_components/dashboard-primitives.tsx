@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { AlertTriangle, CalendarClock, FileCheck } from "lucide-react";
-import type { CSSProperties, MouseEvent as ReactMouseEvent, ReactNode } from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Link } from "@/i18n/navigation";
+import { AlertTriangle, CalendarClock, FileCheck } from 'lucide-react';
+import type { CSSProperties, MouseEvent as ReactMouseEvent, ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Link } from '@/i18n/navigation';
 
 // =============================================================================
 // MESH BACKGROUND — three drifting color orbs + grain + diagonal stripe
@@ -17,7 +17,7 @@ export function AtelierBackground() {
         className="absolute inset-0"
         style={{
           background:
-            "linear-gradient(170deg, color-mix(in oklch, var(--color-primary) 5%, transparent) 0%, transparent 40%, color-mix(in oklch, oklch(0.6 0.15 270) 3%, transparent) 100%)",
+            'linear-gradient(170deg, color-mix(in oklch, var(--color-primary) 5%, transparent) 0%, transparent 40%, color-mix(in oklch, oklch(0.6 0.15 270) 3%, transparent) 100%)',
         }}
       />
 
@@ -26,27 +26,27 @@ export function AtelierBackground() {
         className="absolute -start-[10%] -top-[10%] h-[800px] w-[800px] rounded-full"
         style={{
           background:
-            "radial-gradient(circle, color-mix(in oklch, var(--color-primary) 22%, transparent) 0%, transparent 65%)",
-          animation: "drift-1 28s ease-in-out infinite",
-          filter: "blur(80px)",
+            'radial-gradient(circle, color-mix(in oklch, var(--color-primary) 22%, transparent) 0%, transparent 65%)',
+          animation: 'drift-1 28s ease-in-out infinite',
+          filter: 'blur(80px)',
         }}
       />
       <div
         className="absolute -end-[5%] top-[10%] h-[650px] w-[650px] rounded-full"
         style={{
           background:
-            "radial-gradient(circle, color-mix(in oklch, oklch(0.78 0.14 55) 16%, transparent) 0%, transparent 65%)",
-          animation: "drift-2 35s ease-in-out infinite",
-          filter: "blur(100px)",
+            'radial-gradient(circle, color-mix(in oklch, oklch(0.78 0.14 55) 16%, transparent) 0%, transparent 65%)',
+          animation: 'drift-2 35s ease-in-out infinite',
+          filter: 'blur(100px)',
         }}
       />
       <div
         className="absolute bottom-[-5%] start-[35%] h-[550px] w-[550px] rounded-full"
         style={{
           background:
-            "radial-gradient(circle, color-mix(in oklch, oklch(0.55 0.2 270) 12%, transparent) 0%, transparent 65%)",
-          animation: "drift-3 24s ease-in-out infinite",
-          filter: "blur(90px)",
+            'radial-gradient(circle, color-mix(in oklch, oklch(0.55 0.2 270) 12%, transparent) 0%, transparent 65%)',
+          animation: 'drift-3 24s ease-in-out infinite',
+          filter: 'blur(90px)',
         }}
       />
 
@@ -55,7 +55,7 @@ export function AtelierBackground() {
         className="absolute inset-0 opacity-[0.03] dark:opacity-[0.06] mix-blend-overlay"
         style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
-          backgroundSize: "256px",
+          backgroundSize: '256px',
         }}
       />
 
@@ -64,8 +64,8 @@ export function AtelierBackground() {
         className="absolute inset-0"
         style={{
           backgroundImage:
-            "radial-gradient(circle, var(--color-muted-foreground) 0.5px, transparent 0.5px)",
-          backgroundSize: "32px 32px",
+            'radial-gradient(circle, var(--color-muted-foreground) 0.5px, transparent 0.5px)',
+          backgroundSize: '32px 32px',
           opacity: 0.04,
         }}
       />
@@ -75,7 +75,7 @@ export function AtelierBackground() {
         className="absolute inset-0 opacity-[0.015] dark:opacity-[0.025]"
         style={{
           backgroundImage:
-            "repeating-linear-gradient(135deg, var(--color-foreground) 0px, var(--color-foreground) 1px, transparent 1px, transparent 80px)",
+            'repeating-linear-gradient(135deg, var(--color-foreground) 0px, var(--color-foreground) 1px, transparent 1px, transparent 80px)',
         }}
       />
     </div>
@@ -88,7 +88,7 @@ export function AtelierBackground() {
 
 export function TiltCard({
   children,
-  className = "",
+  className = '',
   delay = 0,
   href,
   glow = false,
@@ -117,17 +117,17 @@ export function TiltCard({
   const handleMouseLeave = useCallback(() => {
     const el = ref.current;
     if (!el) return;
-    el.style.transform = "perspective(800px) rotateY(0deg) rotateX(0deg) translateY(0px)";
+    el.style.transform = 'perspective(800px) rotateY(0deg) rotateX(0deg) translateY(0px)';
   }, []);
 
   const classes = [
-    "atelier-enter atelier-glass group relative rounded-2xl p-5",
-    glow ? "atelier-border-glow" : "",
-    shimmer ? "atelier-shimmer" : "",
+    'atelier-enter atelier-glass group relative rounded-2xl p-5',
+    glow ? 'atelier-border-glow' : '',
+    shimmer ? 'atelier-shimmer' : '',
     className,
   ]
     .filter(Boolean)
-    .join(" ");
+    .join(' ');
 
   const inner = (
     <div
@@ -135,14 +135,13 @@ export function TiltCard({
       className={classes}
       style={{
         animationDelay: `${delay}ms`,
-        transition: "transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease",
-        transformStyle: "preserve-3d",
-        willChange: "transform",
+        transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease',
+        transformStyle: 'preserve-3d',
+        willChange: 'transform',
         ...style,
       }}
       onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-    >
+      onMouseLeave={handleMouseLeave}>
       {children}
     </div>
   );
@@ -188,7 +187,7 @@ export function AnimatedNumber({
     return () => cancelAnimationFrame(frameRef.current);
   }, [value, duration]);
 
-  return <>{format ? format(display) : display.toLocaleString("pl-PL")}</>;
+  return <>{format ? format(display) : display.toLocaleString('pl-PL')}</>;
 }
 
 // =============================================================================
@@ -236,7 +235,7 @@ export function Ring({
           strokeDasharray={c}
           strokeDashoffset={c * (1 - pct)}
           style={{
-            transition: "stroke-dashoffset 1.6s cubic-bezier(0.16, 1, 0.3, 1)",
+            transition: 'stroke-dashoffset 1.6s cubic-bezier(0.16, 1, 0.3, 1)',
             filter: `drop-shadow(0 0 4px ${color})`,
           }}
         />
@@ -256,8 +255,8 @@ export function Sparkline({
   data,
   w = 180,
   h = 52,
-  color = "var(--color-primary)",
-  id = "sp",
+  color = 'var(--color-primary)',
+  id = 'sp',
 }: {
   data: number[];
   w?: number;
@@ -273,8 +272,8 @@ export function Sparkline({
   const toY = (v: number) => pad + (1 - (v - min) / range) * (h - pad * 2);
   const step = w / Math.max(data.length - 1, 1);
 
-  const line = data.map((v, i) => `${i * step},${toY(v)}`).join(" ");
-  const area = `0,${h} ${data.map((v, i) => `${i * step},${toY(v)}`).join(" ")} ${w},${h}`;
+  const line = data.map((v, i) => `${i * step},${toY(v)}`).join(' ');
+  const area = `0,${h} ${data.map((v, i) => `${i * step},${toY(v)}`).join(' ')} ${w},${h}`;
 
   return (
     <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="overflow-visible">
@@ -314,9 +313,9 @@ export function LiveClock() {
   }, []);
   if (!t)
     return <span className="font-mono text-xs tabular-nums text-muted-foreground">--:--</span>;
-  const h = t.getHours().toString().padStart(2, "0");
-  const m = t.getMinutes().toString().padStart(2, "0");
-  const s = t.getSeconds().toString().padStart(2, "0");
+  const h = t.getHours().toString().padStart(2, '0');
+  const m = t.getMinutes().toString().padStart(2, '0');
+  const s = t.getSeconds().toString().padStart(2, '0');
   return (
     <span className="font-mono text-xs tabular-nums text-muted-foreground/70">
       {h}
@@ -339,7 +338,7 @@ export function PulseDot({ color, pulse = false }: { color: string; pulse?: bool
           className="absolute inset-0 rounded-full opacity-75"
           style={{
             backgroundColor: color,
-            animation: "ring-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite",
+            animation: 'ring-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite',
           }}
         />
       )}
@@ -356,9 +355,9 @@ export function PulseDot({ color, pulse = false }: { color: string; pulse?: bool
 // =============================================================================
 
 const SLA_CFG: Record<string, { color: string; label: string }> = {
-  ON_TRACK: { color: "oklch(0.65 0.2 155)", label: "On track" },
-  APPROACHING: { color: "oklch(0.75 0.17 65)", label: "Approaching" },
-  BREACHED: { color: "oklch(0.65 0.25 25)", label: "Breached" },
+  ON_TRACK: { color: 'oklch(0.65 0.2 155)', label: 'On track' },
+  APPROACHING: { color: 'oklch(0.75 0.17 65)', label: 'Approaching' },
+  BREACHED: { color: 'oklch(0.65 0.25 25)', label: 'Breached' },
 };
 
 export function SlaPill({ status }: { status: string }) {
@@ -366,9 +365,8 @@ export function SlaPill({ status }: { status: string }) {
   return (
     <span
       className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.08em]"
-      style={{ color: c.color, background: `color-mix(in oklch, ${c.color} 10%, transparent)` }}
-    >
-      <PulseDot color={c.color} pulse={status === "BREACHED"} />
+      style={{ color: c.color, background: `color-mix(in oklch, ${c.color} 10%, transparent)` }}>
+      <PulseDot color={c.color} pulse={status === 'BREACHED'} />
       {c.label}
     </span>
   );
@@ -382,34 +380,34 @@ export const DL_CFG: Record<
   string,
   { icon: React.ComponentType<{ className?: string }>; color: string }
 > = {
-  CONTRACT_EXPIRING: { icon: CalendarClock, color: "var(--color-warning)" },
-  TASK_OVERDUE: { icon: AlertTriangle, color: "var(--color-destructive)" },
-  INVOICE_DUE: { icon: FileCheck, color: "var(--color-info)" },
+  CONTRACT_EXPIRING: { icon: CalendarClock, color: 'var(--color-warning)' },
+  TASK_OVERDUE: { icon: AlertTriangle, color: 'var(--color-destructive)' },
+  INVOICE_DUE: { icon: FileCheck, color: 'var(--color-info)' },
 };
 
 export function dlHref(type: string, id: string) {
-  return type === "CONTRACT_EXPIRING"
+  return type === 'CONTRACT_EXPIRING'
     ? `/contracts/${id}`
-    : type === "INVOICE_DUE"
+    : type === 'INVOICE_DUE'
       ? `/invoices/${id}`
-      : "/workflows?tab=my-tasks";
+      : '/workflows?tab=my-tasks';
 }
 
 // =============================================================================
 // CURRENCY FORMATTERS
 // =============================================================================
 
-export const plnFmt = new Intl.NumberFormat("pl-PL", {
-  style: "currency",
-  currency: "PLN",
+export const plnFmt = new Intl.NumberFormat('pl-PL', {
+  style: 'currency',
+  currency: 'PLN',
   minimumFractionDigits: 0,
   maximumFractionDigits: 0,
 });
 
-export const fmtAmt = (g: number, cur = "PLN") =>
-  cur !== "PLN"
-    ? new Intl.NumberFormat("pl-PL", {
-        style: "currency",
+export const fmtAmt = (g: number, cur = 'PLN') =>
+  cur !== 'PLN'
+    ? new Intl.NumberFormat('pl-PL', {
+        style: 'currency',
         currency: cur,
         minimumFractionDigits: 0,
         maximumFractionDigits: 0,

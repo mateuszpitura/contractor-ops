@@ -1,7 +1,7 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock the client module before importing region
-vi.mock("../client.js", () => ({
+vi.mock('../client.js', () => ({
   createPrismaClientForUrl: vi.fn((url: string) => ({
     _connectionUrl: url,
     $connect: vi.fn(),
@@ -9,16 +9,16 @@ vi.mock("../client.js", () => ({
   })),
 }));
 
-import { createPrismaClientForUrl } from "../client.js";
-import { getRegionalClient, preWarmRegionalClients, SUPPORTED_REGIONS } from "../region.js";
+import { createPrismaClientForUrl } from '../client.js';
+import { getRegionalClient, preWarmRegionalClients, SUPPORTED_REGIONS } from '../region.js';
 
-describe("SUPPORTED_REGIONS", () => {
-  it("contains exactly EU and ME", () => {
-    expect(SUPPORTED_REGIONS).toEqual(["EU", "ME"]);
+describe('SUPPORTED_REGIONS', () => {
+  it('contains exactly EU and ME', () => {
+    expect(SUPPORTED_REGIONS).toEqual(['EU', 'ME']);
   });
 });
 
-describe("getRegionalClient", () => {
+describe('getRegionalClient', () => {
   const originalEnv = process.env;
 
   beforeEach(() => {
@@ -28,8 +28,8 @@ describe("getRegionalClient", () => {
 
     process.env = {
       ...originalEnv,
-      DATABASE_URL_EU: "postgresql://eu-host/neondb",
-      DATABASE_URL_ME: "postgresql://me-host/neondb-me",
+      DATABASE_URL_EU: 'postgresql://eu-host/neondb',
+      DATABASE_URL_ME: 'postgresql://me-host/neondb-me',
     };
 
     vi.mocked(createPrismaClientForUrl).mockClear();
@@ -39,40 +39,40 @@ describe("getRegionalClient", () => {
     process.env = originalEnv;
   });
 
-  it("returns a PrismaClient connected to DATABASE_URL_EU for EU region", () => {
-    const client = getRegionalClient("EU");
-    expect(createPrismaClientForUrl).toHaveBeenCalledWith("postgresql://eu-host/neondb");
+  it('returns a PrismaClient connected to DATABASE_URL_EU for EU region', () => {
+    const client = getRegionalClient('EU');
+    expect(createPrismaClientForUrl).toHaveBeenCalledWith('postgresql://eu-host/neondb');
     expect(client).toBeDefined();
   });
 
-  it("returns a PrismaClient connected to DATABASE_URL_ME for ME region", () => {
-    const client = getRegionalClient("ME");
-    expect(createPrismaClientForUrl).toHaveBeenCalledWith("postgresql://me-host/neondb-me");
+  it('returns a PrismaClient connected to DATABASE_URL_ME for ME region', () => {
+    const client = getRegionalClient('ME');
+    expect(createPrismaClientForUrl).toHaveBeenCalledWith('postgresql://me-host/neondb-me');
     expect(client).toBeDefined();
   });
 
-  it("returns the same cached instance when called twice for EU", () => {
-    const first = getRegionalClient("EU");
-    const second = getRegionalClient("EU");
+  it('returns the same cached instance when called twice for EU', () => {
+    const first = getRegionalClient('EU');
+    const second = getRegionalClient('EU');
     expect(first).toBe(second);
     expect(createPrismaClientForUrl).toHaveBeenCalledTimes(1);
   });
 
-  it("throws an error for an unsupported region", () => {
-    expect(() => getRegionalClient("INVALID")).toThrow(
-      "Unsupported data region: INVALID. Supported: EU, ME",
+  it('throws an error for an unsupported region', () => {
+    expect(() => getRegionalClient('INVALID')).toThrow(
+      'Unsupported data region: INVALID. Supported: EU, ME',
     );
   });
 
-  it("throws an error when env var is not set", () => {
+  it('throws an error when env var is not set', () => {
     delete process.env.DATABASE_URL_ME;
-    expect(() => getRegionalClient("ME")).toThrow(
-      "DATABASE_URL_ME environment variable is not set for region ME",
+    expect(() => getRegionalClient('ME')).toThrow(
+      'DATABASE_URL_ME environment variable is not set for region ME',
     );
   });
 });
 
-describe("preWarmRegionalClients", () => {
+describe('preWarmRegionalClients', () => {
   const originalEnv = process.env;
 
   beforeEach(() => {
@@ -81,7 +81,7 @@ describe("preWarmRegionalClients", () => {
 
     process.env = {
       ...originalEnv,
-      DATABASE_URL_EU: "postgresql://eu-host/neondb",
+      DATABASE_URL_EU: 'postgresql://eu-host/neondb',
       // DATABASE_URL_ME intentionally missing
     };
 
@@ -92,10 +92,10 @@ describe("preWarmRegionalClients", () => {
     process.env = originalEnv;
   });
 
-  it("warms available regions and skips unconfigured ones", () => {
+  it('warms available regions and skips unconfigured ones', () => {
     preWarmRegionalClients();
     // Only EU should be created (ME env var missing)
     expect(createPrismaClientForUrl).toHaveBeenCalledTimes(1);
-    expect(createPrismaClientForUrl).toHaveBeenCalledWith("postgresql://eu-host/neondb");
+    expect(createPrismaClientForUrl).toHaveBeenCalledWith('postgresql://eu-host/neondb');
   });
 });

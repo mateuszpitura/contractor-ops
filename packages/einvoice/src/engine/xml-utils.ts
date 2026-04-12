@@ -9,7 +9,7 @@
 export function dig(obj: Record<string, unknown>, ...keys: string[]): unknown {
   let current: unknown = obj;
   for (const key of keys) {
-    if (current === null || current === undefined || typeof current !== "object") {
+    if (current === null || current === undefined || typeof current !== 'object') {
       return;
     }
     current = (current as Record<string, unknown>)[key];
@@ -26,7 +26,7 @@ export function dig(obj: Record<string, unknown>, ...keys: string[]): unknown {
  *                   Future-proofed for ISO 4217 lookup in Phase 46.
  */
 export function toMinorUnits(value: unknown, exponent = 2): number {
-  if (value === undefined || value === null || value === "") return 0;
+  if (value === undefined || value === null || value === '') return 0;
   const factor = 10 ** exponent;
   return Math.round(parseFloat(String(value)) * factor);
 }

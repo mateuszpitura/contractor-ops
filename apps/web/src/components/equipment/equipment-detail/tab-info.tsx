@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { format } from "date-fns";
-import { useTranslations } from "next-intl";
+import { format } from 'date-fns';
+import { useTranslations } from 'next-intl';
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { EquipmentTypeIcon } from "../equipment-type-icon";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { EquipmentTypeIcon } from '../equipment-type-icon';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -33,19 +33,19 @@ interface TabInfoProps {
 // ---------------------------------------------------------------------------
 
 export function TabInfo({ equipment, onEdit }: TabInfoProps) {
-  const t = useTranslations("Equipment");
+  const t = useTranslations('Equipment');
 
   return (
     <div className="grid gap-4 md:grid-cols-2">
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">{t("detail.info")}</CardTitle>
+          <CardTitle className="text-base">{t('detail.info')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <InfoRow label={t("form.name")} value={equipment.name} />
-          <InfoRow label={t("form.serialNumber")} value={equipment.serialNumber} mono />
+          <InfoRow label={t('form.name')} value={equipment.name} />
+          <InfoRow label={t('form.serialNumber')} value={equipment.serialNumber} mono />
           <InfoRow
-            label={t("form.type")}
+            label={t('form.type')}
             value={
               <span className="flex items-center gap-1.5">
                 <EquipmentTypeIcon type={equipment.type} />
@@ -55,10 +55,10 @@ export function TabInfo({ equipment, onEdit }: TabInfoProps) {
             }
           />
           <InfoRow
-            label={t("form.purchaseDate")}
+            label={t('form.purchaseDate')}
             value={
               equipment.purchaseDate
-                ? format(new Date(equipment.purchaseDate), "MMM d, yyyy")
+                ? format(new Date(equipment.purchaseDate), 'MMM d, yyyy')
                 : null
             }
           />
@@ -67,7 +67,7 @@ export function TabInfo({ equipment, onEdit }: TabInfoProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">{t("form.notes")}</CardTitle>
+          <CardTitle className="text-base">{t('form.notes')}</CardTitle>
         </CardHeader>
         <CardContent>
           {equipment.notes ? (
@@ -79,11 +79,11 @@ export function TabInfo({ equipment, onEdit }: TabInfoProps) {
           <div className="mt-6 space-y-2 border-t pt-4">
             <InfoRow
               label="Created"
-              value={format(new Date(equipment.createdAt), "MMM d, yyyy HH:mm")}
+              value={format(new Date(equipment.createdAt), 'MMM d, yyyy HH:mm')}
             />
             <InfoRow
               label="Updated"
-              value={format(new Date(equipment.updatedAt), "MMM d, yyyy HH:mm")}
+              value={format(new Date(equipment.updatedAt), 'MMM d, yyyy HH:mm')}
             />
           </div>
         </CardContent>
@@ -108,7 +108,7 @@ function InfoRow({
   return (
     <div className="flex items-start justify-between gap-4">
       <span className="text-sm text-muted-foreground">{label}</span>
-      <span className={`text-sm text-end ${mono ? "font-mono" : ""}`}>
+      <span className={`text-sm text-end ${mono ? 'font-mono' : ''}`}>
         {value ?? <span className="text-muted-foreground">&mdash;</span>}
       </span>
     </div>

@@ -1,22 +1,22 @@
-"use client";
+'use client';
 
-import type { DirectoryRole } from "@contractor-ops/validators";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, Check } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useCallback, useMemo, useState } from "react";
-import { toast } from "sonner";
-import { FeatureGate } from "@/components/billing/feature-gate";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Skeleton } from "@/components/ui/skeleton";
-import { trpc } from "@/trpc/init";
-import type { DirectoryUser } from "./directory-preview-table";
-import { DirectoryPreviewTable } from "./directory-preview-table";
-import { DirectorySummaryBar } from "./directory-summary-bar";
-import { GroupRoleMappingStep } from "./group-role-mapping-step";
-import { ImportConfirmStep } from "./import-confirm-step";
-import { ROLE_LABELS, RoleAssignmentControls } from "./role-assignment-controls";
+import type { DirectoryRole } from '@contractor-ops/validators';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { AlertTriangle, Check } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useMemo, useState } from 'react';
+import { toast } from 'sonner';
+import { FeatureGate } from '@/components/billing/feature-gate';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Skeleton } from '@/components/ui/skeleton';
+import { trpc } from '@/trpc/init';
+import type { DirectoryUser } from './directory-preview-table';
+import { DirectoryPreviewTable } from './directory-preview-table';
+import { DirectorySummaryBar } from './directory-summary-bar';
+import { GroupRoleMappingStep } from './group-role-mapping-step';
+import { ImportConfirmStep } from './import-confirm-step';
+import { ROLE_LABELS, RoleAssignmentControls } from './role-assignment-controls';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -51,13 +51,12 @@ function StepIndicator({
             key={step}
             className={`flex items-center gap-1.5 text-sm ${
               isCurrent
-                ? "text-primary border-b-2 border-primary pb-px font-medium"
+                ? 'text-primary border-b-2 border-primary pb-px font-medium'
                 : isCompleted
-                  ? "text-primary"
-                  : "text-muted-foreground"
+                  ? 'text-primary'
+                  : 'text-muted-foreground'
             }`}
-            aria-current={isCurrent ? "step" : undefined}
-          >
+            aria-current={isCurrent ? 'step' : undefined}>
             {isCompleted && <Check className="size-3.5" aria-hidden="true" />}
             <span>
               {step}. {label}
@@ -74,13 +73,13 @@ function StepIndicator({
 // ---------------------------------------------------------------------------
 
 export function DirectoryImportWizard({ open, onOpenChange }: DirectoryImportWizardProps) {
-  const t = useTranslations("GoogleWorkspace.import");
+  const t = useTranslations('GoogleWorkspace.import');
   const queryClient = useQueryClient();
 
   // Wizard state
   const [step, setStep] = useState<WizardStep>(1);
   const [selectedEmails, setSelectedEmails] = useState<Set<string>>(new Set());
-  const [defaultRole, setDefaultRole] = useState<DirectoryRole>("readonly");
+  const [defaultRole, setDefaultRole] = useState<DirectoryRole>('readonly');
   const [groupMappings, setGroupMappings] = useState<Map<string, DirectoryRole>>(new Map());
 
   // Reset when dialog closes
@@ -89,7 +88,7 @@ export function DirectoryImportWizard({ open, onOpenChange }: DirectoryImportWiz
       if (!value) {
         setStep(1);
         setSelectedEmails(new Set());
-        setDefaultRole("readonly");
+        setDefaultRole('readonly');
         setGroupMappings(new Map());
       }
       onOpenChange(value);
@@ -124,7 +123,7 @@ export function DirectoryImportWizard({ open, onOpenChange }: DirectoryImportWiz
   const groups = listGroupsMutation.data?.groups ?? [];
 
   const handleGroupMappingChange = useCallback((groupEmail: string, role: DirectoryRole) => {
-    setGroupMappings((prev) => {
+    setGroupMappings(prev => {
       const next = new Map(prev);
       next.set(groupEmail, role);
       return next;
@@ -136,7 +135,7 @@ export function DirectoryImportWizard({ open, onOpenChange }: DirectoryImportWiz
   // ---------------------------------------------------------------------------
 
   const selectedUsers = useMemo(
-    () => users.filter((u) => selectedEmails.has(u.primaryEmail)),
+    () => users.filter(u => selectedEmails.has(u.primaryEmail)),
     [users, selectedEmails],
   );
 
@@ -157,14 +156,14 @@ export function DirectoryImportWizard({ open, onOpenChange }: DirectoryImportWiz
 
     for (const user of selectedUsers) {
       let role: DirectoryRole = defaultRole;
-      let source = t("roleSourceDefault");
+      let source = t('roleSourceDefault');
 
       // Check group mappings
       const userGroups = userGroupMemberships[user.primaryEmail] ?? [];
       for (const [groupEmail, mappedRole] of groupMappings) {
         if (userGroups.includes(groupEmail)) {
           role = mappedRole;
-          const group = groups.find((g) => g.email === groupEmail);
+          const group = groups.find(g => g.email === groupEmail);
           source = group?.name ?? groupEmail;
           break;
         }
@@ -180,7 +179,7 @@ export function DirectoryImportWizard({ open, onOpenChange }: DirectoryImportWiz
     }
 
     return Array.from(counts.entries()).map(([key, { count, source }]) => ({
-      role: ROLE_LABELS[key.split(":")[0] as DirectoryRole] ?? key.split(":")[0],
+      role: ROLE_LABELS[key.split(':')[0] as DirectoryRole] ?? key.split(':')[0],
       count,
       source,
     }));
@@ -192,16 +191,16 @@ export function DirectoryImportWizard({ open, onOpenChange }: DirectoryImportWiz
 
   const importMutation = useMutation({
     ...trpc.googleWorkspace.bulkImport.mutationOptions(),
-    onSuccess: (data) => {
+    onSuccess: data => {
       const succeededCount = data.succeeded.length;
       const failedCount = data.failed.length;
 
       if (failedCount === 0) {
-        toast.success(t("successToast", { count: succeededCount }));
+        toast.success(t('successToast', { count: succeededCount }));
         handleOpenChange(false);
       } else {
         toast.error(
-          t("partialError", {
+          t('partialError', {
             succeeded: succeededCount,
             total: succeededCount + failedCount,
             failed: failedCount,
@@ -218,12 +217,12 @@ export function DirectoryImportWizard({ open, onOpenChange }: DirectoryImportWiz
       });
     },
     onError: () => {
-      toast.error(t("fetchError"));
+      toast.error(t('fetchError'));
     },
   });
 
   const handleConfirmImport = useCallback(() => {
-    const usersPayload = selectedUsers.map((u) => ({
+    const usersPayload = selectedUsers.map(u => ({
       email: u.primaryEmail,
       name: u.name.fullName,
       googleUserId: u.id,
@@ -232,7 +231,7 @@ export function DirectoryImportWizard({ open, onOpenChange }: DirectoryImportWiz
     const groupRoleMappingsPayload = Array.from(groupMappings.entries()).map(
       ([groupEmail, role]) => ({
         groupEmail,
-        groupName: groups.find((g) => g.email === groupEmail)?.name ?? groupEmail,
+        groupName: groups.find(g => g.email === groupEmail)?.name ?? groupEmail,
         role,
       }),
     );
@@ -251,9 +250,9 @@ export function DirectoryImportWizard({ open, onOpenChange }: DirectoryImportWiz
   // ---------------------------------------------------------------------------
 
   const stepsConfig: Array<{ step: WizardStep; label: string }> = [
-    { step: 1, label: t("step1Title") },
-    { step: 2, label: t("step2Title") },
-    { step: 3, label: t("step3Title") },
+    { step: 1, label: t('step1Title') },
+    { step: 2, label: t('step2Title') },
+    { step: 3, label: t('step3Title') },
   ];
 
   // ---------------------------------------------------------------------------
@@ -265,7 +264,7 @@ export function DirectoryImportWizard({ open, onOpenChange }: DirectoryImportWiz
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto sm:max-w-3xl">
           <DialogHeader>
-            <DialogTitle>{t("title")}</DialogTitle>
+            <DialogTitle>{t('title')}</DialogTitle>
           </DialogHeader>
 
           <StepIndicator currentStep={step} steps={stepsConfig} />
@@ -284,7 +283,7 @@ export function DirectoryImportWizard({ open, onOpenChange }: DirectoryImportWiz
               {directoryQuery.isError && (
                 <div className="flex items-center gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-4">
                   <AlertTriangle className="size-5 text-destructive" aria-hidden="true" />
-                  <p className="text-sm text-destructive">{t("fetchError")}</p>
+                  <p className="text-sm text-destructive">{t('fetchError')}</p>
                 </div>
               )}
 
@@ -292,14 +291,14 @@ export function DirectoryImportWizard({ open, onOpenChange }: DirectoryImportWiz
                 <>
                   {stats.total === 0 ? (
                     <div className="py-8 text-center">
-                      <h3 className="text-lg font-semibold">{t("emptyNoUsers")}</h3>
-                      <p className="mt-1 text-sm text-muted-foreground">{t("emptyNoUsersBody")}</p>
+                      <h3 className="text-lg font-semibold">{t('emptyNoUsers')}</h3>
+                      <p className="mt-1 text-sm text-muted-foreground">{t('emptyNoUsersBody')}</p>
                     </div>
                   ) : stats.new === 0 ? (
                     <div className="py-8 text-center">
-                      <h3 className="text-lg font-semibold">{t("emptyAllImported")}</h3>
+                      <h3 className="text-lg font-semibold">{t('emptyAllImported')}</h3>
                       <p className="mt-1 text-sm text-muted-foreground">
-                        {t("emptyAllImportedBody")}
+                        {t('emptyAllImportedBody')}
                       </p>
                     </div>
                   ) : (
@@ -322,7 +321,7 @@ export function DirectoryImportWizard({ open, onOpenChange }: DirectoryImportWiz
                   {stats.new > 0 && (
                     <div className="flex justify-end">
                       <Button onClick={handleGoToStep2} disabled={selectedEmails.size === 0}>
-                        {t("nextRoles")}
+                        {t('nextRoles')}
                       </Button>
                     </div>
                   )}
@@ -356,9 +355,9 @@ export function DirectoryImportWizard({ open, onOpenChange }: DirectoryImportWiz
 
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setStep(1)}>
-                  {t("back")}
+                  {t('back')}
                 </Button>
-                <Button onClick={() => setStep(3)}>{t("nextReview")}</Button>
+                <Button onClick={() => setStep(3)}>{t('nextReview')}</Button>
               </div>
             </div>
           )}

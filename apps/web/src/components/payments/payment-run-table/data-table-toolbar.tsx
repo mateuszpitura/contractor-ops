@@ -1,23 +1,23 @@
-"use client";
+'use client';
 
-import { CalendarIcon } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useCallback, useMemo } from "react";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { CalendarIcon } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useMemo } from 'react';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 // ---------------------------------------------------------------------------
 // Status chip definitions
 // ---------------------------------------------------------------------------
 
 const STATUS_CHIPS = [
-  { key: "all", label: "all" },
-  { key: "DRAFT", label: "draft" },
-  { key: "LOCKED", label: "locked" },
-  { key: "EXPORTED", label: "exported" },
-  { key: "COMPLETED", label: "completed" },
-  { key: "CANCELLED", label: "cancelled" },
+  { key: 'all', label: 'all' },
+  { key: 'DRAFT', label: 'draft' },
+  { key: 'LOCKED', label: 'locked' },
+  { key: 'EXPORTED', label: 'exported' },
+  { key: 'COMPLETED', label: 'completed' },
+  { key: 'CANCELLED', label: 'cancelled' },
 ] as const;
 
 // ---------------------------------------------------------------------------
@@ -45,11 +45,11 @@ export function DataTableToolbar({
   onDateFromChange,
   onDateToChange,
 }: DataTableToolbarProps) {
-  const t = useTranslations("Payments");
+  const t = useTranslations('Payments');
 
   const formatDate = useCallback((date: Date | undefined) => {
-    if (!date) return "";
-    return date.toLocaleDateString("pl-PL");
+    if (!date) return '';
+    return date.toLocaleDateString('pl-PL');
   }, []);
 
   const dateLabel = useMemo(() => {
@@ -58,14 +58,14 @@ export function DataTableToolbar({
     }
     if (dateFrom) return `From ${formatDate(dateFrom)}`;
     if (dateTo) return `To ${formatDate(dateTo)}`;
-    return t("filters.dateRange");
+    return t('filters.dateRange');
   }, [dateFrom, dateTo, formatDate, t]);
 
   return (
     <div className="flex items-center gap-2 flex-wrap">
       {/* Status chip bar */}
       <div className="flex items-center gap-1.5 flex-wrap">
-        {STATUS_CHIPS.map((chip) => {
+        {STATUS_CHIPS.map(chip => {
           const isActive = activeStatus === chip.key;
           return (
             <button
@@ -74,10 +74,9 @@ export function DataTableToolbar({
               onClick={() => onStatusChange(chip.key)}
               className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                 isActive
-                  ? "bg-primary/10 text-primary"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
-              }`}
-            >
+                  ? 'bg-primary/10 text-primary'
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+              }`}>
               {t(`filters.${chip.label}` as Parameters<typeof t>[0])}
             </button>
           );
@@ -118,8 +117,7 @@ export function DataTableToolbar({
                 onClick={() => {
                   onDateFromChange(undefined);
                   onDateToChange(undefined);
-                }}
-              >
+                }}>
                 Clear dates
               </Button>
             </div>

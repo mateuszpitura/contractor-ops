@@ -7,16 +7,16 @@
  * retrigger has inline Prisma logic for finding existing extraction and document.
  */
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
-const ORG_ID = "org-ocr-001";
-const USER_ID = "user-ocr-001";
-const CONTRACTOR_ID = "contractor-ocr-001";
-const PORTAL_SESSION_TOKEN = "portal-session-token-ocr";
+const ORG_ID = 'org-ocr-001';
+const USER_ID = 'user-ocr-001';
+const CONTRACTOR_ID = 'contractor-ocr-001';
+const PORTAL_SESSION_TOKEN = 'portal-session-token-ocr';
 
 // ---------------------------------------------------------------------------
 // Mock via vi.hoisted
@@ -56,7 +56,7 @@ const {
 // Module mocks
 // ---------------------------------------------------------------------------
 
-vi.mock("@contractor-ops/auth", () => ({
+vi.mock('@contractor-ops/auth', () => ({
   auth: {
     api: {
       getSession: vi.fn(),
@@ -65,7 +65,7 @@ vi.mock("@contractor-ops/auth", () => ({
   },
 }));
 
-vi.mock("@contractor-ops/db", () => ({
+vi.mock('@contractor-ops/db', () => ({
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
@@ -73,54 +73,54 @@ vi.mock("@contractor-ops/db", () => ({
   },
 }));
 
-vi.mock("../../services/ocr-extraction.js", () => ({
+vi.mock('../../services/ocr-extraction.js', () => ({
   triggerOcrExtraction: mockTriggerOcr,
   processOcrExtraction: vi.fn(),
   getExtractionResult: mockGetExtractionResult,
   getExtractionByDocument: mockGetExtractionByDocument,
 }));
 
-vi.mock("@contractor-ops/integrations/services/qstash-client", () => ({
+vi.mock('@contractor-ops/integrations/services/qstash-client', () => ({
   getQStashClient: () => ({
     publishJSON: mockQStashPublish,
   }),
 }));
 
-vi.mock("../../services/portal-session.js", () => ({
+vi.mock('../../services/portal-session.js', () => ({
   validatePortalSession: vi.fn(async (token: string) => {
     if (token !== PORTAL_SESSION_TOKEN) return null;
     return {
       contractorId: CONTRACTOR_ID,
       organizationId: ORG_ID,
-      contractor: { id: CONTRACTOR_ID, email: "contractor@test.com" },
+      contractor: { id: CONTRACTOR_ID, email: 'contractor@test.com' },
     };
   }),
   createPortalSession: vi.fn(),
   deletePortalSession: vi.fn(),
 }));
 
-vi.mock("../../services/portal-magic-link.js", () => ({
+vi.mock('../../services/portal-magic-link.js', () => ({
   createMagicLinkToken: vi.fn(),
   verifyMagicLinkToken: vi.fn(),
   findContractorsByEmail: vi.fn(),
   sendPortalMagicLink: vi.fn(),
 }));
 
-vi.mock("../../services/r2.js", () => ({
-  createPresignedUploadUrl: vi.fn(async () => ({ url: "https://r2.test/upload", key: "k" })),
-  createPresignedDownloadUrl: vi.fn(async () => "https://r2.test/download"),
-  generateStorageKey: vi.fn(() => "mock-key"),
+vi.mock('../../services/r2.js', () => ({
+  createPresignedUploadUrl: vi.fn(async () => ({ url: 'https://r2.test/upload', key: 'k' })),
+  createPresignedDownloadUrl: vi.fn(async () => 'https://r2.test/download'),
+  generateStorageKey: vi.fn(() => 'mock-key'),
 }));
 
-vi.mock("../../services/portal-change-request.js", () => ({
+vi.mock('../../services/portal-change-request.js', () => ({
   createChangeRequest: vi.fn(),
 }));
 
-vi.mock("../../services/bank-account-crypto.js", () => ({
+vi.mock('../../services/bank-account-crypto.js', () => ({
   encryptBankAccount: vi.fn((v: string) => `encrypted:${v}`),
 }));
 
-vi.mock("../../services/stripe-client.js", () => ({
+vi.mock('../../services/stripe-client.js', () => ({
   stripe: {
     checkout: { sessions: { create: vi.fn() } },
     billingPortal: { sessions: { create: vi.fn() } },
@@ -131,25 +131,25 @@ vi.mock("../../services/stripe-client.js", () => ({
   },
 }));
 
-vi.mock("../../services/billing-service.js", () => ({
+vi.mock('../../services/billing-service.js', () => ({
   syncSeatCountForOrg: vi.fn(async () => undefined),
   getSubscription: vi.fn(async () => ({
-    id: "sub_ocr_mock",
-    status: "ACTIVE",
-    tier: "PRO",
+    id: 'sub_ocr_mock',
+    status: 'ACTIVE',
+    tier: 'PRO',
   })),
 }));
 
-vi.mock("@contractor-ops/logger", () => ({
+vi.mock('@contractor-ops/logger', () => ({
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
 
-vi.mock("@contractor-ops/logger/metrics", () => ({
+vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { increment: vi.fn(), histogram: vi.fn(), distribution: vi.fn() },
 }));
 
-vi.mock("@sentry/nextjs", () => {
+vi.mock('@sentry/nextjs', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
     startSpan: vi.fn((_o: unknown, fn: (span: typeof mockSpan) => unknown) => fn(mockSpan)),
@@ -161,8 +161,8 @@ vi.mock("@sentry/nextjs", () => {
 // Imports (after mocks)
 // ---------------------------------------------------------------------------
 
-import { createCallerFactory } from "../../init.js";
-import { appRouter } from "../../root.js";
+import { createCallerFactory } from '../../init.js';
+import { appRouter } from '../../root.js';
 
 // ---------------------------------------------------------------------------
 // Caller setup
@@ -173,11 +173,11 @@ const createCaller = createCallerFactory(appRouter);
 function makeTenantCaller() {
   const session = {
     session: {
-      id: "session-ocr",
+      id: 'session-ocr',
       userId: USER_ID,
       activeOrganizationId: ORG_ID,
-      expiresAt: new Date("2099-01-01"),
-      token: "mock-token",
+      expiresAt: new Date('2099-01-01'),
+      token: 'mock-token',
       createdAt: new Date(),
       updatedAt: new Date(),
       ipAddress: null,
@@ -185,14 +185,14 @@ function makeTenantCaller() {
     },
     user: {
       id: USER_ID,
-      name: "OCR User",
-      email: "ocr@test.com",
+      name: 'OCR User',
+      email: 'ocr@test.com',
       emailVerified: true,
       image: null,
       banned: false,
       banReason: null,
       banExpires: null,
-      role: "admin",
+      role: 'admin',
       createdAt: new Date(),
       updatedAt: new Date(),
     },
@@ -227,31 +227,31 @@ beforeEach(() => {
 // trigger
 // ===========================================================================
 
-describe("ocr.trigger", () => {
-  it("creates extraction record and returns extractionId", async () => {
-    mockTriggerOcr.mockResolvedValue({ extractionId: "ext-1", remaining: 9 });
+describe('ocr.trigger', () => {
+  it('creates extraction record and returns extractionId', async () => {
+    mockTriggerOcr.mockResolvedValue({ extractionId: 'ext-1', remaining: 9 });
 
     const result = await tenantCaller.ocr.trigger({
-      documentId: "doc-1",
-      storageKey: "org/docs/file.pdf",
+      documentId: 'doc-1',
+      storageKey: 'org/docs/file.pdf',
     });
 
-    expect(result.extractionId).toBe("ext-1");
+    expect(result.extractionId).toBe('ext-1');
     expect(mockTriggerOcr).toHaveBeenCalledWith(
       expect.objectContaining({
         organizationId: ORG_ID,
-        documentId: "doc-1",
-        storageKey: "org/docs/file.pdf",
+        documentId: 'doc-1',
+        storageKey: 'org/docs/file.pdf',
       }),
     );
   });
 
-  it("throws PRECONDITION_FAILED when credits are exhausted", async () => {
-    mockTriggerOcr.mockResolvedValue({ error: "credits_exhausted", remaining: 0 });
+  it('throws PRECONDITION_FAILED when credits are exhausted', async () => {
+    mockTriggerOcr.mockResolvedValue({ error: 'credits_exhausted', remaining: 0 });
 
     await expect(
-      tenantCaller.ocr.trigger({ documentId: "doc-1", storageKey: "key" }),
-    ).rejects.toMatchObject({ code: "PRECONDITION_FAILED" });
+      tenantCaller.ocr.trigger({ documentId: 'doc-1', storageKey: 'key' }),
+    ).rejects.toMatchObject({ code: 'PRECONDITION_FAILED' });
   });
 });
 
@@ -259,30 +259,30 @@ describe("ocr.trigger", () => {
 // getResult
 // ===========================================================================
 
-describe("ocr.getResult", () => {
-  it("returns extraction data scoped to organization", async () => {
+describe('ocr.getResult', () => {
+  it('returns extraction data scoped to organization', async () => {
     const extractionData = {
-      id: "ext-1",
+      id: 'ext-1',
       organizationId: ORG_ID,
-      status: "COMPLETED",
-      resultJson: { vendorName: "Test Vendor" },
+      status: 'COMPLETED',
+      resultJson: { vendorName: 'Test Vendor' },
     };
     mockGetExtractionResult.mockResolvedValue(extractionData);
 
-    const result = await tenantCaller.ocr.getResult({ extractionId: "ext-1" });
+    const result = await tenantCaller.ocr.getResult({ extractionId: 'ext-1' });
 
     expect(result).toBeTruthy();
-    expect(result?.status).toBe("COMPLETED");
+    expect(result?.status).toBe('COMPLETED');
     expect(mockGetExtractionResult).toHaveBeenCalledWith({
       organizationId: ORG_ID,
-      extractionId: "ext-1",
+      extractionId: 'ext-1',
     });
   });
 
-  it("returns null when extraction not found", async () => {
+  it('returns null when extraction not found', async () => {
     mockGetExtractionResult.mockResolvedValue(null);
 
-    const result = await tenantCaller.ocr.getResult({ extractionId: "nonexistent" });
+    const result = await tenantCaller.ocr.getResult({ extractionId: 'nonexistent' });
     expect(result).toBeNull();
   });
 });
@@ -291,19 +291,19 @@ describe("ocr.getResult", () => {
 // getByDocument
 // ===========================================================================
 
-describe("ocr.getByDocument", () => {
-  it("returns latest extraction for a document", async () => {
+describe('ocr.getByDocument', () => {
+  it('returns latest extraction for a document', async () => {
     mockGetExtractionByDocument.mockResolvedValue({
-      id: "ext-latest",
-      status: "COMPLETED",
+      id: 'ext-latest',
+      status: 'COMPLETED',
     });
 
-    const result = await tenantCaller.ocr.getByDocument({ documentId: "doc-1" });
+    const result = await tenantCaller.ocr.getByDocument({ documentId: 'doc-1' });
 
-    expect(result?.id).toBe("ext-latest");
+    expect(result?.id).toBe('ext-latest');
     expect(mockGetExtractionByDocument).toHaveBeenCalledWith({
       organizationId: ORG_ID,
-      documentId: "doc-1",
+      documentId: 'doc-1',
     });
   });
 });
@@ -312,56 +312,56 @@ describe("ocr.getByDocument", () => {
 // retrigger
 // ===========================================================================
 
-describe("ocr.retrigger", () => {
-  it("creates new extraction record for same document", async () => {
+describe('ocr.retrigger', () => {
+  it('creates new extraction record for same document', async () => {
     mockPrisma.ocrExtraction.findFirst.mockResolvedValue({
-      id: "ext-old",
+      id: 'ext-old',
       organizationId: ORG_ID,
-      documentId: "doc-retrigger",
-      invoiceId: "inv-1",
+      documentId: 'doc-retrigger',
+      invoiceId: 'inv-1',
     });
 
     mockPrisma.document.findFirst.mockResolvedValue({
-      storageKey: "org/docs/retrigger.pdf",
+      storageKey: 'org/docs/retrigger.pdf',
     });
 
     mockPrisma.ocrExtraction.create.mockResolvedValue({
-      id: "ext-new",
+      id: 'ext-new',
     });
 
     mockQStashPublish.mockResolvedValue({});
 
-    const result = await tenantCaller.ocr.retrigger({ extractionId: "ext-old" });
+    const result = await tenantCaller.ocr.retrigger({ extractionId: 'ext-old' });
 
-    expect(result.extractionId).toBe("ext-new");
+    expect(result.extractionId).toBe('ext-new');
 
     // Verify the new extraction inherits documentId and invoiceId
     const createCall = mockPrisma.ocrExtraction.create.mock.calls[0][0];
     expect(createCall.data).toMatchObject({
       organizationId: ORG_ID,
-      documentId: "doc-retrigger",
-      invoiceId: "inv-1",
-      provider: "CLAUDE",
-      status: "PENDING",
+      documentId: 'doc-retrigger',
+      invoiceId: 'inv-1',
+      provider: 'CLAUDE',
+      status: 'PENDING',
     });
 
     // Verify QStash job was dispatched
     expect(mockQStashPublish).toHaveBeenCalledWith(
       expect.objectContaining({
         body: expect.objectContaining({
-          extractionId: "ext-new",
+          extractionId: 'ext-new',
           organizationId: ORG_ID,
-          storageKey: "org/docs/retrigger.pdf",
+          storageKey: 'org/docs/retrigger.pdf',
         }),
       }),
     );
   });
 
-  it("throws when extraction not found (org-scoped)", async () => {
+  it('throws when extraction not found (org-scoped)', async () => {
     mockPrisma.ocrExtraction.findFirst.mockResolvedValue(null);
 
-    await expect(tenantCaller.ocr.retrigger({ extractionId: "nonexistent" })).rejects.toThrow(
-      "Extraction not found",
+    await expect(tenantCaller.ocr.retrigger({ extractionId: 'nonexistent' })).rejects.toThrow(
+      'Extraction not found',
     );
   });
 });
@@ -370,49 +370,49 @@ describe("ocr.retrigger", () => {
 // Portal endpoints
 // ===========================================================================
 
-describe("ocr.portalTrigger", () => {
-  it("creates extraction using portal session organizationId", async () => {
-    mockTriggerOcr.mockResolvedValue({ extractionId: "ext-portal", remaining: 5 });
+describe('ocr.portalTrigger', () => {
+  it('creates extraction using portal session organizationId', async () => {
+    mockTriggerOcr.mockResolvedValue({ extractionId: 'ext-portal', remaining: 5 });
 
     const result = await portalCaller.ocr.portalTrigger({
-      documentId: "doc-portal",
-      storageKey: "org/portal/file.pdf",
+      documentId: 'doc-portal',
+      storageKey: 'org/portal/file.pdf',
     });
 
-    expect(result.extractionId).toBe("ext-portal");
+    expect(result.extractionId).toBe('ext-portal');
     expect(mockTriggerOcr).toHaveBeenCalledWith(
       expect.objectContaining({
         organizationId: ORG_ID,
-        documentId: "doc-portal",
+        documentId: 'doc-portal',
       }),
     );
   });
 });
 
-describe("ocr.portalGetResult", () => {
-  it("returns extraction scoped to portal organization", async () => {
+describe('ocr.portalGetResult', () => {
+  it('returns extraction scoped to portal organization', async () => {
     mockGetExtractionResult.mockResolvedValue({
-      id: "ext-portal-result",
-      status: "COMPLETED",
+      id: 'ext-portal-result',
+      status: 'COMPLETED',
     });
 
     const result = await portalCaller.ocr.portalGetResult({
-      extractionId: "ext-portal-result",
+      extractionId: 'ext-portal-result',
     });
 
-    expect(result?.id).toBe("ext-portal-result");
+    expect(result?.id).toBe('ext-portal-result');
     expect(mockGetExtractionResult).toHaveBeenCalledWith({
       organizationId: ORG_ID,
-      extractionId: "ext-portal-result",
+      extractionId: 'ext-portal-result',
     });
   });
 
-  describe("tier gating", () => {
-    it("trigger and retrigger include requireTier(PRO)", async () => {
-      const fs = await import("node:fs");
-      const path = await import("node:path");
-      const sourceDir = path.resolve(import.meta.dirname, "../../routers");
-      const source = fs.readFileSync(path.join(sourceDir, "ocr.ts"), "utf-8");
+  describe('tier gating', () => {
+    it('trigger and retrigger include requireTier(PRO)', async () => {
+      const fs = await import('node:fs');
+      const path = await import('node:path');
+      const sourceDir = path.resolve(import.meta.dirname, '../../routers');
+      const source = fs.readFileSync(path.join(sourceDir, 'ocr.ts'), 'utf-8');
 
       expect(source).toContain('import { requireTier } from "../middleware/tier.js"');
       expect(source).toContain('requireTier("PRO")');
@@ -421,20 +421,20 @@ describe("ocr.portalGetResult", () => {
       expect(matches).toHaveLength(2);
     });
 
-    it("read-only procedures do NOT include requireTier", async () => {
-      const fs = await import("node:fs");
-      const path = await import("node:path");
-      const sourceDir = path.resolve(import.meta.dirname, "../../routers");
-      const source = fs.readFileSync(path.join(sourceDir, "ocr.ts"), "utf-8");
+    it('read-only procedures do NOT include requireTier', async () => {
+      const fs = await import('node:fs');
+      const path = await import('node:path');
+      const sourceDir = path.resolve(import.meta.dirname, '../../routers');
+      const source = fs.readFileSync(path.join(sourceDir, 'ocr.ts'), 'utf-8');
 
-      for (const proc of ["getResult", "getByDocument"]) {
+      for (const proc of ['getResult', 'getByDocument']) {
         const procRegex = new RegExp(
           `${proc}:\\s*tenantProcedure[\\s\\S]*?(?=\\w+:\\s*tenantProcedure|\\}\\);$)`,
-          "m",
+          'm',
         );
         const match = source.match(procRegex);
         if (match) {
-          expect(match[0]).not.toContain("requireTier");
+          expect(match[0]).not.toContain('requireTier');
         }
       }
     });

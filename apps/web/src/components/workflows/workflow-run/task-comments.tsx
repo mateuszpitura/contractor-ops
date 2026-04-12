@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { formatDistanceToNow } from "date-fns";
-import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { toast } from "sonner";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Textarea } from "@/components/ui/textarea";
-import { getAvatarInitials } from "@/lib/avatar-initials";
-import { trpc } from "@/trpc/init";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { formatDistanceToNow } from 'date-fns';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Textarea } from '@/components/ui/textarea';
+import { getAvatarInitials } from '@/lib/avatar-initials';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -26,9 +26,9 @@ interface TaskCommentsProps {
 // ---------------------------------------------------------------------------
 
 export function TaskComments({ runId, taskRunId }: TaskCommentsProps) {
-  const t = useTranslations("Workflows");
+  const t = useTranslations('Workflows');
   const queryClient = useQueryClient();
-  const [body, setBody] = useState("");
+  const [body, setBody] = useState('');
 
   const commentsQuery = useQuery(
     trpc.workflow.listComments.queryOptions({
@@ -42,17 +42,17 @@ export function TaskComments({ runId, taskRunId }: TaskCommentsProps) {
   const addCommentMutation = useMutation(
     trpc.workflow.addComment.mutationOptions({
       onSuccess: () => {
-        toast.success(t("toastCommentPosted"));
+        toast.success(t('toastCommentPosted'));
         queryClient.invalidateQueries({
           queryKey: trpc.workflow.listComments.queryKey({
             workflowRunId: runId,
             workflowTaskRunId: taskRunId,
           }),
         });
-        setBody("");
+        setBody('');
       },
       onError: () => {
-        toast.error(t("errors.failedToPostComment"));
+        toast.error(t('errors.failedToPostComment'));
       },
     }),
   );
@@ -69,7 +69,7 @@ export function TaskComments({ runId, taskRunId }: TaskCommentsProps) {
 
   return (
     <div className="space-y-3">
-      <h4 className="text-sm font-medium">{t("commentsHeading")}</h4>
+      <h4 className="text-sm font-medium">{t('commentsHeading')}</h4>
 
       {/* Comment list */}
       {commentsQuery.isLoading ? (
@@ -85,14 +85,14 @@ export function TaskComments({ runId, taskRunId }: TaskCommentsProps) {
           ))}
         </div>
       ) : comments.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{t("noComments")}</p>
+        <p className="text-sm text-muted-foreground">{t('noComments')}</p>
       ) : (
         <div className="space-y-3">
-          {comments.map((comment) => (
+          {comments.map(comment => (
             <div key={comment.id} className="flex items-start gap-2">
               <Avatar className="size-6 shrink-0">
                 {comment.author?.image && (
-                  <AvatarImage src={comment.author.image} alt={comment.author?.name ?? ""} />
+                  <AvatarImage src={comment.author.image} alt={comment.author?.name ?? ''} />
                 )}
                 <AvatarFallback className="text-xs">
                   {getAvatarInitials(comment.author?.name)}
@@ -100,7 +100,7 @@ export function TaskComments({ runId, taskRunId }: TaskCommentsProps) {
               </Avatar>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 text-[13px]">
-                  <span className="font-medium truncate">{comment.author?.name ?? "Unknown"}</span>
+                  <span className="font-medium truncate">{comment.author?.name ?? 'Unknown'}</span>
                   <span className="text-muted-foreground shrink-0">
                     {formatDistanceToNow(new Date(comment.createdAt), {
                       addSuffix: true,
@@ -117,13 +117,13 @@ export function TaskComments({ runId, taskRunId }: TaskCommentsProps) {
       {/* Add comment input */}
       <div className="flex gap-2">
         <Textarea
-          placeholder={t("commentPlaceholder")}
+          placeholder={t('commentPlaceholder')}
           value={body}
-          onChange={(e) => setBody(e.target.value)}
+          onChange={e => setBody(e.target.value)}
           rows={2}
           className="flex-1 resize-none"
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+          onKeyDown={e => {
+            if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
               e.preventDefault();
               handleSubmit();
             }
@@ -133,9 +133,8 @@ export function TaskComments({ runId, taskRunId }: TaskCommentsProps) {
           size="sm"
           disabled={body.trim().length === 0 || addCommentMutation.isPending}
           onClick={handleSubmit}
-          className="self-end"
-        >
-          {t("postComment")}
+          className="self-end">
+          {t('postComment')}
         </Button>
       </div>
     </div>

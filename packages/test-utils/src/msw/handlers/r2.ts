@@ -1,6 +1,6 @@
-import { HttpResponse, http } from "msw";
-import type { HandlerOptions } from "../types.js";
-import { applyNetworkConditions, mockId } from "../utils.js";
+import { HttpResponse, http } from 'msw';
+import type { HandlerOptions } from '../types.js';
+import { applyNetworkConditions, mockId } from '../utils.js';
 
 /**
  * Cloudflare R2 (S3-compatible) mock handlers.
@@ -18,14 +18,14 @@ export function r2Handlers(options?: HandlerOptions) {
 
   return [
     // --- PUT Object ---
-    http.put("https://*.r2.cloudflarestorage.com/*", async ({ request }) => {
+    http.put('https://*.r2.cloudflarestorage.com/*', async ({ request }) => {
       const err = await applyNetworkConditions(net);
       if (err) return err;
 
       const url = new URL(request.url);
       const key = url.pathname.slice(1); // remove leading /
       const body = new Uint8Array(await request.arrayBuffer());
-      const contentType = request.headers.get("Content-Type") ?? "application/octet-stream";
+      const contentType = request.headers.get('Content-Type') ?? 'application/octet-stream';
 
       objects.set(key, { body, contentType });
 
@@ -36,7 +36,7 @@ export function r2Handlers(options?: HandlerOptions) {
     }),
 
     // --- GET Object ---
-    http.get("https://*.r2.cloudflarestorage.com/*", async ({ request }) => {
+    http.get('https://*.r2.cloudflarestorage.com/*', async ({ request }) => {
       const err = await applyNetworkConditions(net);
       if (err) return err;
 
@@ -52,12 +52,12 @@ export function r2Handlers(options?: HandlerOptions) {
       }
 
       return new HttpResponse(obj.body, {
-        headers: { "Content-Type": obj.contentType },
+        headers: { 'Content-Type': obj.contentType },
       });
     }),
 
     // --- HEAD Object ---
-    http.head("https://*.r2.cloudflarestorage.com/*", async ({ request }) => {
+    http.head('https://*.r2.cloudflarestorage.com/*', async ({ request }) => {
       const err = await applyNetworkConditions(net);
       if (err) return err;
 
@@ -72,14 +72,14 @@ export function r2Handlers(options?: HandlerOptions) {
       return new HttpResponse(null, {
         status: 200,
         headers: {
-          "Content-Type": obj.contentType,
-          "Content-Length": String(obj.body.length),
+          'Content-Type': obj.contentType,
+          'Content-Length': String(obj.body.length),
         },
       });
     }),
 
     // --- DELETE Object ---
-    http.delete("https://*.r2.cloudflarestorage.com/*", async ({ request }) => {
+    http.delete('https://*.r2.cloudflarestorage.com/*', async ({ request }) => {
       const err = await applyNetworkConditions(net);
       if (err) return err;
 

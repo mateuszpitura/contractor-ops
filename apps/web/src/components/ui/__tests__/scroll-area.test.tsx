@@ -1,21 +1,21 @@
-import { vi } from "vitest";
+import { vi } from 'vitest';
 
-vi.unmock("@/components/ui/scroll-area");
+vi.unmock('@/components/ui/scroll-area');
 
-import { render } from "@/test/test-utils";
-import { ScrollArea } from "../scroll-area";
+import { render } from '@/test/test-utils';
+import { ScrollArea } from '../scroll-area';
 
-describe("ScrollArea", () => {
-  it("renders children", () => {
+describe('ScrollArea', () => {
+  it('renders children', () => {
     const { getByText } = render(
       <ScrollArea>
         <p>Scrollable content</p>
       </ScrollArea>,
     );
-    expect(getByText("Scrollable content")).toBeInTheDocument();
+    expect(getByText('Scrollable content')).toBeInTheDocument();
   });
 
-  it("sets data-slot on root", () => {
+  it('sets data-slot on root', () => {
     render(
       <ScrollArea>
         <p>Content</p>
@@ -25,7 +25,7 @@ describe("ScrollArea", () => {
     expect(root).toBeInTheDocument();
   });
 
-  it("sets data-slot on viewport", () => {
+  it('sets data-slot on viewport', () => {
     render(
       <ScrollArea>
         <p>Content</p>
@@ -35,13 +35,13 @@ describe("ScrollArea", () => {
     expect(viewport).toBeInTheDocument();
   });
 
-  it("merges custom className on root", () => {
+  it('merges custom className on root', () => {
     render(
       <ScrollArea className="my-scroll">
         <p>Content</p>
       </ScrollArea>,
     );
     const root = document.querySelector("[data-slot='scroll-area']");
-    expect(root?.className).toContain("my-scroll");
+    expect(root?.className).toContain('my-scroll');
   });
 });

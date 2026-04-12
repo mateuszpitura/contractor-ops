@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ---------------------------------------------------------------------------
 // Mocks — use vi.hoisted to avoid TDZ issues with vi.mock hoisting
@@ -10,7 +10,7 @@ const { mockSessionCreate, mockSessionFindUnique, mockSessionDeleteMany } = vi.h
   mockSessionDeleteMany: vi.fn(),
 }));
 
-vi.mock("@contractor-ops/db", () => ({
+vi.mock('@contractor-ops/db', () => ({
   prisma: {
     portalSession: {
       create: mockSessionCreate,
@@ -27,7 +27,7 @@ import {
   generateSessionToken,
   hashToken,
   validatePortalSession,
-} from "../portal-session.js";
+} from '../portal-session.js';
 
 // ---------------------------------------------------------------------------
 // Setup
@@ -41,36 +41,36 @@ beforeEach(() => {
 // Token utilities (pure functions)
 // ---------------------------------------------------------------------------
 
-describe("generateSessionToken", () => {
-  it("returns a base64url string", () => {
+describe('generateSessionToken', () => {
+  it('returns a base64url string', () => {
     const token = generateSessionToken();
     expect(token).toMatch(/^[A-Za-z0-9_-]+$/);
   });
 
-  it("generates unique tokens on each call", () => {
+  it('generates unique tokens on each call', () => {
     const tokens = new Set(Array.from({ length: 10 }, generateSessionToken));
     expect(tokens.size).toBe(10);
   });
 
-  it("produces a token of expected length (32 bytes = ~43 base64url chars)", () => {
+  it('produces a token of expected length (32 bytes = ~43 base64url chars)', () => {
     const token = generateSessionToken();
     expect(token.length).toBeGreaterThanOrEqual(40);
     expect(token.length).toBeLessThanOrEqual(44);
   });
 });
 
-describe("hashToken", () => {
-  it("returns a hex string (SHA-256 = 64 hex chars)", () => {
-    const hash = hashToken("test-token");
+describe('hashToken', () => {
+  it('returns a hex string (SHA-256 = 64 hex chars)', () => {
+    const hash = hashToken('test-token');
     expect(hash).toMatch(/^[a-f0-9]{64}$/);
   });
 
-  it("is deterministic (same input = same output)", () => {
-    expect(hashToken("abc")).toBe(hashToken("abc"));
+  it('is deterministic (same input = same output)', () => {
+    expect(hashToken('abc')).toBe(hashToken('abc'));
   });
 
-  it("different inputs produce different hashes", () => {
-    expect(hashToken("token-a")).not.toBe(hashToken("token-b"));
+  it('different inputs produce different hashes', () => {
+    expect(hashToken('token-a')).not.toBe(hashToken('token-b'));
   });
 });
 
@@ -78,16 +78,16 @@ describe("hashToken", () => {
 // createPortalSession
 // ---------------------------------------------------------------------------
 
-describe("createPortalSession", () => {
-  it("creates a session with hashed token and correct scoping", async () => {
-    mockSessionCreate.mockResolvedValueOnce({ id: "session_1" });
+describe('createPortalSession', () => {
+  it('creates a session with hashed token and correct scoping', async () => {
+    mockSessionCreate.mockResolvedValueOnce({ id: 'session_1' });
 
     const result = await createPortalSession({
-      contractorId: "contractor_1",
-      organizationId: "org_1",
-      email: "contractor@example.com",
-      ipAddress: "1.2.3.4",
-      userAgent: "TestBrowser/1.0",
+      contractorId: 'contractor_1',
+      organizationId: 'org_1',
+      email: 'contractor@example.com',
+      ipAddress: '1.2.3.4',
+      userAgent: 'TestBrowser/1.0',
     });
 
     expect(result.rawToken).toBeDefined();
@@ -100,11 +100,11 @@ describe("createPortalSession", () => {
 
     expect(mockSessionCreate).toHaveBeenCalledWith({
       data: expect.objectContaining({
-        contractorId: "contractor_1",
-        organizationId: "org_1",
-        email: "contractor@example.com",
-        ipAddress: "1.2.3.4",
-        userAgent: "TestBrowser/1.0",
+        contractorId: 'contractor_1',
+        organizationId: 'org_1',
+        email: 'contractor@example.com',
+        ipAddress: '1.2.3.4',
+        userAgent: 'TestBrowser/1.0',
       }),
     });
 
@@ -114,13 +114,13 @@ describe("createPortalSession", () => {
     expect(storedToken).toBe(hashToken(result.rawToken));
   });
 
-  it("stores null for optional ipAddress and userAgent when omitted", async () => {
-    mockSessionCreate.mockResolvedValueOnce({ id: "session_2" });
+  it('stores null for optional ipAddress and userAgent when omitted', async () => {
+    mockSessionCreate.mockResolvedValueOnce({ id: 'session_2' });
 
     await createPortalSession({
-      contractorId: "contractor_1",
-      organizationId: "org_1",
-      email: "test@example.com",
+      contractorId: 'contractor_1',
+      organizationId: 'org_1',
+      email: 'test@example.com',
     });
 
     expect(mockSessionCreate).toHaveBeenCalledWith({
@@ -136,65 +136,65 @@ describe("createPortalSession", () => {
 // validatePortalSession
 // ---------------------------------------------------------------------------
 
-describe("validatePortalSession", () => {
-  it("returns session when token is valid and not expired", async () => {
+describe('validatePortalSession', () => {
+  it('returns session when token is valid and not expired', async () => {
     const futureDate = new Date(Date.now() + 86400000);
     const session = {
-      id: "session_1",
+      id: 'session_1',
       expiresAt: futureDate,
-      contractor: { status: "ACTIVE" },
+      contractor: { status: 'ACTIVE' },
     };
     mockSessionFindUnique.mockResolvedValueOnce(session);
 
-    const result = await validatePortalSession("raw-token");
+    const result = await validatePortalSession('raw-token');
 
     expect(result).toBe(session);
     expect(mockSessionFindUnique).toHaveBeenCalledWith({
-      where: { token: hashToken("raw-token") },
+      where: { token: hashToken('raw-token') },
       include: { contractor: true },
     });
   });
 
-  it("returns null when session is not found", async () => {
+  it('returns null when session is not found', async () => {
     mockSessionFindUnique.mockResolvedValueOnce(null);
 
-    const result = await validatePortalSession("nonexistent-token");
+    const result = await validatePortalSession('nonexistent-token');
     expect(result).toBeNull();
   });
 
-  it("returns null when session is expired", async () => {
+  it('returns null when session is expired', async () => {
     const pastDate = new Date(Date.now() - 86400000);
     mockSessionFindUnique.mockResolvedValueOnce({
-      id: "session_expired",
+      id: 'session_expired',
       expiresAt: pastDate,
-      contractor: { status: "ACTIVE" },
+      contractor: { status: 'ACTIVE' },
     });
 
-    const result = await validatePortalSession("expired-token");
+    const result = await validatePortalSession('expired-token');
     expect(result).toBeNull();
   });
 
-  it("returns null when contractor is ARCHIVED", async () => {
+  it('returns null when contractor is ARCHIVED', async () => {
     const futureDate = new Date(Date.now() + 86400000);
     mockSessionFindUnique.mockResolvedValueOnce({
-      id: "session_archived",
+      id: 'session_archived',
       expiresAt: futureDate,
-      contractor: { status: "ARCHIVED" },
+      contractor: { status: 'ARCHIVED' },
     });
 
-    const result = await validatePortalSession("archived-token");
+    const result = await validatePortalSession('archived-token');
     expect(result).toBeNull();
   });
 
-  it("returns null when contractor is INACTIVE", async () => {
+  it('returns null when contractor is INACTIVE', async () => {
     const futureDate = new Date(Date.now() + 86400000);
     mockSessionFindUnique.mockResolvedValueOnce({
-      id: "session_inactive",
+      id: 'session_inactive',
       expiresAt: futureDate,
-      contractor: { status: "INACTIVE" },
+      contractor: { status: 'INACTIVE' },
     });
 
-    const result = await validatePortalSession("inactive-token");
+    const result = await validatePortalSession('inactive-token');
     expect(result).toBeNull();
   });
 });
@@ -203,21 +203,21 @@ describe("validatePortalSession", () => {
 // deletePortalSession
 // ---------------------------------------------------------------------------
 
-describe("deletePortalSession", () => {
-  it("deletes session by hashed token using deleteMany", async () => {
+describe('deletePortalSession', () => {
+  it('deletes session by hashed token using deleteMany', async () => {
     mockSessionDeleteMany.mockResolvedValueOnce({ count: 1 });
 
-    await deletePortalSession("raw-token");
+    await deletePortalSession('raw-token');
 
     expect(mockSessionDeleteMany).toHaveBeenCalledWith({
-      where: { token: hashToken("raw-token") },
+      where: { token: hashToken('raw-token') },
     });
   });
 
-  it("does not throw when session does not exist", async () => {
+  it('does not throw when session does not exist', async () => {
     mockSessionDeleteMany.mockResolvedValueOnce({ count: 0 });
 
-    await expect(deletePortalSession("nonexistent-token")).resolves.toBeUndefined();
+    await expect(deletePortalSession('nonexistent-token')).resolves.toBeUndefined();
   });
 });
 
@@ -225,8 +225,8 @@ describe("deletePortalSession", () => {
 // cleanExpiredSessions
 // ---------------------------------------------------------------------------
 
-describe("cleanExpiredSessions", () => {
-  it("deletes expired sessions and returns count", async () => {
+describe('cleanExpiredSessions', () => {
+  it('deletes expired sessions and returns count', async () => {
     mockSessionDeleteMany.mockResolvedValueOnce({ count: 5 });
 
     const count = await cleanExpiredSessions();
@@ -237,7 +237,7 @@ describe("cleanExpiredSessions", () => {
     });
   });
 
-  it("returns 0 when no expired sessions exist", async () => {
+  it('returns 0 when no expired sessions exist', async () => {
     mockSessionDeleteMany.mockResolvedValueOnce({ count: 0 });
 
     const count = await cleanExpiredSessions();

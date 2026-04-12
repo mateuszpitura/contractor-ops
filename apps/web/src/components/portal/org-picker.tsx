@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { Loader2 } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import { Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -38,8 +38,8 @@ interface OrgPickerProps {
  * - Hover accent border, loading spinner on selected card
  */
 export function OrgPicker({ orgs, email, onSelect, loading }: OrgPickerProps) {
-  const tAria = useTranslations("Common.aria");
-  const t = useTranslations("Portal.orgPicker");
+  const tAria = useTranslations('Common.aria');
+  const t = useTranslations('Portal.orgPicker');
   const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
 
   const handleSelect = (org: OrgInfo) => {
@@ -51,12 +51,12 @@ export function OrgPicker({ orgs, email, onSelect, loading }: OrgPickerProps) {
   return (
     <div className="mx-auto w-full max-w-[480px]">
       <div className="mb-6 text-center">
-        <h1 className="text-xl font-semibold">{t("title")}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{t("description")}</p>
+        <h1 className="text-xl font-semibold">{t('title')}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{t('description')}</p>
       </div>
 
       <div className="space-y-3">
-        {orgs.map((org) => {
+        {orgs.map(org => {
           const isSelected = selectedOrgId === org.organizationId;
           const isDisabled = loading && !isSelected;
 
@@ -64,21 +64,20 @@ export function OrgPicker({ orgs, email, onSelect, loading }: OrgPickerProps) {
             <Card
               key={org.organizationId}
               className={cn(
-                "cursor-pointer transition-colors",
-                isSelected && loading ? "border-primary" : "hover:border-primary",
-                isDisabled && "opacity-50 cursor-not-allowed",
+                'cursor-pointer transition-colors',
+                isSelected && loading ? 'border-primary' : 'hover:border-primary',
+                isDisabled && 'opacity-50 cursor-not-allowed',
               )}
               onClick={() => !isDisabled && handleSelect(org)}
               role="button"
               tabIndex={0}
-              aria-label={tAria("selectOrg", { name: org.orgName })}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
+              aria-label={tAria('selectOrg', { name: org.orgName })}
+              onKeyDown={e => {
+                if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
                   if (!isDisabled) handleSelect(org);
                 }
-              }}
-            >
+              }}>
               <CardContent className="flex items-center gap-3 p-4">
                 {org.orgLogo ? (
                   <img
@@ -101,7 +100,7 @@ export function OrgPicker({ orgs, email, onSelect, loading }: OrgPickerProps) {
         })}
       </div>
 
-      <p className="mt-4 text-center text-xs text-muted-foreground">{t("signedInAs", { email })}</p>
+      <p className="mt-4 text-center text-xs text-muted-foreground">{t('signedInAs', { email })}</p>
     </div>
   );
 }

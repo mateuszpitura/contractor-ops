@@ -1,14 +1,14 @@
-import { prisma } from "@contractor-ops/db";
+import { prisma } from '@contractor-ops/db';
 import {
   KsefApiClient,
   ksefConnectionConfigSchema,
   mapKsefToInvoiceFields,
   parseFa3Xml,
-} from "@contractor-ops/einvoice";
-import { decryptCredentials } from "@contractor-ops/integrations";
-import { computeDuplicateCheckHash, runAutoMatch } from "./invoice-matching.js";
-import { checkCrossSourceDuplicate, linkDuplicateInvoices } from "./ksef-duplicate-detection.js";
-import { dispatch } from "./notification-service.js";
+} from '@contractor-ops/einvoice';
+import { decryptCredentials } from '@contractor-ops/integrations';
+import { computeDuplicateCheckHash, runAutoMatch } from './invoice-matching.js';
+import { checkCrossSourceDuplicate, linkDuplicateInvoices } from './ksef-duplicate-detection.js';
+import { dispatch } from './notification-service.js';
 
 // ---------------------------------------------------------------------------
 // KSeF Sync Orchestrator
@@ -46,9 +46,9 @@ export async function processKsefSync(params: {
     data: {
       organizationId: params.organizationId,
       integrationConnectionId: params.connectionId,
-      direction: "INBOUND",
-      syncType: "ksef_invoice_fetch",
-      status: "STARTED",
+      direction: 'INBOUND',
+      syncType: 'ksef_invoice_fetch',
+      status: 'STARTED',
       startedAt: new Date(),
     },
   });
@@ -63,10 +63,10 @@ export async function processKsefSync(params: {
     });
 
     if (connection.organizationId !== params.organizationId) {
-      throw new Error("Connection does not belong to the specified organization");
+      throw new Error('Connection does not belong to the specified organization');
     }
 
-    const credentials = decryptCredentials(connection.credentialsRef, "ksef");
+    const credentials = decryptCredentials(connection.credentialsRef, 'ksef');
     const config = ksefConnectionConfigSchema.parse(connection.configJson);
 
     // -----------------------------------------------------------------------
@@ -80,16 +80,16 @@ export async function processKsefSync(params: {
     const nip = settingsJson.taxId as string | undefined;
 
     if (!nip) {
-      throw new Error("Organization NIP not configured. Set it in Organization Settings.");
+      throw new Error('Organization NIP not configured. Set it in Organization Settings.');
     }
 
     // -----------------------------------------------------------------------
     // Step 3: Authenticate with KSeF
     // -----------------------------------------------------------------------
 
-    client = new KsefApiClient(config.environment ?? "prod");
+    client = new KsefApiClient(config.environment ?? 'prod');
 
-    if (config.authMethod === "certificate") {
+    if (config.authMethod === 'certificate') {
       await client.authenticateWithCertificate(
         credentials.extra?.certificateBase64 as string,
         credentials.extra?.certificatePassword as string | undefined,
@@ -104,9 +104,9 @@ export async function processKsefSync(params: {
     // -----------------------------------------------------------------------
 
     const dateFrom = connection.lastSuccessAt
-      ? connection.lastSuccessAt.toISOString().split("T")[0]!
-      : new Date(Date.now() - 90 * 24 * 3600 * 1000).toISOString().split("T")[0]!;
-    const dateTo = new Date().toISOString().split("T")[0]!;
+      ? connection.lastSuccessAt.toISOString().split('T')[0]!
+      : new Date(Date.now() - 90 * 24 * 3600 * 1000).toISOString().split('T')[0]!;
+    const dateTo = new Date().toISOString().split('T')[0]!;
 
     // -----------------------------------------------------------------------
     // Step 5: Query invoices from KSeF
@@ -125,7 +125,7 @@ export async function processKsefSync(params: {
           where: {
             organizationId: params.organizationId,
             externalInvoiceId: metadata.ksefReferenceNumber,
-            source: "KSEF",
+            source: 'KSEF',
             deletedAt: null,
           },
           select: { id: true },
@@ -170,12 +170,12 @@ export async function processKsefSync(params: {
             dueDate,
             organizationId: params.organizationId,
             duplicateCheckHash: hash,
-            status: "RECEIVED",
-            matchStatus: "UNMATCHED",
-            approvalStatus: "NOT_STARTED",
-            paymentStatus: "NOT_READY",
+            status: 'RECEIVED',
+            matchStatus: 'UNMATCHED',
+            approvalStatus: 'NOT_STARTED',
+            paymentStatus: 'NOT_READY',
             lines: {
-              create: lines.map((l) => ({
+              create: lines.map(l => ({
                 ...l,
                 organizationId: params.organizationId,
               })),
@@ -210,7 +210,7 @@ export async function processKsefSync(params: {
     // Step 7: Update connection status
     // -----------------------------------------------------------------------
 
-    const newStatus = errors.length > 0 ? "ERROR" : "CONNECTED";
+    const newStatus = errors.length > 0 ? 'ERROR' : 'CONNECTED';
 
     await prisma.integrationConnection.update({
       where: { id: params.connectionId },
@@ -221,7 +221,7 @@ export async function processKsefSync(params: {
         ...(errors.length > 0
           ? {
               lastErrorAt: new Date(),
-              lastErrorMessage: errors.join("; ").slice(0, 1000),
+              lastErrorMessage: errors.join('; ').slice(0, 1000),
             }
           : {}),
       },
@@ -234,7 +234,7 @@ export async function processKsefSync(params: {
     await prisma.integrationSyncLog.update({
       where: { id: syncLog.id },
       data: {
-        status: "SUCCESS",
+        status: 'SUCCESS',
         completedAt: new Date(),
         responsePayloadJson: {
           invoicesCreated,
@@ -253,27 +253,27 @@ export async function processKsefSync(params: {
       const members = await prisma.member.findMany({
         where: {
           organizationId: params.organizationId,
-          role: { in: ["owner", "admin", "finance_manager"] },
+          role: { in: ['owner', 'admin', 'finance_manager'] },
         },
         select: { userId: true },
       });
 
-      const recipientUserIds = members.map((m) => m.userId);
+      const recipientUserIds = members.map(m => m.userId);
 
       if (recipientUserIds.length > 0) {
         try {
           await dispatch({
             organizationId: params.organizationId,
-            type: "KSEF_SYNC_COMPLETE",
-            title: "KSeF Sync Complete",
-            body: `${invoicesCreated} new invoice${invoicesCreated === 1 ? "" : "s"} fetched from KSeF`,
-            entityType: "INVOICE",
+            type: 'KSEF_SYNC_COMPLETE',
+            title: 'KSeF Sync Complete',
+            body: `${invoicesCreated} new invoice${invoicesCreated === 1 ? '' : 's'} fetched from KSeF`,
+            entityType: 'INVOICE',
             entityId: params.connectionId,
             recipientUserIds,
             metadata: {
               invoicesCreated,
               duplicatesFound,
-              link: "/invoices?source=KSEF",
+              link: '/invoices?source=KSEF',
             },
           });
         } catch (notificationError) {
@@ -291,7 +291,7 @@ export async function processKsefSync(params: {
     await prisma.integrationSyncLog.update({
       where: { id: syncLog.id },
       data: {
-        status: "FAILED",
+        status: 'FAILED',
         completedAt: new Date(),
         errorMessage: error instanceof Error ? error.message : String(error),
       },
@@ -304,7 +304,7 @@ export async function processKsefSync(params: {
         lastSyncAt: new Date(),
         lastErrorAt: new Date(),
         lastErrorMessage: error instanceof Error ? error.message : String(error),
-        status: "ERROR",
+        status: 'ERROR',
       },
     });
 

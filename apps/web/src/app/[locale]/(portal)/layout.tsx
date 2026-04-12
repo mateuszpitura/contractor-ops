@@ -1,9 +1,9 @@
-import { validatePortalSession } from "@contractor-ops/api/services/portal-session";
-import { prisma } from "@contractor-ops/db";
-import { cookies, headers } from "next/headers";
-import { redirect } from "next/navigation";
-import type { ReactNode } from "react";
-import { PortalTopBar } from "@/components/portal/portal-top-bar";
+import { validatePortalSession } from '@contractor-ops/api/services/portal-session';
+import { prisma } from '@contractor-ops/db';
+import { cookies, headers } from 'next/headers';
+import { redirect } from 'next/navigation';
+import type { ReactNode } from 'react';
+import { PortalTopBar } from '@/components/portal/portal-top-bar';
 
 /**
  * Portal route group layout.
@@ -21,9 +21,9 @@ import { PortalTopBar } from "@/components/portal/portal-top-bar";
  */
 export default async function PortalLayout({ children }: { children: ReactNode }) {
   const cookieStore = await cookies();
-  const sessionToken = cookieStore.get("portal_session")?.value;
+  const sessionToken = cookieStore.get('portal_session')?.value;
   const headerStore = await headers();
-  const subdomainSlug = headerStore.get("x-portal-org-subdomain");
+  const subdomainSlug = headerStore.get('x-portal-org-subdomain');
 
   // No session cookie: try to resolve org from subdomain for branding
   if (!sessionToken) {
@@ -39,9 +39,8 @@ export default async function PortalLayout({ children }: { children: ReactNode }
           <div
             className="min-h-screen bg-background"
             style={
-              brandColor ? ({ "--brand-accent": brandColor } as React.CSSProperties) : undefined
-            }
-          >
+              brandColor ? ({ '--brand-accent': brandColor } as React.CSSProperties) : undefined
+            }>
             {children}
           </div>
         );
@@ -54,7 +53,7 @@ export default async function PortalLayout({ children }: { children: ReactNode }
   const session = await validatePortalSession(sessionToken);
 
   if (!session) {
-    redirect("/portal/login");
+    redirect('/portal/login');
   }
 
   // Fetch organization info for the top bar + branding (session.organizationId is authoritative)
@@ -70,18 +69,16 @@ export default async function PortalLayout({ children }: { children: ReactNode }
   return (
     <div
       className="min-h-screen bg-background"
-      style={brandColor ? ({ "--brand-accent": brandColor } as React.CSSProperties) : undefined}
-    >
+      style={brandColor ? ({ '--brand-accent': brandColor } as React.CSSProperties) : undefined}>
       <a
         href="#portal-content"
-        className="fixed start-4 top-4 z-[100] -translate-y-16 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-lg transition-transform focus:translate-y-0"
-      >
+        className="fixed start-4 top-4 z-[100] -translate-y-16 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-lg transition-transform focus:translate-y-0">
         Skip to content
       </a>
       <PortalTopBar
-        orgName={organization?.name ?? "Organization"}
+        orgName={organization?.name ?? 'Organization'}
         orgLogo={organization?.logo ?? null}
-        contractorName={session.contractor?.displayName ?? "Contractor"}
+        contractorName={session.contractor?.displayName ?? 'Contractor'}
         contractorEmail={session.email}
       />
       <main id="portal-content" className="flex-1">

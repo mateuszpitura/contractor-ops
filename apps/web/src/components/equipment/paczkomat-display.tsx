@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { MapPin } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { MapPin } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -30,7 +30,7 @@ export function PaczkomatDisplay({
   pointAddress,
   onChangeClick,
 }: PaczkomatDisplayProps) {
-  const t = useTranslations("Equipment.paczkomat");
+  const t = useTranslations('Equipment.paczkomat');
 
   return (
     <Card>
@@ -41,7 +41,7 @@ export function PaczkomatDisplay({
           <p className="truncate text-xs text-muted-foreground">{pointAddress}</p>
         </div>
         <Button variant="outline" size="sm" onClick={onChangeClick}>
-          {t("change")}
+          {t('change')}
         </Button>
       </CardContent>
     </Card>

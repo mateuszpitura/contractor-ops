@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { useMutation } from "@tanstack/react-query";
-import { AlertTriangle, Loader2, ShieldCheck } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
+import { useMutation } from '@tanstack/react-query';
+import { AlertTriangle, Loader2, ShieldCheck } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { zatcaTrpc } from "./zatca-trpc";
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { zatcaTrpc } from './zatca-trpc';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -36,10 +36,10 @@ export function ProductionCertificate({ onSuccess, onBack }: ProductionCertifica
     ...zatcaTrpc.exchangeProductionCert.mutationOptions(),
     onSuccess: () => {
       setCompleted(true);
-      toast.success("ZATCA onboarding complete! Production certificate activated.");
+      toast.success('ZATCA onboarding complete! Production certificate activated.');
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Failed to exchange production certificate");
+      toast.error(error.message || 'Failed to exchange production certificate');
     },
   });
 
@@ -69,8 +69,7 @@ export function ProductionCertificate({ onSuccess, onBack }: ProductionCertifica
       {!completed && (
         <Button
           onClick={() => (exchangeMutation.mutate as () => void)()}
-          disabled={exchangeMutation.isPending}
-        >
+          disabled={exchangeMutation.isPending}>
           {exchangeMutation.isPending && (
             <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" aria-hidden="true" />
           )}

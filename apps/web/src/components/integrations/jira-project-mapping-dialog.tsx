@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Loader2 } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -12,17 +12,17 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { trpc } from "@/trpc/init";
+} from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -100,7 +100,7 @@ export function JiraProjectMappingDialog({
   const issueTypesQuery = useQuery({
     ...trpc.jira.listIssueTypes.queryOptions({
       connectionId,
-      projectId: projectId ?? "",
+      projectId: projectId ?? '',
     }),
     enabled: !!projectId,
   });
@@ -113,14 +113,14 @@ export function JiraProjectMappingDialog({
   const saveMutation = useMutation({
     ...trpc.jira.saveTaskConfig.mutationOptions(),
     onSuccess: () => {
-      toast.success("Jira task configuration saved");
+      toast.success('Jira task configuration saved');
       queryClient.invalidateQueries({
         queryKey: trpc.jira.getTaskConfig.queryKey({ taskTemplateId }),
       });
       onOpenChange(false);
     },
     onError: () => {
-      toast.error("Failed to save Jira task configuration");
+      toast.error('Failed to save Jira task configuration');
     },
   });
 
@@ -137,7 +137,7 @@ export function JiraProjectMappingDialog({
   // ---- Handlers ----
   function handleProjectChange(value: string | null) {
     if (!value) return;
-    const project = projects.find((p) => p.id === value);
+    const project = projects.find(p => p.id === value);
     if (project) {
       setProjectId(project.id);
       setProjectKey(project.key);
@@ -150,7 +150,7 @@ export function JiraProjectMappingDialog({
 
   function handleIssueTypeChange(value: string | null) {
     if (!value) return;
-    const issueType = issueTypes.find((t) => t.id === value);
+    const issueType = issueTypes.find(t => t.id === value);
     if (issueType) {
       setIssueTypeId(issueType.id);
       setIssueTypeName(issueType.name);
@@ -190,7 +190,7 @@ export function JiraProjectMappingDialog({
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                {projects.map((project) => (
+                {projects.map(project => (
                   <SelectItem key={project.id} value={project.id}>
                     {project.key} — {project.name}
                   </SelectItem>
@@ -209,7 +209,7 @@ export function JiraProjectMappingDialog({
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                {issueTypes.map((type) => (
+                {issueTypes.map(type => (
                   <SelectItem key={type.id} value={type.id}>
                     {type.name}
                   </SelectItem>
@@ -226,7 +226,7 @@ export function JiraProjectMappingDialog({
             <Switch
               id="jira-auto-create"
               checked={jiraEnabled}
-              onCheckedChange={(checked) => setJiraEnabled(checked as boolean)}
+              onCheckedChange={checked => setJiraEnabled(checked as boolean)}
             />
           </div>
         </div>

@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { toast } from "sonner";
-import { FeatureGate } from "@/components/billing/feature-gate";
-import { GoogleCalendarIcon, OutlookCalendarIcon } from "@/components/integrations/provider-icons";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { FeatureGate } from '@/components/billing/feature-gate';
+import { GoogleCalendarIcon, OutlookCalendarIcon } from '@/components/integrations/provider-icons';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,12 +16,12 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { trpc } from "@/trpc/init";
+} from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -58,11 +58,11 @@ function OrgCalendarProviderCard({
   onDisconnect,
   isDisconnecting,
 }: OrgCalendarProviderCardProps) {
-  const t = useTranslations("CalendarSettings");
-  const _tIntegrations = useTranslations("Settings.integrations");
+  const t = useTranslations('CalendarSettings');
+  const _tIntegrations = useTranslations('Settings.integrations');
   const [disconnectDialogOpen, setDisconnectDialogOpen] = useState(false);
 
-  const isConnected = connection?.status === "CONNECTED";
+  const isConnected = connection?.status === 'CONNECTED';
 
   // OAuth connect handler
   const oauthUrlQuery = useQuery({
@@ -88,28 +88,27 @@ function OrgCalendarProviderCard({
               variant="secondary"
               className={
                 isConnected
-                  ? "bg-emerald-500/10 text-emerald-500"
-                  : "bg-muted text-muted-foreground"
-              }
-            >
-              {isConnected ? t("statusConnected") : t("statusNotConnected")}
+                  ? 'bg-emerald-500/10 text-emerald-500'
+                  : 'bg-muted text-muted-foreground'
+              }>
+              {isConnected ? t('statusConnected') : t('statusNotConnected')}
             </Badge>
           </div>
         </CardHeader>
         <CardContent>
           {isConnected ? (
             <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">{t("orgCalendarDescription")}</p>
+              <p className="text-sm text-muted-foreground">{t('orgCalendarDescription')}</p>
               <div className="space-y-1 text-sm">
                 {connection.displayName && (
                   <p>
-                    <span className="text-muted-foreground">{t("connectedAccount")}:</span>{" "}
+                    <span className="text-muted-foreground">{t('connectedAccount')}:</span>{' '}
                     <span className="font-medium">{connection.displayName}</span>
                   </p>
                 )}
                 {connection.connectedAt && (
                   <p>
-                    <span className="text-muted-foreground">{t("connectedOn")}:</span>{" "}
+                    <span className="text-muted-foreground">{t('connectedOn')}:</span>{' '}
                     <span className="font-medium">
                       {new Date(connection.connectedAt).toLocaleDateString()}
                     </span>
@@ -119,15 +118,14 @@ function OrgCalendarProviderCard({
               <Button
                 variant="outline"
                 className="text-destructive hover:text-destructive"
-                onClick={() => setDisconnectDialogOpen(true)}
-              >
-                {t("disconnectCalendar")}
+                onClick={() => setDisconnectDialogOpen(true)}>
+                {t('disconnectCalendar')}
               </Button>
             </div>
           ) : (
             <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">{t("orgCalendarDescription")}</p>
-              <Button onClick={handleConnect}>{t("connectCalendar")}</Button>
+              <p className="text-sm text-muted-foreground">{t('orgCalendarDescription')}</p>
+              <Button onClick={handleConnect}>{t('connectCalendar')}</Button>
             </div>
           )}
         </CardContent>
@@ -137,11 +135,11 @@ function OrgCalendarProviderCard({
       <AlertDialog open={disconnectDialogOpen} onOpenChange={setDisconnectDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("disconnectTitle", { provider: displayName })}</AlertDialogTitle>
-            <AlertDialogDescription>{t("disconnectBody")}</AlertDialogDescription>
+            <AlertDialogTitle>{t('disconnectTitle', { provider: displayName })}</AlertDialogTitle>
+            <AlertDialogDescription>{t('disconnectBody')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t("keepConnection")}</AlertDialogCancel>
+            <AlertDialogCancel>{t('keepConnection')}</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
               disabled={isDisconnecting}
@@ -150,10 +148,9 @@ function OrgCalendarProviderCard({
                   onDisconnect(connection.id);
                   setDisconnectDialogOpen(false);
                 }
-              }}
-            >
+              }}>
               {isDisconnecting && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
-              {t("disconnectCalendar")}
+              {t('disconnectCalendar')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -167,31 +164,31 @@ function OrgCalendarProviderCard({
 // ---------------------------------------------------------------------------
 
 export function OrgCalendarSection() {
-  const t = useTranslations("CalendarSettings");
+  const t = useTranslations('CalendarSettings');
   const queryClient = useQueryClient();
 
   // Fetch org-level calendar connections (userId null)
   const connectionsQuery = useQuery(trpc.calendar.listConnections.queryOptions());
   const allConnections = (connectionsQuery.data ?? []) as CalendarConnection[];
-  const orgConnections = allConnections.filter((c) => c.userId === null);
+  const orgConnections = allConnections.filter(c => c.userId === null);
 
   // Disconnect mutation
   const disconnectMutation = useMutation(
     trpc.calendar.disconnect.mutationOptions({
       onSuccess: () => {
-        toast.success(t("disconnectedToast"));
+        toast.success(t('disconnectedToast'));
         queryClient.invalidateQueries({
           queryKey: trpc.calendar.listConnections.queryKey(),
         });
       },
       onError: () => {
-        toast.error(t("disconnectFailedToast"));
+        toast.error(t('disconnectFailedToast'));
       },
     }),
   );
 
-  const googleConnection = orgConnections.find((c) => c.provider === "GOOGLE_CALENDAR");
-  const outlookConnection = orgConnections.find((c) => c.provider === "OUTLOOK_CALENDAR");
+  const googleConnection = orgConnections.find(c => c.provider === 'GOOGLE_CALENDAR');
+  const outlookConnection = orgConnections.find(c => c.provider === 'OUTLOOK_CALENDAR');
 
   function handleDisconnect(connectionId: string) {
     disconnectMutation.mutate({ connectionId });
@@ -201,7 +198,7 @@ export function OrgCalendarSection() {
   if (connectionsQuery.isLoading) {
     return (
       <div className="space-y-4">
-        <h3 className="text-sm font-semibold">{t("calendarSectionTitle")}</h3>
+        <h3 className="text-sm font-semibold">{t('calendarSectionTitle')}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Card>
             <CardHeader>
@@ -235,11 +232,11 @@ export function OrgCalendarSection() {
   return (
     <FeatureGate requiredTier="Pro" featureName="Calendar integration">
       <div className="space-y-4">
-        <h3 className="text-sm font-semibold">{t("calendarSectionTitle")}</h3>
+        <h3 className="text-sm font-semibold">{t('calendarSectionTitle')}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <OrgCalendarProviderCard
             provider="google-calendar"
-            displayName={t("googleCalendar")}
+            displayName={t('googleCalendar')}
             icon={<GoogleCalendarIcon className="h-8 w-8" />}
             connection={googleConnection}
             onDisconnect={handleDisconnect}
@@ -247,7 +244,7 @@ export function OrgCalendarSection() {
           />
           <OrgCalendarProviderCard
             provider="outlook-calendar"
-            displayName={t("outlookCalendar")}
+            displayName={t('outlookCalendar')}
             icon={<OutlookCalendarIcon className="h-8 w-8 text-[#0078D4]" />}
             connection={outlookConnection}
             onDisconnect={handleDisconnect}

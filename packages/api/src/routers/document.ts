@@ -1,27 +1,28 @@
-import type { Prisma } from "@contractor-ops/db";
+import type { HeadObjectCommandOutput } from '@aws-sdk/client-s3';
+import type { Prisma } from '@contractor-ops/db';
 import {
   documentConfirmUploadSchema,
   documentLinkSchema,
   documentListSchema,
   documentRequestUploadSchema,
   documentVersionUploadSchema,
-} from "@contractor-ops/validators";
-import { TRPCError } from "@trpc/server";
-import { z } from "zod";
-import * as E from "../errors.js";
-import { router } from "../init.js";
-import { requirePermission } from "../middleware/rbac.js";
-import { tenantProcedure } from "../middleware/tenant.js";
-import { uploadRateLimitMiddleware } from "../middleware/upload-rate-limit.js";
-import { isAllowedMimeType, validateMimeType } from "../services/mime-validator.js";
-import { generateStorageKey } from "../services/r2.js";
+} from '@contractor-ops/validators';
+import { TRPCError } from '@trpc/server';
+import { z } from 'zod';
+import * as E from '../errors.js';
+import { router } from '../init.js';
+import { requirePermission } from '../middleware/rbac.js';
+import { tenantProcedure } from '../middleware/tenant.js';
+import { uploadRateLimitMiddleware } from '../middleware/upload-rate-limit.js';
+import { isAllowedMimeType, validateMimeType } from '../services/mime-validator.js';
+import { generateStorageKey } from '../services/r2.js';
 import {
   createRegionalPresignedDownloadUrl,
   createRegionalPresignedUploadUrl,
   deleteRegionalObject,
   headRegionalObject,
-} from "../services/regional-storage.js";
-import { isClamAvailable, scanBuffer } from "../services/virus-scanner.js";
+} from '../services/regional-storage.js';
+import { isClamAvailable, scanBuffer } from '../services/virus-scanner.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -55,24 +56,24 @@ async function scanAndUpdate(
 ): Promise<void> {
   try {
     // Fetch first 4100 bytes for MIME validation (magic bytes are in the header)
-    const { GetObjectCommand } = await import("@aws-sdk/client-s3");
-    const { createR2Client } = await import("../services/r2.js");
+    const { GetObjectCommand } = await import('@aws-sdk/client-s3');
+    const { createR2Client } = await import('../services/r2.js');
     const client = createR2Client();
 
     const getCmd = new GetObjectCommand({
       Bucket: process.env.R2_BUCKET_NAME!,
       Key: storageKey,
-      Range: "bytes=0-4099",
+      Range: 'bytes=0-4099',
     });
 
     const response = await client.send(getCmd);
     const bodyBytes = await response.Body?.transformToByteArray();
 
     if (!bodyBytes) {
-      console.error("[document-scan] Could not read object body for:", storageKey);
+      console.error('[document-scan] Could not read object body for:', storageKey);
       await db.document.update({
         where: { id: documentId },
-        data: { virusScanStatus: "FAILED" },
+        data: { virusScanStatus: 'FAILED' },
       });
       return;
     }
@@ -83,11 +84,11 @@ async function scanAndUpdate(
     const mimeResult = await validateMimeType(buffer);
     if (!mimeResult.valid) {
       console.warn(
-        `[document-scan] Invalid MIME type for ${documentId}: detected ${mimeResult.detectedMime ?? "unknown"}`,
+        `[document-scan] Invalid MIME type for ${documentId}: detected ${mimeResult.detectedMime ?? 'unknown'}`,
       );
       await db.document.update({
         where: { id: documentId },
-        data: { virusScanStatus: "FAILED" },
+        data: { virusScanStatus: 'FAILED' },
       });
       return;
     }
@@ -95,10 +96,10 @@ async function scanAndUpdate(
     // Step 2: Virus scan via ClamAV
     const clamReady = await isClamAvailable();
     if (!clamReady) {
-      console.error("[document-scan] ClamAV not available — marking FAILED");
+      console.error('[document-scan] ClamAV not available — marking FAILED');
       await db.document.update({
         where: { id: documentId },
-        data: { virusScanStatus: "FAILED" },
+        data: { virusScanStatus: 'FAILED' },
       });
       return;
     }
@@ -107,25 +108,25 @@ async function scanAndUpdate(
     if (scanResult.isClean) {
       await db.document.update({
         where: { id: documentId },
-        data: { virusScanStatus: "CLEAN" },
+        data: { virusScanStatus: 'CLEAN' },
       });
     } else {
       console.warn(
-        `[document-scan] Virus detected in ${documentId}: ${scanResult.virusName ?? "unknown"}`,
+        `[document-scan] Virus detected in ${documentId}: ${scanResult.virusName ?? 'unknown'}`,
       );
       await db.document.update({
         where: { id: documentId },
-        data: { virusScanStatus: "INFECTED" },
+        data: { virusScanStatus: 'INFECTED' },
       });
     }
   } catch (error) {
-    console.error("[document-scan] Scan pipeline failed for:", documentId, error);
+    console.error('[document-scan] Scan pipeline failed for:', documentId, error);
     await db.document
       .update({
         where: { id: documentId },
-        data: { virusScanStatus: "FAILED" },
+        data: { virusScanStatus: 'FAILED' },
       })
-      .catch((e) => console.error("[document-scan] Failed to update status:", e));
+      .catch(e => console.error('[document-scan] Failed to update status:', e));
   }
 }
 
@@ -139,14 +140,14 @@ export const documentRouter = router({
    * the upload URL + storage key for direct client-to-R2 upload.
    */
   requestUpload: tenantProcedure
-    .use(requirePermission({ document: ["create"] }))
+    .use(requirePermission({ document: ['create'] }))
     .use(uploadRateLimitMiddleware)
     .input(documentRequestUploadSchema)
     .mutation(async ({ ctx, input }) => {
       // Validate MIME type before creating record
       if (!isAllowedMimeType(input.mimeType)) {
         throw new TRPCError({
-          code: "BAD_REQUEST",
+          code: 'BAD_REQUEST',
           message: E.DOCUMENT_FILE_TYPE_NOT_ALLOWED,
         });
       }
@@ -155,15 +156,15 @@ export const documentRouter = router({
       const doc = await ctx.db.document.create({
         data: {
           organizationId: ctx.organizationId,
-          storageKey: "", // Placeholder — updated below
+          storageKey: '', // Placeholder — updated below
           originalFileName: input.filename,
           mimeType: input.mimeType,
           fileSizeBytes: input.fileSizeBytes,
-          checksumSha256: "", // Placeholder until confirmUpload
+          checksumSha256: '', // Placeholder until confirmUpload
           documentType: input.documentType,
-          status: "ACTIVE",
-          virusScanStatus: "PENDING",
-          source: "USER_UPLOAD",
+          status: 'ACTIVE',
+          virusScanStatus: 'PENDING',
+          source: 'USER_UPLOAD',
           uploadedByUserId: ctx.user?.id,
         },
       });
@@ -199,7 +200,7 @@ export const documentRouter = router({
    * and triggers async virus scanning + MIME validation.
    */
   confirmUpload: tenantProcedure
-    .use(requirePermission({ document: ["create"] }))
+    .use(requirePermission({ document: ['create'] }))
     .input(documentConfirmUploadSchema)
     .mutation(async ({ ctx, input }) => {
       const doc = await ctx.db.document.findFirst({
@@ -211,18 +212,18 @@ export const documentRouter = router({
 
       if (!doc) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: E.DOCUMENT_NOT_FOUND,
         });
       }
 
       // Verify object exists in R2
-      let headResponse;
+      let headResponse: HeadObjectCommandOutput;
       try {
         headResponse = await headRegionalObject(doc.storageKey);
       } catch {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: E.DOCUMENT_NOT_IN_STORAGE,
         });
       }
@@ -246,7 +247,7 @@ export const documentRouter = router({
    * Blocks downloads of infected files.
    */
   getDownloadUrl: tenantProcedure
-    .use(requirePermission({ document: ["read"] }))
+    .use(requirePermission({ document: ['read'] }))
     .input(z.object({ documentId: z.string() }))
     .query(async ({ ctx, input }) => {
       const doc = await ctx.db.document.findFirst({
@@ -259,14 +260,14 @@ export const documentRouter = router({
 
       if (!doc) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: E.DOCUMENT_NOT_FOUND,
         });
       }
 
-      if (doc.virusScanStatus === "INFECTED") {
+      if (doc.virusScanStatus === 'INFECTED') {
         throw new TRPCError({
-          code: "FORBIDDEN",
+          code: 'FORBIDDEN',
           message: E.DOCUMENT_INFECTED,
         });
       }
@@ -280,7 +281,7 @@ export const documentRouter = router({
    * Supports filtering by entity link (contractor/contract), document type, and status.
    */
   list: tenantProcedure
-    .use(requirePermission({ document: ["read"] }))
+    .use(requirePermission({ document: ['read'] }))
     .input(documentListSchema)
     .query(async ({ ctx, input }) => {
       const { page, pageSize, entityType, entityId, documentType, status } = input;
@@ -300,7 +301,7 @@ export const documentRouter = router({
           },
           select: { documentId: true },
         });
-        where.id = { in: linkedDocIds.map((l) => l.documentId) };
+        where.id = { in: linkedDocIds.map(l => l.documentId) };
       }
 
       if (documentType?.length) {
@@ -316,7 +317,7 @@ export const documentRouter = router({
           where,
           skip: (page - 1) * pageSize,
           take: pageSize,
-          orderBy: { createdAt: "desc" },
+          orderBy: { createdAt: 'desc' },
           include: {
             links: true,
           },
@@ -332,19 +333,19 @@ export const documentRouter = router({
    * Marks the old document as SUPERSEDED and copies all entity links.
    */
   uploadNewVersion: tenantProcedure
-    .use(requirePermission({ document: ["create"] }))
+    .use(requirePermission({ document: ['create'] }))
     .use(uploadRateLimitMiddleware)
     .input(documentVersionUploadSchema)
     .mutation(async ({ ctx, input }) => {
       // Validate MIME type
       if (!isAllowedMimeType(input.mimeType)) {
         throw new TRPCError({
-          code: "BAD_REQUEST",
+          code: 'BAD_REQUEST',
           message: E.DOCUMENT_FILE_TYPE_NOT_ALLOWED,
         });
       }
 
-      const result = await ctx.db.$transaction(async (tx) => {
+      const result = await ctx.db.$transaction(async tx => {
         // Find existing document
         const existing = await tx.document.findFirst({
           where: {
@@ -357,14 +358,14 @@ export const documentRouter = router({
 
         if (!existing) {
           throw new TRPCError({
-            code: "NOT_FOUND",
+            code: 'NOT_FOUND',
             message: E.DOCUMENT_NOT_FOUND,
           });
         }
 
-        if (existing.status !== "ACTIVE") {
+        if (existing.status !== 'ACTIVE') {
           throw new TRPCError({
-            code: "BAD_REQUEST",
+            code: 'BAD_REQUEST',
             message: E.DOCUMENT_NOT_ACTIVE,
           });
         }
@@ -372,22 +373,22 @@ export const documentRouter = router({
         // Mark existing document as SUPERSEDED
         await tx.document.update({
           where: { id: existing.id },
-          data: { status: "SUPERSEDED" },
+          data: { status: 'SUPERSEDED' },
         });
 
         // Create new document record
         const newDoc = await tx.document.create({
           data: {
             organizationId: ctx.organizationId,
-            storageKey: "", // Placeholder
+            storageKey: '', // Placeholder
             originalFileName: input.filename,
             mimeType: input.mimeType,
             fileSizeBytes: input.fileSizeBytes,
-            checksumSha256: "",
+            checksumSha256: '',
             documentType: existing.documentType,
-            status: "ACTIVE",
+            status: 'ACTIVE',
             visibility: existing.visibility,
-            virusScanStatus: "PENDING",
+            virusScanStatus: 'PENDING',
             source: existing.source,
             uploadedByUserId: ctx.user?.id,
           },
@@ -403,7 +404,7 @@ export const documentRouter = router({
         // Copy all document links from old to new
         if (existing.links.length > 0) {
           await tx.documentLink.createMany({
-            data: existing.links.map((link) => ({
+            data: existing.links.map(link => ({
               organizationId: ctx.organizationId,
               documentId: newDoc.id,
               entityType: link.entityType,
@@ -427,7 +428,7 @@ export const documentRouter = router({
    * linked to the same entities.
    */
   getVersionHistory: tenantProcedure
-    .use(requirePermission({ document: ["read"] }))
+    .use(requirePermission({ document: ['read'] }))
     .input(z.object({ documentId: z.string() }))
     .query(async ({ ctx, input }) => {
       const doc = await ctx.db.document.findFirst({
@@ -440,7 +441,7 @@ export const documentRouter = router({
 
       if (!doc) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: E.DOCUMENT_NOT_FOUND,
         });
       }
@@ -460,7 +461,7 @@ export const documentRouter = router({
         select: { documentId: true },
       });
 
-      const relatedDocIds = [...new Set(relatedLinks.map((l) => l.documentId))];
+      const relatedDocIds = [...new Set(relatedLinks.map(l => l.documentId))];
 
       const documents = await ctx.db.document.findMany({
         where: {
@@ -468,7 +469,7 @@ export const documentRouter = router({
           organizationId: ctx.organizationId,
           documentType: doc.documentType, // Same type for version chain
         },
-        orderBy: { createdAt: "desc" },
+        orderBy: { createdAt: 'desc' },
       });
 
       return plain(documents);
@@ -478,7 +479,7 @@ export const documentRouter = router({
    * Soft-delete a document and clean up storage + links.
    */
   delete: tenantProcedure
-    .use(requirePermission({ document: ["delete"] }))
+    .use(requirePermission({ document: ['delete'] }))
     .input(z.object({ documentId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const doc = await ctx.db.document.findFirst({
@@ -491,7 +492,7 @@ export const documentRouter = router({
 
       if (!doc) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: E.DOCUMENT_NOT_FOUND,
         });
       }
@@ -506,7 +507,7 @@ export const documentRouter = router({
       try {
         await deleteRegionalObject(doc.storageKey);
       } catch (error) {
-        console.error("[document-delete] Failed to delete R2 object:", doc.storageKey, error);
+        console.error('[document-delete] Failed to delete R2 object:', doc.storageKey, error);
       }
 
       // Remove associated document links
@@ -524,7 +525,7 @@ export const documentRouter = router({
    * Link a document to a contractor or contract entity.
    */
   linkToEntity: tenantProcedure
-    .use(requirePermission({ document: ["create"] }))
+    .use(requirePermission({ document: ['create'] }))
     .input(documentLinkSchema)
     .mutation(async ({ ctx, input }) => {
       // Verify document belongs to org
@@ -538,7 +539,7 @@ export const documentRouter = router({
 
       if (!doc) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: E.DOCUMENT_NOT_FOUND,
         });
       }

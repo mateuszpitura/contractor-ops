@@ -19,20 +19,20 @@ export interface ActivityAlertCardParams {
  */
 export function buildActivityAlertCard(params: ActivityAlertCardParams): Record<string, unknown> {
   return {
-    type: "AdaptiveCard",
-    $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
-    version: "1.4",
+    type: 'AdaptiveCard',
+    $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
+    version: '1.4',
     body: [
       {
-        type: "TextBlock",
+        type: 'TextBlock',
         text: params.title,
-        weight: "Bolder",
-        size: "Medium",
+        weight: 'Bolder',
+        size: 'Medium',
         wrap: true,
       },
       {
-        type: "FactSet",
-        facts: params.details.map((d) => ({
+        type: 'FactSet',
+        facts: params.details.map(d => ({
           title: d.label,
           value: d.value,
         })),
@@ -40,8 +40,8 @@ export function buildActivityAlertCard(params: ActivityAlertCardParams): Record<
     ],
     actions: [
       {
-        type: "Action.OpenUrl",
-        title: "View in Contractor Ops",
+        type: 'Action.OpenUrl',
+        title: 'View in Contractor Ops',
         url: params.viewUrl,
       },
     ],

@@ -1,4 +1,4 @@
-import { prisma } from "@contractor-ops/db";
+import { prisma } from '@contractor-ops/db';
 import {
   createSingleEntrySchema,
   getTimesheetSchema,
@@ -6,13 +6,13 @@ import {
   saveDraftEntriesSchema,
   submitTimesheetSchema,
   syncExternalEntriesSchema,
-} from "@contractor-ops/validators";
-import { TRPCError } from "@trpc/server";
-import { router } from "../init.js";
-import { portalProcedure } from "../middleware/portal-auth.js";
-import { syncClockifyEntries } from "../services/clockify-sync.js";
-import { syncJiraWorklogs } from "../services/jira-worklog-sync.js";
-import { getOrCreateTimesheet, saveDraftEntries, submitTimesheet } from "../services/time-entry.js";
+} from '@contractor-ops/validators';
+import { TRPCError } from '@trpc/server';
+import { router } from '../init.js';
+import { portalProcedure } from '../middleware/portal-auth.js';
+import { syncClockifyEntries } from '../services/clockify-sync.js';
+import { syncJiraWorklogs } from '../services/jira-worklog-sync.js';
+import { getOrCreateTimesheet, saveDraftEntries, submitTimesheet } from '../services/time-entry.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -76,7 +76,7 @@ export const portalTimeRouter = router({
           select: { id: true, title: true },
         },
       },
-      orderBy: { entryDate: "asc" },
+      orderBy: { entryDate: 'asc' },
     });
 
     return plain({ ...timesheet, entries });
@@ -90,7 +90,7 @@ export const portalTimeRouter = router({
       where: {
         organizationId: ctx.organizationId,
         contractorId: ctx.contractorId,
-        status: "ACTIVE",
+        status: 'ACTIVE',
         deletedAt: null,
       },
       select: {
@@ -99,7 +99,7 @@ export const portalTimeRouter = router({
         rateType: true,
         rateValueMinor: true,
       },
-      orderBy: { title: "asc" },
+      orderBy: { title: 'asc' },
     });
 
     return plain(contracts);
@@ -200,7 +200,7 @@ export const portalTimeRouter = router({
 
     const timesheets = await prisma.timesheet.findMany({
       where,
-      orderBy: { weekStartDate: "desc" },
+      orderBy: { weekStartDate: 'desc' },
       take: input.limit + 1,
       select: {
         id: true,
@@ -232,13 +232,13 @@ export const portalTimeRouter = router({
         where: {
           organizationId: ctx.organizationId,
           provider: input.provider,
-          status: "CONNECTED",
+          status: 'CONNECTED',
         },
       });
 
       if (!connection) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: `No connected ${input.provider} integration found. Connect it in Settings > Integrations.`,
         });
       }
@@ -257,7 +257,7 @@ export const portalTimeRouter = router({
         where: {
           organizationId: ctx.organizationId,
           contractorId: ctx.contractorId,
-          status: "ACTIVE",
+          status: 'ACTIVE',
           deletedAt: null,
         },
         select: { id: true },
@@ -265,12 +265,12 @@ export const portalTimeRouter = router({
 
       if (!contract) {
         throw new TRPCError({
-          code: "PRECONDITION_FAILED",
-          message: "No active contract found. You need an active contract to import time entries.",
+          code: 'PRECONDITION_FAILED',
+          message: 'No active contract found. You need an active contract to import time entries.',
         });
       }
 
-      if (input.provider === "CLOCKIFY") {
+      if (input.provider === 'CLOCKIFY') {
         return syncClockifyEntries(
           prisma,
           ctx.organizationId,
@@ -303,8 +303,8 @@ export const portalTimeRouter = router({
     const connections = await prisma.integrationConnection.findMany({
       where: {
         organizationId: ctx.organizationId,
-        provider: { in: ["CLOCKIFY", "JIRA"] },
-        status: "CONNECTED",
+        provider: { in: ['CLOCKIFY', 'JIRA'] },
+        status: 'CONNECTED',
       },
       select: {
         provider: true,
@@ -312,11 +312,11 @@ export const portalTimeRouter = router({
     });
 
     const providerDisplayNames: Record<string, string> = {
-      CLOCKIFY: "Clockify",
-      JIRA: "Jira",
+      CLOCKIFY: 'Clockify',
+      JIRA: 'Jira',
     };
 
-    return connections.map((c) => ({
+    return connections.map(c => ({
       provider: c.provider,
       displayName: providerDisplayNames[c.provider] ?? c.provider,
     }));

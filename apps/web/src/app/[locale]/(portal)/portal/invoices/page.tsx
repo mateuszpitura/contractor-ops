@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { Plus } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useQuery } from '@tanstack/react-query';
+import { Plus } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -15,17 +15,17 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Link } from "@/i18n/navigation";
-import { trpc } from "@/trpc/init";
+} from '@/components/ui/table';
+import { Link } from '@/i18n/navigation';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
 function formatAmount(minor: number, currency: string): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
     currency,
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
@@ -33,11 +33,11 @@ function formatAmount(minor: number, currency: string): string {
 }
 
 function formatDate(date: Date | string): string {
-  const d = typeof date === "string" ? new Date(date) : date;
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
   }).format(d);
 }
 
@@ -47,7 +47,7 @@ function formatDate(date: Date | string): string {
 
 type InvoiceStatusDisplay = {
   label: string;
-  variant: "info" | "warning" | "success" | "success-outline" | "success-solid" | "destructive";
+  variant: 'info' | 'warning' | 'success' | 'success-outline' | 'success-solid' | 'destructive';
 };
 
 function getStatusDisplay(
@@ -56,26 +56,26 @@ function getStatusDisplay(
     approvalStatus: string;
     paymentStatus: string;
   },
-  t: ReturnType<typeof useTranslations<"Portal">>,
+  t: ReturnType<typeof useTranslations<'Portal'>>,
 ): InvoiceStatusDisplay {
-  if (invoice.paymentStatus === "PAID")
-    return { label: t("invoices.status.paid"), variant: "success-solid" };
-  if (invoice.paymentStatus === "IN_RUN")
-    return { label: t("invoices.status.paymentScheduled"), variant: "success-outline" };
-  if (invoice.approvalStatus === "APPROVED")
-    return { label: t("invoices.status.approved"), variant: "success" };
-  if (invoice.status === "REJECTED")
-    return { label: t("invoices.status.rejected"), variant: "destructive" };
-  if (invoice.status === "UNDER_REVIEW" || invoice.status === "APPROVAL_PENDING")
-    return { label: t("invoices.status.inReview"), variant: "warning" };
-  return { label: t("invoices.status.submitted"), variant: "info" };
+  if (invoice.paymentStatus === 'PAID')
+    return { label: t('invoices.status.paid'), variant: 'success-solid' };
+  if (invoice.paymentStatus === 'IN_RUN')
+    return { label: t('invoices.status.paymentScheduled'), variant: 'success-outline' };
+  if (invoice.approvalStatus === 'APPROVED')
+    return { label: t('invoices.status.approved'), variant: 'success' };
+  if (invoice.status === 'REJECTED')
+    return { label: t('invoices.status.rejected'), variant: 'destructive' };
+  if (invoice.status === 'UNDER_REVIEW' || invoice.status === 'APPROVAL_PENDING')
+    return { label: t('invoices.status.inReview'), variant: 'warning' };
+  return { label: t('invoices.status.submitted'), variant: 'info' };
 }
 
 // ---------------------------------------------------------------------------
 // Loading skeleton
 // ---------------------------------------------------------------------------
 
-function InvoiceListSkeleton({ t }: { t: ReturnType<typeof useTranslations<"Portal">> }) {
+function InvoiceListSkeleton({ t }: { t: ReturnType<typeof useTranslations<'Portal'>> }) {
   return (
     <>
       {/* Desktop skeleton */}
@@ -83,11 +83,11 @@ function InvoiceListSkeleton({ t }: { t: ReturnType<typeof useTranslations<"Port
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>{t("invoices.columns.invoiceNumber")}</TableHead>
-              <TableHead>{t("invoices.columns.contract")}</TableHead>
-              <TableHead>{t("invoices.columns.amount")}</TableHead>
-              <TableHead>{t("invoices.columns.dateSubmitted")}</TableHead>
-              <TableHead>{t("invoices.columns.status")}</TableHead>
+              <TableHead>{t('invoices.columns.invoiceNumber')}</TableHead>
+              <TableHead>{t('invoices.columns.contract')}</TableHead>
+              <TableHead>{t('invoices.columns.amount')}</TableHead>
+              <TableHead>{t('invoices.columns.dateSubmitted')}</TableHead>
+              <TableHead>{t('invoices.columns.status')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -139,15 +139,15 @@ function InvoiceListSkeleton({ t }: { t: ReturnType<typeof useTranslations<"Port
 // Empty state
 // ---------------------------------------------------------------------------
 
-function InvoicesEmptyState({ t }: { t: ReturnType<typeof useTranslations<"Portal">> }) {
+function InvoicesEmptyState({ t }: { t: ReturnType<typeof useTranslations<'Portal'>> }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center">
-      <h2 className="text-xl font-semibold">{t("invoices.emptyTitle")}</h2>
-      <p className="mt-2 max-w-sm text-sm text-muted-foreground">{t("invoices.emptyBody")}</p>
+      <h2 className="text-xl font-semibold">{t('invoices.emptyTitle')}</h2>
+      <p className="mt-2 max-w-sm text-sm text-muted-foreground">{t('invoices.emptyBody')}</p>
       <Link href="/portal/invoices/submit">
         <Button className="mt-6">
           <Plus className="me-1.5 h-4 w-4" />
-          {t("invoices.submitInvoice")}
+          {t('invoices.submitInvoice')}
         </Button>
       </Link>
     </div>
@@ -159,7 +159,7 @@ function InvoicesEmptyState({ t }: { t: ReturnType<typeof useTranslations<"Porta
 // ---------------------------------------------------------------------------
 
 export default function PortalInvoicesPage() {
-  const t = useTranslations("Portal");
+  const t = useTranslations('Portal');
   const router = useRouter();
 
   const { data: invoices, isLoading } = useQuery(trpc.portal.listInvoices.queryOptions());
@@ -168,11 +168,11 @@ export default function PortalInvoicesPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">{t("invoices.title")}</h1>
+        <h1 className="text-xl font-semibold">{t('invoices.title')}</h1>
         <Link href="/portal/invoices/submit">
           <Button>
             <Plus className="me-1.5 h-4 w-4" />
-            {t("invoices.submitInvoice")}
+            {t('invoices.submitInvoice')}
           </Button>
         </Link>
       </div>
@@ -189,39 +189,37 @@ export default function PortalInvoicesPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{t("invoices.columns.invoiceNumber")}</TableHead>
-                  <TableHead>{t("invoices.columns.contract")}</TableHead>
-                  <TableHead>{t("invoices.columns.amount")}</TableHead>
-                  <TableHead>{t("invoices.columns.dateSubmitted")}</TableHead>
-                  <TableHead>{t("invoices.columns.status")}</TableHead>
+                  <TableHead>{t('invoices.columns.invoiceNumber')}</TableHead>
+                  <TableHead>{t('invoices.columns.contract')}</TableHead>
+                  <TableHead>{t('invoices.columns.amount')}</TableHead>
+                  <TableHead>{t('invoices.columns.dateSubmitted')}</TableHead>
+                  <TableHead>{t('invoices.columns.status')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {invoices.map((invoice) => {
+                {invoices.map(invoice => {
                   const statusDisplay = getStatusDisplay(invoice, t);
                   return (
                     <TableRow
                       key={invoice.id}
                       className="cursor-pointer"
-                      onClick={() => router.push(`/portal/invoices/${invoice.id}`)}
-                    >
+                      onClick={() => router.push(`/portal/invoices/${invoice.id}`)}>
                       <TableCell>
                         <Link
                           href={`/portal/invoices/${invoice.id}`}
                           className="font-medium text-primary hover:underline"
-                          onClick={(e) => e.stopPropagation()}
-                        >
+                          onClick={e => e.stopPropagation()}>
                           {invoice.invoiceNumber}
                         </Link>
                       </TableCell>
                       <TableCell className="text-muted-foreground">
-                        {invoice.contract?.title ?? t("invoices.fallback")}
+                        {invoice.contract?.title ?? t('invoices.fallback')}
                       </TableCell>
                       <TableCell>{formatAmount(invoice.totalMinor, invoice.currency)}</TableCell>
                       <TableCell className="text-muted-foreground">
                         {invoice.receivedAt
                           ? formatDate(invoice.receivedAt)
-                          : t("invoices.fallback")}
+                          : t('invoices.fallback')}
                       </TableCell>
                       <TableCell>
                         <Badge variant={statusDisplay.variant}>{statusDisplay.label}</Badge>
@@ -235,7 +233,7 @@ export default function PortalInvoicesPage() {
 
           {/* Mobile cards */}
           <div className="space-y-3 md:hidden">
-            {invoices.map((invoice) => {
+            {invoices.map(invoice => {
               const statusDisplay = getStatusDisplay(invoice, t);
               return (
                 <Link key={invoice.id} href={`/portal/invoices/${invoice.id}`} className="block">
@@ -248,14 +246,14 @@ export default function PortalInvoicesPage() {
                         </span>
                       </div>
                       <p className="text-[13px] text-muted-foreground">
-                        {invoice.contract?.title ?? t("invoices.fallback")}
+                        {invoice.contract?.title ?? t('invoices.fallback')}
                       </p>
                       <div className="flex items-center justify-between">
                         <Badge variant={statusDisplay.variant}>{statusDisplay.label}</Badge>
                         <span className="text-[13px] text-muted-foreground">
                           {invoice.receivedAt
                             ? formatDate(invoice.receivedAt)
-                            : t("invoices.fallback")}
+                            : t('invoices.fallback')}
                         </span>
                       </div>
                     </CardContent>

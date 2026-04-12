@@ -1,4 +1,4 @@
-import type { Transition, Variants } from "motion/react";
+import type { Transition, Variants } from 'motion/react';
 
 /**
  * Spring presets — physics-based motion that feels natural.
@@ -7,7 +7,7 @@ import type { Transition, Variants } from "motion/react";
 export const springs = {
   /** Buttons, toggles, small state changes */
   snappy: {
-    type: "spring",
+    type: 'spring',
     stiffness: 500,
     damping: 30,
     mass: 1,
@@ -15,7 +15,7 @@ export const springs = {
 
   /** Cards, panels opening, dropdowns */
   responsive: {
-    type: "spring",
+    type: 'spring',
     stiffness: 300,
     damping: 28,
     mass: 1,
@@ -23,7 +23,7 @@ export const springs = {
 
   /** Page transitions, large layout shifts */
   gentle: {
-    type: "spring",
+    type: 'spring',
     stiffness: 200,
     damping: 25,
     mass: 1.2,
@@ -31,7 +31,7 @@ export const springs = {
 
   /** Celebratory moments — success, achievements */
   bouncy: {
-    type: "spring",
+    type: 'spring',
     stiffness: 400,
     damping: 15,
     mass: 1,
@@ -39,7 +39,7 @@ export const springs = {
 
   /** Slow, dramatic reveals */
   molasses: {
-    type: "spring",
+    type: 'spring',
     stiffness: 120,
     damping: 20,
     mass: 1.5,
@@ -65,6 +65,6 @@ export const stagger = {
  * Reusable variant sets for common animation patterns.
  */
 export const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 12, filter: "blur(4px)" },
-  visible: { opacity: 1, y: 0, filter: "blur(0px)" },
+  hidden: { opacity: 0, y: 12, filter: 'blur(4px)' },
+  visible: { opacity: 1, y: 0, filter: 'blur(0px)' },
 };

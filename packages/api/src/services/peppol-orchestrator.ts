@@ -1,12 +1,12 @@
-import type { PrismaClient } from "@contractor-ops/db";
-import { prisma as defaultPrisma } from "@contractor-ops/db";
-import type { ASPAdapter, InboundInvoicePayload } from "@contractor-ops/einvoice";
+import type { PrismaClient } from '@contractor-ops/db';
+import { prisma as defaultPrisma } from '@contractor-ops/db';
+import type { ASPAdapter, InboundInvoicePayload } from '@contractor-ops/einvoice';
 import {
   PeppolAEProfile,
   PeppolAEQRCode,
   PINT_AE_DOCUMENT_TYPE_ID,
-} from "@contractor-ops/einvoice";
-import { computeDuplicateCheckHash } from "./invoice-matching.js";
+} from '@contractor-ops/einvoice';
+import { computeDuplicateCheckHash } from './invoice-matching.js';
 
 // ---------------------------------------------------------------------------
 // Peppol Orchestrator
@@ -58,39 +58,39 @@ export class PeppolOrchestrator {
     const participant = await this.db.peppolParticipant.findFirst({
       where: {
         organizationId: params.organizationId,
-        status: "ACTIVE",
+        status: 'ACTIVE',
       },
     });
 
     if (!participant) {
-      throw new Error("No active Peppol participant found for this organization");
+      throw new Error('No active Peppol participant found for this organization');
     }
 
     // Generate PINT-AE XML using canonical EInvoice type
     const vatAmountMinor = invoice.vatAmountMinor ?? 0;
     const xml = await this.profile.generate({
       id: invoice.invoiceNumber,
-      invoiceTypeCode: "380",
+      invoiceTypeCode: '380',
       issueDate: invoice.issueDate.toISOString().slice(0, 10),
       dueDate: invoice.dueDate.toISOString().slice(0, 10),
       currencyCode: invoice.currency,
       supplier: {
-        id: invoice.sellerTaxId ?? "",
-        name: invoice.sellerName ?? "",
-        country: "AE",
+        id: invoice.sellerTaxId ?? '',
+        name: invoice.sellerName ?? '',
+        country: 'AE',
       },
       customer: {
-        id: invoice.buyerTaxId ?? "",
-        name: "",
-        country: "AE",
+        id: invoice.buyerTaxId ?? '',
+        name: '',
+        country: 'AE',
       },
-      lines: invoice.lines.map((line) => ({
+      lines: invoice.lines.map(line => ({
         lineNumber: line.lineNumber,
         description: line.description,
         quantity: line.quantity ? Number(line.quantity) : 1,
         unitPriceMinor: line.unitPriceMinor ?? 0,
         netAmountMinor: line.netAmountMinor ?? 0,
-        vatRate: line.vatRate ?? "0",
+        vatRate: line.vatRate ?? '0',
         vatAmountMinor: line.vatAmountMinor ?? 0,
       })),
       taxExclusiveAmount: invoice.subtotalMinor,
@@ -100,11 +100,11 @@ export class PeppolOrchestrator {
         {
           taxableAmountMinor: invoice.subtotalMinor,
           taxAmountMinor: vatAmountMinor,
-          taxCategory: "S",
+          taxCategory: 'S',
           percent: invoice.vatRate ? parseFloat(invoice.vatRate) : 5,
         },
       ],
-      profileId: "peppol-ae",
+      profileId: 'peppol-ae',
       extensions: {
         buyerReference: invoice.externalInvoiceId ?? invoice.invoiceNumber,
       },
@@ -113,19 +113,19 @@ export class PeppolOrchestrator {
     // Generate QR code for UAE FTA compliance (PEPPOL-04)
     const qrBuffer = await this.qrCode.generateQR({
       id: invoice.invoiceNumber,
-      invoiceTypeCode: "380",
+      invoiceTypeCode: '380',
       issueDate: invoice.issueDate.toISOString().slice(0, 10),
       dueDate: invoice.dueDate.toISOString().slice(0, 10),
       currencyCode: invoice.currency,
       supplier: {
-        id: invoice.sellerTaxId ?? "",
-        name: invoice.sellerName ?? "",
-        country: "AE",
+        id: invoice.sellerTaxId ?? '',
+        name: invoice.sellerName ?? '',
+        country: 'AE',
       },
       customer: {
-        id: invoice.buyerTaxId ?? "",
-        name: "",
-        country: "AE",
+        id: invoice.buyerTaxId ?? '',
+        name: '',
+        country: 'AE',
       },
       lines: [],
       taxExclusiveAmount: invoice.subtotalMinor,
@@ -135,12 +135,12 @@ export class PeppolOrchestrator {
         {
           taxableAmountMinor: invoice.subtotalMinor,
           taxAmountMinor: vatAmountMinor,
-          taxCategory: "S",
+          taxCategory: 'S',
         },
       ],
-      profileId: "peppol-ae",
+      profileId: 'peppol-ae',
     });
-    const qrCodeBase64 = `data:image/png;base64,${qrBuffer.toString("base64")}`;
+    const qrCodeBase64 = `data:image/png;base64,${qrBuffer.toString('base64')}`;
 
     // Persist QR code on the invoice record
     await this.db.invoice.update({
@@ -154,8 +154,8 @@ export class PeppolOrchestrator {
         organizationId: params.organizationId,
         peppolParticipantId: participant.id,
         invoiceId: invoice.id,
-        direction: "OUTBOUND",
-        status: "PENDING",
+        direction: 'OUTBOUND',
+        status: 'PENDING',
         xmlPayload: xml,
         documentTypeId: PINT_AE_DOCUMENT_TYPE_ID,
       },
@@ -170,12 +170,12 @@ export class PeppolOrchestrator {
         documentTypeId: PINT_AE_DOCUMENT_TYPE_ID,
       });
 
-      if (result.status === "rejected") {
+      if (result.status === 'rejected') {
         return this.db.peppolTransmission.update({
           where: { id: transmission.id },
           data: {
-            status: "REJECTED",
-            errorMessage: result.errors?.map((e) => `${e.code}: ${e.message}`).join("; "),
+            status: 'REJECTED',
+            errorMessage: result.errors?.map(e => `${e.code}: ${e.message}`).join('; '),
           },
         });
       }
@@ -183,7 +183,7 @@ export class PeppolOrchestrator {
       return this.db.peppolTransmission.update({
         where: { id: transmission.id },
         data: {
-          status: "TRANSMITTED",
+          status: 'TRANSMITTED',
           aspTransmissionId: result.transmissionId,
           transmittedAt: new Date(),
         },
@@ -192,8 +192,8 @@ export class PeppolOrchestrator {
       return this.db.peppolTransmission.update({
         where: { id: transmission.id },
         data: {
-          status: "FAILED",
-          errorMessage: error instanceof Error ? error.message : "Transmission failed",
+          status: 'FAILED',
+          errorMessage: error instanceof Error ? error.message : 'Transmission failed',
         },
       });
     }
@@ -218,12 +218,12 @@ export class PeppolOrchestrator {
     const participant = await this.db.peppolParticipant.findFirst({
       where: {
         organizationId: params.organizationId,
-        status: { in: ["ACTIVE", "REGISTERED", "PENDING"] },
+        status: { in: ['ACTIVE', 'REGISTERED', 'PENDING'] },
       },
     });
 
     if (!participant) {
-      throw new Error("No Peppol participant found for this organization");
+      throw new Error('No Peppol participant found for this organization');
     }
 
     // Parse the XML to extract invoice data
@@ -234,8 +234,8 @@ export class PeppolOrchestrator {
       data: {
         organizationId: params.organizationId,
         peppolParticipantId: participant.id,
-        direction: "INBOUND",
-        status: "DELIVERED",
+        direction: 'INBOUND',
+        status: 'DELIVERED',
         aspTransmissionId: params.payload.documentId,
         xmlPayload: params.payload.xml,
         deliveredAt: params.payload.receivedAt,
@@ -248,11 +248,11 @@ export class PeppolOrchestrator {
       data: {
         organizationId: params.organizationId,
         invoiceNumber,
-        source: "PEPPOL",
+        source: 'PEPPOL',
         sourceReference: params.payload.documentId,
         issueDate: new Date(parsed.issueDate),
         dueDate: parsed.dueDate ? new Date(parsed.dueDate) : new Date(parsed.issueDate),
-        currency: parsed.currencyCode || "AED",
+        currency: parsed.currencyCode || 'AED',
         subtotalMinor: parsed.taxExclusiveAmount,
         vatAmountMinor: parsed.taxBreakdown.reduce((sum, t) => sum + t.taxAmountMinor, 0),
         totalMinor: parsed.taxInclusiveAmount,
@@ -260,8 +260,8 @@ export class PeppolOrchestrator {
         sellerName: parsed.supplier.name,
         sellerTaxId: parsed.supplier.id,
         buyerTaxId: parsed.customer.id,
-        status: "RECEIVED",
-        matchStatus: "UNMATCHED",
+        status: 'RECEIVED',
+        matchStatus: 'UNMATCHED',
         duplicateCheckHash: computeDuplicateCheckHash(
           invoiceNumber,
           parsed.supplier.id,
@@ -288,21 +288,21 @@ export class PeppolOrchestrator {
     const aspStatus = await this.aspAdapter.getTransmissionStatus(transmission.aspTransmissionId);
 
     const statusMap: Record<string, string> = {
-      transmitted: "TRANSMITTED",
-      delivered: "DELIVERED",
-      failed: "FAILED",
-      pending: "PENDING",
+      transmitted: 'TRANSMITTED',
+      delivered: 'DELIVERED',
+      failed: 'FAILED',
+      pending: 'PENDING',
     };
 
     return this.db.peppolTransmission.update({
       where: { id: transmissionId },
       data: {
-        status: (statusMap[aspStatus.status] ?? "PENDING") as
-          | "PENDING"
-          | "TRANSMITTED"
-          | "DELIVERED"
-          | "FAILED"
-          | "REJECTED",
+        status: (statusMap[aspStatus.status] ?? 'PENDING') as
+          | 'PENDING'
+          | 'TRANSMITTED'
+          | 'DELIVERED'
+          | 'FAILED'
+          | 'REJECTED',
         deliveredAt: aspStatus.deliveredAt,
         errorMessage: aspStatus.failureReason,
       },
@@ -318,9 +318,9 @@ export class PeppolOrchestrator {
     const lastInbound = await this.db.peppolTransmission.findFirst({
       where: {
         organizationId,
-        direction: "INBOUND",
+        direction: 'INBOUND',
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: 'desc' },
       select: { createdAt: true },
     });
 

@@ -1,8 +1,8 @@
-import { decryptCredentials } from "@contractor-ops/integrations/services/credential-service";
-import type { LinearIssueMetadata } from "@contractor-ops/validators";
-import { TRPCError } from "@trpc/server";
-import { resolveLinearStateId } from "./linear-status-mapping.js";
-import type { DbClient } from "./types.js";
+import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
+import type { LinearIssueMetadata } from '@contractor-ops/validators';
+import { TRPCError } from '@trpc/server';
+import { resolveLinearStateId } from './linear-status-mapping.js';
+import type { DbClient } from './types.js';
 
 type PrismaClient = DbClient;
 
@@ -17,7 +17,7 @@ const LOOP_PREVENTION_WINDOW_MS = 30_000;
 const _DEDUP_WINDOW_MS = 5_000;
 
 /** Linear GraphQL API endpoint */
-const LINEAR_API_URL = "https://api.linear.app/graphql";
+const LINEAR_API_URL = 'https://api.linear.app/graphql';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -61,10 +61,10 @@ export async function linearGraphQL<T>(
   variables?: Record<string, unknown>,
 ): Promise<T> {
   const response = await fetch(LINEAR_API_URL, {
-    method: "POST",
+    method: 'POST',
     headers: {
       Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify({ query, variables }),
   });
@@ -74,14 +74,14 @@ export async function linearGraphQL<T>(
 
     if (response.status === 401) {
       throw new TRPCError({
-        code: "UNAUTHORIZED",
+        code: 'UNAUTHORIZED',
         message:
-          "Linear access token is invalid or expired. Please reconnect your Linear integration.",
+          'Linear access token is invalid or expired. Please reconnect your Linear integration.',
       });
     }
 
     throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
+      code: 'INTERNAL_SERVER_ERROR',
       message: `Linear API error (${response.status}): ${text}`,
     });
   }
@@ -93,15 +93,15 @@ export async function linearGraphQL<T>(
 
   if (result.errors && result.errors.length > 0) {
     throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: `Linear GraphQL error: ${result.errors.map((e) => e.message).join(", ")}`,
+      code: 'INTERNAL_SERVER_ERROR',
+      message: `Linear GraphQL error: ${result.errors.map(e => e.message).join(', ')}`,
     });
   }
 
   if (!result.data) {
     throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "Linear GraphQL returned no data",
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'Linear GraphQL returned no data',
     });
   }
 
@@ -146,14 +146,14 @@ export async function createLinearIssue(
     where: { id: connectionId },
   });
 
-  if (!connection || connection.status !== "CONNECTED") {
+  if (!connection || connection.status !== 'CONNECTED') {
     throw new TRPCError({
-      code: "PRECONDITION_FAILED",
-      message: "Linear connection is not active",
+      code: 'PRECONDITION_FAILED',
+      message: 'Linear connection is not active',
     });
   }
 
-  const credentials = decryptCredentials(connection.credentialsRef, "linear");
+  const credentials = decryptCredentials(connection.credentialsRef, 'linear');
   const accessToken = credentials.accessToken;
 
   // 2. Create sync log
@@ -161,11 +161,11 @@ export async function createLinearIssue(
     data: {
       organizationId,
       integrationConnectionId: connectionId,
-      direction: "OUTBOUND",
-      syncType: "ISSUE_CREATE",
-      entityType: "WORKFLOW_TASK_RUN",
+      direction: 'OUTBOUND',
+      syncType: 'ISSUE_CREATE',
+      entityType: 'WORKFLOW_TASK_RUN',
       entityId: taskRunId,
-      status: "STARTED",
+      status: 'STARTED',
     },
   });
 
@@ -246,7 +246,7 @@ export async function createLinearIssue(
     );
 
     if (!createResult.issueCreate.success) {
-      throw new Error("Linear issueCreate returned success=false");
+      throw new Error('Linear issueCreate returned success=false');
     }
 
     const issue = createResult.issueCreate.issue;
@@ -257,9 +257,9 @@ export async function createLinearIssue(
       linearIssueId: issue.id,
       title: issue.title,
       status: issue.state.name,
-      statusType: issue.state.type as LinearIssueMetadata["statusType"],
+      statusType: issue.state.type as LinearIssueMetadata['statusType'],
       url: issue.url,
-      lastSyncOrigin: "APP",
+      lastSyncOrigin: 'APP',
       lastSyncAt: new Date().toISOString(),
     };
 
@@ -267,9 +267,9 @@ export async function createLinearIssue(
       data: {
         organizationId,
         integrationConnectionId: connectionId,
-        entityType: "WORKFLOW_TASK_RUN",
+        entityType: 'WORKFLOW_TASK_RUN',
         entityId: taskRunId,
-        externalType: "LINEAR_ISSUE",
+        externalType: 'LINEAR_ISSUE',
         externalId: issue.identifier,
         externalUrl: issue.url,
         metadataJson: metadata,
@@ -280,7 +280,7 @@ export async function createLinearIssue(
     await prisma.integrationSyncLog.update({
       where: { id: syncLog.id },
       data: {
-        status: "SUCCESS",
+        status: 'SUCCESS',
         completedAt: new Date(),
         responsePayloadJson: {
           identifier: issue.identifier,
@@ -296,16 +296,16 @@ export async function createLinearIssue(
     await prisma.integrationSyncLog.update({
       where: { id: syncLog.id },
       data: {
-        status: "FAILED",
+        status: 'FAILED',
         completedAt: new Date(),
-        errorMessage: error instanceof Error ? error.message : "Unknown error",
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
       },
     });
 
     if (error instanceof TRPCError) throw error;
     throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "Failed to create Linear issue",
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'Failed to create Linear issue',
       cause: error,
     });
   }
@@ -338,9 +338,9 @@ export async function syncTaskStatusToLinear(
   // 1. Find ExternalLink for this task run
   const externalLink = await prisma.externalLink.findFirst({
     where: {
-      entityType: "WORKFLOW_TASK_RUN",
+      entityType: 'WORKFLOW_TASK_RUN',
       entityId: taskRunId,
-      externalType: "LINEAR_ISSUE",
+      externalType: 'LINEAR_ISSUE',
     },
   });
 
@@ -354,7 +354,7 @@ export async function syncTaskStatusToLinear(
   const lastSyncOrigin = metadata.lastSyncOrigin as string | undefined;
   const lastSyncAt = metadata.lastSyncAt as string | undefined;
 
-  if (lastSyncOrigin === "LINEAR" && lastSyncAt) {
+  if (lastSyncOrigin === 'LINEAR' && lastSyncAt) {
     const syncAge = Date.now() - new Date(lastSyncAt).getTime();
     if (syncAge < LOOP_PREVENTION_WINDOW_MS) {
       console.info(
@@ -369,7 +369,7 @@ export async function syncTaskStatusToLinear(
     where: { id: externalLink.integrationConnectionId },
   });
 
-  if (!connection || connection.status !== "CONNECTED") {
+  if (!connection || connection.status !== 'CONNECTED') {
     return;
   }
 
@@ -412,16 +412,16 @@ export async function syncTaskStatusToLinear(
       data: {
         organizationId: connection.organizationId,
         integrationConnectionId: connection.id,
-        direction: "OUTBOUND",
-        syncType: "STATUS_UPDATE_UNMAPPED",
-        entityType: "WORKFLOW_TASK_RUN",
+        direction: 'OUTBOUND',
+        syncType: 'STATUS_UPDATE_UNMAPPED',
+        entityType: 'WORKFLOW_TASK_RUN',
         entityId: taskRunId,
-        status: "SUCCESS",
+        status: 'SUCCESS',
         completedAt: new Date(),
         responsePayloadJson: {
           identifier: metadata.identifier,
           workflowStatus: newStatus,
-          reason: "No Linear state mapping found for this workflow status",
+          reason: 'No Linear state mapping found for this workflow status',
         },
       },
     });
@@ -429,17 +429,17 @@ export async function syncTaskStatusToLinear(
   }
 
   // 6. Decrypt credentials and call issueUpdate
-  const credentials = decryptCredentials(connection.credentialsRef, "linear");
+  const credentials = decryptCredentials(connection.credentialsRef, 'linear');
 
   const syncLog = await prisma.integrationSyncLog.create({
     data: {
       organizationId: connection.organizationId,
       integrationConnectionId: connection.id,
-      direction: "OUTBOUND",
-      syncType: "STATUS_UPDATE",
-      entityType: "WORKFLOW_TASK_RUN",
+      direction: 'OUTBOUND',
+      syncType: 'STATUS_UPDATE',
+      entityType: 'WORKFLOW_TASK_RUN',
       entityId: taskRunId,
-      status: "STARTED",
+      status: 'STARTED',
       requestPayloadJson: {
         linearIssueId,
         targetStateId,
@@ -473,7 +473,7 @@ export async function syncTaskStatusToLinear(
     );
 
     if (!updateResult.issueUpdate.success) {
-      throw new Error("Linear issueUpdate returned success=false");
+      throw new Error('Linear issueUpdate returned success=false');
     }
 
     const newState = updateResult.issueUpdate.issue.state;
@@ -486,7 +486,7 @@ export async function syncTaskStatusToLinear(
           ...metadata,
           status: newState.name,
           statusType: newState.type,
-          lastSyncOrigin: "APP",
+          lastSyncOrigin: 'APP',
           lastSyncAt: new Date().toISOString(),
         },
       },
@@ -496,7 +496,7 @@ export async function syncTaskStatusToLinear(
     await prisma.integrationSyncLog.update({
       where: { id: syncLog.id },
       data: {
-        status: "SUCCESS",
+        status: 'SUCCESS',
         completedAt: new Date(),
         responsePayloadJson: {
           linearIssueId,
@@ -509,9 +509,9 @@ export async function syncTaskStatusToLinear(
     await prisma.integrationSyncLog.update({
       where: { id: syncLog.id },
       data: {
-        status: "FAILED",
+        status: 'FAILED',
         completedAt: new Date(),
-        errorMessage: error instanceof Error ? error.message : "Unknown error",
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
       },
     });
 
@@ -519,14 +519,14 @@ export async function syncTaskStatusToLinear(
       where: { id: connection.id },
       data: {
         lastErrorAt: new Date(),
-        lastErrorMessage: error instanceof Error ? error.message : "Unknown error",
+        lastErrorMessage: error instanceof Error ? error.message : 'Unknown error',
       },
     });
 
     if (error instanceof TRPCError) throw error;
     throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "Failed to sync task status to Linear",
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'Failed to sync task status to Linear',
       cause: error,
     });
   }
@@ -543,7 +543,7 @@ export async function syncTaskStatusToLinear(
  * @returns true if scope expansion is needed
  */
 export function detectScopeExpansionNeeded(storedScope: string): boolean {
-  const requiredScopes = ["read", "write"];
-  const currentScopes = storedScope.split(",").map((s) => s.trim());
-  return requiredScopes.some((scope) => !currentScopes.includes(scope));
+  const requiredScopes = ['read', 'write'];
+  const currentScopes = storedScope.split(',').map(s => s.trim());
+  return requiredScopes.some(scope => !currentScopes.includes(scope));
 }

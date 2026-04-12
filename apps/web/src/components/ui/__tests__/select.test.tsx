@@ -1,4 +1,4 @@
-import { render, screen, setup } from "@/test/test-utils";
+import { render, screen, setup } from '@/test/test-utils';
 import {
   Select,
   SelectContent,
@@ -8,7 +8,7 @@ import {
   SelectSeparator,
   SelectTrigger,
   SelectValue,
-} from "../select";
+} from '../select';
 
 function renderSelect({
   defaultOpen = false,
@@ -35,30 +35,30 @@ function renderSelect({
   );
 }
 
-describe("Select", () => {
-  it("renders the trigger", () => {
+describe('Select', () => {
+  it('renders the trigger', () => {
     renderSelect();
-    expect(screen.getByText("Select an option")).toBeInTheDocument();
+    expect(screen.getByText('Select an option')).toBeInTheDocument();
   });
 
-  it("does not show options when closed", () => {
+  it('does not show options when closed', () => {
     renderSelect();
-    expect(screen.queryByText("Apple")).not.toBeInTheDocument();
+    expect(screen.queryByText('Apple')).not.toBeInTheDocument();
   });
 
-  it("shows options when defaultOpen", () => {
+  it('shows options when defaultOpen', () => {
     renderSelect({ defaultOpen: true });
-    expect(screen.getByText("Apple")).toBeInTheDocument();
-    expect(screen.getByText("Banana")).toBeInTheDocument();
-    expect(screen.getByText("Cherry")).toBeInTheDocument();
+    expect(screen.getByText('Apple')).toBeInTheDocument();
+    expect(screen.getByText('Banana')).toBeInTheDocument();
+    expect(screen.getByText('Cherry')).toBeInTheDocument();
   });
 
-  it("renders group label", () => {
+  it('renders group label', () => {
     renderSelect({ defaultOpen: true });
-    expect(screen.getByText("Fruits")).toBeInTheDocument();
+    expect(screen.getByText('Fruits')).toBeInTheDocument();
   });
 
-  it("SelectTrigger merges custom className", () => {
+  it('SelectTrigger merges custom className', () => {
     render(
       <Select>
         <SelectTrigger className="my-trigger">
@@ -70,10 +70,10 @@ describe("Select", () => {
       </Select>,
     );
     const trigger = document.querySelector("[data-slot='select-trigger']");
-    expect(trigger?.className).toContain("my-trigger");
+    expect(trigger?.className).toContain('my-trigger');
   });
 
-  it("SelectTrigger supports size prop", () => {
+  it('SelectTrigger supports size prop', () => {
     render(
       <Select>
         <SelectTrigger size="sm">
@@ -85,16 +85,16 @@ describe("Select", () => {
       </Select>,
     );
     const trigger = document.querySelector("[data-slot='select-trigger']");
-    expect(trigger).toHaveAttribute("data-size", "sm");
+    expect(trigger).toHaveAttribute('data-size', 'sm');
   });
 
-  it("SelectSeparator sets data-slot", () => {
+  it('SelectSeparator sets data-slot', () => {
     renderSelect({ defaultOpen: true });
     const sep = document.querySelector("[data-slot='select-separator']");
     expect(sep).toBeInTheDocument();
   });
 
-  it("SelectLabel sets data-slot", () => {
+  it('SelectLabel sets data-slot', () => {
     renderSelect({ defaultOpen: true });
     const label = document.querySelector("[data-slot='select-label']");
     expect(label).toBeInTheDocument();

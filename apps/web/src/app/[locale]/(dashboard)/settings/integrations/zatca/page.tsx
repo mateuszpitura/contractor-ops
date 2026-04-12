@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import type { ZatcaOnboardingState } from "@contractor-ops/einvoice";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, ShieldCheck } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
-import { AnimateIn } from "@/components/shared/animate-in";
-import { Button } from "@/components/ui/button";
-import { EnvironmentToggle } from "@/components/zatca/environment-toggle";
-import { OnboardingWizard } from "@/components/zatca/onboarding-wizard";
-import { ZatcaComplianceWidget } from "@/components/zatca/zatca-compliance-widget";
-import { zatcaTrpc } from "@/components/zatca/zatca-trpc";
-import { Link } from "@/i18n/navigation";
+import type { ZatcaOnboardingState } from '@contractor-ops/einvoice';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { ArrowLeft, ShieldCheck } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { AnimateIn } from '@/components/shared/animate-in';
+import { Button } from '@/components/ui/button';
+import { EnvironmentToggle } from '@/components/zatca/environment-toggle';
+import { OnboardingWizard } from '@/components/zatca/onboarding-wizard';
+import { ZatcaComplianceWidget } from '@/components/zatca/zatca-compliance-widget';
+import { zatcaTrpc } from '@/components/zatca/zatca-trpc';
+import { Link } from '@/i18n/navigation';
 
 // ---------------------------------------------------------------------------
 // ZATCA Settings Page
@@ -30,22 +30,22 @@ export default function ZatcaSettingsPage() {
   const stateQuery = useQuery(zatcaTrpc.getOnboardingState.queryOptions());
   const state = stateQuery.data as ZatcaOnboardingState | undefined;
   const isConnected = state?.productionCertActive === true;
-  const isOnboarding = state && !state.productionCertActive && state.currentStep !== "tax_details";
+  const isOnboarding = state && !state.productionCertActive && state.currentStep !== 'tax_details';
 
-  const [environment, setEnvironment] = useState<"sandbox" | "production">(
-    isConnected ? "production" : "sandbox",
+  const [environment, setEnvironment] = useState<'sandbox' | 'production'>(
+    isConnected ? 'production' : 'sandbox',
   );
 
   function handleWizardComplete() {
     setWizardOpen(false);
-    setEnvironment("production");
+    setEnvironment('production');
     queryClient.invalidateQueries({
       queryKey: zatcaTrpc.getOnboardingState.queryKey(),
     });
     queryClient.invalidateQueries({
       queryKey: zatcaTrpc.getComplianceStats.queryKey(),
     });
-    toast.success("ZATCA onboarding complete!");
+    toast.success('ZATCA onboarding complete!');
   }
 
   return (
@@ -57,8 +57,7 @@ export default function ZatcaSettingsPage() {
             variant="ghost"
             size="icon"
             render={<Link href="/settings?tab=integrations" />}
-            aria-label="Back to integrations"
-          >
+            aria-label="Back to integrations">
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
@@ -105,7 +104,7 @@ export default function ZatcaSettingsPage() {
       {isConnected && (
         <>
           {/* Sandbox Banner */}
-          {environment === "sandbox" && (
+          {environment === 'sandbox' && (
             <AnimateIn delay={1}>
               <div className="rounded-lg border border-blue-500/30 bg-blue-50 px-4 py-3 text-sm text-blue-700 dark:bg-blue-950/20 dark:text-blue-400">
                 Sandbox mode — Test invoices are not submitted to ZATCA. Switch to production when
@@ -118,7 +117,7 @@ export default function ZatcaSettingsPage() {
           <AnimateIn delay={1}>
             <ZatcaComplianceWidget
               connectionStatus={environment}
-              environment={environment === "production" ? "Production" : "Sandbox"}
+              environment={environment === 'production' ? 'Production' : 'Sandbox'}
             />
           </AnimateIn>
 

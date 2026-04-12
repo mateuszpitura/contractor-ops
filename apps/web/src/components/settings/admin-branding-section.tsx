@@ -1,27 +1,27 @@
-"use client";
+'use client';
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Globe, Loader2, Upload } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useRef, useState } from "react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
-import { trpc } from "@/trpc/init";
-import { BrandColorPicker } from "./brand-color-picker";
-import { BrandPreviewStrip } from "./brand-preview-strip";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Globe, Loader2, Upload } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useRef, useState } from 'react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
+import { trpc } from '@/trpc/init';
+import { BrandColorPicker } from './brand-color-picker';
+import { BrandPreviewStrip } from './brand-preview-strip';
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
 const MAX_LOGO_SIZE = 2 * 1024 * 1024; // 2MB
-const ACCEPTED_TYPES = ["image/png", "image/jpeg", "image/svg+xml"];
-const DEFAULT_BRAND_COLOR = "#4f46e5"; // indigo-600
+const ACCEPTED_TYPES = ['image/png', 'image/jpeg', 'image/svg+xml'];
+const DEFAULT_BRAND_COLOR = '#4f46e5'; // indigo-600
 
 // ---------------------------------------------------------------------------
 // Component
@@ -37,8 +37,8 @@ const DEFAULT_BRAND_COLOR = "#4f46e5"; // indigo-600
  * - Save button wired to settings.updateBranding
  */
 export function AdminBrandingSection() {
-  const t = useTranslations("Settings.branding");
-  const tAria = useTranslations("Common.aria");
+  const t = useTranslations('Settings.branding');
+  const tAria = useTranslations('Common.aria');
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -53,7 +53,7 @@ export function AdminBrandingSection() {
   const [initialized, setInitialized] = useState(false);
 
   // Portal subdomain state
-  const [portalSubdomain, setPortalSubdomain] = useState("");
+  const [portalSubdomain, setPortalSubdomain] = useState('');
   const [subdomainInitialized, setSubdomainInitialized] = useState(false);
   const [subdomainError, setSubdomainError] = useState<string | null>(null);
 
@@ -63,7 +63,7 @@ export function AdminBrandingSection() {
 
   const brandingQuery = useQuery({
     ...trpc.settings.getBranding.queryOptions(),
-    select: (data) => {
+    select: data => {
       // Initialize local state from server data (once)
       if (!initialized && data) {
         setBrandColor(data.brandColor ?? DEFAULT_BRAND_COLOR);
@@ -80,22 +80,22 @@ export function AdminBrandingSection() {
   const updateBrandingMutation = useMutation(
     trpc.settings.updateBranding.mutationOptions({
       onSuccess: () => {
-        toast.success(t("successToast"));
+        toast.success(t('successToast'));
         queryClient.invalidateQueries({
           queryKey: trpc.settings.getBranding.queryKey(),
         });
       },
       onError: () => {
-        toast.error(t("errorToast"));
+        toast.error(t('errorToast'));
       },
     }),
   );
 
   const _portalDomainQuery = useQuery({
     ...trpc.settings.getPortalDomain.queryOptions(),
-    select: (data) => {
+    select: data => {
       if (!subdomainInitialized && data) {
-        setPortalSubdomain(data.portalSubdomain ?? "");
+        setPortalSubdomain(data.portalSubdomain ?? '');
         setSubdomainInitialized(true);
       }
       return data;
@@ -105,17 +105,17 @@ export function AdminBrandingSection() {
   const updatePortalDomainMutation = useMutation(
     trpc.settings.updatePortalDomain.mutationOptions({
       onSuccess: () => {
-        toast.success(t("subdomainUpdated"));
+        toast.success(t('subdomainUpdated'));
         queryClient.invalidateQueries({
           queryKey: trpc.settings.getPortalDomain.queryKey(),
         });
       },
-      onError: (error) => {
-        if (error.message === "This subdomain is already in use") {
-          toast.error(t("subdomainTaken"));
-          setSubdomainError(t("subdomainTaken"));
+      onError: error => {
+        if (error.message === 'This subdomain is already in use') {
+          toast.error(t('subdomainTaken'));
+          setSubdomainError(t('subdomainTaken'));
         } else {
-          toast.error(t("subdomainSaveError"));
+          toast.error(t('subdomainSaveError'));
         }
       },
     }),
@@ -131,11 +131,11 @@ export function AdminBrandingSection() {
 
     // Client-side validation
     if (!ACCEPTED_TYPES.includes(file.type)) {
-      toast.error(t("invalidFileType"));
+      toast.error(t('invalidFileType'));
       return;
     }
     if (file.size > MAX_LOGO_SIZE) {
-      toast.error(t("fileTooLarge"));
+      toast.error(t('fileTooLarge'));
       return;
     }
 
@@ -150,20 +150,20 @@ export function AdminBrandingSection() {
 
       // Upload to R2
       await fetch(uploadUrl, {
-        method: "PUT",
-        headers: { "Content-Type": file.type },
+        method: 'PUT',
+        headers: { 'Content-Type': file.type },
         body: file,
       });
 
       setLogoUrl(publicUrl);
       setLogoPreview(URL.createObjectURL(file));
     } catch {
-      toast.error(t("uploadError"));
+      toast.error(t('uploadError'));
     } finally {
       setUploading(false);
       // Reset input so the same file can be re-selected
       if (fileInputRef.current) {
-        fileInputRef.current.value = "";
+        fileInputRef.current.value = '';
       }
     }
   };
@@ -182,17 +182,17 @@ export function AdminBrandingSection() {
 
   const validateSubdomain = (value: string): string | null => {
     if (!value) return null; // Empty is valid (clears subdomain)
-    if (value.length < 3) return t("subdomainMinLength");
-    if (value.length > 63) return t("subdomainMaxLength");
+    if (value.length < 3) return t('subdomainMinLength');
+    if (value.length > 63) return t('subdomainMaxLength');
     if (!/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/.test(value)) {
-      return t("subdomainFormat");
+      return t('subdomainFormat');
     }
     return null;
   };
 
   const handleSubdomainChange = (value: string) => {
     // Auto-lowercase and strip invalid chars for better UX
-    const sanitized = value.toLowerCase().replace(/[^a-z0-9-]/g, "");
+    const sanitized = value.toLowerCase().replace(/[^a-z0-9-]/g, '');
     setPortalSubdomain(sanitized);
     setSubdomainError(null);
   };
@@ -236,27 +236,26 @@ export function AdminBrandingSection() {
   return (
     <Card>
       <CardHeader>
-        <h3 className="text-sm font-semibold">{t("heading")}</h3>
-        <p className="text-sm text-muted-foreground">{t("description")}</p>
+        <h3 className="text-sm font-semibold">{t('heading')}</h3>
+        <p className="text-sm text-muted-foreground">{t('description')}</p>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Logo upload */}
         <div className="space-y-2">
-          <Label className="text-sm font-normal">{t("logoLabel")}</Label>
+          <Label className="text-sm font-normal">{t('logoLabel')}</Label>
 
           {logoPreview ? (
             <div className="flex flex-col items-start gap-2">
               <img
                 src={logoPreview}
-                alt={t("logoAlt")}
+                alt={t('logoAlt')}
                 className="h-20 w-20 rounded-md border object-cover"
               />
               <button
                 type="button"
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                onClick={handleRemoveLogo}
-              >
-                {t("removeLogo")}
+                onClick={handleRemoveLogo}>
+                {t('removeLogo')}
               </button>
             </div>
           ) : (
@@ -264,18 +263,17 @@ export function AdminBrandingSection() {
               type="button"
               className="flex h-20 w-20 flex-col items-center justify-center gap-1 rounded-md border-2 border-dashed border-muted-foreground/25 text-muted-foreground transition-colors hover:border-muted-foreground/50 hover:text-foreground"
               onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-            >
+              disabled={uploading}>
               {uploading ? (
                 <Loader2 className="h-6 w-6 animate-spin" />
               ) : (
                 <Upload className="h-6 w-6" />
               )}
-              <span className="text-xs">{t("uploadLogo")}</span>
+              <span className="text-xs">{t('uploadLogo')}</span>
             </button>
           )}
 
-          <p className="text-xs text-muted-foreground">{t("logoHint")}</p>
+          <p className="text-xs text-muted-foreground">{t('logoHint')}</p>
 
           <input
             ref={fileInputRef}
@@ -288,7 +286,7 @@ export function AdminBrandingSection() {
 
         {/* Brand color picker */}
         <div className="space-y-2">
-          <Label className="text-sm font-normal">{t("accentColor")}</Label>
+          <Label className="text-sm font-normal">{t('accentColor')}</Label>
           <BrandColorPicker value={brandColor} onChange={setBrandColor} />
         </div>
 
@@ -299,15 +297,14 @@ export function AdminBrandingSection() {
         <Button
           onClick={handleSave}
           disabled={updateBrandingMutation.isPending}
-          className="w-full sm:w-auto"
-        >
+          className="w-full sm:w-auto">
           {updateBrandingMutation.isPending ? (
             <>
               <Loader2 className="me-2 h-4 w-4 animate-spin" />
-              {t("saving")}
+              {t('saving')}
             </>
           ) : (
-            t("saveBranding")
+            t('saveBranding')
           )}
         </Button>
 
@@ -317,27 +314,27 @@ export function AdminBrandingSection() {
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <Globe className="h-4 w-4 text-muted-foreground" />
-            <Label className="text-sm font-normal">{t("subdomainHeading")}</Label>
+            <Label className="text-sm font-normal">{t('subdomainHeading')}</Label>
           </div>
           <p className="text-sm text-muted-foreground">
-            {t("subdomainDescription")}{" "}
+            {t('subdomainDescription')}{' '}
             <span className="font-medium text-foreground">
-              {portalSubdomain || "your-subdomain"}
+              {portalSubdomain || 'your-subdomain'}
             </span>
-            {t("subdomainSuffix")}
+            {t('subdomainSuffix')}
           </p>
 
           <div className="flex items-center gap-2">
             <Input
               value={portalSubdomain}
-              onChange={(e) => handleSubdomainChange(e.target.value)}
-              placeholder={t("subdomainPlaceholder")}
+              onChange={e => handleSubdomainChange(e.target.value)}
+              placeholder={t('subdomainPlaceholder')}
               className="max-w-[200px]"
-              aria-label={tAria("portalSubdomain")}
+              aria-label={tAria('portalSubdomain')}
               aria-describedby="subdomain-suffix subdomain-error"
             />
             <span id="subdomain-suffix" className="text-sm text-muted-foreground whitespace-nowrap">
-              {t("subdomainSuffix")}
+              {t('subdomainSuffix')}
             </span>
           </div>
 
@@ -351,15 +348,14 @@ export function AdminBrandingSection() {
             variant="outline"
             onClick={handleSaveSubdomain}
             disabled={updatePortalDomainMutation.isPending}
-            className="w-full sm:w-auto"
-          >
+            className="w-full sm:w-auto">
             {updatePortalDomainMutation.isPending ? (
               <>
                 <Loader2 className="me-2 h-4 w-4 animate-spin" />
-                {t("saving")}
+                {t('saving')}
               </>
             ) : (
-              t("saveDomain")
+              t('saveDomain')
             )}
           </Button>
         </div>

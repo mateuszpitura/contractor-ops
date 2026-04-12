@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import type { ColumnDef, RowSelectionState } from "@tanstack/react-table";
-import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
-import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import type { ColumnDef, RowSelectionState } from '@tanstack/react-table';
+import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { useTranslations } from 'next-intl';
+import { useEffect, useState } from 'react';
 
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -14,9 +14,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 
-import type { ApprovalQueueRow } from "./columns";
+import type { ApprovalQueueRow } from './columns';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -42,7 +42,7 @@ interface ApprovalQueueTableProps {
 const PAGE_SIZE_OPTIONS = [10, 25, 50];
 
 function isOverdue(row: ApprovalQueueRow): boolean {
-  if (row.status !== "PENDING" || !row.slaDeadline) return false;
+  if (row.status !== 'PENDING' || !row.slaDeadline) return false;
   return new Date(row.slaDeadline).getTime() < Date.now();
 }
 
@@ -66,7 +66,7 @@ export function ApprovalQueueTable({
   onSelectionChange,
   isLoading,
 }: ApprovalQueueTableProps) {
-  const t = useTranslations("Approvals");
+  const t = useTranslations('Approvals');
 
   // Row selection state managed locally, forwarded to parent via callback
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
@@ -78,7 +78,7 @@ export function ApprovalQueueTable({
 
   // Forward selection changes to parent
   useEffect(() => {
-    const ids = Object.keys(rowSelection).filter((k) => rowSelection[k]);
+    const ids = Object.keys(rowSelection).filter(k => rowSelection[k]);
     onSelectionChange?.(ids);
   }, [rowSelection, onSelectionChange]);
 
@@ -94,7 +94,7 @@ export function ApprovalQueueTable({
     getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
     enableRowSelection: true,
-    getRowId: (row) => row.id,
+    getRowId: row => row.id,
   });
 
   const totalPages = pageCount;
@@ -105,9 +105,9 @@ export function ApprovalQueueTable({
       <div className="rounded-xl border bg-background">
         <Table>
           <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
+            {table.getHeaderGroups().map(headerGroup => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
+                {headerGroup.headers.map(header => (
                   <TableHead
                     key={header.id}
                     className="whitespace-nowrap text-[12px]"
@@ -115,8 +115,7 @@ export function ApprovalQueueTable({
                       header.column.getSize() !== 150
                         ? { width: header.column.getSize() }
                         : undefined
-                    }
-                  >
+                    }>
                     {header.isPlaceholder
                       ? null
                       : flexRender(header.column.columnDef.header, header.getContext())}
@@ -138,16 +137,15 @@ export function ApprovalQueueTable({
                   </TableRow>
                 ))
               : table.getRowModel().rows.length > 0
-                ? table.getRowModel().rows.map((row) => {
+                ? table.getRowModel().rows.map(row => {
                     const overdue = isOverdue(row.original);
                     return (
                       <TableRow
                         key={row.id}
-                        data-state={row.getIsSelected() ? "selected" : undefined}
-                        className={`group cursor-pointer ${overdue ? "bg-destructive/5" : ""}`}
-                        onClick={() => onRowClick(row.original)}
-                      >
-                        {row.getVisibleCells().map((cell) => (
+                        data-state={row.getIsSelected() ? 'selected' : undefined}
+                        className={`group cursor-pointer ${overdue ? 'bg-destructive/5' : ''}`}
+                        onClick={() => onRowClick(row.original)}>
+                        {row.getVisibleCells().map(cell => (
                           <TableCell key={cell.id}>
                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
                           </TableCell>
@@ -164,13 +162,12 @@ export function ApprovalQueueTable({
       {!isLoading && totalPages > 0 && (
         <div className="flex items-center justify-between px-2 py-4">
           <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">{t("pagination.rowsPerPage")}</span>
+            <span className="text-sm text-muted-foreground">{t('pagination.rowsPerPage')}</span>
             <select
               value={pageSize}
-              onChange={(e) => onPageSizeChange(Number(e.target.value))}
-              className="h-8 w-16 rounded-md border bg-background px-2 text-sm"
-            >
-              {PAGE_SIZE_OPTIONS.map((size) => (
+              onChange={e => onPageSizeChange(Number(e.target.value))}
+              className="h-8 w-16 rounded-md border bg-background px-2 text-sm">
+              {PAGE_SIZE_OPTIONS.map(size => (
                 <option key={size} value={size}>
                   {size}
                 </option>
@@ -180,23 +177,21 @@ export function ApprovalQueueTable({
 
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">
-              {t("pagination.pageOf", { current: page, total: totalPages })}
+              {t('pagination.pageOf', { current: page, total: totalPages })}
             </span>
             <Button
               variant="outline"
               size="sm"
               disabled={page <= 1}
-              onClick={() => onPageChange(page - 1)}
-            >
-              {t("pagination.previous")}
+              onClick={() => onPageChange(page - 1)}>
+              {t('pagination.previous')}
             </Button>
             <Button
               variant="outline"
               size="sm"
               disabled={page >= totalPages}
-              onClick={() => onPageChange(page + 1)}
-            >
-              {t("pagination.next")}
+              onClick={() => onPageChange(page + 1)}>
+              {t('pagination.next')}
             </Button>
           </div>
         </div>

@@ -8,8 +8,8 @@ import {
   HeadObjectCommand,
   PutObjectCommand,
   S3Client,
-} from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+} from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 // ---------------------------------------------------------------------------
 // R2 client singleton
@@ -20,7 +20,7 @@ let r2Client: S3Client | null = null;
 export function createR2Client(): S3Client {
   if (!r2Client) {
     r2Client = new S3Client({
-      region: "auto",
+      region: 'auto',
       endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
       credentials: {
         accessKeyId: process.env.R2_ACCESS_KEY_ID!,
@@ -37,7 +37,7 @@ export function createR2Client(): S3Client {
 
 function getDefaultBucket(): string {
   return (
-    process.env.R2_BUCKET_NAME ?? process.env.R2_BUCKET_NAME_EU ?? "contractor-ops-documents-eu"
+    process.env.R2_BUCKET_NAME ?? process.env.R2_BUCKET_NAME_EU ?? 'contractor-ops-documents-eu'
   );
 }
 
@@ -50,29 +50,29 @@ function getDefaultBucket(): string {
  * Restricts storage keys to known-safe document types.
  */
 const ALLOWED_EXTENSIONS = new Set([
-  "pdf",
-  "doc",
-  "docx",
-  "xls",
-  "xlsx",
-  "csv",
-  "txt",
-  "rtf",
-  "odt",
-  "ods",
-  "png",
-  "jpg",
-  "jpeg",
-  "gif",
-  "webp",
-  "svg",
-  "tiff",
-  "tif",
-  "bmp",
-  "xml",
-  "json",
-  "zip",
-  "eml",
+  'pdf',
+  'doc',
+  'docx',
+  'xls',
+  'xlsx',
+  'csv',
+  'txt',
+  'rtf',
+  'odt',
+  'ods',
+  'png',
+  'jpg',
+  'jpeg',
+  'gif',
+  'webp',
+  'svg',
+  'tiff',
+  'tif',
+  'bmp',
+  'xml',
+  'json',
+  'zip',
+  'eml',
 ]);
 
 /**
@@ -83,13 +83,13 @@ const ALLOWED_EXTENSIONS = new Set([
 function sanitizeExtension(raw: string): string {
   // Strip path traversal sequences and special characters
   const cleaned = raw
-    .replace(/[/\\]/g, "") // remove slashes and backslashes
-    .replace(/\.\./g, "") // remove parent directory traversal
-    .replace(/[^a-zA-Z0-9]/g, "") // keep only alphanumeric
+    .replace(/[/\\]/g, '') // remove slashes and backslashes
+    .replace(/\.\./g, '') // remove parent directory traversal
+    .replace(/[^a-zA-Z0-9]/g, '') // keep only alphanumeric
     .toLowerCase();
 
   if (!(cleaned && ALLOWED_EXTENSIONS.has(cleaned))) {
-    return "";
+    return '';
   }
 
   return cleaned;
@@ -103,9 +103,9 @@ function sanitizeExtension(raw: string): string {
  * to prevent path traversal, and validated against an allowlist.
  */
 export function generateStorageKey(orgId: string, docId: string, filename: string): string {
-  const rawExt = filename.split(".").pop() ?? "";
+  const rawExt = filename.split('.').pop() ?? '';
   const ext = sanitizeExtension(rawExt);
-  return `orgs/${orgId}/documents/${docId}${ext ? `.${ext}` : ""}`;
+  return `orgs/${orgId}/documents/${docId}${ext ? `.${ext}` : ''}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -139,7 +139,7 @@ export async function createPresignedDownloadUrl(key: string, expiresIn = 900): 
   const command = new GetObjectCommand({
     Bucket: getDefaultBucket(),
     Key: key,
-    ResponseContentDisposition: "attachment",
+    ResponseContentDisposition: 'attachment',
   });
   return getSignedUrl(client, command, { expiresIn });
 }

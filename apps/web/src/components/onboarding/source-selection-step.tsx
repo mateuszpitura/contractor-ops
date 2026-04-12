@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-import { useCallback } from "react";
-import { toast } from "sonner";
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+import { useCallback } from 'react';
+import { toast } from 'sonner';
 import {
   JiraBrandIcon,
   LinearBrandIcon,
   SlackBrandIcon,
-} from "@/components/integrations/brand-icons";
-import { GoogleWorkspaceLogo } from "@/components/integrations/google-workspace-logo";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useRouter } from "@/i18n/navigation";
-import { trpc } from "@/trpc/init";
-import { SourceCard } from "./source-card";
+} from '@/components/integrations/brand-icons';
+import { GoogleWorkspaceLogo } from '@/components/integrations/google-workspace-logo';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useRouter } from '@/i18n/navigation';
+import { trpc } from '@/trpc/init';
+import { SourceCard } from './source-card';
 
 // ---------------------------------------------------------------------------
 // Provider icon mapping
@@ -28,10 +28,10 @@ const PROVIDER_ICONS: Record<string, React.ReactNode> = {
 };
 
 const PROVIDER_NAMES: Record<string, string> = {
-  JIRA: "Jira",
-  LINEAR: "Linear",
-  GOOGLE_WORKSPACE: "Google Workspace",
-  SLACK: "Slack",
+  JIRA: 'Jira',
+  LINEAR: 'Linear',
+  GOOGLE_WORKSPACE: 'Google Workspace',
+  SLACK: 'Slack',
 };
 
 // ---------------------------------------------------------------------------
@@ -47,7 +47,7 @@ export function SourceSelectionStep({
   selectedSources,
   onSourcesChange,
 }: SourceSelectionStepProps) {
-  const t = useTranslations("OnboardingImport");
+  const t = useTranslations('OnboardingImport');
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -58,7 +58,7 @@ export function SourceSelectionStep({
   const handleToggle = useCallback(
     (provider: string) => {
       if (selectedSources.includes(provider)) {
-        onSourcesChange(selectedSources.filter((s) => s !== provider));
+        onSourcesChange(selectedSources.filter(s => s !== provider));
       } else {
         onSourcesChange([...selectedSources, provider]);
       }
@@ -73,7 +73,7 @@ export function SourceSelectionStep({
           trpc.integration.getOAuthUrlGeneric.queryOptions({ provider }),
         );
         if (!result?.url) {
-          toast.error(t("step1.connectError"));
+          toast.error(t('step1.connectError'));
           return;
         }
 
@@ -105,22 +105,22 @@ export function SourceSelectionStep({
           }
         }, 500);
       } catch {
-        toast.error(t("step1.connectError"));
+        toast.error(t('step1.connectError'));
       }
     },
     [queryClient, t],
   );
 
   const handleSkip = useCallback(() => {
-    router.push("/settings?tab=members");
+    router.push('/settings?tab=members');
   }, [router]);
 
   return (
     <div className="space-y-6">
       {/* Heading */}
       <div>
-        <h2 className="font-display text-xl font-semibold leading-[1.2]">{t("step1.heading")}</h2>
-        <p className="mt-1 text-sm text-muted-foreground">{t("step1.subtitle")}</p>
+        <h2 className="font-display text-xl font-semibold leading-[1.2]">{t('step1.heading')}</h2>
+        <p className="mt-1 text-sm text-muted-foreground">{t('step1.subtitle')}</p>
       </div>
 
       {/* Source cards grid */}
@@ -132,7 +132,7 @@ export function SourceSelectionStep({
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {sources.map((source) => (
+          {sources.map(source => (
             <SourceCard
               key={source.provider}
               provider={source.provider}
@@ -150,7 +150,7 @@ export function SourceSelectionStep({
       {/* Skip link */}
       <div className="text-center">
         <Button variant="link" onClick={handleSkip} className="text-muted-foreground">
-          {t("step1.skipLink")}
+          {t('step1.skipLink')}
         </Button>
       </div>
     </div>

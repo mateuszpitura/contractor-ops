@@ -1,7 +1,7 @@
-import { describe, expect, it, vi } from "vitest";
-import { withSoftDelete } from "../soft-delete.js";
+import { describe, expect, it, vi } from 'vitest';
+import { withSoftDelete } from '../soft-delete.js';
 
-describe("withSoftDelete", () => {
+describe('withSoftDelete', () => {
   function createMockClient() {
     const innerQuery = vi.fn(async (args: unknown) => args);
     const invoiceUpdate = vi.fn(async (args: unknown) => args);
@@ -25,61 +25,61 @@ describe("withSoftDelete", () => {
           invoice: {
             delete: (args: unknown) =>
               models.delete({
-                model: "Invoice",
+                model: 'Invoice',
                 args,
                 query: innerQuery,
               }),
             deleteMany: (args: unknown) =>
               models.deleteMany({
-                model: "Invoice",
+                model: 'Invoice',
                 args,
                 query: innerQuery,
               }),
             findMany: (args: unknown) =>
               models.findMany({
-                model: "Invoice",
+                model: 'Invoice',
                 args,
                 query: innerQuery,
               }),
             findFirst: (args: unknown) =>
               models.findFirst({
-                model: "Invoice",
+                model: 'Invoice',
                 args,
                 query: innerQuery,
               }),
             count: (args: unknown) =>
               models.count({
-                model: "Invoice",
+                model: 'Invoice',
                 args,
                 query: innerQuery,
               }),
             findFirstOrThrow: (args: unknown) =>
               models.findFirstOrThrow({
-                model: "Invoice",
+                model: 'Invoice',
                 args,
                 query: innerQuery,
               }),
             findUnique: (args: unknown) =>
               models.findUnique({
-                model: "Invoice",
+                model: 'Invoice',
                 args,
                 query: innerQuery,
               }),
             findUniqueOrThrow: (args: unknown) =>
               models.findUniqueOrThrow({
-                model: "Invoice",
+                model: 'Invoice',
                 args,
                 query: innerQuery,
               }),
             aggregate: (args: unknown) =>
               models.aggregate({
-                model: "Invoice",
+                model: 'Invoice',
                 args,
                 query: innerQuery,
               }),
             groupBy: (args: unknown) =>
               models.groupBy({
-                model: "Invoice",
+                model: 'Invoice',
                 args,
                 query: innerQuery,
               }),
@@ -87,7 +87,7 @@ describe("withSoftDelete", () => {
           verification: {
             delete: (args: unknown) =>
               models.delete({
-                model: "Verification",
+                model: 'Verification',
                 args,
                 query: innerQuery,
               }),
@@ -100,58 +100,58 @@ describe("withSoftDelete", () => {
     return { client, innerQuery, invoiceUpdate, invoiceUpdateMany };
   }
 
-  it("converts delete on soft-delete models to update with deletedAt", async () => {
+  it('converts delete on soft-delete models to update with deletedAt', async () => {
     const { client, invoiceUpdate, innerQuery } = createMockClient();
-    await client.invoice.delete({ where: { id: "i1" } });
+    await client.invoice.delete({ where: { id: 'i1' } });
     expect(invoiceUpdate).toHaveBeenCalledWith({
-      where: { id: "i1" },
+      where: { id: 'i1' },
       data: { deletedAt: expect.any(Date) },
     });
     expect(innerQuery).not.toHaveBeenCalled();
   });
 
-  it("converts deleteMany to updateMany with deletedAt for soft-delete models", async () => {
+  it('converts deleteMany to updateMany with deletedAt for soft-delete models', async () => {
     const { client, invoiceUpdateMany } = createMockClient();
-    await client.invoice.deleteMany({ where: { status: "DRAFT" } });
+    await client.invoice.deleteMany({ where: { status: 'DRAFT' } });
     expect(invoiceUpdateMany).toHaveBeenCalledWith({
-      where: { status: "DRAFT" },
+      where: { status: 'DRAFT' },
       data: { deletedAt: expect.any(Date) },
     });
   });
 
-  it("adds deletedAt: null to findMany for soft-delete models", async () => {
+  it('adds deletedAt: null to findMany for soft-delete models', async () => {
     const { client, innerQuery } = createMockClient();
-    await client.invoice.findMany({ where: { status: "SENT" } });
+    await client.invoice.findMany({ where: { status: 'SENT' } });
     expect(innerQuery).toHaveBeenCalledWith({
-      where: { status: "SENT", deletedAt: null },
+      where: { status: 'SENT', deletedAt: null },
     });
   });
 
-  it("adds deletedAt: null to findFirst for soft-delete models", async () => {
+  it('adds deletedAt: null to findFirst for soft-delete models', async () => {
     const { client, innerQuery } = createMockClient();
-    await client.invoice.findFirst({ where: { status: "SENT" } });
+    await client.invoice.findFirst({ where: { status: 'SENT' } });
     expect(innerQuery).toHaveBeenCalledWith({
-      where: { status: "SENT", deletedAt: null },
+      where: { status: 'SENT', deletedAt: null },
     });
   });
 
-  it("adds deletedAt: null to findFirstOrThrow for soft-delete models", async () => {
+  it('adds deletedAt: null to findFirstOrThrow for soft-delete models', async () => {
     const { client, innerQuery } = createMockClient();
-    await client.invoice.findFirstOrThrow({ where: { id: "i1" } });
+    await client.invoice.findFirstOrThrow({ where: { id: 'i1' } });
     expect(innerQuery).toHaveBeenCalledWith({
-      where: { id: "i1", deletedAt: null },
+      where: { id: 'i1', deletedAt: null },
     });
   });
 
-  it("adds deletedAt: null to count for soft-delete models", async () => {
+  it('adds deletedAt: null to count for soft-delete models', async () => {
     const { client, innerQuery } = createMockClient();
-    await client.invoice.count({ where: { status: "DRAFT" } });
+    await client.invoice.count({ where: { status: 'DRAFT' } });
     expect(innerQuery).toHaveBeenCalledWith({
-      where: { status: "DRAFT", deletedAt: null },
+      where: { status: 'DRAFT', deletedAt: null },
     });
   });
 
-  it("adds deletedAt: null to findMany when where is empty", async () => {
+  it('adds deletedAt: null to findMany when where is empty', async () => {
     const { client, innerQuery } = createMockClient();
     await client.invoice.findMany({});
     expect(innerQuery).toHaveBeenCalledWith({
@@ -159,41 +159,41 @@ describe("withSoftDelete", () => {
     });
   });
 
-  it("adds deletedAt: null to findUnique for soft-delete models", async () => {
+  it('adds deletedAt: null to findUnique for soft-delete models', async () => {
     const { client, innerQuery } = createMockClient();
-    await client.invoice.findUnique({ where: { id: "i1" } });
+    await client.invoice.findUnique({ where: { id: 'i1' } });
     expect(innerQuery).toHaveBeenCalledWith({
-      where: { id: "i1", deletedAt: null },
+      where: { id: 'i1', deletedAt: null },
     });
   });
 
-  it("adds deletedAt: null to findUniqueOrThrow for soft-delete models", async () => {
+  it('adds deletedAt: null to findUniqueOrThrow for soft-delete models', async () => {
     const { client, innerQuery } = createMockClient();
-    await client.invoice.findUniqueOrThrow({ where: { id: "i1" } });
+    await client.invoice.findUniqueOrThrow({ where: { id: 'i1' } });
     expect(innerQuery).toHaveBeenCalledWith({
-      where: { id: "i1", deletedAt: null },
+      where: { id: 'i1', deletedAt: null },
     });
   });
 
-  it("adds deletedAt: null to aggregate for soft-delete models", async () => {
+  it('adds deletedAt: null to aggregate for soft-delete models', async () => {
     const { client, innerQuery } = createMockClient();
-    await client.invoice.aggregate({ where: { status: "PAID" } });
+    await client.invoice.aggregate({ where: { status: 'PAID' } });
     expect(innerQuery).toHaveBeenCalledWith({
-      where: { status: "PAID", deletedAt: null },
+      where: { status: 'PAID', deletedAt: null },
     });
   });
 
-  it("adds deletedAt: null to groupBy for soft-delete models", async () => {
+  it('adds deletedAt: null to groupBy for soft-delete models', async () => {
     const { client, innerQuery } = createMockClient();
-    await client.invoice.groupBy({ where: { status: "SENT" } });
+    await client.invoice.groupBy({ where: { status: 'SENT' } });
     expect(innerQuery).toHaveBeenCalledWith({
-      where: { status: "SENT", deletedAt: null },
+      where: { status: 'SENT', deletedAt: null },
     });
   });
 
-  it("passes through delete for non-soft-delete models", async () => {
+  it('passes through delete for non-soft-delete models', async () => {
     const { client, innerQuery } = createMockClient();
-    await client.verification.delete({ where: { id: "v1" } });
-    expect(innerQuery).toHaveBeenCalledWith({ where: { id: "v1" } });
+    await client.verification.delete({ where: { id: 'v1' } });
+    expect(innerQuery).toHaveBeenCalledWith({ where: { id: 'v1' } });
   });
 });

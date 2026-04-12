@@ -1,11 +1,11 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // ---------------------------------------------------------------------------
 // Jira Webhook Payload (inbound)
 // ---------------------------------------------------------------------------
 
 export const jiraWebhookPayloadSchema = z.object({
-  webhookEvent: z.literal("jira:issue_updated"),
+  webhookEvent: z.literal('jira:issue_updated'),
   timestamp: z.number(),
   issue: z.object({
     id: z.string(),
@@ -15,7 +15,7 @@ export const jiraWebhookPayloadSchema = z.object({
       status: z.object({
         name: z.string(),
         statusCategory: z.object({
-          key: z.enum(["new", "indeterminate", "done"]),
+          key: z.enum(['new', 'indeterminate', 'done']),
           name: z.string(),
         }),
       }),
@@ -66,7 +66,7 @@ export const jiraStatusMappingEntrySchema = z.object({
   jiraTransitionId: z.string(),
   jiraTransitionName: z.string(),
   jiraTargetStatusName: z.string(),
-  jiraTargetStatusCategory: z.enum(["new", "indeterminate", "done"]),
+  jiraTargetStatusCategory: z.enum(['new', 'indeterminate', 'done']),
 });
 
 export const jiraStatusMappingSchema = z.record(
@@ -85,9 +85,9 @@ export const jiraIssueMetadataSchema = z.object({
   key: z.string(),
   summary: z.string(),
   status: z.string(),
-  statusCategory: z.enum(["new", "indeterminate", "done"]),
+  statusCategory: z.enum(['new', 'indeterminate', 'done']),
   url: z.string().url(),
-  lastSyncOrigin: z.enum(["APP", "JIRA"]).optional(),
+  lastSyncOrigin: z.enum(['APP', 'JIRA']).optional(),
   lastSyncAt: z.string().datetime().optional(),
 });
 
@@ -116,7 +116,7 @@ export const jiraTransitionSchema = z.object({
     id: z.string(),
     name: z.string(),
     statusCategory: z.object({
-      key: z.enum(["new", "indeterminate", "done"]),
+      key: z.enum(['new', 'indeterminate', 'done']),
       name: z.string(),
     }),
   }),

@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import type { DragEndEvent } from "@dnd-kit/core";
+import type { DragEndEvent } from '@dnd-kit/core';
 import {
   closestCenter,
   DndContext,
@@ -8,15 +8,15 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-} from "@dnd-kit/core";
+} from '@dnd-kit/core';
 import {
   SortableContext,
   sortableKeyboardCoordinates,
   useSortable,
   verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowRight,
   Banknote,
@@ -41,21 +41,21 @@ import {
   UserCircle,
   Workflow,
   Zap,
-} from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
-import type { ReactNode, MouseEvent as RME } from "react";
-import { useCallback, useRef, useState } from "react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import type { ReactNode, MouseEvent as RME } from 'react';
+import { useCallback, useRef, useState } from 'react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
 import type {
   TaskFormValues,
   TemplateFormValues,
-} from "@/components/workflows/template-builder/use-template-form";
-import { useTemplateForm } from "@/components/workflows/template-builder/use-template-form";
-import { trpc } from "@/trpc/init";
+} from '@/components/workflows/template-builder/use-template-form';
+import { useTemplateForm } from '@/components/workflows/template-builder/use-template-form';
+import { trpc } from '@/trpc/init';
 
 // =============================================================================
 // TASK TYPE CONFIG
@@ -63,74 +63,74 @@ import { trpc } from "@/trpc/init";
 
 const TASK_TYPES = [
   {
-    value: "DOCUMENT_COLLECTION",
+    value: 'DOCUMENT_COLLECTION',
     icon: FileText,
-    label: "Document Collection",
-    color: "var(--color-info)",
+    label: 'Document Collection',
+    color: 'var(--color-info)',
   },
-  { value: "APPROVAL", icon: CheckCircle, label: "Approval", color: "var(--color-success)" },
-  { value: "ACCESS_GRANT", icon: KeyRound, label: "Access Grant", color: "var(--color-chart-1)" },
+  { value: 'APPROVAL', icon: CheckCircle, label: 'Approval', color: 'var(--color-success)' },
+  { value: 'ACCESS_GRANT', icon: KeyRound, label: 'Access Grant', color: 'var(--color-chart-1)' },
   {
-    value: "ACCESS_REVOKE",
+    value: 'ACCESS_REVOKE',
     icon: KeyRound,
-    label: "Access Revoke",
-    color: "var(--color-destructive)",
+    label: 'Access Revoke',
+    color: 'var(--color-destructive)',
   },
-  { value: "FINANCE_SETUP", icon: Banknote, label: "Finance Setup", color: "var(--color-warning)" },
-  { value: "EQUIPMENT", icon: Monitor, label: "Equipment", color: "var(--color-chart-2)" },
+  { value: 'FINANCE_SETUP', icon: Banknote, label: 'Finance Setup', color: 'var(--color-warning)' },
+  { value: 'EQUIPMENT', icon: Monitor, label: 'Equipment', color: 'var(--color-chart-2)' },
   {
-    value: "KNOWLEDGE_TRANSFER",
+    value: 'KNOWLEDGE_TRANSFER',
     icon: BookOpen,
-    label: "Knowledge Transfer",
-    color: "var(--color-chart-3)",
+    label: 'Knowledge Transfer',
+    color: 'var(--color-chart-3)',
   },
-  { value: "MEETING", icon: Calendar, label: "Meeting", color: "var(--color-accent-warm)" },
+  { value: 'MEETING', icon: Calendar, label: 'Meeting', color: 'var(--color-accent-warm)' },
   {
-    value: "MANUAL",
+    value: 'MANUAL',
     icon: ClipboardList,
-    label: "Manual Task",
-    color: "var(--color-muted-foreground)",
+    label: 'Manual Task',
+    color: 'var(--color-muted-foreground)',
   },
-  { value: "NOTIFICATION", icon: Bell, label: "Notification", color: "var(--color-chart-4)" },
+  { value: 'NOTIFICATION', icon: Bell, label: 'Notification', color: 'var(--color-chart-4)' },
 ] as const;
 
-const TASK_TYPE_MAP = Object.fromEntries(TASK_TYPES.map((t) => [t.value, t]));
+const TASK_TYPE_MAP = Object.fromEntries(TASK_TYPES.map(t => [t.value, t]));
 
 const TEMPLATE_TYPES = [
-  { value: "ONBOARDING", label: "Onboarding", icon: Sparkles, color: "var(--color-success)" },
-  { value: "OFFBOARDING", label: "Offboarding", icon: ArrowRight, color: "var(--color-warning)" },
+  { value: 'ONBOARDING', label: 'Onboarding', icon: Sparkles, color: 'var(--color-success)' },
+  { value: 'OFFBOARDING', label: 'Offboarding', icon: ArrowRight, color: 'var(--color-warning)' },
   {
-    value: "DOCUMENT_COLLECTION",
-    label: "Document Collection",
+    value: 'DOCUMENT_COLLECTION',
+    label: 'Document Collection',
     icon: FileText,
-    color: "var(--color-info)",
+    color: 'var(--color-info)',
   },
   {
-    value: "COMPLIANCE_REVIEW",
-    label: "Compliance Review",
+    value: 'COMPLIANCE_REVIEW',
+    label: 'Compliance Review',
     icon: Shield,
-    color: "var(--color-destructive)",
+    color: 'var(--color-destructive)',
   },
-  { value: "CUSTOM", label: "Custom", icon: Zap, color: "var(--color-chart-1)" },
+  { value: 'CUSTOM', label: 'Custom', icon: Zap, color: 'var(--color-chart-1)' },
 ] as const;
 
 const ASSIGNEE_MODES = [
-  { value: "ROLE_BASED", label: "By Role" },
-  { value: "FIXED_USER", label: "Specific User" },
-  { value: "CONTRACTOR_OWNER", label: "Contractor Owner" },
-  { value: "CONTRACT_OWNER", label: "Contract Owner" },
-  { value: "PROJECT_MANAGER", label: "Project Manager" },
+  { value: 'ROLE_BASED', label: 'By Role' },
+  { value: 'FIXED_USER', label: 'Specific User' },
+  { value: 'CONTRACTOR_OWNER', label: 'Contractor Owner' },
+  { value: 'CONTRACT_OWNER', label: 'Contract Owner' },
+  { value: 'PROJECT_MANAGER', label: 'Project Manager' },
 ] as const;
 
 const ROLES = [
-  "ORG_ADMIN",
-  "FINANCE_ADMIN",
-  "OPS_MANAGER",
-  "TEAM_MANAGER",
-  "LEGAL_VIEWER",
-  "IT_ADMIN",
-  "ACCOUNTANT",
-  "READ_ONLY",
+  'ORG_ADMIN',
+  'FINANCE_ADMIN',
+  'OPS_MANAGER',
+  'TEAM_MANAGER',
+  'LEGAL_VIEWER',
+  'IT_ADMIN',
+  'ACCOUNTANT',
+  'READ_ONLY',
 ] as const;
 
 // =============================================================================
@@ -144,32 +144,32 @@ function AtelierBg() {
         className="absolute inset-0"
         style={{
           background:
-            "linear-gradient(170deg, color-mix(in oklch, var(--color-primary) 4%, transparent) 0%, transparent 50%)",
+            'linear-gradient(170deg, color-mix(in oklch, var(--color-primary) 4%, transparent) 0%, transparent 50%)',
         }}
       />
       <div
         className="absolute -start-[10%] -top-[10%] h-[600px] w-[600px] rounded-full"
         style={{
           background:
-            "radial-gradient(circle, color-mix(in oklch, var(--color-primary) 15%, transparent) 0%, transparent 65%)",
-          animation: "drift-1 28s ease-in-out infinite",
-          filter: "blur(80px)",
+            'radial-gradient(circle, color-mix(in oklch, var(--color-primary) 15%, transparent) 0%, transparent 65%)',
+          animation: 'drift-1 28s ease-in-out infinite',
+          filter: 'blur(80px)',
         }}
       />
       <div
         className="absolute -end-[5%] bottom-[10%] h-[400px] w-[400px] rounded-full"
         style={{
           background:
-            "radial-gradient(circle, color-mix(in oklch, oklch(0.6 0.15 270) 10%, transparent) 0%, transparent 65%)",
-          animation: "drift-3 24s ease-in-out infinite",
-          filter: "blur(90px)",
+            'radial-gradient(circle, color-mix(in oklch, oklch(0.6 0.15 270) 10%, transparent) 0%, transparent 65%)',
+          animation: 'drift-3 24s ease-in-out infinite',
+          filter: 'blur(90px)',
         }}
       />
       <div
         className="absolute inset-0 opacity-[0.025] dark:opacity-[0.05] mix-blend-overlay"
         style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
-          backgroundSize: "256px",
+          backgroundSize: '256px',
         }}
       />
     </div>
@@ -182,7 +182,7 @@ function AtelierBg() {
 
 function TiltCard({
   children,
-  className = "",
+  className = '',
   delay = 0,
 }: {
   children: ReactNode;
@@ -197,7 +197,9 @@ function TiltCard({
     el.style.transform = `perspective(1000px) rotateY(${((e.clientX - r.left) / r.width - 0.5) * 2}deg) rotateX(${((e.clientY - r.top) / r.height - 0.5) * -2}deg)`;
   }, []);
   const onLeave = useCallback(() => {
-    ref.current && (ref.current.style.transform = "perspective(1000px) rotateY(0) rotateX(0)");
+    if (ref.current) {
+      ref.current.style.transform = 'perspective(1000px) rotateY(0) rotateX(0)';
+    }
   }, []);
 
   return (
@@ -206,8 +208,7 @@ function TiltCard({
       className={`atelier-enter atelier-glass relative rounded-2xl p-5 transition-[transform] duration-[400ms] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform ${className}`}
       style={{ animationDelay: `${delay}ms` }}
       onMouseMove={onMove}
-      onMouseLeave={onLeave}
-    >
+      onMouseLeave={onLeave}>
       {children}
     </div>
   );
@@ -224,8 +225,8 @@ function PipelineConnector() {
         className="absolute start-0 h-full w-[2px] rounded-full"
         style={{
           background:
-            "linear-gradient(to bottom, var(--color-primary), color-mix(in oklch, var(--color-primary) 30%, transparent))",
-          boxShadow: "0 0 6px color-mix(in oklch, var(--color-primary) 20%, transparent)",
+            'linear-gradient(to bottom, var(--color-primary), color-mix(in oklch, var(--color-primary) 30%, transparent))',
+          boxShadow: '0 0 6px color-mix(in oklch, var(--color-primary) 20%, transparent)',
         }}
       />
       <div className="ms-4 h-px flex-1 bg-gradient-to-r from-border/40 to-transparent" />
@@ -240,7 +241,7 @@ function PipelineConnector() {
 interface TaskCardV2Props {
   index: number;
   task: TaskFormValues;
-  form: ReturnType<typeof useTemplateForm>["form"];
+  form: ReturnType<typeof useTemplateForm>['form'];
   allTasks: TaskFormValues[];
   onRemove: (i: number) => void;
   dragHandleProps?: { attributes: Record<string, unknown>; listeners: Record<string, unknown> };
@@ -253,7 +254,7 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
 
   const { data: users } = useQuery(
     trpc.user.list.queryOptions(undefined, {
-      enabled: expanded && form.watch(`tasks.${index}.assigneeMode`) === "FIXED_USER",
+      enabled: expanded && form.watch(`tasks.${index}.assigneeMode`) === 'FIXED_USER',
     }),
   );
 
@@ -263,22 +264,19 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
       <button
         type="button"
         className="flex w-full items-center gap-3 px-4 py-3 text-start"
-        onClick={() => setExpanded(!expanded)}
-      >
+        onClick={() => setExpanded(!expanded)}>
         {/* Drag handle */}
         <span
           className="cursor-grab touch-none text-muted-foreground/30 hover:text-muted-foreground/60"
           {...(dragHandleProps?.attributes ?? {})}
-          {...(dragHandleProps?.listeners ?? {})}
-        >
+          {...(dragHandleProps?.listeners ?? {})}>
           <GripVertical className="h-4 w-4" />
         </span>
 
         {/* Step number + icon */}
         <div
           className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white text-[11px] font-black shadow-sm"
-          style={{ background: cfg.color }}
-        >
+          style={{ background: cfg.color }}>
           {index + 1}
         </div>
 
@@ -334,7 +332,7 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
                 Task Type
               </label>
               <div className="grid grid-cols-5 gap-1">
-                {TASK_TYPES.map((tt) => {
+                {TASK_TYPES.map(tt => {
                   const TTIcon = tt.icon;
                   const active = task.taskType === tt.value;
                   return (
@@ -347,10 +345,9 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
                       }
                       className={`flex h-8 items-center justify-center rounded-lg border text-xs transition-all ${
                         active
-                          ? "border-primary/40 bg-primary/8 text-primary shadow-sm"
-                          : "border-transparent text-muted-foreground/40 hover:bg-muted/30 hover:text-muted-foreground"
-                      }`}
-                    >
+                          ? 'border-primary/40 bg-primary/8 text-primary shadow-sm'
+                          : 'border-transparent text-muted-foreground/40 hover:bg-muted/30 hover:text-muted-foreground'
+                      }`}>
                       <TTIcon className="h-3.5 w-3.5" />
                     </button>
                   );
@@ -381,15 +378,14 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
               <select
                 className="h-9 w-full rounded-lg border border-border/40 bg-transparent px-2 text-[12px] focus:border-primary/40 focus:outline-none"
                 value={task.assigneeMode}
-                onChange={(e) =>
+                onChange={e =>
                   form.setValue(
                     `tasks.${index}.assigneeMode`,
-                    e.target.value as TaskFormValues["assigneeMode"],
+                    e.target.value as TaskFormValues['assigneeMode'],
                     { shouldDirty: true },
                   )
-                }
-              >
-                {ASSIGNEE_MODES.map((m) => (
+                }>
+                {ASSIGNEE_MODES.map(m => (
                   <option key={m.value} value={m.value}>
                     {m.label}
                   </option>
@@ -397,40 +393,38 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
               </select>
 
               {/* Conditional: role select */}
-              {task.assigneeMode === "ROLE_BASED" && (
+              {task.assigneeMode === 'ROLE_BASED' && (
                 <select
                   className="mt-1.5 h-8 w-full rounded-lg border border-border/30 bg-transparent px-2 text-[11px] focus:border-primary/40 focus:outline-none"
-                  value={task.assigneeRole ?? ""}
-                  onChange={(e) =>
+                  value={task.assigneeRole ?? ''}
+                  onChange={e =>
                     form.setValue(
                       `tasks.${index}.assigneeRole`,
-                      e.target.value as TaskFormValues["assigneeRole"],
+                      e.target.value as TaskFormValues['assigneeRole'],
                       { shouldDirty: true },
                     )
-                  }
-                >
+                  }>
                   <option value="">Select role...</option>
-                  {ROLES.map((r) => (
+                  {ROLES.map(r => (
                     <option key={r} value={r}>
-                      {r.replace(/_/g, " ")}
+                      {r.replace(/_/g, ' ')}
                     </option>
                   ))}
                 </select>
               )}
 
               {/* Conditional: user select */}
-              {task.assigneeMode === "FIXED_USER" && (
+              {task.assigneeMode === 'FIXED_USER' && (
                 <select
                   className="mt-1.5 h-8 w-full rounded-lg border border-border/30 bg-transparent px-2 text-[11px] focus:border-primary/40 focus:outline-none"
-                  value={task.assigneeUserId ?? ""}
-                  onChange={(e) =>
+                  value={task.assigneeUserId ?? ''}
+                  onChange={e =>
                     form.setValue(`tasks.${index}.assigneeUserId`, e.target.value, {
                       shouldDirty: true,
                     })
-                  }
-                >
+                  }>
                   <option value="">Select user...</option>
-                  {(users as Array<{ id: string; name: string | null }> | undefined)?.map((u) => (
+                  {(users as Array<{ id: string; name: string | null }> | undefined)?.map(u => (
                     <option key={u.id} value={u.id}>
                       {u.name ?? u.id}
                     </option>
@@ -481,12 +475,12 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
                 <div className="flex h-9 items-center">
                   <Switch
                     checked={task.required}
-                    onCheckedChange={(v) =>
+                    onCheckedChange={v =>
                       form.setValue(`tasks.${index}.required`, !!v, { shouldDirty: true })
                     }
                   />
                   <span className="ms-2 text-[11px] text-muted-foreground/60">
-                    {task.required ? "Yes" : "No"}
+                    {task.required ? 'Yes' : 'No'}
                   </span>
                 </div>
               </div>
@@ -497,19 +491,18 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
                   </label>
                   <select
                     className="h-8 w-full rounded-lg border border-border/30 bg-transparent px-2 text-[11px] focus:border-primary/40 focus:outline-none"
-                    value={task.dependsOnTaskTemplateId ?? ""}
-                    onChange={(e) =>
+                    value={task.dependsOnTaskTemplateId ?? ''}
+                    onChange={e =>
                       form.setValue(
                         `tasks.${index}.dependsOnTaskTemplateId`,
                         e.target.value || undefined,
                         { shouldDirty: true },
                       )
-                    }
-                  >
+                    }>
                     <option value="">None</option>
                     {allTasks.slice(0, index).map((t, ti) => (
                       <option key={ti} value={t.id ?? `task-${ti}`}>
-                        Step {ti + 1}: {t.title || "Untitled"}
+                        Step {ti + 1}: {t.title || 'Untitled'}
                       </option>
                     ))}
                   </select>
@@ -523,8 +516,7 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
             <button
               type="button"
               onClick={() => onRemove(index)}
-              className="flex items-center gap-1 text-[11px] font-medium text-destructive/60 transition-colors hover:text-destructive"
-            >
+              className="flex items-center gap-1 text-[11px] font-medium text-destructive/60 transition-colors hover:text-destructive">
               <Trash2 className="h-3 w-3" /> Remove task
             </button>
           </div>
@@ -550,8 +542,7 @@ function SortableTask(props: TaskCardV2Props & { id: string }) {
         transition,
         opacity: isDragging ? 0.5 : 1,
         zIndex: isDragging ? 50 : undefined,
-      }}
-    >
+      }}>
       <TaskCardV2
         {...props}
         dragHandleProps={{
@@ -568,12 +559,12 @@ function SortableTask(props: TaskCardV2Props & { id: string }) {
 // =============================================================================
 
 export default function NewWorkflowTemplatePage() {
-  const t = useTranslations("Workflows");
+  const t = useTranslations('Workflows');
   const router = useRouter();
   const queryClient = useQueryClient();
 
   const { form, fields, isDirty, addTask, removeTask, reorderTasks } = useTemplateForm();
-  const tasks = form.watch("tasks");
+  const tasks = form.watch('tasks');
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -583,11 +574,11 @@ export default function NewWorkflowTemplatePage() {
   const createMutation = useMutation(
     trpc.workflow.createTemplate.mutationOptions({
       onSuccess: () => {
-        toast.success(t("toastTemplateSaved"));
-        queryClient.invalidateQueries({ queryKey: ["workflow"] });
-        router.push("/workflows");
+        toast.success(t('toastTemplateSaved'));
+        queryClient.invalidateQueries({ queryKey: ['workflow'] });
+        router.push('/workflows');
       },
-      onError: () => toast.error(t("errorSaveTemplate")),
+      onError: () => toast.error(t('errorSaveTemplate')),
     }),
   );
 
@@ -622,7 +613,7 @@ export default function NewWorkflowTemplatePage() {
     (event: DragEndEvent) => {
       const { active, over } = event;
       if (!over || active.id === over.id) return;
-      const ids = fields.map((f) => f.id);
+      const ids = fields.map(f => f.id);
       const oi = ids.indexOf(active.id as string);
       const ni = ids.indexOf(over.id as string);
       if (oi !== -1 && ni !== -1) reorderTasks(oi, ni);
@@ -650,11 +641,11 @@ export default function NewWorkflowTemplatePage() {
                   type="text"
                   placeholder="Name your workflow..."
                   className="w-full bg-transparent font-display text-[24px] font-black tracking-tight text-foreground placeholder:text-muted-foreground/25 focus:outline-none lg:text-[28px]"
-                  {...form.register("name")}
+                  {...form.register('name')}
                 />
                 {form.formState.errors.name && (
                   <p className="text-[11px] text-destructive">
-                    {t("validationTemplateNameRequired")}
+                    {t('validationTemplateNameRequired')}
                   </p>
                 )}
 
@@ -664,20 +655,19 @@ export default function NewWorkflowTemplatePage() {
                     Workflow Type
                   </label>
                   <div className="flex flex-wrap gap-1.5">
-                    {TEMPLATE_TYPES.map((tt) => {
+                    {TEMPLATE_TYPES.map(tt => {
                       const TTIcon = tt.icon;
-                      const active = form.watch("type") === tt.value;
+                      const active = form.watch('type') === tt.value;
                       return (
                         <button
                           key={tt.value}
                           type="button"
-                          onClick={() => form.setValue("type", tt.value, { shouldDirty: true })}
+                          onClick={() => form.setValue('type', tt.value, { shouldDirty: true })}
                           className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.08em] transition-all ${
                             active
-                              ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
-                              : "bg-muted/30 text-muted-foreground/50 hover:bg-muted/50 hover:text-foreground"
-                          }`}
-                        >
+                              ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20'
+                              : 'bg-muted/30 text-muted-foreground/50 hover:bg-muted/50 hover:text-foreground'
+                          }`}>
                           <TTIcon className="h-3 w-3" />
                           {tt.label}
                         </button>
@@ -691,7 +681,7 @@ export default function NewWorkflowTemplatePage() {
                   rows={2}
                   placeholder="Describe what this workflow does..."
                   className="w-full resize-none rounded-xl border border-border/30 bg-transparent px-3 py-2.5 text-[12px] text-foreground placeholder:text-muted-foreground/30 focus:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/10"
-                  {...form.register("description")}
+                  {...form.register('description')}
                 />
               </div>
             </div>
@@ -700,10 +690,10 @@ export default function NewWorkflowTemplatePage() {
           {/* ============================================================== */}
           {/* PIPELINE — visual task list                                     */}
           {/* ============================================================== */}
-          <div className="atelier-enter" style={{ animationDelay: "150ms" }}>
+          <div className="atelier-enter" style={{ animationDelay: '150ms' }}>
             <div className="mb-3 flex items-center gap-2.5 ps-1">
               <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground/60">
-                Pipeline — {fields.length} {fields.length === 1 ? "step" : "steps"}
+                Pipeline — {fields.length} {fields.length === 1 ? 'step' : 'steps'}
               </span>
               <div className="h-px flex-1 bg-gradient-to-r from-border/50 to-transparent" />
             </div>
@@ -728,12 +718,10 @@ export default function NewWorkflowTemplatePage() {
                 <DndContext
                   sensors={sensors}
                   collisionDetection={closestCenter}
-                  onDragEnd={handleDragEnd}
-                >
+                  onDragEnd={handleDragEnd}>
                   <SortableContext
-                    items={fields.map((f) => f.id)}
-                    strategy={verticalListSortingStrategy}
-                  >
+                    items={fields.map(f => f.id)}
+                    strategy={verticalListSortingStrategy}>
                     {fields.map((field, i) => (
                       <div key={field.id}>
                         {i > 0 && <PipelineConnector />}
@@ -755,8 +743,7 @@ export default function NewWorkflowTemplatePage() {
                 <button
                   type="button"
                   onClick={addTask}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-primary/20 bg-primary/[0.02] py-3 text-[11px] font-semibold text-primary/60 transition-all hover:border-primary/40 hover:bg-primary/5 hover:text-primary"
-                >
+                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-primary/20 bg-primary/[0.02] py-3 text-[11px] font-semibold text-primary/60 transition-all hover:border-primary/40 hover:bg-primary/5 hover:text-primary">
                   <Plus className="h-3.5 w-3.5" /> Add step
                 </button>
               </div>
@@ -766,19 +753,19 @@ export default function NewWorkflowTemplatePage() {
           {/* ============================================================== */}
           {/* SAVE BAR                                                       */}
           {/* ============================================================== */}
-          <div className="atelier-enter sticky bottom-6 z-20" style={{ animationDelay: "250ms" }}>
+          <div className="atelier-enter sticky bottom-6 z-20" style={{ animationDelay: '250ms' }}>
             <div className="atelier-glass flex items-center justify-between rounded-2xl px-5 py-3 shadow-xl">
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2">
                   <div
-                    className={`h-2 w-2 rounded-full transition-colors ${isDirty ? "bg-amber-500" : "bg-emerald-500"}`}
+                    className={`h-2 w-2 rounded-full transition-colors ${isDirty ? 'bg-amber-500' : 'bg-emerald-500'}`}
                   />
                   <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/50">
-                    {isDirty ? "Unsaved changes" : "Saved"}
+                    {isDirty ? 'Unsaved changes' : 'Saved'}
                   </span>
                 </div>
                 <span className="text-[10px] text-muted-foreground/30">
-                  {fields.length} {fields.length === 1 ? "step" : "steps"}
+                  {fields.length} {fields.length === 1 ? 'step' : 'steps'}
                 </span>
               </div>
               <div className="flex items-center gap-2">
@@ -787,21 +774,19 @@ export default function NewWorkflowTemplatePage() {
                   variant="outline"
                   size="sm"
                   className="text-xs"
-                  onClick={() => router.push("/workflows")}
-                >
+                  onClick={() => router.push('/workflows')}>
                   Cancel
                 </Button>
                 <Button
                   type="submit"
                   size="sm"
                   className="text-xs"
-                  disabled={createMutation.isPending}
-                >
+                  disabled={createMutation.isPending}>
                   {isDirty && (
                     <span className="me-1.5 inline-block h-1.5 w-1.5 rounded-full bg-current" />
                   )}
                   <Save className="me-1 h-3.5 w-3.5" />
-                  {createMutation.isPending ? "Saving..." : "Save Template"}
+                  {createMutation.isPending ? 'Saving...' : 'Save Template'}
                 </Button>
               </div>
             </div>

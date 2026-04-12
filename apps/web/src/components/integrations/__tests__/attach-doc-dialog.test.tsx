@@ -1,16 +1,16 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, setup, waitFor } from "@/test/test-utils";
-import { AttachDocDialog } from "../attach-doc-dialog";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { render, screen, setup, waitFor } from '@/test/test-utils';
+import { AttachDocDialog } from '../attach-doc-dialog';
 
 // ---------------------------------------------------------------------------
 // Mocks
 // ---------------------------------------------------------------------------
 
-vi.mock("sonner", () => ({
+vi.mock('sonner', () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
 
-vi.mock("../provider-icons", () => ({
+vi.mock('../provider-icons', () => ({
   NotionIcon: ({ className }: { className?: string }) => (
     <span data-testid="notion-icon" className={className} />
   ),
@@ -21,20 +21,20 @@ vi.mock("../provider-icons", () => ({
 
 const mockSearchResults = [
   {
-    id: "page-1",
-    title: "Design System",
+    id: 'page-1',
+    title: 'Design System',
     icon: null,
-    subtitle: "Engineering",
-    url: "https://notion.so/page-1",
-    provider: "notion",
+    subtitle: 'Engineering',
+    url: 'https://notion.so/page-1',
+    provider: 'notion',
   },
   {
-    id: "page-2",
-    title: "API Docs",
+    id: 'page-2',
+    title: 'API Docs',
     icon: null,
-    subtitle: "Docs Space",
-    url: "https://confluence.com/page-2",
-    provider: "confluence",
+    subtitle: 'Docs Space',
+    url: 'https://confluence.com/page-2',
+    provider: 'confluence',
   },
 ];
 
@@ -43,14 +43,14 @@ let searchLoading = false;
 
 const mockMutate = vi.fn();
 
-vi.mock("@tanstack/react-query", async () => {
+vi.mock('@tanstack/react-query', async () => {
   const actual =
-    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
+    await vi.importActual<typeof import('@tanstack/react-query')>('@tanstack/react-query');
   return {
     ...actual,
     useQuery: (opts: { queryKey?: unknown; enabled?: boolean }) => {
-      const key = JSON.stringify(opts.queryKey ?? "");
-      if (key.includes("search")) {
+      const key = JSON.stringify(opts.queryKey ?? '');
+      if (key.includes('search')) {
         return { isLoading: searchLoading, data: searchData };
       }
       return { isLoading: false, data: null };
@@ -64,15 +64,15 @@ vi.mock("@tanstack/react-query", async () => {
   };
 });
 
-vi.mock("@/trpc/init", () => ({
+vi.mock('@/trpc/init', () => ({
   trpc: {
     docs: {
       search: {
-        queryOptions: vi.fn(() => ({ queryKey: ["docs", "search"] })),
+        queryOptions: vi.fn(() => ({ queryKey: ['docs', 'search'] })),
       },
       attach: { mutationOptions: vi.fn(() => ({})) },
       list: {
-        queryKey: vi.fn(() => ["docs", "list"]),
+        queryKey: vi.fn(() => ['docs', 'list']),
       },
     },
   },
@@ -82,7 +82,7 @@ vi.mock("@/trpc/init", () => ({
 // Tests
 // ---------------------------------------------------------------------------
 
-describe("AttachDocDialog", () => {
+describe('AttachDocDialog', () => {
   const onOpenChange = vi.fn();
 
   beforeEach(() => {
@@ -91,90 +91,90 @@ describe("AttachDocDialog", () => {
     searchLoading = false;
   });
 
-  it("renders dialog title when open", () => {
+  it('renders dialog title when open', () => {
     render(<AttachDocDialog workflowTaskRunId="wtr-1" open={true} onOpenChange={onOpenChange} />);
-    expect(screen.getByText("Attach Document")).toBeInTheDocument();
+    expect(screen.getByText('Attach Document')).toBeInTheDocument();
   });
 
-  it("renders dialog description", () => {
+  it('renders dialog description', () => {
     render(<AttachDocDialog workflowTaskRunId="wtr-1" open={true} onOpenChange={onOpenChange} />);
-    expect(screen.getByText("Search for a page to link to this step.")).toBeInTheDocument();
+    expect(screen.getByText('Search for a page to link to this step.')).toBeInTheDocument();
   });
 
-  it("does not render dialog when closed", () => {
+  it('does not render dialog when closed', () => {
     render(<AttachDocDialog workflowTaskRunId="wtr-1" open={false} onOpenChange={onOpenChange} />);
-    expect(screen.queryByText("Attach Document")).not.toBeInTheDocument();
+    expect(screen.queryByText('Attach Document')).not.toBeInTheDocument();
   });
 
-  it("renders search input with placeholder", () => {
+  it('renders search input with placeholder', () => {
     render(<AttachDocDialog workflowTaskRunId="wtr-1" open={true} onOpenChange={onOpenChange} />);
     expect(
-      screen.getByPlaceholderText("Search Notion and Confluence pages..."),
+      screen.getByPlaceholderText('Search Notion and Confluence pages...'),
     ).toBeInTheDocument();
   });
 
-  it("renders provider filter buttons", () => {
+  it('renders provider filter buttons', () => {
     render(<AttachDocDialog workflowTaskRunId="wtr-1" open={true} onOpenChange={onOpenChange} />);
-    expect(screen.getByText("All")).toBeInTheDocument();
-    expect(screen.getByText("Notion")).toBeInTheDocument();
-    expect(screen.getByText("Confluence")).toBeInTheDocument();
+    expect(screen.getByText('All')).toBeInTheDocument();
+    expect(screen.getByText('Notion')).toBeInTheDocument();
+    expect(screen.getByText('Confluence')).toBeInTheDocument();
   });
 
-  it("shows no results message when search returns empty", async () => {
+  it('shows no results message when search returns empty', async () => {
     searchData = [];
     const { user } = setup(
       <AttachDocDialog workflowTaskRunId="wtr-1" open={true} onOpenChange={onOpenChange} />,
     );
-    const input = screen.getByPlaceholderText("Search Notion and Confluence pages...");
-    await user.type(input, "xyz");
+    const input = screen.getByPlaceholderText('Search Notion and Confluence pages...');
+    await user.type(input, 'xyz');
     await waitFor(() => {
-      expect(screen.getByText("No pages found matching your search.")).toBeInTheDocument();
+      expect(screen.getByText('No pages found matching your search.')).toBeInTheDocument();
     });
   });
 
-  it("renders search results when available", async () => {
+  it('renders search results when available', async () => {
     searchData = mockSearchResults;
     const { user } = setup(
       <AttachDocDialog workflowTaskRunId="wtr-1" open={true} onOpenChange={onOpenChange} />,
     );
-    const input = screen.getByPlaceholderText("Search Notion and Confluence pages...");
-    await user.type(input, "design");
+    const input = screen.getByPlaceholderText('Search Notion and Confluence pages...');
+    await user.type(input, 'design');
     await waitFor(() => {
-      expect(screen.getByText("Design System")).toBeInTheDocument();
-      expect(screen.getByText("API Docs")).toBeInTheDocument();
+      expect(screen.getByText('Design System')).toBeInTheDocument();
+      expect(screen.getByText('API Docs')).toBeInTheDocument();
     });
   });
 
-  it("renders result subtitles", async () => {
+  it('renders result subtitles', async () => {
     searchData = mockSearchResults;
     const { user } = setup(
       <AttachDocDialog workflowTaskRunId="wtr-1" open={true} onOpenChange={onOpenChange} />,
     );
-    const input = screen.getByPlaceholderText("Search Notion and Confluence pages...");
-    await user.type(input, "docs");
+    const input = screen.getByPlaceholderText('Search Notion and Confluence pages...');
+    await user.type(input, 'docs');
     await waitFor(() => {
-      expect(screen.getByText("Engineering")).toBeInTheDocument();
-      expect(screen.getByText("Docs Space")).toBeInTheDocument();
+      expect(screen.getByText('Engineering')).toBeInTheDocument();
+      expect(screen.getByText('Docs Space')).toBeInTheDocument();
     });
   });
 
-  it("calls mutate when selecting a result", async () => {
+  it('calls mutate when selecting a result', async () => {
     searchData = mockSearchResults;
     const { user } = setup(
       <AttachDocDialog workflowTaskRunId="wtr-1" open={true} onOpenChange={onOpenChange} />,
     );
-    const input = screen.getByPlaceholderText("Search Notion and Confluence pages...");
-    await user.type(input, "design");
+    const input = screen.getByPlaceholderText('Search Notion and Confluence pages...');
+    await user.type(input, 'design');
     await waitFor(() => {
-      expect(screen.getByText("Design System")).toBeInTheDocument();
+      expect(screen.getByText('Design System')).toBeInTheDocument();
     });
-    await user.click(screen.getByText("Design System"));
+    await user.click(screen.getByText('Design System'));
     expect(mockMutate).toHaveBeenCalledWith(
       expect.objectContaining({
-        workflowTaskRunId: "wtr-1",
-        externalId: "page-1",
-        externalUrl: "https://notion.so/page-1",
-        externalType: "NOTION_PAGE",
+        workflowTaskRunId: 'wtr-1',
+        externalId: 'page-1',
+        externalUrl: 'https://notion.so/page-1',
+        externalType: 'NOTION_PAGE',
       }),
     );
   });

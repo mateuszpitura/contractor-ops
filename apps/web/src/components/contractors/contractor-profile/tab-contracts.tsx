@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import type { ColumnDef } from "@tanstack/react-table";
-import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
-import { FileText, Plus } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useMemo, useState } from "react";
-import { ContractWizardDialog } from "@/components/contracts/contract-wizard/wizard-dialog";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useQuery } from '@tanstack/react-query';
+import type { ColumnDef } from '@tanstack/react-table';
+import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { FileText, Plus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useMemo, useState } from 'react';
+import { ContractWizardDialog } from '@/components/contracts/contract-wizard/wizard-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -17,9 +17,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Link } from "@/i18n/navigation";
-import { trpc } from "@/trpc/init";
+} from '@/components/ui/table';
+import { Link } from '@/i18n/navigation';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Row type (subset of full ContractRow for the mini table)
@@ -40,14 +40,14 @@ type MiniContractRow = {
 // ---------------------------------------------------------------------------
 
 const statusBadgeColors: Record<string, string> = {
-  DRAFT: "bg-muted text-muted-foreground border border-border",
-  PENDING_SIGNATURE: "bg-muted text-muted-foreground border border-border",
-  ACTIVE: "bg-green-500/10 text-green-600 dark:text-green-400",
-  EXPIRING: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
-  EXPIRED: "bg-red-500/10 text-red-600 dark:text-red-400",
-  TERMINATED: "bg-muted text-muted-foreground border border-border",
-  SUPERSEDED: "bg-muted/50 text-muted-foreground/60 border border-border/50",
-  ARCHIVED: "bg-muted text-muted-foreground border border-border",
+  DRAFT: 'bg-muted text-muted-foreground border border-border',
+  PENDING_SIGNATURE: 'bg-muted text-muted-foreground border border-border',
+  ACTIVE: 'bg-green-500/10 text-green-600 dark:text-green-400',
+  EXPIRING: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+  EXPIRED: 'bg-red-500/10 text-red-600 dark:text-red-400',
+  TERMINATED: 'bg-muted text-muted-foreground border border-border',
+  SUPERSEDED: 'bg-muted/50 text-muted-foreground/60 border border-border/50',
+  ARCHIVED: 'bg-muted text-muted-foreground border border-border',
 };
 
 // ---------------------------------------------------------------------------
@@ -63,7 +63,7 @@ type TabContractsProps = {
 // ---------------------------------------------------------------------------
 
 export function TabContracts({ contractorId }: TabContractsProps) {
-  const t = useTranslations("Contracts");
+  const t = useTranslations('Contracts');
   const [wizardOpen, setWizardOpen] = useState(false);
   const [page, setPage] = useState(1);
   const pageSize = 10;
@@ -73,8 +73,8 @@ export function TabContracts({ contractorId }: TabContractsProps) {
       contractorId,
       page,
       pageSize,
-      sortBy: "startDate",
-      sortOrder: "desc",
+      sortBy: 'startDate',
+      sortOrder: 'desc',
     }),
   );
 
@@ -86,29 +86,29 @@ export function TabContracts({ contractorId }: TabContractsProps) {
   const columns: ColumnDef<MiniContractRow>[] = useMemo(
     () => [
       {
-        accessorKey: "title",
-        header: t("contractorTab.columns.title" as Parameters<typeof t>[0]),
+        accessorKey: 'title',
+        header: t('contractorTab.columns.title' as Parameters<typeof t>[0]),
         cell: ({ row }) => <span className="font-medium">{row.original.title}</span>,
       },
       {
-        accessorKey: "status",
-        header: t("contractorTab.columns.status" as Parameters<typeof t>[0]),
+        accessorKey: 'status',
+        header: t('contractorTab.columns.status' as Parameters<typeof t>[0]),
         cell: ({ row }) => (
-          <Badge variant="secondary" className={statusBadgeColors[row.original.status] ?? ""}>
+          <Badge variant="secondary" className={statusBadgeColors[row.original.status] ?? ''}>
             {t(`status.${row.original.status}` as Parameters<typeof t>[0])}
           </Badge>
         ),
       },
       {
-        accessorKey: "startDate",
-        header: t("contractorTab.columns.startDate" as Parameters<typeof t>[0]),
+        accessorKey: 'startDate',
+        header: t('contractorTab.columns.startDate' as Parameters<typeof t>[0]),
         cell: ({ row }) => {
           if (!row.original.startDate)
             return <span className="text-muted-foreground">&mdash;</span>;
           try {
             return (
               <span className="text-sm">
-                {new Date(row.original.startDate).toLocaleDateString("pl-PL")}
+                {new Date(row.original.startDate).toLocaleDateString('pl-PL')}
               </span>
             );
           } catch {
@@ -117,14 +117,14 @@ export function TabContracts({ contractorId }: TabContractsProps) {
         },
       },
       {
-        accessorKey: "endDate",
-        header: t("contractorTab.columns.endDate" as Parameters<typeof t>[0]),
+        accessorKey: 'endDate',
+        header: t('contractorTab.columns.endDate' as Parameters<typeof t>[0]),
         cell: ({ row }) => {
           if (!row.original.endDate) return <span className="text-muted-foreground">&mdash;</span>;
           try {
             return (
               <span className="text-sm">
-                {new Date(row.original.endDate).toLocaleDateString("pl-PL")}
+                {new Date(row.original.endDate).toLocaleDateString('pl-PL')}
               </span>
             );
           } catch {
@@ -133,13 +133,13 @@ export function TabContracts({ contractorId }: TabContractsProps) {
         },
       },
       {
-        accessorKey: "rateValueMinor",
-        header: t("contractorTab.columns.rate" as Parameters<typeof t>[0]),
+        accessorKey: 'rateValueMinor',
+        header: t('contractorTab.columns.rate' as Parameters<typeof t>[0]),
         cell: ({ row }) => {
           const minor = row.original.rateValueMinor;
-          if (typeof minor !== "number")
+          if (typeof minor !== 'number')
             return <span className="text-muted-foreground">&mdash;</span>;
-          const formatted = new Intl.NumberFormat("pl-PL", {
+          const formatted = new Intl.NumberFormat('pl-PL', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
           }).format(minor / 100);
@@ -185,11 +185,11 @@ export function TabContracts({ contractorId }: TabContractsProps) {
       <>
         <div className="flex min-h-[300px] flex-col items-center justify-center gap-3 text-center">
           <FileText className="size-10 text-muted-foreground/50" />
-          <h4 className="text-sm font-medium">{t("contractorTab.emptyHeading")}</h4>
-          <p className="max-w-sm text-sm text-muted-foreground">{t("contractorTab.emptyBody")}</p>
+          <h4 className="text-sm font-medium">{t('contractorTab.emptyHeading')}</h4>
+          <p className="max-w-sm text-sm text-muted-foreground">{t('contractorTab.emptyBody')}</p>
           <Button size="sm" onClick={() => setWizardOpen(true)}>
             <Plus className="me-1.5 size-3.5" />
-            {t("contractorTab.emptyCTA")}
+            {t('contractorTab.emptyCTA')}
           </Button>
         </div>
         <ContractWizardDialog
@@ -205,10 +205,10 @@ export function TabContracts({ contractorId }: TabContractsProps) {
     <div className="space-y-4">
       {/* Header with CTA */}
       <div className="flex items-center justify-between">
-        <h3 className="text-base font-medium">{t("contractorTab.heading")}</h3>
+        <h3 className="text-base font-medium">{t('contractorTab.heading')}</h3>
         <Button size="sm" onClick={() => setWizardOpen(true)}>
           <Plus className="me-1.5 size-3.5" />
-          {t("contractorTab.addCTA")}
+          {t('contractorTab.addCTA')}
         </Button>
       </div>
 
@@ -216,9 +216,9 @@ export function TabContracts({ contractorId }: TabContractsProps) {
       <div className="rounded-xl border bg-background">
         <Table>
           <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
+            {table.getHeaderGroups().map(headerGroup => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
+                {headerGroup.headers.map(header => (
                   <TableHead key={header.id}>
                     {header.isPlaceholder
                       ? null
@@ -229,9 +229,9 @@ export function TabContracts({ contractorId }: TabContractsProps) {
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows.map((row) => (
+            {table.getRowModel().rows.map(row => (
               <TableRow key={row.id} className="cursor-pointer hover:bg-muted/50">
-                {row.getVisibleCells().map((cell) => (
+                {row.getVisibleCells().map(cell => (
                   <TableCell key={cell.id}>
                     <Link href={`/contracts/${row.original.id}`} className="contents">
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -251,8 +251,7 @@ export function TabContracts({ contractorId }: TabContractsProps) {
             variant="outline"
             size="sm"
             disabled={page <= 1}
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-          >
+            onClick={() => setPage(p => Math.max(1, p - 1))}>
             &laquo;
           </Button>
           <span className="text-sm text-muted-foreground">
@@ -262,8 +261,7 @@ export function TabContracts({ contractorId }: TabContractsProps) {
             variant="outline"
             size="sm"
             disabled={page >= totalPages}
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-          >
+            onClick={() => setPage(p => Math.min(totalPages, p + 1))}>
             &raquo;
           </Button>
         </div>

@@ -1,30 +1,30 @@
-import type { Metadata } from "next";
-import { Bricolage_Grotesque, JetBrains_Mono, Outfit } from "next/font/google";
-import type { ReactNode } from "react";
+import type { Metadata } from 'next';
+import { Bricolage_Grotesque, JetBrains_Mono, Outfit } from 'next/font/google';
+import type { ReactNode } from 'react';
 
 // Sentry: instrument client-side route transitions for performance tracing
-export { onRouterTransitionStart } from "@/sentry.client.config";
+export { onRouterTransitionStart } from '@/sentry.client.config';
 
 const outfit = Outfit({
-  subsets: ["latin", "latin-ext"],
-  variable: "--font-sans",
+  subsets: ['latin', 'latin-ext'],
+  variable: '--font-sans',
 });
 
 const bricolageGrotesque = Bricolage_Grotesque({
-  subsets: ["latin", "latin-ext"],
-  variable: "--font-display",
+  subsets: ['latin', 'latin-ext'],
+  variable: '--font-display',
 });
 
 const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-mono",
+  subsets: ['latin'],
+  variable: '--font-mono',
 });
 
 export const metadata: Metadata = {
-  title: "Contractor Ops",
-  description: "Contractor management and invoice processing platform",
+  title: 'Contractor Ops',
+  description: 'Contractor management and invoice processing platform',
   icons: {
-    icon: "/favicon.svg",
+    icon: '/favicon.svg',
   },
 };
 
@@ -33,10 +33,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html
       lang="en"
       className={`${outfit.variable} ${bricolageGrotesque.variable} ${jetbrainsMono.variable} font-sans`}
-      suppressHydrationWarning
-    >
+      suppressHydrationWarning>
       <head>
         <script
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: server-rendered theme script with no user input
           dangerouslySetInnerHTML={{
             __html: `
               try {

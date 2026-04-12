@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle } from "lucide-react";
-import { useState } from "react";
-import { FeatureGate } from "@/components/billing/feature-gate";
-import { ProviderConnectionCard } from "@/components/settings/provider-connection-card";
-import { Button } from "@/components/ui/button";
-import { trpc } from "@/trpc/init";
-import { JiraLogo } from "./jira-logo";
-import { JiraStatusMappingDialog } from "./jira-status-mapping-dialog";
+import { useQuery } from '@tanstack/react-query';
+import { AlertTriangle } from 'lucide-react';
+import { useState } from 'react';
+import { FeatureGate } from '@/components/billing/feature-gate';
+import { ProviderConnectionCard } from '@/components/settings/provider-connection-card';
+import { Button } from '@/components/ui/button';
+import { trpc } from '@/trpc/init';
+import { JiraLogo } from './jira-logo';
+import { JiraStatusMappingDialog } from './jira-status-mapping-dialog';
 
 // ---------------------------------------------------------------------------
 // JiraProviderSection
@@ -27,7 +27,7 @@ export function JiraProviderSection() {
       }
     | null
     | undefined;
-  const isConnected = connection?.status === "CONNECTED";
+  const isConnected = connection?.status === 'CONNECTED';
 
   return (
     <FeatureGate requiredTier="Pro" featureName="Jira integration">

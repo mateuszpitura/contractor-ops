@@ -8,15 +8,15 @@
  *  - Each test verifies WHERE clauses, sort order, pagination, and data updates.
  */
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
-const ORG_ID = "clxxxxxxxxxxxxxxxxxxxxxxxxx";
-const USER_ID = "clyyyyyyyyyyyyyyyyyyyyyyyy";
-const NOTIF_ID = "clnotif0000000000000000001";
+const ORG_ID = 'clxxxxxxxxxxxxxxxxxxxxxxxxx';
+const USER_ID = 'clyyyyyyyyyyyyyyyyyyyyyyyy';
+const NOTIF_ID = 'clnotif0000000000000000001';
 
 // ---------------------------------------------------------------------------
 // Mock Prisma
@@ -36,7 +36,7 @@ const { mockPrisma } = vi.hoisted(() => {
       upsert: vi.fn(async (opts: { where: Rec; create: Rec }) => opts.create),
     },
     member: {
-      findFirst: vi.fn(async () => ({ role: "admin" })),
+      findFirst: vi.fn(async () => ({ role: 'admin' })),
     },
     $transaction: vi.fn(async (fn: (tx: Rec) => Promise<unknown>) => fn(mockPrisma)),
   };
@@ -48,7 +48,7 @@ const { mockPrisma } = vi.hoisted(() => {
 // Mock modules
 // ---------------------------------------------------------------------------
 
-vi.mock("@contractor-ops/auth", () => ({
+vi.mock('@contractor-ops/auth', () => ({
   auth: {
     api: {
       getSession: vi.fn(),
@@ -57,7 +57,7 @@ vi.mock("@contractor-ops/auth", () => ({
   },
 }));
 
-vi.mock("@contractor-ops/db", () => ({
+vi.mock('@contractor-ops/db', () => ({
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
@@ -69,7 +69,7 @@ vi.mock("@contractor-ops/db", () => ({
   createTenantClientFrom: vi.fn(() => mockPrisma),
 }));
 
-vi.mock("../../services/notification-service.js", () => ({
+vi.mock('../../services/notification-service.js', () => ({
   dispatch: vi.fn(async () => undefined),
   getOrCreatePreferences: vi.fn(async (_uid: string, _oid: string, type: string) => ({
     notificationType: type,
@@ -79,18 +79,18 @@ vi.mock("../../services/notification-service.js", () => ({
   })),
 }));
 
-vi.mock("../../services/r2.js", () => ({
+vi.mock('../../services/r2.js', () => ({
   createPresignedUploadUrl: vi.fn(async () => ({
-    url: "https://r2.example.com/upload",
-    key: "mock-key",
+    url: 'https://r2.example.com/upload',
+    key: 'mock-key',
   })),
-  createPresignedDownloadUrl: vi.fn(async () => "https://r2.example.com/download"),
-  generateStorageKey: vi.fn(() => "mock-storage-key"),
+  createPresignedDownloadUrl: vi.fn(async () => 'https://r2.example.com/download'),
+  generateStorageKey: vi.fn(() => 'mock-storage-key'),
   headObject: vi.fn(async () => ({ ContentLength: 1024 })),
   deleteObject: vi.fn(async () => undefined),
 }));
 
-vi.mock("../../services/cache.js", () => ({
+vi.mock('../../services/cache.js', () => ({
   cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
   invalidate: vi.fn(async () => undefined),
   invalidateByPrefix: vi.fn(async () => undefined),
@@ -104,73 +104,73 @@ vi.mock("../../services/cache.js", () => ({
   CacheTTL: { ORG_SETTINGS: 300, ORG_SETTINGS_JSON: 300, ORG_BRANDING: 300, APPROVAL_CHAINS: 300 },
 }));
 
-vi.mock("../../services/invoice-matching.js", () => ({
-  computeDuplicateCheckHash: vi.fn(() => "hash"),
+vi.mock('../../services/invoice-matching.js', () => ({
+  computeDuplicateCheckHash: vi.fn(() => 'hash'),
   runAutoMatch: vi.fn(async () => undefined),
 }));
 
-vi.mock("../../services/bank-account-crypto.js", () => ({
+vi.mock('../../services/bank-account-crypto.js', () => ({
   encryptBankAccount: vi.fn((v: string) => `encrypted:${v}`),
 }));
 
-vi.mock("../../services/sanitize.js", () => ({
+vi.mock('../../services/sanitize.js', () => ({
   sanitizeStrings: vi.fn(<T>(v: T) => v),
 }));
 
-vi.mock("../../services/approval-engine.js", () => ({
+vi.mock('../../services/approval-engine.js', () => ({
   routeToChain: vi.fn(async () => null),
   createApprovalFlow: vi.fn(async () => ({})),
   advanceFlow: vi.fn(async () => undefined),
-  computeSlaStatus: vi.fn(() => "ON_TIME"),
+  computeSlaStatus: vi.fn(() => 'ON_TIME'),
 }));
 
-vi.mock("../../services/calendar-event-service.js", () => ({
+vi.mock('../../services/calendar-event-service.js', () => ({
   deleteCalendarEvent: vi.fn(async () => undefined),
 }));
 
-vi.mock("../../services/calendar-deadline-sync.js", () => ({
+vi.mock('../../services/calendar-deadline-sync.js', () => ({
   syncPaymentDueDeadline: vi.fn(async () => undefined),
   syncApprovalSlaDeadline: vi.fn(async () => undefined),
 }));
 
-vi.mock("../../services/report-export.js", () => ({
-  generateAuditCsv: vi.fn(async () => ({ base64: "bW9jaw==", filename: "audit.csv" })),
+vi.mock('../../services/report-export.js', () => ({
+  generateAuditCsv: vi.fn(async () => ({ base64: 'bW9jaw==', filename: 'audit.csv' })),
 }));
 
-vi.mock("../../services/billing-service.js", () => ({
+vi.mock('../../services/billing-service.js', () => ({
   syncSeatCountForOrg: vi.fn(async () => undefined),
   getSubscription: vi.fn(async () => null),
   createCheckoutSession: vi.fn(async () => ({})),
   createPortalSession: vi.fn(async () => ({})),
   getProrationPreview: vi.fn(async () => ({})),
-  ensureStripeCustomer: vi.fn(async () => "cus_mock"),
+  ensureStripeCustomer: vi.fn(async () => 'cus_mock'),
   createTopUpCheckoutSession: vi.fn(async () => ({})),
   updateSubscriptionSeatCount: vi.fn(async () => undefined),
 }));
 
-vi.mock("../../services/billing-constants.js", () => ({
+vi.mock('../../services/billing-constants.js', () => ({
   TIER_CREDIT_ALLOWANCE: { STARTER: 20, PRO: 100, ENTERPRISE: 500 },
   TRIAL_CREDIT_ALLOWANCE: 5,
-  KNOWN_SUBSCRIPTION_PRICE_IDS: new Set(["price_starter_monthly"]),
-  KNOWN_TOPUP_PRICE_IDS: new Set(["price_topup_10"]),
+  KNOWN_SUBSCRIPTION_PRICE_IDS: new Set(['price_starter_monthly']),
+  KNOWN_TOPUP_PRICE_IDS: new Set(['price_topup_10']),
 }));
 
-vi.mock("../../services/portal-change-request.js", () => ({
+vi.mock('../../services/portal-change-request.js', () => ({
   approveChangeRequest: vi.fn(async () => undefined),
   rejectChangeRequest: vi.fn(async () => undefined),
 }));
 
-vi.mock("../../services/mime-validator.js", () => ({
+vi.mock('../../services/mime-validator.js', () => ({
   isAllowedMimeType: vi.fn(() => true),
   validateMimeType: vi.fn(async () => ({ valid: true })),
 }));
 
-vi.mock("../../services/virus-scanner.js", () => ({
+vi.mock('../../services/virus-scanner.js', () => ({
   isClamAvailable: vi.fn(async () => false),
   scanBuffer: vi.fn(async () => ({ clean: true })),
 }));
 
-vi.mock("../../services/stripe-client.js", () => ({
+vi.mock('../../services/stripe-client.js', () => ({
   stripe: {
     subscriptions: { retrieve: vi.fn(), update: vi.fn(), list: vi.fn(async () => ({ data: [] })) },
     customers: { create: vi.fn(), retrieve: vi.fn() },
@@ -180,7 +180,7 @@ vi.mock("../../services/stripe-client.js", () => ({
   },
 }));
 
-vi.mock("../../services/credit-service.js", () => ({
+vi.mock('../../services/credit-service.js', () => ({
   deductCredits: vi.fn(async () => undefined),
   getBalance: vi.fn(async () => ({ credits: 0 })),
   getCreditBalance: vi.fn(async () => ({ credits: 0 })),
@@ -188,27 +188,27 @@ vi.mock("../../services/credit-service.js", () => ({
   checkAndDeductCredit: vi.fn(async () => true),
 }));
 
-vi.mock("../../services/ocr-extraction.js", () => ({
+vi.mock('../../services/ocr-extraction.js', () => ({
   extractInvoiceData: vi.fn(async () => ({})),
 }));
 
-vi.mock("../../services/billing-webhook.js", () => ({
+vi.mock('../../services/billing-webhook.js', () => ({
   handleStripeWebhook: vi.fn(async () => undefined),
 }));
 
-vi.mock("../../services/payment-export.js", () => ({
-  generateCsv: vi.fn(async () => Buffer.from("csv-data")),
-  generateElixir: vi.fn(() => Buffer.from("elixir-data")),
-  generateSepaXml: vi.fn(() => Buffer.from("sepa-data")),
-  resolveTransferTitle: vi.fn(() => "FV/2025/001"),
+vi.mock('../../services/payment-export.js', () => ({
+  generateCsv: vi.fn(async () => Buffer.from('csv-data')),
+  generateElixir: vi.fn(() => Buffer.from('elixir-data')),
+  generateSepaXml: vi.fn(() => Buffer.from('sepa-data')),
+  resolveTransferTitle: vi.fn(() => 'FV/2025/001'),
 }));
 
-vi.mock("../../services/bank-statement.js", () => ({
+vi.mock('../../services/bank-statement.js', () => ({
   parseBankStatement: vi.fn(() => []),
   matchStatementToRun: vi.fn(() => []),
 }));
 
-vi.mock("@sentry/nextjs", () => {
+vi.mock('@sentry/nextjs', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
     startSpan: vi.fn((_o: unknown, fn: (span: typeof mockSpan) => unknown) => fn(mockSpan)),
@@ -216,12 +216,12 @@ vi.mock("@sentry/nextjs", () => {
   };
 });
 
-vi.mock("@contractor-ops/logger", () => ({
+vi.mock('@contractor-ops/logger', () => ({
   createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
 }));
 
-vi.mock("@contractor-ops/logger/metrics", () => ({
+vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { increment: vi.fn(), histogram: vi.fn(), distribution: vi.fn() },
 }));
 
@@ -229,8 +229,8 @@ vi.mock("@contractor-ops/logger/metrics", () => ({
 // Imports (after mocks)
 // ---------------------------------------------------------------------------
 
-import { createCallerFactory } from "../../init.js";
-import { appRouter } from "../../root.js";
+import { createCallerFactory } from '../../init.js';
+import { appRouter } from '../../root.js';
 
 // ---------------------------------------------------------------------------
 // Caller helper
@@ -244,8 +244,8 @@ function makeCaller(userId: string, orgId: string) {
       id: `session-${userId}`,
       userId,
       activeOrganizationId: orgId,
-      expiresAt: new Date("2099-01-01"),
-      token: "mock-token",
+      expiresAt: new Date('2099-01-01'),
+      token: 'mock-token',
       createdAt: new Date(),
       updatedAt: new Date(),
       ipAddress: null,
@@ -253,14 +253,14 @@ function makeCaller(userId: string, orgId: string) {
     },
     user: {
       id: userId,
-      name: "Test User",
+      name: 'Test User',
       email: `${userId}@example.com`,
       emailVerified: true,
       image: null,
       banned: false,
       banReason: null,
       banExpires: null,
-      role: "admin",
+      role: 'admin',
       createdAt: new Date(),
       updatedAt: new Date(),
     },
@@ -286,8 +286,8 @@ beforeEach(() => {
 // Tests
 // ===========================================================================
 
-describe("notification.list", () => {
-  it("queries with userId + organizationId sorted by createdAt DESC", async () => {
+describe('notification.list', () => {
+  it('queries with userId + organizationId sorted by createdAt DESC', async () => {
     mockPrisma.notification.findMany.mockResolvedValueOnce([]);
     mockPrisma.notification.count.mockResolvedValueOnce(0);
 
@@ -299,12 +299,12 @@ describe("notification.list", () => {
           organizationId: ORG_ID,
           userId: USER_ID,
         }),
-        orderBy: { createdAt: "desc" },
+        orderBy: { createdAt: 'desc' },
       }),
     );
   });
 
-  it("applies pagination with skip/take based on page and perPage", async () => {
+  it('applies pagination with skip/take based on page and perPage', async () => {
     mockPrisma.notification.findMany.mockResolvedValueOnce([]);
     mockPrisma.notification.count.mockResolvedValueOnce(50);
 
@@ -319,7 +319,7 @@ describe("notification.list", () => {
     expect(result.totalPages).toBe(5); // 50 / 10
   });
 
-  it("adds unread filter when unreadOnly is true", async () => {
+  it('adds unread filter when unreadOnly is true', async () => {
     mockPrisma.notification.findMany.mockResolvedValueOnce([]);
     mockPrisma.notification.count.mockResolvedValueOnce(0);
 
@@ -329,15 +329,15 @@ describe("notification.list", () => {
       expect.objectContaining({
         where: expect.objectContaining({
           readAt: null,
-          status: { in: ["PENDING", "SENT"] },
+          status: { in: ['PENDING', 'SENT'] },
         }),
       }),
     );
   });
 });
 
-describe("notification.unreadCount", () => {
-  it("counts notifications with PENDING/SENT status for user in org", async () => {
+describe('notification.unreadCount', () => {
+  it('counts notifications with PENDING/SENT status for user in org', async () => {
     mockPrisma.notification.count.mockResolvedValueOnce(7);
 
     const result = await caller.notification.unreadCount();
@@ -347,20 +347,20 @@ describe("notification.unreadCount", () => {
       where: {
         userId: USER_ID,
         organizationId: ORG_ID,
-        status: { in: ["PENDING", "SENT"] },
+        status: { in: ['PENDING', 'SENT'] },
       },
     });
   });
 });
 
-describe("notification.markRead", () => {
-  it("rejects empty notification id", async () => {
-    await expect(caller.notification.markRead({ notificationId: "" })).rejects.toMatchObject({
-      code: "BAD_REQUEST",
+describe('notification.markRead', () => {
+  it('rejects empty notification id', async () => {
+    await expect(caller.notification.markRead({ notificationId: '' })).rejects.toMatchObject({
+      code: 'BAD_REQUEST',
     });
   });
 
-  it("updates only the notification owned by the current user in their org", async () => {
+  it('updates only the notification owned by the current user in their org', async () => {
     await caller.notification.markRead({ notificationId: NOTIF_ID });
 
     expect(mockPrisma.notification.updateMany).toHaveBeenCalledWith({
@@ -371,14 +371,14 @@ describe("notification.markRead", () => {
       },
       data: {
         readAt: expect.any(Date),
-        status: "READ",
+        status: 'READ',
       },
     });
   });
 });
 
-describe("notification.markAllRead", () => {
-  it("updates all unread notifications for user (readAt is null)", async () => {
+describe('notification.markAllRead', () => {
+  it('updates all unread notifications for user (readAt is null)', async () => {
     await caller.notification.markAllRead();
 
     expect(mockPrisma.notification.updateMany).toHaveBeenCalledWith({
@@ -389,7 +389,7 @@ describe("notification.markAllRead", () => {
       },
       data: {
         readAt: expect.any(Date),
-        status: "READ",
+        status: 'READ',
       },
     });
   });

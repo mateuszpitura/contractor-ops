@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { Check, Copy, Receipt } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { parseAsString, useQueryState } from "nuqs";
-import { Suspense, useCallback, useEffect, useState } from "react";
-import { InvoiceSidePanel } from "@/components/invoices/invoice-side-panel";
-import type { InvoiceRow } from "@/components/invoices/invoice-table/columns";
-import { InvoiceDataTable } from "@/components/invoices/invoice-table/data-table";
-import { useInvoiceFilters } from "@/components/invoices/invoice-table/use-invoice-filters";
-import { InvoiceUploadArea } from "@/components/invoices/invoice-upload-area";
-import { StatusChipBar } from "@/components/invoices/status-chip-bar";
-import { AnimateIn } from "@/components/shared/animate-in";
-import { EmptyState } from "@/components/shared/empty-state";
-import { PageHeader } from "@/components/shared/page-header";
-import { Skeleton } from "@/components/ui/skeleton";
-import { trpc } from "@/trpc/init";
+import { useQuery } from '@tanstack/react-query';
+import { Check, Copy, Receipt } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { parseAsString, useQueryState } from 'nuqs';
+import { Suspense, useCallback, useEffect, useState } from 'react';
+import { InvoiceSidePanel } from '@/components/invoices/invoice-side-panel';
+import type { InvoiceRow } from '@/components/invoices/invoice-table/columns';
+import { InvoiceDataTable } from '@/components/invoices/invoice-table/data-table';
+import { useInvoiceFilters } from '@/components/invoices/invoice-table/use-invoice-filters';
+import { InvoiceUploadArea } from '@/components/invoices/invoice-upload-area';
+import { StatusChipBar } from '@/components/invoices/status-chip-bar';
+import { AnimateIn } from '@/components/shared/animate-in';
+import { EmptyState } from '@/components/shared/empty-state';
+import { PageHeader } from '@/components/shared/page-header';
+import { Skeleton } from '@/components/ui/skeleton';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Email inbox address (constructed from placeholder org slug)
@@ -24,7 +24,7 @@ import { trpc } from "@/trpc/init";
 function useInvoiceEmail(): string {
   // In production, this would come from org settings.
   // For now, construct from a placeholder.
-  return "invoices@your-org.contractorhub.io";
+  return 'invoices@your-org.contractorhub.io';
 }
 
 // ---------------------------------------------------------------------------
@@ -32,18 +32,18 @@ function useInvoiceEmail(): string {
 // ---------------------------------------------------------------------------
 
 function InvoicesContent() {
-  const t = useTranslations("Invoices");
-  const te = useTranslations("EmptyStates");
+  const t = useTranslations('Invoices');
+  const te = useTranslations('EmptyStates');
   const invoiceEmail = useInvoiceEmail();
 
   const [selectedInvoice, setSelectedInvoice] = useState<InvoiceRow | null>(null);
   const [sidePanelOpen, setSidePanelOpen] = useState(false);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [emailCopied, setEmailCopied] = useState(false);
-  const [action, setAction] = useQueryState("action", parseAsString);
+  const [action, setAction] = useQueryState('action', parseAsString);
 
   useEffect(() => {
-    if (action === "upload") {
+    if (action === 'upload') {
       setUploadOpen(true);
       void setAction(null);
     }
@@ -67,7 +67,7 @@ function InvoicesContent() {
   }, []);
 
   const handleUpload = useCallback(() => {
-    setUploadOpen((prev) => !prev);
+    setUploadOpen(prev => !prev);
   }, []);
 
   const handleStatusChange = useCallback(
@@ -88,18 +88,18 @@ function InvoicesContent() {
   if (!isCountLoading && invoiceTotal === 0) {
     return (
       <div className="space-y-6">
-        <PageHeader title={t("pageTitle")} description={t("pageDescription")} />
+        <PageHeader title={t('pageTitle')} description={t('pageDescription')} />
         {uploadOpen ? (
           <InvoiceUploadArea onUploadComplete={() => setUploadOpen(false)} />
         ) : (
           <EmptyState
             icon={Receipt}
-            heading={te("invoices.heading")}
-            body={te("invoices.body")}
-            primaryAction={{ label: te("invoices.cta"), onClick: handleUpload }}
-            secondaryAction={{ label: te("invoices.secondary"), href: "/settings" }}
+            heading={te('invoices.heading')}
+            body={te('invoices.body')}
+            primaryAction={{ label: te('invoices.cta'), onClick: handleUpload }}
+            secondaryAction={{ label: te('invoices.secondary'), href: '/settings' }}
             prerequisiteMissing={contractorCount === 0}
-            prerequisiteAction={{ label: te("prerequisite.cta"), href: "/contractors" }}
+            prerequisiteAction={{ label: te('prerequisite.cta'), href: '/contractors' }}
           />
         )}
       </div>
@@ -110,7 +110,7 @@ function InvoicesContent() {
     <div className="space-y-6">
       {/* Page header */}
       <AnimateIn delay={0}>
-        <PageHeader title={t("pageTitle")} description={t("pageDescription")} />
+        <PageHeader title={t('pageTitle')} description={t('pageDescription')} />
       </AnimateIn>
 
       {/* Status chip bar */}
@@ -124,12 +124,11 @@ function InvoicesContent() {
           <InvoiceUploadArea onUploadComplete={() => setUploadOpen(false)} />
           {/* Email inbox tip */}
           <p className="text-sm text-muted-foreground text-center">
-            {t("upload.emailTip", { email: "" })}
+            {t('upload.emailTip', { email: '' })}
             <button
               type="button"
               onClick={handleCopyEmail}
-              className="inline-flex items-center gap-1 ms-1 font-medium text-primary hover:underline"
-            >
+              className="inline-flex items-center gap-1 ms-1 font-medium text-primary hover:underline">
               {invoiceEmail}
               {emailCopied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
             </button>
@@ -174,8 +173,7 @@ function InvoicesLoading() {
           {Array.from({ length: 8 }).map((_, i) => (
             <div
               key={`skel-${i}`}
-              className="flex items-center gap-4 px-4 py-3 border-b last:border-b-0"
-            >
+              className="flex items-center gap-4 px-4 py-3 border-b last:border-b-0">
               <Skeleton className="h-4 w-4" />
               <Skeleton className="h-4 w-28" />
               <Skeleton className="h-4 w-32" />

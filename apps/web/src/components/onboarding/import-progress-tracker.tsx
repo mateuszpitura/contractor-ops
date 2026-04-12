@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle, Loader2, XCircle } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Link } from "@/i18n/navigation";
-import { trpc } from "@/trpc/init";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { CheckCircle, Loader2, XCircle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { Link } from '@/i18n/navigation';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // ImportProgressTracker
@@ -18,14 +18,14 @@ interface ImportProgressTrackerProps {
 }
 
 export function ImportProgressTracker({ jobId }: ImportProgressTrackerProps) {
-  const t = useTranslations("OnboardingImport.step4");
+  const t = useTranslations('OnboardingImport.step4');
   const queryClient = useQueryClient();
 
   const progressQuery = useQuery({
     ...trpc.onboardingImport.getProgress.queryOptions({ jobId }),
-    refetchInterval: (query) => {
+    refetchInterval: query => {
       const status = query.state.data?.status;
-      return status === "completed" || status === "failed" ? false : 2000;
+      return status === 'completed' || status === 'failed' ? false : 2000;
     },
   });
 
@@ -48,8 +48,8 @@ export function ImportProgressTracker({ jobId }: ImportProgressTrackerProps) {
     );
   }
 
-  const isComplete = progress.status === "completed";
-  const isFailed = progress.status === "failed";
+  const isComplete = progress.status === 'completed';
+  const isFailed = progress.status === 'failed';
   const percentDone =
     progress.totalItems > 0 ? Math.round((progress.completedItems / progress.totalItems) * 100) : 0;
 
@@ -59,14 +59,14 @@ export function ImportProgressTracker({ jobId }: ImportProgressTrackerProps) {
       <Card className="mx-auto max-w-lg">
         <CardContent className="flex flex-col items-center gap-4 py-8">
           <CheckCircle className="size-12 text-green-600" aria-hidden="true" />
-          <h3 className="text-lg font-semibold">{t("completeHeading")}</h3>
+          <h3 className="text-lg font-semibold">{t('completeHeading')}</h3>
           <p className="text-center text-sm text-muted-foreground">
-            {t("completeBody", {
+            {t('completeBody', {
               imported: progress.completedItems,
               projects: 0,
             })}
           </p>
-          <Button render={<Link href="/dashboard" />}>{t("completeCta")}</Button>
+          <Button render={<Link href="/dashboard" />}>{t('completeCta')}</Button>
         </CardContent>
       </Card>
     );
@@ -78,7 +78,7 @@ export function ImportProgressTracker({ jobId }: ImportProgressTrackerProps) {
       <div className="space-y-2">
         <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">
-            {t("progressLabel", {
+            {t('progressLabel', {
               current: progress.completedItems,
               total: progress.totalItems,
             })}
@@ -96,11 +96,10 @@ export function ImportProgressTracker({ jobId }: ImportProgressTrackerProps) {
       {/* Failed items list */}
       {(isFailed || progress.failedItems.length > 0) && (
         <div className="space-y-2">
-          {progress.failedItems.map((item) => (
+          {progress.failedItems.map(item => (
             <div
               key={item.email}
-              className="flex items-center justify-between rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2"
-            >
+              className="flex items-center justify-between rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2">
               <div className="flex items-center gap-2">
                 <XCircle className="size-4 text-destructive" aria-hidden="true" />
                 <div>
@@ -112,12 +111,11 @@ export function ImportProgressTracker({ jobId }: ImportProgressTrackerProps) {
                 variant="ghost"
                 size="sm"
                 onClick={() => retryMutation.mutate({ jobId, email: item.email })}
-                disabled={retryMutation.isPending}
-              >
+                disabled={retryMutation.isPending}>
                 {retryMutation.isPending ? (
                   <Loader2 className="size-3 animate-spin" aria-hidden="true" />
                 ) : (
-                  t("retryButton")
+                  t('retryButton')
                 )}
               </Button>
             </div>

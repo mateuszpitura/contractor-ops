@@ -2,7 +2,7 @@
 // Minimal type declarations for docusign-esign SDK (pure JS, no bundled types)
 // ---------------------------------------------------------------------------
 
-declare module "docusign-esign" {
+declare module 'docusign-esign' {
   export class ApiClient {
     setBasePath(basePath: string): void;
     addDefaultHeader(name: string, value: string): void;

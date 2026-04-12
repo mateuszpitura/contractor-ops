@@ -7,13 +7,13 @@
  * Per D-09: states based on actual provider lifecycle needs.
  */
 export type ComplianceState =
-  | "not_connected" // No profile configured for this org
-  | "onboarding" // Setup in progress (e.g., ZATCA CSID exchange)
-  | "sandbox" // Connected to test environment
-  | "active" // Connected and syncing successfully
-  | "degraded" // Connected but recent errors (still operational)
-  | "suspended" // Manually paused or credential expired
-  | "error"; // Failed — requires intervention
+  | 'not_connected' // No profile configured for this org
+  | 'onboarding' // Setup in progress (e.g., ZATCA CSID exchange)
+  | 'sandbox' // Connected to test environment
+  | 'active' // Connected and syncing successfully
+  | 'degraded' // Connected but recent errors (still operational)
+  | 'suspended' // Manually paused or credential expired
+  | 'error'; // Failed — requires intervention
 
 /**
  * Capability flags for a profile.

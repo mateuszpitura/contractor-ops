@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Download } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { use } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useQuery } from '@tanstack/react-query';
+import { ArrowLeft, Download } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { use } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -15,17 +15,17 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Link } from "@/i18n/navigation";
-import { trpc } from "@/trpc/init";
+} from '@/components/ui/table';
+import { Link } from '@/i18n/navigation';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
 function formatAmount(minor: number, currency: string): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
     currency,
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
@@ -34,21 +34,21 @@ function formatAmount(minor: number, currency: string): string {
 
 function formatContractType(type: string): string {
   return type
-    .replace(/_/g, " ")
+    .replace(/_/g, ' ')
     .toLowerCase()
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+    .replace(/\b\w/g, c => c.toUpperCase());
 }
 
 function statusBadgeVariant(status: string) {
   switch (status) {
-    case "ACTIVE":
-      return "default" as const;
-    case "EXPIRING":
-      return "outline" as const;
-    case "EXPIRED":
-      return "secondary" as const;
+    case 'ACTIVE':
+      return 'default' as const;
+    case 'EXPIRING':
+      return 'outline' as const;
+    case 'EXPIRED':
+      return 'secondary' as const;
     default:
-      return "secondary" as const;
+      return 'secondary' as const;
   }
 }
 
@@ -67,41 +67,41 @@ function statusBadgeVariant(status: string) {
  * - Documents section with download buttons
  */
 export default function PortalContractDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const t = useTranslations("Portal");
+  const t = useTranslations('Portal');
   const { id } = use(params);
   const contractQuery = useQuery(trpc.portal.getContract.queryOptions({ id }));
   const contract = contractQuery.data;
   const isLoading = contractQuery.isPending;
 
   function formatDate(date: Date | string | null): string {
-    if (!date) return t("time.na");
-    const d = typeof date === "string" ? new Date(date) : date;
-    return new Intl.DateTimeFormat("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
+    if (!date) return t('time.na');
+    const d = typeof date === 'string' ? new Date(date) : date;
+    return new Intl.DateTimeFormat('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
     }).format(d);
   }
 
   function ratePeriodLabel(rateType: string): string {
     switch (rateType) {
-      case "MONTHLY":
-        return t("contracts.rateUnit.monthly");
-      case "HOURLY":
-        return t("contracts.rateUnit.hourly");
-      case "DAILY":
-        return t("contracts.rateUnit.daily");
-      case "FIXED":
-        return t("contracts.rateUnit.fixed");
+      case 'MONTHLY':
+        return t('contracts.rateUnit.monthly');
+      case 'HOURLY':
+        return t('contracts.rateUnit.hourly');
+      case 'DAILY':
+        return t('contracts.rateUnit.daily');
+      case 'FIXED':
+        return t('contracts.rateUnit.fixed');
       default:
-        return "";
+        return '';
     }
   }
 
   function formatFileSize(bytes: number): string {
-    if (bytes < 1024) return t("fileSize.bytes", { size: bytes });
-    if (bytes < 1024 * 1024) return t("fileSize.kilobytes", { size: (bytes / 1024).toFixed(1) });
-    return t("fileSize.megabytes", { size: (bytes / (1024 * 1024)).toFixed(1) });
+    if (bytes < 1024) return t('fileSize.bytes', { size: bytes });
+    if (bytes < 1024 * 1024) return t('fileSize.kilobytes', { size: (bytes / 1024).toFixed(1) });
+    return t('fileSize.megabytes', { size: (bytes / (1024 * 1024)).toFixed(1) });
   }
 
   if (isLoading) {
@@ -137,15 +137,14 @@ export default function PortalContractDetailPage({ params }: { params: Promise<{
   if (!contract) {
     return (
       <div className="py-12 text-center">
-        <p className="text-sm text-muted-foreground">{t("contracts.notFound")}</p>
+        <p className="text-sm text-muted-foreground">{t('contracts.notFound')}</p>
         <Button
           variant="ghost"
           size="sm"
           className="mt-4"
-          render={<Link href="/portal/contracts" />}
-        >
+          render={<Link href="/portal/contracts" />}>
           <ArrowLeft className="me-1 h-4 w-4" />
-          {t("contracts.backToContracts")}
+          {t('contracts.backToContracts')}
         </Button>
       </div>
     );
@@ -154,14 +153,14 @@ export default function PortalContractDetailPage({ params }: { params: Promise<{
   const rateDisplay =
     contract.rateValueMinor != null && contract.rateType
       ? `${formatAmount(contract.rateValueMinor, contract.currency)}${ratePeriodLabel(contract.rateType)}`
-      : t("time.na");
+      : t('time.na');
 
   return (
     <div>
       {/* Back button */}
       <Button variant="ghost" size="sm" render={<Link href="/portal/contracts" />}>
         <ArrowLeft className="me-1 h-4 w-4" />
-        {t("contracts.backToContracts")}
+        {t('contracts.backToContracts')}
       </Button>
 
       {/* Header */}
@@ -176,35 +175,35 @@ export default function PortalContractDetailPage({ params }: { params: Promise<{
       <Card className="mt-6">
         <CardContent className="grid gap-4 p-6 sm:grid-cols-2">
           <DetailField
-            label={t("contracts.contractNumber")}
-            value={contract.contractNumber ?? t("time.na")}
+            label={t('contracts.contractNumber')}
+            value={contract.contractNumber ?? t('time.na')}
           />
-          <DetailField label={t("contracts.type")} value={formatContractType(contract.type)} />
-          <DetailField label={t("contracts.startDate")} value={formatDate(contract.startDate)} />
-          <DetailField label={t("contracts.endDate")} value={formatDate(contract.endDate)} />
-          <DetailField label={t("contracts.rate")} value={rateDisplay} />
+          <DetailField label={t('contracts.type')} value={formatContractType(contract.type)} />
+          <DetailField label={t('contracts.startDate')} value={formatDate(contract.startDate)} />
+          <DetailField label={t('contracts.endDate')} value={formatDate(contract.endDate)} />
+          <DetailField label={t('contracts.rate')} value={rateDisplay} />
           <DetailField
-            label={t("contracts.billingModel")}
-            value={formatContractType(contract.billingModel ?? t("time.na"))}
+            label={t('contracts.billingModel')}
+            value={formatContractType(contract.billingModel ?? t('time.na'))}
           />
           <DetailField
-            label={t("contracts.paymentTerms")}
+            label={t('contracts.paymentTerms')}
             value={
               contract.paymentTermsDays != null
-                ? t("contracts.paymentTermsDays", { days: contract.paymentTermsDays })
-                : t("time.na")
+                ? t('contracts.paymentTermsDays', { days: contract.paymentTermsDays })
+                : t('time.na')
             }
           />
           <DetailField
-            label={t("contracts.autoRenewal")}
-            value={contract.autoRenewal ? t("contracts.yes") : t("contracts.no")}
+            label={t('contracts.autoRenewal')}
+            value={contract.autoRenewal ? t('contracts.yes') : t('contracts.no')}
           />
           <DetailField
-            label={t("contracts.noticePeriod")}
+            label={t('contracts.noticePeriod')}
             value={
               contract.noticePeriodDays != null
-                ? t("contracts.paymentTermsDays", { days: contract.noticePeriodDays })
-                : t("time.na")
+                ? t('contracts.paymentTermsDays', { days: contract.noticePeriodDays })
+                : t('time.na')
             }
           />
         </CardContent>
@@ -213,14 +212,14 @@ export default function PortalContractDetailPage({ params }: { params: Promise<{
       {/* Rate Periods */}
       {contract.ratePeriods && contract.ratePeriods.length > 0 && (
         <div className="mt-6">
-          <h2 className="text-xl font-semibold">{t("contracts.ratePeriods")}</h2>
+          <h2 className="text-xl font-semibold">{t('contracts.ratePeriods')}</h2>
           <Table className="mt-4">
             <TableHeader>
               <TableRow>
-                <TableHead>{t("contracts.columns.rate")}</TableHead>
-                <TableHead>{t("contracts.columns.type")}</TableHead>
-                <TableHead>{t("contracts.columns.validFrom")}</TableHead>
-                <TableHead>{t("contracts.columns.validTo")}</TableHead>
+                <TableHead>{t('contracts.columns.rate')}</TableHead>
+                <TableHead>{t('contracts.columns.type')}</TableHead>
+                <TableHead>{t('contracts.columns.validFrom')}</TableHead>
+                <TableHead>{t('contracts.columns.validTo')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -239,16 +238,16 @@ export default function PortalContractDetailPage({ params }: { params: Promise<{
 
       {/* Documents */}
       <div className="mt-6">
-        <h2 className="text-xl font-semibold">{t("contracts.documents")}</h2>
+        <h2 className="text-xl font-semibold">{t('contracts.documents')}</h2>
         {contract.documents && contract.documents.length > 0 ? (
           <div className="mt-4 space-y-2">
-            {contract.documents.map((doc) => (
+            {contract.documents.map(doc => (
               <div key={doc.id} className="flex items-center justify-between rounded-lg border p-3">
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium">{doc.name}</p>
                   <div className="flex items-center gap-2 mt-0.5">
                     <Badge variant="secondary">
-                      {formatContractType(doc.type ?? t("contracts.documentFallback"))}
+                      {formatContractType(doc.type ?? t('contracts.documentFallback'))}
                     </Badge>
                     <span className="text-[13px] text-muted-foreground">
                       {formatFileSize(doc.sizeBytes)}
@@ -258,16 +257,15 @@ export default function PortalContractDetailPage({ params }: { params: Promise<{
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => window.open(doc.downloadUrl, "_blank")}
-                >
+                  onClick={() => window.open(doc.downloadUrl, '_blank')}>
                   <Download className="me-1 h-4 w-4" />
-                  {t("documents.download")}
+                  {t('documents.download')}
                 </Button>
               </div>
             ))}
           </div>
         ) : (
-          <p className="mt-4 text-sm text-muted-foreground">{t("contracts.noDocuments")}</p>
+          <p className="mt-4 text-sm text-muted-foreground">{t('contracts.noDocuments')}</p>
         )}
       </div>
     </div>

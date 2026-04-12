@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { Plus, Trash2 } from "lucide-react";
-import { useCallback } from "react";
-import { ConfidenceBadge } from "@/components/ocr/confidence-badge";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Plus, Trash2 } from 'lucide-react';
+import { useCallback } from 'react';
+import { ConfidenceBadge } from '@/components/ocr/confidence-badge';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Table,
   TableBody,
@@ -13,8 +13,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/table';
+import { cn } from '@/lib/utils';
 
 interface LineItem {
   id: string;
@@ -36,7 +36,7 @@ interface LineItemsTableProps {
 }
 
 function formatMinorUnits(minor: number | null): string {
-  if (minor == null) return "";
+  if (minor == null) return '';
   return (minor / 100).toFixed(2);
 }
 
@@ -47,7 +47,7 @@ function parseToMinorUnits(display: string): number | null {
 }
 
 function formatNumber(value: number | null): string {
-  if (value == null) return "";
+  if (value == null) return '';
   return String(value);
 }
 
@@ -64,18 +64,18 @@ export function LineItemsTable({ items, onChange, readOnly = false }: LineItemsT
       const item = { ...updated[index] };
 
       switch (field) {
-        case "description":
-        case "unit":
-        case "vatRate":
+        case 'description':
+        case 'unit':
+        case 'vatRate':
           (item[field] as string | null) = value || null;
           break;
-        case "quantity":
+        case 'quantity':
           item.quantity = parseNumber(value);
           break;
-        case "unitPriceMinor":
-        case "netAmountMinor":
-        case "vatAmountMinor":
-        case "grossAmountMinor":
+        case 'unitPriceMinor':
+        case 'netAmountMinor':
+        case 'vatAmountMinor':
+        case 'grossAmountMinor':
           (item[field] as number | null) = parseToMinorUnits(value);
           break;
         default:
@@ -99,7 +99,7 @@ export function LineItemsTable({ items, onChange, readOnly = false }: LineItemsT
   const addItem = useCallback(() => {
     const newItem: LineItem = {
       id: crypto.randomUUID(),
-      description: "",
+      description: '',
       quantity: null,
       unit: null,
       unitPriceMinor: null,
@@ -143,7 +143,7 @@ export function LineItemsTable({ items, onChange, readOnly = false }: LineItemsT
                 <TableCell>
                   <InlineInput
                     value={item.description}
-                    onChange={(v) => updateItem(index, "description", v)}
+                    onChange={v => updateItem(index, 'description', v)}
                     readOnly={readOnly}
                     placeholder="Description"
                   />
@@ -151,7 +151,7 @@ export function LineItemsTable({ items, onChange, readOnly = false }: LineItemsT
                 <TableCell>
                   <InlineInput
                     value={formatNumber(item.quantity)}
-                    onChange={(v) => updateItem(index, "quantity", v)}
+                    onChange={v => updateItem(index, 'quantity', v)}
                     readOnly={readOnly}
                     placeholder="0"
                     className="text-end"
@@ -159,8 +159,8 @@ export function LineItemsTable({ items, onChange, readOnly = false }: LineItemsT
                 </TableCell>
                 <TableCell>
                   <InlineInput
-                    value={item.unit ?? ""}
-                    onChange={(v) => updateItem(index, "unit", v)}
+                    value={item.unit ?? ''}
+                    onChange={v => updateItem(index, 'unit', v)}
                     readOnly={readOnly}
                     placeholder="pcs"
                   />
@@ -168,7 +168,7 @@ export function LineItemsTable({ items, onChange, readOnly = false }: LineItemsT
                 <TableCell>
                   <InlineInput
                     value={formatMinorUnits(item.unitPriceMinor)}
-                    onChange={(v) => updateItem(index, "unitPriceMinor", v)}
+                    onChange={v => updateItem(index, 'unitPriceMinor', v)}
                     readOnly={readOnly}
                     placeholder="0.00"
                     className="text-end"
@@ -177,7 +177,7 @@ export function LineItemsTable({ items, onChange, readOnly = false }: LineItemsT
                 <TableCell>
                   <InlineInput
                     value={formatMinorUnits(item.netAmountMinor)}
-                    onChange={(v) => updateItem(index, "netAmountMinor", v)}
+                    onChange={v => updateItem(index, 'netAmountMinor', v)}
                     readOnly={readOnly}
                     placeholder="0.00"
                     className="text-end"
@@ -185,8 +185,8 @@ export function LineItemsTable({ items, onChange, readOnly = false }: LineItemsT
                 </TableCell>
                 <TableCell>
                   <InlineInput
-                    value={item.vatRate ?? ""}
-                    onChange={(v) => updateItem(index, "vatRate", v)}
+                    value={item.vatRate ?? ''}
+                    onChange={v => updateItem(index, 'vatRate', v)}
                     readOnly={readOnly}
                     placeholder="23%"
                   />
@@ -194,7 +194,7 @@ export function LineItemsTable({ items, onChange, readOnly = false }: LineItemsT
                 <TableCell>
                   <InlineInput
                     value={formatMinorUnits(item.vatAmountMinor)}
-                    onChange={(v) => updateItem(index, "vatAmountMinor", v)}
+                    onChange={v => updateItem(index, 'vatAmountMinor', v)}
                     readOnly={readOnly}
                     placeholder="0.00"
                     className="text-end"
@@ -203,7 +203,7 @@ export function LineItemsTable({ items, onChange, readOnly = false }: LineItemsT
                 <TableCell>
                   <InlineInput
                     value={formatMinorUnits(item.grossAmountMinor)}
-                    onChange={(v) => updateItem(index, "grossAmountMinor", v)}
+                    onChange={v => updateItem(index, 'grossAmountMinor', v)}
                     readOnly={readOnly}
                     placeholder="0.00"
                     className="text-end"
@@ -218,8 +218,7 @@ export function LineItemsTable({ items, onChange, readOnly = false }: LineItemsT
                       variant="ghost"
                       size="icon-sm"
                       onClick={() => removeItem(index)}
-                      aria-label="Remove Item"
-                    >
+                      aria-label="Remove Item">
                       <Trash2 className="text-muted-foreground" />
                     </Button>
                   </TableCell>
@@ -256,7 +255,7 @@ function InlineInput({
 }) {
   if (readOnly) {
     return (
-      <span className={cn("text-sm", className)}>
+      <span className={cn('text-sm', className)}>
         {value || <span className="text-muted-foreground">&mdash;</span>}
       </span>
     );
@@ -265,10 +264,10 @@ function InlineInput({
   return (
     <Input
       value={value}
-      onChange={(e) => onChange(e.target.value)}
+      onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
       className={cn(
-        "h-7 border-transparent bg-transparent text-sm shadow-none hover:border-input focus-visible:border-input",
+        'h-7 border-transparent bg-transparent text-sm shadow-none hover:border-input focus-visible:border-input',
         className,
       )}
     />

@@ -20,7 +20,7 @@ export interface RegisterParticipantParams {
 export interface ParticipantRegistration {
   registrationId: string;
   participantId: string;
-  status: "pending" | "registered" | "failed";
+  status: 'pending' | 'registered' | 'failed';
   registeredAt?: Date;
 }
 
@@ -29,7 +29,7 @@ export interface ParticipantRegistration {
  */
 export interface ParticipantStatus {
   participantId: string;
-  status: "pending" | "registered" | "active" | "suspended" | "deregistered";
+  status: 'pending' | 'registered' | 'active' | 'suspended' | 'deregistered';
 }
 
 /**
@@ -49,7 +49,7 @@ export interface TransmitInvoiceParams {
  */
 export interface TransmissionResult {
   transmissionId: string;
-  status: "accepted" | "rejected";
+  status: 'accepted' | 'rejected';
   timestamp: Date;
   errors?: Array<{ code: string; message: string }>;
 }
@@ -59,7 +59,7 @@ export interface TransmissionResult {
  */
 export interface TransmissionStatus {
   transmissionId: string;
-  status: "pending" | "transmitted" | "delivered" | "failed";
+  status: 'pending' | 'transmitted' | 'delivered' | 'failed';
   deliveredAt?: Date;
   failureReason?: string;
 }

@@ -1,5 +1,5 @@
-import { delay, HttpResponse } from "msw";
-import type { CapturedRequest, NetworkCondition } from "./types.js";
+import { delay, HttpResponse } from 'msw';
+import type { CapturedRequest, NetworkCondition } from './types.js';
 
 /**
  * Apply network conditions (delay, error injection) before returning a response.
@@ -30,8 +30,8 @@ export async function applyNetworkConditions(
   if (condition.errorRate && Math.random() < condition.errorRate) {
     const status = condition.errorStatus ?? 500;
     const body = condition.errorBody ?? {
-      error: "Simulated error",
-      message: "This error was injected by test network conditions",
+      error: 'Simulated error',
+      message: 'This error was injected by test network conditions',
     };
     return HttpResponse.json(body, { status }) as Response;
   }
@@ -57,25 +57,25 @@ export class RequestCapture {
 
   /** Get requests matching a URL pattern */
   getByUrl(pattern: string | RegExp): CapturedRequest[] {
-    return this.requests.filter((r) =>
-      typeof pattern === "string" ? r.url.includes(pattern) : pattern.test(r.url),
+    return this.requests.filter(r =>
+      typeof pattern === 'string' ? r.url.includes(pattern) : pattern.test(r.url),
     );
   }
 
   /** Get requests matching an HTTP method */
   getByMethod(method: string): CapturedRequest[] {
-    return this.requests.filter((r) => r.method.toUpperCase() === method.toUpperCase());
+    return this.requests.filter(r => r.method.toUpperCase() === method.toUpperCase());
   }
 
   /** Assert a request was made matching the given criteria */
   assertCalled(urlPattern: string | RegExp, method?: string): CapturedRequest {
     const matches = this.getByUrl(urlPattern).filter(
-      (r) => !method || r.method.toUpperCase() === method.toUpperCase(),
+      r => !method || r.method.toUpperCase() === method.toUpperCase(),
     );
     if (matches.length === 0) {
       throw new Error(
-        `Expected a ${method ?? "any"} request matching ${String(urlPattern)}, but none was captured. ` +
-          `Captured URLs: ${this.requests.map((r) => `${r.method} ${r.url}`).join(", ") || "(none)"}`,
+        `Expected a ${method ?? 'any'} request matching ${String(urlPattern)}, but none was captured. ` +
+          `Captured URLs: ${this.requests.map(r => `${r.method} ${r.url}`).join(', ') || '(none)'}`,
       );
     }
     return matches[0]!;
@@ -84,11 +84,11 @@ export class RequestCapture {
   /** Assert no request was made matching the given criteria */
   assertNotCalled(urlPattern: string | RegExp, method?: string): void {
     const matches = this.getByUrl(urlPattern).filter(
-      (r) => !method || r.method.toUpperCase() === method.toUpperCase(),
+      r => !method || r.method.toUpperCase() === method.toUpperCase(),
     );
     if (matches.length > 0) {
       throw new Error(
-        `Expected no ${method ?? "any"} request matching ${String(urlPattern)}, ` +
+        `Expected no ${method ?? 'any'} request matching ${String(urlPattern)}, ` +
           `but ${matches.length} were captured`,
       );
     }
@@ -109,9 +109,9 @@ export class RequestCapture {
  * Generate a random UUID v4 for mock IDs.
  */
 export function mockId(): string {
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
     const r = (Math.random() * 16) | 0;
-    const v = c === "x" ? r : (r & 0x3) | 0x8;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
 }

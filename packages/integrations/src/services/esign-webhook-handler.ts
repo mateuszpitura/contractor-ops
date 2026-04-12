@@ -1,45 +1,45 @@
-import type { Prisma } from "@contractor-ops/db";
-import { prisma } from "@contractor-ops/db";
-import { normalizeSigningEvent } from "./esign-service.js";
+import type { Prisma } from '@contractor-ops/db';
+import { prisma } from '@contractor-ops/db';
+import { normalizeSigningEvent } from './esign-service.js';
 
 // ---------------------------------------------------------------------------
 // E-Sign Webhook Handler
 // ---------------------------------------------------------------------------
 
-type ESignProvider = "DOCUSIGN" | "AUTENTI";
+type ESignProvider = 'DOCUSIGN' | 'AUTENTI';
 
 /**
  * Maps normalized envelope status to Prisma SigningEnvelopeStatus.
  */
 const ENVELOPE_STATUS_MAP: Record<string, string> = {
-  CREATED: "CREATED",
-  SENT: "SENT",
-  DELIVERED: "DELIVERED",
-  COMPLETED: "COMPLETED",
-  DECLINED: "DECLINED",
-  VOIDED: "VOIDED",
-  EXPIRED: "EXPIRED",
+  CREATED: 'CREATED',
+  SENT: 'SENT',
+  DELIVERED: 'DELIVERED',
+  COMPLETED: 'COMPLETED',
+  DECLINED: 'DECLINED',
+  VOIDED: 'VOIDED',
+  EXPIRED: 'EXPIRED',
 };
 
 /**
  * Maps normalized recipient status to Prisma SigningRecipientStatus.
  */
 const RECIPIENT_STATUS_MAP: Record<string, string> = {
-  PENDING: "PENDING",
-  SENT: "SENT",
-  DELIVERED: "DELIVERED",
-  VIEWED: "VIEWED",
-  SIGNED: "SIGNED",
-  DECLINED: "DECLINED",
+  PENDING: 'PENDING',
+  SENT: 'SENT',
+  DELIVERED: 'DELIVERED',
+  VIEWED: 'VIEWED',
+  SIGNED: 'SIGNED',
+  DECLINED: 'DECLINED',
 };
 
 /**
  * Maps terminal envelope status to the corresponding contract status.
  */
 const CONTRACT_STATUS_MAP: Record<string, string> = {
-  COMPLETED: "ACTIVE",
-  DECLINED: "SIGNATURE_DECLINED",
-  EXPIRED: "SIGNATURE_EXPIRED",
+  COMPLETED: 'ACTIVE',
+  DECLINED: 'SIGNATURE_DECLINED',
+  EXPIRED: 'SIGNATURE_EXPIRED',
 };
 
 /**
@@ -93,7 +93,7 @@ export async function handleSigningWebhook(params: {
   }
 
   // d. Process the event in a transaction
-  await prisma.$transaction(async (tx) => {
+  await prisma.$transaction(async tx => {
     // Create SigningEvent record
     await tx.signingEvent.create({
       data: {
@@ -116,13 +116,13 @@ export async function handleSigningWebhook(params: {
         status: recipientStatus,
       };
 
-      if (event.eventType === "RECIPIENT_SIGNED") {
+      if (event.eventType === 'RECIPIENT_SIGNED') {
         recipientUpdate.signedAt = event.occurredAt;
       }
-      if (event.eventType === "RECIPIENT_DECLINED") {
+      if (event.eventType === 'RECIPIENT_DECLINED') {
         recipientUpdate.declinedAt = event.occurredAt;
       }
-      if (event.eventType === "RECIPIENT_VIEWED") {
+      if (event.eventType === 'RECIPIENT_VIEWED') {
         recipientUpdate.viewedAt = event.occurredAt;
       }
 
@@ -150,10 +150,10 @@ export async function handleSigningWebhook(params: {
         status: envelopeStatus,
       };
 
-      if (event.envelopeStatus === "COMPLETED") {
+      if (event.envelopeStatus === 'COMPLETED') {
         envelopeUpdate.completedAt = event.occurredAt;
       }
-      if (event.envelopeStatus === "VOIDED") {
+      if (event.envelopeStatus === 'VOIDED') {
         envelopeUpdate.voidedAt = event.occurredAt;
       }
 
@@ -170,7 +170,7 @@ export async function handleSigningWebhook(params: {
           status: contractStatus,
         };
 
-        if (event.envelopeStatus === "COMPLETED") {
+        if (event.envelopeStatus === 'COMPLETED') {
           contractUpdate.signedAt = event.occurredAt;
         }
 
@@ -183,7 +183,7 @@ export async function handleSigningWebhook(params: {
   });
 
   // e. Return completion signal
-  const isCompleted = event.envelopeStatus === "COMPLETED";
+  const isCompleted = event.envelopeStatus === 'COMPLETED';
 
   return { envelopeId: envelope.id, completed: isCompleted };
 }

@@ -24,14 +24,14 @@ export function computeSmartDefaultMappings(states: LinearStateInput[]): Record<
     const lower = state.name.toLowerCase();
     let workflowStatus: string | null = null;
 
-    if (lower.includes("block")) {
-      workflowStatus = "BLOCKED";
-    } else if (lower.includes("done") || lower.includes("complete")) {
-      workflowStatus = "DONE";
-    } else if (lower.includes("progress") || lower.includes("review")) {
-      workflowStatus = "IN_PROGRESS";
-    } else if (lower.includes("cancel")) {
-      workflowStatus = "CANCELLED";
+    if (lower.includes('block')) {
+      workflowStatus = 'BLOCKED';
+    } else if (lower.includes('done') || lower.includes('complete')) {
+      workflowStatus = 'DONE';
+    } else if (lower.includes('progress') || lower.includes('review')) {
+      workflowStatus = 'IN_PROGRESS';
+    } else if (lower.includes('cancel')) {
+      workflowStatus = 'CANCELLED';
     }
 
     if (workflowStatus && !used.has(workflowStatus)) {
@@ -42,12 +42,12 @@ export function computeSmartDefaultMappings(states: LinearStateInput[]): Record<
 
   // Pass 2: fall back to state.type mapping for unmapped workflow statuses
   const typeMapping: Record<string, string> = {
-    triage: "TODO",
-    backlog: "TODO",
-    unstarted: "TODO",
-    started: "IN_PROGRESS",
-    completed: "DONE",
-    cancelled: "CANCELLED",
+    triage: 'TODO',
+    backlog: 'TODO',
+    unstarted: 'TODO',
+    started: 'IN_PROGRESS',
+    completed: 'DONE',
+    cancelled: 'CANCELLED',
   };
 
   for (const state of states) {

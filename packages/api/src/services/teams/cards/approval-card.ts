@@ -25,48 +25,48 @@ export interface ApprovalCardParams {
  */
 export function buildApprovalCard(params: ApprovalCardParams): Record<string, unknown> {
   return {
-    type: "AdaptiveCard",
-    $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
-    version: "1.4",
+    type: 'AdaptiveCard',
+    $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
+    version: '1.4',
     body: [
       {
-        type: "TextBlock",
-        text: "Invoice Approval Required",
-        weight: "Bolder",
-        size: "Medium",
+        type: 'TextBlock',
+        text: 'Invoice Approval Required',
+        weight: 'Bolder',
+        size: 'Medium',
         wrap: true,
       },
       {
-        type: "FactSet",
+        type: 'FactSet',
         facts: [
-          { title: "Invoice", value: params.invoiceNumber },
-          { title: "Contractor", value: params.contractorName },
+          { title: 'Invoice', value: params.invoiceNumber },
+          { title: 'Contractor', value: params.contractorName },
           {
-            title: "Amount",
+            title: 'Amount',
             value: `${params.amount} ${params.currency}`,
           },
-          { title: "Due Date", value: params.dueDate },
+          { title: 'Due Date', value: params.dueDate },
         ],
       },
     ],
     actions: [
       {
-        type: "Action.Submit",
-        title: "Approve",
-        style: "positive",
+        type: 'Action.Submit',
+        title: 'Approve',
+        style: 'positive',
         data: {
-          action: "approve_invoice",
+          action: 'approve_invoice',
           invoiceId: params.invoiceId,
           flowId: params.flowId,
         },
       },
       {
-        type: "Action.Submit",
-        title: "Reject",
-        style: "destructive",
+        type: 'Action.Submit',
+        title: 'Reject',
+        style: 'destructive',
         data: {
-          msteams: { type: "task/fetch" },
-          action: "reject_invoice",
+          msteams: { type: 'task/fetch' },
+          action: 'reject_invoice',
           invoiceId: params.invoiceId,
           flowId: params.flowId,
         },

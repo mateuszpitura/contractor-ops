@@ -1,8 +1,8 @@
-import type { SubscriptionTier } from "@contractor-ops/db/generated/prisma/client";
-import { TRPCError } from "@trpc/server";
-import { t } from "../init.js";
-import { getSubscription } from "../services/billing-service.js";
-import { tenantProcedure } from "./tenant.js";
+import type { SubscriptionTier } from '@contractor-ops/db/generated/prisma/client';
+import { TRPCError } from '@trpc/server';
+import { t } from '../init.js';
+import { getSubscription } from '../services/billing-service.js';
+import { tenantProcedure } from './tenant.js';
 
 // ---------------------------------------------------------------------------
 // Tier ranking for comparison
@@ -35,11 +35,11 @@ export function requireTier(minimumTier: SubscriptionTier) {
     );
 
     // No subscription or inactive status
-    if (!sub || (sub.status !== "ACTIVE" && sub.status !== "TRIALING")) {
+    if (!sub || (sub.status !== 'ACTIVE' && sub.status !== 'TRIALING')) {
       throw new TRPCError({
-        code: "FORBIDDEN",
+        code: 'FORBIDDEN',
         message: JSON.stringify({
-          type: "TIER_REQUIRED",
+          type: 'TIER_REQUIRED',
           requiredTier: minimumTier,
           currentTier: null,
         }),
@@ -49,9 +49,9 @@ export function requireTier(minimumTier: SubscriptionTier) {
     // Tier rank insufficient
     if (TIER_RANK[sub.tier as SubscriptionTier] < TIER_RANK[minimumTier]) {
       throw new TRPCError({
-        code: "FORBIDDEN",
+        code: 'FORBIDDEN',
         message: JSON.stringify({
-          type: "TIER_REQUIRED",
+          type: 'TIER_REQUIRED',
           requiredTier: minimumTier,
           currentTier: sub.tier,
         }),
@@ -72,10 +72,10 @@ export function requireTier(minimumTier: SubscriptionTier) {
  * Procedure requiring PRO or higher subscription tier.
  * Chain: auth -> tenant -> requireTier(PRO) -> handler
  */
-export const proProcedure = tenantProcedure.use(requireTier("PRO"));
+export const proProcedure = tenantProcedure.use(requireTier('PRO'));
 
 /**
  * Procedure requiring ENTERPRISE subscription tier.
  * Chain: auth -> tenant -> requireTier(ENTERPRISE) -> handler
  */
-export const enterpriseProcedure = tenantProcedure.use(requireTier("ENTERPRISE"));
+export const enterpriseProcedure = tenantProcedure.use(requireTier('ENTERPRISE'));

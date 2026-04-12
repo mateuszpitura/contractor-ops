@@ -1,11 +1,11 @@
-import { HttpResponse, http } from "msw";
-import type { HandlerOptions } from "../types.js";
-import { applyNetworkConditions, mockId } from "../utils.js";
+import { HttpResponse, http } from 'msw';
+import type { HandlerOptions } from '../types.js';
+import { applyNetworkConditions, mockId } from '../utils.js';
 
-const KSEF_TEST = "https://ksef-test.mf.gov.pl/api/v2";
-const KSEF_PROD = "https://ksef.mf.gov.pl/api/v2";
+const KSEF_TEST = 'https://ksef-test.mf.gov.pl/api/v2';
+const KSEF_PROD = 'https://ksef.mf.gov.pl/api/v2';
 
-function ksefEndpoints(baseUrl: string, net: HandlerOptions["network"]) {
+function ksefEndpoints(baseUrl: string, net: HandlerOptions['network']) {
   return [
     // --- Get Public Key ---
     http.get(`${baseUrl}/auth/public-key`, async () => {
@@ -14,7 +14,7 @@ function ksefEndpoints(baseUrl: string, net: HandlerOptions["network"]) {
       // Return a dummy RSA public key (PEM format)
       return HttpResponse.json({
         publicKey:
-          "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0Z3VS5JJcds3xfn/ygWe\nFsWlRNiDteIOPBWfR+oWpwAB8UHAgwBnz5dFz1VbMjCyQjLn1SZ+7+YhJfMPPB+\nVBOlq3GxB3mbBjYpK6Q1szDQ+IhLZoSjR/qB1A0+test+mock+key+AQAB\n-----END PUBLIC KEY-----",
+          '-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0Z3VS5JJcds3xfn/ygWe\nFsWlRNiDteIOPBWfR+oWpwAB8UHAgwBnz5dFz1VbMjCyQjLn1SZ+7+YhJfMPPB+\nVBOlq3GxB3mbBjYpK6Q1szDQ+IhLZoSjR/qB1A0+test+mock+key+AQAB\n-----END PUBLIC KEY-----',
       });
     }),
 
@@ -35,7 +35,7 @@ function ksefEndpoints(baseUrl: string, net: HandlerOptions["network"]) {
       return HttpResponse.json({
         jwt: `ksef_jwt_${mockId()}`,
         referenceNumber: `ref-${mockId().slice(0, 8)}`,
-        encryptionKey: Buffer.alloc(32).toString("base64"),
+        encryptionKey: Buffer.alloc(32).toString('base64'),
       });
     }),
 
@@ -44,7 +44,7 @@ function ksefEndpoints(baseUrl: string, net: HandlerOptions["network"]) {
       const err = await applyNetworkConditions(net);
       if (err) return err;
       return HttpResponse.json({
-        status: "READY",
+        status: 'READY',
         processingCode: 200,
       });
     }),
@@ -63,14 +63,14 @@ function ksefEndpoints(baseUrl: string, net: HandlerOptions["network"]) {
       const err = await applyNetworkConditions(net);
       if (err) return err;
       return HttpResponse.json({
-        status: "COMPLETED",
+        status: 'COMPLETED',
         processingCode: 200,
         invoiceMetadataList: [
           {
             ksefReferenceNumber: `KSeF-${mockId().slice(0, 10)}`,
-            invoiceNumber: "FV/2026/001",
-            subjectNip: "1234567890",
-            invoiceDate: "2026-03-15",
+            invoiceNumber: 'FV/2026/001',
+            subjectNip: '1234567890',
+            invoiceDate: '2026-03-15',
           },
         ],
         hasMore: false,
@@ -94,7 +94,7 @@ function ksefEndpoints(baseUrl: string, net: HandlerOptions["network"]) {
     <P_15>10000.00</P_15>
   </Fa>
 </Faktura>`,
-        { headers: { "Content-Type": "application/xml" } },
+        { headers: { 'Content-Type': 'application/xml' } },
       );
     }),
 

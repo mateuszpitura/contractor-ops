@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { formatDistanceToNow } from "date-fns";
-import { ChevronDown, History } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Skeleton } from "@/components/ui/skeleton";
-import { trpc } from "@/trpc/init";
+import { useQuery } from '@tanstack/react-query';
+import { formatDistanceToNow } from 'date-fns';
+import { ChevronDown, History } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Skeleton } from '@/components/ui/skeleton';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Sync status styling
@@ -16,16 +16,16 @@ import { trpc } from "@/trpc/init";
 
 const SYNC_STATUS_STYLES: Record<string, { className: string; labelKey: string }> = {
   SUCCESS: {
-    className: "bg-emerald-500/10 text-emerald-500",
-    labelKey: "syncStatusSuccess",
+    className: 'bg-emerald-500/10 text-emerald-500',
+    labelKey: 'syncStatusSuccess',
   },
   FAILED: {
-    className: "bg-destructive/10 text-destructive",
-    labelKey: "syncStatusFailed",
+    className: 'bg-destructive/10 text-destructive',
+    labelKey: 'syncStatusFailed',
   },
   STARTED: {
-    className: "bg-blue-500/10 text-blue-500",
-    labelKey: "syncing",
+    className: 'bg-blue-500/10 text-blue-500',
+    labelKey: 'syncing',
   },
 };
 
@@ -57,7 +57,7 @@ interface KsefSyncHistoryProps {
 // ---------------------------------------------------------------------------
 
 export function KsefSyncHistory({ connectionId }: KsefSyncHistoryProps) {
-  const t = useTranslations("ksef");
+  const t = useTranslations('ksef');
   const [isOpen, setIsOpen] = useState(false);
 
   const syncHistoryQuery = useQuery(
@@ -71,10 +71,10 @@ export function KsefSyncHistory({ connectionId }: KsefSyncHistoryProps) {
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       <CollapsibleTrigger className="flex w-full items-center gap-2 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
         <History className="size-4" aria-hidden="true" />
-        <span>{t("syncHistoryTitle")}</span>
+        <span>{t('syncHistoryTitle')}</span>
         <ChevronDown
           className={`ms-auto size-4 transition-transform duration-200 ${
-            isOpen ? "rotate-180" : ""
+            isOpen ? 'rotate-180' : ''
           }`}
           aria-hidden="true"
         />
@@ -92,16 +92,16 @@ export function KsefSyncHistory({ connectionId }: KsefSyncHistoryProps) {
             ))}
           </div>
         ) : logs.length === 0 ? (
-          <p className="py-4 text-center text-sm text-muted-foreground">{t("syncHistoryEmpty")}</p>
+          <p className="py-4 text-center text-sm text-muted-foreground">{t('syncHistoryEmpty')}</p>
         ) : (
           <div className="divide-y">
-            {logs.map((log) => {
+            {logs.map(log => {
               const statusStyle = SYNC_STATUS_STYLES[log.status] ?? SYNC_STATUS_STYLES.STARTED!;
 
               const payload = log.responsePayloadJson as Record<string, unknown> | null;
               const invoicesCreated = (payload?.invoicesCreated as number) ?? 0;
 
-              const isNoNew = log.status === "SUCCESS" && invoicesCreated === 0;
+              const isNoNew = log.status === 'SUCCESS' && invoicesCreated === 0;
 
               return (
                 <div key={log.id} className="flex items-center gap-3 py-2 text-sm">
@@ -115,7 +115,7 @@ export function KsefSyncHistory({ connectionId }: KsefSyncHistoryProps) {
                   {/* Invoice count */}
                   {!isNoNew && invoicesCreated > 0 && (
                     <Badge variant="secondary" className="text-xs">
-                      {t("syncInvoiceCount", { count: invoicesCreated })}
+                      {t('syncInvoiceCount', { count: invoicesCreated })}
                     </Badge>
                   )}
 
@@ -123,11 +123,10 @@ export function KsefSyncHistory({ connectionId }: KsefSyncHistoryProps) {
                   <Badge
                     variant="secondary"
                     className={`ms-auto text-xs ${
-                      isNoNew ? "bg-muted text-muted-foreground" : statusStyle.className
-                    }`}
-                  >
+                      isNoNew ? 'bg-muted text-muted-foreground' : statusStyle.className
+                    }`}>
                     {isNoNew
-                      ? t("syncStatusNoNew")
+                      ? t('syncStatusNoNew')
                       : t(statusStyle.labelKey as Parameters<typeof t>[0])}
                   </Badge>
                 </div>

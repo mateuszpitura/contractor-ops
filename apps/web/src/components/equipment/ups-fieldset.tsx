@@ -1,25 +1,25 @@
-"use client";
+'use client';
 
-import { useTranslations } from "next-intl";
+import { useTranslations } from 'next-intl';
 
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 
-import type { DpdAddress, ParcelSize } from "./dpd-fieldset";
+import type { DpdAddress, ParcelSize } from './dpd-fieldset';
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
-export type UpsServiceCode = "11" | "65" | "07";
+export type UpsServiceCode = '11' | '65' | '07';
 
 export interface UpsFieldsetProps {
   address: DpdAddress;
@@ -35,9 +35,9 @@ export interface UpsFieldsetProps {
 // ---------------------------------------------------------------------------
 
 const SERVICE_OPTIONS: { value: UpsServiceCode; labelKey: string }[] = [
-  { value: "11", labelKey: "standard" },
-  { value: "65", labelKey: "expressSaver" },
-  { value: "07", labelKey: "express" },
+  { value: '11', labelKey: 'standard' },
+  { value: '65', labelKey: 'expressSaver' },
+  { value: '07', labelKey: 'express' },
 ];
 
 // ---------------------------------------------------------------------------
@@ -56,8 +56,8 @@ export function UpsFieldset({
   serviceCode,
   onServiceCodeChange,
 }: UpsFieldsetProps) {
-  const t = useTranslations("Equipment.ups");
-  const tCarrier = useTranslations("Equipment.carrier");
+  const t = useTranslations('Equipment.ups');
+  const tCarrier = useTranslations('Equipment.carrier');
 
   const updateField = (field: keyof DpdAddress, value: string) => {
     onAddressChange({ ...address, [field]: value });
@@ -67,28 +67,28 @@ export function UpsFieldset({
     <div className="space-y-4">
       {/* Delivery address section */}
       <div className="space-y-3">
-        <Label className="text-sm font-medium">{t("deliveryAddress")}</Label>
+        <Label className="text-sm font-medium">{t('deliveryAddress')}</Label>
 
         <div className="space-y-2">
           <Input
-            placeholder={t("street")}
+            placeholder={t('street')}
             value={address.street}
-            onChange={(e) => updateField("street", e.target.value)}
-            aria-label={t("street")}
+            onChange={e => updateField('street', e.target.value)}
+            aria-label={t('street')}
           />
 
           <div className="grid grid-cols-2 gap-2">
             <Input
-              placeholder={t("city")}
+              placeholder={t('city')}
               value={address.city}
-              onChange={(e) => updateField("city", e.target.value)}
-              aria-label={t("city")}
+              onChange={e => updateField('city', e.target.value)}
+              aria-label={t('city')}
             />
             <Input
-              placeholder={t("postalCode")}
+              placeholder={t('postalCode')}
               value={address.postalCode}
-              onChange={(e) => updateField("postalCode", e.target.value)}
-              aria-label={t("postalCode")}
+              onChange={e => updateField('postalCode', e.target.value)}
+              aria-label={t('postalCode')}
             />
           </div>
 
@@ -99,13 +99,12 @@ export function UpsFieldset({
 
       {/* Parcel size */}
       <div className="space-y-2">
-        <Label>{tCarrier("parcelSize")}</Label>
+        <Label>{tCarrier('parcelSize')}</Label>
         <RadioGroup
           value={parcelSize}
-          onValueChange={(val) => val && onParcelSizeChange(val as ParcelSize)}
-          className="flex gap-4"
-        >
-          {(["small", "medium", "large"] as const).map((size) => (
+          onValueChange={val => val && onParcelSizeChange(val as ParcelSize)}
+          className="flex gap-4">
+          {(['small', 'medium', 'large'] as const).map(size => (
             <label key={size} className="flex cursor-pointer items-center gap-2">
               <RadioGroupItem value={size} />
               <span className="text-sm">{tCarrier(size)}</span>
@@ -116,16 +115,15 @@ export function UpsFieldset({
 
       {/* Service type (UPS-specific) */}
       <div className="space-y-2">
-        <Label>{t("serviceType")}</Label>
+        <Label>{t('serviceType')}</Label>
         <Select
           value={serviceCode}
-          onValueChange={(val) => val && onServiceCodeChange(val as UpsServiceCode)}
-        >
+          onValueChange={val => val && onServiceCodeChange(val as UpsServiceCode)}>
           <SelectTrigger className="w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {SERVICE_OPTIONS.map((opt) => (
+            {SERVICE_OPTIONS.map(opt => (
               <SelectItem key={opt.value} value={opt.value}>
                 {t(opt.labelKey)}
               </SelectItem>

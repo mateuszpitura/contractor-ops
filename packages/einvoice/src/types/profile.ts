@@ -2,9 +2,9 @@
 // E-Invoice Profile Interface
 // ---------------------------------------------------------------------------
 
-import type { ComplianceStatus } from "./compliance.js";
-import type { EInvoice } from "./invoice.js";
-import type { ValidationResult } from "./validation.js";
+import type { ComplianceStatus } from './compliance.js';
+import type { EInvoice } from './invoice.js';
+import type { ValidationResult } from './validation.js';
 
 /**
  * Certificate information for digital signing operations.

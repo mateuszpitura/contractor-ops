@@ -1,4 +1,4 @@
-import { render, screen, setup } from "@/test/test-utils";
+import { render, screen, setup } from '@/test/test-utils';
 import {
   Popover,
   PopoverContent,
@@ -6,7 +6,7 @@ import {
   PopoverHeader,
   PopoverTitle,
   PopoverTrigger,
-} from "../popover";
+} from '../popover';
 
 function renderPopover({ defaultOpen = false }: { defaultOpen?: boolean } = {}) {
   return setup(
@@ -23,31 +23,31 @@ function renderPopover({ defaultOpen = false }: { defaultOpen?: boolean } = {}) 
   );
 }
 
-describe("Popover", () => {
-  it("renders the trigger", () => {
+describe('Popover', () => {
+  it('renders the trigger', () => {
     renderPopover();
-    expect(screen.getByText("Open Popover")).toBeInTheDocument();
+    expect(screen.getByText('Open Popover')).toBeInTheDocument();
   });
 
-  it("does not render content when closed", () => {
+  it('does not render content when closed', () => {
     renderPopover();
-    expect(screen.queryByText("Popover Title")).not.toBeInTheDocument();
+    expect(screen.queryByText('Popover Title')).not.toBeInTheDocument();
   });
 
-  it("renders content when defaultOpen", () => {
+  it('renders content when defaultOpen', () => {
     renderPopover({ defaultOpen: true });
-    expect(screen.getByText("Popover Title")).toBeInTheDocument();
-    expect(screen.getByText("Popover desc.")).toBeInTheDocument();
-    expect(screen.getByText("Popover body")).toBeInTheDocument();
+    expect(screen.getByText('Popover Title')).toBeInTheDocument();
+    expect(screen.getByText('Popover desc.')).toBeInTheDocument();
+    expect(screen.getByText('Popover body')).toBeInTheDocument();
   });
 
-  it("opens popover on trigger click", async () => {
+  it('opens popover on trigger click', async () => {
     const { user } = renderPopover();
-    await user.click(screen.getByText("Open Popover"));
-    expect(screen.getByText("Popover Title")).toBeInTheDocument();
+    await user.click(screen.getByText('Open Popover'));
+    expect(screen.getByText('Popover Title')).toBeInTheDocument();
   });
 
-  it("PopoverHeader merges custom className", () => {
+  it('PopoverHeader merges custom className', () => {
     render(
       <Popover defaultOpen>
         <PopoverContent>
@@ -58,10 +58,10 @@ describe("Popover", () => {
       </Popover>,
     );
     const header = document.querySelector("[data-slot='popover-header']");
-    expect(header?.className).toContain("my-header");
+    expect(header?.className).toContain('my-header');
   });
 
-  it("PopoverContent merges custom className", () => {
+  it('PopoverContent merges custom className', () => {
     render(
       <Popover defaultOpen>
         <PopoverContent className="custom-pop">
@@ -70,18 +70,18 @@ describe("Popover", () => {
       </Popover>,
     );
     const content = document.querySelector("[data-slot='popover-content']");
-    expect(content?.className).toContain("custom-pop");
+    expect(content?.className).toContain('custom-pop');
   });
 
-  it("PopoverTitle sets data-slot", () => {
+  it('PopoverTitle sets data-slot', () => {
     renderPopover({ defaultOpen: true });
-    const title = screen.getByText("Popover Title").closest("[data-slot='popover-title']");
+    const title = screen.getByText('Popover Title').closest("[data-slot='popover-title']");
     expect(title).toBeInTheDocument();
   });
 
-  it("PopoverDescription sets data-slot", () => {
+  it('PopoverDescription sets data-slot', () => {
     renderPopover({ defaultOpen: true });
-    const desc = screen.getByText("Popover desc.").closest("[data-slot='popover-description']");
+    const desc = screen.getByText('Popover desc.').closest("[data-slot='popover-description']");
     expect(desc).toBeInTheDocument();
   });
 });

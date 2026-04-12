@@ -1,4 +1,4 @@
-declare module "clamscan" {
+declare module 'clamscan' {
   interface ClamScanOptions {
     clamdscan?: {
       host?: string;
@@ -13,7 +13,7 @@ declare module "clamscan" {
       bypassTest?: boolean;
       tls?: boolean;
     };
-    preference?: "clamdscan" | "clamscan";
+    preference?: 'clamdscan' | 'clamscan';
     removeInfected?: boolean;
     quarantineInfected?: boolean | string;
     debugMode?: boolean;

@@ -1,14 +1,14 @@
-import { attachDocInputSchema, docSearchInputSchema } from "@contractor-ops/validators";
-import { z } from "zod";
-import { router } from "../init.js";
-import { tenantProcedure } from "../middleware/tenant.js";
+import { attachDocInputSchema, docSearchInputSchema } from '@contractor-ops/validators';
+import { z } from 'zod';
+import { router } from '../init.js';
+import { tenantProcedure } from '../middleware/tenant.js';
 import {
   attachDocLink,
   detachDocLink,
   getDocLinks,
   refreshDocMetadata,
   searchDocs,
-} from "../services/doc-link-service.js";
+} from '../services/doc-link-service.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -18,9 +18,9 @@ import {
  * Maps externalType to provider slug for IntegrationConnection lookup.
  */
 function providerFromExternalType(
-  externalType: "NOTION_PAGE" | "CONFLUENCE_PAGE",
-): "NOTION" | "CONFLUENCE" {
-  return externalType === "NOTION_PAGE" ? "NOTION" : "CONFLUENCE";
+  externalType: 'NOTION_PAGE' | 'CONFLUENCE_PAGE',
+): 'NOTION' | 'CONFLUENCE' {
+  return externalType === 'NOTION_PAGE' ? 'NOTION' : 'CONFLUENCE';
 }
 
 function plain<T>(data: T): T {
@@ -45,15 +45,15 @@ export const docsRouter = router({
       where: {
         organizationId: ctx.organizationId,
         provider,
-        status: "CONNECTED",
+        status: 'CONNECTED',
       },
       select: { id: true },
     });
 
     if (!connection) {
-      const { TRPCError } = await import("@trpc/server");
+      const { TRPCError } = await import('@trpc/server');
       throw new TRPCError({
-        code: "PRECONDITION_FAILED",
+        code: 'PRECONDITION_FAILED',
         message: `No active ${provider.toLowerCase()} connection found. Please connect ${provider.toLowerCase()} in Settings > Integrations.`,
       });
     }

@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { Banknote, CalendarDays, Clock, FileText } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { PortalPendingSignatures } from "@/components/portal/portal-pending-signatures";
-import { SummaryCard, SummaryCardSkeleton } from "@/components/portal/summary-card";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Link } from "@/i18n/navigation";
-import { trpc } from "@/trpc/init";
+import { useQuery } from '@tanstack/react-query';
+import { Banknote, CalendarDays, Clock, FileText } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { PortalPendingSignatures } from '@/components/portal/portal-pending-signatures';
+import { SummaryCard, SummaryCardSkeleton } from '@/components/portal/summary-card';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Link } from '@/i18n/navigation';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -18,15 +18,15 @@ import { trpc } from "@/trpc/init";
  * Extract first name from a display name string.
  */
 function getFirstName(displayName: string): string {
-  return displayName.split(" ")[0] ?? displayName;
+  return displayName.split(' ')[0] ?? displayName;
 }
 
 /**
  * Format minor units to display amount with currency.
  */
 function formatAmount(minor: number, currency: string): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
     currency,
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
@@ -37,11 +37,11 @@ function formatAmount(minor: number, currency: string): string {
  * Format a date to a short readable form (e.g. "Mar 15, 2026").
  */
 function formatDate(date: Date | string): string {
-  const d = typeof date === "string" ? new Date(date) : date;
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
   }).format(d);
 }
 
@@ -59,7 +59,7 @@ function formatDate(date: Date | string): string {
  * - Recent activity list (last 5 entries)
  */
 export default function PortalOverviewPage() {
-  const t = useTranslations("Portal");
+  const t = useTranslations('Portal');
   const overviewQuery = useQuery(trpc.portal.overview.queryOptions());
   const sessionQuery = useQuery(trpc.portal.getSession.queryOptions());
 
@@ -71,17 +71,17 @@ export default function PortalOverviewPage() {
    * Format a relative timestamp (e.g. "2 hours ago", "3 days ago").
    */
   function formatRelativeTime(date: Date | string): string {
-    const d = typeof date === "string" ? new Date(date) : date;
+    const d = typeof date === 'string' ? new Date(date) : date;
     const now = new Date();
     const diffMs = now.getTime() - d.getTime();
     const diffMinutes = Math.floor(diffMs / (1000 * 60));
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-    if (diffMinutes < 1) return t("time.justNow");
-    if (diffMinutes < 60) return t("time.minutesAgo", { minutes: diffMinutes });
-    if (diffHours < 24) return t("time.hoursAgo", { hours: diffHours });
-    if (diffDays < 30) return t("time.daysAgo", { days: diffDays });
+    if (diffMinutes < 1) return t('time.justNow');
+    if (diffMinutes < 60) return t('time.minutesAgo', { minutes: diffMinutes });
+    if (diffHours < 24) return t('time.hoursAgo', { hours: diffHours });
+    if (diffDays < 30) return t('time.daysAgo', { days: diffDays });
     return formatDate(d);
   }
 
@@ -95,7 +95,7 @@ export default function PortalOverviewPage() {
         {isLoading ? (
           <Skeleton className="h-9 w-64" />
         ) : (
-          t("dashboard.welcomeBack", { name: getFirstName(session?.contractor.displayName ?? "") })
+          t('dashboard.welcomeBack', { name: getFirstName(session?.contractor.displayName ?? '') })
         )}
       </h1>
 
@@ -112,29 +112,29 @@ export default function PortalOverviewPage() {
           <>
             <SummaryCard
               icon={FileText}
-              label={t("dashboard.activeContracts")}
+              label={t('dashboard.activeContracts')}
               value={overview?.activeContracts ?? 0}
             />
             <SummaryCard
               icon={Clock}
-              label={t("dashboard.pendingInvoices")}
+              label={t('dashboard.pendingInvoices')}
               value={overview?.pendingInvoices ?? 0}
             />
             <SummaryCard
               icon={Banknote}
-              label={t("dashboard.recentPayments")}
+              label={t('dashboard.recentPayments')}
               value={formatAmount(
                 overview?.recentPaymentsMinor ?? 0,
-                overview?.recentPaymentsCurrency ?? "PLN",
+                overview?.recentPaymentsCurrency ?? 'PLN',
               )}
             />
             <SummaryCard
               icon={CalendarDays}
-              label={t("dashboard.nextDeadline")}
+              label={t('dashboard.nextDeadline')}
               value={
                 overview?.upcomingDeadline
                   ? formatDate(overview.upcomingDeadline)
-                  : t("dashboard.none")
+                  : t('dashboard.none')
               }
             />
           </>
@@ -144,16 +144,16 @@ export default function PortalOverviewPage() {
       {/* Quick Actions */}
       <div className="mt-6 flex gap-3">
         <Button render={<Link href="/portal/invoices/submit" />}>
-          {t("dashboard.submitInvoice")}
+          {t('dashboard.submitInvoice')}
         </Button>
         <Button variant="outline" render={<Link href="/portal/contracts" />}>
-          {t("dashboard.viewContracts")}
+          {t('dashboard.viewContracts')}
         </Button>
       </div>
 
       {/* Recent Activity */}
       <div className="mt-8">
-        <h2 className="text-xl font-semibold">{t("dashboard.recentActivity")}</h2>
+        <h2 className="text-xl font-semibold">{t('dashboard.recentActivity')}</h2>
         <div className="mt-4 space-y-3">
           {isLoading ? (
             Array.from({ length: 5 }).map((_, i) => (
@@ -166,8 +166,7 @@ export default function PortalOverviewPage() {
             overview.recentActivity.map((entry, i) => (
               <div
                 key={`skel-${i}`}
-                className="flex items-start justify-between gap-4 border-b border-border/50 pb-3 last:border-0"
-              >
+                className="flex items-start justify-between gap-4 border-b border-border/50 pb-3 last:border-0">
                 <p className="text-sm">{entry.event}</p>
                 <span className="shrink-0 text-[13px] text-muted-foreground">
                   {formatRelativeTime(entry.timestamp)}
@@ -175,7 +174,7 @@ export default function PortalOverviewPage() {
               </div>
             ))
           ) : (
-            <p className="text-sm text-muted-foreground">{t("dashboard.noActivity")}</p>
+            <p className="text-sm text-muted-foreground">{t('dashboard.noActivity')}</p>
           )}
         </div>
       </div>

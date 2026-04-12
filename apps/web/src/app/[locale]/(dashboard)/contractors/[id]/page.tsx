@@ -1,28 +1,28 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { useParams } from "next/navigation";
-import { useTranslations } from "next-intl";
-import { Suspense } from "react";
-import { ProfileHeader } from "@/components/contractors/contractor-profile/profile-header";
-import { ProfileTabs } from "@/components/contractors/contractor-profile/profile-tabs";
+import { useQuery } from '@tanstack/react-query';
+import { useParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { Suspense } from 'react';
+import { ProfileHeader } from '@/components/contractors/contractor-profile/profile-header';
+import { ProfileTabs } from '@/components/contractors/contractor-profile/profile-tabs';
 import {
   ActivityTimeline,
   RightRail,
-} from "@/components/contractors/contractor-profile/right-rail";
-import { TabCompliance } from "@/components/contractors/contractor-profile/tab-compliance";
-import { TabContracts } from "@/components/contractors/contractor-profile/tab-contracts";
-import { TabDocuments } from "@/components/contractors/contractor-profile/tab-documents";
-import { TabEquipment } from "@/components/contractors/contractor-profile/tab-equipment";
-import { TabOverview } from "@/components/contractors/contractor-profile/tab-overview";
-import { TabPayments } from "@/components/contractors/contractor-profile/tab-payments";
-import { InvoicesTab } from "@/components/contractors/contractor-profile/tabs/invoices-tab";
-import { WorkflowsTab } from "@/components/contractors/contractor-profile/workflows-tab";
-import { useBreadcrumbOverride } from "@/components/layout/breadcrumb-context";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Link } from "@/i18n/navigation";
-import { trpc } from "@/trpc/init";
+} from '@/components/contractors/contractor-profile/right-rail';
+import { TabCompliance } from '@/components/contractors/contractor-profile/tab-compliance';
+import { TabContracts } from '@/components/contractors/contractor-profile/tab-contracts';
+import { TabDocuments } from '@/components/contractors/contractor-profile/tab-documents';
+import { TabEquipment } from '@/components/contractors/contractor-profile/tab-equipment';
+import { TabOverview } from '@/components/contractors/contractor-profile/tab-overview';
+import { TabPayments } from '@/components/contractors/contractor-profile/tab-payments';
+import { InvoicesTab } from '@/components/contractors/contractor-profile/tabs/invoices-tab';
+import { WorkflowsTab } from '@/components/contractors/contractor-profile/workflows-tab';
+import { useBreadcrumbOverride } from '@/components/layout/breadcrumb-context';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Link } from '@/i18n/navigation';
+import { trpc } from '@/trpc/init';
 
 function ProfileHeaderSkeleton() {
   return (
@@ -68,7 +68,7 @@ function TabContentSkeleton() {
 
 export default function ContractorProfilePage() {
   const params = useParams<{ id: string }>();
-  const t = useTranslations("ContractorProfile");
+  const t = useTranslations('ContractorProfile');
 
   const contractorQuery = useQuery(trpc.contractor.getById.queryOptions({ id: params.id }));
 
@@ -80,15 +80,15 @@ export default function ContractorProfilePage() {
   // Error state
   if (contractorQuery.isError) {
     const isNotFound =
-      contractorQuery.error?.message?.includes("not found") ||
-      (contractorQuery.error as { data?: { code?: string } })?.data?.code === "NOT_FOUND";
+      contractorQuery.error?.message?.includes('not found') ||
+      (contractorQuery.error as { data?: { code?: string } })?.data?.code === 'NOT_FOUND';
 
     if (isNotFound) {
       return (
         <div className="flex min-h-[400px] flex-col items-center justify-center gap-3 text-center">
-          <h2 className="text-lg font-medium">{t("error.notFound")}</h2>
+          <h2 className="text-lg font-medium">{t('error.notFound')}</h2>
           <Button variant="outline" render={<Link href="/contractors" />}>
-            {t("error.backToList")}
+            {t('error.backToList')}
           </Button>
         </div>
       );
@@ -96,9 +96,9 @@ export default function ContractorProfilePage() {
 
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center gap-3 text-center">
-        <h2 className="text-lg font-medium">{t("error.loadFailed")}</h2>
+        <h2 className="text-lg font-medium">{t('error.loadFailed')}</h2>
         <Button variant="outline" onClick={() => contractorQuery.refetch()}>
-          {t("error.retry")}
+          {t('error.retry')}
         </Button>
       </div>
     );

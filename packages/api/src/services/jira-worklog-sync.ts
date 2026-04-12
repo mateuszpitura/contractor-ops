@@ -1,6 +1,6 @@
-import { decryptCredentials } from "@contractor-ops/integrations/services/credential-service";
-import { TRPCError } from "@trpc/server";
-import type { DbClient } from "./types.js";
+import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
+import { TRPCError } from '@trpc/server';
+import type { DbClient } from './types.js';
 
 type PrismaClient = DbClient;
 
@@ -62,7 +62,7 @@ interface JiraConnectionConfig {
  * Extracts plain text from Jira's Atlassian Document Format (ADF) comment.
  * ADF uses a nested content structure; we extract all text nodes.
  */
-function extractCommentText(comment: JiraWorklog["comment"]): string | null {
+function extractCommentText(comment: JiraWorklog['comment']): string | null {
   if (!comment?.content) return null;
 
   const texts: string[] = [];
@@ -76,7 +76,7 @@ function extractCommentText(comment: JiraWorklog["comment"]): string | null {
     }
   }
 
-  return texts.length > 0 ? texts.join(" ") : null;
+  return texts.length > 0 ? texts.join(' ') : null;
 }
 
 // ---------------------------------------------------------------------------
@@ -121,25 +121,25 @@ export async function syncJiraWorklogs(
 
   if (!connection) {
     throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "Jira connection not found",
+      code: 'NOT_FOUND',
+      message: 'Jira connection not found',
     });
   }
 
-  if (connection.status !== "CONNECTED") {
+  if (connection.status !== 'CONNECTED') {
     throw new TRPCError({
-      code: "PRECONDITION_FAILED",
+      code: 'PRECONDITION_FAILED',
       message: `Jira connection is not active (status: ${connection.status})`,
     });
   }
 
-  const credentials = decryptCredentials(connection.credentialsRef, "jira");
+  const credentials = decryptCredentials(connection.credentialsRef, 'jira');
   const config = connection.configJson as unknown as JiraConnectionConfig;
 
   if (!config?.cloudId) {
     throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: "Jira connection is missing cloudId. Please reconnect your Jira integration.",
+      code: 'BAD_REQUEST',
+      message: 'Jira connection is missing cloudId. Please reconnect your Jira integration.',
     });
   }
 
@@ -152,17 +152,17 @@ export async function syncJiraWorklogs(
       where: {
         organizationId,
         integrationConnectionId: connectionId,
-        entityType: "CONTRACTOR",
+        entityType: 'CONTRACTOR',
         entityId: contractorId,
-        externalType: "JIRA_USER",
+        externalType: 'JIRA_USER',
       },
     });
 
     if (!externalLink) {
       throw new TRPCError({
-        code: "BAD_REQUEST",
+        code: 'BAD_REQUEST',
         message:
-          "Jira account ID not found. Please map your Jira user account in integration settings.",
+          'Jira account ID not found. Please map your Jira user account in integration settings.',
       });
     }
 
@@ -173,7 +173,7 @@ export async function syncJiraWorklogs(
   const baseUrl = `https://api.atlassian.com/ex/jira/${config.cloudId}/rest/api/3`;
   const authHeaders = {
     Authorization: `Bearer ${credentials.accessToken}`,
-    Accept: "application/json",
+    Accept: 'application/json',
   };
 
   // 4. Create sync log
@@ -181,9 +181,9 @@ export async function syncJiraWorklogs(
     data: {
       organizationId,
       integrationConnectionId: connectionId,
-      direction: "INBOUND",
-      syncType: "worklogs",
-      status: "STARTED",
+      direction: 'INBOUND',
+      syncType: 'worklogs',
+      status: 'STARTED',
     },
   });
 
@@ -200,10 +200,10 @@ export async function syncJiraWorklogs(
     while (true) {
       const jql = `worklogDate>="${startDate}" AND worklogDate<="${endDate}" AND worklogAuthor="${accountId}"`;
       const searchUrl = new URL(`${baseUrl}/search`);
-      searchUrl.searchParams.set("jql", jql);
-      searchUrl.searchParams.set("fields", "key,summary");
-      searchUrl.searchParams.set("maxResults", String(maxResults));
-      searchUrl.searchParams.set("startAt", String(startAt));
+      searchUrl.searchParams.set('jql', jql);
+      searchUrl.searchParams.set('fields', 'key,summary');
+      searchUrl.searchParams.set('maxResults', String(maxResults));
+      searchUrl.searchParams.set('startAt', String(startAt));
 
       const searchResponse = await fetch(searchUrl.toString(), {
         headers: authHeaders,
@@ -211,17 +211,17 @@ export async function syncJiraWorklogs(
 
       if (searchResponse.status === 401) {
         throw new TRPCError({
-          code: "UNAUTHORIZED",
+          code: 'UNAUTHORIZED',
           message:
-            "Jira access token is invalid or expired. Please reconnect your Jira integration.",
+            'Jira access token is invalid or expired. Please reconnect your Jira integration.',
         });
       }
 
       if (searchResponse.status === 429) {
-        const retryAfter = searchResponse.headers.get("Retry-After");
+        const retryAfter = searchResponse.headers.get('Retry-After');
         throw new TRPCError({
-          code: "TOO_MANY_REQUESTS",
-          message: `Jira API rate limit exceeded. Retry after ${retryAfter ?? "60"} seconds.`,
+          code: 'TOO_MANY_REQUESTS',
+          message: `Jira API rate limit exceeded. Retry after ${retryAfter ?? '60'} seconds.`,
         });
       }
 
@@ -249,8 +249,8 @@ export async function syncJiraWorklogs(
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       while (true) {
         const worklogUrl = new URL(`${baseUrl}/issue/${issue.key}/worklog`);
-        worklogUrl.searchParams.set("startAt", String(worklogStartAt));
-        worklogUrl.searchParams.set("maxResults", String(worklogMaxResults));
+        worklogUrl.searchParams.set('startAt', String(worklogStartAt));
+        worklogUrl.searchParams.set('maxResults', String(worklogMaxResults));
 
         const worklogResponse = await fetch(worklogUrl.toString(), {
           headers: authHeaders,
@@ -267,7 +267,7 @@ export async function syncJiraWorklogs(
         const worklogData = (await worklogResponse.json()) as JiraWorklogResponse;
 
         // Filter worklogs by author and date range
-        const userWorklogs = worklogData.worklogs.filter((wl) => {
+        const userWorklogs = worklogData.worklogs.filter(wl => {
           if (wl.author.accountId !== accountId) return false;
           const worklogDate = new Date(wl.started);
           return worklogDate >= startDateObj && worklogDate <= endDateObj;
@@ -276,7 +276,7 @@ export async function syncJiraWorklogs(
         // Step C: Map worklogs to TimeEntry
         for (const worklog of userWorklogs) {
           const minutes = Math.round(worklog.timeSpentSeconds / 60);
-          const entryDate = worklog.started.split("T")[0]!;
+          const entryDate = worklog.started.split('T')[0]!;
 
           // Skip zero-duration worklogs
           if (minutes === 0) {
@@ -292,7 +292,7 @@ export async function syncJiraWorklogs(
             where: {
               organizationId,
               contractorId,
-              source: "JIRA",
+              source: 'JIRA',
               externalId: String(worklog.id),
             },
             select: { id: true },
@@ -325,7 +325,7 @@ export async function syncJiraWorklogs(
                 entryDate: new Date(entryDate),
                 minutes,
                 description,
-                source: "JIRA",
+                source: 'JIRA',
                 externalId: String(worklog.id),
                 metadataJson: {
                   issueKey: issue.key,
@@ -369,7 +369,7 @@ export async function syncJiraWorklogs(
     await prisma.integrationSyncLog.update({
       where: { id: syncLog.id },
       data: {
-        status: "SUCCESS",
+        status: 'SUCCESS',
         completedAt: new Date(),
         responsePayloadJson: {
           issuesScanned: allIssues.length,
@@ -383,9 +383,9 @@ export async function syncJiraWorklogs(
     await prisma.integrationSyncLog.update({
       where: { id: syncLog.id },
       data: {
-        status: "FAILED",
+        status: 'FAILED',
         completedAt: new Date(),
-        errorMessage: error instanceof Error ? error.message : "Unknown error",
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
       },
     });
 
@@ -393,15 +393,15 @@ export async function syncJiraWorklogs(
       where: { id: connectionId },
       data: {
         lastErrorAt: new Date(),
-        lastErrorMessage: error instanceof Error ? error.message : "Unknown error",
+        lastErrorMessage: error instanceof Error ? error.message : 'Unknown error',
       },
     });
 
     // Re-throw TRPCErrors as-is, wrap others
     if (error instanceof TRPCError) throw error;
     throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "Failed to sync Jira worklogs",
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'Failed to sync Jira worklogs',
       cause: error,
     });
   }

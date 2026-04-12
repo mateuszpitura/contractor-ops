@@ -1,4 +1,4 @@
-import { render, screen, setup } from "@/test/test-utils";
+import { render, screen, setup } from '@/test/test-utils';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,7 +10,7 @@ import {
   AlertDialogMedia,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "../alert-dialog";
+} from '../alert-dialog';
 
 function renderAlertDialog({ defaultOpen = false }: { defaultOpen?: boolean } = {}) {
   return setup(
@@ -30,48 +30,48 @@ function renderAlertDialog({ defaultOpen = false }: { defaultOpen?: boolean } = 
   );
 }
 
-describe("AlertDialog", () => {
-  it("renders the trigger button", () => {
+describe('AlertDialog', () => {
+  it('renders the trigger button', () => {
     renderAlertDialog();
-    expect(screen.getByText("Open Alert")).toBeInTheDocument();
+    expect(screen.getByText('Open Alert')).toBeInTheDocument();
   });
 
-  it("does not render content when closed", () => {
+  it('does not render content when closed', () => {
     renderAlertDialog();
-    expect(screen.queryByText("Are you sure?")).not.toBeInTheDocument();
+    expect(screen.queryByText('Are you sure?')).not.toBeInTheDocument();
   });
 
-  it("renders content when defaultOpen is true", () => {
+  it('renders content when defaultOpen is true', () => {
     renderAlertDialog({ defaultOpen: true });
-    expect(screen.getByText("Are you sure?")).toBeInTheDocument();
-    expect(screen.getByText("This action cannot be undone.")).toBeInTheDocument();
+    expect(screen.getByText('Are you sure?')).toBeInTheDocument();
+    expect(screen.getByText('This action cannot be undone.')).toBeInTheDocument();
   });
 
-  it("opens dialog when trigger is clicked", async () => {
+  it('opens dialog when trigger is clicked', async () => {
     const { user } = renderAlertDialog();
-    await user.click(screen.getByText("Open Alert"));
-    expect(screen.getByText("Are you sure?")).toBeInTheDocument();
+    await user.click(screen.getByText('Open Alert'));
+    expect(screen.getByText('Are you sure?')).toBeInTheDocument();
   });
 
-  it("renders action and cancel buttons in footer", () => {
+  it('renders action and cancel buttons in footer', () => {
     renderAlertDialog({ defaultOpen: true });
-    expect(screen.getByText("Continue")).toBeInTheDocument();
-    expect(screen.getByText("Cancel")).toBeInTheDocument();
+    expect(screen.getByText('Continue')).toBeInTheDocument();
+    expect(screen.getByText('Cancel')).toBeInTheDocument();
   });
 
-  it("sets data-slot attributes on subcomponents", () => {
+  it('sets data-slot attributes on subcomponents', () => {
     renderAlertDialog({ defaultOpen: true });
     expect(
-      screen.getByText("Are you sure?").closest("[data-slot='alert-dialog-title']"),
+      screen.getByText('Are you sure?').closest("[data-slot='alert-dialog-title']"),
     ).toBeInTheDocument();
     expect(
       screen
-        .getByText("This action cannot be undone.")
+        .getByText('This action cannot be undone.')
         .closest("[data-slot='alert-dialog-description']"),
     ).toBeInTheDocument();
   });
 
-  it("AlertDialogHeader merges custom className", () => {
+  it('AlertDialogHeader merges custom className', () => {
     render(
       <AlertDialog defaultOpen>
         <AlertDialogContent>
@@ -82,10 +82,10 @@ describe("AlertDialog", () => {
       </AlertDialog>,
     );
     const header = document.querySelector("[data-slot='alert-dialog-header']");
-    expect(header?.className).toContain("custom-header");
+    expect(header?.className).toContain('custom-header');
   });
 
-  it("AlertDialogFooter merges custom className", () => {
+  it('AlertDialogFooter merges custom className', () => {
     render(
       <AlertDialog defaultOpen>
         <AlertDialogContent>
@@ -96,10 +96,10 @@ describe("AlertDialog", () => {
       </AlertDialog>,
     );
     const footer = document.querySelector("[data-slot='alert-dialog-footer']");
-    expect(footer?.className).toContain("custom-footer");
+    expect(footer?.className).toContain('custom-footer');
   });
 
-  it("AlertDialogContent accepts size prop", () => {
+  it('AlertDialogContent accepts size prop', () => {
     render(
       <AlertDialog defaultOpen>
         <AlertDialogContent size="sm">
@@ -108,10 +108,10 @@ describe("AlertDialog", () => {
       </AlertDialog>,
     );
     const content = document.querySelector("[data-slot='alert-dialog-content']");
-    expect(content).toHaveAttribute("data-size", "sm");
+    expect(content).toHaveAttribute('data-size', 'sm');
   });
 
-  it("AlertDialogMedia sets data-slot", () => {
+  it('AlertDialogMedia sets data-slot', () => {
     render(
       <AlertDialog defaultOpen>
         <AlertDialogContent>
@@ -124,10 +124,10 @@ describe("AlertDialog", () => {
     );
     const media = document.querySelector("[data-slot='alert-dialog-media']");
     expect(media).toBeInTheDocument();
-    expect(media?.className).toContain("media-class");
+    expect(media?.className).toContain('media-class');
   });
 
-  it("AlertDialogAction fires onClick", async () => {
+  it('AlertDialogAction fires onClick', async () => {
     const onClick = vi.fn();
     const { user } = setup(
       <AlertDialog defaultOpen>
@@ -136,7 +136,7 @@ describe("AlertDialog", () => {
         </AlertDialogContent>
       </AlertDialog>,
     );
-    await user.click(screen.getByText("Do it"));
+    await user.click(screen.getByText('Do it'));
     expect(onClick).toHaveBeenCalledOnce();
   });
 });

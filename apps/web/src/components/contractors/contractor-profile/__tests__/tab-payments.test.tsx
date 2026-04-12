@@ -1,5 +1,5 @@
-import { render, screen } from "@/test/test-utils";
-import { TabPayments } from "../tab-payments";
+import { render, screen } from '@/test/test-utils';
+import { TabPayments } from '../tab-payments';
 
 const mockUseQuery = vi.fn(() => ({
   data: [],
@@ -8,23 +8,23 @@ const mockUseQuery = vi.fn(() => ({
   isPending: false,
 }));
 
-vi.mock("@tanstack/react-query", () => ({
+vi.mock('@tanstack/react-query', () => ({
   useQuery: (...args: any[]) => mockUseQuery(...args),
 }));
 
-vi.mock("@/trpc/init", () => ({
+vi.mock('@/trpc/init', () => ({
   trpc: {
     payment: {
       listByContractor: {
         queryOptions: (input: any) => ({
-          queryKey: ["payment", "listByContractor", input],
+          queryKey: ['payment', 'listByContractor', input],
         }),
       },
     },
   },
 }));
 
-vi.mock("@/i18n/navigation", () => ({
+vi.mock('@/i18n/navigation', () => ({
   Link: ({ children, href, ...props }: any) => (
     <a href={href} {...props}>
       {children}
@@ -32,7 +32,7 @@ vi.mock("@/i18n/navigation", () => ({
   ),
 }));
 
-describe("TabPayments", () => {
+describe('TabPayments', () => {
   beforeEach(() => {
     mockUseQuery.mockReturnValue({
       data: [],
@@ -42,13 +42,13 @@ describe("TabPayments", () => {
     });
   });
 
-  it("renders empty state when no payments", () => {
+  it('renders empty state when no payments', () => {
     render(<TabPayments contractorId="c1" />);
-    const container = document.querySelector("div");
+    const container = document.querySelector('div');
     expect(container).toBeInTheDocument();
   });
 
-  it("renders loading skeletons", () => {
+  it('renders loading skeletons', () => {
     mockUseQuery.mockReturnValue({
       data: null,
       isLoading: true,
@@ -60,37 +60,37 @@ describe("TabPayments", () => {
     expect(container.querySelector("[data-slot='skeleton']")).toBeTruthy();
   });
 
-  it("renders empty state heading when no payments exist", () => {
+  it('renders empty state heading when no payments exist', () => {
     render(<TabPayments contractorId="c1" />);
-    expect(screen.getByText("No payments for this contractor")).toBeInTheDocument();
+    expect(screen.getByText('No payments for this contractor')).toBeInTheDocument();
   });
 
-  it("renders empty state body text", () => {
+  it('renders empty state body text', () => {
     render(<TabPayments contractorId="c1" />);
     expect(screen.getByText(/payment runs/i)).toBeInTheDocument();
   });
 
-  it("renders empty state icon", () => {
+  it('renders empty state icon', () => {
     const { container } = render(<TabPayments contractorId="c1" />);
-    const svgs = container.querySelectorAll("svg");
+    const svgs = container.querySelectorAll('svg');
     expect(svgs.length).toBeGreaterThan(0);
   });
 
-  it("renders payment table with data", () => {
+  it('renders payment table with data', () => {
     mockUseQuery.mockReturnValue({
       data: [
         {
-          id: "pi-1",
-          paymentRunId: "pr-1",
-          paymentRun: { runNumber: "PR-001", createdAt: "2025-01-15T10:00:00Z" },
-          invoiceId: "inv-1",
-          invoice: { invoiceNumber: "FV/2025/001" },
+          id: 'pi-1',
+          paymentRunId: 'pr-1',
+          paymentRun: { runNumber: 'PR-001', createdAt: '2025-01-15T10:00:00Z' },
+          invoiceId: 'inv-1',
+          invoice: { invoiceNumber: 'FV/2025/001' },
           amountMinor: 150000,
-          currency: "PLN",
-          status: "PAID",
-          paymentReference: "REF-001",
-          markedPaidAt: "2025-01-20T10:00:00Z",
-          createdAt: "2025-01-15T10:00:00Z",
+          currency: 'PLN',
+          status: 'PAID',
+          paymentReference: 'REF-001',
+          markedPaidAt: '2025-01-20T10:00:00Z',
+          createdAt: '2025-01-15T10:00:00Z',
         },
       ],
       isLoading: false,
@@ -99,25 +99,25 @@ describe("TabPayments", () => {
     });
 
     render(<TabPayments contractorId="c1" />);
-    expect(screen.getByText("PR-001")).toBeInTheDocument();
-    expect(screen.getByText("FV/2025/001")).toBeInTheDocument();
+    expect(screen.getByText('PR-001')).toBeInTheDocument();
+    expect(screen.getByText('FV/2025/001')).toBeInTheDocument();
   });
 
-  it("renders formatted amount in table", () => {
+  it('renders formatted amount in table', () => {
     mockUseQuery.mockReturnValue({
       data: [
         {
-          id: "pi-1",
-          paymentRunId: "pr-1",
-          paymentRun: { runNumber: "PR-001", createdAt: "2025-01-15T10:00:00Z" },
-          invoiceId: "inv-1",
-          invoice: { invoiceNumber: "FV/001" },
+          id: 'pi-1',
+          paymentRunId: 'pr-1',
+          paymentRun: { runNumber: 'PR-001', createdAt: '2025-01-15T10:00:00Z' },
+          invoiceId: 'inv-1',
+          invoice: { invoiceNumber: 'FV/001' },
           amountMinor: 150000,
-          currency: "PLN",
-          status: "PAID",
+          currency: 'PLN',
+          status: 'PAID',
           paymentReference: null,
           markedPaidAt: null,
-          createdAt: "2025-01-15T10:00:00Z",
+          createdAt: '2025-01-15T10:00:00Z',
         },
       ],
       isLoading: false,
@@ -129,242 +129,242 @@ describe("TabPayments", () => {
     expect(matches.length).toBeGreaterThanOrEqual(1);
   });
 
-  it("renders status badge for PAID items", () => {
+  it('renders status badge for PAID items', () => {
     mockUseQuery.mockReturnValue({
       data: [
         {
-          id: "pi-1",
-          paymentRunId: "pr-1",
-          paymentRun: { runNumber: "PR-001", createdAt: "2025-01-15T10:00:00Z" },
-          invoiceId: "inv-1",
-          invoice: { invoiceNumber: "FV/001" },
+          id: 'pi-1',
+          paymentRunId: 'pr-1',
+          paymentRun: { runNumber: 'PR-001', createdAt: '2025-01-15T10:00:00Z' },
+          invoiceId: 'inv-1',
+          invoice: { invoiceNumber: 'FV/001' },
           amountMinor: 100000,
-          currency: "PLN",
-          status: "PAID",
-          paymentReference: "REF-001",
-          markedPaidAt: "2025-01-20T10:00:00Z",
-          createdAt: "2025-01-15T10:00:00Z",
+          currency: 'PLN',
+          status: 'PAID',
+          paymentReference: 'REF-001',
+          markedPaidAt: '2025-01-20T10:00:00Z',
+          createdAt: '2025-01-15T10:00:00Z',
         },
       ],
       isLoading: false,
     });
 
     render(<TabPayments contractorId="c1" />);
-    expect(screen.getByText("Paid")).toBeInTheDocument();
+    expect(screen.getByText('Paid')).toBeInTheDocument();
   });
 
-  it("renders total paid amount in header", () => {
+  it('renders total paid amount in header', () => {
     mockUseQuery.mockReturnValue({
       data: [
         {
-          id: "pi-1",
-          paymentRunId: "pr-1",
-          paymentRun: { runNumber: "PR-001", createdAt: "2025-01-15T10:00:00Z" },
-          invoiceId: "inv-1",
-          invoice: { invoiceNumber: "FV/001" },
+          id: 'pi-1',
+          paymentRunId: 'pr-1',
+          paymentRun: { runNumber: 'PR-001', createdAt: '2025-01-15T10:00:00Z' },
+          invoiceId: 'inv-1',
+          invoice: { invoiceNumber: 'FV/001' },
           amountMinor: 200000,
-          currency: "PLN",
-          status: "PAID",
+          currency: 'PLN',
+          status: 'PAID',
           paymentReference: null,
           markedPaidAt: null,
-          createdAt: "2025-01-15T10:00:00Z",
+          createdAt: '2025-01-15T10:00:00Z',
         },
       ],
       isLoading: false,
     });
 
     render(<TabPayments contractorId="c1" />);
-    expect(screen.getByText("Total paid:")).toBeInTheDocument();
+    expect(screen.getByText('Total paid:')).toBeInTheDocument();
     // 200000 / 100 = 2000.00 -- appears in both table cell and header
     const amounts = screen.getAllByText(/2.*000,00 PLN/);
     expect(amounts.length).toBeGreaterThanOrEqual(1);
   });
 
-  it("renders payment reference when available", () => {
+  it('renders payment reference when available', () => {
     mockUseQuery.mockReturnValue({
       data: [
         {
-          id: "pi-1",
-          paymentRunId: "pr-1",
-          paymentRun: { runNumber: "PR-001", createdAt: "2025-01-15T10:00:00Z" },
-          invoiceId: "inv-1",
-          invoice: { invoiceNumber: "FV/001" },
+          id: 'pi-1',
+          paymentRunId: 'pr-1',
+          paymentRun: { runNumber: 'PR-001', createdAt: '2025-01-15T10:00:00Z' },
+          invoiceId: 'inv-1',
+          invoice: { invoiceNumber: 'FV/001' },
           amountMinor: 100000,
-          currency: "PLN",
-          status: "PAID",
-          paymentReference: "SWIFT-REF-12345",
+          currency: 'PLN',
+          status: 'PAID',
+          paymentReference: 'SWIFT-REF-12345',
           markedPaidAt: null,
-          createdAt: "2025-01-15T10:00:00Z",
+          createdAt: '2025-01-15T10:00:00Z',
         },
       ],
       isLoading: false,
     });
 
     render(<TabPayments contractorId="c1" />);
-    expect(screen.getByText("SWIFT-REF-12345")).toBeInTheDocument();
+    expect(screen.getByText('SWIFT-REF-12345')).toBeInTheDocument();
   });
 
-  it("renders em dash for null payment reference", () => {
+  it('renders em dash for null payment reference', () => {
     mockUseQuery.mockReturnValue({
       data: [
         {
-          id: "pi-1",
-          paymentRunId: "pr-1",
-          paymentRun: { runNumber: "PR-001", createdAt: "2025-01-15T10:00:00Z" },
-          invoiceId: "inv-1",
-          invoice: { invoiceNumber: "FV/001" },
+          id: 'pi-1',
+          paymentRunId: 'pr-1',
+          paymentRun: { runNumber: 'PR-001', createdAt: '2025-01-15T10:00:00Z' },
+          invoiceId: 'inv-1',
+          invoice: { invoiceNumber: 'FV/001' },
           amountMinor: 100000,
-          currency: "PLN",
-          status: "PENDING",
+          currency: 'PLN',
+          status: 'PENDING',
           paymentReference: null,
           markedPaidAt: null,
-          createdAt: "2025-01-15T10:00:00Z",
+          createdAt: '2025-01-15T10:00:00Z',
         },
       ],
       isLoading: false,
     });
 
     render(<TabPayments contractorId="c1" />);
-    expect(screen.getByText("\u2014")).toBeInTheDocument();
+    expect(screen.getByText('\u2014')).toBeInTheDocument();
   });
 
-  it("renders run number as link", () => {
+  it('renders run number as link', () => {
     mockUseQuery.mockReturnValue({
       data: [
         {
-          id: "pi-1",
-          paymentRunId: "pr-1",
-          paymentRun: { runNumber: "PR-001", createdAt: "2025-01-15T10:00:00Z" },
-          invoiceId: "inv-1",
-          invoice: { invoiceNumber: "FV/001" },
+          id: 'pi-1',
+          paymentRunId: 'pr-1',
+          paymentRun: { runNumber: 'PR-001', createdAt: '2025-01-15T10:00:00Z' },
+          invoiceId: 'inv-1',
+          invoice: { invoiceNumber: 'FV/001' },
           amountMinor: 100000,
-          currency: "PLN",
-          status: "PAID",
+          currency: 'PLN',
+          status: 'PAID',
           paymentReference: null,
           markedPaidAt: null,
-          createdAt: "2025-01-15T10:00:00Z",
+          createdAt: '2025-01-15T10:00:00Z',
         },
       ],
       isLoading: false,
     });
 
     render(<TabPayments contractorId="c1" />);
-    const link = screen.getByText("PR-001");
-    expect(link.closest("a")).toHaveAttribute("href", "/payments");
+    const link = screen.getByText('PR-001');
+    expect(link.closest('a')).toHaveAttribute('href', '/payments');
   });
 
-  it("renders invoice number as link", () => {
+  it('renders invoice number as link', () => {
     mockUseQuery.mockReturnValue({
       data: [
         {
-          id: "pi-1",
-          paymentRunId: "pr-1",
-          paymentRun: { runNumber: "PR-001", createdAt: "2025-01-15T10:00:00Z" },
-          invoiceId: "inv-99",
-          invoice: { invoiceNumber: "FV/099" },
+          id: 'pi-1',
+          paymentRunId: 'pr-1',
+          paymentRun: { runNumber: 'PR-001', createdAt: '2025-01-15T10:00:00Z' },
+          invoiceId: 'inv-99',
+          invoice: { invoiceNumber: 'FV/099' },
           amountMinor: 100000,
-          currency: "PLN",
-          status: "PAID",
+          currency: 'PLN',
+          status: 'PAID',
           paymentReference: null,
           markedPaidAt: null,
-          createdAt: "2025-01-15T10:00:00Z",
+          createdAt: '2025-01-15T10:00:00Z',
         },
       ],
       isLoading: false,
     });
 
     render(<TabPayments contractorId="c1" />);
-    const link = screen.getByText("FV/099");
-    expect(link.closest("a")).toHaveAttribute("href", "/invoices/inv-99");
+    const link = screen.getByText('FV/099');
+    expect(link.closest('a')).toHaveAttribute('href', '/invoices/inv-99');
   });
 
-  it("renders date column with formatted date", () => {
+  it('renders date column with formatted date', () => {
     mockUseQuery.mockReturnValue({
       data: [
         {
-          id: "pi-1",
-          paymentRunId: "pr-1",
-          paymentRun: { runNumber: "PR-001", createdAt: "2025-03-15T10:00:00Z" },
-          invoiceId: "inv-1",
-          invoice: { invoiceNumber: "FV/001" },
+          id: 'pi-1',
+          paymentRunId: 'pr-1',
+          paymentRun: { runNumber: 'PR-001', createdAt: '2025-03-15T10:00:00Z' },
+          invoiceId: 'inv-1',
+          invoice: { invoiceNumber: 'FV/001' },
           amountMinor: 100000,
-          currency: "PLN",
-          status: "PAID",
+          currency: 'PLN',
+          status: 'PAID',
           paymentReference: null,
           markedPaidAt: null,
-          createdAt: "2025-03-15T10:00:00Z",
+          createdAt: '2025-03-15T10:00:00Z',
         },
       ],
       isLoading: false,
     });
 
     render(<TabPayments contractorId="c1" />);
-    expect(screen.getByText("15.03.2025")).toBeInTheDocument();
+    expect(screen.getByText('15.03.2025')).toBeInTheDocument();
   });
 
-  it("renders PENDING status badge", () => {
+  it('renders PENDING status badge', () => {
     mockUseQuery.mockReturnValue({
       data: [
         {
-          id: "pi-1",
-          paymentRunId: "pr-1",
-          paymentRun: { runNumber: "PR-001", createdAt: "2025-01-15T10:00:00Z" },
-          invoiceId: "inv-1",
-          invoice: { invoiceNumber: "FV/001" },
+          id: 'pi-1',
+          paymentRunId: 'pr-1',
+          paymentRun: { runNumber: 'PR-001', createdAt: '2025-01-15T10:00:00Z' },
+          invoiceId: 'inv-1',
+          invoice: { invoiceNumber: 'FV/001' },
           amountMinor: 100000,
-          currency: "PLN",
-          status: "PENDING",
+          currency: 'PLN',
+          status: 'PENDING',
           paymentReference: null,
           markedPaidAt: null,
-          createdAt: "2025-01-15T10:00:00Z",
+          createdAt: '2025-01-15T10:00:00Z',
         },
       ],
       isLoading: false,
     });
 
     render(<TabPayments contractorId="c1" />);
-    expect(screen.getByText("Pending")).toBeInTheDocument();
+    expect(screen.getByText('Pending')).toBeInTheDocument();
   });
 
-  it("renders FAILED status badge", () => {
+  it('renders FAILED status badge', () => {
     mockUseQuery.mockReturnValue({
       data: [
         {
-          id: "pi-1",
-          paymentRunId: "pr-1",
-          paymentRun: { runNumber: "PR-001", createdAt: "2025-01-15T10:00:00Z" },
-          invoiceId: "inv-1",
-          invoice: { invoiceNumber: "FV/001" },
+          id: 'pi-1',
+          paymentRunId: 'pr-1',
+          paymentRun: { runNumber: 'PR-001', createdAt: '2025-01-15T10:00:00Z' },
+          invoiceId: 'inv-1',
+          invoice: { invoiceNumber: 'FV/001' },
           amountMinor: 100000,
-          currency: "PLN",
-          status: "FAILED",
+          currency: 'PLN',
+          status: 'FAILED',
           paymentReference: null,
           markedPaidAt: null,
-          createdAt: "2025-01-15T10:00:00Z",
+          createdAt: '2025-01-15T10:00:00Z',
         },
       ],
       isLoading: false,
     });
 
     render(<TabPayments contractorId="c1" />);
-    expect(screen.getByText("Failed")).toBeInTheDocument();
+    expect(screen.getByText('Failed')).toBeInTheDocument();
   });
 
-  it("renders EXPORTED status badge", () => {
+  it('renders EXPORTED status badge', () => {
     mockUseQuery.mockReturnValue({
       data: [
         {
-          id: "pi-1",
-          paymentRunId: "pr-1",
-          paymentRun: { runNumber: "PR-001", createdAt: "2025-01-15T10:00:00Z" },
-          invoiceId: "inv-1",
-          invoice: { invoiceNumber: "FV/001" },
+          id: 'pi-1',
+          paymentRunId: 'pr-1',
+          paymentRun: { runNumber: 'PR-001', createdAt: '2025-01-15T10:00:00Z' },
+          invoiceId: 'inv-1',
+          invoice: { invoiceNumber: 'FV/001' },
           amountMinor: 100000,
-          currency: "PLN",
-          status: "EXPORTED",
+          currency: 'PLN',
+          status: 'EXPORTED',
           paymentReference: null,
           markedPaidAt: null,
-          createdAt: "2025-01-15T10:00:00Z",
+          createdAt: '2025-01-15T10:00:00Z',
         },
       ],
       isLoading: false,
@@ -376,45 +376,45 @@ describe("TabPayments", () => {
     expect(statusCell).toBeInTheDocument();
   });
 
-  it("renders tab heading text", () => {
+  it('renders tab heading text', () => {
     mockUseQuery.mockReturnValue({
       data: [
         {
-          id: "pi-1",
-          paymentRunId: "pr-1",
-          paymentRun: { runNumber: "PR-001", createdAt: "2025-01-15T10:00:00Z" },
-          invoiceId: "inv-1",
-          invoice: { invoiceNumber: "FV/001" },
+          id: 'pi-1',
+          paymentRunId: 'pr-1',
+          paymentRun: { runNumber: 'PR-001', createdAt: '2025-01-15T10:00:00Z' },
+          invoiceId: 'inv-1',
+          invoice: { invoiceNumber: 'FV/001' },
           amountMinor: 100000,
-          currency: "PLN",
-          status: "PAID",
+          currency: 'PLN',
+          status: 'PAID',
           paymentReference: null,
           markedPaidAt: null,
-          createdAt: "2025-01-15T10:00:00Z",
+          createdAt: '2025-01-15T10:00:00Z',
         },
       ],
       isLoading: false,
     });
 
     render(<TabPayments contractorId="c1" />);
-    expect(screen.getByText("Payments")).toBeInTheDocument();
+    expect(screen.getByText('Payments')).toBeInTheDocument();
   });
 
-  it("renders table column headers", () => {
+  it('renders table column headers', () => {
     mockUseQuery.mockReturnValue({
       data: [
         {
-          id: "pi-1",
-          paymentRunId: "pr-1",
-          paymentRun: { runNumber: "PR-001", createdAt: "2025-01-15T10:00:00Z" },
-          invoiceId: "inv-1",
-          invoice: { invoiceNumber: "FV/001" },
+          id: 'pi-1',
+          paymentRunId: 'pr-1',
+          paymentRun: { runNumber: 'PR-001', createdAt: '2025-01-15T10:00:00Z' },
+          invoiceId: 'inv-1',
+          invoice: { invoiceNumber: 'FV/001' },
           amountMinor: 100000,
-          currency: "PLN",
-          status: "PAID",
+          currency: 'PLN',
+          status: 'PAID',
           paymentReference: null,
           markedPaidAt: null,
-          createdAt: "2025-01-15T10:00:00Z",
+          createdAt: '2025-01-15T10:00:00Z',
         },
       ],
       isLoading: false,
@@ -422,25 +422,25 @@ describe("TabPayments", () => {
 
     render(<TabPayments contractorId="c1" />);
     // Column headers use translation keys like columnRunNumber, columnDate, etc.
-    const headers = document.querySelectorAll("th");
+    const headers = document.querySelectorAll('th');
     expect(headers.length).toBeGreaterThanOrEqual(4);
   });
 
-  it("does not render pagination for small datasets", () => {
+  it('does not render pagination for small datasets', () => {
     mockUseQuery.mockReturnValue({
       data: [
         {
-          id: "pi-1",
-          paymentRunId: "pr-1",
-          paymentRun: { runNumber: "PR-001", createdAt: "2025-01-15T10:00:00Z" },
-          invoiceId: "inv-1",
-          invoice: { invoiceNumber: "FV/001" },
+          id: 'pi-1',
+          paymentRunId: 'pr-1',
+          paymentRun: { runNumber: 'PR-001', createdAt: '2025-01-15T10:00:00Z' },
+          invoiceId: 'inv-1',
+          invoice: { invoiceNumber: 'FV/001' },
           amountMinor: 100000,
-          currency: "PLN",
-          status: "PAID",
+          currency: 'PLN',
+          status: 'PAID',
           paymentReference: null,
           markedPaidAt: null,
-          createdAt: "2025-01-15T10:00:00Z",
+          createdAt: '2025-01-15T10:00:00Z',
         },
       ],
       isLoading: false,
@@ -448,37 +448,37 @@ describe("TabPayments", () => {
 
     render(<TabPayments contractorId="c1" />);
     // Only 1 item, no pagination
-    expect(screen.queryByText("1 / 1")).not.toBeInTheDocument();
+    expect(screen.queryByText('1 / 1')).not.toBeInTheDocument();
   });
 
-  it("calculates total paid from only PAID items", () => {
+  it('calculates total paid from only PAID items', () => {
     mockUseQuery.mockReturnValue({
       data: [
         {
-          id: "pi-1",
-          paymentRunId: "pr-1",
-          paymentRun: { runNumber: "PR-001", createdAt: "2025-01-15T10:00:00Z" },
-          invoiceId: "inv-1",
-          invoice: { invoiceNumber: "FV/001" },
+          id: 'pi-1',
+          paymentRunId: 'pr-1',
+          paymentRun: { runNumber: 'PR-001', createdAt: '2025-01-15T10:00:00Z' },
+          invoiceId: 'inv-1',
+          invoice: { invoiceNumber: 'FV/001' },
           amountMinor: 100000,
-          currency: "PLN",
-          status: "PAID",
+          currency: 'PLN',
+          status: 'PAID',
           paymentReference: null,
           markedPaidAt: null,
-          createdAt: "2025-01-15T10:00:00Z",
+          createdAt: '2025-01-15T10:00:00Z',
         },
         {
-          id: "pi-2",
-          paymentRunId: "pr-1",
-          paymentRun: { runNumber: "PR-001", createdAt: "2025-01-15T10:00:00Z" },
-          invoiceId: "inv-2",
-          invoice: { invoiceNumber: "FV/002" },
+          id: 'pi-2',
+          paymentRunId: 'pr-1',
+          paymentRun: { runNumber: 'PR-001', createdAt: '2025-01-15T10:00:00Z' },
+          invoiceId: 'inv-2',
+          invoice: { invoiceNumber: 'FV/002' },
           amountMinor: 200000,
-          currency: "PLN",
-          status: "PENDING",
+          currency: 'PLN',
+          status: 'PENDING',
           paymentReference: null,
           markedPaidAt: null,
-          createdAt: "2025-01-15T10:00:00Z",
+          createdAt: '2025-01-15T10:00:00Z',
         },
       ],
       isLoading: false,
@@ -490,18 +490,18 @@ describe("TabPayments", () => {
     expect(amounts.length).toBeGreaterThanOrEqual(1);
   });
 
-  it("renders em dash for missing createdAt date", () => {
+  it('renders em dash for missing createdAt date', () => {
     mockUseQuery.mockReturnValue({
       data: [
         {
-          id: "pi-1",
-          paymentRunId: "pr-1",
-          paymentRun: { runNumber: "PR-001", createdAt: null },
-          invoiceId: "inv-1",
-          invoice: { invoiceNumber: "FV/001" },
+          id: 'pi-1',
+          paymentRunId: 'pr-1',
+          paymentRun: { runNumber: 'PR-001', createdAt: null },
+          invoiceId: 'inv-1',
+          invoice: { invoiceNumber: 'FV/001' },
           amountMinor: 100000,
-          currency: "PLN",
-          status: "PAID",
+          currency: 'PLN',
+          status: 'PAID',
           paymentReference: null,
           markedPaidAt: null,
           createdAt: null,
@@ -512,7 +512,7 @@ describe("TabPayments", () => {
 
     render(<TabPayments contractorId="c1" />);
     // Should show em dash for missing date
-    const dashElements = screen.getAllByText("\u2014");
+    const dashElements = screen.getAllByText('\u2014');
     expect(dashElements.length).toBeGreaterThanOrEqual(1);
   });
 });

@@ -1,21 +1,21 @@
-import NodeClam from "clamscan";
+import NodeClam from 'clamscan';
 
 // ---------------------------------------------------------------------------
 // ClamAV virus scanner singleton
 // ---------------------------------------------------------------------------
 
-let clamInstance: Awaited<ReturnType<InstanceType<typeof NodeClam>["init"]>> | null = null;
+let clamInstance: Awaited<ReturnType<InstanceType<typeof NodeClam>['init']>> | null = null;
 
 async function getClamInstance() {
   if (!clamInstance) {
     const clam = new NodeClam();
     clamInstance = await clam.init({
       clamdscan: {
-        host: process.env.CLAMAV_HOST ?? "127.0.0.1",
+        host: process.env.CLAMAV_HOST ?? '127.0.0.1',
         port: Number(process.env.CLAMAV_PORT ?? 3310),
         timeout: 60000,
       },
-      preference: "clamdscan",
+      preference: 'clamdscan',
     });
   }
   return clamInstance;
@@ -34,7 +34,7 @@ export async function scanBuffer(
 ): Promise<{ isClean: boolean; virusName?: string }> {
   try {
     const clam = await getClamInstance();
-    const { Readable } = await import("node:stream");
+    const { Readable } = await import('node:stream');
     const stream = Readable.from(buffer);
     const { isInfected, viruses } = await clam.scanStream(stream);
     return {
@@ -42,7 +42,7 @@ export async function scanBuffer(
       virusName: viruses?.[0],
     };
   } catch (error) {
-    console.error("[virus-scanner] Scan failed:", error);
+    console.error('[virus-scanner] Scan failed:', error);
     throw error;
   }
 }

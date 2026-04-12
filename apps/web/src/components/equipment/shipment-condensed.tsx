@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { ShipmentStatusBadge } from "./shipment-status-badge";
+import { ShipmentStatusBadge } from './shipment-status-badge';
 
 // ---------------------------------------------------------------------------
 // Types

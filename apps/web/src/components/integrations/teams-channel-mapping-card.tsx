@@ -1,44 +1,44 @@
-"use client";
+'use client';
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, RefreshCw } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
-import { FeatureGate } from "@/components/billing/feature-gate";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Loader2, RefreshCw } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { FeatureGate } from '@/components/billing/feature-gate';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { trpc } from "@/trpc/init";
+} from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
 const NOTIFICATION_CATEGORIES = [
-  "approvals",
-  "invoices",
-  "contracts",
-  "tasks",
-  "equipment",
+  'approvals',
+  'invoices',
+  'contracts',
+  'tasks',
+  'equipment',
 ] as const;
 
 type NotificationCategory = (typeof NOTIFICATION_CATEGORIES)[number];
 
 const CATEGORY_LABEL_KEYS: Record<NotificationCategory, string> = {
-  approvals: "categoryApprovals",
-  invoices: "categoryInvoices",
-  contracts: "categoryContracts",
-  tasks: "categoryTasks",
-  equipment: "categoryEquipment",
+  approvals: 'categoryApprovals',
+  invoices: 'categoryInvoices',
+  contracts: 'categoryContracts',
+  tasks: 'categoryTasks',
+  equipment: 'categoryEquipment',
 };
 
 // ---------------------------------------------------------------------------
@@ -60,7 +60,7 @@ interface TeamsChannel {
 // ---------------------------------------------------------------------------
 
 export function TeamsChannelMappingCard() {
-  const t = useTranslations("Settings.integrations.teams");
+  const t = useTranslations('Settings.integrations.teams');
   const queryClient = useQueryClient();
 
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
@@ -79,7 +79,7 @@ export function TeamsChannelMappingCard() {
 
   // ---- Fetch channels for selected team ----
   const channelsQuery = useQuery({
-    ...trpc.teams.getChannels.queryOptions({ teamId: selectedTeamId ?? "" }),
+    ...trpc.teams.getChannels.queryOptions({ teamId: selectedTeamId ?? '' }),
     enabled: !!selectedTeamId,
   });
   const channels = (channelsQuery.data ?? []) as TeamsChannel[];
@@ -98,19 +98,19 @@ export function TeamsChannelMappingCard() {
   const saveMutation = useMutation({
     ...trpc.teams.saveChannelMapping.mutationOptions(),
     onSuccess: () => {
-      toast.success(t("mappingSaved"));
+      toast.success(t('mappingSaved'));
       queryClient.invalidateQueries({
         queryKey: trpc.teams.getChannelMapping.queryKey(),
       });
     },
     onError: () => {
-      toast.error(t("mappingSaveFailed"));
+      toast.error(t('mappingSaveFailed'));
     },
   });
 
   // ---- Handlers ----
   function handleChannelSelect(category: string, channelId: string) {
-    setLocalMapping((prev) => ({ ...prev, [category]: channelId }));
+    setLocalMapping(prev => ({ ...prev, [category]: channelId }));
   }
 
   function handleSave() {
@@ -141,8 +141,8 @@ export function TeamsChannelMappingCard() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <h4 className="text-lg font-semibold">{t("channelMappingHeading")}</h4>
-              <p className="text-sm text-muted-foreground">{t("channelMappingDescription")}</p>
+              <h4 className="text-lg font-semibold">{t('channelMappingHeading')}</h4>
+              <p className="text-sm text-muted-foreground">{t('channelMappingDescription')}</p>
             </div>
             <Tooltip>
               <TooltipTrigger render={<div className="inline-flex" />}>
@@ -151,8 +151,7 @@ export function TeamsChannelMappingCard() {
                   size="icon"
                   onClick={handleRefresh}
                   disabled={isLoadingChannels}
-                  aria-label={t("refreshChannels")}
-                >
+                  aria-label={t('refreshChannels')}>
                   {isLoadingChannels ? (
                     <Loader2 className="size-4 animate-spin" />
                   ) : (
@@ -160,7 +159,7 @@ export function TeamsChannelMappingCard() {
                   )}
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>{t("refreshChannels")}</TooltipContent>
+              <TooltipContent>{t('refreshChannels')}</TooltipContent>
             </Tooltip>
           </div>
         </CardHeader>
@@ -170,13 +169,12 @@ export function TeamsChannelMappingCard() {
           {teams.length > 1 && (
             <Select
               value={selectedTeamId ?? undefined}
-              onValueChange={(v) => v && setSelectedTeamId(v)}
-            >
+              onValueChange={v => v && setSelectedTeamId(v)}>
               <SelectTrigger className="w-full">
-                <SelectValue placeholder={t("selectChannel")} />
+                <SelectValue placeholder={t('selectChannel')} />
               </SelectTrigger>
               <SelectContent>
-                {teams.map((team) => (
+                {teams.map(team => (
                   <SelectItem key={team.id} value={team.id}>
                     {team.displayName}
                   </SelectItem>
@@ -186,16 +184,15 @@ export function TeamsChannelMappingCard() {
           )}
 
           {/* Error state */}
-          {isChannelError && <p className="text-sm text-destructive">{t("channelFetchError")}</p>}
+          {isChannelError && <p className="text-sm text-destructive">{t('channelFetchError')}</p>}
 
           {/* Loading state */}
           {isLoadingChannels && !isChannelError && (
             <div className="space-y-3">
-              {NOTIFICATION_CATEGORIES.map((cat) => (
+              {NOTIFICATION_CATEGORIES.map(cat => (
                 <div
                   key={cat}
-                  className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
-                >
+                  className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <Skeleton className="h-4 w-24" />
                   <Skeleton className="h-9 w-full sm:w-64" />
                 </div>
@@ -205,32 +202,29 @@ export function TeamsChannelMappingCard() {
 
           {/* Empty state */}
           {!(isLoadingChannels || isChannelError) && selectedTeamId && channels.length === 0 && (
-            <p className="text-sm text-muted-foreground">{t("noChannels")}</p>
+            <p className="text-sm text-muted-foreground">{t('noChannels')}</p>
           )}
 
           {/* Channel mapping rows */}
           {!(isLoadingChannels || isChannelError) &&
             channels.length > 0 &&
-            NOTIFICATION_CATEGORIES.map((category) => (
+            NOTIFICATION_CATEGORIES.map(category => (
               <div
                 key={category}
-                className="flex flex-col gap-2 py-2 sm:flex-row sm:items-center sm:justify-between"
-              >
+                className="flex flex-col gap-2 py-2 sm:flex-row sm:items-center sm:justify-between">
                 <span className="text-sm font-semibold">
                   {t(CATEGORY_LABEL_KEYS[category] as Parameters<typeof t>[0])}
                 </span>
                 <Select
                   value={localMapping[category] ?? undefined}
-                  onValueChange={(v) => v && handleChannelSelect(category, v)}
-                >
+                  onValueChange={v => v && handleChannelSelect(category, v)}>
                   <SelectTrigger
                     className="w-full sm:w-64"
-                    aria-label={`${t(CATEGORY_LABEL_KEYS[category] as Parameters<typeof t>[0])} notification channel`}
-                  >
-                    <SelectValue placeholder={t("selectChannel")} />
+                    aria-label={`${t(CATEGORY_LABEL_KEYS[category] as Parameters<typeof t>[0])} notification channel`}>
+                    <SelectValue placeholder={t('selectChannel')} />
                   </SelectTrigger>
                   <SelectContent>
-                    {channels.map((ch) => (
+                    {channels.map(ch => (
                       <SelectItem key={ch.id} value={ch.id}>
                         {ch.displayName}
                       </SelectItem>
@@ -245,7 +239,7 @@ export function TeamsChannelMappingCard() {
             <div className="flex justify-end pt-2">
               <Button onClick={handleSave} disabled={saveMutation.isPending}>
                 {saveMutation.isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
-                {t("saveMapping")}
+                {t('saveMapping')}
               </Button>
             </div>
           )}

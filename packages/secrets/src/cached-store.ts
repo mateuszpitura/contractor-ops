@@ -1,4 +1,4 @@
-import type { SecretStore } from "./secret-store.js";
+import type { SecretStore } from './secret-store.js';
 
 interface CacheEntry {
   value: string;

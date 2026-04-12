@@ -1,8 +1,8 @@
-import { TRPCError } from "@trpc/server";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { TRPCError } from '@trpc/server';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock("@contractor-ops/integrations/services/credential-service", () => ({
-  decryptCredentials: vi.fn().mockReturnValue({ accessToken: "test-token" }),
+vi.mock('@contractor-ops/integrations/services/credential-service', () => ({
+  decryptCredentials: vi.fn().mockReturnValue({ accessToken: 'test-token' }),
 }));
 
 // ---------------------------------------------------------------------------
@@ -13,15 +13,15 @@ function createMockPrisma(overrides: Record<string, unknown> = {}) {
   return {
     integrationConnection: {
       findUnique: vi.fn().mockResolvedValue({
-        id: "conn-1",
-        status: "CONNECTED",
-        credentialsRef: "ref-1",
-        configJson: { cloudId: "cloud-123", accountId: "acc-456" },
+        id: 'conn-1',
+        status: 'CONNECTED',
+        credentialsRef: 'ref-1',
+        configJson: { cloudId: 'cloud-123', accountId: 'acc-456' },
       }),
       update: vi.fn().mockResolvedValue({}),
     },
     integrationSyncLog: {
-      create: vi.fn().mockResolvedValue({ id: "sync-log-1" }),
+      create: vi.fn().mockResolvedValue({ id: 'sync-log-1' }),
       update: vi.fn().mockResolvedValue({}),
     },
     externalLink: {
@@ -64,7 +64,7 @@ function makeSearchResponse(
   opts: { startAt?: number; total?: number } = {},
 ) {
   return {
-    issues: issues.map((i) => ({ key: i.key, fields: { summary: i.summary } })),
+    issues: issues.map(i => ({ key: i.key, fields: { summary: i.summary } })),
     startAt: opts.startAt ?? 0,
     maxResults: 100,
     total: opts.total ?? issues.length,
@@ -76,10 +76,10 @@ function makeWorklogResponse(
   opts: { total?: number } = {},
 ) {
   return {
-    worklogs: worklogs.map((w) => ({
+    worklogs: worklogs.map(w => ({
       id: w.id,
-      author: { accountId: w.accountId, displayName: "Test User" },
-      started: w.started ?? "2024-01-15T10:00:00.000+0000",
+      author: { accountId: w.accountId, displayName: 'Test User' },
+      started: w.started ?? '2024-01-15T10:00:00.000+0000',
       timeSpentSeconds: w.seconds,
     })),
     startAt: 0,
@@ -92,13 +92,13 @@ function makeWorklogResponse(
 // Tests
 // ---------------------------------------------------------------------------
 
-describe("jira-worklog", () => {
-  let syncJiraWorklogs: typeof import("../../services/jira-worklog-sync.js").syncJiraWorklogs;
+describe('jira-worklog', () => {
+  let syncJiraWorklogs: typeof import('../../services/jira-worklog-sync.js').syncJiraWorklogs;
 
   beforeEach(async () => {
     vi.resetModules();
-    vi.stubGlobal("fetch", vi.fn());
-    const mod = await import("../../services/jira-worklog-sync.js");
+    vi.stubGlobal('fetch', vi.fn());
+    const mod = await import('../../services/jira-worklog-sync.js');
     syncJiraWorklogs = mod.syncJiraWorklogs;
   });
 
@@ -107,48 +107,48 @@ describe("jira-worklog", () => {
   });
 
   const baseArgs = [
-    "org-1",
-    "contractor-1",
-    "contract-1",
-    "timesheet-1",
-    "conn-1",
-    "2024-01-01",
-    "2024-01-31",
+    'org-1',
+    'contractor-1',
+    'contract-1',
+    'timesheet-1',
+    'conn-1',
+    '2024-01-01',
+    '2024-01-31',
   ] as const;
 
-  describe("syncJiraWorklogs", () => {
-    it("performs JQL search for issues with user worklogs in date range", async () => {
+  describe('syncJiraWorklogs', () => {
+    it('performs JQL search for issues with user worklogs in date range', async () => {
       const prisma = createMockPrisma();
       const fetchMock = mockFetchResponses([{ status: 200, body: makeSearchResponse([]) }]);
-      vi.stubGlobal("fetch", fetchMock);
+      vi.stubGlobal('fetch', fetchMock);
 
       await syncJiraWorklogs(prisma, ...baseArgs);
 
       const searchCall = fetchMock.mock.calls[0]!;
       const url = new URL(searchCall[0] as string);
-      const jql = url.searchParams.get("jql")!;
+      const jql = url.searchParams.get('jql')!;
 
       expect(jql).toContain('worklogDate>="2024-01-01"');
       expect(jql).toContain('worklogDate<="2024-01-31"');
       expect(jql).toContain('worklogAuthor="acc-456"');
-      expect(url.searchParams.get("fields")).toBe("key,summary");
+      expect(url.searchParams.get('fields')).toBe('key,summary');
     });
 
-    it("fetches worklogs per issue and filters by accountId", async () => {
+    it('fetches worklogs per issue and filters by accountId', async () => {
       const prisma = createMockPrisma();
       const fetchMock = mockFetchResponses([
         // Search response
-        { status: 200, body: makeSearchResponse([{ key: "PROJ-1", summary: "Task 1" }]) },
+        { status: 200, body: makeSearchResponse([{ key: 'PROJ-1', summary: 'Task 1' }]) },
         // Worklog response with mixed authors
         {
           status: 200,
           body: makeWorklogResponse([
-            { id: "wl-1", accountId: "acc-456", seconds: 3600 },
-            { id: "wl-2", accountId: "other-user", seconds: 1800 },
+            { id: 'wl-1', accountId: 'acc-456', seconds: 3600 },
+            { id: 'wl-2', accountId: 'other-user', seconds: 1800 },
           ]),
         },
       ]);
-      vi.stubGlobal("fetch", fetchMock);
+      vi.stubGlobal('fetch', fetchMock);
 
       await syncJiraWorklogs(prisma, ...baseArgs);
 
@@ -157,22 +157,22 @@ describe("jira-worklog", () => {
       expect(prisma.timeEntry.create).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
-            externalId: "wl-1",
+            externalId: 'wl-1',
           }),
         }),
       );
     });
 
-    it("converts timeSpentSeconds to integer minutes", async () => {
+    it('converts timeSpentSeconds to integer minutes', async () => {
       const prisma = createMockPrisma();
       const fetchMock = mockFetchResponses([
-        { status: 200, body: makeSearchResponse([{ key: "PROJ-1", summary: "Task" }]) },
+        { status: 200, body: makeSearchResponse([{ key: 'PROJ-1', summary: 'Task' }]) },
         {
           status: 200,
-          body: makeWorklogResponse([{ id: "wl-1", accountId: "acc-456", seconds: 3600 }]),
+          body: makeWorklogResponse([{ id: 'wl-1', accountId: 'acc-456', seconds: 3600 }]),
         },
       ]);
-      vi.stubGlobal("fetch", fetchMock);
+      vi.stubGlobal('fetch', fetchMock);
 
       await syncJiraWorklogs(prisma, ...baseArgs);
 
@@ -185,25 +185,25 @@ describe("jira-worklog", () => {
       );
     });
 
-    it("deduplicates worklogs by externalId using findFirst + update", async () => {
+    it('deduplicates worklogs by externalId using findFirst + update', async () => {
       const prisma = createMockPrisma();
-      prisma.timeEntry.findFirst.mockResolvedValue({ id: "existing-entry-1" });
+      prisma.timeEntry.findFirst.mockResolvedValue({ id: 'existing-entry-1' });
 
       const fetchMock = mockFetchResponses([
-        { status: 200, body: makeSearchResponse([{ key: "PROJ-1", summary: "Task" }]) },
+        { status: 200, body: makeSearchResponse([{ key: 'PROJ-1', summary: 'Task' }]) },
         {
           status: 200,
-          body: makeWorklogResponse([{ id: "wl-1", accountId: "acc-456", seconds: 7200 }]),
+          body: makeWorklogResponse([{ id: 'wl-1', accountId: 'acc-456', seconds: 7200 }]),
         },
       ]);
-      vi.stubGlobal("fetch", fetchMock);
+      vi.stubGlobal('fetch', fetchMock);
 
       const result = await syncJiraWorklogs(prisma, ...baseArgs);
 
       // Should update, not create
       expect(prisma.timeEntry.update).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { id: "existing-entry-1" },
+          where: { id: 'existing-entry-1' },
           data: expect.objectContaining({ minutes: 120 }),
         }),
       );
@@ -212,38 +212,38 @@ describe("jira-worklog", () => {
       expect(result.imported).toBe(0);
     });
 
-    it("sets source=JIRA on all imported entries", async () => {
+    it('sets source=JIRA on all imported entries', async () => {
       const prisma = createMockPrisma();
       const fetchMock = mockFetchResponses([
-        { status: 200, body: makeSearchResponse([{ key: "PROJ-1", summary: "Task" }]) },
+        { status: 200, body: makeSearchResponse([{ key: 'PROJ-1', summary: 'Task' }]) },
         {
           status: 200,
-          body: makeWorklogResponse([{ id: "wl-1", accountId: "acc-456", seconds: 1800 }]),
+          body: makeWorklogResponse([{ id: 'wl-1', accountId: 'acc-456', seconds: 1800 }]),
         },
       ]);
-      vi.stubGlobal("fetch", fetchMock);
+      vi.stubGlobal('fetch', fetchMock);
 
       await syncJiraWorklogs(prisma, ...baseArgs);
 
       expect(prisma.timeEntry.create).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
-            source: "JIRA",
+            source: 'JIRA',
           }),
         }),
       );
     });
 
-    it("stores issueKey and issueSummary in metadataJson", async () => {
+    it('stores issueKey and issueSummary in metadataJson', async () => {
       const prisma = createMockPrisma();
       const fetchMock = mockFetchResponses([
-        { status: 200, body: makeSearchResponse([{ key: "DEV-42", summary: "Fix login bug" }]) },
+        { status: 200, body: makeSearchResponse([{ key: 'DEV-42', summary: 'Fix login bug' }]) },
         {
           status: 200,
-          body: makeWorklogResponse([{ id: "wl-1", accountId: "acc-456", seconds: 900 }]),
+          body: makeWorklogResponse([{ id: 'wl-1', accountId: 'acc-456', seconds: 900 }]),
         },
       ]);
-      vi.stubGlobal("fetch", fetchMock);
+      vi.stubGlobal('fetch', fetchMock);
 
       await syncJiraWorklogs(prisma, ...baseArgs);
 
@@ -251,16 +251,16 @@ describe("jira-worklog", () => {
         expect.objectContaining({
           data: expect.objectContaining({
             metadataJson: expect.objectContaining({
-              issueKey: "DEV-42",
-              issueSummary: "Fix login bug",
-              worklogId: "wl-1",
+              issueKey: 'DEV-42',
+              issueSummary: 'Fix login bug',
+              worklogId: 'wl-1',
             }),
           }),
         }),
       );
     });
 
-    it("paginates JQL search with startAt parameter", async () => {
+    it('paginates JQL search with startAt parameter', async () => {
       const prisma = createMockPrisma();
 
       // Page 1: 100 issues but total=150 so needs page 2
@@ -282,59 +282,59 @@ describe("jira-worklog", () => {
           body: makeWorklogResponse([]),
         })),
       ]);
-      vi.stubGlobal("fetch", fetchMock);
+      vi.stubGlobal('fetch', fetchMock);
 
       await syncJiraWorklogs(prisma, ...baseArgs);
 
       // Verify second search call uses startAt=100
       const secondSearchCall = fetchMock.mock.calls[1]!;
       const url = new URL(secondSearchCall[0] as string);
-      expect(url.searchParams.get("startAt")).toBe("100");
+      expect(url.searchParams.get('startAt')).toBe('100');
     });
 
-    it("recalculates timesheet totalMinutes after import", async () => {
+    it('recalculates timesheet totalMinutes after import', async () => {
       const prisma = createMockPrisma();
       prisma.timeEntry.aggregate.mockResolvedValue({ _sum: { minutes: 180 } });
 
       const fetchMock = mockFetchResponses([
-        { status: 200, body: makeSearchResponse([{ key: "PROJ-1", summary: "Task" }]) },
+        { status: 200, body: makeSearchResponse([{ key: 'PROJ-1', summary: 'Task' }]) },
         {
           status: 200,
-          body: makeWorklogResponse([{ id: "wl-1", accountId: "acc-456", seconds: 3600 }]),
+          body: makeWorklogResponse([{ id: 'wl-1', accountId: 'acc-456', seconds: 3600 }]),
         },
       ]);
-      vi.stubGlobal("fetch", fetchMock);
+      vi.stubGlobal('fetch', fetchMock);
 
       await syncJiraWorklogs(prisma, ...baseArgs);
 
       expect(prisma.timeEntry.aggregate).toHaveBeenCalledWith({
-        where: { timesheetId: "timesheet-1" },
+        where: { timesheetId: 'timesheet-1' },
         _sum: { minutes: true },
       });
       expect(prisma.timesheet.update).toHaveBeenCalledWith({
-        where: { id: "timesheet-1" },
+        where: { id: 'timesheet-1' },
         data: { totalMinutes: 180 },
       });
     });
 
-    it("returns count of imported and skipped worklogs", async () => {
+    it('returns count of imported and skipped worklogs', async () => {
       const prisma = createMockPrisma();
       // First call: not found (will create), second call: found (will update/skip)
       prisma.timeEntry.findFirst
         .mockResolvedValueOnce(null)
-        .mockResolvedValueOnce({ id: "existing-1" });
+        .mockResolvedValueOnce({ id: 'existing-1' });
 
       const fetchMock = mockFetchResponses([
-        { status: 200, body: makeSearchResponse([{ key: "PROJ-1", summary: "Task" }]) },
+        { status: 200, body: makeSearchResponse([{ key: 'PROJ-1', summary: 'Task' }]) },
         {
           status: 200,
           body: makeWorklogResponse([
-            { id: "wl-1", accountId: "acc-456", seconds: 1800 },
-            { id: "wl-2", accountId: "acc-456", seconds: 3600 },
+            { id: 'wl-1', accountId: 'acc-456', seconds: 1800 },
+            { id: 'wl-2', accountId: 'acc-456', seconds: 3600 },
           ]),
         },
       ]);
-      vi.stubGlobal("fetch", fetchMock);
+      vi.stubGlobal('fetch', fetchMock);
 
       const result = await syncJiraWorklogs(prisma, ...baseArgs);
 
@@ -342,10 +342,10 @@ describe("jira-worklog", () => {
       expect(result.skipped).toBe(1);
     });
 
-    it("handles 401 with reconnect error message", async () => {
+    it('handles 401 with reconnect error message', async () => {
       const prisma = createMockPrisma();
-      const fetchMock = mockFetchResponses([{ status: 401, body: { message: "Unauthorized" } }]);
-      vi.stubGlobal("fetch", fetchMock);
+      const fetchMock = mockFetchResponses([{ status: 401, body: { message: 'Unauthorized' } }]);
+      vi.stubGlobal('fetch', fetchMock);
 
       await expect(syncJiraWorklogs(prisma, ...baseArgs)).rejects.toThrow(TRPCError);
 

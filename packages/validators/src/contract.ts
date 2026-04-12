@@ -1,50 +1,50 @@
-import { z } from "zod";
-import { optionalFk, optionalPositiveInt, optionalString } from "./helpers.js";
+import { z } from 'zod';
+import { optionalFk, optionalPositiveInt, optionalString } from './helpers.js';
 
 // ---------------------------------------------------------------------------
 // Prisma enum mirrors (string unions — validators package has no Prisma dep)
 // ---------------------------------------------------------------------------
 
 const contractTypeEnum = z.enum([
-  "B2B_MASTER_SERVICE",
-  "STATEMENT_OF_WORK",
-  "NDA",
-  "IP_ASSIGNMENT",
-  "DPA",
-  "OTHER",
+  'B2B_MASTER_SERVICE',
+  'STATEMENT_OF_WORK',
+  'NDA',
+  'IP_ASSIGNMENT',
+  'DPA',
+  'OTHER',
 ]);
 
 const contractStatusEnum = z.enum([
-  "DRAFT",
-  "PENDING_SIGNATURE",
-  "ACTIVE",
-  "EXPIRING",
-  "EXPIRED",
-  "TERMINATED",
-  "SUPERSEDED",
-  "ARCHIVED",
+  'DRAFT',
+  'PENDING_SIGNATURE',
+  'ACTIVE',
+  'EXPIRING',
+  'EXPIRED',
+  'TERMINATED',
+  'SUPERSEDED',
+  'ARCHIVED',
 ]);
 
 const billingModelEnum = z.enum([
-  "MONTHLY_RETAINER",
-  "HOURLY",
-  "DAILY",
-  "MILESTONE",
-  "DELIVERABLE_BASED",
-  "MIXED",
+  'MONTHLY_RETAINER',
+  'HOURLY',
+  'DAILY',
+  'MILESTONE',
+  'DELIVERABLE_BASED',
+  'MIXED',
 ]);
 
 const rateTypeEnum = z.enum([
-  "MONTHLY_FIXED",
-  "PER_HOUR",
-  "PER_DAY",
-  "PER_MILESTONE",
-  "PER_DELIVERABLE",
+  'MONTHLY_FIXED',
+  'PER_HOUR',
+  'PER_DAY',
+  'PER_MILESTONE',
+  'PER_DELIVERABLE',
 ]);
 
-const invoiceCycleEnum = z.enum(["WEEKLY", "BIWEEKLY", "MONTHLY", "ON_DELIVERABLE", "AD_HOC"]);
+const invoiceCycleEnum = z.enum(['WEEKLY', 'BIWEEKLY', 'MONTHLY', 'ON_DELIVERABLE', 'AD_HOC']);
 
-const complianceRiskLevelEnum = z.enum(["LOW", "MEDIUM", "HIGH"]);
+const complianceRiskLevelEnum = z.enum(['LOW', 'MEDIUM', 'HIGH']);
 
 // ---------------------------------------------------------------------------
 // Contract CRUD schemas
@@ -56,8 +56,8 @@ const complianceRiskLevelEnum = z.enum(["LOW", "MEDIUM", "HIGH"]);
  */
 export const contractCreateSchema = z
   .object({
-    contractorId: z.string().min(1, "Contractor is required"),
-    title: z.string().min(1, "Contract title is required").max(255),
+    contractorId: z.string().min(1, 'Contractor is required'),
+    title: z.string().min(1, 'Contract title is required').max(255),
     type: contractTypeEnum,
     startDate: z.string().datetime(),
     endDate: z.string().datetime().optional(),
@@ -79,15 +79,15 @@ export const contractCreateSchema = z
     notes: optionalString,
   })
   .refine(
-    (data) => {
+    data => {
       if (data.endDate && data.startDate) {
         return new Date(data.endDate) > new Date(data.startDate);
       }
       return true;
     },
     {
-      message: "End date must be after start date",
-      path: ["endDate"],
+      message: 'End date must be after start date',
+      path: ['endDate'],
     },
   );
 
@@ -98,7 +98,7 @@ export type ContractCreateInput = z.infer<typeof contractCreateSchema>;
  * contractorId is excluded as it cannot be changed after creation.
  */
 const contractUpdateBaseSchema = z.object({
-  title: z.string().min(1, "Contract title is required").max(255),
+  title: z.string().min(1, 'Contract title is required').max(255),
   type: contractTypeEnum,
   startDate: z.string().datetime(),
   endDate: z.string().datetime().nullable().optional(),
@@ -114,12 +114,12 @@ const contractUpdateBaseSchema = z.object({
   paymentTermsDays: z.number().int().positive().nullable().optional(),
   invoiceCycle: invoiceCycleEnum.nullable().optional(),
   internalOwnerUserId: z.preprocess(
-    (v) => (v === "" ? null : v),
+    v => (v === '' ? null : v),
     z.string().min(1).nullable().optional(),
   ),
-  teamId: z.preprocess((v) => (v === "" ? null : v), z.string().min(1).nullable().optional()),
-  projectId: z.preprocess((v) => (v === "" ? null : v), z.string().min(1).nullable().optional()),
-  costCenterId: z.preprocess((v) => (v === "" ? null : v), z.string().min(1).nullable().optional()),
+  teamId: z.preprocess(v => (v === '' ? null : v), z.string().min(1).nullable().optional()),
+  projectId: z.preprocess(v => (v === '' ? null : v), z.string().min(1).nullable().optional()),
+  costCenterId: z.preprocess(v => (v === '' ? null : v), z.string().min(1).nullable().optional()),
   notes: z.string().nullable().optional(),
 });
 
@@ -135,9 +135,9 @@ export const contractListSchema = z.object({
   pageSize: z.number().min(10).max(50).default(25),
   search: z.string().optional(),
   sortBy: z
-    .enum(["createdAt", "title", "status", "endDate", "startDate", "type"])
-    .default("endDate"),
-  sortOrder: z.enum(["asc", "desc"]).default("asc"),
+    .enum(['createdAt', 'title', 'status', 'endDate', 'startDate', 'type'])
+    .default('endDate'),
+  sortOrder: z.enum(['asc', 'desc']).default('asc'),
   contractorId: z.string().optional(),
   filters: z
     .object({
@@ -169,7 +169,7 @@ export type ContractStatusTransitionInput = z.infer<typeof contractStatusTransit
  */
 export const amendmentCreateSchema = z.object({
   contractId: z.string().min(1),
-  title: z.string().min(1, "Amendment title is required").max(255),
+  title: z.string().min(1, 'Amendment title is required').max(255),
   effectiveDate: z.string().datetime(),
   description: z.string().optional(),
   changesSummaryJson: z.record(z.unknown()),

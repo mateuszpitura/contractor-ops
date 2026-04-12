@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import type { DirectoryRole } from "@contractor-ops/validators";
-import { useTranslations } from "next-intl";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import type { DirectoryRole } from '@contractor-ops/validators';
+import { useTranslations } from 'next-intl';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { ROLE_LABELS, ROLE_OPTIONS } from "./role-assignment-controls";
+} from '@/components/ui/select';
+import { ROLE_LABELS, ROLE_OPTIONS } from './role-assignment-controls';
 
 // ---------------------------------------------------------------------------
 // GroupRoleMappingStep
@@ -35,21 +35,21 @@ export function GroupRoleMappingStep({
   onMappingChange,
   defaultRole,
 }: GroupRoleMappingStepProps) {
-  const t = useTranslations("GoogleWorkspace.import");
+  const t = useTranslations('GoogleWorkspace.import');
 
   if (groups.length === 0) return null;
 
   return (
     <div className="space-y-4">
       <div className="space-y-1">
-        <h3 className="text-sm font-semibold">{t("groupMappingTitle")}</h3>
+        <h3 className="text-sm font-semibold">{t('groupMappingTitle')}</h3>
         <p className="text-sm text-muted-foreground">
-          {t("groupMappingFound", { count: groups.length })}
+          {t('groupMappingFound', { count: groups.length })}
         </p>
       </div>
 
       <div className="space-y-2">
-        {groups.map((group) => {
+        {groups.map(group => {
           const mappedRole = mappings.get(group.email);
           const displayRole = mappedRole ?? defaultRole;
 
@@ -63,16 +63,15 @@ export function GroupRoleMappingStep({
 
                 <div className="flex items-center gap-2">
                   <Select
-                    value={mappedRole ?? ""}
-                    onValueChange={(val) => {
+                    value={mappedRole ?? ''}
+                    onValueChange={val => {
                       if (val) onMappingChange(group.email, val as DirectoryRole);
-                    }}
-                  >
+                    }}>
                     <SelectTrigger className="w-48">
                       <SelectValue>{ROLE_LABELS[displayRole]}</SelectValue>
                     </SelectTrigger>
                     <SelectContent>
-                      {ROLE_OPTIONS.map((role) => (
+                      {ROLE_OPTIONS.map(role => (
                         <SelectItem key={role} value={role}>
                           {ROLE_LABELS[role]}
                         </SelectItem>
@@ -82,7 +81,7 @@ export function GroupRoleMappingStep({
 
                   {!mappedRole && (
                     <span className="text-xs text-muted-foreground whitespace-nowrap">
-                      {t("default")}
+                      {t('default')}
                     </span>
                   )}
                 </div>
@@ -92,7 +91,7 @@ export function GroupRoleMappingStep({
         })}
       </div>
 
-      <p className="text-xs text-muted-foreground">{t("groupMappingHint")}</p>
+      <p className="text-xs text-muted-foreground">{t('groupMappingHint')}</p>
     </div>
   );
 }

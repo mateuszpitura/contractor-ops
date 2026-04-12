@@ -1,5 +1,5 @@
-import { dispatch } from "../notification-service.js";
-import type { DbClient } from "../types.js";
+import { dispatch } from '../notification-service.js';
+import type { DbClient } from '../types.js';
 
 type PrismaClient = DbClient;
 
@@ -27,7 +27,7 @@ export async function dispatchShipmentNotification(
     const adminMembers = await db.member.findMany({
       where: {
         organizationId,
-        role: { in: ["owner", "admin"] },
+        role: { in: ['owner', 'admin'] },
       },
       select: { userId: true },
     });
@@ -38,14 +38,14 @@ export async function dispatchShipmentNotification(
       return;
     }
 
-    const statusLabel = mappedStatus.toLowerCase().replace("_", " ");
+    const statusLabel = mappedStatus.toLowerCase().replace('_', ' ');
     void dispatch({
       organizationId,
-      type: "SHIPMENT_STATUS_CHANGE" as const,
+      type: 'SHIPMENT_STATUS_CHANGE' as const,
       recipientUserIds: adminUserIds,
       title: `Shipment ${statusLabel}`,
       body: `Shipment ${shipment.trackingNumber ?? shipment.id} status changed to ${statusLabel}.`,
-      entityType: "SHIPMENT",
+      entityType: 'SHIPMENT',
       entityId: shipment.id,
       metadata: {
         shipmentId: shipment.id,

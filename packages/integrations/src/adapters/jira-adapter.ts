@@ -1,10 +1,10 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
-import { prisma } from "@contractor-ops/db";
-import type { CredentialBlob } from "../types/credentials.js";
-import type { ProviderHealthStatus } from "../types/health.js";
-import type { OAuthConfig } from "../types/provider.js";
-import type { WebhookVerificationResult } from "../types/webhook.js";
-import { BaseAdapter } from "./base-adapter.js";
+import { createHmac, timingSafeEqual } from 'node:crypto';
+import { prisma } from '@contractor-ops/db';
+import type { CredentialBlob } from '../types/credentials.js';
+import type { ProviderHealthStatus } from '../types/health.js';
+import type { OAuthConfig } from '../types/provider.js';
+import type { WebhookVerificationResult } from '../types/webhook.js';
+import { BaseAdapter } from './base-adapter.js';
 
 // ---------------------------------------------------------------------------
 // Jira OAuth 2.0 3LO Configuration
@@ -22,12 +22,12 @@ import { BaseAdapter } from "./base-adapter.js";
  * - offline_access — receive a refresh token for long-lived access
  */
 const JIRA_OAUTH_CONFIG: OAuthConfig = {
-  clientIdEnvVar: "JIRA_CLIENT_ID",
-  clientSecretEnvVar: "JIRA_CLIENT_SECRET",
-  authorizationUrl: "https://auth.atlassian.com/authorize",
-  tokenUrl: "https://auth.atlassian.com/oauth/token",
-  scopes: ["read:jira-work", "write:jira-work", "manage:jira-webhook", "offline_access"],
-  redirectPath: "/api/oauth/jira/callback",
+  clientIdEnvVar: 'JIRA_CLIENT_ID',
+  clientSecretEnvVar: 'JIRA_CLIENT_SECRET',
+  authorizationUrl: 'https://auth.atlassian.com/authorize',
+  tokenUrl: 'https://auth.atlassian.com/oauth/token',
+  scopes: ['read:jira-work', 'write:jira-work', 'manage:jira-webhook', 'offline_access'],
+  redirectPath: '/api/oauth/jira/callback',
 };
 
 /**
@@ -36,8 +36,8 @@ const JIRA_OAUTH_CONFIG: OAuthConfig = {
  * - prompt: Forces consent screen to ensure refresh token is returned
  */
 export const JIRA_EXTRA_AUTH_PARAMS: Record<string, string> = {
-  audience: "api.atlassian.com",
-  prompt: "consent",
+  audience: 'api.atlassian.com',
+  prompt: 'consent',
 };
 
 // ---------------------------------------------------------------------------
@@ -58,8 +58,8 @@ export const JIRA_EXTRA_AUTH_PARAMS: Record<string, string> = {
  * - JIRA_ENCRYPTION_KEY — for credential encryption at rest
  */
 export class JiraAdapter extends BaseAdapter {
-  readonly slug = "jira";
-  readonly displayName = "Jira";
+  readonly slug = 'jira';
+  readonly displayName = 'Jira';
   readonly supportsOAuth = true;
   readonly supportsWebhooks = true;
 
@@ -76,16 +76,16 @@ export class JiraAdapter extends BaseAdapter {
     const clientSecret = process.env.JIRA_CLIENT_SECRET;
 
     if (!(clientId && clientSecret)) {
-      throw new Error("JIRA_CLIENT_ID and JIRA_CLIENT_SECRET environment variables are required");
+      throw new Error('JIRA_CLIENT_ID and JIRA_CLIENT_SECRET environment variables are required');
     }
 
-    const response = await fetch("https://auth.atlassian.com/oauth/token", {
-      method: "POST",
+    const response = await fetch('https://auth.atlassian.com/oauth/token', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        grant_type: "authorization_code",
+        grant_type: 'authorization_code',
         client_id: clientId,
         client_secret: clientSecret,
         code,
@@ -120,20 +120,20 @@ export class JiraAdapter extends BaseAdapter {
     const clientSecret = process.env.JIRA_CLIENT_SECRET;
 
     if (!(clientId && clientSecret)) {
-      throw new Error("JIRA_CLIENT_ID and JIRA_CLIENT_SECRET environment variables are required");
+      throw new Error('JIRA_CLIENT_ID and JIRA_CLIENT_SECRET environment variables are required');
     }
 
     if (!credentials.refreshToken) {
-      throw new Error("No refresh token available for Jira");
+      throw new Error('No refresh token available for Jira');
     }
 
-    const response = await fetch("https://auth.atlassian.com/oauth/token", {
-      method: "POST",
+    const response = await fetch('https://auth.atlassian.com/oauth/token', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        grant_type: "refresh_token",
+        grant_type: 'refresh_token',
         client_id: clientId,
         client_secret: clientSecret,
         refresh_token: credentials.refreshToken,
@@ -181,8 +181,8 @@ export class JiraAdapter extends BaseAdapter {
     rawBody: string,
     headers: Record<string, string>,
   ): WebhookVerificationResult {
-    const signatureHeader = headers["x-hub-signature"] ?? headers["X-Hub-Signature"];
-    const secret = headers["x-webhook-secret"] ?? headers["X-Webhook-Secret"];
+    const signatureHeader = headers['x-hub-signature'] ?? headers['X-Hub-Signature'];
+    const secret = headers['x-webhook-secret'] ?? headers['X-Webhook-Secret'];
 
     // If no secret is configured, allow through (3LO dynamic webhooks
     // may not support custom secrets — see RESEARCH.md open question #2).
@@ -202,16 +202,16 @@ export class JiraAdapter extends BaseAdapter {
       return { valid: false };
     }
 
-    const [method, signature] = signatureHeader.split("=");
-    if (method !== "sha256" || !signature) {
+    const [method, signature] = signatureHeader.split('=');
+    if (method !== 'sha256' || !signature) {
       return { valid: false };
     }
 
-    const expected = createHmac("sha256", secret).update(rawBody).digest("hex");
+    const expected = createHmac('sha256', secret).update(rawBody).digest('hex');
 
     let valid: boolean;
     try {
-      valid = timingSafeEqual(Buffer.from(signature, "hex"), Buffer.from(expected, "hex"));
+      valid = timingSafeEqual(Buffer.from(signature, 'hex'), Buffer.from(expected, 'hex'));
     } catch {
       // Buffer length mismatch — invalid signature
       valid = false;
@@ -257,7 +257,7 @@ export class JiraAdapter extends BaseAdapter {
    * (e.g., Phase 18 read-only connections upgraded to Phase 19 write access).
    */
   getRequiredScopes(): string[] {
-    return ["read:jira-work", "write:jira-work", "manage:jira-webhook", "offline_access"];
+    return ['read:jira-work', 'write:jira-work', 'manage:jira-webhook', 'offline_access'];
   }
 
   // -------------------------------------------------------------------------
@@ -278,10 +278,10 @@ export class JiraAdapter extends BaseAdapter {
   async discoverCloudId(
     accessToken: string,
   ): Promise<{ cloudId: string; siteName: string; siteUrl: string }> {
-    const response = await fetch("https://api.atlassian.com/oauth/token/accessible-resources", {
+    const response = await fetch('https://api.atlassian.com/oauth/token/accessible-resources', {
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        Accept: "application/json",
+        Accept: 'application/json',
       },
     });
 
@@ -299,7 +299,7 @@ export class JiraAdapter extends BaseAdapter {
 
     if (resources.length === 0) {
       throw new Error(
-        "No accessible Jira Cloud sites found. The authorized user may not have access to any Jira instances.",
+        'No accessible Jira Cloud sites found. The authorized user may not have access to any Jira instances.',
       );
     }
 
@@ -333,8 +333,8 @@ export class JiraAdapter extends BaseAdapter {
 
     if (!connection) {
       return {
-        status: "DISCONNECTED",
-        provider: "jira",
+        status: 'DISCONNECTED',
+        provider: 'jira',
         recentSyncs: [],
         recentWebhooks: [],
         errorCountLast24h: 0,
@@ -344,7 +344,7 @@ export class JiraAdapter extends BaseAdapter {
     // Fetch recent sync logs
     const recentSyncs = await prisma.integrationSyncLog.findMany({
       where: { integrationConnectionId: connectionId },
-      orderBy: { startedAt: "desc" },
+      orderBy: { startedAt: 'desc' },
       take: 5,
       select: {
         id: true,
@@ -360,28 +360,28 @@ export class JiraAdapter extends BaseAdapter {
     const errorCountLast24h = await prisma.integrationSyncLog.count({
       where: {
         integrationConnectionId: connectionId,
-        status: "FAILED",
+        status: 'FAILED',
         startedAt: { gte: oneDayAgo },
       },
     });
 
     // Determine status
-    let status: ProviderHealthStatus["status"];
-    if (connection.status !== "CONNECTED") {
-      status = "DISCONNECTED";
+    let status: ProviderHealthStatus['status'];
+    if (connection.status !== 'CONNECTED') {
+      status = 'DISCONNECTED';
     } else if (connection.lastErrorAt && !connection.lastSuccessAt) {
-      status = "ERROR";
+      status = 'ERROR';
     } else if (connection.tokenExpiresAt && connection.tokenExpiresAt < new Date()) {
-      status = "REAUTH_REQUIRED";
-    } else if (recentSyncs[0]?.status === "FAILED") {
-      status = "ERROR";
+      status = 'REAUTH_REQUIRED';
+    } else if (recentSyncs[0]?.status === 'FAILED') {
+      status = 'ERROR';
     } else {
-      status = "CONNECTED";
+      status = 'CONNECTED';
     }
 
     return {
       status,
-      provider: "jira",
+      provider: 'jira',
       displayName: connection.displayName,
       connectedAt: connection.connectedAt,
       lastSyncAt: connection.lastSyncAt,
@@ -389,7 +389,7 @@ export class JiraAdapter extends BaseAdapter {
       lastErrorAt: connection.lastErrorAt,
       lastErrorMessage: connection.lastErrorMessage,
       tokenExpiresAt: connection.tokenExpiresAt,
-      recentSyncs: recentSyncs.map((s) => ({
+      recentSyncs: recentSyncs.map(s => ({
         id: s.id,
         syncType: s.syncType,
         status: s.status,

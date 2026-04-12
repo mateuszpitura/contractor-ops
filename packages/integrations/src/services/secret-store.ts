@@ -5,7 +5,7 @@
 // adds a listSecrets method for ZATCA certificate management use cases.
 // ---------------------------------------------------------------------------
 
-export type { SecretStore } from "@contractor-ops/secrets";
+export type { SecretStore } from '@contractor-ops/secrets';
 
 /**
  * Extended secret store with listing capability.
@@ -34,7 +34,7 @@ export class SecretStoreError extends Error {
 
   constructor(message: string, operation: string, cause?: unknown) {
     super(message);
-    this.name = "SecretStoreError";
+    this.name = 'SecretStoreError';
     this.operation = operation;
     if (cause) this.cause = cause;
   }

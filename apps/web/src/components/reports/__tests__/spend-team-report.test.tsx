@@ -1,15 +1,15 @@
-import { describe, expect, it, vi } from "vitest";
-import { render, screen } from "@/test/test-utils";
+import { describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@/test/test-utils';
 
-vi.mock("next-intl", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("next-intl")>();
+vi.mock('next-intl', async importOriginal => {
+  const actual = await importOriginal<typeof import('next-intl')>();
   return {
     ...actual,
     useTranslations: () => (key: string, _params?: any) => key,
   };
 });
 
-vi.mock("@tanstack/react-query", () => ({
+vi.mock('@tanstack/react-query', () => ({
   useQuery: vi.fn(),
   useMutation: () => ({
     mutate: vi.fn(),
@@ -17,7 +17,7 @@ vi.mock("@tanstack/react-query", () => ({
   }),
 }));
 
-vi.mock("@/trpc/init", () => ({
+vi.mock('@/trpc/init', () => ({
   trpc: {
     report: {
       spendByTeam: { queryOptions: (opts: any) => opts },
@@ -27,16 +27,16 @@ vi.mock("@/trpc/init", () => ({
   },
 }));
 
-vi.mock("sonner", () => ({
+vi.mock('sonner', () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
 
-vi.mock("../report-chart", () => ({
+vi.mock('../report-chart', () => ({
   ReportChart: ({ isLoading }: { isLoading?: boolean }) =>
     isLoading ? <div data-testid="chart-loading" /> : <div data-testid="report-chart" />,
 }));
 
-vi.mock("../report-table", () => ({
+vi.mock('../report-table', () => ({
   ReportTable: ({ data, emptyTitle, isLoading, grandTotalLabel, grandTotalValue }: any) =>
     isLoading ? (
       <div data-testid="loading" />
@@ -56,21 +56,21 @@ vi.mock("../report-table", () => ({
     ),
 }));
 
-vi.mock("../drill-down-breadcrumb", () => ({
+vi.mock('../drill-down-breadcrumb', () => ({
   DrillDownBreadcrumb: () => <div data-testid="breadcrumb" />,
 }));
 
-vi.mock("../export-buttons", () => ({
+vi.mock('../export-buttons', () => ({
   ExportButtons: () => <div data-testid="export-buttons" />,
   downloadBase64File: vi.fn(),
 }));
 
-import { useQuery } from "@tanstack/react-query";
-import { SpendTeamReport } from "../spend-team-report";
+import { useQuery } from '@tanstack/react-query';
+import { SpendTeamReport } from '../spend-team-report';
 
 const mockUseQuery = vi.mocked(useQuery);
 
-describe("SpendTeamReport", () => {
+describe('SpendTeamReport', () => {
   beforeEach(() => {
     // useQuery is called twice: table query then chart query
     mockUseQuery
@@ -78,8 +78,8 @@ describe("SpendTeamReport", () => {
         data: {
           items: [
             {
-              teamId: "t-1",
-              teamName: "Engineering",
+              teamId: 't-1',
+              teamName: 'Engineering',
               contractorCount: 4,
               invoiceCount: 12,
               totalMinor: 4800000,
@@ -97,37 +97,37 @@ describe("SpendTeamReport", () => {
         isLoading: false,
       } as any)
       .mockReturnValueOnce({
-        data: [{ teamId: "t-1", teamName: "Engineering", totalMinor: 4800000 }],
+        data: [{ teamId: 't-1', teamName: 'Engineering', totalMinor: 4800000 }],
         isLoading: false,
       } as any);
   });
 
-  it("renders chart", () => {
+  it('renders chart', () => {
     render(<SpendTeamReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    expect(screen.getByTestId("report-chart")).toBeInTheDocument();
+    expect(screen.getByTestId('report-chart')).toBeInTheDocument();
   });
 
-  it("renders breadcrumb", () => {
+  it('renders breadcrumb', () => {
     render(<SpendTeamReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    expect(screen.getByTestId("breadcrumb")).toBeInTheDocument();
+    expect(screen.getByTestId('breadcrumb')).toBeInTheDocument();
   });
 
-  it("renders table with team data", () => {
+  it('renders table with team data', () => {
     render(<SpendTeamReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    expect(screen.getByText("Engineering")).toBeInTheDocument();
+    expect(screen.getByText('Engineering')).toBeInTheDocument();
   });
 
-  it("renders grand total row", () => {
+  it('renders grand total row', () => {
     render(<SpendTeamReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    expect(screen.getByTestId("grand-total")).toBeInTheDocument();
+    expect(screen.getByTestId('grand-total')).toBeInTheDocument();
   });
 
-  it("renders export buttons", () => {
+  it('renders export buttons', () => {
     render(<SpendTeamReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    expect(screen.getByTestId("export-buttons")).toBeInTheDocument();
+    expect(screen.getByTestId('export-buttons')).toBeInTheDocument();
   });
 
-  it("renders empty state when no data", () => {
+  it('renders empty state when no data', () => {
     mockUseQuery.mockReset();
     mockUseQuery
       .mockReturnValueOnce({
@@ -139,10 +139,10 @@ describe("SpendTeamReport", () => {
         isLoading: false,
       } as any);
     render(<SpendTeamReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    expect(screen.getByTestId("empty")).toBeInTheDocument();
+    expect(screen.getByTestId('empty')).toBeInTheDocument();
   });
 
-  it("shows loading skeleton for table while table query is loading", () => {
+  it('shows loading skeleton for table while table query is loading', () => {
     mockUseQuery.mockReset();
     mockUseQuery
       .mockReturnValueOnce({
@@ -154,18 +154,18 @@ describe("SpendTeamReport", () => {
         isLoading: false,
       } as any);
     render(<SpendTeamReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    expect(screen.getByTestId("loading")).toBeInTheDocument();
+    expect(screen.getByTestId('loading')).toBeInTheDocument();
   });
 
-  it("shows chart loading while table is already settled", () => {
+  it('shows chart loading while table is already settled', () => {
     mockUseQuery.mockReset();
     mockUseQuery
       .mockReturnValueOnce({
         data: {
           items: [
             {
-              teamId: "t-1",
-              teamName: "Engineering",
+              teamId: 't-1',
+              teamName: 'Engineering',
               contractorCount: 1,
               invoiceCount: 1,
               totalMinor: 100,
@@ -180,7 +180,7 @@ describe("SpendTeamReport", () => {
         isLoading: true,
       } as any);
     render(<SpendTeamReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    expect(screen.getByTestId("chart-loading")).toBeInTheDocument();
-    expect(screen.getByText("Engineering")).toBeInTheDocument();
+    expect(screen.getByTestId('chart-loading')).toBeInTheDocument();
+    expect(screen.getByText('Engineering')).toBeInTheDocument();
   });
 });

@@ -8,7 +8,7 @@
  * to avoid complex module mocking of tRPC internals.
  */
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ---------------------------------------------------------------------------
 // Mock @contractor-ops/db
@@ -18,7 +18,7 @@ const mockFindUnique = vi.fn();
 const mockScopedClient = { _scoped: true };
 const mockTenantStoreRun = vi.fn((_ctx: unknown, fn: () => unknown) => fn());
 
-vi.mock("@contractor-ops/db", () => ({
+vi.mock('@contractor-ops/db', () => ({
   prisma: {
     organization: {
       findUnique: (...args: unknown[]) => mockFindUnique(...args),
@@ -35,7 +35,7 @@ vi.mock("@contractor-ops/db", () => ({
   createTenantClientFrom: vi.fn(() => mockScopedClient),
 }));
 
-import { createTenantClientFrom, getRegionalClient } from "@contractor-ops/db";
+import { createTenantClientFrom, getRegionalClient } from '@contractor-ops/db';
 
 // ---------------------------------------------------------------------------
 // Middleware under test — extracted logic
@@ -49,31 +49,31 @@ async function runTenantMiddleware(opts: { session: unknown; user: unknown }) {
   const { session, user } = opts;
 
   if (!(session && user)) {
-    throw new Error("UNAUTHORIZED");
+    throw new Error('UNAUTHORIZED');
   }
 
   const orgId = (session as { session: { activeOrganizationId: string | null } }).session
     .activeOrganizationId;
 
   if (!orgId) {
-    throw new Error("No active organization. Please select an organization first.");
+    throw new Error('No active organization. Please select an organization first.');
   }
 
   // This mirrors the logic in packages/api/src/middleware/tenant.ts
-  const { prisma } = await import("@contractor-ops/db");
+  const { prisma } = await import('@contractor-ops/db');
   const org = await prisma.organization.findUnique({
     where: { id: orgId },
     select: { dataRegion: true },
   });
-  const region = (org as { dataRegion?: string } | null)?.dataRegion ?? "EU";
+  const region = (org as { dataRegion?: string } | null)?.dataRegion ?? 'EU';
 
   const { getRegionalClient: getClient, createTenantClientFrom: createClient } = await import(
-    "@contractor-ops/db"
+    '@contractor-ops/db'
   );
   const regionalPrisma = getClient(region);
   const scopedClient = createClient(regionalPrisma);
 
-  const { tenantStore: store } = await import("@contractor-ops/db");
+  const { tenantStore: store } = await import('@contractor-ops/db');
   const nextResult = { ctx: { organizationId: orgId, region, db: scopedClient } };
   store.run({ organizationId: orgId, region }, () => nextResult);
 
@@ -84,81 +84,81 @@ async function runTenantMiddleware(opts: { session: unknown; user: unknown }) {
 // Tests
 // ---------------------------------------------------------------------------
 
-describe("tenant middleware — region routing", () => {
+describe('tenant middleware — region routing', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("resolves dataRegion=ME and selects ME regional client", async () => {
-    mockFindUnique.mockResolvedValue({ dataRegion: "ME" });
+  it('resolves dataRegion=ME and selects ME regional client', async () => {
+    mockFindUnique.mockResolvedValue({ dataRegion: 'ME' });
 
     const result = await runTenantMiddleware({
-      session: { session: { activeOrganizationId: "org-me-001" } },
-      user: { id: "user-1" },
+      session: { session: { activeOrganizationId: 'org-me-001' } },
+      user: { id: 'user-1' },
     });
 
     expect(mockFindUnique).toHaveBeenCalledWith({
-      where: { id: "org-me-001" },
+      where: { id: 'org-me-001' },
       select: { dataRegion: true },
     });
-    expect(getRegionalClient).toHaveBeenCalledWith("ME");
+    expect(getRegionalClient).toHaveBeenCalledWith('ME');
     expect(createTenantClientFrom).toHaveBeenCalled();
     expect(mockTenantStoreRun).toHaveBeenCalledWith(
-      { organizationId: "org-me-001", region: "ME" },
+      { organizationId: 'org-me-001', region: 'ME' },
       expect.any(Function),
     );
-    expect(result.ctx.region).toBe("ME");
+    expect(result.ctx.region).toBe('ME');
     expect(result.ctx.db).toBe(mockScopedClient);
   });
 
-  it("resolves dataRegion=EU and selects EU regional client", async () => {
-    mockFindUnique.mockResolvedValue({ dataRegion: "EU" });
+  it('resolves dataRegion=EU and selects EU regional client', async () => {
+    mockFindUnique.mockResolvedValue({ dataRegion: 'EU' });
 
     const result = await runTenantMiddleware({
-      session: { session: { activeOrganizationId: "org-eu-001" } },
-      user: { id: "user-1" },
+      session: { session: { activeOrganizationId: 'org-eu-001' } },
+      user: { id: 'user-1' },
     });
 
-    expect(getRegionalClient).toHaveBeenCalledWith("EU");
-    expect(result.ctx.region).toBe("EU");
+    expect(getRegionalClient).toHaveBeenCalledWith('EU');
+    expect(result.ctx.region).toBe('EU');
   });
 
-  it("defaults to EU when org has no dataRegion field", async () => {
+  it('defaults to EU when org has no dataRegion field', async () => {
     mockFindUnique.mockResolvedValue({});
 
     const result = await runTenantMiddleware({
-      session: { session: { activeOrganizationId: "org-legacy-001" } },
-      user: { id: "user-1" },
+      session: { session: { activeOrganizationId: 'org-legacy-001' } },
+      user: { id: 'user-1' },
     });
 
-    expect(getRegionalClient).toHaveBeenCalledWith("EU");
-    expect(result.ctx.region).toBe("EU");
+    expect(getRegionalClient).toHaveBeenCalledWith('EU');
+    expect(result.ctx.region).toBe('EU');
   });
 
-  it("defaults to EU when org is not found in database", async () => {
+  it('defaults to EU when org is not found in database', async () => {
     mockFindUnique.mockResolvedValue(null);
 
     const result = await runTenantMiddleware({
-      session: { session: { activeOrganizationId: "org-missing-001" } },
-      user: { id: "user-1" },
+      session: { session: { activeOrganizationId: 'org-missing-001' } },
+      user: { id: 'user-1' },
     });
 
-    expect(getRegionalClient).toHaveBeenCalledWith("EU");
-    expect(result.ctx.region).toBe("EU");
+    expect(getRegionalClient).toHaveBeenCalledWith('EU');
+    expect(result.ctx.region).toBe('EU');
   });
 
-  it("throws when no session provided", async () => {
+  it('throws when no session provided', async () => {
     await expect(runTenantMiddleware({ session: null, user: null })).rejects.toThrow(
-      "UNAUTHORIZED",
+      'UNAUTHORIZED',
     );
   });
 
-  it("throws when no active organization", async () => {
+  it('throws when no active organization', async () => {
     await expect(
       runTenantMiddleware({
         session: { session: { activeOrganizationId: null } },
-        user: { id: "user-1" },
+        user: { id: 'user-1' },
       }),
-    ).rejects.toThrow("No active organization");
+    ).rejects.toThrow('No active organization');
   });
 });

@@ -1,4 +1,4 @@
-import { render, screen, setup } from "@/test/test-utils";
+import { render, screen, setup } from '@/test/test-utils';
 import {
   Command,
   CommandEmpty,
@@ -8,13 +8,19 @@ import {
   CommandList,
   CommandSeparator,
   CommandShortcut,
-} from "../command";
+} from '../command';
 
 beforeAll(() => {
   global.ResizeObserver = class {
-    observe() {}
-    unobserve() {}
-    disconnect() {}
+    observe() {
+      /* no-op */
+    }
+    unobserve() {
+      /* no-op */
+    }
+    disconnect() {
+      /* no-op */
+    }
   };
   Element.prototype.scrollIntoView = vi.fn();
 });
@@ -41,62 +47,62 @@ function renderCommand() {
   );
 }
 
-describe("Command", () => {
-  it("renders the input with placeholder", () => {
+describe('Command', () => {
+  it('renders the input with placeholder', () => {
     renderCommand();
-    expect(screen.getByPlaceholderText("Search...")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Search...')).toBeInTheDocument();
   });
 
-  it("renders command items", () => {
+  it('renders command items', () => {
     renderCommand();
-    expect(screen.getByText("Create new")).toBeInTheDocument();
-    expect(screen.getByText("Open file")).toBeInTheDocument();
-    expect(screen.getByText("Preferences")).toBeInTheDocument();
+    expect(screen.getByText('Create new')).toBeInTheDocument();
+    expect(screen.getByText('Open file')).toBeInTheDocument();
+    expect(screen.getByText('Preferences')).toBeInTheDocument();
   });
 
-  it("renders group headings", () => {
+  it('renders group headings', () => {
     renderCommand();
-    expect(screen.getByText("Actions")).toBeInTheDocument();
-    expect(screen.getByText("Settings")).toBeInTheDocument();
+    expect(screen.getByText('Actions')).toBeInTheDocument();
+    expect(screen.getByText('Settings')).toBeInTheDocument();
   });
 
-  it("renders shortcut", () => {
+  it('renders shortcut', () => {
     renderCommand();
-    const shortcut = screen.getByText("N").closest("[data-slot='command-shortcut']");
+    const shortcut = screen.getByText('N').closest("[data-slot='command-shortcut']");
     expect(shortcut).toBeInTheDocument();
   });
 
-  it("sets data-slot on command root", () => {
+  it('sets data-slot on command root', () => {
     renderCommand();
     const root = document.querySelector("[data-slot='command']");
     expect(root).toBeInTheDocument();
   });
 
-  it("sets data-slot on command input wrapper", () => {
+  it('sets data-slot on command input wrapper', () => {
     renderCommand();
     const wrapper = document.querySelector("[data-slot='command-input-wrapper']");
     expect(wrapper).toBeInTheDocument();
   });
 
-  it("sets data-slot on command list", () => {
+  it('sets data-slot on command list', () => {
     renderCommand();
     const list = document.querySelector("[data-slot='command-list']");
     expect(list).toBeInTheDocument();
   });
 
-  it("sets data-slot on command item", () => {
+  it('sets data-slot on command item', () => {
     renderCommand();
     const items = document.querySelectorAll("[data-slot='command-item']");
     expect(items.length).toBe(3);
   });
 
-  it("sets data-slot on separator", () => {
+  it('sets data-slot on separator', () => {
     renderCommand();
     const sep = document.querySelector("[data-slot='command-separator']");
     expect(sep).toBeInTheDocument();
   });
 
-  it("Command merges custom className", () => {
+  it('Command merges custom className', () => {
     render(
       <Command className="custom-cmd">
         <CommandList>
@@ -105,21 +111,21 @@ describe("Command", () => {
       </Command>,
     );
     const root = document.querySelector("[data-slot='command']");
-    expect(root?.className).toContain("custom-cmd");
+    expect(root?.className).toContain('custom-cmd');
   });
 
-  it("filters items when typing", async () => {
+  it('filters items when typing', async () => {
     const { user } = renderCommand();
-    const input = screen.getByPlaceholderText("Search...");
-    await user.type(input, "Pref");
-    expect(screen.getByText("Preferences")).toBeInTheDocument();
-    expect(screen.queryByText("Create new")).not.toBeInTheDocument();
+    const input = screen.getByPlaceholderText('Search...');
+    await user.type(input, 'Pref');
+    expect(screen.getByText('Preferences')).toBeInTheDocument();
+    expect(screen.queryByText('Create new')).not.toBeInTheDocument();
   });
 
-  it("shows empty state when no match", async () => {
+  it('shows empty state when no match', async () => {
     const { user } = renderCommand();
-    const input = screen.getByPlaceholderText("Search...");
-    await user.type(input, "zzzzz");
-    expect(screen.getByText("No results found.")).toBeInTheDocument();
+    const input = screen.getByPlaceholderText('Search...');
+    await user.type(input, 'zzzzz');
+    expect(screen.getByText('No results found.')).toBeInTheDocument();
   });
 });

@@ -1,4 +1,4 @@
-import type { PrismaClient as BasePrismaClient } from "@contractor-ops/db";
+import type { PrismaClient as BasePrismaClient } from '@contractor-ops/db';
 
 /**
  * Database client type used across services.

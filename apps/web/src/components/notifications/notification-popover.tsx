@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bell, BellOff } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useRouter } from "@/i18n/navigation";
-import { trpc } from "@/trpc/init";
-import type { NotificationData } from "./notification-item";
-import { getEntityUrl, NotificationItem } from "./notification-item";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Bell, BellOff } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useRouter } from '@/i18n/navigation';
+import { trpc } from '@/trpc/init';
+import type { NotificationData } from './notification-item';
+import { getEntityUrl, NotificationItem } from './notification-item';
 
 // ---------------------------------------------------------------------------
 // Loading skeletons
@@ -38,8 +38,8 @@ function PopoverSkeletons() {
 // ---------------------------------------------------------------------------
 
 export function NotificationPopover() {
-  const t = useTranslations("Notifications");
-  const tAria = useTranslations("Common.aria");
+  const t = useTranslations('Notifications');
+  const tAria = useTranslations('Common.aria');
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -66,10 +66,10 @@ export function NotificationPopover() {
     trpc.notification.markRead.mutationOptions({
       onSuccess: () => {
         void queryClient.invalidateQueries({
-          queryKey: [["notification", "unreadCount"]],
+          queryKey: [['notification', 'unreadCount']],
         });
         void queryClient.invalidateQueries({
-          queryKey: [["notification", "list"]],
+          queryKey: [['notification', 'list']],
         });
       },
     }),
@@ -79,16 +79,16 @@ export function NotificationPopover() {
   const markAllReadMutation = useMutation(
     trpc.notification.markAllRead.mutationOptions({
       onSuccess: () => {
-        toast.success(t("markedAllRead"));
+        toast.success(t('markedAllRead'));
         void queryClient.invalidateQueries({
-          queryKey: [["notification", "unreadCount"]],
+          queryKey: [['notification', 'unreadCount']],
         });
         void queryClient.invalidateQueries({
-          queryKey: [["notification", "list"]],
+          queryKey: [['notification', 'list']],
         });
       },
       onError: () => {
-        toast.error(t("errors.failedToMarkRead"));
+        toast.error(t('errors.failedToMarkRead'));
       },
     }),
   );
@@ -104,13 +104,13 @@ export function NotificationPopover() {
   const handleOpenChange = (open: boolean) => {
     if (open) {
       void queryClient.invalidateQueries({
-        queryKey: [["notification", "list"]],
+        queryKey: [['notification', 'list']],
       });
     }
   };
 
   // Badge display: cap at 99+
-  const badgeText = unreadCount > 99 ? "99+" : String(unreadCount);
+  const badgeText = unreadCount > 99 ? '99+' : String(unreadCount);
 
   return (
     <Popover onOpenChange={handleOpenChange}>
@@ -122,19 +122,17 @@ export function NotificationPopover() {
             className="relative h-8 w-8"
             aria-label={
               unreadCount > 0
-                ? tAria("notificationsWithUnread", { title: t("title"), count: unreadCount })
-                : t("title")
+                ? tAria('notificationsWithUnread', { title: t('title'), count: unreadCount })
+                : t('title')
             }
           />
-        }
-      >
+        }>
         <Bell className="h-4 w-4" aria-hidden="true" />
         {unreadCount > 0 && (
           <span
             aria-live="polite"
             aria-atomic="true"
-            className="absolute -end-1 -top-1 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold leading-none text-white"
-          >
+            className="absolute -end-1 -top-1 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold leading-none text-white">
             {badgeText}
           </span>
         )}
@@ -143,15 +141,14 @@ export function NotificationPopover() {
       <PopoverContent align="end" sideOffset={8} className="w-96 gap-0 p-0">
         {/* Header */}
         <div className="flex items-center justify-between border-b px-4 py-3">
-          <span className="text-sm font-semibold">{t("title")}</span>
+          <span className="text-sm font-semibold">{t('title')}</span>
           {unreadCount > 0 && (
             <button
               type="button"
               onClick={() => markAllReadMutation.mutate()}
               disabled={markAllReadMutation.isPending}
-              className="text-xs text-primary hover:underline disabled:opacity-50"
-            >
-              {t("markAllRead")}
+              className="text-xs text-primary hover:underline disabled:opacity-50">
+              {t('markAllRead')}
             </button>
           )}
         </div>
@@ -163,13 +160,13 @@ export function NotificationPopover() {
           /* Empty state */
           <div className="flex flex-col items-center justify-center py-10">
             <BellOff className="h-8 w-8 text-muted-foreground" />
-            <span className="mt-2 text-sm text-muted-foreground">{t("empty")}</span>
+            <span className="mt-2 text-sm text-muted-foreground">{t('empty')}</span>
           </div>
         ) : (
           <>
             <ScrollArea className="max-h-[360px]">
               <div className="flex flex-col">
-                {notifications.map((n) => (
+                {notifications.map(n => (
                   <NotificationItem
                     key={n.id}
                     notification={n}
@@ -184,10 +181,9 @@ export function NotificationPopover() {
             <div className="border-t px-4 py-2 text-center">
               <button
                 type="button"
-                onClick={() => router.push("/notifications")}
-                className="text-xs text-primary hover:underline"
-              >
-                {t("viewAll")}
+                onClick={() => router.push('/notifications')}
+                className="text-xs text-primary hover:underline">
+                {t('viewAll')}
               </button>
             </div>
           </>

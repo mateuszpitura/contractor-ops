@@ -4,8 +4,8 @@
  * and SWIFT XML pain.001.001.09 (Phase 46).
  */
 
-import { minorToDecimalStr } from "@contractor-ops/shared";
-import { getPurposeCode } from "./purpose-codes.js";
+import { minorToDecimalStr } from '@contractor-ops/shared';
+import { getPurposeCode } from './purpose-codes.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -43,31 +43,31 @@ export type OrgBankInfo = {
  */
 export function stripDiacritics(s: string): string {
   const map: Record<string, string> = {
-    "\u0105": "a",
-    "\u0107": "c",
-    "\u0119": "e",
-    "\u0142": "l",
-    "\u0144": "n",
-    "\u00f3": "o",
-    "\u015b": "s",
-    "\u017a": "z",
-    "\u017c": "z",
-    "\u0104": "A",
-    "\u0106": "C",
-    "\u0118": "E",
-    "\u0141": "L",
-    "\u0143": "N",
-    "\u00d3": "O",
-    "\u015a": "S",
-    "\u0179": "Z",
-    "\u017b": "Z",
+    '\u0105': 'a',
+    '\u0107': 'c',
+    '\u0119': 'e',
+    '\u0142': 'l',
+    '\u0144': 'n',
+    '\u00f3': 'o',
+    '\u015b': 's',
+    '\u017a': 'z',
+    '\u017c': 'z',
+    '\u0104': 'A',
+    '\u0106': 'C',
+    '\u0118': 'E',
+    '\u0141': 'L',
+    '\u0143': 'N',
+    '\u00d3': 'O',
+    '\u015a': 'S',
+    '\u0179': 'Z',
+    '\u017b': 'Z',
   };
   return s
     .replace(
       /[\u0105\u0107\u0119\u0142\u0144\u00f3\u015b\u017a\u017c\u0104\u0106\u0118\u0141\u0143\u00d3\u015a\u0179\u017b]/g,
-      (ch) => map[ch] ?? ch,
+      ch => map[ch] ?? ch,
     )
-    .replace(/[^\x20-\x7E]/g, ""); // Strip any remaining non-ASCII characters
+    .replace(/[^\x20-\x7E]/g, ''); // Strip any remaining non-ASCII characters
 }
 
 /**
@@ -83,14 +83,14 @@ export function formatMultiline(s: string, maxLines: number, lineWidth: number):
     remaining = remaining.substring(lineWidth);
   }
 
-  return lines.join("|");
+  return lines.join('|');
 }
 
 /**
  * Convert a minor-unit integer to a decimal string using ISO 4217 exponent.
  * Delegates to Dinero.js for currency-aware precision (per D-02).
  */
-function minorToDecimal(minor: number, currency: string = "PLN"): string {
+function minorToDecimal(minor: number, currency: string = 'PLN'): string {
   return minorToDecimalStr(minor, currency);
 }
 
@@ -99,11 +99,11 @@ function minorToDecimal(minor: number, currency: string = "PLN"): string {
  */
 export function escapeXml(s: string): string {
   return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&apos;");
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
 }
 
 /**
@@ -121,9 +121,9 @@ export function resolveTransferTitle(
 ): string {
   return template
     .replace(/\{invoice_number\}/g, context.invoiceNumber)
-    .replace(/\{billing_period\}/g, context.billingPeriod ?? "")
+    .replace(/\{billing_period\}/g, context.billingPeriod ?? '')
     .replace(/\{contractor_name\}/g, context.contractorName)
-    .replace(/\{contract_number\}/g, context.contractNumber ?? "")
+    .replace(/\{contract_number\}/g, context.contractNumber ?? '')
     .trim();
 }
 
@@ -137,28 +137,28 @@ export function resolveTransferTitle(
  * Adds UTF-8 BOM for Excel compatibility.
  */
 export async function generateCsv(items: ExportItem[]): Promise<Buffer> {
-  const { default: XLSX } = await import("xlsx");
+  const { default: XLSX } = await import('xlsx');
 
-  const rows = items.map((item) => ({
-    "Contractor name": item.contractorName,
+  const rows = items.map(item => ({
+    'Contractor name': item.contractorName,
     IBAN: item.iban,
     Amount: minorToDecimal(item.amountMinor, item.currency),
     Currency: item.currency,
-    "Invoice number": item.invoiceNumber,
-    NIP: item.taxId ?? "",
-    "Bank name": item.bankName ?? "",
-    "SWIFT/BIC": item.swiftBic ?? "",
-    "Due date": item.dueDate.toISOString().slice(0, 10),
-    "Transfer title": item.transferTitle,
+    'Invoice number': item.invoiceNumber,
+    NIP: item.taxId ?? '',
+    'Bank name': item.bankName ?? '',
+    'SWIFT/BIC': item.swiftBic ?? '',
+    'Due date': item.dueDate.toISOString().slice(0, 10),
+    'Transfer title': item.transferTitle,
   }));
 
   const worksheet = XLSX.utils.json_to_sheet(rows);
   const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Payment");
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Payment');
 
   const csvBuffer = XLSX.write(workbook, {
-    type: "buffer",
-    bookType: "csv",
+    type: 'buffer',
+    bookType: 'csv',
   }) as Buffer;
 
   // Prepend UTF-8 BOM for Excel compatibility
@@ -176,7 +176,7 @@ export async function generateCsv(items: ExportItem[]): Promise<Buffer> {
  * Lines separated by CRLF.
  */
 export function generateElixir(items: ExportItem[], sender: OrgBankInfo): Buffer {
-  const lines = items.map((item) => {
+  const lines = items.map(item => {
     const date = formatDateYYYYMMDD(item.dueDate);
     const amountMinor = String(item.amountMinor);
     // Strip "PL" prefix from IBANs — sender and recipient
@@ -185,7 +185,7 @@ export function generateElixir(items: ExportItem[], sender: OrgBankInfo): Buffer
     const senderSort = senderAccount.substring(0, 8);
     const recipientSort = recipientAccount.substring(0, 8);
 
-    const taxId = item.taxId ?? "";
+    const taxId = item.taxId ?? '';
     if (!taxId) {
       console.warn(
         `[payment-export] Missing taxId (NIP) for contractor "${item.contractorName}" in Elixir export — using empty value`,
@@ -193,26 +193,26 @@ export function generateElixir(items: ExportItem[], sender: OrgBankInfo): Buffer
     }
 
     return [
-      "110",
+      '110',
       date,
       amountMinor,
       senderSort,
-      "0",
+      '0',
       `"${senderAccount}"`,
       `"${recipientAccount}"`,
       `"${formatMultiline(sender.name, 4, 35)}"`,
       `"${formatMultiline(item.contractorName, 4, 35)}"`,
-      "0",
+      '0',
       recipientSort,
       `"${formatMultiline(item.transferTitle, 4, 35)}"`,
       '""',
       '""',
-      `"${taxId ? "1" : ""}"`,
+      `"${taxId ? '1' : ''}"`,
       `"${stripDiacritics(taxId)}"`,
-    ].join(",");
+    ].join(',');
   });
 
-  return Buffer.from(lines.join("\r\n"), "utf-8");
+  return Buffer.from(lines.join('\r\n'), 'utf-8');
 }
 
 // ---------------------------------------------------------------------------
@@ -223,7 +223,7 @@ export function generateElixir(items: ExportItem[], sender: OrgBankInfo): Buffer
  * Generate a SEPA XML pain.001.001.03 credit transfer initiation document.
  */
 export function generateSepaXml(items: ExportItem[], org: OrgBankInfo, runNumber: string): Buffer {
-  const msgId = runNumber.replace(/[^a-zA-Z0-9-]/g, "").substring(0, 35);
+  const msgId = runNumber.replace(/[^a-zA-Z0-9-]/g, '').substring(0, 35);
   const now = new Date().toISOString();
   const totalAmount = items.reduce((sum, i) => sum + i.amountMinor, 0);
   const requestedDate =
@@ -231,8 +231,8 @@ export function generateSepaXml(items: ExportItem[], org: OrgBankInfo, runNumber
 
   const transactions = items
     .map((item, i) => {
-      const endToEndId = `${msgId}-${String(i + 1).padStart(4, "0")}`;
-      const bic = item.swiftBic ?? "NOTPROVIDED";
+      const endToEndId = `${msgId}-${String(i + 1).padStart(4, '0')}`;
+      const bic = item.swiftBic ?? 'NOTPROVIDED';
 
       return `      <CdtTrfTxInf>
         <PmtId><EndToEndId>${endToEndId}</EndToEndId></PmtId>
@@ -243,7 +243,7 @@ export function generateSepaXml(items: ExportItem[], org: OrgBankInfo, runNumber
         <RmtInf><Ustrd>${escapeXml(item.transferTitle)}</Ustrd></RmtInf>
       </CdtTrfTxInf>`;
     })
-    .join("\n");
+    .join('\n');
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.001.001.03"
@@ -253,14 +253,14 @@ export function generateSepaXml(items: ExportItem[], org: OrgBankInfo, runNumber
       <MsgId>${msgId}</MsgId>
       <CreDtTm>${now}</CreDtTm>
       <NbOfTxs>${items.length}</NbOfTxs>
-      <CtrlSum>${minorToDecimal(totalAmount, "EUR")}</CtrlSum>
+      <CtrlSum>${minorToDecimal(totalAmount, 'EUR')}</CtrlSum>
       <InitgPty><Nm>${escapeXml(org.name)}</Nm></InitgPty>
     </GrpHdr>
     <PmtInf>
       <PmtInfId>${msgId.slice(0, 31)}-001</PmtInfId>
       <PmtMtd>TRF</PmtMtd>
       <NbOfTxs>${items.length}</NbOfTxs>
-      <CtrlSum>${minorToDecimal(totalAmount, "EUR")}</CtrlSum>
+      <CtrlSum>${minorToDecimal(totalAmount, 'EUR')}</CtrlSum>
       <PmtTpInf><SvcLvl><Cd>SEPA</Cd></SvcLvl></PmtTpInf>
       <ReqdExctnDt>${requestedDate}</ReqdExctnDt>
       <Dbtr><Nm>${escapeXml(org.name)}</Nm></Dbtr>
@@ -272,7 +272,7 @@ ${transactions}
   </CstmrCdtTrfInitn>
 </Document>`;
 
-  return Buffer.from(xml, "utf-8");
+  return Buffer.from(xml, 'utf-8');
 }
 
 // ---------------------------------------------------------------------------
@@ -285,19 +285,19 @@ ${transactions}
  * Per D-03: sits alongside generateSepaXml, format chosen by payment run.
  */
 export function generateSwiftXml(items: ExportItem[], org: OrgBankInfo, runNumber: string): Buffer {
-  const msgId = runNumber.replace(/[^a-zA-Z0-9-]/g, "").substring(0, 35);
+  const msgId = runNumber.replace(/[^a-zA-Z0-9-]/g, '').substring(0, 35);
   const now = new Date().toISOString();
-  const currency = items[0]?.currency ?? "USD";
+  const currency = items[0]?.currency ?? 'USD';
   const totalAmount = items.reduce((sum, i) => sum + i.amountMinor, 0);
   const requestedDate =
     items[0]?.dueDate.toISOString().slice(0, 10) ?? new Date().toISOString().slice(0, 10);
 
   const transactions = items
     .map((item, i) => {
-      const endToEndId = `${msgId}-${String(i + 1).padStart(4, "0")}`;
-      const bic = item.swiftBic ?? "NOTPROVIDED";
-      const purposeCode = getPurposeCode(item.serviceCategory ?? "", item.purposeCodeOverride);
-      const country = item.creditorCountry ?? "";
+      const endToEndId = `${msgId}-${String(i + 1).padStart(4, '0')}`;
+      const bic = item.swiftBic ?? 'NOTPROVIDED';
+      const purposeCode = getPurposeCode(item.serviceCategory ?? '', item.purposeCodeOverride);
+      const country = item.creditorCountry ?? '';
 
       return `      <CdtTrfTxInf>
         <PmtId><EndToEndId>${endToEndId}</EndToEndId></PmtId>
@@ -308,7 +308,7 @@ export function generateSwiftXml(items: ExportItem[], org: OrgBankInfo, runNumbe
             country
               ? `
           <PstlAdr><Ctry>${escapeXml(country)}</Ctry></PstlAdr>`
-              : ""
+              : ''
           }
         </Cdtr>
         <CdtrAcct><Id><IBAN>${escapeXml(item.iban)}</IBAN></Id></CdtrAcct>
@@ -316,7 +316,7 @@ export function generateSwiftXml(items: ExportItem[], org: OrgBankInfo, runNumbe
         <RmtInf><Ustrd>${escapeXml(item.transferTitle)}</Ustrd></RmtInf>
       </CdtTrfTxInf>`;
     })
-    .join("\n");
+    .join('\n');
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.001.001.09"
@@ -344,7 +344,7 @@ ${transactions}
   </CstmrCdtTrfInitn>
 </Document>`;
 
-  return Buffer.from(xml, "utf-8");
+  return Buffer.from(xml, 'utf-8');
 }
 
 // ---------------------------------------------------------------------------
@@ -353,14 +353,14 @@ ${transactions}
 
 function formatDateYYYYMMDD(date: Date): string {
   const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
   return `${y}${m}${d}`;
 }
 
 function stripCountryPrefix(iban: string): string {
   // Remove country code prefix (first 2 letters) if present
-  const cleaned = iban.replace(/\s/g, "");
+  const cleaned = iban.replace(/\s/g, '');
   if (/^[A-Z]{2}/.test(cleaned)) {
     return cleaned.substring(2);
   }

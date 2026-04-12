@@ -1,8 +1,8 @@
-import { describe, expect, it, vi } from "vitest";
-import type { PrismaExtensible } from "../tenant.js";
-import { tenantStore, withTenantScope } from "../tenant.js";
+import { describe, expect, it, vi } from 'vitest';
+import type { PrismaExtensible } from '../tenant.js';
+import { tenantStore, withTenantScope } from '../tenant.js';
 
-describe("withTenantScope", () => {
+describe('withTenantScope', () => {
   function createMockClient() {
     const innerQuery = vi.fn(async (args: unknown) => args);
     const base = {
@@ -12,8 +12,8 @@ describe("withTenantScope", () => {
           contractor: {
             findMany: (args: unknown) =>
               $allOps({
-                operation: "findMany",
-                model: "Contractor",
+                operation: 'findMany',
+                model: 'Contractor',
                 args,
                 query: innerQuery,
               }),
@@ -21,8 +21,8 @@ describe("withTenantScope", () => {
           user: {
             findMany: (args: unknown) =>
               $allOps({
-                operation: "findMany",
-                model: "User",
+                operation: 'findMany',
+                model: 'User',
                 args,
                 query: innerQuery,
               }),
@@ -30,8 +30,8 @@ describe("withTenantScope", () => {
           organization: {
             findMany: (args: unknown) =>
               $allOps({
-                operation: "findMany",
-                model: "Organization",
+                operation: 'findMany',
+                model: 'Organization',
                 args,
                 query: innerQuery,
               }),
@@ -39,57 +39,57 @@ describe("withTenantScope", () => {
           invoice: {
             create: (args: unknown) =>
               $allOps({
-                operation: "create",
-                model: "Invoice",
+                operation: 'create',
+                model: 'Invoice',
                 args,
                 query: innerQuery,
               }),
             createMany: (args: unknown) =>
               $allOps({
-                operation: "createMany",
-                model: "Invoice",
+                operation: 'createMany',
+                model: 'Invoice',
                 args,
                 query: innerQuery,
               }),
             update: (args: unknown) =>
               $allOps({
-                operation: "update",
-                model: "Invoice",
+                operation: 'update',
+                model: 'Invoice',
                 args,
                 query: innerQuery,
               }),
             deleteMany: (args: unknown) =>
               $allOps({
-                operation: "deleteMany",
-                model: "Invoice",
+                operation: 'deleteMany',
+                model: 'Invoice',
                 args,
                 query: innerQuery,
               }),
             upsert: (args: unknown) =>
               $allOps({
-                operation: "upsert",
-                model: "Invoice",
+                operation: 'upsert',
+                model: 'Invoice',
                 args,
                 query: innerQuery,
               }),
             aggregate: (args: unknown) =>
               $allOps({
-                operation: "aggregate",
-                model: "Invoice",
+                operation: 'aggregate',
+                model: 'Invoice',
                 args,
                 query: innerQuery,
               }),
             groupBy: (args: unknown) =>
               $allOps({
-                operation: "groupBy",
-                model: "Invoice",
+                operation: 'groupBy',
+                model: 'Invoice',
                 args,
                 query: innerQuery,
               }),
             createManyAndReturn: (args: unknown) =>
               $allOps({
-                operation: "createManyAndReturn",
-                model: "Invoice",
+                operation: 'createManyAndReturn',
+                model: 'Invoice',
                 args,
                 query: innerQuery,
               }),
@@ -101,148 +101,148 @@ describe("withTenantScope", () => {
     return { client, innerQuery };
   }
 
-  it("throws when tenant context is missing", async () => {
+  it('throws when tenant context is missing', async () => {
     const { client } = createMockClient();
-    await expect(client.contractor.findMany({ where: { status: "ACTIVE" } })).rejects.toThrow(
-      "Tenant context not initialized",
+    await expect(client.contractor.findMany({ where: { status: 'ACTIVE' } })).rejects.toThrow(
+      'Tenant context not initialized',
     );
   });
 
-  it("injects organizationId into findMany for tenant models", async () => {
+  it('injects organizationId into findMany for tenant models', async () => {
     const { client, innerQuery } = createMockClient();
-    await tenantStore.run({ organizationId: "org_1" }, async () => {
-      await client.contractor.findMany({ where: { status: "ACTIVE" } });
+    await tenantStore.run({ organizationId: 'org_1' }, async () => {
+      await client.contractor.findMany({ where: { status: 'ACTIVE' } });
     });
     expect(innerQuery).toHaveBeenCalledWith({
-      where: { status: "ACTIVE", organizationId: "org_1" },
+      where: { status: 'ACTIVE', organizationId: 'org_1' },
     });
   });
 
-  it("does not inject organizationId for global models", async () => {
+  it('does not inject organizationId for global models', async () => {
     const { client, innerQuery } = createMockClient();
-    await tenantStore.run({ organizationId: "org_1" }, async () => {
-      await client.user.findMany({ where: { email: "a@b.com" } });
+    await tenantStore.run({ organizationId: 'org_1' }, async () => {
+      await client.user.findMany({ where: { email: 'a@b.com' } });
     });
     expect(innerQuery).toHaveBeenCalledWith({
-      where: { email: "a@b.com" },
+      where: { email: 'a@b.com' },
     });
   });
 
-  it("injects organizationId into create data", async () => {
+  it('injects organizationId into create data', async () => {
     const { client, innerQuery } = createMockClient();
-    await tenantStore.run({ organizationId: "org_1" }, async () => {
+    await tenantStore.run({ organizationId: 'org_1' }, async () => {
       await client.invoice.create({
-        data: { amount: 100, currency: "PLN" },
+        data: { amount: 100, currency: 'PLN' },
       });
     });
     expect(innerQuery).toHaveBeenCalledWith({
-      data: { amount: 100, currency: "PLN", organizationId: "org_1" },
+      data: { amount: 100, currency: 'PLN', organizationId: 'org_1' },
     });
   });
 
-  it("injects organizationId into update where", async () => {
+  it('injects organizationId into update where', async () => {
     const { client, innerQuery } = createMockClient();
-    await tenantStore.run({ organizationId: "org_1" }, async () => {
+    await tenantStore.run({ organizationId: 'org_1' }, async () => {
       await client.invoice.update({
-        where: { id: "inv_1" },
-        data: { status: "PAID" },
+        where: { id: 'inv_1' },
+        data: { status: 'PAID' },
       });
     });
     expect(innerQuery).toHaveBeenCalledWith({
-      where: { id: "inv_1", organizationId: "org_1" },
-      data: { status: "PAID" },
+      where: { id: 'inv_1', organizationId: 'org_1' },
+      data: { status: 'PAID' },
     });
   });
 
-  it("injects organizationId into createMany data array", async () => {
+  it('injects organizationId into createMany data array', async () => {
     const { client, innerQuery } = createMockClient();
-    await tenantStore.run({ organizationId: "org_1" }, async () => {
+    await tenantStore.run({ organizationId: 'org_1' }, async () => {
       await client.invoice.createMany({
         data: [
-          { amount: 100, currency: "PLN" },
-          { amount: 200, currency: "EUR" },
+          { amount: 100, currency: 'PLN' },
+          { amount: 200, currency: 'EUR' },
         ],
       });
     });
     expect(innerQuery).toHaveBeenCalledWith({
       data: [
-        { amount: 100, currency: "PLN", organizationId: "org_1" },
-        { amount: 200, currency: "EUR", organizationId: "org_1" },
+        { amount: 100, currency: 'PLN', organizationId: 'org_1' },
+        { amount: 200, currency: 'EUR', organizationId: 'org_1' },
       ],
     });
   });
 
-  it("injects organizationId into deleteMany where", async () => {
+  it('injects organizationId into deleteMany where', async () => {
     const { client, innerQuery } = createMockClient();
-    await tenantStore.run({ organizationId: "org_1" }, async () => {
-      await client.invoice.deleteMany({ where: { status: "DRAFT" } });
+    await tenantStore.run({ organizationId: 'org_1' }, async () => {
+      await client.invoice.deleteMany({ where: { status: 'DRAFT' } });
     });
     expect(innerQuery).toHaveBeenCalledWith({
-      where: { status: "DRAFT", organizationId: "org_1" },
+      where: { status: 'DRAFT', organizationId: 'org_1' },
     });
   });
 
-  it("injects organizationId into upsert where, create, and update data", async () => {
+  it('injects organizationId into upsert where, create, and update data', async () => {
     const { client, innerQuery } = createMockClient();
-    await tenantStore.run({ organizationId: "org_1" }, async () => {
+    await tenantStore.run({ organizationId: 'org_1' }, async () => {
       await client.invoice.upsert({
-        where: { id: "inv_1" },
-        create: { amount: 100, currency: "PLN" },
+        where: { id: 'inv_1' },
+        create: { amount: 100, currency: 'PLN' },
         update: { amount: 200 },
       });
     });
     expect(innerQuery).toHaveBeenCalledWith({
-      where: { id: "inv_1", organizationId: "org_1" },
-      create: { amount: 100, currency: "PLN", organizationId: "org_1" },
-      update: { amount: 200, organizationId: "org_1" },
+      where: { id: 'inv_1', organizationId: 'org_1' },
+      create: { amount: 100, currency: 'PLN', organizationId: 'org_1' },
+      update: { amount: 200, organizationId: 'org_1' },
     });
   });
 
-  it("injects organizationId into aggregate where", async () => {
+  it('injects organizationId into aggregate where', async () => {
     const { client, innerQuery } = createMockClient();
-    await tenantStore.run({ organizationId: "org_1" }, async () => {
-      await client.invoice.aggregate({ where: { status: "PAID" } });
+    await tenantStore.run({ organizationId: 'org_1' }, async () => {
+      await client.invoice.aggregate({ where: { status: 'PAID' } });
     });
     expect(innerQuery).toHaveBeenCalledWith({
-      where: { status: "PAID", organizationId: "org_1" },
+      where: { status: 'PAID', organizationId: 'org_1' },
     });
   });
 
-  it("injects organizationId into groupBy where", async () => {
+  it('injects organizationId into groupBy where', async () => {
     const { client, innerQuery } = createMockClient();
-    await tenantStore.run({ organizationId: "org_1" }, async () => {
-      await client.invoice.groupBy({ where: { status: "SENT" } });
+    await tenantStore.run({ organizationId: 'org_1' }, async () => {
+      await client.invoice.groupBy({ where: { status: 'SENT' } });
     });
     expect(innerQuery).toHaveBeenCalledWith({
-      where: { status: "SENT", organizationId: "org_1" },
+      where: { status: 'SENT', organizationId: 'org_1' },
     });
   });
 
-  it("injects organizationId into createManyAndReturn data array", async () => {
+  it('injects organizationId into createManyAndReturn data array', async () => {
     const { client, innerQuery } = createMockClient();
-    await tenantStore.run({ organizationId: "org_1" }, async () => {
+    await tenantStore.run({ organizationId: 'org_1' }, async () => {
       await client.invoice.createManyAndReturn({
         data: [
-          { amount: 100, currency: "PLN" },
-          { amount: 200, currency: "EUR" },
+          { amount: 100, currency: 'PLN' },
+          { amount: 200, currency: 'EUR' },
         ],
       });
     });
     expect(innerQuery).toHaveBeenCalledWith({
       data: [
-        { amount: 100, currency: "PLN", organizationId: "org_1" },
-        { amount: 200, currency: "EUR", organizationId: "org_1" },
+        { amount: 100, currency: 'PLN', organizationId: 'org_1' },
+        { amount: 200, currency: 'EUR', organizationId: 'org_1' },
       ],
     });
   });
 
-  it("does not inject organizationId for Organization model (global model)", async () => {
+  it('does not inject organizationId for Organization model (global model)', async () => {
     const { client, innerQuery } = createMockClient();
-    await tenantStore.run({ organizationId: "org_1" }, async () => {
-      await client.organization.findMany({ where: { id: "org_1" } });
+    await tenantStore.run({ organizationId: 'org_1' }, async () => {
+      await client.organization.findMany({ where: { id: 'org_1' } });
     });
     expect(innerQuery).toHaveBeenCalledWith({
-      where: { id: "org_1" },
+      where: { id: 'org_1' },
     });
   });
 });

@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { Files } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { DocumentCard } from "@/components/documents/document-card";
-import { DropZone } from "@/components/documents/drop-zone";
-import { Skeleton } from "@/components/ui/skeleton";
-import { trpc } from "@/trpc/init";
+import { useQuery } from '@tanstack/react-query';
+import { Files } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { DocumentCard } from '@/components/documents/document-card';
+import { DropZone } from '@/components/documents/drop-zone';
+import { Skeleton } from '@/components/ui/skeleton';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -21,11 +21,11 @@ type TabDocumentsProps = {
 // ---------------------------------------------------------------------------
 
 export function TabDocuments({ contractorId }: TabDocumentsProps) {
-  const t = useTranslations("Documents");
+  const t = useTranslations('Documents');
 
   const documentsQuery = useQuery(
     trpc.document.list.queryOptions({
-      entityType: "CONTRACTOR" as const,
+      entityType: 'CONTRACTOR' as const,
       entityId: contractorId,
       page: 1,
       pageSize: 50,
@@ -70,8 +70,8 @@ export function TabDocuments({ contractorId }: TabDocumentsProps) {
 
         <div className="flex min-h-[200px] flex-col items-center justify-center gap-3 text-center">
           <Files className="size-10 text-muted-foreground/50" />
-          <h4 className="text-sm font-medium">{t("contractorTab.emptyHeading")}</h4>
-          <p className="max-w-sm text-sm text-muted-foreground">{t("contractorTab.emptyBody")}</p>
+          <h4 className="text-sm font-medium">{t('contractorTab.emptyHeading')}</h4>
+          <p className="max-w-sm text-sm text-muted-foreground">{t('contractorTab.emptyBody')}</p>
         </div>
       </div>
     );
@@ -81,7 +81,7 @@ export function TabDocuments({ contractorId }: TabDocumentsProps) {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-base font-medium">{t("contractorTab.heading")}</h3>
+        <h3 className="text-base font-medium">{t('contractorTab.heading')}</h3>
       </div>
 
       {/* Drop zone for uploads */}

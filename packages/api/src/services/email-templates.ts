@@ -1,23 +1,23 @@
-import type { ReactElement } from "react";
-import { createElement } from "react";
-import { ApprovalDecisionEmail } from "../emails/approval-decision.js";
-import { ApprovalRequestEmail } from "../emails/approval-request.js";
-import { ContractExpiringEmail } from "../emails/contract-expiring.js";
-import { InvoiceReceivedEmail } from "../emails/invoice-received.js";
-import { TaskAssignedEmail } from "../emails/task-assigned.js";
-import { TaskOverdueEmail } from "../emails/task-overdue.js";
+import type { ReactElement } from 'react';
+import { createElement } from 'react';
+import { ApprovalDecisionEmail } from '../emails/approval-decision.js';
+import { ApprovalRequestEmail } from '../emails/approval-request.js';
+import { ContractExpiringEmail } from '../emails/contract-expiring.js';
+import { InvoiceReceivedEmail } from '../emails/invoice-received.js';
+import { TaskAssignedEmail } from '../emails/task-assigned.js';
+import { TaskOverdueEmail } from '../emails/task-overdue.js';
 
 // ---------------------------------------------------------------------------
 // i18n subject key constants
 // ---------------------------------------------------------------------------
 
 export const EMAIL_SUBJECT_KEYS = {
-  approvalRequest: "email.subject.approvalRequest",
-  approvalDecision: "email.subject.approvalDecision",
-  taskAssigned: "email.subject.taskAssigned",
-  taskOverdue: "email.subject.taskOverdue",
-  contractExpiring: "email.subject.contractExpiring",
-  invoiceReceived: "email.subject.invoiceReceived",
+  approvalRequest: 'email.subject.approvalRequest',
+  approvalDecision: 'email.subject.approvalDecision',
+  taskAssigned: 'email.subject.taskAssigned',
+  taskOverdue: 'email.subject.taskOverdue',
+  contractExpiring: 'email.subject.contractExpiring',
+  invoiceReceived: 'email.subject.invoiceReceived',
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -32,32 +32,32 @@ interface EmailSubject {
 }
 
 const SUBJECT_LINES: Record<string, (data: Record<string, unknown>) => EmailSubject> = {
-  APPROVAL_REQUEST: (data) => ({
+  APPROVAL_REQUEST: data => ({
     key: EMAIL_SUBJECT_KEYS.approvalRequest,
-    params: { invoiceNumber: (data.invoiceNumber as string) ?? "" },
+    params: { invoiceNumber: (data.invoiceNumber as string) ?? '' },
   }),
-  APPROVAL_DECISION: (data) => ({
+  APPROVAL_DECISION: data => ({
     key: EMAIL_SUBJECT_KEYS.approvalDecision,
     params: {
-      invoiceNumber: (data.invoiceNumber as string) ?? "",
-      decision: (data.decision as string)?.toLowerCase() ?? "processed",
+      invoiceNumber: (data.invoiceNumber as string) ?? '',
+      decision: (data.decision as string)?.toLowerCase() ?? 'processed',
     },
   }),
-  TASK_ASSIGNED: (data) => ({
+  TASK_ASSIGNED: data => ({
     key: EMAIL_SUBJECT_KEYS.taskAssigned,
-    params: { taskName: (data.taskName as string) ?? "" },
+    params: { taskName: (data.taskName as string) ?? '' },
   }),
-  TASK_OVERDUE: (data) => ({
+  TASK_OVERDUE: data => ({
     key: EMAIL_SUBJECT_KEYS.taskOverdue,
-    params: { taskName: (data.taskName as string) ?? "Task" },
+    params: { taskName: (data.taskName as string) ?? 'Task' },
   }),
-  CONTRACT_EXPIRING: (data) => ({
+  CONTRACT_EXPIRING: data => ({
     key: EMAIL_SUBJECT_KEYS.contractExpiring,
-    params: { contractTitle: (data.contractTitle as string) ?? "" },
+    params: { contractTitle: (data.contractTitle as string) ?? '' },
   }),
-  INVOICE_RECEIVED: (data) => ({
+  INVOICE_RECEIVED: data => ({
     key: EMAIL_SUBJECT_KEYS.invoiceReceived,
-    params: { contractorName: (data.contractorName as string) ?? "contractor" },
+    params: { contractorName: (data.contractorName as string) ?? 'contractor' },
   }),
 };
 

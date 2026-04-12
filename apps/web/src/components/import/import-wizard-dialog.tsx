@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Check, Loader2 } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useCallback, useState } from "react";
-import { toast } from "sonner";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Check, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useState } from 'react';
+import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,26 +14,26 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { trpc } from "@/trpc/init";
-import { StepConfirm } from "./step-confirm";
-import { StepDuplicates } from "./step-duplicates";
-import { StepMapping } from "./step-mapping";
-import { StepPreview } from "./step-preview";
-import { StepUpload } from "./step-upload";
+} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { trpc } from '@/trpc/init';
+import { StepConfirm } from './step-confirm';
+import { StepDuplicates } from './step-duplicates';
+import { StepMapping } from './step-mapping';
+import { StepPreview } from './step-preview';
+import { StepUpload } from './step-upload';
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
-type EntityType = "contractor" | "contract";
+type EntityType = 'contractor' | 'contract';
 
 interface ImportRow {
   rowNumber: number;
   data: Record<string, unknown>;
-  status: "valid" | "invalid" | "duplicate";
+  status: 'valid' | 'invalid' | 'duplicate';
   errors: Array<{ field: string; message: string }>;
   duplicateOf?: string;
 }
@@ -73,58 +73,53 @@ function StepIndicator({
   steps: Array<{ label: string; visible: boolean }>;
   currentStep: number;
 }) {
-  const tAria = useTranslations("Common.aria");
-  const visibleSteps = steps.filter((s) => s.visible);
+  const tAria = useTranslations('Common.aria');
+  const visibleSteps = steps.filter(s => s.visible);
   const visibleIndex = visibleSteps.findIndex(
-    (s) => s === steps.filter((_, i) => i <= currentStep).findLast((s2) => s2.visible),
+    s => s === steps.filter((_, i) => i <= currentStep).findLast(s2 => s2.visible),
   );
 
   return (
     <nav
-      aria-label={tAria("wizardProgress")}
-      className="flex items-center justify-center gap-0 py-3"
-    >
+      aria-label={tAria('wizardProgress')}
+      className="flex items-center justify-center gap-0 py-3">
       {visibleSteps.map((step, index) => {
         const isCompleted = index < visibleIndex;
         const isCurrent = index === visibleIndex;
-        const status = isCompleted ? "completed" : isCurrent ? "current" : "upcoming";
+        const status = isCompleted ? 'completed' : isCurrent ? 'current' : 'upcoming';
 
         return (
           <div
             key={step.label}
             className="flex items-center"
-            aria-current={isCurrent ? "step" : undefined}
-          >
+            aria-current={isCurrent ? 'step' : undefined}>
             {index > 0 && (
               <div
                 aria-hidden="true"
                 className={`mx-1.5 h-px w-6 sm:mx-2 sm:w-8 ${
-                  index <= visibleIndex ? "bg-primary" : "bg-border"
+                  index <= visibleIndex ? 'bg-primary' : 'bg-border'
                 }`}
               />
             )}
             <div
               className="flex items-center gap-1.5"
               role="listitem"
-              aria-label={tAria("wizardStep", { step: index + 1, label: step.label, status })}
-            >
+              aria-label={tAria('wizardStep', { step: index + 1, label: step.label, status })}>
               <div
                 aria-hidden="true"
                 className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold transition-colors ${
                   isCompleted
-                    ? "bg-primary text-primary-foreground"
+                    ? 'bg-primary text-primary-foreground'
                     : isCurrent
-                      ? "bg-primary/10 text-primary ring-1 ring-primary"
-                      : "bg-muted text-muted-foreground ring-1 ring-border"
-                }`}
-              >
+                      ? 'bg-primary/10 text-primary ring-1 ring-primary'
+                      : 'bg-muted text-muted-foreground ring-1 ring-border'
+                }`}>
                 {isCompleted ? <Check className="h-3 w-3" /> : index + 1}
               </div>
               <span
                 className={`hidden whitespace-nowrap text-[13px] sm:inline ${
-                  isCurrent ? "font-medium text-foreground" : "text-muted-foreground"
-                }`}
-              >
+                  isCurrent ? 'font-medium text-foreground' : 'text-muted-foreground'
+                }`}>
                 {step.label}
               </span>
             </div>
@@ -148,10 +143,10 @@ interface ImportWizardDialogProps {
 export function ImportWizardDialog({
   open,
   onOpenChange,
-  defaultEntityType = "contractor",
+  defaultEntityType = 'contractor',
 }: ImportWizardDialogProps) {
-  const t = useTranslations("Import");
-  const _tAria = useTranslations("Common.aria");
+  const t = useTranslations('Import');
+  const _tAria = useTranslations('Common.aria');
   const queryClient = useQueryClient();
 
   // Wizard state
@@ -166,49 +161,49 @@ export function ImportWizardDialog({
   const [columnMapping, setColumnMapping] = useState<Record<string, string | null>>({});
   const [validateResult, setValidateResult] = useState<ImportResult | null>(null);
   const [duplicateActions, setDuplicateActions] = useState<
-    Record<string, "skip" | "update" | "create">
+    Record<string, 'skip' | 'update' | 'create'>
   >({});
   const [importResult, setImportResult] = useState<CommitResult | null>(null);
 
   // Mutations
   const parseMutation = useMutation(
     trpc.import.parse.mutationOptions({
-      onSuccess: (data) => {
+      onSuccess: data => {
         const result = data as unknown as ParseResult;
         setParseResult(result);
         setColumnMapping(result.suggestedMapping);
         setCurrentStep(1);
       },
       onError: () => {
-        toast.error(t("parseError"));
+        toast.error(t('parseError'));
       },
     }),
   );
 
   const validateMutation = useMutation(
     trpc.import.validate.mutationOptions({
-      onSuccess: (data) => {
+      onSuccess: data => {
         const result = data as unknown as ImportResult;
         setValidateResult(result);
         setCurrentStep(2);
       },
       onError: () => {
-        toast.error(t("validateError"));
+        toast.error(t('validateError'));
       },
     }),
   );
 
   const commitMutation = useMutation(
     trpc.import.commit.mutationOptions({
-      onSuccess: (data) => {
+      onSuccess: data => {
         const result = data as unknown as CommitResult;
         setImportResult(result);
         queryClient.invalidateQueries({
-          queryKey: [entityType === "contractor" ? "contractor" : "contract"],
+          queryKey: [entityType === 'contractor' ? 'contractor' : 'contract'],
         });
       },
       onError: () => {
-        toast.error(t("importError"));
+        toast.error(t('importError'));
       },
     }),
   );
@@ -295,21 +290,21 @@ export function ImportWizardDialog({
         if (!validateResult) return;
         // Remap duplicateActions from rowNumber keys to taxId keys
         // (backend looks up action by taxId, UI stores by rowNumber)
-        const taxIdActions: Record<string, "skip" | "update" | "create"> = {};
+        const taxIdActions: Record<string, 'skip' | 'update' | 'create'> = {};
         for (const row of validateResult.duplicateRows) {
           const action = duplicateActions[String(row.rowNumber)];
           if (action) {
-            const taxId = String(row.data.taxId ?? row.data.contractorTaxId ?? "");
+            const taxId = String(row.data.taxId ?? row.data.contractorTaxId ?? '');
             if (taxId) taxIdActions[taxId] = action;
           }
         }
         commitMutation.mutate({
           entityType,
           rows: [
-            ...validateResult.validRows.map((r) => r.data),
+            ...validateResult.validRows.map(r => r.data),
             ...validateResult.duplicateRows
-              .filter((r) => duplicateActions[String(r.rowNumber)] !== "skip")
-              .map((r) => r.data),
+              .filter(r => duplicateActions[String(r.rowNumber)] !== 'skip')
+              .map(r => r.data),
           ],
           duplicateActions: taxIdActions,
         });
@@ -336,18 +331,18 @@ export function ImportWizardDialog({
     if (currentStep === 4 && !hasDuplicates) {
       setCurrentStep(2);
     } else if (currentStep > 0) {
-      setCurrentStep((s) => s - 1);
+      setCurrentStep(s => s - 1);
     }
   }, [currentStep, hasDuplicates]);
 
   // Check if required mappings are complete for next button
-  const requiredContractorFields = ["legalName", "taxId", "email"];
-  const requiredContractFields = ["title", "type", "startDate", "contractorTaxId"];
+  const requiredContractorFields = ['legalName', 'taxId', 'email'];
+  const requiredContractFields = ['title', 'type', 'startDate', 'contractorTaxId'];
   const requiredFields =
-    entityType === "contractor" ? requiredContractorFields : requiredContractFields;
+    entityType === 'contractor' ? requiredContractorFields : requiredContractFields;
 
   const mappedTargets = Object.values(columnMapping).filter(Boolean);
-  const allRequiredMapped = requiredFields.every((f) => mappedTargets.includes(f));
+  const allRequiredMapped = requiredFields.every(f => mappedTargets.includes(f));
 
   const canProceed = (() => {
     switch (currentStep) {
@@ -368,24 +363,24 @@ export function ImportWizardDialog({
 
   // Step configuration
   const stepLabels = [
-    { label: t("steps.upload"), visible: true },
-    { label: t("steps.mapping"), visible: true },
-    { label: t("steps.preview"), visible: true },
-    { label: t("steps.duplicates"), visible: hasDuplicates },
-    { label: t("steps.confirm"), visible: true },
+    { label: t('steps.upload'), visible: true },
+    { label: t('steps.mapping'), visible: true },
+    { label: t('steps.preview'), visible: true },
+    { label: t('steps.duplicates'), visible: hasDuplicates },
+    { label: t('steps.confirm'), visible: true },
   ];
 
   const getNextLabel = () => {
-    if (currentStep === 4) return t("actions.import");
-    return t("actions.next");
+    if (currentStep === 4) return t('actions.import');
+    return t('actions.next');
   };
 
   // Compute confirm step counts
   const confirmCounts = {
     newRecords: validateResult?.validRows?.length ?? 0,
-    updates: Object.values(duplicateActions).filter((a) => a === "update").length,
+    updates: Object.values(duplicateActions).filter(a => a === 'update').length,
     skippedDuplicates:
-      Object.values(duplicateActions).filter((a) => a === "skip").length +
+      Object.values(duplicateActions).filter(a => a === 'skip').length +
       (validateResult?.duplicateRows?.length ?? 0) -
       Object.keys(duplicateActions).length,
     skippedErrors: validateResult?.invalidRows?.length ?? 0,
@@ -393,10 +388,10 @@ export function ImportWizardDialog({
 
   return (
     <>
-      <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
+      <Dialog open={open} onOpenChange={o => !o && handleClose()}>
         <DialogContent className="sm:max-w-[720px]" showCloseButton={false}>
           <DialogHeader>
-            <DialogTitle>{t("title")}</DialogTitle>
+            <DialogTitle>{t('title')}</DialogTitle>
           </DialogHeader>
 
           {/* Step indicator */}
@@ -460,13 +455,12 @@ export function ImportWizardDialog({
                     type="button"
                     variant="outline"
                     onClick={handleBack}
-                    disabled={isProcessing}
-                  >
-                    {t("actions.back")}
+                    disabled={isProcessing}>
+                    {t('actions.back')}
                   </Button>
                 ) : (
                   <Button type="button" variant="ghost" onClick={() => handleClose()}>
-                    {fileBase64 ? t("actions.discard") : t("actions.close")}
+                    {fileBase64 ? t('actions.discard') : t('actions.close')}
                   </Button>
                 )}
               </div>
@@ -475,7 +469,7 @@ export function ImportWizardDialog({
                   {isProcessing ? (
                     <>
                       <Loader2 className="me-2 h-4 w-4 animate-spin" />
-                      {t("actions.processing")}
+                      {t('actions.processing')}
                     </>
                   ) : (
                     getNextLabel()
@@ -491,13 +485,13 @@ export function ImportWizardDialog({
       <AlertDialog open={showDiscardDialog} onOpenChange={setShowDiscardDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("discard.title")}</AlertDialogTitle>
-            <AlertDialogDescription>{t("discard.description")}</AlertDialogDescription>
+            <AlertDialogTitle>{t('discard.title')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('discard.description')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t("discard.keep")}</AlertDialogCancel>
+            <AlertDialogCancel>{t('discard.keep')}</AlertDialogCancel>
             <AlertDialogAction onClick={handleDiscard} variant="destructive">
-              {t("discard.discard")}
+              {t('discard.discard')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

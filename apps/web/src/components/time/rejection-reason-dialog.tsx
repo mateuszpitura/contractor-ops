@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -9,9 +9,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -45,19 +45,19 @@ export function RejectionReasonDialog({
   isBulk = false,
   count = 0,
 }: RejectionReasonDialogProps) {
-  const [reason, setReason] = useState("");
+  const [reason, setReason] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  const title = isBulk ? `Reject ${count} Timesheet${count !== 1 ? "s" : ""}` : "Reject Timesheet";
+  const title = isBulk ? `Reject ${count} Timesheet${count !== 1 ? 's' : ''}` : 'Reject Timesheet';
 
   const description = isBulk
-    ? "All selected timesheets will be rejected with the same reason."
-    : "Please provide a reason for rejection. The contractor will be notified and can resubmit corrections.";
+    ? 'All selected timesheets will be rejected with the same reason.'
+    : 'Please provide a reason for rejection. The contractor will be notified and can resubmit corrections.';
 
   function handleSubmit() {
     const trimmed = reason.trim();
     if (trimmed.length < 10) {
-      setError("Reason must be at least 10 characters.");
+      setError('Reason must be at least 10 characters.');
       return;
     }
     setError(null);
@@ -67,7 +67,7 @@ export function RejectionReasonDialog({
   function handleOpenChange(nextOpen: boolean) {
     if (!nextOpen) {
       // Reset state on close
-      setReason("");
+      setReason('');
       setError(null);
     }
     onOpenChange(nextOpen);
@@ -86,14 +86,14 @@ export function RejectionReasonDialog({
           <Textarea
             id="rejection-reason"
             value={reason}
-            onChange={(e) => {
+            onChange={e => {
               setReason(e.target.value);
               if (error) setError(null);
             }}
             placeholder="Describe what needs to be corrected..."
             maxLength={500}
             rows={4}
-            className={error ? "border-destructive" : ""}
+            className={error ? 'border-destructive' : ''}
           />
           <div className="flex items-center justify-between">
             {error ? <p className="text-xs text-destructive">{error}</p> : <span />}
@@ -108,9 +108,8 @@ export function RejectionReasonDialog({
           <Button
             variant="destructive"
             onClick={handleSubmit}
-            disabled={isSubmitting || reason.trim().length < 10}
-          >
-            {isSubmitting ? "Rejecting..." : "Reject Timesheet"}
+            disabled={isSubmitting || reason.trim().length < 10}>
+            {isSubmitting ? 'Rejecting...' : 'Reject Timesheet'}
           </Button>
         </DialogFooter>
       </DialogContent>

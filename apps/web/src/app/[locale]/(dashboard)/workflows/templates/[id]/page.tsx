@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { useParams } from "next/navigation";
+import { useQuery } from '@tanstack/react-query';
+import { useParams } from 'next/navigation';
 
-import { useBreadcrumbOverride } from "@/components/layout/breadcrumb-context";
-import { TemplateForm } from "@/components/workflows/template-builder/template-form";
-import { trpc } from "@/trpc/init";
+import { useBreadcrumbOverride } from '@/components/layout/breadcrumb-context';
+import { TemplateForm } from '@/components/workflows/template-builder/template-form';
+import { trpc } from '@/trpc/init';
 
 export default function EditTemplatePage() {
   const params = useParams<{ id: string }>();

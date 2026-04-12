@@ -1,9 +1,9 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { render, screen } from "@/test/test-utils";
-import { ImportProgressTracker } from "../import-progress-tracker";
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { render, screen } from '@/test/test-utils';
+import { ImportProgressTracker } from '../import-progress-tracker';
 
-vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual("@tanstack/react-query");
+vi.mock('@tanstack/react-query', async () => {
+  const actual = await vi.importActual('@tanstack/react-query');
   return {
     ...actual,
     useQuery: vi.fn(),
@@ -12,19 +12,19 @@ vi.mock("@tanstack/react-query", async () => {
   };
 });
 
-vi.mock("@/trpc/init", () => ({
+vi.mock('@/trpc/init', () => ({
   trpc: {
     onboardingImport: {
       getProgress: {
-        queryOptions: () => ({ queryKey: ["progress"] }),
-        queryKey: () => ["progress"],
+        queryOptions: () => ({ queryKey: ['progress'] }),
+        queryKey: () => ['progress'],
       },
       retryFailedItem: { mutationOptions: () => ({}) },
     },
   },
 }));
 
-vi.mock("@/i18n/navigation", () => ({
+vi.mock('@/i18n/navigation', () => ({
   Link: ({ children, href, ...props }: any) => (
     <a href={href} {...props}>
       {children}
@@ -35,48 +35,48 @@ vi.mock("@/i18n/navigation", () => ({
 const mockedUseQuery = vi.mocked(useQuery);
 const mockedUseMutation = vi.mocked(useMutation);
 
-describe("ImportProgressTracker", () => {
+describe('ImportProgressTracker', () => {
   beforeEach(() => {
     mockedUseMutation.mockReturnValue({ mutate: vi.fn(), isPending: false } as any);
   });
 
-  it("shows loading spinner when no progress data", () => {
+  it('shows loading spinner when no progress data', () => {
     mockedUseQuery.mockReturnValue({ data: undefined, isLoading: true } as any);
     const { container } = render(<ImportProgressTracker jobId="job-1" />);
-    expect(container.querySelector(".animate-spin")).toBeInTheDocument();
+    expect(container.querySelector('.animate-spin')).toBeInTheDocument();
   });
 
-  it("shows completed state", () => {
+  it('shows completed state', () => {
     mockedUseQuery.mockReturnValue({
-      data: { status: "completed", completedItems: 5, totalItems: 5, failedItems: [] },
+      data: { status: 'completed', completedItems: 5, totalItems: 5, failedItems: [] },
       isLoading: false,
     } as any);
     render(<ImportProgressTracker jobId="job-1" />);
-    expect(screen.getByText("Import complete")).toBeInTheDocument();
-    expect(screen.getByText("Go to Dashboard")).toBeInTheDocument();
+    expect(screen.getByText('Import complete')).toBeInTheDocument();
+    expect(screen.getByText('Go to Dashboard')).toBeInTheDocument();
   });
 
-  it("shows progress bar for in-progress import", () => {
+  it('shows progress bar for in-progress import', () => {
     mockedUseQuery.mockReturnValue({
-      data: { status: "in_progress", completedItems: 3, totalItems: 10, failedItems: [] },
+      data: { status: 'in_progress', completedItems: 3, totalItems: 10, failedItems: [] },
       isLoading: false,
     } as any);
     render(<ImportProgressTracker jobId="job-1" />);
-    expect(screen.getByText("Processing...")).toBeInTheDocument();
+    expect(screen.getByText('Processing...')).toBeInTheDocument();
   });
 
-  it("shows failed items with retry buttons", () => {
+  it('shows failed items with retry buttons', () => {
     mockedUseQuery.mockReturnValue({
       data: {
-        status: "failed",
+        status: 'failed',
         completedItems: 4,
         totalItems: 5,
-        failedItems: [{ email: "bad@test.com", error: "Invalid email" }],
+        failedItems: [{ email: 'bad@test.com', error: 'Invalid email' }],
       },
       isLoading: false,
     } as any);
     render(<ImportProgressTracker jobId="job-1" />);
-    expect(screen.getByText("bad@test.com")).toBeInTheDocument();
-    expect(screen.getByText("Retry")).toBeInTheDocument();
+    expect(screen.getByText('bad@test.com')).toBeInTheDocument();
+    expect(screen.getByText('Retry')).toBeInTheDocument();
   });
 });

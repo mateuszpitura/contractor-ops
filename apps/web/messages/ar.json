@@ -1304,8 +1304,7 @@
       "rateValueMinor": "المعدل",
       "billingModel": "Billing model",
       "internalOwner": "المسؤول",
-      "complianceRiskLevel": "مخاطر الامتثال",
-      "rateValueMinor": "Rate"
+      "complianceRiskLevel": "مخاطر الامتثال"
     },
     "empty": {
       "heading": "لا توجد عقود بعد",

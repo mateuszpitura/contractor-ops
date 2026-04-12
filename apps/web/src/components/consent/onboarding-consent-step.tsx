@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import type { ConsentPurpose } from "@contractor-ops/validators";
+import type { ConsentPurpose } from '@contractor-ops/validators';
 import {
   isPdplJurisdiction,
   OPTIONAL_PURPOSES,
   REQUIRED_PURPOSES,
-} from "@contractor-ops/validators";
-import { Loader2 } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useCallback, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { trpc } from "@/trpc/init";
-import { ConsentPurposeToggle } from "./consent-purpose-toggle";
-import { PrivacyNoticeDisplay } from "./privacy-notice-display";
+} from '@contractor-ops/validators';
+import { Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { trpc } from '@/trpc/init';
+import { ConsentPurposeToggle } from './consent-purpose-toggle';
+import { PrivacyNoticeDisplay } from './privacy-notice-display';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -28,7 +28,7 @@ interface OnboardingConsentStepProps {
 // ---------------------------------------------------------------------------
 
 export function OnboardingConsentStep({ orgCountryCode, onComplete }: OnboardingConsentStepProps) {
-  const _t = useTranslations("Consent");
+  const _t = useTranslations('Consent');
 
   // Skip entirely for non-PDPL jurisdictions
   if (!isPdplJurisdiction(orgCountryCode)) {
@@ -44,7 +44,7 @@ export function OnboardingConsentStep({ orgCountryCode, onComplete }: Onboarding
 // ---------------------------------------------------------------------------
 
 function ConsentStepContent({ onComplete }: { onComplete: () => void }) {
-  const t = useTranslations("Consent");
+  const t = useTranslations('Consent');
 
   const [consents, setConsents] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};
@@ -63,10 +63,10 @@ function ConsentStepContent({ onComplete }: { onComplete: () => void }) {
   });
 
   const handleToggle = useCallback((purpose: ConsentPurpose, granted: boolean) => {
-    setConsents((prev) => ({ ...prev, [purpose]: granted }));
+    setConsents(prev => ({ ...prev, [purpose]: granted }));
   }, []);
 
-  const allRequiredGranted = REQUIRED_PURPOSES.every((p) => consents[p] === true);
+  const allRequiredGranted = REQUIRED_PURPOSES.every(p => consents[p] === true);
 
   const handleAccept = useCallback(() => {
     const consentEntries = Object.entries(consents)
@@ -96,8 +96,8 @@ function ConsentStepContent({ onComplete }: { onComplete: () => void }) {
 
       {/* Required Consents */}
       <div className="space-y-3">
-        <h3 className="text-sm font-semibold">{t("onboarding.requiredConsents")}</h3>
-        {REQUIRED_PURPOSES.map((purpose) => (
+        <h3 className="text-sm font-semibold">{t('onboarding.requiredConsents')}</h3>
+        {REQUIRED_PURPOSES.map(purpose => (
           <ConsentPurposeToggle
             key={purpose}
             purpose={purpose}
@@ -110,8 +110,8 @@ function ConsentStepContent({ onComplete }: { onComplete: () => void }) {
 
       {/* Optional Consents */}
       <div className="space-y-3">
-        <h3 className="text-sm font-semibold">{t("onboarding.optionalConsents")}</h3>
-        {OPTIONAL_PURPOSES.map((purpose) => (
+        <h3 className="text-sm font-semibold">{t('onboarding.optionalConsents')}</h3>
+        {OPTIONAL_PURPOSES.map(purpose => (
           <ConsentPurposeToggle
             key={purpose}
             purpose={purpose}
@@ -120,7 +120,7 @@ function ConsentStepContent({ onComplete }: { onComplete: () => void }) {
             onToggle={handleToggle}
           />
         ))}
-        <p className="text-xs text-muted-foreground">{t("onboarding.optionalNote")}</p>
+        <p className="text-xs text-muted-foreground">{t('onboarding.optionalNote')}</p>
       </div>
 
       {/* Accept Button */}
@@ -128,10 +128,9 @@ function ConsentStepContent({ onComplete }: { onComplete: () => void }) {
         onClick={handleAccept}
         disabled={!allRequiredGranted || bulkGrantMutation.isPending}
         className="w-full"
-        size="lg"
-      >
+        size="lg">
         {bulkGrantMutation.isPending ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : null}
-        {t("onboarding.acceptAndContinue")}
+        {t('onboarding.acceptAndContinue')}
       </Button>
     </div>
   );

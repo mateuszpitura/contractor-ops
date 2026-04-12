@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 import type {
   CourierClient,
@@ -7,7 +7,7 @@ import type {
   DPDShipmentParams,
   LabelFormat,
   ShipmentParams,
-} from "./courier-client.js";
+} from './courier-client.js';
 
 // ---------------------------------------------------------------------------
 // DPD Package API Client
@@ -17,9 +17,9 @@ import type {
 // ---------------------------------------------------------------------------
 
 const DPD_SANDBOX_URL =
-  "https://dpdservicesdemo.dpd.com.pl/DPDPackageObjServicesService/DPDPackageObjServices";
+  'https://dpdservicesdemo.dpd.com.pl/DPDPackageObjServicesService/DPDPackageObjServices';
 const DPD_PRODUCTION_URL =
-  "https://dpdservices.dpd.com.pl/DPDPackageObjServicesService/DPDPackageObjServices";
+  'https://dpdservices.dpd.com.pl/DPDPackageObjServicesService/DPDPackageObjServices';
 
 /** Map abstract parcel sizes to DPD physical dimensions (cm) and weight (kg). */
 const DPD_SIZE_MAP = {
@@ -85,8 +85,8 @@ export class DPDClient implements CourierClient {
    * Accepts BaseShipmentParams and narrows to DPDShipmentParams internally.
    */
   async createShipment(params: ShipmentParams): Promise<CourierShipmentResult> {
-    if (!("deliveryAddress" in params)) {
-      throw new Error("[dpd-client] createShipment requires deliveryAddress for DPD shipments");
+    if (!('deliveryAddress' in params)) {
+      throw new Error('[dpd-client] createShipment requires deliveryAddress for DPD shipments');
     }
     const dpdParams = params as DPDShipmentParams;
     const url = `${this.baseUrl}/createShipment`;
@@ -123,19 +123,19 @@ export class DPDClient implements CourierClient {
               countryCode: dpdParams.sender.countryCode,
             },
           },
-          reference: dpdParams.reference ?? "",
+          reference: dpdParams.reference ?? '',
         },
       ],
     };
 
     const response = await globalThis.fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
 
     if (!response.ok) {
-      const errorBody = await response.text().catch(() => "unknown");
+      const errorBody = await response.text().catch(() => 'unknown');
       throw new Error(`[dpd-client] createShipment failed: HTTP ${response.status} — ${errorBody}`);
     }
 
@@ -155,16 +155,16 @@ export class DPDClient implements CourierClient {
    *
    * GET /label/{waybill}
    */
-  async getLabel(shipmentExternalId: string, _format: LabelFormat = "pdf"): Promise<Buffer> {
+  async getLabel(shipmentExternalId: string, _format: LabelFormat = 'pdf'): Promise<Buffer> {
     const url = `${this.baseUrl}/label/${shipmentExternalId}`;
 
     const response = await globalThis.fetch(url, {
-      method: "GET",
-      headers: { Accept: "application/pdf" },
+      method: 'GET',
+      headers: { Accept: 'application/pdf' },
     });
 
     if (!response.ok) {
-      const errorBody = await response.text().catch(() => "unknown");
+      const errorBody = await response.text().catch(() => 'unknown');
       throw new Error(`[dpd-client] getLabel failed: HTTP ${response.status} — ${errorBody}`);
     }
 
@@ -181,12 +181,12 @@ export class DPDClient implements CourierClient {
     const url = `${this.baseUrl}/tracking/${shipmentExternalId}`;
 
     const response = await globalThis.fetch(url, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
     });
 
     if (!response.ok) {
-      const errorBody = await response.text().catch(() => "unknown");
+      const errorBody = await response.text().catch(() => 'unknown');
       throw new Error(`[dpd-client] getStatus failed: HTTP ${response.status} — ${errorBody}`);
     }
 
@@ -210,15 +210,15 @@ export class DPDClient implements CourierClient {
     const url = `${this.baseUrl}/cancel/${shipmentExternalId}`;
 
     const response = await globalThis.fetch(url, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({ authData: this.authData }),
     });
 
     if (!response.ok) {
-      const errorBody = await response.text().catch(() => "unknown");
+      const errorBody = await response.text().catch(() => 'unknown');
       throw new Error(`[dpd-client] cancelShipment failed: HTTP ${response.status} — ${errorBody}`);
     }
   }

@@ -1,4 +1,4 @@
-import type { Prisma } from "@contractor-ops/db/generated/prisma/client";
+import type { Prisma } from '@contractor-ops/db/generated/prisma/client';
 import {
   amendmentCreateSchema,
   contractCreateSchema,
@@ -6,28 +6,28 @@ import {
   contractListSchema,
   contractStatusTransitionSchema,
   contractUpdateSchema,
-} from "@contractor-ops/validators";
-import { TRPCError } from "@trpc/server";
-import { z } from "zod";
-import * as E from "../errors.js";
-import { router } from "../init.js";
-import { requirePermission } from "../middleware/rbac.js";
-import { tenantProcedure } from "../middleware/tenant.js";
-import { syncContractExpiryDeadline } from "../services/calendar-deadline-sync.js";
-import { deleteCalendarEvent } from "../services/calendar-event-service.js";
+} from '@contractor-ops/validators';
+import { TRPCError } from '@trpc/server';
+import { z } from 'zod';
+import * as E from '../errors.js';
+import { router } from '../init.js';
+import { requirePermission } from '../middleware/rbac.js';
+import { tenantProcedure } from '../middleware/tenant.js';
+import { syncContractExpiryDeadline } from '../services/calendar-deadline-sync.js';
+import { deleteCalendarEvent } from '../services/calendar-event-service.js';
 
 // ---------------------------------------------------------------------------
 // Contract status transition map
 // ---------------------------------------------------------------------------
 
 const CONTRACT_TRANSITIONS: Record<string, string[]> = {
-  DRAFT: ["ACTIVE", "PENDING_SIGNATURE", "TERMINATED"],
-  PENDING_SIGNATURE: ["ACTIVE", "SIGNATURE_DECLINED", "SIGNATURE_EXPIRED", "TERMINATED"],
-  SIGNATURE_DECLINED: ["PENDING_SIGNATURE", "TERMINATED"],
-  SIGNATURE_EXPIRED: ["PENDING_SIGNATURE", "TERMINATED"],
-  ACTIVE: ["EXPIRING", "TERMINATED", "SUPERSEDED"],
-  EXPIRING: ["ACTIVE", "EXPIRED", "TERMINATED", "SUPERSEDED"],
-  EXPIRED: ["TERMINATED", "SUPERSEDED"],
+  DRAFT: ['ACTIVE', 'PENDING_SIGNATURE', 'TERMINATED'],
+  PENDING_SIGNATURE: ['ACTIVE', 'SIGNATURE_DECLINED', 'SIGNATURE_EXPIRED', 'TERMINATED'],
+  SIGNATURE_DECLINED: ['PENDING_SIGNATURE', 'TERMINATED'],
+  SIGNATURE_EXPIRED: ['PENDING_SIGNATURE', 'TERMINATED'],
+  ACTIVE: ['EXPIRING', 'TERMINATED', 'SUPERSEDED'],
+  EXPIRING: ['ACTIVE', 'EXPIRED', 'TERMINATED', 'SUPERSEDED'],
+  EXPIRED: ['TERMINATED', 'SUPERSEDED'],
   TERMINATED: [],
   SUPERSEDED: [],
   ARCHIVED: [],
@@ -51,7 +51,7 @@ export const contractRouter = router({
    * Create a new contract with all metadata fields.
    */
   create: tenantProcedure
-    .use(requirePermission({ contract: ["create"] }))
+    .use(requirePermission({ contract: ['create'] }))
     .input(contractCreateSchema)
     .mutation(async ({ ctx, input }) => {
       const contract = await ctx.db.contract.create({
@@ -78,7 +78,7 @@ export const contractRouter = router({
           projectId: input.projectId ?? null,
           costCenterId: input.costCenterId ?? null,
           notes: input.notes ?? null,
-          status: "DRAFT",
+          status: 'DRAFT',
         },
         include: {
           contractor: {
@@ -93,10 +93,10 @@ export const contractRouter = router({
           organizationId: ctx.organizationId,
           contractId: contract.id,
           contractName: contract.title ?? input.title,
-          contractorName: contract.contractor?.displayName ?? "Unknown",
+          contractorName: contract.contractor?.displayName ?? 'Unknown',
           expiryDate: contract.endDate,
           userId: ctx.user?.id,
-        }).catch((err) => console.error("[contract] calendar sync on create failed:", err));
+        }).catch(err => console.error('[contract] calendar sync on create failed:', err));
       }
 
       return plain(contract);
@@ -106,7 +106,7 @@ export const contractRouter = router({
    * Get a contract by ID with full relations.
    */
   getById: tenantProcedure
-    .use(requirePermission({ contract: ["read"] }))
+    .use(requirePermission({ contract: ['read'] }))
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
       const contract = await ctx.db.contract.findFirst({
@@ -120,7 +120,7 @@ export const contractRouter = router({
             select: { id: true, legalName: true, displayName: true, status: true },
           },
           amendments: {
-            orderBy: { effectiveDate: "desc" },
+            orderBy: { effectiveDate: 'desc' },
           },
           internalOwner: {
             select: { id: true, name: true },
@@ -135,7 +135,7 @@ export const contractRouter = router({
 
       if (!contract) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: E.CONTRACT_NOT_FOUND,
         });
       }
@@ -144,7 +144,7 @@ export const contractRouter = router({
       const documentCount = await ctx.db.documentLink.count({
         where: {
           organizationId: ctx.organizationId,
-          entityType: "CONTRACT",
+          entityType: 'CONTRACT',
           entityId: contract.id,
         },
       });
@@ -156,7 +156,7 @@ export const contractRouter = router({
    * Update a contract (PATCH semantics).
    */
   update: tenantProcedure
-    .use(requirePermission({ contract: ["update"] }))
+    .use(requirePermission({ contract: ['update'] }))
     .input(z.object({ id: z.string(), data: contractUpdateSchema }))
     .mutation(async ({ ctx, input }) => {
       const existing = await ctx.db.contract.findFirst({
@@ -169,7 +169,7 @@ export const contractRouter = router({
 
       if (!existing) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: E.CONTRACT_NOT_FOUND,
         });
       }
@@ -188,7 +188,7 @@ export const contractRouter = router({
       if (updateData.endDate && updateData.startDate) {
         if (updateData.endDate <= updateData.startDate) {
           throw new TRPCError({
-            code: "BAD_REQUEST",
+            code: 'BAD_REQUEST',
             message: E.CONTRACT_END_DATE_BEFORE_START,
           });
         }
@@ -208,18 +208,18 @@ export const contractRouter = router({
         void syncContractExpiryDeadline(prisma, {
           organizationId: ctx.organizationId,
           contractId: updated.id,
-          contractName: updated.title ?? "Untitled",
-          contractorName: contractor?.displayName ?? "Unknown",
+          contractName: updated.title ?? 'Untitled',
+          contractorName: contractor?.displayName ?? 'Unknown',
           expiryDate: updated.endDate,
           userId: ctx.user?.id,
-        }).catch((err) => console.error("[contract] calendar sync on update failed:", err));
+        }).catch(err => console.error('[contract] calendar sync on update failed:', err));
       } else if (!updated.endDate && existing.endDate) {
         // endDate was cleared -- delete calendar event (D-08)
         void deleteCalendarEvent(prisma, {
           organizationId: ctx.organizationId,
-          entityType: "CONTRACT",
+          entityType: 'CONTRACT',
           entityId: updated.id,
-        }).catch((err) => console.error("[contract] calendar event cleanup failed:", err));
+        }).catch(err => console.error('[contract] calendar event cleanup failed:', err));
       }
 
       return plain(updated);
@@ -229,7 +229,7 @@ export const contractRouter = router({
    * List contracts with pagination, sorting, filtering, and full-text search.
    */
   list: tenantProcedure
-    .use(requirePermission({ contract: ["read"] }))
+    .use(requirePermission({ contract: ['read'] }))
     .input(contractListSchema)
     .query(async ({ ctx, input }) => {
       const { page, pageSize, search, sortBy, sortOrder, contractorId, filters } = input;
@@ -278,10 +278,10 @@ export const contractRouter = router({
         const terms = search
           .trim()
           .split(/\s+/)
-          .map((t) => t.replace(/[^a-zA-Z0-9\u00C0-\u024F]/g, ""))
+          .map(t => t.replace(/[^a-zA-Z0-9\u00C0-\u024F]/g, ''))
           .filter(Boolean)
-          .map((t) => `${t}:*`)
-          .join(" & ");
+          .map(t => `${t}:*`)
+          .join(' & ');
 
         if (terms) {
           const matchingIds: Array<{ id: string }> = await ctx.db.$queryRaw`
@@ -300,7 +300,7 @@ export const contractRouter = router({
             };
           }
 
-          where.id = { in: matchingIds.map((r) => r.id) };
+          where.id = { in: matchingIds.map(r => r.id) };
         }
       }
 
@@ -329,7 +329,7 @@ export const contractRouter = router({
    * Transition contract status with state machine validation.
    */
   transitionStatus: tenantProcedure
-    .use(requirePermission({ contract: ["update"] }))
+    .use(requirePermission({ contract: ['update'] }))
     .input(contractStatusTransitionSchema)
     .mutation(async ({ ctx, input }) => {
       const contract = await ctx.db.contract.findFirst({
@@ -342,7 +342,7 @@ export const contractRouter = router({
 
       if (!contract) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: E.CONTRACT_NOT_FOUND,
         });
       }
@@ -350,7 +350,7 @@ export const contractRouter = router({
       const allowedTargets = CONTRACT_TRANSITIONS[contract.status] ?? [];
       if (!allowedTargets.includes(input.targetStatus)) {
         throw new TRPCError({
-          code: "BAD_REQUEST",
+          code: 'BAD_REQUEST',
           message: E.CONTRACT_INVALID_TRANSITION,
         });
       }
@@ -359,7 +359,7 @@ export const contractRouter = router({
         status: input.targetStatus,
       };
 
-      if (input.targetStatus === "TERMINATED") {
+      if (input.targetStatus === 'TERMINATED') {
         updateData.terminatedAt = new Date();
       }
 
@@ -375,7 +375,7 @@ export const contractRouter = router({
    * Create a contract amendment.
    */
   createAmendment: tenantProcedure
-    .use(requirePermission({ contract: ["update"] }))
+    .use(requirePermission({ contract: ['update'] }))
     .input(amendmentCreateSchema)
     .mutation(async ({ ctx, input }) => {
       const contract = await ctx.db.contract.findFirst({
@@ -388,7 +388,7 @@ export const contractRouter = router({
 
       if (!contract) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: E.CONTRACT_NOT_FOUND,
         });
       }
@@ -420,7 +420,7 @@ export const contractRouter = router({
    * List amendments for a contract.
    */
   listAmendments: tenantProcedure
-    .use(requirePermission({ contract: ["read"] }))
+    .use(requirePermission({ contract: ['read'] }))
     .input(z.object({ contractId: z.string() }))
     .query(async ({ ctx, input }) => {
       const amendments = await ctx.db.contractAmendment.findMany({
@@ -428,7 +428,7 @@ export const contractRouter = router({
           contractId: input.contractId,
           organizationId: ctx.organizationId,
         },
-        orderBy: { effectiveDate: "desc" },
+        orderBy: { effectiveDate: 'desc' },
       });
 
       return plain(amendments);
@@ -438,7 +438,7 @@ export const contractRouter = router({
    * Update per-contract expiry reminder intervals in metadataJson.
    */
   updateExpiryReminders: tenantProcedure
-    .use(requirePermission({ contract: ["update"] }))
+    .use(requirePermission({ contract: ['update'] }))
     .input(contractExpiryReminderSchema)
     .mutation(async ({ ctx, input }) => {
       const contract = await ctx.db.contract.findFirst({
@@ -451,7 +451,7 @@ export const contractRouter = router({
 
       if (!contract) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: E.CONTRACT_NOT_FOUND,
         });
       }
@@ -477,7 +477,7 @@ export const contractRouter = router({
    * Delete a contract (soft-delete, only if DRAFT status).
    */
   delete: tenantProcedure
-    .use(requirePermission({ contract: ["delete"] }))
+    .use(requirePermission({ contract: ['delete'] }))
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const contract = await ctx.db.contract.findFirst({
@@ -490,15 +490,15 @@ export const contractRouter = router({
 
       if (!contract) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: E.CONTRACT_NOT_FOUND,
         });
       }
 
-      if (contract.status !== "DRAFT") {
+      if (contract.status !== 'DRAFT') {
         throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Only draft contracts can be deleted. Use status transitions instead.",
+          code: 'BAD_REQUEST',
+          message: 'Only draft contracts can be deleted. Use status transitions instead.',
         });
       }
 
@@ -510,9 +510,9 @@ export const contractRouter = router({
       // Calendar cleanup: remove contract expiry event (D-08)
       void deleteCalendarEvent(prisma, {
         organizationId: ctx.organizationId,
-        entityType: "CONTRACT",
+        entityType: 'CONTRACT',
         entityId: input.id,
-      }).catch((err) => console.error("[contract] calendar event cleanup on delete failed:", err));
+      }).catch(err => console.error('[contract] calendar event cleanup on delete failed:', err));
 
       return { success: true };
     }),
@@ -521,7 +521,7 @@ export const contractRouter = router({
    * Bulk transition multiple contracts to a target status.
    */
   bulkTransition: tenantProcedure
-    .use(requirePermission({ contract: ["update"] }))
+    .use(requirePermission({ contract: ['update'] }))
     .input(
       z.object({
         ids: z.array(z.string()).min(1).max(100),
@@ -551,7 +551,7 @@ export const contractRouter = router({
       }
 
       // Also track IDs not found
-      const foundIds = new Set(contracts.map((c) => c.id));
+      const foundIds = new Set(contracts.map(c => c.id));
       for (const id of input.ids) {
         if (!foundIds.has(id)) {
           failed.push(id);
@@ -559,12 +559,12 @@ export const contractRouter = router({
       }
 
       if (valid.length > 0) {
-        await ctx.db.$transaction(async (tx) => {
+        await ctx.db.$transaction(async tx => {
           const updateData: Record<string, unknown> = {
             status: input.targetStatus,
           };
 
-          if (input.targetStatus === "TERMINATED") {
+          if (input.targetStatus === 'TERMINATED') {
             updateData.terminatedAt = new Date();
           }
 

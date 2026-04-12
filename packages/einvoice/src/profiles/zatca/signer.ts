@@ -6,28 +6,28 @@
 // xml-crypto's canonicalization utilities for sign/verify consistency.
 // ---------------------------------------------------------------------------
 
-import crypto from "node:crypto";
-import { ExclusiveCanonicalization, SignedXml } from "xml-crypto";
+import crypto from 'node:crypto';
+import { ExclusiveCanonicalization, SignedXml } from 'xml-crypto';
 import type {
   CertificateInfo,
   Signable,
   SignatureVerificationResult,
-} from "../../types/profile.js";
+} from '../../types/profile.js';
 
-type XmlDomModule = typeof import("@xmldom/xmldom");
+type XmlDomModule = typeof import('@xmldom/xmldom');
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
-const DS_NS = "http://www.w3.org/2000/09/xmldsig#";
-const XADES_NS = "http://uri.etsi.org/01903/v1.3.2#";
-const EXC_C14N = "http://www.w3.org/2001/10/xml-exc-c14n#";
-const ENVELOPED_SIG = "http://www.w3.org/2000/09/xmldsig#enveloped-signature";
-const SHA256_DIGEST = "http://www.w3.org/2001/04/xmlenc#sha256";
-const ECDSA_SHA256 = "http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha256";
-const SIGNATURE_ID = "signature";
-const SIGNED_PROPS_ID = "xadesSignedProperties";
+const DS_NS = 'http://www.w3.org/2000/09/xmldsig#';
+const XADES_NS = 'http://uri.etsi.org/01903/v1.3.2#';
+const EXC_C14N = 'http://www.w3.org/2001/10/xml-exc-c14n#';
+const ENVELOPED_SIG = 'http://www.w3.org/2000/09/xmldsig#enveloped-signature';
+const SHA256_DIGEST = 'http://www.w3.org/2001/04/xmlenc#sha256';
+const ECDSA_SHA256 = 'http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha256';
+const SIGNATURE_ID = 'signature';
+const SIGNED_PROPS_ID = 'xadesSignedProperties';
 
 // ---------------------------------------------------------------------------
 // xmldom accessor (via xml-crypto's dependency)
@@ -38,8 +38,8 @@ let _xmldom: XmlDomModule | undefined;
 function getXmldom(): XmlDomModule {
   if (!_xmldom) {
     // Resolve @xmldom/xmldom through xml-crypto's dependency chain
-    const xmlCryptoPath = require.resolve("xml-crypto");
-    const xmldomPath = require.resolve("@xmldom/xmldom", {
+    const xmlCryptoPath = require.resolve('xml-crypto');
+    const xmldomPath = require.resolve('@xmldom/xmldom', {
       paths: [xmlCryptoPath],
     });
     // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -54,21 +54,21 @@ function getXmldom(): XmlDomModule {
 
 class EcdsaSha256Algorithm {
   getSignature(signedInfo: crypto.BinaryLike, privateKey: crypto.KeyLike | string): string {
-    const signer = crypto.createSign("SHA256");
+    const signer = crypto.createSign('SHA256');
     signer.update(signedInfo);
     return signer.sign(
-      { key: privateKey, dsaEncoding: "ieee-p1363" } as crypto.SignPrivateKeyInput,
-      "base64",
+      { key: privateKey, dsaEncoding: 'ieee-p1363' } as crypto.SignPrivateKeyInput,
+      'base64',
     );
   }
 
   verifySignature(material: string, key: crypto.KeyLike | string, signatureValue: string): boolean {
-    const verifier = crypto.createVerify("SHA256");
+    const verifier = crypto.createVerify('SHA256');
     verifier.update(material);
     return verifier.verify(
-      { key, dsaEncoding: "ieee-p1363" } as crypto.VerifyPublicKeyInput,
+      { key, dsaEncoding: 'ieee-p1363' } as crypto.VerifyPublicKeyInput,
       signatureValue,
-      "base64",
+      'base64',
     );
   }
 
@@ -82,34 +82,34 @@ class EcdsaSha256Algorithm {
 // ---------------------------------------------------------------------------
 
 function parseCertificate(certString: string): crypto.X509Certificate {
-  if (certString.includes("-----BEGIN")) {
+  if (certString.includes('-----BEGIN')) {
     return new crypto.X509Certificate(certString);
   }
-  return new crypto.X509Certificate(Buffer.from(certString, "base64"));
+  return new crypto.X509Certificate(Buffer.from(certString, 'base64'));
 }
 
 function parsePrivateKey(keyString: string): crypto.KeyObject {
-  if (keyString.includes("-----BEGIN")) {
+  if (keyString.includes('-----BEGIN')) {
     return crypto.createPrivateKey(keyString);
   }
-  const derBuffer = Buffer.from(keyString, "base64");
+  const derBuffer = Buffer.from(keyString, 'base64');
   try {
     return crypto.createPrivateKey({
       key: derBuffer,
-      format: "der",
-      type: "pkcs8",
+      format: 'der',
+      type: 'pkcs8',
     });
   } catch {
     return crypto.createPrivateKey({
       key: derBuffer,
-      format: "der",
-      type: "sec1",
+      format: 'der',
+      type: 'sec1',
     });
   }
 }
 
 function computeCertDigest(cert: crypto.X509Certificate): string {
-  return crypto.createHash("sha256").update(cert.raw).digest("base64");
+  return crypto.createHash('sha256').update(cert.raw).digest('base64');
 }
 
 function extractSerialNumber(cert: crypto.X509Certificate): string {
@@ -117,25 +117,25 @@ function extractSerialNumber(cert: crypto.X509Certificate): string {
 }
 
 function extractCertBase64(certificate: string): string {
-  if (certificate.includes("-----BEGIN")) {
+  if (certificate.includes('-----BEGIN')) {
     return certificate
-      .replace(/-----BEGIN CERTIFICATE-----/, "")
-      .replace(/-----END CERTIFICATE-----/, "")
-      .replace(/\s/g, "");
+      .replace(/-----BEGIN CERTIFICATE-----/, '')
+      .replace(/-----END CERTIFICATE-----/, '')
+      .replace(/\s/g, '');
   }
   return certificate;
 }
 
 function sha256Base64(data: string): string {
-  return crypto.createHash("sha256").update(data, "utf-8").digest("base64");
+  return crypto.createHash('sha256').update(data, 'utf-8').digest('base64');
 }
 
 function escapeXml(str: string): string {
   return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
 // ---------------------------------------------------------------------------
@@ -151,7 +151,7 @@ function escapeXml(str: string): string {
  */
 function computeDocDigest(xml: string): string {
   const { DOMParser } = getXmldom();
-  const doc = new DOMParser().parseFromString(xml, "text/xml");
+  const doc = new DOMParser().parseFromString(xml, 'text/xml');
   const rootElement = doc.documentElement!;
 
   // Apply exclusive C14N (enveloped-sig is no-op on unsigned XML)
@@ -166,7 +166,7 @@ function computeDocDigest(xml: string): string {
  */
 function canonicalizeFragment(xmlStr: string): string {
   const { DOMParser } = getXmldom();
-  const doc = new DOMParser().parseFromString(xmlStr, "text/xml");
+  const doc = new DOMParser().parseFromString(xmlStr, 'text/xml');
   const c14n = new ExclusiveCanonicalization();
   return c14n.process(doc.documentElement!, {}).toString();
 }
@@ -177,7 +177,7 @@ function canonicalizeFragment(xmlStr: string): string {
 
 function buildSignedProperties(cert: crypto.X509Certificate, signingTime: string): string {
   const certDigest = computeCertDigest(cert);
-  const issuerDN = escapeXml(cert.issuer.replace(/\n/g, ", "));
+  const issuerDN = escapeXml(cert.issuer.replace(/\n/g, ', '));
   const serialNumber = extractSerialNumber(cert);
 
   return [
@@ -198,7 +198,7 @@ function buildSignedProperties(cert: crypto.X509Certificate, signingTime: string
     `</xades:SigningCertificate>`,
     `</xades:SignedSignatureProperties>`,
     `</xades:SignedProperties>`,
-  ].join("");
+  ].join('');
 }
 
 // ---------------------------------------------------------------------------
@@ -226,7 +226,7 @@ function buildSignedInfoXml(docDigest: string, signedPropsDigest: string): strin
     `<ds:DigestValue>${signedPropsDigest}</ds:DigestValue>`,
     `</ds:Reference>`,
     `</ds:SignedInfo>`,
-  ].join("");
+  ].join('');
 }
 
 function buildSignatureXml(params: {
@@ -250,7 +250,7 @@ function buildSignatureXml(params: {
     `</xades:QualifyingProperties>`,
     `</ds:Object>`,
     `</ds:Signature>`,
-  ].join("");
+  ].join('');
 }
 
 // ---------------------------------------------------------------------------
@@ -273,7 +273,7 @@ function buildSignatureXml(params: {
 export class ZatcaXAdESSigner implements Signable {
   async sign(xml: string, certificate: CertificateInfo): Promise<string> {
     if (!certificate.privateKey) {
-      throw new Error("ZATCA signing requires privateKey in CertificateInfo");
+      throw new Error('ZATCA signing requires privateKey in CertificateInfo');
     }
 
     const x509 = parseCertificate(certificate.certificate);
@@ -291,8 +291,8 @@ export class ZatcaXAdESSigner implements Signable {
     //    the document, then compute the real SignedProperties digest from
     //    the full document context. This 2-pass approach ensures the
     //    canonical form matches what the verifier will compute.
-    const PLACEHOLDER_DIGEST = "PLACEHOLDER_DIGEST";
-    const PLACEHOLDER_SIG_VALUE = "PLACEHOLDER_SIG";
+    const PLACEHOLDER_DIGEST = 'PLACEHOLDER_DIGEST';
+    const PLACEHOLDER_SIG_VALUE = 'PLACEHOLDER_SIG';
 
     const placeholderSignatureXml = buildSignatureXml({
       signedInfoXml: buildSignedInfoXml(docDigest, PLACEHOLDER_DIGEST),
@@ -309,18 +309,18 @@ export class ZatcaXAdESSigner implements Signable {
 
     // 4. Compute real SignedProperties digest from the full document
     const { DOMParser: DomParser } = getXmldom();
-    const tempDoc = new DomParser().parseFromString(tempSignedXml, "text/xml");
-    const allElements = tempDoc.getElementsByTagName("*");
+    const tempDoc = new DomParser().parseFromString(tempSignedXml, 'text/xml');
+    const allElements = tempDoc.getElementsByTagName('*');
     let signedPropsElement: unknown = null;
     for (let i = 0; i < allElements.length; i++) {
       const el = allElements.item(i) as { getAttribute(name: string): string | null };
-      if (el.getAttribute("Id") === SIGNED_PROPS_ID) {
+      if (el.getAttribute('Id') === SIGNED_PROPS_ID) {
         signedPropsElement = el;
         break;
       }
     }
     if (!signedPropsElement) {
-      throw new Error("Failed to find SignedProperties in temporary document");
+      throw new Error('Failed to find SignedProperties in temporary document');
     }
     const c14n = new ExclusiveCanonicalization();
     const canonSignedProps = c14n.process(signedPropsElement as Element, {}).toString();
@@ -331,9 +331,9 @@ export class ZatcaXAdESSigner implements Signable {
 
     // 6. Canonicalize SignedInfo and compute ECDSA signature
     const canonicalSignedInfo = canonicalizeFragment(signedInfoXml);
-    const signer = crypto.createSign("SHA256");
+    const signer = crypto.createSign('SHA256');
     signer.update(canonicalSignedInfo);
-    const signatureValue = signer.sign({ key: privateKey, dsaEncoding: "ieee-p1363" }, "base64");
+    const signatureValue = signer.sign({ key: privateKey, dsaEncoding: 'ieee-p1363' }, 'base64');
 
     // 7. Build final signature with real values
     const finalSignatureXml = buildSignatureXml({
@@ -356,7 +356,7 @@ export class ZatcaXAdESSigner implements Signable {
       if (!sigMatch) {
         return {
           valid: false,
-          errors: ["No ds:Signature element found in XML"],
+          errors: ['No ds:Signature element found in XML'],
         };
       }
 
@@ -364,11 +364,11 @@ export class ZatcaXAdESSigner implements Signable {
       if (!certMatch) {
         return {
           valid: false,
-          errors: ["No X509Certificate found in signature KeyInfo"],
+          errors: ['No X509Certificate found in signature KeyInfo'],
         };
       }
 
-      const certBase64 = certMatch[1]?.replace(/\s/g, "");
+      const certBase64 = certMatch[1]?.replace(/\s/g, '');
       const certPem = `-----BEGIN CERTIFICATE-----\n${certBase64}\n-----END CERTIFICATE-----`;
 
       const sigVerifier = new SignedXml({
@@ -404,8 +404,8 @@ export class ZatcaXAdESSigner implements Signable {
 
       const refErrors = sigVerifier
         .getReferences()
-        .filter((r) => r.validationError)
-        .map((r) => `Reference ${r.uri || "(document)"}: ${r.validationError?.message}`);
+        .filter(r => r.validationError)
+        .map(r => `Reference ${r.uri || '(document)'}: ${r.validationError?.message}`);
 
       return {
         valid: false,
@@ -414,10 +414,10 @@ export class ZatcaXAdESSigner implements Signable {
         errors:
           refErrors.length > 0
             ? refErrors
-            : ["Signature verification failed: signature value mismatch"],
+            : ['Signature verification failed: signature value mismatch'],
       };
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Unknown verification error";
+      const message = error instanceof Error ? error.message : 'Unknown verification error';
       return {
         valid: false,
         errors: [`Signature verification error: ${message}`],

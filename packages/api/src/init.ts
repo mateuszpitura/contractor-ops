@@ -1,7 +1,7 @@
-import { initTRPC } from "@trpc/server";
-import superjson from "superjson";
-import type { Context } from "./context.js";
-import { observabilityMiddleware } from "./middleware/observability.js";
+import { initTRPC } from '@trpc/server';
+import superjson from 'superjson';
+import type { Context } from './context.js';
+import { observabilityMiddleware } from './middleware/observability.js';
 
 const t = initTRPC.context<Context>().create({
   transformer: superjson,

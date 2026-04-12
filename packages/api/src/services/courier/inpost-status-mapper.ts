@@ -12,23 +12,23 @@
  * simplified enum. Multiple ShipX statuses can map to the same ShipmentStatus.
  */
 export const INPOST_STATUS_MAP: Record<string, string> = {
-  created: "CREATED",
-  offers_prepared: "CREATED",
-  offer_selected: "CREATED",
-  confirmed: "LABEL_GENERATED",
-  dispatched_by_sender: "PICKED_UP",
-  collected_from_sender: "PICKED_UP",
-  taken_by_courier: "PICKED_UP",
-  adopted_at_source_branch: "IN_TRANSIT",
-  sent_from_source_branch: "IN_TRANSIT",
-  out_for_delivery: "OUT_FOR_DELIVERY",
-  ready_to_pickup: "OUT_FOR_DELIVERY",
-  delivered: "DELIVERED",
-  picked_up_by_receiver: "DELIVERED",
-  avizo: "OUT_FOR_DELIVERY",
-  claimed: "FAILED",
-  returned_to_sender: "RETURNED",
-  not_delivered: "FAILED",
+  created: 'CREATED',
+  offers_prepared: 'CREATED',
+  offer_selected: 'CREATED',
+  confirmed: 'LABEL_GENERATED',
+  dispatched_by_sender: 'PICKED_UP',
+  collected_from_sender: 'PICKED_UP',
+  taken_by_courier: 'PICKED_UP',
+  adopted_at_source_branch: 'IN_TRANSIT',
+  sent_from_source_branch: 'IN_TRANSIT',
+  out_for_delivery: 'OUT_FOR_DELIVERY',
+  ready_to_pickup: 'OUT_FOR_DELIVERY',
+  delivered: 'DELIVERED',
+  picked_up_by_receiver: 'DELIVERED',
+  avizo: 'OUT_FOR_DELIVERY',
+  claimed: 'FAILED',
+  returned_to_sender: 'RETURNED',
+  not_delivered: 'FAILED',
 };
 
 /**
@@ -50,4 +50,4 @@ export function mapInPostStatus(rawStatus: string): string | null {
  * Statuses that should trigger user notifications (per D-06).
  * Intermediate statuses update silently; only terminal/critical events notify.
  */
-export const NOTIFICATION_STATUSES = ["DELIVERED", "FAILED", "RETURNED"] as const;
+export const NOTIFICATION_STATUSES = ['DELIVERED', 'FAILED', 'RETURNED'] as const;

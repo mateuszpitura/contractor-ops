@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import dynamic from "next/dynamic";
-import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
+import { useQuery } from '@tanstack/react-query';
+import dynamic from 'next/dynamic';
+import { useCallback, useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,31 +14,30 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import { trpc } from "@/trpc/init";
+} from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { trpc } from '@/trpc/init';
 
-const PdfViewer = dynamic(
-  () => import("@/components/ocr/pdf-viewer").then((mod) => mod.PdfViewer),
-  { ssr: false },
-);
+const PdfViewer = dynamic(() => import('@/components/ocr/pdf-viewer').then(mod => mod.PdfViewer), {
+  ssr: false,
+});
 
-import type { OcrExtractionResult, OcrLineItem } from "@contractor-ops/integrations/types/ocr";
-import { ConfidenceFieldWrapper } from "@/components/ocr/confidence-field-wrapper";
-import { ExtractionStatusBar } from "@/components/ocr/extraction-status-bar";
-import { LineItemsTable } from "@/components/ocr/line-items-table";
-import { NipValidationBadge } from "@/components/ocr/nip-validation-badge";
-import { OcrProcessingOverlay } from "@/components/ocr/ocr-processing-overlay";
+import type { OcrExtractionResult, OcrLineItem } from '@contractor-ops/integrations/types/ocr';
+import { ConfidenceFieldWrapper } from '@/components/ocr/confidence-field-wrapper';
+import { ExtractionStatusBar } from '@/components/ocr/extraction-status-bar';
+import { LineItemsTable } from '@/components/ocr/line-items-table';
+import { NipValidationBadge } from '@/components/ocr/nip-validation-badge';
+import { OcrProcessingOverlay } from '@/components/ocr/ocr-processing-overlay';
 
 export interface ExtractedInvoiceData {
   invoiceNumber: string;
@@ -82,14 +81,14 @@ interface OcrReviewPanelProps {
 // Helpers
 // ---------------------------------------------------------------------------
 
-const CURRENCIES = ["PLN", "EUR", "USD", "GBP"] as const;
+const CURRENCIES = ['PLN', 'EUR', 'USD', 'GBP'] as const;
 
 function getFieldValue(
   fields: Record<string, { value: string | number | null }> | undefined,
   key: string,
 ): string {
   const field = fields?.[key];
-  if (!field || field.value == null) return "";
+  if (!field || field.value == null) return '';
   return String(field.value);
 }
 
@@ -106,12 +105,12 @@ function getNumericFieldMinor(
 ): number {
   const field = fields?.[key];
   if (!field || field.value == null) return 0;
-  const num = typeof field.value === "number" ? field.value : parseFloat(field.value);
+  const num = typeof field.value === 'number' ? field.value : parseFloat(field.value);
   return Number.isNaN(num) ? 0 : num;
 }
 
 function formatMinorUnits(minor: number): string {
-  if (minor === 0) return "";
+  if (minor === 0) return '';
   return (minor / 100).toFixed(2);
 }
 
@@ -122,7 +121,7 @@ function parseMinorUnits(display: string): number {
 }
 
 function mapLineItems(items: OcrLineItem[]): LineItemFormData[] {
-  return items.map((item) => ({
+  return items.map(item => ({
     id: crypto.randomUUID(),
     description: item.description,
     quantity: item.quantity,
@@ -141,18 +140,18 @@ function mapLineItems(items: OcrLineItem[]): LineItemFormData[] {
 // ---------------------------------------------------------------------------
 
 const FIELD_ORDER = [
-  "invoiceNumber",
-  "issueDate",
-  "dueDate",
-  "currency",
-  "sellerTaxId",
-  "buyerTaxId",
-  "sellerName",
-  "buyerName",
-  "subtotalMinor",
-  "vatAmountMinor",
-  "totalMinor",
-  "sellerBankAccount",
+  'invoiceNumber',
+  'issueDate',
+  'dueDate',
+  'currency',
+  'sellerTaxId',
+  'buyerTaxId',
+  'sellerName',
+  'buyerName',
+  'subtotalMinor',
+  'vatAmountMinor',
+  'totalMinor',
+  'sellerBankAccount',
 ] as const;
 
 function useCascadeAnimation(isReady: boolean) {
@@ -167,7 +166,7 @@ function useCascadeAnimation(isReady: boolean) {
     const timers: ReturnType<typeof setTimeout>[] = [];
     FIELD_ORDER.forEach((field, index) => {
       const timer = setTimeout(() => {
-        setVisibleFields((prev) => new Set([...prev, field]));
+        setVisibleFields(prev => new Set([...prev, field]));
       }, index * 50);
       timers.push(timer);
     });
@@ -194,40 +193,40 @@ export function OcrReviewPanel({
   const adminQuery = useQuery({
     ...trpc.ocr.getResult.queryOptions({ extractionId }),
     enabled: !isPortal,
-    refetchInterval: (query) => {
+    refetchInterval: query => {
       const status = query.state.data?.status;
-      return status === "PROCESSING" || status === "PENDING" ? 2000 : false;
+      return status === 'PROCESSING' || status === 'PENDING' ? 2000 : false;
     },
   });
 
   const portalQuery = useQuery({
     ...trpc.ocr.portalGetResult.queryOptions({ extractionId }),
     enabled: isPortal,
-    refetchInterval: (query) => {
+    refetchInterval: query => {
       const status = query.state.data?.status;
-      return status === "PROCESSING" || status === "PENDING" ? 2000 : false;
+      return status === 'PROCESSING' || status === 'PENDING' ? 2000 : false;
     },
   });
 
   const extraction = isPortal ? portalQuery.data : adminQuery.data;
-  const extractionStatus = extraction?.status ?? "PENDING";
+  const extractionStatus = extraction?.status ?? 'PENDING';
   const resultJson = extraction?.resultJson as OcrExtractionResult | null | undefined;
-  const isProcessing = extractionStatus === "PROCESSING" || extractionStatus === "PENDING";
-  const isComplete = extractionStatus === "EXTRACTED" || extractionStatus === "PARTIAL";
+  const isProcessing = extractionStatus === 'PROCESSING' || extractionStatus === 'PENDING';
+  const isComplete = extractionStatus === 'EXTRACTED' || extractionStatus === 'PARTIAL';
 
   // Form state
-  const [invoiceNumber, setInvoiceNumber] = useState("");
-  const [issueDate, setIssueDate] = useState("");
-  const [dueDate, setDueDate] = useState("");
-  const [currency, setCurrency] = useState("PLN");
-  const [subtotalMinor, setSubtotalMinor] = useState("");
-  const [vatAmountMinor, setVatAmountMinor] = useState("");
-  const [totalMinor, setTotalMinor] = useState("");
-  const [sellerTaxId, setSellerTaxId] = useState("");
-  const [sellerName, setSellerName] = useState("");
-  const [buyerTaxId, setBuyerTaxId] = useState("");
-  const [buyerName, setBuyerName] = useState("");
-  const [sellerBankAccount, setSellerBankAccount] = useState("");
+  const [invoiceNumber, setInvoiceNumber] = useState('');
+  const [issueDate, setIssueDate] = useState('');
+  const [dueDate, setDueDate] = useState('');
+  const [currency, setCurrency] = useState('PLN');
+  const [subtotalMinor, setSubtotalMinor] = useState('');
+  const [vatAmountMinor, setVatAmountMinor] = useState('');
+  const [totalMinor, setTotalMinor] = useState('');
+  const [sellerTaxId, setSellerTaxId] = useState('');
+  const [sellerName, setSellerName] = useState('');
+  const [buyerTaxId, setBuyerTaxId] = useState('');
+  const [buyerName, setBuyerName] = useState('');
+  const [sellerBankAccount, setSellerBankAccount] = useState('');
   const [lineItems, setLineItems] = useState<LineItemFormData[]>([]);
   const [hasPopulated, setHasPopulated] = useState(false);
 
@@ -237,31 +236,31 @@ export function OcrReviewPanel({
   // Pre-fill from extraction result
   useEffect(() => {
     if (!resultJson || hasPopulated) return;
-    if (resultJson.status !== "EXTRACTED" && resultJson.status !== "PARTIAL") return;
+    if (resultJson.status !== 'EXTRACTED' && resultJson.status !== 'PARTIAL') return;
 
     const fields = resultJson.fields;
 
-    setInvoiceNumber(getFieldValue(fields, "invoiceNumber"));
-    setIssueDate(getFieldValue(fields, "issueDate"));
-    setDueDate(getFieldValue(fields, "dueDate"));
-    setCurrency(getFieldValue(fields, "currency") || "PLN");
-    setSubtotalMinor(formatMinorUnits(getNumericFieldMinor(fields, "totalNet")));
-    setVatAmountMinor(formatMinorUnits(getNumericFieldMinor(fields, "totalTax")));
-    setTotalMinor(formatMinorUnits(getNumericFieldMinor(fields, "totalGross")));
-    setSellerTaxId(getFieldValue(fields, "sellerNip"));
-    setSellerName(getFieldValue(fields, "sellerName"));
-    setBuyerTaxId(getFieldValue(fields, "buyerNip"));
-    setBuyerName(getFieldValue(fields, "buyerName"));
-    setSellerBankAccount(getFieldValue(fields, "bankAccount"));
+    setInvoiceNumber(getFieldValue(fields, 'invoiceNumber'));
+    setIssueDate(getFieldValue(fields, 'issueDate'));
+    setDueDate(getFieldValue(fields, 'dueDate'));
+    setCurrency(getFieldValue(fields, 'currency') || 'PLN');
+    setSubtotalMinor(formatMinorUnits(getNumericFieldMinor(fields, 'totalNet')));
+    setVatAmountMinor(formatMinorUnits(getNumericFieldMinor(fields, 'totalTax')));
+    setTotalMinor(formatMinorUnits(getNumericFieldMinor(fields, 'totalGross')));
+    setSellerTaxId(getFieldValue(fields, 'sellerNip'));
+    setSellerName(getFieldValue(fields, 'sellerName'));
+    setBuyerTaxId(getFieldValue(fields, 'buyerNip'));
+    setBuyerName(getFieldValue(fields, 'buyerName'));
+    setSellerBankAccount(getFieldValue(fields, 'bankAccount'));
     setLineItems(mapLineItems(resultJson.lineItems));
     setHasPopulated(true);
 
-    toast.success("Invoice data extracted -- please review before saving");
+    toast.success('Invoice data extracted -- please review before saving');
   }, [resultJson, hasPopulated]);
 
   // Computed field counts
   const fieldCount = resultJson
-    ? Object.values(resultJson.fields).filter((f) => f.value != null).length
+    ? Object.values(resultJson.fields).filter(f => f.value != null).length
     : 0;
   const totalFields = resultJson ? Object.keys(resultJson.fields).length : 0;
 
@@ -302,14 +301,14 @@ export function OcrReviewPanel({
   // Field wrapper with cascade animation
   const fieldStyle = (key: string) => ({
     opacity: visibleFields.has(key) ? 1 : 0,
-    transition: "opacity 200ms ease-in-out",
+    transition: 'opacity 200ms ease-in-out',
   });
 
   return (
     <div className="flex flex-col gap-4">
       {/* Extraction Status Bar */}
       <ExtractionStatusBar
-        status={extractionStatus as "PENDING" | "PROCESSING" | "EXTRACTED" | "PARTIAL" | "FAILED"}
+        status={extractionStatus as 'PENDING' | 'PROCESSING' | 'EXTRACTED' | 'PARTIAL' | 'FAILED'}
         fieldCount={fieldCount}
         totalFields={totalFields}
         errorMessage={resultJson?.errorMessage}
@@ -333,58 +332,53 @@ export function OcrReviewPanel({
               <div>
                 <h3 className="mb-4 text-xl font-semibold">Review Extracted Data</h3>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div style={fieldStyle("invoiceNumber")}>
+                  <div style={fieldStyle('invoiceNumber')}>
                     <ConfidenceFieldWrapper
-                      confidence={getFieldConfidence(resultJson?.fields, "invoiceNumber")}
-                      label="Invoice Number"
-                    >
+                      confidence={getFieldConfidence(resultJson?.fields, 'invoiceNumber')}
+                      label="Invoice Number">
                       <Input
                         value={invoiceNumber}
-                        onChange={(e) => setInvoiceNumber(e.target.value)}
+                        onChange={e => setInvoiceNumber(e.target.value)}
                         placeholder="FV/2026/001"
                       />
                     </ConfidenceFieldWrapper>
                   </div>
-                  <div style={fieldStyle("issueDate")}>
+                  <div style={fieldStyle('issueDate')}>
                     <ConfidenceFieldWrapper
-                      confidence={getFieldConfidence(resultJson?.fields, "issueDate")}
-                      label="Issue Date"
-                    >
+                      confidence={getFieldConfidence(resultJson?.fields, 'issueDate')}
+                      label="Issue Date">
                       <Input
                         type="date"
                         value={issueDate}
-                        onChange={(e) => setIssueDate(e.target.value)}
+                        onChange={e => setIssueDate(e.target.value)}
                       />
                     </ConfidenceFieldWrapper>
                   </div>
-                  <div style={fieldStyle("dueDate")}>
+                  <div style={fieldStyle('dueDate')}>
                     <ConfidenceFieldWrapper
-                      confidence={getFieldConfidence(resultJson?.fields, "dueDate")}
-                      label="Due Date"
-                    >
+                      confidence={getFieldConfidence(resultJson?.fields, 'dueDate')}
+                      label="Due Date">
                       <Input
                         type="date"
                         value={dueDate}
-                        onChange={(e) => setDueDate(e.target.value)}
+                        onChange={e => setDueDate(e.target.value)}
                       />
                     </ConfidenceFieldWrapper>
                   </div>
-                  <div style={fieldStyle("currency")}>
+                  <div style={fieldStyle('currency')}>
                     <ConfidenceFieldWrapper
-                      confidence={getFieldConfidence(resultJson?.fields, "currency")}
-                      label="Currency"
-                    >
+                      confidence={getFieldConfidence(resultJson?.fields, 'currency')}
+                      label="Currency">
                       <Select
                         value={currency}
-                        onValueChange={(val) => {
+                        onValueChange={val => {
                           if (val) setCurrency(val);
-                        }}
-                      >
+                        }}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select currency" />
                         </SelectTrigger>
                         <SelectContent>
-                          {CURRENCIES.map((c) => (
+                          {CURRENCIES.map(c => (
                             <SelectItem key={c} value={c}>
                               {c}
                             </SelectItem>
@@ -400,56 +394,52 @@ export function OcrReviewPanel({
 
               {/* Section 2: Parties */}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div style={fieldStyle("sellerTaxId")}>
+                <div style={fieldStyle('sellerTaxId')}>
                   <ConfidenceFieldWrapper
-                    confidence={getFieldConfidence(resultJson?.fields, "sellerNip")}
-                    label="Seller NIP"
-                  >
+                    confidence={getFieldConfidence(resultJson?.fields, 'sellerNip')}
+                    label="Seller NIP">
                     <div className="flex items-center gap-2">
                       <Input
                         value={sellerTaxId}
-                        onChange={(e) => setSellerTaxId(e.target.value)}
+                        onChange={e => setSellerTaxId(e.target.value)}
                         placeholder="0000000000"
                       />
                       <NipValidationBadge nip={sellerTaxId} />
                     </div>
                   </ConfidenceFieldWrapper>
                 </div>
-                <div style={fieldStyle("buyerTaxId")}>
+                <div style={fieldStyle('buyerTaxId')}>
                   <ConfidenceFieldWrapper
-                    confidence={getFieldConfidence(resultJson?.fields, "buyerNip")}
-                    label="Buyer NIP"
-                  >
+                    confidence={getFieldConfidence(resultJson?.fields, 'buyerNip')}
+                    label="Buyer NIP">
                     <div className="flex items-center gap-2">
                       <Input
                         value={buyerTaxId}
-                        onChange={(e) => setBuyerTaxId(e.target.value)}
+                        onChange={e => setBuyerTaxId(e.target.value)}
                         placeholder="0000000000"
                       />
                       <NipValidationBadge nip={buyerTaxId} />
                     </div>
                   </ConfidenceFieldWrapper>
                 </div>
-                <div style={fieldStyle("sellerName")}>
+                <div style={fieldStyle('sellerName')}>
                   <ConfidenceFieldWrapper
-                    confidence={getFieldConfidence(resultJson?.fields, "sellerName")}
-                    label="Seller Name"
-                  >
+                    confidence={getFieldConfidence(resultJson?.fields, 'sellerName')}
+                    label="Seller Name">
                     <Input
                       value={sellerName}
-                      onChange={(e) => setSellerName(e.target.value)}
+                      onChange={e => setSellerName(e.target.value)}
                       placeholder="Company name"
                     />
                   </ConfidenceFieldWrapper>
                 </div>
-                <div style={fieldStyle("buyerName")}>
+                <div style={fieldStyle('buyerName')}>
                   <ConfidenceFieldWrapper
-                    confidence={getFieldConfidence(resultJson?.fields, "buyerName")}
-                    label="Buyer Name"
-                  >
+                    confidence={getFieldConfidence(resultJson?.fields, 'buyerName')}
+                    label="Buyer Name">
                     <Input
                       value={buyerName}
-                      onChange={(e) => setBuyerName(e.target.value)}
+                      onChange={e => setBuyerName(e.target.value)}
                       placeholder="Company name"
                     />
                   </ConfidenceFieldWrapper>
@@ -460,44 +450,41 @@ export function OcrReviewPanel({
 
               {/* Section 3: Amounts */}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <div style={fieldStyle("subtotalMinor")}>
+                <div style={fieldStyle('subtotalMinor')}>
                   <ConfidenceFieldWrapper
-                    confidence={getFieldConfidence(resultJson?.fields, "totalNet")}
-                    label="Net Amount"
-                  >
+                    confidence={getFieldConfidence(resultJson?.fields, 'totalNet')}
+                    label="Net Amount">
                     <Input
                       type="number"
                       step="0.01"
                       value={subtotalMinor}
-                      onChange={(e) => setSubtotalMinor(e.target.value)}
+                      onChange={e => setSubtotalMinor(e.target.value)}
                       placeholder="0.00"
                     />
                   </ConfidenceFieldWrapper>
                 </div>
-                <div style={fieldStyle("vatAmountMinor")}>
+                <div style={fieldStyle('vatAmountMinor')}>
                   <ConfidenceFieldWrapper
-                    confidence={getFieldConfidence(resultJson?.fields, "totalTax")}
-                    label="VAT Amount"
-                  >
+                    confidence={getFieldConfidence(resultJson?.fields, 'totalTax')}
+                    label="VAT Amount">
                     <Input
                       type="number"
                       step="0.01"
                       value={vatAmountMinor}
-                      onChange={(e) => setVatAmountMinor(e.target.value)}
+                      onChange={e => setVatAmountMinor(e.target.value)}
                       placeholder="0.00"
                     />
                   </ConfidenceFieldWrapper>
                 </div>
-                <div style={fieldStyle("totalMinor")}>
+                <div style={fieldStyle('totalMinor')}>
                   <ConfidenceFieldWrapper
-                    confidence={getFieldConfidence(resultJson?.fields, "totalGross")}
-                    label="Total Gross"
-                  >
+                    confidence={getFieldConfidence(resultJson?.fields, 'totalGross')}
+                    label="Total Gross">
                     <Input
                       type="number"
                       step="0.01"
                       value={totalMinor}
-                      onChange={(e) => setTotalMinor(e.target.value)}
+                      onChange={e => setTotalMinor(e.target.value)}
                       placeholder="0.00"
                     />
                   </ConfidenceFieldWrapper>
@@ -507,14 +494,13 @@ export function OcrReviewPanel({
               <Separator />
 
               {/* Section 4: Bank Account */}
-              <div style={fieldStyle("sellerBankAccount")}>
+              <div style={fieldStyle('sellerBankAccount')}>
                 <ConfidenceFieldWrapper
-                  confidence={getFieldConfidence(resultJson?.fields, "bankAccount")}
-                  label="Seller Bank Account"
-                >
+                  confidence={getFieldConfidence(resultJson?.fields, 'bankAccount')}
+                  label="Seller Bank Account">
                   <Input
                     value={sellerBankAccount}
-                    onChange={(e) => setSellerBankAccount(e.target.value)}
+                    onChange={e => setSellerBankAccount(e.target.value)}
                     placeholder="PL00 0000 0000 0000 0000 0000 0000"
                   />
                 </ConfidenceFieldWrapper>

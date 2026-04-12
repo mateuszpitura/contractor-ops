@@ -1,18 +1,18 @@
-import type { DestinationStream, Logger, LoggerOptions } from "pino";
-import pino from "pino";
+import type { DestinationStream, Logger, LoggerOptions } from 'pino';
+import pino from 'pino';
 
 // ---------------------------------------------------------------------------
 // Environment detection
 // ---------------------------------------------------------------------------
 
-const isDev = process.env.NODE_ENV !== "production";
+const isDev = process.env.NODE_ENV !== 'production';
 
 // ---------------------------------------------------------------------------
 // Base logger configuration
 // ---------------------------------------------------------------------------
 
 const baseOptions: LoggerOptions = {
-  level: process.env.LOG_LEVEL ?? (isDev ? "debug" : "info"),
+  level: process.env.LOG_LEVEL ?? (isDev ? 'debug' : 'info'),
   timestamp: pino.stdTimeFunctions.isoTime,
   formatters: {
     level(label) {
@@ -39,7 +39,7 @@ const baseOptions: LoggerOptions = {
 function createRootLogger(): Logger {
   const axiomDataset = process.env.AXIOM_DATASET;
   const axiomToken = process.env.AXIOM_TOKEN;
-  const axiomInDev = process.env.AXIOM_DEV === "true";
+  const axiomInDev = process.env.AXIOM_DEV === 'true';
   const hasAxiom = !!(axiomDataset && axiomToken);
   const sendToAxiom = hasAxiom && (!isDev || axiomInDev);
 
@@ -50,13 +50,13 @@ function createRootLogger(): Logger {
   if (isDev) {
     try {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const pretty = require("pino-pretty") as typeof import("pino-pretty");
+      const pretty = require('pino-pretty') as typeof import('pino-pretty');
       streams.push({
         level: baseOptions.level as pino.Level,
         stream: pretty({
           colorize: true,
-          translateTime: "SYS:HH:MM:ss.l",
-          ignore: "pid,hostname",
+          translateTime: 'SYS:HH:MM:ss.l',
+          ignore: 'pid,hostname',
           singleLine: true,
         }),
       });
@@ -71,7 +71,7 @@ function createRootLogger(): Logger {
   if (sendToAxiom) {
     try {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { createAxiomStream } = require("./axiom-stream.js");
+      const { createAxiomStream } = require('./axiom-stream.js');
       streams.push({
         level: baseOptions.level as pino.Level,
         stream: createAxiomStream({ dataset: axiomDataset!, token: axiomToken! }),
@@ -126,22 +126,22 @@ export function createTrpcLogger(meta: {
   organizationId?: string;
   requestId?: string;
 }): Logger {
-  return logger.child({ service: "trpc", ...meta });
+  return logger.child({ service: 'trpc', ...meta });
 }
 
 /** Logger for cron jobs */
 export function createCronLogger(jobName: string): Logger {
-  return logger.child({ service: "cron", job: jobName });
+  return logger.child({ service: 'cron', job: jobName });
 }
 
 /** Logger for webhook handlers */
 export function createWebhookLogger(provider: string): Logger {
-  return logger.child({ service: "webhook", provider });
+  return logger.child({ service: 'webhook', provider });
 }
 
 /** Logger for integration adapters */
 export function createIntegrationLogger(provider: string): Logger {
-  return logger.child({ service: "integration", provider });
+  return logger.child({ service: 'integration', provider });
 }
 
 export type { Logger };

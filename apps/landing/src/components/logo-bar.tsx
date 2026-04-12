@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { FadeUp } from "./motion-wrapper";
+import { FadeUp } from './motion-wrapper';
 
 /**
  * Trusted-by logo bar — placed right after the hero.
@@ -9,27 +9,25 @@ import { FadeUp } from "./motion-wrapper";
  */
 
 const logos = [
-  { name: "TechFlow", width: 110 },
-  { name: "Novacore", width: 105 },
-  { name: "Meridian", width: 115 },
-  { name: "Zentara", width: 100 },
-  { name: "Arcwise", width: 95 },
-  { name: "Luminos", width: 108 },
+  { name: 'TechFlow', width: 110 },
+  { name: 'Novacore', width: 105 },
+  { name: 'Meridian', width: 115 },
+  { name: 'Zentara', width: 100 },
+  { name: 'Arcwise', width: 95 },
+  { name: 'Luminos', width: 108 },
 ];
 
 function PlaceholderLogo({ name, width }: { name: string; width: number }) {
   return (
     <div
       className="flex items-center gap-2 opacity-40 transition-opacity duration-300 hover:opacity-70 dark:opacity-30 dark:hover:opacity-50"
-      style={{ width }}
-    >
+      style={{ width }}>
       {/* Abstract mark */}
       <svg
         viewBox="0 0 24 24"
         fill="none"
         className="h-5 w-5 shrink-0 text-foreground"
-        aria-hidden="true"
-      >
+        aria-hidden="true">
         <rect x="3" y="3" width="18" height="18" rx="4" stroke="currentColor" strokeWidth="1.5" />
         <circle cx="9" cy="12" r="2.5" fill="currentColor" opacity="0.6" />
         <path
@@ -56,7 +54,7 @@ export function LogoBar() {
             Trusted by teams across the EU
           </p>
           <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-6 sm:gap-x-14">
-            {logos.map((logo) => (
+            {logos.map(logo => (
               <PlaceholderLogo key={logo.name} name={logo.name} width={logo.width} />
             ))}
           </div>

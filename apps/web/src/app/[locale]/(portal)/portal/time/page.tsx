@@ -1,19 +1,19 @@
-"use client";
+'use client';
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { endOfISOWeek, endOfMonth, format, startOfISOWeek, startOfMonth } from "date-fns";
-import { Clock, Plus } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useCallback, useMemo, useState } from "react";
-import { toast } from "sonner";
-import { ExternalSyncButton } from "@/components/time/external-sync-button";
-import { SingleEntryForm } from "@/components/time/single-entry-form";
-import { TimeEntryStatusBadge } from "@/components/time/time-entry-status-badge";
-import { TimeSummaryStats } from "@/components/time/time-summary-stats";
-import { TimesheetGrid } from "@/components/time/timesheet-grid";
-import { TimesheetHeader } from "@/components/time/timesheet-header";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { endOfISOWeek, endOfMonth, format, startOfISOWeek, startOfMonth } from 'date-fns';
+import { Clock, Plus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useMemo, useState } from 'react';
+import { toast } from 'sonner';
+import { ExternalSyncButton } from '@/components/time/external-sync-button';
+import { SingleEntryForm } from '@/components/time/single-entry-form';
+import { TimeEntryStatusBadge } from '@/components/time/time-entry-status-badge';
+import { TimeSummaryStats } from '@/components/time/time-summary-stats';
+import { TimesheetGrid } from '@/components/time/timesheet-grid';
+import { TimesheetHeader } from '@/components/time/timesheet-header';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -21,17 +21,17 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { trpc } from "@/trpc/init";
+} from '@/components/ui/table';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
 function formatWeekRange(weekStart: Date | string): string {
-  const d = typeof weekStart === "string" ? new Date(weekStart) : weekStart;
+  const d = typeof weekStart === 'string' ? new Date(weekStart) : weekStart;
   const weekEnd = endOfISOWeek(d);
-  return `${format(d, "MMM d")} - ${format(weekEnd, "MMM d, yyyy")}`;
+  return `${format(d, 'MMM d')} - ${format(weekEnd, 'MMM d, yyyy')}`;
 }
 
 function minutesToHoursDisplay(minutes: number): string {
@@ -44,14 +44,14 @@ function minutesToHoursDisplay(minutes: number): string {
 // ---------------------------------------------------------------------------
 
 export default function PortalTimePage() {
-  const t = useTranslations("Portal.timeTracking");
+  const t = useTranslations('Portal.timeTracking');
   const queryClient = useQueryClient();
 
   // Current week state
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(startOfISOWeek(new Date()));
   const [singleEntryOpen, setSingleEntryOpen] = useState(false);
 
-  const weekStartStr = format(currentWeekStart, "yyyy-MM-dd");
+  const weekStartStr = format(currentWeekStart, 'yyyy-MM-dd');
 
   // -------------------------------------------------------------------------
   // Queries
@@ -75,7 +75,7 @@ export default function PortalTimePage() {
   // Pending count from history
   const pendingCount = useMemo(() => {
     if (!historyQuery.data?.items) return 0;
-    return historyQuery.data.items.filter((t) => t.status === "SUBMITTED").length;
+    return historyQuery.data.items.filter(t => t.status === 'SUBMITTED').length;
   }, [historyQuery.data]);
 
   // Approved this month (rough from history data)
@@ -85,8 +85,8 @@ export default function PortalTimePage() {
     const monthStart = startOfMonth(now);
     const monthEnd = endOfMonth(now);
     return historyQuery.data.items
-      .filter((t) => {
-        if (t.status !== "APPROVED") return false;
+      .filter(t => {
+        if (t.status !== 'APPROVED') return false;
         const d = new Date(t.weekStartDate);
         return d >= monthStart && d <= monthEnd;
       })
@@ -121,7 +121,7 @@ export default function PortalTimePage() {
   const createSingleEntryMutation = useMutation(
     trpc.portalTime.createSingleEntry.mutationOptions({
       onSuccess: () => {
-        toast.success(t("toast.entryAdded"));
+        toast.success(t('toast.entryAdded'));
         setSingleEntryOpen(false);
         void queryClient.invalidateQueries({
           queryKey: trpc.portalTime.getTimesheet.queryOptions({
@@ -133,7 +133,7 @@ export default function PortalTimePage() {
         });
       },
       onError: () => {
-        toast.error(t("toast.entryAddFailed"));
+        toast.error(t('toast.entryAddFailed'));
       },
     }),
   );
@@ -141,7 +141,7 @@ export default function PortalTimePage() {
   const submitMutation = useMutation(
     trpc.portalTime.submitTimesheet.mutationOptions({
       onSuccess: () => {
-        toast.success(t("toast.timesheetSubmitted"));
+        toast.success(t('toast.timesheetSubmitted'));
         void queryClient.invalidateQueries({
           queryKey: trpc.portalTime.getTimesheet.queryOptions({
             weekStartDate: weekStartStr,
@@ -152,7 +152,7 @@ export default function PortalTimePage() {
         });
       },
       onError: () => {
-        toast.error(t("toast.timesheetSubmitFailed"));
+        toast.error(t('toast.timesheetSubmitFailed'));
       },
     }),
   );
@@ -212,7 +212,7 @@ export default function PortalTimePage() {
   );
 
   const handleSync = useCallback(
-    (provider: "CLOCKIFY" | "JIRA") => async (startDate: string, endDate: string) => {
+    (provider: 'CLOCKIFY' | 'JIRA') => async (startDate: string, endDate: string) => {
       const result = await syncMutation.mutateAsync({
         provider,
         startDate,
@@ -231,12 +231,12 @@ export default function PortalTimePage() {
 
   const timesheet = timesheetQuery.data;
   const contracts = contractsQuery.data ?? [];
-  const timesheetStatus = (timesheet?.status ?? "DRAFT") as
-    | "DRAFT"
-    | "SUBMITTED"
-    | "APPROVED"
-    | "REJECTED";
-  const isDisabled = timesheetStatus === "SUBMITTED" || timesheetStatus === "APPROVED";
+  const timesheetStatus = (timesheet?.status ?? 'DRAFT') as
+    | 'DRAFT'
+    | 'SUBMITTED'
+    | 'APPROVED'
+    | 'REJECTED';
+  const isDisabled = timesheetStatus === 'SUBMITTED' || timesheetStatus === 'APPROVED';
 
   // -------------------------------------------------------------------------
   // Render
@@ -245,7 +245,7 @@ export default function PortalTimePage() {
   return (
     <div className="space-y-8">
       {/* Page heading */}
-      <h1 className="text-xl font-semibold">{t("title")}</h1>
+      <h1 className="text-xl font-semibold">{t('title')}</h1>
 
       {/* 1. Summary stats */}
       <TimeSummaryStats
@@ -285,10 +285,10 @@ export default function PortalTimePage() {
           weekStartDate={currentWeekStart}
           entries={timesheet?.entries ?? []}
           contracts={contracts}
-          timesheetId={timesheet?.id ?? ""}
+          timesheetId={timesheet?.id ?? ''}
           disabled={isDisabled}
           rejectionReason={
-            timesheetStatus === "REJECTED"
+            timesheetStatus === 'REJECTED'
               ? ((timesheet as Record<string, unknown>)?.rejectionReason as string | null)
               : null
           }
@@ -300,27 +300,27 @@ export default function PortalTimePage() {
       {!isDisabled && (
         <Button variant="outline" onClick={() => setSingleEntryOpen(true)} className="gap-2">
           <Plus className="h-4 w-4" />
-          {t("addEntry")}
+          {t('addEntry')}
         </Button>
       )}
 
       {/* 5. External sync buttons */}
-      {(connectedProviders.has("CLOCKIFY") || connectedProviders.has("JIRA")) && (
+      {(connectedProviders.has('CLOCKIFY') || connectedProviders.has('JIRA')) && (
         <div className="flex flex-wrap gap-3">
-          {connectedProviders.has("CLOCKIFY") && (
+          {connectedProviders.has('CLOCKIFY') && (
             <ExternalSyncButton
               provider="CLOCKIFY"
               connected={true}
-              onSync={handleSync("CLOCKIFY")}
-              isSyncing={syncMutation.isPending && syncMutation.variables?.provider === "CLOCKIFY"}
+              onSync={handleSync('CLOCKIFY')}
+              isSyncing={syncMutation.isPending && syncMutation.variables?.provider === 'CLOCKIFY'}
             />
           )}
-          {connectedProviders.has("JIRA") && (
+          {connectedProviders.has('JIRA') && (
             <ExternalSyncButton
               provider="JIRA"
               connected={true}
-              onSync={handleSync("JIRA")}
-              isSyncing={syncMutation.isPending && syncMutation.variables?.provider === "JIRA"}
+              onSync={handleSync('JIRA')}
+              isSyncing={syncMutation.isPending && syncMutation.variables?.provider === 'JIRA'}
             />
           )}
         </div>
@@ -328,7 +328,7 @@ export default function PortalTimePage() {
 
       {/* 6. Time entry history */}
       <div>
-        <h2 className="text-xl font-semibold mb-4">{t("pastTimesheets")}</h2>
+        <h2 className="text-xl font-semibold mb-4">{t('pastTimesheets')}</h2>
         {historyQuery.isPending ? (
           <div className="space-y-2">
             {Array.from({ length: 5 }).map((_, i) => (
@@ -338,41 +338,40 @@ export default function PortalTimePage() {
         ) : !historyQuery.data?.items || historyQuery.data.items.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <Clock className="h-12 w-12 text-muted-foreground" />
-            <h3 className="mt-4 font-display text-[20px] font-semibold">{t("noEntriesHeading")}</h3>
-            <p className="mt-2 max-w-sm text-sm text-muted-foreground">{t("noEntriesBody")}</p>
+            <h3 className="mt-4 font-display text-[20px] font-semibold">{t('noEntriesHeading')}</h3>
+            <p className="mt-2 max-w-sm text-sm text-muted-foreground">{t('noEntriesBody')}</p>
           </div>
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>{t("columns.period")}</TableHead>
-                <TableHead>{t("columns.totalHours")}</TableHead>
-                <TableHead>{t("columns.status")}</TableHead>
-                <TableHead>{t("columns.submitted")}</TableHead>
+                <TableHead>{t('columns.period')}</TableHead>
+                <TableHead>{t('columns.totalHours')}</TableHead>
+                <TableHead>{t('columns.status')}</TableHead>
+                <TableHead>{t('columns.submitted')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {historyQuery.data.items.map((ts) => (
+              {historyQuery.data.items.map(ts => (
                 <TableRow
                   key={ts.id}
                   className="cursor-pointer"
                   onClick={() => {
                     const d = new Date(ts.weekStartDate);
                     setCurrentWeekStart(startOfISOWeek(d));
-                    window.scrollTo({ top: 0, behavior: "smooth" });
-                  }}
-                >
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}>
                   <TableCell className="font-medium">{formatWeekRange(ts.weekStartDate)}</TableCell>
                   <TableCell>{minutesToHoursDisplay(ts.totalMinutes)}</TableCell>
                   <TableCell>
                     <TimeEntryStatusBadge
-                      status={ts.status as "DRAFT" | "SUBMITTED" | "APPROVED" | "REJECTED"}
+                      status={ts.status as 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED'}
                     />
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {ts.submittedAt
-                      ? format(new Date(ts.submittedAt as unknown as string), "MMM d, yyyy")
-                      : "-"}
+                      ? format(new Date(ts.submittedAt as unknown as string), 'MMM d, yyyy')
+                      : '-'}
                   </TableCell>
                 </TableRow>
               ))}

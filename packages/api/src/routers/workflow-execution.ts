@@ -15,17 +15,17 @@ import {
   startRunSchema,
   taskActionSchema,
   workflowRunListSchema,
-} from "@contractor-ops/validators";
-import { TRPCError } from "@trpc/server";
-import { z } from "zod";
-import * as E from "../errors.js";
-import { router } from "../init.js";
-import { requirePermission } from "../middleware/rbac.js";
-import { tenantProcedure } from "../middleware/tenant.js";
-import { CacheKeys, invalidateByPrefix } from "../services/cache.js";
-import { handleEquipmentTaskStart } from "../services/equipment-workflow.js";
-import { dispatch } from "../services/notification-service.js";
-import type { ConditionGroup } from "./workflow-shared.js";
+} from '@contractor-ops/validators';
+import { TRPCError } from '@trpc/server';
+import { z } from 'zod';
+import * as E from '../errors.js';
+import { router } from '../init.js';
+import { requirePermission } from '../middleware/rbac.js';
+import { tenantProcedure } from '../middleware/tenant.js';
+import { CacheKeys, invalidateByPrefix } from '../services/cache.js';
+import { handleEquipmentTaskStart } from '../services/equipment-workflow.js';
+import { dispatch } from '../services/notification-service.js';
+import type { ConditionGroup } from './workflow-shared.js';
 import {
   addDays,
   addHours,
@@ -34,7 +34,7 @@ import {
   plain,
   resolveAssignee,
   validateTransition,
-} from "./workflow-shared.js";
+} from './workflow-shared.js';
 
 // ---------------------------------------------------------------------------
 // Workflow Execution sub-router
@@ -50,22 +50,22 @@ export const workflowExecutionRouter = router({
    * Instantiates all task runs, evaluates conditions, resolves assignees.
    */
   startRun: tenantProcedure
-    .use(requirePermission({ workflow: ["execute"] }))
+    .use(requirePermission({ workflow: ['execute'] }))
     .input(startRunSchema)
     .mutation(async ({ ctx, input }) => {
-      const run = await ctx.db.$transaction(async (tx) => {
+      const run = await ctx.db.$transaction(async tx => {
         const template = await tx.workflowTemplate.findFirst({
           where: {
             id: input.templateId,
             organizationId: ctx.organizationId,
-            status: "ACTIVE",
+            status: 'ACTIVE',
           },
-          include: { tasks: { orderBy: { sortOrder: "asc" } } },
+          include: { tasks: { orderBy: { sortOrder: 'asc' } } },
         });
 
         if (!template) {
           throw new TRPCError({
-            code: "NOT_FOUND",
+            code: 'NOT_FOUND',
             message: E.WORKFLOW_TEMPLATE_NOT_FOUND,
           });
         }
@@ -80,7 +80,7 @@ export const workflowExecutionRouter = router({
 
         if (!contractor) {
           throw new TRPCError({
-            code: "NOT_FOUND",
+            code: 'NOT_FOUND',
             message: E.CONTRACTOR_NOT_FOUND,
           });
         }
@@ -112,11 +112,11 @@ export const workflowExecutionRouter = router({
           data: {
             organizationId: ctx.organizationId,
             workflowTemplateId: template.id,
-            entityType: "CONTRACTOR",
+            entityType: 'CONTRACTOR',
             entityId: contractor.id,
             contractorId: contractor.id,
             contractId: contract?.id ?? null,
-            status: "IN_PROGRESS",
+            status: 'IN_PROGRESS',
             startedByUserId: ctx.user?.id,
             startedAt: now,
             dueAt: maxDueDate,
@@ -154,13 +154,13 @@ export const workflowExecutionRouter = router({
           let resultJson: Record<string, unknown> | null = null;
 
           const status = !conditionMet
-            ? ("SKIPPED" as const)
+            ? ('SKIPPED' as const)
             : dependsOnRunId
-              ? ("BLOCKED" as const)
-              : ("TODO" as const);
+              ? ('BLOCKED' as const)
+              : ('TODO' as const);
 
           if (!conditionMet) {
-            resultJson = { skipReason: "condition_not_met" };
+            resultJson = { skipReason: 'condition_not_met' };
           }
 
           const taskRun = await tx.workflowTaskRun.create({
@@ -198,7 +198,7 @@ export const workflowExecutionRouter = router({
         const fullRun = await tx.workflowRun.findUniqueOrThrow({
           where: { id: workflowRun.id },
           include: {
-            tasks: { orderBy: { createdAt: "asc" } },
+            tasks: { orderBy: { createdAt: 'asc' } },
             workflowTemplate: { select: { name: true, type: true } },
           },
         });
@@ -228,7 +228,7 @@ export const workflowExecutionRouter = router({
             if (runId) {
               linearEligibleTaskRuns.set(runId, {
                 teamId: linearParsed.data.linearTeamId,
-                teamKey: linearParsed.data.linearTeamKey ?? "",
+                teamKey: linearParsed.data.linearTeamKey ?? '',
               });
             }
           }
@@ -237,7 +237,7 @@ export const workflowExecutionRouter = router({
         // Build map of task run IDs to their calendar config for calendar event creation
         const calendarConfigMap = new Map<
           string,
-          import("@contractor-ops/validators").CalendarTaskConfig
+          import('@contractor-ops/validators').CalendarTaskConfig
         >();
         for (const taskTemplate of template.tasks) {
           const parsed = calendarTaskConfigSchema.safeParse(taskTemplate.configJson);
@@ -252,7 +252,7 @@ export const workflowExecutionRouter = router({
         // Build set of task run IDs eligible for equipment workflow hook
         const equipmentEligibleTaskRunIds = new Set<string>();
         for (const taskTemplate of template.tasks) {
-          if (taskTemplate.taskType === "EQUIPMENT") {
+          if (taskTemplate.taskType === 'EQUIPMENT') {
             const parsed = equipmentTaskConfigSchema.safeParse(taskTemplate.configJson);
             if (!parsed.success || parsed.data.equipmentEnabled !== false) {
               const runId = taskIdMap.get(taskTemplate.id);
@@ -265,55 +265,55 @@ export const workflowExecutionRouter = router({
 
         return {
           run: fullRun,
-          contractorName: contractor.legalName ?? contractor.displayName ?? "Unknown",
+          contractorName: contractor.legalName ?? contractor.displayName ?? 'Unknown',
           jiraEligibleTaskRunIds,
           linearEligibleTaskRuns,
           calendarConfigMap,
           calendarTaskCount: calendarConfigMap.size,
-          contractName: contract?.title ?? "",
+          contractName: contract?.title ?? '',
           equipmentEligibleTaskRunIds,
           templateType: template.type,
         };
       });
 
       // Fire-and-forget: dispatch TASK_ASSIGNED to each task assignee
-      const activeTasks = run.run.tasks.filter((t) => t.status !== "SKIPPED" && t.assigneeUserId);
+      const activeTasks = run.run.tasks.filter(t => t.status !== 'SKIPPED' && t.assigneeUserId);
       for (const task of activeTasks) {
         dispatch({
           organizationId: ctx.organizationId,
-          type: "TASK_ASSIGNED",
+          type: 'TASK_ASSIGNED',
           recipientUserIds: [task.assigneeUserId!],
           title: `Task assigned: ${task.title}`,
           body: `Workflow: ${run.run.workflowTemplate.name} for ${run.contractorName}`,
-          entityType: "WORKFLOW_RUN",
+          entityType: 'WORKFLOW_RUN',
           entityId: run.run.id,
           metadata: {
             taskTitle: task.title,
             workflowName: run.run.workflowTemplate.name,
             contractorName: run.contractorName,
           },
-        }).catch((err) => console.error("[workflow] dispatch TASK_ASSIGNED failed:", err));
+        }).catch(err => console.error('[workflow] dispatch TASK_ASSIGNED failed:', err));
       }
 
       // Fire-and-forget: create Jira issues for jira-enabled tasks (non-blocking)
       const todoJiraTasks = run.run.tasks.filter(
-        (t) => t.status === "TODO" && run.jiraEligibleTaskRunIds.has(t.id),
+        t => t.status === 'TODO' && run.jiraEligibleTaskRunIds.has(t.id),
       );
       if (todoJiraTasks.length > 0) {
         void (async () => {
           try {
-            const { createJiraIssue } = await import("../services/jira-issue-sync.js");
+            const { createJiraIssue } = await import('../services/jira-issue-sync.js');
             const connection = await ctx.db.integrationConnection.findFirst({
               where: {
                 organizationId: ctx.organizationId,
-                provider: "JIRA",
-                status: "CONNECTED",
+                provider: 'JIRA',
+                status: 'CONNECTED',
               },
               select: { id: true },
             });
             if (connection) {
               for (const task of todoJiraTasks) {
-                createJiraIssue(prisma, ctx.organizationId, connection.id, task.id).catch((err) =>
+                createJiraIssue(prisma, ctx.organizationId, connection.id, task.id).catch(err =>
                   console.error(
                     `[workflow/startRun] Jira issue creation failed for task ${task.id}:`,
                     err,
@@ -322,24 +322,24 @@ export const workflowExecutionRouter = router({
               }
             }
           } catch (err) {
-            console.error("[workflow/startRun] Jira issue creation setup failed:", err);
+            console.error('[workflow/startRun] Jira issue creation setup failed:', err);
           }
         })();
       }
 
       // Fire-and-forget: create Linear issues for linear-enabled tasks (non-blocking)
       const todoLinearTasks = run.run.tasks.filter(
-        (t) => t.status === "TODO" && run.linearEligibleTaskRuns.has(t.id),
+        t => t.status === 'TODO' && run.linearEligibleTaskRuns.has(t.id),
       );
       if (todoLinearTasks.length > 0) {
         void (async () => {
           try {
-            const { createLinearIssue } = await import("../services/linear-issue-sync.js");
+            const { createLinearIssue } = await import('../services/linear-issue-sync.js');
             const linearConnection = await ctx.db.integrationConnection.findFirst({
               where: {
                 organizationId: ctx.organizationId,
-                provider: "LINEAR",
-                status: "CONNECTED",
+                provider: 'LINEAR',
+                status: 'CONNECTED',
               },
               select: { id: true },
             });
@@ -356,7 +356,7 @@ export const workflowExecutionRouter = router({
                     assigneeEmail: undefined, // Resolved separately if needed
                     teamId: linearConfig.teamId,
                     teamKey: linearConfig.teamKey,
-                  }).catch((err) =>
+                  }).catch(err =>
                     console.error(
                       `[workflow/startRun] Linear issue creation failed for task ${task.id}:`,
                       err,
@@ -366,7 +366,7 @@ export const workflowExecutionRouter = router({
               }
             }
           } catch (err) {
-            console.error("[workflow/startRun] Linear issue creation setup failed:", err);
+            console.error('[workflow/startRun] Linear issue creation setup failed:', err);
           }
         })();
       }
@@ -374,13 +374,13 @@ export const workflowExecutionRouter = router({
       // Fire-and-forget: create calendar events for calendar-enabled tasks (non-blocking)
       if (run.calendarConfigMap.size > 0) {
         const todoCalendarTasks = run.run.tasks.filter(
-          (t) => t.status === "TODO" && run.calendarConfigMap.has(t.id),
+          t => t.status === 'TODO' && run.calendarConfigMap.has(t.id),
         );
         if (todoCalendarTasks.length > 0) {
           void (async () => {
             try {
               const { createTaskCalendarEvent } = await import(
-                "../services/calendar-deadline-sync.js"
+                '../services/calendar-deadline-sync.js'
               );
               for (const task of todoCalendarTasks) {
                 const config = run.calendarConfigMap.get(task.id);
@@ -393,7 +393,7 @@ export const workflowExecutionRouter = router({
                   contractName: run.contractName,
                   taskName: task.title,
                   userId: ctx.user?.id,
-                }).catch((err) =>
+                }).catch(err =>
                   console.error(
                     `[workflow/startRun] Calendar event creation failed for task ${task.id}:`,
                     err,
@@ -401,7 +401,7 @@ export const workflowExecutionRouter = router({
                 );
               }
             } catch (err) {
-              console.error("[workflow/startRun] Calendar event creation setup failed:", err);
+              console.error('[workflow/startRun] Calendar event creation setup failed:', err);
             }
           })();
         }
@@ -409,7 +409,7 @@ export const workflowExecutionRouter = router({
 
       // Fire-and-forget: handle EQUIPMENT task integration hooks (Phase 30)
       const equipmentTasks = run.run.tasks.filter(
-        (t) => t.status !== "SKIPPED" && run.equipmentEligibleTaskRunIds.has(t.id),
+        t => t.status !== 'SKIPPED' && run.equipmentEligibleTaskRunIds.has(t.id),
       );
       for (const eqTask of equipmentTasks) {
         void (async () => {
@@ -430,10 +430,10 @@ export const workflowExecutionRouter = router({
    * Cancel a workflow run. Sets all non-terminal tasks to CANCELLED.
    */
   cancelRun: tenantProcedure
-    .use(requirePermission({ workflow: ["update"] }))
+    .use(requirePermission({ workflow: ['update'] }))
     .input(cancelRunSchema)
     .mutation(async ({ ctx, input }) => {
-      const run = await ctx.db.$transaction(async (tx) => {
+      const run = await ctx.db.$transaction(async tx => {
         const existing = await tx.workflowRun.findFirst({
           where: {
             id: input.runId,
@@ -443,14 +443,14 @@ export const workflowExecutionRouter = router({
 
         if (!existing) {
           throw new TRPCError({
-            code: "NOT_FOUND",
+            code: 'NOT_FOUND',
             message: E.WORKFLOW_RUN_NOT_FOUND,
           });
         }
 
-        if (existing.status === "COMPLETED" || existing.status === "CANCELLED") {
+        if (existing.status === 'COMPLETED' || existing.status === 'CANCELLED') {
           throw new TRPCError({
-            code: "BAD_REQUEST",
+            code: 'BAD_REQUEST',
             message: E.WORKFLOW_RUN_ALREADY_CANCELLED,
           });
         }
@@ -461,39 +461,39 @@ export const workflowExecutionRouter = router({
         await tx.workflowTaskRun.updateMany({
           where: {
             workflowRunId: input.runId,
-            status: { in: ["TODO", "IN_PROGRESS", "BLOCKED"] },
+            status: { in: ['TODO', 'IN_PROGRESS', 'BLOCKED'] },
           },
-          data: { status: "CANCELLED" },
+          data: { status: 'CANCELLED' },
         });
 
         return tx.workflowRun.update({
           where: { id: input.runId },
           data: {
-            status: "CANCELLED",
+            status: 'CANCELLED',
             cancelledAt: now,
             cancelReason: input.reason ?? null,
           },
           include: {
-            tasks: { orderBy: { createdAt: "asc" } },
+            tasks: { orderBy: { createdAt: 'asc' } },
           },
         });
       });
 
       // Fire-and-forget outbound sync for cancelled tasks with external links
       // Per D-09/D-10: Linear and Jira always reflect real task state
-      const cancelledTasks = run.tasks.filter((t) => t.status === "CANCELLED");
+      const cancelledTasks = run.tasks.filter(t => t.status === 'CANCELLED');
 
       for (const task of cancelledTasks) {
         // Outbound Jira transition (same pattern as completeTask/skipTask)
-        if (task.externalRefType === "JIRA_ISSUE" && task.externalRefId) {
+        if (task.externalRefType === 'JIRA_ISSUE' && task.externalRefId) {
           void (async () => {
             try {
-              const { transitionJiraIssue } = await import("../services/jira-issue-sync.js");
+              const { transitionJiraIssue } = await import('../services/jira-issue-sync.js');
               const connection = await ctx.db.integrationConnection.findFirst({
                 where: {
                   organizationId: ctx.organizationId,
-                  provider: "JIRA",
-                  status: "CONNECTED",
+                  provider: 'JIRA',
+                  status: 'CONNECTED',
                 },
                 select: { id: true },
               });
@@ -503,23 +503,23 @@ export const workflowExecutionRouter = router({
                   ctx.organizationId,
                   connection.id,
                   task.id,
-                  "CANCELLED",
+                  'CANCELLED',
                 );
               }
             } catch (err) {
-              console.error("[workflow/cancelRun] Outbound Jira transition failed:", err);
+              console.error('[workflow/cancelRun] Outbound Jira transition failed:', err);
             }
           })();
         }
 
         // Outbound Linear sync (same pattern as completeTask/skipTask)
-        if (task.externalRefType === "LINEAR_ISSUE" && task.externalRefId) {
+        if (task.externalRefType === 'LINEAR_ISSUE' && task.externalRefId) {
           void (async () => {
             try {
-              const { syncTaskStatusToLinear } = await import("../services/linear-issue-sync.js");
-              await syncTaskStatusToLinear(prisma, task.id, "CANCELLED");
+              const { syncTaskStatusToLinear } = await import('../services/linear-issue-sync.js');
+              await syncTaskStatusToLinear(prisma, task.id, 'CANCELLED');
             } catch (err) {
-              console.error("[workflow/cancelRun] Outbound Linear sync failed:", err);
+              console.error('[workflow/cancelRun] Outbound Linear sync failed:', err);
             }
           })();
         }
@@ -534,7 +534,7 @@ export const workflowExecutionRouter = router({
    * Get a workflow run by ID with full relations.
    */
   getRun: tenantProcedure
-    .use(requirePermission({ workflow: ["read"] }))
+    .use(requirePermission({ workflow: ['read'] }))
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
       const run = await ctx.db.workflowRun.findFirst({
@@ -543,10 +543,10 @@ export const workflowExecutionRouter = router({
           organizationId: ctx.organizationId,
         },
         include: {
-          tasks: { orderBy: { createdAt: "asc" } },
+          tasks: { orderBy: { createdAt: 'asc' } },
           comments: {
             include: { author: { select: { id: true, name: true, image: true } } },
-            orderBy: { createdAt: "asc" },
+            orderBy: { createdAt: 'asc' },
           },
           workflowTemplate: { select: { id: true, name: true, type: true } },
           contractor: {
@@ -565,7 +565,7 @@ export const workflowExecutionRouter = router({
 
       if (!run) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: E.WORKFLOW_RUN_NOT_FOUND,
         });
       }
@@ -573,12 +573,12 @@ export const workflowExecutionRouter = router({
       const now = new Date();
 
       // Add computed isOverdue field to each task
-      const tasksWithOverdue = run.tasks.map((task) => ({
+      const tasksWithOverdue = run.tasks.map(task => ({
         ...task,
         isOverdue:
           task.dueAt !== null &&
           task.dueAt < now &&
-          (task.status === "TODO" || task.status === "IN_PROGRESS"),
+          (task.status === 'TODO' || task.status === 'IN_PROGRESS'),
       }));
 
       return plain({ ...run, tasks: tasksWithOverdue });
@@ -588,7 +588,7 @@ export const workflowExecutionRouter = router({
    * List workflow runs with pagination, sorting, and filtering.
    */
   listRuns: tenantProcedure
-    .use(requirePermission({ workflow: ["read"] }))
+    .use(requirePermission({ workflow: ['read'] }))
     .input(workflowRunListSchema)
     .query(async ({ ctx, input }) => {
       const { page, pageSize, search, sortBy, sortOrder, contractorId, filters } = input;
@@ -614,17 +614,17 @@ export const workflowExecutionRouter = router({
         where.OR = [
           {
             contractor: {
-              legalName: { contains: search, mode: "insensitive" },
+              legalName: { contains: search, mode: 'insensitive' },
             },
           },
           {
             contractor: {
-              displayName: { contains: search, mode: "insensitive" },
+              displayName: { contains: search, mode: 'insensitive' },
             },
           },
           {
             workflowTemplate: {
-              name: { contains: search, mode: "insensitive" },
+              name: { contains: search, mode: 'insensitive' },
             },
           },
         ];
@@ -635,7 +635,7 @@ export const workflowExecutionRouter = router({
         where.tasks = {
           some: {
             dueAt: { lt: new Date() },
-            status: { in: ["TODO", "IN_PROGRESS"] },
+            status: { in: ['TODO', 'IN_PROGRESS'] },
           },
         };
       }
@@ -660,7 +660,7 @@ export const workflowExecutionRouter = router({
       ]);
 
       // Compute progress for each run
-      const itemsWithProgress = items.map((item) => {
+      const itemsWithProgress = items.map(item => {
         const progress = calculateProgress(item.tasks);
         return { ...item, progress };
       });
@@ -672,7 +672,7 @@ export const workflowExecutionRouter = router({
    * List tasks assigned to the current user.
    */
   myTasks: tenantProcedure
-    .use(requirePermission({ workflow: ["read"] }))
+    .use(requirePermission({ workflow: ['read'] }))
     .input(myTasksListSchema)
     .query(async ({ ctx, input }) => {
       const { page, pageSize, overdueOnly } = input;
@@ -680,7 +680,7 @@ export const workflowExecutionRouter = router({
       const where: Record<string, unknown> = {
         organizationId: ctx.organizationId,
         assigneeUserId: ctx.user?.id,
-        status: { in: ["TODO", "IN_PROGRESS", "BLOCKED"] },
+        status: { in: ['TODO', 'IN_PROGRESS', 'BLOCKED'] },
       };
 
       if (overdueOnly) {
@@ -692,7 +692,7 @@ export const workflowExecutionRouter = router({
           where,
           skip: (page - 1) * pageSize,
           take: pageSize,
-          orderBy: { dueAt: "asc" },
+          orderBy: { dueAt: 'asc' },
           include: {
             workflowRun: {
               select: {
@@ -710,12 +710,12 @@ export const workflowExecutionRouter = router({
       ]);
 
       const now = new Date();
-      const itemsWithOverdue = items.map((item) => ({
+      const itemsWithOverdue = items.map(item => ({
         ...item,
         isOverdue:
           item.dueAt !== null &&
           item.dueAt < now &&
-          (item.status === "TODO" || item.status === "IN_PROGRESS"),
+          (item.status === 'TODO' || item.status === 'IN_PROGRESS'),
       }));
 
       return plain({ items: itemsWithOverdue, total, page, pageSize });
@@ -729,10 +729,10 @@ export const workflowExecutionRouter = router({
    * Complete a task. Unblocks dependent tasks and recomputes progress.
    */
   completeTask: tenantProcedure
-    .use(requirePermission({ workflow: ["execute"] }))
+    .use(requirePermission({ workflow: ['execute'] }))
     .input(taskActionSchema)
     .mutation(async ({ ctx, input }) => {
-      const result = await ctx.db.$transaction(async (tx) => {
+      const result = await ctx.db.$transaction(async tx => {
         const task = await tx.workflowTaskRun.findFirst({
           where: {
             id: input.taskRunId,
@@ -745,14 +745,14 @@ export const workflowExecutionRouter = router({
 
         if (!task) {
           throw new TRPCError({
-            code: "NOT_FOUND",
+            code: 'NOT_FOUND',
             message: E.WORKFLOW_TASK_NOT_FOUND,
           });
         }
 
-        if (!validateTransition(task.status, "DONE")) {
+        if (!validateTransition(task.status, 'DONE')) {
           throw new TRPCError({
-            code: "BAD_REQUEST",
+            code: 'BAD_REQUEST',
             message: E.WORKFLOW_TASK_INVALID_STATUS,
           });
         }
@@ -763,7 +763,7 @@ export const workflowExecutionRouter = router({
         const updated = await tx.workflowTaskRun.update({
           where: { id: input.taskRunId },
           data: {
-            status: "DONE",
+            status: 'DONE',
             completedAt: now,
             completedByUserId: ctx.user?.id,
             startedAt: task.startedAt ?? now,
@@ -774,9 +774,9 @@ export const workflowExecutionRouter = router({
         await tx.workflowTaskRun.updateMany({
           where: {
             dependsOnTaskRunId: task.id,
-            status: "BLOCKED",
+            status: 'BLOCKED',
           },
-          data: { status: "TODO" },
+          data: { status: 'TODO' },
         });
 
         // Recompute run progress
@@ -792,7 +792,7 @@ export const workflowExecutionRouter = router({
           where: { id: task.workflowRun.id },
           data: {
             progressPercent: progress.percent,
-            ...(isComplete ? { status: "COMPLETED", completedAt: now } : {}),
+            ...(isComplete ? { status: 'COMPLETED', completedAt: now } : {}),
           },
         });
 
@@ -800,15 +800,15 @@ export const workflowExecutionRouter = router({
       });
 
       // Fire-and-forget outbound Jira transition (non-blocking)
-      if (result.externalRefType === "JIRA_ISSUE" && result.externalRefId) {
+      if (result.externalRefType === 'JIRA_ISSUE' && result.externalRefId) {
         void (async () => {
           try {
-            const { transitionJiraIssue } = await import("../services/jira-issue-sync.js");
+            const { transitionJiraIssue } = await import('../services/jira-issue-sync.js');
             const connection = await ctx.db.integrationConnection.findFirst({
               where: {
                 organizationId: ctx.organizationId,
-                provider: "JIRA",
-                status: "CONNECTED",
+                provider: 'JIRA',
+                status: 'CONNECTED',
               },
               select: { id: true },
             });
@@ -818,11 +818,11 @@ export const workflowExecutionRouter = router({
                 ctx.organizationId,
                 connection.id,
                 result.id,
-                "DONE",
+                'DONE',
               );
             }
           } catch (err) {
-            console.error("[workflow/completeTask] Outbound Jira transition failed:", err);
+            console.error('[workflow/completeTask] Outbound Jira transition failed:', err);
           }
         })();
       }
@@ -830,10 +830,10 @@ export const workflowExecutionRouter = router({
       // Fire-and-forget outbound Linear sync (non-blocking)
       void (async () => {
         try {
-          const { syncTaskStatusToLinear } = await import("../services/linear-issue-sync.js");
-          await syncTaskStatusToLinear(prisma, result.id, "DONE");
+          const { syncTaskStatusToLinear } = await import('../services/linear-issue-sync.js');
+          await syncTaskStatusToLinear(prisma, result.id, 'DONE');
         } catch (err) {
-          console.error("[workflow/completeTask] Outbound Linear sync failed:", err);
+          console.error('[workflow/completeTask] Outbound Linear sync failed:', err);
         }
       })();
 
@@ -846,10 +846,10 @@ export const workflowExecutionRouter = router({
    * Skip a task with a reason. Unblocks dependents and recomputes progress.
    */
   skipTask: tenantProcedure
-    .use(requirePermission({ workflow: ["execute"] }))
+    .use(requirePermission({ workflow: ['execute'] }))
     .input(skipTaskSchema)
     .mutation(async ({ ctx, input }) => {
-      const result = await ctx.db.$transaction(async (tx) => {
+      const result = await ctx.db.$transaction(async tx => {
         const task = await tx.workflowTaskRun.findFirst({
           where: {
             id: input.taskRunId,
@@ -862,14 +862,14 @@ export const workflowExecutionRouter = router({
 
         if (!task) {
           throw new TRPCError({
-            code: "NOT_FOUND",
+            code: 'NOT_FOUND',
             message: E.WORKFLOW_TASK_NOT_FOUND,
           });
         }
 
-        if (!validateTransition(task.status, "SKIPPED")) {
+        if (!validateTransition(task.status, 'SKIPPED')) {
           throw new TRPCError({
-            code: "BAD_REQUEST",
+            code: 'BAD_REQUEST',
             message: E.WORKFLOW_TASK_CANNOT_SKIP,
           });
         }
@@ -877,7 +877,7 @@ export const workflowExecutionRouter = router({
         const updated = await tx.workflowTaskRun.update({
           where: { id: input.taskRunId },
           data: {
-            status: "SKIPPED",
+            status: 'SKIPPED',
             resultJson: { skipReason: input.reason },
           },
         });
@@ -886,9 +886,9 @@ export const workflowExecutionRouter = router({
         await tx.workflowTaskRun.updateMany({
           where: {
             dependsOnTaskRunId: task.id,
-            status: "BLOCKED",
+            status: 'BLOCKED',
           },
-          data: { status: "TODO" },
+          data: { status: 'TODO' },
         });
 
         // Recompute run progress
@@ -903,7 +903,7 @@ export const workflowExecutionRouter = router({
           where: { id: task.workflowRun.id },
           data: {
             progressPercent: progress.percent,
-            ...(isComplete ? { status: "COMPLETED", completedAt: new Date() } : {}),
+            ...(isComplete ? { status: 'COMPLETED', completedAt: new Date() } : {}),
           },
         });
 
@@ -911,15 +911,15 @@ export const workflowExecutionRouter = router({
       });
 
       // Fire-and-forget outbound Jira transition (non-blocking)
-      if (result.externalRefType === "JIRA_ISSUE" && result.externalRefId) {
+      if (result.externalRefType === 'JIRA_ISSUE' && result.externalRefId) {
         void (async () => {
           try {
-            const { transitionJiraIssue } = await import("../services/jira-issue-sync.js");
+            const { transitionJiraIssue } = await import('../services/jira-issue-sync.js');
             const connection = await ctx.db.integrationConnection.findFirst({
               where: {
                 organizationId: ctx.organizationId,
-                provider: "JIRA",
-                status: "CONNECTED",
+                provider: 'JIRA',
+                status: 'CONNECTED',
               },
               select: { id: true },
             });
@@ -929,11 +929,11 @@ export const workflowExecutionRouter = router({
                 ctx.organizationId,
                 connection.id,
                 result.id,
-                "SKIPPED",
+                'SKIPPED',
               );
             }
           } catch (err) {
-            console.error("[workflow/skipTask] Outbound Jira transition failed:", err);
+            console.error('[workflow/skipTask] Outbound Jira transition failed:', err);
           }
         })();
       }
@@ -941,10 +941,10 @@ export const workflowExecutionRouter = router({
       // Fire-and-forget outbound Linear sync (non-blocking)
       void (async () => {
         try {
-          const { syncTaskStatusToLinear } = await import("../services/linear-issue-sync.js");
-          await syncTaskStatusToLinear(prisma, result.id, "SKIPPED");
+          const { syncTaskStatusToLinear } = await import('../services/linear-issue-sync.js');
+          await syncTaskStatusToLinear(prisma, result.id, 'SKIPPED');
         } catch (err) {
-          console.error("[workflow/skipTask] Outbound Linear sync failed:", err);
+          console.error('[workflow/skipTask] Outbound Linear sync failed:', err);
         }
       })();
 
@@ -957,7 +957,7 @@ export const workflowExecutionRouter = router({
    * Reassign a task to a different user.
    */
   reassignTask: tenantProcedure
-    .use(requirePermission({ workflow: ["update"] }))
+    .use(requirePermission({ workflow: ['update'] }))
     .input(reassignTaskSchema)
     .mutation(async ({ ctx, input }) => {
       const task = await ctx.db.workflowTaskRun.findFirst({
@@ -969,7 +969,7 @@ export const workflowExecutionRouter = router({
 
       if (!task) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: E.WORKFLOW_TASK_NOT_FOUND,
         });
       }
@@ -991,11 +991,11 @@ export const workflowExecutionRouter = router({
       // Fire-and-forget: dispatch TASK_ASSIGNED to new assignee
       dispatch({
         organizationId: ctx.organizationId,
-        type: "TASK_ASSIGNED",
+        type: 'TASK_ASSIGNED',
         recipientUserIds: [input.newAssigneeUserId],
         title: `Task assigned: ${updated.title}`,
-        body: `Workflow: ${updated.workflowRun.workflowTemplate.name} for ${updated.workflowRun.contractor?.legalName ?? updated.workflowRun.contractor?.displayName ?? "Unknown"}`,
-        entityType: "WORKFLOW_RUN",
+        body: `Workflow: ${updated.workflowRun.workflowTemplate.name} for ${updated.workflowRun.contractor?.legalName ?? updated.workflowRun.contractor?.displayName ?? 'Unknown'}`,
+        entityType: 'WORKFLOW_RUN',
         entityId: updated.workflowRun.id,
         metadata: {
           taskTitle: updated.title,
@@ -1003,9 +1003,9 @@ export const workflowExecutionRouter = router({
           contractorName:
             updated.workflowRun.contractor?.legalName ??
             updated.workflowRun.contractor?.displayName ??
-            "Unknown",
+            'Unknown',
         },
-      }).catch((err) => console.error("[workflow] dispatch TASK_ASSIGNED (reassign) failed:", err));
+      }).catch(err => console.error('[workflow] dispatch TASK_ASSIGNED (reassign) failed:', err));
 
       return plain(updated);
     }),
@@ -1018,7 +1018,7 @@ export const workflowExecutionRouter = router({
    * Add a comment to a workflow run or task.
    */
   addComment: tenantProcedure
-    .use(requirePermission({ workflow: ["update"] }))
+    .use(requirePermission({ workflow: ['update'] }))
     .input(addCommentSchema)
     .mutation(async ({ ctx, input }) => {
       // Verify run belongs to org
@@ -1031,7 +1031,7 @@ export const workflowExecutionRouter = router({
 
       if (!run) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: E.WORKFLOW_RUN_NOT_FOUND,
         });
       }
@@ -1056,7 +1056,7 @@ export const workflowExecutionRouter = router({
    * List comments for a workflow run, optionally filtered by task.
    */
   listComments: tenantProcedure
-    .use(requirePermission({ workflow: ["read"] }))
+    .use(requirePermission({ workflow: ['read'] }))
     .input(
       z.object({
         workflowRunId: z.string(),
@@ -1078,7 +1078,7 @@ export const workflowExecutionRouter = router({
         include: {
           author: { select: { id: true, name: true, image: true } },
         },
-        orderBy: { createdAt: "asc" },
+        orderBy: { createdAt: 'asc' },
       });
 
       return plain(comments);
@@ -1093,13 +1093,13 @@ export const workflowExecutionRouter = router({
    * Used for the sidebar navigation badge.
    */
   overdueCount: tenantProcedure
-    .use(requirePermission({ workflow: ["read"] }))
+    .use(requirePermission({ workflow: ['read'] }))
     .query(async ({ ctx }) => {
       const count = await ctx.db.workflowTaskRun.count({
         where: {
           organizationId: ctx.organizationId,
           assigneeUserId: ctx.user?.id,
-          status: { in: ["TODO", "IN_PROGRESS"] },
+          status: { in: ['TODO', 'IN_PROGRESS'] },
           dueAt: { lt: new Date() },
         },
       });

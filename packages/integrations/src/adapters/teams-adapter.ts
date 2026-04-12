@@ -1,9 +1,9 @@
-import { prisma } from "@contractor-ops/db";
-import { decryptCredentials } from "../services/credential-service.js";
-import type { CredentialBlob } from "../types/credentials.js";
-import type { ProviderHealthStatus } from "../types/health.js";
-import type { OAuthConfig } from "../types/provider.js";
-import { BaseAdapter } from "./base-adapter.js";
+import { prisma } from '@contractor-ops/db';
+import { decryptCredentials } from '../services/credential-service.js';
+import type { CredentialBlob } from '../types/credentials.js';
+import type { ProviderHealthStatus } from '../types/health.js';
+import type { OAuthConfig } from '../types/provider.js';
+import { BaseAdapter } from './base-adapter.js';
 
 // ---------------------------------------------------------------------------
 // Azure AD / Microsoft Teams OAuth 2.0 Configuration
@@ -20,17 +20,17 @@ import { BaseAdapter } from "./base-adapter.js";
  * - offline_access       -- refresh tokens
  */
 const TEAMS_OAUTH_CONFIG: OAuthConfig = {
-  clientIdEnvVar: "AZURE_BOT_APP_ID",
-  clientSecretEnvVar: "AZURE_BOT_APP_SECRET",
-  authorizationUrl: "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
-  tokenUrl: "https://login.microsoftonline.com/common/oauth2/v2.0/token",
+  clientIdEnvVar: 'AZURE_BOT_APP_ID',
+  clientSecretEnvVar: 'AZURE_BOT_APP_SECRET',
+  authorizationUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
+  tokenUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/token',
   scopes: [
-    "https://graph.microsoft.com/Team.ReadBasic.All",
-    "https://graph.microsoft.com/Channel.ReadBasic.All",
-    "https://graph.microsoft.com/User.Read",
-    "offline_access",
+    'https://graph.microsoft.com/Team.ReadBasic.All',
+    'https://graph.microsoft.com/Channel.ReadBasic.All',
+    'https://graph.microsoft.com/User.Read',
+    'offline_access',
   ],
-  redirectPath: "/api/oauth/microsoft_teams/callback",
+  redirectPath: '/api/oauth/microsoft_teams/callback',
 };
 
 // ---------------------------------------------------------------------------
@@ -53,8 +53,8 @@ const TEAMS_OAUTH_CONFIG: OAuthConfig = {
  * - MICROSOFT_TEAMS_ENCRYPTION_KEY — for credential encryption at rest
  */
 export class TeamsAdapter extends BaseAdapter {
-  readonly slug = "microsoft_teams";
-  readonly displayName = "Microsoft Teams";
+  readonly slug = 'microsoft_teams';
+  readonly displayName = 'Microsoft Teams';
   readonly supportsOAuth = true;
   readonly supportsWebhooks = false;
 
@@ -72,23 +72,23 @@ export class TeamsAdapter extends BaseAdapter {
 
     if (!(clientId && clientSecret)) {
       throw new Error(
-        "AZURE_BOT_APP_ID and AZURE_BOT_APP_SECRET environment variables are required",
+        'AZURE_BOT_APP_ID and AZURE_BOT_APP_SECRET environment variables are required',
       );
     }
 
     const body = new URLSearchParams({
-      grant_type: "authorization_code",
+      grant_type: 'authorization_code',
       client_id: clientId,
       client_secret: clientSecret,
       code,
       redirect_uri: redirectUri,
-      scope: TEAMS_OAUTH_CONFIG.scopes.join(" "),
+      scope: TEAMS_OAUTH_CONFIG.scopes.join(' '),
     });
 
     const response = await fetch(TEAMS_OAUTH_CONFIG.tokenUrl, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
+        'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: body.toString(),
     });
@@ -121,29 +121,29 @@ export class TeamsAdapter extends BaseAdapter {
 
     if (!(clientId && clientSecret)) {
       throw new Error(
-        "AZURE_BOT_APP_ID and AZURE_BOT_APP_SECRET environment variables are required",
+        'AZURE_BOT_APP_ID and AZURE_BOT_APP_SECRET environment variables are required',
       );
     }
 
     // Decrypt stored credentials using AES-256-GCM per-provider encryption
-    const decrypted = decryptCredentials(credentials.accessToken, "microsoft_teams");
+    const decrypted = decryptCredentials(credentials.accessToken, 'microsoft_teams');
 
     if (!decrypted.refreshToken) {
-      throw new Error("No refresh token available for Microsoft Teams");
+      throw new Error('No refresh token available for Microsoft Teams');
     }
 
     const body = new URLSearchParams({
-      grant_type: "refresh_token",
+      grant_type: 'refresh_token',
       client_id: clientId,
       client_secret: clientSecret,
       refresh_token: decrypted.refreshToken,
-      scope: TEAMS_OAUTH_CONFIG.scopes.join(" "),
+      scope: TEAMS_OAUTH_CONFIG.scopes.join(' '),
     });
 
     const response = await fetch(TEAMS_OAUTH_CONFIG.tokenUrl, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
+        'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: body.toString(),
     });
@@ -192,8 +192,8 @@ export class TeamsAdapter extends BaseAdapter {
 
     if (!connection) {
       return {
-        status: "DISCONNECTED",
-        provider: "microsoft_teams",
+        status: 'DISCONNECTED',
+        provider: 'microsoft_teams',
         recentSyncs: [],
         recentWebhooks: [],
         errorCountLast24h: 0,
@@ -203,7 +203,7 @@ export class TeamsAdapter extends BaseAdapter {
     // Fetch recent sync logs
     const recentSyncs = await prisma.integrationSyncLog.findMany({
       where: { integrationConnectionId: connectionId },
-      orderBy: { startedAt: "desc" },
+      orderBy: { startedAt: 'desc' },
       take: 5,
       select: {
         id: true,
@@ -219,28 +219,28 @@ export class TeamsAdapter extends BaseAdapter {
     const errorCountLast24h = await prisma.integrationSyncLog.count({
       where: {
         integrationConnectionId: connectionId,
-        status: "FAILED",
+        status: 'FAILED',
         startedAt: { gte: oneDayAgo },
       },
     });
 
     // Determine status
-    let status: ProviderHealthStatus["status"];
-    if (connection.status !== "CONNECTED") {
-      status = "DISCONNECTED";
+    let status: ProviderHealthStatus['status'];
+    if (connection.status !== 'CONNECTED') {
+      status = 'DISCONNECTED';
     } else if (connection.lastErrorAt && !connection.lastSuccessAt) {
-      status = "ERROR";
+      status = 'ERROR';
     } else if (connection.tokenExpiresAt && connection.tokenExpiresAt < new Date()) {
-      status = "REAUTH_REQUIRED";
-    } else if (recentSyncs[0]?.status === "FAILED") {
-      status = "ERROR";
+      status = 'REAUTH_REQUIRED';
+    } else if (recentSyncs[0]?.status === 'FAILED') {
+      status = 'ERROR';
     } else {
-      status = "CONNECTED";
+      status = 'CONNECTED';
     }
 
     return {
       status,
-      provider: "microsoft_teams",
+      provider: 'microsoft_teams',
       displayName: connection.displayName,
       connectedAt: connection.connectedAt,
       lastSyncAt: connection.lastSyncAt,
@@ -248,7 +248,7 @@ export class TeamsAdapter extends BaseAdapter {
       lastErrorAt: connection.lastErrorAt,
       lastErrorMessage: connection.lastErrorMessage,
       tokenExpiresAt: connection.tokenExpiresAt,
-      recentSyncs: recentSyncs.map((s) => ({
+      recentSyncs: recentSyncs.map(s => ({
         id: s.id,
         syncType: s.syncType,
         status: s.status,

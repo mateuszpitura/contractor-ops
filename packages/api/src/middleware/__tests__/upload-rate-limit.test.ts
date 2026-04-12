@@ -1,6 +1,6 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock("@sentry/nextjs", () => {
+vi.mock('@sentry/nextjs', () => {
   const mockSpan = {
     setStatus: vi.fn(),
     setAttribute: vi.fn(),
@@ -12,7 +12,7 @@ vi.mock("@sentry/nextjs", () => {
   };
 });
 
-vi.mock("@contractor-ops/logger", () => ({
+vi.mock('@contractor-ops/logger', () => ({
   createTrpcLogger: vi.fn(() => ({
     info: vi.fn(),
     warn: vi.fn(),
@@ -20,22 +20,22 @@ vi.mock("@contractor-ops/logger", () => ({
   })),
 }));
 
-vi.mock("@contractor-ops/logger/metrics", () => ({
+vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { increment: vi.fn(), distribution: vi.fn(), histogram: vi.fn() },
 }));
 
-import { t } from "../../init.js";
-import { authedProcedure } from "../auth.js";
-import { uploadRateLimitMiddleware } from "../upload-rate-limit.js";
+import { t } from '../../init.js';
+import { authedProcedure } from '../auth.js';
+import { uploadRateLimitMiddleware } from '../upload-rate-limit.js';
 
 function ctxForUser(userId: string) {
   const session = {
     session: {
-      id: "sess-1",
+      id: 'sess-1',
       userId,
-      activeOrganizationId: "org_up",
-      expiresAt: new Date("2099-01-01"),
-      token: "mock-token",
+      activeOrganizationId: 'org_up',
+      expiresAt: new Date('2099-01-01'),
+      token: 'mock-token',
       createdAt: new Date(),
       updatedAt: new Date(),
       ipAddress: null,
@@ -43,14 +43,14 @@ function ctxForUser(userId: string) {
     },
     user: {
       id: userId,
-      name: "Test",
-      email: "t@example.com",
+      name: 'Test',
+      email: 't@example.com',
       emailVerified: true,
       image: null,
       banned: false,
       banReason: null,
       banExpires: null,
-      role: "admin",
+      role: 'admin',
       createdAt: new Date(),
       updatedAt: new Date(),
     },
@@ -62,7 +62,7 @@ function ctxForUser(userId: string) {
   };
 }
 
-describe("uploadRateLimitMiddleware", () => {
+describe('uploadRateLimitMiddleware', () => {
   const router = t.router({
     upload: authedProcedure.use(uploadRateLimitMiddleware).query(({ ctx }) => ({
       remaining: ctx.uploadRateLimit?.remaining,
@@ -72,24 +72,24 @@ describe("uploadRateLimitMiddleware", () => {
 
   beforeEach(() => {
     vi.useFakeTimers();
-    vi.setSystemTime(new Date("2026-04-04T12:00:00.000Z"));
+    vi.setSystemTime(new Date('2026-04-04T12:00:00.000Z'));
   });
 
   afterEach(() => {
     vi.useRealTimers();
   });
 
-  it("throws UNAUTHORIZED when user id is missing", async () => {
+  it('throws UNAUTHORIZED when user id is missing', async () => {
     await expect(
       createCaller({
         headers: new Headers(),
         session: null,
         user: null,
       }).upload(),
-    ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+    ).rejects.toMatchObject({ code: 'UNAUTHORIZED' });
   });
 
-  it("allows first 10 uploads and exposes remaining count", async () => {
+  it('allows first 10 uploads and exposes remaining count', async () => {
     const uid = `u-rate-${Math.random().toString(36).slice(2)}`;
     const c = createCaller(ctxForUser(uid));
     for (let i = 0; i < 10; i++) {
@@ -98,25 +98,25 @@ describe("uploadRateLimitMiddleware", () => {
     }
   });
 
-  it("throws TOO_MANY_REQUESTS on the 11th upload in the same window", async () => {
+  it('throws TOO_MANY_REQUESTS on the 11th upload in the same window', async () => {
     const uid = `u-11-${Math.random().toString(36).slice(2)}`;
     const c = createCaller(ctxForUser(uid));
     for (let i = 0; i < 10; i++) {
       await c.upload();
     }
     await expect(c.upload()).rejects.toMatchObject({
-      code: "TOO_MANY_REQUESTS",
+      code: 'TOO_MANY_REQUESTS',
     });
   });
 
-  it("allows uploads again after the window expires", async () => {
+  it('allows uploads again after the window expires', async () => {
     const uid = `u-win-${Math.random().toString(36).slice(2)}`;
     const c = createCaller(ctxForUser(uid));
     for (let i = 0; i < 10; i++) {
       await c.upload();
     }
     await expect(c.upload()).rejects.toMatchObject({
-      code: "TOO_MANY_REQUESTS",
+      code: 'TOO_MANY_REQUESTS',
     });
     vi.advanceTimersByTime(61_000);
     const r = await c.upload();

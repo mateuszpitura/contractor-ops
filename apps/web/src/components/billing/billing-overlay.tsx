@@ -1,22 +1,22 @@
-"use client";
+'use client';
 
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-import { useRouter } from "@/i18n/navigation";
-import { trpc } from "@/trpc/init";
-import { SoftBlockModal } from "./soft-block-modal";
-import { TrialBanner } from "./trial-banner";
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+import { useRouter } from '@/i18n/navigation';
+import { trpc } from '@/trpc/init';
+import { SoftBlockModal } from './soft-block-modal';
+import { TrialBanner } from './trial-banner';
 
 // ---------------------------------------------------------------------------
 // Statuses that should trigger the soft-block modal
 // ---------------------------------------------------------------------------
 
 const BLOCKED_STATUSES = new Set([
-  "CANCELED",
-  "UNPAID",
-  "INCOMPLETE",
-  "INCOMPLETE_EXPIRED",
-  "PAUSED",
+  'CANCELED',
+  'UNPAID',
+  'INCOMPLETE',
+  'INCOMPLETE_EXPIRED',
+  'PAUSED',
 ]);
 
 // ---------------------------------------------------------------------------
@@ -46,7 +46,7 @@ export function BillingOverlay() {
   // No subscription data yet or no subscription at all -- don't render
   if (!subscription) return null;
 
-  const isTrialing = subscription.status === "TRIALING";
+  const isTrialing = subscription.status === 'TRIALING';
   const trialEnd = subscription.trialEnd ? new Date(subscription.trialEnd) : null;
 
   // Trial expired: show soft-block modal
@@ -56,13 +56,13 @@ export function BillingOverlay() {
   const isBlocked = BLOCKED_STATUSES.has(subscription.status);
 
   // Past due: show warning banner but don't block
-  const isPastDue = subscription.status === "PAST_DUE";
+  const isPastDue = subscription.status === 'PAST_DUE';
 
   // Trial ending soon: show banner (last 7 days)
   const showTrialBanner = isTrialing && trialEnd !== null && !isTrialExpired;
 
   function handleUpgrade() {
-    router.push("/settings?tab=billing");
+    router.push('/settings?tab=billing');
   }
 
   function handleSelectPlan(priceId: string) {
@@ -83,19 +83,17 @@ export function BillingOverlay() {
 // ---------------------------------------------------------------------------
 
 function PastDueBanner({ onResolve }: { onResolve: () => void }) {
-  const t = useTranslations("Billing.overlay");
+  const t = useTranslations('Billing.overlay');
   return (
     <div
       role="alert"
-      className="bg-destructive/10 border-b border-destructive/20 px-4 py-2 text-center text-sm text-destructive"
-    >
-      <span className="font-medium">{t("paymentFailed")}</span> {t("paymentFailedBody")}{" "}
+      className="bg-destructive/10 border-b border-destructive/20 px-4 py-2 text-center text-sm text-destructive">
+      <span className="font-medium">{t('paymentFailed')}</span> {t('paymentFailedBody')}{' '}
       <button
         type="button"
         onClick={onResolve}
-        className="underline font-medium hover:no-underline"
-      >
-        {t("goToBilling")}
+        className="underline font-medium hover:no-underline">
+        {t('goToBilling')}
       </button>
     </div>
   );

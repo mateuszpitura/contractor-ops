@@ -1,8 +1,8 @@
-import { act, renderHook, waitFor } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { useIsMobile } from "../use-mobile";
+import { act, renderHook, waitFor } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { useIsMobile } from '../use-mobile';
 
-describe("useIsMobile", () => {
+describe('useIsMobile', () => {
   let innerWidth = 1024;
   let mediaChangeHandler: (() => void) | undefined;
 
@@ -10,12 +10,12 @@ describe("useIsMobile", () => {
     innerWidth = 1024;
     mediaChangeHandler = undefined;
     vi.stubGlobal(
-      "matchMedia",
+      'matchMedia',
       vi.fn((_query: string) => ({
         get matches() {
           return innerWidth < 768;
         },
-        media: "",
+        media: '',
         addEventListener: (_type: string, cb: () => void) => {
           mediaChangeHandler = cb;
         },
@@ -23,7 +23,7 @@ describe("useIsMobile", () => {
         dispatchEvent: vi.fn(),
       })),
     );
-    Object.defineProperty(window, "innerWidth", {
+    Object.defineProperty(window, 'innerWidth', {
       configurable: true,
       get: () => innerWidth,
     });
@@ -33,7 +33,7 @@ describe("useIsMobile", () => {
     vi.unstubAllGlobals();
   });
 
-  it("returns true when viewport width is below 768px", async () => {
+  it('returns true when viewport width is below 768px', async () => {
     innerWidth = 320;
     const { result } = renderHook(() => useIsMobile());
     await waitFor(() => {
@@ -41,7 +41,7 @@ describe("useIsMobile", () => {
     });
   });
 
-  it("returns false when viewport width is at or above 768px", async () => {
+  it('returns false when viewport width is at or above 768px', async () => {
     innerWidth = 1024;
     const { result } = renderHook(() => useIsMobile());
     await waitFor(() => {
@@ -49,7 +49,7 @@ describe("useIsMobile", () => {
     });
   });
 
-  it("updates when matchMedia change fires after resize", async () => {
+  it('updates when matchMedia change fires after resize', async () => {
     innerWidth = 1024;
     const { result } = renderHook(() => useIsMobile());
     await waitFor(() => expect(result.current).toBe(false));
@@ -64,15 +64,15 @@ describe("useIsMobile", () => {
     });
   });
 
-  it("calls removeEventListener on unmount", async () => {
+  it('calls removeEventListener on unmount', async () => {
     const removeEventListener = vi.fn();
     vi.stubGlobal(
-      "matchMedia",
+      'matchMedia',
       vi.fn((_query: string) => ({
         get matches() {
           return innerWidth < 768;
         },
-        media: "",
+        media: '',
         addEventListener: (_type: string, cb: () => void) => {
           mediaChangeHandler = cb;
         },
@@ -84,6 +84,6 @@ describe("useIsMobile", () => {
     const { unmount } = renderHook(() => useIsMobile());
     unmount();
 
-    expect(removeEventListener).toHaveBeenCalledWith("change", expect.any(Function));
+    expect(removeEventListener).toHaveBeenCalledWith('change', expect.any(Function));
   });
 });

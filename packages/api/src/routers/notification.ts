@@ -1,13 +1,13 @@
-import type { Prisma } from "@contractor-ops/db";
+import type { Prisma } from '@contractor-ops/db';
 import {
   NOTIFICATION_TYPES,
   notificationListSchema,
   notificationMarkReadSchema,
   notificationPreferenceUpdateSchema,
-} from "@contractor-ops/validators";
-import { router } from "../init.js";
-import { tenantProcedure } from "../middleware/tenant.js";
-import { getOrCreatePreferences } from "../services/notification-service.js";
+} from '@contractor-ops/validators';
+import { router } from '../init.js';
+import { tenantProcedure } from '../middleware/tenant.js';
+import { getOrCreatePreferences } from '../services/notification-service.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -42,13 +42,13 @@ export const notificationRouter = router({
 
     if (input.unreadOnly) {
       where.readAt = null;
-      where.status = { in: ["PENDING", "SENT"] };
+      where.status = { in: ['PENDING', 'SENT'] };
     }
 
     const [items, total] = await Promise.all([
       ctx.db.notification.findMany({
         where,
-        orderBy: { createdAt: "desc" },
+        orderBy: { createdAt: 'desc' },
         skip: (input.page - 1) * input.perPage,
         take: input.perPage,
       }),
@@ -73,7 +73,7 @@ export const notificationRouter = router({
       where: {
         userId: ctx.user?.id,
         organizationId: ctx.organizationId,
-        status: { in: ["PENDING", "SENT"] },
+        status: { in: ['PENDING', 'SENT'] },
       },
     });
 
@@ -93,7 +93,7 @@ export const notificationRouter = router({
       },
       data: {
         readAt: new Date(),
-        status: "READ",
+        status: 'READ',
       },
     });
 
@@ -112,7 +112,7 @@ export const notificationRouter = router({
       },
       data: {
         readAt: new Date(),
-        status: "READ",
+        status: 'READ',
       },
     });
 
@@ -125,7 +125,7 @@ export const notificationRouter = router({
    */
   getPreferences: tenantProcedure.query(async ({ ctx }) => {
     const preferences = await Promise.all(
-      NOTIFICATION_TYPES.map((type) =>
+      NOTIFICATION_TYPES.map(type =>
         getOrCreatePreferences(ctx.user?.id, ctx.organizationId, type),
       ),
     );
@@ -141,7 +141,7 @@ export const notificationRouter = router({
     .input(notificationPreferenceUpdateSchema)
     .mutation(async ({ ctx, input }) => {
       const results = await Promise.all(
-        input.preferences.map((pref) =>
+        input.preferences.map(pref =>
           ctx.db.userNotificationPreference.upsert({
             where: {
               userId_notificationType: {

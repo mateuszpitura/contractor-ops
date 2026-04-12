@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { format } from "date-fns";
-import { CalendarDays } from "lucide-react";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
+import { format } from 'date-fns';
+import { CalendarDays } from 'lucide-react';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import {
   Dialog,
   DialogContent,
@@ -12,19 +12,19 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/utils';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -66,17 +66,17 @@ export function SingleEntryForm({
   isSubmitting,
 }: SingleEntryFormProps) {
   const [date, setDate] = useState<Date | undefined>(new Date());
-  const [contractId, setContractId] = useState("");
-  const [hours, setHours] = useState("");
-  const [description, setDescription] = useState("");
+  const [contractId, setContractId] = useState('');
+  const [hours, setHours] = useState('');
+  const [description, setDescription] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [calendarOpen, setCalendarOpen] = useState(false);
 
   const resetForm = () => {
     setDate(new Date());
-    setContractId("");
-    setHours("");
-    setDescription("");
+    setContractId('');
+    setHours('');
+    setDescription('');
     setErrors({});
   };
 
@@ -84,17 +84,17 @@ export function SingleEntryForm({
     const newErrors: Record<string, string> = {};
 
     if (!date) {
-      newErrors.date = "Date is required";
+      newErrors.date = 'Date is required';
     }
     if (!contractId) {
-      newErrors.contractId = "Project is required";
+      newErrors.contractId = 'Project is required';
     }
     const hoursVal = parseFloat(hours);
     if (!hours || Number.isNaN(hoursVal) || hoursVal < 0.25 || hoursVal > 24) {
-      newErrors.hours = "Hours must be between 0.25 and 24";
+      newErrors.hours = 'Hours must be between 0.25 and 24';
     }
     if (description && description.length > 500) {
-      newErrors.description = "Description must be 500 characters or less";
+      newErrors.description = 'Description must be 500 characters or less';
     }
 
     setErrors(newErrors);
@@ -109,7 +109,7 @@ export function SingleEntryForm({
 
     onSubmit({
       contractId,
-      entryDate: format(date!, "yyyy-MM-dd"),
+      entryDate: format(date!, 'yyyy-MM-dd'),
       minutes,
       description: description || undefined,
     });
@@ -142,19 +142,18 @@ export function SingleEntryForm({
                   id="entry-date"
                   variant="outline"
                   className={cn(
-                    "w-full justify-start font-normal",
-                    !date && "text-muted-foreground",
-                  )}
-                >
+                    'w-full justify-start font-normal',
+                    !date && 'text-muted-foreground',
+                  )}>
                   <CalendarDays className="me-2 h-4 w-4" />
-                  {date ? format(date, "MMM d, yyyy") : "Select date"}
+                  {date ? format(date, 'MMM d, yyyy') : 'Select date'}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
                   mode="single"
                   selected={date}
-                  onSelect={(d) => {
+                  onSelect={d => {
                     setDate(d);
                     setCalendarOpen(false);
                   }}
@@ -173,7 +172,7 @@ export function SingleEntryForm({
                 <SelectValue placeholder="Select a project" />
               </SelectTrigger>
               <SelectContent>
-                {contracts.map((c) => (
+                {contracts.map(c => (
                   <SelectItem key={c.id} value={c.id}>
                     {c.title}
                   </SelectItem>
@@ -194,7 +193,7 @@ export function SingleEntryForm({
               max="24"
               placeholder="e.g. 1.5"
               value={hours}
-              onChange={(e) => setHours(e.target.value)}
+              onChange={e => setHours(e.target.value)}
               className="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             />
             {errors.hours && <p className="text-sm text-destructive">{errors.hours}</p>}
@@ -211,7 +210,7 @@ export function SingleEntryForm({
               maxLength={500}
               placeholder="What did you work on?"
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={e => setDescription(e.target.value)}
             />
             {errors.description && <p className="text-sm text-destructive">{errors.description}</p>}
             {description.length > 0 && (
@@ -225,7 +224,7 @@ export function SingleEntryForm({
             Discard Entry
           </Button>
           <Button onClick={handleSubmit} disabled={isSubmitting}>
-            {isSubmitting ? "Adding..." : "Add Entry"}
+            {isSubmitting ? 'Adding...' : 'Add Entry'}
           </Button>
         </DialogFooter>
       </DialogContent>

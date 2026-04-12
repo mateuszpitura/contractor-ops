@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { Clock, Pencil, Ticket } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Clock, Pencil, Ticket } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 // ---------------------------------------------------------------------------
 // Source -> badge config mapping per UI-SPEC Time Entry Source
@@ -11,18 +11,18 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 const SOURCE_CONFIG = {
   MANUAL: {
     icon: Pencil,
-    variant: "secondary" as const,
-    label: "Manual",
+    variant: 'secondary' as const,
+    label: 'Manual',
   },
   CLOCKIFY: {
     icon: Clock,
-    variant: "info" as const,
-    label: "Clockify",
+    variant: 'info' as const,
+    label: 'Clockify',
   },
   JIRA: {
     icon: Ticket,
-    variant: "info" as const,
-    label: "Jira",
+    variant: 'info' as const,
+    label: 'Jira',
   },
 } as const;
 
@@ -31,7 +31,7 @@ const SOURCE_CONFIG = {
 // ---------------------------------------------------------------------------
 
 interface TimeSourceBadgeProps {
-  source: "MANUAL" | "CLOCKIFY" | "JIRA";
+  source: 'MANUAL' | 'CLOCKIFY' | 'JIRA';
   importedAt?: Date | string | null;
 }
 
@@ -49,9 +49,9 @@ export function TimeSourceBadge({ source, importedAt }: TimeSourceBadgeProps) {
   const Icon = config.icon;
 
   const tooltipText =
-    source === "MANUAL"
-      ? "Manual entry"
-      : `Imported from ${config.label} on ${importedAt ? new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(typeof importedAt === "string" ? new Date(importedAt) : importedAt) : "unknown date"}`;
+    source === 'MANUAL'
+      ? 'Manual entry'
+      : `Imported from ${config.label} on ${importedAt ? new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(typeof importedAt === 'string' ? new Date(importedAt) : importedAt) : 'unknown date'}`;
 
   return (
     <TooltipProvider>

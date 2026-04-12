@@ -1,21 +1,21 @@
 /**
  * Equipment return request procedures: approve, reject, list return requests.
  */
-import type { Prisma } from "@contractor-ops/db";
+import type { Prisma } from '@contractor-ops/db';
 import {
   returnRequestApproveSchema,
   returnRequestRejectSchema,
   returnRequestStatusEnum,
-} from "@contractor-ops/validators";
-import { TRPCError } from "@trpc/server";
-import { z } from "zod";
-import { router } from "../init.js";
-import { requirePermission } from "../middleware/rbac.js";
-import { tenantProcedure } from "../middleware/tenant.js";
-import type { InPostClientConfig } from "../services/courier/inpost-client.js";
-import { InPostClient } from "../services/courier/inpost-client.js";
-import { dispatch } from "../services/notification-service.js";
-import { NOTIFICATION_KEYS, plain } from "./equipment-shared.js";
+} from '@contractor-ops/validators';
+import { TRPCError } from '@trpc/server';
+import { z } from 'zod';
+import { router } from '../init.js';
+import { requirePermission } from '../middleware/rbac.js';
+import { tenantProcedure } from '../middleware/tenant.js';
+import type { InPostClientConfig } from '../services/courier/inpost-client.js';
+import { InPostClient } from '../services/courier/inpost-client.js';
+import { dispatch } from '../services/notification-service.js';
+import { NOTIFICATION_KEYS, plain } from './equipment-shared.js';
 
 // ---------------------------------------------------------------------------
 // Equipment Returns sub-router
@@ -27,7 +27,7 @@ export const equipmentReturnsRouter = router({
    * All equipment assigned to the contractor is included (D-11 all-or-nothing).
    */
   approveReturnRequest: tenantProcedure
-    .use(requirePermission({ equipment: ["update"] }))
+    .use(requirePermission({ equipment: ['update'] }))
     .input(returnRequestApproveSchema)
     .mutation(async ({ ctx, input }) => {
       const returnRequest = await ctx.db.returnRequest.findFirst({
@@ -49,15 +49,15 @@ export const equipmentReturnsRouter = router({
 
       if (!returnRequest) {
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "RETURN_REQUEST_NOT_FOUND",
+          code: 'NOT_FOUND',
+          message: 'RETURN_REQUEST_NOT_FOUND',
         });
       }
 
-      if (returnRequest.status !== "PENDING_APPROVAL") {
+      if (returnRequest.status !== 'PENDING_APPROVAL') {
         throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "RETURN_REQUEST_NOT_PENDING",
+          code: 'BAD_REQUEST',
+          message: 'RETURN_REQUEST_NOT_PENDING',
         });
       }
 
@@ -78,15 +78,15 @@ export const equipmentReturnsRouter = router({
         where: {
           organizationId_carrier: {
             organizationId: ctx.organizationId,
-            carrier: "inpost",
+            carrier: 'inpost',
           },
         },
       });
 
       if (!courierConfig) {
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "COURIER_CONFIG_NOT_FOUND",
+          code: 'NOT_FOUND',
+          message: 'COURIER_CONFIG_NOT_FOUND',
         });
       }
 
@@ -102,24 +102,24 @@ export const equipmentReturnsRouter = router({
       // Create InPost shipment
       const shipmentResult = await client.createShipment({
         organizationId: ctx.organizationId,
-        direction: "RETURN",
+        direction: 'RETURN',
         receiver: {
           name: returnRequest.contractor.displayName,
-          email: returnRequest.contractor.email ?? "",
-          phone: returnRequest.contractor.phone ?? "",
+          email: returnRequest.contractor.email ?? '',
+          phone: returnRequest.contractor.phone ?? '',
         },
         sender: {
-          name: org?.name ?? "Organization",
-          email: "",
-          phone: "",
+          name: org?.name ?? 'Organization',
+          email: '',
+          phone: '',
         },
-        targetPoint: returnRequest.targetPointId ?? "",
+        targetPoint: returnRequest.targetPointId ?? '',
         parcelSize: input.parcelSize,
         reference: `return-${returnRequest.id}`,
       });
 
       // Create records in transaction
-      const result = await ctx.db.$transaction(async (tx) => {
+      const result = await ctx.db.$transaction(async tx => {
         // Create shipment records for each equipment item
         let firstShipmentId: string | null = null;
 
@@ -128,12 +128,12 @@ export const equipmentReturnsRouter = router({
             data: {
               organizationId: ctx.organizationId,
               equipmentId: assignment.equipment.id,
-              direction: "RETURN",
-              carrier: "InPost",
+              direction: 'RETURN',
+              carrier: 'InPost',
               trackingNumber: shipmentResult.trackingNumber,
               externalId: shipmentResult.externalId,
               labelUrl: shipmentResult.labelUrl ?? null,
-              currentStatus: "CREATED",
+              currentStatus: 'CREATED',
               createdByUserId: ctx.user?.id,
             },
           });
@@ -147,8 +147,8 @@ export const equipmentReturnsRouter = router({
             data: {
               organizationId: ctx.organizationId,
               shipmentId: shipment.id,
-              status: "CREATED",
-              notes: `Return request approved by ${ctx.user?.name ?? "admin"}`,
+              status: 'CREATED',
+              notes: `Return request approved by ${ctx.user?.name ?? 'admin'}`,
               createdByUserId: ctx.user?.id,
             },
           });
@@ -157,8 +157,8 @@ export const equipmentReturnsRouter = router({
             data: {
               organizationId: ctx.organizationId,
               shipmentId: shipment.id,
-              status: "LABEL_GENERATED",
-              notes: "Label auto-generated by ShipX",
+              status: 'LABEL_GENERATED',
+              notes: 'Label auto-generated by ShipX',
               createdByUserId: ctx.user?.id,
             },
           });
@@ -166,7 +166,7 @@ export const equipmentReturnsRouter = router({
           // Update equipment status
           await tx.equipment.update({
             where: { id: assignment.equipment.id },
-            data: { status: "RETURN_IN_TRANSIT" },
+            data: { status: 'RETURN_IN_TRANSIT' },
           });
         }
 
@@ -174,7 +174,7 @@ export const equipmentReturnsRouter = router({
         const updated = await tx.returnRequest.update({
           where: { id: input.id },
           data: {
-            status: "SHIPMENT_CREATED",
+            status: 'SHIPMENT_CREATED',
             approvedByUserId: ctx.user?.id,
             approvedAt: new Date(),
             shipmentId: firstShipmentId,
@@ -193,33 +193,33 @@ export const equipmentReturnsRouter = router({
       // Fire-and-forget: notify contractor about approved return with label info (D-13)
       void dispatch({
         organizationId: ctx.organizationId,
-        type: "EQUIPMENT_RETURN_APPROVED",
+        type: 'EQUIPMENT_RETURN_APPROVED',
         recipientUserIds: [],
         title: NOTIFICATION_KEYS.equipment.returnApproved.title,
         body: NOTIFICATION_KEYS.equipment.returnApproved.body,
-        entityType: "RETURN_REQUEST",
+        entityType: 'RETURN_REQUEST',
         entityId: returnRequest.id,
         metadata: {
           contractorId: returnRequest.contractorId,
           trackingNumber: shipmentResult.trackingNumber,
           targetPoint: returnRequest.targetPointName,
         },
-      }).catch((err) =>
-        console.error("[equipment] Failed to dispatch return approval notification:", err),
+      }).catch(err =>
+        console.error('[equipment] Failed to dispatch return approval notification:', err),
       );
 
       // Audit log
       await ctx.db.auditLog.create({
         data: {
           organizationId: ctx.organizationId,
-          actorType: "USER",
+          actorType: 'USER',
           actorId: ctx.user?.id,
           actorName: ctx.user?.name,
-          action: "returnRequest.approve",
-          resourceType: "RETURN_REQUEST",
+          action: 'returnRequest.approve',
+          resourceType: 'RETURN_REQUEST',
           resourceId: returnRequest.id,
           newValuesJson: {
-            status: "SHIPMENT_CREATED",
+            status: 'SHIPMENT_CREATED',
             externalId: shipmentResult.externalId,
             trackingNumber: shipmentResult.trackingNumber,
             equipmentCount: assignments.length,
@@ -235,7 +235,7 @@ export const equipmentReturnsRouter = router({
    * Reverts equipment statuses from RETURN_REQUESTED back to previous state.
    */
   rejectReturnRequest: tenantProcedure
-    .use(requirePermission({ equipment: ["update"] }))
+    .use(requirePermission({ equipment: ['update'] }))
     .input(returnRequestRejectSchema)
     .mutation(async ({ ctx, input }) => {
       const returnRequest = await ctx.db.returnRequest.findFirst({
@@ -247,24 +247,24 @@ export const equipmentReturnsRouter = router({
 
       if (!returnRequest) {
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "RETURN_REQUEST_NOT_FOUND",
+          code: 'NOT_FOUND',
+          message: 'RETURN_REQUEST_NOT_FOUND',
         });
       }
 
-      if (returnRequest.status !== "PENDING_APPROVAL") {
+      if (returnRequest.status !== 'PENDING_APPROVAL') {
         throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "RETURN_REQUEST_NOT_PENDING",
+          code: 'BAD_REQUEST',
+          message: 'RETURN_REQUEST_NOT_PENDING',
         });
       }
 
-      const result = await ctx.db.$transaction(async (tx) => {
+      const result = await ctx.db.$transaction(async tx => {
         // Update ReturnRequest
         const updated = await tx.returnRequest.update({
           where: { id: input.id },
           data: {
-            status: "REJECTED",
+            status: 'REJECTED',
             rejectedReason: input.reason ?? null,
             rejectedByUserId: ctx.user?.id,
             rejectedAt: new Date(),
@@ -280,7 +280,7 @@ export const equipmentReturnsRouter = router({
         await tx.equipment.updateMany({
           where: {
             organizationId: ctx.organizationId,
-            status: "RETURN_REQUESTED",
+            status: 'RETURN_REQUESTED',
             assignments: {
               some: {
                 contractorId: returnRequest.contractorId,
@@ -288,7 +288,7 @@ export const equipmentReturnsRouter = router({
               },
             },
           },
-          data: { status: "ASSIGNED" },
+          data: { status: 'ASSIGNED' },
         });
 
         return updated;
@@ -297,32 +297,32 @@ export const equipmentReturnsRouter = router({
       // Fire-and-forget: notify contractor about rejection
       void dispatch({
         organizationId: ctx.organizationId,
-        type: "EQUIPMENT_RETURN_REJECTED",
+        type: 'EQUIPMENT_RETURN_REJECTED',
         recipientUserIds: [],
         title: NOTIFICATION_KEYS.equipment.returnRejected.title,
         body: NOTIFICATION_KEYS.equipment.returnRejected.body,
-        entityType: "RETURN_REQUEST",
+        entityType: 'RETURN_REQUEST',
         entityId: returnRequest.id,
         metadata: {
           contractorId: returnRequest.contractorId,
           reason: input.reason,
         },
-      }).catch((err) =>
-        console.error("[equipment] Failed to dispatch return rejection notification:", err),
+      }).catch(err =>
+        console.error('[equipment] Failed to dispatch return rejection notification:', err),
       );
 
       // Audit log
       await ctx.db.auditLog.create({
         data: {
           organizationId: ctx.organizationId,
-          actorType: "USER",
+          actorType: 'USER',
           actorId: ctx.user?.id,
           actorName: ctx.user?.name,
-          action: "returnRequest.reject",
-          resourceType: "RETURN_REQUEST",
+          action: 'returnRequest.reject',
+          resourceType: 'RETURN_REQUEST',
           resourceId: returnRequest.id,
           newValuesJson: {
-            status: "REJECTED",
+            status: 'REJECTED',
             reason: input.reason,
           },
         },
@@ -336,7 +336,7 @@ export const equipmentReturnsRouter = router({
    * Optionally filter by status.
    */
   listReturnRequests: tenantProcedure
-    .use(requirePermission({ equipment: ["read"] }))
+    .use(requirePermission({ equipment: ['read'] }))
     .input(
       z.object({
         status: returnRequestStatusEnum.optional(),
@@ -353,7 +353,7 @@ export const equipmentReturnsRouter = router({
 
       const returnRequests = await ctx.db.returnRequest.findMany({
         where,
-        orderBy: { createdAt: "desc" },
+        orderBy: { createdAt: 'desc' },
         include: {
           contractor: {
             select: {

@@ -1,43 +1,43 @@
-"use client";
+'use client';
 
-import { useTranslations } from "next-intl";
-import React from "react";
-import type { UseFormReturn } from "react-hook-form";
+import { useTranslations } from 'next-intl';
+import React from 'react';
+import type { UseFormReturn } from 'react-hook-form';
 
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 
-import type { WizardFormValues } from "./wizard-dialog";
+import type { WizardFormValues } from './wizard-dialog';
 
 interface StepBillingProps {
   form: UseFormReturn<WizardFormValues>;
 }
 
-const BILLING_MODEL_VALUES = ["FIXED", "HOURLY", "PROJECT", "MILESTONE"] as const;
+const BILLING_MODEL_VALUES = ['FIXED', 'HOURLY', 'PROJECT', 'MILESTONE'] as const;
 
-const CURRENCIES = ["PLN", "EUR", "USD"] as const;
+const CURRENCIES = ['PLN', 'EUR', 'USD'] as const;
 
 /**
  * Step 2: Billing configuration.
  * Fields: billing model, currency, rate, bank account IBAN, payment terms.
  */
 export function StepBilling({ form }: StepBillingProps) {
-  const t = useTranslations("ContractorWizard.fields");
-  const tb = useTranslations("ContractorWizard.billingModelOptions");
+  const t = useTranslations('ContractorWizard.fields');
+  const tb = useTranslations('ContractorWizard.billingModelOptions');
 
-  const billingModelItems = BILLING_MODEL_VALUES.map((v) => ({
+  const billingModelItems = BILLING_MODEL_VALUES.map(v => ({
     value: v,
     label: tb(v),
   }));
 
-  const _currencyItems = CURRENCIES.map((c) => ({
+  const _currencyItems = CURRENCIES.map(c => ({
     value: c,
     label: c,
   }));
@@ -50,16 +50,16 @@ export function StepBilling({ form }: StepBillingProps) {
   } = form;
 
   // Local state for rate input — prevents cursor jumping during typing.
-  const rateMinor = watch("rateValueMinor");
+  const rateMinor = watch('rateValueMinor');
   const [rateLocal, setRateLocal] = React.useState(() =>
-    typeof rateMinor === "number" && rateMinor > 0 ? (rateMinor / 100).toString() : "",
+    typeof rateMinor === 'number' && rateMinor > 0 ? (rateMinor / 100).toString() : '',
   );
 
   React.useEffect(() => {
     const fromForm =
-      typeof rateMinor === "number" && rateMinor > 0 ? (rateMinor / 100).toString() : "";
-    setRateLocal((prev) => {
-      const prevMinor = Math.round(parseFloat(prev || "0") * 100);
+      typeof rateMinor === 'number' && rateMinor > 0 ? (rateMinor / 100).toString() : '';
+    setRateLocal(prev => {
+      const prevMinor = Math.round(parseFloat(prev || '0') * 100);
       if (prevMinor !== rateMinor) return fromForm;
       return prev;
     });
@@ -68,17 +68,17 @@ export function StepBilling({ form }: StepBillingProps) {
   const handleRateBlur = () => {
     const value = parseFloat(rateLocal);
     if (!Number.isNaN(value) && value >= 0) {
-      setValue("rateValueMinor", Math.round(value * 100), {
+      setValue('rateValueMinor', Math.round(value * 100), {
         shouldDirty: true,
         shouldValidate: true,
       });
       setRateLocal(value.toFixed(2));
     } else {
-      setValue("rateValueMinor", 0, {
+      setValue('rateValueMinor', 0, {
         shouldDirty: true,
         shouldValidate: true,
       });
-      setRateLocal("");
+      setRateLocal('');
     }
   };
 
@@ -86,22 +86,21 @@ export function StepBilling({ form }: StepBillingProps) {
     <div className="space-y-4">
       {/* Billing model */}
       <div className="space-y-2">
-        <Label className="text-[13px]">{t("billingModel")}</Label>
+        <Label className="text-[13px]">{t('billingModel')}</Label>
         <Select
-          value={watch("billingModel") ?? ""}
-          onValueChange={(value) =>
-            setValue("billingModel", value ?? "", {
+          value={watch('billingModel') ?? ''}
+          onValueChange={value =>
+            setValue('billingModel', value ?? '', {
               shouldDirty: true,
               shouldValidate: true,
             })
           }
-          items={billingModelItems}
-        >
+          items={billingModelItems}>
           <SelectTrigger className="w-full">
-            <SelectValue placeholder={t("billingModel")} />
+            <SelectValue placeholder={t('billingModel')} />
           </SelectTrigger>
           <SelectContent>
-            {billingModelItems.map((model) => (
+            {billingModelItems.map(model => (
               <SelectItem key={model.value} value={model.value}>
                 {model.label}
               </SelectItem>
@@ -115,21 +114,20 @@ export function StepBilling({ form }: StepBillingProps) {
 
       {/* Currency */}
       <div className="space-y-2">
-        <Label className="text-[13px]">{t("currency")}</Label>
+        <Label className="text-[13px]">{t('currency')}</Label>
         <Select
-          value={watch("currency") ?? "PLN"}
-          onValueChange={(value) =>
-            setValue("currency", value ?? "PLN", {
+          value={watch('currency') ?? 'PLN'}
+          onValueChange={value =>
+            setValue('currency', value ?? 'PLN', {
               shouldDirty: true,
               shouldValidate: true,
             })
-          }
-        >
+          }>
           <SelectTrigger className="w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {CURRENCIES.map((currency) => (
+            {CURRENCIES.map(currency => (
               <SelectItem key={currency} value={currency}>
                 {currency}
               </SelectItem>
@@ -142,7 +140,7 @@ export function StepBilling({ form }: StepBillingProps) {
       {/* Default rate (display as zloty, store as minor units) */}
       <div className="space-y-2">
         <Label htmlFor="rate" className="text-[13px]">
-          {t("rate")}
+          {t('rate')}
         </Label>
         <div className="relative">
           <Input
@@ -152,11 +150,11 @@ export function StepBilling({ form }: StepBillingProps) {
             min="0"
             className="font-mono pe-16"
             value={rateLocal}
-            onChange={(e) => setRateLocal(e.target.value)}
+            onChange={e => setRateLocal(e.target.value)}
             onBlur={handleRateBlur}
           />
           <span className="absolute end-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-            {watch("currency") ?? "PLN"}
+            {watch('currency') ?? 'PLN'}
           </span>
         </div>
         {errors.rateValueMinor && (
@@ -167,13 +165,13 @@ export function StepBilling({ form }: StepBillingProps) {
       {/* Bank account IBAN */}
       <div className="space-y-2">
         <Label htmlFor="bankAccount" className="text-[13px]">
-          {t("bankAccount")}
+          {t('bankAccount')}
         </Label>
         <Input
           id="bankAccount"
           className="font-mono"
           placeholder="PL00 0000 0000 0000 0000 0000 0000"
-          {...register("bankAccount")}
+          {...register('bankAccount')}
         />
         {errors.bankAccount && (
           <p className="text-sm text-destructive">{errors.bankAccount.message}</p>
@@ -183,14 +181,14 @@ export function StepBilling({ form }: StepBillingProps) {
       {/* Payment terms */}
       <div className="space-y-2">
         <Label htmlFor="paymentTermsDays" className="text-[13px]">
-          {t("paymentTerms")}
+          {t('paymentTerms')}
         </Label>
         <Input
           id="paymentTermsDays"
           type="number"
           min="1"
           placeholder="30"
-          {...register("paymentTermsDays", {
+          {...register('paymentTermsDays', {
             setValueAs: (v: string) => {
               const n = parseInt(v, 10);
               return Number.isNaN(n) ? undefined : n;

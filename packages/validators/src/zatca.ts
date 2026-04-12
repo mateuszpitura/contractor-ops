@@ -7,7 +7,7 @@ export type {
   ZatcaInvoiceFields,
   ZatcaOnboardingStepType,
   ZatcaTaxDetails,
-} from "@contractor-ops/einvoice";
+} from '@contractor-ops/einvoice';
 export {
   zatcaConnectionConfigSchema,
   zatcaCsrAttributesSchema,
@@ -15,4 +15,4 @@ export {
   zatcaInvoiceFieldsSchema,
   zatcaOnboardingStepSchema,
   zatcaTaxDetailsSchema,
-} from "@contractor-ops/einvoice";
+} from '@contractor-ops/einvoice';

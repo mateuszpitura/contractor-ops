@@ -1,16 +1,16 @@
-import { act, renderHook } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
-import { useWizardSteps } from "../use-wizard-steps";
+import { act, renderHook } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
+import { useWizardSteps } from '../use-wizard-steps';
 
-describe("useWizardSteps", () => {
-  it("starts at step 0 with isFirst=true", () => {
+describe('useWizardSteps', () => {
+  it('starts at step 0 with isFirst=true', () => {
     const { result } = renderHook(() => useWizardSteps(3));
     expect(result.current.currentStep).toBe(0);
     expect(result.current.isFirst).toBe(true);
     expect(result.current.isLast).toBe(false);
   });
 
-  it("goNext advances the step", () => {
+  it('goNext advances the step', () => {
     const { result } = renderHook(() => useWizardSteps(3));
 
     act(() => {
@@ -21,7 +21,7 @@ describe("useWizardSteps", () => {
     expect(result.current.isLast).toBe(false);
   });
 
-  it("goNext clamps at the last step", () => {
+  it('goNext clamps at the last step', () => {
     const { result } = renderHook(() => useWizardSteps(2));
 
     act(() => {
@@ -36,7 +36,7 @@ describe("useWizardSteps", () => {
     expect(result.current.currentStep).toBe(1);
   });
 
-  it("goBack decrements the step", () => {
+  it('goBack decrements the step', () => {
     const { result } = renderHook(() => useWizardSteps(3));
 
     act(() => {
@@ -51,7 +51,7 @@ describe("useWizardSteps", () => {
     expect(result.current.currentStep).toBe(1);
   });
 
-  it("goBack clamps at 0", () => {
+  it('goBack clamps at 0', () => {
     const { result } = renderHook(() => useWizardSteps(3));
 
     act(() => {
@@ -61,7 +61,7 @@ describe("useWizardSteps", () => {
     expect(result.current.isFirst).toBe(true);
   });
 
-  it("goTo jumps to a specific step within bounds", () => {
+  it('goTo jumps to a specific step within bounds', () => {
     const { result } = renderHook(() => useWizardSteps(5));
 
     act(() => {
@@ -70,7 +70,7 @@ describe("useWizardSteps", () => {
     expect(result.current.currentStep).toBe(3);
   });
 
-  it("goTo clamps out-of-range values", () => {
+  it('goTo clamps out-of-range values', () => {
     const { result } = renderHook(() => useWizardSteps(3));
 
     act(() => {
@@ -84,7 +84,7 @@ describe("useWizardSteps", () => {
     expect(result.current.currentStep).toBe(0);
   });
 
-  it("reset returns to step 0", () => {
+  it('reset returns to step 0', () => {
     const { result } = renderHook(() => useWizardSteps(3));
 
     act(() => {
@@ -99,7 +99,7 @@ describe("useWizardSteps", () => {
     expect(result.current.isFirst).toBe(true);
   });
 
-  it("handles single-step wizard", () => {
+  it('handles single-step wizard', () => {
     const { result } = renderHook(() => useWizardSteps(1));
     expect(result.current.isFirst).toBe(true);
     expect(result.current.isLast).toBe(true);

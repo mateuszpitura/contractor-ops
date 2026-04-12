@@ -1,9 +1,9 @@
-import { decryptCredentials } from "@contractor-ops/integrations/services/credential-service";
-import type { JiraIssueMetadata, JiraTaskConfig } from "@contractor-ops/validators";
-import { jiraTaskConfigSchema } from "@contractor-ops/validators";
-import { TRPCError } from "@trpc/server";
-import { lookupJiraTransitionId } from "./jira-status-mapping.js";
-import type { DbClient } from "./types.js";
+import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
+import type { JiraIssueMetadata, JiraTaskConfig } from '@contractor-ops/validators';
+import { jiraTaskConfigSchema } from '@contractor-ops/validators';
+import { TRPCError } from '@trpc/server';
+import { lookupJiraTransitionId } from './jira-status-mapping.js';
+import type { DbClient } from './types.js';
 
 type PrismaClient = DbClient;
 
@@ -40,19 +40,19 @@ function buildJiraApiContext(
 
   if (!config?.cloudId) {
     throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: "Jira connection is missing cloudId. Please reconnect your Jira integration.",
+      code: 'BAD_REQUEST',
+      message: 'Jira connection is missing cloudId. Please reconnect your Jira integration.',
     });
   }
 
-  const credentials = decryptCredentials(credentialsRef, "jira");
+  const credentials = decryptCredentials(credentialsRef, 'jira');
 
   return {
     baseUrl: `https://api.atlassian.com/ex/jira/${config.cloudId}/rest/api/3`,
     authHeaders: {
       Authorization: `Bearer ${credentials.accessToken}`,
-      Accept: "application/json",
-      "Content-Type": "application/json",
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
     },
     siteUrl: `https://api.atlassian.com/ex/jira/${config.cloudId}`,
   };
@@ -97,8 +97,8 @@ export async function createJiraIssue(
 
   if (!taskRun) {
     throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "Workflow task run not found",
+      code: 'NOT_FOUND',
+      message: 'Workflow task run not found',
     });
   }
 
@@ -120,9 +120,9 @@ export async function createJiraIssue(
 
   if (!(jiraConfig?.jiraEnabled && jiraConfig.jiraProjectId && jiraConfig.jiraIssueTypeId)) {
     throw new TRPCError({
-      code: "BAD_REQUEST",
+      code: 'BAD_REQUEST',
       message:
-        "Jira is not configured for this task template. Set project and issue type mapping in workflow settings.",
+        'Jira is not configured for this task template. Set project and issue type mapping in workflow settings.',
     });
   }
 
@@ -131,10 +131,10 @@ export async function createJiraIssue(
     where: { id: connectionId },
   });
 
-  if (!connection || connection.status !== "CONNECTED") {
+  if (!connection || connection.status !== 'CONNECTED') {
     throw new TRPCError({
-      code: "PRECONDITION_FAILED",
-      message: "Jira connection is not active",
+      code: 'PRECONDITION_FAILED',
+      message: 'Jira connection is not active',
     });
   }
 
@@ -154,11 +154,11 @@ export async function createJiraIssue(
     data: {
       organizationId,
       integrationConnectionId: connectionId,
-      direction: "OUTBOUND",
-      syncType: "issue-create",
-      entityType: "WORKFLOW_TASK_RUN",
+      direction: 'OUTBOUND',
+      syncType: 'issue-create',
+      entityType: 'WORKFLOW_TASK_RUN',
       entityId: taskRunId,
-      status: "STARTED",
+      status: 'STARTED',
     },
   });
 
@@ -171,12 +171,12 @@ export async function createJiraIssue(
         issuetype: { id: jiraConfig.jiraIssueTypeId },
         summary: taskRun.title,
         description: {
-          type: "doc",
+          type: 'doc',
           version: 1,
           content: [
             {
-              type: "paragraph",
-              content: [{ type: "text", text: descriptionText }],
+              type: 'paragraph',
+              content: [{ type: 'text', text: descriptionText }],
             },
           ],
         },
@@ -184,15 +184,15 @@ export async function createJiraIssue(
     };
 
     const response = await fetch(`${baseUrl}/issue`, {
-      method: "POST",
+      method: 'POST',
       headers: authHeaders,
       body: JSON.stringify(issueBody),
     });
 
     if (response.status === 401) {
       throw new TRPCError({
-        code: "UNAUTHORIZED",
-        message: "Jira access token is invalid or expired. Please reconnect your Jira integration.",
+        code: 'UNAUTHORIZED',
+        message: 'Jira access token is invalid or expired. Please reconnect your Jira integration.',
       });
     }
 
@@ -207,7 +207,7 @@ export async function createJiraIssue(
     await prisma.workflowTaskRun.update({
       where: { id: taskRunId },
       data: {
-        externalRefType: "JIRA_ISSUE",
+        externalRefType: 'JIRA_ISSUE',
         externalRefId: created.key,
       },
     });
@@ -217,10 +217,10 @@ export async function createJiraIssue(
     const metadata: JiraIssueMetadata = {
       key: created.key,
       summary: taskRun.title,
-      status: "To Do",
-      statusCategory: "new",
-      url: issueUrl ?? "",
-      lastSyncOrigin: "APP",
+      status: 'To Do',
+      statusCategory: 'new',
+      url: issueUrl ?? '',
+      lastSyncOrigin: 'APP',
       lastSyncAt: new Date().toISOString(),
     };
 
@@ -228,11 +228,11 @@ export async function createJiraIssue(
       data: {
         organizationId,
         integrationConnectionId: connectionId,
-        entityType: "WORKFLOW_TASK_RUN",
+        entityType: 'WORKFLOW_TASK_RUN',
         entityId: taskRunId,
-        externalType: "JIRA_ISSUE",
+        externalType: 'JIRA_ISSUE',
         externalId: created.key,
-        externalUrl: issueUrl ?? "",
+        externalUrl: issueUrl ?? '',
         metadataJson: metadata,
       },
     });
@@ -241,7 +241,7 @@ export async function createJiraIssue(
     await prisma.integrationSyncLog.update({
       where: { id: syncLog.id },
       data: {
-        status: "SUCCESS",
+        status: 'SUCCESS',
         completedAt: new Date(),
         responsePayloadJson: {
           issueKey: created.key,
@@ -257,16 +257,16 @@ export async function createJiraIssue(
     await prisma.integrationSyncLog.update({
       where: { id: syncLog.id },
       data: {
-        status: "FAILED",
+        status: 'FAILED',
         completedAt: new Date(),
-        errorMessage: error instanceof Error ? error.message : "Unknown error",
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
       },
     });
 
     if (error instanceof TRPCError) throw error;
     throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "Failed to create Jira issue",
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'Failed to create Jira issue',
       cause: error,
     });
   }
@@ -304,9 +304,9 @@ export async function transitionJiraIssue(
   const externalLink = await prisma.externalLink.findFirst({
     where: {
       organizationId,
-      entityType: "WORKFLOW_TASK_RUN",
+      entityType: 'WORKFLOW_TASK_RUN',
       entityId: taskRunId,
-      externalType: "JIRA_ISSUE",
+      externalType: 'JIRA_ISSUE',
     },
   });
 
@@ -346,11 +346,11 @@ export async function transitionJiraIssue(
       data: {
         organizationId,
         integrationConnectionId: connectionId,
-        direction: "OUTBOUND",
-        syncType: "issue-transition-unmapped",
-        entityType: "WORKFLOW_TASK_RUN",
+        direction: 'OUTBOUND',
+        syncType: 'issue-transition-unmapped',
+        entityType: 'WORKFLOW_TASK_RUN',
         entityId: taskRunId,
-        status: "FAILED",
+        status: 'FAILED',
         completedAt: new Date(),
         errorMessage: `Cannot determine Jira project ID for task run ${taskRunId}`,
       },
@@ -367,16 +367,16 @@ export async function transitionJiraIssue(
       data: {
         organizationId,
         integrationConnectionId: connectionId,
-        direction: "OUTBOUND",
-        syncType: "issue-transition-unmapped",
-        entityType: "WORKFLOW_TASK_RUN",
+        direction: 'OUTBOUND',
+        syncType: 'issue-transition-unmapped',
+        entityType: 'WORKFLOW_TASK_RUN',
         entityId: taskRunId,
-        status: "SUCCESS",
+        status: 'SUCCESS',
         completedAt: new Date(),
         responsePayloadJson: {
           issueKey,
           workflowStatus: newWorkflowStatus,
-          reason: "No Jira transition mapping found for this workflow status",
+          reason: 'No Jira transition mapping found for this workflow status',
         },
       },
     });
@@ -388,7 +388,7 @@ export async function transitionJiraIssue(
     where: { id: connectionId },
   });
 
-  if (!connection || connection.status !== "CONNECTED") {
+  if (!connection || connection.status !== 'CONNECTED') {
     return;
   }
 
@@ -404,7 +404,7 @@ export async function transitionJiraIssue(
     data: {
       metadataJson: {
         ...existingMetadata,
-        lastSyncOrigin: "APP",
+        lastSyncOrigin: 'APP',
         lastSyncAt: new Date().toISOString(),
       },
     },
@@ -415,11 +415,11 @@ export async function transitionJiraIssue(
     data: {
       organizationId,
       integrationConnectionId: connectionId,
-      direction: "OUTBOUND",
-      syncType: "issue-transition",
-      entityType: "WORKFLOW_TASK_RUN",
+      direction: 'OUTBOUND',
+      syncType: 'issue-transition',
+      entityType: 'WORKFLOW_TASK_RUN',
       entityId: taskRunId,
-      status: "STARTED",
+      status: 'STARTED',
       requestPayloadJson: {
         issueKey,
         transitionId: mapping.transitionId,
@@ -432,7 +432,7 @@ export async function transitionJiraIssue(
   try {
     // 7. POST transition to Jira
     const response = await fetch(`${baseUrl}/issue/${issueKey}/transitions`, {
-      method: "POST",
+      method: 'POST',
       headers: authHeaders,
       body: JSON.stringify({
         transition: { id: mapping.transitionId },
@@ -441,8 +441,8 @@ export async function transitionJiraIssue(
 
     if (response.status === 401) {
       throw new TRPCError({
-        code: "UNAUTHORIZED",
-        message: "Jira access token is invalid or expired. Please reconnect your Jira integration.",
+        code: 'UNAUTHORIZED',
+        message: 'Jira access token is invalid or expired. Please reconnect your Jira integration.',
       });
     }
 
@@ -459,7 +459,7 @@ export async function transitionJiraIssue(
           ...existingMetadata,
           status: mapping.targetStatusName,
           statusCategory: mapping.targetStatusCategory,
-          lastSyncOrigin: "APP",
+          lastSyncOrigin: 'APP',
           lastSyncAt: new Date().toISOString(),
         },
       },
@@ -469,7 +469,7 @@ export async function transitionJiraIssue(
     await prisma.integrationSyncLog.update({
       where: { id: syncLog.id },
       data: {
-        status: "SUCCESS",
+        status: 'SUCCESS',
         completedAt: new Date(),
         responsePayloadJson: {
           issueKey,
@@ -482,9 +482,9 @@ export async function transitionJiraIssue(
     await prisma.integrationSyncLog.update({
       where: { id: syncLog.id },
       data: {
-        status: "FAILED",
+        status: 'FAILED',
         completedAt: new Date(),
-        errorMessage: error instanceof Error ? error.message : "Unknown error",
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
       },
     });
 
@@ -492,14 +492,14 @@ export async function transitionJiraIssue(
       where: { id: connectionId },
       data: {
         lastErrorAt: new Date(),
-        lastErrorMessage: error instanceof Error ? error.message : "Unknown error",
+        lastErrorMessage: error instanceof Error ? error.message : 'Unknown error',
       },
     });
 
     if (error instanceof TRPCError) throw error;
     throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "Failed to transition Jira issue",
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'Failed to transition Jira issue',
       cause: error,
     });
   }
@@ -520,8 +520,8 @@ export async function transitionJiraIssue(
  * @returns true if the stored scope needs expansion
  */
 export function detectScopeExpansionNeeded(storedScope: string): boolean {
-  const requiredScopes = ["write:jira-work", "manage:jira-webhook"];
-  const currentScopes = storedScope.split(" ");
+  const requiredScopes = ['write:jira-work', 'manage:jira-webhook'];
+  const currentScopes = storedScope.split(' ');
 
-  return requiredScopes.some((scope) => !currentScopes.includes(scope));
+  return requiredScopes.some(scope => !currentScopes.includes(scope));
 }

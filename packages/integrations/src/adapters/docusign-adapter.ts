@@ -1,8 +1,8 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
-import { prisma } from "@contractor-ops/db";
-import { decryptCredentials } from "../services/credential-service.js";
-import { handleSigningWebhook } from "../services/esign-webhook-handler.js";
-import type { CredentialBlob } from "../types/credentials.js";
+import { createHmac, timingSafeEqual } from 'node:crypto';
+import { prisma } from '@contractor-ops/db';
+import { decryptCredentials } from '../services/credential-service.js';
+import { handleSigningWebhook } from '../services/esign-webhook-handler.js';
+import type { CredentialBlob } from '../types/credentials.js';
 import type {
   EmbeddedSigningUrlResult,
   ESignAdapter,
@@ -10,10 +10,10 @@ import type {
   SignedDocumentResult,
   SigningEnvelopeRequest,
   SigningEnvelopeResult,
-} from "../types/esign.js";
-import type { OAuthConfig } from "../types/provider.js";
-import type { WebhookVerificationResult } from "../types/webhook.js";
-import { BaseAdapter } from "./base-adapter.js";
+} from '../types/esign.js';
+import type { OAuthConfig } from '../types/provider.js';
+import type { WebhookVerificationResult } from '../types/webhook.js';
+import { BaseAdapter } from './base-adapter.js';
 
 // ---------------------------------------------------------------------------
 // DocuSign SDK types (untyped JS SDK — declare minimal shapes we use)
@@ -110,8 +110,8 @@ interface DocuSignSdk {
  * - APP_URL — for embedded signing frame ancestors
  */
 export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
-  readonly slug = "docusign";
-  readonly displayName = "DocuSign";
+  readonly slug = 'docusign';
+  readonly displayName = 'DocuSign';
   readonly supportsOAuth = true;
   readonly supportsWebhooks = true;
   readonly supportsEmbeddedSigning = true;
@@ -122,12 +122,12 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
 
   getOAuthConfig(): OAuthConfig {
     return {
-      clientIdEnvVar: "DOCUSIGN_CLIENT_ID",
-      clientSecretEnvVar: "DOCUSIGN_CLIENT_SECRET",
-      authorizationUrl: "https://account-d.docusign.com/oauth/auth",
-      tokenUrl: "https://account-d.docusign.com/oauth/token",
-      scopes: ["signature"],
-      redirectPath: "/api/oauth/docusign/callback",
+      clientIdEnvVar: 'DOCUSIGN_CLIENT_ID',
+      clientSecretEnvVar: 'DOCUSIGN_CLIENT_SECRET',
+      authorizationUrl: 'https://account-d.docusign.com/oauth/auth',
+      tokenUrl: 'https://account-d.docusign.com/oauth/token',
+      scopes: ['signature'],
+      redirectPath: '/api/oauth/docusign/callback',
     };
   }
 
@@ -137,18 +137,18 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
 
     if (!(clientId && clientSecret)) {
       throw new Error(
-        "DOCUSIGN_CLIENT_ID and DOCUSIGN_CLIENT_SECRET environment variables are required",
+        'DOCUSIGN_CLIENT_ID and DOCUSIGN_CLIENT_SECRET environment variables are required',
       );
     }
 
-    const response = await fetch("https://account-d.docusign.com/oauth/token", {
-      method: "POST",
+    const response = await fetch('https://account-d.docusign.com/oauth/token', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+        Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
       },
       body: new URLSearchParams({
-        grant_type: "authorization_code",
+        grant_type: 'authorization_code',
         code,
         redirect_uri: redirectUri,
       }),
@@ -170,7 +170,7 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
       accessToken: data.access_token,
       refreshToken: data.refresh_token,
       tokenType: data.token_type,
-      scope: "signature",
+      scope: 'signature',
       expiresAt: new Date(Date.now() + data.expires_in * 1000).toISOString(),
     };
   }
@@ -181,22 +181,22 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
 
     if (!(clientId && clientSecret)) {
       throw new Error(
-        "DOCUSIGN_CLIENT_ID and DOCUSIGN_CLIENT_SECRET environment variables are required",
+        'DOCUSIGN_CLIENT_ID and DOCUSIGN_CLIENT_SECRET environment variables are required',
       );
     }
 
     if (!credentials.refreshToken) {
-      throw new Error("No refresh token available for DocuSign");
+      throw new Error('No refresh token available for DocuSign');
     }
 
-    const response = await fetch("https://account-d.docusign.com/oauth/token", {
-      method: "POST",
+    const response = await fetch('https://account-d.docusign.com/oauth/token', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+        Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
       },
       body: new URLSearchParams({
-        grant_type: "refresh_token",
+        grant_type: 'refresh_token',
         refresh_token: credentials.refreshToken,
       }),
     });
@@ -239,8 +239,8 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
     const document = docusign.Document.constructFromObject({
       documentBase64: request.documentBase64,
       name: request.documentName,
-      fileExtension: "pdf",
-      documentId: "1",
+      fileExtension: 'pdf',
+      documentId: '1',
     });
 
     // Build signers with routing order and embedded signing support
@@ -265,7 +265,7 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
       emailSubject: request.message ?? `Please sign: ${request.documentName}`,
       documents: [document],
       recipients: docusign.Recipients.constructFromObject({ signers }),
-      status: "sent",
+      status: 'sent',
     };
 
     // Configure notifications if specified
@@ -274,7 +274,7 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
 
       if (request.expiresInDays) {
         notification.expirations = docusign.Expirations.constructFromObject({
-          expireEnabled: "true",
+          expireEnabled: 'true',
           expireAfter: String(request.expiresInDays),
           expireWarn: String(Math.max(1, request.expiresInDays - 2)),
         });
@@ -282,7 +282,7 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
 
       if (request.reminderIntervalDays) {
         notification.reminders = docusign.Reminders.constructFromObject({
-          reminderEnabled: "true",
+          reminderEnabled: 'true',
           reminderDelay: String(request.reminderIntervalDays),
           reminderFrequency: String(request.reminderIntervalDays),
         });
@@ -303,7 +303,7 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
       signers: request.signers.map((signer, index) => ({
         externalRecipientId: String(index + 1),
         email: signer.email,
-        status: "sent",
+        status: 'sent',
       })),
     };
   }
@@ -319,16 +319,16 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
 
     const envelopesApi = new docusign.EnvelopesApi(apiClient);
 
-    const appUrl = process.env.APP_URL ?? "http://localhost:3000";
+    const appUrl = process.env.APP_URL ?? 'http://localhost:3000';
     const origin = new URL(appUrl).origin;
 
     const viewRequest = docusign.RecipientViewRequest.constructFromObject({
       returnUrl,
-      authenticationMethod: "none",
+      authenticationMethod: 'none',
       email: recipientEmail,
       userName: recipientEmail,
       clientUserId: recipientEmail,
-      frameAncestors: [origin, "https://apps-d.docusign.com"],
+      frameAncestors: [origin, 'https://apps-d.docusign.com'],
       messageOrigins: [origin],
     });
 
@@ -353,11 +353,11 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
     const envelopesApi = new docusign.EnvelopesApi(apiClient);
 
     // "combined" returns all documents as a single PDF
-    const documentBytes: Buffer = await envelopesApi.getDocument(accountId, envelopeId, "combined");
+    const documentBytes: Buffer = await envelopesApi.getDocument(accountId, envelopeId, 'combined');
 
     return {
-      documentBase64: Buffer.from(documentBytes).toString("base64"),
-      mimeType: "application/pdf",
+      documentBase64: Buffer.from(documentBytes).toString('base64'),
+      mimeType: 'application/pdf',
       fileName: `signed-${envelopeId}.pdf`,
     };
   }
@@ -379,7 +379,7 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
     return {
       externalEnvelopeId: envelope.envelopeId,
       status: envelope.status,
-      signers: (recipients.signers ?? []).map((signer) => ({
+      signers: (recipients.signers ?? []).map(signer => ({
         externalRecipientId: signer.recipientId,
         email: signer.email,
         status: signer.status,
@@ -394,7 +394,7 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
     const envelopesApi = new docusign.EnvelopesApi(apiClient);
 
     const envelope = docusign.Envelope.constructFromObject({
-      status: "voided",
+      status: 'voided',
       voidedReason: reason,
     });
 
@@ -418,7 +418,7 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
     );
 
     const matchingSigner = currentRecipients.signers?.find(
-      (s) => s.email.toLowerCase() === recipientEmail.toLowerCase(),
+      s => s.email.toLowerCase() === recipientEmail.toLowerCase(),
     );
 
     if (!matchingSigner) {
@@ -437,7 +437,7 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
 
     await envelopesApi.updateRecipients(accountId, envelopeId, {
       recipients,
-      resendEnvelope: "true",
+      resendEnvelope: 'true',
     });
   }
 
@@ -448,17 +448,17 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
   normalizeWebhookEvent(payload: unknown): NormalizedSigningEvent {
     const data = payload as DocuSignConnectPayload;
 
-    const envelopeId = data.envelopeId ?? data.data?.envelopeId ?? "";
-    const envelopeStatus = data.status ?? data.data?.envelopeSummary?.status ?? "";
+    const envelopeId = data.envelopeId ?? data.data?.envelopeId ?? '';
+    const envelopeStatus = data.status ?? data.data?.envelopeSummary?.status ?? '';
 
     // Check for recipient-level events
     const recipientStatuses = data.data?.envelopeSummary?.recipients?.signers ?? [];
     const changedRecipient = recipientStatuses.find(
       (r: { status?: string }) =>
-        r.status === "completed" ||
-        r.status === "declined" ||
-        r.status === "delivered" ||
-        r.status === "sent",
+        r.status === 'completed' ||
+        r.status === 'declined' ||
+        r.status === 'delivered' ||
+        r.status === 'sent',
     );
 
     const eventType = this.mapDocuSignEventType(envelopeStatus, changedRecipient?.status);
@@ -468,12 +468,12 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
       eventType,
       recipientEmail: changedRecipient?.email,
       recipientStatus: changedRecipient
-        ? this.mapRecipientStatus(changedRecipient.status ?? "")
+        ? this.mapRecipientStatus(changedRecipient.status ?? '')
         : undefined,
       envelopeStatus: this.mapEnvelopeStatus(envelopeStatus),
       actorName: changedRecipient?.name,
       actorEmail: changedRecipient?.email,
-      description: `DocuSign: envelope ${envelopeStatus}${changedRecipient ? `, recipient ${changedRecipient.email} ${changedRecipient.status}` : ""}`,
+      description: `DocuSign: envelope ${envelopeStatus}${changedRecipient ? `, recipient ${changedRecipient.email} ${changedRecipient.status}` : ''}`,
       providerEventId: data.data?.envelopeId,
       occurredAt: new Date(),
     };
@@ -488,12 +488,12 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
       return { valid: false };
     }
 
-    const signature = headers["x-docusign-signature-1"] ?? "";
+    const signature = headers['x-docusign-signature-1'] ?? '';
     if (!signature) {
       return { valid: false };
     }
 
-    const expectedSignature = createHmac("sha256", secret).update(rawBody).digest("base64");
+    const expectedSignature = createHmac('sha256', secret).update(rawBody).digest('base64');
 
     const expectedBuffer = Buffer.from(expectedSignature);
     const receivedBuffer = Buffer.from(signature);
@@ -508,7 +508,7 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
 
     return {
       valid: true,
-      eventType: "docusign-connect",
+      eventType: 'docusign-connect',
     };
   }
 
@@ -527,13 +527,13 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
       throw new Error(`Integration connection not found: ${connectionId}`);
     }
 
-    if (connection.status !== "CONNECTED") {
+    if (connection.status !== 'CONNECTED') {
       throw new Error(
         `Integration connection ${connectionId} is not active (status: ${connection.status})`,
       );
     }
 
-    const credentials = decryptCredentials(connection.credentialsRef, "docusign");
+    const credentials = decryptCredentials(connection.credentialsRef, 'docusign');
 
     const configJson = (connection.configJson ?? {}) as {
       basePath?: string;
@@ -547,8 +547,8 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
     const docusign = await this.loadDocuSignSdk();
 
     const apiClient: DocuSignApiClient = new docusign.ApiClient();
-    apiClient.setBasePath(configJson.basePath ?? "https://demo.docusign.net/restapi");
-    apiClient.addDefaultHeader("Authorization", `Bearer ${credentials.accessToken}`);
+    apiClient.setBasePath(configJson.basePath ?? 'https://demo.docusign.net/restapi');
+    apiClient.addDefaultHeader('Authorization', `Bearer ${credentials.accessToken}`);
 
     return { apiClient, accountId: configJson.accountId };
   }
@@ -558,65 +558,65 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
    * Returns as DocuSignSdk — our local interface covering the subset we use.
    */
   private async loadDocuSignSdk(): Promise<DocuSignSdk> {
-    return (await import("docusign-esign")) as unknown as DocuSignSdk;
+    return (await import('docusign-esign')) as unknown as DocuSignSdk;
   }
 
   private mapDocuSignEventType(
     envelopeStatus: string,
     recipientStatus?: string,
-  ): NormalizedSigningEvent["eventType"] {
+  ): NormalizedSigningEvent['eventType'] {
     // Recipient-level events take priority
     if (recipientStatus) {
       switch (recipientStatus) {
-        case "completed":
-          return "RECIPIENT_SIGNED";
-        case "declined":
-          return "RECIPIENT_DECLINED";
-        case "delivered":
-          return "RECIPIENT_VIEWED";
-        case "sent":
-          return "ENVELOPE_SENT";
+        case 'completed':
+          return 'RECIPIENT_SIGNED';
+        case 'declined':
+          return 'RECIPIENT_DECLINED';
+        case 'delivered':
+          return 'RECIPIENT_VIEWED';
+        case 'sent':
+          return 'ENVELOPE_SENT';
       }
     }
 
     // Envelope-level events
     switch (envelopeStatus) {
-      case "sent":
-        return "ENVELOPE_SENT";
-      case "delivered":
-        return "RECIPIENT_VIEWED";
-      case "completed":
-        return "ENVELOPE_COMPLETED";
-      case "declined":
-        return "RECIPIENT_DECLINED";
-      case "voided":
-        return "ENVELOPE_VOIDED";
+      case 'sent':
+        return 'ENVELOPE_SENT';
+      case 'delivered':
+        return 'RECIPIENT_VIEWED';
+      case 'completed':
+        return 'ENVELOPE_COMPLETED';
+      case 'declined':
+        return 'RECIPIENT_DECLINED';
+      case 'voided':
+        return 'ENVELOPE_VOIDED';
       default:
-        return "ENVELOPE_SENT";
+        return 'ENVELOPE_SENT';
     }
   }
 
-  private mapEnvelopeStatus(status: string): NormalizedSigningEvent["envelopeStatus"] {
-    const mapping: Record<string, NormalizedSigningEvent["envelopeStatus"]> = {
-      created: "CREATED",
-      sent: "SENT",
-      delivered: "DELIVERED",
-      completed: "COMPLETED",
-      declined: "DECLINED",
-      voided: "VOIDED",
+  private mapEnvelopeStatus(status: string): NormalizedSigningEvent['envelopeStatus'] {
+    const mapping: Record<string, NormalizedSigningEvent['envelopeStatus']> = {
+      created: 'CREATED',
+      sent: 'SENT',
+      delivered: 'DELIVERED',
+      completed: 'COMPLETED',
+      declined: 'DECLINED',
+      voided: 'VOIDED',
     };
-    return mapping[status] ?? "SENT";
+    return mapping[status] ?? 'SENT';
   }
 
-  private mapRecipientStatus(status: string): NormalizedSigningEvent["recipientStatus"] {
-    const mapping: Record<string, NormalizedSigningEvent["recipientStatus"]> = {
-      created: "PENDING",
-      sent: "SENT",
-      delivered: "DELIVERED",
-      completed: "SIGNED",
-      declined: "DECLINED",
+  private mapRecipientStatus(status: string): NormalizedSigningEvent['recipientStatus'] {
+    const mapping: Record<string, NormalizedSigningEvent['recipientStatus']> = {
+      created: 'PENDING',
+      sent: 'SENT',
+      delivered: 'DELIVERED',
+      completed: 'SIGNED',
+      declined: 'DECLINED',
     };
-    return mapping[status] ?? "PENDING";
+    return mapping[status] ?? 'PENDING';
   }
 
   // -------------------------------------------------------------------------
@@ -634,7 +634,7 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
     connectionId: string,
   ): Promise<{ envelopeId: string; completed: boolean }> {
     return handleSigningWebhook({
-      provider: "DOCUSIGN",
+      provider: 'DOCUSIGN',
       payload,
       organizationId,
       connectionId,

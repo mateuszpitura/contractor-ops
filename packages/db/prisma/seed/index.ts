@@ -1,6 +1,6 @@
-import { PrismaClient } from "../../generated/prisma/client/index.js";
-import { seedTaxRates } from "./tax-rates.js";
-import { seedWhtRates } from "./wht-rates.js";
+import { PrismaClient } from '../../generated/prisma/client/index.js';
+import { seedTaxRates } from './tax-rates.js';
+import { seedWhtRates } from './wht-rates.js';
 
 const prisma = new PrismaClient();
 
@@ -10,7 +10,7 @@ async function main() {
 }
 
 main()
-  .catch((e) => {
+  .catch(e => {
     console.error(e);
     process.exit(1);
   })

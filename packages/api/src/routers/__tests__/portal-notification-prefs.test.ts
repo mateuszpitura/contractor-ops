@@ -4,15 +4,15 @@
  * Tests getNotificationPreferences and updateNotificationPreference procedures.
  */
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
-const ORG_ID = "org-notif-001";
-const CONTRACTOR_ID = "contractor-notif-001";
-const SESSION_TOKEN = "portal-session-token-notif";
+const ORG_ID = 'org-notif-001';
+const CONTRACTOR_ID = 'contractor-notif-001';
+const SESSION_TOKEN = 'portal-session-token-notif';
 
 // ---------------------------------------------------------------------------
 // Mock Prisma via vi.hoisted
@@ -46,7 +46,7 @@ const { mockPrisma } = vi.hoisted(() => {
 // Module mocks
 // ---------------------------------------------------------------------------
 
-vi.mock("@contractor-ops/auth", () => ({
+vi.mock('@contractor-ops/auth', () => ({
   auth: {
     api: {
       getSession: vi.fn(),
@@ -55,7 +55,7 @@ vi.mock("@contractor-ops/auth", () => ({
   },
 }));
 
-vi.mock("@contractor-ops/db", () => ({
+vi.mock('@contractor-ops/db', () => ({
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
@@ -63,41 +63,41 @@ vi.mock("@contractor-ops/db", () => ({
   },
 }));
 
-vi.mock("../../services/portal-session.js", () => ({
+vi.mock('../../services/portal-session.js', () => ({
   validatePortalSession: vi.fn(async (token: string) => {
     if (token !== SESSION_TOKEN) return null;
     return {
       contractorId: CONTRACTOR_ID,
       organizationId: ORG_ID,
-      contractor: { id: CONTRACTOR_ID, email: "contractor@test.com" },
+      contractor: { id: CONTRACTOR_ID, email: 'contractor@test.com' },
     };
   }),
   createPortalSession: vi.fn(),
   deletePortalSession: vi.fn(),
 }));
 
-vi.mock("../../services/portal-magic-link.js", () => ({
+vi.mock('../../services/portal-magic-link.js', () => ({
   createMagicLinkToken: vi.fn(),
   verifyMagicLinkToken: vi.fn(),
   findContractorsByEmail: vi.fn(),
   sendPortalMagicLink: vi.fn(),
 }));
 
-vi.mock("../../services/r2.js", () => ({
-  createPresignedUploadUrl: vi.fn(async () => ({ url: "https://r2.test/upload", key: "k" })),
-  createPresignedDownloadUrl: vi.fn(async () => "https://r2.test/download"),
-  generateStorageKey: vi.fn(() => "mock-key"),
+vi.mock('../../services/r2.js', () => ({
+  createPresignedUploadUrl: vi.fn(async () => ({ url: 'https://r2.test/upload', key: 'k' })),
+  createPresignedDownloadUrl: vi.fn(async () => 'https://r2.test/download'),
+  generateStorageKey: vi.fn(() => 'mock-key'),
 }));
 
-vi.mock("../../services/portal-change-request.js", () => ({
+vi.mock('../../services/portal-change-request.js', () => ({
   createChangeRequest: vi.fn(),
 }));
 
-vi.mock("../../services/bank-account-crypto.js", () => ({
+vi.mock('../../services/bank-account-crypto.js', () => ({
   encryptBankAccount: vi.fn((v: string) => `encrypted:${v}`),
 }));
 
-vi.mock("../../services/stripe-client.js", () => ({
+vi.mock('../../services/stripe-client.js', () => ({
   stripe: {
     checkout: { sessions: { create: vi.fn() } },
     billingPortal: { sessions: { create: vi.fn() } },
@@ -108,16 +108,16 @@ vi.mock("../../services/stripe-client.js", () => ({
   },
 }));
 
-vi.mock("@contractor-ops/logger", () => ({
+vi.mock('@contractor-ops/logger', () => ({
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
 
-vi.mock("@contractor-ops/logger/metrics", () => ({
+vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { increment: vi.fn(), histogram: vi.fn(), distribution: vi.fn() },
 }));
 
-vi.mock("@sentry/nextjs", () => {
+vi.mock('@sentry/nextjs', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
     startSpan: vi.fn((_o: unknown, fn: (span: typeof mockSpan) => unknown) => fn(mockSpan)),
@@ -129,8 +129,8 @@ vi.mock("@sentry/nextjs", () => {
 // Imports (after mocks)
 // ---------------------------------------------------------------------------
 
-import { createCallerFactory } from "../../init.js";
-import { appRouter } from "../../root.js";
+import { createCallerFactory } from '../../init.js';
+import { appRouter } from '../../root.js';
 
 // ---------------------------------------------------------------------------
 // Caller setup
@@ -160,8 +160,8 @@ beforeEach(() => {
 // getNotificationPreferences
 // ===========================================================================
 
-describe("portal.getNotificationPreferences", () => {
-  it("returns all 5 categories with emailEnabled defaults for missing rows (PORT-07a)", async () => {
+describe('portal.getNotificationPreferences', () => {
+  it('returns all 5 categories with emailEnabled defaults for missing rows (PORT-07a)', async () => {
     // No rows exist — all should default to true
     mockPrisma.contractorNotificationPreference.findMany.mockResolvedValue([]);
 
@@ -173,36 +173,36 @@ describe("portal.getNotificationPreferences", () => {
     }
   });
 
-  it("returns actual emailEnabled values for existing preference rows", async () => {
+  it('returns actual emailEnabled values for existing preference rows', async () => {
     mockPrisma.contractorNotificationPreference.findMany.mockResolvedValue([
-      { category: "INVOICE_UPDATES", emailEnabled: false },
-      { category: "PAYMENT_CONFIRMATIONS", emailEnabled: true },
+      { category: 'INVOICE_UPDATES', emailEnabled: false },
+      { category: 'PAYMENT_CONFIRMATIONS', emailEnabled: true },
     ]);
 
     const result = await caller.portal.getNotificationPreferences();
 
     expect(result).toHaveLength(5);
-    const invoiceUpdates = result.find((p) => p.category === "INVOICE_UPDATES");
+    const invoiceUpdates = result.find(p => p.category === 'INVOICE_UPDATES');
     expect(invoiceUpdates?.emailEnabled).toBe(false);
-    const paymentConf = result.find((p) => p.category === "PAYMENT_CONFIRMATIONS");
+    const paymentConf = result.find(p => p.category === 'PAYMENT_CONFIRMATIONS');
     expect(paymentConf?.emailEnabled).toBe(true);
     // Missing rows default to true
-    const contractChanges = result.find((p) => p.category === "CONTRACT_CHANGES");
+    const contractChanges = result.find(p => p.category === 'CONTRACT_CHANGES');
     expect(contractChanges?.emailEnabled).toBe(true);
   });
 
-  it("categories are: INVOICE_UPDATES, PAYMENT_CONFIRMATIONS, CONTRACT_CHANGES, DOCUMENT_UPLOADS, SECURITY_ALERTS", async () => {
+  it('categories are: INVOICE_UPDATES, PAYMENT_CONFIRMATIONS, CONTRACT_CHANGES, DOCUMENT_UPLOADS, SECURITY_ALERTS', async () => {
     mockPrisma.contractorNotificationPreference.findMany.mockResolvedValue([]);
 
     const result = await caller.portal.getNotificationPreferences();
 
-    const categories = result.map((p) => p.category);
+    const categories = result.map(p => p.category);
     expect(categories).toEqual([
-      "INVOICE_UPDATES",
-      "PAYMENT_CONFIRMATIONS",
-      "CONTRACT_CHANGES",
-      "DOCUMENT_UPLOADS",
-      "SECURITY_ALERTS",
+      'INVOICE_UPDATES',
+      'PAYMENT_CONFIRMATIONS',
+      'CONTRACT_CHANGES',
+      'DOCUMENT_UPLOADS',
+      'SECURITY_ALERTS',
     ]);
   });
 });
@@ -211,19 +211,19 @@ describe("portal.getNotificationPreferences", () => {
 // updateNotificationPreference
 // ===========================================================================
 
-describe("portal.updateNotificationPreference", () => {
-  it("upserts preference for a valid category (PORT-07b)", async () => {
+describe('portal.updateNotificationPreference', () => {
+  it('upserts preference for a valid category (PORT-07b)', async () => {
     mockPrisma.contractorNotificationPreference.upsert.mockResolvedValue({
-      category: "INVOICE_UPDATES",
+      category: 'INVOICE_UPDATES',
       emailEnabled: false,
     });
 
     const result = await caller.portal.updateNotificationPreference({
-      category: "INVOICE_UPDATES",
+      category: 'INVOICE_UPDATES',
       emailEnabled: false,
     });
 
-    expect(result.category).toBe("INVOICE_UPDATES");
+    expect(result.category).toBe('INVOICE_UPDATES');
     expect(result.emailEnabled).toBe(false);
 
     // Verify the upsert uses the correct composite key
@@ -231,19 +231,19 @@ describe("portal.updateNotificationPreference", () => {
     expect(upsertCall.where).toMatchObject({
       contractorId_category: {
         contractorId: CONTRACTOR_ID,
-        category: "INVOICE_UPDATES",
+        category: 'INVOICE_UPDATES',
       },
     });
   });
 
-  it("creates new preference row when none exists for category", async () => {
+  it('creates new preference row when none exists for category', async () => {
     mockPrisma.contractorNotificationPreference.upsert.mockResolvedValue({
-      category: "DOCUMENT_UPLOADS",
+      category: 'DOCUMENT_UPLOADS',
       emailEnabled: false,
     });
 
     await caller.portal.updateNotificationPreference({
-      category: "DOCUMENT_UPLOADS",
+      category: 'DOCUMENT_UPLOADS',
       emailEnabled: false,
     });
 
@@ -251,19 +251,19 @@ describe("portal.updateNotificationPreference", () => {
     expect(upsertCall.create).toMatchObject({
       contractorId: CONTRACTOR_ID,
       organizationId: ORG_ID,
-      category: "DOCUMENT_UPLOADS",
+      category: 'DOCUMENT_UPLOADS',
       emailEnabled: false,
     });
   });
 
-  it("updates existing preference row when one exists", async () => {
+  it('updates existing preference row when one exists', async () => {
     mockPrisma.contractorNotificationPreference.upsert.mockResolvedValue({
-      category: "CONTRACT_CHANGES",
+      category: 'CONTRACT_CHANGES',
       emailEnabled: true,
     });
 
     await caller.portal.updateNotificationPreference({
-      category: "CONTRACT_CHANGES",
+      category: 'CONTRACT_CHANGES',
       emailEnabled: true,
     });
 
@@ -273,33 +273,33 @@ describe("portal.updateNotificationPreference", () => {
     });
   });
 
-  it("throws BAD_REQUEST when attempting to disable SECURITY_ALERTS (PORT-07c)", async () => {
+  it('throws BAD_REQUEST when attempting to disable SECURITY_ALERTS (PORT-07c)', async () => {
     await expect(
       caller.portal.updateNotificationPreference({
-        category: "SECURITY_ALERTS",
+        category: 'SECURITY_ALERTS',
         emailEnabled: false,
       }),
-    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    ).rejects.toMatchObject({ code: 'BAD_REQUEST' });
   });
 
-  it("allows enabling SECURITY_ALERTS (no-op but valid)", async () => {
+  it('allows enabling SECURITY_ALERTS (no-op but valid)', async () => {
     mockPrisma.contractorNotificationPreference.upsert.mockResolvedValue({
-      category: "SECURITY_ALERTS",
+      category: 'SECURITY_ALERTS',
       emailEnabled: true,
     });
 
     const result = await caller.portal.updateNotificationPreference({
-      category: "SECURITY_ALERTS",
+      category: 'SECURITY_ALERTS',
       emailEnabled: true,
     });
 
     expect(result.emailEnabled).toBe(true);
   });
 
-  it("validates category is one of the 5 allowed enum values", async () => {
+  it('validates category is one of the 5 allowed enum values', async () => {
     await expect(
       caller.portal.updateNotificationPreference({
-        category: "INVALID_CATEGORY" as never,
+        category: 'INVALID_CATEGORY' as never,
         emailEnabled: false,
       }),
     ).rejects.toThrow();

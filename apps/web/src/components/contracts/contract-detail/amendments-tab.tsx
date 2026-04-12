@@ -1,19 +1,19 @@
-"use client";
+'use client';
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ChevronDown, ChevronRight, FileText, Plus } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { ChevronDown, ChevronRight, FileText, Plus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { trpc } from "@/trpc/init";
+} from '@/components/ui/dialog';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -44,11 +44,11 @@ type AmendmentsTabProps = {
 // ---------------------------------------------------------------------------
 
 function formatDate(date: string | Date): string {
-  const d = typeof date === "string" ? new Date(date) : date;
-  return d.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return d.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
   });
 }
 
@@ -65,16 +65,16 @@ function AddAmendmentDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const t = useTranslations("ContractDetail.amendments");
+  const t = useTranslations('ContractDetail.amendments');
   const queryClient = useQueryClient();
-  const [title, setTitle] = useState("");
-  const [effectiveDate, setEffectiveDate] = useState("");
-  const [description, setDescription] = useState("");
+  const [title, setTitle] = useState('');
+  const [effectiveDate, setEffectiveDate] = useState('');
+  const [description, setDescription] = useState('');
 
   const createMutation = useMutation(
     trpc.contract.createAmendment.mutationOptions({
       onSuccess: () => {
-        toast.success(t("addSuccess"));
+        toast.success(t('addSuccess'));
         queryClient.invalidateQueries({
           queryKey: trpc.contract.getById.queryKey(),
         });
@@ -82,16 +82,16 @@ function AddAmendmentDialog({
           queryKey: trpc.contract.listAmendments.queryKey(),
         });
         onOpenChange(false);
-        setTitle("");
-        setEffectiveDate("");
-        setDescription("");
+        setTitle('');
+        setEffectiveDate('');
+        setDescription('');
       },
       onError: (error: unknown) => {
         const message =
-          typeof error === "object" && error && "message" in error
-            ? String((error as { message?: unknown }).message ?? "")
-            : "";
-        toast.error(message || t("addError"));
+          typeof error === 'object' && error && 'message' in error
+            ? String((error as { message?: unknown }).message ?? '')
+            : '';
+        toast.error(message || t('addError'));
       },
     }),
   );
@@ -113,49 +113,48 @@ function AddAmendmentDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{t("addTitle")}</DialogTitle>
+          <DialogTitle>{t('addTitle')}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium">{t("fields.title")}</label>
+            <label className="text-sm font-medium">{t('fields.title')}</label>
             <input
               type="text"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={e => setTitle(e.target.value)}
               className="h-9 w-full rounded-md border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-              placeholder={t("fields.titlePlaceholder")}
+              placeholder={t('fields.titlePlaceholder')}
               required
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium">{t("fields.effectiveDate")}</label>
+            <label className="text-sm font-medium">{t('fields.effectiveDate')}</label>
             <input
               type="date"
               value={effectiveDate}
-              onChange={(e) => setEffectiveDate(e.target.value)}
+              onChange={e => setEffectiveDate(e.target.value)}
               className="h-9 w-full rounded-md border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               required
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium">{t("fields.description")}</label>
+            <label className="text-sm font-medium">{t('fields.description')}</label>
             <textarea
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={e => setDescription(e.target.value)}
               className="w-full resize-none rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               rows={3}
-              placeholder={t("fields.descriptionPlaceholder")}
+              placeholder={t('fields.descriptionPlaceholder')}
             />
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              {t("cancel")}
+              {t('cancel')}
             </Button>
             <Button
               type="submit"
-              disabled={createMutation.isPending || !title.trim() || !effectiveDate}
-            >
-              {createMutation.isPending ? t("adding") : t("add")}
+              disabled={createMutation.isPending || !title.trim() || !effectiveDate}>
+              {createMutation.isPending ? t('adding') : t('add')}
             </Button>
           </DialogFooter>
         </form>
@@ -177,7 +176,7 @@ function TimelineNode({
   isFirst: boolean;
   isLast: boolean;
 }) {
-  const t = useTranslations("ContractDetail.amendments");
+  const t = useTranslations('ContractDetail.amendments');
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -186,7 +185,7 @@ function TimelineNode({
       <div className="flex flex-col items-center">
         <div
           className={`shrink-0 rounded-full ${
-            isFirst ? "size-3 bg-primary" : "size-2 bg-muted-foreground/40"
+            isFirst ? 'size-3 bg-primary' : 'size-2 bg-muted-foreground/40'
           }`}
         />
         {!isLast && <div className="mt-1 w-0.5 flex-1 bg-border" />}
@@ -197,8 +196,7 @@ function TimelineNode({
         <button
           type="button"
           onClick={() => setExpanded(!expanded)}
-          className="flex items-center gap-2 text-start"
-        >
+          className="flex items-center gap-2 text-start">
           {expanded ? (
             <ChevronDown className="size-3.5 shrink-0 text-muted-foreground" />
           ) : (
@@ -212,7 +210,7 @@ function TimelineNode({
               </span>
             </p>
             <p className="text-xs text-muted-foreground">
-              {t("effective", {
+              {t('effective', {
                 date: formatDate(amendment.effectiveDate),
               })}
             </p>
@@ -223,7 +221,7 @@ function TimelineNode({
           <div className="mt-3 ms-5 space-y-2 rounded-md border bg-muted/50 p-3">
             {amendment.description && <p className="text-sm">{amendment.description}</p>}
             <p className="text-xs text-muted-foreground">
-              {t("created", { date: formatDate(amendment.createdAt) })}
+              {t('created', { date: formatDate(amendment.createdAt) })}
             </p>
           </div>
         )}
@@ -237,15 +235,15 @@ function TimelineNode({
 // ---------------------------------------------------------------------------
 
 export function AmendmentsTab({ contract }: AmendmentsTabProps) {
-  const t = useTranslations("ContractDetail.amendments");
+  const t = useTranslations('ContractDetail.amendments');
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const amendments = (contract.amendments ?? []) as Amendment[];
 
   // Sort newest first
   const sorted = [...amendments].sort((a, b) => {
-    const dateA = typeof a.effectiveDate === "string" ? new Date(a.effectiveDate) : a.effectiveDate;
-    const dateB = typeof b.effectiveDate === "string" ? new Date(b.effectiveDate) : b.effectiveDate;
+    const dateA = typeof a.effectiveDate === 'string' ? new Date(a.effectiveDate) : a.effectiveDate;
+    const dateB = typeof b.effectiveDate === 'string' ? new Date(b.effectiveDate) : b.effectiveDate;
     return dateB.getTime() - dateA.getTime();
   });
 
@@ -253,10 +251,10 @@ export function AmendmentsTab({ contract }: AmendmentsTabProps) {
     <div className="space-y-6">
       {/* Header with CTA */}
       <div className="flex items-center justify-between">
-        <h3 className="text-base font-medium">{t("heading")}</h3>
+        <h3 className="text-base font-medium">{t('heading')}</h3>
         <Button size="sm" onClick={() => setDialogOpen(true)}>
           <Plus className="me-1.5 size-3.5" />
-          {t("addCta")}
+          {t('addCta')}
         </Button>
       </div>
 
@@ -264,8 +262,8 @@ export function AmendmentsTab({ contract }: AmendmentsTabProps) {
       {sorted.length === 0 ? (
         <div className="flex min-h-[200px] flex-col items-center justify-center gap-2 text-center">
           <FileText className="size-8 text-muted-foreground/50" />
-          <h4 className="text-sm font-medium text-muted-foreground">{t("empty.title")}</h4>
-          <p className="max-w-sm text-sm text-muted-foreground">{t("empty.description")}</p>
+          <h4 className="text-sm font-medium text-muted-foreground">{t('empty.title')}</h4>
+          <p className="max-w-sm text-sm text-muted-foreground">{t('empty.description')}</p>
         </div>
       ) : (
         <div className="ms-1">
@@ -283,7 +281,7 @@ export function AmendmentsTab({ contract }: AmendmentsTabProps) {
               <div className="size-2 shrink-0 rounded-full bg-muted-foreground/30" />
             </div>
             <div className="min-w-0 flex-1 pb-2">
-              <p className="text-sm text-muted-foreground">{t("originalContract")}</p>
+              <p className="text-sm text-muted-foreground">{t('originalContract')}</p>
               {contract.startDate && (
                 <p className="text-xs text-muted-foreground/70">{formatDate(contract.startDate)}</p>
               )}

@@ -1,23 +1,23 @@
-import { describe, expect, it } from "vitest";
-import { ac, accessControlStatement } from "../permissions.js";
+import { describe, expect, it } from 'vitest';
+import { ac, accessControlStatement } from '../permissions.js';
 
-describe("accessControlStatement", () => {
-  it("defines all expected resources with non-empty action lists", () => {
+describe('accessControlStatement', () => {
+  it('defines all expected resources with non-empty action lists', () => {
     const expectedResources = [
-      "organization",
-      "member",
-      "invitation",
-      "contractor",
-      "contract",
-      "document",
-      "invoice",
-      "workflow",
-      "payment",
-      "report",
-      "settings",
-      "integration",
-      "time",
-      "equipment",
+      'organization',
+      'member',
+      'invitation',
+      'contractor',
+      'contract',
+      'document',
+      'invoice',
+      'workflow',
+      'payment',
+      'report',
+      'settings',
+      'integration',
+      'time',
+      'equipment',
     ];
     const keys = Object.keys(accessControlStatement);
     expect(keys).toHaveLength(expectedResources.length);
@@ -31,8 +31,8 @@ describe("accessControlStatement", () => {
     }
   });
 
-  it("creates an access control instance from the statement", () => {
+  it('creates an access control instance from the statement', () => {
     expect(ac).toBeDefined();
-    expect(ac.newRole).toBeTypeOf("function");
+    expect(ac.newRole).toBeTypeOf('function');
   });
 });

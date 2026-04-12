@@ -9,20 +9,20 @@
 
 export const WORKFLOW_TEMPLATE_KEYS = {
   onboarding: {
-    collectNda: "workflow.templates.onboarding.collectNda",
-    signContract: "workflow.templates.onboarding.signContract",
-    setupItAccess: "workflow.templates.onboarding.setupItAccess",
-    setupFinance: "workflow.templates.onboarding.setupFinance",
-    provisionEquipment: "workflow.templates.onboarding.provisionEquipment",
-    teamIntroMeeting: "workflow.templates.onboarding.teamIntroMeeting",
-    knowledgeTransfer: "workflow.templates.onboarding.knowledgeTransfer",
+    collectNda: 'workflow.templates.onboarding.collectNda',
+    signContract: 'workflow.templates.onboarding.signContract',
+    setupItAccess: 'workflow.templates.onboarding.setupItAccess',
+    setupFinance: 'workflow.templates.onboarding.setupFinance',
+    provisionEquipment: 'workflow.templates.onboarding.provisionEquipment',
+    teamIntroMeeting: 'workflow.templates.onboarding.teamIntroMeeting',
+    knowledgeTransfer: 'workflow.templates.onboarding.knowledgeTransfer',
   },
   offboarding: {
-    knowledgeTransfer: "workflow.templates.offboarding.knowledgeTransfer",
-    revokeItAccess: "workflow.templates.offboarding.revokeItAccess",
-    returnEquipment: "workflow.templates.offboarding.returnEquipment",
-    financeWrapUp: "workflow.templates.offboarding.financeWrapUp",
-    finalDocumentation: "workflow.templates.offboarding.finalDocumentation",
+    knowledgeTransfer: 'workflow.templates.offboarding.knowledgeTransfer',
+    revokeItAccess: 'workflow.templates.offboarding.revokeItAccess',
+    returnEquipment: 'workflow.templates.offboarding.returnEquipment',
+    financeWrapUp: 'workflow.templates.offboarding.financeWrapUp',
+    finalDocumentation: 'workflow.templates.offboarding.finalDocumentation',
   },
 } as const;
 
@@ -63,12 +63,12 @@ export function addHours(date: Date, hours: number): Date {
 
 export interface ConditionRule {
   field: string;
-  operator: "equals" | "notEquals" | "contains" | "startsWith";
+  operator: 'equals' | 'notEquals' | 'contains' | 'startsWith';
   value: string;
 }
 
 export interface ConditionGroup {
-  combinator: "AND" | "OR";
+  combinator: 'AND' | 'OR';
   rules: ConditionRule[];
 }
 
@@ -77,7 +77,7 @@ export interface ConditionGroup {
  * e.g., "contractor.type" -> context.contractor.type
  */
 function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
-  return path.split(".").reduce((current, key) => current?.[key], obj);
+  return path.split('.').reduce((current, key) => current?.[key], obj);
 }
 
 /**
@@ -92,25 +92,25 @@ export function evaluateCondition(
     return true;
   }
 
-  const results = condition.rules.map((rule) => {
+  const results = condition.rules.map(rule => {
     const fieldValue = getNestedValue(context as Record<string, unknown>, rule.field);
-    const strValue = String(fieldValue ?? "");
+    const strValue = String(fieldValue ?? '');
 
     switch (rule.operator) {
-      case "equals":
+      case 'equals':
         return strValue === rule.value;
-      case "notEquals":
+      case 'notEquals':
         return strValue !== rule.value;
-      case "contains":
+      case 'contains':
         return strValue.includes(rule.value);
-      case "startsWith":
+      case 'startsWith':
         return strValue.startsWith(rule.value);
       default:
         return false;
     }
   });
 
-  return condition.combinator === "AND" ? results.every(Boolean) : results.some(Boolean);
+  return condition.combinator === 'AND' ? results.every(Boolean) : results.some(Boolean);
 }
 
 // ---------------------------------------------------------------------------
@@ -129,9 +129,9 @@ export async function resolveAssignee(
   tx: { member: { findFirst: (args: unknown) => Promise<{ userId: string } | null> } },
 ): Promise<string | null> {
   switch (task.assigneeMode) {
-    case "FIXED_USER":
+    case 'FIXED_USER':
       return task.assigneeUserId ?? null;
-    case "ROLE_BASED": {
+    case 'ROLE_BASED': {
       const member = await tx.member.findFirst({
         where: {
           organizationId: orgId,
@@ -141,11 +141,11 @@ export async function resolveAssignee(
       });
       return member?.userId ?? null;
     }
-    case "CONTRACTOR_OWNER":
+    case 'CONTRACTOR_OWNER':
       return contractor.internalOwnerUserId ?? null;
-    case "CONTRACT_OWNER":
+    case 'CONTRACT_OWNER':
       return contract?.internalOwnerUserId ?? null;
-    case "PROJECT_MANAGER":
+    case 'PROJECT_MANAGER':
       return null;
     default:
       return null;
@@ -166,17 +166,17 @@ export function calculateProgress(tasks: Array<{ status: string; resultJson?: un
   percent: number;
 } {
   // Exclude condition-skipped tasks from the total
-  const activeTasks = tasks.filter((t) => {
+  const activeTasks = tasks.filter(t => {
     if (
-      t.status === "SKIPPED" &&
-      (t.resultJson as Record<string, unknown>)?.skipReason === "condition_not_met"
+      t.status === 'SKIPPED' &&
+      (t.resultJson as Record<string, unknown>)?.skipReason === 'condition_not_met'
     ) {
       return false;
     }
     return true;
   });
 
-  const done = activeTasks.filter((t) => t.status === "DONE" || t.status === "SKIPPED").length;
+  const done = activeTasks.filter(t => t.status === 'DONE' || t.status === 'SKIPPED').length;
   const total = activeTasks.length;
 
   return {
@@ -191,13 +191,13 @@ export function calculateProgress(tasks: Array<{ status: string; resultJson?: un
 // ---------------------------------------------------------------------------
 
 export const TASK_TRANSITIONS: Record<string, string[]> = {
-  TODO: ["IN_PROGRESS", "SKIPPED", "CANCELLED"],
-  IN_PROGRESS: ["DONE", "SKIPPED", "CANCELLED"],
-  BLOCKED: ["TODO"],
+  TODO: ['IN_PROGRESS', 'SKIPPED', 'CANCELLED'],
+  IN_PROGRESS: ['DONE', 'SKIPPED', 'CANCELLED'],
+  BLOCKED: ['TODO'],
   DONE: [],
   SKIPPED: [],
   CANCELLED: [],
-  OVERDUE: ["DONE", "SKIPPED", "CANCELLED"],
+  OVERDUE: ['DONE', 'SKIPPED', 'CANCELLED'],
 };
 
 export function validateTransition(current: string, target: string): boolean {

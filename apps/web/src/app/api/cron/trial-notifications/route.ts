@@ -1,14 +1,14 @@
-import { withCronMonitor } from "@contractor-ops/api/services/cron-monitor";
-import { dispatch } from "@contractor-ops/api/services/notification-service";
-import { prisma } from "@contractor-ops/db";
-import { createCronLogger } from "@contractor-ops/logger";
-import { metrics } from "@contractor-ops/logger/metrics";
-import * as Sentry from "@sentry/nextjs";
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
-import { Resend } from "resend";
+import { withCronMonitor } from '@contractor-ops/api/services/cron-monitor';
+import { dispatch } from '@contractor-ops/api/services/notification-service';
+import { prisma } from '@contractor-ops/db';
+import { createCronLogger } from '@contractor-ops/logger';
+import { metrics } from '@contractor-ops/logger/metrics';
+import * as Sentry from '@sentry/nextjs';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { Resend } from 'resend';
 
-const log = createCronLogger("trial-notifications");
+const log = createCronLogger('trial-notifications');
 
 // ---------------------------------------------------------------------------
 // Resend client (lazy init)
@@ -24,7 +24,7 @@ function getResend(): Resend {
 }
 
 function buildBillingUrl(): string {
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
   return `${base}/settings?tab=billing`;
 }
 
@@ -40,17 +40,17 @@ function buildBillingUrl(): string {
  * Runs daily at 09:00 UTC (configured in vercel.json).
  */
 export async function GET(request: NextRequest) {
-  const authHeader = request.headers.get("authorization");
+  const authHeader = request.headers.get('authorization');
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   return Sentry.withMonitor(
-    "trial-notifications",
-    () => withCronMonitor("trial-notifications", handleTrialNotifications),
+    'trial-notifications',
+    () => withCronMonitor('trial-notifications', handleTrialNotifications),
     {
-      schedule: { type: "crontab", value: "0 9 * * *" },
-      timezone: "UTC",
+      schedule: { type: 'crontab', value: '0 9 * * *' },
+      timezone: 'UTC',
     },
   );
 }
@@ -61,7 +61,7 @@ async function handleTrialNotifications() {
   try {
     const trialingSubscriptions = await prisma.subscription.findMany({
       where: {
-        status: "TRIALING",
+        status: 'TRIALING',
         trialEnd: { not: null },
       },
       include: {
@@ -70,7 +70,7 @@ async function handleTrialNotifications() {
             id: true,
             billingEmail: true,
             members: {
-              where: { role: { in: ["owner", "admin"] } },
+              where: { role: { in: ['owner', 'admin'] } },
               select: { userId: true },
             },
           },
@@ -94,11 +94,11 @@ async function handleTrialNotifications() {
         if (adminUserIds.length > 0) {
           await dispatch({
             organizationId: sub.organization.id,
-            type: "TRIAL_ENDING",
+            type: 'TRIAL_ENDING',
             recipientUserIds: adminUserIds,
-            title: "Trial ending in 7 days",
-            body: "Your trial ends in 7 days. Upgrade to keep your data and full access.",
-            entityType: "ORGANIZATION",
+            title: 'Trial ending in 7 days',
+            body: 'Your trial ends in 7 days. Upgrade to keep your data and full access.',
+            entityType: 'ORGANIZATION',
             entityId: sub.organization.id,
           });
         }
@@ -107,13 +107,13 @@ async function handleTrialNotifications() {
           try {
             const resend = getResend();
             await resend.emails.send({
-              from: "Contractor Ops <notifications@contractorhub.io>",
+              from: 'Contractor Ops <notifications@contractorhub.io>',
               to: sub.organization.billingEmail,
-              subject: "Your Contractor Ops trial ends in 7 days",
+              subject: 'Your Contractor Ops trial ends in 7 days',
               html: `<p>Your trial ends in 7 days. Upgrade to keep your data and full access.</p><p><a href="${buildBillingUrl()}">Go to billing settings</a></p>`,
             });
           } catch (error) {
-            log.error({ err: error }, "email send failed");
+            log.error({ err: error }, 'email send failed');
           }
         }
 
@@ -125,11 +125,11 @@ async function handleTrialNotifications() {
         if (adminUserIds.length > 0) {
           await dispatch({
             organizationId: sub.organization.id,
-            type: "TRIAL_ENDING",
+            type: 'TRIAL_ENDING',
             recipientUserIds: adminUserIds,
-            title: "Trial ending tomorrow",
-            body: "Your trial ends tomorrow. Upgrade now to avoid losing access to features.",
-            entityType: "ORGANIZATION",
+            title: 'Trial ending tomorrow',
+            body: 'Your trial ends tomorrow. Upgrade now to avoid losing access to features.',
+            entityType: 'ORGANIZATION',
             entityId: sub.organization.id,
           });
         }
@@ -138,13 +138,13 @@ async function handleTrialNotifications() {
           try {
             const resend = getResend();
             await resend.emails.send({
-              from: "Contractor Ops <notifications@contractorhub.io>",
+              from: 'Contractor Ops <notifications@contractorhub.io>',
               to: sub.organization.billingEmail,
-              subject: "Your Contractor Ops trial ends tomorrow",
+              subject: 'Your Contractor Ops trial ends tomorrow',
               html: `<p>Your trial ends tomorrow. Upgrade now to avoid losing access to features.</p><p><a href="${buildBillingUrl()}">Go to billing settings</a></p>`,
             });
           } catch (error) {
-            log.error({ err: error }, "email send failed");
+            log.error({ err: error }, 'email send failed');
           }
         }
 
@@ -154,19 +154,19 @@ async function handleTrialNotifications() {
 
     log.info(
       { processed: trialingSubscriptions.length, sent: notificationCount },
-      "cron completed",
+      'cron completed',
     );
-    metrics.gauge("cron.trial_notifications.sent", notificationCount);
+    metrics.gauge('cron.trial_notifications.sent', notificationCount);
 
     return NextResponse.json({
       processed: trialingSubscriptions.length,
       notificationsSent: notificationCount,
     });
   } catch (error) {
-    log.error({ err: error }, "cron handler failed");
+    log.error({ err: error }, 'cron handler failed');
     Sentry.captureException(error, {
-      tags: { "cron.job": "trial-notifications" },
+      tags: { 'cron.job': 'trial-notifications' },
     });
-    return NextResponse.json({ error: "Cron processing failed" }, { status: 500 });
+    return NextResponse.json({ error: 'Cron processing failed' }, { status: 500 });
   }
 }

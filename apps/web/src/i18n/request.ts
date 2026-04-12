@@ -1,14 +1,14 @@
-import { getRequestConfig } from "next-intl/server";
-import type { Locale } from "./routing";
-import { routing } from "./routing";
+import { getRequestConfig } from 'next-intl/server';
+import type { Locale } from './routing';
+import { routing } from './routing';
 
 const localeSettings: Record<
   Locale,
   { timeZone: string; currency: string; numberingSystem?: string }
 > = {
-  en: { timeZone: "Europe/Warsaw", currency: "EUR" },
-  pl: { timeZone: "Europe/Warsaw", currency: "PLN" },
-  ar: { timeZone: "Asia/Dubai", currency: "AED", numberingSystem: "latn" },
+  en: { timeZone: 'Europe/Warsaw', currency: 'EUR' },
+  pl: { timeZone: 'Europe/Warsaw', currency: 'PLN' },
+  ar: { timeZone: 'Asia/Dubai', currency: 'AED', numberingSystem: 'latn' },
 };
 
 export default getRequestConfig(async ({ requestLocale }) => {
@@ -25,18 +25,18 @@ export default getRequestConfig(async ({ requestLocale }) => {
     timeZone: settings.timeZone,
     formats: {
       dateTime: {
-        short: { day: "numeric", month: "short", year: "numeric" },
+        short: { day: 'numeric', month: 'short', year: 'numeric' },
         long: {
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
         },
       },
       number: {
-        currency: { style: "currency", currency: settings.currency },
-        percent: { style: "percent" },
+        currency: { style: 'currency', currency: settings.currency },
+        percent: { style: 'percent' },
       },
     },
     ...(settings.numberingSystem && {

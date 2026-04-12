@@ -1,7 +1,8 @@
-import type { PrismaClient } from "@contractor-ops/db";
-import { TRPCError } from "@trpc/server";
+import type { PrismaClient } from '@contractor-ops/db';
+import type { TimeEntry } from '@contractor-ops/db/generated/prisma/client';
+import { TRPCError } from '@trpc/server';
 
-type TxClient = Parameters<Parameters<PrismaClient["$transaction"]>[0]>[0];
+type TxClient = Parameters<Parameters<PrismaClient['$transaction']>[0]>[0];
 
 // ---------------------------------------------------------------------------
 // Status transition rules (D-03):
@@ -38,8 +39,8 @@ export async function getOrCreateTimesheet(
   const monday = getISOMonday(weekStartDate);
   if (monday.getTime() !== weekStartDate.getTime()) {
     throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: "errors.timesheet.weekStartDateMustBeMonday",
+      code: 'BAD_REQUEST',
+      message: 'errors.timesheet.weekStartDateMustBeMonday',
     });
   }
 
@@ -55,7 +56,7 @@ export async function getOrCreateTimesheet(
       organizationId,
       contractorId,
       weekStartDate: monday,
-      status: "DRAFT",
+      status: 'DRAFT',
       totalMinutes: 0,
     },
     update: {},
@@ -87,21 +88,21 @@ export async function saveDraftEntries(
 
   if (!timesheet) {
     throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "errors.timesheet.notFound",
+      code: 'NOT_FOUND',
+      message: 'errors.timesheet.notFound',
     });
   }
 
-  if (timesheet.status !== "DRAFT" && timesheet.status !== "REJECTED") {
+  if (timesheet.status !== 'DRAFT' && timesheet.status !== 'REJECTED') {
     throw new TRPCError({
-      code: "PRECONDITION_FAILED",
-      message: "errors.timesheet.canOnlyEditDraftOrRejected",
+      code: 'PRECONDITION_FAILED',
+      message: 'errors.timesheet.canOnlyEditDraftOrRejected',
     });
   }
 
   // Upsert entries in transaction
   const result = await prisma.$transaction(async (tx: TxClient) => {
-    const upserted = [];
+    const upserted: TimeEntry[] = [];
     for (const entry of entries) {
       if (entry.id) {
         // Update existing — verify it's a MANUAL source entry
@@ -115,14 +116,14 @@ export async function saveDraftEntries(
         });
         if (!existing) {
           throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "errors.timesheet.entryNotFound",
+            code: 'NOT_FOUND',
+            message: 'errors.timesheet.entryNotFound',
           });
         }
-        if (existing.source !== "MANUAL") {
+        if (existing.source !== 'MANUAL') {
           throw new TRPCError({
-            code: "PRECONDITION_FAILED",
-            message: "errors.timesheet.cannotEditImportedEntries",
+            code: 'PRECONDITION_FAILED',
+            message: 'errors.timesheet.cannotEditImportedEntries',
           });
         }
         const updated = await tx.timeEntry.update({
@@ -146,7 +147,7 @@ export async function saveDraftEntries(
             entryDate: new Date(entry.entryDate),
             minutes: entry.minutes,
             description: entry.description ?? null,
-            source: "MANUAL",
+            source: 'MANUAL',
           },
         });
         upserted.push(created);
@@ -185,10 +186,10 @@ export async function submitTimesheet(
       id: timesheetId,
       organizationId,
       contractorId,
-      status: { in: ["DRAFT", "REJECTED"] },
+      status: { in: ['DRAFT', 'REJECTED'] },
     },
     data: {
-      status: "SUBMITTED",
+      status: 'SUBMITTED',
       submittedAt: new Date(),
       rejectionReason: null, // Clear previous rejection
     },
@@ -196,8 +197,8 @@ export async function submitTimesheet(
 
   if (updated.count === 0) {
     throw new TRPCError({
-      code: "PRECONDITION_FAILED",
-      message: "errors.timesheet.cannotSubmit",
+      code: 'PRECONDITION_FAILED',
+      message: 'errors.timesheet.cannotSubmit',
     });
   }
 
@@ -222,10 +223,10 @@ export async function approveTimesheet(
     where: {
       id: timesheetId,
       organizationId,
-      status: "SUBMITTED",
+      status: 'SUBMITTED',
     },
     data: {
-      status: "APPROVED",
+      status: 'APPROVED',
       reviewedAt: new Date(),
       reviewedByUserId: reviewerUserId,
     },
@@ -233,8 +234,8 @@ export async function approveTimesheet(
 
   if (updated.count === 0) {
     throw new TRPCError({
-      code: "PRECONDITION_FAILED",
-      message: "errors.timesheet.cannotApprove",
+      code: 'PRECONDITION_FAILED',
+      message: 'errors.timesheet.cannotApprove',
     });
   }
 
@@ -260,10 +261,10 @@ export async function rejectTimesheet(
     where: {
       id: timesheetId,
       organizationId,
-      status: "SUBMITTED",
+      status: 'SUBMITTED',
     },
     data: {
-      status: "REJECTED",
+      status: 'REJECTED',
       reviewedAt: new Date(),
       reviewedByUserId: reviewerUserId,
       rejectionReason: reason,
@@ -272,8 +273,8 @@ export async function rejectTimesheet(
 
   if (updated.count === 0) {
     throw new TRPCError({
-      code: "PRECONDITION_FAILED",
-      message: "errors.timesheet.cannotReject",
+      code: 'PRECONDITION_FAILED',
+      message: 'errors.timesheet.cannotReject',
     });
   }
 
@@ -297,10 +298,10 @@ export async function bulkApproveTimesheets(
     where: {
       id: { in: timesheetIds },
       organizationId,
-      status: "SUBMITTED",
+      status: 'SUBMITTED',
     },
     data: {
-      status: "APPROVED",
+      status: 'APPROVED',
       reviewedAt: new Date(),
       reviewedByUserId: reviewerUserId,
     },
@@ -322,10 +323,10 @@ export async function bulkRejectTimesheets(
     where: {
       id: { in: timesheetIds },
       organizationId,
-      status: "SUBMITTED",
+      status: 'SUBMITTED',
     },
     data: {
-      status: "REJECTED",
+      status: 'REJECTED',
       reviewedAt: new Date(),
       reviewedByUserId: reviewerUserId,
       rejectionReason: reason,

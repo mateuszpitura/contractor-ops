@@ -6,9 +6,9 @@
  * audit trail of all consent changes.
  */
 
-import { prisma } from "@contractor-ops/db";
-import type { ConsentPurpose } from "@contractor-ops/validators";
-import { REQUIRED_PURPOSES } from "@contractor-ops/validators";
+import { prisma } from '@contractor-ops/db';
+import type { ConsentPurpose } from '@contractor-ops/validators';
+import { REQUIRED_PURPOSES } from '@contractor-ops/validators';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -93,7 +93,7 @@ export async function getCurrentConsent(
 ): Promise<Map<string, ConsentState>> {
   const records = await prisma.consentRecord.findMany({
     where: { organizationId, userId },
-    orderBy: { createdAt: "desc" },
+    orderBy: { createdAt: 'desc' },
   });
 
   // Latest record per purpose
@@ -137,7 +137,7 @@ export async function getConsentHistory(
       userId,
       ...(purpose ? { purpose } : {}),
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: { createdAt: 'desc' },
     select: {
       id: true,
       purpose: true,
@@ -181,7 +181,7 @@ export async function bulkGrantConsent(
   ipAddress?: string | null,
   userAgent?: string | null,
 ): Promise<Array<{ id: string; purpose: string; granted: boolean; version: number }>> {
-  return prisma.$transaction(async (tx) => {
+  return prisma.$transaction(async tx => {
     const results: Array<{
       id: string;
       purpose: string;

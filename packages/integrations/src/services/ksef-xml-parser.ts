@@ -1,6 +1,6 @@
-import type { KsefParsedInvoice } from "@contractor-ops/einvoice";
-import { ksefParsedInvoiceSchema } from "@contractor-ops/einvoice";
-import { XMLParser } from "fast-xml-parser";
+import type { KsefParsedInvoice } from '@contractor-ops/einvoice';
+import { ksefParsedInvoiceSchema } from '@contractor-ops/einvoice';
+import { XMLParser } from 'fast-xml-parser';
 
 // ---------------------------------------------------------------------------
 // FA(3) XML Parser
@@ -8,11 +8,11 @@ import { XMLParser } from "fast-xml-parser";
 
 const parser = new XMLParser({
   ignoreAttributes: false,
-  attributeNamePrefix: "@_",
-  textNodeName: "#text",
+  attributeNamePrefix: '@_',
+  textNodeName: '#text',
   parseTagValue: true,
   trimValues: true,
-  isArray: (name) => name === "FaWiersz",
+  isArray: name => name === 'FaWiersz',
 });
 
 /**
@@ -20,7 +20,7 @@ const parser = new XMLParser({
  * Handles missing/undefined values by returning 0.
  */
 function toMinor(value: unknown): number {
-  if (value === undefined || value === null || value === "") return 0;
+  if (value === undefined || value === null || value === '') return 0;
   return Math.round(parseFloat(String(value)) * 100);
 }
 
@@ -31,7 +31,7 @@ function toMinor(value: unknown): number {
 function dig(obj: Record<string, unknown>, ...keys: string[]): unknown {
   let current: unknown = obj;
   for (const key of keys) {
-    if (current === null || current === undefined || typeof current !== "object") {
+    if (current === null || current === undefined || typeof current !== 'object') {
       return;
     }
     current = (current as Record<string, unknown>)[key];
@@ -58,7 +58,7 @@ export function parseFa3Xml(
   const parsed = parser.parse(xmlString) as Record<string, unknown>;
 
   // Root element — handle namespace prefix variations
-  const faktura = (parsed.Faktura ?? parsed["tns:Faktura"] ?? parsed) as Record<string, unknown>;
+  const faktura = (parsed.Faktura ?? parsed['tns:Faktura'] ?? parsed) as Record<string, unknown>;
   const fa = (faktura.Fa ?? {}) as Record<string, unknown>;
   const podmiot1 = (faktura.Podmiot1 ?? {}) as Record<string, unknown>;
   const podmiot2 = (faktura.Podmiot2 ?? {}) as Record<string, unknown>;
@@ -75,7 +75,7 @@ export function parseFa3Xml(
         sellerAddress.Miejscowosc,
       ]
         .filter(Boolean)
-        .join(" ")
+        .join(' ')
     : undefined;
 
   // Buyer
@@ -85,7 +85,7 @@ export function parseFa3Xml(
   const rawLines = fa.FaWiersz as Record<string, unknown>[] | undefined;
   const linesArray = Array.isArray(rawLines) ? rawLines : rawLines ? [rawLines] : [];
 
-  const lines = linesArray.map((line) => {
+  const lines = linesArray.map(line => {
     const netAmount = toMinor(line.P_11);
     const vatRateStr = line.P_12 != null ? String(line.P_12) : undefined;
     const vatAmount =
@@ -98,7 +98,7 @@ export function parseFa3Xml(
 
     return {
       lineNumber: Number(line.NrWierszaFa ?? 0),
-      description: String(line.P_7 ?? ""),
+      description: String(line.P_7 ?? ''),
       quantity: line.P_8B != null ? Number(line.P_8B) : undefined,
       unit: line.P_8A != null ? String(line.P_8A) : undefined,
       unitPriceMinor: line.P_9A != null ? toMinor(line.P_9A) : undefined,
@@ -122,26 +122,26 @@ export function parseFa3Xml(
     ? {
         dueDate: platnosc.TerminPlatnosci != null ? String(platnosc.TerminPlatnosci) : undefined,
         bankAccount:
-          (platnosc.NrRB ?? dig(platnosc, "RachunekBankowy", "NrRB")) != null
-            ? String(platnosc.NrRB ?? dig(platnosc, "RachunekBankowy", "NrRB"))
+          (platnosc.NrRB ?? dig(platnosc, 'RachunekBankowy', 'NrRB')) != null
+            ? String(platnosc.NrRB ?? dig(platnosc, 'RachunekBankowy', 'NrRB'))
             : undefined,
         method: platnosc.FormaPlatnosci != null ? String(platnosc.FormaPlatnosci) : undefined,
       }
     : undefined;
 
   const mapped = {
-    invoiceNumber: String(fa.P_2 ?? ""),
-    issueDate: String(fa.P_1 ?? ""),
-    invoiceType: String(fa.RodzajFaktury ?? "VAT"),
-    currency: String(fa.KodWaluty ?? "PLN"),
+    invoiceNumber: String(fa.P_2 ?? ''),
+    issueDate: String(fa.P_1 ?? ''),
+    invoiceType: String(fa.RodzajFaktury ?? 'VAT'),
+    currency: String(fa.KodWaluty ?? 'PLN'),
     seller: {
-      nip: String(sellerIdent.NIP ?? ""),
-      name: String(sellerIdent.Nazwa ?? sellerIdent.PelnaNazwa ?? ""),
+      nip: String(sellerIdent.NIP ?? ''),
+      name: String(sellerIdent.Nazwa ?? sellerIdent.PelnaNazwa ?? ''),
       address: sellerAddressStr || undefined,
     },
     buyer: {
-      nip: String(buyerIdent.NIP ?? ""),
-      name: String(buyerIdent.Nazwa ?? buyerIdent.PelnaNazwa ?? ""),
+      nip: String(buyerIdent.NIP ?? ''),
+      name: String(buyerIdent.Nazwa ?? buyerIdent.PelnaNazwa ?? ''),
     },
     lines,
     totals: {
@@ -185,7 +185,7 @@ export function mapKsefToInvoiceFields(parsed: KsefParsedInvoice) {
   const invoice = {
     invoiceNumber: parsed.invoiceNumber,
     externalInvoiceId: parsed.ksefReferenceNumber,
-    source: "KSEF" as const,
+    source: 'KSEF' as const,
     sourceReference: parsed.upoNumber ?? null,
     issueDate: new Date(parsed.issueDate),
     dueDate: parsed.payment?.dueDate ? new Date(parsed.payment.dueDate) : null,
@@ -201,7 +201,7 @@ export function mapKsefToInvoiceFields(parsed: KsefParsedInvoice) {
     buyerTaxId: parsed.buyer.nip,
   };
 
-  const lines = parsed.lines.map((line) => ({
+  const lines = parsed.lines.map(line => ({
     lineNumber: line.lineNumber,
     description: line.description,
     quantity: line.quantity ?? null,

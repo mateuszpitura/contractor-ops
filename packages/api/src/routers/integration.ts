@@ -1,11 +1,11 @@
-import { createHmac } from "node:crypto";
+import { createHmac } from 'node:crypto';
 import {
   generateOAuthState,
   getAdapter,
   getAllProviderHealth,
   getProviderHealth,
   registerAllAdapters,
-} from "@contractor-ops/integrations";
+} from '@contractor-ops/integrations';
 import {
   disconnectProviderSchema,
   getSyncLogSchema,
@@ -13,13 +13,13 @@ import {
   providerSlugSchema,
   slackUserLinkSchema,
   slackUserUnlinkSchema,
-} from "@contractor-ops/validators";
-import { TRPCError } from "@trpc/server";
-import * as E from "../errors.js";
-import { router } from "../init.js";
-import { requirePermission } from "../middleware/rbac.js";
-import { tenantProcedure } from "../middleware/tenant.js";
-import { syncWorkspaceUsers } from "../services/slack-client.js";
+} from '@contractor-ops/validators';
+import { TRPCError } from '@trpc/server';
+import * as E from '../errors.js';
+import { router } from '../init.js';
+import { requirePermission } from '../middleware/rbac.js';
+import { tenantProcedure } from '../middleware/tenant.js';
+import { syncWorkspaceUsers } from '../services/slack-client.js';
 
 // Ensure all provider adapters are registered before any procedure runs
 registerAllAdapters();
@@ -40,9 +40,9 @@ function plain<T>(data: T): T {
  */
 function generateSlackOAuthState(orgId: string, userId: string, secret: string): string {
   const payload = `${orgId}:${userId}:${Date.now()}`;
-  const hmac = createHmac("sha256", secret);
+  const hmac = createHmac('sha256', secret);
   hmac.update(payload);
-  const signature = hmac.digest("hex");
+  const signature = hmac.digest('hex');
   return `${payload}:${signature}`;
 }
 
@@ -59,7 +59,7 @@ export const integrationRouter = router({
     const connection = await ctx.db.integrationConnection.findFirst({
       where: {
         organizationId: ctx.organizationId,
-        provider: "SLACK",
+        provider: 'SLACK',
       },
       include: {
         connectedBy: {
@@ -73,7 +73,7 @@ export const integrationRouter = router({
     }
 
     return plain({
-      connected: connection.status === "CONNECTED",
+      connected: connection.status === 'CONNECTED',
       status: connection.status,
       displayName: connection.displayName,
       connectedAt: connection.connectedAt,
@@ -86,7 +86,7 @@ export const integrationRouter = router({
    * Admin only. State parameter is HMAC-signed for CSRF protection.
    */
   getOAuthUrl: tenantProcedure
-    .use(requirePermission({ organization: ["update"] }))
+    .use(requirePermission({ organization: ['update'] }))
     .query(async ({ ctx }) => {
       const clientId = process.env.SLACK_CLIENT_ID;
       const redirectUri = process.env.SLACK_REDIRECT_URI;
@@ -94,14 +94,14 @@ export const integrationRouter = router({
 
       if (!(clientId && redirectUri && signingSecret)) {
         throw new TRPCError({
-          code: "PRECONDITION_FAILED",
+          code: 'PRECONDITION_FAILED',
           message: E.INTEGRATION_NOT_CONFIGURED,
         });
       }
 
       const state = generateSlackOAuthState(ctx.organizationId, ctx.user?.id, signingSecret);
 
-      const scopes = ["chat:write", "users:read", "users:read.email", "im:write"].join(",");
+      const scopes = ['chat:write', 'users:read', 'users:read.email', 'im:write'].join(',');
 
       const params = new URLSearchParams({
         client_id: clientId,
@@ -120,18 +120,18 @@ export const integrationRouter = router({
    * Sets status to DISCONNECTED and clears credentials reference.
    */
   disconnect: tenantProcedure
-    .use(requirePermission({ organization: ["update"] }))
+    .use(requirePermission({ organization: ['update'] }))
     .mutation(async ({ ctx }) => {
       const connection = await ctx.db.integrationConnection.findFirst({
         where: {
           organizationId: ctx.organizationId,
-          provider: "SLACK",
+          provider: 'SLACK',
         },
       });
 
       if (!connection) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: E.INTEGRATION_NOT_FOUND,
         });
       }
@@ -139,8 +139,8 @@ export const integrationRouter = router({
       await ctx.db.integrationConnection.update({
         where: { id: connection.id },
         data: {
-          status: "DISCONNECTED",
-          credentialsRef: "",
+          status: 'DISCONNECTED',
+          credentialsRef: '',
         },
       });
 
@@ -156,7 +156,7 @@ export const integrationRouter = router({
     const connection = await ctx.db.integrationConnection.findFirst({
       where: {
         organizationId: ctx.organizationId,
-        provider: "SLACK",
+        provider: 'SLACK',
       },
       select: { id: true },
     });
@@ -170,7 +170,7 @@ export const integrationRouter = router({
       where: {
         organizationId: ctx.organizationId,
         integrationConnectionId: connection.id,
-        externalType: "SLACK_USER",
+        externalType: 'SLACK_USER',
       },
     });
 
@@ -185,9 +185,9 @@ export const integrationRouter = router({
     });
 
     // Build mapping with matched/unmatched status
-    const linksByUserId = new Map(externalLinks.map((link) => [link.entityId, link]));
+    const linksByUserId = new Map(externalLinks.map(link => [link.entityId, link]));
 
-    const mappings = members.map((member) => {
+    const mappings = members.map(member => {
       const link = linksByUserId.get(member.userId);
       return {
         userId: member.userId,
@@ -201,7 +201,7 @@ export const integrationRouter = router({
               metadata: link.metadataJson,
             }
           : null,
-        status: link ? ("linked" as const) : ("unlinked" as const),
+        status: link ? ('linked' as const) : ('unlinked' as const),
       };
     });
 
@@ -213,19 +213,19 @@ export const integrationRouter = router({
    * Creates an ExternalLink mapping.
    */
   linkUser: tenantProcedure
-    .use(requirePermission({ organization: ["update"] }))
+    .use(requirePermission({ organization: ['update'] }))
     .input(slackUserLinkSchema)
     .mutation(async ({ ctx, input }) => {
       const connection = await ctx.db.integrationConnection.findFirst({
         where: {
           organizationId: ctx.organizationId,
-          provider: "SLACK",
+          provider: 'SLACK',
         },
       });
 
       if (!connection) {
         throw new TRPCError({
-          code: "PRECONDITION_FAILED",
+          code: 'PRECONDITION_FAILED',
           message: E.INTEGRATION_NOT_CONNECTED,
         });
       }
@@ -234,9 +234,9 @@ export const integrationRouter = router({
         data: {
           organizationId: ctx.organizationId,
           integrationConnectionId: connection.id,
-          entityType: "CONTRACTOR",
+          entityType: 'CONTRACTOR',
           entityId: input.userId,
-          externalType: "SLACK_USER",
+          externalType: 'SLACK_USER',
           externalId: input.externalId,
         },
       });
@@ -249,7 +249,7 @@ export const integrationRouter = router({
    * Deletes the ExternalLink by ID.
    */
   unlinkUser: tenantProcedure
-    .use(requirePermission({ organization: ["update"] }))
+    .use(requirePermission({ organization: ['update'] }))
     .input(slackUserUnlinkSchema)
     .mutation(async ({ ctx, input }) => {
       const existing = await ctx.db.externalLink.findFirst({
@@ -261,7 +261,7 @@ export const integrationRouter = router({
 
       if (!existing) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: E.INTEGRATION_LINK_NOT_FOUND,
         });
       }
@@ -274,16 +274,16 @@ export const integrationRouter = router({
     }),
 
   syncUsers: tenantProcedure
-    .use(requirePermission({ organization: ["update"] }))
+    .use(requirePermission({ organization: ['update'] }))
     .mutation(async ({ ctx }) => {
       const connection = await ctx.db.integrationConnection.findFirst({
-        where: { organizationId: ctx.organizationId, provider: "SLACK" },
+        where: { organizationId: ctx.organizationId, provider: 'SLACK' },
         select: { id: true },
       });
 
       if (!connection) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: E.INTEGRATION_NOT_CONNECTED,
         });
       }
@@ -318,13 +318,13 @@ export const integrationRouter = router({
    * Admin only. Uses the adapter's OAuthConfig and HMAC-signed state.
    */
   getOAuthUrlGeneric: tenantProcedure
-    .use(requirePermission({ organization: ["update"] }))
+    .use(requirePermission({ organization: ['update'] }))
     .input(providerSlugSchema)
     .query(async ({ ctx, input }) => {
       const adapter = getAdapter(input.provider);
       if (!(adapter?.supportsOAuth && adapter.getOAuthConfig)) {
         throw new TRPCError({
-          code: "BAD_REQUEST",
+          code: 'BAD_REQUEST',
           message: E.INTEGRATION_NO_OAUTH,
         });
       }
@@ -336,7 +336,7 @@ export const integrationRouter = router({
 
       if (!(clientId && clientSecret && appUrl)) {
         throw new TRPCError({
-          code: "PRECONDITION_FAILED",
+          code: 'PRECONDITION_FAILED',
           message: E.INTEGRATION_NOT_CONFIGURED,
         });
       }
@@ -351,8 +351,8 @@ export const integrationRouter = router({
 
       const params = new URLSearchParams({
         client_id: clientId,
-        response_type: "code",
-        scope: oauthConfig.scopes.join(" "),
+        response_type: 'code',
+        scope: oauthConfig.scopes.join(' '),
         redirect_uri: redirectUri,
         state,
       });
@@ -373,19 +373,19 @@ export const integrationRouter = router({
    * Sets status to DISCONNECTED and clears credentials reference.
    */
   disconnectGeneric: tenantProcedure
-    .use(requirePermission({ organization: ["update"] }))
+    .use(requirePermission({ organization: ['update'] }))
     .input(disconnectProviderSchema)
     .mutation(async ({ ctx, input }) => {
       const connection = await ctx.db.integrationConnection.findFirst({
         where: {
           organizationId: ctx.organizationId,
-          provider: input.provider.toUpperCase() as "SLACK",
+          provider: input.provider.toUpperCase() as 'SLACK',
         },
       });
 
       if (!connection) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: E.INTEGRATION_NOT_FOUND,
         });
       }
@@ -393,8 +393,8 @@ export const integrationRouter = router({
       await ctx.db.integrationConnection.update({
         where: { id: connection.id },
         data: {
-          status: "DISCONNECTED",
-          credentialsRef: "",
+          status: 'DISCONNECTED',
+          credentialsRef: '',
         },
       });
 
@@ -409,7 +409,7 @@ export const integrationRouter = router({
     const connection = await ctx.db.integrationConnection.findFirst({
       where: {
         organizationId: ctx.organizationId,
-        provider: input.provider.toUpperCase() as "SLACK",
+        provider: input.provider.toUpperCase() as 'SLACK',
       },
       select: { id: true },
     });
@@ -420,7 +420,7 @@ export const integrationRouter = router({
 
     const items = await ctx.db.integrationSyncLog.findMany({
       where: { integrationConnectionId: connection.id },
-      orderBy: { startedAt: "desc" },
+      orderBy: { startedAt: 'desc' },
       take: input.limit + 1,
       ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
       select: {
@@ -451,9 +451,9 @@ export const integrationRouter = router({
     const items = await ctx.db.webhookDelivery.findMany({
       where: {
         organizationId: ctx.organizationId,
-        provider: input.provider.toUpperCase() as "SLACK",
+        provider: input.provider.toUpperCase() as 'SLACK',
       },
-      orderBy: { receivedAt: "desc" },
+      orderBy: { receivedAt: 'desc' },
       take: input.limit + 1,
       ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
       select: {

@@ -1,6 +1,6 @@
-import type { CalendarTaskConfig } from "@contractor-ops/validators";
-import { createCalendarEvent, updateCalendarEvent } from "./calendar-event-service.js";
-import type { DbClient } from "./types.js";
+import type { CalendarTaskConfig } from '@contractor-ops/validators';
+import { createCalendarEvent, updateCalendarEvent } from './calendar-event-service.js';
+import type { DbClient } from './types.js';
 
 type PrismaClient = DbClient;
 
@@ -8,14 +8,14 @@ type PrismaClient = DbClient;
 // Constants
 // ---------------------------------------------------------------------------
 
-const APP_BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://app.contractorop.com";
-const TITLE_PREFIX = "[Contractor Ops] ";
+const APP_BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://app.contractorop.com';
+const TITLE_PREFIX = '[Contractor Ops] ';
 
 const DURATION_MS: Record<string, number> = {
-  "30m": 30 * 60 * 1000,
-  "1h": 60 * 60 * 1000,
-  "2h": 2 * 60 * 60 * 1000,
-  "4h": 4 * 60 * 60 * 1000,
+  '30m': 30 * 60 * 1000,
+  '1h': 60 * 60 * 1000,
+  '2h': 2 * 60 * 60 * 1000,
+  '4h': 4 * 60 * 60 * 1000,
   full_day: 0, // handled separately
 };
 
@@ -39,7 +39,7 @@ async function hasExistingCalendarEvent(
       entityType,
       entityId,
       externalType: {
-        in: ["GOOGLE_CALENDAR_EVENT", "OUTLOOK_CALENDAR_EVENT"],
+        in: ['GOOGLE_CALENDAR_EVENT', 'OUTLOOK_CALENDAR_EVENT'],
       },
     },
   });
@@ -78,7 +78,7 @@ export async function syncContractExpiryDeadline(
   },
 ): Promise<void> {
   const title = `${TITLE_PREFIX}Contract expiry: ${input.contractorName} - ${input.contractName}`;
-  const description = `Contract "${input.contractName}" with ${input.contractorName} expires on ${input.expiryDate.toISOString().split("T")[0]}.\n\nView in Contractor Ops: ${APP_BASE_URL}/contracts/${input.contractId}`;
+  const description = `Contract "${input.contractName}" with ${input.contractorName} expires on ${input.expiryDate.toISOString().split('T')[0]}.\n\nView in Contractor Ops: ${APP_BASE_URL}/contracts/${input.contractId}`;
 
   const expiryDay = new Date(input.expiryDate);
   expiryDay.setUTCHours(9, 0, 0, 0);
@@ -91,14 +91,14 @@ export async function syncContractExpiryDeadline(
   const exists = await hasExistingCalendarEvent(
     prisma,
     input.organizationId,
-    "CONTRACT",
+    'CONTRACT',
     input.contractId,
   );
 
   if (exists) {
     await updateCalendarEvent(prisma, {
       organizationId: input.organizationId,
-      entityType: "CONTRACT",
+      entityType: 'CONTRACT',
       entityId: input.contractId,
       summary: title,
       description,
@@ -109,7 +109,7 @@ export async function syncContractExpiryDeadline(
     await createCalendarEvent(prisma, {
       organizationId: input.organizationId,
       userId: input.userId,
-      entityType: "CONTRACT",
+      entityType: 'CONTRACT',
       entityId: input.contractId,
       summary: title,
       description,
@@ -141,7 +141,7 @@ export async function syncApprovalSlaDeadline(
   },
 ): Promise<void> {
   const title = `${TITLE_PREFIX}Approval deadline: ${input.itemType} - ${input.itemName}`;
-  const description = `Approval for ${input.itemType} "${input.itemName}" is due by ${input.deadline.toISOString().split("T")[0]}.\n\nView in Contractor Ops: ${APP_BASE_URL}/approvals`;
+  const description = `Approval for ${input.itemType} "${input.itemName}" is due by ${input.deadline.toISOString().split('T')[0]}.\n\nView in Contractor Ops: ${APP_BASE_URL}/approvals`;
 
   const deadlineDay = new Date(input.deadline);
   deadlineDay.setUTCHours(9, 0, 0, 0);
@@ -154,14 +154,14 @@ export async function syncApprovalSlaDeadline(
   const exists = await hasExistingCalendarEvent(
     prisma,
     input.organizationId,
-    "APPROVAL_FLOW",
+    'APPROVAL_FLOW',
     input.approvalFlowId,
   );
 
   if (exists) {
     await updateCalendarEvent(prisma, {
       organizationId: input.organizationId,
-      entityType: "APPROVAL_FLOW",
+      entityType: 'APPROVAL_FLOW',
       entityId: input.approvalFlowId,
       summary: title,
       description,
@@ -172,7 +172,7 @@ export async function syncApprovalSlaDeadline(
     await createCalendarEvent(prisma, {
       organizationId: input.organizationId,
       userId: input.userId,
-      entityType: "APPROVAL_FLOW",
+      entityType: 'APPROVAL_FLOW',
       entityId: input.approvalFlowId,
       summary: title,
       description,
@@ -204,7 +204,7 @@ export async function syncPaymentDueDeadline(
   },
 ): Promise<void> {
   const title = `${TITLE_PREFIX}Payment due: ${input.contractorName} - ${input.invoiceNumber}`;
-  const description = `Invoice ${input.invoiceNumber} from ${input.contractorName} is due on ${input.dueDate.toISOString().split("T")[0]}.\n\nView in Contractor Ops: ${APP_BASE_URL}/invoices/${input.invoiceId}`;
+  const description = `Invoice ${input.invoiceNumber} from ${input.contractorName} is due on ${input.dueDate.toISOString().split('T')[0]}.\n\nView in Contractor Ops: ${APP_BASE_URL}/invoices/${input.invoiceId}`;
 
   const dueDay = new Date(input.dueDate);
   dueDay.setUTCHours(9, 0, 0, 0);
@@ -217,14 +217,14 @@ export async function syncPaymentDueDeadline(
   const exists = await hasExistingCalendarEvent(
     prisma,
     input.organizationId,
-    "INVOICE",
+    'INVOICE',
     input.invoiceId,
   );
 
   if (exists) {
     await updateCalendarEvent(prisma, {
       organizationId: input.organizationId,
-      entityType: "INVOICE",
+      entityType: 'INVOICE',
       entityId: input.invoiceId,
       summary: title,
       description,
@@ -235,7 +235,7 @@ export async function syncPaymentDueDeadline(
     await createCalendarEvent(prisma, {
       organizationId: input.organizationId,
       userId: input.userId,
-      entityType: "INVOICE",
+      entityType: 'INVOICE',
       entityId: input.invoiceId,
       summary: title,
       description,
@@ -270,7 +270,7 @@ export async function createTaskCalendarEvent(
   if (!input.config.calendarEnabled) return;
 
   // Substitute template variables in title
-  let title = input.config.titleTemplate ?? "{task} - {contractor} ({contract})";
+  let title = input.config.titleTemplate ?? '{task} - {contractor} ({contract})';
   title = title.replace(/\{contractor\}/g, input.contractorName);
   title = title.replace(/\{contract\}/g, input.contractName);
   title = title.replace(/\{task\}/g, input.taskName);
@@ -282,17 +282,17 @@ export async function createTaskCalendarEvent(
   const startDateTime = now.toISOString();
 
   let endDateTime: string;
-  if (input.config.duration === "full_day") {
+  if (input.config.duration === 'full_day') {
     endDateTime = endOfDay(startDateTime);
   } else {
-    const durationMs = DURATION_MS[input.config.duration] ?? DURATION_MS["1h"]!;
+    const durationMs = DURATION_MS[input.config.duration] ?? DURATION_MS['1h']!;
     endDateTime = new Date(now.getTime() + durationMs).toISOString();
   }
 
   await createCalendarEvent(prisma, {
     organizationId: input.organizationId,
     userId: input.userId,
-    entityType: "WORKFLOW_TASK_RUN",
+    entityType: 'WORKFLOW_TASK_RUN',
     entityId: input.workflowTaskRunId,
     summary: title,
     description,

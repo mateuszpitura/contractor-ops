@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { ShieldCheck, Upload } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { CountryComplianceSection } from "@/components/contractors/country-compliance-section";
-import { DocumentList } from "@/components/documents/document-list";
-import { DropZone } from "@/components/documents/drop-zone";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { ShieldCheck, Upload } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { CountryComplianceSection } from '@/components/contractors/country-compliance-section';
+import { DocumentList } from '@/components/documents/document-list';
+import { DropZone } from '@/components/documents/drop-zone';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 type ComplianceItem = {
   id: string;
@@ -27,31 +27,31 @@ type TabComplianceProps = {
 };
 
 const statusBadgeStyles: Record<string, string> = {
-  SATISFIED: "bg-green-600/10 text-green-600",
-  MISSING: "bg-red-500/10 text-red-500",
-  EXPIRED: "bg-red-500/10 text-red-500",
-  PENDING: "bg-amber-500/10 text-amber-600",
-  WAIVED: "bg-muted text-muted-foreground",
+  SATISFIED: 'bg-green-600/10 text-green-600',
+  MISSING: 'bg-red-500/10 text-red-500',
+  EXPIRED: 'bg-red-500/10 text-red-500',
+  PENDING: 'bg-amber-500/10 text-amber-600',
+  WAIVED: 'bg-muted text-muted-foreground',
 };
 
 function isExpiringSoon(expiresAt: string | Date | null): boolean {
   if (!expiresAt) return false;
-  const d = typeof expiresAt === "string" ? new Date(expiresAt) : expiresAt;
+  const d = typeof expiresAt === 'string' ? new Date(expiresAt) : expiresAt;
   const thirtyDaysFromNow = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
   return d <= thirtyDaysFromNow && d >= new Date();
 }
 
 function formatDate(date: string | Date): string {
-  const d = typeof date === "string" ? new Date(date) : date;
-  return d.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return d.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
   });
 }
 
 export function TabCompliance({ contractor }: TabComplianceProps) {
-  const t = useTranslations("ContractorProfile.compliance");
+  const t = useTranslations('ContractorProfile.compliance');
 
   if (contractor.complianceItems.length === 0) {
     return (
@@ -64,9 +64,9 @@ export function TabCompliance({ contractor }: TabComplianceProps) {
             <ShieldCheck className="size-6 text-muted-foreground" />
           </div>
           <div className="mx-auto w-full max-w-[320px] text-center">
-            <p className="text-sm font-medium">{t("noRequirements")}</p>
+            <p className="text-sm font-medium">{t('noRequirements')}</p>
             <p className="mt-1 text-xs text-pretty text-muted-foreground">
-              {t("noRequirementsHint")}
+              {t('noRequirementsHint')}
             </p>
           </div>
         </div>
@@ -78,11 +78,11 @@ export function TabCompliance({ contractor }: TabComplianceProps) {
     <div className="space-y-4">
       {/* Country-specific compliance fields (Phase 47) */}
       <CountryComplianceSection contractorId={contractor.id} />
-      <h3 className="text-base font-medium">{t("requiredDocuments")}</h3>
+      <h3 className="text-base font-medium">{t('requiredDocuments')}</h3>
 
       <div className="divide-y rounded-xl border bg-card">
-        {contractor.complianceItems.map((item) => {
-          const isMissing = item.status === "MISSING";
+        {contractor.complianceItems.map(item => {
+          const isMissing = item.status === 'MISSING';
           const expiringSoon = isExpiringSoon(item.expiresAt);
           const statusKey = item.status as keyof typeof statusBadgeStyles;
 
@@ -90,9 +90,8 @@ export function TabCompliance({ contractor }: TabComplianceProps) {
             <div
               key={item.id}
               className={`flex items-center justify-between gap-4 px-4 py-3 ${
-                isMissing ? "bg-red-50 dark:bg-red-950/20" : ""
-              }`}
-            >
+                isMissing ? 'bg-red-50 dark:bg-red-950/20' : ''
+              }`}>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">{item.name}</span>
@@ -103,11 +102,11 @@ export function TabCompliance({ contractor }: TabComplianceProps) {
                 {item.expiresAt && (
                   <div className="mt-0.5 flex items-center gap-1">
                     <span className="text-xs text-muted-foreground">
-                      {t("expires")}: {formatDate(item.expiresAt)}
+                      {t('expires')}: {formatDate(item.expiresAt)}
                     </span>
                     {expiringSoon && (
                       <span className="text-xs font-medium text-amber-600">
-                        {t("expiringSoon")}
+                        {t('expiringSoon')}
                       </span>
                     )}
                   </div>
@@ -115,14 +114,14 @@ export function TabCompliance({ contractor }: TabComplianceProps) {
               </div>
 
               <div className="flex items-center gap-3">
-                <Badge variant="secondary" className={statusBadgeStyles[statusKey] ?? ""}>
+                <Badge variant="secondary" className={statusBadgeStyles[statusKey] ?? ''}>
                   {t(
                     `status.${statusKey}` as
-                      | "status.SATISFIED"
-                      | "status.MISSING"
-                      | "status.EXPIRED"
-                      | "status.PENDING"
-                      | "status.WAIVED",
+                      | 'status.SATISFIED'
+                      | 'status.MISSING'
+                      | 'status.EXPIRED'
+                      | 'status.PENDING'
+                      | 'status.WAIVED',
                   )}
                 </Badge>
 
@@ -133,12 +132,11 @@ export function TabCompliance({ contractor }: TabComplianceProps) {
                     onClick={() => {
                       // Scroll to the upload section at bottom
                       document
-                        .getElementById("compliance-upload-zone")
-                        ?.scrollIntoView({ behavior: "smooth" });
-                    }}
-                  >
+                        .getElementById('compliance-upload-zone')
+                        ?.scrollIntoView({ behavior: 'smooth' });
+                    }}>
                     <Upload className="me-1.5 size-3.5" />
-                    {t("upload")}
+                    {t('upload')}
                   </Button>
                 )}
               </div>
@@ -150,7 +148,7 @@ export function TabCompliance({ contractor }: TabComplianceProps) {
       {/* Required documents section — upload zone */}
       <div id="compliance-upload-zone" className="space-y-4">
         <h3 className="text-base font-medium">
-          {t("uploadCompliance" as Parameters<typeof t>[0])}
+          {t('uploadCompliance' as Parameters<typeof t>[0])}
         </h3>
         <DropZone entityType="CONTRACTOR" entityId={contractor.id} />
       </div>

@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { format, formatDistanceToNow } from "date-fns";
-import { ExternalLink, ShieldCheck } from "lucide-react";
-import { CopyableField } from "@/components/shared/copyable-field";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { KsefSourceBadge } from "./ksef-badge";
+import { format, formatDistanceToNow } from 'date-fns';
+import { ExternalLink, ShieldCheck } from 'lucide-react';
+import { CopyableField } from '@/components/shared/copyable-field';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { KsefSourceBadge } from './ksef-badge';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -30,7 +30,7 @@ export function KsefMetadataSection({
 }: KsefMetadataSectionProps) {
   const fetchedDate = new Date(fetchedAt);
   const relativeTime = formatDistanceToNow(fetchedDate, { addSuffix: true });
-  const exactDate = format(fetchedDate, "yyyy-MM-dd HH:mm:ss");
+  const exactDate = format(fetchedDate, 'yyyy-MM-dd HH:mm:ss');
 
   const ksefUrl = `https://ksef.mf.gov.pl/web/${encodeURIComponent(ksefReference)}`;
 
@@ -44,8 +44,7 @@ export function KsefMetadataSection({
             href={ksefUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="ms-auto inline-flex items-center gap-1 text-sm text-primary hover:underline"
-          >
+            className="ms-auto inline-flex items-center gap-1 text-sm text-primary hover:underline">
             View in KSeF
             <ExternalLink className="size-3" aria-hidden="true" />
           </a>

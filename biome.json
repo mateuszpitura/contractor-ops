@@ -12,6 +12,18 @@
     "indentWidth": 2,
     "lineWidth": 100
   },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "jsxQuoteStyle": "double",
+      "trailingCommas": "all",
+      "semicolons": "always",
+      "arrowParentheses": "asNeeded",
+      "bracketSpacing": true,
+      "bracketSameLine": true,
+      "quoteProperties": "asNeeded"
+    }
+  },
   "linter": {
     "enabled": true,
     "domains": {
@@ -28,6 +40,7 @@
           "level": "warn",
           "options": { "allow": ["warn", "error", "info"] }
         },
+        "noArrayIndexKey": "warn",
         "noEmptyBlockStatements": "error",
         "noEvolvingTypes": "error"
       },
@@ -55,6 +68,19 @@
         "noForEach": "error",
         "useDateNow": "error",
         "useSimplifiedLogicExpression": "warn"
+      },
+      "a11y": {
+        "noLabelWithoutControl": "warn",
+        "useButtonType": "warn",
+        "useSemanticElements": "warn",
+        "noStaticElementInteractions": "warn",
+        "useKeyWithClickEvents": "warn",
+        "useAriaPropsSupportedByRole": "warn",
+        "useValidAnchor": "warn",
+        "noSvgWithoutTitle": "warn",
+        "useAnchorContent": "warn",
+        "useFocusableInteractive": "warn",
+        "noRedundantRoles": "warn"
       },
       "nursery": {
         "noNestedPromises": "error",

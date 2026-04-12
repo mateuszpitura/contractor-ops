@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { useMutation } from "@tanstack/react-query";
-import { AlertTriangle, Loader2 } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Link } from "@/i18n/navigation";
-import { trpc } from "@/trpc/init";
+import { useMutation } from '@tanstack/react-query';
+import { AlertTriangle, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Link } from '@/i18n/navigation';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -35,12 +35,12 @@ export function DuplicateWarning({
   invoiceNumber,
   onDismiss,
 }: DuplicateWarningProps) {
-  const t = useTranslations("Invoices");
+  const t = useTranslations('Invoices');
 
   const dismissMutation = useMutation(
     trpc.invoice.dismissDuplicate.mutationOptions({
       onSuccess: () => {
-        toast.success(t("duplicate.dismissedToast"));
+        toast.success(t('duplicate.dismissedToast'));
         onDismiss?.();
       },
     }),
@@ -51,26 +51,24 @@ export function DuplicateWarning({
       <CardContent className="flex items-start gap-3 py-4 px-6">
         <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
         <div className="flex-1 space-y-1">
-          <h3 className="text-sm font-medium">{t("duplicate.heading")}</h3>
-          <p className="text-sm text-muted-foreground">{t("duplicate.body", { invoiceNumber })}</p>
+          <h3 className="text-sm font-medium">{t('duplicate.heading')}</h3>
+          <p className="text-sm text-muted-foreground">{t('duplicate.body', { invoiceNumber })}</p>
           <div className="flex items-center gap-2 pt-1">
             {duplicateInvoiceId && (
               <Link
                 href={`/invoices/${duplicateInvoiceId}`}
                 target="_blank"
-                className="text-sm text-primary hover:underline"
-              >
-                {t("duplicate.viewOriginal")}
+                className="text-sm text-primary hover:underline">
+                {t('duplicate.viewOriginal')}
               </Link>
             )}
             <Button
               variant="ghost"
               size="sm"
               onClick={() => dismissMutation.mutate({ id: invoiceId })}
-              disabled={dismissMutation.isPending}
-            >
+              disabled={dismissMutation.isPending}>
               {dismissMutation.isPending && <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />}
-              {t("duplicate.notDuplicate")}
+              {t('duplicate.notDuplicate')}
             </Button>
           </div>
         </div>

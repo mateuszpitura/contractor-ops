@@ -1,8 +1,8 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useCallback } from "react";
-import { toast } from "sonner";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useCallback } from 'react';
+import { toast } from 'sonner';
 
-import { trpc } from "@/trpc/init";
+import { trpc } from '@/trpc/init';
 
 /**
  * Encapsulates workflow template CRUD mutations with cache invalidation.
@@ -18,7 +18,7 @@ export function useTemplateMutations(t: (key: string) => string): {
 
   const invalidate = useCallback(() => {
     void queryClient.invalidateQueries({
-      queryKey: [["workflow", "listTemplates"]],
+      queryKey: [['workflow', 'listTemplates']],
     });
   }, [queryClient]);
 
@@ -31,11 +31,11 @@ export function useTemplateMutations(t: (key: string) => string): {
   const activate = useCallback(
     async (id: string) => {
       try {
-        await updateMutation.mutateAsync({ id, status: "ACTIVE" });
-        toast.success(t("toast.templateActivated"));
+        await updateMutation.mutateAsync({ id, status: 'ACTIVE' });
+        toast.success(t('toast.templateActivated'));
         invalidate();
       } catch {
-        toast.error(t("errors.failedToSaveTemplate"));
+        toast.error(t('errors.failedToSaveTemplate'));
       }
     },
     [updateMutation, invalidate, t],
@@ -44,11 +44,11 @@ export function useTemplateMutations(t: (key: string) => string): {
   const archive = useCallback(
     async (id: string) => {
       try {
-        await updateMutation.mutateAsync({ id, status: "ARCHIVED" });
-        toast.success(t("toast.templateArchived"));
+        await updateMutation.mutateAsync({ id, status: 'ARCHIVED' });
+        toast.success(t('toast.templateArchived'));
         invalidate();
       } catch {
-        toast.error(t("errors.failedToSaveTemplate"));
+        toast.error(t('errors.failedToSaveTemplate'));
       }
     },
     [updateMutation, invalidate, t],
@@ -58,10 +58,10 @@ export function useTemplateMutations(t: (key: string) => string): {
     async (id: string) => {
       try {
         await duplicateMutation.mutateAsync({ id });
-        toast.success(t("toast.templateDuplicated"));
+        toast.success(t('toast.templateDuplicated'));
         invalidate();
       } catch {
-        toast.error(t("errors.failedToSaveTemplate"));
+        toast.error(t('errors.failedToSaveTemplate'));
       }
     },
     [duplicateMutation, invalidate, t],
@@ -71,10 +71,10 @@ export function useTemplateMutations(t: (key: string) => string): {
     async (id: string) => {
       try {
         await deleteMutation.mutateAsync({ id });
-        toast.success(t("toast.templateDeleted"));
+        toast.success(t('toast.templateDeleted'));
         invalidate();
       } catch {
-        toast.error(t("errors.failedToSaveTemplate"));
+        toast.error(t('errors.failedToSaveTemplate'));
       }
     },
     [deleteMutation, invalidate, t],

@@ -1,9 +1,9 @@
-import type { Permission } from "@contractor-ops/auth";
-import { auth } from "@contractor-ops/auth";
-import { TRPCError } from "@trpc/server";
-import * as E from "../errors.js";
-import { t } from "../init.js";
-import { tenantProcedure } from "./tenant.js";
+import type { Permission } from '@contractor-ops/auth';
+import { auth } from '@contractor-ops/auth';
+import { TRPCError } from '@trpc/server';
+import * as E from '../errors.js';
+import { t } from '../init.js';
+import { tenantProcedure } from './tenant.js';
 
 /**
  * RBAC middleware factory: creates a middleware that checks if the current
@@ -23,7 +23,7 @@ export function requirePermission(permission: Permission) {
 
     if (!hasPermission?.success) {
       throw new TRPCError({
-        code: "FORBIDDEN",
+        code: 'FORBIDDEN',
         message: E.PERMISSION_DENIED,
       });
     }
@@ -38,4 +38,4 @@ export function requirePermission(permission: Permission) {
  * Procedure that requires admin-level organization permissions.
  * Chain: auth -> tenant -> rbac(organization.update) -> handler
  */
-export const adminProcedure = tenantProcedure.use(requirePermission({ organization: ["update"] }));
+export const adminProcedure = tenantProcedure.use(requirePermission({ organization: ['update'] }));

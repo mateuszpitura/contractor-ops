@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { Check, Copy } from "lucide-react";
-import { useState } from "react";
+import { Check, Copy } from 'lucide-react';
+import { useState } from 'react';
 
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 
 interface CopyableFieldProps {
   value: string;
@@ -30,10 +30,9 @@ export function CopyableField({ value, ariaLabel, className }: CopyableFieldProp
       aria-label={ariaLabel}
       onClick={handleCopy}
       className={cn(
-        "inline-flex items-center gap-1.5 text-muted-foreground transition-colors hover:text-foreground",
+        'inline-flex items-center gap-1.5 text-muted-foreground transition-colors hover:text-foreground',
         className,
-      )}
-    >
+      )}>
       <span className="font-mono text-sm">{value}</span>
       {copied ? (
         <Check

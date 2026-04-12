@@ -1,14 +1,14 @@
-import { TRPCError } from "@trpc/server";
-import { z } from "zod";
-import { router } from "../init.js";
-import { adminProcedure } from "../middleware/rbac.js";
-import { tenantProcedure } from "../middleware/tenant.js";
+import { TRPCError } from '@trpc/server';
+import { z } from 'zod';
+import { router } from '../init.js';
+import { adminProcedure } from '../middleware/rbac.js';
+import { tenantProcedure } from '../middleware/tenant.js';
 import {
   KNOWN_SUBSCRIPTION_PRICE_IDS,
   KNOWN_TOPUP_PRICE_IDS,
   TIER_CREDIT_ALLOWANCE,
   TRIAL_CREDIT_ALLOWANCE,
-} from "../services/billing-constants.js";
+} from '../services/billing-constants.js';
 import {
   createCheckoutSession,
   createPortalSession,
@@ -17,8 +17,8 @@ import {
   getProrationPreview,
   getSubscription,
   updateSubscriptionSeatCount,
-} from "../services/billing-service.js";
-import { getCreditBalance } from "../services/credit-service.js";
+} from '../services/billing-service.js';
+import { getCreditBalance } from '../services/credit-service.js';
 
 // ---------------------------------------------------------------------------
 // Static plan configuration (D-01 through D-06)
@@ -27,63 +27,63 @@ import { getCreditBalance } from "../services/credit-service.js";
 const PLAN_CONFIG = {
   tiers: [
     {
-      id: "STARTER" as const,
-      name: "Starter",
+      id: 'STARTER' as const,
+      name: 'Starter',
       basePriceMinor: 9_900, // 99 PLN base
       seatPriceMinor: 1_000, // 10 PLN per contractor
       monthlyOcrCredits: TIER_CREDIT_ALLOWANCE.STARTER,
-      description: "Everything you need to manage contractors",
+      description: 'Everything you need to manage contractors',
       features: [
-        "Contractor management",
-        "Contracts & documents",
-        "Invoice intake & matching",
-        "Approval workflows",
-        "Payment batching",
+        'Contractor management',
+        'Contracts & documents',
+        'Invoice intake & matching',
+        'Approval workflows',
+        'Payment batching',
       ],
       excludedFeatures: [
-        "Integrations (Jira, Linear, Calendar)",
-        "OCR invoice parsing",
-        "Advanced workflows",
-        "Audit log export",
-        "API access",
+        'Integrations (Jira, Linear, Calendar)',
+        'OCR invoice parsing',
+        'Advanced workflows',
+        'Audit log export',
+        'API access',
       ],
     },
     {
-      id: "PRO" as const,
-      name: "Pro",
+      id: 'PRO' as const,
+      name: 'Pro',
       basePriceMinor: 29_900, // 299 PLN base
       seatPriceMinor: 1_500, // 15 PLN per contractor
       monthlyOcrCredits: TIER_CREDIT_ALLOWANCE.PRO,
-      description: "Integrations, OCR, and advanced workflows",
+      description: 'Integrations, OCR, and advanced workflows',
       features: [
-        "Everything in Starter",
-        "Integrations (Jira, Linear, Calendar)",
-        "OCR invoice parsing",
-        "Advanced workflows",
-        "E-signatures",
+        'Everything in Starter',
+        'Integrations (Jira, Linear, Calendar)',
+        'OCR invoice parsing',
+        'Advanced workflows',
+        'E-signatures',
       ],
-      excludedFeatures: ["Audit log export", "API access"],
+      excludedFeatures: ['Audit log export', 'API access'],
     },
     {
-      id: "ENTERPRISE" as const,
-      name: "Enterprise",
+      id: 'ENTERPRISE' as const,
+      name: 'Enterprise',
       basePriceMinor: 89_900, // 899 PLN base
       seatPriceMinor: 2_900, // 29 PLN per contractor
       monthlyOcrCredits: TIER_CREDIT_ALLOWANCE.ENTERPRISE,
-      description: "Full platform access with audit and API",
+      description: 'Full platform access with audit and API',
       features: [
-        "Everything in Pro",
-        "Audit log export",
-        "API access",
-        "Priority support",
-        "Custom onboarding",
+        'Everything in Pro',
+        'Audit log export',
+        'API access',
+        'Priority support',
+        'Custom onboarding',
       ],
       excludedFeatures: [],
     },
   ],
   trialDays: 14,
   trialCredits: TRIAL_CREDIT_ALLOWANCE,
-  currency: "PLN",
+  currency: 'PLN',
 };
 
 // ---------------------------------------------------------------------------
@@ -105,14 +105,14 @@ export const billingRouter = router({
   createCheckoutSession: adminProcedure
     .input(
       z.object({
-        priceId: z.string().min(1, "Price ID is required"),
+        priceId: z.string().min(1, 'Price ID is required'),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       if (!KNOWN_SUBSCRIPTION_PRICE_IDS.has(input.priceId)) {
         throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Invalid subscription price ID",
+          code: 'BAD_REQUEST',
+          message: 'Invalid subscription price ID',
         });
       }
 
@@ -123,8 +123,8 @@ export const billingRouter = router({
 
       if (!org) {
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Organization not found",
+          code: 'NOT_FOUND',
+          message: 'Organization not found',
         });
       }
 
@@ -142,11 +142,11 @@ export const billingRouter = router({
 
       // Count active contractors as seat quantity (minimum 1)
       const contractorCount = await ctx.db.contractor.count({
-        where: { organizationId: ctx.organizationId, status: "ACTIVE" },
+        where: { organizationId: ctx.organizationId, status: 'ACTIVE' },
       });
       const quantity = Math.max(1, contractorCount);
 
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
 
       return createCheckoutSession({
         organizationId: ctx.organizationId,
@@ -166,14 +166,14 @@ export const billingRouter = router({
   getProrationPreview: adminProcedure
     .input(
       z.object({
-        newPriceId: z.string().min(1, "New price ID is required"),
+        newPriceId: z.string().min(1, 'New price ID is required'),
       }),
     )
     .query(async ({ ctx, input }) => {
       if (!KNOWN_SUBSCRIPTION_PRICE_IDS.has(input.newPriceId)) {
         throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Invalid subscription price ID",
+          code: 'BAD_REQUEST',
+          message: 'Invalid subscription price ID',
         });
       }
 
@@ -181,15 +181,15 @@ export const billingRouter = router({
 
       if (!sub) {
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "No active subscription found",
+          code: 'NOT_FOUND',
+          message: 'No active subscription found',
         });
       }
 
       if (!sub.stripeSubscriptionItemId) {
         throw new TRPCError({
-          code: "PRECONDITION_FAILED",
-          message: "Subscription item ID not available",
+          code: 'PRECONDITION_FAILED',
+          message: 'Subscription item ID not available',
         });
       }
 
@@ -210,12 +210,12 @@ export const billingRouter = router({
 
     if (!sub) {
       throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "No active subscription found",
+        code: 'NOT_FOUND',
+        message: 'No active subscription found',
       });
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
 
     return createPortalSession({
       stripeCustomerId: sub.stripeCustomerId,
@@ -230,14 +230,14 @@ export const billingRouter = router({
   createTopUpCheckout: adminProcedure
     .input(
       z.object({
-        priceId: z.string().min(1, "Price ID is required"),
+        priceId: z.string().min(1, 'Price ID is required'),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       if (!KNOWN_TOPUP_PRICE_IDS.has(input.priceId)) {
         throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Invalid top-up price ID",
+          code: 'BAD_REQUEST',
+          message: 'Invalid top-up price ID',
         });
       }
 
@@ -245,12 +245,12 @@ export const billingRouter = router({
 
       if (!sub) {
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "No active subscription found. Subscribe to a plan first.",
+          code: 'NOT_FOUND',
+          message: 'No active subscription found. Subscribe to a plan first.',
         });
       }
 
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
 
       return createTopUpCheckoutSession({
         organizationId: ctx.organizationId,
@@ -270,20 +270,20 @@ export const billingRouter = router({
 
     if (!sub?.stripeSubscriptionItemId) {
       throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "No active subscription with a subscription item found",
+        code: 'NOT_FOUND',
+        message: 'No active subscription with a subscription item found',
       });
     }
 
-    if (sub.status !== "ACTIVE" && sub.status !== "TRIALING") {
+    if (sub.status !== 'ACTIVE' && sub.status !== 'TRIALING') {
       throw new TRPCError({
-        code: "PRECONDITION_FAILED",
-        message: "Subscription is not active",
+        code: 'PRECONDITION_FAILED',
+        message: 'Subscription is not active',
       });
     }
 
     const contractorCount = await ctx.db.contractor.count({
-      where: { organizationId: ctx.organizationId, status: "ACTIVE" },
+      where: { organizationId: ctx.organizationId, status: 'ACTIVE' },
     });
     const newQuantity = Math.max(1, contractorCount);
 
@@ -326,11 +326,11 @@ export const billingRouter = router({
       getSubscription(ctx.organizationId),
       getCreditBalance(ctx.organizationId),
       ctx.db.contractor.count({
-        where: { organizationId: ctx.organizationId, status: "ACTIVE" },
+        where: { organizationId: ctx.organizationId, status: 'ACTIVE' },
       }),
     ]);
 
-    const tierConfig = PLAN_CONFIG.tiers.find((t) => t.id === sub?.tier);
+    const tierConfig = PLAN_CONFIG.tiers.find(t => t.id === sub?.tier);
     const includedSeats = tierConfig
       ? Math.floor(tierConfig.basePriceMinor / tierConfig.seatPriceMinor)
       : 0;

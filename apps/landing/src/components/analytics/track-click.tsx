@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import type { MouseEvent, ReactNode } from "react";
-import { useCallback } from "react";
-import { posthog } from "@/lib/posthog";
+import type { MouseEvent, ReactNode } from 'react';
+import { useCallback } from 'react';
+import { posthog } from '@/lib/posthog';
 
 /**
  * Wraps clickable children and fires a PostHog event on click.
@@ -24,7 +24,7 @@ export function TrackClick({
     (e: MouseEvent) => {
       const target = e.target instanceof HTMLElement ? e.target : null;
       posthog.capture(event, {
-        element_text: target?.textContent?.slice(0, 100) ?? "",
+        element_text: target?.textContent?.slice(0, 100) ?? '',
         ...properties,
       });
     },

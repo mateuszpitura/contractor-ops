@@ -33,23 +33,23 @@
  * Opcjonalnie max długość zapisanego body odpowiedzi: KSEF_LOG_MAX=12000
  */
 
-import { constants, publicEncrypt, X509Certificate } from "node:crypto";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import { config as loadEnv } from "dotenv";
+import { constants, publicEncrypt, X509Certificate } from 'node:crypto';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { config as loadEnv } from 'dotenv';
 
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-loadEnv({ path: path.join(repoRoot, ".env"), quiet: true });
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+loadEnv({ path: path.join(repoRoot, '.env'), quiet: true });
 
 // Zgodnie z OpenAPI — host + `/v2` (nie mylić z aliasem `/api/v2`).
 const BASE_URL =
-  process.env.KSEF_BASE_URL?.replace(/\/$/, "") ?? "https://api-test.ksef.mf.gov.pl/v2";
-const TOKEN = process.env.KSEF_TOKEN ?? "";
-const NIP = (process.env.KSEF_NIP ?? "").replace(/\D/g, "");
-const DATE_FROM = process.env.KSEF_DATE_FROM ?? "2025-01-01";
-const DATE_TO = process.env.KSEF_DATE_TO ?? "2026-12-31";
+  process.env.KSEF_BASE_URL?.replace(/\/$/, '') ?? 'https://api-test.ksef.mf.gov.pl/v2';
+const TOKEN = process.env.KSEF_TOKEN ?? '';
+const NIP = (process.env.KSEF_NIP ?? '').replace(/\D/g, '');
+const DATE_FROM = process.env.KSEF_DATE_FROM ?? '2025-01-01';
+const DATE_TO = process.env.KSEF_DATE_TO ?? '2026-12-31';
 
-const DEBUG = process.env.KSEF_DEBUG === "1" || /^(true|yes)$/i.test(process.env.KSEF_DEBUG ?? "");
+const DEBUG = process.env.KSEF_DEBUG === '1' || /^(true|yes)$/i.test(process.env.KSEF_DEBUG ?? '');
 const LOG_MAX = Math.min(Math.max(Number(process.env.KSEF_LOG_MAX) || 12000, 500), 500_000);
 
 /** Parsowanie `YYYY-MM-DD` (tylko zapytanie o faktury — nie pełny ISO z czasem). */
@@ -71,7 +71,7 @@ function lastDayOfMonthUtc(y, m) {
 }
 
 function ymdFromParts(y, mo, d) {
-  return `${String(y).padStart(4, "0")}-${String(mo).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+  return `${String(y).padStart(4, '0')}-${String(mo).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
 }
 
 /** `fromYmd` + N miesięcy kalendarzowych; dzień jest przycinany, jeśli docelowy miesiąc jest krótszy (np. 31 sty → 28/29 lut). */
@@ -126,7 +126,7 @@ function clampInvoiceQueryYmdRange(fromYmd, toYmd) {
 function sanitizeHeadersForLog(headers) {
   const h = { ...headers };
   if (h.Authorization) {
-    const raw = h.Authorization.replace(/^Bearer\s+/i, "");
+    const raw = h.Authorization.replace(/^Bearer\s+/i, '');
     h.Authorization = `Bearer <redacted len=${raw.length} …${raw.slice(-6)}>`;
   }
   return h;
@@ -136,8 +136,8 @@ function sanitizeHeadersForLog(headers) {
 function sanitizeForLog(data, depth = 0) {
   if (depth > 14) return data;
   if (data === null || data === undefined) return data;
-  if (typeof data === "string") {
-    if (data.split(".").length === 3 && data.length > 40) {
+  if (typeof data === 'string') {
+    if (data.split('.').length === 3 && data.length > 40) {
       return `<jwt len=${data.length} …${data.slice(-8)}>`;
     }
     if (data.length > 120 && /^[A-Za-z0-9+/=\s\n]+$/s.test(data)) {
@@ -146,20 +146,20 @@ function sanitizeForLog(data, depth = 0) {
     return data.length > LOG_MAX ? `${data.slice(0, LOG_MAX)}…` : data;
   }
   if (Array.isArray(data)) {
-    return data.map((x) => sanitizeForLog(x, depth + 1));
+    return data.map(x => sanitizeForLog(x, depth + 1));
   }
-  if (typeof data === "object") {
+  if (typeof data === 'object') {
     const o = {};
     for (const [k, v] of Object.entries(data)) {
-      if (k === "encryptedToken" && typeof v === "string") {
+      if (k === 'encryptedToken' && typeof v === 'string') {
         o[k] = `<base64 ${v.length} chars>`;
         continue;
       }
-      if (k === "certificate" && typeof v === "string" && v.length > 80) {
+      if (k === 'certificate' && typeof v === 'string' && v.length > 80) {
         o[k] = `<DER base64 ${v.length} chars>`;
         continue;
       }
-      if (k === "token" && typeof v === "string" && v.length > 24) {
+      if (k === 'token' && typeof v === 'string' && v.length > 24) {
         o[k] = `<secret len=${v.length} …${v.slice(-6)}>`;
         continue;
       }
@@ -171,9 +171,9 @@ function sanitizeForLog(data, depth = 0) {
 }
 
 function formatBodyForLog(text, contentType) {
-  const ct = contentType ?? "";
-  if (!text) return "(empty)";
-  if (ct.includes("json")) {
+  const ct = contentType ?? '';
+  if (!text) return '(empty)';
+  if (ct.includes('json')) {
     try {
       const j = JSON.parse(text);
       const s = JSON.stringify(sanitizeForLog(j), null, 2);
@@ -189,43 +189,43 @@ function formatBodyForLog(text, contentType) {
  * Fetch z opcjonalnym logiem: metoda, URL, nagłówki (bez pełnego Bearer), body żądania / odpowiedzi.
  */
 async function loggedFetch(url, options = {}) {
-  const method = options.method ?? "GET";
+  const method = options.method ?? 'GET';
   const headers = {
     ...(options.headers ?? {}),
   };
 
   if (DEBUG) {
-    console.error("\n────────── REQUEST ──────────");
+    console.error('\n────────── REQUEST ──────────');
     console.error(`${method} ${url}`);
-    console.error("headers:", JSON.stringify(sanitizeHeadersForLog(headers), null, 2));
-    if (options.body != null && options.body !== "") {
+    console.error('headers:', JSON.stringify(sanitizeHeadersForLog(headers), null, 2));
+    if (options.body != null && options.body !== '') {
       const raw = String(options.body);
       let printed = raw;
-      if (raw.trim().startsWith("{")) {
+      if (raw.trim().startsWith('{')) {
         try {
           printed = JSON.stringify(sanitizeForLog(JSON.parse(raw)), null, 2);
         } catch {
           printed = raw.length > LOG_MAX ? `${raw.slice(0, LOG_MAX)}…` : raw;
         }
       }
-      console.error("body:\n", printed);
+      console.error('body:\n', printed);
     }
   }
 
   const res = await fetch(url, { ...options, method, headers });
   const text = await res.text();
-  const ct = res.headers.get("content-type") ?? "";
+  const ct = res.headers.get('content-type') ?? '';
 
   if (DEBUG) {
-    console.error("────────── RESPONSE ──────────");
+    console.error('────────── RESPONSE ──────────');
     console.error(`${res.status} ${res.statusText} ← ${method} ${url}`);
-    console.error("content-type:", ct || "(none)");
-    const interesting = ["x-request-id", "retry-after", "www-authenticate"];
+    console.error('content-type:', ct || '(none)');
+    const interesting = ['x-request-id', 'retry-after', 'www-authenticate'];
     for (const name of interesting) {
       const v = res.headers.get(name);
       if (v) console.error(`${name}:`, v);
     }
-    console.error("body:\n", formatBodyForLog(text, ct));
+    console.error('body:\n', formatBodyForLog(text, ct));
   }
 
   return { res, text };
@@ -235,7 +235,7 @@ async function fetchJson(url, options = {}) {
   const { res, text } = await loggedFetch(url, {
     ...options,
     headers: {
-      Accept: "application/json",
+      Accept: 'application/json',
       ...(options.headers ?? {}),
     },
   });
@@ -246,7 +246,7 @@ async function fetchJson(url, options = {}) {
     body = text;
   }
   if (!res.ok) {
-    const detail = typeof body === "object" && body !== null ? JSON.stringify(body) : String(body);
+    const detail = typeof body === 'object' && body !== null ? JSON.stringify(body) : String(body);
     throw new Error(`HTTP ${res.status} ${url}: ${detail}`);
   }
   return body;
@@ -263,27 +263,27 @@ async function fetchJson(url, options = {}) {
  */
 async function fetchKsefTokenEncryptionPublicKey() {
   const rows = await fetchJson(`${BASE_URL}/security/public-key-certificates`, {
-    method: "GET",
+    method: 'GET',
   });
   if (!Array.isArray(rows)) {
-    throw new Error("Oczekiwano tablicy z /security/public-key-certificates");
+    throw new Error('Oczekiwano tablicy z /security/public-key-certificates');
   }
-  const row = rows.find((r) => Array.isArray(r.usage) && r.usage.includes("KsefTokenEncryption"));
+  const row = rows.find(r => Array.isArray(r.usage) && r.usage.includes('KsefTokenEncryption'));
   if (!row?.certificate) {
-    throw new Error("Brak wpisu z usage KsefTokenEncryption");
+    throw new Error('Brak wpisu z usage KsefTokenEncryption');
   }
-  const der = Buffer.from(row.certificate, "base64");
+  const der = Buffer.from(row.certificate, 'base64');
   return new X509Certificate(der).publicKey;
 }
 
 function formatAuthStatusError(st) {
   const s = st?.status;
   if (!s) return JSON.stringify(st);
-  const parts = [`[${s.code}] ${s.description ?? ""}`.trim()];
+  const parts = [`[${s.code}] ${s.description ?? ''}`.trim()];
   if (Array.isArray(s.details) && s.details.length) {
     parts.push(...s.details);
   }
-  return parts.join("\n");
+  return parts.join('\n');
 }
 
 /**
@@ -298,9 +298,9 @@ async function authenticate(token, nip) {
   const rsaKey = await fetchKsefTokenEncryptionPublicKey();
 
   const challengePayload = await fetchJson(`${BASE_URL}/auth/challenge`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: "{}",
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: '{}',
   });
 
   const { challenge, timestampMs } = challengePayload;
@@ -309,34 +309,34 @@ async function authenticate(token, nip) {
     {
       key: rsaKey,
       padding: constants.RSA_PKCS1_OAEP_PADDING,
-      oaepHash: "sha256",
+      oaepHash: 'sha256',
     },
     plaintext,
   );
 
   const init = await fetchJson(`${BASE_URL}/auth/ksef-token`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       challenge,
       // OpenAPI: AuthenticationContextIdentifierType — wartości case-sensitive (np. "Nip", nie "nip").
-      contextIdentifier: { type: "Nip", value: nip },
-      encryptedToken: encrypted.toString("base64"),
+      contextIdentifier: { type: 'Nip', value: nip },
+      encryptedToken: encrypted.toString('base64'),
     }),
   });
 
   const referenceNumber = init.referenceNumber;
   const authToken = init.authenticationToken?.token;
   if (!(referenceNumber && authToken)) {
-    throw new Error("Brak referenceNumber lub authenticationToken w odpowiedzi ksef-token");
+    throw new Error('Brak referenceNumber lub authenticationToken w odpowiedzi ksef-token');
   }
 
   let authReady = false;
   for (let i = 0; i < 60; i++) {
     const st = await fetchJson(`${BASE_URL}/auth/${encodeURIComponent(referenceNumber)}`, {
-      method: "GET",
+      method: 'GET',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${authToken}`,
       },
     });
@@ -348,29 +348,29 @@ async function authenticate(token, nip) {
     if (code !== undefined && code !== 100) {
       const hint =
         code === 450
-          ? "\n\n→ Kod 450: KSeF nie rozpoznaje tokena. Najczęściej: token wygenerowany w **innym środowisku** (np. produkcja zamiast TEST), unieważniony token, literówka w wartości, albo NIP kontekstu nie zgadza się z tokenem. Wygeneruj nowy token KSeF w **portalu środowiska TEST** (ten sam co api-test.ksef.mf.gov.pl) i ustaw KSEF_NIP zgodny z uprawnieniami tego tokena."
-          : "";
+          ? '\n\n→ Kod 450: KSeF nie rozpoznaje tokena. Najczęściej: token wygenerowany w **innym środowisku** (np. produkcja zamiast TEST), unieważniony token, literówka w wartości, albo NIP kontekstu nie zgadza się z tokenem. Wygeneruj nowy token KSeF w **portalu środowiska TEST** (ten sam co api-test.ksef.mf.gov.pl) i ustaw KSEF_NIP zgodny z uprawnieniami tego tokena.'
+          : '';
       throw new Error(`Uwierzytelnianie KSeF nieudane:\n${formatAuthStatusError(st)}${hint}`);
     }
-    await new Promise((r) => setTimeout(r, 1000));
+    await new Promise(r => setTimeout(r, 1000));
   }
   if (!authReady) {
-    throw new Error("Timeout: status uwierzytelniania nie osiągnął kodu 200");
+    throw new Error('Timeout: status uwierzytelniania nie osiągnął kodu 200');
   }
 
   const tokens = await fetchJson(`${BASE_URL}/auth/token/redeem`, {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       Authorization: `Bearer ${authToken}`,
     },
-    body: "{}",
+    body: '{}',
   });
 
   const accessToken = tokens?.accessToken?.token;
   const refreshToken = tokens?.refreshToken?.token;
   if (!accessToken) {
-    throw new Error("Brak accessToken po /auth/token/redeem");
+    throw new Error('Brak accessToken po /auth/token/redeem');
   }
 
   return { accessToken, refreshToken, referenceNumber };
@@ -395,19 +395,19 @@ async function queryInvoiceMetadata(accessToken, dateFrom, dateTo) {
   const to = `${toYmd}T23:59:59`;
 
   const url = new URL(`${BASE_URL}/invoices/query/metadata`);
-  url.searchParams.set("pageOffset", "0");
-  url.searchParams.set("pageSize", "50");
+  url.searchParams.set('pageOffset', '0');
+  url.searchParams.set('pageSize', '50');
 
   return await fetchJson(url.toString(), {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       Authorization: `Bearer ${accessToken}`,
     },
     body: JSON.stringify({
-      subjectType: "Subject2",
+      subjectType: 'Subject2',
       dateRange: {
-        dateType: "Issue",
+        dateType: 'Issue',
         from,
         to,
       },
@@ -420,9 +420,9 @@ async function queryInvoiceMetadata(accessToken, dateFrom, dateTo) {
 async function downloadInvoiceXml(accessToken, ksefNumber) {
   const url = `${BASE_URL}/invoices/ksef/${encodeURIComponent(ksefNumber)}`;
   const { res, text } = await loggedFetch(url, {
-    method: "GET",
+    method: 'GET',
     headers: {
-      Accept: "application/xml, text/xml;q=0.9, */*;q=0.8",
+      Accept: 'application/xml, text/xml;q=0.9, */*;q=0.8',
       Authorization: `Bearer ${accessToken}`,
     },
   });
@@ -434,21 +434,21 @@ async function downloadInvoiceXml(accessToken, ksefNumber) {
 
 async function revokeCurrentSession(accessToken) {
   const { res, text } = await loggedFetch(`${BASE_URL}/auth/sessions/current`, {
-    method: "DELETE",
+    method: 'DELETE',
     headers: { Authorization: `Bearer ${accessToken}` },
   });
   if (!res.ok && res.status !== 204) {
-    console.warn("DELETE /auth/sessions/current:", res.status, text);
+    console.warn('DELETE /auth/sessions/current:', res.status, text);
   }
 }
 
 async function main() {
   if (!TOKEN || NIP.length !== 10) {
-    console.error("Ustaw KSEF_TOKEN oraz KSEF_NIP (10 cyfr) w .env lub w środowisku.");
+    console.error('Ustaw KSEF_TOKEN oraz KSEF_NIP (10 cyfr) w .env lub w środowisku.');
     process.exit(1);
   }
   if (DEBUG) {
-    console.error("KSeF_DEBUG=1 — pełne logi HTTP na stderr (tokeny/JWT redagowane).");
+    console.error('KSeF_DEBUG=1 — pełne logi HTTP na stderr (tokeny/JWT redagowane).');
   }
 
   let accessToken;
@@ -462,14 +462,13 @@ async function main() {
     const firstKsef = list[0]?.ksefNumber;
     if (firstKsef) {
       const _xml = await downloadInvoiceXml(accessToken, firstKsef);
-    } else {
     }
   } finally {
     if (accessToken) await revokeCurrentSession(accessToken);
   }
 }
 
-main().catch((e) => {
+main().catch(e => {
   console.error(e);
   process.exit(1);
 });

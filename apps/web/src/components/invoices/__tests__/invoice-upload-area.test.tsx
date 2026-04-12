@@ -1,24 +1,24 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type { ReactNode } from "react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, setup, waitFor } from "@/test/test-utils";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import type { ReactNode } from 'react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { render, screen, setup, waitFor } from '@/test/test-utils';
 
-import { InvoiceUploadArea } from "../invoice-upload-area";
+import { InvoiceUploadArea } from '../invoice-upload-area';
 
 const { sampleOcrDataForMock } = vi.hoisted(() => ({
   sampleOcrDataForMock: {
-    invoiceNumber: "INV-ACCEPT-1",
-    issueDate: "2026-01-01",
-    dueDate: "2026-01-15",
-    currency: "PLN",
+    invoiceNumber: 'INV-ACCEPT-1',
+    issueDate: '2026-01-01',
+    dueDate: '2026-01-15',
+    currency: 'PLN',
     subtotalMinor: 10000,
     vatAmountMinor: 2300,
     totalMinor: 12300,
-    sellerTaxId: "5250000000",
-    sellerName: "Seller Sp. z o.o.",
-    buyerTaxId: "",
-    buyerName: "Buyer SA",
-    sellerBankAccount: "",
+    sellerTaxId: '5250000000',
+    sellerName: 'Seller Sp. z o.o.',
+    buyerTaxId: '',
+    buyerName: 'Buyer SA',
+    sellerBankAccount: '',
     lineItems: [] as {
       id: string;
       description: string;
@@ -40,16 +40,16 @@ const { toastSuccess, toastError, invalidateQueries } = vi.hoisted(() => ({
   invalidateQueries: vi.fn(),
 }));
 
-vi.mock("sonner", () => ({
+vi.mock('sonner', () => ({
   toast: {
     success: (...args: unknown[]) => toastSuccess(...args),
     error: (...args: unknown[]) => toastError(...args),
   },
 }));
 
-vi.mock("@tanstack/react-query", async () => {
+vi.mock('@tanstack/react-query', async () => {
   const actual =
-    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
+    await vi.importActual<typeof import('@tanstack/react-query')>('@tanstack/react-query');
   return {
     ...actual,
     useQueryClient: () => ({
@@ -66,28 +66,28 @@ const {
   ocrRetriggerMutationFn,
 } = vi.hoisted(() => ({
   requestUploadMutationFn: vi.fn(async () => ({
-    documentId: "doc-1",
-    uploadUrl: "https://r2.example/put",
-    storageKey: "sk-1",
+    documentId: 'doc-1',
+    uploadUrl: 'https://r2.example/put',
+    storageKey: 'sk-1',
   })),
   confirmUploadMutationFn: vi.fn(async () => ({})),
   createInvoiceMutationFn: vi.fn(async () => ({})),
-  ocrTriggerMutationFn: vi.fn(async () => ({ extractionId: "ext-1" })),
-  ocrRetriggerMutationFn: vi.fn(async () => ({ extractionId: "ext-2" })),
+  ocrTriggerMutationFn: vi.fn(async () => ({ extractionId: 'ext-1' })),
+  ocrRetriggerMutationFn: vi.fn(async () => ({ extractionId: 'ext-2' })),
 }));
 
-vi.mock("@/trpc/init", () => ({
+vi.mock('@/trpc/init', () => ({
   trpc: {
     document: {
       requestUpload: {
         mutationOptions: vi.fn(() => ({
-          mutationKey: ["document", "requestUpload"],
+          mutationKey: ['document', 'requestUpload'],
           mutationFn: requestUploadMutationFn,
         })),
       },
       confirmUpload: {
         mutationOptions: vi.fn(() => ({
-          mutationKey: ["document", "confirmUpload"],
+          mutationKey: ['document', 'confirmUpload'],
           mutationFn: confirmUploadMutationFn,
         })),
       },
@@ -95,27 +95,27 @@ vi.mock("@/trpc/init", () => ({
     invoice: {
       create: {
         mutationOptions: vi.fn(() => ({
-          mutationKey: ["invoice", "create"],
+          mutationKey: ['invoice', 'create'],
           mutationFn: createInvoiceMutationFn,
         })),
       },
       list: {
-        queryKey: vi.fn(() => ["invoice", "list"] as const),
+        queryKey: vi.fn(() => ['invoice', 'list'] as const),
       },
       statusCounts: {
-        queryKey: vi.fn(() => ["invoice", "statusCounts"] as const),
+        queryKey: vi.fn(() => ['invoice', 'statusCounts'] as const),
       },
     },
     ocr: {
       trigger: {
         mutationOptions: vi.fn(() => ({
-          mutationKey: ["ocr", "trigger"],
+          mutationKey: ['ocr', 'trigger'],
           mutationFn: ocrTriggerMutationFn,
         })),
       },
       retrigger: {
         mutationOptions: vi.fn(() => ({
-          mutationKey: ["ocr", "retrigger"],
+          mutationKey: ['ocr', 'retrigger'],
           mutationFn: ocrRetriggerMutationFn,
         })),
       },
@@ -123,7 +123,7 @@ vi.mock("@/trpc/init", () => ({
   },
 }));
 
-vi.mock("@/components/ocr/ocr-review-panel", () => ({
+vi.mock('@/components/ocr/ocr-review-panel', () => ({
   OcrReviewPanel: ({
     onAccept,
     onDiscard,
@@ -151,11 +151,11 @@ const { mockRouterPush } = vi.hoisted(() => ({
   mockRouterPush: vi.fn(),
 }));
 
-vi.mock("@/i18n/navigation", () => ({
+vi.mock('@/i18n/navigation', () => ({
   useRouter: () => ({ push: mockRouterPush }),
 }));
 
-vi.mock("@/components/billing/credit-exhausted-inline", () => ({
+vi.mock('@/components/billing/credit-exhausted-inline', () => ({
   CreditExhaustedInline: ({
     onUpgrade,
     onBuyCredits,
@@ -184,14 +184,14 @@ const { MockTRPCClientError } = vi.hoisted(() => {
     data: { code: string };
     constructor(message: string, code: string) {
       super(message);
-      this.name = "TRPCClientError";
+      this.name = 'TRPCClientError';
       this.data = { code };
     }
   }
   return { MockTRPCClientError };
 });
 
-vi.mock("@trpc/client", () => ({
+vi.mock('@trpc/client', () => ({
   TRPCClientError: MockTRPCClientError,
 }));
 
@@ -238,7 +238,7 @@ function renderWithClient(ui: ReactNode) {
 // Tests
 // ---------------------------------------------------------------------------
 
-describe("InvoiceUploadArea", () => {
+describe('InvoiceUploadArea', () => {
   beforeEach(() => {
     toastSuccess.mockClear();
     toastError.mockClear();
@@ -246,20 +246,20 @@ describe("InvoiceUploadArea", () => {
     mockRouterPush.mockClear();
     requestUploadMutationFn.mockClear();
     requestUploadMutationFn.mockImplementation(async () => ({
-      documentId: "doc-1",
-      uploadUrl: "https://r2.example/put",
-      storageKey: "sk-1",
+      documentId: 'doc-1',
+      uploadUrl: 'https://r2.example/put',
+      storageKey: 'sk-1',
     }));
     confirmUploadMutationFn.mockClear();
     createInvoiceMutationFn.mockClear();
     ocrTriggerMutationFn.mockClear();
     ocrRetriggerMutationFn.mockClear();
     ocrRetriggerMutationFn.mockImplementation(async () => ({
-      extractionId: "ext-2",
+      extractionId: 'ext-2',
     }));
-    vi.stubGlobal("XMLHttpRequest", XhrSuccess());
-    vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:mock-pdf");
-    vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
+    vi.stubGlobal('XMLHttpRequest', XhrSuccess());
+    vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock-pdf');
+    vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined);
   });
 
   afterEach(() => {
@@ -267,9 +267,9 @@ describe("InvoiceUploadArea", () => {
     vi.restoreAllMocks();
   });
 
-  it("renders CreditExhaustedInline when OCR returns PRECONDITION_FAILED credit error", async () => {
+  it('renders CreditExhaustedInline when OCR returns PRECONDITION_FAILED credit error', async () => {
     ocrTriggerMutationFn.mockRejectedValueOnce(
-      new MockTRPCClientError("OCR credits exhausted", "PRECONDITION_FAILED"),
+      new MockTRPCClientError('OCR credits exhausted', 'PRECONDITION_FAILED'),
     );
 
     const { user } = setup(
@@ -281,17 +281,16 @@ describe("InvoiceUploadArea", () => {
               mutations: { retry: false },
             },
           })
-        }
-      >
+        }>
         <InvoiceUploadArea />
       </QueryClientProvider>,
     );
 
     // No credit-exhausted banner initially
-    expect(screen.queryByTestId("credit-exhausted-inline")).not.toBeInTheDocument();
+    expect(screen.queryByTestId('credit-exhausted-inline')).not.toBeInTheDocument();
 
-    const file = new File(["%PDF-1.4 test"], "inv-credit.pdf", {
-      type: "application/pdf",
+    const file = new File(['%PDF-1.4 test'], 'inv-credit.pdf', {
+      type: 'application/pdf',
     });
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     expect(input).toBeTruthy();
@@ -303,16 +302,16 @@ describe("InvoiceUploadArea", () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByTestId("credit-exhausted-inline")).toBeInTheDocument();
+      expect(screen.getByTestId('credit-exhausted-inline')).toBeInTheDocument();
     });
 
-    expect(screen.getByText("OCR credits exhausted")).toBeInTheDocument();
-    expect(screen.getByText("Upgrade plan")).toBeInTheDocument();
-    expect(screen.getByText("Buy credits")).toBeInTheDocument();
+    expect(screen.getByText('OCR credits exhausted')).toBeInTheDocument();
+    expect(screen.getByText('Upgrade plan')).toBeInTheDocument();
+    expect(screen.getByText('Buy credits')).toBeInTheDocument();
   });
 
-  it("does not render CreditExhaustedInline on generic OCR error", async () => {
-    ocrTriggerMutationFn.mockRejectedValueOnce(new Error("Network error"));
+  it('does not render CreditExhaustedInline on generic OCR error', async () => {
+    ocrTriggerMutationFn.mockRejectedValueOnce(new Error('Network error'));
 
     const { user } = setup(
       <QueryClientProvider
@@ -323,14 +322,13 @@ describe("InvoiceUploadArea", () => {
               mutations: { retry: false },
             },
           })
-        }
-      >
+        }>
         <InvoiceUploadArea />
       </QueryClientProvider>,
     );
 
-    const file = new File(["%PDF-1.4 test"], "inv-generic.pdf", {
-      type: "application/pdf",
+    const file = new File(['%PDF-1.4 test'], 'inv-generic.pdf', {
+      type: 'application/pdf',
     });
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, file);
@@ -345,12 +343,12 @@ describe("InvoiceUploadArea", () => {
     });
 
     // CreditExhaustedInline should NOT appear for generic errors
-    expect(screen.queryByTestId("credit-exhausted-inline")).not.toBeInTheDocument();
+    expect(screen.queryByTestId('credit-exhausted-inline')).not.toBeInTheDocument();
   });
 
-  it("navigates to /settings?tab=billing when Upgrade plan is clicked", async () => {
+  it('navigates to /settings?tab=billing when Upgrade plan is clicked', async () => {
     ocrTriggerMutationFn.mockRejectedValueOnce(
-      new MockTRPCClientError("OCR credits exhausted", "PRECONDITION_FAILED"),
+      new MockTRPCClientError('OCR credits exhausted', 'PRECONDITION_FAILED'),
     );
 
     const { user } = setup(
@@ -362,33 +360,32 @@ describe("InvoiceUploadArea", () => {
               mutations: { retry: false },
             },
           })
-        }
-      >
+        }>
         <InvoiceUploadArea />
       </QueryClientProvider>,
     );
 
-    const file = new File(["%PDF-1.4 test"], "inv-upgrade.pdf", {
-      type: "application/pdf",
+    const file = new File(['%PDF-1.4 test'], 'inv-upgrade.pdf', {
+      type: 'application/pdf',
     });
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, file);
 
     await waitFor(() => {
-      expect(screen.getByTestId("credit-exhausted-inline")).toBeInTheDocument();
+      expect(screen.getByTestId('credit-exhausted-inline')).toBeInTheDocument();
     });
 
-    await user.click(screen.getByTestId("upgrade-btn"));
-    expect(mockRouterPush).toHaveBeenCalledWith("/settings?tab=billing");
+    await user.click(screen.getByTestId('upgrade-btn'));
+    expect(mockRouterPush).toHaveBeenCalledWith('/settings?tab=billing');
   });
 
-  it("renders drop zone with text and accepted formats", () => {
+  it('renders drop zone with text and accepted formats', () => {
     renderWithClient(<InvoiceUploadArea />);
     expect(screen.getByText(/drag.*drop|drop.*PDF|browse/i)).toBeInTheDocument();
     expect(screen.getByText(/PDF files only/i)).toBeInTheDocument();
   });
 
-  it("renders file list with progress after upload starts", async () => {
+  it('renders file list with progress after upload starts', async () => {
     const { user } = setup(
       <QueryClientProvider
         client={
@@ -398,14 +395,13 @@ describe("InvoiceUploadArea", () => {
               mutations: { retry: false },
             },
           })
-        }
-      >
+        }>
         <InvoiceUploadArea />
       </QueryClientProvider>,
     );
 
-    const file = new File(["%PDF-1.4 content"], "progress-test.pdf", {
-      type: "application/pdf",
+    const file = new File(['%PDF-1.4 content'], 'progress-test.pdf', {
+      type: 'application/pdf',
     });
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, file);
@@ -415,7 +411,7 @@ describe("InvoiceUploadArea", () => {
     });
   });
 
-  it("shows completed file with check icon after full upload", async () => {
+  it('shows completed file with check icon after full upload', async () => {
     const { user } = setup(
       <QueryClientProvider
         client={
@@ -425,14 +421,13 @@ describe("InvoiceUploadArea", () => {
               mutations: { retry: false },
             },
           })
-        }
-      >
+        }>
         <InvoiceUploadArea />
       </QueryClientProvider>,
     );
 
-    const file = new File(["%PDF-1.4 content"], "complete-test.pdf", {
-      type: "application/pdf",
+    const file = new File(['%PDF-1.4 content'], 'complete-test.pdf', {
+      type: 'application/pdf',
     });
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, file);
@@ -442,8 +437,8 @@ describe("InvoiceUploadArea", () => {
     });
   });
 
-  it("shows error state and retry button when upload fails", async () => {
-    requestUploadMutationFn.mockRejectedValueOnce(new Error("Upload failed"));
+  it('shows error state and retry button when upload fails', async () => {
+    requestUploadMutationFn.mockRejectedValueOnce(new Error('Upload failed'));
 
     const { user } = setup(
       <QueryClientProvider
@@ -454,24 +449,23 @@ describe("InvoiceUploadArea", () => {
               mutations: { retry: false },
             },
           })
-        }
-      >
+        }>
         <InvoiceUploadArea />
       </QueryClientProvider>,
     );
 
-    const file = new File(["%PDF-1.4 content"], "fail-test.pdf", {
-      type: "application/pdf",
+    const file = new File(['%PDF-1.4 content'], 'fail-test.pdf', {
+      type: 'application/pdf',
     });
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, file);
 
     await waitFor(() => {
-      expect(screen.getByText("Retry")).toBeInTheDocument();
+      expect(screen.getByText('Retry')).toBeInTheDocument();
     });
   });
 
-  it("shows OCR review panel after successful OCR trigger", async () => {
+  it('shows OCR review panel after successful OCR trigger', async () => {
     const { user } = setup(
       <QueryClientProvider
         client={
@@ -481,14 +475,13 @@ describe("InvoiceUploadArea", () => {
               mutations: { retry: false },
             },
           })
-        }
-      >
+        }>
         <InvoiceUploadArea />
       </QueryClientProvider>,
     );
 
-    const file = new File(["%PDF-1.4 content"], "ocr-test.pdf", {
-      type: "application/pdf",
+    const file = new File(['%PDF-1.4 content'], 'ocr-test.pdf', {
+      type: 'application/pdf',
     });
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, file);
@@ -498,11 +491,11 @@ describe("InvoiceUploadArea", () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByTestId("ocr-review-panel")).toBeInTheDocument();
+      expect(screen.getByTestId('ocr-review-panel')).toBeInTheDocument();
     });
   });
 
-  it("hides OCR review panel when Discard OCR is clicked", async () => {
+  it('hides OCR review panel when Discard OCR is clicked', async () => {
     const { user } = setup(
       <QueryClientProvider
         client={
@@ -512,29 +505,28 @@ describe("InvoiceUploadArea", () => {
               mutations: { retry: false },
             },
           })
-        }
-      >
+        }>
         <InvoiceUploadArea />
       </QueryClientProvider>,
     );
 
-    const file = new File(["%PDF-1.4 content"], "discard-test.pdf", {
-      type: "application/pdf",
+    const file = new File(['%PDF-1.4 content'], 'discard-test.pdf', {
+      type: 'application/pdf',
     });
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, file);
 
     await waitFor(() => {
-      expect(screen.getByTestId("ocr-review-panel")).toBeInTheDocument();
+      expect(screen.getByTestId('ocr-review-panel')).toBeInTheDocument();
     });
 
-    await user.click(screen.getByText("Discard OCR"));
+    await user.click(screen.getByText('Discard OCR'));
     await waitFor(() => {
-      expect(screen.queryByTestId("ocr-review-panel")).not.toBeInTheDocument();
+      expect(screen.queryByTestId('ocr-review-panel')).not.toBeInTheDocument();
     });
   });
 
-  it("calls onOcrAccept when Apply OCR data is clicked", async () => {
+  it('calls onOcrAccept when Apply OCR data is clicked', async () => {
     const onOcrAccept = vi.fn();
     const { user } = setup(
       <QueryClientProvider
@@ -545,27 +537,26 @@ describe("InvoiceUploadArea", () => {
               mutations: { retry: false },
             },
           })
-        }
-      >
+        }>
         <InvoiceUploadArea onOcrAccept={onOcrAccept} />
       </QueryClientProvider>,
     );
 
-    const file = new File(["%PDF-1.4 content"], "accept-test.pdf", {
-      type: "application/pdf",
+    const file = new File(['%PDF-1.4 content'], 'accept-test.pdf', {
+      type: 'application/pdf',
     });
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, file);
 
     await waitFor(() => {
-      expect(screen.getByTestId("ocr-review-panel")).toBeInTheDocument();
+      expect(screen.getByTestId('ocr-review-panel')).toBeInTheDocument();
     });
 
-    await user.click(screen.getByText("Apply OCR data"));
+    await user.click(screen.getByText('Apply OCR data'));
     expect(onOcrAccept).toHaveBeenCalled();
   });
 
-  it("shows toggle PDF button when OCR extraction is active", async () => {
+  it('shows toggle PDF button when OCR extraction is active', async () => {
     const { user } = setup(
       <QueryClientProvider
         client={
@@ -575,29 +566,28 @@ describe("InvoiceUploadArea", () => {
               mutations: { retry: false },
             },
           })
-        }
-      >
+        }>
         <InvoiceUploadArea />
       </QueryClientProvider>,
     );
 
-    const file = new File(["%PDF-1.4 content"], "toggle-test.pdf", {
-      type: "application/pdf",
+    const file = new File(['%PDF-1.4 content'], 'toggle-test.pdf', {
+      type: 'application/pdf',
     });
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, file);
 
     await waitFor(() => {
-      expect(screen.getByTestId("ocr-review-panel")).toBeInTheDocument();
+      expect(screen.getByTestId('ocr-review-panel')).toBeInTheDocument();
     });
 
     // Hide PDF button should be visible
-    expect(screen.getByText("Hide PDF")).toBeInTheDocument();
+    expect(screen.getByText('Hide PDF')).toBeInTheDocument();
   });
 
-  it("navigates to billing when Buy credits is clicked", async () => {
+  it('navigates to billing when Buy credits is clicked', async () => {
     ocrTriggerMutationFn.mockRejectedValueOnce(
-      new MockTRPCClientError("OCR credits exhausted", "PRECONDITION_FAILED"),
+      new MockTRPCClientError('OCR credits exhausted', 'PRECONDITION_FAILED'),
     );
 
     const { user } = setup(
@@ -609,27 +599,26 @@ describe("InvoiceUploadArea", () => {
               mutations: { retry: false },
             },
           })
-        }
-      >
+        }>
         <InvoiceUploadArea />
       </QueryClientProvider>,
     );
 
-    const file = new File(["%PDF-1.4 test"], "buy-credits.pdf", {
-      type: "application/pdf",
+    const file = new File(['%PDF-1.4 test'], 'buy-credits.pdf', {
+      type: 'application/pdf',
     });
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, file);
 
     await waitFor(() => {
-      expect(screen.getByTestId("credit-exhausted-inline")).toBeInTheDocument();
+      expect(screen.getByTestId('credit-exhausted-inline')).toBeInTheDocument();
     });
 
-    await user.click(screen.getByTestId("buy-credits-btn"));
-    expect(mockRouterPush).toHaveBeenCalledWith("/settings?tab=billing");
+    await user.click(screen.getByTestId('buy-credits-btn'));
+    expect(mockRouterPush).toHaveBeenCalledWith('/settings?tab=billing');
   });
 
-  it("toggles PDF visibility when Hide PDF is clicked", async () => {
+  it('toggles PDF visibility when Hide PDF is clicked', async () => {
     const { user } = setup(
       <QueryClientProvider
         client={
@@ -639,39 +628,38 @@ describe("InvoiceUploadArea", () => {
               mutations: { retry: false },
             },
           })
-        }
-      >
+        }>
         <InvoiceUploadArea />
       </QueryClientProvider>,
     );
 
-    const file = new File(["%PDF-1.4 content"], "toggle-hide-test.pdf", {
-      type: "application/pdf",
+    const file = new File(['%PDF-1.4 content'], 'toggle-hide-test.pdf', {
+      type: 'application/pdf',
     });
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, file);
 
     await waitFor(() => {
-      expect(screen.getByTestId("ocr-review-panel")).toBeInTheDocument();
+      expect(screen.getByTestId('ocr-review-panel')).toBeInTheDocument();
     });
 
     // Click "Hide PDF" to hide the review panel
-    await user.click(screen.getByText("Hide PDF"));
+    await user.click(screen.getByText('Hide PDF'));
     await waitFor(() => {
-      expect(screen.queryByTestId("ocr-review-panel")).not.toBeInTheDocument();
+      expect(screen.queryByTestId('ocr-review-panel')).not.toBeInTheDocument();
     });
 
     // Should now show "View PDF" button
-    expect(screen.getByText("View PDF")).toBeInTheDocument();
+    expect(screen.getByText('View PDF')).toBeInTheDocument();
 
     // Click "View PDF" to show it again
-    await user.click(screen.getByText("View PDF"));
+    await user.click(screen.getByText('View PDF'));
     await waitFor(() => {
-      expect(screen.getByTestId("ocr-review-panel")).toBeInTheDocument();
+      expect(screen.getByTestId('ocr-review-panel')).toBeInTheDocument();
     });
   });
 
-  it("shows file name and size in upload list", async () => {
+  it('shows file name and size in upload list', async () => {
     const { user } = setup(
       <QueryClientProvider
         client={
@@ -681,14 +669,13 @@ describe("InvoiceUploadArea", () => {
               mutations: { retry: false },
             },
           })
-        }
-      >
+        }>
         <InvoiceUploadArea />
       </QueryClientProvider>,
     );
 
-    const file = new File(["%PDF-1.4 content"], "file-info-test.pdf", {
-      type: "application/pdf",
+    const file = new File(['%PDF-1.4 content'], 'file-info-test.pdf', {
+      type: 'application/pdf',
     });
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, file);
@@ -698,8 +685,8 @@ describe("InvoiceUploadArea", () => {
     });
   });
 
-  it("retries upload when retry button is clicked", async () => {
-    requestUploadMutationFn.mockRejectedValueOnce(new Error("Upload failed"));
+  it('retries upload when retry button is clicked', async () => {
+    requestUploadMutationFn.mockRejectedValueOnce(new Error('Upload failed'));
 
     const { user } = setup(
       <QueryClientProvider
@@ -710,36 +697,35 @@ describe("InvoiceUploadArea", () => {
               mutations: { retry: false },
             },
           })
-        }
-      >
+        }>
         <InvoiceUploadArea />
       </QueryClientProvider>,
     );
 
-    const file = new File(["%PDF-1.4 content"], "retry-test.pdf", {
-      type: "application/pdf",
+    const file = new File(['%PDF-1.4 content'], 'retry-test.pdf', {
+      type: 'application/pdf',
     });
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, file);
 
     await waitFor(() => {
-      expect(screen.getByText("Retry")).toBeInTheDocument();
+      expect(screen.getByText('Retry')).toBeInTheDocument();
     });
 
     // Click retry
     requestUploadMutationFn.mockImplementation(async () => ({
-      documentId: "doc-retry",
-      uploadUrl: "https://r2.example/put",
-      storageKey: "sk-retry",
+      documentId: 'doc-retry',
+      uploadUrl: 'https://r2.example/put',
+      storageKey: 'sk-retry',
     }));
-    await user.click(screen.getByText("Retry"));
+    await user.click(screen.getByText('Retry'));
 
     await waitFor(() => {
       expect(requestUploadMutationFn).toHaveBeenCalledTimes(2);
     });
   });
 
-  it("calls Re-run OCR handler", async () => {
+  it('calls Re-run OCR handler', async () => {
     const { user } = setup(
       <QueryClientProvider
         client={
@@ -749,23 +735,22 @@ describe("InvoiceUploadArea", () => {
               mutations: { retry: false },
             },
           })
-        }
-      >
+        }>
         <InvoiceUploadArea />
       </QueryClientProvider>,
     );
 
-    const file = new File(["%PDF-1.4 content"], "rerun-test.pdf", {
-      type: "application/pdf",
+    const file = new File(['%PDF-1.4 content'], 'rerun-test.pdf', {
+      type: 'application/pdf',
     });
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     await user.upload(input, file);
 
     await waitFor(() => {
-      expect(screen.getByTestId("ocr-review-panel")).toBeInTheDocument();
+      expect(screen.getByTestId('ocr-review-panel')).toBeInTheDocument();
     });
 
-    await user.click(screen.getByText("Re-run OCR"));
+    await user.click(screen.getByText('Re-run OCR'));
     await waitFor(() => {
       expect(ocrRetriggerMutationFn).toHaveBeenCalled();
     });

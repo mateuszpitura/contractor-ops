@@ -1,22 +1,22 @@
-"use client";
+'use client';
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, Globe, Loader2 } from "lucide-react";
-import { useState } from "react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { CheckCircle2, Globe, Loader2 } from 'lucide-react';
+import { useState } from 'react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { trpc } from "@/trpc/init";
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -32,11 +32,11 @@ interface PeppolWizardProps {
 // ---------------------------------------------------------------------------
 
 const STEPS = [
-  { label: "TRN", number: 1 },
-  { label: "ASP", number: 2 },
-  { label: "Credentials", number: 3 },
-  { label: "Register", number: 4 },
-  { label: "Confirm", number: 5 },
+  { label: 'TRN', number: 1 },
+  { label: 'ASP', number: 2 },
+  { label: 'Credentials', number: 3 },
+  { label: 'Register', number: 4 },
+  { label: 'Confirm', number: 5 },
 ] as const;
 
 function StepIndicator({ current }: { current: number }) {
@@ -47,16 +47,15 @@ function StepIndicator({ current }: { current: number }) {
           <div
             className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-medium transition-colors ${
               step.number < current
-                ? "bg-primary text-primary-foreground"
+                ? 'bg-primary text-primary-foreground'
                 : step.number === current
-                  ? "ring-2 ring-primary bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground"
-            }`}
-          >
+                  ? 'ring-2 ring-primary bg-primary text-primary-foreground'
+                  : 'bg-muted text-muted-foreground'
+            }`}>
             {step.number < current ? <CheckCircle2 className="h-4 w-4" /> : step.number}
           </div>
           {i < STEPS.length - 1 && (
-            <div className={`h-px w-6 ${step.number < current ? "bg-primary" : "bg-muted"}`} />
+            <div className={`h-px w-6 ${step.number < current ? 'bg-primary' : 'bg-muted'}`} />
           )}
         </div>
       ))}
@@ -73,11 +72,11 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
 
   // Form state
   const [step, setStep] = useState(1);
-  const [trn, setTrn] = useState("");
-  const [aspProvider] = useState<"storecove">("storecove");
-  const [apiKey, setApiKey] = useState("");
+  const [trn, setTrn] = useState('');
+  const [aspProvider] = useState<'storecove'>('storecove');
+  const [apiKey, setApiKey] = useState('');
   const [showApiKey, setShowApiKey] = useState(false);
-  const [environment, setEnvironment] = useState<"sandbox" | "production">("sandbox");
+  const [environment, setEnvironment] = useState<'sandbox' | 'production'>('sandbox');
   const [registrationError, setRegistrationError] = useState<string | null>(null);
 
   // Connect mutation
@@ -89,23 +88,23 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
           queryKey: trpc.peppol.getStatus.queryKey(),
         });
       },
-      onError: (error) => {
-        setRegistrationError(error.message || "Registration failed");
+      onError: error => {
+        setRegistrationError(error.message || 'Registration failed');
       },
     }),
   );
 
   function resetAndClose() {
     setStep(1);
-    setTrn("");
-    setApiKey("");
+    setTrn('');
+    setApiKey('');
     setShowApiKey(false);
-    setEnvironment("sandbox");
+    setEnvironment('sandbox');
     setRegistrationError(null);
     onOpenChange(false);
   }
 
-  const participantId = trn.length === 15 ? `0192:${trn}` : "";
+  const participantId = trn.length === 15 ? `0192:${trn}` : '';
   const canGoNext =
     (step === 1 && trn.length === 15 && /^\d{15}$/.test(trn)) ||
     step === 2 ||
@@ -156,8 +155,8 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
                   id="trn"
                   placeholder="123456789012345"
                   value={trn}
-                  onChange={(e) => {
-                    const val = e.target.value.replace(/\D/g, "").slice(0, 15);
+                  onChange={e => {
+                    const val = e.target.value.replace(/\D/g, '').slice(0, 15);
                     setTrn(val);
                   }}
                   pattern="[0-9]*"
@@ -182,8 +181,7 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
               <RadioGroup value={aspProvider} className="space-y-3">
                 <label
                   htmlFor="storecove"
-                  className="flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition-colors hover:bg-muted/50 has-[:checked]:border-primary has-[:checked]:bg-primary/5"
-                >
+                  className="flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition-colors hover:bg-muted/50 has-[:checked]:border-primary has-[:checked]:bg-primary/5">
                   <RadioGroupItem value="storecove" id="storecove" />
                   <div>
                     <p className="text-sm font-medium">Storecove</p>
@@ -206,9 +204,9 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
                 <div className="relative">
                   <Input
                     id="apiKey"
-                    type={showApiKey ? "text" : "password"}
+                    type={showApiKey ? 'text' : 'password'}
                     value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
+                    onChange={e => setApiKey(e.target.value)}
                     placeholder="Enter your API key"
                   />
                   <Button
@@ -216,9 +214,8 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
                     variant="ghost"
                     size="sm"
                     className="absolute end-1 top-1/2 -translate-y-1/2 h-7 px-2 text-xs"
-                    onClick={() => setShowApiKey(!showApiKey)}
-                  >
-                    {showApiKey ? "Hide" : "Show"}
+                    onClick={() => setShowApiKey(!showApiKey)}>
+                    {showApiKey ? 'Hide' : 'Show'}
                   </Button>
                 </div>
                 <p className="text-sm text-muted-foreground">Obtain from Storecove dashboard</p>
@@ -227,9 +224,8 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
                 <Label>Environment</Label>
                 <RadioGroup
                   value={environment}
-                  onValueChange={(val) => setEnvironment(val as "sandbox" | "production")}
-                  className="flex gap-4"
-                >
+                  onValueChange={val => setEnvironment(val as 'sandbox' | 'production')}
+                  className="flex gap-4">
                   <label className="flex cursor-pointer items-center gap-2">
                     <RadioGroupItem value="sandbox" />
                     <span className="text-sm">Sandbox (testing)</span>
@@ -318,8 +314,7 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
             <Button
               variant="outline"
               onClick={() => setStep(step - 1)}
-              disabled={step === 4 && connectMutation.isPending}
-            >
+              disabled={step === 4 && connectMutation.isPending}>
               Back
             </Button>
           )}

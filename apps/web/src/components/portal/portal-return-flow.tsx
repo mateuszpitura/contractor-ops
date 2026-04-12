@@ -1,25 +1,25 @@
-"use client";
+'use client';
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Package } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useCallback, useState } from "react";
-import { toast } from "sonner";
-import { PaczkomatDisplay } from "@/components/equipment/paczkomat-display";
-import type { PaczkomatPoint } from "@/components/equipment/paczkomat-picker";
-import { PaczkomatPicker } from "@/components/equipment/paczkomat-picker";
-import { LabelDisplay } from "@/components/equipment/shipment-label-view";
-import { Button } from "@/components/ui/button";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Loader2, Package } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useState } from 'react';
+import { toast } from 'sonner';
+import { PaczkomatDisplay } from '@/components/equipment/paczkomat-display';
+import type { PaczkomatPoint } from '@/components/equipment/paczkomat-picker';
+import { PaczkomatPicker } from '@/components/equipment/paczkomat-picker';
+import { LabelDisplay } from '@/components/equipment/shipment-label-view';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
-import { trpc } from "@/trpc/init";
+} from '@/components/ui/dialog';
+import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -52,8 +52,8 @@ function StepIndicator({ currentStep, totalSteps }: { currentStep: number; total
         <div
           key={`step-${i}`}
           className={cn(
-            "h-2 w-2 rounded-full transition-colors",
-            i + 1 === currentStep ? "bg-primary" : "bg-muted",
+            'h-2 w-2 rounded-full transition-colors',
+            i + 1 === currentStep ? 'bg-primary' : 'bg-muted',
           )}
         />
       ))}
@@ -78,15 +78,15 @@ export function PortalReturnFlow({
   returnRequest,
   onSuccess,
 }: PortalReturnFlowProps) {
-  const t = useTranslations("Portal.return");
+  const t = useTranslations('Portal.return');
   const queryClient = useQueryClient();
 
   // Determine initial step based on existing return request
-  const getInitialStep = () => {
-    if (returnRequest?.status === "SHIPMENT_CREATED") return 3;
-    if (returnRequest?.status === "PENDING_APPROVAL") return 2;
+  const getInitialStep = useCallback(() => {
+    if (returnRequest?.status === 'SHIPMENT_CREATED') return 3;
+    if (returnRequest?.status === 'PENDING_APPROVAL') return 2;
     return 1;
-  };
+  }, [returnRequest?.status]);
 
   const [step, setStep] = useState(getInitialStep);
   const [selectedPoint, setSelectedPoint] = useState<PaczkomatPoint | null>(null);
@@ -111,7 +111,7 @@ export function PortalReturnFlow({
   const requestMutation = useMutation(
     trpc.portal.requestReturn.mutationOptions({
       onSuccess: () => {
-        toast.success(t("returnRequested"));
+        toast.success(t('returnRequested'));
         queryClient.invalidateQueries({
           queryKey: trpc.portal.getReturnStatus.queryKey(),
         });
@@ -122,7 +122,7 @@ export function PortalReturnFlow({
         // Stay on step 2 to show pending state
       },
       onError: () => {
-        toast.error(t("returnRequested"));
+        toast.error(t('returnRequested'));
       },
     }),
   );
@@ -142,7 +142,7 @@ export function PortalReturnFlow({
 
   const labelQuery = useQuery({
     ...trpc.portal.getReturnLabel.queryOptions({
-      returnRequestId: returnRequest?.id ?? "",
+      returnRequestId: returnRequest?.id ?? '',
     }),
     enabled: step === 3 && !!returnRequest?.id,
   });
@@ -154,7 +154,7 @@ export function PortalReturnFlow({
   // -------------------------------------------------------------------------
 
   const geowidgetToken =
-    typeof window !== "undefined" ? (process.env.NEXT_PUBLIC_INPOST_GEOWIDGET_TOKEN ?? "") : "";
+    typeof window !== 'undefined' ? (process.env.NEXT_PUBLIC_INPOST_GEOWIDGET_TOKEN ?? '') : '';
 
   // -------------------------------------------------------------------------
   // Render
@@ -165,7 +165,7 @@ export function PortalReturnFlow({
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>{t("title")}</DialogTitle>
+            <DialogTitle>{t('title')}</DialogTitle>
           </DialogHeader>
 
           <StepIndicator currentStep={step} totalSteps={3} />
@@ -174,7 +174,7 @@ export function PortalReturnFlow({
           {step === 1 && (
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                {t("itemsToReturn", { count: equipmentItems.length })}
+                {t('itemsToReturn', { count: equipmentItems.length })}
               </p>
               <ul className="space-y-1 text-sm">
                 {equipmentItems.map((item, i) => (
@@ -193,7 +193,7 @@ export function PortalReturnFlow({
               </ul>
 
               <div className="space-y-2">
-                <p className="text-sm font-medium">{t("selectDropOff")}</p>
+                <p className="text-sm font-medium">{t('selectDropOff')}</p>
                 {selectedPoint ? (
                   <PaczkomatDisplay
                     pointId={selectedPoint.id}
@@ -204,17 +204,17 @@ export function PortalReturnFlow({
                 ) : (
                   <Button variant="outline" className="w-full" onClick={() => setPickerOpen(true)}>
                     <Package className="me-2 h-4 w-4" />
-                    {t("selectDropOff")}
+                    {t('selectDropOff')}
                   </Button>
                 )}
               </div>
 
               <DialogFooter>
                 <Button variant="outline" onClick={() => onOpenChange(false)}>
-                  {t("cancel")}
+                  {t('cancel')}
                 </Button>
                 <Button onClick={() => setStep(2)} disabled={!selectedPoint}>
-                  {t("next")}
+                  {t('next')}
                 </Button>
               </DialogFooter>
             </div>
@@ -226,7 +226,7 @@ export function PortalReturnFlow({
               <div className="space-y-2 text-sm">
                 <p>
                   <span className="font-medium">
-                    {t("itemsToReturn", { count: equipmentItems.length })}
+                    {t('itemsToReturn', { count: equipmentItems.length })}
                   </span>
                 </p>
                 <ul className="space-y-1 ps-4">
@@ -243,7 +243,7 @@ export function PortalReturnFlow({
                 </ul>
                 {selectedPoint && (
                   <p className="text-muted-foreground">
-                    {t("dropOffAt", { name: selectedPoint.name })}
+                    {t('dropOffAt', { name: selectedPoint.name })}
                     <br />
                     <span className="text-xs">{selectedPoint.address}</span>
                   </p>
@@ -251,19 +251,18 @@ export function PortalReturnFlow({
               </div>
 
               <div className="rounded-md border bg-muted/50 p-3">
-                <p className="text-sm text-muted-foreground">{t("approvalNotice")}</p>
+                <p className="text-sm text-muted-foreground">{t('approvalNotice')}</p>
               </div>
 
               <DialogFooter>
                 <Button variant="outline" onClick={() => setStep(1)}>
-                  {t("back")}
+                  {t('back')}
                 </Button>
                 <Button
                   onClick={handleRequestReturn}
-                  disabled={requestMutation.isPending || requestMutation.isSuccess}
-                >
+                  disabled={requestMutation.isPending || requestMutation.isSuccess}>
                   {requestMutation.isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
-                  {t("requestReturn")}
+                  {t('requestReturn')}
                 </Button>
               </DialogFooter>
             </div>
@@ -272,7 +271,7 @@ export function PortalReturnFlow({
           {/* Step 3: Label view (after approval) */}
           {step === 3 && (
             <div className="space-y-4">
-              <p className="text-center text-lg font-semibold">{t("step3Title")}</p>
+              <p className="text-center text-lg font-semibold">{t('step3Title')}</p>
 
               {labelQuery.isPending ? (
                 <div className="space-y-3">
@@ -283,18 +282,18 @@ export function PortalReturnFlow({
                 <LabelDisplay labelData={labelData.data} contentType={labelData.contentType} />
               ) : (
                 <div className="py-8 text-center text-sm text-muted-foreground">
-                  {t("approvalNotice")}
+                  {t('approvalNotice')}
                 </div>
               )}
 
               {returnRequest?.targetPointName && (
                 <p className="text-center text-sm text-muted-foreground">
-                  {t("dropOffAt", { name: returnRequest.targetPointName })}
+                  {t('dropOffAt', { name: returnRequest.targetPointName })}
                 </p>
               )}
 
               <DialogFooter>
-                <Button onClick={() => onOpenChange(false)}>{t("cancel")}</Button>
+                <Button onClick={() => onOpenChange(false)}>{t('cancel')}</Button>
               </DialogFooter>
             </div>
           )}

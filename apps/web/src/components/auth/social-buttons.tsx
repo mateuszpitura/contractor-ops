@@ -1,25 +1,25 @@
-"use client";
+'use client';
 
-import { Loader2 } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { authClient } from "@/lib/auth-client";
+import { Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { authClient } from '@/lib/auth-client';
 
 /**
  * Social OAuth buttons for Google and Microsoft.
  * Shared between login, register, and invite accept forms.
  */
 export function SocialButtons() {
-  const t = useTranslations("Auth.register");
+  const t = useTranslations('Auth.register');
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
 
-  const handleSocialLogin = async (provider: "google" | "microsoft") => {
+  const handleSocialLogin = async (provider: 'google' | 'microsoft') => {
     setLoadingProvider(provider);
     try {
       await authClient.signIn.social({
         provider,
-        callbackURL: "/",
+        callbackURL: '/',
       });
     } catch {
       setLoadingProvider(null);
@@ -33,7 +33,7 @@ export function SocialButtons() {
           <span className="w-full border-t" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-card px-2 text-muted-foreground">{t("socialDivider")}</span>
+          <span className="bg-card px-2 text-muted-foreground">{t('socialDivider')}</span>
         </div>
       </div>
 
@@ -42,10 +42,9 @@ export function SocialButtons() {
           variant="outline"
           type="button"
           disabled={loadingProvider !== null}
-          onClick={() => handleSocialLogin("google")}
-          className="w-full"
-        >
-          {loadingProvider === "google" ? (
+          onClick={() => handleSocialLogin('google')}
+          className="w-full">
+          {loadingProvider === 'google' ? (
             <Loader2 className="me-2 h-4 w-4 animate-spin" />
           ) : (
             <svg className="me-2 h-4 w-4" viewBox="0 0 24 24">
@@ -67,17 +66,16 @@ export function SocialButtons() {
               />
             </svg>
           )}
-          {t("googleButton")}
+          {t('googleButton')}
         </Button>
 
         <Button
           variant="outline"
           type="button"
           disabled={loadingProvider !== null}
-          onClick={() => handleSocialLogin("microsoft")}
-          className="w-full"
-        >
-          {loadingProvider === "microsoft" ? (
+          onClick={() => handleSocialLogin('microsoft')}
+          className="w-full">
+          {loadingProvider === 'microsoft' ? (
             <Loader2 className="me-2 h-4 w-4 animate-spin" />
           ) : (
             <svg className="me-2 h-4 w-4" viewBox="0 0 21 21">
@@ -87,7 +85,7 @@ export function SocialButtons() {
               <rect x="11" y="11" width="9" height="9" fill="#FFB900" />
             </svg>
           )}
-          {t("microsoftButton")}
+          {t('microsoftButton')}
         </Button>
       </div>
     </div>

@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useTranslations } from "next-intl";
-import { Progress, ProgressIndicator, ProgressTrack } from "@/components/ui/progress";
+import { useTranslations } from 'next-intl';
+import { Progress, ProgressIndicator, ProgressTrack } from '@/components/ui/progress';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -17,12 +17,12 @@ interface CreditProgressBarProps {
 // ---------------------------------------------------------------------------
 
 function getBarColor(used: number, total: number): string {
-  if (total === 0) return "var(--destructive)";
+  if (total === 0) return 'var(--destructive)';
   const remaining = total - used;
   const pct = remaining / total;
-  if (pct > 0.5) return "var(--success)"; // >50% remaining: green
-  if (pct >= 0.2) return "var(--warning)"; // 20-50%: yellow
-  return "var(--destructive)"; // <20%: red
+  if (pct > 0.5) return 'var(--success)'; // >50% remaining: green
+  if (pct >= 0.2) return 'var(--warning)'; // 20-50%: yellow
+  return 'var(--destructive)'; // <20%: red
 }
 
 // ---------------------------------------------------------------------------
@@ -30,7 +30,7 @@ function getBarColor(used: number, total: number): string {
 // ---------------------------------------------------------------------------
 
 export function CreditProgressBar({ used, total }: CreditProgressBarProps) {
-  const t = useTranslations("Billing.credits");
+  const t = useTranslations('Billing.credits');
 
   const remaining = Math.max(0, total - used);
   const percentUsed = total > 0 ? (used / total) * 100 : 100;
@@ -44,22 +44,20 @@ export function CreditProgressBar({ used, total }: CreditProgressBarProps) {
         aria-valuenow={remaining}
         aria-valuemin={0}
         aria-valuemax={total}
-        aria-label={t("remaining", {
+        aria-label={t('remaining', {
           remaining: String(remaining),
           total: String(total),
-        })}
-      >
+        })}>
         <ProgressTrack>
           <ProgressIndicator style={{ backgroundColor: barColor }} />
         </ProgressTrack>
       </Progress>
 
       <p
-        className={`text-sm ${isExhausted ? "text-destructive font-medium" : "text-muted-foreground"}`}
-      >
+        className={`text-sm ${isExhausted ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
         {isExhausted
-          ? t("exhausted")
-          : t("remaining", {
+          ? t('exhausted')
+          : t('remaining', {
               remaining: String(remaining),
               total: String(total),
             })}

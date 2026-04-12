@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { useLocale, useTranslations } from "next-intl";
-import { parseAsString, useQueryState } from "nuqs";
-import { useMemo } from "react";
+import { useQuery } from '@tanstack/react-query';
+import { useLocale, useTranslations } from 'next-intl';
+import { parseAsString, useQueryState } from 'nuqs';
+import { useMemo } from 'react';
 import {
   Area,
   AreaChart,
@@ -12,11 +12,11 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-} from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useRtlChartConfig } from "@/hooks/use-rtl-chart-config";
-import { trpc } from "@/trpc/init";
+} from 'recharts';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useRtlChartConfig } from '@/hooks/use-rtl-chart-config';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -34,7 +34,7 @@ interface ChartDataPoint {
 
 function formatMonthLabel(isoString: string): string {
   const date = new Date(isoString);
-  return date.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+  return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
 }
 
 // ---------------------------------------------------------------------------
@@ -48,25 +48,24 @@ interface RangeToggleProps {
 }
 
 const RANGES = [
-  { value: "6", labelKey: "spend.range6m" },
-  { value: "12", labelKey: "spend.range12m" },
-  { value: "ytd", labelKey: "spend.rangeYtd" },
+  { value: '6', labelKey: 'spend.range6m' },
+  { value: '12', labelKey: 'spend.range12m' },
+  { value: 'ytd', labelKey: 'spend.rangeYtd' },
 ] as const;
 
 function RangeToggle({ value, onChange, t }: RangeToggleProps) {
   return (
     <div className="flex items-center gap-0.5 rounded-lg bg-surface-3 p-0.5">
-      {RANGES.map((range) => (
+      {RANGES.map(range => (
         <button
           key={range.value}
           type="button"
           onClick={() => onChange(range.value)}
           className={`rounded-md px-2.5 py-1 text-xs font-medium transition-all duration-200 ${
             value === range.value
-              ? "bg-surface-1 text-foreground shadow-sm ring-1 ring-foreground/[0.06]"
-              : "text-muted-foreground hover:text-foreground hover:bg-surface-2"
-          }`}
-        >
+              ? 'bg-surface-1 text-foreground shadow-sm ring-1 ring-foreground/[0.06]'
+              : 'text-muted-foreground hover:text-foreground hover:bg-surface-2'
+          }`}>
           {t(range.labelKey as Parameters<typeof t>[0])}
         </button>
       ))}
@@ -96,7 +95,7 @@ function ChartTooltip({
       <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/60">
         {label}
       </p>
-      {payload.map((entry) => (
+      {payload.map(entry => (
         <div key={entry.name} className="flex items-baseline gap-2">
           <span
             className="inline-block h-2 w-2 shrink-0 rounded-full"
@@ -105,8 +104,7 @@ function ChartTooltip({
           <span className="text-xs text-muted-foreground">{entry.name}</span>
           <span
             className="ms-auto font-display text-sm font-bold tabular-nums"
-            style={{ color: entry.color }}
-          >
+            style={{ color: entry.color }}>
             {currencyFormatter.format(entry.value / 100)}
           </span>
         </div>
@@ -125,17 +123,17 @@ function ChartTooltip({
  * Enhanced with gradient fills and glow-line strokes.
  */
 export function SpendChart() {
-  const t = useTranslations("Dashboard");
+  const t = useTranslations('Dashboard');
   const locale = useLocale();
   const { xAxisProps, yAxisProps, chartStyle } = useRtlChartConfig();
 
   const currencyFormatter = useMemo(
     () =>
       new Intl.NumberFormat(
-        locale === "ar" ? "ar-SA-u-nu-latn" : locale === "pl" ? "pl-PL" : "en-US",
+        locale === 'ar' ? 'ar-SA-u-nu-latn' : locale === 'pl' ? 'pl-PL' : 'en-US',
         {
-          style: "currency",
-          currency: locale === "ar" ? "AED" : "PLN",
+          style: 'currency',
+          currency: locale === 'ar' ? 'AED' : 'PLN',
           minimumFractionDigits: 0,
           maximumFractionDigits: 0,
         },
@@ -143,11 +141,11 @@ export function SpendChart() {
     [locale],
   );
 
-  const [spendRange, setSpendRange] = useQueryState("spend", parseAsString.withDefault("6"));
+  const [spendRange, setSpendRange] = useQueryState('spend', parseAsString.withDefault('6'));
 
   const { data, isLoading } = useQuery(
     trpc.dashboard.spendTrend.queryOptions({
-      months: spendRange as "6" | "12" | "ytd",
+      months: spendRange as '6' | '12' | 'ytd',
     }),
   );
 
@@ -160,9 +158,9 @@ export function SpendChart() {
     for (const row of data) {
       const label = formatMonthLabel(row.month);
       const existing = monthMap.get(label) ?? { month: label, PLN: 0, EUR: 0 };
-      if (row.currency === "PLN") {
+      if (row.currency === 'PLN') {
         existing.PLN = row.totalMinor;
-      } else if (row.currency === "EUR") {
+      } else if (row.currency === 'EUR') {
         existing.EUR = row.totalMinor;
       }
       monthMap.set(label, existing);
@@ -171,12 +169,12 @@ export function SpendChart() {
     return Array.from(monthMap.values());
   }, [data]);
 
-  const hasEur = chartData.some((d) => d.EUR > 0);
+  const hasEur = chartData.some(d => d.EUR > 0);
 
   return (
     <Card className="iridescent neon-card">
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle className="font-display text-lg font-semibold">{t("spend.title")}</CardTitle>
+        <CardTitle className="font-display text-lg font-semibold">{t('spend.title')}</CardTitle>
         <RangeToggle value={spendRange} onChange={setSpendRange} t={t} />
       </CardHeader>
       <CardContent>
@@ -184,7 +182,7 @@ export function SpendChart() {
           <Skeleton className="h-[280px] w-full rounded-lg" />
         ) : chartData.length === 0 ? (
           <div className="corner-marks flex h-[280px] items-center justify-center text-sm text-muted-foreground">
-            {t("spend.empty")}
+            {t('spend.empty')}
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={280}>
@@ -216,14 +214,14 @@ export function SpendChart() {
                 fontSize={11}
                 tickLine={false}
                 axisLine={false}
-                tick={{ fill: "var(--color-muted-foreground)" }}
+                tick={{ fill: 'var(--color-muted-foreground)' }}
                 {...xAxisProps}
               />
               <YAxis
                 fontSize={11}
                 tickLine={false}
                 axisLine={false}
-                tick={{ fill: "var(--color-muted-foreground)" }}
+                tick={{ fill: 'var(--color-muted-foreground)' }}
                 tickFormatter={(val: number) => currencyFormatter.format(val / 100)}
                 width={70}
                 {...yAxisProps}
@@ -231,9 +229,9 @@ export function SpendChart() {
               <Tooltip
                 content={<ChartTooltip />}
                 cursor={{
-                  stroke: "var(--color-primary)",
+                  stroke: 'var(--color-primary)',
                   strokeWidth: 1,
-                  strokeDasharray: "4 4",
+                  strokeDasharray: '4 4',
                   strokeOpacity: 0.3,
                 }}
               />
@@ -248,8 +246,8 @@ export function SpendChart() {
                 dot={false}
                 activeDot={{
                   r: 5,
-                  fill: "var(--color-viz-1)",
-                  stroke: "var(--color-surface-1)",
+                  fill: 'var(--color-viz-1)',
+                  stroke: 'var(--color-surface-1)',
                   strokeWidth: 2,
                 }}
               />
@@ -264,8 +262,8 @@ export function SpendChart() {
                   dot={false}
                   activeDot={{
                     r: 4,
-                    fill: "var(--color-viz-2)",
-                    stroke: "var(--color-surface-1)",
+                    fill: 'var(--color-viz-2)',
+                    stroke: 'var(--color-surface-1)',
                     strokeWidth: 2,
                   }}
                 />

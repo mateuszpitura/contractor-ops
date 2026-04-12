@@ -23,59 +23,59 @@ export interface PurposeCodeEntry {
  */
 const PURPOSE_CODE_MAP: PurposeCodeEntry[] = [
   {
-    code: "SCVE",
-    description: "Services",
+    code: 'SCVE',
+    description: 'Services',
     serviceCategories: [
-      "SOFTWARE_DEVELOPMENT",
-      "SOFTWARE",
-      "ENGINEERING",
-      "IT_SERVICES",
-      "DEVELOPMENT",
+      'SOFTWARE_DEVELOPMENT',
+      'SOFTWARE',
+      'ENGINEERING',
+      'IT_SERVICES',
+      'DEVELOPMENT',
     ],
   },
   {
-    code: "COMC",
-    description: "Commercial",
-    serviceCategories: ["CONSULTING", "ADVISORY", "MANAGEMENT_CONSULTING", "STRATEGY"],
+    code: 'COMC',
+    description: 'Commercial',
+    serviceCategories: ['CONSULTING', 'ADVISORY', 'MANAGEMENT_CONSULTING', 'STRATEGY'],
   },
   {
-    code: "LGAS",
-    description: "Legal Services",
-    serviceCategories: ["LEGAL", "COMPLIANCE", "REGULATORY"],
+    code: 'LGAS',
+    description: 'Legal Services',
+    serviceCategories: ['LEGAL', 'COMPLIANCE', 'REGULATORY'],
   },
   {
-    code: "ACCT",
-    description: "Account Management",
-    serviceCategories: ["ACCOUNTING", "BOOKKEEPING", "AUDIT", "FINANCE", "TAX"],
+    code: 'ACCT',
+    description: 'Account Management',
+    serviceCategories: ['ACCOUNTING', 'BOOKKEEPING', 'AUDIT', 'FINANCE', 'TAX'],
   },
   {
-    code: "ADVE",
-    description: "Advertising",
-    serviceCategories: ["MARKETING", "ADVERTISING", "PR", "COMMUNICATIONS", "MEDIA"],
+    code: 'ADVE',
+    description: 'Advertising',
+    serviceCategories: ['MARKETING', 'ADVERTISING', 'PR', 'COMMUNICATIONS', 'MEDIA'],
   },
   {
-    code: "EDUC",
-    description: "Education",
-    serviceCategories: ["EDUCATION", "TRAINING", "COACHING", "MENTORING"],
+    code: 'EDUC',
+    description: 'Education',
+    serviceCategories: ['EDUCATION', 'TRAINING', 'COACHING', 'MENTORING'],
   },
   {
-    code: "BLDG",
-    description: "Building Maintenance",
-    serviceCategories: ["CONSTRUCTION", "FACILITIES", "MAINTENANCE", "REAL_ESTATE"],
+    code: 'BLDG',
+    description: 'Building Maintenance',
+    serviceCategories: ['CONSTRUCTION', 'FACILITIES', 'MAINTENANCE', 'REAL_ESTATE'],
   },
   {
-    code: "OTHR",
-    description: "Other",
-    serviceCategories: ["DESIGN", "CREATIVE", "GRAPHIC_DESIGN", "UX", "UI"],
+    code: 'OTHR',
+    description: 'Other',
+    serviceCategories: ['DESIGN', 'CREATIVE', 'GRAPHIC_DESIGN', 'UX', 'UI'],
   },
   {
-    code: "SUPP",
-    description: "Supplier Payment",
+    code: 'SUPP',
+    description: 'Supplier Payment',
     serviceCategories: [], // Default fallback — no specific categories
   },
 ];
 
-const DEFAULT_PURPOSE_CODE = "SUPP";
+const DEFAULT_PURPOSE_CODE = 'SUPP';
 
 // Build reverse lookup: category -> code
 const CATEGORY_TO_CODE = new Map<string, string>();
@@ -86,7 +86,7 @@ for (const entry of PURPOSE_CODE_MAP) {
 }
 
 // Valid purpose codes set
-const VALID_CODES = new Set(PURPOSE_CODE_MAP.map((e) => e.code));
+const VALID_CODES = new Set(PURPOSE_CODE_MAP.map(e => e.code));
 
 // ---------------------------------------------------------------------------
 // Public API
@@ -101,7 +101,7 @@ export function getPurposeCode(serviceCategory: string, override?: string | null
   if (override && VALID_CODES.has(override)) {
     return override;
   }
-  const normalized = serviceCategory.toUpperCase().replace(/[\s-]/g, "_");
+  const normalized = serviceCategory.toUpperCase().replace(/[\s-]/g, '_');
   return CATEGORY_TO_CODE.get(normalized) ?? DEFAULT_PURPOSE_CODE;
 }
 

@@ -1,5 +1,5 @@
-import { render, screen } from "@/test/test-utils";
-import { InvoicesTab } from "../invoices-tab";
+import { render, screen } from '@/test/test-utils';
+import { InvoicesTab } from '../invoices-tab';
 
 const mockUseQuery = vi.fn(() => ({
   data: null,
@@ -8,31 +8,31 @@ const mockUseQuery = vi.fn(() => ({
   isPending: false,
 }));
 
-vi.mock("@tanstack/react-query", () => ({
+vi.mock('@tanstack/react-query', () => ({
   useQuery: (...args: any[]) => mockUseQuery(...args),
   useQueryClient: () => ({ invalidateQueries: vi.fn() }),
 }));
 
-vi.mock("@/trpc/init", () => ({
+vi.mock('@/trpc/init', () => ({
   trpc: {
     invoice: {
       list: {
-        queryOptions: (input: any) => ({ queryKey: ["invoice", "list", input] }),
-        queryKey: () => ["invoice", "list"],
+        queryOptions: (input: any) => ({ queryKey: ['invoice', 'list', input] }),
+        queryKey: () => ['invoice', 'list'],
       },
     },
   },
 }));
 
-vi.mock("@/components/invoices/invoice-upload-area", () => ({
+vi.mock('@/components/invoices/invoice-upload-area', () => ({
   InvoiceUploadArea: () => <div data-testid="upload-area" />,
 }));
 
-vi.mock("@/components/invoices/invoice-table/columns", () => ({
+vi.mock('@/components/invoices/invoice-table/columns', () => ({
   getColumns: () => [],
 }));
 
-describe("InvoicesTab", () => {
+describe('InvoicesTab', () => {
   beforeEach(() => {
     mockUseQuery.mockReturnValue({
       data: null,
@@ -42,13 +42,13 @@ describe("InvoicesTab", () => {
     });
   });
 
-  it("renders empty state when no invoices", () => {
+  it('renders empty state when no invoices', () => {
     render(<InvoicesTab contractorId="c1" />);
-    const buttons = screen.getAllByRole("button");
+    const buttons = screen.getAllByRole('button');
     expect(buttons.length).toBeGreaterThan(0);
   });
 
-  it("renders loading skeletons", () => {
+  it('renders loading skeletons', () => {
     mockUseQuery.mockReturnValue({
       data: null,
       isLoading: true,

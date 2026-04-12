@@ -15,7 +15,7 @@ export function formatFileSize(bytes: number): string {
  */
 export function truncateFilename(name: string, maxLen = 40): string {
   if (name.length <= maxLen) return name;
-  const ext = name.lastIndexOf(".");
+  const ext = name.lastIndexOf('.');
   if (ext > 0) {
     const extension = name.slice(ext);
     return `${name.slice(0, maxLen - extension.length - 3)}...${extension}`;

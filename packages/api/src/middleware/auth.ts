@@ -1,5 +1,5 @@
-import { TRPCError } from "@trpc/server";
-import { publicProcedure, t } from "../init.js";
+import { TRPCError } from '@trpc/server';
+import { publicProcedure, t } from '../init.js';
 
 /**
  * Auth middleware: requires an authenticated session.
@@ -7,13 +7,13 @@ import { publicProcedure, t } from "../init.js";
  */
 export const authMiddleware = t.middleware(async ({ ctx, next }) => {
   if (!(ctx.session && ctx.user)) {
-    throw new TRPCError({ code: "UNAUTHORIZED" });
+    throw new TRPCError({ code: 'UNAUTHORIZED' });
   }
 
   if (ctx.user.banned) {
     throw new TRPCError({
-      code: "FORBIDDEN",
-      message: "ACCOUNT_BANNED",
+      code: 'FORBIDDEN',
+      message: 'ACCOUNT_BANNED',
     });
   }
 

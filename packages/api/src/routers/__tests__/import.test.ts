@@ -9,16 +9,16 @@
  *    then asserts the arguments passed to Prisma or service delegates.
  */
 
-import { TRPCError } from "@trpc/server";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { TRPCError } from '@trpc/server';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
-const ORG_ID = "clxxxxxxxxxxxxxxxxxxxxxxxxx";
-const USER_ID = "clyyyyyyyyyyyyyyyyyyyyyyyy";
-const CONTRACTOR_ID = "clcontractor000000000001";
+const ORG_ID = 'clxxxxxxxxxxxxxxxxxxxxxxxxx';
+const USER_ID = 'clyyyyyyyyyyyyyyyyyyyyyyyy';
+const CONTRACTOR_ID = 'clcontractor000000000001';
 
 // ---------------------------------------------------------------------------
 // Mock Prisma
@@ -43,7 +43,7 @@ const { mockPrisma } = vi.hoisted(() => {
     },
     contract: {
       create: vi.fn(async (opts: { data: Rec }) => ({
-        id: "contract-1",
+        id: 'contract-1',
         ...opts.data,
       })),
     },
@@ -59,7 +59,7 @@ const { mockPrisma } = vi.hoisted(() => {
       count: vi.fn(async () => 0),
     },
     member: {
-      findFirst: vi.fn(async () => ({ role: "admin" })),
+      findFirst: vi.fn(async () => ({ role: 'admin' })),
     },
     auditLog: {
       create: vi.fn(async () => ({})),
@@ -74,7 +74,7 @@ const { mockPrisma } = vi.hoisted(() => {
 // Mock modules
 // ---------------------------------------------------------------------------
 
-vi.mock("@contractor-ops/auth", () => ({
+vi.mock('@contractor-ops/auth', () => ({
   auth: {
     api: {
       getSession: vi.fn(),
@@ -83,7 +83,7 @@ vi.mock("@contractor-ops/auth", () => ({
   },
 }));
 
-vi.mock("@contractor-ops/db", () => ({
+vi.mock('@contractor-ops/db', () => ({
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
@@ -96,79 +96,79 @@ vi.mock("@contractor-ops/db", () => ({
 }));
 
 const mockParseImportFile = vi.fn(async () => [
-  { legalName: "Acme Corp", email: "acme@example.com", taxId: "1234567890" },
-  { legalName: "Beta Inc", email: "beta@example.com", taxId: "0987654321" },
+  { legalName: 'Acme Corp', email: 'acme@example.com', taxId: '1234567890' },
+  { legalName: 'Beta Inc', email: 'beta@example.com', taxId: '0987654321' },
 ]);
 const mockAutoMapColumns = vi.fn(() => ({
-  legalName: "legalName",
-  email: "email",
-  taxId: "taxId",
+  legalName: 'legalName',
+  email: 'email',
+  taxId: 'taxId',
 }));
 const mockProcessImportFile = vi.fn(async () => ({
-  valid: [{ legalName: "Acme Corp", email: "acme@example.com", taxId: "1234567890" }],
+  valid: [{ legalName: 'Acme Corp', email: 'acme@example.com', taxId: '1234567890' }],
   invalid: [],
-  duplicates: [{ legalName: "Beta Inc", taxId: "0987654321" }],
+  duplicates: [{ legalName: 'Beta Inc', taxId: '0987654321' }],
 }));
 
-vi.mock("../../services/import-processor.js", () => ({
+vi.mock('../../services/import-processor.js', () => ({
   parseImportFile: (...args: any[]) => (mockParseImportFile as any)(...args),
   autoMapColumns: (...args: any[]) => (mockAutoMapColumns as any)(...args),
   processImportFile: (...args: any[]) => (mockProcessImportFile as any)(...args),
 }));
 
-vi.mock("../../services/r2.js", () => ({
+vi.mock('../../services/r2.js', () => ({
   createPresignedUploadUrl: vi.fn(async () => ({
-    url: "https://r2.example.com/upload",
-    key: "mock-key",
+    url: 'https://r2.example.com/upload',
+    key: 'mock-key',
   })),
-  createPresignedDownloadUrl: vi.fn(async () => "https://r2.example.com/download"),
-  generateStorageKey: vi.fn(() => "mock-storage-key"),
+  createPresignedDownloadUrl: vi.fn(async () => 'https://r2.example.com/download'),
+  generateStorageKey: vi.fn(() => 'mock-storage-key'),
   headObject: vi.fn(async () => ({ ContentLength: 1024 })),
   deleteObject: vi.fn(async () => undefined),
 }));
 
-vi.mock("../../services/notification-service.js", () => ({
+vi.mock('../../services/notification-service.js', () => ({
   dispatch: vi.fn(async () => undefined),
 }));
 
-vi.mock("../../services/invoice-matching.js", () => ({
-  computeDuplicateCheckHash: vi.fn(() => "hash"),
+vi.mock('../../services/invoice-matching.js', () => ({
+  computeDuplicateCheckHash: vi.fn(() => 'hash'),
   runAutoMatch: vi.fn(async () => undefined),
 }));
 
-vi.mock("../../services/bank-account-crypto.js", () => ({
+vi.mock('../../services/bank-account-crypto.js', () => ({
   encryptBankAccount: vi.fn((v: string) => `encrypted:${v}`),
 }));
 
-vi.mock("../../services/sanitize.js", () => ({
+vi.mock('../../services/sanitize.js', () => ({
   sanitizeStrings: vi.fn(<T>(v: T) => v),
 }));
 
-vi.mock("../../services/approval-engine.js", () => ({
+vi.mock('../../services/approval-engine.js', () => ({
   routeToChain: vi.fn(async () => null),
   createApprovalFlow: vi.fn(async () => ({})),
   advanceFlow: vi.fn(async () => undefined),
-  computeSlaStatus: vi.fn(() => "ON_TIME"),
+  computeSlaStatus: vi.fn(() => 'ON_TIME'),
 }));
 
-vi.mock("../../services/calendar-event-service.js", () => ({
+vi.mock('../../services/calendar-event-service.js', () => ({
   deleteCalendarEvent: vi.fn(async () => undefined),
 }));
 
-vi.mock("../../services/calendar-deadline-sync.js", () => ({
+vi.mock('../../services/calendar-deadline-sync.js', () => ({
   syncPaymentDueDeadline: vi.fn(async () => undefined),
   syncApprovalSlaDeadline: vi.fn(async () => undefined),
 }));
 
-vi.mock("../../services/report-export.js", () => ({
-  generateAuditCsv: vi.fn(async () => ({ base64: "bW9jaw==", filename: "audit-log.csv" })),
+vi.mock('../../services/report-export.js', () => ({
+  generateAuditCsv: vi.fn(async () => ({ base64: 'bW9jaw==', filename: 'audit-log.csv' })),
 }));
 
-vi.mock("../../services/billing-service.js", () => ({
+vi.mock('../../services/billing-service.js', () => ({
   syncSeatCountForOrg: vi.fn(async () => undefined),
 }));
 
-vi.mock("../../services/cache.js", () => ({
+vi.mock('../../services/cache.js', () => ({
   cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
   invalidate: vi.fn(async () => undefined),
   invalidateByPrefix: vi.fn(async () => undefined),
@@ -176,17 +176,17 @@ vi.mock("../../services/cache.js", () => ({
   CacheTTL: { APPROVAL_CHAINS: 300 },
 }));
 
-vi.mock("../../services/mime-validator.js", () => ({
+vi.mock('../../services/mime-validator.js', () => ({
   isAllowedMimeType: vi.fn(() => true),
   validateMimeType: vi.fn(async () => ({ valid: true })),
 }));
 
-vi.mock("../../services/virus-scanner.js", () => ({
+vi.mock('../../services/virus-scanner.js', () => ({
   isClamAvailable: vi.fn(async () => false),
   scanBuffer: vi.fn(async () => ({ clean: true })),
 }));
 
-vi.mock("../../services/stripe-client.js", () => ({
+vi.mock('../../services/stripe-client.js', () => ({
   stripe: {
     subscriptions: { retrieve: vi.fn(), update: vi.fn(), list: vi.fn(async () => ({ data: [] })) },
     customers: { create: vi.fn(), retrieve: vi.fn() },
@@ -196,48 +196,48 @@ vi.mock("../../services/stripe-client.js", () => ({
   },
 }));
 
-vi.mock("../../services/credit-service.js", () => ({
+vi.mock('../../services/credit-service.js', () => ({
   deductCredits: vi.fn(async () => undefined),
   getBalance: vi.fn(async () => ({ credits: 0 })),
   hasCredits: vi.fn(async () => true),
 }));
 
-vi.mock("../../services/ocr-extraction.js", () => ({
+vi.mock('../../services/ocr-extraction.js', () => ({
   extractInvoiceData: vi.fn(async () => ({})),
 }));
 
-vi.mock("../../services/billing-webhook.js", () => ({
+vi.mock('../../services/billing-webhook.js', () => ({
   handleStripeWebhook: vi.fn(async () => undefined),
 }));
 
-vi.mock("../../services/payment-export.js", () => ({
-  generateCsv: vi.fn(async () => Buffer.from("csv-data")),
-  generateElixir: vi.fn(() => Buffer.from("elixir-data")),
-  generateSepaXml: vi.fn(() => Buffer.from("sepa-data")),
-  resolveTransferTitle: vi.fn(() => "FV/2025/001"),
+vi.mock('../../services/payment-export.js', () => ({
+  generateCsv: vi.fn(async () => Buffer.from('csv-data')),
+  generateElixir: vi.fn(() => Buffer.from('elixir-data')),
+  generateSepaXml: vi.fn(() => Buffer.from('sepa-data')),
+  resolveTransferTitle: vi.fn(() => 'FV/2025/001'),
 }));
 
-vi.mock("../../services/bank-statement.js", () => ({
+vi.mock('../../services/bank-statement.js', () => ({
   parseBankStatement: vi.fn(() => []),
   matchStatementToRun: vi.fn(() => []),
 }));
 
-vi.mock("../../services/time-entry.js", () => ({
+vi.mock('../../services/time-entry.js', () => ({
   approveTimesheet: vi.fn(async () => ({})),
   rejectTimesheet: vi.fn(async () => ({})),
   bulkApproveTimesheets: vi.fn(async () => ({ count: 0 })),
   bulkRejectTimesheets: vi.fn(async () => ({ count: 0 })),
 }));
 
-vi.mock("../../services/time-reconciliation.js", () => ({
+vi.mock('../../services/time-reconciliation.js', () => ({
   computeTimeReconciliation: vi.fn(async () => null),
 }));
 
-vi.mock("../../services/equipment-workflow.js", () => ({
+vi.mock('../../services/equipment-workflow.js', () => ({
   checkShipmentTaskCompletion: vi.fn(async () => undefined),
 }));
 
-vi.mock("@sentry/nextjs", () => {
+vi.mock('@sentry/nextjs', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
     startSpan: vi.fn((_o: unknown, fn: (span: typeof mockSpan) => unknown) => fn(mockSpan)),
@@ -245,11 +245,11 @@ vi.mock("@sentry/nextjs", () => {
   };
 });
 
-vi.mock("@contractor-ops/logger", () => ({
+vi.mock('@contractor-ops/logger', () => ({
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
 }));
 
-vi.mock("@contractor-ops/logger/metrics", () => ({
+vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { increment: vi.fn(), histogram: vi.fn(), distribution: vi.fn() },
 }));
 
@@ -257,8 +257,8 @@ vi.mock("@contractor-ops/logger/metrics", () => ({
 // Imports (after mocks)
 // ---------------------------------------------------------------------------
 
-import { createCallerFactory } from "../../init.js";
-import { appRouter } from "../../root.js";
+import { createCallerFactory } from '../../init.js';
+import { appRouter } from '../../root.js';
 
 // ---------------------------------------------------------------------------
 // Caller helper
@@ -272,8 +272,8 @@ function makeCaller(userId: string, orgId: string) {
       id: `session-${userId}`,
       userId,
       activeOrganizationId: orgId,
-      expiresAt: new Date("2099-01-01"),
-      token: "mock-token",
+      expiresAt: new Date('2099-01-01'),
+      token: 'mock-token',
       createdAt: new Date(),
       updatedAt: new Date(),
       ipAddress: null,
@@ -281,14 +281,14 @@ function makeCaller(userId: string, orgId: string) {
     },
     user: {
       id: userId,
-      name: "Test User",
+      name: 'Test User',
       email: `${userId}@example.com`,
       emailVerified: true,
       image: null,
       banned: false,
       banReason: null,
       banExpires: null,
-      role: "admin",
+      role: 'admin',
       createdAt: new Date(),
       updatedAt: new Date(),
     },
@@ -308,8 +308,8 @@ const caller = makeCaller(USER_ID, ORG_ID);
 
 /** Minimal base64-encoded CSV content for testing */
 const SAMPLE_CSV_BASE64 = Buffer.from(
-  "legalName,email,taxId\nAcme Corp,acme@example.com,1234567890\nBeta Inc,beta@example.com,0987654321",
-).toString("base64");
+  'legalName,email,taxId\nAcme Corp,acme@example.com,1234567890\nBeta Inc,beta@example.com,0987654321',
+).toString('base64');
 
 // ---------------------------------------------------------------------------
 // Reset mocks
@@ -322,18 +322,18 @@ beforeEach(() => {
   );
   // Restore default mock implementations
   mockParseImportFile.mockResolvedValue([
-    { legalName: "Acme Corp", email: "acme@example.com", taxId: "1234567890" },
-    { legalName: "Beta Inc", email: "beta@example.com", taxId: "0987654321" },
+    { legalName: 'Acme Corp', email: 'acme@example.com', taxId: '1234567890' },
+    { legalName: 'Beta Inc', email: 'beta@example.com', taxId: '0987654321' },
   ]);
   mockAutoMapColumns.mockReturnValue({
-    legalName: "legalName",
-    email: "email",
-    taxId: "taxId",
+    legalName: 'legalName',
+    email: 'email',
+    taxId: 'taxId',
   });
   mockProcessImportFile.mockResolvedValue({
-    valid: [{ legalName: "Acme Corp", email: "acme@example.com", taxId: "1234567890" }],
+    valid: [{ legalName: 'Acme Corp', email: 'acme@example.com', taxId: '1234567890' }],
     invalid: [],
-    duplicates: [{ legalName: "Beta Inc", taxId: "0987654321" }],
+    duplicates: [{ legalName: 'Beta Inc', taxId: '0987654321' }],
   });
 });
 
@@ -341,16 +341,16 @@ beforeEach(() => {
 // Import Router Tests
 // ===========================================================================
 
-describe("import router", () => {
+describe('import router', () => {
   // =========================================================================
   // parse
   // =========================================================================
 
-  describe("parse", () => {
-    it("parses file and returns headers, sample rows, and suggested mapping", async () => {
+  describe('parse', () => {
+    it('parses file and returns headers, sample rows, and suggested mapping', async () => {
       const result = await caller.import.parse({
         fileBase64: SAMPLE_CSV_BASE64,
-        entityType: "contractor",
+        entityType: 'contractor',
       });
 
       expect(mockParseImportFile).toHaveBeenCalledTimes(1);
@@ -359,57 +359,57 @@ describe("import router", () => {
       expect(Buffer.isBuffer(bufferArg)).toBe(true);
 
       expect(mockAutoMapColumns).toHaveBeenCalledWith(
-        ["legalName", "email", "taxId"],
-        "contractor",
+        ['legalName', 'email', 'taxId'],
+        'contractor',
       );
 
       expect(result).toMatchObject({
-        headers: ["legalName", "email", "taxId"],
+        headers: ['legalName', 'email', 'taxId'],
         totalRows: 2,
-        suggestedMapping: { legalName: "legalName", email: "email", taxId: "taxId" },
+        suggestedMapping: { legalName: 'legalName', email: 'email', taxId: 'taxId' },
       });
       expect(result.sampleRows).toHaveLength(2);
     });
 
-    it("throws BAD_REQUEST when file has no data rows", async () => {
+    it('throws BAD_REQUEST when file has no data rows', async () => {
       mockParseImportFile.mockResolvedValueOnce([]);
 
       await expect(
         caller.import.parse({
           fileBase64: SAMPLE_CSV_BASE64,
-          entityType: "contractor",
+          entityType: 'contractor',
         }),
       ).rejects.toThrow(TRPCError);
     });
 
-    it("throws BAD_REQUEST when parse fails", async () => {
-      mockParseImportFile.mockRejectedValueOnce(new Error("Invalid CSV format"));
+    it('throws BAD_REQUEST when parse fails', async () => {
+      mockParseImportFile.mockRejectedValueOnce(new Error('Invalid CSV format'));
 
       await expect(
         caller.import.parse({
           fileBase64: SAMPLE_CSV_BASE64,
-          entityType: "contractor",
+          entityType: 'contractor',
         }),
       ).rejects.toThrow(TRPCError);
     });
 
-    it("works for contract entity type", async () => {
+    it('works for contract entity type', async () => {
       mockParseImportFile.mockResolvedValueOnce([
-        { title: "Contract 1", contractorTaxId: "1234567890", startDate: "2025-01-01" },
+        { title: 'Contract 1', contractorTaxId: '1234567890', startDate: '2025-01-01' },
       ] as any);
       mockAutoMapColumns.mockReturnValueOnce({
-        title: "title",
-        contractorTaxId: "contractorTaxId",
+        title: 'title',
+        contractorTaxId: 'contractorTaxId',
       } as any);
 
       const result = await caller.import.parse({
         fileBase64: SAMPLE_CSV_BASE64,
-        entityType: "contract",
+        entityType: 'contract',
       });
 
       expect(mockAutoMapColumns).toHaveBeenCalledWith(
-        ["title", "contractorTaxId", "startDate"],
-        "contract",
+        ['title', 'contractorTaxId', 'startDate'],
+        'contract',
       );
       expect(result.totalRows).toBe(1);
     });
@@ -419,35 +419,35 @@ describe("import router", () => {
   // validate
   // =========================================================================
 
-  describe("validate", () => {
-    it("calls processImportFile with buffer, entityType, orgId, and column mapping", async () => {
-      const columnMapping = { legalName: "legalName", email: "email", taxId: "taxId" };
+  describe('validate', () => {
+    it('calls processImportFile with buffer, entityType, orgId, and column mapping', async () => {
+      const columnMapping = { legalName: 'legalName', email: 'email', taxId: 'taxId' };
 
       await caller.import.validate({
         fileBase64: SAMPLE_CSV_BASE64,
-        entityType: "contractor",
+        entityType: 'contractor',
         columnMapping,
       });
 
       expect(mockProcessImportFile).toHaveBeenCalledTimes(1);
       const args = (mockProcessImportFile.mock.calls as any)[0];
       expect(Buffer.isBuffer(args?.[0])).toBe(true);
-      expect(args?.[1]).toBe("contractor");
+      expect(args?.[1]).toBe('contractor');
       expect(args?.[2]).toBe(ORG_ID);
       expect(args?.[3]).toEqual(columnMapping);
     });
 
-    it("returns valid, invalid, and duplicate row arrays", async () => {
+    it('returns valid, invalid, and duplicate row arrays', async () => {
       const result = await caller.import.validate({
         fileBase64: SAMPLE_CSV_BASE64,
-        entityType: "contractor",
-        columnMapping: { legalName: "legalName" },
+        entityType: 'contractor',
+        columnMapping: { legalName: 'legalName' },
       });
 
       expect(result).toMatchObject({
-        valid: expect.arrayContaining([expect.objectContaining({ legalName: "Acme Corp" })]),
+        valid: expect.arrayContaining([expect.objectContaining({ legalName: 'Acme Corp' })]),
         invalid: [],
-        duplicates: expect.arrayContaining([expect.objectContaining({ legalName: "Beta Inc" })]),
+        duplicates: expect.arrayContaining([expect.objectContaining({ legalName: 'Beta Inc' })]),
       });
     });
   });
@@ -456,22 +456,22 @@ describe("import router", () => {
   // commit (contractors)
   // =========================================================================
 
-  describe("commit - contractors", () => {
-    it("creates contractors from validated data in a transaction", async () => {
+  describe('commit - contractors', () => {
+    it('creates contractors from validated data in a transaction', async () => {
       const rows = [
         {
-          legalName: "Acme Corp",
-          displayName: "Acme",
-          type: "COMPANY",
-          taxId: "1234567890",
-          email: "acme@example.com",
-          countryCode: "PL",
-          currency: "PLN",
+          legalName: 'Acme Corp',
+          displayName: 'Acme',
+          type: 'COMPANY',
+          taxId: '1234567890',
+          email: 'acme@example.com',
+          countryCode: 'PL',
+          currency: 'PLN',
         },
       ];
 
       const result = await caller.import.commit({
-        entityType: "contractor",
+        entityType: 'contractor',
         rows,
         duplicateActions: {},
       });
@@ -482,67 +482,67 @@ describe("import router", () => {
       const createCall = mockPrisma.contractor.create.mock.calls[0]?.[0];
       expect(createCall.data).toMatchObject({
         organizationId: ORG_ID,
-        legalName: "Acme Corp",
-        displayName: "Acme",
-        taxId: "1234567890",
-        email: "acme@example.com",
-        countryCode: "PL",
-        currency: "PLN",
+        legalName: 'Acme Corp',
+        displayName: 'Acme',
+        taxId: '1234567890',
+        email: 'acme@example.com',
+        countryCode: 'PL',
+        currency: 'PLN',
         ownerUserId: USER_ID,
       });
 
       expect(result).toMatchObject({ created: 1, updated: 0, skipped: 0, failed: 0 });
     });
 
-    it("skips rows when duplicateAction is skip", async () => {
-      const rows = [{ legalName: "Dup Corp", taxId: "DUP123", email: "dup@example.com" }];
+    it('skips rows when duplicateAction is skip', async () => {
+      const rows = [{ legalName: 'Dup Corp', taxId: 'DUP123', email: 'dup@example.com' }];
 
       const result = await caller.import.commit({
-        entityType: "contractor",
+        entityType: 'contractor',
         rows,
-        duplicateActions: { DUP123: "skip" },
+        duplicateActions: { DUP123: 'skip' },
       });
 
       expect(mockPrisma.contractor.create).not.toHaveBeenCalled();
       expect(result.skipped).toBe(1);
     });
 
-    it("updates existing contractor when duplicateAction is update", async () => {
+    it('updates existing contractor when duplicateAction is update', async () => {
       mockPrisma.contractor.findFirst.mockResolvedValueOnce({
         id: CONTRACTOR_ID,
         organizationId: ORG_ID,
-        legalName: "Old Name",
-        displayName: "Old",
-        email: "old@example.com",
+        legalName: 'Old Name',
+        displayName: 'Old',
+        email: 'old@example.com',
         phone: null,
-        countryCode: "PL",
-        currency: "PLN",
+        countryCode: 'PL',
+        currency: 'PLN',
       });
 
       const rows = [
         {
-          legalName: "Updated Corp",
-          displayName: "Updated",
-          taxId: "UPD123",
-          email: "updated@example.com",
-          countryCode: "PL",
-          currency: "EUR",
+          legalName: 'Updated Corp',
+          displayName: 'Updated',
+          taxId: 'UPD123',
+          email: 'updated@example.com',
+          countryCode: 'PL',
+          currency: 'EUR',
         },
       ];
 
       const result = await caller.import.commit({
-        entityType: "contractor",
+        entityType: 'contractor',
         rows,
-        duplicateActions: { UPD123: "update" },
+        duplicateActions: { UPD123: 'update' },
       });
 
       expect(mockPrisma.contractor.update).toHaveBeenCalledTimes(1);
       const updateCall = mockPrisma.contractor.update.mock.calls[0]?.[0];
       expect(updateCall.where).toMatchObject({ id: CONTRACTOR_ID });
       expect(updateCall.data).toMatchObject({
-        legalName: "Updated Corp",
-        email: "updated@example.com",
-        currency: "EUR",
+        legalName: 'Updated Corp',
+        email: 'updated@example.com',
+        currency: 'EUR',
       });
 
       expect(result).toMatchObject({ created: 0, updated: 1, skipped: 0, failed: 0 });
@@ -553,24 +553,24 @@ describe("import router", () => {
   // commit (contracts)
   // =========================================================================
 
-  describe("commit - contracts", () => {
-    it("creates contracts from validated data with contractor resolution", async () => {
+  describe('commit - contracts', () => {
+    it('creates contracts from validated data with contractor resolution', async () => {
       mockPrisma.contractor.findFirst.mockResolvedValueOnce({
         id: CONTRACTOR_ID,
       });
 
       const rows = [
         {
-          title: "Service Agreement",
-          type: "B2B_MASTER_SERVICE",
-          contractorTaxId: "1234567890",
-          startDate: "2025-01-01",
-          currency: "PLN",
+          title: 'Service Agreement',
+          type: 'B2B_MASTER_SERVICE',
+          contractorTaxId: '1234567890',
+          startDate: '2025-01-01',
+          currency: 'PLN',
         },
       ];
 
       const result = await caller.import.commit({
-        entityType: "contract",
+        entityType: 'contract',
         rows,
         duplicateActions: {},
       });
@@ -582,27 +582,27 @@ describe("import router", () => {
       expect(createCall.data).toMatchObject({
         organizationId: ORG_ID,
         contractorId: CONTRACTOR_ID,
-        title: "Service Agreement",
-        currency: "PLN",
+        title: 'Service Agreement',
+        currency: 'PLN',
         internalOwnerUserId: USER_ID,
       });
 
       expect(result).toMatchObject({ created: 1, updated: 0, skipped: 0, failed: 0 });
     });
 
-    it("fails when contractor cannot be resolved by taxId", async () => {
+    it('fails when contractor cannot be resolved by taxId', async () => {
       mockPrisma.contractor.findFirst.mockResolvedValueOnce(null);
 
       const rows = [
         {
-          title: "Orphan Contract",
-          contractorTaxId: "UNKNOWN",
-          startDate: "2025-01-01",
+          title: 'Orphan Contract',
+          contractorTaxId: 'UNKNOWN',
+          startDate: '2025-01-01',
         },
       ];
 
       const result = await caller.import.commit({
-        entityType: "contract",
+        entityType: 'contract',
         rows,
         duplicateActions: {},
       });
@@ -611,17 +611,17 @@ describe("import router", () => {
       expect(result.failed).toBe(1);
     });
 
-    it("uses provided contractorId directly when available", async () => {
+    it('uses provided contractorId directly when available', async () => {
       const rows = [
         {
-          title: "Direct Contract",
+          title: 'Direct Contract',
           contractorId: CONTRACTOR_ID,
-          startDate: "2025-01-01",
+          startDate: '2025-01-01',
         },
       ];
 
       const result = await caller.import.commit({
-        entityType: "contract",
+        entityType: 'contract',
         rows,
         duplicateActions: {},
       });

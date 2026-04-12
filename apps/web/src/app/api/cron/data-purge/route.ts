@@ -1,13 +1,13 @@
-import { timingSafeEqual } from "node:crypto";
-import { withCronMonitor } from "@contractor-ops/api/services/cron-monitor";
-import { prisma } from "@contractor-ops/db";
-import { createCronLogger } from "@contractor-ops/logger";
-import { metrics } from "@contractor-ops/logger/metrics";
-import * as Sentry from "@sentry/nextjs";
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import { timingSafeEqual } from 'node:crypto';
+import { withCronMonitor } from '@contractor-ops/api/services/cron-monitor';
+import { prisma } from '@contractor-ops/db';
+import { createCronLogger } from '@contractor-ops/logger';
+import { metrics } from '@contractor-ops/logger/metrics';
+import * as Sentry from '@sentry/nextjs';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
-const log = createCronLogger("data-purge");
+const log = createCronLogger('data-purge');
 
 /**
  * Retention period for soft-deleted records before permanent purge.
@@ -35,19 +35,19 @@ const RETENTION_DAYS = 90;
  * 6. Contractors
  */
 export async function GET(request: NextRequest) {
-  const authHeader = request.headers.get("authorization") ?? "";
-  const expected = `Bearer ${process.env.CRON_SECRET ?? ""}`;
+  const authHeader = request.headers.get('authorization') ?? '';
+  const expected = `Bearer ${process.env.CRON_SECRET ?? ''}`;
   const isAuthorized =
     authHeader.length === expected.length &&
     timingSafeEqual(Buffer.from(authHeader), Buffer.from(expected));
   if (!isAuthorized) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   return Sentry.withMonitor(
-    "data-purge",
+    'data-purge',
     () =>
-      withCronMonitor("data-purge", async () => {
+      withCronMonitor('data-purge', async () => {
         try {
           const cutoff = new Date();
           cutoff.setDate(cutoff.getDate() - RETENTION_DAYS);
@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
             select: { id: true, storageKey: true },
           });
 
-          const docIds = expiredDocs.map((d) => d.id);
+          const docIds = expiredDocs.map(d => d.id);
 
           // 2. Delete R2 files BEFORE DB records — if R2 fails we can retry
           //    because the DB records still reference the storage keys.
@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
           const failedR2DocIds = new Set<string>();
 
           if (expiredDocs.length > 0) {
-            const { deleteObject } = await import("@contractor-ops/api/services/r2");
+            const { deleteObject } = await import('@contractor-ops/api/services/r2');
 
             let r2Deleted = 0;
             let purgeSkippedR2KeyMissing = 0;
@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
                 } catch (err) {
                   log.warn(
                     { storageKey: doc.storageKey, documentId: doc.id, err },
-                    "failed to delete R2 object — excluding from DB purge",
+                    'failed to delete R2 object — excluding from DB purge',
                   );
                   failedR2DocIds.add(doc.id);
                 }
@@ -95,7 +95,7 @@ export async function GET(request: NextRequest) {
             if (purgeSkippedR2KeyMissing > 0) {
               log.info(
                 { count: purgeSkippedR2KeyMissing },
-                "documents with null storageKey skipped during R2 cleanup",
+                'documents with null storageKey skipped during R2 cleanup',
               );
             }
             results.r2Files = r2Deleted;
@@ -103,12 +103,12 @@ export async function GET(request: NextRequest) {
           }
 
           // Exclude documents whose R2 files failed to delete so we can retry next run
-          const safeDocIds = docIds.filter((id) => !failedR2DocIds.has(id));
+          const safeDocIds = docIds.filter(id => !failedR2DocIds.has(id));
 
           // 3. Delete DB records in a transaction using the snapshotted IDs.
           //    Order: children first (document links, invoice files), then
           //    documents, invoices, contracts, contractors.
-          const txResults = await prisma.$transaction(async (tx) => {
+          const txResults = await prisma.$transaction(async tx => {
             const txRes: Record<string, number> = {};
 
             if (safeDocIds.length > 0) {
@@ -152,12 +152,12 @@ export async function GET(request: NextRequest) {
 
           log.info(
             { ...results, totalPurged, retentionDays: RETENTION_DAYS },
-            "data purge completed",
+            'data purge completed',
           );
 
-          metrics.gauge("cron.data_purge.total", totalPurged);
-          metrics.gauge("cron.data_purge.documents", results.documents ?? 0);
-          metrics.gauge("cron.data_purge.invoices", results.invoices ?? 0);
+          metrics.gauge('cron.data_purge.total', totalPurged);
+          metrics.gauge('cron.data_purge.documents', results.documents ?? 0);
+          metrics.gauge('cron.data_purge.invoices', results.invoices ?? 0);
 
           return NextResponse.json({
             purged: results,
@@ -166,16 +166,16 @@ export async function GET(request: NextRequest) {
             cutoffDate: cutoff.toISOString(),
           });
         } catch (error) {
-          log.error({ err: error }, "data purge failed");
+          log.error({ err: error }, 'data purge failed');
           Sentry.captureException(error, {
-            tags: { "cron.job": "data-purge" },
+            tags: { 'cron.job': 'data-purge' },
           });
-          return NextResponse.json({ error: "Data purge failed" }, { status: 500 });
+          return NextResponse.json({ error: 'Data purge failed' }, { status: 500 });
         }
       }),
     {
-      schedule: { type: "crontab", value: "0 3 * * *" },
-      timezone: "UTC",
+      schedule: { type: 'crontab', value: '0 3 * * *' },
+      timezone: 'UTC',
     },
   );
 }

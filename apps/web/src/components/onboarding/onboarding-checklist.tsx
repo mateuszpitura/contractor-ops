@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { isPdplJurisdiction } from "@contractor-ops/validators";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { LucideIcon } from "lucide-react";
+import { isPdplJurisdiction } from '@contractor-ops/validators';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { LucideIcon } from 'lucide-react';
 import {
   Building2,
   Check,
@@ -13,17 +13,17 @@ import {
   Shield,
   UserPlus,
   Users,
-} from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useCallback, useState } from "react";
-import { OnboardingConsentStep } from "@/components/consent/onboarding-consent-step";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { usePermissions } from "@/hooks/use-permissions";
-import { Link } from "@/i18n/navigation";
-import { cn } from "@/lib/utils";
-import { trpc } from "@/trpc/init";
+} from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useState } from 'react';
+import { OnboardingConsentStep } from '@/components/consent/onboarding-consent-step';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { usePermissions } from '@/hooks/use-permissions';
+import { Link } from '@/i18n/navigation';
+import { cn } from '@/lib/utils';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Step definitions
@@ -40,46 +40,46 @@ type OnboardingStep = {
 
 const ONBOARDING_STEPS: OnboardingStep[] = [
   {
-    id: "org-details",
+    id: 'org-details',
     icon: Building2,
     optional: false,
-    stepKey: "orgDetails",
-    ctaHref: "/settings",
+    stepKey: 'orgDetails',
+    ctaHref: '/settings',
   },
   {
-    id: "privacy-consent",
+    id: 'privacy-consent',
     icon: Shield,
     optional: false,
-    stepKey: "privacyConsent",
-    ctaHref: "/settings?tab=privacy",
+    stepKey: 'privacyConsent',
+    ctaHref: '/settings?tab=privacy',
   },
   {
-    id: "invite-team",
+    id: 'invite-team',
     icon: UserPlus,
     optional: false,
-    stepKey: "inviteTeam",
-    ctaHref: "/onboarding/import",
+    stepKey: 'inviteTeam',
+    ctaHref: '/onboarding/import',
   },
   {
-    id: "add-contractor",
+    id: 'add-contractor',
     icon: Users,
     optional: false,
-    stepKey: "addContractor",
-    ctaHref: "/contractors?action=new",
+    stepKey: 'addContractor',
+    ctaHref: '/contractors?action=new',
   },
   {
-    id: "configure-approvals",
+    id: 'configure-approvals',
     icon: CheckCircle,
     optional: true,
-    stepKey: "configureApprovals",
-    ctaHref: "/settings?tab=approvals",
+    stepKey: 'configureApprovals',
+    ctaHref: '/settings?tab=approvals',
   },
   {
-    id: "connect-slack",
+    id: 'connect-slack',
     icon: MessageSquare,
     optional: true,
-    stepKey: "connectSlack",
-    ctaHref: "/settings?tab=integrations",
+    stepKey: 'connectSlack',
+    ctaHref: '/settings?tab=integrations',
   },
 ] as const;
 
@@ -112,7 +112,7 @@ function StepItem({
   step: OnboardingStep;
   completed: boolean;
   current: boolean;
-  t: ReturnType<typeof useTranslations<"Onboarding">>;
+  t: ReturnType<typeof useTranslations<'Onboarding'>>;
 }) {
   const title = t(`steps.${step.stepKey}.title` as Parameters<typeof t>[0]);
   const description = t(`steps.${step.stepKey}.description` as Parameters<typeof t>[0]);
@@ -127,16 +127,15 @@ function StepItem({
         <div className="flex items-center gap-2">
           <span
             className={cn(
-              "text-sm",
-              completed && "text-muted-foreground line-through",
-              current && "font-semibold",
-            )}
-          >
+              'text-sm',
+              completed && 'text-muted-foreground line-through',
+              current && 'font-semibold',
+            )}>
             {title}
           </span>
           {step.optional && (
             <span className="text-xs font-medium text-amber-600 dark:text-amber-400">
-              ({t("optional")})
+              ({t('optional')})
             </span>
           )}
         </div>
@@ -166,16 +165,16 @@ function CollapsedBar({
   completedCount: number;
   totalCount: number;
   onExpand: () => void;
-  t: ReturnType<typeof useTranslations<"Onboarding">>;
+  t: ReturnType<typeof useTranslations<'Onboarding'>>;
 }) {
   return (
     <Card size="sm">
       <CardContent>
         <div className="flex items-center justify-between">
           <span className="text-sm">
-            {t("collapsed")} &mdash;{" "}
+            {t('collapsed')} &mdash;{' '}
             <span className="font-semibold text-primary">
-              {t("progress", { completed: completedCount, total: totalCount })}
+              {t('progress', { completed: completedCount, total: totalCount })}
             </span>
           </span>
           <Button variant="ghost" size="icon-sm" onClick={onExpand}>
@@ -192,7 +191,7 @@ function CollapsedBar({
 // ---------------------------------------------------------------------------
 
 export function OnboardingChecklist() {
-  const t = useTranslations("Onboarding");
+  const t = useTranslations('Onboarding');
   const { can, isLoading: permissionsLoading } = usePermissions();
   const queryClient = useQueryClient();
 
@@ -213,7 +212,7 @@ export function OnboardingChecklist() {
   const isPdpl = isPdplJurisdiction(orgCountryCode);
   const visibleSteps = isPdpl
     ? ONBOARDING_STEPS
-    : ONBOARDING_STEPS.filter((s) => s.id !== "privacy-consent");
+    : ONBOARDING_STEPS.filter(s => s.id !== 'privacy-consent');
 
   // Server-side consent validation for gating the privacy-consent step
   const { data: hasConsents } = useQuery({
@@ -243,7 +242,7 @@ export function OnboardingChecklist() {
       if (completedSteps.includes(stepId)) return;
 
       // Server-side consent validation for privacy-consent step (D-03 belt-and-suspenders)
-      if (stepId === "privacy-consent" && !skipValidation && !hasConsents) {
+      if (stepId === 'privacy-consent' && !skipValidation && !hasConsents) {
         return; // Block completion until server confirms consents
       }
 
@@ -268,7 +267,7 @@ export function OnboardingChecklist() {
 
   // Visibility: only show for admins when setup is incomplete and not loading
   if (permissionsLoading || settingsLoading) return null;
-  if (!can("settings", ["write"])) return null;
+  if (!can('settings', ['write'])) return null;
   if (completedCount >= totalCount) return null;
 
   // Collapsed state
@@ -284,22 +283,22 @@ export function OnboardingChecklist() {
   }
 
   // Determine current step (first non-completed)
-  const currentStepId = visibleSteps.find((s) => !completedSteps.includes(s.id))?.id;
+  const currentStepId = visibleSteps.find(s => !completedSteps.includes(s.id))?.id;
 
   return (
     <Card className="iridescent neon-card">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="gradient-text text-[20px] font-bold">{t("widgetTitle")}</CardTitle>
+          <CardTitle className="gradient-text text-[20px] font-bold">{t('widgetTitle')}</CardTitle>
           <span className="text-xs font-semibold text-primary">
-            {t("progress", { completed: completedCount, total: totalCount })}
+            {t('progress', { completed: completedCount, total: totalCount })}
           </span>
         </div>
         <Progress value={(completedCount / totalCount) * 100} />
       </CardHeader>
       <CardContent>
         <div className="flex flex-col gap-3">
-          {visibleSteps.map((step) => (
+          {visibleSteps.map(step => (
             <div key={step.id}>
               <StepItem
                 step={step}
@@ -308,13 +307,13 @@ export function OnboardingChecklist() {
                 t={t}
               />
               {/* Inline consent step for PDPL jurisdictions */}
-              {step.id === "privacy-consent" &&
+              {step.id === 'privacy-consent' &&
                 step.id === currentStepId &&
                 !completedSteps.includes(step.id) && (
                   <div className="ms-9 mt-2">
                     <OnboardingConsentStep
                       orgCountryCode={orgCountryCode}
-                      onComplete={() => completeStep("privacy-consent", true)}
+                      onComplete={() => completeStep('privacy-consent', true)}
                     />
                   </div>
                 )}
@@ -325,7 +324,7 @@ export function OnboardingChecklist() {
       <CardFooter>
         <Button variant="ghost" size="sm" onClick={handleDismiss}>
           <ChevronUp className="me-1 h-3.5 w-3.5" />
-          {t("dismiss")}
+          {t('dismiss')}
         </Button>
       </CardFooter>
     </Card>

@@ -1,43 +1,43 @@
-import { prisma } from "@contractor-ops/db";
+import { prisma } from '@contractor-ops/db';
 
 // EU member states for reverse charge mechanism
 const EU_MEMBER_STATES = new Set([
-  "AT",
-  "BE",
-  "BG",
-  "HR",
-  "CY",
-  "CZ",
-  "DK",
-  "EE",
-  "FI",
-  "FR",
-  "DE",
-  "GR",
-  "HU",
-  "IE",
-  "IT",
-  "LV",
-  "LT",
-  "LU",
-  "MT",
-  "NL",
-  "PL",
-  "PT",
-  "RO",
-  "SK",
-  "SI",
-  "ES",
-  "SE",
+  'AT',
+  'BE',
+  'BG',
+  'HR',
+  'CY',
+  'CZ',
+  'DK',
+  'EE',
+  'FI',
+  'FR',
+  'DE',
+  'GR',
+  'HU',
+  'IE',
+  'IT',
+  'LV',
+  'LT',
+  'LU',
+  'MT',
+  'NL',
+  'PL',
+  'PT',
+  'RO',
+  'SK',
+  'SI',
+  'ES',
+  'SE',
 ]);
 
 // GCC member states (for future GCC reverse charge rules)
-const GCC_MEMBER_STATES = new Set(["AE", "SA", "BH", "KW", "OM", "QA"]);
+const GCC_MEMBER_STATES = new Set(['AE', 'SA', 'BH', 'KW', 'OM', 'QA']);
 
 export interface ReverseChargeResult {
   shouldApply: boolean;
   reason: string;
-  rule: "eu_cross_border_b2b" | "not_applicable";
+  rule: 'eu_cross_border_b2b' | 'not_applicable';
 }
 
 /**
@@ -59,15 +59,15 @@ export function detectReverseCharge(params: {
 
   // Rule 1: Same country - no reverse charge
   if (sellerCountry === buyerCountry) {
-    return { shouldApply: false, reason: "Domestic transaction", rule: "not_applicable" };
+    return { shouldApply: false, reason: 'Domestic transaction', rule: 'not_applicable' };
   }
 
   // Rule 2: Not B2B - no reverse charge
   if (!isB2B) {
     return {
       shouldApply: false,
-      reason: "B2C transaction - reverse charge only for B2B",
-      rule: "not_applicable",
+      reason: 'B2C transaction - reverse charge only for B2B',
+      rule: 'not_applicable',
     };
   }
 
@@ -76,7 +76,7 @@ export function detectReverseCharge(params: {
     return {
       shouldApply: true,
       reason: `EU cross-border B2B: ${sellerCountry} -> ${buyerCountry} with valid buyer VAT ID`,
-      rule: "eu_cross_border_b2b",
+      rule: 'eu_cross_border_b2b',
     };
   }
 
@@ -84,8 +84,8 @@ export function detectReverseCharge(params: {
   if (EU_MEMBER_STATES.has(sellerCountry) && EU_MEMBER_STATES.has(buyerCountry) && !buyerHasVatId) {
     return {
       shouldApply: false,
-      reason: "EU cross-border but buyer has no VAT ID - standard VAT applies",
-      rule: "not_applicable",
+      reason: 'EU cross-border but buyer has no VAT ID - standard VAT applies',
+      rule: 'not_applicable',
     };
   }
 
@@ -93,16 +93,16 @@ export function detectReverseCharge(params: {
   if (GCC_MEMBER_STATES.has(sellerCountry) && GCC_MEMBER_STATES.has(buyerCountry)) {
     return {
       shouldApply: false,
-      reason: "GCC cross-border - no standardized reverse charge mechanism",
-      rule: "not_applicable",
+      reason: 'GCC cross-border - no standardized reverse charge mechanism',
+      rule: 'not_applicable',
     };
   }
 
   // Default: no reverse charge
   return {
     shouldApply: false,
-    reason: "No applicable reverse charge rule",
-    rule: "not_applicable",
+    reason: 'No applicable reverse charge rule',
+    rule: 'not_applicable',
   };
 }
 
@@ -122,8 +122,8 @@ export async function applyReverseCharge(params: {
     return {
       isReverseCharge: reverseChargeOverride,
       reason: reverseChargeOverride
-        ? "Manually set to reverse charge"
-        : "Manually removed reverse charge",
+        ? 'Manually set to reverse charge'
+        : 'Manually removed reverse charge',
     };
   }
 
@@ -140,14 +140,14 @@ export async function applyReverseCharge(params: {
   ]);
 
   if (!org.countryCode) {
-    return { isReverseCharge: false, reason: "Organization has no country set" };
+    return { isReverseCharge: false, reason: 'Organization has no country set' };
   }
 
   const result = detectReverseCharge({
     sellerCountry: contractor.countryCode,
     buyerCountry: org.countryCode,
     buyerHasVatId: !!contractor.vatId,
-    isB2B: contractor.type === "COMPANY" || contractor.type === "SOLE_TRADER",
+    isB2B: contractor.type === 'COMPANY' || contractor.type === 'SOLE_TRADER',
   });
 
   return { isReverseCharge: result.shouldApply, reason: result.reason };

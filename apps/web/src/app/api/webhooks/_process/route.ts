@@ -1,10 +1,10 @@
-import { handleSigningCompletion } from "@contractor-ops/api/services/esign-orchestrator";
-import { prisma } from "@contractor-ops/db";
-import { registerAllAdapters } from "@contractor-ops/integrations/adapters/register-all";
-import { getAdapter } from "@contractor-ops/integrations/registry";
-import { verifySignatureAppRouter } from "@upstash/qstash/nextjs";
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import { handleSigningCompletion } from '@contractor-ops/api/services/esign-orchestrator';
+import { prisma } from '@contractor-ops/db';
+import { registerAllAdapters } from '@contractor-ops/integrations/adapters/register-all';
+import { getAdapter } from '@contractor-ops/integrations/registry';
+import { verifySignatureAppRouter } from '@upstash/qstash/nextjs';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 // ---------------------------------------------------------------------------
 // Ensure adapters are registered
@@ -36,12 +36,12 @@ async function handler(request: NextRequest) {
   };
 
   if (!(deliveryId && provider)) {
-    return NextResponse.json({ error: "Missing deliveryId or provider" }, { status: 400 });
+    return NextResponse.json({ error: 'Missing deliveryId or provider' }, { status: 400 });
   }
 
   const adapter = getAdapter(provider);
   if (!adapter?.handleWebhook) {
-    return NextResponse.json({ error: "No handler for provider" }, { status: 404 });
+    return NextResponse.json({ error: 'No handler for provider' }, { status: 404 });
   }
 
   const delivery = await prisma.webhookDelivery.findUnique({
@@ -49,27 +49,27 @@ async function handler(request: NextRequest) {
   });
 
   if (!delivery) {
-    return NextResponse.json({ error: "Delivery not found" }, { status: 404 });
+    return NextResponse.json({ error: 'Delivery not found' }, { status: 404 });
   }
 
   try {
     const webhookResult = await adapter.handleWebhook(
       delivery.payloadJson,
       delivery.organizationId,
-      delivery.integrationConnectionId ?? "",
+      delivery.integrationConnectionId ?? '',
     );
 
     // For Jira provider, dispatch to processJiraWebhook from @contractor-ops/api.
     // Done here in apps/web to avoid circular dependency between packages/integrations and packages/api.
     // JiraAdapter.handleWebhook is a no-op — actual processing dispatched here.
-    if (provider === "jira") {
+    if (provider === 'jira') {
       const { processJiraWebhook } = await import(
-        "@contractor-ops/api/services/jira-webhook-handler"
+        '@contractor-ops/api/services/jira-webhook-handler'
       );
       await processJiraWebhook(
         prisma,
         delivery.organizationId,
-        delivery.integrationConnectionId ?? "",
+        delivery.integrationConnectionId ?? '',
         delivery.payloadJson,
       );
     }
@@ -77,21 +77,21 @@ async function handler(request: NextRequest) {
     // For Linear provider, dispatch to processLinearWebhook from @contractor-ops/api.
     // Done here in apps/web to avoid circular dependency between packages/integrations and packages/api.
     // LinearAdapter.handleWebhook is a no-op — actual processing dispatched here.
-    if (provider === "linear") {
+    if (provider === 'linear') {
       const { processLinearWebhook } = await import(
-        "@contractor-ops/api/services/linear-webhook-handler"
+        '@contractor-ops/api/services/linear-webhook-handler'
       );
       await processLinearWebhook(
         prisma,
         delivery.organizationId,
-        delivery.integrationConnectionId ?? "",
+        delivery.integrationConnectionId ?? '',
         delivery.payloadJson,
       );
     }
 
     // For e-sign providers, check if signing was completed and trigger
     // signed PDF download + R2 storage via the orchestrator
-    const isESignProvider = provider === "docusign" || provider === "autenti";
+    const isESignProvider = provider === 'docusign' || provider === 'autenti';
     if (isESignProvider) {
       const esignResult = webhookResult as { envelopeId: string; completed: boolean } | undefined;
 
@@ -100,7 +100,7 @@ async function handler(request: NextRequest) {
           await handleSigningCompletion(
             esignResult.envelopeId,
             delivery.integrationConnectionId,
-            provider.toUpperCase() as "DOCUSIGN" | "AUTENTI",
+            provider.toUpperCase() as 'DOCUSIGN' | 'AUTENTI',
           );
         } catch (completionError) {
           console.error(
@@ -114,7 +114,7 @@ async function handler(request: NextRequest) {
     await prisma.webhookDelivery.update({
       where: { id: deliveryId },
       data: {
-        deliveryStatus: "PROCESSED",
+        deliveryStatus: 'PROCESSED',
         processedAt: new Date(),
       },
     });
@@ -124,13 +124,13 @@ async function handler(request: NextRequest) {
     await prisma.webhookDelivery.update({
       where: { id: deliveryId },
       data: {
-        deliveryStatus: "FAILED",
+        deliveryStatus: 'FAILED',
         processedAt: new Date(),
-        errorMessage: error instanceof Error ? error.message : "Processing failed",
+        errorMessage: error instanceof Error ? error.message : 'Processing failed',
       },
     });
 
-    return NextResponse.json({ error: "Processing failed" }, { status: 500 });
+    return NextResponse.json({ error: 'Processing failed' }, { status: 500 });
   }
 }
 

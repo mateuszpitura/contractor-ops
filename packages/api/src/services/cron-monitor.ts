@@ -10,19 +10,19 @@
  * If CRONITOR_API_KEY is not set, all pings are silently skipped (dev-friendly).
  */
 
-const CRONITOR_PING_URL = "https://cronitor.link/p";
+const CRONITOR_PING_URL = 'https://cronitor.link/p';
 
 /** Cronitor monitor keys — mapped to cron route names. */
 export const CronMonitors = {
-  REMINDERS: "reminders",
-  TOKEN_REFRESH: "token-refresh",
-  TRIAL_NOTIFICATIONS: "trial-notifications",
-  JOB_HEALTH: "job-health",
+  REMINDERS: 'reminders',
+  TOKEN_REFRESH: 'token-refresh',
+  TRIAL_NOTIFICATIONS: 'trial-notifications',
+  JOB_HEALTH: 'job-health',
 } as const;
 
 export type CronMonitorKey = (typeof CronMonitors)[keyof typeof CronMonitors];
 
-type PingState = "run" | "complete" | "fail";
+type PingState = 'run' | 'complete' | 'fail';
 
 /**
  * Send a heartbeat ping to Cronitor. Fire-and-forget — never throws.
@@ -32,14 +32,14 @@ async function ping(monitorKey: string, state: PingState, message?: string): Pro
   if (!apiKey) return;
 
   const url = new URL(`${CRONITOR_PING_URL}/${apiKey}/${monitorKey}`);
-  url.searchParams.set("state", state);
+  url.searchParams.set('state', state);
   if (message) {
-    url.searchParams.set("msg", message.slice(0, 2000));
+    url.searchParams.set('msg', message.slice(0, 2000));
   }
 
   try {
     await fetch(url.toString(), {
-      method: "GET",
+      method: 'GET',
       signal: AbortSignal.timeout(5000),
     });
   } catch {
@@ -62,17 +62,17 @@ export async function withCronMonitor<T>(
   monitorKey: CronMonitorKey,
   fn: () => Promise<T>,
 ): Promise<T> {
-  await ping(monitorKey, "run");
+  await ping(monitorKey, 'run');
 
   try {
     const result = await fn();
     const message =
-      typeof result === "object" && result !== null ? JSON.stringify(result) : String(result);
-    await ping(monitorKey, "complete", message);
+      typeof result === 'object' && result !== null ? JSON.stringify(result) : String(result);
+    await ping(monitorKey, 'complete', message);
     return result;
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    await ping(monitorKey, "fail", message);
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    await ping(monitorKey, 'fail', message);
     throw error;
   }
 }

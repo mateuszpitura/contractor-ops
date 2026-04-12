@@ -1,15 +1,15 @@
-import { TRPCError } from "@trpc/server";
-import { z } from "zod";
-import { router } from "../init.js";
-import { portalProcedure } from "../middleware/portal-auth.js";
-import { requirePermission } from "../middleware/rbac.js";
-import { tenantProcedure } from "../middleware/tenant.js";
+import { TRPCError } from '@trpc/server';
+import { z } from 'zod';
+import { router } from '../init.js';
+import { portalProcedure } from '../middleware/portal-auth.js';
+import { requirePermission } from '../middleware/rbac.js';
+import { tenantProcedure } from '../middleware/tenant.js';
 import {
   getSigningUrl,
   resendToRecipient,
   sendForSignature,
   voidEnvelope,
-} from "../services/esign-orchestrator.js";
+} from '../services/esign-orchestrator.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -26,7 +26,7 @@ function plain<T>(data: T): T {
 const signerSchema = z.object({
   name: z.string().min(1),
   email: z.string().email(),
-  role: z.enum(["signer", "countersigner"]),
+  role: z.enum(['signer', 'countersigner']),
   routingOrder: z.number().int().positive(),
 });
 
@@ -34,7 +34,7 @@ const sendForSignatureInput = z.object({
   contractId: z.string().optional(),
   documentId: z.string(),
   connectionId: z.string(),
-  provider: z.enum(["DOCUSIGN", "AUTENTI"]),
+  provider: z.enum(['DOCUSIGN', 'AUTENTI']),
   signers: z.array(signerSchema).min(1),
   message: z.string().optional(),
   expiresInDays: z.number().int().min(1).max(90).optional().default(14),
@@ -78,8 +78,8 @@ export const esignRouter = router({
     const connections = await ctx.db.integrationConnection.findMany({
       where: {
         organizationId: ctx.organizationId,
-        provider: { in: ["DOCUSIGN", "AUTENTI"] },
-        status: "CONNECTED",
+        provider: { in: ['DOCUSIGN', 'AUTENTI'] },
+        status: 'CONNECTED',
       },
       select: {
         id: true,
@@ -87,7 +87,7 @@ export const esignRouter = router({
         status: true,
         displayName: true,
       },
-      orderBy: { provider: "asc" },
+      orderBy: { provider: 'asc' },
     });
 
     return plain(connections);
@@ -99,7 +99,7 @@ export const esignRouter = router({
    * and creates audit events.
    */
   sendForSignature: tenantProcedure
-    .use(requirePermission({ contract: ["update"] }))
+    .use(requirePermission({ contract: ['update'] }))
     .input(sendForSignatureInput)
     .mutation(async ({ ctx, input }) => {
       const envelope = await sendForSignature({
@@ -150,18 +150,18 @@ export const esignRouter = router({
     });
 
     if (!envelope) {
-      throw new TRPCError({ code: "NOT_FOUND", message: "Envelope not found" });
+      throw new TRPCError({ code: 'NOT_FOUND', message: 'Envelope not found' });
     }
 
     const contractorEmail = ctx.contractor?.email?.toLowerCase();
     if (!contractorEmail) {
-      throw new TRPCError({ code: "FORBIDDEN", message: "Not a recipient of this envelope" });
+      throw new TRPCError({ code: 'FORBIDDEN', message: 'Not a recipient of this envelope' });
     }
 
-    const isRecipient = envelope.recipients.some((r) => r.email.toLowerCase() === contractorEmail);
+    const isRecipient = envelope.recipients.some(r => r.email.toLowerCase() === contractorEmail);
 
     if (!isRecipient) {
-      throw new TRPCError({ code: "FORBIDDEN", message: "Not a recipient of this envelope" });
+      throw new TRPCError({ code: 'FORBIDDEN', message: 'Not a recipient of this envelope' });
     }
 
     return getSigningUrl({
@@ -177,7 +177,7 @@ export const esignRouter = router({
    * Reverts contract to DRAFT if it was PENDING_SIGNATURE.
    */
   voidEnvelope: tenantProcedure
-    .use(requirePermission({ contract: ["update"] }))
+    .use(requirePermission({ contract: ['update'] }))
     .input(voidEnvelopeInput)
     .mutation(async ({ ctx, input }) => {
       await voidEnvelope({
@@ -194,7 +194,7 @@ export const esignRouter = router({
    * Resend signing notification to a specific recipient.
    */
   resendToRecipient: tenantProcedure
-    .use(requirePermission({ contract: ["update"] }))
+    .use(requirePermission({ contract: ['update'] }))
     .input(resendToRecipientInput)
     .mutation(async ({ ctx, input }) => {
       await resendToRecipient({
@@ -218,10 +218,10 @@ export const esignRouter = router({
       },
       include: {
         recipients: {
-          orderBy: { routingOrder: "asc" },
+          orderBy: { routingOrder: 'asc' },
         },
         events: {
-          orderBy: { occurredAt: "desc" },
+          orderBy: { occurredAt: 'desc' },
         },
         sentBy: {
           select: { id: true, name: true, email: true },
@@ -246,7 +246,7 @@ export const esignRouter = router({
         contractId: input.contractId,
         organizationId: ctx.organizationId,
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: 'desc' },
       include: {
         recipients: {
           select: { id: true, name: true, email: true, status: true },
@@ -258,8 +258,8 @@ export const esignRouter = router({
     });
 
     // Add recipient summary (signed/total count)
-    const items = envelopes.map((env) => {
-      const signedCount = env.recipients.filter((r) => r.status === "SIGNED").length;
+    const items = envelopes.map(env => {
+      const signedCount = env.recipients.filter(r => r.status === 'SIGNED').length;
       return {
         ...env,
         recipientSummary: {
@@ -288,10 +288,10 @@ export const esignRouter = router({
     const recipients = await ctx.db.signingRecipient.findMany({
       where: {
         email: contractor.email,
-        status: { in: ["PENDING", "SENT", "DELIVERED"] },
+        status: { in: ['PENDING', 'SENT', 'DELIVERED'] },
         signingEnvelope: {
           organizationId: ctx.organizationId,
-          status: { in: ["SENT", "DELIVERED"] },
+          status: { in: ['SENT', 'DELIVERED'] },
         },
       },
       include: {
@@ -308,11 +308,11 @@ export const esignRouter = router({
         },
       },
       orderBy: {
-        signingEnvelope: { createdAt: "desc" },
+        signingEnvelope: { createdAt: 'desc' },
       },
     });
 
-    const items = recipients.map((r) => ({
+    const items = recipients.map(r => ({
       envelopeId: r.signingEnvelope.id,
       contractId: r.signingEnvelope.contractId,
       recipientId: r.id,

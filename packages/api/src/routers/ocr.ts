@@ -1,16 +1,16 @@
-import { getQStashClient } from "@contractor-ops/integrations/services/qstash-client";
-import { TRPCError } from "@trpc/server";
-import { z } from "zod";
-import { router } from "../init.js";
-import { portalProcedure } from "../middleware/portal-auth.js";
-import { requirePermission } from "../middleware/rbac.js";
-import { tenantProcedure } from "../middleware/tenant.js";
-import { requireTier } from "../middleware/tier.js";
+import { getQStashClient } from '@contractor-ops/integrations/services/qstash-client';
+import { TRPCError } from '@trpc/server';
+import { z } from 'zod';
+import { router } from '../init.js';
+import { portalProcedure } from '../middleware/portal-auth.js';
+import { requirePermission } from '../middleware/rbac.js';
+import { tenantProcedure } from '../middleware/tenant.js';
+import { requireTier } from '../middleware/tier.js';
 import {
   getExtractionByDocument,
   getExtractionResult,
   triggerOcrExtraction,
-} from "../services/ocr-extraction.js";
+} from '../services/ocr-extraction.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -56,8 +56,8 @@ export const ocrRouter = router({
    * Creates an OcrExtraction record and dispatches a QStash job.
    */
   trigger: tenantProcedure
-    .use(requirePermission({ invoice: ["create"] }))
-    .use(requireTier("PRO"))
+    .use(requirePermission({ invoice: ['create'] }))
+    .use(requireTier('PRO'))
     .input(triggerInput)
     .mutation(async ({ ctx, input }) => {
       const result = await triggerOcrExtraction({
@@ -67,13 +67,13 @@ export const ocrRouter = router({
         invoiceId: input.invoiceId,
       });
 
-      if ("error" in result) {
+      if ('error' in result) {
         throw new TRPCError({
-          code: "PRECONDITION_FAILED",
+          code: 'PRECONDITION_FAILED',
           message:
-            result.error === "credits_exhausted"
-              ? "OCR credits exhausted"
-              : "No active subscription",
+            result.error === 'credits_exhausted'
+              ? 'OCR credits exhausted'
+              : 'No active subscription',
           cause: { reason: result.error, remaining: result.remaining },
         });
       }
@@ -110,8 +110,8 @@ export const ocrRouter = router({
    * Creates a new OcrExtraction record and dispatches a new QStash job.
    */
   retrigger: tenantProcedure
-    .use(requirePermission({ invoice: ["create"] }))
-    .use(requireTier("PRO"))
+    .use(requirePermission({ invoice: ['create'] }))
+    .use(requireTier('PRO'))
     .input(retriggerInput)
     .mutation(async ({ ctx, input }) => {
       // Find the existing extraction to get documentId and storageKey
@@ -123,7 +123,7 @@ export const ocrRouter = router({
       });
 
       if (!existing) {
-        throw new Error("Extraction not found");
+        throw new Error('Extraction not found');
       }
 
       // Look up the document to get storageKey
@@ -136,7 +136,7 @@ export const ocrRouter = router({
       });
 
       if (!document?.storageKey) {
-        throw new Error("Document or storage key not found");
+        throw new Error('Document or storage key not found');
       }
 
       // Create a new extraction for the same document
@@ -145,8 +145,8 @@ export const ocrRouter = router({
           organizationId: ctx.organizationId,
           documentId: existing.documentId,
           invoiceId: existing.invoiceId,
-          provider: "CLAUDE",
-          status: "PENDING",
+          provider: 'CLAUDE',
+          status: 'PENDING',
         },
       });
 
@@ -160,7 +160,7 @@ export const ocrRouter = router({
           storageKey: document.storageKey,
         },
         retries: 2,
-        timeout: "60s",
+        timeout: '60s',
       });
 
       return { extractionId: newExtraction.id };
@@ -181,11 +181,11 @@ export const ocrRouter = router({
       invoiceId: input.invoiceId,
     });
 
-    if ("error" in result) {
+    if ('error' in result) {
       throw new TRPCError({
-        code: "PRECONDITION_FAILED",
+        code: 'PRECONDITION_FAILED',
         message:
-          result.error === "credits_exhausted" ? "OCR credits exhausted" : "No active subscription",
+          result.error === 'credits_exhausted' ? 'OCR credits exhausted' : 'No active subscription',
         cause: { reason: result.error, remaining: result.remaining },
       });
     }

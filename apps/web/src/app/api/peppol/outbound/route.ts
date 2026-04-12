@@ -1,10 +1,10 @@
-import { PeppolOrchestrator } from "@contractor-ops/api/services/peppol-orchestrator";
-import { prisma } from "@contractor-ops/db";
-import { StorecoveAdapter } from "@contractor-ops/einvoice";
-import { getCredentials } from "@contractor-ops/integrations";
-import { verifySignatureAppRouter } from "@upstash/qstash/nextjs";
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import { PeppolOrchestrator } from '@contractor-ops/api/services/peppol-orchestrator';
+import { prisma } from '@contractor-ops/db';
+import { StorecoveAdapter } from '@contractor-ops/einvoice';
+import { getCredentials } from '@contractor-ops/integrations';
+import { verifySignatureAppRouter } from '@upstash/qstash/nextjs';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 // ---------------------------------------------------------------------------
 // POST /api/peppol/outbound
@@ -28,7 +28,7 @@ async function handler(request: NextRequest) {
   };
 
   if (!(organizationId && invoiceId && receiverParticipantId)) {
-    return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
   }
 
   try {
@@ -36,26 +36,26 @@ async function handler(request: NextRequest) {
     const connection = await prisma.integrationConnection.findFirst({
       where: {
         organizationId,
-        provider: "PEPPOL",
-        status: "CONNECTED",
+        provider: 'PEPPOL',
+        status: 'CONNECTED',
       },
     });
 
     if (!connection) {
       console.error(`[peppol/outbound] No active Peppol connection for org ${organizationId}`);
-      return NextResponse.json({ error: "No Peppol connection" });
+      return NextResponse.json({ error: 'No Peppol connection' });
     }
 
-    const credentials = await getCredentials(connection.credentialsRef, "peppol");
+    const credentials = await getCredentials(connection.credentialsRef, 'peppol');
     const config = (connection.configJson as Record<string, unknown>) ?? {};
     const environment = config.environment as string;
 
     const adapter = new StorecoveAdapter({
       apiKey: credentials.accessToken,
       baseUrl:
-        environment === "production"
-          ? "https://api.storecove.com/api/v2"
-          : "https://api-sandbox.storecove.com/api/v2",
+        environment === 'production'
+          ? 'https://api.storecove.com/api/v2'
+          : 'https://api-sandbox.storecove.com/api/v2',
     });
 
     const orchestrator = new PeppolOrchestrator(adapter);
@@ -74,7 +74,7 @@ async function handler(request: NextRequest) {
     // Return 200 to prevent QStash retry on business errors
     // The transmission record is already marked FAILED in the orchestrator
     return NextResponse.json({
-      error: error instanceof Error ? error.message : "Outbound processing failed",
+      error: error instanceof Error ? error.message : 'Outbound processing failed',
     });
   }
 }

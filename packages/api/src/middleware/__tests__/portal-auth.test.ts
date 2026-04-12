@@ -1,15 +1,15 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const { validatePortalSession, tenantStoreRun } = vi.hoisted(() => ({
   validatePortalSession: vi.fn(),
   tenantStoreRun: vi.fn((_ctx: { organizationId: string }, fn: () => unknown) => fn()),
 }));
 
-vi.mock("../../services/portal-session.js", () => ({
+vi.mock('../../services/portal-session.js', () => ({
   validatePortalSession,
 }));
 
-vi.mock("@sentry/nextjs", () => {
+vi.mock('@sentry/nextjs', () => {
   const mockSpan = {
     setStatus: vi.fn(),
     setAttribute: vi.fn(),
@@ -21,7 +21,7 @@ vi.mock("@sentry/nextjs", () => {
   };
 });
 
-vi.mock("@contractor-ops/logger", () => ({
+vi.mock('@contractor-ops/logger', () => ({
   createTrpcLogger: vi.fn(() => ({
     info: vi.fn(),
     warn: vi.fn(),
@@ -29,34 +29,34 @@ vi.mock("@contractor-ops/logger", () => ({
   })),
 }));
 
-vi.mock("@contractor-ops/logger/metrics", () => ({
+vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { increment: vi.fn(), distribution: vi.fn(), histogram: vi.fn() },
 }));
 
-vi.mock("@contractor-ops/db", () => ({
+vi.mock('@contractor-ops/db', () => ({
   tenantStore: {
     run: tenantStoreRun,
     getStore: vi.fn(),
   },
 }));
 
-import { t } from "../../init.js";
-import { portalProcedure } from "../portal-auth.js";
+import { t } from '../../init.js';
+import { portalProcedure } from '../portal-auth.js';
 
 const mockSession = {
-  id: "ps1",
-  contractorId: "contractor_1",
-  organizationId: "org_portal",
-  email: "c@example.com",
-  expiresAt: new Date("2099-01-01"),
+  id: 'ps1',
+  contractorId: 'contractor_1',
+  organizationId: 'org_portal',
+  email: 'c@example.com',
+  expiresAt: new Date('2099-01-01'),
   contractor: {
-    id: "contractor_1",
-    status: "ACTIVE",
-    name: "Contractor",
+    id: 'contractor_1',
+    status: 'ACTIVE',
+    name: 'Contractor',
   },
 };
 
-describe("portalProcedure", () => {
+describe('portalProcedure', () => {
   const router = t.router({
     portal: portalProcedure.query(({ ctx }) => ({
       contractorId: ctx.contractorId,
@@ -71,49 +71,49 @@ describe("portalProcedure", () => {
     tenantStoreRun.mockClear();
   });
 
-  it("throws UNAUTHORIZED when Cookie header is missing", async () => {
+  it('throws UNAUTHORIZED when Cookie header is missing', async () => {
     await expect(
       createCaller({
         headers: new Headers(),
         session: null,
         user: null,
       }).portal(),
-    ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+    ).rejects.toMatchObject({ code: 'UNAUTHORIZED' });
   });
 
-  it("throws UNAUTHORIZED when portal_session cookie is missing", async () => {
+  it('throws UNAUTHORIZED when portal_session cookie is missing', async () => {
     const h = new Headers();
-    h.set("cookie", "other=value");
+    h.set('cookie', 'other=value');
     await expect(
       createCaller({ headers: h, session: null, user: null }).portal(),
-    ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+    ).rejects.toMatchObject({ code: 'UNAUTHORIZED' });
   });
 
-  it("throws UNAUTHORIZED when validatePortalSession returns null", async () => {
+  it('throws UNAUTHORIZED when validatePortalSession returns null', async () => {
     validatePortalSession.mockResolvedValue(null);
     const h = new Headers();
-    h.set("cookie", "portal_session=badtoken");
+    h.set('cookie', 'portal_session=badtoken');
     await expect(
       createCaller({ headers: h, session: null, user: null }).portal(),
-    ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
-    expect(validatePortalSession).toHaveBeenCalledWith("badtoken");
+    ).rejects.toMatchObject({ code: 'UNAUTHORIZED' });
+    expect(validatePortalSession).toHaveBeenCalledWith('badtoken');
   });
 
-  it("runs tenantStore and exposes portal context on success", async () => {
+  it('runs tenantStore and exposes portal context on success', async () => {
     validatePortalSession.mockResolvedValue(mockSession);
     const h = new Headers();
-    h.set("cookie", "portal_session=goodtoken");
-    h.set("x-portal-org-subdomain", "acme");
+    h.set('cookie', 'portal_session=goodtoken');
+    h.set('x-portal-org-subdomain', 'acme');
     const result = await createCaller({
       headers: h,
       session: null,
       user: null,
     }).portal();
-    expect(result.contractorId).toBe("contractor_1");
-    expect(result.organizationId).toBe("org_portal");
-    expect(result.portalSubdomain).toBe("acme");
+    expect(result.contractorId).toBe('contractor_1');
+    expect(result.organizationId).toBe('org_portal');
+    expect(result.portalSubdomain).toBe('acme');
     expect(tenantStoreRun).toHaveBeenCalledWith(
-      { organizationId: "org_portal" },
+      { organizationId: 'org_portal' },
       expect.any(Function),
     );
   });

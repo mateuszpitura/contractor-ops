@@ -1,7 +1,7 @@
-import { render, screen } from "@/test/test-utils";
-import { ContractorSidePanel } from "../contractor-side-panel";
+import { render, screen } from '@/test/test-utils';
+import { ContractorSidePanel } from '../contractor-side-panel';
 
-vi.mock("@/i18n/navigation", () => ({
+vi.mock('@/i18n/navigation', () => ({
   Link: ({ children, href, ...props }: any) => (
     <a href={href} {...props}>
       {children}
@@ -9,61 +9,61 @@ vi.mock("@/i18n/navigation", () => ({
   ),
 }));
 
-vi.mock("@/hooks/use-permissions", () => ({
-  usePermissions: () => ({ role: "admin", can: () => true }),
+vi.mock('@/hooks/use-permissions', () => ({
+  usePermissions: () => ({ role: 'admin', can: () => true }),
 }));
 
-vi.mock("@/lib/mask-pii", () => ({
-  maskTaxId: (v: string | null) => (v ? "***" : null),
+vi.mock('@/lib/mask-pii', () => ({
+  maskTaxId: (v: string | null) => (v ? '***' : null),
   canViewSensitivePii: () => true,
 }));
 
 const baseContractor = {
-  id: "c1",
-  legalName: "ACME Sp. z o.o.",
-  displayName: "ACME",
-  type: "COMPANY",
-  status: "ACTIVE",
-  lifecycleStage: "ACTIVE",
-  currency: "PLN",
-  email: "test@acme.pl",
-  taxId: "1234567890",
-  customFieldsJson: { billingModel: "HOURLY", rateValueMinor: 15000 },
-  owner: { id: "u1", name: "Jan", image: null },
-  primaryTeam: { id: "t1", name: "Engineering" },
+  id: 'c1',
+  legalName: 'ACME Sp. z o.o.',
+  displayName: 'ACME',
+  type: 'COMPANY',
+  status: 'ACTIVE',
+  lifecycleStage: 'ACTIVE',
+  currency: 'PLN',
+  email: 'test@acme.pl',
+  taxId: '1234567890',
+  customFieldsJson: { billingModel: 'HOURLY', rateValueMinor: 15000 },
+  owner: { id: 'u1', name: 'Jan', image: null },
+  primaryTeam: { id: 't1', name: 'Engineering' },
   billingProfiles: [],
   createdAt: null,
   updatedAt: null,
-  complianceHealth: "green" as const,
+  complianceHealth: 'green' as const,
 };
 
-describe("ContractorSidePanel", () => {
-  it("returns null when contractor is null", () => {
+describe('ContractorSidePanel', () => {
+  it('returns null when contractor is null', () => {
     const { container } = render(
       <ContractorSidePanel contractor={null} open={true} onOpenChange={vi.fn()} />,
     );
-    expect(container.innerHTML).toBe("");
+    expect(container.innerHTML).toBe('');
   });
 
-  it("renders contractor display name and badges", () => {
+  it('renders contractor display name and badges', () => {
     render(<ContractorSidePanel contractor={baseContractor} open={true} onOpenChange={vi.fn()} />);
-    expect(screen.getByText("ACME")).toBeInTheDocument();
+    expect(screen.getByText('ACME')).toBeInTheDocument();
   });
 
-  it("renders rate display when rateValueMinor is present", () => {
+  it('renders rate display when rateValueMinor is present', () => {
     render(<ContractorSidePanel contractor={baseContractor} open={true} onOpenChange={vi.fn()} />);
     // 15000 minor = 150.00 PLN
     expect(screen.getByText(/150,00/)).toBeInTheDocument();
   });
 
-  it("renders full profile button", () => {
+  it('renders full profile button', () => {
     render(<ContractorSidePanel contractor={baseContractor} open={true} onOpenChange={vi.fn()} />);
     // The "Open full profile" CTA is rendered
-    const container = document.querySelector("div");
+    const container = document.querySelector('div');
     expect(container).toBeInTheDocument();
   });
 
-  it("renders legalName when displayName is null", () => {
+  it('renders legalName when displayName is null', () => {
     render(
       <ContractorSidePanel
         contractor={{ ...baseContractor, displayName: null }}
@@ -71,31 +71,31 @@ describe("ContractorSidePanel", () => {
         onOpenChange={vi.fn()}
       />,
     );
-    expect(screen.getByText("ACME Sp. z o.o.")).toBeInTheDocument();
+    expect(screen.getByText('ACME Sp. z o.o.')).toBeInTheDocument();
   });
 
-  it("renders tax ID when canViewSensitivePii is true", () => {
+  it('renders tax ID when canViewSensitivePii is true', () => {
     render(<ContractorSidePanel contractor={baseContractor} open={true} onOpenChange={vi.fn()} />);
     // canViewSensitivePii returns true, so raw taxId is shown
-    expect(screen.getByText("1234567890")).toBeInTheDocument();
+    expect(screen.getByText('1234567890')).toBeInTheDocument();
   });
 
-  it("renders email when present", () => {
+  it('renders email when present', () => {
     render(<ContractorSidePanel contractor={baseContractor} open={true} onOpenChange={vi.fn()} />);
-    expect(screen.getByText("test@acme.pl")).toBeInTheDocument();
+    expect(screen.getByText('test@acme.pl')).toBeInTheDocument();
   });
 
-  it("renders owner name when present", () => {
+  it('renders owner name when present', () => {
     render(<ContractorSidePanel contractor={baseContractor} open={true} onOpenChange={vi.fn()} />);
-    expect(screen.getByText("Jan")).toBeInTheDocument();
+    expect(screen.getByText('Jan')).toBeInTheDocument();
   });
 
-  it("renders team name when present", () => {
+  it('renders team name when present', () => {
     render(<ContractorSidePanel contractor={baseContractor} open={true} onOpenChange={vi.fn()} />);
-    expect(screen.getByText("Engineering")).toBeInTheDocument();
+    expect(screen.getByText('Engineering')).toBeInTheDocument();
   });
 
-  it("renders mdash when owner is null", () => {
+  it('renders mdash when owner is null', () => {
     render(
       <ContractorSidePanel
         contractor={{ ...baseContractor, owner: null }}
@@ -104,11 +104,11 @@ describe("ContractorSidePanel", () => {
       />,
     );
     // Multiple mdash entries for null fields
-    const mdashes = document.querySelectorAll("span.text-muted-foreground");
+    const mdashes = document.querySelectorAll('span.text-muted-foreground');
     expect(mdashes.length).toBeGreaterThan(0);
   });
 
-  it("renders mdash when team is null", () => {
+  it('renders mdash when team is null', () => {
     render(
       <ContractorSidePanel
         contractor={{ ...baseContractor, primaryTeam: null }}
@@ -116,11 +116,11 @@ describe("ContractorSidePanel", () => {
         onOpenChange={vi.fn()}
       />,
     );
-    const mdashes = document.querySelectorAll("span.text-muted-foreground");
+    const mdashes = document.querySelectorAll('span.text-muted-foreground');
     expect(mdashes.length).toBeGreaterThan(0);
   });
 
-  it("renders mdash for rate when customFieldsJson has no rateValueMinor", () => {
+  it('renders mdash for rate when customFieldsJson has no rateValueMinor', () => {
     render(
       <ContractorSidePanel
         contractor={{ ...baseContractor, customFieldsJson: {} }}
@@ -129,19 +129,19 @@ describe("ContractorSidePanel", () => {
       />,
     );
     // Rate should show mdash since no rateValueMinor
-    const mdashes = document.querySelectorAll("span.text-muted-foreground");
+    const mdashes = document.querySelectorAll('span.text-muted-foreground');
     expect(mdashes.length).toBeGreaterThan(0);
   });
 
-  it("renders link to contractor profile page", () => {
+  it('renders link to contractor profile page', () => {
     render(<ContractorSidePanel contractor={baseContractor} open={true} onOpenChange={vi.fn()} />);
     const link = document.querySelector('a[href="/contractors/c1"]');
     expect(link).toBeInTheDocument();
   });
 
-  it("does not render when open is false", () => {
+  it('does not render when open is false', () => {
     render(<ContractorSidePanel contractor={baseContractor} open={false} onOpenChange={vi.fn()} />);
     // Sheet should not show content when closed
-    expect(screen.queryByText("ACME")).not.toBeInTheDocument();
+    expect(screen.queryByText('ACME')).not.toBeInTheDocument();
   });
 });

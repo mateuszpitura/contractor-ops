@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import type { ColumnDef } from "@tanstack/react-table";
-import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
-import { ArrowDown, ArrowUp, ArrowUpDown, FileText, Loader2 } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useCallback, useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import type { ColumnDef } from '@tanstack/react-table';
+import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { ArrowDown, ArrowUp, ArrowUpDown, FileText, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useMemo, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -15,19 +15,19 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { trpc } from "@/trpc/init";
-import type { InvoiceRow } from "./columns";
-import { getColumns } from "./columns";
-import { DataTablePagination } from "./data-table-pagination";
-import { DataTableToolbar } from "./data-table-toolbar";
-import { useInvoiceFilters } from "./use-invoice-filters";
+} from '@/components/ui/table';
+import { trpc } from '@/trpc/init';
+import type { InvoiceRow } from './columns';
+import { getColumns } from './columns';
+import { DataTablePagination } from './data-table-pagination';
+import { DataTableToolbar } from './data-table-toolbar';
+import { useInvoiceFilters } from './use-invoice-filters';
 
 // ---------------------------------------------------------------------------
 // Overdue row detection
 // ---------------------------------------------------------------------------
 
-const NON_OVERDUE_STATUSES = new Set(["PAID", "VOID"]);
+const NON_OVERDUE_STATUSES = new Set(['PAID', 'VOID']);
 
 function isRowOverdue(row: InvoiceRow): boolean {
   if (!row.dueDate || NON_OVERDUE_STATUSES.has(row.status)) return false;
@@ -49,8 +49,8 @@ interface InvoiceDataTableProps {
  * URL state is managed by nuqs for shareable filtered views.
  */
 export function InvoiceDataTable({ onRowClick, onUpload }: InvoiceDataTableProps) {
-  const t = useTranslations("Invoices");
-  const tAria = useTranslations("Common.aria");
+  const t = useTranslations('Invoices');
+  const tAria = useTranslations('Common.aria');
 
   // URL-synced filter state
   const [filters, setFilters] = useInvoiceFilters();
@@ -66,34 +66,34 @@ export function InvoiceDataTable({ onRowClick, onUpload }: InvoiceDataTableProps
       search: filters.search || undefined,
       sortBy:
         (filters.sortBy as
-          | "receivedAt"
-          | "invoiceNumber"
-          | "issueDate"
-          | "dueDate"
-          | "totalMinor"
-          | "status") || "receivedAt",
-      sortOrder: (filters.sortOrder as "asc" | "desc") || "desc",
+          | 'receivedAt'
+          | 'invoiceNumber'
+          | 'issueDate'
+          | 'dueDate'
+          | 'totalMinor'
+          | 'status') || 'receivedAt',
+      sortOrder: (filters.sortOrder as 'asc' | 'desc') || 'desc',
       filters: {
         status: filters.status.length
           ? (filters.status as Array<
-              | "RECEIVED"
-              | "UNDER_REVIEW"
-              | "APPROVAL_PENDING"
-              | "APPROVED"
-              | "REJECTED"
-              | "READY_FOR_PAYMENT"
-              | "PARTIALLY_PAID"
-              | "PAID"
-              | "VOID"
+              | 'RECEIVED'
+              | 'UNDER_REVIEW'
+              | 'APPROVAL_PENDING'
+              | 'APPROVED'
+              | 'REJECTED'
+              | 'READY_FOR_PAYMENT'
+              | 'PARTIALLY_PAID'
+              | 'PAID'
+              | 'VOID'
             >)
           : undefined,
         matchStatus: filters.matchStatus
           ? ([filters.matchStatus] as Array<
-              "UNMATCHED" | "PARTIAL" | "MATCHED" | "DISCREPANCY" | "MANUALLY_CONFIRMED"
+              'UNMATCHED' | 'PARTIAL' | 'MATCHED' | 'DISCREPANCY' | 'MANUALLY_CONFIRMED'
             >)
           : undefined,
         source: filters.source.length
-          ? (filters.source as Array<"MANUAL_UPLOAD" | "EMAIL_INTAKE" | "KSEF" | "API">)
+          ? (filters.source as Array<'MANUAL_UPLOAD' | 'EMAIL_INTAKE' | 'KSEF' | 'API'>)
           : undefined,
         contractorId: filters.contractorId || undefined,
       },
@@ -133,26 +133,26 @@ export function InvoiceDataTable({ onRowClick, onUpload }: InvoiceDataTableProps
       sorting: [
         {
           id: filters.sortBy,
-          desc: filters.sortOrder === "desc",
+          desc: filters.sortOrder === 'desc',
         },
       ],
     },
     onRowSelectionChange: setRowSelection,
-    onSortingChange: (updater) => {
+    onSortingChange: updater => {
       const next =
-        typeof updater === "function"
-          ? updater([{ id: filters.sortBy, desc: filters.sortOrder === "desc" }])
+        typeof updater === 'function'
+          ? updater([{ id: filters.sortBy, desc: filters.sortOrder === 'desc' }])
           : updater;
       const first = next[0];
       if (first) {
         void setFilters({
           sortBy: first.id,
-          sortOrder: first.desc ? "desc" : "asc",
+          sortOrder: first.desc ? 'desc' : 'asc',
           page: 1,
         });
       } else {
         // Sort removed — reset to default
-        void setFilters({ sortBy: "receivedAt", sortOrder: "desc", page: 1 });
+        void setFilters({ sortBy: 'receivedAt', sortOrder: 'desc', page: 1 });
       }
     },
     enableSortingRemoval: true,
@@ -161,7 +161,7 @@ export function InvoiceDataTable({ onRowClick, onUpload }: InvoiceDataTableProps
     manualSorting: true,
     manualFiltering: true,
     enableRowSelection: true,
-    getRowId: (row) => row.id,
+    getRowId: row => row.id,
   });
 
   // Filter change handler
@@ -202,11 +202,11 @@ export function InvoiceDataTable({ onRowClick, onUpload }: InvoiceDataTableProps
   // Clear filters for "no results" CTA
   const clearFilters = useCallback(() => {
     void setFilters({
-      search: "",
+      search: '',
       status: [],
-      matchStatus: "",
+      matchStatus: '',
       source: [],
-      contractorId: "",
+      contractorId: '',
       page: 1,
     });
   }, [setFilters]);
@@ -245,9 +245,9 @@ export function InvoiceDataTable({ onRowClick, onUpload }: InvoiceDataTableProps
         )}
         <Table>
           <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
+            {table.getHeaderGroups().map(headerGroup => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
+                {headerGroup.headers.map(header => (
                   <TableHead
                     key={header.id}
                     style={
@@ -256,29 +256,27 @@ export function InvoiceDataTable({ onRowClick, onUpload }: InvoiceDataTableProps
                         : undefined
                     }
                     aria-sort={
-                      header.column.getIsSorted() === "asc"
-                        ? "ascending"
-                        : header.column.getIsSorted() === "desc"
-                          ? "descending"
+                      header.column.getIsSorted() === 'asc'
+                        ? 'ascending'
+                        : header.column.getIsSorted() === 'desc'
+                          ? 'descending'
                           : undefined
-                    }
-                  >
+                    }>
                     {header.isPlaceholder ? null : header.column.getCanSort() ? (
                       <button
                         type="button"
                         className="flex items-center gap-1 uppercase hover:text-foreground"
                         onClick={header.column.getToggleSortingHandler()}
-                        aria-label={tAria("sortBy", {
+                        aria-label={tAria('sortBy', {
                           column:
-                            typeof header.column.columnDef.header === "string"
+                            typeof header.column.columnDef.header === 'string'
                               ? header.column.columnDef.header
                               : header.id,
-                        })}
-                      >
+                        })}>
                         {flexRender(header.column.columnDef.header, header.getContext())}
-                        {header.column.getIsSorted() === "asc" ? (
+                        {header.column.getIsSorted() === 'asc' ? (
                           <ArrowUp className="h-3 w-3" />
-                        ) : header.column.getIsSorted() === "desc" ? (
+                        ) : header.column.getIsSorted() === 'desc' ? (
                           <ArrowDown className="h-3 w-3" />
                         ) : (
                           <ArrowUpDown className="h-3 w-3 opacity-40" />
@@ -297,7 +295,7 @@ export function InvoiceDataTable({ onRowClick, onUpload }: InvoiceDataTableProps
               // Skeleton loading rows
               Array.from({ length: 8 }).map((_, i) => (
                 <TableRow key={`skeleton-${i}`}>
-                  {table.getVisibleLeafColumns().map((col) => (
+                  {table.getVisibleLeafColumns().map(col => (
                     <TableCell key={col.id}>
                       <Skeleton className="h-4 w-full max-w-[120px]" />
                     </TableCell>
@@ -305,16 +303,15 @@ export function InvoiceDataTable({ onRowClick, onUpload }: InvoiceDataTableProps
                 </TableRow>
               ))
             ) : table.getRowModel().rows.length > 0 ? (
-              table.getRowModel().rows.map((row) => (
+              table.getRowModel().rows.map(row => (
                 <TableRow
                   key={row.id}
-                  data-state={row.getIsSelected() ? "selected" : undefined}
+                  data-state={row.getIsSelected() ? 'selected' : undefined}
                   className={`cursor-pointer ${
-                    isRowOverdue(row.original) ? "bg-destructive/5" : ""
+                    isRowOverdue(row.original) ? 'bg-destructive/5' : ''
                   }`}
-                  onClick={() => onRowClick(row.original)}
-                >
-                  {row.getVisibleCells().map((cell) => (
+                  onClick={() => onRowClick(row.original)}>
+                  {row.getVisibleCells().map(cell => (
                     <TableCell key={cell.id}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
@@ -326,12 +323,11 @@ export function InvoiceDataTable({ onRowClick, onUpload }: InvoiceDataTableProps
               <TableRow>
                 <TableCell
                   colSpan={table.getVisibleLeafColumns().length}
-                  className="py-16 text-center"
-                >
-                  <h3 className="text-[16px] font-medium">{t("noResults.heading")}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">{t("noResults.body")}</p>
+                  className="py-16 text-center">
+                  <h3 className="text-[16px] font-medium">{t('noResults.heading')}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">{t('noResults.body')}</p>
                   <Button variant="outline" className="mt-4" onClick={clearFilters}>
-                    {t("noResults.cta")}
+                    {t('noResults.cta')}
                   </Button>
                 </TableCell>
               </TableRow>
@@ -340,13 +336,12 @@ export function InvoiceDataTable({ onRowClick, onUpload }: InvoiceDataTableProps
               <TableRow>
                 <TableCell
                   colSpan={table.getVisibleLeafColumns().length}
-                  className="py-16 text-center"
-                >
+                  className="py-16 text-center">
                   <FileText className="mx-auto h-10 w-10 text-muted-foreground/50" />
-                  <h3 className="mt-3 text-[16px] font-medium">{t("empty.heading")}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">{t("empty.body")}</p>
+                  <h3 className="mt-3 text-[16px] font-medium">{t('empty.heading')}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">{t('empty.body')}</p>
                   <Button className="mt-4" onClick={onUpload}>
-                    {t("empty.cta")}
+                    {t('empty.cta')}
                   </Button>
                 </TableCell>
               </TableRow>

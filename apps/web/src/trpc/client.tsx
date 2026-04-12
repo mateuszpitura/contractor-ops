@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import type { QueryClient } from "@tanstack/react-query";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { makeQueryClient } from "./query-client";
+import type { QueryClient } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { makeQueryClient } from './query-client';
 
 let browserQueryClient: QueryClient | undefined;
 
 function getQueryClient() {
-  if (typeof window === "undefined") {
+  if (typeof window === 'undefined') {
     // Server: always create a new QueryClient
     return makeQueryClient();
   }

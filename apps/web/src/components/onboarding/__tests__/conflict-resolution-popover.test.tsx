@@ -1,18 +1,18 @@
-import { render, screen } from "@/test/test-utils";
-import { ConflictResolutionPopover } from "../conflict-resolution-popover";
+import { render, screen } from '@/test/test-utils';
+import { ConflictResolutionPopover } from '../conflict-resolution-popover';
 
 const mockConflicts = [
   {
-    field: "name",
+    field: 'name',
     values: [
-      { source: "JIRA", value: "John Doe" },
-      { source: "SLACK", value: "John D." },
+      { source: 'JIRA', value: 'John Doe' },
+      { source: 'SLACK', value: 'John D.' },
     ],
   },
 ];
 
-describe("ConflictResolutionPopover", () => {
-  it("renders badge with unresolved count", () => {
+describe('ConflictResolutionPopover', () => {
+  it('renders badge with unresolved count', () => {
     render(
       <ConflictResolutionPopover
         conflicts={mockConflicts}
@@ -23,11 +23,11 @@ describe("ConflictResolutionPopover", () => {
     expect(screen.getByText(/Status.*\(1\)/)).toBeInTheDocument();
   });
 
-  it("shows 0 count when all conflicts resolved", () => {
+  it('shows 0 count when all conflicts resolved', () => {
     render(
       <ConflictResolutionPopover
         conflicts={mockConflicts}
-        resolvedConflicts={{ name: "John Doe" }}
+        resolvedConflicts={{ name: 'John Doe' }}
         onResolve={vi.fn()}
       />,
     );

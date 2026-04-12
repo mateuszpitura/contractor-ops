@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { AlertTriangle } from "lucide-react";
-import { useState } from "react";
+import { AlertTriangle } from 'lucide-react';
+import { useState } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,9 +11,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import { Link } from "@/i18n/navigation";
+} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import { Link } from '@/i18n/navigation';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -46,16 +46,15 @@ export function KsefDuplicateBanner({
           <div className="space-y-2">
             <h4 className="text-sm font-semibold">KSeF Duplicate Found</h4>
             <p className="text-sm text-muted-foreground">
-              A matching invoice was found in KSeF (invoice number{" "}
-              <span className="font-medium text-foreground">{invoiceNumber}</span>, seller NIP{" "}
+              A matching invoice was found in KSeF (invoice number{' '}
+              <span className="font-medium text-foreground">{invoiceNumber}</span>, seller NIP{' '}
               <span className="font-medium text-foreground">{sellerNip}</span>
               ). The KSeF version is government-validated.
             </p>
             <div className="flex items-center gap-2">
               <Link
                 href={`/invoices/${duplicateInvoiceId}`}
-                className="text-sm text-primary hover:underline"
-              >
+                className="text-sm text-primary hover:underline">
                 View KSeF Invoice
               </Link>
               {onVoid && (
@@ -88,8 +87,7 @@ export function KsefDuplicateBanner({
               onClick={() => {
                 onVoid?.();
                 setVoidDialogOpen(false);
-              }}
-            >
+              }}>
               Void Invoice
             </AlertDialogAction>
           </AlertDialogFooter>

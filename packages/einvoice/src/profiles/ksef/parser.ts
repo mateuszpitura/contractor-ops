@@ -1,7 +1,7 @@
-import { XMLParser } from "fast-xml-parser";
-import { dig, toMinorUnits } from "../../engine/xml-utils.js";
-import type { KsefParsedInvoice } from "./schemas.js";
-import { ksefParsedInvoiceSchema } from "./schemas.js";
+import { XMLParser } from 'fast-xml-parser';
+import { dig, toMinorUnits } from '../../engine/xml-utils.js';
+import type { KsefParsedInvoice } from './schemas.js';
+import { ksefParsedInvoiceSchema } from './schemas.js';
 
 // ---------------------------------------------------------------------------
 // FA(3) XML Parser
@@ -9,11 +9,11 @@ import { ksefParsedInvoiceSchema } from "./schemas.js";
 
 const parser = new XMLParser({
   ignoreAttributes: false,
-  attributeNamePrefix: "@_",
-  textNodeName: "#text",
+  attributeNamePrefix: '@_',
+  textNodeName: '#text',
   parseTagValue: true,
   trimValues: true,
-  isArray: (name) => name === "FaWiersz",
+  isArray: name => name === 'FaWiersz',
 });
 
 /**
@@ -35,7 +35,7 @@ export function parseFa3Xml(
   const parsed = parser.parse(xmlString) as Record<string, unknown>;
 
   // Root element — handle namespace prefix variations
-  const faktura = (parsed.Faktura ?? parsed["tns:Faktura"] ?? parsed) as Record<string, unknown>;
+  const faktura = (parsed.Faktura ?? parsed['tns:Faktura'] ?? parsed) as Record<string, unknown>;
   const fa = (faktura.Fa ?? {}) as Record<string, unknown>;
   const podmiot1 = (faktura.Podmiot1 ?? {}) as Record<string, unknown>;
   const podmiot2 = (faktura.Podmiot2 ?? {}) as Record<string, unknown>;
@@ -52,7 +52,7 @@ export function parseFa3Xml(
         sellerAddress.Miejscowosc,
       ]
         .filter(Boolean)
-        .join(" ")
+        .join(' ')
     : undefined;
 
   // Buyer
@@ -62,7 +62,7 @@ export function parseFa3Xml(
   const rawLines = fa.FaWiersz as Record<string, unknown>[] | undefined;
   const linesArray = Array.isArray(rawLines) ? rawLines : rawLines ? [rawLines] : [];
 
-  const lines = linesArray.map((line) => {
+  const lines = linesArray.map(line => {
     const netAmount = toMinorUnits(line.P_11);
     const vatRateStr = line.P_12 != null ? String(line.P_12) : undefined;
     const vatAmount =
@@ -75,7 +75,7 @@ export function parseFa3Xml(
 
     return {
       lineNumber: Number(line.NrWierszaFa ?? 0),
-      description: String(line.P_7 ?? ""),
+      description: String(line.P_7 ?? ''),
       quantity: line.P_8B != null ? Number(line.P_8B) : undefined,
       unit: line.P_8A != null ? String(line.P_8A) : undefined,
       unitPriceMinor: line.P_9A != null ? toMinorUnits(line.P_9A) : undefined,
@@ -103,11 +103,11 @@ export function parseFa3Xml(
     ? {
         dueDate: platnosc.TerminPlatnosci != null ? String(platnosc.TerminPlatnosci) : undefined,
         bankAccount:
-          (platnosc.NrRB ?? dig(platnosc as Record<string, unknown>, "RachunekBankowy", "NrRB")) !=
+          (platnosc.NrRB ?? dig(platnosc as Record<string, unknown>, 'RachunekBankowy', 'NrRB')) !=
           null
             ? String(
                 platnosc.NrRB ??
-                  dig(platnosc as Record<string, unknown>, "RachunekBankowy", "NrRB"),
+                  dig(platnosc as Record<string, unknown>, 'RachunekBankowy', 'NrRB'),
               )
             : undefined,
         method: platnosc.FormaPlatnosci != null ? String(platnosc.FormaPlatnosci) : undefined,
@@ -115,18 +115,18 @@ export function parseFa3Xml(
     : undefined;
 
   const mapped = {
-    invoiceNumber: String(fa.P_2 ?? ""),
-    issueDate: String(fa.P_1 ?? ""),
-    invoiceType: String(fa.RodzajFaktury ?? "VAT"),
-    currency: String(fa.KodWaluty ?? "PLN"),
+    invoiceNumber: String(fa.P_2 ?? ''),
+    issueDate: String(fa.P_1 ?? ''),
+    invoiceType: String(fa.RodzajFaktury ?? 'VAT'),
+    currency: String(fa.KodWaluty ?? 'PLN'),
     seller: {
-      nip: String(sellerIdent.NIP ?? ""),
-      name: String(sellerIdent.Nazwa ?? sellerIdent.PelnaNazwa ?? ""),
+      nip: String(sellerIdent.NIP ?? ''),
+      name: String(sellerIdent.Nazwa ?? sellerIdent.PelnaNazwa ?? ''),
       address: sellerAddressStr || undefined,
     },
     buyer: {
-      nip: String(buyerIdent.NIP ?? ""),
-      name: String(buyerIdent.Nazwa ?? buyerIdent.PelnaNazwa ?? ""),
+      nip: String(buyerIdent.NIP ?? ''),
+      name: String(buyerIdent.Nazwa ?? buyerIdent.PelnaNazwa ?? ''),
     },
     lines,
     totals: {

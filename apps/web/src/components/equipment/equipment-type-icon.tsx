@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import type { LucideIcon } from "lucide-react";
+import type { LucideIcon } from 'lucide-react';
 import {
   Box,
   Headphones,
@@ -10,10 +10,10 @@ import {
   Mouse,
   Package,
   Smartphone,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-type EquipmentType = "LAPTOP" | "MONITOR" | "PHONE" | "HEADSET" | "KEYBOARD" | "MOUSE" | "OTHER";
+type EquipmentType = 'LAPTOP' | 'MONITOR' | 'PHONE' | 'HEADSET' | 'KEYBOARD' | 'MOUSE' | 'OTHER';
 
 const TYPE_ICON_MAP: Record<EquipmentType, LucideIcon> = {
   LAPTOP: Laptop,
@@ -36,5 +36,5 @@ interface EquipmentTypeIconProps {
  */
 export function EquipmentTypeIcon({ type, className }: EquipmentTypeIconProps) {
   const Icon = TYPE_ICON_MAP[type as EquipmentType] ?? Box;
-  return <Icon className={cn("h-4 w-4 text-muted-foreground", className)} />;
+  return <Icon className={cn('h-4 w-4 text-muted-foreground', className)} />;
 }

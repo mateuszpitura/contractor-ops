@@ -1,4 +1,4 @@
-import { Link } from "@/i18n/navigation";
+import { Link } from '@/i18n/navigation';
 
 export default function LegalLayout({ children }: { children: React.ReactNode }) {
   return (

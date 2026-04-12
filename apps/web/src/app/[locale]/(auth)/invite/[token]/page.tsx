@@ -1,4 +1,4 @@
-import { InviteAcceptForm } from "@/components/auth/invite-accept-form";
+import { InviteAcceptForm } from '@/components/auth/invite-accept-form';
 
 interface InvitePageProps {
   params: Promise<{ token: string }>;

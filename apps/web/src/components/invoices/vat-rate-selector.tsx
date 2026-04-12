@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { Loader2 } from "lucide-react";
+import { Loader2 } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -9,8 +9,8 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { trpc } from "@/trpc/init";
+} from '@/components/ui/select';
+import { trpc } from '@/trpc/init';
 
 interface VatRateSelectorProps {
   value?: string;
@@ -40,12 +40,12 @@ export function VatRateSelector({ value, onChange, disabled }: VatRateSelectorPr
 
   // Group rates by category
   const defaultRates = ratesQuery.data.filter(
-    (r) => !(r.isExempt || r.isReverseCharge) && r.ratePercent > 0 && r.isDefault,
+    r => !(r.isExempt || r.isReverseCharge) && r.ratePercent > 0 && r.isDefault,
   );
   const reducedRates = ratesQuery.data.filter(
-    (r) => !(r.isExempt || r.isReverseCharge) && r.ratePercent > 0 && !r.isDefault,
+    r => !(r.isExempt || r.isReverseCharge) && r.ratePercent > 0 && !r.isDefault,
   );
-  const exemptRates = ratesQuery.data.filter((r) => r.isExempt || r.ratePercent === 0);
+  const exemptRates = ratesQuery.data.filter(r => r.isExempt || r.ratePercent === 0);
 
   return (
     <Select value={value} onValueChange={onChange} disabled={disabled}>
@@ -58,7 +58,7 @@ export function VatRateSelector({ value, onChange, disabled }: VatRateSelectorPr
             <SelectLabel className="text-xs font-medium text-muted-foreground">
               Standard Rates
             </SelectLabel>
-            {defaultRates.map((rate) => (
+            {defaultRates.map(rate => (
               <SelectItem key={rate.id} value={rate.code}>
                 {rate.ratePercent}% &mdash; {rate.description}
               </SelectItem>
@@ -70,7 +70,7 @@ export function VatRateSelector({ value, onChange, disabled }: VatRateSelectorPr
             <SelectLabel className="text-xs font-medium text-muted-foreground">
               Reduced Rates
             </SelectLabel>
-            {reducedRates.map((rate) => (
+            {reducedRates.map(rate => (
               <SelectItem key={rate.id} value={rate.code}>
                 {rate.ratePercent}% &mdash; {rate.description}
               </SelectItem>
@@ -80,12 +80,12 @@ export function VatRateSelector({ value, onChange, disabled }: VatRateSelectorPr
         {exemptRates.length > 0 && (
           <SelectGroup>
             <SelectLabel className="text-xs font-medium text-muted-foreground">Exempt</SelectLabel>
-            {exemptRates.map((rate) => (
+            {exemptRates.map(rate => (
               <SelectItem key={rate.id} value={rate.code}>
-                {rate.code === "ZW"
-                  ? "ZW \u2014 Tax exempt"
-                  : rate.code === "NP"
-                    ? "NP \u2014 Not applicable"
+                {rate.code === 'ZW'
+                  ? 'ZW \u2014 Tax exempt'
+                  : rate.code === 'NP'
+                    ? 'NP \u2014 Not applicable'
                     : `${rate.ratePercent}% \u2014 ${rate.description}`}
               </SelectItem>
             ))}

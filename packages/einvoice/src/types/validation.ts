@@ -10,7 +10,7 @@ export interface ValidationError {
   message: string;
   /** XPath or field path where the error occurred */
   path?: string;
-  severity: "error" | "warning";
+  severity: 'error' | 'warning';
 }
 
 /**

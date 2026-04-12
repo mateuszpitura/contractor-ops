@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from 'vitest';
 import {
   equipmentAssignSchema,
   equipmentCreateSchema,
@@ -7,37 +7,37 @@ import {
   equipmentUpdateSchema,
   shipmentCreateSchema,
   shipmentEventCreateSchema,
-} from "../equipment.js";
+} from '../equipment.js';
 
-describe("equipmentCreateSchema", () => {
-  it("accepts laptop with name", () => {
+describe('equipmentCreateSchema', () => {
+  it('accepts laptop with name', () => {
     const r = equipmentCreateSchema.safeParse({
-      name: "MacBook",
-      type: "LAPTOP",
+      name: 'MacBook',
+      type: 'LAPTOP',
     });
     expect(r.success).toBe(true);
   });
 
-  it("rejects empty name", () => {
-    const r = equipmentCreateSchema.safeParse({ name: "", type: "OTHER" });
+  it('rejects empty name', () => {
+    const r = equipmentCreateSchema.safeParse({ name: '', type: 'OTHER' });
     expect(r.success).toBe(false);
   });
 });
 
-describe("equipmentUpdateSchema", () => {
-  it("requires id", () => {
-    const r = equipmentUpdateSchema.safeParse({ name: "X" });
+describe('equipmentUpdateSchema', () => {
+  it('requires id', () => {
+    const r = equipmentUpdateSchema.safeParse({ name: 'X' });
     expect(r.success).toBe(false);
   });
 
-  it("accepts id + partial fields", () => {
-    const r = equipmentUpdateSchema.safeParse({ id: "eq1", notes: "ok" });
+  it('accepts id + partial fields', () => {
+    const r = equipmentUpdateSchema.safeParse({ id: 'eq1', notes: 'ok' });
     expect(r.success).toBe(true);
   });
 });
 
-describe("equipmentListSchema", () => {
-  it("defaults pagination", () => {
+describe('equipmentListSchema', () => {
+  it('defaults pagination', () => {
     const r = equipmentListSchema.safeParse({});
     expect(r.success).toBe(true);
     if (r.success) {
@@ -47,48 +47,48 @@ describe("equipmentListSchema", () => {
   });
 });
 
-describe("equipmentAssignSchema", () => {
-  it("requires equipment and contractor ids", () => {
+describe('equipmentAssignSchema', () => {
+  it('requires equipment and contractor ids', () => {
     const r = equipmentAssignSchema.safeParse({
-      equipmentId: "e1",
-      contractorId: "c1",
+      equipmentId: 'e1',
+      contractorId: 'c1',
     });
     expect(r.success).toBe(true);
   });
 });
 
-describe("shipmentCreateSchema", () => {
-  it("requires carrier for outbound", () => {
+describe('shipmentCreateSchema', () => {
+  it('requires carrier for outbound', () => {
     const r = shipmentCreateSchema.safeParse({
-      equipmentId: "e1",
-      direction: "OUTBOUND",
-      carrier: "DHL",
+      equipmentId: 'e1',
+      direction: 'OUTBOUND',
+      carrier: 'DHL',
     });
     expect(r.success).toBe(true);
   });
 
-  it("rejects empty carrier", () => {
+  it('rejects empty carrier', () => {
     const r = shipmentCreateSchema.safeParse({
-      equipmentId: "e1",
-      direction: "OUTBOUND",
-      carrier: "",
+      equipmentId: 'e1',
+      direction: 'OUTBOUND',
+      carrier: '',
     });
     expect(r.success).toBe(false);
   });
 });
 
-describe("shipmentEventCreateSchema", () => {
-  it("accepts status update", () => {
+describe('shipmentEventCreateSchema', () => {
+  it('accepts status update', () => {
     const r = shipmentEventCreateSchema.safeParse({
-      shipmentId: "s1",
-      status: "DELIVERED",
+      shipmentId: 's1',
+      status: 'DELIVERED',
     });
     expect(r.success).toBe(true);
   });
 });
 
-describe("equipmentTaskConfigSchema", () => {
-  it("defaults equipmentEnabled false", () => {
+describe('equipmentTaskConfigSchema', () => {
+  it('defaults equipmentEnabled false', () => {
     const r = equipmentTaskConfigSchema.safeParse({});
     expect(r.success).toBe(true);
     if (r.success) {

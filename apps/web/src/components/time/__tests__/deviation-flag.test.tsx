@@ -1,9 +1,9 @@
-import { describe, expect, it } from "vitest";
-import { render, screen } from "@/test/test-utils";
-import { DeviationFlag } from "../deviation-flag";
+import { describe, expect, it } from 'vitest';
+import { render, screen } from '@/test/test-utils';
+import { DeviationFlag } from '../deviation-flag';
 
-describe("DeviationFlag", () => {
-  it("shows within-threshold label when deviation is small", () => {
+describe('DeviationFlag', () => {
+  it('shows within-threshold label when deviation is small', () => {
     render(
       <DeviationFlag
         deviationPercent={2}
@@ -14,10 +14,10 @@ describe("DeviationFlag", () => {
         approvedMinutes={120}
       />,
     );
-    expect(screen.getByText("Within 10%")).toBeInTheDocument();
+    expect(screen.getByText('Within 10%')).toBeInTheDocument();
   });
 
-  it("shows warning label when deviation exceeds threshold but not 2x", () => {
+  it('shows warning label when deviation exceeds threshold but not 2x', () => {
     render(
       <DeviationFlag
         deviationPercent={15}
@@ -28,6 +28,6 @@ describe("DeviationFlag", () => {
         approvedMinutes={120}
       />,
     );
-    expect(screen.getByText("+15.0% over expected")).toBeInTheDocument();
+    expect(screen.getByText('+15.0% over expected')).toBeInTheDocument();
   });
 });

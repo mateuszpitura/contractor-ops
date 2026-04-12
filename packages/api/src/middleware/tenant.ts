@@ -1,7 +1,7 @@
-import { createTenantClientFrom, getRegionalClient, prisma, tenantStore } from "@contractor-ops/db";
-import { TRPCError } from "@trpc/server";
-import { t } from "../init.js";
-import { authedProcedure } from "./auth.js";
+import { createTenantClientFrom, getRegionalClient, prisma, tenantStore } from '@contractor-ops/db';
+import { TRPCError } from '@trpc/server';
+import { t } from '../init.js';
+import { authedProcedure } from './auth.js';
 
 /**
  * Tenant middleware: enforces an active organization, resolves its data region,
@@ -19,15 +19,15 @@ import { authedProcedure } from "./auth.js";
  */
 const tenantMiddleware = t.middleware(async ({ ctx, next }) => {
   if (!(ctx.session && ctx.user)) {
-    throw new TRPCError({ code: "UNAUTHORIZED" });
+    throw new TRPCError({ code: 'UNAUTHORIZED' });
   }
 
   const orgId = ctx.session.session.activeOrganizationId;
 
   if (!orgId) {
     throw new TRPCError({
-      code: "FORBIDDEN",
-      message: "errors.tenant.noActiveOrganization",
+      code: 'FORBIDDEN',
+      message: 'errors.tenant.noActiveOrganization',
     });
   }
 
@@ -37,7 +37,7 @@ const tenantMiddleware = t.middleware(async ({ ctx, next }) => {
     where: { id: orgId },
     select: { dataRegion: true },
   });
-  const region = org?.dataRegion ?? "EU";
+  const region = org?.dataRegion ?? 'EU';
 
   // Get the regional Prisma client and apply tenant + soft-delete extensions
   const regionalPrisma = getRegionalClient(region);

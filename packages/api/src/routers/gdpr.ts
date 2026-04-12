@@ -1,8 +1,8 @@
-import { z } from "zod";
-import { router } from "../init.js";
-import { requirePermission } from "../middleware/rbac.js";
-import { tenantProcedure } from "../middleware/tenant.js";
-import { deleteRegionalObject } from "../services/regional-storage.js";
+import { z } from 'zod';
+import { router } from '../init.js';
+import { requirePermission } from '../middleware/rbac.js';
+import { tenantProcedure } from '../middleware/tenant.js';
+import { deleteRegionalObject } from '../services/regional-storage.js';
 
 // ---------------------------------------------------------------------------
 // GDPR Router — Right to Erasure (Art. 17) + Data Portability (Art. 20)
@@ -24,10 +24,10 @@ export const gdprRouter = router({
    * Requires organization owner/admin permission.
    */
   requestErasure: tenantProcedure
-    .use(requirePermission({ organization: ["delete"] }))
+    .use(requirePermission({ organization: ['delete'] }))
     .input(
       z.object({
-        confirmPhrase: z.string().refine((v) => v === "DELETE ALL DATA", {
+        confirmPhrase: z.string().refine(v => v === 'DELETE ALL DATA', {
           message: 'You must type "DELETE ALL DATA" to confirm',
         }),
         /** Keep invoices for tax compliance (default: true). */
@@ -40,7 +40,7 @@ export const gdprRouter = router({
 
       const results: Record<string, number> = {};
 
-      await ctx.db.$transaction(async (tx) => {
+      await ctx.db.$transaction(async tx => {
         // 1. Soft-delete contractors
         const contractors = await tx.contractor.updateMany({
           where: { organizationId: orgId, deletedAt: null },
@@ -369,7 +369,7 @@ export const gdprRouter = router({
           where: { organizationId: orgId },
           select: { email: true },
         });
-        const emails = orgContractorEmails.map((c) => c.email).filter(Boolean) as string[];
+        const emails = orgContractorEmails.map(c => c.email).filter(Boolean) as string[];
         if (emails.length > 0) {
           const portalTokens = await tx.portalMagicToken.deleteMany({
             where: { email: { in: emails } },
@@ -400,15 +400,15 @@ export const gdprRouter = router({
       await ctx.db.auditLog.create({
         data: {
           organizationId: orgId,
-          action: "organization.erasure_requested",
-          actorType: "USER",
+          action: 'organization.erasure_requested',
+          actorType: 'USER',
           actorId: ctx.user?.id,
           actorName: ctx.user?.name ?? ctx.user?.email,
-          resourceType: "ORGANIZATION",
+          resourceType: 'ORGANIZATION',
           resourceId: orgId,
-          resourceName: "Data Erasure Request",
-          ipAddress: ctx.headers.get("x-forwarded-for")?.split(",")[0] ?? null,
-          userAgent: ctx.headers.get("user-agent") ?? null,
+          resourceName: 'Data Erasure Request',
+          ipAddress: ctx.headers.get('x-forwarded-for')?.split(',')[0] ?? null,
+          userAgent: ctx.headers.get('user-agent') ?? null,
         },
       });
 
@@ -416,10 +416,10 @@ export const gdprRouter = router({
         success: true,
         summary: results,
         message:
-          "Data has been soft-deleted. Permanent deletion will occur after the retention period (90 days). " +
+          'Data has been soft-deleted. Permanent deletion will occur after the retention period (90 days). ' +
           (input.retainFinancialRecords
-            ? "Financial records (invoices) are retained for tax compliance."
-            : "All data including financial records will be purged."),
+            ? 'Financial records (invoices) are retained for tax compliance.'
+            : 'All data including financial records will be purged.'),
       };
     }),
 
@@ -437,7 +437,7 @@ export const gdprRouter = router({
    * Requires organization admin permission.
    */
   exportData: tenantProcedure
-    .use(requirePermission({ organization: ["update"] }))
+    .use(requirePermission({ organization: ['update'] }))
     .query(async ({ ctx }) => {
       const orgId = ctx.organizationId;
 
@@ -517,7 +517,7 @@ export const gdprRouter = router({
               resourceName: true,
               createdAt: true,
             },
-            orderBy: { createdAt: "desc" },
+            orderBy: { createdAt: 'desc' },
             take: 10000,
           }),
           ctx.db.member.findMany({
@@ -531,19 +531,19 @@ export const gdprRouter = router({
         ]);
 
       // Mask sensitive data for GDPR export
-      const maskedContractors = contractors.map((c) => ({
+      const maskedContractors = contractors.map(c => ({
         ...c,
         taxId: c.taxId ? `****${c.taxId.slice(-4)}` : c.taxId,
       }));
 
-      const maskedAuditLogs = auditLogs.map((log) => ({
+      const maskedAuditLogs = auditLogs.map(log => ({
         ...log,
         actorName: log.actorName ? `${log.actorName.charAt(0)}***` : log.actorName,
       }));
 
       return {
         exportedAt: new Date().toISOString(),
-        format: "contractor-ops-export-v1",
+        format: 'contractor-ops-export-v1',
         organization,
         members,
         contractors: maskedContractors,

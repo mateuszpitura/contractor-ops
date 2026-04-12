@@ -1,9 +1,9 @@
-import { beforeEach, describe, expect, it } from "vitest";
-import { clearProfiles, getProfile, listProfiles, registerProfile } from "../registry.js";
-import type { ComplianceStatus } from "../types/compliance.js";
-import type { EInvoice } from "../types/invoice.js";
-import type { EInvoiceProfile } from "../types/profile.js";
-import type { ValidationResult } from "../types/validation.js";
+import { beforeEach, describe, expect, it } from 'vitest';
+import { clearProfiles, getProfile, listProfiles, registerProfile } from '../registry.js';
+import type { ComplianceStatus } from '../types/compliance.js';
+import type { EInvoice } from '../types/invoice.js';
+import type { EInvoiceProfile } from '../types/profile.js';
+import type { ValidationResult } from '../types/validation.js';
 
 // ---------------------------------------------------------------------------
 // Mock Profile
@@ -12,12 +12,12 @@ import type { ValidationResult } from "../types/validation.js";
 function createMockProfile(id: string): EInvoiceProfile {
   return {
     profileId: id,
-    country: "XX",
+    country: 'XX',
     displayName: `Mock (${id})`,
     sign: undefined,
     qrCode: undefined,
     async generate(_invoice: EInvoice) {
-      return "<xml/>";
+      return '<xml/>';
     },
     async parse(_xml: string) {
       return {} as EInvoice;
@@ -28,8 +28,8 @@ function createMockProfile(id: string): EInvoiceProfile {
     async getComplianceStatus(_orgId: string): Promise<ComplianceStatus> {
       return {
         profileId: id,
-        state: "not_connected",
-        country: "XX",
+        state: 'not_connected',
+        country: 'XX',
         displayName: `Mock (${id})`,
         healthScore: 0,
         capabilities: {
@@ -47,42 +47,42 @@ function createMockProfile(id: string): EInvoiceProfile {
 // Tests
 // ---------------------------------------------------------------------------
 
-describe("Profile Registry", () => {
+describe('Profile Registry', () => {
   beforeEach(() => {
     clearProfiles();
   });
 
-  it("registers and retrieves a profile by profileId", () => {
-    const mock = createMockProfile("test-profile");
+  it('registers and retrieves a profile by profileId', () => {
+    const mock = createMockProfile('test-profile');
     registerProfile(mock);
-    const retrieved = getProfile("test-profile");
+    const retrieved = getProfile('test-profile');
     expect(retrieved).toBe(mock);
-    expect(retrieved.profileId).toBe("test-profile");
+    expect(retrieved.profileId).toBe('test-profile');
   });
 
-  it("throws for unregistered profileId", () => {
-    expect(() => getProfile("nonexistent")).toThrow("Unknown e-invoicing profile: nonexistent");
+  it('throws for unregistered profileId', () => {
+    expect(() => getProfile('nonexistent')).toThrow('Unknown e-invoicing profile: nonexistent');
   });
 
-  it("lists all registered profiles", () => {
-    const a = createMockProfile("profile-a");
-    const b = createMockProfile("profile-b");
+  it('lists all registered profiles', () => {
+    const a = createMockProfile('profile-a');
+    const b = createMockProfile('profile-b');
     registerProfile(a);
     registerProfile(b);
     const all = listProfiles();
     expect(all).toHaveLength(2);
-    expect(all.map((p) => p.profileId)).toEqual(["profile-a", "profile-b"]);
+    expect(all.map(p => p.profileId)).toEqual(['profile-a', 'profile-b']);
   });
 
-  it("returns empty array when no profiles registered", () => {
+  it('returns empty array when no profiles registered', () => {
     expect(listProfiles()).toEqual([]);
   });
 
-  it("throws when registering duplicate profileId", () => {
-    const mock = createMockProfile("dup");
+  it('throws when registering duplicate profileId', () => {
+    const mock = createMockProfile('dup');
     registerProfile(mock);
-    expect(() => registerProfile(createMockProfile("dup"))).toThrow(
-      "E-invoicing profile already registered: dup",
+    expect(() => registerProfile(createMockProfile('dup'))).toThrow(
+      'E-invoicing profile already registered: dup',
     );
   });
 });

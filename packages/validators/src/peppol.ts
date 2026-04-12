@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // ---------------------------------------------------------------------------
 // Peppol Participant ID
@@ -10,7 +10,7 @@ import { z } from "zod";
  */
 export const peppolParticipantIdSchema = z
   .string()
-  .regex(/^0192:\d{15}$/, "Invalid UAE Peppol Participant ID (expected 0192:NNNNNNNNNNNNNNN)");
+  .regex(/^0192:\d{15}$/, 'Invalid UAE Peppol Participant ID (expected 0192:NNNNNNNNNNNNNNN)');
 
 export type PeppolParticipantId = z.infer<typeof peppolParticipantIdSchema>;
 
@@ -21,11 +21,11 @@ export type PeppolParticipantId = z.infer<typeof peppolParticipantIdSchema>;
 export const connectPeppolSchema = z.object({
   trn: z
     .string()
-    .length(15, "TRN must be exactly 15 digits")
-    .regex(/^\d+$/, "TRN must be 15 digits"),
-  aspProvider: z.enum(["storecove"]),
-  apiKey: z.string().min(1, "API key required"),
-  environment: z.enum(["sandbox", "production"]),
+    .length(15, 'TRN must be exactly 15 digits')
+    .regex(/^\d+$/, 'TRN must be 15 digits'),
+  aspProvider: z.enum(['storecove']),
+  apiKey: z.string().min(1, 'API key required'),
+  environment: z.enum(['sandbox', 'production']),
 });
 
 export type ConnectPeppolInput = z.infer<typeof connectPeppolSchema>;
@@ -48,7 +48,7 @@ export type TransmitInvoiceInput = z.infer<typeof transmitInvoiceSchema>;
 export const getTransmissionsSchema = z.object({
   cursor: z.string().optional(),
   limit: z.number().int().min(1).max(100).default(20),
-  direction: z.enum(["INBOUND", "OUTBOUND"]).optional(),
+  direction: z.enum(['INBOUND', 'OUTBOUND']).optional(),
 });
 
 export type GetTransmissionsInput = z.infer<typeof getTransmissionsSchema>;

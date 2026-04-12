@@ -2,13 +2,13 @@
  * Equipment shipment procedures: generic shipment CRUD, event tracking,
  * status transitions, and contractor equipment view.
  */
-import { shipmentCreateSchema, shipmentEventCreateSchema } from "@contractor-ops/validators";
-import { TRPCError } from "@trpc/server";
-import { z } from "zod";
-import { router } from "../init.js";
-import { requirePermission } from "../middleware/rbac.js";
-import { tenantProcedure } from "../middleware/tenant.js";
-import { checkShipmentTaskCompletion } from "../services/equipment-workflow.js";
+import { shipmentCreateSchema, shipmentEventCreateSchema } from '@contractor-ops/validators';
+import { TRPCError } from '@trpc/server';
+import { z } from 'zod';
+import { router } from '../init.js';
+import { requirePermission } from '../middleware/rbac.js';
+import { tenantProcedure } from '../middleware/tenant.js';
+import { checkShipmentTaskCompletion } from '../services/equipment-workflow.js';
 import {
   EQUIPMENT_NOT_FOUND,
   EQUIPMENT_STATUS_TRANSITIONS,
@@ -16,7 +16,7 @@ import {
   SHIPMENT_CANNOT_DELETE,
   SHIPMENT_NOT_FOUND,
   SHIPMENT_TO_EQUIPMENT_STATUS,
-} from "./equipment-shared.js";
+} from './equipment-shared.js';
 
 // ---------------------------------------------------------------------------
 // Equipment Shipments sub-router
@@ -28,7 +28,7 @@ export const equipmentShipmentsRouter = router({
    * Auto-advances equipment status based on direction (D-06).
    */
   createShipment: tenantProcedure
-    .use(requirePermission({ equipment: ["create"] }))
+    .use(requirePermission({ equipment: ['create'] }))
     .input(shipmentCreateSchema)
     .mutation(async ({ ctx, input }) => {
       const equipment = await ctx.db.equipment.findFirst({
@@ -40,16 +40,16 @@ export const equipmentShipmentsRouter = router({
 
       if (!equipment) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: EQUIPMENT_NOT_FOUND,
         });
       }
 
       // Determine equipment status based on direction
       const newEquipmentStatus =
-        input.direction === "OUTBOUND" ? "IN_TRANSIT" : "RETURN_IN_TRANSIT";
+        input.direction === 'OUTBOUND' ? 'IN_TRANSIT' : 'RETURN_IN_TRANSIT';
 
-      const shipment = await ctx.db.$transaction(async (tx) => {
+      const shipment = await ctx.db.$transaction(async tx => {
         const created = await tx.shipment.create({
           data: {
             organizationId: ctx.organizationId,
@@ -61,7 +61,7 @@ export const equipmentShipmentsRouter = router({
             carrierCustom: input.carrierCustom ?? null,
             trackingNumber: input.trackingNumber ?? null,
             expectedDeliveryAt: input.expectedDeliveryAt ?? null,
-            currentStatus: "CREATED",
+            currentStatus: 'CREATED',
             createdByUserId: ctx.user?.id,
           },
         });
@@ -71,7 +71,7 @@ export const equipmentShipmentsRouter = router({
           data: {
             organizationId: ctx.organizationId,
             shipmentId: created.id,
-            status: "CREATED",
+            status: 'CREATED',
             notes: input.notes ?? null,
             createdByUserId: ctx.user?.id,
           },
@@ -90,18 +90,18 @@ export const equipmentShipmentsRouter = router({
       const result = await ctx.db.shipment.findUnique({
         where: { id: shipment.id },
         include: {
-          events: { orderBy: { occurredAt: "asc" } },
+          events: { orderBy: { occurredAt: 'asc' } },
         },
       });
 
       await ctx.db.auditLog.create({
         data: {
           organizationId: ctx.organizationId,
-          actorType: "USER",
+          actorType: 'USER',
           actorId: ctx.user?.id,
           actorName: ctx.user?.name,
-          action: "shipment.create",
-          resourceType: "SHIPMENT",
+          action: 'shipment.create',
+          resourceType: 'SHIPMENT',
           resourceId: shipment.id,
           newValuesJson: {
             equipmentId: input.equipmentId,
@@ -121,7 +121,7 @@ export const equipmentShipmentsRouter = router({
    * Auto-advances equipment status per D-06 mapping when applicable.
    */
   addShipmentEvent: tenantProcedure
-    .use(requirePermission({ equipment: ["update"] }))
+    .use(requirePermission({ equipment: ['update'] }))
     .input(shipmentEventCreateSchema)
     .mutation(async ({ ctx, input }) => {
       const shipment = await ctx.db.shipment.findFirst({
@@ -136,12 +136,12 @@ export const equipmentShipmentsRouter = router({
 
       if (!shipment) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: SHIPMENT_NOT_FOUND,
         });
       }
 
-      await ctx.db.$transaction(async (tx) => {
+      await ctx.db.$transaction(async tx => {
         // Create event
         await tx.shipmentEvent.create({
           data: {
@@ -177,18 +177,18 @@ export const equipmentShipmentsRouter = router({
       const result = await ctx.db.shipment.findUnique({
         where: { id: input.shipmentId },
         include: {
-          events: { orderBy: { occurredAt: "asc" } },
+          events: { orderBy: { occurredAt: 'asc' } },
         },
       });
 
       await ctx.db.auditLog.create({
         data: {
           organizationId: ctx.organizationId,
-          actorType: "USER",
+          actorType: 'USER',
           actorId: ctx.user?.id,
           actorName: ctx.user?.name,
-          action: "shipment.updateStatus",
-          resourceType: "SHIPMENT",
+          action: 'shipment.updateStatus',
+          resourceType: 'SHIPMENT',
           resourceId: shipment.id,
           newValuesJson: {
             status: input.status,
@@ -203,7 +203,7 @@ export const equipmentShipmentsRouter = router({
         await checkShipmentTaskCompletion(prisma, ctx.organizationId, {
           id: shipment.id,
           workflowTaskRunId: shipment.workflowTaskRunId,
-          direction: shipment.direction as "OUTBOUND" | "RETURN",
+          direction: shipment.direction as 'OUTBOUND' | 'RETURN',
           currentStatus: input.status,
         });
       })();
@@ -215,7 +215,7 @@ export const equipmentShipmentsRouter = router({
    * Get shipment by ID with all events and equipment info.
    */
   getShipment: tenantProcedure
-    .use(requirePermission({ equipment: ["read"] }))
+    .use(requirePermission({ equipment: ['read'] }))
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
       const shipment = await ctx.db.shipment.findFirst({
@@ -224,7 +224,7 @@ export const equipmentShipmentsRouter = router({
           organizationId: ctx.organizationId,
         },
         include: {
-          events: { orderBy: { occurredAt: "asc" } },
+          events: { orderBy: { occurredAt: 'asc' } },
           equipment: {
             select: {
               id: true,
@@ -239,7 +239,7 @@ export const equipmentShipmentsRouter = router({
 
       if (!shipment) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: SHIPMENT_NOT_FOUND,
         });
       }
@@ -251,7 +251,7 @@ export const equipmentShipmentsRouter = router({
    * List all shipments for a specific equipment item.
    */
   listShipments: tenantProcedure
-    .use(requirePermission({ equipment: ["read"] }))
+    .use(requirePermission({ equipment: ['read'] }))
     .input(z.object({ equipmentId: z.string() }))
     .query(async ({ ctx, input }) => {
       const shipments = await ctx.db.shipment.findMany({
@@ -259,10 +259,10 @@ export const equipmentShipmentsRouter = router({
           equipmentId: input.equipmentId,
           organizationId: ctx.organizationId,
         },
-        orderBy: { createdAt: "desc" },
+        orderBy: { createdAt: 'desc' },
         include: {
           events: {
-            orderBy: { occurredAt: "desc" },
+            orderBy: { occurredAt: 'desc' },
             take: 1,
           },
         },
@@ -275,7 +275,7 @@ export const equipmentShipmentsRouter = router({
    * Delete a shipment. Only allowed when status is CREATED.
    */
   deleteShipment: tenantProcedure
-    .use(requirePermission({ equipment: ["delete"] }))
+    .use(requirePermission({ equipment: ['delete'] }))
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const shipment = await ctx.db.shipment.findFirst({
@@ -287,14 +287,14 @@ export const equipmentShipmentsRouter = router({
 
       if (!shipment) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: SHIPMENT_NOT_FOUND,
         });
       }
 
-      if (shipment.currentStatus !== "CREATED") {
+      if (shipment.currentStatus !== 'CREATED') {
         throw new TRPCError({
-          code: "BAD_REQUEST",
+          code: 'BAD_REQUEST',
           message: SHIPMENT_CANNOT_DELETE,
         });
       }
@@ -316,7 +316,7 @@ export const equipmentShipmentsRouter = router({
    * Returns active assignments with equipment details and latest shipment.
    */
   listByContractor: tenantProcedure
-    .use(requirePermission({ equipment: ["read"] }))
+    .use(requirePermission({ equipment: ['read'] }))
     .input(z.object({ contractorId: z.string() }))
     .query(async ({ ctx, input }) => {
       const assignments = await ctx.db.equipmentAssignment.findMany({
@@ -329,7 +329,7 @@ export const equipmentShipmentsRouter = router({
           equipment: {
             include: {
               shipments: {
-                orderBy: { createdAt: "desc" },
+                orderBy: { createdAt: 'desc' },
                 take: 1,
                 select: {
                   id: true,
@@ -345,7 +345,7 @@ export const equipmentShipmentsRouter = router({
         },
       });
 
-      const items = assignments.map((a) => ({
+      const items = assignments.map(a => ({
         assignmentId: a.id,
         assignedAt: a.assignedAt,
         equipment: {

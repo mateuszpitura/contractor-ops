@@ -1,25 +1,25 @@
-import { render, screen } from "@/test/test-utils";
-import { DataTableColumnToggle } from "../data-table-column-toggle";
+import { render, screen } from '@/test/test-utils';
+import { DataTableColumnToggle } from '../data-table-column-toggle';
 
 function makeMockTable() {
   return {
     getAllColumns: () => [
       {
-        id: "displayName",
-        accessorFn: () => "",
+        id: 'displayName',
+        accessorFn: () => '',
         getCanHide: () => true,
         getIsVisible: () => true,
         toggleVisibility: vi.fn(),
       },
       {
-        id: "type",
-        accessorFn: () => "",
+        id: 'type',
+        accessorFn: () => '',
         getCanHide: () => true,
         getIsVisible: () => true,
         toggleVisibility: vi.fn(),
       },
       {
-        id: "select",
+        id: 'select',
         accessorFn: undefined,
         getCanHide: () => false,
         getIsVisible: () => true,
@@ -29,15 +29,15 @@ function makeMockTable() {
   } as any;
 }
 
-describe("DataTableColumnToggle", () => {
-  it("renders the toggle button", () => {
+describe('DataTableColumnToggle', () => {
+  it('renders the toggle button', () => {
     render(<DataTableColumnToggle table={makeMockTable()} />);
-    const button = screen.getByRole("button");
+    const button = screen.getByRole('button');
     expect(button).toBeInTheDocument();
   });
 
-  it("has screen reader text", () => {
+  it('has screen reader text', () => {
     render(<DataTableColumnToggle table={makeMockTable()} />);
-    expect(screen.getByText("Filters", { exact: false })).toBeInTheDocument();
+    expect(screen.getByText('Filters', { exact: false })).toBeInTheDocument();
   });
 });

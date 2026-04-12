@@ -1,12 +1,12 @@
-import Anthropic from "@anthropic-ai/sdk";
+import Anthropic from '@anthropic-ai/sdk';
 import type {
   OcrAdapter,
   OcrExtractionField,
   OcrExtractionRequest,
   OcrExtractionResult,
   OcrLineItem,
-} from "../types/ocr.js";
-import { adjustConfidences } from "../types/ocr.js";
+} from '../types/ocr.js';
+import { adjustConfidences } from '../types/ocr.js';
 
 // ---------------------------------------------------------------------------
 // Prompt & Tool Schema
@@ -34,151 +34,151 @@ Strip dashes and spaces from NIP numbers (return 10 consecutive digits).
 Use the extract_invoice_data tool to return your results.`;
 
 const INVOICE_EXTRACTION_TOOL: Anthropic.Tool = {
-  name: "extract_invoice_data",
-  description: "Extract structured invoice data from a Polish invoice PDF",
+  name: 'extract_invoice_data',
+  description: 'Extract structured invoice data from a Polish invoice PDF',
   input_schema: {
-    type: "object" as const,
+    type: 'object' as const,
     properties: {
       invoiceNumber: {
-        type: "object",
+        type: 'object',
         properties: {
-          value: { type: "string" },
-          confidence: { type: "number" },
+          value: { type: 'string' },
+          confidence: { type: 'number' },
         },
-        required: ["value", "confidence"],
+        required: ['value', 'confidence'],
       },
       issueDate: {
-        type: "object",
+        type: 'object',
         properties: {
-          value: { type: "string", description: "ISO 8601 date" },
-          confidence: { type: "number" },
+          value: { type: 'string', description: 'ISO 8601 date' },
+          confidence: { type: 'number' },
         },
-        required: ["value", "confidence"],
+        required: ['value', 'confidence'],
       },
       dueDate: {
-        type: "object",
+        type: 'object',
         properties: {
-          value: { type: "string", description: "ISO 8601 date or null" },
-          confidence: { type: "number" },
+          value: { type: 'string', description: 'ISO 8601 date or null' },
+          confidence: { type: 'number' },
         },
-        required: ["value", "confidence"],
+        required: ['value', 'confidence'],
       },
       sellerNip: {
-        type: "object",
+        type: 'object',
         properties: {
           value: {
-            type: "string",
-            description: "10 digits, no dashes",
+            type: 'string',
+            description: '10 digits, no dashes',
           },
-          confidence: { type: "number" },
+          confidence: { type: 'number' },
         },
-        required: ["value", "confidence"],
+        required: ['value', 'confidence'],
       },
       buyerNip: {
-        type: "object",
+        type: 'object',
         properties: {
           value: {
-            type: "string",
-            description: "10 digits, no dashes",
+            type: 'string',
+            description: '10 digits, no dashes',
           },
-          confidence: { type: "number" },
+          confidence: { type: 'number' },
         },
-        required: ["value", "confidence"],
+        required: ['value', 'confidence'],
       },
       sellerName: {
-        type: "object",
+        type: 'object',
         properties: {
-          value: { type: "string" },
-          confidence: { type: "number" },
+          value: { type: 'string' },
+          confidence: { type: 'number' },
         },
-        required: ["value", "confidence"],
+        required: ['value', 'confidence'],
       },
       buyerName: {
-        type: "object",
+        type: 'object',
         properties: {
-          value: { type: "string" },
-          confidence: { type: "number" },
+          value: { type: 'string' },
+          confidence: { type: 'number' },
         },
-        required: ["value", "confidence"],
+        required: ['value', 'confidence'],
       },
       currency: {
-        type: "object",
+        type: 'object',
         properties: {
           value: {
-            type: "string",
-            description: "3-letter ISO currency code",
+            type: 'string',
+            description: '3-letter ISO currency code',
           },
-          confidence: { type: "number" },
+          confidence: { type: 'number' },
         },
-        required: ["value", "confidence"],
+        required: ['value', 'confidence'],
       },
       totalNet: {
-        type: "object",
+        type: 'object',
         properties: {
-          value: { type: "number", description: "Net total as decimal" },
-          confidence: { type: "number" },
+          value: { type: 'number', description: 'Net total as decimal' },
+          confidence: { type: 'number' },
         },
-        required: ["value", "confidence"],
+        required: ['value', 'confidence'],
       },
       totalTax: {
-        type: "object",
+        type: 'object',
         properties: {
-          value: { type: "number", description: "Tax total as decimal" },
-          confidence: { type: "number" },
+          value: { type: 'number', description: 'Tax total as decimal' },
+          confidence: { type: 'number' },
         },
-        required: ["value", "confidence"],
+        required: ['value', 'confidence'],
       },
       totalGross: {
-        type: "object",
+        type: 'object',
         properties: {
           value: {
-            type: "number",
-            description: "Gross total as decimal",
+            type: 'number',
+            description: 'Gross total as decimal',
           },
-          confidence: { type: "number" },
+          confidence: { type: 'number' },
         },
-        required: ["value", "confidence"],
+        required: ['value', 'confidence'],
       },
       bankAccount: {
-        type: "object",
+        type: 'object',
         properties: {
-          value: { type: "string", description: "Bank account number" },
-          confidence: { type: "number" },
+          value: { type: 'string', description: 'Bank account number' },
+          confidence: { type: 'number' },
         },
-        required: ["value", "confidence"],
+        required: ['value', 'confidence'],
       },
       lineItems: {
-        type: "array",
+        type: 'array',
         items: {
-          type: "object",
+          type: 'object',
           properties: {
-            description: { type: "string" },
-            quantity: { type: "number" },
-            unit: { type: "string" },
+            description: { type: 'string' },
+            quantity: { type: 'number' },
+            unit: { type: 'string' },
             unitPrice: {
-              type: "number",
-              description: "Decimal amount",
+              type: 'number',
+              description: 'Decimal amount',
             },
             netAmount: {
-              type: "number",
-              description: "Decimal amount",
+              type: 'number',
+              description: 'Decimal amount',
             },
-            vatRate: { type: "string" },
+            vatRate: { type: 'string' },
             vatAmount: {
-              type: "number",
-              description: "Decimal amount",
+              type: 'number',
+              description: 'Decimal amount',
             },
             grossAmount: {
-              type: "number",
-              description: "Decimal amount",
+              type: 'number',
+              description: 'Decimal amount',
             },
-            confidence: { type: "number" },
+            confidence: { type: 'number' },
           },
-          required: ["description", "confidence"],
+          required: ['description', 'confidence'],
         },
       },
     },
-    required: ["invoiceNumber", "issueDate", "totalNet", "totalGross", "currency", "lineItems"],
+    required: ['invoiceNumber', 'issueDate', 'totalNet', 'totalGross', 'currency', 'lineItems'],
   },
 };
 
@@ -187,12 +187,12 @@ const INVOICE_EXTRACTION_TOOL: Anthropic.Tool = {
 // ---------------------------------------------------------------------------
 
 const REQUIRED_FIELDS = [
-  "invoiceNumber",
-  "issueDate",
-  "totalNet",
-  "totalGross",
-  "currency",
-  "sellerNip",
+  'invoiceNumber',
+  'issueDate',
+  'totalNet',
+  'totalGross',
+  'currency',
+  'sellerNip',
 ] as const;
 
 // Max PDF size: 30MB
@@ -209,9 +209,9 @@ const MAX_PDF_SIZE_BYTES = 30 * 1024 * 1024;
  * tool_use for guaranteed structured JSON output.
  */
 export class ClaudeOcrAdapter implements OcrAdapter {
-  readonly providerName = "claude";
-  readonly slug = "claude";
-  readonly supportedDocumentTypes = ["application/pdf"];
+  readonly providerName = 'claude';
+  readonly slug = 'claude';
+  readonly supportedDocumentTypes = ['application/pdf'];
 
   private readonly client: Anthropic;
   private readonly modelId: string;
@@ -220,7 +220,7 @@ export class ClaudeOcrAdapter implements OcrAdapter {
     this.client = new Anthropic({
       apiKey: params?.apiKey ?? process.env.ANTHROPIC_API_KEY,
     });
-    this.modelId = params?.modelId ?? "claude-sonnet-4-5-20250514";
+    this.modelId = params?.modelId ?? 'claude-sonnet-4-5-20250514';
   }
 
   async extractInvoice(request: OcrExtractionRequest): Promise<OcrExtractionResult> {
@@ -230,7 +230,7 @@ export class ClaudeOcrAdapter implements OcrAdapter {
     const pdfSizeBytes = Math.ceil((request.pdfBase64.length * 3) / 4);
     if (pdfSizeBytes > MAX_PDF_SIZE_BYTES) {
       return {
-        status: "FAILED",
+        status: 'FAILED',
         fields: {},
         lineItems: [],
         processingTimeMs: Date.now() - startTime,
@@ -246,41 +246,41 @@ export class ClaudeOcrAdapter implements OcrAdapter {
         max_tokens: 4096,
         messages: [
           {
-            role: "user",
+            role: 'user',
             content: [
               {
-                type: "document",
+                type: 'document',
                 source: {
-                  type: "base64",
-                  media_type: "application/pdf",
+                  type: 'base64',
+                  media_type: 'application/pdf',
                   data: request.pdfBase64,
                 },
               },
               {
-                type: "text",
+                type: 'text',
                 text: POLISH_INVOICE_EXTRACTION_PROMPT,
               },
             ],
           },
         ],
         tools: [INVOICE_EXTRACTION_TOOL],
-        tool_choice: { type: "tool", name: "extract_invoice_data" },
+        tool_choice: { type: 'tool', name: 'extract_invoice_data' },
       });
 
       // Find the tool_use block in the response
       const toolUseBlock = response.content.find(
-        (block): block is Anthropic.ToolUseBlock => block.type === "tool_use",
+        (block): block is Anthropic.ToolUseBlock => block.type === 'tool_use',
       );
 
       if (!toolUseBlock) {
         return {
-          status: "FAILED",
+          status: 'FAILED',
           fields: {},
           lineItems: [],
           processingTimeMs: Date.now() - startTime,
           pageCount: 0,
           overallConfidence: 0,
-          errorMessage: "Claude returned no tool_use block in response",
+          errorMessage: 'Claude returned no tool_use block in response',
         };
       }
 
@@ -290,13 +290,13 @@ export class ClaudeOcrAdapter implements OcrAdapter {
       return this.parseExtractionResponse(rawData, processingTimeMs, request.pageCount, response);
     } catch (error) {
       return {
-        status: "FAILED",
+        status: 'FAILED',
         fields: {},
         lineItems: [],
         processingTimeMs: Date.now() - startTime,
         pageCount: 0,
         overallConfidence: 0,
-        errorMessage: error instanceof Error ? error.message : "Unknown extraction error",
+        errorMessage: error instanceof Error ? error.message : 'Unknown extraction error',
       };
     }
   }
@@ -315,15 +315,15 @@ export class ClaudeOcrAdapter implements OcrAdapter {
 
     // Parse scalar fields
     const scalarFieldKeys = [
-      "invoiceNumber",
-      "issueDate",
-      "dueDate",
-      "sellerNip",
-      "buyerNip",
-      "sellerName",
-      "buyerName",
-      "currency",
-      "bankAccount",
+      'invoiceNumber',
+      'issueDate',
+      'dueDate',
+      'sellerNip',
+      'buyerNip',
+      'sellerName',
+      'buyerName',
+      'currency',
+      'bankAccount',
     ] as const;
 
     for (const key of scalarFieldKeys) {
@@ -338,7 +338,7 @@ export class ClaudeOcrAdapter implements OcrAdapter {
     }
 
     // Parse amount fields -- convert from decimal to minor units
-    const amountFieldKeys = ["totalNet", "totalTax", "totalGross"] as const;
+    const amountFieldKeys = ['totalNet', 'totalTax', 'totalGross'] as const;
 
     for (const key of amountFieldKeys) {
       const raw = rawData[key] as { value: number | null; confidence: number } | undefined;
@@ -364,7 +364,7 @@ export class ClaudeOcrAdapter implements OcrAdapter {
       confidence: number;
     }>;
 
-    const lineItems: OcrLineItem[] = rawLineItems.map((item) => ({
+    const lineItems: OcrLineItem[] = rawLineItems.map(item => ({
       description: item.description,
       quantity: item.quantity ?? null,
       unit: item.unit ?? null,
@@ -377,16 +377,14 @@ export class ClaudeOcrAdapter implements OcrAdapter {
     }));
 
     // Determine extraction status
-    const extractedRequiredCount = REQUIRED_FIELDS.filter(
-      (key) => fields[key]?.value != null,
-    ).length;
+    const extractedRequiredCount = REQUIRED_FIELDS.filter(key => fields[key]?.value != null).length;
     const requiredRatio = extractedRequiredCount / REQUIRED_FIELDS.length;
 
-    let status: "EXTRACTED" | "PARTIAL" | "FAILED";
+    let status: 'EXTRACTED' | 'PARTIAL' | 'FAILED';
     if (requiredRatio < 0.5) {
-      status = "PARTIAL";
+      status = 'PARTIAL';
     } else {
-      status = "EXTRACTED";
+      status = 'EXTRACTED';
     }
 
     // Compute overall confidence as weighted average

@@ -1,5 +1,5 @@
-import { render, screen } from "@/test/test-utils";
-import { WorkflowsTab } from "../workflows-tab";
+import { render, screen } from '@/test/test-utils';
+import { WorkflowsTab } from '../workflows-tab';
 
 const mockUseQuery = vi.fn(() => ({
   data: null,
@@ -8,31 +8,31 @@ const mockUseQuery = vi.fn(() => ({
   isPending: false,
 }));
 
-vi.mock("@tanstack/react-query", () => ({
+vi.mock('@tanstack/react-query', () => ({
   useQuery: (...args: any[]) => mockUseQuery(...args),
 }));
 
-vi.mock("@/trpc/init", () => ({
+vi.mock('@/trpc/init', () => ({
   trpc: {
     workflow: {
       listRuns: {
         queryOptions: (input: any) => ({
-          queryKey: ["workflow", "listRuns", input],
+          queryKey: ['workflow', 'listRuns', input],
         }),
       },
     },
     jira: {
-      connectionStatus: { queryOptions: () => ({ queryKey: ["jira", "conn"] }) },
-      linkedIssues: { queryOptions: (input: any) => ({ queryKey: ["jira", "linked", input] }) },
+      connectionStatus: { queryOptions: () => ({ queryKey: ['jira', 'conn'] }) },
+      linkedIssues: { queryOptions: (input: any) => ({ queryKey: ['jira', 'linked', input] }) },
     },
     linear: {
-      connectionStatus: { queryOptions: () => ({ queryKey: ["linear", "conn"] }) },
-      linkedIssues: { queryOptions: (input: any) => ({ queryKey: ["linear", "linked", input] }) },
+      connectionStatus: { queryOptions: () => ({ queryKey: ['linear', 'conn'] }) },
+      linkedIssues: { queryOptions: (input: any) => ({ queryKey: ['linear', 'linked', input] }) },
     },
   },
 }));
 
-vi.mock("@/i18n/navigation", () => ({
+vi.mock('@/i18n/navigation', () => ({
   Link: ({ children, href, ...props }: any) => (
     <a href={href} {...props}>
       {children}
@@ -40,23 +40,23 @@ vi.mock("@/i18n/navigation", () => ({
   ),
 }));
 
-vi.mock("@/components/workflows/template-picker-dialog", () => ({
+vi.mock('@/components/workflows/template-picker-dialog', () => ({
   TemplatePicker: () => null,
 }));
 
-vi.mock("@/components/integrations/jira-activity-summary", () => ({
+vi.mock('@/components/integrations/jira-activity-summary', () => ({
   JiraActivitySummary: () => null,
 }));
 
-vi.mock("@/components/integrations/jira-issue-chip", () => ({
+vi.mock('@/components/integrations/jira-issue-chip', () => ({
   JiraIssueChip: () => null,
 }));
 
-vi.mock("@/components/integrations/linear-issue-chip", () => ({
+vi.mock('@/components/integrations/linear-issue-chip', () => ({
   LinearIssueChip: () => null,
 }));
 
-describe("WorkflowsTab", () => {
+describe('WorkflowsTab', () => {
   beforeEach(() => {
     mockUseQuery.mockReturnValue({
       data: null,
@@ -66,13 +66,13 @@ describe("WorkflowsTab", () => {
     });
   });
 
-  it("renders empty state when no workflows", () => {
+  it('renders empty state when no workflows', () => {
     render(<WorkflowsTab contractorId="c1" />);
-    const buttons = screen.getAllByRole("button");
+    const buttons = screen.getAllByRole('button');
     expect(buttons.length).toBeGreaterThan(0);
   });
 
-  it("renders loading skeletons", () => {
+  it('renders loading skeletons', () => {
     mockUseQuery.mockReturnValue({
       data: null,
       isLoading: true,
@@ -85,31 +85,31 @@ describe("WorkflowsTab", () => {
   });
 
   // ---- Empty state content ----
-  it("shows empty state heading", () => {
+  it('shows empty state heading', () => {
     render(<WorkflowsTab contractorId="c1" />);
     expect(screen.getByText(/No workflows/i)).toBeInTheDocument();
   });
 
-  it("shows empty state body text", () => {
+  it('shows empty state body text', () => {
     render(<WorkflowsTab contractorId="c1" />);
     expect(screen.getByText(/Start a workflow/i)).toBeInTheDocument();
   });
 
-  it("shows empty state CTA button", () => {
+  it('shows empty state CTA button', () => {
     render(<WorkflowsTab contractorId="c1" />);
     expect(screen.getByText(/Start workflow/i)).toBeInTheDocument();
   });
 
   // ---- With workflow runs ----
-  it("renders workflow run list when data exists", () => {
+  it('renders workflow run list when data exists', () => {
     mockUseQuery.mockReturnValue({
       data: {
         items: [
           {
-            id: "run-1",
-            status: "IN_PROGRESS",
-            startedAt: "2026-01-15",
-            workflowTemplate: { name: "Onboarding", type: "ONBOARDING" },
+            id: 'run-1',
+            status: 'IN_PROGRESS',
+            startedAt: '2026-01-15',
+            workflowTemplate: { name: 'Onboarding', type: 'ONBOARDING' },
             progress: { done: 2, total: 5, percent: 40 },
           },
         ],
@@ -121,19 +121,19 @@ describe("WorkflowsTab", () => {
     });
 
     render(<WorkflowsTab contractorId="c1" />);
-    expect(screen.getByText("Onboarding")).toBeInTheDocument();
-    expect(screen.getByText("2/5")).toBeInTheDocument();
+    expect(screen.getByText('Onboarding')).toBeInTheDocument();
+    expect(screen.getByText('2/5')).toBeInTheDocument();
   });
 
-  it("renders status badge for workflow run", () => {
+  it('renders status badge for workflow run', () => {
     mockUseQuery.mockReturnValue({
       data: {
         items: [
           {
-            id: "run-1",
-            status: "COMPLETED",
-            startedAt: "2026-01-15",
-            workflowTemplate: { name: "Offboarding", type: "OFFBOARDING" },
+            id: 'run-1',
+            status: 'COMPLETED',
+            startedAt: '2026-01-15',
+            workflowTemplate: { name: 'Offboarding', type: 'OFFBOARDING' },
             progress: { done: 3, total: 3, percent: 100 },
           },
         ],
@@ -145,18 +145,18 @@ describe("WorkflowsTab", () => {
     });
 
     render(<WorkflowsTab contractorId="c1" />);
-    expect(screen.getByText("Completed")).toBeInTheDocument();
+    expect(screen.getByText('Completed')).toBeInTheDocument();
   });
 
-  it("renders start workflow button in run list view", () => {
+  it('renders start workflow button in run list view', () => {
     mockUseQuery.mockReturnValue({
       data: {
         items: [
           {
-            id: "run-1",
-            status: "IN_PROGRESS",
-            startedAt: "2026-01-15",
-            workflowTemplate: { name: "Onboarding", type: "ONBOARDING" },
+            id: 'run-1',
+            status: 'IN_PROGRESS',
+            startedAt: '2026-01-15',
+            workflowTemplate: { name: 'Onboarding', type: 'ONBOARDING' },
             progress: { done: 1, total: 4, percent: 25 },
           },
         ],
@@ -168,18 +168,18 @@ describe("WorkflowsTab", () => {
     });
 
     render(<WorkflowsTab contractorId="c1" />);
-    expect(screen.getByText("Start workflow")).toBeInTheDocument();
+    expect(screen.getByText('Start workflow')).toBeInTheDocument();
   });
 
-  it("renders tab heading for workflow list", () => {
+  it('renders tab heading for workflow list', () => {
     mockUseQuery.mockReturnValue({
       data: {
         items: [
           {
-            id: "run-1",
-            status: "IN_PROGRESS",
+            id: 'run-1',
+            status: 'IN_PROGRESS',
             startedAt: null,
-            workflowTemplate: { name: "Onboarding", type: "ONBOARDING" },
+            workflowTemplate: { name: 'Onboarding', type: 'ONBOARDING' },
             progress: { done: 0, total: 3, percent: 0 },
           },
         ],
@@ -191,18 +191,18 @@ describe("WorkflowsTab", () => {
     });
 
     render(<WorkflowsTab contractorId="c1" />);
-    expect(screen.getByText("Workflows")).toBeInTheDocument();
+    expect(screen.getByText('Workflows')).toBeInTheDocument();
   });
 
-  it("renders date for workflow run when startedAt is provided", () => {
+  it('renders date for workflow run when startedAt is provided', () => {
     mockUseQuery.mockReturnValue({
       data: {
         items: [
           {
-            id: "run-1",
-            status: "IN_PROGRESS",
-            startedAt: "2026-03-15",
-            workflowTemplate: { name: "Compliance", type: "COMPLIANCE_REVIEW" },
+            id: 'run-1',
+            status: 'IN_PROGRESS',
+            startedAt: '2026-03-15',
+            workflowTemplate: { name: 'Compliance', type: 'COMPLIANCE_REVIEW' },
             progress: { done: 1, total: 2, percent: 50 },
           },
         ],
@@ -215,7 +215,7 @@ describe("WorkflowsTab", () => {
 
     render(<WorkflowsTab contractorId="c1" />);
     // Date should be rendered in pl-PL format
-    const dateStr = new Date("2026-03-15").toLocaleDateString("pl-PL");
+    const dateStr = new Date('2026-03-15').toLocaleDateString('pl-PL');
     expect(screen.getByText(dateStr)).toBeInTheDocument();
   });
 
@@ -224,8 +224,8 @@ describe("WorkflowsTab", () => {
       data: {
         items: [
           {
-            id: "run-1",
-            status: "NOT_STARTED",
+            id: 'run-1',
+            status: 'NOT_STARTED',
             startedAt: null,
             workflowTemplate: null,
             progress: { done: 0, total: 1, percent: 0 },
@@ -239,19 +239,19 @@ describe("WorkflowsTab", () => {
     });
 
     render(<WorkflowsTab contractorId="c1" />);
-    expect(screen.getByText("Workflow")).toBeInTheDocument();
+    expect(screen.getByText('Workflow')).toBeInTheDocument();
   });
 
   // ---- Pagination ----
-  it("does not render pagination when total pages is 1", () => {
+  it('does not render pagination when total pages is 1', () => {
     mockUseQuery.mockReturnValue({
       data: {
         items: [
           {
-            id: "run-1",
-            status: "IN_PROGRESS",
+            id: 'run-1',
+            status: 'IN_PROGRESS',
             startedAt: null,
-            workflowTemplate: { name: "Test", type: "CUSTOM" },
+            workflowTemplate: { name: 'Test', type: 'CUSTOM' },
             progress: { done: 0, total: 1, percent: 0 },
           },
         ],
@@ -263,6 +263,6 @@ describe("WorkflowsTab", () => {
     });
 
     render(<WorkflowsTab contractorId="c1" />);
-    expect(screen.queryByText("1 / 1")).not.toBeInTheDocument();
+    expect(screen.queryByText('1 / 1')).not.toBeInTheDocument();
   });
 });

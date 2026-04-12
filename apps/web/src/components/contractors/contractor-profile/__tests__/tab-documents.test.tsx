@@ -1,5 +1,5 @@
-import { render, screen } from "@/test/test-utils";
-import { TabDocuments } from "../tab-documents";
+import { render, screen } from '@/test/test-utils';
+import { TabDocuments } from '../tab-documents';
 
 const mockUseQuery = vi.fn(() => ({
   data: null,
@@ -8,29 +8,29 @@ const mockUseQuery = vi.fn(() => ({
   isPending: false,
 }));
 
-vi.mock("@tanstack/react-query", () => ({
+vi.mock('@tanstack/react-query', () => ({
   useQuery: (...args: any[]) => mockUseQuery(...args),
 }));
 
-vi.mock("@/trpc/init", () => ({
+vi.mock('@/trpc/init', () => ({
   trpc: {
     document: {
       list: {
-        queryOptions: (input: any) => ({ queryKey: ["document", "list", input] }),
+        queryOptions: (input: any) => ({ queryKey: ['document', 'list', input] }),
       },
     },
   },
 }));
 
-vi.mock("@/components/documents/drop-zone", () => ({
+vi.mock('@/components/documents/drop-zone', () => ({
   DropZone: () => <div data-testid="drop-zone" />,
 }));
 
-vi.mock("@/components/documents/document-card", () => ({
+vi.mock('@/components/documents/document-card', () => ({
   DocumentCard: ({ document }: any) => <div data-testid="document-card">{document.id}</div>,
 }));
 
-describe("TabDocuments", () => {
+describe('TabDocuments', () => {
   beforeEach(() => {
     mockUseQuery.mockReturnValue({
       data: null,
@@ -40,12 +40,12 @@ describe("TabDocuments", () => {
     });
   });
 
-  it("renders empty state with drop zone when no documents", () => {
+  it('renders empty state with drop zone when no documents', () => {
     render(<TabDocuments contractorId="c1" />);
-    expect(screen.getByTestId("drop-zone")).toBeInTheDocument();
+    expect(screen.getByTestId('drop-zone')).toBeInTheDocument();
   });
 
-  it("renders loading skeletons when loading", () => {
+  it('renders loading skeletons when loading', () => {
     mockUseQuery.mockReturnValue({
       data: null,
       isLoading: true,
@@ -57,17 +57,17 @@ describe("TabDocuments", () => {
     expect(container.querySelector("[data-slot='skeleton']")).toBeTruthy();
   });
 
-  it("renders empty state heading and body text", () => {
+  it('renders empty state heading and body text', () => {
     render(<TabDocuments contractorId="c1" />);
     expect(screen.getByText(/no documents/i)).toBeInTheDocument();
   });
 
-  it("renders document cards when documents exist", () => {
+  it('renders document cards when documents exist', () => {
     mockUseQuery.mockReturnValue({
       data: {
         items: [
-          { id: "doc-1", originalFileName: "contract.pdf" },
-          { id: "doc-2", originalFileName: "invoice.pdf" },
+          { id: 'doc-1', originalFileName: 'contract.pdf' },
+          { id: 'doc-2', originalFileName: 'invoice.pdf' },
         ],
       },
       isLoading: false,
@@ -76,14 +76,14 @@ describe("TabDocuments", () => {
     });
 
     render(<TabDocuments contractorId="c1" />);
-    const cards = screen.getAllByTestId("document-card");
+    const cards = screen.getAllByTestId('document-card');
     expect(cards).toHaveLength(2);
   });
 
-  it("renders heading when documents exist", () => {
+  it('renders heading when documents exist', () => {
     mockUseQuery.mockReturnValue({
       data: {
-        items: [{ id: "doc-1", originalFileName: "test.pdf" }],
+        items: [{ id: 'doc-1', originalFileName: 'test.pdf' }],
       },
       isLoading: false,
       isFetching: false,
@@ -91,13 +91,13 @@ describe("TabDocuments", () => {
     });
 
     render(<TabDocuments contractorId="c1" />);
-    expect(screen.getByText("Documents")).toBeInTheDocument();
+    expect(screen.getByText('Documents')).toBeInTheDocument();
   });
 
-  it("renders drop zone in populated state", () => {
+  it('renders drop zone in populated state', () => {
     mockUseQuery.mockReturnValue({
       data: {
-        items: [{ id: "doc-1", originalFileName: "test.pdf" }],
+        items: [{ id: 'doc-1', originalFileName: 'test.pdf' }],
       },
       isLoading: false,
       isFetching: false,
@@ -105,10 +105,10 @@ describe("TabDocuments", () => {
     });
 
     render(<TabDocuments contractorId="c1" />);
-    expect(screen.getByTestId("drop-zone")).toBeInTheDocument();
+    expect(screen.getByTestId('drop-zone')).toBeInTheDocument();
   });
 
-  it("renders multiple skeleton items when loading", () => {
+  it('renders multiple skeleton items when loading', () => {
     mockUseQuery.mockReturnValue({
       data: null,
       isLoading: true,

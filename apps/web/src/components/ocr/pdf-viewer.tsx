@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { ChevronLeft, ChevronRight, Maximize2, ZoomIn, ZoomOut } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
-import { Document, Page, pdfjs } from "react-pdf";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib/utils";
+import { ChevronLeft, ChevronRight, Maximize2, ZoomIn, ZoomOut } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { Document, Page, pdfjs } from 'react-pdf';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
@@ -27,8 +27,8 @@ export function PdfViewer({ url, className }: PdfViewerProps) {
 
   // Load react-pdf CSS dynamically to avoid Next.js build issues
   useEffect(() => {
-    import("react-pdf/dist/Page/AnnotationLayer.css" as never);
-    import("react-pdf/dist/Page/TextLayer.css" as never);
+    import('react-pdf/dist/Page/AnnotationLayer.css' as never);
+    import('react-pdf/dist/Page/TextLayer.css' as never);
   }, []);
 
   const onDocumentLoadSuccess = useCallback(({ numPages: total }: { numPages: number }) => {
@@ -37,19 +37,19 @@ export function PdfViewer({ url, className }: PdfViewerProps) {
   }, []);
 
   const goToPreviousPage = useCallback(() => {
-    setCurrentPage((prev) => Math.max(1, prev - 1));
+    setCurrentPage(prev => Math.max(1, prev - 1));
   }, []);
 
   const goToNextPage = useCallback(() => {
-    setCurrentPage((prev) => Math.min(numPages, prev + 1));
+    setCurrentPage(prev => Math.min(numPages, prev + 1));
   }, [numPages]);
 
   const zoomIn = useCallback(() => {
-    setScale((prev) => Math.min(MAX_SCALE, prev + SCALE_STEP));
+    setScale(prev => Math.min(MAX_SCALE, prev + SCALE_STEP));
   }, []);
 
   const zoomOut = useCallback(() => {
-    setScale((prev) => Math.max(MIN_SCALE, prev - SCALE_STEP));
+    setScale(prev => Math.max(MIN_SCALE, prev - SCALE_STEP));
   }, []);
 
   const fitWidth = useCallback(() => {
@@ -57,11 +57,11 @@ export function PdfViewer({ url, className }: PdfViewerProps) {
   }, []);
 
   return (
-    <Card className={cn("sticky top-20 min-h-[240px] bg-muted/30 md:min-h-[400px]", className)}>
+    <Card className={cn('sticky top-20 min-h-[240px] bg-muted/30 md:min-h-[400px]', className)}>
       {/* Toolbar */}
       <div className="flex items-center gap-2 px-4 py-2">
         <span className="text-sm font-semibold tabular-nums">
-          {currentPage} of {numPages || "..."}
+          {currentPage} of {numPages || '...'}
         </span>
 
         <div className="flex items-center gap-1">
@@ -70,8 +70,7 @@ export function PdfViewer({ url, className }: PdfViewerProps) {
             size="icon-sm"
             onClick={goToPreviousPage}
             disabled={currentPage <= 1}
-            aria-label="Previous page"
-          >
+            aria-label="Previous page">
             <ChevronLeft />
           </Button>
           <Button
@@ -79,8 +78,7 @@ export function PdfViewer({ url, className }: PdfViewerProps) {
             size="icon-sm"
             onClick={goToNextPage}
             disabled={currentPage >= numPages}
-            aria-label="Next page"
-          >
+            aria-label="Next page">
             <ChevronRight />
           </Button>
         </div>
@@ -97,8 +95,7 @@ export function PdfViewer({ url, className }: PdfViewerProps) {
           size="icon-sm"
           onClick={zoomOut}
           disabled={scale <= MIN_SCALE}
-          aria-label="Zoom out"
-        >
+          aria-label="Zoom out">
           <ZoomOut />
         </Button>
         <Button
@@ -106,8 +103,7 @@ export function PdfViewer({ url, className }: PdfViewerProps) {
           size="icon-sm"
           onClick={zoomIn}
           disabled={scale >= MAX_SCALE}
-          aria-label="Zoom in"
-        >
+          aria-label="Zoom in">
           <ZoomIn />
         </Button>
       </div>

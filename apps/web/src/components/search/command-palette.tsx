@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, Clock, Play, Plus, Star, Upload } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { ConfluenceIcon, NotionIcon } from "@/components/integrations/provider-icons";
-import { Badge } from "@/components/ui/badge";
+import { useQuery } from '@tanstack/react-query';
+import { ArrowRight, Clock, Play, Plus, Star, Upload } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ConfluenceIcon, NotionIcon } from '@/components/integrations/provider-icons';
+import { Badge } from '@/components/ui/badge';
 import {
   CommandDialog,
   CommandEmpty,
@@ -14,19 +14,19 @@ import {
   CommandItem,
   CommandList,
   CommandSeparator,
-} from "@/components/ui/command";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useRouter } from "@/i18n/navigation";
-import { navigationItems } from "@/lib/navigation";
-import { trpc } from "@/trpc/init";
-import type { RecentItem } from "./search-provider";
-import { useSearch } from "./search-provider";
+} from '@/components/ui/command';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useRouter } from '@/i18n/navigation';
+import { navigationItems } from '@/lib/navigation';
+import { trpc } from '@/trpc/init';
+import type { RecentItem } from './search-provider';
+import { useSearch } from './search-provider';
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
-const PINNED_STORAGE_KEY = "contractor-ops:pinned-items";
+const PINNED_STORAGE_KEY = 'contractor-ops:pinned-items';
 const DEBOUNCE_MS = 200;
 
 type PinnedItem = { type: string; id: string; name: string };
@@ -35,7 +35,7 @@ type SearchResultItem = {
   id: string;
   name: string;
   subtitle: string;
-  type: "contractor" | "contract" | "invoice";
+  type: 'contractor' | 'contract' | 'invoice';
 };
 
 type DocSearchResultItem = {
@@ -44,7 +44,7 @@ type DocSearchResultItem = {
   icon?: string | null;
   subtitle: string;
   url: string;
-  provider: "notion" | "confluence";
+  provider: 'notion' | 'confluence';
 };
 
 // ---------------------------------------------------------------------------
@@ -52,10 +52,10 @@ type DocSearchResultItem = {
 // ---------------------------------------------------------------------------
 
 const TYPE_BADGE_CLASSES: Record<string, string> = {
-  contractor: "bg-primary/10 text-primary border-transparent",
-  contract: "bg-chart-2/10 text-chart-2 border-transparent",
-  invoice: "bg-warning/10 text-warning border-transparent",
-  doc: "bg-chart-3/10 text-chart-3 border-transparent",
+  contractor: 'bg-primary/10 text-primary border-transparent',
+  contract: 'bg-chart-2/10 text-chart-2 border-transparent',
+  invoice: 'bg-warning/10 text-warning border-transparent',
+  doc: 'bg-chart-3/10 text-chart-3 border-transparent',
 };
 
 // ---------------------------------------------------------------------------
@@ -64,28 +64,28 @@ const TYPE_BADGE_CLASSES: Record<string, string> = {
 
 const QUICK_ACTIONS = [
   {
-    key: "new-contractor",
-    labelKey: "actions.newContractor" as const,
+    key: 'new-contractor',
+    labelKey: 'actions.newContractor' as const,
     icon: Plus,
-    href: "/contractors?action=new",
+    href: '/contractors?action=new',
   },
   {
-    key: "new-contract",
-    labelKey: "actions.newContract" as const,
+    key: 'new-contract',
+    labelKey: 'actions.newContract' as const,
     icon: Plus,
-    href: "/contracts?action=new",
+    href: '/contracts?action=new',
   },
   {
-    key: "upload-invoice",
-    labelKey: "actions.uploadInvoice" as const,
+    key: 'upload-invoice',
+    labelKey: 'actions.uploadInvoice' as const,
     icon: Upload,
-    href: "/invoices?action=upload",
+    href: '/invoices?action=upload',
   },
   {
-    key: "start-workflow",
-    labelKey: "actions.startWorkflow" as const,
+    key: 'start-workflow',
+    labelKey: 'actions.startWorkflow' as const,
     icon: Play,
-    href: "/workflows?action=start",
+    href: '/workflows?action=start',
   },
 ] as const;
 
@@ -94,7 +94,7 @@ const QUICK_ACTIONS = [
 // ---------------------------------------------------------------------------
 
 function readPinned(): PinnedItem[] {
-  if (typeof window === "undefined") return [];
+  if (typeof window === 'undefined') return [];
   try {
     const raw = localStorage.getItem(PINNED_STORAGE_KEY);
     if (!raw) return [];
@@ -118,22 +118,22 @@ function formatRelativeTimeData(timestamp: number): {
   params?: Record<string, number>;
 } {
   const diff = Math.floor((Date.now() - timestamp) / 1000);
-  if (diff < 60) return { key: "justNow" };
-  if (diff < 3600) return { key: "minutesAgo", params: { minutes: Math.floor(diff / 60) } };
-  if (diff < 86400) return { key: "hoursAgo", params: { hours: Math.floor(diff / 3600) } };
-  return { key: "daysAgo", params: { days: Math.floor(diff / 86400) } };
+  if (diff < 60) return { key: 'justNow' };
+  if (diff < 3600) return { key: 'minutesAgo', params: { minutes: Math.floor(diff / 60) } };
+  if (diff < 86400) return { key: 'hoursAgo', params: { hours: Math.floor(diff / 3600) } };
+  return { key: 'daysAgo', params: { days: Math.floor(diff / 86400) } };
 }
 
 function entityDetailUrl(type: string, id: string): string {
   switch (type) {
-    case "contractor":
+    case 'contractor':
       return `/contractors/${id}`;
-    case "contract":
+    case 'contract':
       return `/contracts/${id}`;
-    case "invoice":
+    case 'invoice':
       return `/invoices/${id}`;
     default:
-      return "/";
+      return '/';
   }
 }
 
@@ -142,14 +142,14 @@ function entityDetailUrl(type: string, id: string): string {
 // ---------------------------------------------------------------------------
 
 export function CommandPalette() {
-  const t = useTranslations("Search");
-  const tTime = useTranslations("Search.time");
+  const t = useTranslations('Search');
+  const tTime = useTranslations('Search.time');
   const { open, setOpen, recentItems, addRecentItem } = useSearch();
   const router = useRouter();
 
   // Input / debounce state
-  const [query, setQuery] = useState("");
-  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [query, setQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
 
   // Pinned items
   const [pinnedItems, setPinnedItems] = useState<PinnedItem[]>([]);
@@ -170,8 +170,8 @@ export function CommandPalette() {
   // Reset query when dialog closes
   useEffect(() => {
     if (!open) {
-      setQuery("");
-      setDebouncedQuery("");
+      setQuery('');
+      setDebouncedQuery('');
     }
   }, [open]);
 
@@ -188,7 +188,7 @@ export function CommandPalette() {
 
   // Doc search query (runs alongside global search)
   const docSearchQuery = useQuery({
-    ...trpc.docs.search.queryOptions({ query: debouncedQuery, provider: "all" }),
+    ...trpc.docs.search.queryOptions({ query: debouncedQuery, provider: 'all' }),
     enabled: open && debouncedQuery.length >= 2,
   });
 
@@ -201,14 +201,14 @@ export function CommandPalette() {
   const matchedPages = useMemo(() => {
     if (!debouncedQuery || debouncedQuery.length < 2) return [];
     const q = debouncedQuery.toLowerCase();
-    return navigationItems.filter((item) => item.label.toLowerCase().includes(q));
+    return navigationItems.filter(item => item.label.toLowerCase().includes(q));
   }, [debouncedQuery]);
 
   // Client-side action matching
   const matchedActions = useMemo(() => {
     if (!debouncedQuery || debouncedQuery.length < 2) return QUICK_ACTIONS.slice();
     const q = debouncedQuery.toLowerCase();
-    return QUICK_ACTIONS.filter((a) =>
+    return QUICK_ACTIONS.filter(a =>
       t(a.labelKey as Parameters<typeof t>[0])
         .toLowerCase()
         .includes(q),
@@ -239,7 +239,7 @@ export function CommandPalette() {
   // Recent item click handler
   const handleRecentClick = useCallback(
     (item: RecentItem) => {
-      if (item.type === "page") {
+      if (item.type === 'page') {
         navigate(item.id); // For pages, id stores the href
       } else {
         addRecentItem({ id: item.id, type: item.type, name: item.name });
@@ -251,10 +251,10 @@ export function CommandPalette() {
 
   // Pin/unpin toggle
   const togglePin = useCallback((item: { type: string; id: string; name: string }) => {
-    setPinnedItems((prev) => {
-      const exists = prev.some((p) => p.type === item.type && p.id === item.id);
+    setPinnedItems(prev => {
+      const exists = prev.some(p => p.type === item.type && p.id === item.id);
       const next = exists
-        ? prev.filter((p) => !(p.type === item.type && p.id === item.id))
+        ? prev.filter(p => !(p.type === item.type && p.id === item.id))
         : [...prev, item];
       writePinned(next);
       return next;
@@ -262,7 +262,7 @@ export function CommandPalette() {
   }, []);
 
   const isPinned = useCallback(
-    (type: string, id: string) => pinnedItems.some((p) => p.type === type && p.id === id),
+    (type: string, id: string) => pinnedItems.some(p => p.type === type && p.id === id),
     [pinnedItems],
   );
 
@@ -270,22 +270,21 @@ export function CommandPalette() {
     <CommandDialog
       open={open}
       onOpenChange={setOpen}
-      title={t("commandPaletteTitle")}
-      description={t("commandPaletteDescription")}
+      title={t('commandPaletteTitle')}
+      description={t('commandPaletteDescription')}
       className="w-[560px]"
-      shouldFilter={!isSearching}
-    >
-      <CommandInput placeholder={t("placeholder")} value={query} onValueChange={setQuery} />
+      shouldFilter={!isSearching}>
+      <CommandInput placeholder={t('placeholder')} value={query} onValueChange={setQuery} />
       {/* Live region for screen reader result announcements */}
       {isSearching && !isLoading && (
         <div className="sr-only" aria-live="polite" aria-atomic="true">
           {searchResults.length > 0
-            ? t("resultsFound", { count: searchResults.length })
-            : t("noResultsFound")}
+            ? t('resultsFound', { count: searchResults.length })
+            : t('noResultsFound')}
         </div>
       )}
       <CommandList>
-        <CommandEmpty>{t("noResults")}</CommandEmpty>
+        <CommandEmpty>{t('noResults')}</CommandEmpty>
 
         {/* Loading state */}
         {isLoading && (
@@ -301,16 +300,15 @@ export function CommandPalette() {
           <>
             {/* Recent items */}
             {recentItems.length > 0 && (
-              <CommandGroup heading={t("sections.recent")}>
-                {recentItems.map((item) => (
+              <CommandGroup heading={t('sections.recent')}>
+                {recentItems.map(item => (
                   <CommandItem
                     key={`recent-${item.type}-${item.id}`}
-                    onSelect={() => handleRecentClick(item)}
-                  >
+                    onSelect={() => handleRecentClick(item)}>
                     <Clock className="h-4 w-4 text-muted-foreground" />
                     <span className="flex-1 truncate text-sm font-medium">{item.name}</span>
-                    {item.type !== "page" && (
-                      <Badge variant="secondary" className={TYPE_BADGE_CLASSES[item.type] ?? ""}>
+                    {item.type !== 'page' && (
+                      <Badge variant="secondary" className={TYPE_BADGE_CLASSES[item.type] ?? ''}>
                         {item.type}
                       </Badge>
                     )}
@@ -329,15 +327,14 @@ export function CommandPalette() {
             {pinnedItems.length > 0 && (
               <>
                 <CommandSeparator />
-                <CommandGroup heading={t("sections.pinned")}>
-                  {pinnedItems.map((item) => (
+                <CommandGroup heading={t('sections.pinned')}>
+                  {pinnedItems.map(item => (
                     <CommandItem
                       key={`pinned-${item.type}-${item.id}`}
-                      onSelect={() => navigate(entityDetailUrl(item.type, item.id))}
-                    >
+                      onSelect={() => navigate(entityDetailUrl(item.type, item.id))}>
                       <Star className="h-4 w-4 text-warning" />
                       <span className="flex-1 truncate text-sm font-medium">{item.name}</span>
-                      <Badge variant="secondary" className={TYPE_BADGE_CLASSES[item.type] ?? ""}>
+                      <Badge variant="secondary" className={TYPE_BADGE_CLASSES[item.type] ?? ''}>
                         {item.type}
                       </Badge>
                     </CommandItem>
@@ -348,8 +345,8 @@ export function CommandPalette() {
 
             {/* Quick actions */}
             <CommandSeparator />
-            <CommandGroup heading={t("sections.actions")}>
-              {QUICK_ACTIONS.map((action) => (
+            <CommandGroup heading={t('sections.actions')}>
+              {QUICK_ACTIONS.map(action => (
                 <CommandItem key={action.key} onSelect={() => navigate(action.href)}>
                   <action.icon className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">{t(action.labelKey as Parameters<typeof t>[0])}</span>
@@ -359,19 +356,18 @@ export function CommandPalette() {
 
             {/* Page navigation */}
             <CommandSeparator />
-            <CommandGroup heading={t("sections.pages")}>
-              {navigationItems.map((item) => (
+            <CommandGroup heading={t('sections.pages')}>
+              {navigationItems.map(item => (
                 <CommandItem
                   key={`page-${item.key}`}
                   onSelect={() => {
                     addRecentItem({
                       id: item.href,
-                      type: "page",
+                      type: 'page',
                       name: item.label,
                     });
                     navigate(item.href);
-                  }}
-                >
+                  }}>
                   <item.icon className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">{item.label}</span>
                 </CommandItem>
@@ -385,14 +381,13 @@ export function CommandPalette() {
           <>
             {/* Entity results from tRPC */}
             {searchResults.length > 0 && (
-              <CommandGroup heading={t("sections.results")}>
-                {searchResults.map((item) => (
+              <CommandGroup heading={t('sections.results')}>
+                {searchResults.map(item => (
                   <CommandItem
                     key={`result-${item.type}-${item.id}`}
                     onSelect={() => handleEntityClick(item)}
-                    className="group"
-                  >
-                    <Badge variant="secondary" className={TYPE_BADGE_CLASSES[item.type] ?? ""}>
+                    className="group">
+                    <Badge variant="secondary" className={TYPE_BADGE_CLASSES[item.type] ?? ''}>
                       {item.type}
                     </Badge>
                     <div className="flex flex-1 flex-col gap-0.5 overflow-hidden">
@@ -404,7 +399,7 @@ export function CommandPalette() {
                     <button
                       type="button"
                       className="opacity-0 transition-opacity group-hover:opacity-100"
-                      onClick={(e) => {
+                      onClick={e => {
                         e.stopPropagation();
                         togglePin({
                           type: item.type,
@@ -412,13 +407,12 @@ export function CommandPalette() {
                           name: item.name,
                         });
                       }}
-                      aria-label={isPinned(item.type, item.id) ? t("unpin") : t("pin")}
-                    >
+                      aria-label={isPinned(item.type, item.id) ? t('unpin') : t('pin')}>
                       <Star
                         className={`h-4 w-4 ${
                           isPinned(item.type, item.id)
-                            ? "fill-warning text-warning"
-                            : "text-muted-foreground"
+                            ? 'fill-warning text-warning'
+                            : 'text-muted-foreground'
                         }`}
                       />
                     </button>
@@ -441,14 +435,13 @@ export function CommandPalette() {
               <>
                 <CommandSeparator />
                 <CommandGroup heading="Docs">
-                  {docResults.map((result) => {
-                    const ProviderIcon = result.provider === "notion" ? NotionIcon : ConfluenceIcon;
+                  {docResults.map(result => {
+                    const ProviderIcon = result.provider === 'notion' ? NotionIcon : ConfluenceIcon;
 
                     return (
                       <CommandItem
                         key={`doc-${result.provider}-${result.id}`}
-                        onSelect={() => window.open(result.url, "_blank")}
-                      >
+                        onSelect={() => window.open(result.url, '_blank')}>
                         <ProviderIcon className="h-3.5 w-3.5 shrink-0" />
                         <span className="flex-1 truncate text-sm font-medium">{result.title}</span>
                         <span className="text-xs text-muted-foreground shrink-0">
@@ -468,8 +461,8 @@ export function CommandPalette() {
             {matchedPages.length > 0 && (
               <>
                 <CommandSeparator />
-                <CommandGroup heading={t("sections.pages")}>
-                  {matchedPages.map((item) => (
+                <CommandGroup heading={t('sections.pages')}>
+                  {matchedPages.map(item => (
                     <CommandItem key={`page-${item.key}`} onSelect={() => navigate(item.href)}>
                       <ArrowRight className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm">{item.label}</span>
@@ -483,8 +476,8 @@ export function CommandPalette() {
             {matchedActions.length > 0 && (
               <>
                 <CommandSeparator />
-                <CommandGroup heading={t("sections.actions")}>
-                  {matchedActions.map((action) => (
+                <CommandGroup heading={t('sections.actions')}>
+                  {matchedActions.map(action => (
                     <CommandItem key={action.key} onSelect={() => navigate(action.href)}>
                       <action.icon className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm">
@@ -501,9 +494,9 @@ export function CommandPalette() {
 
       {/* Footer keyboard hints */}
       <div className="flex items-center gap-4 border-t border-border/40 px-3 py-2">
-        <span className="text-xs font-mono text-muted-foreground/70">{t("footer.select")}</span>
-        <span className="text-xs font-mono text-muted-foreground/70">{t("footer.navigate")}</span>
-        <span className="text-xs font-mono text-muted-foreground/70">{t("footer.close")}</span>
+        <span className="text-xs font-mono text-muted-foreground/70">{t('footer.select')}</span>
+        <span className="text-xs font-mono text-muted-foreground/70">{t('footer.navigate')}</span>
+        <span className="text-xs font-mono text-muted-foreground/70">{t('footer.close')}</span>
       </div>
     </CommandDialog>
   );

@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { format } from "date-fns";
-import { AlertTriangle, Loader2 } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { toast } from "sonner";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { format } from 'date-fns';
+import { AlertTriangle, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,9 +15,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import { trpc } from "@/trpc/init";
+} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -44,14 +44,14 @@ interface ReturnApprovalBannerProps {
  * when a contractor has submitted a return request pending approval.
  */
 export function ReturnApprovalBanner({ returnRequest }: ReturnApprovalBannerProps) {
-  const t = useTranslations("Equipment.return");
+  const t = useTranslations('Equipment.return');
   const queryClient = useQueryClient();
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
 
   const approveMutation = useMutation(
     trpc.equipment.approveReturnRequest.mutationOptions({
       onSuccess: () => {
-        toast.success(t("approvedToast"));
+        toast.success(t('approvedToast'));
         queryClient.invalidateQueries({
           queryKey: trpc.equipment.getById.queryKey(),
         });
@@ -60,7 +60,7 @@ export function ReturnApprovalBanner({ returnRequest }: ReturnApprovalBannerProp
         });
       },
       onError: () => {
-        toast.error(t("actionFailed"));
+        toast.error(t('actionFailed'));
       },
     }),
   );
@@ -68,7 +68,7 @@ export function ReturnApprovalBanner({ returnRequest }: ReturnApprovalBannerProp
   const rejectMutation = useMutation(
     trpc.equipment.rejectReturnRequest.mutationOptions({
       onSuccess: () => {
-        toast.success(t("rejectedToast"));
+        toast.success(t('rejectedToast'));
         setRejectDialogOpen(false);
         queryClient.invalidateQueries({
           queryKey: trpc.equipment.getById.queryKey(),
@@ -78,7 +78,7 @@ export function ReturnApprovalBanner({ returnRequest }: ReturnApprovalBannerProp
         });
       },
       onError: () => {
-        toast.error(t("actionFailed"));
+        toast.error(t('actionFailed'));
       },
     }),
   );
@@ -86,7 +86,7 @@ export function ReturnApprovalBanner({ returnRequest }: ReturnApprovalBannerProp
   const handleApprove = () => {
     approveMutation.mutate({
       id: returnRequest.id,
-      parcelSize: "large",
+      parcelSize: 'large',
     });
   };
 
@@ -103,12 +103,12 @@ export function ReturnApprovalBanner({ returnRequest }: ReturnApprovalBannerProp
           <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-warning" />
           <div className="min-w-0 flex-1">
             <p className="text-sm font-medium">
-              {t("requestedBy", { name: returnRequest.contractorName })}
+              {t('requestedBy', { name: returnRequest.contractorName })}
             </p>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              {t("itemCount", { count: returnRequest.itemCount })} | {t("dropOff")}:{" "}
-              {returnRequest.targetPointName} | {t("requested")}:{" "}
-              {format(new Date(returnRequest.createdAt), "MMM d, yyyy")}
+              {t('itemCount', { count: returnRequest.itemCount })} | {t('dropOff')}:{' '}
+              {returnRequest.targetPointName} | {t('requested')}:{' '}
+              {format(new Date(returnRequest.createdAt), 'MMM d, yyyy')}
             </p>
           </div>
           <div className="flex shrink-0 gap-2">
@@ -116,14 +116,13 @@ export function ReturnApprovalBanner({ returnRequest }: ReturnApprovalBannerProp
               variant="destructive"
               size="sm"
               onClick={() => setRejectDialogOpen(true)}
-              disabled={isPending}
-            >
+              disabled={isPending}>
               {rejectMutation.isPending && <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />}
-              {t("reject")}
+              {t('reject')}
             </Button>
             <Button size="sm" onClick={handleApprove} disabled={isPending}>
               {approveMutation.isPending && <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />}
-              {t("approve")}
+              {t('approve')}
             </Button>
           </div>
         </div>
@@ -133,20 +132,19 @@ export function ReturnApprovalBanner({ returnRequest }: ReturnApprovalBannerProp
       <AlertDialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("rejectConfirmTitle")}</AlertDialogTitle>
-            <AlertDialogDescription>{t("rejectConfirmDescription")}</AlertDialogDescription>
+            <AlertDialogTitle>{t('rejectConfirmTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('rejectConfirmDescription')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={rejectMutation.isPending}>
-              {t("cancelAction")}
+              {t('cancelAction')}
             </AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
               onClick={handleReject}
-              disabled={rejectMutation.isPending}
-            >
+              disabled={rejectMutation.isPending}>
               {rejectMutation.isPending && <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />}
-              {t("reject")}
+              {t('reject')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

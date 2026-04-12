@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { Badge } from "@/components/ui/badge";
+import { Badge } from '@/components/ui/badge';
 
 // ---------------------------------------------------------------------------
 // Status -> badge variant mapping per UI-SPEC
 // ---------------------------------------------------------------------------
 
 const STATUS_CONFIG = {
-  DRAFT: { variant: "info" as const, label: "Draft" },
-  SUBMITTED: { variant: "warning" as const, label: "Submitted" },
-  APPROVED: { variant: "success" as const, label: "Approved" },
-  REJECTED: { variant: "destructive" as const, label: "Rejected" },
+  DRAFT: { variant: 'info' as const, label: 'Draft' },
+  SUBMITTED: { variant: 'warning' as const, label: 'Submitted' },
+  APPROVED: { variant: 'success' as const, label: 'Approved' },
+  REJECTED: { variant: 'destructive' as const, label: 'Rejected' },
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -18,7 +18,7 @@ const STATUS_CONFIG = {
 // ---------------------------------------------------------------------------
 
 interface TimeEntryStatusBadgeProps {
-  status: "DRAFT" | "SUBMITTED" | "APPROVED" | "REJECTED";
+  status: 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED';
 }
 
 // ---------------------------------------------------------------------------

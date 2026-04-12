@@ -1,10 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
-import { render, screen, setup, waitFor } from "@/test/test-utils";
-import { SourceSelectionStep } from "../source-selection-step";
+import { useQuery } from '@tanstack/react-query';
+import { render, screen, setup, waitFor } from '@/test/test-utils';
+import { SourceSelectionStep } from '../source-selection-step';
 
 const mockFetchQuery = vi.fn();
-vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual("@tanstack/react-query");
+vi.mock('@tanstack/react-query', async () => {
+  const actual = await vi.importActual('@tanstack/react-query');
   return {
     ...actual,
     useQuery: vi.fn(),
@@ -12,25 +12,25 @@ vi.mock("@tanstack/react-query", async () => {
   };
 });
 
-vi.mock("@/trpc/init", () => ({
+vi.mock('@/trpc/init', () => ({
   trpc: {
     onboardingImport: {
       listSources: {
-        queryOptions: () => ({ queryKey: ["onboardingImport", "listSources"] }),
-        queryKey: () => ["onboardingImport", "listSources"],
+        queryOptions: () => ({ queryKey: ['onboardingImport', 'listSources'] }),
+        queryKey: () => ['onboardingImport', 'listSources'],
       },
     },
     integration: {
       getOAuthUrlGeneric: {
         queryOptions: (params: { provider: string }) => ({
-          queryKey: ["integration", "getOAuthUrlGeneric", params.provider],
+          queryKey: ['integration', 'getOAuthUrlGeneric', params.provider],
         }),
       },
     },
   },
 }));
 
-vi.mock("@/i18n/navigation", () => ({
+vi.mock('@/i18n/navigation', () => ({
   Link: ({ children, href, ...props }: any) => (
     <a href={href} {...props}>
       {children}
@@ -39,51 +39,51 @@ vi.mock("@/i18n/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
 }));
 
-vi.mock("sonner", () => ({ toast: { info: vi.fn() } }));
+vi.mock('sonner', () => ({ toast: { info: vi.fn() } }));
 
-vi.mock("@/components/integrations/brand-icons", () => ({
+vi.mock('@/components/integrations/brand-icons', () => ({
   JiraBrandIcon: () => <span>Jira</span>,
   LinearBrandIcon: () => <span>Linear</span>,
   SlackBrandIcon: () => <span>Slack</span>,
 }));
 
-vi.mock("@/components/integrations/google-workspace-logo", () => ({
+vi.mock('@/components/integrations/google-workspace-logo', () => ({
   GoogleWorkspaceLogo: () => <span>GWS</span>,
 }));
 
 const mockedUseQuery = vi.mocked(useQuery);
 
-describe("SourceSelectionStep", () => {
-  it("renders heading", () => {
+describe('SourceSelectionStep', () => {
+  it('renders heading', () => {
     mockedUseQuery.mockReturnValue({
-      data: [{ provider: "JIRA", connected: true }],
+      data: [{ provider: 'JIRA', connected: true }],
       isLoading: false,
     } as any);
     render(<SourceSelectionStep selectedSources={[]} onSourcesChange={vi.fn()} />);
     expect(screen.getByText(/Where do you manage/)).toBeInTheDocument();
   });
 
-  it("renders source cards for each provider", () => {
+  it('renders source cards for each provider', () => {
     mockedUseQuery.mockReturnValue({
       data: [
-        { provider: "JIRA", connected: true },
-        { provider: "LINEAR", connected: false },
+        { provider: 'JIRA', connected: true },
+        { provider: 'LINEAR', connected: false },
       ],
       isLoading: false,
     } as any);
     render(<SourceSelectionStep selectedSources={[]} onSourcesChange={vi.fn()} />);
     // One connected, one not connected
-    expect(screen.getByText("Connected")).toBeInTheDocument();
-    expect(screen.getByText("Connect")).toBeInTheDocument();
+    expect(screen.getByText('Connected')).toBeInTheDocument();
+    expect(screen.getByText('Connect')).toBeInTheDocument();
   });
 
-  it("renders skip link", () => {
+  it('renders skip link', () => {
     mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as any);
     render(<SourceSelectionStep selectedSources={[]} onSourcesChange={vi.fn()} />);
     expect(screen.getByText(/Skip/)).toBeInTheDocument();
   });
 
-  it("renders loading skeletons when query is loading", () => {
+  it('renders loading skeletons when query is loading', () => {
     mockedUseQuery.mockReturnValue({ data: undefined, isLoading: true } as any);
     const { container } = render(
       <SourceSelectionStep selectedSources={[]} onSourcesChange={vi.fn()} />,
@@ -93,7 +93,7 @@ describe("SourceSelectionStep", () => {
     expect(skeletons.length).toBe(4);
   });
 
-  it("renders subtitle text", () => {
+  it('renders subtitle text', () => {
     mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as any);
     render(<SourceSelectionStep selectedSources={[]} onSourcesChange={vi.fn()} />);
     // Subtitle is present below heading
@@ -101,57 +101,57 @@ describe("SourceSelectionStep", () => {
     expect(heading).toBeInTheDocument();
   });
 
-  it("renders all four provider source cards when data includes four providers", () => {
+  it('renders all four provider source cards when data includes four providers', () => {
     mockedUseQuery.mockReturnValue({
       data: [
-        { provider: "JIRA", connected: true },
-        { provider: "LINEAR", connected: false },
-        { provider: "GOOGLE_WORKSPACE", connected: true },
-        { provider: "SLACK", connected: false },
+        { provider: 'JIRA', connected: true },
+        { provider: 'LINEAR', connected: false },
+        { provider: 'GOOGLE_WORKSPACE', connected: true },
+        { provider: 'SLACK', connected: false },
       ],
       isLoading: false,
     } as any);
     render(<SourceSelectionStep selectedSources={[]} onSourcesChange={vi.fn()} />);
     // Connected and Connect buttons should be visible
-    const connectedBadges = screen.getAllByText("Connected");
-    const connectBtns = screen.getAllByText("Connect");
+    const connectedBadges = screen.getAllByText('Connected');
+    const connectBtns = screen.getAllByText('Connect');
     expect(connectedBadges.length).toBe(2);
     expect(connectBtns.length).toBe(2);
   });
 
-  it("shows no source cards when data is empty", () => {
+  it('shows no source cards when data is empty', () => {
     mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as any);
     render(<SourceSelectionStep selectedSources={[]} onSourcesChange={vi.fn()} />);
-    expect(screen.queryByText("Connected")).not.toBeInTheDocument();
-    expect(screen.queryByText("Connect")).not.toBeInTheDocument();
+    expect(screen.queryByText('Connected')).not.toBeInTheDocument();
+    expect(screen.queryByText('Connect')).not.toBeInTheDocument();
   });
 
-  it("renders heading and skip even when no sources available", () => {
+  it('renders heading and skip even when no sources available', () => {
     mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as any);
     render(<SourceSelectionStep selectedSources={[]} onSourcesChange={vi.fn()} />);
     expect(screen.getByText(/Where do you manage/)).toBeInTheDocument();
     expect(screen.getByText(/Skip/)).toBeInTheDocument();
   });
 
-  it("renders with pre-selected sources", () => {
+  it('renders with pre-selected sources', () => {
     mockedUseQuery.mockReturnValue({
       data: [
-        { provider: "JIRA", connected: true },
-        { provider: "LINEAR", connected: true },
+        { provider: 'JIRA', connected: true },
+        { provider: 'LINEAR', connected: true },
       ],
       isLoading: false,
     } as any);
-    render(<SourceSelectionStep selectedSources={["JIRA"]} onSourcesChange={vi.fn()} />);
+    render(<SourceSelectionStep selectedSources={['JIRA']} onSourcesChange={vi.fn()} />);
     // Both should show as connected
-    const connectedBadges = screen.getAllByText("Connected");
+    const connectedBadges = screen.getAllByText('Connected');
     expect(connectedBadges.length).toBe(2);
   });
 
-  it("calls onSourcesChange when a connected source is toggled", async () => {
+  it('calls onSourcesChange when a connected source is toggled', async () => {
     mockedUseQuery.mockReturnValue({
       data: [
-        { provider: "JIRA", connected: true },
-        { provider: "LINEAR", connected: true },
+        { provider: 'JIRA', connected: true },
+        { provider: 'LINEAR', connected: true },
       ],
       isLoading: false,
     } as any);
@@ -160,7 +160,7 @@ describe("SourceSelectionStep", () => {
       <SourceSelectionStep selectedSources={[]} onSourcesChange={onSourcesChange} />,
     );
     // Click on a source card to toggle it
-    const connectedBadges = screen.getAllByText("Connected");
+    const connectedBadges = screen.getAllByText('Connected');
     // Click the parent card of the first connected source
     const card = connectedBadges[0]?.closest("div[role='button'], button, div");
     if (card) await user.click(card);
@@ -168,38 +168,38 @@ describe("SourceSelectionStep", () => {
     expect(onSourcesChange).toHaveBeenCalled();
   });
 
-  it("calls handleConnect when Connect button is clicked", async () => {
-    mockFetchQuery.mockResolvedValue({ url: "https://oauth.test/auth" });
-    vi.spyOn(window, "open").mockReturnValue({
+  it('calls handleConnect when Connect button is clicked', async () => {
+    mockFetchQuery.mockResolvedValue({ url: 'https://oauth.test/auth' });
+    vi.spyOn(window, 'open').mockReturnValue({
       closed: true,
     } as Window);
 
     mockedUseQuery.mockReturnValue({
-      data: [{ provider: "LINEAR", connected: false }],
+      data: [{ provider: 'LINEAR', connected: false }],
       isLoading: false,
     } as any);
     const { user } = setup(<SourceSelectionStep selectedSources={[]} onSourcesChange={vi.fn()} />);
-    await user.click(screen.getByText("Connect"));
+    await user.click(screen.getByText('Connect'));
     await waitFor(() => {
       expect(mockFetchQuery).toHaveBeenCalled();
     });
   });
 
-  it("removes source from selection when already selected", async () => {
+  it('removes source from selection when already selected', async () => {
     mockedUseQuery.mockReturnValue({
-      data: [{ provider: "JIRA", connected: true }],
+      data: [{ provider: 'JIRA', connected: true }],
       isLoading: false,
     } as any);
     const onSourcesChange = vi.fn();
     const { user } = setup(
-      <SourceSelectionStep selectedSources={["JIRA"]} onSourcesChange={onSourcesChange} />,
+      <SourceSelectionStep selectedSources={['JIRA']} onSourcesChange={onSourcesChange} />,
     );
-    const card = screen.getByText("Connected").closest("div[role='button'], button, div");
+    const card = screen.getByText('Connected').closest("div[role='button'], button, div");
     if (card) await user.click(card);
     expect(onSourcesChange).toHaveBeenCalled();
   });
 
-  it("navigates to settings when skip is clicked", async () => {
+  it('navigates to settings when skip is clicked', async () => {
     mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as any);
     const { user } = setup(<SourceSelectionStep selectedSources={[]} onSourcesChange={vi.fn()} />);
     await user.click(screen.getByText(/Skip/));

@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import type { DragEndEvent } from "@dnd-kit/core";
+import type { DragEndEvent } from '@dnd-kit/core';
 import {
   closestCenter,
   DndContext,
@@ -8,22 +8,22 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-} from "@dnd-kit/core";
+} from '@dnd-kit/core';
 import {
   SortableContext,
   sortableKeyboardCoordinates,
   useSortable,
   verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import { Plus } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useCallback } from "react";
-import type { UseFormReturn } from "react-hook-form";
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { Plus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback } from 'react';
+import type { UseFormReturn } from 'react-hook-form';
 
-import { Button } from "@/components/ui/button";
-import { TaskCard } from "./task-card";
-import type { TaskFormValues, TemplateFormValues } from "./use-template-form";
+import { Button } from '@/components/ui/button';
+import { TaskCard } from './task-card';
+import type { TaskFormValues, TemplateFormValues } from './use-template-form';
 
 // ---------------------------------------------------------------------------
 // Sortable wrapper
@@ -86,7 +86,7 @@ export function SortableTaskList({
   onRemove,
   onAdd,
 }: SortableTaskListProps) {
-  const t = useTranslations("Workflows");
+  const t = useTranslations('Workflows');
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -97,7 +97,7 @@ export function SortableTaskList({
     }),
   );
 
-  const taskIds = fields.map((f) => f.id);
+  const taskIds = fields.map(f => f.id);
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
@@ -116,10 +116,10 @@ export function SortableTaskList({
   if (fields.length === 0) {
     return (
       <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed py-12 text-center">
-        <p className="text-sm text-muted-foreground">{t("noTasksYet")}</p>
+        <p className="text-sm text-muted-foreground">{t('noTasksYet')}</p>
         <Button type="button" variant="secondary" onClick={onAdd}>
           <Plus className="me-1.5 size-4" />
-          {t("addTask")}
+          {t('addTask')}
         </Button>
       </div>
     );
@@ -144,7 +144,7 @@ export function SortableTaskList({
 
       <Button type="button" variant="secondary" onClick={onAdd}>
         <Plus className="me-1.5 size-4" />
-        {t("addTask")}
+        {t('addTask')}
       </Button>
     </div>
   );

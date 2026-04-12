@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { MoreHorizontal } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { toast } from "sonner";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { MoreHorizontal } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,30 +13,30 @@ import {
   AlertDialogDescription,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+} from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Progress } from "@/components/ui/progress";
-import { Link } from "@/i18n/navigation";
-import { trpc } from "@/trpc/init";
+} from '@/components/ui/dropdown-menu';
+import { Progress } from '@/components/ui/progress';
+import { Link } from '@/i18n/navigation';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Status badge colors (shared with side panel)
 // ---------------------------------------------------------------------------
 
 const statusBadgeColors: Record<string, string> = {
-  NOT_STARTED: "bg-muted text-muted-foreground border border-border",
-  IN_PROGRESS: "bg-primary/10 text-primary",
-  COMPLETED: "bg-green-500/10 text-green-600 dark:text-green-400",
-  CANCELLED: "bg-muted text-muted-foreground border border-border",
-  BLOCKED: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
-  OVERDUE: "bg-red-500/10 text-red-600 dark:text-red-400",
+  NOT_STARTED: 'bg-muted text-muted-foreground border border-border',
+  IN_PROGRESS: 'bg-primary/10 text-primary',
+  COMPLETED: 'bg-green-500/10 text-green-600 dark:text-green-400',
+  CANCELLED: 'bg-muted text-muted-foreground border border-border',
+  BLOCKED: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+  OVERDUE: 'bg-red-500/10 text-red-600 dark:text-red-400',
 };
 
 // ---------------------------------------------------------------------------
@@ -75,17 +75,17 @@ interface RunHeaderProps {
 // ---------------------------------------------------------------------------
 
 function calculateRunProgress(tasks: RunTask[]) {
-  const activeTasks = tasks.filter((t) => {
+  const activeTasks = tasks.filter(t => {
     if (
-      t.status === "SKIPPED" &&
-      (t.resultJson as Record<string, unknown>)?.skipReason === "condition_not_met"
+      t.status === 'SKIPPED' &&
+      (t.resultJson as Record<string, unknown>)?.skipReason === 'condition_not_met'
     ) {
       return false;
     }
     return true;
   });
 
-  const done = activeTasks.filter((t) => t.status === "DONE" || t.status === "SKIPPED").length;
+  const done = activeTasks.filter(t => t.status === 'DONE' || t.status === 'SKIPPED').length;
   const total = activeTasks.length;
 
   return {
@@ -96,16 +96,16 @@ function calculateRunProgress(tasks: RunTask[]) {
 }
 
 function formatDate(date: string | Date): string {
-  const d = typeof date === "string" ? new Date(date) : date;
-  return d.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return d.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
   });
 }
 
 function getDaysOverdue(dueDate: string | Date): number {
-  const due = typeof dueDate === "string" ? new Date(dueDate) : dueDate;
+  const due = typeof dueDate === 'string' ? new Date(dueDate) : dueDate;
   const now = new Date();
   const diff = now.getTime() - due.getTime();
   return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
@@ -116,32 +116,32 @@ function getDaysOverdue(dueDate: string | Date): number {
 // ---------------------------------------------------------------------------
 
 export function RunHeader({ run }: RunHeaderProps) {
-  const t = useTranslations("Workflows");
-  const tCommon = useTranslations("Common");
+  const t = useTranslations('Workflows');
+  const tCommon = useTranslations('Common');
   const queryClient = useQueryClient();
   const [cancelOpen, setCancelOpen] = useState(false);
 
   const progress = calculateRunProgress(run.tasks);
 
   const isOverdue =
-    run.dueAt !== null && new Date(run.dueAt) < new Date() && run.status === "IN_PROGRESS";
+    run.dueAt !== null && new Date(run.dueAt) < new Date() && run.status === 'IN_PROGRESS';
 
   const cancelMutation = useMutation(
     trpc.workflow.cancelRun.mutationOptions({
       onSuccess: () => {
-        toast.success(t("toastWorkflowCancelled"));
+        toast.success(t('toastWorkflowCancelled'));
         queryClient.invalidateQueries({
           queryKey: trpc.workflow.getRun.queryKey({ id: run.id }),
         });
         setCancelOpen(false);
       },
       onError: () => {
-        toast.error(t("errors.failedToLoadWorkflowDetail"));
+        toast.error(t('errors.failedToLoadWorkflowDetail'));
       },
     }),
   );
 
-  const canCancel = run.status !== "COMPLETED" && run.status !== "CANCELLED";
+  const canCancel = run.status !== 'COMPLETED' && run.status !== 'CANCELLED';
 
   return (
     <div className="space-y-4">
@@ -151,9 +151,9 @@ export function RunHeader({ run }: RunHeaderProps) {
           {/* Workflow name */}
           <div className="flex items-center gap-3 flex-wrap">
             <h1 className="text-[20px] font-semibold leading-[1.2]">
-              {run.workflowTemplate?.name ?? t("workflowLabel")}
+              {run.workflowTemplate?.name ?? t('workflowLabel')}
             </h1>
-            <Badge variant="secondary" className={statusBadgeColors[run.status] ?? ""}>
+            <Badge variant="secondary" className={statusBadgeColors[run.status] ?? ''}>
               {t(`runStatus.${run.status}` as Parameters<typeof t>[0])}
             </Badge>
           </div>
@@ -163,19 +163,17 @@ export function RunHeader({ run }: RunHeaderProps) {
             {run.workflowTemplate && (
               <Link
                 href={`/workflows/templates/${run.workflowTemplate.id}`}
-                className="text-primary hover:underline"
-              >
+                className="text-primary hover:underline">
                 {run.workflowTemplate.name}
               </Link>
             )}
             {run.contractor && (
               <>
                 <span className="text-muted-foreground">&middot;</span>
-                <span className="text-muted-foreground">{t("contractorLabel")}</span>
+                <span className="text-muted-foreground">{t('contractorLabel')}</span>
                 <Link
                   href={`/contractors/${run.contractor.id}`}
-                  className="text-primary hover:underline"
-                >
+                  className="text-primary hover:underline">
                   {run.contractor.displayName ?? run.contractor.legalName}
                 </Link>
               </>
@@ -186,8 +184,8 @@ export function RunHeader({ run }: RunHeaderProps) {
           <div className="flex items-center gap-3 flex-wrap text-[13px] text-muted-foreground">
             {run.startedAt && (
               <span>
-                {t("startedByLabel", {
-                  name: run.startedByUserId ?? "Unknown",
+                {t('startedByLabel', {
+                  name: run.startedByUserId ?? 'Unknown',
                   date: formatDate(run.startedAt),
                 })}
               </span>
@@ -197,10 +195,10 @@ export function RunHeader({ run }: RunHeaderProps) {
                 <span>&middot;</span>
                 {isOverdue ? (
                   <span className="text-destructive font-medium">
-                    {t("overdueLabel", { count: getDaysOverdue(run.dueAt) })}
+                    {t('overdueLabel', { count: getDaysOverdue(run.dueAt) })}
                   </span>
                 ) : (
-                  <span>{t("dueDateLabel", { date: formatDate(run.dueAt) })}</span>
+                  <span>{t('dueDateLabel', { date: formatDate(run.dueAt) })}</span>
                 )}
               </>
             )}
@@ -212,21 +210,20 @@ export function RunHeader({ run }: RunHeaderProps) {
           <AlertDialog open={cancelOpen} onOpenChange={setCancelOpen}>
             <DropdownMenu>
               <DropdownMenuTrigger
-                render={(props) => (
+                render={props => (
                   <Button {...props} variant="ghost" size="icon">
                     <MoreHorizontal className="size-4" />
-                    <span className="sr-only">{tCommon("srOnly.actions")}</span>
+                    <span className="sr-only">{tCommon('srOnly.actions')}</span>
                   </Button>
                 )}
               />
               <DropdownMenuContent align="end">
                 <AlertDialogTrigger
-                  render={(props) => (
+                  render={props => (
                     <DropdownMenuItem
                       {...props}
-                      className="text-destructive focus:text-destructive"
-                    >
-                      {t("cancelWorkflow")}
+                      className="text-destructive focus:text-destructive">
+                      {t('cancelWorkflow')}
                     </DropdownMenuItem>
                   )}
                 />
@@ -234,18 +231,17 @@ export function RunHeader({ run }: RunHeaderProps) {
             </DropdownMenu>
 
             <AlertDialogContent>
-              <AlertDialogTitle>{t("cancelWorkflowTitle")}</AlertDialogTitle>
-              <AlertDialogDescription>{t("cancelWorkflowBody")}</AlertDialogDescription>
+              <AlertDialogTitle>{t('cancelWorkflowTitle')}</AlertDialogTitle>
+              <AlertDialogDescription>{t('cancelWorkflowBody')}</AlertDialogDescription>
               <div className="flex justify-end gap-2 pt-2">
-                <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+                <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
                 <AlertDialogAction
                   variant="destructive"
                   onClick={() => {
                     cancelMutation.mutate({ runId: run.id });
                   }}
-                  disabled={cancelMutation.isPending}
-                >
-                  {t("cancelWorkflowCta")}
+                  disabled={cancelMutation.isPending}>
+                  {t('cancelWorkflowCta')}
                 </AlertDialogAction>
               </div>
             </AlertDialogContent>
@@ -257,7 +253,7 @@ export function RunHeader({ run }: RunHeaderProps) {
       <div className="space-y-2">
         <Progress value={progress.percent} className="[&_[data-slot=progress-track]]:h-2">
           <span className="text-[13px] text-muted-foreground">
-            {t("progressLabel", {
+            {t('progressLabel', {
               completed: progress.done,
               total: progress.total,
             })}

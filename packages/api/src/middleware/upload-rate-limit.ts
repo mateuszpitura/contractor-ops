@@ -1,5 +1,5 @@
-import { TRPCError } from "@trpc/server";
-import { t } from "../init.js";
+import { TRPCError } from '@trpc/server';
+import { t } from '../init.js';
 
 /**
  * In-memory sliding window rate limiter for file uploads.
@@ -23,11 +23,11 @@ const MAX_MAP_ENTRIES = 10_000; // Cap to prevent unbounded memory growth
 const uploadCounts = new Map<string, { timestamps: number[] }>();
 
 // Periodic cleanup of expired entries
-if (typeof globalThis !== "undefined") {
+if (typeof globalThis !== 'undefined') {
   const cleanup = () => {
     const now = Date.now();
     for (const [key, entry] of uploadCounts) {
-      entry.timestamps = entry.timestamps.filter((ts) => now - ts < WINDOW_MS);
+      entry.timestamps = entry.timestamps.filter(ts => now - ts < WINDOW_MS);
       if (entry.timestamps.length === 0) uploadCounts.delete(key);
     }
   };
@@ -42,7 +42,7 @@ function checkUploadLimit(userId: string): {
   const entry = uploadCounts.get(userId) ?? { timestamps: [] };
 
   // Remove timestamps outside the window
-  entry.timestamps = entry.timestamps.filter((ts) => now - ts < WINDOW_MS);
+  entry.timestamps = entry.timestamps.filter(ts => now - ts < WINDOW_MS);
 
   if (entry.timestamps.length >= MAX_UPLOADS) {
     return { allowed: false, remaining: 0 };
@@ -66,15 +66,15 @@ function checkUploadLimit(userId: string): {
 export const uploadRateLimitMiddleware = t.middleware(async ({ ctx, next }) => {
   const userId = (ctx as { user?: { id: string } }).user?.id;
   if (!userId) {
-    throw new TRPCError({ code: "UNAUTHORIZED" });
+    throw new TRPCError({ code: 'UNAUTHORIZED' });
   }
 
   const { allowed, remaining } = checkUploadLimit(userId);
 
   if (!allowed) {
     throw new TRPCError({
-      code: "TOO_MANY_REQUESTS",
-      message: "errors.upload.rateLimitExceeded",
+      code: 'TOO_MANY_REQUESTS',
+      message: 'errors.upload.rateLimitExceeded',
     });
   }
 

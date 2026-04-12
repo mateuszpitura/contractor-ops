@@ -8,14 +8,14 @@
  *  - Each test verifies delegation params, metadata merging, slug generation.
  */
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
-const ORG_ID = "clxxxxxxxxxxxxxxxxxxxxxxxxx";
-const USER_ID = "clyyyyyyyyyyyyyyyyyyyyyyyy";
+const ORG_ID = 'clxxxxxxxxxxxxxxxxxxxxxxxxx';
+const USER_ID = 'clyyyyyyyyyyyyyyyyyyyyyyyy';
 
 // ---------------------------------------------------------------------------
 // Mock Prisma
@@ -27,7 +27,7 @@ const { mockPrisma } = vi.hoisted(() => {
 
   const mockPrisma: Rec = {
     member: {
-      findFirst: vi.fn(async () => ({ role: "admin" })),
+      findFirst: vi.fn(async () => ({ role: 'admin' })),
     },
     $transaction: vi.fn(async (fn: (tx: Rec) => Promise<unknown>) => fn(mockPrisma)),
   };
@@ -39,33 +39,33 @@ const { mockPrisma } = vi.hoisted(() => {
 // Mock modules
 // ---------------------------------------------------------------------------
 
-vi.mock("@contractor-ops/auth", () => ({
+vi.mock('@contractor-ops/auth', () => ({
   auth: {
     api: {
       getSession: vi.fn(),
       hasPermission: vi.fn().mockResolvedValue({ success: true }),
       getFullOrganization: vi.fn(async () => ({
         id: ORG_ID,
-        name: "Test Org",
-        slug: "test-org",
-        metadata: { countryCode: "PL" },
+        name: 'Test Org',
+        slug: 'test-org',
+        metadata: { countryCode: 'PL' },
         members: [],
       })),
       createOrganization: vi.fn(async () => ({
-        id: "new-org-id",
-        name: "New Org",
-        slug: "new-org",
+        id: 'new-org-id',
+        name: 'New Org',
+        slug: 'new-org',
       })),
       setActiveOrganization: vi.fn(async () => undefined),
       updateOrganization: vi.fn(async () => ({
         id: ORG_ID,
-        name: "Updated Org",
+        name: 'Updated Org',
       })),
     },
   },
 }));
 
-vi.mock("@contractor-ops/db", () => ({
+vi.mock('@contractor-ops/db', () => ({
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
@@ -77,18 +77,18 @@ vi.mock("@contractor-ops/db", () => ({
   createTenantClientFrom: vi.fn(() => mockPrisma),
 }));
 
-vi.mock("../../services/r2.js", () => ({
+vi.mock('../../services/r2.js', () => ({
   createPresignedUploadUrl: vi.fn(async () => ({
-    url: "https://r2.example.com/upload",
-    key: "mock-key",
+    url: 'https://r2.example.com/upload',
+    key: 'mock-key',
   })),
-  createPresignedDownloadUrl: vi.fn(async () => "https://r2.example.com/download"),
-  generateStorageKey: vi.fn(() => "mock-storage-key"),
+  createPresignedDownloadUrl: vi.fn(async () => 'https://r2.example.com/download'),
+  generateStorageKey: vi.fn(() => 'mock-storage-key'),
   headObject: vi.fn(async () => ({ ContentLength: 1024 })),
   deleteObject: vi.fn(async () => undefined),
 }));
 
-vi.mock("../../services/cache.js", () => ({
+vi.mock('../../services/cache.js', () => ({
   cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
   invalidate: vi.fn(async () => undefined),
   invalidateByPrefix: vi.fn(async () => undefined),
@@ -102,78 +102,78 @@ vi.mock("../../services/cache.js", () => ({
   CacheTTL: { ORG_SETTINGS: 300, ORG_SETTINGS_JSON: 300, ORG_BRANDING: 300, APPROVAL_CHAINS: 300 },
 }));
 
-vi.mock("../../services/notification-service.js", () => ({
+vi.mock('../../services/notification-service.js', () => ({
   dispatch: vi.fn(async () => undefined),
   getOrCreatePreferences: vi.fn(async () => ({})),
 }));
 
-vi.mock("../../services/invoice-matching.js", () => ({
-  computeDuplicateCheckHash: vi.fn(() => "hash"),
+vi.mock('../../services/invoice-matching.js', () => ({
+  computeDuplicateCheckHash: vi.fn(() => 'hash'),
   runAutoMatch: vi.fn(async () => undefined),
 }));
 
-vi.mock("../../services/bank-account-crypto.js", () => ({
+vi.mock('../../services/bank-account-crypto.js', () => ({
   encryptBankAccount: vi.fn((v: string) => `encrypted:${v}`),
 }));
 
-vi.mock("../../services/sanitize.js", () => ({
+vi.mock('../../services/sanitize.js', () => ({
   sanitizeStrings: vi.fn(<T>(v: T) => v),
 }));
 
-vi.mock("../../services/approval-engine.js", () => ({
+vi.mock('../../services/approval-engine.js', () => ({
   routeToChain: vi.fn(async () => null),
   createApprovalFlow: vi.fn(async () => ({})),
   advanceFlow: vi.fn(async () => undefined),
-  computeSlaStatus: vi.fn(() => "ON_TIME"),
+  computeSlaStatus: vi.fn(() => 'ON_TIME'),
 }));
 
-vi.mock("../../services/calendar-event-service.js", () => ({
+vi.mock('../../services/calendar-event-service.js', () => ({
   deleteCalendarEvent: vi.fn(async () => undefined),
 }));
 
-vi.mock("../../services/calendar-deadline-sync.js", () => ({
+vi.mock('../../services/calendar-deadline-sync.js', () => ({
   syncPaymentDueDeadline: vi.fn(async () => undefined),
   syncApprovalSlaDeadline: vi.fn(async () => undefined),
 }));
 
-vi.mock("../../services/report-export.js", () => ({
-  generateAuditCsv: vi.fn(async () => ({ base64: "bW9jaw==", filename: "audit.csv" })),
+vi.mock('../../services/report-export.js', () => ({
+  generateAuditCsv: vi.fn(async () => ({ base64: 'bW9jaw==', filename: 'audit.csv' })),
 }));
 
-vi.mock("../../services/billing-service.js", () => ({
+vi.mock('../../services/billing-service.js', () => ({
   syncSeatCountForOrg: vi.fn(async () => undefined),
   getSubscription: vi.fn(async () => null),
   createCheckoutSession: vi.fn(async () => ({})),
   createPortalSession: vi.fn(async () => ({})),
   getProrationPreview: vi.fn(async () => ({})),
-  ensureStripeCustomer: vi.fn(async () => "cus_mock"),
+  ensureStripeCustomer: vi.fn(async () => 'cus_mock'),
   createTopUpCheckoutSession: vi.fn(async () => ({})),
   updateSubscriptionSeatCount: vi.fn(async () => undefined),
 }));
 
-vi.mock("../../services/billing-constants.js", () => ({
+vi.mock('../../services/billing-constants.js', () => ({
   TIER_CREDIT_ALLOWANCE: { STARTER: 20, PRO: 100, ENTERPRISE: 500 },
   TRIAL_CREDIT_ALLOWANCE: 5,
-  KNOWN_SUBSCRIPTION_PRICE_IDS: new Set(["price_starter_monthly"]),
-  KNOWN_TOPUP_PRICE_IDS: new Set(["price_topup_10"]),
+  KNOWN_SUBSCRIPTION_PRICE_IDS: new Set(['price_starter_monthly']),
+  KNOWN_TOPUP_PRICE_IDS: new Set(['price_topup_10']),
 }));
 
-vi.mock("../../services/portal-change-request.js", () => ({
+vi.mock('../../services/portal-change-request.js', () => ({
   approveChangeRequest: vi.fn(async () => undefined),
   rejectChangeRequest: vi.fn(async () => undefined),
 }));
 
-vi.mock("../../services/mime-validator.js", () => ({
+vi.mock('../../services/mime-validator.js', () => ({
   isAllowedMimeType: vi.fn(() => true),
   validateMimeType: vi.fn(async () => ({ valid: true })),
 }));
 
-vi.mock("../../services/virus-scanner.js", () => ({
+vi.mock('../../services/virus-scanner.js', () => ({
   isClamAvailable: vi.fn(async () => false),
   scanBuffer: vi.fn(async () => ({ clean: true })),
 }));
 
-vi.mock("../../services/stripe-client.js", () => ({
+vi.mock('../../services/stripe-client.js', () => ({
   stripe: {
     subscriptions: { retrieve: vi.fn(), update: vi.fn(), list: vi.fn(async () => ({ data: [] })) },
     customers: { create: vi.fn(), retrieve: vi.fn() },
@@ -183,7 +183,7 @@ vi.mock("../../services/stripe-client.js", () => ({
   },
 }));
 
-vi.mock("../../services/credit-service.js", () => ({
+vi.mock('../../services/credit-service.js', () => ({
   deductCredits: vi.fn(async () => undefined),
   getBalance: vi.fn(async () => ({ credits: 0 })),
   getCreditBalance: vi.fn(async () => ({ credits: 0 })),
@@ -191,27 +191,27 @@ vi.mock("../../services/credit-service.js", () => ({
   checkAndDeductCredit: vi.fn(async () => true),
 }));
 
-vi.mock("../../services/ocr-extraction.js", () => ({
+vi.mock('../../services/ocr-extraction.js', () => ({
   extractInvoiceData: vi.fn(async () => ({})),
 }));
 
-vi.mock("../../services/billing-webhook.js", () => ({
+vi.mock('../../services/billing-webhook.js', () => ({
   handleStripeWebhook: vi.fn(async () => undefined),
 }));
 
-vi.mock("../../services/payment-export.js", () => ({
-  generateCsv: vi.fn(async () => Buffer.from("csv-data")),
-  generateElixir: vi.fn(() => Buffer.from("elixir-data")),
-  generateSepaXml: vi.fn(() => Buffer.from("sepa-data")),
-  resolveTransferTitle: vi.fn(() => "FV/2025/001"),
+vi.mock('../../services/payment-export.js', () => ({
+  generateCsv: vi.fn(async () => Buffer.from('csv-data')),
+  generateElixir: vi.fn(() => Buffer.from('elixir-data')),
+  generateSepaXml: vi.fn(() => Buffer.from('sepa-data')),
+  resolveTransferTitle: vi.fn(() => 'FV/2025/001'),
 }));
 
-vi.mock("../../services/bank-statement.js", () => ({
+vi.mock('../../services/bank-statement.js', () => ({
   parseBankStatement: vi.fn(() => []),
   matchStatementToRun: vi.fn(() => []),
 }));
 
-vi.mock("@sentry/nextjs", () => {
+vi.mock('@sentry/nextjs', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
     startSpan: vi.fn((_o: unknown, fn: (span: typeof mockSpan) => unknown) => fn(mockSpan)),
@@ -219,12 +219,12 @@ vi.mock("@sentry/nextjs", () => {
   };
 });
 
-vi.mock("@contractor-ops/logger", () => ({
+vi.mock('@contractor-ops/logger', () => ({
   createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
 }));
 
-vi.mock("@contractor-ops/logger/metrics", () => ({
+vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { increment: vi.fn(), histogram: vi.fn(), distribution: vi.fn() },
 }));
 
@@ -232,9 +232,9 @@ vi.mock("@contractor-ops/logger/metrics", () => ({
 // Imports (after mocks)
 // ---------------------------------------------------------------------------
 
-import { auth } from "@contractor-ops/auth";
-import { createCallerFactory } from "../../init.js";
-import { appRouter } from "../../root.js";
+import { auth } from '@contractor-ops/auth';
+import { createCallerFactory } from '../../init.js';
+import { appRouter } from '../../root.js';
 
 // ---------------------------------------------------------------------------
 // Caller helper
@@ -248,8 +248,8 @@ function makeCaller(userId: string, orgId: string) {
       id: `session-${userId}`,
       userId,
       activeOrganizationId: orgId,
-      expiresAt: new Date("2099-01-01"),
-      token: "mock-token",
+      expiresAt: new Date('2099-01-01'),
+      token: 'mock-token',
       createdAt: new Date(),
       updatedAt: new Date(),
       ipAddress: null,
@@ -257,14 +257,14 @@ function makeCaller(userId: string, orgId: string) {
     },
     user: {
       id: userId,
-      name: "Test User",
+      name: 'Test User',
       email: `${userId}@example.com`,
       emailVerified: true,
       image: null,
       banned: false,
       banReason: null,
       banExpires: null,
-      role: "admin",
+      role: 'admin',
       createdAt: new Date(),
       updatedAt: new Date(),
     },
@@ -291,14 +291,14 @@ beforeEach(() => {
 // Tests
 // ===========================================================================
 
-describe("organization.getCurrent", () => {
-  it("queries auth API with the active organizationId from context", async () => {
+describe('organization.getCurrent', () => {
+  it('queries auth API with the active organizationId from context', async () => {
     const mockOrg = {
       id: ORG_ID,
-      name: "My Company",
-      slug: "my-company",
-      metadata: { countryCode: "PL", defaultCurrency: "PLN" },
-      members: [{ id: "m-1", role: "owner" }],
+      name: 'My Company',
+      slug: 'my-company',
+      metadata: { countryCode: 'PL', defaultCurrency: 'PLN' },
+      members: [{ id: 'm-1', role: 'owner' }],
     };
     vi.mocked(auth.api.getFullOrganization).mockResolvedValueOnce(mockOrg as never);
 
@@ -313,11 +313,11 @@ describe("organization.getCurrent", () => {
   });
 });
 
-describe("organization.update", () => {
-  it("passes name as top-level and other fields as metadata", async () => {
+describe('organization.update', () => {
+  it('passes name as top-level and other fields as metadata', async () => {
     await caller.organization.update({
-      name: "Updated Corp",
-      legalName: "Updated Corp Sp. z o.o.",
+      name: 'Updated Corp',
+      legalName: 'Updated Corp Sp. z o.o.',
       fiscalYearStartMonth: 4,
     });
 
@@ -326,9 +326,9 @@ describe("organization.update", () => {
         body: {
           organizationId: ORG_ID,
           data: {
-            name: "Updated Corp",
+            name: 'Updated Corp',
             metadata: {
-              legalName: "Updated Corp Sp. z o.o.",
+              legalName: 'Updated Corp Sp. z o.o.',
               fiscalYearStartMonth: 4,
             },
           },
@@ -337,25 +337,25 @@ describe("organization.update", () => {
     );
   });
 
-  it("omits metadata key when only name is provided", async () => {
-    await caller.organization.update({ name: "Just Name" });
+  it('omits metadata key when only name is provided', async () => {
+    await caller.organization.update({ name: 'Just Name' });
 
     const call = vi.mocked(auth.api.updateOrganization).mock.calls[0]?.[0] as {
       body: { data: Record<string, unknown> };
     };
-    expect(call.body.data.name).toBe("Just Name");
+    expect(call.body.data.name).toBe('Just Name');
     expect(call.body.data.metadata).toBeUndefined();
   });
 
-  it("omits name key when only metadata fields are provided", async () => {
-    await caller.organization.update({ billingEmail: "billing@corp.com" });
+  it('omits name key when only metadata fields are provided', async () => {
+    await caller.organization.update({ billingEmail: 'billing@corp.com' });
 
     const call = vi.mocked(auth.api.updateOrganization).mock.calls[0]?.[0] as {
       body: { data: Record<string, unknown> };
     };
     expect(call.body.data.name).toBeUndefined();
     expect(call.body.data.metadata).toEqual({
-      billingEmail: "billing@corp.com",
+      billingEmail: 'billing@corp.com',
     });
   });
 });

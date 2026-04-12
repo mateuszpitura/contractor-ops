@@ -1,5 +1,5 @@
-import { Text } from "@react-email/components";
-import { BaseLayout } from "./base-layout.js";
+import { Text } from '@react-email/components';
+import { BaseLayout } from './base-layout.js';
 
 interface InvoiceReceivedLabels {
   invoice?: string;
@@ -29,17 +29,17 @@ export function InvoiceReceivedEmail({
   labels,
 }: InvoiceReceivedEmailProps) {
   const l = {
-    invoice: labels?.invoice ?? "Invoice",
-    from: labels?.from ?? "From",
-    amount: labels?.amount ?? "Amount",
+    invoice: labels?.invoice ?? 'Invoice',
+    from: labels?.from ?? 'From',
+    amount: labels?.amount ?? 'Amount',
   };
 
   return (
     <BaseLayout ctaUrl={ctaUrl} preferencesUrl={preferencesUrl}>
-      <Text style={{ fontSize: "20px", fontWeight: "600", color: "#1a1a1a" }}>{title}</Text>
-      <Text style={{ fontSize: "14px", color: "#4a4a4a", lineHeight: "24px" }}>{body}</Text>
+      <Text style={{ fontSize: '20px', fontWeight: '600', color: '#1a1a1a' }}>{title}</Text>
+      <Text style={{ fontSize: '14px', color: '#4a4a4a', lineHeight: '24px' }}>{body}</Text>
       {invoiceNumber && (
-        <Text style={{ fontSize: "14px", color: "#6b7280" }}>
+        <Text style={{ fontSize: '14px', color: '#6b7280' }}>
           <strong>{l.invoice}:</strong> {invoiceNumber}
           {contractorName && (
             <>

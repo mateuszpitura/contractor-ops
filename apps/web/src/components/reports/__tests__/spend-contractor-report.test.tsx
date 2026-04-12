@@ -1,15 +1,15 @@
-import { describe, expect, it, vi } from "vitest";
-import { render, screen } from "@/test/test-utils";
+import { describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@/test/test-utils';
 
-vi.mock("next-intl", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("next-intl")>();
+vi.mock('next-intl', async importOriginal => {
+  const actual = await importOriginal<typeof import('next-intl')>();
   return {
     ...actual,
     useTranslations: () => (key: string, _params?: any) => key,
   };
 });
 
-vi.mock("@tanstack/react-query", () => ({
+vi.mock('@tanstack/react-query', () => ({
   useQuery: vi.fn(),
   useMutation: () => ({
     mutate: vi.fn(),
@@ -17,7 +17,7 @@ vi.mock("@tanstack/react-query", () => ({
   }),
 }));
 
-vi.mock("@/trpc/init", () => ({
+vi.mock('@/trpc/init', () => ({
   trpc: {
     report: {
       spendByContractor: { queryOptions: (opts: any) => opts },
@@ -27,7 +27,7 @@ vi.mock("@/trpc/init", () => ({
   },
 }));
 
-vi.mock("@/i18n/navigation", () => ({
+vi.mock('@/i18n/navigation', () => ({
   Link: ({ children, href, ...props }: any) => (
     <a href={href} {...props}>
       {children}
@@ -36,15 +36,15 @@ vi.mock("@/i18n/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
 }));
 
-vi.mock("sonner", () => ({
+vi.mock('sonner', () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
 
-vi.mock("../report-chart", () => ({
+vi.mock('../report-chart', () => ({
   ReportChart: () => <div data-testid="report-chart" />,
 }));
 
-vi.mock("../report-table", () => ({
+vi.mock('../report-table', () => ({
   ReportTable: ({ data, emptyTitle, isLoading, grandTotalLabel, grandTotalValue }: any) =>
     isLoading ? (
       <div data-testid="loading" />
@@ -64,32 +64,32 @@ vi.mock("../report-table", () => ({
     ),
 }));
 
-vi.mock("../drill-down-breadcrumb", () => ({
+vi.mock('../drill-down-breadcrumb', () => ({
   DrillDownBreadcrumb: () => <div data-testid="breadcrumb" />,
 }));
 
-vi.mock("../export-buttons", () => ({
+vi.mock('../export-buttons', () => ({
   ExportButtons: () => <div data-testid="export-buttons" />,
   downloadBase64File: vi.fn(),
 }));
 
-import { useQuery } from "@tanstack/react-query";
-import { SpendContractorReport } from "../spend-contractor-report";
+import { useQuery } from '@tanstack/react-query';
+import { SpendContractorReport } from '../spend-contractor-report';
 
 const mockUseQuery = vi.mocked(useQuery);
 
-describe("SpendContractorReport", () => {
+describe('SpendContractorReport', () => {
   beforeEach(() => {
     mockUseQuery.mockReturnValue({
       data: {
         items: [
           {
-            contractorId: "c-1",
-            contractorName: "Acme Corp",
+            contractorId: 'c-1',
+            contractorName: 'Acme Corp',
             invoiceCount: 5,
             totalMinor: 1500000,
             avgMinor: 300000,
-            lastPaidAt: "2026-03-15",
+            lastPaidAt: '2026-03-15',
           },
         ],
         totalCount: 1,
@@ -98,41 +98,41 @@ describe("SpendContractorReport", () => {
     } as any);
   });
 
-  it("renders chart", () => {
+  it('renders chart', () => {
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    expect(screen.getByTestId("report-chart")).toBeInTheDocument();
+    expect(screen.getByTestId('report-chart')).toBeInTheDocument();
   });
 
-  it("renders breadcrumb", () => {
+  it('renders breadcrumb', () => {
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    expect(screen.getByTestId("breadcrumb")).toBeInTheDocument();
+    expect(screen.getByTestId('breadcrumb')).toBeInTheDocument();
   });
 
-  it("renders table with contractor data", () => {
+  it('renders table with contractor data', () => {
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    expect(screen.getByText("Acme Corp")).toBeInTheDocument();
+    expect(screen.getByText('Acme Corp')).toBeInTheDocument();
   });
 
-  it("renders grand total row", () => {
+  it('renders grand total row', () => {
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    expect(screen.getByTestId("grand-total")).toBeInTheDocument();
+    expect(screen.getByTestId('grand-total')).toBeInTheDocument();
   });
 
-  it("renders export buttons", () => {
+  it('renders export buttons', () => {
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    expect(screen.getByTestId("export-buttons")).toBeInTheDocument();
+    expect(screen.getByTestId('export-buttons')).toBeInTheDocument();
   });
 
-  it("renders empty state when no data", () => {
+  it('renders empty state when no data', () => {
     mockUseQuery.mockReturnValue({
       data: { items: [], totalCount: 0 },
       isLoading: false,
     } as any);
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    expect(screen.getByTestId("empty")).toBeInTheDocument();
+    expect(screen.getByTestId('empty')).toBeInTheDocument();
   });
 
-  it("shows table loading while chart query is already settled", () => {
+  it('shows table loading while chart query is already settled', () => {
     let call = 0;
     mockUseQuery.mockImplementation(() => {
       call++;
@@ -142,16 +142,16 @@ describe("SpendContractorReport", () => {
       return { data: [], isLoading: false };
     });
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    expect(screen.getByTestId("loading")).toBeInTheDocument();
+    expect(screen.getByTestId('loading')).toBeInTheDocument();
   });
 
   // ---- Multiple contractor rows ----
-  it("renders multiple contractor rows", () => {
+  it('renders multiple contractor rows', () => {
     mockUseQuery.mockReturnValue({
       data: {
         items: [
-          { contractorId: "c-1", contractorName: "Alpha", totalMinor: 50000, invoiceCount: 3 },
-          { contractorId: "c-2", contractorName: "Beta", totalMinor: 30000, invoiceCount: 2 },
+          { contractorId: 'c-1', contractorName: 'Alpha', totalMinor: 50000, invoiceCount: 3 },
+          { contractorId: 'c-2', contractorName: 'Beta', totalMinor: 30000, invoiceCount: 2 },
         ],
         totalCount: 2,
         grandTotalMinor: 80000,
@@ -159,31 +159,31 @@ describe("SpendContractorReport", () => {
       isLoading: false,
     } as any);
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    expect(screen.getByText("Alpha")).toBeInTheDocument();
-    expect(screen.getByText("Beta")).toBeInTheDocument();
+    expect(screen.getByText('Alpha')).toBeInTheDocument();
+    expect(screen.getByText('Beta')).toBeInTheDocument();
   });
 
   // ---- Chart always renders ----
-  it("renders chart component with data", () => {
+  it('renders chart component with data', () => {
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    expect(screen.getByTestId("report-chart")).toBeInTheDocument();
+    expect(screen.getByTestId('report-chart')).toBeInTheDocument();
   });
 
   // ---- Breadcrumb always renders ----
-  it("renders breadcrumb component", () => {
+  it('renders breadcrumb component', () => {
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    expect(screen.getByTestId("breadcrumb")).toBeInTheDocument();
+    expect(screen.getByTestId('breadcrumb')).toBeInTheDocument();
   });
 
   // ---- Different date range ----
-  it("renders correctly with different date range", () => {
+  it('renders correctly with different date range', () => {
     render(<SpendContractorReport dateFrom="2025-06-01" dateTo="2025-12-31" />);
-    expect(screen.getByTestId("report-chart")).toBeInTheDocument();
-    expect(screen.getByTestId("export-buttons")).toBeInTheDocument();
+    expect(screen.getByTestId('report-chart')).toBeInTheDocument();
+    expect(screen.getByTestId('export-buttons')).toBeInTheDocument();
   });
 
   // ---- Large dataset ----
-  it("renders large dataset correctly", () => {
+  it('renders large dataset correctly', () => {
     const items = Array.from({ length: 20 }, (_, i) => ({
       contractorId: `c-${i}`,
       contractorName: `Contractor ${i}`,
@@ -195,30 +195,30 @@ describe("SpendContractorReport", () => {
       isLoading: false,
     } as any);
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    expect(screen.getByText("Contractor 0")).toBeInTheDocument();
-    expect(screen.getByText("Contractor 19")).toBeInTheDocument();
+    expect(screen.getByText('Contractor 0')).toBeInTheDocument();
+    expect(screen.getByText('Contractor 19')).toBeInTheDocument();
   });
 
   // ---- grandTotal computed from table data ----
-  it("renders grand total value computed from table data", () => {
+  it('renders grand total value computed from table data', () => {
     mockUseQuery.mockReturnValue({
       data: {
         items: [
           {
-            contractorId: "c-1",
-            contractorName: "A",
+            contractorId: 'c-1',
+            contractorName: 'A',
             totalMinor: 100000,
             invoiceCount: 2,
             avgMinor: 50000,
             lastPaidAt: null,
           },
           {
-            contractorId: "c-2",
-            contractorName: "B",
+            contractorId: 'c-2',
+            contractorName: 'B',
             totalMinor: 200000,
             invoiceCount: 3,
             avgMinor: 66666,
-            lastPaidAt: "2026-03-01",
+            lastPaidAt: '2026-03-01',
           },
         ],
         totalCount: 2,
@@ -226,27 +226,27 @@ describe("SpendContractorReport", () => {
       isLoading: false,
     } as any);
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    expect(screen.getByTestId("grand-total")).toBeInTheDocument();
+    expect(screen.getByTestId('grand-total')).toBeInTheDocument();
   });
 
   // ---- Both queries loading ----
-  it("shows loading when both table and chart queries are loading", () => {
+  it('shows loading when both table and chart queries are loading', () => {
     mockUseQuery.mockReturnValue({
       data: undefined,
       isLoading: true,
     } as any);
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    expect(screen.getByTestId("loading")).toBeInTheDocument();
+    expect(screen.getByTestId('loading')).toBeInTheDocument();
   });
 
   // ---- drillDownName falls back to contractorId when not in chart data ----
-  it("renders drill-down breadcrumb when chart data and drill-down are present", () => {
+  it('renders drill-down breadcrumb when chart data and drill-down are present', () => {
     mockUseQuery.mockReturnValue({
       data: {
         items: [
           {
-            contractorId: "c-1",
-            contractorName: "Drilled",
+            contractorId: 'c-1',
+            contractorName: 'Drilled',
             totalMinor: 50000,
             invoiceCount: 1,
             avgMinor: 50000,
@@ -258,11 +258,11 @@ describe("SpendContractorReport", () => {
       isLoading: false,
     } as any);
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    expect(screen.getByTestId("breadcrumb")).toBeInTheDocument();
+    expect(screen.getByTestId('breadcrumb')).toBeInTheDocument();
   });
 
   // ---- Empty chart data handled ----
-  it("handles undefined chart data gracefully", () => {
+  it('handles undefined chart data gracefully', () => {
     let callCount = 0;
     mockUseQuery.mockImplementation(() => {
       callCount++;
@@ -272,11 +272,11 @@ describe("SpendContractorReport", () => {
       return { data: undefined, isLoading: false } as any;
     });
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    expect(screen.getByTestId("report-chart")).toBeInTheDocument();
+    expect(screen.getByTestId('report-chart')).toBeInTheDocument();
   });
 
   // ---- Export buttons always render ----
-  it("renders export buttons even when loading", () => {
+  it('renders export buttons even when loading', () => {
     let callCount = 0;
     mockUseQuery.mockImplementation(() => {
       callCount++;
@@ -284,21 +284,21 @@ describe("SpendContractorReport", () => {
       return { data: undefined, isLoading: true } as any;
     });
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    expect(screen.getByTestId("export-buttons")).toBeInTheDocument();
+    expect(screen.getByTestId('export-buttons')).toBeInTheDocument();
   });
 
   // ---- Single contractor row ----
-  it("renders single contractor row with all fields", () => {
+  it('renders single contractor row with all fields', () => {
     mockUseQuery.mockReturnValue({
       data: {
         items: [
           {
-            contractorId: "c-solo",
-            contractorName: "Solo Inc",
+            contractorId: 'c-solo',
+            contractorName: 'Solo Inc',
             invoiceCount: 1,
             totalMinor: 50000,
             avgMinor: 50000,
-            lastPaidAt: "2026-02-15",
+            lastPaidAt: '2026-02-15',
           },
         ],
         totalCount: 1,
@@ -306,17 +306,17 @@ describe("SpendContractorReport", () => {
       isLoading: false,
     } as any);
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    expect(screen.getByText("Solo Inc")).toBeInTheDocument();
+    expect(screen.getByText('Solo Inc')).toBeInTheDocument();
   });
 
   // ---- formatCurrency works for zero ----
-  it("renders grand total for zero total minor", () => {
+  it('renders grand total for zero total minor', () => {
     mockUseQuery.mockReturnValue({
       data: {
         items: [
           {
-            contractorId: "c-1",
-            contractorName: "ZeroCo",
+            contractorId: 'c-1',
+            contractorName: 'ZeroCo',
             totalMinor: 0,
             invoiceCount: 0,
             avgMinor: 0,
@@ -328,17 +328,17 @@ describe("SpendContractorReport", () => {
       isLoading: false,
     } as any);
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    expect(screen.getByTestId("report-table")).toBeInTheDocument();
+    expect(screen.getByTestId('report-table')).toBeInTheDocument();
   });
 
   // ---- formatDate with null ----
-  it("renders correctly when lastPaidAt is null for all rows", () => {
+  it('renders correctly when lastPaidAt is null for all rows', () => {
     mockUseQuery.mockReturnValue({
       data: {
         items: [
           {
-            contractorId: "c-1",
-            contractorName: "NullDate",
+            contractorId: 'c-1',
+            contractorName: 'NullDate',
             totalMinor: 50000,
             invoiceCount: 1,
             avgMinor: 50000,
@@ -350,38 +350,38 @@ describe("SpendContractorReport", () => {
       isLoading: false,
     } as any);
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    expect(screen.getByText("NullDate")).toBeInTheDocument();
+    expect(screen.getByText('NullDate')).toBeInTheDocument();
   });
 
   // ---- All reports structure tests ----
-  it("renders all four main sections", () => {
+  it('renders all four main sections', () => {
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    expect(screen.getByTestId("report-chart")).toBeInTheDocument();
-    expect(screen.getByTestId("breadcrumb")).toBeInTheDocument();
-    expect(screen.getByTestId("report-table")).toBeInTheDocument();
-    expect(screen.getByTestId("export-buttons")).toBeInTheDocument();
+    expect(screen.getByTestId('report-chart')).toBeInTheDocument();
+    expect(screen.getByTestId('breadcrumb')).toBeInTheDocument();
+    expect(screen.getByTestId('report-table')).toBeInTheDocument();
+    expect(screen.getByTestId('export-buttons')).toBeInTheDocument();
   });
 
   // ---- Multiple rows with different values ----
-  it("renders rows with varied invoice counts and amounts", () => {
+  it('renders rows with varied invoice counts and amounts', () => {
     mockUseQuery.mockReturnValue({
       data: {
         items: [
           {
-            contractorId: "c-1",
-            contractorName: "High Vol",
+            contractorId: 'c-1',
+            contractorName: 'High Vol',
             totalMinor: 9000000,
             invoiceCount: 50,
             avgMinor: 180000,
-            lastPaidAt: "2026-03-30",
+            lastPaidAt: '2026-03-30',
           },
           {
-            contractorId: "c-2",
-            contractorName: "Low Vol",
+            contractorId: 'c-2',
+            contractorName: 'Low Vol',
             totalMinor: 5000,
             invoiceCount: 1,
             avgMinor: 5000,
-            lastPaidAt: "2026-01-15",
+            lastPaidAt: '2026-01-15',
           },
         ],
         totalCount: 2,
@@ -389,12 +389,12 @@ describe("SpendContractorReport", () => {
       isLoading: false,
     } as any);
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    expect(screen.getByText("High Vol")).toBeInTheDocument();
-    expect(screen.getByText("Low Vol")).toBeInTheDocument();
+    expect(screen.getByText('High Vol')).toBeInTheDocument();
+    expect(screen.getByText('Low Vol')).toBeInTheDocument();
   });
 
   // ---- chartData returns empty when undefined ----
-  it("renders chart with empty data when chart query returns undefined", () => {
+  it('renders chart with empty data when chart query returns undefined', () => {
     let callCount = 0;
     mockUseQuery.mockImplementation(() => {
       callCount++;
@@ -404,11 +404,11 @@ describe("SpendContractorReport", () => {
       return { data: undefined, isLoading: false } as any;
     });
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    expect(screen.getByTestId("report-chart")).toBeInTheDocument();
+    expect(screen.getByTestId('report-chart')).toBeInTheDocument();
   });
 
   // ---- chart data with contractors ----
-  it("passes chart data with contractor names to chart component", () => {
+  it('passes chart data with contractor names to chart component', () => {
     let callCount = 0;
     mockUseQuery.mockImplementation(() => {
       callCount++;
@@ -417,8 +417,8 @@ describe("SpendContractorReport", () => {
           data: {
             items: [
               {
-                contractorId: "c-1",
-                contractorName: "ChartCo",
+                contractorId: 'c-1',
+                contractorName: 'ChartCo',
                 totalMinor: 100000,
                 invoiceCount: 5,
                 avgMinor: 20000,
@@ -431,11 +431,11 @@ describe("SpendContractorReport", () => {
         } as any;
       }
       return {
-        data: [{ contractorId: "c-1", contractorName: "ChartCo", totalMinor: 100000 }],
+        data: [{ contractorId: 'c-1', contractorName: 'ChartCo', totalMinor: 100000 }],
         isLoading: false,
       } as any;
     });
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
-    expect(screen.getByTestId("report-chart")).toBeInTheDocument();
+    expect(screen.getByTestId('report-chart')).toBeInTheDocument();
   });
 });

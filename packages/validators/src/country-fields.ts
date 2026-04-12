@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // ---------------------------------------------------------------------------
 // UAE Country Fields
@@ -66,11 +66,11 @@ export function validateSaudiTin(tin: string): boolean {
  * Weights: [6, 5, 7, 2, 3, 4, 5, 6, 7]
  */
 export function validatePolishNip(nip: string): boolean {
-  const cleaned = nip.replace(/[-\s]/g, "");
+  const cleaned = nip.replace(/[-\s]/g, '');
   if (!/^\d{10}$/.test(cleaned)) return false;
 
   const weights = [6, 5, 7, 2, 3, 4, 5, 6, 7];
-  const digits = cleaned.split("").map(Number);
+  const digits = cleaned.split('').map(Number);
   const checksum = weights.reduce((sum, w, i) => sum + w * digits[i]!, 0) % 11;
 
   return checksum === digits[9];

@@ -1,6 +1,6 @@
-import type { InPostClientConfig } from "./courier/inpost-client.js";
-import { InPostClient } from "./courier/inpost-client.js";
-import type { DbClient } from "./types.js";
+import type { InPostClientConfig } from './courier/inpost-client.js';
+import { InPostClient } from './courier/inpost-client.js';
+import type { DbClient } from './types.js';
 
 type PrismaClient = DbClient;
 
@@ -42,7 +42,7 @@ export async function handleEquipmentTaskStart(
   },
 ): Promise<void> {
   try {
-    if (taskRun.taskType !== "EQUIPMENT") return;
+    if (taskRun.taskType !== 'EQUIPMENT') return;
 
     if (!workflowRun.contractorId) {
       console.info(
@@ -69,22 +69,22 @@ export async function handleEquipmentTaskStart(
       const equipmentIds = assignments.map((a: { equipment: { id: string } }) => a.equipment.id);
 
       // Determine direction based on workflow template type
-      const direction: "OUTBOUND" | "RETURN" =
-        workflowRun.templateType === "OFFBOARDING" ? "RETURN" : "OUTBOUND";
+      const direction: 'OUTBOUND' | 'RETURN' =
+        workflowRun.templateType === 'OFFBOARDING' ? 'RETURN' : 'OUTBOUND';
 
       if (equipmentIds.length === 0) {
         // No equipment assigned — complete task immediately
         await tx.workflowTaskRun.update({
           where: { id: taskRun.id },
           data: {
-            status: "DONE",
+            status: 'DONE',
             startedAt: new Date(),
             completedAt: new Date(),
             resultJson: {
               equipmentIds: [],
               direction,
               autoCompleted: true,
-              reason: "no_equipment_assigned",
+              reason: 'no_equipment_assigned',
             },
           },
         });
@@ -102,20 +102,20 @@ export async function handleEquipmentTaskStart(
       await tx.workflowTaskRun.update({
         where: { id: taskRun.id },
         data: {
-          status: "IN_PROGRESS",
+          status: 'IN_PROGRESS',
           startedAt: new Date(),
           resultJson: { equipmentIds, direction },
         },
       });
 
       // For OFFBOARDING: mark each equipment as RETURN_REQUESTED
-      if (direction === "RETURN") {
+      if (direction === 'RETURN') {
         await tx.equipment.updateMany({
           where: {
             id: { in: equipmentIds },
             organizationId,
           },
-          data: { status: "RETURN_REQUESTED" },
+          data: { status: 'RETURN_REQUESTED' },
         });
 
         console.info(
@@ -169,7 +169,7 @@ export async function checkShipmentTaskCompletion(
   shipment: {
     id: string;
     workflowTaskRunId: string | null;
-    direction: "OUTBOUND" | "RETURN";
+    direction: 'OUTBOUND' | 'RETURN';
     currentStatus: string;
   },
 ): Promise<void> {
@@ -177,7 +177,7 @@ export async function checkShipmentTaskCompletion(
     if (!shipment.workflowTaskRunId) return;
 
     // Determine target status based on shipment direction
-    const targetStatus = shipment.direction === "OUTBOUND" ? "DELIVERED" : "RETURNED";
+    const targetStatus = shipment.direction === 'OUTBOUND' ? 'DELIVERED' : 'RETURNED';
 
     // Quick check: if this shipment hasn't reached target, no point checking others
     if (shipment.currentStatus !== targetStatus) return;
@@ -200,7 +200,7 @@ export async function checkShipmentTaskCompletion(
     // Check if ALL linked shipments have reached their respective target status
     const allComplete = allLinkedShipments.every(
       (s: { direction: string; currentStatus: string }) => {
-        const sTarget = s.direction === "OUTBOUND" ? "DELIVERED" : "RETURNED";
+        const sTarget = s.direction === 'OUTBOUND' ? 'DELIVERED' : 'RETURNED';
         return s.currentStatus === sTarget;
       },
     );
@@ -217,10 +217,10 @@ export async function checkShipmentTaskCompletion(
       where: {
         id: workflowTaskRunId,
         organizationId,
-        status: "IN_PROGRESS",
+        status: 'IN_PROGRESS',
       },
       data: {
-        status: "DONE",
+        status: 'DONE',
         completedAt: new Date(),
       },
     });
@@ -285,7 +285,7 @@ async function autoCreateInPostReturnShipment(
       where: {
         organizationId_carrier: {
           organizationId,
-          carrier: "inpost",
+          carrier: 'inpost',
         },
       },
     });
@@ -328,19 +328,19 @@ async function autoCreateInPostReturnShipment(
     // Create shipment via ShipX API
     const shipmentResult = await client.createShipment({
       organizationId,
-      direction: "RETURN",
+      direction: 'RETURN',
       receiver: {
         name: contractor.displayName,
-        email: contractor.email ?? "",
-        phone: contractor.phone ?? "",
+        email: contractor.email ?? '',
+        phone: contractor.phone ?? '',
       },
       sender: {
-        name: org?.name ?? "Organization",
-        email: "",
-        phone: "",
+        name: org?.name ?? 'Organization',
+        email: '',
+        phone: '',
       },
       targetPoint: contractor.preferredPaczkomatId,
-      parcelSize: "large", // Default for offboarding — covers all equipment
+      parcelSize: 'large', // Default for offboarding — covers all equipment
       reference: `offboarding-${workflowRunId}`,
     });
 
@@ -353,13 +353,13 @@ async function autoCreateInPostReturnShipment(
           organizationId,
           equipmentId,
           workflowTaskRunId: taskRunId,
-          direction: "RETURN",
-          carrier: "InPost",
+          direction: 'RETURN',
+          carrier: 'InPost',
           trackingNumber: shipmentResult.trackingNumber,
           externalId: shipmentResult.externalId,
           labelUrl: shipmentResult.labelUrl ?? null,
-          currentStatus: "CREATED",
-          createdByUserId: "system",
+          currentStatus: 'CREATED',
+          createdByUserId: 'system',
         },
       });
 
@@ -372,7 +372,7 @@ async function autoCreateInPostReturnShipment(
         data: {
           organizationId,
           shipmentId: shipment.id,
-          status: "CREATED",
+          status: 'CREATED',
           notes: `Auto-created for offboarding workflow ${workflowRunId}`,
         },
       });
@@ -381,15 +381,15 @@ async function autoCreateInPostReturnShipment(
         data: {
           organizationId,
           shipmentId: shipment.id,
-          status: "LABEL_GENERATED",
-          notes: "Label auto-generated by ShipX on shipment creation",
+          status: 'LABEL_GENERATED',
+          notes: 'Label auto-generated by ShipX on shipment creation',
         },
       });
 
       // Update equipment status from RETURN_REQUESTED to RETURN_IN_TRANSIT
       await tx.equipment.update({
         where: { id: equipmentId },
-        data: { status: "RETURN_IN_TRANSIT" },
+        data: { status: 'RETURN_IN_TRANSIT' },
       });
     }
 
@@ -398,7 +398,7 @@ async function autoCreateInPostReturnShipment(
       data: {
         organizationId,
         contractorId,
-        status: "SHIPMENT_CREATED",
+        status: 'SHIPMENT_CREATED',
         targetPointId: contractor.preferredPaczkomatId,
         targetPointName: contractor.preferredPaczkomatName,
         targetPointAddress: contractor.preferredPaczkomatAddress,
@@ -441,7 +441,7 @@ async function recomputeWorkflowProgress(tx: PrismaClient, workflowRunId: string
 
   const doneTasks = allTasks.filter(
     (t: { status: string }) =>
-      t.status === "DONE" || t.status === "SKIPPED" || t.status === "CANCELLED",
+      t.status === 'DONE' || t.status === 'SKIPPED' || t.status === 'CANCELLED',
   );
 
   const progressPercent = Math.round((doneTasks.length / total) * 100);
@@ -450,7 +450,7 @@ async function recomputeWorkflowProgress(tx: PrismaClient, workflowRunId: string
   const requiredTasks = allTasks.filter((t: { required: boolean }) => t.required);
   const allRequiredDone = requiredTasks.every(
     (t: { status: string }) =>
-      t.status === "DONE" || t.status === "SKIPPED" || t.status === "CANCELLED",
+      t.status === 'DONE' || t.status === 'SKIPPED' || t.status === 'CANCELLED',
   );
 
   if (allRequiredDone && requiredTasks.length > 0) {
@@ -458,7 +458,7 @@ async function recomputeWorkflowProgress(tx: PrismaClient, workflowRunId: string
       where: { id: workflowRunId },
       data: {
         progressPercent,
-        status: "COMPLETED",
+        status: 'COMPLETED',
         completedAt: new Date(),
       },
     });

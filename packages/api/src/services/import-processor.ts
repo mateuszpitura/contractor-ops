@@ -5,8 +5,8 @@
  * Supports contractor and contract entity types.
  */
 
-import { prisma } from "@contractor-ops/db";
-import * as E from "../errors.js";
+import { prisma } from '@contractor-ops/db';
+import * as E from '../errors.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -15,7 +15,7 @@ import * as E from "../errors.js";
 export type ImportRow = {
   rowNumber: number;
   data: Record<string, unknown>;
-  status: "valid" | "invalid" | "duplicate";
+  status: 'valid' | 'invalid' | 'duplicate';
   errors: Array<{ field: string; message: string }>;
   duplicateOf?: string;
 };
@@ -39,23 +39,23 @@ const MAX_IMPORT_ROWS = 5000;
 // ---------------------------------------------------------------------------
 
 export const CONTRACTOR_FIELD_ALIASES: Record<string, string[]> = {
-  legalName: ["legalname", "companyname", "company", "name", "nazwa", "nazwafirmy"],
-  taxId: ["taxid", "nip", "nipnumber", "taxnumber"],
-  email: ["email", "emailaddress", "mail", "kontakt"],
-  displayName: ["displayname", "shortname", "tradingname", "nazwahandlowa"],
-  type: ["type", "contractortype", "typkontrahenta", "rodzaj"],
-  vatId: ["vatid", "vateu", "euvatid", "nrvat"],
-  phone: ["phone", "phonenumber", "telefon"],
-  countryCode: ["countrycode", "country", "kraj"],
-  currency: ["currency", "waluta"],
+  legalName: ['legalname', 'companyname', 'company', 'name', 'nazwa', 'nazwafirmy'],
+  taxId: ['taxid', 'nip', 'nipnumber', 'taxnumber'],
+  email: ['email', 'emailaddress', 'mail', 'kontakt'],
+  displayName: ['displayname', 'shortname', 'tradingname', 'nazwahandlowa'],
+  type: ['type', 'contractortype', 'typkontrahenta', 'rodzaj'],
+  vatId: ['vatid', 'vateu', 'euvatid', 'nrvat'],
+  phone: ['phone', 'phonenumber', 'telefon'],
+  countryCode: ['countrycode', 'country', 'kraj'],
+  currency: ['currency', 'waluta'],
 };
 
 export const CONTRACT_FIELD_ALIASES: Record<string, string[]> = {
-  title: ["title", "contracttitle", "name", "nazwa", "tytul"],
-  type: ["type", "contracttype", "rodzaj"],
-  startDate: ["startdate", "start", "datapoczatku", "od"],
-  endDate: ["enddate", "end", "datakonca", "do"],
-  contractorTaxId: ["contractortaxid", "nip", "nipkontrahenta", "taxid"],
+  title: ['title', 'contracttitle', 'name', 'nazwa', 'tytul'],
+  type: ['type', 'contracttype', 'rodzaj'],
+  startDate: ['startdate', 'start', 'datapoczatku', 'od'],
+  endDate: ['enddate', 'end', 'datakonca', 'do'],
+  contractorTaxId: ['contractortaxid', 'nip', 'nipkontrahenta', 'taxid'],
 };
 
 // ---------------------------------------------------------------------------
@@ -66,7 +66,7 @@ export const CONTRACT_FIELD_ALIASES: Record<string, string[]> = {
  * Normalizes a column header by lowercasing and stripping non-alphanumeric chars.
  */
 export function normalizeHeader(header: string): string {
-  return header.toLowerCase().replace(/[^a-z0-9\u00C0-\u024F]/g, "");
+  return header.toLowerCase().replace(/[^a-z0-9\u00C0-\u024F]/g, '');
 }
 
 // ---------------------------------------------------------------------------
@@ -79,11 +79,11 @@ export function normalizeHeader(header: string): string {
  */
 export function autoMapColumns(
   sourceHeaders: string[],
-  entityType: "contractor" | "contract",
+  entityType: 'contractor' | 'contract',
 ): Record<string, string | null> {
-  const aliases = entityType === "contractor" ? CONTRACTOR_FIELD_ALIASES : CONTRACT_FIELD_ALIASES;
+  const aliases = entityType === 'contractor' ? CONTRACTOR_FIELD_ALIASES : CONTRACT_FIELD_ALIASES;
 
-  const normalizedSources = sourceHeaders.map((h) => ({
+  const normalizedSources = sourceHeaders.map(h => ({
     original: h,
     normalized: normalizeHeader(h),
   }));
@@ -91,7 +91,7 @@ export function autoMapColumns(
   const mapping: Record<string, string | null> = {};
 
   for (const [field, fieldAliases] of Object.entries(aliases)) {
-    const match = normalizedSources.find((src) => fieldAliases.includes(src.normalized));
+    const match = normalizedSources.find(src => fieldAliases.includes(src.normalized));
     mapping[field] = match?.original ?? null;
   }
 
@@ -113,47 +113,47 @@ export function validateContractorRow(row: Record<string, unknown>): {
   const errors: Array<{ field: string; message: string }> = [];
 
   // Required fields
-  if (!row.legalName || String(row.legalName).trim() === "") {
-    errors.push({ field: "legalName", message: E.VALIDATION_LEGAL_NAME_REQUIRED });
+  if (!row.legalName || String(row.legalName).trim() === '') {
+    errors.push({ field: 'legalName', message: E.VALIDATION_LEGAL_NAME_REQUIRED });
   }
 
-  if (!row.taxId || String(row.taxId).trim() === "") {
-    errors.push({ field: "taxId", message: E.VALIDATION_TAX_ID_REQUIRED });
+  if (!row.taxId || String(row.taxId).trim() === '') {
+    errors.push({ field: 'taxId', message: E.VALIDATION_TAX_ID_REQUIRED });
   }
 
-  if (!row.email || String(row.email).trim() === "") {
-    errors.push({ field: "email", message: E.VALIDATION_EMAIL_REQUIRED });
+  if (!row.email || String(row.email).trim() === '') {
+    errors.push({ field: 'email', message: E.VALIDATION_EMAIL_REQUIRED });
   } else {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(String(row.email).trim())) {
-      errors.push({ field: "email", message: E.VALIDATION_EMAIL_INVALID });
+      errors.push({ field: 'email', message: E.VALIDATION_EMAIL_INVALID });
     }
   }
 
   // Apply defaults (mutate row in place for downstream)
-  if (!row.type || String(row.type).trim() === "") {
-    row.type = "COMPANY";
+  if (!row.type || String(row.type).trim() === '') {
+    row.type = 'COMPANY';
   }
-  if (!row.countryCode || String(row.countryCode).trim() === "") {
-    row.countryCode = "PL";
+  if (!row.countryCode || String(row.countryCode).trim() === '') {
+    row.countryCode = 'PL';
   }
-  if (!row.currency || String(row.currency).trim() === "") {
-    row.currency = "PLN";
+  if (!row.currency || String(row.currency).trim() === '') {
+    row.currency = 'PLN';
   }
 
   // Validate type enum
-  const validTypes = ["SOLE_TRADER", "COMPANY", "INDIVIDUAL_FREELANCER", "OTHER"];
+  const validTypes = ['SOLE_TRADER', 'COMPANY', 'INDIVIDUAL_FREELANCER', 'OTHER'];
   if (row.type && !validTypes.includes(String(row.type).toUpperCase())) {
     errors.push({
-      field: "type",
-      message: `Invalid type. Must be one of: ${validTypes.join(", ")}`,
+      field: 'type',
+      message: `Invalid type. Must be one of: ${validTypes.join(', ')}`,
     });
   }
 
   // Validate countryCode length
   if (row.countryCode && String(row.countryCode).trim().length !== 2) {
     errors.push({
-      field: "countryCode",
+      field: 'countryCode',
       message: E.VALIDATION_COUNTRY_CODE_LENGTH,
     });
   }
@@ -161,7 +161,7 @@ export function validateContractorRow(row: Record<string, unknown>): {
   // Validate currency length
   if (row.currency && String(row.currency).trim().length !== 3) {
     errors.push({
-      field: "currency",
+      field: 'currency',
       message: E.VALIDATION_CURRENCY_LENGTH,
     });
   }
@@ -178,41 +178,41 @@ export function validateContractRow(row: Record<string, unknown>): {
 } {
   const errors: Array<{ field: string; message: string }> = [];
 
-  if (!row.title || String(row.title).trim() === "") {
-    errors.push({ field: "title", message: E.VALIDATION_CONTRACT_TITLE_REQUIRED });
+  if (!row.title || String(row.title).trim() === '') {
+    errors.push({ field: 'title', message: E.VALIDATION_CONTRACT_TITLE_REQUIRED });
   }
 
-  if (!row.type || String(row.type).trim() === "") {
-    errors.push({ field: "type", message: E.VALIDATION_CONTRACT_TYPE_REQUIRED });
+  if (!row.type || String(row.type).trim() === '') {
+    errors.push({ field: 'type', message: E.VALIDATION_CONTRACT_TYPE_REQUIRED });
   } else {
     const validTypes = [
-      "B2B_MASTER_SERVICE",
-      "STATEMENT_OF_WORK",
-      "NDA",
-      "IP_ASSIGNMENT",
-      "DPA",
-      "OTHER",
+      'B2B_MASTER_SERVICE',
+      'STATEMENT_OF_WORK',
+      'NDA',
+      'IP_ASSIGNMENT',
+      'DPA',
+      'OTHER',
     ];
     if (!validTypes.includes(String(row.type).toUpperCase())) {
       errors.push({
-        field: "type",
-        message: `Invalid type. Must be one of: ${validTypes.join(", ")}`,
+        field: 'type',
+        message: `Invalid type. Must be one of: ${validTypes.join(', ')}`,
       });
     }
   }
 
-  if (!row.startDate || String(row.startDate).trim() === "") {
-    errors.push({ field: "startDate", message: E.VALIDATION_START_DATE_REQUIRED });
+  if (!row.startDate || String(row.startDate).trim() === '') {
+    errors.push({ field: 'startDate', message: E.VALIDATION_START_DATE_REQUIRED });
   } else {
     const parsed = new Date(String(row.startDate));
     if (Number.isNaN(parsed.getTime())) {
-      errors.push({ field: "startDate", message: E.VALIDATION_DATE_INVALID });
+      errors.push({ field: 'startDate', message: E.VALIDATION_DATE_INVALID });
     }
   }
 
-  if (!row.contractorTaxId || String(row.contractorTaxId).trim() === "") {
+  if (!row.contractorTaxId || String(row.contractorTaxId).trim() === '') {
     errors.push({
-      field: "contractorTaxId",
+      field: 'contractorTaxId',
       message: E.VALIDATION_TAX_ID_FK_REQUIRED,
     });
   }
@@ -230,17 +230,17 @@ export function validateContractRow(row: Record<string, unknown>): {
  * Enforces a max row limit.
  */
 export async function parseImportFile(buffer: Buffer): Promise<Record<string, string>[]> {
-  const { default: XLSX } = await import("xlsx");
+  const { default: XLSX } = await import('xlsx');
 
-  const workbook = XLSX.read(buffer, { type: "buffer", cellDates: true });
+  const workbook = XLSX.read(buffer, { type: 'buffer', cellDates: true });
   const sheetName = workbook.SheetNames[0];
   if (!sheetName) {
-    throw new Error("File contains no sheets");
+    throw new Error('File contains no sheets');
   }
 
   const sheet = workbook.Sheets[sheetName]!;
   const rows = XLSX.utils.sheet_to_json<Record<string, string>>(sheet, {
-    defval: "",
+    defval: '',
     raw: false,
   });
 
@@ -261,7 +261,7 @@ export async function parseImportFile(buffer: Buffer): Promise<Record<string, st
  */
 export async function processImportFile(
   buffer: Buffer,
-  entityType: "contractor" | "contract",
+  entityType: 'contractor' | 'contract',
   organizationId: string,
   columnMapping: Record<string, string | null>,
 ): Promise<ImportResult> {
@@ -294,21 +294,21 @@ export async function processImportFile(
   const duplicateRows: ImportRow[] = [];
 
   // Validate each row
-  const validator = entityType === "contractor" ? validateContractorRow : validateContractRow;
+  const validator = entityType === 'contractor' ? validateContractorRow : validateContractRow;
 
   for (const { rowNumber, data } of mappedRows) {
     const { valid, errors } = validator({ ...data });
     if (!valid) {
-      invalidRows.push({ rowNumber, data, status: "invalid", errors });
+      invalidRows.push({ rowNumber, data, status: 'invalid', errors });
     } else {
-      validRows.push({ rowNumber, data, status: "valid", errors: [] });
+      validRows.push({ rowNumber, data, status: 'valid', errors: [] });
     }
   }
 
   // Duplicate detection
-  if (entityType === "contractor") {
+  if (entityType === 'contractor') {
     // Batch query existing contractors by taxId
-    const taxIds = validRows.map((r) => String(r.data.taxId ?? "").trim()).filter(Boolean);
+    const taxIds = validRows.map(r => String(r.data.taxId ?? '').trim()).filter(Boolean);
 
     if (taxIds.length > 0) {
       const existing = await prisma.contractor.findMany({
@@ -320,17 +320,17 @@ export async function processImportFile(
         select: { id: true, taxId: true },
       });
 
-      const existingByTaxId = new Map(existing.map((c) => [c.taxId, c.id]));
+      const existingByTaxId = new Map(existing.map(c => [c.taxId, c.id]));
 
       // Move duplicates from validRows to duplicateRows
       const stillValid: ImportRow[] = [];
       for (const row of validRows) {
-        const taxId = String(row.data.taxId ?? "").trim();
+        const taxId = String(row.data.taxId ?? '').trim();
         const existingId = existingByTaxId.get(taxId);
         if (existingId) {
           duplicateRows.push({
             ...row,
-            status: "duplicate",
+            status: 'duplicate',
             duplicateOf: existingId,
           });
         } else {
@@ -342,9 +342,7 @@ export async function processImportFile(
     }
   } else {
     // For contracts: batch query contractors by taxId to resolve contractorId FK
-    const taxIds = validRows
-      .map((r) => String(r.data.contractorTaxId ?? "").trim())
-      .filter(Boolean);
+    const taxIds = validRows.map(r => String(r.data.contractorTaxId ?? '').trim()).filter(Boolean);
 
     if (taxIds.length > 0) {
       const contractors = await prisma.contractor.findMany({
@@ -356,12 +354,12 @@ export async function processImportFile(
         select: { id: true, taxId: true },
       });
 
-      const contractorByTaxId = new Map(contractors.map((c) => [c.taxId, c.id]));
+      const contractorByTaxId = new Map(contractors.map(c => [c.taxId, c.id]));
 
       // Attach resolved contractorId or mark as invalid
       const stillValid: ImportRow[] = [];
       for (const row of validRows) {
-        const taxId = String(row.data.contractorTaxId ?? "").trim();
+        const taxId = String(row.data.contractorTaxId ?? '').trim();
         const contractorId = contractorByTaxId.get(taxId);
         if (contractorId) {
           row.data.contractorId = contractorId;
@@ -369,10 +367,10 @@ export async function processImportFile(
         } else {
           invalidRows.push({
             ...row,
-            status: "invalid",
+            status: 'invalid',
             errors: [
               {
-                field: "contractorTaxId",
+                field: 'contractorTaxId',
                 message: `No contractor found with tax ID: ${taxId}`,
               },
             ],

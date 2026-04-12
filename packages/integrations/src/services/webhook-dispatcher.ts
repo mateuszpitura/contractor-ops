@@ -1,7 +1,7 @@
-import { prisma } from "@contractor-ops/db";
-import { getAdapter } from "../registry.js";
-import type { WebhookVerificationResult } from "../types/webhook.js";
-import { getQStashClient } from "./qstash-client.js";
+import { prisma } from '@contractor-ops/db';
+import { getAdapter } from '../registry.js';
+import type { WebhookVerificationResult } from '../types/webhook.js';
+import { getQStashClient } from './qstash-client.js';
 
 // ---------------------------------------------------------------------------
 // Webhook Dispatcher Service
@@ -51,11 +51,11 @@ export async function logWebhookDelivery(params: {
   return prisma.webhookDelivery.create({
     data: {
       organizationId: params.organizationId,
-      provider: params.provider.toUpperCase() as "SLACK",
+      provider: params.provider.toUpperCase() as 'SLACK',
       eventType: params.eventType,
       signatureValid: params.signatureValid,
       payloadJson: params.payloadJson as never,
-      deliveryStatus: "RECEIVED",
+      deliveryStatus: 'RECEIVED',
       integrationConnectionId: params.connectionId ?? null,
     },
   });

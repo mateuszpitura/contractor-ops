@@ -1,14 +1,14 @@
-import { prisma } from "@contractor-ops/db";
-import type { Prisma } from "@contractor-ops/db/generated/prisma/client";
-import { extractInvoice } from "@contractor-ops/integrations/services/ocr-service";
-import { getQStashClient } from "@contractor-ops/integrations/services/qstash-client";
-import { createLogger } from "@contractor-ops/logger";
-import { metrics } from "@contractor-ops/logger/metrics";
-import * as Sentry from "@sentry/nextjs";
-import { checkAndDeductCredit } from "./credit-service.js";
-import { createPresignedDownloadUrl } from "./r2.js";
+import { prisma } from '@contractor-ops/db';
+import type { Prisma } from '@contractor-ops/db/generated/prisma/client';
+import { extractInvoice } from '@contractor-ops/integrations/services/ocr-service';
+import { getQStashClient } from '@contractor-ops/integrations/services/qstash-client';
+import { createLogger } from '@contractor-ops/logger';
+import { metrics } from '@contractor-ops/logger/metrics';
+import * as Sentry from '@sentry/nextjs';
+import { checkAndDeductCredit } from './credit-service.js';
+import { createPresignedDownloadUrl } from './r2.js';
 
-const log = createLogger({ service: "ocr" });
+const log = createLogger({ service: 'ocr' });
 
 // ---------------------------------------------------------------------------
 // OCR Extraction Orchestrator
@@ -28,13 +28,13 @@ export async function triggerOcrExtraction(params: {
   storageKey: string;
   invoiceId?: string;
 }): Promise<
-  { extractionId: string } | { error: "no_subscription" | "credits_exhausted"; remaining: number }
+  { extractionId: string } | { error: 'no_subscription' | 'credits_exhausted'; remaining: number }
 > {
   // Credit check per BILL-06 -- hard-block when exhausted
   const creditResult = await checkAndDeductCredit(params.organizationId);
   if (!creditResult.allowed) {
     return {
-      error: creditResult.reason ?? "credits_exhausted",
+      error: creditResult.reason ?? 'credits_exhausted',
       remaining: creditResult.remaining,
     };
   }
@@ -44,8 +44,8 @@ export async function triggerOcrExtraction(params: {
       organizationId: params.organizationId,
       documentId: params.documentId,
       invoiceId: params.invoiceId ?? null,
-      provider: "CLAUDE",
-      status: "PENDING",
+      provider: 'CLAUDE',
+      status: 'PENDING',
     },
   });
 
@@ -58,14 +58,14 @@ export async function triggerOcrExtraction(params: {
       storageKey: params.storageKey,
     },
     retries: 2,
-    timeout: "60s",
+    timeout: '60s',
   });
 
   log.info(
     { extractionId: extraction.id, organizationId: params.organizationId },
-    "ocr extraction triggered",
+    'ocr extraction triggered',
   );
-  metrics.increment("ocr.triggered", 1, {
+  metrics.increment('ocr.triggered', 1, {
     organizationId: params.organizationId,
   });
 
@@ -88,7 +88,7 @@ export async function processOcrExtraction(params: {
   // Mark as processing
   await prisma.ocrExtraction.update({
     where: { id: params.extractionId },
-    data: { status: "PROCESSING" },
+    data: { status: 'PROCESSING' },
   });
 
   try {
@@ -103,14 +103,14 @@ export async function processOcrExtraction(params: {
     }
 
     const pdfBuffer = Buffer.from(await pdfResponse.arrayBuffer());
-    const pdfBase64 = pdfBuffer.toString("base64");
+    const pdfBase64 = pdfBuffer.toString('base64');
 
     // Extract invoice data via OCR adapter
     const result = await extractInvoice({
-      provider: "CLAUDE",
+      provider: 'CLAUDE',
       pdfBase64,
       fileName: params.storageKey,
-      locale: "pl",
+      locale: 'pl',
     });
 
     // Persist results
@@ -134,30 +134,30 @@ export async function processOcrExtraction(params: {
         confidence: result.overallConfidence,
         durationMs: result.processingTimeMs,
       },
-      "ocr extraction completed",
+      'ocr extraction completed',
     );
-    metrics.increment("ocr.completed", 1, { status: result.status });
+    metrics.increment('ocr.completed', 1, { status: result.status });
     if (result.processingTimeMs) {
-      metrics.distribution("ocr.processing_time", result.processingTimeMs, {
-        unit: "millisecond",
+      metrics.distribution('ocr.processing_time', result.processingTimeMs, {
+        unit: 'millisecond',
       });
     }
     if (result.overallConfidence != null) {
-      metrics.distribution("ocr.confidence", result.overallConfidence);
+      metrics.distribution('ocr.confidence', result.overallConfidence);
     }
   } catch (error) {
-    log.error({ err: error, extractionId: params.extractionId }, "ocr extraction failed");
+    log.error({ err: error, extractionId: params.extractionId }, 'ocr extraction failed');
     Sentry.captureException(error, {
-      tags: { "ocr.extraction_id": params.extractionId },
+      tags: { 'ocr.extraction_id': params.extractionId },
     });
-    metrics.increment("ocr.failed");
+    metrics.increment('ocr.failed');
 
     // Mark as failed
     await prisma.ocrExtraction.update({
       where: { id: params.extractionId },
       data: {
-        status: "FAILED",
-        errorMessage: error instanceof Error ? error.message : "Unknown processing error",
+        status: 'FAILED',
+        errorMessage: error instanceof Error ? error.message : 'Unknown processing error',
         retryCount: { increment: 1 },
         completedAt: new Date(),
       },
@@ -192,6 +192,6 @@ export async function getExtractionByDocument(params: {
       documentId: params.documentId,
       organizationId: params.organizationId,
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: { createdAt: 'desc' },
   });
 }

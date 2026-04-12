@@ -1,9 +1,9 @@
-import type { HttpHandler } from "msw";
-import type { SetupServer } from "msw/node";
-import { setupServer } from "msw/node";
-import { allHandlers } from "./handlers/index.js";
-import type { HandlerOptions } from "./types.js";
-import { RequestCapture } from "./utils.js";
+import type { HttpHandler } from 'msw';
+import type { SetupServer } from 'msw/node';
+import { setupServer } from 'msw/node';
+import { allHandlers } from './handlers/index.js';
+import type { HandlerOptions } from './types.js';
+import { RequestCapture } from './utils.js';
 
 /* Global test lifecycle hooks — provided by vitest with globals: true */
 declare function beforeAll(fn: () => void): void;
@@ -70,7 +70,7 @@ export function useMockServer(options: MockServerOptions = {}): {
 } {
   const { server, capture } = createMockServer(options);
 
-  beforeAll(() => server.listen({ onUnhandledRequest: "warn" }));
+  beforeAll(() => server.listen({ onUnhandledRequest: 'warn' }));
   afterEach(() => {
     server.resetHandlers();
     capture.clear();

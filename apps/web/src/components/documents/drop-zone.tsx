@@ -1,24 +1,24 @@
-"use client";
+'use client';
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { UploadCloud } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useCallback, useState } from "react";
-import { useDropzone } from "react-dropzone";
-import { trpc } from "@/trpc/init";
-import type { UploadingFile } from "./upload-progress";
-import { UploadProgress } from "./upload-progress";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { UploadCloud } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useState } from 'react';
+import { useDropzone } from 'react-dropzone';
+import { trpc } from '@/trpc/init';
+import type { UploadingFile } from './upload-progress';
+import { UploadProgress } from './upload-progress';
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
 export const ACCEPTED_TYPES: Record<string, string[]> = {
-  "application/pdf": [".pdf"],
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"],
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"],
-  "image/png": [".png"],
-  "image/jpeg": [".jpg", ".jpeg"],
+  'application/pdf': ['.pdf'],
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
+  'image/png': ['.png'],
+  'image/jpeg': ['.jpg', '.jpeg'],
 };
 
 export const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25 MB
@@ -46,9 +46,9 @@ export function DropZone({
   disabled,
   entityType,
   entityId,
-  documentType = "OTHER",
+  documentType = 'OTHER',
 }: DropZoneProps) {
-  const t = useTranslations("Documents");
+  const t = useTranslations('Documents');
   const queryClient = useQueryClient();
   const [files, setFiles] = useState<UploadingFile[]>([]);
 
@@ -60,12 +60,12 @@ export function DropZone({
     async (file: File) => {
       const fileId = `${file.name}-${Date.now()}`;
 
-      setFiles((prev) => [
+      setFiles(prev => [
         ...prev,
         {
           id: fileId,
           file,
-          status: "uploading" as const,
+          status: 'uploading' as const,
           progress: 0,
         },
       ]);
@@ -77,7 +77,7 @@ export function DropZone({
           mimeType: file.type,
           fileSizeBytes: file.size,
           documentType,
-          entityType: entityType as "CONTRACT" | "CONTRACTOR" | undefined,
+          entityType: entityType as 'CONTRACT' | 'CONTRACTOR' | undefined,
           entityId,
         } as Parameters<typeof requestUploadMutation.mutateAsync>[0]);
 
@@ -85,22 +85,18 @@ export function DropZone({
         const documentId = uploadResult.documentId as string;
         const uploadUrl = uploadResult.uploadUrl as string;
 
-        setFiles((prev) =>
-          prev.map((f) => (f.id === fileId ? { ...f, documentId, progress: 10 } : f)),
-        );
+        setFiles(prev => prev.map(f => (f.id === fileId ? { ...f, documentId, progress: 10 } : f)));
 
         // Step 2: Upload directly to R2 via presigned URL with progress
         await new Promise<void>((resolve, reject) => {
           const xhr = new XMLHttpRequest();
-          xhr.open("PUT", uploadUrl);
-          xhr.setRequestHeader("Content-Type", file.type);
+          xhr.open('PUT', uploadUrl);
+          xhr.setRequestHeader('Content-Type', file.type);
 
-          xhr.upload.onprogress = (event) => {
+          xhr.upload.onprogress = event => {
             if (event.lengthComputable) {
               const percent = Math.round(10 + (event.loaded / event.total) * 80);
-              setFiles((prev) =>
-                prev.map((f) => (f.id === fileId ? { ...f, progress: percent } : f)),
-              );
+              setFiles(prev => prev.map(f => (f.id === fileId ? { ...f, progress: percent } : f)));
             }
           };
 
@@ -111,14 +107,14 @@ export function DropZone({
               reject(new Error(`Upload failed with status ${xhr.status}`));
             }
           };
-          xhr.onerror = () => reject(new Error("Upload failed"));
+          xhr.onerror = () => reject(new Error('Upload failed'));
           xhr.send(file);
         });
 
         // Step 3: Confirm upload
-        setFiles((prev) =>
-          prev.map((f) =>
-            f.id === fileId ? { ...f, status: "confirming" as const, progress: 95 } : f,
+        setFiles(prev =>
+          prev.map(f =>
+            f.id === fileId ? { ...f, status: 'confirming' as const, progress: 95 } : f,
           ),
         );
 
@@ -127,9 +123,9 @@ export function DropZone({
         } as Parameters<typeof confirmUploadMutation.mutateAsync>[0]);
 
         // Upload confirmed, scan running async
-        setFiles((prev) =>
-          prev.map((f) =>
-            f.id === fileId ? { ...f, status: "scanning" as const, progress: 100 } : f,
+        setFiles(prev =>
+          prev.map(f =>
+            f.id === fileId ? { ...f, status: 'scanning' as const, progress: 100 } : f,
           ),
         );
 
@@ -138,8 +134,8 @@ export function DropZone({
           queryKey: trpc.document.list.queryKey(),
         });
       } catch {
-        setFiles((prev) =>
-          prev.map((f) => (f.id === fileId ? { ...f, status: "error" as const, progress: 0 } : f)),
+        setFiles(prev =>
+          prev.map(f => (f.id === fileId ? { ...f, status: 'error' as const, progress: 0 } : f)),
         );
       }
     },
@@ -160,7 +156,7 @@ export function DropZone({
   );
 
   const removeFile = (fileId: string) => {
-    setFiles((prev) => prev.filter((f) => f.id !== fileId));
+    setFiles(prev => prev.filter(f => f.id !== fileId));
   };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -178,29 +174,28 @@ export function DropZone({
         {...getRootProps()}
         className={`flex min-h-[160px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 transition-colors ${
           disabled
-            ? "pointer-events-none opacity-50"
+            ? 'pointer-events-none opacity-50'
             : isDragActive
-              ? "border-primary bg-primary/[0.03]"
-              : "border-border bg-muted/50 hover:border-muted-foreground/30"
-        }`}
-      >
+              ? 'border-primary bg-primary/[0.03]'
+              : 'border-border bg-muted/50 hover:border-muted-foreground/30'
+        }`}>
         <input {...getInputProps()} />
         <UploadCloud
           className={`mb-3 size-8 text-muted-foreground transition-transform ${
-            isDragActive ? "scale-110 text-primary" : ""
+            isDragActive ? 'scale-110 text-primary' : ''
           }`}
         />
         <p className="text-center text-sm text-muted-foreground">
-          {t("dropZone.body")}{" "}
-          <span className="cursor-pointer font-medium text-primary">{t("dropZone.browse")}</span>
+          {t('dropZone.body')}{' '}
+          <span className="cursor-pointer font-medium text-primary">{t('dropZone.browse')}</span>
         </p>
-        <p className="mt-1 text-xs text-muted-foreground">{t("dropZone.accepted")}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{t('dropZone.accepted')}</p>
       </div>
 
       {/* Upload progress list */}
       {files.length > 0 && (
         <div className="space-y-2">
-          {files.map((item) => (
+          {files.map(item => (
             <UploadProgress key={item.id} file={item} onRemove={() => removeFile(item.id)} />
           ))}
         </div>

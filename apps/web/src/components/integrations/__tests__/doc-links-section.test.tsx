@@ -1,16 +1,16 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, setup } from "@/test/test-utils";
-import { DocLinksSection } from "../doc-links-section";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { render, screen, setup } from '@/test/test-utils';
+import { DocLinksSection } from '../doc-links-section';
 
 // ---------------------------------------------------------------------------
 // Mocks
 // ---------------------------------------------------------------------------
 
-vi.mock("sonner", () => ({
+vi.mock('sonner', () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
 
-vi.mock("../doc-link-chip", () => ({
+vi.mock('../doc-link-chip', () => ({
   DocLinkChip: ({
     title,
     provider,
@@ -30,7 +30,7 @@ vi.mock("../doc-link-chip", () => ({
   ),
 }));
 
-vi.mock("../attach-doc-dialog", () => ({
+vi.mock('../attach-doc-dialog', () => ({
   AttachDocDialog: ({
     open,
   }: {
@@ -42,16 +42,16 @@ vi.mock("../attach-doc-dialog", () => ({
 
 const mockDocLinks = [
   {
-    id: "dl-1",
-    externalUrl: "https://notion.so/page1",
-    externalType: "NOTION_PAGE",
-    metadataJson: { title: "Onboarding Guide", lastEditedTime: new Date().toISOString() },
+    id: 'dl-1',
+    externalUrl: 'https://notion.so/page1',
+    externalType: 'NOTION_PAGE',
+    metadataJson: { title: 'Onboarding Guide', lastEditedTime: new Date().toISOString() },
   },
   {
-    id: "dl-2",
-    externalUrl: "https://confluence.com/page2",
-    externalType: "CONFLUENCE_PAGE",
-    metadataJson: { title: "API Reference" },
+    id: 'dl-2',
+    externalUrl: 'https://confluence.com/page2',
+    externalType: 'CONFLUENCE_PAGE',
+    metadataJson: { title: 'API Reference' },
   },
 ];
 
@@ -60,9 +60,9 @@ let listLoading = false;
 
 const mockMutate = vi.fn();
 
-vi.mock("@tanstack/react-query", async () => {
+vi.mock('@tanstack/react-query', async () => {
   const actual =
-    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
+    await vi.importActual<typeof import('@tanstack/react-query')>('@tanstack/react-query');
   return {
     ...actual,
     useQuery: () => ({
@@ -78,12 +78,12 @@ vi.mock("@tanstack/react-query", async () => {
   };
 });
 
-vi.mock("@/trpc/init", () => ({
+vi.mock('@/trpc/init', () => ({
   trpc: {
     docs: {
       list: {
-        queryOptions: vi.fn(() => ({ queryKey: ["docs", "list"] })),
-        queryKey: vi.fn(() => ["docs", "list"]),
+        queryOptions: vi.fn(() => ({ queryKey: ['docs', 'list'] })),
+        queryKey: vi.fn(() => ['docs', 'list']),
       },
       detach: { mutationOptions: vi.fn(() => ({})) },
     },
@@ -94,56 +94,56 @@ vi.mock("@/trpc/init", () => ({
 // Tests
 // ---------------------------------------------------------------------------
 
-describe("DocLinksSection", () => {
+describe('DocLinksSection', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     listData = [];
     listLoading = false;
   });
 
-  it("renders Documents header", () => {
+  it('renders Documents header', () => {
     render(<DocLinksSection workflowTaskRunId="wtr-1" />);
-    expect(screen.getByText("Documents")).toBeInTheDocument();
+    expect(screen.getByText('Documents')).toBeInTheDocument();
   });
 
-  it("renders Attach Document button when not readOnly", () => {
+  it('renders Attach Document button when not readOnly', () => {
     render(<DocLinksSection workflowTaskRunId="wtr-1" />);
-    expect(screen.getByRole("button", { name: "Attach Document" })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Attach Document' })).toBeInTheDocument();
   });
 
-  it("does not render Attach Document button in readOnly mode", () => {
+  it('does not render Attach Document button in readOnly mode', () => {
     render(<DocLinksSection workflowTaskRunId="wtr-1" readOnly={true} />);
-    expect(screen.queryByRole("button", { name: "Attach Document" })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Attach Document' })).not.toBeInTheDocument();
   });
 
-  it("shows empty state when no docs attached", () => {
+  it('shows empty state when no docs attached', () => {
     render(<DocLinksSection workflowTaskRunId="wtr-1" />);
-    expect(screen.getByText("No documents attached.")).toBeInTheDocument();
+    expect(screen.getByText('No documents attached.')).toBeInTheDocument();
   });
 
-  it("renders doc link chips when data available", () => {
+  it('renders doc link chips when data available', () => {
     listData = mockDocLinks;
     render(<DocLinksSection workflowTaskRunId="wtr-1" />);
-    expect(screen.getByTestId("doc-chip-dl-1")).toBeInTheDocument();
-    expect(screen.getByTestId("doc-chip-dl-2")).toBeInTheDocument();
+    expect(screen.getByTestId('doc-chip-dl-1')).toBeInTheDocument();
+    expect(screen.getByTestId('doc-chip-dl-2')).toBeInTheDocument();
   });
 
-  it("renders doc titles", () => {
+  it('renders doc titles', () => {
     listData = mockDocLinks;
     render(<DocLinksSection workflowTaskRunId="wtr-1" />);
     expect(screen.getByText(/Onboarding Guide/)).toBeInTheDocument();
     expect(screen.getByText(/API Reference/)).toBeInTheDocument();
   });
 
-  it("opens attach dialog when button clicked", async () => {
+  it('opens attach dialog when button clicked', async () => {
     const { user } = setup(<DocLinksSection workflowTaskRunId="wtr-1" />);
-    await user.click(screen.getByText("Attach Document"));
-    expect(screen.getByTestId("attach-dialog")).toBeInTheDocument();
+    await user.click(screen.getByText('Attach Document'));
+    expect(screen.getByTestId('attach-dialog')).toBeInTheDocument();
   });
 
-  it("does not show empty message when docs exist", () => {
+  it('does not show empty message when docs exist', () => {
     listData = mockDocLinks;
     render(<DocLinksSection workflowTaskRunId="wtr-1" />);
-    expect(screen.queryByText("No documents attached.")).not.toBeInTheDocument();
+    expect(screen.queryByText('No documents attached.')).not.toBeInTheDocument();
   });
 });

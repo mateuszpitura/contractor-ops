@@ -1,11 +1,11 @@
-import type { ColumnDef } from "@tanstack/react-table";
-import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
-import { useState } from "react";
-import { describe, expect, it } from "vitest";
+import type { ColumnDef } from '@tanstack/react-table';
+import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { useState } from 'react';
+import { describe, expect, it } from 'vitest';
 
-import { render, screen, setup } from "@/test/test-utils";
+import { render, screen, setup } from '@/test/test-utils';
 
-import { DataTablePagination } from "../data-table-pagination";
+import { DataTablePagination } from '../data-table-pagination';
 
 type Row = { id: string };
 
@@ -20,15 +20,15 @@ function PaginationHarness({
 }) {
   const [page, setPage] = useState(initialPage);
   const [pageSize, setPageSize] = useState(initialPageSize);
-  const columns: ColumnDef<Row>[] = [{ accessorKey: "id", header: "ID" }];
-  const data: Row[] = [{ id: "1" }];
+  const columns: ColumnDef<Row>[] = [{ accessorKey: 'id', header: 'ID' }];
+  const data: Row[] = [{ id: '1' }];
 
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
     enableRowSelection: true,
-    getRowId: (row) => row.id,
+    getRowId: row => row.id,
   });
 
   return (
@@ -43,26 +43,26 @@ function PaginationHarness({
   );
 }
 
-describe("DataTablePagination", () => {
-  it("renders total row count and page indicator", () => {
+describe('DataTablePagination', () => {
+  it('renders total row count and page indicator', () => {
     render(<PaginationHarness />);
     expect(screen.getByText(/of 25/i)).toBeInTheDocument();
     expect(screen.getByText(/page 1 of 3/i)).toBeInTheDocument();
   });
 
-  it("advances page when Next is clicked", async () => {
+  it('advances page when Next is clicked', async () => {
     const { user } = setup(<PaginationHarness />);
-    await user.click(screen.getByRole("button", { name: /next page/i }));
+    await user.click(screen.getByRole('button', { name: /next page/i }));
     expect(screen.getByText(/page 2 of 3/i)).toBeInTheDocument();
   });
 
-  it("disables Previous on the first page", () => {
+  it('disables Previous on the first page', () => {
     render(<PaginationHarness />);
-    expect(screen.getByRole("button", { name: /previous page/i })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /previous page/i })).toBeDisabled();
   });
 
-  it("disables Next on the last page", () => {
+  it('disables Next on the last page', () => {
     render(<PaginationHarness totalRows={5} initialPage={1} initialPageSize={10} />);
-    expect(screen.getByRole("button", { name: /next page/i })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /next page/i })).toBeDisabled();
   });
 });

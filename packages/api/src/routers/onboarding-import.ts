@@ -1,30 +1,30 @@
-import { randomUUID } from "node:crypto";
-import { auth } from "@contractor-ops/auth";
-import type { Prisma } from "@contractor-ops/db";
-import { decryptCredentials } from "@contractor-ops/integrations";
+import { randomUUID } from 'node:crypto';
+import { auth } from '@contractor-ops/auth';
+import type { Prisma } from '@contractor-ops/db';
+import { decryptCredentials } from '@contractor-ops/integrations';
 import {
   fetchPeopleInputSchema,
   retryItemInputSchema,
   sourceProviderSchema,
   startImportInputSchema,
-} from "@contractor-ops/validators";
-import { TRPCError } from "@trpc/server";
-import { z } from "zod";
-import { router } from "../init.js";
-import { tenantProcedure } from "../middleware/tenant.js";
-import { requireTier } from "../middleware/tier.js";
-import { linearGraphQL } from "../services/linear-issue-sync.js";
+} from '@contractor-ops/validators';
+import { TRPCError } from '@trpc/server';
+import { z } from 'zod';
+import { router } from '../init.js';
+import { tenantProcedure } from '../middleware/tenant.js';
+import { requireTier } from '../middleware/tier.js';
+import { linearGraphQL } from '../services/linear-issue-sync.js';
 import {
   createWorkflowTemplatesFromProjects,
   fetchUsersFromSource,
   mergeByEmail,
-} from "../services/onboarding-import-service.js";
+} from '../services/onboarding-import-service.js';
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
-const ALL_PROVIDERS = ["JIRA", "LINEAR", "GOOGLE_WORKSPACE", "SLACK"] as const;
+const ALL_PROVIDERS = ['JIRA', 'LINEAR', 'GOOGLE_WORKSPACE', 'SLACK'] as const;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -38,7 +38,7 @@ interface ConnectionConfig {
 
 export interface ImportJob {
   jobId: string;
-  status: "pending" | "processing" | "completed" | "failed";
+  status: 'pending' | 'processing' | 'completed' | 'failed';
   totalItems: number;
   completedItems: number;
   failedItems: Array<{ email: string; error: string; role: string }>;
@@ -97,19 +97,19 @@ export const onboardingImportRouter = router({
   /**
    * Lists all 4 supported integration sources with their connection status.
    */
-  listSources: tenantProcedure.use(requireTier("PRO")).query(async ({ ctx }) => {
+  listSources: tenantProcedure.use(requireTier('PRO')).query(async ({ ctx }) => {
     const connections = await ctx.db.integrationConnection.findMany({
       where: { organizationId: ctx.organizationId },
       select: { provider: true, status: true, credentialsRef: true },
     });
 
-    const connMap = new Map(connections.map((c) => [c.provider, c]));
+    const connMap = new Map(connections.map(c => [c.provider, c]));
 
-    return ALL_PROVIDERS.map((provider) => {
+    return ALL_PROVIDERS.map(provider => {
       const conn = connMap.get(provider);
       return {
         provider,
-        connected: conn?.status === "CONNECTED" && !!conn.credentialsRef,
+        connected: conn?.status === 'CONNECTED' && !!conn.credentialsRef,
         selected: false,
       };
     });
@@ -119,25 +119,25 @@ export const onboardingImportRouter = router({
    * Fetches users from selected sources, merges by email, detects conflicts.
    */
   fetchPeople: tenantProcedure
-    .use(requireTier("PRO"))
+    .use(requireTier('PRO'))
     .input(fetchPeopleInputSchema)
     .query(async ({ ctx, input }) => {
       const allSourcePeople: Array<{
         email: string;
         name: string;
-        source: "JIRA" | "LINEAR" | "GOOGLE_WORKSPACE" | "SLACK";
+        source: 'JIRA' | 'LINEAR' | 'GOOGLE_WORKSPACE' | 'SLACK';
         avatarUrl?: string;
         metadata?: Record<string, unknown>;
       }> = [];
 
       // Fetch from each requested source using Promise.allSettled
       const results = await Promise.allSettled(
-        input.sources.map(async (source) => {
+        input.sources.map(async source => {
           const connection = await ctx.db.integrationConnection.findFirst({
             where: {
               organizationId: ctx.organizationId,
               provider: source,
-              status: "CONNECTED",
+              status: 'CONNECTED',
             },
           });
 
@@ -153,7 +153,7 @@ export const onboardingImportRouter = router({
       );
 
       for (const result of results) {
-        if (result.status === "fulfilled" && result.value) {
+        if (result.status === 'fulfilled' && result.value) {
           allSourcePeople.push(...result.value);
         }
       }
@@ -167,7 +167,7 @@ export const onboardingImportRouter = router({
       const existingEmails = new Set(
         (org?.members ?? []).map(
           (m: Record<string, unknown>) =>
-            ((m.user as Record<string, unknown>)?.email as string)?.toLowerCase() ?? "",
+            ((m.user as Record<string, unknown>)?.email as string)?.toLowerCase() ?? '',
         ),
       );
 
@@ -178,7 +178,7 @@ export const onboardingImportRouter = router({
    * Fetches projects from Jira and teams from Linear with their statuses.
    */
   fetchProjects: tenantProcedure
-    .use(requireTier("PRO"))
+    .use(requireTier('PRO'))
     .input(z.object({ sources: z.array(sourceProviderSchema) }))
     .query(async ({ ctx, input }) => {
       const projects: Array<{
@@ -193,7 +193,7 @@ export const onboardingImportRouter = router({
           where: {
             organizationId: ctx.organizationId,
             provider: source,
-            status: "CONNECTED",
+            status: 'CONNECTED',
           },
         });
 
@@ -204,14 +204,14 @@ export const onboardingImportRouter = router({
           connection.provider.toLowerCase(),
         );
 
-        if (source === "JIRA") {
+        if (source === 'JIRA') {
           const config = connection.configJson as ConnectionConfig;
           if (!config?.cloudId) continue;
 
           const baseUrl = `https://api.atlassian.com/ex/jira/${config.cloudId}/rest/api/3`;
           const headers = {
             Authorization: `Bearer ${credentials.accessToken}`,
-            Accept: "application/json",
+            Accept: 'application/json',
           };
 
           // Fetch projects
@@ -257,13 +257,13 @@ export const onboardingImportRouter = router({
             }
 
             projects.push({
-              sourceProvider: "JIRA",
+              sourceProvider: 'JIRA',
               externalId: proj.id,
               name: proj.name,
               statuses: [...statusMap.values()],
             });
           }
-        } else if (source === "LINEAR") {
+        } else if (source === 'LINEAR') {
           const data = await linearGraphQL<{
             teams: {
               nodes: Array<{
@@ -295,10 +295,10 @@ export const onboardingImportRouter = router({
 
           for (const team of data.teams.nodes) {
             projects.push({
-              sourceProvider: "LINEAR",
+              sourceProvider: 'LINEAR',
               externalId: team.id,
               name: team.name,
-              statuses: team.states.nodes.map((s) => ({
+              statuses: team.states.nodes.map(s => ({
                 id: s.id,
                 name: s.name,
                 color: s.color,
@@ -316,19 +316,19 @@ export const onboardingImportRouter = router({
    * workflow templates from projects. Tracks progress in settings metadata.
    */
   startImport: tenantProcedure
-    .use(requireTier("PRO"))
+    .use(requireTier('PRO'))
     .input(startImportInputSchema)
     .mutation(async ({ ctx, input }) => {
       const jobId = randomUUID();
-      const nonSkippedPeople = input.people.filter((p) => !p.skip);
-      const nonSkippedProjects = input.projects.filter((p) => !p.skip);
+      const nonSkippedPeople = input.people.filter(p => !p.skip);
+      const nonSkippedProjects = input.projects.filter(p => !p.skip);
       const totalItems = nonSkippedPeople.length + nonSkippedProjects.length;
 
       const { settings } = await getOrgSettings(ctx.organizationId);
 
       const job: ImportJob = {
         jobId,
-        status: "processing",
+        status: 'processing',
         totalItems,
         completedItems: 0,
         failedItems: [],
@@ -344,21 +344,21 @@ export const onboardingImportRouter = router({
             body: {
               email: person.email,
               role: person.role as
-                | "admin"
-                | "owner"
-                | "finance_admin"
-                | "ops_manager"
-                | "team_manager"
-                | "legal_compliance_viewer"
-                | "it_admin"
-                | "external_accountant"
-                | "readonly",
+                | 'admin'
+                | 'owner'
+                | 'finance_admin'
+                | 'ops_manager'
+                | 'team_manager'
+                | 'legal_compliance_viewer'
+                | 'it_admin'
+                | 'external_accountant'
+                | 'readonly',
               organizationId: ctx.organizationId,
             },
           });
           job.completedItems++;
         } catch (error) {
-          const message = error instanceof Error ? error.message : "Unknown error";
+          const message = error instanceof Error ? error.message : 'Unknown error';
           job.failedItems.push({ email: person.email, error: message, role: person.role });
         }
       }
@@ -375,11 +375,11 @@ export const onboardingImportRouter = router({
         } catch (error) {
           // Count project failures individually
           for (const proj of nonSkippedProjects) {
-            const message = error instanceof Error ? error.message : "Unknown error";
+            const message = error instanceof Error ? error.message : 'Unknown error';
             job.failedItems.push({
               email: `project:${proj.externalId}`,
               error: message,
-              role: "readonly",
+              role: 'readonly',
             });
           }
         }
@@ -387,9 +387,9 @@ export const onboardingImportRouter = router({
 
       // Determine final status
       if (job.failedItems.length === totalItems) {
-        job.status = "failed";
+        job.status = 'failed';
       } else {
-        job.status = "completed";
+        job.status = 'completed';
       }
 
       // Re-read settings to avoid overwriting concurrent changes
@@ -403,7 +403,7 @@ export const onboardingImportRouter = router({
    * Returns the progress of an import job by jobId.
    */
   getProgress: tenantProcedure
-    .use(requireTier("PRO"))
+    .use(requireTier('PRO'))
     .input(z.object({ jobId: z.string() }))
     .query(async ({ ctx, input }) => {
       const { settings } = await getOrgSettings(ctx.organizationId);
@@ -411,7 +411,7 @@ export const onboardingImportRouter = router({
 
       if (!job) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: `Import job ${input.jobId} not found`,
         });
       }
@@ -423,7 +423,7 @@ export const onboardingImportRouter = router({
    * Retries a single failed item from an import job.
    */
   retryFailedItem: tenantProcedure
-    .use(requireTier("PRO"))
+    .use(requireTier('PRO'))
     .input(retryItemInputSchema)
     .mutation(async ({ ctx, input }) => {
       const { settings } = await getOrgSettings(ctx.organizationId);
@@ -432,16 +432,16 @@ export const onboardingImportRouter = router({
 
       if (!job) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: `Import job ${input.jobId} not found`,
         });
       }
 
-      const failedIndex = job.failedItems.findIndex((item) => item.email === input.email);
+      const failedIndex = job.failedItems.findIndex(item => item.email === input.email);
 
       if (failedIndex === -1) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: `Failed item ${input.email} not found in job ${input.jobId}`,
         });
       }
@@ -453,16 +453,16 @@ export const onboardingImportRouter = router({
           headers: ctx.headers,
           body: {
             email: input.email,
-            role: (failedItem.role || "readonly") as
-              | "admin"
-              | "owner"
-              | "finance_admin"
-              | "ops_manager"
-              | "team_manager"
-              | "legal_compliance_viewer"
-              | "it_admin"
-              | "external_accountant"
-              | "readonly",
+            role: (failedItem.role || 'readonly') as
+              | 'admin'
+              | 'owner'
+              | 'finance_admin'
+              | 'ops_manager'
+              | 'team_manager'
+              | 'legal_compliance_viewer'
+              | 'it_admin'
+              | 'external_accountant'
+              | 'readonly',
             organizationId: ctx.organizationId,
           },
         });
@@ -475,7 +475,7 @@ export const onboardingImportRouter = router({
 
         return { success: true };
       } catch (error) {
-        const message = error instanceof Error ? error.message : "Unknown error";
+        const message = error instanceof Error ? error.message : 'Unknown error';
 
         // Update the error message
         job.failedItems[failedIndex]!.error = message;

@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Pencil, Plus, Timer, Trash2 } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { toast } from "sonner";
-import { ReminderRuleEditor } from "@/components/settings/reminder-rule-editor";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Pencil, Plus, Timer, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { ReminderRuleEditor } from '@/components/settings/reminder-rule-editor';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,13 +15,13 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Switch } from "@/components/ui/switch";
-import { trpc } from "@/trpc/init";
+} from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Switch } from '@/components/ui/switch';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -45,32 +45,32 @@ export type ReminderRule = {
 // ---------------------------------------------------------------------------
 
 const TRIGGER_LABEL_KEYS: Record<string, string> = {
-  BEFORE_CONTRACT_END: "triggerBeforeContractEnd",
-  BEFORE_DUE_DATE: "triggerBeforeDueDate",
-  ON_DUE_DATE: "triggerOnDueDate",
-  AFTER_DUE_DATE: "triggerAfterDueDate",
-  BEFORE_DOCUMENT_EXPIRY: "triggerBeforeDocumentExpiry",
-  ON_LIFECYCLE_CHANGE: "triggerOnLifecycleChange",
+  BEFORE_CONTRACT_END: 'triggerBeforeContractEnd',
+  BEFORE_DUE_DATE: 'triggerBeforeDueDate',
+  ON_DUE_DATE: 'triggerOnDueDate',
+  AFTER_DUE_DATE: 'triggerAfterDueDate',
+  BEFORE_DOCUMENT_EXPIRY: 'triggerBeforeDocumentExpiry',
+  ON_LIFECYCLE_CHANGE: 'triggerOnLifecycleChange',
 };
 
 const CHANNEL_LABEL_KEYS: Record<string, string> = {
-  IN_APP: "channelInApp",
-  EMAIL: "channelEmail",
-  SLACK: "channelSlack",
+  IN_APP: 'channelInApp',
+  EMAIL: 'channelEmail',
+  SLACK: 'channelSlack',
 };
 
 const RECIPIENT_LABEL_KEYS: Record<string, string> = {
-  ENTITY_OWNER: "recipientEntityOwner",
-  FINANCE_TEAM: "recipientFinanceTeam",
-  ASSIGNEE: "recipientAssignee",
-  SPECIFIC_USER: "recipientSpecificUser",
-  ROLE: "recipientRole",
+  ENTITY_OWNER: 'recipientEntityOwner',
+  FINANCE_TEAM: 'recipientFinanceTeam',
+  ASSIGNEE: 'recipientAssignee',
+  SPECIFIC_USER: 'recipientSpecificUser',
+  ROLE: 'recipientRole',
 };
 
 const CHANNEL_BADGE_VARIANT: Record<string, string> = {
-  IN_APP: "bg-primary/10 text-primary",
-  EMAIL: "bg-blue-500/10 text-blue-500",
-  SLACK: "bg-purple-500/10 text-purple-500",
+  IN_APP: 'bg-primary/10 text-primary',
+  EMAIL: 'bg-blue-500/10 text-blue-500',
+  SLACK: 'bg-purple-500/10 text-purple-500',
 };
 
 // ---------------------------------------------------------------------------
@@ -78,8 +78,8 @@ const CHANNEL_BADGE_VARIANT: Record<string, string> = {
 // ---------------------------------------------------------------------------
 
 export function ReminderRulesSection() {
-  const t = useTranslations("Settings");
-  const tAria = useTranslations("Common.aria");
+  const t = useTranslations('Settings');
+  const tAria = useTranslations('Common.aria');
   const queryClient = useQueryClient();
 
   const [editorOpen, setEditorOpen] = useState(false);
@@ -94,13 +94,13 @@ export function ReminderRulesSection() {
   const toggleActiveMutation = useMutation(
     trpc.reminder.toggleActive.mutationOptions({
       onSuccess: () => {
-        toast.success(t("reminderRules.toasts.toggled"));
+        toast.success(t('reminderRules.toasts.toggled'));
         queryClient.invalidateQueries({
           queryKey: trpc.reminder.list.queryKey(),
         });
       },
       onError: () => {
-        toast.error(t("reminderRules.toasts.saveFailed"));
+        toast.error(t('reminderRules.toasts.saveFailed'));
         queryClient.invalidateQueries({
           queryKey: trpc.reminder.list.queryKey(),
         });
@@ -112,14 +112,14 @@ export function ReminderRulesSection() {
   const deleteMutation = useMutation(
     trpc.reminder.delete.mutationOptions({
       onSuccess: () => {
-        toast.success(t("reminderRules.toasts.deleted"));
+        toast.success(t('reminderRules.toasts.deleted'));
         queryClient.invalidateQueries({
           queryKey: trpc.reminder.list.queryKey(),
         });
         setDeletingRuleId(null);
       },
       onError: () => {
-        toast.error(t("reminderRules.toasts.deleteFailed"));
+        toast.error(t('reminderRules.toasts.deleteFailed'));
       },
     }),
   );
@@ -153,7 +153,7 @@ export function ReminderRulesSection() {
     const channelLabel = t(`reminderRules.editor.${channelKey}` as Parameters<typeof t>[0]);
 
     if (rule.offsetDays) {
-      return `${rule.offsetDays} ${t("reminderRules.editor.offsetDaysPlaceholder")} ${triggerLabel.toLowerCase()}, ${recipientLabel} ${channelLabel}`;
+      return `${rule.offsetDays} ${t('reminderRules.editor.offsetDaysPlaceholder')} ${triggerLabel.toLowerCase()}, ${recipientLabel} ${channelLabel}`;
     }
 
     return `${triggerLabel}, ${recipientLabel} ${channelLabel}`;
@@ -190,13 +190,13 @@ export function ReminderRulesSection() {
       <>
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <Timer className="size-12 text-muted-foreground" />
-          <h3 className="mt-4 text-base font-semibold">{t("reminderRules.emptyHeading")}</h3>
+          <h3 className="mt-4 text-base font-semibold">{t('reminderRules.emptyHeading')}</h3>
           <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-            {t("reminderRules.emptyBody")}
+            {t('reminderRules.emptyBody')}
           </p>
           <Button className="mt-4" onClick={handleCreate}>
             <Plus className="me-1.5 size-4" />
-            {t("reminderRules.emptyCta")}
+            {t('reminderRules.emptyCta')}
           </Button>
         </div>
         <ReminderRuleEditor
@@ -215,19 +215,19 @@ export function ReminderRulesSection() {
         {/* Header */}
         <div className="flex items-start justify-between">
           <div>
-            <h3 className="text-base font-semibold">{t("reminderRules.heading")}</h3>
-            <p className="text-sm text-muted-foreground">{t("reminderRules.description")}</p>
+            <h3 className="text-base font-semibold">{t('reminderRules.heading')}</h3>
+            <p className="text-sm text-muted-foreground">{t('reminderRules.description')}</p>
           </div>
           <Button onClick={handleCreate}>
             <Plus className="me-1.5 size-4" />
-            {t("reminderRules.createRule")}
+            {t('reminderRules.createRule')}
           </Button>
         </div>
 
         {/* Rule cards */}
-        {rules.map((rule) => {
+        {rules.map(rule => {
           const channelBadgeClass =
-            CHANNEL_BADGE_VARIANT[rule.channel] ?? "bg-muted text-muted-foreground";
+            CHANNEL_BADGE_VARIANT[rule.channel] ?? 'bg-muted text-muted-foreground';
 
           return (
             <Card key={rule.id}>
@@ -237,7 +237,7 @@ export function ReminderRulesSection() {
                   <Switch
                     checked={rule.active}
                     onCheckedChange={() => handleToggleActive(rule)}
-                    aria-label={tAria("toggleActive", { name: rule.name })}
+                    aria-label={tAria('toggleActive', { name: rule.name })}
                   />
                 </div>
               </CardHeader>
@@ -246,14 +246,14 @@ export function ReminderRulesSection() {
                 <div className="mt-2 flex items-center gap-2">
                   <Badge variant="secondary" className={channelBadgeClass}>
                     {t(
-                      `reminderRules.editor.${CHANNEL_LABEL_KEYS[rule.channel] ?? "channelInApp"}` as Parameters<
+                      `reminderRules.editor.${CHANNEL_LABEL_KEYS[rule.channel] ?? 'channelInApp'}` as Parameters<
                         typeof t
                       >[0],
                     )}
                   </Badge>
                   <Badge variant="secondary">
                     {t(
-                      `reminderRules.editor.${RECIPIENT_LABEL_KEYS[rule.recipientMode] ?? "recipientEntityOwner"}` as Parameters<
+                      `reminderRules.editor.${RECIPIENT_LABEL_KEYS[rule.recipientMode] ?? 'recipientEntityOwner'}` as Parameters<
                         typeof t
                       >[0],
                     )}
@@ -263,16 +263,15 @@ export function ReminderRulesSection() {
               <CardFooter className="gap-2">
                 <Button variant="ghost" size="sm" onClick={() => handleEdit(rule)}>
                   <Pencil className="me-1.5 size-3.5" />
-                  {t("reminderRules.edit")}
+                  {t('reminderRules.edit')}
                 </Button>
                 <Button
                   variant="ghost"
                   size="sm"
                   className="text-destructive hover:text-destructive"
-                  onClick={() => setDeletingRuleId(rule.id)}
-                >
+                  onClick={() => setDeletingRuleId(rule.id)}>
                   <Trash2 className="me-1.5 size-3.5" />
-                  {t("reminderRules.delete")}
+                  {t('reminderRules.delete')}
                 </Button>
               </CardFooter>
             </Card>
@@ -290,25 +289,23 @@ export function ReminderRulesSection() {
       {/* Delete confirmation dialog */}
       <AlertDialog
         open={deletingRuleId !== null}
-        onOpenChange={(open) => {
+        onOpenChange={open => {
           if (!open) setDeletingRuleId(null);
-        }}
-      >
+        }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("reminderRules.deleteConfirm.title")}</AlertDialogTitle>
-            <AlertDialogDescription>{t("reminderRules.deleteConfirm.body")}</AlertDialogDescription>
+            <AlertDialogTitle>{t('reminderRules.deleteConfirm.title')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('reminderRules.deleteConfirm.body')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t("reminderRules.deleteConfirm.cancel")}</AlertDialogCancel>
+            <AlertDialogCancel>{t('reminderRules.deleteConfirm.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
               disabled={deleteMutation.isPending}
               onClick={() => {
                 if (deletingRuleId) handleDelete(deletingRuleId);
-              }}
-            >
-              {t("reminderRules.deleteConfirm.confirm")}
+              }}>
+              {t('reminderRules.deleteConfirm.confirm')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

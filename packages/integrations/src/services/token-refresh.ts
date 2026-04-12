@@ -1,6 +1,6 @@
-import { prisma } from "@contractor-ops/db";
-import { getAdapter } from "../registry.js";
-import { decryptCredentials, encryptCredentials } from "./credential-service.js";
+import { prisma } from '@contractor-ops/db';
+import { getAdapter } from '../registry.js';
+import { decryptCredentials, encryptCredentials } from './credential-service.js';
 
 // ---------------------------------------------------------------------------
 // Token Refresh — proactive cron + lazy fallback
@@ -31,7 +31,7 @@ export async function refreshExpiring(): Promise<{
 
   const connections = await prisma.integrationConnection.findMany({
     where: {
-      status: "CONNECTED",
+      status: 'CONNECTED',
       tokenExpiresAt: { lte: cutoff },
       // Skip connections already locked by another refresh attempt
       OR: [{ refreshLockedAt: null }, { refreshLockedAt: { lte: staleLock } }],
@@ -69,7 +69,9 @@ export async function refreshExpiring(): Promise<{
           where: { id: conn.id },
           data: { refreshLockedAt: null },
         })
-        .catch(() => {}); // ignore if already cleaned up
+        .catch(() => {
+          /* ignored */
+        }); // ignore if already cleaned up
     }
   }
 
@@ -114,7 +116,9 @@ export async function lazyRefresh(connectionId: string): Promise<boolean> {
         where: { id: connectionId },
         data: { refreshLockedAt: null },
       })
-      .catch(() => {});
+      .catch(() => {
+        /* ignored */
+      });
   }
 }
 
@@ -156,9 +160,9 @@ async function markRefreshFailed(connectionId: string, error: unknown): Promise<
   await prisma.integrationConnection.update({
     where: { id: connectionId },
     data: {
-      status: "REAUTH_REQUIRED",
+      status: 'REAUTH_REQUIRED',
       lastErrorAt: new Date(),
-      lastErrorMessage: error instanceof Error ? error.message : "Token refresh failed",
+      lastErrorMessage: error instanceof Error ? error.message : 'Token refresh failed',
       refreshLockedAt: null,
     },
   });

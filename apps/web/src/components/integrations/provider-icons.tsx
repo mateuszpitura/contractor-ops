@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 /**
  * Provider marks for docs/calendar integrations.
@@ -11,4 +11,4 @@ export {
   LinearBrandIcon as LinearIcon,
   NotionBrandIcon as NotionIcon,
   OutlookCalendarBrandIcon as OutlookCalendarIcon,
-} from "./brand-icons";
+} from './brand-icons';

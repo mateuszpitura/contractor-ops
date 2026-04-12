@@ -9,20 +9,20 @@
 // All invoke payloads are validated with Zod before processing.
 // ---------------------------------------------------------------------------
 
-import type { Prisma } from "@contractor-ops/db";
-import { prisma } from "@contractor-ops/db";
+import type { Prisma } from '@contractor-ops/db';
+import { prisma } from '@contractor-ops/db';
 import type {
   AdaptiveCardInvokeResponse,
   AdaptiveCardInvokeValue,
   ConversationReference,
   TaskModuleRequest,
   TaskModuleResponse,
-} from "botbuilder";
-import { CardFactory, TeamsActivityHandler, TurnContext } from "botbuilder";
-import { z } from "zod";
-import { advanceFlow } from "../approval-engine.js";
-import { buildApprovalResultCard } from "./cards/approval-result-card.js";
-import { buildRejectModalCard } from "./cards/reject-modal-card.js";
+} from 'botbuilder';
+import { CardFactory, TeamsActivityHandler, TurnContext } from 'botbuilder';
+import { z } from 'zod';
+import { advanceFlow } from '../approval-engine.js';
+import { buildApprovalResultCard } from './cards/approval-result-card.js';
+import { buildRejectModalCard } from './cards/reject-modal-card.js';
 
 // ---------------------------------------------------------------------------
 // Zod schemas for invoke payload validation (per CLAUDE.md: validate all
@@ -30,22 +30,22 @@ import { buildRejectModalCard } from "./cards/reject-modal-card.js";
 // ---------------------------------------------------------------------------
 
 const approveInvokeSchema = z.object({
-  action: z.literal("approve_invoice"),
+  action: z.literal('approve_invoice'),
   invoiceId: z.string().uuid(),
   flowId: z.string().uuid(),
 });
 
 const rejectInvokeSchema = z.object({
-  action: z.literal("reject_invoice"),
+  action: z.literal('reject_invoice'),
   invoiceId: z.string().uuid(),
   flowId: z.string().uuid(),
 });
 
 const submitRejectionSchema = z.object({
-  action: z.literal("submit_rejection"),
+  action: z.literal('submit_rejection'),
   invoiceId: z.string().uuid(),
   flowId: z.string().uuid(),
-  comment: z.string().min(1, "Rejection comment is required"),
+  comment: z.string().min(1, 'Rejection comment is required'),
 });
 
 const taskModuleFetchSchema = z.object({
@@ -77,15 +77,15 @@ export async function storeConversationReference(
 ): Promise<void> {
   const aadObjectId = ref.user?.aadObjectId;
   if (!aadObjectId) {
-    console.warn("[Teams] Cannot store ConversationReference: no aadObjectId");
+    console.warn('[Teams] Cannot store ConversationReference: no aadObjectId');
     return;
   }
 
   const connection = await prisma.integrationConnection.findFirst({
     where: {
       organizationId,
-      provider: "MICROSOFT_TEAMS",
-      status: "CONNECTED",
+      provider: 'MICROSOFT_TEAMS',
+      status: 'CONNECTED',
     },
     select: { id: true, configJson: true },
   });
@@ -105,7 +105,7 @@ export async function storeConversationReference(
   // so sendChannelAlert can look up by params.channelId
   const teamConversationReferences = config.teamConversationReferences ?? {};
   const channelId = ref.conversation?.id;
-  if (channelId && ref.conversation?.conversationType === "channel") {
+  if (channelId && ref.conversation?.conversationType === 'channel') {
     teamConversationReferences[channelId] = ref as ConversationReference;
   }
 
@@ -131,8 +131,8 @@ export async function getConversationReference(
   const connection = await prisma.integrationConnection.findFirst({
     where: {
       organizationId,
-      provider: "MICROSOFT_TEAMS",
-      status: "CONNECTED",
+      provider: 'MICROSOFT_TEAMS',
+      status: 'CONNECTED',
     },
     select: { configJson: true },
   });
@@ -156,7 +156,7 @@ async function resolveTeamsUser(
 ): Promise<{ userId: string; userName: string } | null> {
   const link = await prisma.externalLink.findFirst({
     where: {
-      externalType: "TEAMS_USER",
+      externalType: 'TEAMS_USER',
       externalId: aadObjectId,
     },
     select: {
@@ -172,7 +172,7 @@ async function resolveTeamsUser(
   });
 
   if (!user) return null;
-  return { userId: user.id, userName: user.name ?? "Unknown" };
+  return { userId: user.id, userName: user.name ?? 'Unknown' };
 }
 
 // ---------------------------------------------------------------------------
@@ -182,15 +182,15 @@ async function resolveTeamsUser(
 function errorInvokeResponse(statusCode: number, message: string): AdaptiveCardInvokeResponse {
   return {
     statusCode,
-    type: "application/vnd.microsoft.error",
-    value: { code: "BadRequest", message },
+    type: 'application/vnd.microsoft.error',
+    value: { code: 'BadRequest', message },
   };
 }
 
 function cardInvokeResponse(card: Record<string, unknown>): AdaptiveCardInvokeResponse {
   return {
     statusCode: 200,
-    type: "application/vnd.microsoft.card.adaptive",
+    type: 'application/vnd.microsoft.card.adaptive',
     value: card,
   };
 }
@@ -210,23 +210,23 @@ export class TeamsBotHandler extends TeamsActivityHandler {
   ): Promise<AdaptiveCardInvokeResponse> {
     const data = invokeValue.action?.data as Record<string, unknown> | undefined;
     if (!data) {
-      return errorInvokeResponse(400, "No action data provided");
+      return errorInvokeResponse(400, 'No action data provided');
     }
 
     const actionType = data.action as string | undefined;
 
     try {
       switch (actionType) {
-        case "approve_invoice":
+        case 'approve_invoice':
           return await this.handleApproveInvoke(context, data);
-        case "reject_invoice":
+        case 'reject_invoice':
           return await this.handleRejectInvoke(context, data);
         default:
           return errorInvokeResponse(400, `Unknown action: ${actionType}`);
       }
     } catch (error) {
-      console.error("[Teams] Card invoke error:", error);
-      return errorInvokeResponse(500, "Internal error processing action");
+      console.error('[Teams] Card invoke error:', error);
+      return errorInvokeResponse(500, 'Internal error processing action');
     }
   }
 
@@ -242,8 +242,8 @@ export class TeamsBotHandler extends TeamsActivityHandler {
     if (!parsed.success) {
       return {
         task: {
-          type: "message",
-          value: "Invalid request data. Please try again.",
+          type: 'message',
+          value: 'Invalid request data. Please try again.',
         },
       };
     }
@@ -252,12 +252,12 @@ export class TeamsBotHandler extends TeamsActivityHandler {
 
     return {
       task: {
-        type: "continue",
+        type: 'continue',
         value: {
-          title: "Reject Invoice",
+          title: 'Reject Invoice',
           card: CardFactory.adaptiveCard(buildRejectModalCard(invoiceId, flowId)),
-          width: "medium",
-          height: "small",
+          width: 'medium',
+          height: 'small',
         },
       },
     };
@@ -271,8 +271,8 @@ export class TeamsBotHandler extends TeamsActivityHandler {
     if (!parsed.success) {
       return {
         task: {
-          type: "message",
-          value: parsed.error.issues[0]?.message ?? "Invalid data. Please try again.",
+          type: 'message',
+          value: parsed.error.issues[0]?.message ?? 'Invalid data. Please try again.',
         },
       };
     }
@@ -284,8 +284,8 @@ export class TeamsBotHandler extends TeamsActivityHandler {
     if (!aadObjectId) {
       return {
         task: {
-          type: "message",
-          value: "Could not identify your account. Please try again.",
+          type: 'message',
+          value: 'Could not identify your account. Please try again.',
         },
       };
     }
@@ -294,8 +294,8 @@ export class TeamsBotHandler extends TeamsActivityHandler {
     if (!user) {
       return {
         task: {
-          type: "message",
-          value: "Your Teams account is not linked to Contractor Ops.",
+          type: 'message',
+          value: 'Your Teams account is not linked to Contractor Ops.',
         },
       };
     }
@@ -310,7 +310,7 @@ export class TeamsBotHandler extends TeamsActivityHandler {
       });
 
       const invoice =
-        flow?.resourceType === "INVOICE"
+        flow?.resourceType === 'INVOICE'
           ? await prisma.invoice.findUnique({
               where: { id: flow.resourceId },
               select: {
@@ -323,13 +323,13 @@ export class TeamsBotHandler extends TeamsActivityHandler {
 
       if (invoice && flow) {
         const resultCard = buildApprovalResultCard({
-          result: "rejected",
-          invoiceNumber: invoice.invoiceNumber ?? "N/A",
+          result: 'rejected',
+          invoiceNumber: invoice.invoiceNumber ?? 'N/A',
           amount: (invoice.totalMinor / 100).toFixed(2),
           currency: invoice.currency,
           approverName: user.userName,
           comment,
-          viewUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/invoices/${flow.resourceId}`,
+          viewUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? ''}/invoices/${flow.resourceId}`,
         });
 
         // Update the original card in-place
@@ -338,17 +338,17 @@ export class TeamsBotHandler extends TeamsActivityHandler {
           await context.updateActivity({
             ...activity,
             id: activity.replyToId,
-            type: "message",
+            type: 'message',
             attachments: [CardFactory.adaptiveCard(resultCard)],
           });
         }
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to reject invoice";
-      return { task: { type: "message", value: message } };
+      const message = error instanceof Error ? error.message : 'Failed to reject invoice';
+      return { task: { type: 'message', value: message } };
     }
 
-    return { task: { type: "message", value: " " } };
+    return { task: { type: 'message', value: ' ' } };
   }
 
   // -------------------------------------------------------------------------
@@ -361,7 +361,7 @@ export class TeamsBotHandler extends TeamsActivityHandler {
   ): Promise<AdaptiveCardInvokeResponse> {
     const parsed = approveInvokeSchema.safeParse(data);
     if (!parsed.success) {
-      return errorInvokeResponse(400, "Invalid payload");
+      return errorInvokeResponse(400, 'Invalid payload');
     }
 
     const { flowId } = parsed.data;
@@ -369,19 +369,19 @@ export class TeamsBotHandler extends TeamsActivityHandler {
     // Resolve user
     const aadObjectId = context.activity.from?.aadObjectId;
     if (!aadObjectId) {
-      return errorInvokeResponse(403, "Could not identify your account");
+      return errorInvokeResponse(403, 'Could not identify your account');
     }
 
     const user = await resolveTeamsUser(aadObjectId);
     if (!user) {
-      return errorInvokeResponse(403, "Your Teams account is not linked to Contractor Ops.");
+      return errorInvokeResponse(403, 'Your Teams account is not linked to Contractor Ops.');
     }
 
     try {
       const result = await this.processApproval(flowId, user.userId);
 
       const resultCard = buildApprovalResultCard({
-        result: "approved",
+        result: 'approved',
         invoiceNumber: result.invoiceNumber,
         amount: result.amount,
         currency: result.currency,
@@ -392,23 +392,23 @@ export class TeamsBotHandler extends TeamsActivityHandler {
       return cardInvokeResponse(resultCard);
     } catch (error) {
       if (error instanceof Error) {
-        if (error.message === "APPROVAL_STEP_NOT_PENDING") {
+        if (error.message === 'APPROVAL_STEP_NOT_PENDING') {
           return cardInvokeResponse(
             buildApprovalResultCard({
-              result: "approved",
-              invoiceNumber: "N/A",
-              amount: "0.00",
-              currency: "PLN",
-              approverName: "another approver",
-              viewUrl: "",
+              result: 'approved',
+              invoiceNumber: 'N/A',
+              amount: '0.00',
+              currency: 'PLN',
+              approverName: 'another approver',
+              viewUrl: '',
             }),
           );
         }
-        if (error.message === "APPROVAL_NOT_ASSIGNED") {
+        if (error.message === 'APPROVAL_NOT_ASSIGNED') {
           return errorInvokeResponse(403, "You don't have permission to approve this invoice.");
         }
       }
-      return errorInvokeResponse(500, "Failed to process approval");
+      return errorInvokeResponse(500, 'Failed to process approval');
     }
   }
 
@@ -422,13 +422,13 @@ export class TeamsBotHandler extends TeamsActivityHandler {
   ): Promise<AdaptiveCardInvokeResponse> {
     const parsed = rejectInvokeSchema.safeParse(data);
     if (!parsed.success) {
-      return errorInvokeResponse(400, "Invalid payload");
+      return errorInvokeResponse(400, 'Invalid payload');
     }
 
     return cardInvokeResponse({
-      type: "AdaptiveCard",
-      version: "1.5",
-      body: [{ type: "TextBlock", text: "Opening rejection form...", wrap: true }],
+      type: 'AdaptiveCard',
+      version: '1.5',
+      body: [{ type: 'TextBlock', text: 'Opening rejection form...', wrap: true }],
     });
   }
 
@@ -445,13 +445,13 @@ export class TeamsBotHandler extends TeamsActivityHandler {
     currency: string;
     viewUrl: string;
   }> {
-    return prisma.$transaction(async (tx) => {
+    return prisma.$transaction(async tx => {
       // Find the pending step assigned to this user
       const step = await tx.approvalStep.findFirst({
         where: {
           approvalFlowId: flowId,
           approverUserId: userId,
-          status: "PENDING",
+          status: 'PENDING',
         },
         include: {
           approvalFlow: {
@@ -470,14 +470,14 @@ export class TeamsBotHandler extends TeamsActivityHandler {
           where: { approvalFlowId: flowId, approverUserId: userId },
         });
         if (existingStep) {
-          throw new Error("APPROVAL_STEP_NOT_PENDING");
+          throw new Error('APPROVAL_STEP_NOT_PENDING');
         }
-        throw new Error("APPROVAL_NOT_ASSIGNED");
+        throw new Error('APPROVAL_NOT_ASSIGNED');
       }
 
       const flow = step.approvalFlow;
       const invoice =
-        flow.resourceType === "INVOICE"
+        flow.resourceType === 'INVOICE'
           ? await tx.invoice.findUnique({
               where: { id: flow.resourceId },
               select: {
@@ -495,7 +495,7 @@ export class TeamsBotHandler extends TeamsActivityHandler {
           organizationId: step.organizationId,
           approvalStepId: step.id,
           actorUserId: userId,
-          decision: "APPROVE",
+          decision: 'APPROVE',
         },
       });
 
@@ -503,9 +503,9 @@ export class TeamsBotHandler extends TeamsActivityHandler {
       await tx.approvalStep.update({
         where: { id: step.id },
         data: {
-          status: "APPROVED",
+          status: 'APPROVED',
           actedAt: new Date(),
-          decision: "APPROVE",
+          decision: 'APPROVE',
         },
       });
 
@@ -513,22 +513,22 @@ export class TeamsBotHandler extends TeamsActivityHandler {
       const advanceResult = await advanceFlow(tx, step.approvalFlowId);
 
       // If flow completed, update invoice
-      if (advanceResult.completed && flow.resourceType === "INVOICE") {
+      if (advanceResult.completed && flow.resourceType === 'INVOICE') {
         await tx.invoice.update({
           where: { id: flow.resourceId },
           data: {
-            status: "APPROVED",
-            paymentStatus: "READY",
+            status: 'APPROVED',
+            paymentStatus: 'READY',
             readyForPaymentAt: new Date(),
           },
         });
       }
 
       return {
-        invoiceNumber: invoice?.invoiceNumber ?? "N/A",
+        invoiceNumber: invoice?.invoiceNumber ?? 'N/A',
         amount: ((invoice?.totalMinor ?? 0) / 100).toFixed(2),
-        currency: invoice?.currency ?? "PLN",
-        viewUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/invoices/${flow.resourceId}`,
+        currency: invoice?.currency ?? 'PLN',
+        viewUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? ''}/invoices/${flow.resourceId}`,
       };
     });
   }
@@ -538,17 +538,17 @@ export class TeamsBotHandler extends TeamsActivityHandler {
   // -------------------------------------------------------------------------
 
   private async processRejection(flowId: string, userId: string, comment: string): Promise<void> {
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async tx => {
       const step = await tx.approvalStep.findFirst({
         where: {
           approvalFlowId: flowId,
           approverUserId: userId,
-          status: "PENDING",
+          status: 'PENDING',
         },
       });
 
       if (!step) {
-        throw new Error("No pending approval step found for this user");
+        throw new Error('No pending approval step found for this user');
       }
 
       // Create decision
@@ -557,7 +557,7 @@ export class TeamsBotHandler extends TeamsActivityHandler {
           organizationId: step.organizationId,
           approvalStepId: step.id,
           actorUserId: userId,
-          decision: "REJECT",
+          decision: 'REJECT',
           comment,
         },
       });
@@ -566,9 +566,9 @@ export class TeamsBotHandler extends TeamsActivityHandler {
       await tx.approvalStep.update({
         where: { id: step.id },
         data: {
-          status: "REJECTED",
+          status: 'REJECTED',
           actedAt: new Date(),
-          decision: "REJECT",
+          decision: 'REJECT',
           comment,
         },
       });
@@ -576,7 +576,7 @@ export class TeamsBotHandler extends TeamsActivityHandler {
       // Mark flow as REJECTED
       await tx.approvalFlow.update({
         where: { id: flowId },
-        data: { status: "REJECTED" },
+        data: { status: 'REJECTED' },
       });
 
       // Update invoice status
@@ -588,7 +588,7 @@ export class TeamsBotHandler extends TeamsActivityHandler {
       if (flow?.resourceId) {
         await tx.invoice.update({
           where: { id: flow.resourceId },
-          data: { status: "REJECTED" },
+          data: { status: 'REJECTED' },
         });
       }
     });
@@ -622,8 +622,8 @@ export class TeamsBotHandler extends TeamsActivityHandler {
 
       const connection = await prisma.integrationConnection.findFirst({
         where: {
-          provider: "MICROSOFT_TEAMS",
-          status: "CONNECTED",
+          provider: 'MICROSOFT_TEAMS',
+          status: 'CONNECTED',
         },
         select: { id: true, organizationId: true },
       });
@@ -632,7 +632,7 @@ export class TeamsBotHandler extends TeamsActivityHandler {
 
       await storeConversationReference(connection.organizationId, ref);
     } catch (error) {
-      console.error("[Teams] Failed to capture conversation reference:", error);
+      console.error('[Teams] Failed to capture conversation reference:', error);
     }
   }
 }

@@ -1,14 +1,14 @@
-import { SectionTracker } from "@/components/analytics/section-tracker";
-import { Footer } from "@/components/footer";
-import { Navbar } from "@/components/navbar";
-import { CreditsSection } from "@/components/pricing/credits-section";
-import { FeatureComparison } from "@/components/pricing/feature-comparison";
-import { PricingFAQ } from "@/components/pricing/pricing-faq";
-import { PricingHero } from "@/components/pricing/pricing-hero";
-import type { Locale } from "@/i18n";
-import { defaultLocale, getTranslations, isValidLocale, TranslationProvider } from "@/i18n";
-import type { CreditPack, PricingPlan } from "@/lib/stripe";
-import { fetchCreditPacks, fetchPricingPlans } from "@/lib/stripe";
+import { SectionTracker } from '@/components/analytics/section-tracker';
+import { Footer } from '@/components/footer';
+import { Navbar } from '@/components/navbar';
+import { CreditsSection } from '@/components/pricing/credits-section';
+import { FeatureComparison } from '@/components/pricing/feature-comparison';
+import { PricingFAQ } from '@/components/pricing/pricing-faq';
+import { PricingHero } from '@/components/pricing/pricing-hero';
+import type { Locale } from '@/i18n';
+import { defaultLocale, getTranslations, isValidLocale, TranslationProvider } from '@/i18n';
+import type { CreditPack, PricingPlan } from '@/lib/stripe';
+import { fetchCreditPacks, fetchPricingPlans } from '@/lib/stripe';
 
 export default async function PricingPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale: localeParam } = await params;
@@ -20,8 +20,8 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
   try {
     [plans, creditPacks] = await Promise.all([fetchPricingPlans(), fetchCreditPacks()]);
   } catch (error) {
-    console.error("[pricing] Failed to fetch from Stripe:", error);
-    const { PLAN_CONTENT, CREDIT_PACK_CONTENT } = await import("@/lib/pricing-content");
+    console.error('[pricing] Failed to fetch from Stripe:', error);
+    const { PLAN_CONTENT, CREDIT_PACK_CONTENT } = await import('@/lib/pricing-content');
     plans = Object.entries(PLAN_CONTENT).map(([slug, c]) => ({
       id: slug,
       name: c.name,
@@ -29,7 +29,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
       features: c.features,
       monthlyPrice: c.fallbackMonthlyPrice,
       annualPrice: c.fallbackAnnualPrice,
-      currency: "pln",
+      currency: 'pln',
       ctaHref: `/signup?plan=${slug}`,
       popular: c.popular,
       order: c.order,
@@ -40,7 +40,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
       description: c.description,
       credits: c.fallbackCredits,
       price: c.fallbackPrice,
-      currency: "pln",
+      currency: 'pln',
       perCredit:
         c.fallbackCredits > 0 ? Math.round((c.fallbackPrice / c.fallbackCredits) * 100) / 100 : 0,
       ctaHref: `/signup?credits=${slug}`,

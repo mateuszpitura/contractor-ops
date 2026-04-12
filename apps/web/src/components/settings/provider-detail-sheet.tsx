@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { addHours, formatDistanceToNow, isBefore } from "date-fns";
-import { Loader2 } from "lucide-react";
-import { useTranslations } from "next-intl";
-import type { ReactNode } from "react";
-import { useState } from "react";
-import { toast } from "sonner";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { addHours, formatDistanceToNow, isBefore } from 'date-fns';
+import { Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import type { ReactNode } from 'react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,16 +16,16 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+} from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from "@/components/ui/sheet";
+} from '@/components/ui/sheet';
 import {
   Table,
   TableBody,
@@ -33,25 +33,25 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { trpc } from "@/trpc/init";
+} from '@/components/ui/table';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Status badge styling (shared with ProviderConnectionCard)
 // ---------------------------------------------------------------------------
 
 const STATUS_BADGE_CLASSES: Record<string, string> = {
-  CONNECTED: "bg-emerald-500/10 text-emerald-500",
-  DISCONNECTED: "bg-muted text-muted-foreground",
-  ERROR: "bg-destructive/10 text-destructive",
-  REAUTH_REQUIRED: "bg-amber-500/10 text-amber-500",
+  CONNECTED: 'bg-emerald-500/10 text-emerald-500',
+  DISCONNECTED: 'bg-muted text-muted-foreground',
+  ERROR: 'bg-destructive/10 text-destructive',
+  REAUTH_REQUIRED: 'bg-amber-500/10 text-amber-500',
 };
 
 const STATUS_LABEL_KEYS: Record<string, string> = {
-  CONNECTED: "statusConnected",
-  DISCONNECTED: "statusDisconnected",
-  ERROR: "statusError",
-  REAUTH_REQUIRED: "statusReauth",
+  CONNECTED: 'statusConnected',
+  DISCONNECTED: 'statusDisconnected',
+  ERROR: 'statusError',
+  REAUTH_REQUIRED: 'statusReauth',
 };
 
 // ---------------------------------------------------------------------------
@@ -60,11 +60,11 @@ const STATUS_LABEL_KEYS: Record<string, string> = {
 
 function StatusDot({ status }: { status: string }) {
   const colorClass =
-    status === "SUCCESS" || status === "PROCESSED"
-      ? "bg-emerald-500"
-      : status === "FAILED"
-        ? "bg-destructive"
-        : "bg-amber-500";
+    status === 'SUCCESS' || status === 'PROCESSED'
+      ? 'bg-emerald-500'
+      : status === 'FAILED'
+        ? 'bg-destructive'
+        : 'bg-amber-500';
 
   return <span className={`inline-block size-2 rounded-full ${colorClass}`} aria-hidden="true" />;
 }
@@ -74,7 +74,7 @@ function StatusDot({ status }: { status: string }) {
 // ---------------------------------------------------------------------------
 
 function formatDuration(startedAt: Date | string, completedAt: Date | string | null): string {
-  if (!completedAt) return "--";
+  if (!completedAt) return '--';
   const start = new Date(startedAt).getTime();
   const end = new Date(completedAt).getTime();
   const diffMs = end - start;
@@ -89,7 +89,7 @@ function formatDuration(startedAt: Date | string, completedAt: Date | string | n
 // ---------------------------------------------------------------------------
 
 function TokenExpiryDisplay({ expiresAt }: { expiresAt: string | Date | null | undefined }) {
-  const t = useTranslations("Settings.integrations");
+  const t = useTranslations('Settings.integrations');
 
   if (!expiresAt) return <span className="text-muted-foreground">--</span>;
 
@@ -99,13 +99,13 @@ function TokenExpiryDisplay({ expiresAt }: { expiresAt: string | Date | null | u
   const isWarning = !isExpired && isBefore(expiryDate, addHours(now, 1));
 
   const colorClass = isExpired
-    ? "text-destructive"
+    ? 'text-destructive'
     : isWarning
-      ? "text-amber-500"
-      : "text-emerald-500";
+      ? 'text-amber-500'
+      : 'text-emerald-500';
 
   const label = isExpired
-    ? t("provider.tokenExpiryExpired")
+    ? t('provider.tokenExpiryExpired')
     : `in ${formatDistanceToNow(expiryDate)}`;
 
   return <span className={colorClass}>{label}</span>;
@@ -130,7 +130,7 @@ export function ProviderDetailSheet({
   open,
   onOpenChange,
 }: ProviderDetailSheetProps) {
-  const t = useTranslations("Settings.integrations");
+  const t = useTranslations('Settings.integrations');
   const queryClient = useQueryClient();
 
   const [disconnectDialogOpen, setDisconnectDialogOpen] = useState(false);
@@ -231,7 +231,7 @@ export function ProviderDetailSheet({
   const disconnectMutation = useMutation(
     trpc.integration.disconnectGeneric.mutationOptions({
       onSuccess: () => {
-        toast.success(t("providerToasts.disconnected", { provider: displayName }));
+        toast.success(t('providerToasts.disconnected', { provider: displayName }));
         queryClient.invalidateQueries({
           queryKey: trpc.integration.getHealth.queryKey({ provider }),
         });
@@ -242,15 +242,15 @@ export function ProviderDetailSheet({
         onOpenChange(false);
       },
       onError: () => {
-        toast.error(t("providerToasts.disconnectFailed", { provider: displayName }));
+        toast.error(t('providerToasts.disconnectFailed', { provider: displayName }));
       },
     }),
   );
 
-  const connectionStatus = health?.status ?? "DISCONNECTED";
+  const connectionStatus = health?.status ?? 'DISCONNECTED';
   const statusBadgeClass =
     STATUS_BADGE_CLASSES[connectionStatus] ?? STATUS_BADGE_CLASSES.DISCONNECTED;
-  const statusLabelKey = STATUS_LABEL_KEYS[connectionStatus] ?? "statusDisconnected";
+  const statusLabelKey = STATUS_LABEL_KEYS[connectionStatus] ?? 'statusDisconnected';
 
   return (
     <>
@@ -265,22 +265,21 @@ export function ProviderDetailSheet({
               </Badge>
             </div>
             <SheetDescription className="sr-only">
-              {t("provider.connectionDetails")} - {displayName}
+              {t('provider.connectionDetails')} - {displayName}
             </SheetDescription>
             <div className="flex gap-2 pt-2">
-              {(connectionStatus === "REAUTH_REQUIRED" || connectionStatus === "ERROR") && (
+              {(connectionStatus === 'REAUTH_REQUIRED' || connectionStatus === 'ERROR') && (
                 <Button variant="outline" size="sm" onClick={handleReauthorize}>
-                  {t("provider.reconnectCta")}
+                  {t('provider.reconnectCta')}
                 </Button>
               )}
-              {connectionStatus !== "DISCONNECTED" && (
+              {connectionStatus !== 'DISCONNECTED' && (
                 <Button
                   variant="outline"
                   size="sm"
                   className="text-destructive hover:text-destructive"
-                  onClick={() => setDisconnectDialogOpen(true)}
-                >
-                  {t("provider.disconnectCta", { provider: displayName })}
+                  onClick={() => setDisconnectDialogOpen(true)}>
+                  {t('provider.disconnectCta', { provider: displayName })}
                 </Button>
               )}
             </div>
@@ -289,9 +288,9 @@ export function ProviderDetailSheet({
           {/* Connection Details Section */}
           <div className="space-y-6 px-4 pb-6">
             <section>
-              <h3 className="text-sm font-semibold mb-3">{t("provider.connectionDetails")}</h3>
+              <h3 className="text-sm font-semibold mb-3">{t('provider.connectionDetails')}</h3>
               <dl className="grid grid-cols-[140px_1fr] gap-y-2 text-sm">
-                <dt className="text-muted-foreground">{t("provider.status")}</dt>
+                <dt className="text-muted-foreground">{t('provider.status')}</dt>
                 <dd>
                   <Badge variant="secondary" className={statusBadgeClass}>
                     {t(`provider.${statusLabelKey}` as Parameters<typeof t>[0])}
@@ -300,26 +299,26 @@ export function ProviderDetailSheet({
 
                 {health?.connectedAt && (
                   <>
-                    <dt className="text-muted-foreground">{t("provider.connectedOn")}</dt>
+                    <dt className="text-muted-foreground">{t('provider.connectedOn')}</dt>
                     <dd>{new Date(health.connectedAt).toLocaleDateString()}</dd>
                   </>
                 )}
 
                 {health?.displayName && (
                   <>
-                    <dt className="text-muted-foreground">{t("provider.connectedTo")}</dt>
+                    <dt className="text-muted-foreground">{t('provider.connectedTo')}</dt>
                     <dd className="font-medium">{health.displayName}</dd>
                   </>
                 )}
 
-                <dt className="text-muted-foreground">{t("provider.tokenExpires")}</dt>
+                <dt className="text-muted-foreground">{t('provider.tokenExpires')}</dt>
                 <dd>
                   <TokenExpiryDisplay expiresAt={health?.tokenExpiresAt} />
                 </dd>
 
                 {health?.lastSyncAt && (
                   <>
-                    <dt className="text-muted-foreground">{t("provider.lastRefresh")}</dt>
+                    <dt className="text-muted-foreground">{t('provider.lastRefresh')}</dt>
                     <dd>{formatDistanceToNow(new Date(health.lastSyncAt))} ago</dd>
                   </>
                 )}
@@ -328,26 +327,25 @@ export function ProviderDetailSheet({
 
             {/* Sync Log Section */}
             <section>
-              <h3 className="text-sm font-semibold mb-3">{t("provider.syncLogHeading")}</h3>
+              <h3 className="text-sm font-semibold mb-3">{t('provider.syncLogHeading')}</h3>
               {syncItems.length === 0 ? (
-                <p className="text-sm text-muted-foreground">{t("provider.syncLogEmpty")}</p>
+                <p className="text-sm text-muted-foreground">{t('provider.syncLogEmpty')}</p>
               ) : (
                 <>
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>{t("provider.syncLogTimestamp")}</TableHead>
-                        <TableHead>{t("provider.syncLogAction")}</TableHead>
-                        <TableHead>{t("provider.syncLogStatus")}</TableHead>
-                        <TableHead>{t("provider.syncLogDuration")}</TableHead>
+                        <TableHead>{t('provider.syncLogTimestamp')}</TableHead>
+                        <TableHead>{t('provider.syncLogAction')}</TableHead>
+                        <TableHead>{t('provider.syncLogStatus')}</TableHead>
+                        <TableHead>{t('provider.syncLogDuration')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {syncItems.map((item) => (
+                      {syncItems.map(item => (
                         <TableRow
                           key={item.id}
-                          className={item.status === "FAILED" ? "bg-destructive/5" : ""}
-                        >
+                          className={item.status === 'FAILED' ? 'bg-destructive/5' : ''}>
                           <TableCell className="text-xs">
                             {new Date(item.startedAt).toLocaleString()}
                           </TableCell>
@@ -355,11 +353,11 @@ export function ProviderDetailSheet({
                           <TableCell className="text-xs">
                             <span className="inline-flex items-center gap-1.5">
                               <StatusDot status={item.status} />
-                              {item.status === "SUCCESS"
-                                ? "Success"
-                                : item.status === "FAILED"
-                                  ? "Failed"
-                                  : "Started"}
+                              {item.status === 'SUCCESS'
+                                ? 'Success'
+                                : item.status === 'FAILED'
+                                  ? 'Failed'
+                                  : 'Started'}
                             </span>
                           </TableCell>
                           <TableCell className="text-xs">
@@ -375,12 +373,11 @@ export function ProviderDetailSheet({
                         variant="outline"
                         size="sm"
                         onClick={handleLoadMoreSync}
-                        disabled={syncLogQuery.isFetching}
-                      >
+                        disabled={syncLogQuery.isFetching}>
                         {syncLogQuery.isFetching && (
                           <Loader2 className="me-1.5 size-3.5 animate-spin" />
                         )}
-                        {t("provider.loadMore")}
+                        {t('provider.loadMore')}
                       </Button>
                     </div>
                   )}
@@ -390,22 +387,22 @@ export function ProviderDetailSheet({
 
             {/* Webhook Deliveries Section */}
             <section>
-              <h3 className="text-sm font-semibold mb-3">{t("provider.webhookLogHeading")}</h3>
+              <h3 className="text-sm font-semibold mb-3">{t('provider.webhookLogHeading')}</h3>
               {webhookItems.length === 0 ? (
-                <p className="text-sm text-muted-foreground">{t("provider.webhookLogEmpty")}</p>
+                <p className="text-sm text-muted-foreground">{t('provider.webhookLogEmpty')}</p>
               ) : (
                 <>
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>{t("provider.webhookLogReceived")}</TableHead>
-                        <TableHead>{t("provider.webhookLogEventType")}</TableHead>
-                        <TableHead>{t("provider.webhookLogStatus")}</TableHead>
-                        <TableHead>{t("provider.webhookLogProcessingTime")}</TableHead>
+                        <TableHead>{t('provider.webhookLogReceived')}</TableHead>
+                        <TableHead>{t('provider.webhookLogEventType')}</TableHead>
+                        <TableHead>{t('provider.webhookLogStatus')}</TableHead>
+                        <TableHead>{t('provider.webhookLogProcessingTime')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {webhookItems.map((item) => (
+                      {webhookItems.map(item => (
                         <TableRow key={item.id}>
                           <TableCell className="text-xs">
                             {new Date(item.receivedAt).toLocaleString()}
@@ -414,11 +411,11 @@ export function ProviderDetailSheet({
                           <TableCell className="text-xs">
                             <span className="inline-flex items-center gap-1.5">
                               <StatusDot status={item.deliveryStatus} />
-                              {item.deliveryStatus === "PROCESSED"
-                                ? "Delivered"
-                                : item.deliveryStatus === "FAILED"
-                                  ? "Failed"
-                                  : "Received"}
+                              {item.deliveryStatus === 'PROCESSED'
+                                ? 'Delivered'
+                                : item.deliveryStatus === 'FAILED'
+                                  ? 'Failed'
+                                  : 'Received'}
                             </span>
                           </TableCell>
                           <TableCell className="text-xs">
@@ -434,12 +431,11 @@ export function ProviderDetailSheet({
                         variant="outline"
                         size="sm"
                         onClick={handleLoadMoreWebhook}
-                        disabled={webhookLogQuery.isFetching}
-                      >
+                        disabled={webhookLogQuery.isFetching}>
                         {webhookLogQuery.isFetching && (
                           <Loader2 className="me-1.5 size-3.5 animate-spin" />
                         )}
-                        {t("provider.loadMore")}
+                        {t('provider.loadMore')}
                       </Button>
                     </div>
                   )}
@@ -455,21 +451,20 @@ export function ProviderDetailSheet({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {t("disconnectConfirmGeneric.title", {
+              {t('disconnectConfirmGeneric.title', {
                 provider: displayName,
               })}
             </AlertDialogTitle>
-            <AlertDialogDescription>{t("disconnectConfirmGeneric.body")}</AlertDialogDescription>
+            <AlertDialogDescription>{t('disconnectConfirmGeneric.body')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t("disconnectConfirmGeneric.cancel")}</AlertDialogCancel>
+            <AlertDialogCancel>{t('disconnectConfirmGeneric.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
               disabled={disconnectMutation.isPending}
-              onClick={() => disconnectMutation.mutate({ provider })}
-            >
+              onClick={() => disconnectMutation.mutate({ provider })}>
               {disconnectMutation.isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
-              {t("disconnectConfirmGeneric.confirm", {
+              {t('disconnectConfirmGeneric.confirm', {
                 provider: displayName,
               })}
             </AlertDialogAction>

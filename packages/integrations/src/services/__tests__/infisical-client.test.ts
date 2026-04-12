@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock @infisical/sdk before imports
 const { MockInfisicalSDK } = vi.hoisted(() => {
@@ -33,38 +33,38 @@ const { MockInfisicalSDK } = vi.hoisted(() => {
   };
 });
 
-vi.mock("@infisical/sdk", () => ({
+vi.mock('@infisical/sdk', () => ({
   InfisicalSDK: MockInfisicalSDK,
 }));
 
-describe("InfisicalSecretStore", () => {
+describe('InfisicalSecretStore', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("implements SecretStore interface with get/set/delete", async () => {
-    const { InfisicalSecretStore } = await import("../infisical-client.js");
+  it('implements SecretStore interface with get/set/delete', async () => {
+    const { InfisicalSecretStore } = await import('../infisical-client.js');
     const store = new InfisicalSecretStore({
-      clientId: "test-id",
-      clientSecret: "test-secret",
-      projectId: "test-project",
-      environment: "production",
+      clientId: 'test-id',
+      clientSecret: 'test-secret',
+      projectId: 'test-project',
+      environment: 'production',
     });
 
     // Should have get, set, delete methods
-    expect(typeof store.get).toBe("function");
-    expect(typeof store.set).toBe("function");
-    expect(typeof store.delete).toBe("function");
+    expect(typeof store.get).toBe('function');
+    expect(typeof store.set).toBe('function');
+    expect(typeof store.delete).toBe('function');
   });
 
-  it("createZatcaSecretStore binds to /zatca/{orgId} path prefix", async () => {
-    const { createZatcaSecretStore } = await import("../infisical-client.js");
-    expect(typeof createZatcaSecretStore).toBe("function");
+  it('createZatcaSecretStore binds to /zatca/{orgId} path prefix', async () => {
+    const { createZatcaSecretStore } = await import('../infisical-client.js');
+    expect(typeof createZatcaSecretStore).toBe('function');
 
-    const store = createZatcaSecretStore("org_test123");
+    const store = createZatcaSecretStore('org_test123');
     expect(store).toBeDefined();
-    expect(typeof store.get).toBe("function");
-    expect(typeof store.set).toBe("function");
-    expect(typeof store.delete).toBe("function");
+    expect(typeof store.get).toBe('function');
+    expect(typeof store.set).toBe('function');
+    expect(typeof store.delete).toBe('function');
   });
 });

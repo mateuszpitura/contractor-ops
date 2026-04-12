@@ -4,7 +4,7 @@
 // ---------------------------------------------------------------------------
 
 export interface ApprovalResultCardParams {
-  result: "approved" | "rejected";
+  result: 'approved' | 'rejected';
   invoiceNumber: string;
   amount: string;
   currency: string;
@@ -23,30 +23,30 @@ export interface ApprovalResultCardParams {
  * - "View in Contractor Ops" link
  */
 export function buildApprovalResultCard(params: ApprovalResultCardParams): Record<string, unknown> {
-  const isApproved = params.result === "approved";
-  const icon = isApproved ? "\u2705" : "\u274C";
-  const label = isApproved ? "Approved" : "Rejected";
-  const color = isApproved ? "Good" : "Attention";
+  const isApproved = params.result === 'approved';
+  const icon = isApproved ? '\u2705' : '\u274C';
+  const label = isApproved ? 'Approved' : 'Rejected';
+  const color = isApproved ? 'Good' : 'Attention';
 
   const body: Record<string, unknown>[] = [
     {
-      type: "TextBlock",
+      type: 'TextBlock',
       text: `${icon} Invoice ${label}`,
-      weight: "Bolder",
-      size: "Medium",
+      weight: 'Bolder',
+      size: 'Medium',
       color,
       wrap: true,
     },
     {
-      type: "FactSet",
+      type: 'FactSet',
       facts: [
-        { title: "Invoice", value: params.invoiceNumber },
+        { title: 'Invoice', value: params.invoiceNumber },
         {
-          title: "Amount",
+          title: 'Amount',
           value: `${params.amount} ${params.currency}`,
         },
         {
-          title: isApproved ? "Approved by" : "Rejected by",
+          title: isApproved ? 'Approved by' : 'Rejected by',
           value: params.approverName,
         },
       ],
@@ -55,22 +55,22 @@ export function buildApprovalResultCard(params: ApprovalResultCardParams): Recor
 
   if (params.comment) {
     body.push({
-      type: "TextBlock",
+      type: 'TextBlock',
       text: `**Reason:** ${params.comment}`,
       wrap: true,
-      spacing: "Small",
+      spacing: 'Small',
     });
   }
 
   return {
-    type: "AdaptiveCard",
-    $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
-    version: "1.4",
+    type: 'AdaptiveCard',
+    $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
+    version: '1.4',
     body,
     actions: [
       {
-        type: "Action.OpenUrl",
-        title: "View in Contractor Ops",
+        type: 'Action.OpenUrl',
+        title: 'View in Contractor Ops',
         url: params.viewUrl,
       },
     ],

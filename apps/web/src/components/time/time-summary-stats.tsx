@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { CheckCircle2, Clock, Send } from "lucide-react";
-import { SummaryCard, SummaryCardSkeleton } from "@/components/portal/summary-card";
+import { CheckCircle2, Clock, Send } from 'lucide-react';
+import { SummaryCard, SummaryCardSkeleton } from '@/components/portal/summary-card';
 
 // ---------------------------------------------------------------------------
 // Props

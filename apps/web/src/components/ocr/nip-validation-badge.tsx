@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { AlertCircle, CheckCircle2 } from "lucide-react";
+import { AlertCircle, CheckCircle2 } from 'lucide-react';
 
-import { Badge } from "@/components/ui/badge";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const NIP_WEIGHTS = [6, 5, 7, 2, 3, 4, 5, 6, 7] as const;
 
@@ -12,7 +12,7 @@ const NIP_WEIGHTS = [6, 5, 7, 2, 3, 4, 5, 6, 7] as const;
  * NIP must be exactly 10 digits. The 10th digit is the check digit.
  */
 function validateNip(nip: string): boolean {
-  const digits = nip.replace(/[\s-]/g, "");
+  const digits = nip.replace(/[\s-]/g, '');
 
   if (!/^\d{10}$/.test(digits)) {
     return false;
@@ -60,8 +60,8 @@ export function NipValidationBadge({ nip }: NipValidationBadgeProps) {
         <TooltipContent>
           <p>
             {isValid
-              ? `NIP ${nip.replace(/[\s-]/g, "")} passes modulo-11 checksum validation`
-              : "Invalid NIP format -- expected 10 digits with valid checksum"}
+              ? `NIP ${nip.replace(/[\s-]/g, '')} passes modulo-11 checksum validation`
+              : 'Invalid NIP format -- expected 10 digits with valid checksum'}
           </p>
         </TooltipContent>
       </Tooltip>

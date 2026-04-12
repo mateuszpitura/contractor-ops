@@ -1,10 +1,10 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, setup } from "@/test/test-utils";
-import { TemplatePicker } from "../template-picker-dialog";
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { render, screen, setup } from '@/test/test-utils';
+import { TemplatePicker } from '../template-picker-dialog';
 
-vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual("@tanstack/react-query");
+vi.mock('@tanstack/react-query', async () => {
+  const actual = await vi.importActual('@tanstack/react-query');
   return {
     ...actual,
     useQuery: vi.fn(),
@@ -13,18 +13,18 @@ vi.mock("@tanstack/react-query", async () => {
   };
 });
 
-vi.mock("@/trpc/init", () => ({
+vi.mock('@/trpc/init', () => ({
   trpc: {
     workflow: {
       listTemplates: {
-        queryOptions: () => ({ queryKey: ["workflow", "listTemplates"] }),
+        queryOptions: () => ({ queryKey: ['workflow', 'listTemplates'] }),
       },
       startRun: { mutationOptions: () => ({}) },
     },
   },
 }));
 
-vi.mock("@/i18n/navigation", () => ({
+vi.mock('@/i18n/navigation', () => ({
   Link: ({ children, href, ...props }: any) => (
     <a href={href} {...props}>
       {children}
@@ -32,7 +32,7 @@ vi.mock("@/i18n/navigation", () => ({
   ),
 }));
 
-vi.mock("sonner", () => ({
+vi.mock('sonner', () => ({
   toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() },
 }));
 
@@ -41,29 +41,29 @@ const mockedUseMutation = vi.mocked(useMutation);
 
 const mockTemplates = [
   {
-    id: "t1",
-    name: "Onboarding Flow",
-    type: "ONBOARDING",
-    description: "Standard onboarding",
+    id: 't1',
+    name: 'Onboarding Flow',
+    type: 'ONBOARDING',
+    description: 'Standard onboarding',
     _count: { tasks: 5 },
   },
   {
-    id: "t2",
-    name: "Offboarding Flow",
-    type: "OFFBOARDING",
+    id: 't2',
+    name: 'Offboarding Flow',
+    type: 'OFFBOARDING',
     description: null,
     _count: { tasks: 3 },
   },
   {
-    id: "t3",
-    name: "Document Collection",
-    type: "DOCUMENT_COLLECTION",
-    description: "Collect required documents",
+    id: 't3',
+    name: 'Document Collection',
+    type: 'DOCUMENT_COLLECTION',
+    description: 'Collect required documents',
     _count: { tasks: 2 },
   },
 ];
 
-describe("TemplatePicker", () => {
+describe('TemplatePicker', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockedUseMutation.mockReturnValue({
@@ -74,7 +74,7 @@ describe("TemplatePicker", () => {
   });
 
   // ---- Visibility ----
-  it("renders nothing when closed", () => {
+  it('renders nothing when closed', () => {
     mockedUseQuery.mockReturnValue({
       data: undefined,
       isLoading: false,
@@ -82,32 +82,32 @@ describe("TemplatePicker", () => {
     const { container } = render(
       <TemplatePicker open={false} onOpenChange={vi.fn()} contractorId="c1" />,
     );
-    expect(container.innerHTML).toBe("");
+    expect(container.innerHTML).toBe('');
   });
 
   // ---- Template list ----
-  it("renders dialog with template list when open", () => {
+  it('renders dialog with template list when open', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
     } as any);
     render(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
-    expect(screen.getByText("Onboarding Flow")).toBeInTheDocument();
-    expect(screen.getByText("Offboarding Flow")).toBeInTheDocument();
-    expect(screen.getByText("Document Collection")).toBeInTheDocument();
+    expect(screen.getByText('Onboarding Flow')).toBeInTheDocument();
+    expect(screen.getByText('Offboarding Flow')).toBeInTheDocument();
+    expect(screen.getByText('Document Collection')).toBeInTheDocument();
   });
 
-  it("renders template descriptions when present", () => {
+  it('renders template descriptions when present', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
     } as any);
     render(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
-    expect(screen.getByText("Standard onboarding")).toBeInTheDocument();
-    expect(screen.getByText("Collect required documents")).toBeInTheDocument();
+    expect(screen.getByText('Standard onboarding')).toBeInTheDocument();
+    expect(screen.getByText('Collect required documents')).toBeInTheDocument();
   });
 
-  it("renders task count for each template", () => {
+  it('renders task count for each template', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: [mockTemplates[0]] },
       isLoading: false,
@@ -117,16 +117,16 @@ describe("TemplatePicker", () => {
   });
 
   // ---- Empty state ----
-  it("renders empty state when no templates found", () => {
+  it('renders empty state when no templates found', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: [] },
       isLoading: false,
     } as any);
     render(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
-    expect(screen.getByText("No templates available")).toBeInTheDocument();
+    expect(screen.getByText('No templates available')).toBeInTheDocument();
   });
 
-  it("shows empty state body text", () => {
+  it('shows empty state body text', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: [] },
       isLoading: false,
@@ -136,71 +136,71 @@ describe("TemplatePicker", () => {
   });
 
   // ---- Search ----
-  it("renders search input", () => {
+  it('renders search input', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
     } as any);
     render(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
-    expect(screen.getByPlaceholderText("Search templates...")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Search templates...')).toBeInTheDocument();
   });
 
-  it("updates search value on typing", async () => {
+  it('updates search value on typing', async () => {
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
     } as any);
     const { user } = setup(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
-    const input = screen.getByPlaceholderText("Search templates...");
-    await user.type(input, "onboard");
-    expect(input).toHaveValue("onboard");
+    const input = screen.getByPlaceholderText('Search templates...');
+    await user.type(input, 'onboard');
+    expect(input).toHaveValue('onboard');
   });
 
   // ---- Selection ----
-  it("renders start button disabled when no template selected", () => {
+  it('renders start button disabled when no template selected', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
     } as any);
     render(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
-    const startBtn = screen.getByText("Start");
-    expect(startBtn.closest("button")).toBeDisabled();
+    const startBtn = screen.getByText('Start');
+    expect(startBtn.closest('button')).toBeDisabled();
   });
 
-  it("enables start button when a template is selected", async () => {
+  it('enables start button when a template is selected', async () => {
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
     } as any);
     const { user } = setup(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
-    await user.click(screen.getByText("Onboarding Flow"));
-    const startBtn = screen.getByText("Start");
-    expect(startBtn.closest("button")).not.toBeDisabled();
+    await user.click(screen.getByText('Onboarding Flow'));
+    const startBtn = screen.getByText('Start');
+    expect(startBtn.closest('button')).not.toBeDisabled();
   });
 
   // ---- Bulk mode ----
-  it("shows count text in bulk mode", () => {
+  it('shows count text in bulk mode', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
     } as any);
     render(
-      <TemplatePicker open={true} onOpenChange={vi.fn()} contractorIds={["c1", "c2", "c3"]} />,
+      <TemplatePicker open={true} onOpenChange={vi.fn()} contractorIds={['c1', 'c2', 'c3']} />,
     );
     expect(screen.getByText(/3 contractors/i)).toBeInTheDocument();
   });
 
   // ---- Close button ----
-  it("renders close button", () => {
+  it('renders close button', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
     } as any);
     render(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
-    expect(screen.getByText("Close")).toBeInTheDocument();
+    expect(screen.getByText('Close')).toBeInTheDocument();
   });
 
-  it("calls onOpenChange(false) when close is clicked", async () => {
+  it('calls onOpenChange(false) when close is clicked', async () => {
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
@@ -209,59 +209,59 @@ describe("TemplatePicker", () => {
     const { user } = setup(
       <TemplatePicker open={true} onOpenChange={onOpenChange} contractorId="c1" />,
     );
-    await user.click(screen.getByText("Close"));
+    await user.click(screen.getByText('Close'));
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
   // ---- Loading state ----
-  it("shows loading skeletons when query is loading", () => {
+  it('shows loading skeletons when query is loading', () => {
     mockedUseQuery.mockReturnValue({
       data: undefined,
       isLoading: true,
     } as any);
     render(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
     // Loading state should not show templates or empty state
-    expect(screen.queryByText("No templates available")).not.toBeInTheDocument();
+    expect(screen.queryByText('No templates available')).not.toBeInTheDocument();
   });
 
   // ---- Type badges ----
-  it("renders type badge for each template", () => {
+  it('renders type badge for each template', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: [mockTemplates[0]] },
       isLoading: false,
     } as any);
     render(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
-    expect(screen.getAllByText("Onboarding").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('Onboarding').length).toBeGreaterThanOrEqual(1);
   });
 
   // ---- Search filters templates ----
-  it("filters templates by search term", async () => {
+  it('filters templates by search term', async () => {
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
     } as any);
     const { user } = setup(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
-    const input = screen.getByPlaceholderText("Search templates...");
-    await user.type(input, "Onboard");
-    expect(screen.getByText("Onboarding Flow")).toBeInTheDocument();
+    const input = screen.getByPlaceholderText('Search templates...');
+    await user.type(input, 'Onboard');
+    expect(screen.getByText('Onboarding Flow')).toBeInTheDocument();
   });
 
   // ---- Re-selection keeps selection ----
-  it("keeps template selected when clicked again", async () => {
+  it('keeps template selected when clicked again', async () => {
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
     } as any);
     const { user } = setup(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
-    await user.click(screen.getByText("Onboarding Flow"));
-    expect(screen.getByText("Start").closest("button")).not.toBeDisabled();
+    await user.click(screen.getByText('Onboarding Flow'));
+    expect(screen.getByText('Start').closest('button')).not.toBeDisabled();
     // Clicking again keeps the same template selected (no toggle)
-    await user.click(screen.getByText("Onboarding Flow"));
-    expect(screen.getByText("Start").closest("button")).not.toBeDisabled();
+    await user.click(screen.getByText('Onboarding Flow'));
+    expect(screen.getByText('Start').closest('button')).not.toBeDisabled();
   });
 
   // ---- Task count display variations ----
-  it("renders task count for template with 3 tasks", () => {
+  it('renders task count for template with 3 tasks', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: [mockTemplates[1]] },
       isLoading: false,
@@ -270,7 +270,7 @@ describe("TemplatePicker", () => {
     expect(screen.getByText(/3 tasks/i)).toBeInTheDocument();
   });
 
-  it("renders task count for template with 2 tasks", () => {
+  it('renders task count for template with 2 tasks', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: [mockTemplates[2]] },
       isLoading: false,
@@ -280,40 +280,40 @@ describe("TemplatePicker", () => {
   });
 
   // ---- Dialog title ----
-  it("renders dialog title", () => {
+  it('renders dialog title', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
     } as any);
     render(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
-    const headings = screen.getAllByRole("heading");
+    const headings = screen.getAllByRole('heading');
     expect(headings.length).toBeGreaterThan(0);
   });
 
   // ---- Bulk mode with single contractor ----
-  it("shows count text for single contractor in bulk mode", () => {
+  it('shows count text for single contractor in bulk mode', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
     } as any);
-    render(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorIds={["c1"]} />);
+    render(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorIds={['c1']} />);
     expect(screen.getByText(/1 contractor/i)).toBeInTheDocument();
   });
 
   // ---- Selection ring style ----
-  it("applies ring style to selected template", async () => {
+  it('applies ring style to selected template', async () => {
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
     } as any);
     const { user } = setup(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
-    await user.click(screen.getByText("Onboarding Flow"));
-    const btn = screen.getByText("Onboarding Flow").closest("button");
-    expect(btn?.className).toContain("ring-2");
+    await user.click(screen.getByText('Onboarding Flow'));
+    const btn = screen.getByText('Onboarding Flow').closest('button');
+    expect(btn?.className).toContain('ring-2');
   });
 
   // ---- Start button click triggers mutation ----
-  it("clicking start button calls mutateAsync", async () => {
+  it('clicking start button calls mutateAsync', async () => {
     const mockMutateAsync = vi.fn().mockResolvedValue({ calendarTaskCount: 0 });
     mockedUseMutation.mockReturnValue({
       mutate: vi.fn(),
@@ -328,35 +328,35 @@ describe("TemplatePicker", () => {
     const { user } = setup(
       <TemplatePicker open={true} onOpenChange={onOpenChange} contractorId="c1" />,
     );
-    await user.click(screen.getByText("Onboarding Flow"));
-    await user.click(screen.getByText("Start"));
+    await user.click(screen.getByText('Onboarding Flow'));
+    await user.click(screen.getByText('Start'));
     expect(mockMutateAsync).toHaveBeenCalledWith(
       expect.objectContaining({
-        templateId: "t1",
-        contractorId: "c1",
+        templateId: 't1',
+        contractorId: 'c1',
       }),
     );
   });
 
   // ---- Selecting different template changes selection ----
-  it("changes selection when different template is clicked", async () => {
+  it('changes selection when different template is clicked', async () => {
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
     } as any);
     const { user } = setup(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
-    await user.click(screen.getByText("Onboarding Flow"));
-    expect(screen.getByText("Onboarding Flow").closest("button")?.className).toContain("ring-2");
+    await user.click(screen.getByText('Onboarding Flow'));
+    expect(screen.getByText('Onboarding Flow').closest('button')?.className).toContain('ring-2');
 
-    await user.click(screen.getByText("Offboarding Flow"));
-    expect(screen.getByText("Offboarding Flow").closest("button")?.className).toContain("ring-2");
-    expect(screen.getByText("Onboarding Flow").closest("button")?.className).not.toContain(
-      "ring-2",
+    await user.click(screen.getByText('Offboarding Flow'));
+    expect(screen.getByText('Offboarding Flow').closest('button')?.className).toContain('ring-2');
+    expect(screen.getByText('Onboarding Flow').closest('button')?.className).not.toContain(
+      'ring-2',
     );
   });
 
   // ---- Type filter: preFilterType ----
-  it("shows type filter badge when preFilterType is set", () => {
+  it('shows type filter badge when preFilterType is set', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
@@ -370,13 +370,13 @@ describe("TemplatePicker", () => {
       />,
     );
     // "Onboarding" appears as both filter badge and template type badge
-    const onboardingMatches = screen.getAllByText("Onboarding");
+    const onboardingMatches = screen.getAllByText('Onboarding');
     expect(onboardingMatches.length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText("Clear all")).toBeInTheDocument();
+    expect(screen.getByText('Clear all')).toBeInTheDocument();
   });
 
   // ---- Clear type filter ----
-  it("clears type filter when clear button is clicked", async () => {
+  it('clears type filter when clear button is clicked', async () => {
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
@@ -389,24 +389,24 @@ describe("TemplatePicker", () => {
         preFilterType="ONBOARDING"
       />,
     );
-    await user.click(screen.getByText("Clear all"));
+    await user.click(screen.getByText('Clear all'));
     // Filter clear button should be removed after clearing
-    expect(screen.queryByText("Clear all")).not.toBeInTheDocument();
+    expect(screen.queryByText('Clear all')).not.toBeInTheDocument();
   });
 
   // ---- Start button disabled without contractorId ----
-  it("disables start button when no contractorId and not bulk", () => {
+  it('disables start button when no contractorId and not bulk', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
     } as any);
     render(<TemplatePicker open={true} onOpenChange={vi.fn()} />);
-    const startBtn = screen.getByText("Start").closest("button");
+    const startBtn = screen.getByText('Start').closest('button');
     expect(startBtn).toBeDisabled();
   });
 
   // ---- Bulk mode start triggers multiple mutations ----
-  it("clicking start in bulk mode calls mutateAsync for each contractor", async () => {
+  it('clicking start in bulk mode calls mutateAsync for each contractor', async () => {
     const mockMutateAsync = vi.fn().mockResolvedValue({ calendarTaskCount: 0 });
     mockedUseMutation.mockReturnValue({
       mutate: vi.fn(),
@@ -419,16 +419,16 @@ describe("TemplatePicker", () => {
     } as any);
     const onOpenChange = vi.fn();
     const { user } = setup(
-      <TemplatePicker open={true} onOpenChange={onOpenChange} contractorIds={["c1", "c2"]} />,
+      <TemplatePicker open={true} onOpenChange={onOpenChange} contractorIds={['c1', 'c2']} />,
     );
-    await user.click(screen.getByText("Onboarding Flow"));
-    await user.click(screen.getByText("Start"));
+    await user.click(screen.getByText('Onboarding Flow'));
+    await user.click(screen.getByText('Start'));
     // Should be called once for each contractor
     expect(mockMutateAsync).toHaveBeenCalledTimes(2);
   });
 
   // ---- Start triggers calendarTaskCount toast.info ----
-  it("shows calendar task info toast when calendarTaskCount > 0", async () => {
+  it('shows calendar task info toast when calendarTaskCount > 0', async () => {
     const mockMutateAsync = vi.fn().mockResolvedValue({ calendarTaskCount: 3 });
     mockedUseMutation.mockReturnValue({
       mutate: vi.fn(),
@@ -440,15 +440,15 @@ describe("TemplatePicker", () => {
       isLoading: false,
     } as any);
     const { user } = setup(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
-    await user.click(screen.getByText("Onboarding Flow"));
-    await user.click(screen.getByText("Start"));
-    const { toast } = await import("sonner");
+    await user.click(screen.getByText('Onboarding Flow'));
+    await user.click(screen.getByText('Start'));
+    const { toast } = await import('sonner');
     expect(toast.info).toHaveBeenCalled();
   });
 
   // ---- Start error triggers error toast ----
-  it("shows error toast when start mutation fails", async () => {
-    const mockMutateAsync = vi.fn().mockRejectedValue(new Error("fail"));
+  it('shows error toast when start mutation fails', async () => {
+    const mockMutateAsync = vi.fn().mockRejectedValue(new Error('fail'));
     mockedUseMutation.mockReturnValue({
       mutate: vi.fn(),
       mutateAsync: mockMutateAsync,
@@ -459,14 +459,14 @@ describe("TemplatePicker", () => {
       isLoading: false,
     } as any);
     const { user } = setup(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
-    await user.click(screen.getByText("Onboarding Flow"));
-    await user.click(screen.getByText("Start"));
-    const { toast } = await import("sonner");
+    await user.click(screen.getByText('Onboarding Flow'));
+    await user.click(screen.getByText('Start'));
+    const { toast } = await import('sonner');
     expect(toast.error).toHaveBeenCalled();
   });
 
   // ---- handleOpenChange resets state on close ----
-  it("resets selection and search when dialog is closed", async () => {
+  it('resets selection and search when dialog is closed', async () => {
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
@@ -475,15 +475,15 @@ describe("TemplatePicker", () => {
     const { user } = setup(
       <TemplatePicker open={true} onOpenChange={onOpenChange} contractorId="c1" />,
     );
-    await user.click(screen.getByText("Onboarding Flow"));
-    const input = screen.getByPlaceholderText("Search templates...");
-    await user.type(input, "test");
-    await user.click(screen.getByText("Close"));
+    await user.click(screen.getByText('Onboarding Flow'));
+    const input = screen.getByPlaceholderText('Search templates...');
+    await user.type(input, 'test');
+    await user.click(screen.getByText('Close'));
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
   // ---- Template with contractId ----
-  it("passes contractId to mutation when provided", async () => {
+  it('passes contractId to mutation when provided', async () => {
     const mockMutateAsync = vi.fn().mockResolvedValue({ calendarTaskCount: 0 });
     mockedUseMutation.mockReturnValue({
       mutate: vi.fn(),
@@ -502,11 +502,11 @@ describe("TemplatePicker", () => {
         contractId="contract-123"
       />,
     );
-    await user.click(screen.getByText("Onboarding Flow"));
-    await user.click(screen.getByText("Start"));
+    await user.click(screen.getByText('Onboarding Flow'));
+    await user.click(screen.getByText('Start'));
     expect(mockMutateAsync).toHaveBeenCalledWith(
       expect.objectContaining({
-        contractId: "contract-123",
+        contractId: 'contract-123',
       }),
     );
   });

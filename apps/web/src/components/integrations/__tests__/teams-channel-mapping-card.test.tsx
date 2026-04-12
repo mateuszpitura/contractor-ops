@@ -1,12 +1,12 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen } from "@/test/test-utils";
-import { TeamsChannelMappingCard } from "../teams-channel-mapping-card";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@/test/test-utils';
+import { TeamsChannelMappingCard } from '../teams-channel-mapping-card';
 
 // ---------------------------------------------------------------------------
 // Mocks — mock tooltip and select as simple divs to avoid jsdom hangs
 // ---------------------------------------------------------------------------
 
-vi.mock("@/components/ui/tooltip", () => ({
+vi.mock('@/components/ui/tooltip', () => ({
   Tooltip: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   TooltipTrigger: ({
     children,
@@ -19,10 +19,10 @@ vi.mock("@/components/ui/tooltip", () => ({
   TooltipProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
-vi.mock("@/components/ui/select", () => ({
+vi.mock('@/components/ui/select', () => ({
   Select: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  SelectTrigger: ({ children, ...props }: { children: React.ReactNode; "aria-label"?: string }) => (
-    <div data-testid="select-trigger" aria-label={props["aria-label"]}>
+  SelectTrigger: ({ children, ...props }: { children: React.ReactNode; 'aria-label'?: string }) => (
+    <div data-testid="select-trigger" aria-label={props['aria-label']}>
       {children}
     </div>
   ),
@@ -33,22 +33,22 @@ vi.mock("@/components/ui/select", () => ({
   SelectValue: ({ placeholder }: { placeholder?: string }) => <span>{placeholder}</span>,
 }));
 
-vi.mock("sonner", () => ({
+vi.mock('sonner', () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
 
-vi.mock("@/components/billing/feature-gate", () => ({
+vi.mock('@/components/billing/feature-gate', () => ({
   FeatureGate: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 const mockTeams = [
-  { id: "team-1", displayName: "General Team" },
-  { id: "team-2", displayName: "Engineering Team" },
+  { id: 'team-1', displayName: 'General Team' },
+  { id: 'team-2', displayName: 'Engineering Team' },
 ];
 
 const mockChannels = [
-  { id: "ch-1", displayName: "#general" },
-  { id: "ch-2", displayName: "#approvals" },
+  { id: 'ch-1', displayName: '#general' },
+  { id: 'ch-2', displayName: '#approvals' },
 ];
 
 let teamsData: typeof mockTeams = [];
@@ -59,17 +59,17 @@ let mappingData: Record<string, string> = {};
 
 const mockMutate = vi.fn();
 
-vi.mock("@tanstack/react-query", async () => {
+vi.mock('@tanstack/react-query', async () => {
   const actual =
-    await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
+    await vi.importActual<typeof import('@tanstack/react-query')>('@tanstack/react-query');
   return {
     ...actual,
     useQuery: (opts: { queryKey?: unknown }) => {
-      const key = JSON.stringify(opts.queryKey ?? "");
-      if (key.includes("getTeams")) {
+      const key = JSON.stringify(opts.queryKey ?? '');
+      if (key.includes('getTeams')) {
         return { isLoading: false, data: teamsData };
       }
-      if (key.includes("getChannels")) {
+      if (key.includes('getChannels')) {
         return {
           isLoading: channelsLoading,
           isFetching: channelsLoading,
@@ -77,7 +77,7 @@ vi.mock("@tanstack/react-query", async () => {
           data: channelsData,
         };
       }
-      if (key.includes("getChannelMapping")) {
+      if (key.includes('getChannelMapping')) {
         return { isLoading: false, data: mappingData };
       }
       return { isLoading: false, data: null };
@@ -91,20 +91,20 @@ vi.mock("@tanstack/react-query", async () => {
   };
 });
 
-vi.mock("@/trpc/init", () => ({
+vi.mock('@/trpc/init', () => ({
   trpc: {
     teams: {
       getTeams: {
-        queryOptions: vi.fn(() => ({ queryKey: ["teams", "getTeams"] })),
-        queryKey: vi.fn(() => ["teams", "getTeams"]),
+        queryOptions: vi.fn(() => ({ queryKey: ['teams', 'getTeams'] })),
+        queryKey: vi.fn(() => ['teams', 'getTeams']),
       },
       getChannels: {
-        queryOptions: vi.fn(() => ({ queryKey: ["teams", "getChannels"] })),
-        queryKey: vi.fn(() => ["teams", "getChannels"]),
+        queryOptions: vi.fn(() => ({ queryKey: ['teams', 'getChannels'] })),
+        queryKey: vi.fn(() => ['teams', 'getChannels']),
       },
       getChannelMapping: {
-        queryOptions: vi.fn(() => ({ queryKey: ["teams", "getChannelMapping"] })),
-        queryKey: vi.fn(() => ["teams", "getChannelMapping"]),
+        queryOptions: vi.fn(() => ({ queryKey: ['teams', 'getChannelMapping'] })),
+        queryKey: vi.fn(() => ['teams', 'getChannelMapping']),
       },
       saveChannelMapping: { mutationOptions: vi.fn(() => ({})) },
     },
@@ -115,7 +115,7 @@ vi.mock("@/trpc/init", () => ({
 // Tests
 // ---------------------------------------------------------------------------
 
-describe("TeamsChannelMappingCard", () => {
+describe('TeamsChannelMappingCard', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     teamsData = [];
@@ -125,31 +125,31 @@ describe("TeamsChannelMappingCard", () => {
     mappingData = {};
   });
 
-  it("renders heading", () => {
+  it('renders heading', () => {
     render(<TeamsChannelMappingCard />);
-    expect(screen.getByText("Channel mapping")).toBeInTheDocument();
+    expect(screen.getByText('Channel mapping')).toBeInTheDocument();
   });
 
-  it("renders description", () => {
+  it('renders description', () => {
     render(<TeamsChannelMappingCard />);
     expect(
-      screen.getByText("Configure which channel receives each notification type."),
+      screen.getByText('Configure which channel receives each notification type.'),
     ).toBeInTheDocument();
   });
 
-  it("renders refresh button text in tooltip", () => {
+  it('renders refresh button text in tooltip', () => {
     render(<TeamsChannelMappingCard />);
-    expect(screen.getByText("Refresh channel list")).toBeInTheDocument();
+    expect(screen.getByText('Refresh channel list')).toBeInTheDocument();
   });
 
-  it("shows error message on channel fetch error", () => {
+  it('shows error message on channel fetch error', () => {
     teamsData = [mockTeams[0]];
     channelsError = true;
     render(<TeamsChannelMappingCard />);
     expect(screen.getByText(/Could not load Teams channels/)).toBeInTheDocument();
   });
 
-  it("shows no channels message when empty and team selected", () => {
+  it('shows no channels message when empty and team selected', () => {
     teamsData = [mockTeams[0]];
     channelsData = [];
     channelsLoading = false;
@@ -158,36 +158,36 @@ describe("TeamsChannelMappingCard", () => {
     expect(screen.getByText(/No channels available/)).toBeInTheDocument();
   });
 
-  it("renders category labels when channels are available", () => {
+  it('renders category labels when channels are available', () => {
     teamsData = [mockTeams[0]];
     channelsData = mockChannels;
     render(<TeamsChannelMappingCard />);
-    expect(screen.getByText("Approvals")).toBeInTheDocument();
-    expect(screen.getByText("Invoices")).toBeInTheDocument();
-    expect(screen.getByText("Contracts")).toBeInTheDocument();
-    expect(screen.getByText("Tasks")).toBeInTheDocument();
-    expect(screen.getByText("Equipment")).toBeInTheDocument();
+    expect(screen.getByText('Approvals')).toBeInTheDocument();
+    expect(screen.getByText('Invoices')).toBeInTheDocument();
+    expect(screen.getByText('Contracts')).toBeInTheDocument();
+    expect(screen.getByText('Tasks')).toBeInTheDocument();
+    expect(screen.getByText('Equipment')).toBeInTheDocument();
   });
 
-  it("renders save mapping button when channels are available", () => {
+  it('renders save mapping button when channels are available', () => {
     teamsData = [mockTeams[0]];
     channelsData = mockChannels;
     render(<TeamsChannelMappingCard />);
-    expect(screen.getByText("Save mapping")).toBeInTheDocument();
+    expect(screen.getByText('Save mapping')).toBeInTheDocument();
   });
 
-  it("does not render save button when no channels", () => {
+  it('does not render save button when no channels', () => {
     teamsData = [mockTeams[0]];
     channelsData = [];
     render(<TeamsChannelMappingCard />);
-    expect(screen.queryByText("Save mapping")).not.toBeInTheDocument();
+    expect(screen.queryByText('Save mapping')).not.toBeInTheDocument();
   });
 
-  it("renders select triggers with aria labels for each category", () => {
+  it('renders select triggers with aria labels for each category', () => {
     teamsData = [mockTeams[0]];
     channelsData = mockChannels;
     render(<TeamsChannelMappingCard />);
-    expect(screen.getByLabelText("Approvals notification channel")).toBeInTheDocument();
-    expect(screen.getByLabelText("Invoices notification channel")).toBeInTheDocument();
+    expect(screen.getByLabelText('Approvals notification channel')).toBeInTheDocument();
+    expect(screen.getByLabelText('Invoices notification channel')).toBeInTheDocument();
   });
 });

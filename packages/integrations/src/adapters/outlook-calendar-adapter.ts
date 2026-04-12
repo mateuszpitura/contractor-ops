@@ -1,8 +1,8 @@
-import { prisma } from "@contractor-ops/db";
-import type { CredentialBlob } from "../types/credentials.js";
-import type { ProviderHealthStatus } from "../types/health.js";
-import type { OAuthConfig } from "../types/provider.js";
-import { BaseAdapter } from "./base-adapter.js";
+import { prisma } from '@contractor-ops/db';
+import type { CredentialBlob } from '../types/credentials.js';
+import type { ProviderHealthStatus } from '../types/health.js';
+import type { OAuthConfig } from '../types/provider.js';
+import { BaseAdapter } from './base-adapter.js';
 
 // ---------------------------------------------------------------------------
 // Outlook Calendar OAuth 2.0 Configuration
@@ -25,12 +25,12 @@ import { BaseAdapter } from "./base-adapter.js";
  * - OUTLOOK_ENCRYPTION_KEY — for credential encryption at rest
  */
 const OUTLOOK_OAUTH_CONFIG: OAuthConfig = {
-  clientIdEnvVar: "OUTLOOK_CLIENT_ID",
-  clientSecretEnvVar: "OUTLOOK_CLIENT_SECRET",
-  authorizationUrl: "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
-  tokenUrl: "https://login.microsoftonline.com/common/oauth2/v2.0/token",
-  scopes: ["Calendars.ReadWrite", "offline_access"],
-  redirectPath: "/api/oauth/outlook/callback",
+  clientIdEnvVar: 'OUTLOOK_CLIENT_ID',
+  clientSecretEnvVar: 'OUTLOOK_CLIENT_SECRET',
+  authorizationUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
+  tokenUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/token',
+  scopes: ['Calendars.ReadWrite', 'offline_access'],
+  redirectPath: '/api/oauth/outlook/callback',
 };
 
 // ---------------------------------------------------------------------------
@@ -38,8 +38,8 @@ const OUTLOOK_OAUTH_CONFIG: OAuthConfig = {
 // ---------------------------------------------------------------------------
 
 export class OutlookCalendarAdapter extends BaseAdapter {
-  readonly slug = "outlook-calendar";
-  readonly displayName = "Outlook Calendar";
+  readonly slug = 'outlook-calendar';
+  readonly displayName = 'Outlook Calendar';
   readonly supportsOAuth = true;
   readonly supportsWebhooks = false;
 
@@ -57,22 +57,22 @@ export class OutlookCalendarAdapter extends BaseAdapter {
 
     if (!(clientId && clientSecret)) {
       throw new Error(
-        "OUTLOOK_CLIENT_ID and OUTLOOK_CLIENT_SECRET environment variables are required",
+        'OUTLOOK_CLIENT_ID and OUTLOOK_CLIENT_SECRET environment variables are required',
       );
     }
 
-    const response = await fetch("https://login.microsoftonline.com/common/oauth2/v2.0/token", {
-      method: "POST",
+    const response = await fetch('https://login.microsoftonline.com/common/oauth2/v2.0/token', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
+        'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: new URLSearchParams({
-        grant_type: "authorization_code",
+        grant_type: 'authorization_code',
         client_id: clientId,
         client_secret: clientSecret,
         code,
         redirect_uri: redirectUri,
-        scope: OUTLOOK_OAUTH_CONFIG.scopes.join(" "),
+        scope: OUTLOOK_OAUTH_CONFIG.scopes.join(' '),
       }),
     });
 
@@ -104,25 +104,25 @@ export class OutlookCalendarAdapter extends BaseAdapter {
 
     if (!(clientId && clientSecret)) {
       throw new Error(
-        "OUTLOOK_CLIENT_ID and OUTLOOK_CLIENT_SECRET environment variables are required",
+        'OUTLOOK_CLIENT_ID and OUTLOOK_CLIENT_SECRET environment variables are required',
       );
     }
 
     if (!credentials.refreshToken) {
-      throw new Error("No refresh token available for Outlook Calendar");
+      throw new Error('No refresh token available for Outlook Calendar');
     }
 
-    const response = await fetch("https://login.microsoftonline.com/common/oauth2/v2.0/token", {
-      method: "POST",
+    const response = await fetch('https://login.microsoftonline.com/common/oauth2/v2.0/token', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
+        'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: new URLSearchParams({
-        grant_type: "refresh_token",
+        grant_type: 'refresh_token',
         client_id: clientId,
         client_secret: clientSecret,
         refresh_token: credentials.refreshToken,
-        scope: OUTLOOK_OAUTH_CONFIG.scopes.join(" "),
+        scope: OUTLOOK_OAUTH_CONFIG.scopes.join(' '),
       }),
     });
 
@@ -176,33 +176,33 @@ export class OutlookCalendarAdapter extends BaseAdapter {
       subject: event.subject,
       start: {
         dateTime: event.startDateTime,
-        timeZone: "UTC",
+        timeZone: 'UTC',
       },
       end: {
         dateTime: event.endDateTime,
-        timeZone: "UTC",
+        timeZone: 'UTC',
       },
     };
 
     if (event.bodyHtml) {
       body.body = {
-        contentType: "HTML",
+        contentType: 'HTML',
         content: event.bodyHtml,
       };
     }
 
     if (event.attendees?.length) {
-      body.attendees = event.attendees.map((email) => ({
+      body.attendees = event.attendees.map(email => ({
         emailAddress: { address: email },
-        type: "required",
+        type: 'required',
       }));
     }
 
-    const response = await fetch("https://graph.microsoft.com/v1.0/me/calendar/events", {
-      method: "POST",
+    const response = await fetch('https://graph.microsoft.com/v1.0/me/calendar/events', {
+      method: 'POST',
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(body),
     });
@@ -247,34 +247,34 @@ export class OutlookCalendarAdapter extends BaseAdapter {
     if (event.subject !== undefined) body.subject = event.subject;
     if (event.bodyHtml !== undefined) {
       body.body = {
-        contentType: "HTML",
+        contentType: 'HTML',
         content: event.bodyHtml,
       };
     }
     if (event.startDateTime) {
       body.start = {
         dateTime: event.startDateTime,
-        timeZone: "UTC",
+        timeZone: 'UTC',
       };
     }
     if (event.endDateTime) {
       body.end = {
         dateTime: event.endDateTime,
-        timeZone: "UTC",
+        timeZone: 'UTC',
       };
     }
     if (event.attendees?.length) {
-      body.attendees = event.attendees.map((email) => ({
+      body.attendees = event.attendees.map(email => ({
         emailAddress: { address: email },
-        type: "required",
+        type: 'required',
       }));
     }
 
     const response = await fetch(`https://graph.microsoft.com/v1.0/me/calendar/events/${eventId}`, {
-      method: "PATCH",
+      method: 'PATCH',
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(body),
     });
@@ -303,7 +303,7 @@ export class OutlookCalendarAdapter extends BaseAdapter {
    */
   async deleteEvent(accessToken: string, eventId: string): Promise<void> {
     const response = await fetch(`https://graph.microsoft.com/v1.0/me/calendar/events/${eventId}`, {
-      method: "DELETE",
+      method: 'DELETE',
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -337,8 +337,8 @@ export class OutlookCalendarAdapter extends BaseAdapter {
 
     if (!connection) {
       return {
-        status: "DISCONNECTED",
-        provider: "outlook-calendar",
+        status: 'DISCONNECTED',
+        provider: 'outlook-calendar',
         recentSyncs: [],
         recentWebhooks: [],
         errorCountLast24h: 0,
@@ -347,7 +347,7 @@ export class OutlookCalendarAdapter extends BaseAdapter {
 
     const recentSyncs = await prisma.integrationSyncLog.findMany({
       where: { integrationConnectionId: connectionId },
-      orderBy: { startedAt: "desc" },
+      orderBy: { startedAt: 'desc' },
       take: 5,
       select: {
         id: true,
@@ -362,27 +362,27 @@ export class OutlookCalendarAdapter extends BaseAdapter {
     const errorCountLast24h = await prisma.integrationSyncLog.count({
       where: {
         integrationConnectionId: connectionId,
-        status: "FAILED",
+        status: 'FAILED',
         startedAt: { gte: oneDayAgo },
       },
     });
 
-    let status: ProviderHealthStatus["status"];
-    if (connection.status !== "CONNECTED") {
-      status = "DISCONNECTED";
+    let status: ProviderHealthStatus['status'];
+    if (connection.status !== 'CONNECTED') {
+      status = 'DISCONNECTED';
     } else if (connection.lastErrorAt && !connection.lastSuccessAt) {
-      status = "ERROR";
+      status = 'ERROR';
     } else if (connection.tokenExpiresAt && connection.tokenExpiresAt < new Date()) {
-      status = "REAUTH_REQUIRED";
-    } else if (recentSyncs[0]?.status === "FAILED") {
-      status = "ERROR";
+      status = 'REAUTH_REQUIRED';
+    } else if (recentSyncs[0]?.status === 'FAILED') {
+      status = 'ERROR';
     } else {
-      status = "CONNECTED";
+      status = 'CONNECTED';
     }
 
     return {
       status,
-      provider: "outlook-calendar",
+      provider: 'outlook-calendar',
       displayName: connection.displayName,
       connectedAt: connection.connectedAt,
       lastSyncAt: connection.lastSyncAt,
@@ -390,7 +390,7 @@ export class OutlookCalendarAdapter extends BaseAdapter {
       lastErrorAt: connection.lastErrorAt,
       lastErrorMessage: connection.lastErrorMessage,
       tokenExpiresAt: connection.tokenExpiresAt,
-      recentSyncs: recentSyncs.map((s) => ({
+      recentSyncs: recentSyncs.map(s => ({
         id: s.id,
         syncType: s.syncType,
         status: s.status,

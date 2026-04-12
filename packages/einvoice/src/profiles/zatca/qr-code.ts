@@ -5,10 +5,10 @@
 // Implements QRCodeable capability hook from Phase 45's engine architecture.
 // ---------------------------------------------------------------------------
 
-import QRCode from "qrcode";
-import type { EInvoice } from "../../types/invoice.js";
-import type { QRCodeable } from "../../types/profile.js";
-import { ZatcaTlvTag } from "./types.js";
+import QRCode from 'qrcode';
+import type { EInvoice } from '../../types/invoice.js';
+import type { QRCodeable } from '../../types/profile.js';
+import { ZatcaTlvTag } from './types.js';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -36,7 +36,7 @@ export function encodeTLV(fields: Array<{ tag: number; value: string | Buffer }>
 
   for (const field of fields) {
     const valueBuffer =
-      typeof field.value === "string" ? Buffer.from(field.value, "utf-8") : field.value;
+      typeof field.value === 'string' ? Buffer.from(field.value, 'utf-8') : field.value;
 
     const tagByte = Buffer.from([field.tag]);
     const lengthBytes = encodeLength(valueBuffer.length);
@@ -157,12 +157,12 @@ export class ZatcaTLVQRCode implements QRCodeable {
 
     const tlvFields = this.buildTlvFields(invoice);
     const tlvBuffer = encodeTLV(tlvFields);
-    const base64String = tlvBuffer.toString("base64");
+    const base64String = tlvBuffer.toString('base64');
 
     const pngBuffer = await QRCode.toBuffer(base64String, {
-      type: "png",
+      type: 'png',
       width: 200,
-      errorCorrectionLevel: "M",
+      errorCorrectionLevel: 'M',
     });
 
     return Buffer.from(pngBuffer);
@@ -175,13 +175,13 @@ export class ZatcaTLVQRCode implements QRCodeable {
    * This performs data extraction from TLV, not visual QR code scanning.
    */
   async parseQR(data: Buffer): Promise<Partial<EInvoice>> {
-    const base64String = data.toString("utf-8");
-    const tlvBuffer = Buffer.from(base64String, "base64");
+    const base64String = data.toString('utf-8');
+    const tlvBuffer = Buffer.from(base64String, 'base64');
     const fields = decodeTLV(tlvBuffer);
 
     const findField = (tag: number): string | undefined => {
-      const field = fields.find((f) => f.tag === tag);
-      return field?.value.toString("utf-8");
+      const field = fields.find(f => f.tag === tag);
+      return field?.value.toString('utf-8');
     };
 
     const sellerName = findField(ZatcaTlvTag.SELLER_NAME);
@@ -192,16 +192,16 @@ export class ZatcaTLVQRCode implements QRCodeable {
 
     return {
       supplier: {
-        id: vatNumber ?? "",
-        name: sellerName ?? "",
+        id: vatNumber ?? '',
+        name: sellerName ?? '',
       },
-      issueDate: timestamp ?? "",
+      issueDate: timestamp ?? '',
       taxInclusiveAmount: totalStr ? Math.round(parseFloat(totalStr) * 100) : 0,
       taxBreakdown: [
         {
           taxableAmountMinor: 0,
           taxAmountMinor: vatStr ? Math.round(parseFloat(vatStr) * 100) : 0,
-          taxCategory: "S",
+          taxCategory: 'S',
         },
       ],
     };
@@ -238,21 +238,21 @@ export class ZatcaTLVQRCode implements QRCodeable {
     if (ext?.invoiceHash) {
       fields.push({
         tag: ZatcaTlvTag.INVOICE_HASH,
-        value: Buffer.from(ext.invoiceHash as string, "hex"),
+        value: Buffer.from(ext.invoiceHash as string, 'hex'),
       });
     }
 
     if (ext?.signatureValue) {
       fields.push({
         tag: ZatcaTlvTag.ECDSA_SIGNATURE,
-        value: Buffer.from(ext.signatureValue as string, "base64"),
+        value: Buffer.from(ext.signatureValue as string, 'base64'),
       });
     }
 
     if (ext?.publicKey) {
       fields.push({
         tag: ZatcaTlvTag.PUBLIC_KEY,
-        value: Buffer.from(ext.publicKey as string, "base64"),
+        value: Buffer.from(ext.publicKey as string, 'base64'),
       });
     }
 

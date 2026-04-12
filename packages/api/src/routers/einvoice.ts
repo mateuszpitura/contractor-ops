@@ -1,7 +1,8 @@
-import { computeKsefComplianceStatus, listProfiles } from "@contractor-ops/einvoice";
-import { router } from "../init.js";
-import { requirePermission } from "../middleware/rbac.js";
-import { tenantProcedure } from "../middleware/tenant.js";
+import type { ComplianceStatus } from '@contractor-ops/einvoice';
+import { computeKsefComplianceStatus, listProfiles } from '@contractor-ops/einvoice';
+import { router } from '../init.js';
+import { requirePermission } from '../middleware/rbac.js';
+import { tenantProcedure } from '../middleware/tenant.js';
 
 // ---------------------------------------------------------------------------
 // E-Invoicing Router
@@ -14,18 +15,18 @@ export const einvoiceRouter = router({
    * for the current organization.
    */
   complianceStatuses: tenantProcedure
-    .use(requirePermission({ settings: ["read"] }))
+    .use(requirePermission({ settings: ['read'] }))
     .query(async ({ ctx }) => {
       const profiles = listProfiles();
-      const statuses = [];
+      const statuses: ComplianceStatus[] = [];
 
       for (const profile of profiles) {
-        if (profile.profileId === "ksef") {
+        if (profile.profileId === 'ksef') {
           // Fetch KSeF connection data from DB
           const connection = await ctx.db.integrationConnection.findFirst({
             where: {
               organizationId: ctx.organizationId,
-              provider: "KSEF",
+              provider: 'KSEF',
             },
             select: {
               status: true,
@@ -44,14 +45,14 @@ export const einvoiceRouter = router({
               where: {
                 organizationId: ctx.organizationId,
                 integrationConnection: {
-                  provider: "KSEF",
+                  provider: 'KSEF',
                 },
               },
-              orderBy: { startedAt: "desc" },
+              orderBy: { startedAt: 'desc' },
               take: 10,
               select: { status: true },
             });
-            recentSyncStatuses = recentSyncs.map((s) => s.status);
+            recentSyncStatuses = recentSyncs.map(s => s.status);
           }
 
           statuses.push(

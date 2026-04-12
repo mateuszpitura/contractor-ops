@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { DocumentCard } from "@/components/documents/document-card";
-import { DropZone } from "@/components/documents/drop-zone";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { trpc } from "@/trpc/init";
+import { useQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { DocumentCard } from '@/components/documents/document-card';
+import { DropZone } from '@/components/documents/drop-zone';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -23,12 +23,12 @@ interface TaskAttachmentsProps {
 // ---------------------------------------------------------------------------
 
 export function TaskAttachments({ taskRunId }: TaskAttachmentsProps) {
-  const t = useTranslations("Workflows");
+  const t = useTranslations('Workflows');
   const [showDropZone, setShowDropZone] = useState(false);
 
   const docsQuery = useQuery(
     trpc.document.list.queryOptions({
-      entityType: "WORKFLOW_TASK_RUN" as "CONTRACT" | "CONTRACTOR",
+      entityType: 'WORKFLOW_TASK_RUN' as 'CONTRACT' | 'CONTRACTOR',
       entityId: taskRunId,
       page: 1,
       pageSize: 50,
@@ -49,9 +49,9 @@ export function TaskAttachments({ taskRunId }: TaskAttachmentsProps) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h4 className="text-sm font-medium">{t("attachmentsHeading")}</h4>
-        <Button variant="ghost" size="sm" onClick={() => setShowDropZone((prev) => !prev)}>
-          {t("addAttachment")}
+        <h4 className="text-sm font-medium">{t('attachmentsHeading')}</h4>
+        <Button variant="ghost" size="sm" onClick={() => setShowDropZone(prev => !prev)}>
+          {t('addAttachment')}
         </Button>
       </div>
 
@@ -63,10 +63,10 @@ export function TaskAttachments({ taskRunId }: TaskAttachmentsProps) {
           ))}
         </div>
       ) : documents.length === 0 && !showDropZone ? (
-        <p className="text-sm text-muted-foreground">{t("noAttachments")}</p>
+        <p className="text-sm text-muted-foreground">{t('noAttachments')}</p>
       ) : (
         <div className="space-y-2">
-          {documents.map((doc) => (
+          {documents.map(doc => (
             <DocumentCard key={doc.id} document={doc} />
           ))}
         </div>

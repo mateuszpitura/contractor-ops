@@ -19,14 +19,14 @@
  *   5. Verifies the round-trip by reading back from the store
  */
 
-import { createDecipheriv } from "node:crypto";
-import { PrismaClient } from "@prisma/client";
+import { createDecipheriv } from 'node:crypto';
+import { PrismaClient } from '@prisma/client';
 
 // ---------------------------------------------------------------------------
 // Configuration
 // ---------------------------------------------------------------------------
 
-const DRY_RUN = !process.argv.includes("--execute");
+const DRY_RUN = !process.argv.includes('--execute');
 const LEGACY_FORMAT_RE = /^[0-9a-f]+:[0-9a-f]+:[0-9a-f]+$/i;
 
 // ---------------------------------------------------------------------------
@@ -39,20 +39,20 @@ function getLegacyKey(providerSlug: string): Buffer {
   if (!key) {
     throw new Error(`Missing env var: ${envVar}`);
   }
-  return Buffer.from(key, "hex");
+  return Buffer.from(key, 'hex');
 }
 
 function legacyDecrypt(encrypted: string, providerSlug: string): unknown {
-  const [ivHex, authTagHex, ciphertext] = encrypted.split(":") as [string, string, string];
+  const [ivHex, authTagHex, ciphertext] = encrypted.split(':') as [string, string, string];
   const key = getLegacyKey(providerSlug);
-  const iv = Buffer.from(ivHex, "hex");
-  const authTag = Buffer.from(authTagHex, "hex");
+  const iv = Buffer.from(ivHex, 'hex');
+  const authTag = Buffer.from(authTagHex, 'hex');
 
-  const decipher = createDecipheriv("aes-256-gcm", key, iv);
+  const decipher = createDecipheriv('aes-256-gcm', key, iv);
   decipher.setAuthTag(authTag);
 
-  let decrypted = decipher.update(ciphertext, "hex", "utf8");
-  decrypted += decipher.final("utf8");
+  let decrypted = decipher.update(ciphertext, 'hex', 'utf8');
+  decrypted += decipher.final('utf8');
 
   return JSON.parse(decrypted);
 }
@@ -63,7 +63,7 @@ function legacyDecrypt(encrypted: string, providerSlug: string): unknown {
 
 async function main() {
   // Dynamically import secret store so env is read at runtime
-  const { getSecretStore } = await import("@contractor-ops/secrets");
+  const { getSecretStore } = await import('@contractor-ops/secrets');
   const store = getSecretStore();
 
   const prisma = new PrismaClient();
@@ -130,13 +130,14 @@ async function main() {
     }
 
     if (DRY_RUN) {
+      // Dry run complete - no changes persisted
     }
   } finally {
     await prisma.$disconnect();
   }
 }
 
-main().catch((err) => {
-  console.error("Migration failed:", err);
+main().catch(err => {
+  console.error('Migration failed:', err);
   process.exit(1);
 });

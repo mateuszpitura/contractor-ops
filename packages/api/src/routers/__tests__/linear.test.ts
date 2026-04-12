@@ -2,12 +2,12 @@
  * Linear router — connection status (no external API on this path).
  */
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const { ORG_ID, USER_ID, mockPrisma, mockLinearGraphQL, mockRegisterLinearWebhook } = vi.hoisted(
   () => {
-    const ORG_ID = "org-linear-00000000-0000-0000-0000-000000000001";
-    const USER_ID = "user-linear-00000000-0000-0000-0000-000000000001";
+    const ORG_ID = 'org-linear-00000000-0000-0000-0000-000000000001';
+    const USER_ID = 'user-linear-00000000-0000-0000-0000-000000000001';
     const mockLinearGraphQL = vi.fn();
     const mockRegisterLinearWebhook = vi.fn().mockResolvedValue(undefined);
 
@@ -30,9 +30,9 @@ const { ORG_ID, USER_ID, mockPrisma, mockLinearGraphQL, mockRegisterLinearWebhoo
       },
       subscription: {
         findUnique: vi.fn(async () => ({
-          id: "sub_linear_mock",
-          status: "ACTIVE",
-          tier: "PRO",
+          id: 'sub_linear_mock',
+          status: 'ACTIVE',
+          tier: 'PRO',
         })),
       },
     };
@@ -47,7 +47,7 @@ const { ORG_ID, USER_ID, mockPrisma, mockLinearGraphQL, mockRegisterLinearWebhoo
   },
 );
 
-vi.mock("@contractor-ops/auth", () => ({
+vi.mock('@contractor-ops/auth', () => ({
   auth: {
     api: {
       getSession: vi.fn(),
@@ -56,7 +56,7 @@ vi.mock("@contractor-ops/auth", () => ({
   },
 }));
 
-vi.mock("@contractor-ops/db", () => ({
+vi.mock('@contractor-ops/db', () => ({
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
@@ -68,7 +68,7 @@ vi.mock("@contractor-ops/db", () => ({
   createTenantClientFrom: vi.fn(() => mockPrisma),
 }));
 
-vi.mock("@sentry/nextjs", () => {
+vi.mock('@sentry/nextjs', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
     startSpan: vi.fn((_o: unknown, fn: (span: typeof mockSpan) => unknown) => fn(mockSpan)),
@@ -76,7 +76,7 @@ vi.mock("@sentry/nextjs", () => {
   };
 });
 
-vi.mock("@contractor-ops/logger", () => ({
+vi.mock('@contractor-ops/logger', () => ({
   createTrpcLogger: vi.fn(() => ({
     info: vi.fn(),
     warn: vi.fn(),
@@ -84,11 +84,11 @@ vi.mock("@contractor-ops/logger", () => ({
   })),
 }));
 
-vi.mock("@contractor-ops/logger/metrics", () => ({
+vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { increment: vi.fn(), distribution: vi.fn(), histogram: vi.fn() },
 }));
 
-vi.mock("../../services/cache.js", () => ({
+vi.mock('../../services/cache.js', () => ({
   cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
   invalidate: vi.fn(async () => undefined),
   invalidateByPrefix: vi.fn(async () => undefined),
@@ -100,35 +100,35 @@ vi.mock("../../services/cache.js", () => ({
   },
 }));
 
-vi.mock("@contractor-ops/integrations/services/credential-service", () => ({
-  decryptCredentials: vi.fn(() => ({ accessToken: "lin-token" })),
+vi.mock('@contractor-ops/integrations/services/credential-service', () => ({
+  decryptCredentials: vi.fn(() => ({ accessToken: 'lin-token' })),
 }));
 
-vi.mock("../../services/linear-issue-sync.js", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../../services/linear-issue-sync.js")>();
+vi.mock('../../services/linear-issue-sync.js', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../services/linear-issue-sync.js')>();
   return {
     ...actual,
     linearGraphQL: (...args: unknown[]) => mockLinearGraphQL(...args),
   };
 });
 
-vi.mock("../../services/linear-webhook-handler.js", () => ({
+vi.mock('../../services/linear-webhook-handler.js', () => ({
   registerLinearWebhook: (...args: unknown[]) => mockRegisterLinearWebhook(...args),
 }));
 
-import { createCallerFactory } from "../../init.js";
-import { linearRouter } from "../linear.js";
+import { createCallerFactory } from '../../init.js';
+import { linearRouter } from '../linear.js';
 
 const createCaller = createCallerFactory(linearRouter);
 
 function makeCaller(orgId: string) {
   const session = {
     session: {
-      id: "sess-linear",
+      id: 'sess-linear',
       userId: USER_ID,
       activeOrganizationId: orgId,
-      expiresAt: new Date("2099-01-01"),
-      token: "mock-token",
+      expiresAt: new Date('2099-01-01'),
+      token: 'mock-token',
       createdAt: new Date(),
       updatedAt: new Date(),
       ipAddress: null,
@@ -136,14 +136,14 @@ function makeCaller(orgId: string) {
     },
     user: {
       id: USER_ID,
-      name: "Linear User",
-      email: "linear@example.com",
+      name: 'Linear User',
+      email: 'linear@example.com',
       emailVerified: true,
       image: null,
       banned: false,
       banReason: null,
       banExpires: null,
-      role: "admin",
+      role: 'admin',
       createdAt: new Date(),
       updatedAt: new Date(),
     },
@@ -155,7 +155,7 @@ function makeCaller(orgId: string) {
   });
 }
 
-describe("linearRouter", () => {
+describe('linearRouter', () => {
   const caller = makeCaller(ORG_ID);
 
   beforeEach(() => {
@@ -164,27 +164,27 @@ describe("linearRouter", () => {
   });
 
   const linearConn = {
-    id: "conn-linear-1",
-    status: "CONNECTED" as const,
-    credentialsRef: "enc-linear",
+    id: 'conn-linear-1',
+    status: 'CONNECTED' as const,
+    credentialsRef: 'enc-linear',
     configJson: {},
   };
 
   const mappingEntry = {
-    workflowStatus: "In Progress",
-    linearStateId: "state-1",
-    linearStateName: "Doing",
-    linearStateType: "started" as const,
+    workflowStatus: 'In Progress',
+    linearStateId: 'state-1',
+    linearStateName: 'Doing',
+    linearStateType: 'started' as const,
   };
 
-  it("connectionStatus returns null when no Linear connection", async () => {
+  it('connectionStatus returns null when no Linear connection', async () => {
     mockPrisma.integrationConnection.findFirst.mockResolvedValue(null);
     const result = await caller.connectionStatus();
     expect(result).toBeNull();
     expect(mockPrisma.integrationConnection.findFirst).toHaveBeenCalledWith({
       where: {
         organizationId: ORG_ID,
-        provider: "LINEAR",
+        provider: 'LINEAR',
       },
       select: {
         id: true,
@@ -194,43 +194,43 @@ describe("linearRouter", () => {
     });
   });
 
-  it("connectionStatus returns id, status, and configJson when connected", async () => {
+  it('connectionStatus returns id, status, and configJson when connected', async () => {
     mockPrisma.integrationConnection.findFirst.mockResolvedValue({
-      id: "conn-linear",
-      status: "CONNECTED",
-      configJson: { foo: "bar" },
+      id: 'conn-linear',
+      status: 'CONNECTED',
+      configJson: { foo: 'bar' },
     });
 
     const result = await caller.connectionStatus();
 
     expect(result).toEqual({
-      id: "conn-linear",
-      status: "CONNECTED",
-      configJson: { foo: "bar" },
+      id: 'conn-linear',
+      status: 'CONNECTED',
+      configJson: { foo: 'bar' },
     });
   });
 
-  it("teams throws NOT_FOUND when no Linear connection", async () => {
+  it('teams throws NOT_FOUND when no Linear connection', async () => {
     mockPrisma.integrationConnection.findFirst.mockResolvedValue(null);
-    await expect(caller.teams()).rejects.toMatchObject({ code: "NOT_FOUND" });
+    await expect(caller.teams()).rejects.toMatchObject({ code: 'NOT_FOUND' });
   });
 
-  it("teams maps Linear GraphQL teams and states", async () => {
+  it('teams maps Linear GraphQL teams and states', async () => {
     mockPrisma.integrationConnection.findFirst.mockResolvedValue(linearConn);
     mockLinearGraphQL.mockResolvedValue({
       teams: {
         nodes: [
           {
-            id: "tm1",
-            name: "Eng",
-            key: "ENG",
+            id: 'tm1',
+            name: 'Eng',
+            key: 'ENG',
             states: {
               nodes: [
                 {
-                  id: "st1",
-                  name: "Todo",
-                  type: "unstarted",
-                  color: "#000",
+                  id: 'st1',
+                  name: 'Todo',
+                  type: 'unstarted',
+                  color: '#000',
                   position: 0,
                 },
               ],
@@ -244,76 +244,76 @@ describe("linearRouter", () => {
 
     expect(result).toEqual([
       {
-        id: "tm1",
-        name: "Eng",
-        key: "ENG",
+        id: 'tm1',
+        name: 'Eng',
+        key: 'ENG',
         states: [
           {
-            id: "st1",
-            name: "Todo",
-            type: "unstarted",
-            color: "#000",
+            id: 'st1',
+            name: 'Todo',
+            type: 'unstarted',
+            color: '#000',
             position: 0,
           },
         ],
       },
     ]);
-    expect(mockLinearGraphQL).toHaveBeenCalledWith("lin-token", expect.stringContaining("teams"));
+    expect(mockLinearGraphQL).toHaveBeenCalledWith('lin-token', expect.stringContaining('teams'));
   });
 
-  it("getStatusMapping returns team entries from configJson", async () => {
+  it('getStatusMapping returns team entries from configJson', async () => {
     mockPrisma.integrationConnection.findFirst.mockResolvedValue({
       ...linearConn,
       configJson: {
         statusMappings: {
-          "team-99": [mappingEntry],
+          'team-99': [mappingEntry],
         },
       },
     });
 
-    const result = await caller.getStatusMapping({ teamId: "team-99" });
+    const result = await caller.getStatusMapping({ teamId: 'team-99' });
     expect(result).toEqual([mappingEntry]);
   });
 
-  it("getStatusMapping returns empty array when team has no mappings", async () => {
+  it('getStatusMapping returns empty array when team has no mappings', async () => {
     mockPrisma.integrationConnection.findFirst.mockResolvedValue({
       ...linearConn,
       configJson: { statusMappings: {} },
     });
-    const result = await caller.getStatusMapping({ teamId: "unknown" });
+    const result = await caller.getStatusMapping({ teamId: 'unknown' });
     expect(result).toEqual([]);
   });
 
-  it("saveStatusMapping throws BAD_REQUEST when connectionId mismatches", async () => {
+  it('saveStatusMapping throws BAD_REQUEST when connectionId mismatches', async () => {
     mockPrisma.integrationConnection.findFirst.mockResolvedValue(linearConn);
     await expect(
       caller.saveStatusMapping({
-        connectionId: "other-id",
-        teamId: "tm1",
+        connectionId: 'other-id',
+        teamId: 'tm1',
         mappings: [mappingEntry],
       }),
-    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    ).rejects.toMatchObject({ code: 'BAD_REQUEST' });
   });
 
-  it("saveStatusMapping updates config and transitions PENDING_MAPPING to CONNECTED", async () => {
+  it('saveStatusMapping updates config and transitions PENDING_MAPPING to CONNECTED', async () => {
     mockPrisma.integrationConnection.findFirst.mockResolvedValue({
       ...linearConn,
-      id: "conn-linear-1",
-      status: "PENDING_MAPPING",
+      id: 'conn-linear-1',
+      status: 'PENDING_MAPPING',
       configJson: { webhooks: {} },
     });
     mockPrisma.integrationConnection.update.mockResolvedValue({});
 
     await caller.saveStatusMapping({
-      connectionId: "conn-linear-1",
-      teamId: "tm1",
+      connectionId: 'conn-linear-1',
+      teamId: 'tm1',
       mappings: [mappingEntry],
     });
 
     expect(mockPrisma.integrationConnection.update).toHaveBeenCalledWith({
-      where: { id: "conn-linear-1" },
+      where: { id: 'conn-linear-1' },
       data: expect.objectContaining({
-        status: "CONNECTED",
+        status: 'CONNECTED',
         configJson: expect.objectContaining({
           statusMappings: expect.objectContaining({
             tm1: [mappingEntry],
@@ -323,7 +323,7 @@ describe("linearRouter", () => {
     });
   });
 
-  it("saveStatusMapping registers webhook when team not yet in webhooks map", async () => {
+  it('saveStatusMapping registers webhook when team not yet in webhooks map', async () => {
     mockPrisma.integrationConnection.findFirst.mockResolvedValue({
       ...linearConn,
       configJson: { webhooks: {} },
@@ -331,143 +331,143 @@ describe("linearRouter", () => {
     mockPrisma.integrationConnection.update.mockResolvedValue({});
 
     await caller.saveStatusMapping({
-      connectionId: "conn-linear-1",
-      teamId: "tm-new",
+      connectionId: 'conn-linear-1',
+      teamId: 'tm-new',
       mappings: [mappingEntry],
     });
 
     await vi.waitFor(() => {
-      expect(mockRegisterLinearWebhook).toHaveBeenCalledWith(mockPrisma, "conn-linear-1", "tm-new");
+      expect(mockRegisterLinearWebhook).toHaveBeenCalledWith(mockPrisma, 'conn-linear-1', 'tm-new');
     });
   });
 
-  it("saveStatusMapping skips webhook registration when team already registered", async () => {
+  it('saveStatusMapping skips webhook registration when team already registered', async () => {
     mockPrisma.integrationConnection.findFirst.mockResolvedValue({
       ...linearConn,
-      configJson: { webhooks: { "tm-old": "wh-id" } },
+      configJson: { webhooks: { 'tm-old': 'wh-id' } },
     });
     mockPrisma.integrationConnection.update.mockResolvedValue({});
 
     await caller.saveStatusMapping({
-      connectionId: "conn-linear-1",
-      teamId: "tm-old",
+      connectionId: 'conn-linear-1',
+      teamId: 'tm-old',
       mappings: [mappingEntry],
     });
 
-    await new Promise((r) => setImmediate(r));
+    await new Promise(r => setImmediate(r));
     expect(mockRegisterLinearWebhook).not.toHaveBeenCalled();
   });
 
-  it("saveTaskConfig throws NOT_FOUND when template missing", async () => {
+  it('saveTaskConfig throws NOT_FOUND when template missing', async () => {
     mockPrisma.workflowTaskTemplate.findFirst.mockResolvedValue(null);
     await expect(
       caller.saveTaskConfig({
-        taskTemplateId: "x",
+        taskTemplateId: 'x',
         config: { linearEnabled: true },
       }),
-    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+    ).rejects.toMatchObject({ code: 'NOT_FOUND' });
   });
 
-  it("saveTaskConfig merges linear config into template", async () => {
+  it('saveTaskConfig merges linear config into template', async () => {
     mockPrisma.workflowTaskTemplate.findFirst.mockResolvedValue({
       configJson: { other: 1 },
     });
     mockPrisma.workflowTaskTemplate.update.mockResolvedValue({});
 
     await caller.saveTaskConfig({
-      taskTemplateId: "tpl-1",
-      config: { linearEnabled: true, linearTeamId: "t1" },
+      taskTemplateId: 'tpl-1',
+      config: { linearEnabled: true, linearTeamId: 't1' },
     });
 
     expect(mockPrisma.workflowTaskTemplate.update).toHaveBeenCalledWith({
-      where: { id: "tpl-1" },
+      where: { id: 'tpl-1' },
       data: {
         configJson: {
           other: 1,
           linearEnabled: true,
-          linearTeamId: "t1",
+          linearTeamId: 't1',
         },
       },
     });
   });
 
-  it("getLinkedIssue returns null when no link", async () => {
+  it('getLinkedIssue returns null when no link', async () => {
     mockPrisma.externalLink.findFirst.mockResolvedValue(null);
-    expect(await caller.getLinkedIssue({ taskRunId: "tr-1" })).toBeNull();
+    expect(await caller.getLinkedIssue({ taskRunId: 'tr-1' })).toBeNull();
   });
 
-  it("getLinkedIssue returns plain link with metadata", async () => {
+  it('getLinkedIssue returns plain link with metadata', async () => {
     const meta = {
-      identifier: "ENG-1",
-      linearIssueId: "iss-1",
-      title: "Fix bug",
-      status: "In Progress",
-      statusType: "started",
-      url: "https://linear.app/issue/1",
+      identifier: 'ENG-1',
+      linearIssueId: 'iss-1',
+      title: 'Fix bug',
+      status: 'In Progress',
+      statusType: 'started',
+      url: 'https://linear.app/issue/1',
     };
     mockPrisma.externalLink.findFirst.mockResolvedValue({
-      id: "l1",
-      externalId: "iss-1",
-      externalUrl: "https://linear.app/issue/1",
+      id: 'l1',
+      externalId: 'iss-1',
+      externalUrl: 'https://linear.app/issue/1',
       metadataJson: meta,
     });
 
-    const result = await caller.getLinkedIssue({ taskRunId: "tr-1" });
+    const result = await caller.getLinkedIssue({ taskRunId: 'tr-1' });
     expect(result).toMatchObject({
-      id: "l1",
-      externalId: "iss-1",
+      id: 'l1',
+      externalId: 'iss-1',
       metadata: meta,
     });
   });
 
-  it("getLinkedIssues returns empty object for empty taskRunIds", async () => {
+  it('getLinkedIssues returns empty object for empty taskRunIds', async () => {
     expect(await caller.getLinkedIssues({ taskRunIds: [] })).toEqual({});
   });
 
-  it("getLinkedIssues maps taskRunId to link or null", async () => {
+  it('getLinkedIssues maps taskRunId to link or null', async () => {
     mockPrisma.externalLink.findMany.mockResolvedValue([
       {
-        id: "l1",
-        entityId: "tr-a",
-        externalId: "e1",
+        id: 'l1',
+        entityId: 'tr-a',
+        externalId: 'e1',
         externalUrl: null,
         metadataJson: null,
       },
     ]);
 
     const result = await caller.getLinkedIssues({
-      taskRunIds: ["tr-a", "tr-b"],
+      taskRunIds: ['tr-a', 'tr-b'],
     });
 
-    expect(result["tr-a"]).toMatchObject({ id: "l1", externalId: "e1" });
-    expect(result["tr-b"]).toBeNull();
+    expect(result['tr-a']).toMatchObject({ id: 'l1', externalId: 'e1' });
+    expect(result['tr-b']).toBeNull();
   });
 
-  it("linkedIssues returns links for WORKFLOW_TASK_RUN", async () => {
-    const links = [{ id: "l1", externalId: "x", externalUrl: null, metadataJson: null }];
+  it('linkedIssues returns links for WORKFLOW_TASK_RUN', async () => {
+    const links = [{ id: 'l1', externalId: 'x', externalUrl: null, metadataJson: null }];
     mockPrisma.externalLink.findMany.mockResolvedValue(links);
     const result = await caller.linkedIssues({
-      entityType: "WORKFLOW_TASK_RUN",
-      entityId: "tr-1",
+      entityType: 'WORKFLOW_TASK_RUN',
+      entityId: 'tr-1',
     });
     expect(result).toEqual(JSON.parse(JSON.stringify(links)));
   });
 
-  it("linkedIssues returns empty when WORKFLOW_RUN has no task runs", async () => {
+  it('linkedIssues returns empty when WORKFLOW_RUN has no task runs', async () => {
     mockPrisma.workflowTaskRun.findMany.mockResolvedValue([]);
     const result = await caller.linkedIssues({
-      entityType: "WORKFLOW_RUN",
-      entityId: "wr-1",
+      entityType: 'WORKFLOW_RUN',
+      entityId: 'wr-1',
     });
     expect(result).toEqual([]);
   });
 
-  describe("tier gating", () => {
-    it("saveStatusMapping and saveTaskConfig include requireTier(PRO) in middleware chain", async () => {
-      const fs = await import("node:fs");
-      const path = await import("node:path");
-      const sourceDir = path.resolve(import.meta.dirname, "../../routers");
-      const source = fs.readFileSync(path.join(sourceDir, "linear.ts"), "utf-8");
+  describe('tier gating', () => {
+    it('saveStatusMapping and saveTaskConfig include requireTier(PRO) in middleware chain', async () => {
+      const fs = await import('node:fs');
+      const path = await import('node:path');
+      const sourceDir = path.resolve(import.meta.dirname, '../../routers');
+      const source = fs.readFileSync(path.join(sourceDir, 'linear.ts'), 'utf-8');
 
       expect(source).toContain('import { requireTier } from "../middleware/tier.js"');
       expect(source).toContain('requireTier("PRO")');
@@ -476,27 +476,27 @@ describe("linearRouter", () => {
       expect(matches).toHaveLength(2);
     });
 
-    it("read-only procedures do NOT include requireTier", async () => {
-      const fs = await import("node:fs");
-      const path = await import("node:path");
-      const sourceDir = path.resolve(import.meta.dirname, "../../routers");
-      const source = fs.readFileSync(path.join(sourceDir, "linear.ts"), "utf-8");
+    it('read-only procedures do NOT include requireTier', async () => {
+      const fs = await import('node:fs');
+      const path = await import('node:path');
+      const sourceDir = path.resolve(import.meta.dirname, '../../routers');
+      const source = fs.readFileSync(path.join(sourceDir, 'linear.ts'), 'utf-8');
 
       for (const proc of [
-        "connectionStatus",
-        "teams",
-        "getStatusMapping",
-        "getLinkedIssue",
-        "getLinkedIssues",
-        "linkedIssues",
+        'connectionStatus',
+        'teams',
+        'getStatusMapping',
+        'getLinkedIssue',
+        'getLinkedIssues',
+        'linkedIssues',
       ]) {
         const procRegex = new RegExp(
           `${proc}:\\s*tenantProcedure[\\s\\S]*?(?=\\w+:\\s*tenantProcedure|\\}\\);$)`,
-          "m",
+          'm',
         );
         const match = source.match(procRegex);
         if (match) {
-          expect(match[0]).not.toContain("requireTier");
+          expect(match[0]).not.toContain('requireTier');
         }
       }
     });

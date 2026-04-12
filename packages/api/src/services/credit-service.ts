@@ -1,10 +1,10 @@
-import { prisma } from "@contractor-ops/db";
-import type { Prisma } from "@contractor-ops/db/generated/prisma/client";
-import { metrics } from "@contractor-ops/logger/metrics";
-import { TIER_CREDIT_ALLOWANCE, TRIAL_CREDIT_ALLOWANCE } from "./billing-constants.js";
-import { CacheKeys, CacheTTL, cached, invalidate } from "./cache.js";
-import { dispatch } from "./notification-service.js";
-import { stripe } from "./stripe-client.js";
+import { prisma } from '@contractor-ops/db';
+import type { Prisma } from '@contractor-ops/db/generated/prisma/client';
+import { metrics } from '@contractor-ops/logger/metrics';
+import { TIER_CREDIT_ALLOWANCE, TRIAL_CREDIT_ALLOWANCE } from './billing-constants.js';
+import { CacheKeys, CacheTTL, cached, invalidate } from './cache.js';
+import { dispatch } from './notification-service.js';
+import { stripe } from './stripe-client.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -20,7 +20,7 @@ export interface CreditBalance {
 export interface CreditDeductionResult {
   allowed: boolean;
   remaining: number;
-  reason?: "no_subscription" | "credits_exhausted";
+  reason?: 'no_subscription' | 'credits_exhausted';
 }
 
 export interface TopUpResult {
@@ -50,13 +50,13 @@ async function fetchCreditBalance(organizationId: string): Promise<CreditBalance
     where: { organizationId },
   });
 
-  if (!subscription || (subscription.status !== "ACTIVE" && subscription.status !== "TRIALING")) {
+  if (!subscription || (subscription.status !== 'ACTIVE' && subscription.status !== 'TRIALING')) {
     return { balance: 0, allowance: 0, used: 0, tier: null };
   }
 
   // Per D-08: Trial subscriptions get reduced allowance
   const allowance =
-    subscription.status === "TRIALING"
+    subscription.status === 'TRIALING'
       ? TRIAL_CREDIT_ALLOWANCE
       : TIER_CREDIT_ALLOWANCE[subscription.tier as keyof typeof TIER_CREDIT_ALLOWANCE];
 
@@ -115,19 +115,19 @@ export async function checkAndDeductCredit(organizationId: string): Promise<Cred
 
       if (
         !subscription ||
-        (subscription.status !== "ACTIVE" && subscription.status !== "TRIALING")
+        (subscription.status !== 'ACTIVE' && subscription.status !== 'TRIALING')
       ) {
         return {
           allowed: false as const,
           remaining: 0,
-          reason: "no_subscription" as const,
+          reason: 'no_subscription' as const,
           stripeCustomerId: null,
         };
       }
 
       // Per D-08: Trial subscriptions get reduced allowance
       const allowance =
-        subscription.status === "TRIALING"
+        subscription.status === 'TRIALING'
           ? TRIAL_CREDIT_ALLOWANCE
           : TIER_CREDIT_ALLOWANCE[subscription.tier as keyof typeof TIER_CREDIT_ALLOWANCE];
 
@@ -149,7 +149,7 @@ export async function checkAndDeductCredit(organizationId: string): Promise<Cred
         return {
           allowed: false as const,
           remaining: 0,
-          reason: "credits_exhausted" as const,
+          reason: 'credits_exhausted' as const,
           stripeCustomerId: null,
         };
       }
@@ -159,7 +159,7 @@ export async function checkAndDeductCredit(organizationId: string): Promise<Cred
         data: {
           organizationId,
           credits: -1,
-          reason: "OCR_EXTRACTION",
+          reason: 'OCR_EXTRACTION',
           periodStart: subscription.currentPeriodStart,
           periodEnd: subscription.currentPeriodEnd,
         },
@@ -172,13 +172,13 @@ export async function checkAndDeductCredit(organizationId: string): Promise<Cred
       };
     },
     {
-      isolationLevel: "Serializable",
+      isolationLevel: 'Serializable',
     },
   );
 
   // Track metrics
-  metrics.increment("billing.credit_deduction", 1, {
-    outcome: result.allowed ? "granted" : (result.reason ?? "unknown"),
+  metrics.increment('billing.credit_deduction', 1, {
+    outcome: result.allowed ? 'granted' : (result.reason ?? 'unknown'),
   });
 
   // Invalidate credit cache after deduction
@@ -188,7 +188,7 @@ export async function checkAndDeductCredit(organizationId: string): Promise<Cred
 
   // Notify admins when credits are exhausted
   if (result.allowed && result.remaining === 0) {
-    metrics.increment("billing.credits_exhausted", 1);
+    metrics.increment('billing.credits_exhausted', 1);
     void notifyCreditExhausted(organizationId);
   }
 
@@ -196,13 +196,13 @@ export async function checkAndDeductCredit(organizationId: string): Promise<Cred
   if (result.allowed && result.stripeCustomerId) {
     stripe.billing.meterEvents
       .create({
-        event_name: "ocr_extraction",
+        event_name: 'ocr_extraction',
         payload: {
           stripe_customer_id: result.stripeCustomerId,
-          value: "1",
+          value: '1',
         },
       })
-      .catch((err: unknown) => console.error("[billing] Meter event failed:", err));
+      .catch((err: unknown) => console.error('[billing] Meter event failed:', err));
   }
 
   // Strip internal stripeCustomerId from the return type
@@ -246,7 +246,7 @@ export async function allocateTopUpCredits(params: {
     data: {
       organizationId: params.organizationId,
       credits: params.credits,
-      reason: "TOP_UP",
+      reason: 'TOP_UP',
       periodStart: subscription.currentPeriodStart,
       periodEnd: subscription.currentPeriodEnd,
       stripeEventId: params.stripeEventId ?? null,
@@ -278,21 +278,21 @@ async function notifyCreditExhausted(organizationId: string): Promise<void> {
     const adminMembers = await prisma.member.findMany({
       where: {
         organizationId,
-        role: { in: ["owner", "admin"] },
+        role: { in: ['owner', 'admin'] },
       },
       select: { userId: true },
     });
 
-    const adminUserIds = adminMembers.map((m) => m.userId);
+    const adminUserIds = adminMembers.map(m => m.userId);
     if (adminUserIds.length === 0) return;
 
     await dispatch({
       organizationId,
-      type: "CREDIT_EXHAUSTED" as const,
+      type: 'CREDIT_EXHAUSTED' as const,
       recipientUserIds: adminUserIds,
-      title: "OCR credits exhausted",
-      body: "Your organization has used all OCR credits for this billing period. Purchase additional credits to continue processing invoices.",
-      entityType: "ORGANIZATION",
+      title: 'OCR credits exhausted',
+      body: 'Your organization has used all OCR credits for this billing period. Purchase additional credits to continue processing invoices.',
+      entityType: 'ORGANIZATION',
       entityId: organizationId,
     });
   } catch (error) {

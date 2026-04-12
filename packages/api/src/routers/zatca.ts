@@ -6,11 +6,11 @@
 // Per T-48-16: All onboarding mutations require authenticated user with org admin role.
 // ---------------------------------------------------------------------------
 
-import { zatcaTaxDetailsSchema } from "@contractor-ops/einvoice";
-import { z } from "zod";
-import { router } from "../init.js";
-import { requirePermission } from "../middleware/rbac.js";
-import { tenantProcedure } from "../middleware/tenant.js";
+import { zatcaTaxDetailsSchema } from '@contractor-ops/einvoice';
+import { z } from 'zod';
+import { router } from '../init.js';
+import { requirePermission } from '../middleware/rbac.js';
+import { tenantProcedure } from '../middleware/tenant.js';
 import {
   exchangeProductionCertificate,
   generateAndStoreCsr,
@@ -18,8 +18,8 @@ import {
   requestComplianceCsid,
   runComplianceChecks,
   saveTaxDetails,
-} from "../services/zatca-onboarding.js";
-import { queueZatcaSubmission } from "../services/zatca-submission.js";
+} from '../services/zatca-onboarding.js';
+import { queueZatcaSubmission } from '../services/zatca-submission.js';
 
 // ---------------------------------------------------------------------------
 // ZATCA Router
@@ -31,7 +31,7 @@ export const zatcaRouter = router({
    * Validates VAT number format, Arabic org name, and Saudi address.
    */
   saveTaxDetails: tenantProcedure
-    .use(requirePermission({ settings: ["update"] }))
+    .use(requirePermission({ settings: ['update'] }))
     .input(z.object({ taxDetails: zatcaTaxDetailsSchema }))
     .mutation(async ({ ctx, input }) => {
       await saveTaxDetails(ctx.organizationId, input.taxDetails);
@@ -44,7 +44,7 @@ export const zatcaRouter = router({
    * Returns the CSR PEM for UI preview.
    */
   generateCsr: tenantProcedure
-    .use(requirePermission({ settings: ["update"] }))
+    .use(requirePermission({ settings: ['update'] }))
     .mutation(async ({ ctx }) => {
       return generateAndStoreCsr(ctx.organizationId);
     }),
@@ -54,7 +54,7 @@ export const zatcaRouter = router({
    * Stores compliance certificate and API secret in Infisical.
    */
   requestComplianceCsid: tenantProcedure
-    .use(requirePermission({ settings: ["update"] }))
+    .use(requirePermission({ settings: ['update'] }))
     .mutation(async ({ ctx }) => {
       return requestComplianceCsid(ctx.organizationId);
     }),
@@ -64,7 +64,7 @@ export const zatcaRouter = router({
    * Returns results for each test invoice (CLEARED/REPORTED/REJECTED).
    */
   runComplianceChecks: tenantProcedure
-    .use(requirePermission({ settings: ["update"] }))
+    .use(requirePermission({ settings: ['update'] }))
     .mutation(async ({ ctx }) => {
       return runComplianceChecks(ctx.organizationId);
     }),
@@ -74,7 +74,7 @@ export const zatcaRouter = router({
    * Overwrites compliance credentials with production ones.
    */
   exchangeProductionCert: tenantProcedure
-    .use(requirePermission({ settings: ["update"] }))
+    .use(requirePermission({ settings: ['update'] }))
     .mutation(async ({ ctx }) => {
       await exchangeProductionCertificate(ctx.organizationId);
       return { success: true };
@@ -85,7 +85,7 @@ export const zatcaRouter = router({
    * Returns which step the organization is on and progress flags.
    */
   getOnboardingState: tenantProcedure
-    .use(requirePermission({ settings: ["read"] }))
+    .use(requirePermission({ settings: ['read'] }))
     .query(async ({ ctx }) => {
       return getOnboardingState(ctx.organizationId);
     }),
@@ -99,7 +99,7 @@ export const zatcaRouter = router({
    * Per T-48-12: Checks invoice belongs to caller's org.
    */
   getStatus: tenantProcedure
-    .use(requirePermission({ invoice: ["read"] }))
+    .use(requirePermission({ invoice: ['read'] }))
     .input(z.object({ invoiceId: z.string() }))
     .query(async ({ ctx, input }) => {
       const chain = await ctx.db.zatcaInvoiceChain.findFirst({
@@ -131,7 +131,7 @@ export const zatcaRouter = router({
    * Returns recent chain entries with pagination.
    */
   getInvoiceChain: tenantProcedure
-    .use(requirePermission({ invoice: ["read"] }))
+    .use(requirePermission({ invoice: ['read'] }))
     .input(
       z.object({
         limit: z.number().min(1).max(100).default(20),
@@ -141,7 +141,7 @@ export const zatcaRouter = router({
     .query(async ({ ctx, input }) => {
       const items = await ctx.db.zatcaInvoiceChain.findMany({
         where: { organizationId: ctx.organizationId },
-        orderBy: { icv: "desc" },
+        orderBy: { icv: 'desc' },
         take: input.limit + 1,
         ...(input.cursor && { cursor: { id: input.cursor }, skip: 1 }),
         select: {
@@ -169,7 +169,7 @@ export const zatcaRouter = router({
    * Per T-48-12: Checks invoice belongs to caller's org before resubmit.
    */
   resubmit: tenantProcedure
-    .use(requirePermission({ invoice: ["update"] }))
+    .use(requirePermission({ invoice: ['update'] }))
     .input(z.object({ invoiceId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       // Verify invoice belongs to org
@@ -177,13 +177,13 @@ export const zatcaRouter = router({
         where: {
           invoiceId: input.invoiceId,
           organizationId: ctx.organizationId,
-          zatcaStatus: { in: ["REJECTED", "PENDING"] },
+          zatcaStatus: { in: ['REJECTED', 'PENDING'] },
         },
       });
 
       if (!chain) {
         throw new Error(
-          "Invoice not found or not eligible for resubmission. Only REJECTED or PENDING invoices can be resubmitted.",
+          'Invoice not found or not eligible for resubmission. Only REJECTED or PENDING invoices can be resubmitted.',
         );
       }
 
@@ -196,26 +196,26 @@ export const zatcaRouter = router({
    * Returns counts by status for dashboard widget.
    */
   getComplianceStats: tenantProcedure
-    .use(requirePermission({ settings: ["read"] }))
+    .use(requirePermission({ settings: ['read'] }))
     .query(async ({ ctx }) => {
       const [total, cleared, reported, rejected, pending, warning] = await Promise.all([
         ctx.db.zatcaInvoiceChain.count({
           where: { organizationId: ctx.organizationId },
         }),
         ctx.db.zatcaInvoiceChain.count({
-          where: { organizationId: ctx.organizationId, zatcaStatus: "CLEARED" },
+          where: { organizationId: ctx.organizationId, zatcaStatus: 'CLEARED' },
         }),
         ctx.db.zatcaInvoiceChain.count({
-          where: { organizationId: ctx.organizationId, zatcaStatus: "REPORTED" },
+          where: { organizationId: ctx.organizationId, zatcaStatus: 'REPORTED' },
         }),
         ctx.db.zatcaInvoiceChain.count({
-          where: { organizationId: ctx.organizationId, zatcaStatus: "REJECTED" },
+          where: { organizationId: ctx.organizationId, zatcaStatus: 'REJECTED' },
         }),
         ctx.db.zatcaInvoiceChain.count({
-          where: { organizationId: ctx.organizationId, zatcaStatus: "PENDING" },
+          where: { organizationId: ctx.organizationId, zatcaStatus: 'PENDING' },
         }),
         ctx.db.zatcaInvoiceChain.count({
-          where: { organizationId: ctx.organizationId, zatcaStatus: "WARNING" },
+          where: { organizationId: ctx.organizationId, zatcaStatus: 'WARNING' },
         }),
       ]);
 

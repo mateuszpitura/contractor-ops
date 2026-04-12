@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Switch } from "@/components/ui/switch";
-import { trpc } from "@/trpc/init";
-import { CalendarEventConfigDialog } from "./calendar-event-config-dialog";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Switch } from '@/components/ui/switch';
+import { trpc } from '@/trpc/init';
+import { CalendarEventConfigDialog } from './calendar-event-config-dialog';
 
 // Inline type to avoid cross-package build dependency in parallel execution
 interface CalendarTaskConfigType {
   calendarEnabled: boolean;
   titleTemplate?: string;
-  duration: "30m" | "1h" | "2h" | "4h" | "full_day";
+  duration: '30m' | '1h' | '2h' | '4h' | 'full_day';
   attendees: string[];
 }
 
@@ -23,11 +23,11 @@ interface CalendarTaskConfigType {
 // ---------------------------------------------------------------------------
 
 const DURATION_LABELS: Record<string, string> = {
-  "30m": "30 min",
-  "1h": "1 hour",
-  "2h": "2 hours",
-  "4h": "4 hours",
-  full_day: "Full day",
+  '30m': '30 min',
+  '1h': '1 hour',
+  '2h': '2 hours',
+  '4h': '4 hours',
+  full_day: 'Full day',
 };
 
 // ---------------------------------------------------------------------------
@@ -39,7 +39,7 @@ interface CalendarTaskConfigProps {
 }
 
 export function CalendarTaskConfig({ taskTemplateId }: CalendarTaskConfigProps) {
-  const t = useTranslations("CalendarSettings");
+  const t = useTranslations('CalendarSettings');
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -73,7 +73,7 @@ export function CalendarTaskConfig({ taskTemplateId }: CalendarTaskConfigProps) 
       { taskTemplateId, config: updatedConfig },
       {
         onSuccess: () => {
-          toast.success(t("eventConfigSaved"));
+          toast.success(t('eventConfigSaved'));
         },
       },
     );
@@ -93,10 +93,10 @@ export function CalendarTaskConfig({ taskTemplateId }: CalendarTaskConfigProps) 
   const isConfigured = !!config?.titleTemplate;
   const durationLabel = config?.duration
     ? (DURATION_LABELS[config.duration] ?? config.duration)
-    : "";
+    : '';
   const summaryText = isConfigured
     ? `${config.titleTemplate} - ${durationLabel}`
-    : t("notConfigured");
+    : t('notConfigured');
 
   return (
     <>
@@ -105,14 +105,14 @@ export function CalendarTaskConfig({ taskTemplateId }: CalendarTaskConfigProps) 
           checked={config?.calendarEnabled ?? false}
           onCheckedChange={handleToggle}
           disabled={!isConfigured}
-          aria-label={t("createCalendarEvent")}
+          aria-label={t('createCalendarEvent')}
         />
-        <span className="text-sm">{t("createCalendarEvent")}</span>
-        <span className={`flex-1 text-sm ${isConfigured ? "" : "text-muted-foreground"}`}>
+        <span className="text-sm">{t('createCalendarEvent')}</span>
+        <span className={`flex-1 text-sm ${isConfigured ? '' : 'text-muted-foreground'}`}>
           {summaryText}
         </span>
         <Button variant="ghost" size="sm" onClick={() => setDialogOpen(true)}>
-          {t("configureButton")}
+          {t('configureButton')}
         </Button>
       </div>
 
@@ -121,7 +121,7 @@ export function CalendarTaskConfig({ taskTemplateId }: CalendarTaskConfigProps) 
         config={
           config ?? {
             calendarEnabled: false,
-            duration: "1h" as const,
+            duration: '1h' as const,
             attendees: [],
           }
         }

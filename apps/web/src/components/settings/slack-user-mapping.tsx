@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { toast } from "sonner";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Command,
   CommandEmpty,
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Skeleton } from "@/components/ui/skeleton";
+} from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -23,9 +23,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { getAvatarInitials } from "@/lib/avatar-initials";
-import { trpc } from "@/trpc/init";
+} from '@/components/ui/table';
+import { getAvatarInitials } from '@/lib/avatar-initials';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -46,7 +46,7 @@ type UserMapping = {
     externalUrl: string | null;
     metadata: unknown;
   } | null;
-  status: "linked" | "unlinked";
+  status: 'linked' | 'unlinked';
 };
 
 // ---------------------------------------------------------------------------
@@ -55,16 +55,16 @@ type UserMapping = {
 
 const STATUS_BADGE: Record<string, { labelKey: string; className: string }> = {
   auto_matched: {
-    labelKey: "statusAutoMatched",
-    className: "bg-emerald-500/10 text-emerald-500",
+    labelKey: 'statusAutoMatched',
+    className: 'bg-emerald-500/10 text-emerald-500',
   },
   manually_linked: {
-    labelKey: "statusManuallyLinked",
-    className: "bg-blue-500/10 text-blue-500",
+    labelKey: 'statusManuallyLinked',
+    className: 'bg-blue-500/10 text-blue-500',
   },
   unmatched: {
-    labelKey: "statusUnmatched",
-    className: "bg-amber-500/10 text-amber-500",
+    labelKey: 'statusUnmatched',
+    className: 'bg-amber-500/10 text-amber-500',
   },
 };
 
@@ -73,15 +73,15 @@ const STATUS_BADGE: Record<string, { labelKey: string; className: string }> = {
 // ---------------------------------------------------------------------------
 
 function LinkUserPopover({ userId, onLinked }: { userId: string; onLinked: () => void }) {
-  const t = useTranslations("Settings");
+  const t = useTranslations('Settings');
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
 
   const linkMutation = useMutation(
     trpc.integration.linkUser.mutationOptions({
       onSuccess: () => {
-        toast.success(t("integrations.toasts.userLinked"));
+        toast.success(t('integrations.toasts.userLinked'));
         queryClient.invalidateQueries({
           queryKey: trpc.integration.listUserMappings.queryKey(),
         });
@@ -89,7 +89,7 @@ function LinkUserPopover({ userId, onLinked }: { userId: string; onLinked: () =>
         onLinked();
       },
       onError: () => {
-        toast.error(t("integrations.toasts.linkFailed"));
+        toast.error(t('integrations.toasts.linkFailed'));
       },
     }),
   );
@@ -103,12 +103,12 @@ function LinkUserPopover({ userId, onLinked }: { userId: string; onLinked: () =>
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger render={<Button variant="ghost" size="sm" type="button" />}>
-        {t("integrations.userMapping.linkUser")}
+        {t('integrations.userMapping.linkUser')}
       </PopoverTrigger>
       <PopoverContent className="w-[280px] p-0" align="start">
         <Command shouldFilter={false}>
           <CommandInput
-            placeholder={t("integrations.userMapping.searchPlaceholder")}
+            placeholder={t('integrations.userMapping.searchPlaceholder')}
             value={search}
             onValueChange={setSearch}
           />
@@ -118,13 +118,12 @@ function LinkUserPopover({ userId, onLinked }: { userId: string; onLinked: () =>
                 <CommandItem
                   value={search}
                   onSelect={() => handleSelect(search)}
-                  className="cursor-pointer"
-                >
+                  className="cursor-pointer">
                   <span className="text-sm">Link as &quot;{search}&quot;</span>
                 </CommandItem>
               ) : (
                 <span className="text-sm text-muted-foreground p-2">
-                  {t("integrations.userMapping.searchPlaceholder")}
+                  {t('integrations.userMapping.searchPlaceholder')}
                 </span>
               )}
             </CommandEmpty>
@@ -140,7 +139,7 @@ function LinkUserPopover({ userId, onLinked }: { userId: string; onLinked: () =>
 // ---------------------------------------------------------------------------
 
 export function SlackUserMapping() {
-  const t = useTranslations("Settings");
+  const t = useTranslations('Settings');
   const queryClient = useQueryClient();
 
   const mappingsQuery = useQuery(trpc.integration.listUserMappings.queryOptions());
@@ -149,20 +148,20 @@ export function SlackUserMapping() {
   const unlinkMutation = useMutation(
     trpc.integration.unlinkUser.mutationOptions({
       onSuccess: () => {
-        toast.success(t("integrations.toasts.userUnlinked"));
+        toast.success(t('integrations.toasts.userUnlinked'));
         queryClient.invalidateQueries({
           queryKey: trpc.integration.listUserMappings.queryKey(),
         });
       },
       onError: () => {
-        toast.error(t("integrations.toasts.linkFailed"));
+        toast.error(t('integrations.toasts.linkFailed'));
       },
     }),
   );
 
   // Calculate stats
   const totalUsers = mappings.length;
-  const matchedUsers = mappings.filter((m) => m.status === "linked").length;
+  const matchedUsers = mappings.filter(m => m.status === 'linked').length;
 
   // Loading state
   if (mappingsQuery.isLoading) {
@@ -187,24 +186,24 @@ export function SlackUserMapping() {
 
   function getMappingStatus(
     mapping: UserMapping,
-  ): "auto_matched" | "manually_linked" | "unmatched" {
-    if (!mapping.slackLink) return "unmatched";
+  ): 'auto_matched' | 'manually_linked' | 'unmatched' {
+    if (!mapping.slackLink) return 'unmatched';
     // For now, treat all linked users as manually linked
     // (auto-match detection would check metadata)
     const metadata = mapping.slackLink.metadata as Record<string, unknown> | null;
-    if (metadata?.autoMatched) return "auto_matched";
-    return "manually_linked";
+    if (metadata?.autoMatched) return 'auto_matched';
+    return 'manually_linked';
   }
 
   return (
     <div className="space-y-4">
       <div>
-        <h4 className="text-base font-semibold">{t("integrations.userMapping.heading")}</h4>
-        <p className="text-sm text-muted-foreground">{t("integrations.userMapping.description")}</p>
+        <h4 className="text-base font-semibold">{t('integrations.userMapping.heading')}</h4>
+        <p className="text-sm text-muted-foreground">{t('integrations.userMapping.description')}</p>
       </div>
 
       <p className="text-sm text-muted-foreground">
-        {t("integrations.userMapping.mappingStats", {
+        {t('integrations.userMapping.mappingStats', {
           matched: matchedUsers,
           total: totalUsers,
         })}
@@ -213,20 +212,20 @@ export function SlackUserMapping() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>{t("integrations.userMapping.columnUser")}</TableHead>
-            <TableHead>{t("integrations.userMapping.columnEmail")}</TableHead>
-            <TableHead>{t("integrations.userMapping.columnSlackUser")}</TableHead>
-            <TableHead>{t("integrations.userMapping.columnStatus")}</TableHead>
-            <TableHead>{t("integrations.userMapping.columnAction")}</TableHead>
+            <TableHead>{t('integrations.userMapping.columnUser')}</TableHead>
+            <TableHead>{t('integrations.userMapping.columnEmail')}</TableHead>
+            <TableHead>{t('integrations.userMapping.columnSlackUser')}</TableHead>
+            <TableHead>{t('integrations.userMapping.columnStatus')}</TableHead>
+            <TableHead>{t('integrations.userMapping.columnAction')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {mappings.map((mapping) => {
+          {mappings.map(mapping => {
             const status = getMappingStatus(mapping);
             const statusConfig = STATUS_BADGE[status];
             const slackMetadata = mapping.slackLink?.metadata as Record<string, unknown> | null;
             const slackDisplayName =
-              (slackMetadata?.displayName as string) ?? mapping.slackLink?.externalId ?? "---";
+              (slackMetadata?.displayName as string) ?? mapping.slackLink?.externalId ?? '---';
 
             return (
               <TableRow key={mapping.userId}>
@@ -238,7 +237,7 @@ export function SlackUserMapping() {
                         {getAvatarInitials(mapping.user.name, mapping.user.email)}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="text-sm font-medium">{mapping.user.name ?? "Unknown"}</span>
+                    <span className="text-sm font-medium">{mapping.user.name ?? 'Unknown'}</span>
                   </div>
                 </TableCell>
                 <TableCell className="text-sm">{mapping.user.email}</TableCell>
@@ -262,12 +261,11 @@ export function SlackUserMapping() {
                           externalLinkId: mapping.slackLink.externalLinkId,
                         })
                       }
-                      disabled={unlinkMutation.isPending}
-                    >
-                      {t("integrations.userMapping.unlinkUser")}
+                      disabled={unlinkMutation.isPending}>
+                      {t('integrations.userMapping.unlinkUser')}
                     </Button>
                   ) : (
-                    <LinkUserPopover userId={mapping.userId} onLinked={() => {}} />
+                    <LinkUserPopover userId={mapping.userId} onLinked={() => undefined} />
                   )}
                 </TableCell>
               </TableRow>

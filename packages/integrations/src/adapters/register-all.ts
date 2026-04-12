@@ -1,20 +1,20 @@
-import { registerAdapter } from "../registry.js";
-import type { IntegrationProviderAdapter } from "../types/provider.js";
-import { AutentiAdapter } from "./autenti-adapter.js";
-import { ClaudeOcrAdapter } from "./claude-ocr-adapter.js";
-import { ClockifyAdapter } from "./clockify-adapter.js";
-import { ConfluenceAdapter } from "./confluence-adapter.js";
-import { DocuSignAdapter } from "./docusign-adapter.js";
-import { GoogleCalendarAdapter } from "./google-calendar-adapter.js";
-import { GoogleWorkspaceAdapter } from "./google-workspace-adapter.js";
-import { JiraAdapter } from "./jira-adapter.js";
-import { KsefAdapter } from "./ksef-adapter.js";
-import { LinearAdapter } from "./linear-adapter.js";
-import { NotionAdapter } from "./notion-adapter.js";
-import { OutlookCalendarAdapter } from "./outlook-calendar-adapter.js";
-import { ResendAdapter } from "./resend-adapter.js";
-import { SlackAdapter } from "./slack-adapter.js";
-import { TeamsAdapter } from "./teams-adapter.js";
+import { registerAdapter } from '../registry.js';
+import type { IntegrationProviderAdapter } from '../types/provider.js';
+import { AutentiAdapter } from './autenti-adapter.js';
+import { ClaudeOcrAdapter } from './claude-ocr-adapter.js';
+import { ClockifyAdapter } from './clockify-adapter.js';
+import { ConfluenceAdapter } from './confluence-adapter.js';
+import { DocuSignAdapter } from './docusign-adapter.js';
+import { GoogleCalendarAdapter } from './google-calendar-adapter.js';
+import { GoogleWorkspaceAdapter } from './google-workspace-adapter.js';
+import { JiraAdapter } from './jira-adapter.js';
+import { KsefAdapter } from './ksef-adapter.js';
+import { LinearAdapter } from './linear-adapter.js';
+import { NotionAdapter } from './notion-adapter.js';
+import { OutlookCalendarAdapter } from './outlook-calendar-adapter.js';
+import { ResendAdapter } from './resend-adapter.js';
+import { SlackAdapter } from './slack-adapter.js';
+import { TeamsAdapter } from './teams-adapter.js';
 
 // ---------------------------------------------------------------------------
 // Adapter Registration

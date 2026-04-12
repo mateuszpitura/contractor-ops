@@ -1,30 +1,30 @@
-"use client";
+'use client';
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Clock } from "lucide-react";
-import { useParams, useSearchParams } from "next/navigation";
-import { useTranslations } from "next-intl";
-import { Suspense, useCallback, useMemo } from "react";
-import { toast } from "sonner";
-import { EmptyState } from "@/components/shared/empty-state";
-import { ContractorTimesheetReview } from "@/components/time/contractor-timesheet-review";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useRouter } from "@/i18n/navigation";
-import { trpc } from "@/trpc/init";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Clock } from 'lucide-react';
+import { useParams, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { Suspense, useCallback, useMemo } from 'react';
+import { toast } from 'sonner';
+import { EmptyState } from '@/components/shared/empty-state';
+import { ContractorTimesheetReview } from '@/components/time/contractor-timesheet-review';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useRouter } from '@/i18n/navigation';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Inner content
 // ---------------------------------------------------------------------------
 
 function ContractorReviewContent() {
-  const t = useTranslations("Time");
+  const t = useTranslations('Time');
   const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
   const queryClient = useQueryClient();
 
   const contractorId = params.contractorId as string;
-  const week = searchParams.get("week");
+  const week = searchParams.get('week');
 
   // First, find the timesheet for this contractor + week
   // We query all submitted timesheets for this contractor to find the right one
@@ -44,36 +44,36 @@ function ContractorReviewContent() {
   // Fetch the full timesheet with entries
   const detailQuery = useQuery({
     ...trpc.time.getTimesheet.queryOptions({
-      timesheetId: timesheetId ?? "",
+      timesheetId: timesheetId ?? '',
     }),
     enabled: !!timesheetId,
   });
 
   const invalidate = useCallback(() => {
     void queryClient.invalidateQueries({
-      queryKey: [["time"]],
+      queryKey: [['time']],
     });
   }, [queryClient]);
 
   const approveMutation = useMutation(
     trpc.time.approve.mutationOptions({
       onSuccess: () => {
-        toast.success(t("toast.approved"));
+        toast.success(t('toast.approved'));
         invalidate();
-        router.push("/time");
+        router.push('/time');
       },
-      onError: () => toast.error(t("errors.failedToApprove")),
+      onError: () => toast.error(t('errors.failedToApprove')),
     }),
   );
 
   const rejectMutation = useMutation(
     trpc.time.reject.mutationOptions({
       onSuccess: () => {
-        toast.success(t("toast.rejected"));
+        toast.success(t('toast.rejected'));
         invalidate();
-        router.push("/time");
+        router.push('/time');
       },
-      onError: () => toast.error(t("errors.failedToReject")),
+      onError: () => toast.error(t('errors.failedToReject')),
     }),
   );
 
@@ -91,7 +91,7 @@ function ContractorReviewContent() {
   );
 
   const handleBack = useCallback(() => {
-    router.push("/time");
+    router.push('/time');
   }, [router]);
 
   if (listQuery.isLoading || (timesheetId && detailQuery.isLoading)) {
@@ -104,9 +104,9 @@ function ContractorReviewContent() {
     return (
       <EmptyState
         icon={Clock}
-        heading={t("detail.notFoundHeading")}
-        body={t("detail.notFoundBody")}
-        primaryAction={{ label: t("detail.backToTimeTracking"), href: "/time" }}
+        heading={t('detail.notFoundHeading')}
+        body={t('detail.notFoundBody')}
+        primaryAction={{ label: t('detail.backToTimeTracking'), href: '/time' }}
       />
     );
   }

@@ -1,58 +1,58 @@
-"use client";
+'use client';
 
-import { Banknote, CheckCircle2, FileSignature, Receipt, UserPlus } from "lucide-react";
-import { FadeUp, StaggerContainer, StaggerItem } from "./motion-wrapper";
+import { Banknote, CheckCircle2, FileSignature, Receipt, UserPlus } from 'lucide-react';
+import { FadeUp, StaggerContainer, StaggerItem } from './motion-wrapper';
 
 const steps = [
   {
-    number: "01",
+    number: '01',
     icon: UserPlus,
-    title: "Onboard",
+    title: 'Onboard',
     description:
-      "Add a contractor, assign a checklist. They self-serve their data, upload docs, and sign contracts via e-sign.",
-    accent: "border-teal-400/30 bg-teal-500/5",
-    iconColor: "text-teal-500",
-    dotColor: "bg-teal-500",
+      'Add a contractor, assign a checklist. They self-serve their data, upload docs, and sign contracts via e-sign.',
+    accent: 'border-teal-400/30 bg-teal-500/5',
+    iconColor: 'text-teal-500',
+    dotColor: 'bg-teal-500',
   },
   {
-    number: "02",
+    number: '02',
     icon: FileSignature,
-    title: "Contract",
+    title: 'Contract',
     description:
-      "Generate contracts from templates. Automatic renewal tracking, amendment history, and version control.",
-    accent: "border-info/30 bg-info/5",
-    iconColor: "text-info",
-    dotColor: "bg-info",
+      'Generate contracts from templates. Automatic renewal tracking, amendment history, and version control.',
+    accent: 'border-info/30 bg-info/5',
+    iconColor: 'text-info',
+    dotColor: 'bg-info',
   },
   {
-    number: "03",
+    number: '03',
     icon: Receipt,
-    title: "Invoice",
+    title: 'Invoice',
     description:
-      "Invoices pulled from KSeF automatically. Matched to contracts and rate cards. Discrepancies flagged instantly.",
-    accent: "border-accent-warm/30 bg-accent-warm/5",
-    iconColor: "text-accent-warm",
-    dotColor: "bg-accent-warm",
+      'Invoices pulled from KSeF automatically. Matched to contracts and rate cards. Discrepancies flagged instantly.',
+    accent: 'border-accent-warm/30 bg-accent-warm/5',
+    iconColor: 'text-accent-warm',
+    dotColor: 'bg-accent-warm',
   },
   {
-    number: "04",
+    number: '04',
     icon: CheckCircle2,
-    title: "Approve",
+    title: 'Approve',
     description:
-      "Route invoices through your approval chain. Every action logged with timestamp and approver identity.",
-    accent: "border-success/30 bg-success/5",
-    iconColor: "text-success",
-    dotColor: "bg-success",
+      'Route invoices through your approval chain. Every action logged with timestamp and approver identity.',
+    accent: 'border-success/30 bg-success/5',
+    iconColor: 'text-success',
+    dotColor: 'bg-success',
   },
   {
-    number: "05",
+    number: '05',
     icon: Banknote,
-    title: "Pay",
+    title: 'Pay',
     description:
-      "Batch-export approved invoices for payment. Automatic reconciliation when payments clear. Done.",
-    accent: "border-primary/30 bg-primary/5",
-    iconColor: "text-primary",
-    dotColor: "bg-primary",
+      'Batch-export approved invoices for payment. Automatic reconciliation when payments clear. Done.',
+    accent: 'border-primary/30 bg-primary/5',
+    iconColor: 'text-primary',
+    dotColor: 'bg-primary',
   },
 ];
 
@@ -84,16 +84,14 @@ export function HowItWorks() {
                   {/* Timeline dot (desktop) */}
                   <div className="relative z-10 hidden lg:flex flex-col items-center">
                     <div
-                      className={`flex h-16 w-16 items-center justify-center rounded-2xl border ${step.accent} transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg`}
-                    >
+                      className={`flex h-16 w-16 items-center justify-center rounded-2xl border ${step.accent} transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg`}>
                       <step.icon className={`h-7 w-7 ${step.iconColor}`} />
                     </div>
                   </div>
 
                   {/* Mobile icon */}
                   <div
-                    className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border ${step.accent} lg:hidden`}
-                  >
+                    className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border ${step.accent} lg:hidden`}>
                     <step.icon className={`h-5 w-5 ${step.iconColor}`} />
                   </div>
 

@@ -1,23 +1,23 @@
-import { Layers } from "lucide-react";
+import { Layers } from 'lucide-react';
 
 const footerLinks = {
   Product: [
-    { label: "Features", href: "#features" },
-    { label: "Pricing", href: "#pricing" },
-    { label: "How it works", href: "#how-it-works" },
-    { label: "Changelog", href: "#" },
+    { label: 'Features', href: '#features' },
+    { label: 'Pricing', href: '#pricing' },
+    { label: 'How it works', href: '#how-it-works' },
+    { label: 'Changelog', href: '#' },
   ],
   Company: [
-    { label: "About", href: "#" },
-    { label: "Blog", href: "#" },
-    { label: "Careers", href: "#" },
-    { label: "Contact", href: "#" },
+    { label: 'About', href: '#' },
+    { label: 'Blog', href: '#' },
+    { label: 'Careers', href: '#' },
+    { label: 'Contact', href: '#' },
   ],
   Legal: [
-    { label: "Privacy Policy", href: "#" },
-    { label: "Terms of Service", href: "#" },
-    { label: "GDPR", href: "#" },
-    { label: "Security", href: "#" },
+    { label: 'Privacy Policy', href: '#' },
+    { label: 'Terms of Service', href: '#' },
+    { label: 'GDPR', href: '#' },
+    { label: 'Security', href: '#' },
   ],
 };
 
@@ -47,12 +47,11 @@ export function Footer() {
             <div key={group}>
               <h4 className="text-sm font-semibold text-foreground">{group}</h4>
               <ul className="mt-4 space-y-2.5">
-                {links.map((link) => (
+                {links.map(link => (
                   <li key={link.label}>
                     <a
                       href={link.href}
-                      className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                    >
+                      className="text-sm text-muted-foreground transition-colors hover:text-foreground">
                       {link.label}
                     </a>
                   </li>

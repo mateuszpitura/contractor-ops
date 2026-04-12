@@ -2,8 +2,8 @@
 // Government API Audit Logger
 // ---------------------------------------------------------------------------
 
-import type { PrismaClient } from "@contractor-ops/db";
-import type { GovApiAuditEntry } from "./types.js";
+import type { PrismaClient } from '@contractor-ops/db';
+import type { GovApiAuditEntry } from './types.js';
 
 /**
  * Persists government API request/response audit records.
@@ -44,7 +44,7 @@ export class GovApiAuditLogger {
       });
     } catch (err) {
       // Fire-and-forget: audit log failure must not break API operations
-      console.error("[GovApiAuditLogger] Failed to write audit log:", err);
+      console.error('[GovApiAuditLogger] Failed to write audit log:', err);
     }
   }
 }

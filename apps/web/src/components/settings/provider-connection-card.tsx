@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { addHours, formatDistanceToNow, isBefore } from "date-fns";
-import { Loader2 } from "lucide-react";
-import { useSearchParams } from "next/navigation";
-import { useTranslations } from "next-intl";
-import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { addHours, formatDistanceToNow, isBefore } from 'date-fns';
+import { Loader2 } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import type { ReactNode } from 'react';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,30 +17,30 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { trpc } from "@/trpc/init";
-import { ProviderDetailSheet } from "./provider-detail-sheet";
+} from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { trpc } from '@/trpc/init';
+import { ProviderDetailSheet } from './provider-detail-sheet';
 
 // ---------------------------------------------------------------------------
 // Status badge styling per UI-SPEC semantic colors
 // ---------------------------------------------------------------------------
 
 const STATUS_BADGE_CLASSES: Record<string, string> = {
-  CONNECTED: "bg-emerald-500/10 text-emerald-500",
-  DISCONNECTED: "bg-muted text-muted-foreground",
-  ERROR: "bg-destructive/10 text-destructive",
-  REAUTH_REQUIRED: "bg-amber-500/10 text-amber-500",
+  CONNECTED: 'bg-emerald-500/10 text-emerald-500',
+  DISCONNECTED: 'bg-muted text-muted-foreground',
+  ERROR: 'bg-destructive/10 text-destructive',
+  REAUTH_REQUIRED: 'bg-amber-500/10 text-amber-500',
 };
 
 const STATUS_LABEL_KEYS: Record<string, string> = {
-  CONNECTED: "statusConnected",
-  DISCONNECTED: "statusDisconnected",
-  ERROR: "statusError",
-  REAUTH_REQUIRED: "statusReauth",
+  CONNECTED: 'statusConnected',
+  DISCONNECTED: 'statusDisconnected',
+  ERROR: 'statusError',
+  REAUTH_REQUIRED: 'statusReauth',
 };
 
 // ---------------------------------------------------------------------------
@@ -56,12 +56,12 @@ function TokenExpiryBadge({ expiresAt }: { expiresAt: string | Date | null | und
   const isWarning = !isExpired && isBefore(expiryDate, addHours(now, 1));
 
   const colorClass = isExpired
-    ? "text-destructive"
+    ? 'text-destructive'
     : isWarning
-      ? "text-amber-500"
-      : "text-emerald-500";
+      ? 'text-amber-500'
+      : 'text-emerald-500';
 
-  const label = isExpired ? "Expired" : `in ${formatDistanceToNow(expiryDate)}`;
+  const label = isExpired ? 'Expired' : `in ${formatDistanceToNow(expiryDate)}`;
 
   return <span className={`font-medium ${colorClass}`}>{label}</span>;
 }
@@ -87,7 +87,7 @@ export function ProviderConnectionCard({
   icon,
   description,
 }: ProviderConnectionCardProps) {
-  const t = useTranslations("Settings.integrations");
+  const t = useTranslations('Settings.integrations');
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
 
@@ -103,8 +103,8 @@ export function ProviderConnectionCard({
   // ---- Handle OAuth callback result ----
   useEffect(() => {
     const param = searchParams.get(provider);
-    if (param === "connected") {
-      toast.success(t("providerToasts.connected", { provider: displayName }));
+    if (param === 'connected') {
+      toast.success(t('providerToasts.connected', { provider: displayName }));
       queryClient.invalidateQueries({
         queryKey: trpc.integration.getHealth.queryKey({ provider }),
       });
@@ -113,12 +113,12 @@ export function ProviderConnectionCard({
       });
       const url = new URL(window.location.href);
       url.searchParams.delete(provider);
-      window.history.replaceState({}, "", url.toString());
-    } else if (param === "error") {
-      toast.error(t("providerToasts.connectFailed", { provider: displayName }));
+      window.history.replaceState({}, '', url.toString());
+    } else if (param === 'error') {
+      toast.error(t('providerToasts.connectFailed', { provider: displayName }));
       const url = new URL(window.location.href);
       url.searchParams.delete(provider);
-      window.history.replaceState({}, "", url.toString());
+      window.history.replaceState({}, '', url.toString());
     }
   }, [searchParams, provider, displayName, t, queryClient]);
 
@@ -126,7 +126,7 @@ export function ProviderConnectionCard({
   const disconnectMutation = useMutation(
     trpc.integration.disconnectGeneric.mutationOptions({
       onSuccess: () => {
-        toast.success(t("providerToasts.disconnected", { provider: displayName }));
+        toast.success(t('providerToasts.disconnected', { provider: displayName }));
         queryClient.invalidateQueries({
           queryKey: trpc.integration.getHealth.queryKey({ provider }),
         });
@@ -136,7 +136,7 @@ export function ProviderConnectionCard({
         setDisconnectDialogOpen(false);
       },
       onError: () => {
-        toast.error(t("providerToasts.disconnectFailed", { provider: displayName }));
+        toast.error(t('providerToasts.disconnectFailed', { provider: displayName }));
       },
     }),
   );
@@ -173,15 +173,15 @@ export function ProviderConnectionCard({
   }
 
   // Determine connection state
-  const connectionStatus = health?.status ?? "DISCONNECTED";
-  const isConnected = connectionStatus === "CONNECTED";
-  const isReauthRequired = connectionStatus === "REAUTH_REQUIRED";
-  const isError = connectionStatus === "ERROR";
+  const connectionStatus = health?.status ?? 'DISCONNECTED';
+  const isConnected = connectionStatus === 'CONNECTED';
+  const isReauthRequired = connectionStatus === 'REAUTH_REQUIRED';
+  const isError = connectionStatus === 'ERROR';
 
   const statusBadgeClass =
     STATUS_BADGE_CLASSES[connectionStatus] ?? STATUS_BADGE_CLASSES.DISCONNECTED;
 
-  const statusLabelKey = STATUS_LABEL_KEYS[connectionStatus] ?? "statusDisconnected";
+  const statusLabelKey = STATUS_LABEL_KEYS[connectionStatus] ?? 'statusDisconnected';
 
   return (
     <>
@@ -202,13 +202,13 @@ export function ProviderConnectionCard({
               <div className="space-y-1 text-sm">
                 {health?.displayName && (
                   <p>
-                    <span className="text-muted-foreground">{t("provider.connectedTo")}:</span>{" "}
+                    <span className="text-muted-foreground">{t('provider.connectedTo')}:</span>{' '}
                     <span className="font-medium">{health.displayName}</span>
                   </p>
                 )}
                 {health?.connectedAt && (
                   <p>
-                    <span className="text-muted-foreground">{t("provider.connectedOn")}:</span>{" "}
+                    <span className="text-muted-foreground">{t('provider.connectedOn')}:</span>{' '}
                     <span className="font-medium">
                       {new Date(health.connectedAt).toLocaleDateString()}
                     </span>
@@ -216,21 +216,20 @@ export function ProviderConnectionCard({
                 )}
                 {health?.tokenExpiresAt && (
                   <p>
-                    <span className="text-muted-foreground">{t("provider.tokenExpires")}:</span>{" "}
+                    <span className="text-muted-foreground">{t('provider.tokenExpires')}:</span>{' '}
                     <TokenExpiryBadge expiresAt={health.tokenExpiresAt} />
                   </p>
                 )}
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" onClick={() => setDetailSheetOpen(true)}>
-                  {t("provider.manageCta")}
+                  {t('provider.manageCta')}
                 </Button>
                 <Button
                   variant="outline"
                   className="text-destructive hover:text-destructive"
-                  onClick={() => setDisconnectDialogOpen(true)}
-                >
-                  {t("provider.disconnectCta", { provider: displayName })}
+                  onClick={() => setDisconnectDialogOpen(true)}>
+                  {t('provider.disconnectCta', { provider: displayName })}
                 </Button>
               </div>
             </div>
@@ -241,20 +240,19 @@ export function ProviderConnectionCard({
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground">
                 {isReauthRequired
-                  ? t("provider.errorTokenExpired")
-                  : t("provider.errorConnectionFailed")}
+                  ? t('provider.errorTokenExpired')
+                  : t('provider.errorConnectionFailed')}
               </p>
               <div className="flex gap-2">
                 <Button variant="outline" onClick={handleConnect}>
-                  {t("provider.reconnectCta")}
+                  {t('provider.reconnectCta')}
                 </Button>
                 {isReauthRequired && (
                   <Button
                     variant="outline"
                     className="text-destructive hover:text-destructive"
-                    onClick={() => setDisconnectDialogOpen(true)}
-                  >
-                    {t("provider.disconnectCta", { provider: displayName })}
+                    onClick={() => setDisconnectDialogOpen(true)}>
+                    {t('provider.disconnectCta', { provider: displayName })}
                   </Button>
                 )}
               </div>
@@ -266,7 +264,7 @@ export function ProviderConnectionCard({
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground">{description}</p>
               <Button onClick={handleConnect}>
-                {t("provider.connectCta", { provider: displayName })}
+                {t('provider.connectCta', { provider: displayName })}
               </Button>
             </div>
           )}
@@ -287,21 +285,20 @@ export function ProviderConnectionCard({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {t("disconnectConfirmGeneric.title", {
+              {t('disconnectConfirmGeneric.title', {
                 provider: displayName,
               })}
             </AlertDialogTitle>
-            <AlertDialogDescription>{t("disconnectConfirmGeneric.body")}</AlertDialogDescription>
+            <AlertDialogDescription>{t('disconnectConfirmGeneric.body')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t("disconnectConfirmGeneric.cancel")}</AlertDialogCancel>
+            <AlertDialogCancel>{t('disconnectConfirmGeneric.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
               disabled={disconnectMutation.isPending}
-              onClick={() => disconnectMutation.mutate({ provider })}
-            >
+              onClick={() => disconnectMutation.mutate({ provider })}>
               {disconnectMutation.isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
-              {t("disconnectConfirmGeneric.confirm", {
+              {t('disconnectConfirmGeneric.confirm', {
                 provider: displayName,
               })}
             </AlertDialogAction>

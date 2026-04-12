@@ -6,16 +6,16 @@ export function isCarrierFormValid(carrier: string, formData: Record<string, unk
   if (!carrier) return false;
 
   switch (carrier) {
-    case "inpost":
+    case 'inpost':
       return !!formData.selectedPoint;
-    case "dpd": {
+    case 'dpd': {
       const address = formData.address as
         | { street: string; city: string; postalCode: string }
         | undefined;
       if (!address) return false;
       return !!(address.street.trim() && address.city.trim() && address.postalCode.trim());
     }
-    case "ups": {
+    case 'ups': {
       const addr = formData.address as
         | { street: string; city: string; postalCode: string }
         | undefined;

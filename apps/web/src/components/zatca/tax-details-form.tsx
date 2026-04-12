@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import type { ZatcaTaxDetails } from "@contractor-ops/einvoice";
-import { zatcaTaxDetailsSchema } from "@contractor-ops/einvoice";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
-import { Controller, useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { zatcaTrpc } from "./zatca-trpc";
+import type { ZatcaTaxDetails } from '@contractor-ops/einvoice';
+import { zatcaTaxDetailsSchema } from '@contractor-ops/einvoice';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation } from '@tanstack/react-query';
+import { Loader2 } from 'lucide-react';
+import { Controller, useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { zatcaTrpc } from './zatca-trpc';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -42,13 +42,13 @@ export function TaxDetailsForm({ defaultValues, onSuccess, onCancel }: TaxDetail
   } = useForm<ZatcaTaxDetails>({
     resolver: zodResolver(zatcaTaxDetailsSchema),
     defaultValues: {
-      vatNumber: "",
-      orgNameArabic: "",
-      street: "",
-      city: "",
-      district: "",
-      postalCode: "",
-      invoiceTypes: ["standard", "simplified"],
+      vatNumber: '',
+      orgNameArabic: '',
+      street: '',
+      city: '',
+      district: '',
+      postalCode: '',
+      invoiceTypes: ['standard', 'simplified'],
       ...defaultValues,
     },
   });
@@ -56,11 +56,11 @@ export function TaxDetailsForm({ defaultValues, onSuccess, onCancel }: TaxDetail
   const saveMutation = useMutation({
     ...zatcaTrpc.saveTaxDetails.mutationOptions(),
     onSuccess: () => {
-      toast.success("Tax details saved successfully");
+      toast.success('Tax details saved successfully');
       onSuccess();
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Failed to save tax details");
+      toast.error(error.message || 'Failed to save tax details');
     },
   });
 
@@ -86,9 +86,9 @@ export function TaxDetailsForm({ defaultValues, onSuccess, onCancel }: TaxDetail
           id="vatNumber"
           placeholder="3XXXXXXXXXXXXX3"
           maxLength={15}
-          {...register("vatNumber")}
+          {...register('vatNumber')}
           aria-invalid={!!errors.vatNumber}
-          aria-describedby={errors.vatNumber ? "vatNumber-error" : undefined}
+          aria-describedby={errors.vatNumber ? 'vatNumber-error' : undefined}
         />
         {errors.vatNumber && (
           <p id="vatNumber-error" className="text-xs text-destructive">
@@ -107,9 +107,9 @@ export function TaxDetailsForm({ defaultValues, onSuccess, onCancel }: TaxDetail
           id="orgNameArabic"
           dir="rtl"
           placeholder="..."
-          {...register("orgNameArabic")}
+          {...register('orgNameArabic')}
           aria-invalid={!!errors.orgNameArabic}
-          aria-describedby={errors.orgNameArabic ? "orgNameArabic-error" : undefined}
+          aria-describedby={errors.orgNameArabic ? 'orgNameArabic-error' : undefined}
         />
         {errors.orgNameArabic && (
           <p id="orgNameArabic-error" className="text-xs text-destructive">
@@ -124,20 +124,20 @@ export function TaxDetailsForm({ defaultValues, onSuccess, onCancel }: TaxDetail
 
         <div className="space-y-2">
           <Label htmlFor="street">Street</Label>
-          <Input id="street" {...register("street")} aria-invalid={!!errors.street} />
+          <Input id="street" {...register('street')} aria-invalid={!!errors.street} />
           {errors.street && <p className="text-xs text-destructive">{errors.street.message}</p>}
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="city">City</Label>
-            <Input id="city" {...register("city")} aria-invalid={!!errors.city} />
+            <Input id="city" {...register('city')} aria-invalid={!!errors.city} />
             {errors.city && <p className="text-xs text-destructive">{errors.city.message}</p>}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="district">District</Label>
-            <Input id="district" {...register("district")} aria-invalid={!!errors.district} />
+            <Input id="district" {...register('district')} aria-invalid={!!errors.district} />
             {errors.district && (
               <p className="text-xs text-destructive">{errors.district.message}</p>
             )}
@@ -150,7 +150,7 @@ export function TaxDetailsForm({ defaultValues, onSuccess, onCancel }: TaxDetail
             id="postalCode"
             maxLength={5}
             className="max-w-32"
-            {...register("postalCode")}
+            {...register('postalCode')}
             aria-invalid={!!errors.postalCode}
           />
           {errors.postalCode && (
@@ -170,11 +170,11 @@ export function TaxDetailsForm({ defaultValues, onSuccess, onCancel }: TaxDetail
             <div className="space-y-2">
               <label className="flex items-center gap-2 text-sm">
                 <Checkbox
-                  checked={field.value?.includes("standard")}
-                  onCheckedChange={(checked) => {
+                  checked={field.value?.includes('standard')}
+                  onCheckedChange={checked => {
                     const current = field.value ?? [];
                     field.onChange(
-                      checked ? [...current, "standard"] : current.filter((t) => t !== "standard"),
+                      checked ? [...current, 'standard'] : current.filter(t => t !== 'standard'),
                     );
                   }}
                 />
@@ -182,13 +182,13 @@ export function TaxDetailsForm({ defaultValues, onSuccess, onCancel }: TaxDetail
               </label>
               <label className="flex items-center gap-2 text-sm">
                 <Checkbox
-                  checked={field.value?.includes("simplified")}
-                  onCheckedChange={(checked) => {
+                  checked={field.value?.includes('simplified')}
+                  onCheckedChange={checked => {
                     const current = field.value ?? [];
                     field.onChange(
                       checked
-                        ? [...current, "simplified"]
-                        : current.filter((t) => t !== "simplified"),
+                        ? [...current, 'simplified']
+                        : current.filter(t => t !== 'simplified'),
                     );
                   }}
                 />

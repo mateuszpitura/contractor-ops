@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { Globe } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Globe } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -35,7 +35,7 @@ export function PeppolInboundBanner({
       <AlertDescription className="space-y-1">
         <p className="font-mono text-sm">
           From: {senderParticipantId}
-          {senderName ? ` (${senderName})` : ""}
+          {senderName ? ` (${senderName})` : ''}
         </p>
         {documentType && (
           <p className="text-sm text-muted-foreground">Document type: {documentType}</p>

@@ -1,12 +1,12 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { CronMonitors, withCronMonitor } from "../cron-monitor.js";
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { CronMonitors, withCronMonitor } from '../cron-monitor.js';
 
-describe("cron-monitor", () => {
+describe('cron-monitor', () => {
   const fetchMock = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal('fetch', fetchMock);
     fetchMock.mockResolvedValue({ ok: true });
     delete process.env.CRONITOR_API_KEY;
   });
@@ -15,7 +15,7 @@ describe("cron-monitor", () => {
     vi.unstubAllGlobals();
   });
 
-  it("does not call fetch when CRONITOR_API_KEY is unset", async () => {
+  it('does not call fetch when CRONITOR_API_KEY is unset', async () => {
     const result = await withCronMonitor(CronMonitors.REMINDERS, async () => ({
       ok: true,
     }));
@@ -23,27 +23,27 @@ describe("cron-monitor", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it("pings run then complete on success", async () => {
-    process.env.CRONITOR_API_KEY = "key-123";
+  it('pings run then complete on success', async () => {
+    process.env.CRONITOR_API_KEY = 'key-123';
 
     await withCronMonitor(CronMonitors.REMINDERS, async () => ({ n: 1 }));
 
     expect(fetchMock).toHaveBeenCalled();
-    const urls = fetchMock.mock.calls.map((c) => String(c[0]));
-    expect(urls.some((u) => u.includes("state=run"))).toBe(true);
-    expect(urls.some((u) => u.includes("state=complete"))).toBe(true);
+    const urls = fetchMock.mock.calls.map(c => String(c[0]));
+    expect(urls.some(u => u.includes('state=run'))).toBe(true);
+    expect(urls.some(u => u.includes('state=complete'))).toBe(true);
   });
 
-  it("pings fail then rethrows on handler error", async () => {
-    process.env.CRONITOR_API_KEY = "key-123";
+  it('pings fail then rethrows on handler error', async () => {
+    process.env.CRONITOR_API_KEY = 'key-123';
 
     await expect(
       withCronMonitor(CronMonitors.JOB_HEALTH, async () => {
-        throw new Error("boom");
+        throw new Error('boom');
       }),
-    ).rejects.toThrow("boom");
+    ).rejects.toThrow('boom');
 
-    const urls = fetchMock.mock.calls.map((c) => String(c[0]));
-    expect(urls.some((u) => u.includes("state=fail"))).toBe(true);
+    const urls = fetchMock.mock.calls.map(c => String(c[0]));
+    expect(urls.some(u => u.includes('state=fail'))).toBe(true);
   });
 });

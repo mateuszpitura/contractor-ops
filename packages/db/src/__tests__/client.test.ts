@@ -1,9 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from 'vitest';
 
-import { createMissingDatabaseUrlProxy } from "../client.js";
+import { createMissingDatabaseUrlProxy } from '../client.js';
 
-describe("createMissingDatabaseUrlProxy", () => {
-  it("throws when any model or property is accessed", () => {
+describe('createMissingDatabaseUrlProxy', () => {
+  it('throws when any model or property is accessed', () => {
     const proxy = createMissingDatabaseUrlProxy();
     expect(() => {
       void proxy.notification;

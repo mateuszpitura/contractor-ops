@@ -44,7 +44,7 @@ export interface ChannelAlertParams {
 }
 
 export interface MessagingProvider {
-  readonly platform: "slack" | "teams";
+  readonly platform: 'slack' | 'teams';
   sendApprovalCard(params: ApprovalCardParams): Promise<void>;
   sendReminderDM(params: ReminderDMParams): Promise<void>;
   sendChannelAlert(params: ChannelAlertParams): Promise<void>;

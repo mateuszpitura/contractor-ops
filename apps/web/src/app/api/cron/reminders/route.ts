@@ -1,13 +1,13 @@
-import { withCronMonitor } from "@contractor-ops/api/services/cron-monitor";
-import { dispatch } from "@contractor-ops/api/services/notification-service";
-import { prisma } from "@contractor-ops/db";
-import { createCronLogger } from "@contractor-ops/logger";
-import { metrics } from "@contractor-ops/logger/metrics";
-import * as Sentry from "@sentry/nextjs";
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import { withCronMonitor } from '@contractor-ops/api/services/cron-monitor';
+import { dispatch } from '@contractor-ops/api/services/notification-service';
+import { prisma } from '@contractor-ops/db';
+import { createCronLogger } from '@contractor-ops/logger';
+import { metrics } from '@contractor-ops/logger/metrics';
+import * as Sentry from '@sentry/nextjs';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
-const log = createCronLogger("reminders");
+const log = createCronLogger('reminders');
 
 // ---------------------------------------------------------------------------
 // Auth
@@ -17,8 +17,8 @@ function verifyCronSecret(request: NextRequest): boolean {
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) return false;
 
-  const authHeader = request.headers.get("authorization") ?? "";
-  const token = authHeader.replace(/^Bearer\s+/i, "");
+  const authHeader = request.headers.get('authorization') ?? '';
+  const token = authHeader.replace(/^Bearer\s+/i, '');
   return token === cronSecret;
 }
 
@@ -60,13 +60,13 @@ async function evaluateReminderRules(): Promise<{
     const offsetDays = rule.offsetDays ?? 0;
 
     // Determine which entities match based on triggerType
-    if (rule.triggerType === "BEFORE_CONTRACT_END" && rule.entityType === "CONTRACT") {
+    if (rule.triggerType === 'BEFORE_CONTRACT_END' && rule.entityType === 'CONTRACT') {
       const targetDate = addDays(today, offsetDays);
       const contracts = await prisma.contract.findMany({
         where: {
           organizationId: rule.organizationId,
           endDate: { lte: targetDate, gt: today },
-          status: { not: "TERMINATED" },
+          status: { not: 'TERMINATED' },
           deletedAt: null,
         },
         select: { id: true, title: true, contractorId: true, organizationId: true },
@@ -80,7 +80,7 @@ async function evaluateReminderRules(): Promise<{
           where: {
             reminderRuleId: rule.id,
             entityId: contract.id,
-            entityType: "CONTRACT",
+            entityType: 'CONTRACT',
             scheduledFor,
           },
         });
@@ -91,10 +91,10 @@ async function evaluateReminderRules(): Promise<{
           data: {
             organizationId: rule.organizationId,
             reminderRuleId: rule.id,
-            entityType: "CONTRACT",
+            entityType: 'CONTRACT',
             entityId: contract.id,
             scheduledFor,
-            status: "PENDING",
+            status: 'PENDING',
           },
         });
 
@@ -109,11 +109,11 @@ async function evaluateReminderRules(): Promise<{
         if (recipientIds.length > 0) {
           await dispatch({
             organizationId: rule.organizationId,
-            type: "CONTRACT_EXPIRING",
+            type: 'CONTRACT_EXPIRING',
             recipientUserIds: recipientIds,
             title: `Contract expiring soon: ${contract.title}`,
             body: `A contract is approaching its end date.`,
-            entityType: "CONTRACT",
+            entityType: 'CONTRACT',
             entityId: contract.id,
           });
           sent++;
@@ -124,22 +124,22 @@ async function evaluateReminderRules(): Promise<{
           where: {
             reminderRuleId: rule.id,
             entityId: contract.id,
-            entityType: "CONTRACT",
+            entityType: 'CONTRACT',
             scheduledFor,
-            status: "PENDING",
+            status: 'PENDING',
           },
-          data: { status: "SENT", sentAt: now },
+          data: { status: 'SENT', sentAt: now },
         });
       }
     }
 
-    if (rule.triggerType === "BEFORE_DUE_DATE" && rule.entityType === "INVOICE") {
+    if (rule.triggerType === 'BEFORE_DUE_DATE' && rule.entityType === 'INVOICE') {
       const targetDate = addDays(today, offsetDays);
       const invoices = await prisma.invoice.findMany({
         where: {
           organizationId: rule.organizationId,
           dueDate: { lte: targetDate, gt: today },
-          status: { notIn: ["PAID", "VOID"] },
+          status: { notIn: ['PAID', 'VOID'] },
           deletedAt: null,
         },
         select: {
@@ -156,7 +156,7 @@ async function evaluateReminderRules(): Promise<{
           where: {
             reminderRuleId: rule.id,
             entityId: invoice.id,
-            entityType: "INVOICE",
+            entityType: 'INVOICE',
             scheduledFor,
           },
         });
@@ -166,10 +166,10 @@ async function evaluateReminderRules(): Promise<{
           data: {
             organizationId: rule.organizationId,
             reminderRuleId: rule.id,
-            entityType: "INVOICE",
+            entityType: 'INVOICE',
             entityId: invoice.id,
             scheduledFor,
-            status: "PENDING",
+            status: 'PENDING',
           },
         });
 
@@ -183,11 +183,11 @@ async function evaluateReminderRules(): Promise<{
         if (recipientIds.length > 0) {
           await dispatch({
             organizationId: rule.organizationId,
-            type: "INVOICE_RECEIVED",
+            type: 'INVOICE_RECEIVED',
             recipientUserIds: recipientIds,
             title: `Invoice due soon: ${invoice.invoiceNumber}`,
             body: `An invoice is approaching its due date.`,
-            entityType: "INVOICE",
+            entityType: 'INVOICE',
             entityId: invoice.id,
           });
           sent++;
@@ -197,22 +197,22 @@ async function evaluateReminderRules(): Promise<{
           where: {
             reminderRuleId: rule.id,
             entityId: invoice.id,
-            entityType: "INVOICE",
+            entityType: 'INVOICE',
             scheduledFor,
-            status: "PENDING",
+            status: 'PENDING',
           },
-          data: { status: "SENT", sentAt: now },
+          data: { status: 'SENT', sentAt: now },
         });
       }
     }
 
-    if (rule.triggerType === "AFTER_DUE_DATE" && rule.entityType === "INVOICE") {
+    if (rule.triggerType === 'AFTER_DUE_DATE' && rule.entityType === 'INVOICE') {
       const targetDate = addDays(today, -offsetDays);
       const invoices = await prisma.invoice.findMany({
         where: {
           organizationId: rule.organizationId,
           dueDate: { lte: targetDate },
-          status: { notIn: ["PAID", "VOID"] },
+          status: { notIn: ['PAID', 'VOID'] },
           deletedAt: null,
         },
         select: {
@@ -229,7 +229,7 @@ async function evaluateReminderRules(): Promise<{
           where: {
             reminderRuleId: rule.id,
             entityId: invoice.id,
-            entityType: "INVOICE",
+            entityType: 'INVOICE',
             scheduledFor,
           },
         });
@@ -239,10 +239,10 @@ async function evaluateReminderRules(): Promise<{
           data: {
             organizationId: rule.organizationId,
             reminderRuleId: rule.id,
-            entityType: "INVOICE",
+            entityType: 'INVOICE',
             entityId: invoice.id,
             scheduledFor,
-            status: "PENDING",
+            status: 'PENDING',
           },
         });
 
@@ -256,11 +256,11 @@ async function evaluateReminderRules(): Promise<{
         if (recipientIds.length > 0) {
           await dispatch({
             organizationId: rule.organizationId,
-            type: "INVOICE_RECEIVED",
+            type: 'INVOICE_RECEIVED',
             recipientUserIds: recipientIds,
             title: `Invoice overdue: ${invoice.invoiceNumber}`,
             body: `An invoice is past its due date.`,
-            entityType: "INVOICE",
+            entityType: 'INVOICE',
             entityId: invoice.id,
           });
           sent++;
@@ -270,11 +270,11 @@ async function evaluateReminderRules(): Promise<{
           where: {
             reminderRuleId: rule.id,
             entityId: invoice.id,
-            entityType: "INVOICE",
+            entityType: 'INVOICE',
             scheduledFor,
-            status: "PENDING",
+            status: 'PENDING',
           },
-          data: { status: "SENT", sentAt: now },
+          data: { status: 'SENT', sentAt: now },
         });
       }
     }
@@ -296,7 +296,7 @@ async function detectOverdueTasks(): Promise<number> {
   const overdueTasks = await prisma.workflowTaskRun.findMany({
     where: {
       dueAt: { lt: now },
-      status: { notIn: ["DONE", "CANCELLED", "SKIPPED"] },
+      status: { notIn: ['DONE', 'CANCELLED', 'SKIPPED'] },
       assigneeUserId: { not: null },
     },
     select: {
@@ -324,8 +324,8 @@ async function detectOverdueTasks(): Promise<number> {
     // 24h dedup: check if TASK_OVERDUE notification already sent for this task today
     const recentNotification = await prisma.notification.findFirst({
       where: {
-        type: "TASK_OVERDUE",
-        entityType: "WORKFLOW_TASK_RUN",
+        type: 'TASK_OVERDUE',
+        entityType: 'WORKFLOW_TASK_RUN',
         entityId: task.id,
         createdAt: { gte: oneDayAgo },
       },
@@ -333,16 +333,16 @@ async function detectOverdueTasks(): Promise<number> {
 
     if (recentNotification) continue;
 
-    const contractorName = task.workflowRun?.contractor?.displayName ?? "";
-    const workflowName = task.workflowRun?.workflowTemplate?.name ?? "";
+    const contractorName = task.workflowRun?.contractor?.displayName ?? '';
+    const workflowName = task.workflowRun?.workflowTemplate?.name ?? '';
 
     await dispatch({
       organizationId: task.organizationId,
-      type: "TASK_OVERDUE",
+      type: 'TASK_OVERDUE',
       recipientUserIds: [task.assigneeUserId],
       title: `Task overdue: ${task.title}`,
-      body: `${workflowName}${contractorName ? ` - ${contractorName}` : ""}`,
-      entityType: "WORKFLOW_TASK_RUN",
+      body: `${workflowName}${contractorName ? ` - ${contractorName}` : ''}`,
+      entityType: 'WORKFLOW_TASK_RUN',
       entityId: task.id,
     });
 
@@ -363,41 +363,41 @@ async function resolveRecipients(
   entityOwnerId?: string | null,
 ): Promise<string[]> {
   switch (recipientMode) {
-    case "ENTITY_OWNER": {
+    case 'ENTITY_OWNER': {
       if (!entityOwnerId) return [];
       // For contracts/invoices, the "owner" is the contractor's linked user or the creator
       return entityOwnerId ? [entityOwnerId] : [];
     }
 
-    case "FINANCE_TEAM": {
+    case 'FINANCE_TEAM': {
       const financeMembers = await prisma.member.findMany({
         where: {
           organizationId,
-          role: { in: ["FINANCE_ADMIN", "ACCOUNTANT"] },
+          role: { in: ['FINANCE_ADMIN', 'ACCOUNTANT'] },
         },
         select: { userId: true },
       });
-      return financeMembers.map((m) => m.userId);
+      return financeMembers.map(m => m.userId);
     }
 
-    case "ASSIGNEE": {
+    case 'ASSIGNEE': {
       if (!entityOwnerId) return [];
       return [entityOwnerId];
     }
 
-    case "SPECIFIC_USER": {
+    case 'SPECIFIC_USER': {
       const userId = configJson?.userId as string | undefined;
       return userId ? [userId] : [];
     }
 
-    case "ROLE": {
+    case 'ROLE': {
       const role = configJson?.role as string | undefined;
       if (!role) return [];
       const members = await prisma.member.findMany({
         where: { organizationId, role },
         select: { userId: true },
       });
-      return members.map((m) => m.userId);
+      return members.map(m => m.userId);
     }
 
     default:
@@ -411,13 +411,13 @@ async function resolveRecipients(
 
 export async function GET(request: NextRequest) {
   if (!verifyCronSecret(request)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   return Sentry.withMonitor(
-    "reminders",
+    'reminders',
     () =>
-      withCronMonitor("reminders", async () => {
+      withCronMonitor('reminders', async () => {
         try {
           const [ruleResults, overdueTasksNotified] = await Promise.all([
             evaluateReminderRules(),
@@ -426,10 +426,10 @@ export async function GET(request: NextRequest) {
 
           log.info(
             { processed: ruleResults.processed, sent: ruleResults.sent, overdueTasksNotified },
-            "reminders cron completed",
+            'reminders cron completed',
           );
-          metrics.gauge("cron.reminders.sent", ruleResults.sent);
-          metrics.gauge("cron.reminders.overdue_tasks", overdueTasksNotified);
+          metrics.gauge('cron.reminders.sent', ruleResults.sent);
+          metrics.gauge('cron.reminders.overdue_tasks', overdueTasksNotified);
 
           return NextResponse.json({
             processed: ruleResults.processed,
@@ -437,16 +437,16 @@ export async function GET(request: NextRequest) {
             overdueTasksNotified,
           });
         } catch (error) {
-          log.error({ err: error }, "reminders cron failed");
+          log.error({ err: error }, 'reminders cron failed');
           Sentry.captureException(error, {
-            tags: { "cron.job": "reminders" },
+            tags: { 'cron.job': 'reminders' },
           });
-          return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+          return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
         }
       }),
     {
-      schedule: { type: "crontab", value: "0 9 * * *" },
-      timezone: "UTC",
+      schedule: { type: 'crontab', value: '0 9 * * *' },
+      timezone: 'UTC',
     },
   );
 }

@@ -1,10 +1,10 @@
-import { pollDpdShipmentStatuses } from "@contractor-ops/api/services/courier/dpd-polling-service";
-import { pollInPostShipmentStatuses } from "@contractor-ops/api/services/courier/inpost-polling-service";
-import { pollUpsShipmentStatuses } from "@contractor-ops/api/services/courier/ups-polling-service";
-import { prisma } from "@contractor-ops/db";
-import { verifySignatureAppRouter } from "@upstash/qstash/nextjs";
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import { pollDpdShipmentStatuses } from '@contractor-ops/api/services/courier/dpd-polling-service';
+import { pollInPostShipmentStatuses } from '@contractor-ops/api/services/courier/inpost-polling-service';
+import { pollUpsShipmentStatuses } from '@contractor-ops/api/services/courier/ups-polling-service';
+import { prisma } from '@contractor-ops/db';
+import { verifySignatureAppRouter } from '@upstash/qstash/nextjs';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 // ---------------------------------------------------------------------------
 // POST /api/cron/inpost-status-poll
@@ -58,7 +58,7 @@ async function handler(request: NextRequest) {
     // Poll ALL orgs with any courier config
     const configs = await prisma.courierConfig.findMany({
       select: { organizationId: true },
-      distinct: ["organizationId"],
+      distinct: ['organizationId'],
     });
 
     for (const config of configs) {
@@ -91,25 +91,25 @@ async function pollAllCarriersForOrg(organizationId: string): Promise<OrgResult>
   const carriers: CarrierResult[] = [];
 
   // Poll InPost shipments
-  const inpostResult = await pollInPostShipmentStatuses(prisma, organizationId).catch((err) => {
+  const inpostResult = await pollInPostShipmentStatuses(prisma, organizationId).catch(err => {
     console.error(`[courier-status-poll] InPost error for org ${organizationId}:`, err);
     return { checked: 0, updated: 0 };
   });
-  carriers.push({ carrier: "inpost", ...inpostResult });
+  carriers.push({ carrier: 'inpost', ...inpostResult });
 
   // Poll DPD shipments
-  const dpdResult = await pollDpdShipmentStatuses(prisma, organizationId).catch((err) => {
+  const dpdResult = await pollDpdShipmentStatuses(prisma, organizationId).catch(err => {
     console.error(`[courier-status-poll] DPD error for org ${organizationId}:`, err);
     return { checked: 0, updated: 0 };
   });
-  carriers.push({ carrier: "dpd", ...dpdResult });
+  carriers.push({ carrier: 'dpd', ...dpdResult });
 
   // Poll UPS shipments
-  const upsResult = await pollUpsShipmentStatuses(prisma, organizationId).catch((err) => {
+  const upsResult = await pollUpsShipmentStatuses(prisma, organizationId).catch(err => {
     console.error(`[courier-status-poll] UPS error for org ${organizationId}:`, err);
     return { checked: 0, updated: 0 };
   });
-  carriers.push({ carrier: "ups", ...upsResult });
+  carriers.push({ carrier: 'ups', ...upsResult });
 
   return { organizationId, carriers };
 }

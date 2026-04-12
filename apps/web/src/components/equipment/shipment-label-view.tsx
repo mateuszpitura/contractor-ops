@@ -7,7 +7,7 @@ export function LabelDisplay({
   trackingNumber,
   paczkomatName,
 }: {
-  label?: { url: string; format: "PDF" | "IMAGE" } | null;
+  label?: { url: string; format: 'PDF' | 'IMAGE' } | null;
   trackingNumber?: string | null;
   paczkomatName?: string | null;
 }) {
@@ -15,7 +15,7 @@ export function LabelDisplay({
 
   return (
     <div className="space-y-3">
-      {label.format === "IMAGE" ? (
+      {label.format === 'IMAGE' ? (
         <img src={label.url} alt="Shipping label" className="max-w-full" />
       ) : (
         <object data={label.url} type="application/pdf" className="h-64 w-full">

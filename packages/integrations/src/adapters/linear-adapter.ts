@@ -1,10 +1,10 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
-import { prisma } from "@contractor-ops/db";
-import type { CredentialBlob } from "../types/credentials.js";
-import type { ProviderHealthStatus } from "../types/health.js";
-import type { OAuthConfig } from "../types/provider.js";
-import type { WebhookVerificationResult } from "../types/webhook.js";
-import { BaseAdapter } from "./base-adapter.js";
+import { createHmac, timingSafeEqual } from 'node:crypto';
+import { prisma } from '@contractor-ops/db';
+import type { CredentialBlob } from '../types/credentials.js';
+import type { ProviderHealthStatus } from '../types/health.js';
+import type { OAuthConfig } from '../types/provider.js';
+import type { WebhookVerificationResult } from '../types/webhook.js';
+import { BaseAdapter } from './base-adapter.js';
 
 // ---------------------------------------------------------------------------
 // Linear OAuth 2.0 Configuration
@@ -20,12 +20,12 @@ import { BaseAdapter } from "./base-adapter.js";
  * - write — create/update issues, comments, labels
  */
 const LINEAR_OAUTH_CONFIG: OAuthConfig = {
-  clientIdEnvVar: "LINEAR_CLIENT_ID",
-  clientSecretEnvVar: "LINEAR_CLIENT_SECRET",
-  authorizationUrl: "https://linear.app/oauth/authorize",
-  tokenUrl: "https://api.linear.app/oauth/token",
-  scopes: ["read", "write"],
-  redirectPath: "/api/oauth/linear/callback",
+  clientIdEnvVar: 'LINEAR_CLIENT_ID',
+  clientSecretEnvVar: 'LINEAR_CLIENT_SECRET',
+  authorizationUrl: 'https://linear.app/oauth/authorize',
+  tokenUrl: 'https://api.linear.app/oauth/token',
+  scopes: ['read', 'write'],
+  redirectPath: '/api/oauth/linear/callback',
 };
 
 // ---------------------------------------------------------------------------
@@ -47,8 +47,8 @@ const LINEAR_OAUTH_CONFIG: OAuthConfig = {
  * - LINEAR_WEBHOOK_SECRET — for webhook signature verification (per-connection)
  */
 export class LinearAdapter extends BaseAdapter {
-  readonly slug = "linear";
-  readonly displayName = "Linear";
+  readonly slug = 'linear';
+  readonly displayName = 'Linear';
   readonly supportsOAuth = true;
   readonly supportsWebhooks = true;
 
@@ -66,22 +66,22 @@ export class LinearAdapter extends BaseAdapter {
 
     if (!(clientId && clientSecret)) {
       throw new Error(
-        "LINEAR_CLIENT_ID and LINEAR_CLIENT_SECRET environment variables are required",
+        'LINEAR_CLIENT_ID and LINEAR_CLIENT_SECRET environment variables are required',
       );
     }
 
     const body = new URLSearchParams({
-      grant_type: "authorization_code",
+      grant_type: 'authorization_code',
       client_id: clientId,
       client_secret: clientSecret,
       code,
       redirect_uri: redirectUri,
     });
 
-    const response = await fetch("https://api.linear.app/oauth/token", {
-      method: "POST",
+    const response = await fetch('https://api.linear.app/oauth/token', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
+        'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: body.toString(),
     });
@@ -100,7 +100,7 @@ export class LinearAdapter extends BaseAdapter {
     };
 
     // Linear returns scope as an array of strings — join with comma for storage
-    const scope = Array.isArray(data.scope) ? data.scope.join(",") : data.scope;
+    const scope = Array.isArray(data.scope) ? data.scope.join(',') : data.scope;
 
     return {
       accessToken: data.access_token,
@@ -117,25 +117,25 @@ export class LinearAdapter extends BaseAdapter {
 
     if (!(clientId && clientSecret)) {
       throw new Error(
-        "LINEAR_CLIENT_ID and LINEAR_CLIENT_SECRET environment variables are required",
+        'LINEAR_CLIENT_ID and LINEAR_CLIENT_SECRET environment variables are required',
       );
     }
 
     if (!credentials.refreshToken) {
-      throw new Error("No refresh token available for Linear");
+      throw new Error('No refresh token available for Linear');
     }
 
     const body = new URLSearchParams({
-      grant_type: "refresh_token",
+      grant_type: 'refresh_token',
       client_id: clientId,
       client_secret: clientSecret,
       refresh_token: credentials.refreshToken,
     });
 
-    const response = await fetch("https://api.linear.app/oauth/token", {
-      method: "POST",
+    const response = await fetch('https://api.linear.app/oauth/token', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
+        'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: body.toString(),
     });
@@ -153,7 +153,7 @@ export class LinearAdapter extends BaseAdapter {
       scope: string[] | string;
     };
 
-    const scope = Array.isArray(data.scope) ? data.scope.join(",") : data.scope;
+    const scope = Array.isArray(data.scope) ? data.scope.join(',') : data.scope;
 
     return {
       accessToken: data.access_token,
@@ -184,10 +184,10 @@ export class LinearAdapter extends BaseAdapter {
     rawBody: string,
     headers: Record<string, string>,
   ): WebhookVerificationResult {
-    const signatureHeader = headers["linear-signature"] ?? headers["Linear-Signature"];
+    const signatureHeader = headers['linear-signature'] ?? headers['Linear-Signature'];
     const secret =
-      headers["x-webhook-secret"] ??
-      headers["X-Webhook-Secret"] ??
+      headers['x-webhook-secret'] ??
+      headers['X-Webhook-Secret'] ??
       process.env.LINEAR_WEBHOOK_SECRET;
 
     if (!secret) {
@@ -199,11 +199,11 @@ export class LinearAdapter extends BaseAdapter {
       return { valid: false };
     }
 
-    const expected = createHmac("sha256", secret).update(rawBody).digest("hex");
+    const expected = createHmac('sha256', secret).update(rawBody).digest('hex');
 
     let valid: boolean;
     try {
-      valid = timingSafeEqual(Buffer.from(signatureHeader, "hex"), Buffer.from(expected, "hex"));
+      valid = timingSafeEqual(Buffer.from(signatureHeader, 'hex'), Buffer.from(expected, 'hex'));
     } catch {
       // Buffer length mismatch — invalid signature
       valid = false;
@@ -252,7 +252,7 @@ export class LinearAdapter extends BaseAdapter {
    * Returns the full set of OAuth scopes required by the Linear adapter.
    */
   getRequiredScopes(): string[] {
-    return ["read", "write"];
+    return ['read', 'write'];
   }
 
   // -------------------------------------------------------------------------
@@ -308,11 +308,11 @@ export class LinearAdapter extends BaseAdapter {
       }
     }`;
 
-    const response = await fetch("https://api.linear.app/graphql", {
-      method: "POST",
+    const response = await fetch('https://api.linear.app/graphql', {
+      method: 'POST',
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({ query }),
     });
@@ -352,11 +352,11 @@ export class LinearAdapter extends BaseAdapter {
       organizationId: result.data.organization.id,
       organizationName: result.data.organization.name,
       urlKey: result.data.organization.urlKey,
-      teams: result.data.teams.nodes.map((team) => ({
+      teams: result.data.teams.nodes.map(team => ({
         id: team.id,
         name: team.name,
         key: team.key,
-        states: team.states.nodes.map((state) => ({
+        states: team.states.nodes.map(state => ({
           id: state.id,
           name: state.name,
           type: state.type,
@@ -389,8 +389,8 @@ export class LinearAdapter extends BaseAdapter {
 
     if (!connection) {
       return {
-        status: "DISCONNECTED",
-        provider: "linear",
+        status: 'DISCONNECTED',
+        provider: 'linear',
         recentSyncs: [],
         recentWebhooks: [],
         errorCountLast24h: 0,
@@ -400,7 +400,7 @@ export class LinearAdapter extends BaseAdapter {
     // Fetch recent sync logs
     const recentSyncs = await prisma.integrationSyncLog.findMany({
       where: { integrationConnectionId: connectionId },
-      orderBy: { startedAt: "desc" },
+      orderBy: { startedAt: 'desc' },
       take: 5,
       select: {
         id: true,
@@ -416,28 +416,28 @@ export class LinearAdapter extends BaseAdapter {
     const errorCountLast24h = await prisma.integrationSyncLog.count({
       where: {
         integrationConnectionId: connectionId,
-        status: "FAILED",
+        status: 'FAILED',
         startedAt: { gte: oneDayAgo },
       },
     });
 
     // Determine status
-    let status: ProviderHealthStatus["status"];
-    if (connection.status !== "CONNECTED" && connection.status !== "PENDING_MAPPING") {
-      status = "DISCONNECTED";
+    let status: ProviderHealthStatus['status'];
+    if (connection.status !== 'CONNECTED' && connection.status !== 'PENDING_MAPPING') {
+      status = 'DISCONNECTED';
     } else if (connection.lastErrorAt && !connection.lastSuccessAt) {
-      status = "ERROR";
+      status = 'ERROR';
     } else if (connection.tokenExpiresAt && connection.tokenExpiresAt < new Date()) {
-      status = "REAUTH_REQUIRED";
-    } else if (recentSyncs[0]?.status === "FAILED") {
-      status = "ERROR";
+      status = 'REAUTH_REQUIRED';
+    } else if (recentSyncs[0]?.status === 'FAILED') {
+      status = 'ERROR';
     } else {
-      status = "CONNECTED";
+      status = 'CONNECTED';
     }
 
     return {
       status,
-      provider: "linear",
+      provider: 'linear',
       displayName: connection.displayName,
       connectedAt: connection.connectedAt,
       lastSyncAt: connection.lastSyncAt,
@@ -445,7 +445,7 @@ export class LinearAdapter extends BaseAdapter {
       lastErrorAt: connection.lastErrorAt,
       lastErrorMessage: connection.lastErrorMessage,
       tokenExpiresAt: connection.tokenExpiresAt,
-      recentSyncs: recentSyncs.map((s) => ({
+      recentSyncs: recentSyncs.map(s => ({
         id: s.id,
         syncType: s.syncType,
         status: s.status,

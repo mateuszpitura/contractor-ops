@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { format } from "date-fns";
-import { ArrowRightLeft, ExternalLink } from "lucide-react";
-import { EmptyState } from "@/components/shared/empty-state";
-import { DeviationFlag } from "@/components/time/deviation-flag";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useQuery } from '@tanstack/react-query';
+import { format } from 'date-fns';
+import { ArrowRightLeft, ExternalLink } from 'lucide-react';
+import { EmptyState } from '@/components/shared/empty-state';
+import { DeviationFlag } from '@/components/time/deviation-flag';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -13,9 +13,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Link } from "@/i18n/navigation";
-import { trpc } from "@/trpc/init";
+} from '@/components/ui/table';
+import { Link } from '@/i18n/navigation';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Types (mirrors API response)
@@ -54,7 +54,7 @@ interface ReconciliationItem {
 // ---------------------------------------------------------------------------
 
 function formatMinorUnits(minor: number): string {
-  return new Intl.NumberFormat("pl-PL", {
+  return new Intl.NumberFormat('pl-PL', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(minor / 100);
@@ -69,15 +69,15 @@ function formatPeriod(item: ReconciliationItem): string {
   const start = item.invoice.servicePeriodStart;
   const end = item.invoice.servicePeriodEnd;
   if (start && end) {
-    const s = typeof start === "string" ? new Date(start) : start;
-    const e = typeof end === "string" ? new Date(end) : end;
-    return `${format(s, "MMM d")} - ${format(e, "MMM d, yyyy")}`;
+    const s = typeof start === 'string' ? new Date(start) : start;
+    const e = typeof end === 'string' ? new Date(end) : end;
+    return `${format(s, 'MMM d')} - ${format(e, 'MMM d, yyyy')}`;
   }
   const issueDate =
-    typeof item.invoice.issueDate === "string"
+    typeof item.invoice.issueDate === 'string'
       ? new Date(item.invoice.issueDate)
       : item.invoice.issueDate;
-  return format(issueDate, "MMM yyyy");
+  return format(issueDate, 'MMM yyyy');
 }
 
 // ---------------------------------------------------------------------------
@@ -148,21 +148,21 @@ export function ReconciliationTable() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {items.map((item) => (
+          {items.map(item => (
             <TableRow key={item.invoice.id}>
               <TableCell className="text-sm font-medium">
-                {item.contractor?.legalName ?? "Unknown"}
+                {item.contractor?.legalName ?? 'Unknown'}
               </TableCell>
               <TableCell className="text-sm text-muted-foreground">{formatPeriod(item)}</TableCell>
               <TableCell className="text-end text-sm font-medium tabular-nums">
                 {formatHours(item.reconciliation.approvedMinutes)}
               </TableCell>
               <TableCell className="text-end text-sm tabular-nums">
-                {formatMinorUnits(item.reconciliation.expectedAmountMinor)}{" "}
+                {formatMinorUnits(item.reconciliation.expectedAmountMinor)}{' '}
                 <span className="text-muted-foreground">{item.invoice.currency}</span>
               </TableCell>
               <TableCell className="text-end text-sm tabular-nums">
-                {formatMinorUnits(item.reconciliation.invoicedAmountMinor)}{" "}
+                {formatMinorUnits(item.reconciliation.invoicedAmountMinor)}{' '}
                 <span className="text-muted-foreground">{item.invoice.currency}</span>
               </TableCell>
               <TableCell>
@@ -178,8 +178,7 @@ export function ReconciliationTable() {
               <TableCell>
                 <Link
                   href={`/invoices/${item.invoice.id}`}
-                  className="text-muted-foreground hover:text-foreground"
-                >
+                  className="text-muted-foreground hover:text-foreground">
                   <ExternalLink className="h-4 w-4" />
                   <span className="sr-only">View invoice</span>
                 </Link>

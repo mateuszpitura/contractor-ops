@@ -1,7 +1,7 @@
-import { TRPCError } from "@trpc/server";
-import { describe, expect, it, vi } from "vitest";
+import { TRPCError } from '@trpc/server';
+import { describe, expect, it, vi } from 'vitest';
 
-vi.mock("@sentry/nextjs", () => {
+vi.mock('@sentry/nextjs', () => {
   const mockSpan = {
     setStatus: vi.fn(),
     setAttribute: vi.fn(),
@@ -13,7 +13,7 @@ vi.mock("@sentry/nextjs", () => {
   };
 });
 
-vi.mock("@contractor-ops/logger", () => ({
+vi.mock('@contractor-ops/logger', () => ({
   createTrpcLogger: vi.fn(() => ({
     info: vi.fn(),
     warn: vi.fn(),
@@ -21,29 +21,29 @@ vi.mock("@contractor-ops/logger", () => ({
   })),
 }));
 
-vi.mock("@contractor-ops/logger/metrics", () => ({
+vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { increment: vi.fn(), distribution: vi.fn(), histogram: vi.fn() },
 }));
 
-vi.mock("@contractor-ops/db", () => ({
+vi.mock('@contractor-ops/db', () => ({
   tenantStore: {
     run: (_ctx: { organizationId: string }, fn: () => unknown) => fn(),
     getStore: vi.fn(),
   },
 }));
 
-import { t } from "../../init.js";
-import { sensitiveActionProcedure } from "../sensitive.js";
+import { t } from '../../init.js';
+import { sensitiveActionProcedure } from '../sensitive.js';
 
 function ctxWithSessionAge(createdAt: Date) {
-  const userId = "user_sens";
+  const userId = 'user_sens';
   const session = {
     session: {
-      id: "sess-1",
+      id: 'sess-1',
       userId,
-      activeOrganizationId: "org_sens",
-      expiresAt: new Date("2099-01-01"),
-      token: "mock-token",
+      activeOrganizationId: 'org_sens',
+      expiresAt: new Date('2099-01-01'),
+      token: 'mock-token',
       createdAt,
       updatedAt: createdAt,
       ipAddress: null,
@@ -51,14 +51,14 @@ function ctxWithSessionAge(createdAt: Date) {
     },
     user: {
       id: userId,
-      name: "Test",
-      email: "t@example.com",
+      name: 'Test',
+      email: 't@example.com',
       emailVerified: true,
       image: null,
       banned: false,
       banReason: null,
       banExpires: null,
-      role: "admin",
+      role: 'admin',
       createdAt: new Date(),
       updatedAt: new Date(),
     },
@@ -70,41 +70,41 @@ function ctxWithSessionAge(createdAt: Date) {
   };
 }
 
-describe("sensitiveActionProcedure", () => {
+describe('sensitiveActionProcedure', () => {
   const router = t.router({
-    sensitive: sensitiveActionProcedure.query(() => "ok"),
+    sensitive: sensitiveActionProcedure.query(() => 'ok'),
   });
   const createCaller = t.createCallerFactory(router);
 
-  it("throws UNAUTHORIZED when session is missing", async () => {
+  it('throws UNAUTHORIZED when session is missing', async () => {
     await expect(
       createCaller({
         headers: new Headers(),
         session: null,
         user: null,
       }).sensitive(),
-    ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+    ).rejects.toMatchObject({ code: 'UNAUTHORIZED' });
   });
 
-  it("throws FORBIDDEN with REAUTH_REQUIRED cause when session is older than 5 minutes", async () => {
+  it('throws FORBIDDEN with REAUTH_REQUIRED cause when session is older than 5 minutes', async () => {
     const old = new Date(Date.now() - 6 * 60 * 1000);
     try {
       await createCaller(ctxWithSessionAge(old)).sensitive();
-      expect.fail("expected throw");
+      expect.fail('expected throw');
     } catch (e) {
       expect(e).toBeInstanceOf(TRPCError);
-      expect((e as TRPCError).code).toBe("FORBIDDEN");
+      expect((e as TRPCError).code).toBe('FORBIDDEN');
       const cause = (e as TRPCError).cause;
       if (cause instanceof Error) {
-        expect(cause.message).toBe("REAUTH_REQUIRED");
+        expect(cause.message).toBe('REAUTH_REQUIRED');
       } else {
-        expect(cause).toBe("REAUTH_REQUIRED");
+        expect(cause).toBe('REAUTH_REQUIRED');
       }
     }
   });
 
-  it("passes when session is fresh", async () => {
+  it('passes when session is fresh', async () => {
     const recent = new Date(Date.now() - 60 * 1000);
-    await expect(createCaller(ctxWithSessionAge(recent)).sensitive()).resolves.toBe("ok");
+    await expect(createCaller(ctxWithSessionAge(recent)).sensitive()).resolves.toBe('ok');
   });
 });

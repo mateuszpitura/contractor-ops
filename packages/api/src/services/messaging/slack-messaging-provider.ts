@@ -3,13 +3,13 @@ import {
   getSlackUserIdForUser,
   sendApprovalCard as slackSendApprovalCard,
   sendReminderDM as slackSendReminderDM,
-} from "../slack-client.js";
+} from '../slack-client.js';
 import type {
   ApprovalCardParams,
   ChannelAlertParams,
   MessagingProvider,
   ReminderDMParams,
-} from "./types.js";
+} from './types.js';
 
 // ---------------------------------------------------------------------------
 // SlackMessagingProvider
@@ -21,7 +21,7 @@ import type {
 // ---------------------------------------------------------------------------
 
 export class SlackMessagingProvider implements MessagingProvider {
-  readonly platform = "slack" as const;
+  readonly platform = 'slack' as const;
 
   async getUserId(organizationId: string, userId: string): Promise<string | null> {
     return getSlackUserIdForUser(organizationId, userId);
@@ -55,16 +55,16 @@ export class SlackMessagingProvider implements MessagingProvider {
       throw new Error(`No Slack integration for organization ${params.organizationId}`);
     }
 
-    const detailLines = params.details.map((d) => `*${d.label}:* ${d.value}`).join("\n");
+    const detailLines = params.details.map(d => `*${d.label}:* ${d.value}`).join('\n');
 
     const text = [
       `*${params.title}*`,
       params.body,
-      "",
+      '',
       detailLines,
-      "",
+      '',
       `<${params.viewUrl}|View in Contractor Ops>`,
-    ].join("\n");
+    ].join('\n');
 
     await client.chat.postMessage({
       channel: params.channelId,

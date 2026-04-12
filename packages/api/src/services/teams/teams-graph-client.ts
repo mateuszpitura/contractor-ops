@@ -3,7 +3,7 @@
 // Channel/Team/User discovery via delegated user token
 // ---------------------------------------------------------------------------
 
-import { Client } from "@microsoft/microsoft-graph-client";
+import { Client } from '@microsoft/microsoft-graph-client';
 
 // ---------------------------------------------------------------------------
 // Client Factory
@@ -16,7 +16,7 @@ import { Client } from "@microsoft/microsoft-graph-client";
  */
 function createGraphClient(accessToken: string): Client {
   return Client.init({
-    authProvider: (done) => {
+    authProvider: done => {
       done(null, accessToken);
     },
   });
@@ -50,7 +50,7 @@ export interface UserInfo {
 export async function getJoinedTeams(accessToken: string): Promise<TeamInfo[]> {
   const client = createGraphClient(accessToken);
 
-  const response = (await client.api("/me/joinedTeams").select("id,displayName").get()) as {
+  const response = (await client.api('/me/joinedTeams').select('id,displayName').get()) as {
     value: TeamInfo[];
   };
 
@@ -72,7 +72,7 @@ export async function getTeamsChannels(
 
   const response = (await client
     .api(`/teams/${teamId}/channels`)
-    .select("id,displayName")
+    .select('id,displayName')
     .get()) as { value: ChannelInfo[] };
 
   return response.value;
@@ -92,7 +92,7 @@ export async function getUserByEmail(accessToken: string, email: string): Promis
   try {
     const user = (await client
       .api(`/users/${encodeURIComponent(email)}`)
-      .select("id,displayName")
+      .select('id,displayName')
       .get()) as UserInfo;
 
     return user;

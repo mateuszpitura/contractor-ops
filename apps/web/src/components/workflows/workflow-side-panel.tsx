@@ -1,31 +1,31 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-import { useMemo } from "react";
-import { JiraIssueChip } from "@/components/integrations/jira-issue-chip";
-import { LinearIssueChip } from "@/components/integrations/linear-issue-chip";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Link } from "@/i18n/navigation";
-import { trpc } from "@/trpc/init";
+import { useQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+import { useMemo } from 'react';
+import { JiraIssueChip } from '@/components/integrations/jira-issue-chip';
+import { LinearIssueChip } from '@/components/integrations/linear-issue-chip';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Link } from '@/i18n/navigation';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Status badge colors (same as columns.tsx)
 // ---------------------------------------------------------------------------
 
 const statusBadgeColors: Record<string, string> = {
-  NOT_STARTED: "bg-muted text-muted-foreground border border-border",
-  IN_PROGRESS: "bg-primary/10 text-primary",
-  COMPLETED: "bg-green-500/10 text-green-600 dark:text-green-400",
-  CANCELLED: "bg-muted text-muted-foreground border border-border",
-  BLOCKED: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
-  OVERDUE: "bg-red-500/10 text-red-600 dark:text-red-400",
+  NOT_STARTED: 'bg-muted text-muted-foreground border border-border',
+  IN_PROGRESS: 'bg-primary/10 text-primary',
+  COMPLETED: 'bg-green-500/10 text-green-600 dark:text-green-400',
+  CANCELLED: 'bg-muted text-muted-foreground border border-border',
+  BLOCKED: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+  OVERDUE: 'bg-red-500/10 text-red-600 dark:text-red-400',
 };
 
 // ---------------------------------------------------------------------------
@@ -38,7 +38,7 @@ interface LinkedJiraIssueData {
     key: string;
     summary: string;
     status: string;
-    statusCategory: "new" | "indeterminate" | "done";
+    statusCategory: 'new' | 'indeterminate' | 'done';
     url: string;
   };
   externalUrl: string;
@@ -56,7 +56,7 @@ function LinkedIssuesSection({ runId }: { runId: string }) {
 
   const issuesQuery = useQuery({
     ...trpc.jira.linkedIssues.queryOptions({
-      entityType: "WORKFLOW_RUN",
+      entityType: 'WORKFLOW_RUN',
       entityId: runId,
     }),
     enabled: !!connectionQuery.data,
@@ -89,7 +89,7 @@ function LinkedIssuesSection({ runId }: { runId: string }) {
           <p className="text-sm text-muted-foreground">No linked Jira issues for this workflow.</p>
         ) : (
           <div className="space-y-2">
-            {issues.map((issue) => (
+            {issues.map(issue => (
               <div key={issue.id} className="flex items-center gap-2">
                 <JiraIssueChip
                   issueKey={issue.metadataJson.key}
@@ -117,7 +117,7 @@ interface LinkedLinearIssueData {
     identifier: string;
     title: string;
     status: string;
-    statusType: "triage" | "backlog" | "unstarted" | "started" | "completed" | "cancelled";
+    statusType: 'triage' | 'backlog' | 'unstarted' | 'started' | 'completed' | 'cancelled';
     url: string;
   };
   externalUrl: string;
@@ -135,7 +135,7 @@ function LinkedLinearIssuesSection({ runId }: { runId: string }) {
 
   const issuesQuery = useQuery({
     ...trpc.linear.linkedIssues.queryOptions({
-      entityType: "WORKFLOW_RUN",
+      entityType: 'WORKFLOW_RUN',
       entityId: runId,
     }),
     enabled: !!connectionQuery.data,
@@ -167,7 +167,7 @@ function LinkedLinearIssuesSection({ runId }: { runId: string }) {
           </div>
         ) : (
           <div className="space-y-2">
-            {issues.map((issue) => (
+            {issues.map(issue => (
               <div key={issue.id} className="flex items-center gap-2">
                 <LinearIssueChip
                   identifier={issue.metadataJson.identifier}
@@ -199,14 +199,14 @@ interface WorkflowSidePanelProps {
  * Opens from right on row click. 480px on desktop, 400px on tablet.
  */
 export function WorkflowSidePanel({ runId, onClose }: WorkflowSidePanelProps) {
-  const t = useTranslations("Workflows");
-  const ts = useTranslations("Workflows.sidePanel");
+  const t = useTranslations('Workflows');
+  const ts = useTranslations('Workflows.sidePanel');
 
   const open = runId !== null;
 
   // Fetch run details when open
   const runQuery = useQuery({
-    ...trpc.workflow.getRun.queryOptions({ id: runId ?? "" }),
+    ...trpc.workflow.getRun.queryOptions({ id: runId ?? '' }),
     enabled: open && runId !== null,
   });
 
@@ -223,10 +223,10 @@ export function WorkflowSidePanel({ runId, onClose }: WorkflowSidePanelProps) {
     }>;
 
     // Exclude condition-skipped tasks
-    const activeTasks = tasks.filter((task) => {
+    const activeTasks = tasks.filter(task => {
       if (
-        task.status === "SKIPPED" &&
-        (task.resultJson as Record<string, unknown>)?.skipReason === "condition_not_met"
+        task.status === 'SKIPPED' &&
+        (task.resultJson as Record<string, unknown>)?.skipReason === 'condition_not_met'
       ) {
         return false;
       }
@@ -234,10 +234,10 @@ export function WorkflowSidePanel({ runId, onClose }: WorkflowSidePanelProps) {
     });
 
     const done = activeTasks.filter(
-      (task) => task.status === "DONE" || task.status === "SKIPPED",
+      task => task.status === 'DONE' || task.status === 'SKIPPED',
     ).length;
-    const inProgress = activeTasks.filter((task) => task.status === "IN_PROGRESS").length;
-    const overdue = activeTasks.filter((task) => task.isOverdue).length;
+    const inProgress = activeTasks.filter(task => task.status === 'IN_PROGRESS').length;
+    const overdue = activeTasks.filter(task => task.isOverdue).length;
 
     return { done, inProgress, overdue, total: activeTasks.length };
   }, [run]);
@@ -246,7 +246,7 @@ export function WorkflowSidePanel({ runId, onClose }: WorkflowSidePanelProps) {
     taskSummary.total > 0 ? Math.round((taskSummary.done / taskSummary.total) * 100) : 0;
 
   return (
-    <Sheet open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+    <Sheet open={open} onOpenChange={isOpen => !isOpen && onClose()}>
       <SheetContent className="w-[400px] sm:w-[480px] p-0">
         <ScrollArea className="h-full">
           <div className="p-6 space-y-6">
@@ -270,10 +270,10 @@ export function WorkflowSidePanel({ runId, onClose }: WorkflowSidePanelProps) {
                 {/* Header */}
                 <SheetHeader className="space-y-3">
                   <SheetTitle className="text-[20px] font-semibold leading-[1.2]">
-                    {run.workflowTemplate?.name ?? "Workflow"}
+                    {run.workflowTemplate?.name ?? 'Workflow'}
                   </SheetTitle>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <Badge variant="secondary" className={statusBadgeColors[run.status] ?? ""}>
+                    <Badge variant="secondary" className={statusBadgeColors[run.status] ?? ''}>
                       {t(`runStatus.${run.status}` as Parameters<typeof t>[0])}
                     </Badge>
                     {run.workflowTemplate && (
@@ -289,7 +289,7 @@ export function WorkflowSidePanel({ runId, onClose }: WorkflowSidePanelProps) {
                 {/* Progress */}
                 <div className="space-y-3">
                   <h3 className="text-[13px] font-medium text-muted-foreground uppercase tracking-wider">
-                    {ts("progress")}
+                    {ts('progress')}
                   </h3>
                   <Progress value={progressPercent} className="h-2" />
                   <p className="text-sm text-muted-foreground">
@@ -308,7 +308,7 @@ export function WorkflowSidePanel({ runId, onClose }: WorkflowSidePanelProps) {
                 {/* Task summary counts */}
                 <div className="space-y-3">
                   <p className="text-sm">
-                    {ts("tasksSummary", {
+                    {ts('tasksSummary', {
                       done: taskSummary.done,
                       inProgress: taskSummary.inProgress,
                       overdue: taskSummary.overdue,
@@ -323,12 +323,11 @@ export function WorkflowSidePanel({ runId, onClose }: WorkflowSidePanelProps) {
                   <>
                     <div className="space-y-2">
                       <h3 className="text-[13px] font-medium text-muted-foreground uppercase tracking-wider">
-                        {ts("contractor")}
+                        {ts('contractor')}
                       </h3>
                       <Link
                         href={`/contractors/${run.contractor.id}`}
-                        className="text-sm text-primary hover:underline"
-                      >
+                        className="text-sm text-primary hover:underline">
                         {run.contractor.displayName ?? run.contractor.legalName}
                       </Link>
                     </div>
@@ -341,8 +340,8 @@ export function WorkflowSidePanel({ runId, onClose }: WorkflowSidePanelProps) {
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   {run.startedAt && (
                     <div className="space-y-1">
-                      <dt className="text-[13px] text-muted-foreground">{ts("startedOn")}</dt>
-                      <dd>{new Date(run.startedAt).toLocaleDateString("pl-PL")}</dd>
+                      <dt className="text-[13px] text-muted-foreground">{ts('startedOn')}</dt>
+                      <dd>{new Date(run.startedAt).toLocaleDateString('pl-PL')}</dd>
                     </div>
                   )}
                 </div>
@@ -351,7 +350,7 @@ export function WorkflowSidePanel({ runId, onClose }: WorkflowSidePanelProps) {
 
                 {/* Open workflow CTA */}
                 <Button render={<Link href={`/workflows/${run.id}`} />} className="w-full">
-                  {ts("openWorkflow")}
+                  {ts('openWorkflow')}
                 </Button>
               </>
             ) : null}

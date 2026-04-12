@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { AlertCircle, Check, Loader2 } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { trpc } from "@/trpc/init";
+import { AlertCircle, Check, Loader2 } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { trpc } from '@/trpc/init';
 
 interface CountryComplianceSectionProps {
   contractorId: string;
@@ -22,11 +22,11 @@ export function CountryComplianceSection({ contractorId }: CountryComplianceSect
   });
   const updateMutation = trpc.contractor.updateCountryFields.useMutation({
     onSuccess: () => {
-      toast.success("Compliance fields saved");
+      toast.success('Compliance fields saved');
       void fieldsQuery.refetch();
     },
-    onError: (err) => {
-      toast.error(err.message || "Failed to save compliance fields");
+    onError: err => {
+      toast.error(err.message || 'Failed to save compliance fields');
     },
   });
 
@@ -52,7 +52,7 @@ export function CountryComplianceSection({ contractorId }: CountryComplianceSect
   const merged = { ...existingFields, ...formData };
 
   const countryLabel =
-    countryCode === "AE" ? "UAE" : countryCode === "SA" ? "Saudi Arabia" : countryCode;
+    countryCode === 'AE' ? 'UAE' : countryCode === 'SA' ? 'Saudi Arabia' : countryCode;
 
   function handleSave() {
     if (!countryCode) return;
@@ -81,16 +81,16 @@ export function CountryComplianceSection({ contractorId }: CountryComplianceSect
         )}
       </CardHeader>
       <CardContent className="space-y-4">
-        {countryCode === "AE" && (
+        {countryCode === 'AE' && (
           <UaeFields
             values={merged}
-            onChange={(key, val) => setFormData((prev) => ({ ...prev, [key]: val }))}
+            onChange={(key, val) => setFormData(prev => ({ ...prev, [key]: val }))}
           />
         )}
-        {countryCode === "SA" && (
+        {countryCode === 'SA' && (
           <SaudiFields
             values={merged}
-            onChange={(key, val) => setFormData((prev) => ({ ...prev, [key]: val }))}
+            onChange={(key, val) => setFormData(prev => ({ ...prev, [key]: val }))}
           />
         )}
         <Button onClick={handleSave} disabled={updateMutation.isPending} className="mt-4">
@@ -121,8 +121,8 @@ function UaeFields({
         </Label>
         <Input
           id="freelancePermitNumber"
-          value={(values.freelancePermitNumber as string) ?? ""}
-          onChange={(e) => onChange("freelancePermitNumber", e.target.value || undefined)}
+          value={(values.freelancePermitNumber as string) ?? ''}
+          onChange={e => onChange('freelancePermitNumber', e.target.value || undefined)}
           placeholder="Enter permit number"
         />
       </div>
@@ -132,8 +132,8 @@ function UaeFields({
         </Label>
         <Input
           id="tradeLicenseNumber"
-          value={(values.tradeLicenseNumber as string) ?? ""}
-          onChange={(e) => onChange("tradeLicenseNumber", e.target.value || undefined)}
+          value={(values.tradeLicenseNumber as string) ?? ''}
+          onChange={e => onChange('tradeLicenseNumber', e.target.value || undefined)}
           placeholder="Enter license number"
         />
       </div>
@@ -141,7 +141,7 @@ function UaeFields({
         <Switch
           id="freeZone"
           checked={(values.freeZone as boolean) ?? false}
-          onCheckedChange={(checked) => onChange("freeZone", checked)}
+          onCheckedChange={checked => onChange('freeZone', checked)}
         />
         <Label htmlFor="freeZone" className="text-sm font-medium">
           Free Zone
@@ -154,8 +154,8 @@ function UaeFields({
         <Input
           id="tradeLicenseExpiry"
           type="date"
-          value={(values.tradeLicenseExpiry as string) ?? ""}
-          onChange={(e) => onChange("tradeLicenseExpiry", e.target.value || undefined)}
+          value={(values.tradeLicenseExpiry as string) ?? ''}
+          onChange={e => onChange('tradeLicenseExpiry', e.target.value || undefined)}
         />
       </div>
     </>
@@ -177,8 +177,8 @@ function SaudiFields({
         </Label>
         <Input
           id="freelanceSaLicense"
-          value={(values.freelanceSaLicense as string) ?? ""}
-          onChange={(e) => onChange("freelanceSaLicense", e.target.value || undefined)}
+          value={(values.freelanceSaLicense as string) ?? ''}
+          onChange={e => onChange('freelanceSaLicense', e.target.value || undefined)}
           placeholder="Enter Freelance.sa license number"
         />
       </div>
@@ -188,8 +188,8 @@ function SaudiFields({
         </Label>
         <Input
           id="commercialRegistration"
-          value={(values.commercialRegistration as string) ?? ""}
-          onChange={(e) => onChange("commercialRegistration", e.target.value || undefined)}
+          value={(values.commercialRegistration as string) ?? ''}
+          onChange={e => onChange('commercialRegistration', e.target.value || undefined)}
           placeholder="Enter CR number"
         />
       </div>
@@ -200,8 +200,8 @@ function SaudiFields({
         <Input
           id="commercialRegistrationExpiry"
           type="date"
-          value={(values.commercialRegistrationExpiry as string) ?? ""}
-          onChange={(e) => onChange("commercialRegistrationExpiry", e.target.value || undefined)}
+          value={(values.commercialRegistrationExpiry as string) ?? ''}
+          onChange={e => onChange('commercialRegistrationExpiry', e.target.value || undefined)}
         />
       </div>
     </>

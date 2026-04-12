@@ -1,11 +1,11 @@
-import { render, screen, setup } from "@/test/test-utils";
-import { StepConfirm } from "../step-confirm";
+import { render, screen, setup } from '@/test/test-utils';
+import { StepConfirm } from '../step-confirm';
 
-vi.mock("next/navigation", () => ({
+vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn() }),
 }));
 
-describe("StepConfirm", () => {
+describe('StepConfirm', () => {
   const defaultCounts = {
     newRecords: 10,
     updates: 3,
@@ -13,7 +13,7 @@ describe("StepConfirm", () => {
     skippedErrors: 1,
   };
 
-  it("renders pre-import state with summary counts", () => {
+  it('renders pre-import state with summary counts', () => {
     render(
       <StepConfirm
         entityType="contractor"
@@ -23,13 +23,13 @@ describe("StepConfirm", () => {
         isImporting={false}
       />,
     );
-    expect(screen.getByText("10")).toBeInTheDocument();
-    expect(screen.getByText("3")).toBeInTheDocument();
-    expect(screen.getByText("2")).toBeInTheDocument();
-    expect(screen.getByText("1")).toBeInTheDocument();
+    expect(screen.getByText('10')).toBeInTheDocument();
+    expect(screen.getByText('3')).toBeInTheDocument();
+    expect(screen.getByText('2')).toBeInTheDocument();
+    expect(screen.getByText('1')).toBeInTheDocument();
   });
 
-  it("renders import button", () => {
+  it('renders import button', () => {
     render(
       <StepConfirm
         entityType="contractor"
@@ -42,7 +42,7 @@ describe("StepConfirm", () => {
     expect(screen.getByText(/Import.*records/)).toBeInTheDocument();
   });
 
-  it("shows loading state while importing", () => {
+  it('shows loading state while importing', () => {
     render(
       <StepConfirm
         entityType="contractor"
@@ -52,10 +52,10 @@ describe("StepConfirm", () => {
         isImporting={true}
       />,
     );
-    expect(screen.getByText("Importing...")).toBeInTheDocument();
+    expect(screen.getByText('Importing...')).toBeInTheDocument();
   });
 
-  it("shows completion state with results", () => {
+  it('shows completion state with results', () => {
     render(
       <StepConfirm
         entityType="contractor"
@@ -65,10 +65,10 @@ describe("StepConfirm", () => {
         isImporting={false}
       />,
     );
-    expect(screen.getByText("Import complete")).toBeInTheDocument();
+    expect(screen.getByText('Import complete')).toBeInTheDocument();
   });
 
-  it("calls onImport when import button clicked", async () => {
+  it('calls onImport when import button clicked', async () => {
     const onImport = vi.fn();
     const { user } = setup(
       <StepConfirm

@@ -1,8 +1,8 @@
-import { prisma } from "@contractor-ops/db";
-import type { CredentialBlob } from "../types/credentials.js";
-import type { ProviderHealthStatus } from "../types/health.js";
-import type { OAuthConfig } from "../types/provider.js";
-import { BaseAdapter } from "./base-adapter.js";
+import { prisma } from '@contractor-ops/db';
+import type { CredentialBlob } from '../types/credentials.js';
+import type { ProviderHealthStatus } from '../types/health.js';
+import type { OAuthConfig } from '../types/provider.js';
+import { BaseAdapter } from './base-adapter.js';
 
 // ---------------------------------------------------------------------------
 // Google Workspace Admin SDK Types
@@ -49,18 +49,18 @@ export interface GoogleGroup {
  * Slug uses underscore so `.toUpperCase()` maps to `GOOGLE_WORKSPACE` Prisma enum.
  */
 const GOOGLE_WORKSPACE_OAUTH_CONFIG: OAuthConfig = {
-  clientIdEnvVar: "GOOGLE_WORKSPACE_CLIENT_ID",
-  clientSecretEnvVar: "GOOGLE_WORKSPACE_CLIENT_SECRET",
-  authorizationUrl: "https://accounts.google.com/o/oauth2/v2/auth",
-  tokenUrl: "https://oauth2.googleapis.com/token",
+  clientIdEnvVar: 'GOOGLE_WORKSPACE_CLIENT_ID',
+  clientSecretEnvVar: 'GOOGLE_WORKSPACE_CLIENT_SECRET',
+  authorizationUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
+  tokenUrl: 'https://oauth2.googleapis.com/token',
   scopes: [
-    "https://www.googleapis.com/auth/admin.directory.user.readonly",
-    "https://www.googleapis.com/auth/admin.directory.group.readonly",
+    'https://www.googleapis.com/auth/admin.directory.user.readonly',
+    'https://www.googleapis.com/auth/admin.directory.group.readonly',
   ],
-  redirectPath: "/api/oauth/google_workspace/callback",
+  redirectPath: '/api/oauth/google_workspace/callback',
   extraAuthParams: {
-    access_type: "offline",
-    prompt: "consent",
+    access_type: 'offline',
+    prompt: 'consent',
   },
 };
 
@@ -73,8 +73,8 @@ export class GoogleWorkspaceAdapter extends BaseAdapter {
    * Slug uses underscore so `.toUpperCase()` produces `GOOGLE_WORKSPACE`
    * matching the Prisma IntegrationProvider enum value.
    */
-  readonly slug = "google_workspace";
-  readonly displayName = "Google Workspace";
+  readonly slug = 'google_workspace';
+  readonly displayName = 'Google Workspace';
   readonly supportsOAuth = true;
   readonly supportsWebhooks = false;
 
@@ -92,17 +92,17 @@ export class GoogleWorkspaceAdapter extends BaseAdapter {
 
     if (!(clientId && clientSecret)) {
       throw new Error(
-        "GOOGLE_WORKSPACE_CLIENT_ID and GOOGLE_WORKSPACE_CLIENT_SECRET environment variables are required",
+        'GOOGLE_WORKSPACE_CLIENT_ID and GOOGLE_WORKSPACE_CLIENT_SECRET environment variables are required',
       );
     }
 
-    const response = await fetch("https://oauth2.googleapis.com/token", {
-      method: "POST",
+    const response = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        grant_type: "authorization_code",
+        grant_type: 'authorization_code',
         client_id: clientId,
         client_secret: clientSecret,
         code,
@@ -138,21 +138,21 @@ export class GoogleWorkspaceAdapter extends BaseAdapter {
 
     if (!(clientId && clientSecret)) {
       throw new Error(
-        "GOOGLE_WORKSPACE_CLIENT_ID and GOOGLE_WORKSPACE_CLIENT_SECRET environment variables are required",
+        'GOOGLE_WORKSPACE_CLIENT_ID and GOOGLE_WORKSPACE_CLIENT_SECRET environment variables are required',
       );
     }
 
     if (!credentials.refreshToken) {
-      throw new Error("No refresh token available for Google Workspace");
+      throw new Error('No refresh token available for Google Workspace');
     }
 
-    const response = await fetch("https://oauth2.googleapis.com/token", {
-      method: "POST",
+    const response = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        grant_type: "refresh_token",
+        grant_type: 'refresh_token',
         client_id: clientId,
         client_secret: clientSecret,
         refresh_token: credentials.refreshToken,
@@ -194,13 +194,13 @@ export class GoogleWorkspaceAdapter extends BaseAdapter {
     let pageToken: string | undefined;
 
     do {
-      const url = new URL("https://admin.googleapis.com/admin/directory/v1/users");
-      url.searchParams.set("customer", "my_customer");
-      url.searchParams.set("maxResults", "500");
-      url.searchParams.set("projection", "FULL");
-      url.searchParams.set("orderBy", "EMAIL");
+      const url = new URL('https://admin.googleapis.com/admin/directory/v1/users');
+      url.searchParams.set('customer', 'my_customer');
+      url.searchParams.set('maxResults', '500');
+      url.searchParams.set('projection', 'FULL');
+      url.searchParams.set('orderBy', 'EMAIL');
       if (pageToken) {
-        url.searchParams.set("pageToken", pageToken);
+        url.searchParams.set('pageToken', pageToken);
       }
 
       const response = await fetch(url.toString(), {
@@ -221,7 +221,7 @@ export class GoogleWorkspaceAdapter extends BaseAdapter {
 
       if (data.users) {
         // Filter out suspended users
-        const activeUsers = data.users.filter((u) => !u.suspended);
+        const activeUsers = data.users.filter(u => !u.suspended);
         allUsers.push(...activeUsers);
       }
 
@@ -240,11 +240,11 @@ export class GoogleWorkspaceAdapter extends BaseAdapter {
     let pageToken: string | undefined;
 
     do {
-      const url = new URL("https://admin.googleapis.com/admin/directory/v1/groups");
-      url.searchParams.set("userKey", userEmail);
-      url.searchParams.set("maxResults", "200");
+      const url = new URL('https://admin.googleapis.com/admin/directory/v1/groups');
+      url.searchParams.set('userKey', userEmail);
+      url.searchParams.set('maxResults', '200');
       if (pageToken) {
-        url.searchParams.set("pageToken", pageToken);
+        url.searchParams.set('pageToken', pageToken);
       }
 
       const response = await fetch(url.toString(), {
@@ -300,8 +300,8 @@ export class GoogleWorkspaceAdapter extends BaseAdapter {
 
     if (!connection) {
       return {
-        status: "DISCONNECTED",
-        provider: "google_workspace",
+        status: 'DISCONNECTED',
+        provider: 'google_workspace',
         recentSyncs: [],
         recentWebhooks: [],
         errorCountLast24h: 0,
@@ -310,7 +310,7 @@ export class GoogleWorkspaceAdapter extends BaseAdapter {
 
     const recentSyncs = await prisma.integrationSyncLog.findMany({
       where: { integrationConnectionId: connectionId },
-      orderBy: { startedAt: "desc" },
+      orderBy: { startedAt: 'desc' },
       take: 5,
       select: {
         id: true,
@@ -325,27 +325,27 @@ export class GoogleWorkspaceAdapter extends BaseAdapter {
     const errorCountLast24h = await prisma.integrationSyncLog.count({
       where: {
         integrationConnectionId: connectionId,
-        status: "FAILED",
+        status: 'FAILED',
         startedAt: { gte: oneDayAgo },
       },
     });
 
-    let status: ProviderHealthStatus["status"];
-    if (connection.status !== "CONNECTED") {
-      status = "DISCONNECTED";
+    let status: ProviderHealthStatus['status'];
+    if (connection.status !== 'CONNECTED') {
+      status = 'DISCONNECTED';
     } else if (connection.lastErrorAt && !connection.lastSuccessAt) {
-      status = "ERROR";
+      status = 'ERROR';
     } else if (connection.tokenExpiresAt && connection.tokenExpiresAt < new Date()) {
-      status = "REAUTH_REQUIRED";
-    } else if (recentSyncs[0]?.status === "FAILED") {
-      status = "ERROR";
+      status = 'REAUTH_REQUIRED';
+    } else if (recentSyncs[0]?.status === 'FAILED') {
+      status = 'ERROR';
     } else {
-      status = "CONNECTED";
+      status = 'CONNECTED';
     }
 
     return {
       status,
-      provider: "google_workspace",
+      provider: 'google_workspace',
       displayName: connection.displayName,
       connectedAt: connection.connectedAt,
       lastSyncAt: connection.lastSyncAt,
@@ -353,7 +353,7 @@ export class GoogleWorkspaceAdapter extends BaseAdapter {
       lastErrorAt: connection.lastErrorAt,
       lastErrorMessage: connection.lastErrorMessage,
       tokenExpiresAt: connection.tokenExpiresAt,
-      recentSyncs: recentSyncs.map((s) => ({
+      recentSyncs: recentSyncs.map(s => ({
         id: s.id,
         syncType: s.syncType,
         status: s.status,

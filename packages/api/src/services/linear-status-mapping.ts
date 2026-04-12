@@ -1,7 +1,7 @@
-import type { LinearStatusMappingEntry } from "@contractor-ops/validators";
-import { linearStatusMappingEntrySchema } from "@contractor-ops/validators";
-import { z } from "zod";
-import type { DbClient } from "./types.js";
+import type { LinearStatusMappingEntry } from '@contractor-ops/validators';
+import { linearStatusMappingEntrySchema } from '@contractor-ops/validators';
+import { z } from 'zod';
+import type { DbClient } from './types.js';
 
 type PrismaClient = DbClient;
 
@@ -108,7 +108,7 @@ export async function saveStatusMapping(
     data: {
       configJson: updatedConfig,
       // Transition PENDING_MAPPING -> CONNECTED on first mapping save (D-03)
-      ...(connection.status === "PENDING_MAPPING" ? { status: "CONNECTED" } : {}),
+      ...(connection.status === 'PENDING_MAPPING' ? { status: 'CONNECTED' } : {}),
     },
   });
 }
@@ -132,7 +132,7 @@ export async function resolveLinearStateId(
   workflowStatus: string,
 ): Promise<string | null> {
   const mappings = await getStatusMapping(prisma, connectionId, teamId);
-  const entry = mappings.find((m) => m.workflowStatus === workflowStatus);
+  const entry = mappings.find(m => m.workflowStatus === workflowStatus);
   return entry?.linearStateId ?? null;
 }
 
@@ -157,7 +157,7 @@ export async function resolveInternalStatus(
   linearStateId: string,
 ): Promise<string | null> {
   const mappings = await getStatusMapping(prisma, connectionId, teamId);
-  const entry = mappings.find((m) => m.linearStateId === linearStateId);
+  const entry = mappings.find(m => m.linearStateId === linearStateId);
 
   if (entry) {
     return entry.workflowStatus;

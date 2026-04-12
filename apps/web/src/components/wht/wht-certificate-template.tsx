@@ -1,4 +1,4 @@
-import { Document, Image, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
+import { Document, Image, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 
 interface WhtCertificateData {
   certificateNumber: string;
@@ -24,52 +24,52 @@ interface WhtCertificateTemplateProps {
 }
 
 const styles = StyleSheet.create({
-  page: { padding: 40, fontFamily: "Helvetica", fontSize: 10, lineHeight: 1.5 },
-  header: { marginBottom: 24, borderBottom: "2px solid #1a1a1a", paddingBottom: 16 },
-  logo: { width: 120, height: 40, objectFit: "contain", marginBottom: 12 },
+  page: { padding: 40, fontFamily: 'Helvetica', fontSize: 10, lineHeight: 1.5 },
+  header: { marginBottom: 24, borderBottom: '2px solid #1a1a1a', paddingBottom: 16 },
+  logo: { width: 120, height: 40, objectFit: 'contain', marginBottom: 12 },
   title: {
     fontSize: 18,
-    fontWeight: "bold",
-    textTransform: "uppercase",
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
     letterSpacing: 1.5,
     marginBottom: 4,
   },
-  certNumber: { fontSize: 11, color: "#666" },
+  certNumber: { fontSize: 11, color: '#666' },
   section: { marginBottom: 16 },
   sectionTitle: {
     fontSize: 11,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginBottom: 8,
-    textTransform: "uppercase",
-    color: "#444",
+    textTransform: 'uppercase',
+    color: '#444',
   },
-  row: { flexDirection: "row", justifyContent: "space-between", marginBottom: 4 },
-  label: { color: "#666", width: "40%" },
-  value: { fontWeight: "bold", width: "60%", textAlign: "right" },
+  row: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 },
+  label: { color: '#666', width: '40%' },
+  value: { fontWeight: 'bold', width: '60%', textAlign: 'right' },
   amountRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginBottom: 6,
     paddingVertical: 4,
   },
   totalRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    borderTop: "1px solid #ccc",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    borderTop: '1px solid #ccc',
     paddingTop: 8,
     marginTop: 4,
   },
-  treaty: { marginTop: 12, padding: 8, backgroundColor: "#f5f5f5", borderRadius: 4 },
-  treatyText: { fontSize: 9, color: "#555" },
+  treaty: { marginTop: 12, padding: 8, backgroundColor: '#f5f5f5', borderRadius: 4 },
+  treatyText: { fontSize: 9, color: '#555' },
   footer: {
-    position: "absolute",
+    position: 'absolute',
     bottom: 40,
     left: 40,
     right: 40,
     fontSize: 8,
-    color: "#999",
-    textAlign: "center",
-    borderTop: "1px solid #eee",
+    color: '#999',
+    textAlign: 'center',
+    borderTop: '1px solid #eee',
     paddingTop: 8,
   },
 });
@@ -129,7 +129,7 @@ export function WhtCertificateTemplate({ data, branding }: WhtCertificateTemplat
           <Text style={styles.sectionTitle}>Payment Details</Text>
           <View style={styles.row}>
             <Text style={styles.label}>Payment Date</Text>
-            <Text style={styles.value}>{data.paymentDate.toISOString().split("T")[0]}</Text>
+            <Text style={styles.value}>{data.paymentDate.toISOString().split('T')[0]}</Text>
           </View>
           <View style={styles.amountRow}>
             <Text style={styles.label}>Gross Amount</Text>
@@ -137,7 +137,7 @@ export function WhtCertificateTemplate({ data, branding }: WhtCertificateTemplat
           </View>
           <View style={styles.amountRow}>
             <Text style={styles.label}>
-              WHT Rate ({data.treatyApplied ? "Treaty" : "Standard"})
+              WHT Rate ({data.treatyApplied ? 'Treaty' : 'Standard'})
             </Text>
             <Text style={styles.value}>{data.whtRate}%</Text>
           </View>

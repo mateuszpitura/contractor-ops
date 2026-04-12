@@ -1,19 +1,19 @@
-import type { Prisma } from "@contractor-ops/db";
-import { decryptCredentials } from "@contractor-ops/integrations/services/credential-service";
-import type { LinearIssueMetadata } from "@contractor-ops/validators";
+import type { Prisma } from '@contractor-ops/db';
+import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
+import type { LinearIssueMetadata } from '@contractor-ops/validators';
 import {
   saveLinearStatusMappingInputSchema,
   saveLinearTaskConfigInputSchema,
-} from "@contractor-ops/validators";
-import { TRPCError } from "@trpc/server";
-import { z } from "zod";
-import * as E from "../errors.js";
-import { router } from "../init.js";
-import { requirePermission } from "../middleware/rbac.js";
-import { tenantProcedure } from "../middleware/tenant.js";
-import { requireTier } from "../middleware/tier.js";
-import { linearGraphQL } from "../services/linear-issue-sync.js";
-import { registerLinearWebhook } from "../services/linear-webhook-handler.js";
+} from '@contractor-ops/validators';
+import { TRPCError } from '@trpc/server';
+import { z } from 'zod';
+import * as E from '../errors.js';
+import { router } from '../init.js';
+import { requirePermission } from '../middleware/rbac.js';
+import { tenantProcedure } from '../middleware/tenant.js';
+import { requireTier } from '../middleware/tier.js';
+import { linearGraphQL } from '../services/linear-issue-sync.js';
+import { registerLinearWebhook } from '../services/linear-webhook-handler.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -37,13 +37,13 @@ function buildLinearApiContext(credentialsRef: string): {
   accessToken: string;
   authHeaders: Record<string, string>;
 } {
-  const credentials = decryptCredentials(credentialsRef, "linear");
+  const credentials = decryptCredentials(credentialsRef, 'linear');
 
   return {
     accessToken: credentials.accessToken,
     authHeaders: {
       Authorization: `Bearer ${credentials.accessToken}`,
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
   };
 }
@@ -56,14 +56,14 @@ async function loadLinearConnection(organizationId: string) {
   const connection = await ctx.db.integrationConnection.findFirst({
     where: {
       organizationId,
-      provider: "LINEAR",
-      status: { in: ["PENDING_MAPPING", "CONNECTED"] },
+      provider: 'LINEAR',
+      status: { in: ['PENDING_MAPPING', 'CONNECTED'] },
     },
   });
 
   if (!connection) {
     throw new TRPCError({
-      code: "NOT_FOUND",
+      code: 'NOT_FOUND',
       message: E.INTEGRATION_NOT_FOUND,
     });
   }
@@ -89,7 +89,7 @@ export const linearRouter = router({
     const connection = await ctx.db.integrationConnection.findFirst({
       where: {
         organizationId: ctx.organizationId,
-        provider: "LINEAR",
+        provider: 'LINEAR',
       },
       select: {
         id: true,
@@ -155,11 +155,11 @@ export const linearRouter = router({
       }`,
     );
 
-    return result.teams.nodes.map((team) => ({
+    return result.teams.nodes.map(team => ({
       id: team.id,
       name: team.name,
       key: team.key,
-      states: team.states.nodes.map((state) => ({
+      states: team.states.nodes.map(state => ({
         id: state.id,
         name: state.name,
         type: state.type,
@@ -190,16 +190,16 @@ export const linearRouter = router({
    * Transitions connection from PENDING_MAPPING to CONNECTED on first save (D-03).
    */
   saveStatusMapping: tenantProcedure
-    .use(requirePermission({ settings: ["update"] }))
-    .use(requireTier("PRO"))
+    .use(requirePermission({ settings: ['update'] }))
+    .use(requireTier('PRO'))
     .input(saveLinearStatusMappingInputSchema)
     .mutation(async ({ ctx, input }) => {
       const connection = await loadLinearConnection(ctx.organizationId);
 
       if (connection.id !== input.connectionId) {
         throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Connection ID does not match the active Linear connection.",
+          code: 'BAD_REQUEST',
+          message: 'Connection ID does not match the active Linear connection.',
         });
       }
 
@@ -229,14 +229,14 @@ export const linearRouter = router({
             statusMappings,
             stateCache,
           } as Prisma.InputJsonValue,
-          ...(connection.status === "PENDING_MAPPING" ? { status: "CONNECTED" } : {}),
+          ...(connection.status === 'PENDING_MAPPING' ? { status: 'CONNECTED' } : {}),
         },
       });
 
       // Fire-and-forget: register webhook for this team if not yet registered
       const webhooks = (config.webhooks as Record<string, string> | undefined) ?? {};
       if (!webhooks[input.teamId]) {
-        void registerLinearWebhook(prisma, connection.id, input.teamId).catch((err) =>
+        void registerLinearWebhook(prisma, connection.id, input.teamId).catch(err =>
           console.error(`[Linear] Webhook registration failed for team ${input.teamId}:`, err),
         );
       }
@@ -249,8 +249,8 @@ export const linearRouter = router({
    * Merges Linear config into existing configJson.
    */
   saveTaskConfig: tenantProcedure
-    .use(requirePermission({ workflow: ["update"] }))
-    .use(requireTier("PRO"))
+    .use(requirePermission({ workflow: ['update'] }))
+    .use(requireTier('PRO'))
     .input(saveLinearTaskConfigInputSchema)
     .mutation(async ({ ctx, input }) => {
       const template = await ctx.db.workflowTaskTemplate.findFirst({
@@ -263,7 +263,7 @@ export const linearRouter = router({
 
       if (!template) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: E.WORKFLOW_TEMPLATE_NOT_FOUND,
         });
       }
@@ -293,9 +293,9 @@ export const linearRouter = router({
       const link = await ctx.db.externalLink.findFirst({
         where: {
           organizationId: ctx.organizationId,
-          entityType: "WORKFLOW_TASK_RUN",
+          entityType: 'WORKFLOW_TASK_RUN',
           entityId: input.taskRunId,
-          externalType: "LINEAR_ISSUE",
+          externalType: 'LINEAR_ISSUE',
         },
         select: {
           id: true,
@@ -325,9 +325,9 @@ export const linearRouter = router({
       const links = await ctx.db.externalLink.findMany({
         where: {
           organizationId: ctx.organizationId,
-          entityType: "WORKFLOW_TASK_RUN",
+          entityType: 'WORKFLOW_TASK_RUN',
           entityId: { in: input.taskRunIds },
-          externalType: "LINEAR_ISSUE",
+          externalType: 'LINEAR_ISSUE',
         },
         select: {
           id: true,
@@ -373,18 +373,18 @@ export const linearRouter = router({
   linkedIssues: tenantProcedure
     .input(
       z.object({
-        entityType: z.enum(["WORKFLOW_TASK_RUN", "WORKFLOW_RUN"]),
+        entityType: z.enum(['WORKFLOW_TASK_RUN', 'WORKFLOW_RUN']),
         entityId: z.string(),
       }),
     )
     .query(async ({ ctx, input }) => {
-      if (input.entityType === "WORKFLOW_TASK_RUN") {
+      if (input.entityType === 'WORKFLOW_TASK_RUN') {
         const links = await ctx.db.externalLink.findMany({
           where: {
             organizationId: ctx.organizationId,
-            entityType: "WORKFLOW_TASK_RUN",
+            entityType: 'WORKFLOW_TASK_RUN',
             entityId: input.entityId,
-            externalType: "LINEAR_ISSUE",
+            externalType: 'LINEAR_ISSUE',
           },
           select: {
             id: true,
@@ -411,9 +411,9 @@ export const linearRouter = router({
       const links = await ctx.db.externalLink.findMany({
         where: {
           organizationId: ctx.organizationId,
-          entityType: "WORKFLOW_TASK_RUN",
-          entityId: { in: taskRuns.map((t) => t.id) },
-          externalType: "LINEAR_ISSUE",
+          entityType: 'WORKFLOW_TASK_RUN',
+          entityId: { in: taskRuns.map(t => t.id) },
+          externalType: 'LINEAR_ISSUE',
         },
         select: {
           id: true,

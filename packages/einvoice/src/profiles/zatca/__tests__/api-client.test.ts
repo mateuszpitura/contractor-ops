@@ -1,98 +1,98 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock global fetch
 const mockFetch = vi.fn();
-vi.stubGlobal("fetch", mockFetch);
+vi.stubGlobal('fetch', mockFetch);
 
-describe("ZatcaApiClient", () => {
+describe('ZatcaApiClient', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("submitForClearance POSTs to /invoices/clearance/single", async () => {
-    const { ZatcaApiClient } = await import("../api-client.js");
+  it('submitForClearance POSTs to /invoices/clearance/single', async () => {
+    const { ZatcaApiClient } = await import('../api-client.js');
 
     mockFetch.mockResolvedValue({
       ok: true,
       status: 200,
       json: () =>
         Promise.resolve({
-          clearanceStatus: "CLEARED",
-          validationResults: { status: "PASS", warningMessages: [], errorMessages: [] },
+          clearanceStatus: 'CLEARED',
+          validationResults: { status: 'PASS', warningMessages: [], errorMessages: [] },
         }),
     });
 
     const client = new ZatcaApiClient({
-      baseUrl: "https://gw-fatoora.zatca.gov.sa/e-invoicing/developer-portal",
-      binarySecurityToken: "test-token",
-      secret: "test-secret",
+      baseUrl: 'https://gw-fatoora.zatca.gov.sa/e-invoicing/developer-portal',
+      binarySecurityToken: 'test-token',
+      secret: 'test-secret',
     });
 
     await client.submitForClearance({
-      invoiceHash: "abc123",
-      uuid: "uuid-v4",
-      invoice: "PGludm9pY2U+", // base64
+      invoiceHash: 'abc123',
+      uuid: 'uuid-v4',
+      invoice: 'PGludm9pY2U+', // base64
     });
 
     expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining("/invoices/clearance/single"),
-      expect.objectContaining({ method: "POST" }),
+      expect.stringContaining('/invoices/clearance/single'),
+      expect.objectContaining({ method: 'POST' }),
     );
   });
 
-  it("submitForReporting POSTs to /invoices/reporting/single", async () => {
-    const { ZatcaApiClient } = await import("../api-client.js");
+  it('submitForReporting POSTs to /invoices/reporting/single', async () => {
+    const { ZatcaApiClient } = await import('../api-client.js');
 
     mockFetch.mockResolvedValue({
       ok: true,
       status: 200,
       json: () =>
         Promise.resolve({
-          reportingStatus: "REPORTED",
-          validationResults: { status: "PASS", warningMessages: [], errorMessages: [] },
+          reportingStatus: 'REPORTED',
+          validationResults: { status: 'PASS', warningMessages: [], errorMessages: [] },
         }),
     });
 
     const client = new ZatcaApiClient({
-      baseUrl: "https://gw-fatoora.zatca.gov.sa/e-invoicing/developer-portal",
-      binarySecurityToken: "test-token",
-      secret: "test-secret",
+      baseUrl: 'https://gw-fatoora.zatca.gov.sa/e-invoicing/developer-portal',
+      binarySecurityToken: 'test-token',
+      secret: 'test-secret',
     });
 
     await client.submitForReporting({
-      invoiceHash: "abc123",
-      uuid: "uuid-v4",
-      invoice: "PGludm9pY2U+",
+      invoiceHash: 'abc123',
+      uuid: 'uuid-v4',
+      invoice: 'PGludm9pY2U+',
     });
 
     expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining("/invoices/reporting/single"),
-      expect.objectContaining({ method: "POST" }),
+      expect.stringContaining('/invoices/reporting/single'),
+      expect.objectContaining({ method: 'POST' }),
     );
   });
 
-  it("uses Base64 {token}:{secret} for Authorization header", async () => {
-    const { ZatcaApiClient } = await import("../api-client.js");
+  it('uses Base64 {token}:{secret} for Authorization header', async () => {
+    const { ZatcaApiClient } = await import('../api-client.js');
 
     mockFetch.mockResolvedValue({
       ok: true,
       status: 200,
-      json: () => Promise.resolve({ reportingStatus: "REPORTED", validationResults: {} }),
+      json: () => Promise.resolve({ reportingStatus: 'REPORTED', validationResults: {} }),
     });
 
     const client = new ZatcaApiClient({
-      baseUrl: "https://gw-fatoora.zatca.gov.sa/e-invoicing/developer-portal",
-      binarySecurityToken: "mytoken",
-      secret: "mysecret",
+      baseUrl: 'https://gw-fatoora.zatca.gov.sa/e-invoicing/developer-portal',
+      binarySecurityToken: 'mytoken',
+      secret: 'mysecret',
     });
 
     await client.submitForReporting({
-      invoiceHash: "hash",
-      uuid: "uuid",
-      invoice: "base64xml",
+      invoiceHash: 'hash',
+      uuid: 'uuid',
+      invoice: 'base64xml',
     });
 
-    const expectedAuth = `Basic ${Buffer.from("mytoken:mysecret").toString("base64")}`;
+    const expectedAuth = `Basic ${Buffer.from('mytoken:mysecret').toString('base64')}`;
     const callArgs = mockFetch.mock.calls[0];
     expect(callArgs[1].headers.Authorization).toBe(expectedAuth);
   });

@@ -1,22 +1,22 @@
-"use client";
+'use client';
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { format } from "date-fns";
-import { Loader2 } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { format } from 'date-fns';
+import { Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { cn } from "@/lib/utils";
-import { trpc } from "@/trpc/init";
+} from '@/components/ui/select';
+import { cn } from '@/lib/utils';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -34,22 +34,22 @@ type ShipmentEvent = {
  * Ordered list of all shipment statuses for timeline display.
  */
 const SHIPMENT_STATUS_ORDER = [
-  "CREATED",
-  "LABEL_GENERATED",
-  "PICKED_UP",
-  "IN_TRANSIT",
-  "OUT_FOR_DELIVERY",
-  "DELIVERED",
+  'CREATED',
+  'LABEL_GENERATED',
+  'PICKED_UP',
+  'IN_TRANSIT',
+  'OUT_FOR_DELIVERY',
+  'DELIVERED',
 ] as const;
 
 const UPDATABLE_STATUSES = [
-  "LABEL_GENERATED",
-  "PICKED_UP",
-  "IN_TRANSIT",
-  "OUT_FOR_DELIVERY",
-  "DELIVERED",
-  "FAILED",
-  "RETURNED",
+  'LABEL_GENERATED',
+  'PICKED_UP',
+  'IN_TRANSIT',
+  'OUT_FOR_DELIVERY',
+  'DELIVERED',
+  'FAILED',
+  'RETURNED',
 ] as const;
 
 interface ShipmentTimelineProps {
@@ -73,23 +73,23 @@ export function ShipmentTimeline({
   events,
   direction,
 }: ShipmentTimelineProps) {
-  const t = useTranslations("Equipment");
+  const t = useTranslations('Equipment');
   const queryClient = useQueryClient();
-  const [newStatus, setNewStatus] = useState<string>("");
-  const [newNotes, setNewNotes] = useState("");
+  const [newStatus, setNewStatus] = useState<string>('');
+  const [newNotes, setNewNotes] = useState('');
 
   const addEventMutation = useMutation(
     trpc.equipment.addShipmentEvent.mutationOptions({
       onSuccess: () => {
-        toast.success(t("toast.statusUpdated"));
+        toast.success(t('toast.statusUpdated'));
         queryClient.invalidateQueries({
           queryKey: trpc.equipment.getById.queryKey(),
         });
-        setNewStatus("");
-        setNewNotes("");
+        setNewStatus('');
+        setNewNotes('');
       },
       onError: () => {
-        toast.error(t("error.actionFailed"));
+        toast.error(t('error.actionFailed'));
       },
     }),
   );
@@ -116,7 +116,7 @@ export function ShipmentTimeline({
 
   // Terminal statuses
   const isTerminal =
-    currentStatus === "DELIVERED" || currentStatus === "FAILED" || currentStatus === "RETURNED";
+    currentStatus === 'DELIVERED' || currentStatus === 'FAILED' || currentStatus === 'RETURNED';
 
   return (
     <div className="space-y-4">
@@ -125,14 +125,14 @@ export function ShipmentTimeline({
         <div className="flex items-end gap-2 rounded-lg border bg-card p-3">
           <div className="flex-1 space-y-1">
             <label className="text-xs font-medium text-muted-foreground">
-              {t("shipment.addStatusUpdate")}
+              {t('shipment.addStatusUpdate')}
             </label>
-            <Select value={newStatus} onValueChange={(val) => val && setNewStatus(val)}>
+            <Select value={newStatus} onValueChange={val => val && setNewStatus(val)}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select status..." />
               </SelectTrigger>
               <SelectContent>
-                {UPDATABLE_STATUSES.map((status) => (
+                {UPDATABLE_STATUSES.map(status => (
                   <SelectItem key={status} value={status}>
                     {t(`shipment.status.${status}`)}
                   </SelectItem>
@@ -142,19 +142,18 @@ export function ShipmentTimeline({
           </div>
           <div className="flex-1 space-y-1">
             <label className="text-xs font-medium text-muted-foreground">
-              {t("shipment.notes")}
+              {t('shipment.notes')}
             </label>
             <Input
               value={newNotes}
-              onChange={(e) => setNewNotes(e.target.value)}
+              onChange={e => setNewNotes(e.target.value)}
               placeholder="Optional notes..."
             />
           </div>
           <Button
             size="sm"
             onClick={handleAddEvent}
-            disabled={!newStatus || addEventMutation.isPending}
-          >
+            disabled={!newStatus || addEventMutation.isPending}>
             {addEventMutation.isPending && <Loader2 className="me-1 h-3 w-3 animate-spin" />}
             Add
           </Button>
@@ -178,10 +177,10 @@ export function ShipmentTimeline({
               {index < SHIPMENT_STATUS_ORDER.length - 1 && (
                 <div
                   className={cn(
-                    "absolute start-[5px] top-[18px] h-full w-0.5",
+                    'absolute start-[5px] top-[18px] h-full w-0.5',
                     isCompleted || isCurrent
-                      ? "bg-border"
-                      : "border-s-2 border-dashed border-border/40",
+                      ? 'bg-border'
+                      : 'border-s-2 border-dashed border-border/40',
                   )}
                 />
               )}
@@ -191,31 +190,29 @@ export function ShipmentTimeline({
                 {/* Circle indicator */}
                 <div
                   className={cn(
-                    "relative z-10 mt-0.5 h-3 w-3 shrink-0 rounded-full border-2",
+                    'relative z-10 mt-0.5 h-3 w-3 shrink-0 rounded-full border-2',
                     isCurrent
-                      ? "border-primary bg-primary/20"
+                      ? 'border-primary bg-primary/20'
                       : isCompleted
-                        ? "border-muted-foreground bg-muted-foreground"
-                        : "border-border/40 bg-background",
+                        ? 'border-muted-foreground bg-muted-foreground'
+                        : 'border-border/40 bg-background',
                   )}
                 />
 
                 {/* Content */}
                 <div
                   className={cn(
-                    "flex flex-1 items-start justify-between gap-2",
-                    isCurrent && "rounded-md bg-primary/5 px-2 py-1 -mx-2",
-                    isPending && "opacity-40",
-                  )}
-                >
+                    'flex flex-1 items-start justify-between gap-2',
+                    isCurrent && 'rounded-md bg-primary/5 px-2 py-1 -mx-2',
+                    isPending && 'opacity-40',
+                  )}>
                   <div>
                     <span
                       className={cn(
-                        "text-sm font-medium",
-                        isCurrent && "text-primary",
-                        isPending && "text-muted-foreground",
-                      )}
-                    >
+                        'text-sm font-medium',
+                        isCurrent && 'text-primary',
+                        isPending && 'text-muted-foreground',
+                      )}>
                       {t(`shipment.status.${status}`)}
                     </span>
                     {event?.notes && (
@@ -225,7 +222,7 @@ export function ShipmentTimeline({
 
                   {event && (
                     <span className="shrink-0 text-xs text-muted-foreground">
-                      {format(new Date(event.occurredAt), "MMM d, HH:mm")}
+                      {format(new Date(event.occurredAt), 'MMM d, HH:mm')}
                     </span>
                   )}
 
@@ -241,7 +238,7 @@ export function ShipmentTimeline({
         {/* Show FAILED or RETURNED as special terminal events if applicable */}
         {(() => {
           const terminalEvent =
-            currentStatus === "FAILED" || currentStatus === "RETURNED"
+            currentStatus === 'FAILED' || currentStatus === 'RETURNED'
               ? eventByStatus.get(currentStatus)
               : undefined;
           if (!terminalEvent) return null;
@@ -259,7 +256,7 @@ export function ShipmentTimeline({
                     )}
                   </div>
                   <span className="shrink-0 text-xs text-muted-foreground">
-                    {format(new Date(terminalEvent.occurredAt), "MMM d, HH:mm")}
+                    {format(new Date(terminalEvent.occurredAt), 'MMM d, HH:mm')}
                   </span>
                 </div>
               </div>

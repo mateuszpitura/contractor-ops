@@ -1,21 +1,21 @@
-import { useQuery } from "@tanstack/react-query";
-import { render, screen } from "@/test/test-utils";
-import { ApprovalQueueWidget } from "../approval-queue-widget";
+import { useQuery } from '@tanstack/react-query';
+import { render, screen } from '@/test/test-utils';
+import { ApprovalQueueWidget } from '../approval-queue-widget';
 
-vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual("@tanstack/react-query");
+vi.mock('@tanstack/react-query', async () => {
+  const actual = await vi.importActual('@tanstack/react-query');
   return { ...actual, useQuery: vi.fn() };
 });
 
-vi.mock("@/trpc/init", () => ({
+vi.mock('@/trpc/init', () => ({
   trpc: {
     approval: {
-      listPending: { queryOptions: () => ({ queryKey: ["approval", "listPending"] }) },
+      listPending: { queryOptions: () => ({ queryKey: ['approval', 'listPending'] }) },
     },
   },
 }));
 
-vi.mock("@/i18n/navigation", () => ({
+vi.mock('@/i18n/navigation', () => ({
   Link: ({ children, href, ...props }: any) => (
     <a href={href} {...props}>
       {children}
@@ -25,146 +25,146 @@ vi.mock("@/i18n/navigation", () => ({
 
 const mockedUseQuery = vi.mocked(useQuery);
 
-describe("ApprovalQueueWidget", () => {
-  it("shows loading skeletons", () => {
+describe('ApprovalQueueWidget', () => {
+  it('shows loading skeletons', () => {
     mockedUseQuery.mockReturnValue({ data: undefined, isLoading: true } as any);
     const { container } = render(<ApprovalQueueWidget />);
     expect(container.querySelectorAll("[data-slot='skeleton']").length).toBeGreaterThan(0);
   });
 
-  it("shows empty state when no pending approvals", () => {
+  it('shows empty state when no pending approvals', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: [] },
       isLoading: false,
     } as any);
     render(<ApprovalQueueWidget />);
-    expect(screen.getByText("No pending approvals")).toBeInTheDocument();
+    expect(screen.getByText('No pending approvals')).toBeInTheDocument();
   });
 
-  it("renders widget title and see all link", () => {
+  it('renders widget title and see all link', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: [] },
       isLoading: false,
     } as any);
     render(<ApprovalQueueWidget />);
-    expect(screen.getByText("Approval queue")).toBeInTheDocument();
-    expect(screen.getByText("See all approvals")).toBeInTheDocument();
+    expect(screen.getByText('Approval queue')).toBeInTheDocument();
+    expect(screen.getByText('See all approvals')).toBeInTheDocument();
   });
 
-  it("renders approval items with contractor name", () => {
+  it('renders approval items with contractor name', () => {
     mockedUseQuery.mockReturnValue({
       data: {
         items: [
           {
-            id: "s1",
+            id: 's1',
             invoice: {
-              contractor: { legalName: "Acme sp. z o.o." },
+              contractor: { legalName: 'Acme sp. z o.o.' },
               sellerName: null,
               totalMinor: 100000,
-              currency: "PLN",
+              currency: 'PLN',
             },
-            approvalFlow: { resourceId: "inv-1" },
-            slaStatus: { status: "green" },
+            approvalFlow: { resourceId: 'inv-1' },
+            slaStatus: { status: 'green' },
           },
         ],
       },
       isLoading: false,
     } as any);
     render(<ApprovalQueueWidget />);
-    expect(screen.getByText("Acme sp. z o.o.")).toBeInTheDocument();
+    expect(screen.getByText('Acme sp. z o.o.')).toBeInTheDocument();
   });
 
-  it("falls back to sellerName when contractor legal name is absent", () => {
+  it('falls back to sellerName when contractor legal name is absent', () => {
     mockedUseQuery.mockReturnValue({
       data: {
         items: [
           {
-            id: "s2",
+            id: 's2',
             invoice: {
               contractor: null,
-              sellerName: "Vendor Ltd",
+              sellerName: 'Vendor Ltd',
               totalMinor: 5000,
-              currency: "PLN",
+              currency: 'PLN',
             },
-            approvalFlow: { resourceId: "inv-2" },
-            slaStatus: { status: "yellow" },
+            approvalFlow: { resourceId: 'inv-2' },
+            slaStatus: { status: 'yellow' },
           },
         ],
       },
       isLoading: false,
     } as any);
     render(<ApprovalQueueWidget />);
-    expect(screen.getByText("Vendor Ltd")).toBeInTheDocument();
+    expect(screen.getByText('Vendor Ltd')).toBeInTheDocument();
   });
 
-  it("links to invoice detail when resourceId is set", () => {
+  it('links to invoice detail when resourceId is set', () => {
     mockedUseQuery.mockReturnValue({
       data: {
         items: [
           {
-            id: "s3",
+            id: 's3',
             invoice: {
-              contractor: { legalName: "X" },
+              contractor: { legalName: 'X' },
               sellerName: null,
               totalMinor: 0,
-              currency: "PLN",
+              currency: 'PLN',
             },
-            approvalFlow: { resourceId: "inv-42" },
-            slaStatus: { status: "green" },
+            approvalFlow: { resourceId: 'inv-42' },
+            slaStatus: { status: 'green' },
           },
         ],
       },
       isLoading: false,
     } as any);
     render(<ApprovalQueueWidget />);
-    const link = screen.getByRole("link", { name: /X/ });
-    expect(link.getAttribute("href")).toBe("/invoices/inv-42");
+    const link = screen.getByRole('link', { name: /X/ });
+    expect(link.getAttribute('href')).toBe('/invoices/inv-42');
   });
 
-  it("links to approvals list when resourceId is missing", () => {
+  it('links to approvals list when resourceId is missing', () => {
     mockedUseQuery.mockReturnValue({
       data: {
         items: [
           {
-            id: "s4",
+            id: 's4',
             invoice: {
-              contractor: { legalName: "Orphan" },
+              contractor: { legalName: 'Orphan' },
               sellerName: null,
               totalMinor: 100,
-              currency: "PLN",
+              currency: 'PLN',
             },
             approvalFlow: {},
-            slaStatus: { status: "green" },
+            slaStatus: { status: 'green' },
           },
         ],
       },
       isLoading: false,
     } as any);
     render(<ApprovalQueueWidget />);
-    const link = screen.getByRole("link", { name: /Orphan/ });
-    expect(link.getAttribute("href")).toBe("/approvals");
+    const link = screen.getByRole('link', { name: /Orphan/ });
+    expect(link.getAttribute('href')).toBe('/approvals');
   });
 
-  it("shows breached SLA label for red status", () => {
+  it('shows breached SLA label for red status', () => {
     mockedUseQuery.mockReturnValue({
       data: {
         items: [
           {
-            id: "s5",
+            id: 's5',
             invoice: {
-              contractor: { legalName: "Late Co" },
+              contractor: { legalName: 'Late Co' },
               sellerName: null,
               totalMinor: 99900,
-              currency: "PLN",
+              currency: 'PLN',
             },
-            approvalFlow: { resourceId: "inv-9" },
-            slaStatus: { status: "red" },
+            approvalFlow: { resourceId: 'inv-9' },
+            slaStatus: { status: 'red' },
           },
         ],
       },
       isLoading: false,
     } as any);
     render(<ApprovalQueueWidget />);
-    expect(screen.getByText("Breached")).toBeInTheDocument();
+    expect(screen.getByText('Breached')).toBeInTheDocument();
   });
 });

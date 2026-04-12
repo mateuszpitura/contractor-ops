@@ -4,12 +4,12 @@
  * Remove after Slack app webhook URL is updated to /api/webhooks/slack.
  */
 
-import { createHmac, timingSafeEqual } from "node:crypto";
-import { advanceFlow } from "@contractor-ops/api/services/approval-engine";
-import { getSlackClient, updateMessageToResult } from "@contractor-ops/api/services/slack-client";
-import { prisma } from "@contractor-ops/db";
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import { createHmac, timingSafeEqual } from 'node:crypto';
+import { advanceFlow } from '@contractor-ops/api/services/approval-engine';
+import { getSlackClient, updateMessageToResult } from '@contractor-ops/api/services/slack-client';
+import { prisma } from '@contractor-ops/db';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 // ---------------------------------------------------------------------------
 // Slack Signature Verification
@@ -26,7 +26,7 @@ function verifySlackSignature(body: string, timestamp: string, signature: string
   }
 
   const sigBasestring = `v0:${timestamp}:${body}`;
-  const mySignature = `v0=${createHmac("sha256", signingSecret).update(sigBasestring).digest("hex")}`;
+  const mySignature = `v0=${createHmac('sha256', signingSecret).update(sigBasestring).digest('hex')}`;
 
   const myBuffer = Buffer.from(mySignature);
   const slackBuffer = Buffer.from(signature);
@@ -50,7 +50,7 @@ interface ActionValue {
  * @see https://api.slack.com/reference/interaction-payloads
  */
 interface SlackInteractionPayload {
-  type: "block_actions" | "view_submission" | string;
+  type: 'block_actions' | 'view_submission' | string;
   trigger_id?: string;
   user: { id: string; name: string };
   actions?: Array<{
@@ -80,7 +80,7 @@ async function resolveUserFromSlackId(
 ): Promise<{ userId: string; userName: string; organizationId: string } | null> {
   const link = await prisma.externalLink.findFirst({
     where: {
-      externalType: "SLACK_USER",
+      externalType: 'SLACK_USER',
       externalId: slackUserId,
     },
   });
@@ -96,7 +96,7 @@ async function resolveUserFromSlackId(
 
   return {
     userId: user.id,
-    userName: user.name ?? "Unknown",
+    userName: user.name ?? 'Unknown',
     organizationId: link.organizationId,
   };
 }
@@ -112,32 +112,32 @@ async function processBlockAction(payload: SlackInteractionPayload) {
   const slackUserId = payload.user?.id as string;
   const actor = await resolveUserFromSlackId(slackUserId);
   if (!actor) {
-    console.error("[slack-interactivity] Could not resolve user for Slack ID:", slackUserId);
+    console.error('[slack-interactivity] Could not resolve user for Slack ID:', slackUserId);
     return;
   }
 
-  if (action.action_id === "approve_invoice") {
+  if (action.action_id === 'approve_invoice') {
     const value = JSON.parse(action.value) as ActionValue;
 
     // Advance approval flow via Prisma transaction
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async tx => {
       // Record the step decision
       const flow = await tx.approvalFlow.findUniqueOrThrow({
         where: { id: value.flowId },
-        include: { steps: { orderBy: { stepOrder: "asc" } } },
+        include: { steps: { orderBy: { stepOrder: 'asc' } } },
       });
 
       const currentStep = flow.steps.find(
-        (s) => s.stepOrder === flow.currentStepOrder && s.status === "PENDING",
+        s => s.stepOrder === flow.currentStepOrder && s.status === 'PENDING',
       );
 
       if (currentStep) {
         await tx.approvalStep.update({
           where: { id: currentStep.id },
           data: {
-            status: "APPROVED",
+            status: 'APPROVED',
             actedAt: new Date(),
-            decision: "APPROVE",
+            decision: 'APPROVE',
           },
         });
 
@@ -147,7 +147,7 @@ async function processBlockAction(payload: SlackInteractionPayload) {
             organizationId: actor.organizationId,
             approvalStepId: currentStep.id,
             actorUserId: actor.userId,
-            decision: "APPROVE",
+            decision: 'APPROVE',
           },
         });
       }
@@ -161,12 +161,12 @@ async function processBlockAction(payload: SlackInteractionPayload) {
       organizationId: actor.organizationId,
       channel: payload.channel?.id ?? payload.user?.id,
       ts: payload.message?.ts,
-      result: "approved",
+      result: 'approved',
       actorName: actor.userName,
     });
   }
 
-  if (action.action_id === "reject_invoice") {
+  if (action.action_id === 'reject_invoice') {
     const value = JSON.parse(action.value) as ActionValue;
 
     // Open rejection modal with comment field
@@ -183,37 +183,37 @@ async function processBlockAction(payload: SlackInteractionPayload) {
     await client.views.open({
       trigger_id: payload.trigger_id,
       view: {
-        type: "modal",
-        callback_id: "reject_invoice_modal",
+        type: 'modal',
+        callback_id: 'reject_invoice_modal',
         title: {
-          type: "plain_text",
-          text: "Reject Invoice",
+          type: 'plain_text',
+          text: 'Reject Invoice',
         },
         submit: {
-          type: "plain_text",
-          text: "Reject",
+          type: 'plain_text',
+          text: 'Reject',
         },
         close: {
-          type: "plain_text",
-          text: "Cancel",
+          type: 'plain_text',
+          text: 'Cancel',
         },
         private_metadata: privateMetadata,
         blocks: [
           {
-            type: "input",
-            block_id: "comment_block",
+            type: 'input',
+            block_id: 'comment_block',
             element: {
-              type: "plain_text_input",
-              action_id: "comment_input",
+              type: 'plain_text_input',
+              action_id: 'comment_input',
               multiline: true,
               placeholder: {
-                type: "plain_text",
-                text: "Reason for rejection (required)",
+                type: 'plain_text',
+                text: 'Reason for rejection (required)',
               },
             },
             label: {
-              type: "plain_text",
-              text: "Comment",
+              type: 'plain_text',
+              text: 'Comment',
             },
           },
         ],
@@ -223,9 +223,9 @@ async function processBlockAction(payload: SlackInteractionPayload) {
 }
 
 async function processViewSubmission(payload: SlackInteractionPayload) {
-  if (payload.view?.callback_id !== "reject_invoice_modal") return;
+  if (payload.view?.callback_id !== 'reject_invoice_modal') return;
 
-  const comment = payload.view?.state?.values?.comment_block?.comment_input?.value ?? "";
+  const comment = payload.view?.state?.values?.comment_block?.comment_input?.value ?? '';
 
   const metadata = JSON.parse(payload.view.private_metadata) as {
     invoiceId: string;
@@ -239,23 +239,23 @@ async function processViewSubmission(payload: SlackInteractionPayload) {
   if (!actor) return;
 
   // Reject the approval flow
-  await prisma.$transaction(async (tx) => {
+  await prisma.$transaction(async tx => {
     const flow = await tx.approvalFlow.findUniqueOrThrow({
       where: { id: metadata.flowId },
-      include: { steps: { orderBy: { stepOrder: "asc" } } },
+      include: { steps: { orderBy: { stepOrder: 'asc' } } },
     });
 
     const currentStep = flow.steps.find(
-      (s) => s.stepOrder === flow.currentStepOrder && s.status === "PENDING",
+      s => s.stepOrder === flow.currentStepOrder && s.status === 'PENDING',
     );
 
     if (currentStep) {
       await tx.approvalStep.update({
         where: { id: currentStep.id },
         data: {
-          status: "REJECTED",
+          status: 'REJECTED',
           actedAt: new Date(),
-          decision: "REJECT",
+          decision: 'REJECT',
           comment,
         },
       });
@@ -266,7 +266,7 @@ async function processViewSubmission(payload: SlackInteractionPayload) {
           organizationId: actor.organizationId,
           approvalStepId: currentStep.id,
           actorUserId: actor.userId,
-          decision: "REJECT",
+          decision: 'REJECT',
           comment,
         },
       });
@@ -276,7 +276,7 @@ async function processViewSubmission(payload: SlackInteractionPayload) {
     await tx.approvalFlow.update({
       where: { id: metadata.flowId },
       data: {
-        status: "REJECTED",
+        status: 'REJECTED',
         completedAt: new Date(),
       },
     });
@@ -287,7 +287,7 @@ async function processViewSubmission(payload: SlackInteractionPayload) {
     organizationId: actor.organizationId,
     channel: metadata.channel,
     ts: metadata.messageTs,
-    result: "rejected",
+    result: 'rejected',
     actorName: actor.userName,
     comment,
   });
@@ -299,39 +299,39 @@ async function processViewSubmission(payload: SlackInteractionPayload) {
 
 export async function POST(request: NextRequest) {
   const rawBody = await request.text();
-  const timestamp = request.headers.get("x-slack-request-timestamp") ?? "";
-  const signature = request.headers.get("x-slack-signature") ?? "";
+  const timestamp = request.headers.get('x-slack-request-timestamp') ?? '';
+  const signature = request.headers.get('x-slack-signature') ?? '';
 
   // Verify Slack request signature
   if (!verifySlackSignature(rawBody, timestamp, signature)) {
-    return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+    return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
   }
 
   // Parse payload from form data
   const params = new URLSearchParams(rawBody);
-  const payloadStr = params.get("payload");
+  const payloadStr = params.get('payload');
   if (!payloadStr) {
-    return NextResponse.json({ error: "Missing payload" }, { status: 400 });
+    return NextResponse.json({ error: 'Missing payload' }, { status: 400 });
   }
 
   const payload = JSON.parse(payloadStr) as SlackInteractionPayload;
 
   // For view_submission, we must return synchronously with response_action
-  if (payload.type === "view_submission") {
+  if (payload.type === 'view_submission') {
     // Process async but return immediately
-    processViewSubmission(payload).catch((error) => {
-      console.error("[slack-interactivity] view_submission error:", error);
+    processViewSubmission(payload).catch(error => {
+      console.error('[slack-interactivity] view_submission error:', error);
     });
 
     // Return response_action: clear to close the modal
-    return NextResponse.json({ response_action: "clear" });
+    return NextResponse.json({ response_action: 'clear' });
   }
 
   // For block_actions, respond immediately with 200 (3-second window per pitfall 1)
   // then process asynchronously
-  if (payload.type === "block_actions") {
-    processBlockAction(payload).catch((error) => {
-      console.error("[slack-interactivity] block_actions error:", error);
+  if (payload.type === 'block_actions') {
+    processBlockAction(payload).catch(error => {
+      console.error('[slack-interactivity] block_actions error:', error);
     });
   }
 

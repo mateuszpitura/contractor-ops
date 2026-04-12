@@ -1,12 +1,12 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from 'vitest';
 import {
   notificationListSchema,
   notificationMarkReadSchema,
   notificationPreferenceUpdateSchema,
-} from "../notification.js";
+} from '../notification.js';
 
-describe("notificationListSchema", () => {
-  it("defaults pagination", () => {
+describe('notificationListSchema', () => {
+  it('defaults pagination', () => {
     const r = notificationListSchema.safeParse({});
     expect(r.success).toBe(true);
     if (r.success) {
@@ -16,26 +16,26 @@ describe("notificationListSchema", () => {
   });
 });
 
-describe("notificationMarkReadSchema", () => {
-  it("requires notificationId", () => {
+describe('notificationMarkReadSchema', () => {
+  it('requires notificationId', () => {
     const r = notificationMarkReadSchema.safeParse({
-      notificationId: "n1",
+      notificationId: 'n1',
     });
     expect(r.success).toBe(true);
   });
 
-  it("rejects empty notificationId", () => {
-    const r = notificationMarkReadSchema.safeParse({ notificationId: "" });
+  it('rejects empty notificationId', () => {
+    const r = notificationMarkReadSchema.safeParse({ notificationId: '' });
     expect(r.success).toBe(false);
   });
 });
 
-describe("notificationPreferenceUpdateSchema", () => {
-  it("accepts preference rows", () => {
+describe('notificationPreferenceUpdateSchema', () => {
+  it('accepts preference rows', () => {
     const r = notificationPreferenceUpdateSchema.safeParse({
       preferences: [
         {
-          notificationType: "APPROVAL_REQUEST",
+          notificationType: 'APPROVAL_REQUEST',
           channelEmail: true,
           channelSlack: false,
         },

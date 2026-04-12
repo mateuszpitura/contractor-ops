@@ -1,18 +1,18 @@
-import { auth } from "@contractor-ops/auth";
-import { inviteUserSchema, updateUserRoleSchema } from "@contractor-ops/validators";
-import { TRPCError } from "@trpc/server";
-import { z } from "zod";
-import { router } from "../init.js";
-import { requirePermission } from "../middleware/rbac.js";
-import { sensitiveActionProcedure } from "../middleware/sensitive.js";
-import { tenantProcedure } from "../middleware/tenant.js";
+import { auth } from '@contractor-ops/auth';
+import { inviteUserSchema, updateUserRoleSchema } from '@contractor-ops/validators';
+import { TRPCError } from '@trpc/server';
+import { z } from 'zod';
+import { router } from '../init.js';
+import { requirePermission } from '../middleware/rbac.js';
+import { sensitiveActionProcedure } from '../middleware/sensitive.js';
+import { tenantProcedure } from '../middleware/tenant.js';
 
 export const userRouter = router({
   /**
    * List all members of the current organization.
    * Returns user details including name, email, role, and status.
    */
-  list: tenantProcedure.use(requirePermission({ member: ["read"] })).query(async ({ ctx }) => {
+  list: tenantProcedure.use(requirePermission({ member: ['read'] })).query(async ({ ctx }) => {
     const org = await auth.api.getFullOrganization({
       headers: ctx.headers,
       query: { organizationId: ctx.organizationId },
@@ -39,7 +39,7 @@ export const userRouter = router({
    * Sends an invitation email with a link to accept.
    */
   invite: tenantProcedure
-    .use(requirePermission({ member: ["create"] }))
+    .use(requirePermission({ member: ['create'] }))
     .input(inviteUserSchema)
     .mutation(async ({ ctx, input }) => {
       const result = await auth.api.createInvitation({
@@ -59,7 +59,7 @@ export const userRouter = router({
    * Sensitive action: requires re-authentication if session > 5 minutes old.
    */
   updateRole: sensitiveActionProcedure
-    .use(requirePermission({ member: ["update"] }))
+    .use(requirePermission({ member: ['update'] }))
     .input(updateUserRoleSchema)
     .mutation(async ({ ctx, input }) => {
       const result = await auth.api.updateMemberRole({
@@ -80,7 +80,7 @@ export const userRouter = router({
    * Sensitive action: requires re-authentication.
    */
   deactivate: sensitiveActionProcedure
-    .use(requirePermission({ member: ["delete"] }))
+    .use(requirePermission({ member: ['delete'] }))
     .input(z.object({ userId: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
       // Prevent deactivating the last admin/owner in the organization
@@ -92,19 +92,19 @@ export const userRouter = router({
         select: { role: true },
       });
 
-      if (targetMember && (targetMember.role === "owner" || targetMember.role === "admin")) {
+      if (targetMember && (targetMember.role === 'owner' || targetMember.role === 'admin')) {
         const adminCount = await ctx.db.member.count({
           where: {
             organizationId: ctx.organizationId,
-            role: { in: ["owner", "admin"] },
+            role: { in: ['owner', 'admin'] },
             user: { banned: { not: true } },
           },
         });
 
         if (adminCount <= 1) {
           throw new TRPCError({
-            code: "PRECONDITION_FAILED",
-            message: "LAST_ADMIN_CANNOT_DEACTIVATE",
+            code: 'PRECONDITION_FAILED',
+            message: 'LAST_ADMIN_CANNOT_DEACTIVATE',
           });
         }
       }
@@ -121,7 +121,7 @@ export const userRouter = router({
         where: {
           organizationId: ctx.organizationId,
           approverUserId: input.userId,
-          status: { in: ["NOT_STARTED", "PENDING"] },
+          status: { in: ['NOT_STARTED', 'PENDING'] },
         },
         select: { id: true, approverRole: true },
       });
@@ -166,7 +166,7 @@ export const userRouter = router({
         const replacement = await ctx.db.member.findFirst({
           where: {
             organizationId: ctx.organizationId,
-            role: { in: ["owner", "admin"] },
+            role: { in: ['owner', 'admin'] },
             userId: { not: input.userId },
             user: { banned: { not: true } },
           },
@@ -176,7 +176,7 @@ export const userRouter = router({
         if (replacement) {
           await ctx.db.contractor.updateMany({
             where: {
-              id: { in: ownedContractors.map((c) => c.id) },
+              id: { in: ownedContractors.map(c => c.id) },
             },
             data: { ownerUserId: replacement.userId },
           });
@@ -184,7 +184,7 @@ export const userRouter = router({
           // No admin available — clear ownership to prevent dangling reference
           await ctx.db.contractor.updateMany({
             where: {
-              id: { in: ownedContractors.map((c) => c.id) },
+              id: { in: ownedContractors.map(c => c.id) },
             },
             data: { ownerUserId: null },
           });
@@ -199,7 +199,7 @@ export const userRouter = router({
    * Sensitive action: requires re-authentication.
    */
   reactivate: sensitiveActionProcedure
-    .use(requirePermission({ member: ["update"] }))
+    .use(requirePermission({ member: ['update'] }))
     .input(z.object({ userId: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
       const result = await auth.api.unbanUser({

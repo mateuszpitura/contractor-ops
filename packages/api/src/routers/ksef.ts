@@ -1,12 +1,13 @@
-import { KsefApiClient, ksefConnectionConfigSchema } from "@contractor-ops/einvoice";
-import { encryptCredentials } from "@contractor-ops/integrations";
-import { getQStashClient } from "@contractor-ops/integrations/services/qstash-client";
-import { TRPCError } from "@trpc/server";
-import { z } from "zod";
-import * as E from "../errors.js";
-import { router } from "../init.js";
-import { requirePermission } from "../middleware/rbac.js";
-import { tenantProcedure } from "../middleware/tenant.js";
+import type { IntegrationConnection } from '@contractor-ops/db/generated/prisma/client';
+import { KsefApiClient, ksefConnectionConfigSchema } from '@contractor-ops/einvoice';
+import { encryptCredentials } from '@contractor-ops/integrations';
+import { getQStashClient } from '@contractor-ops/integrations/services/qstash-client';
+import { TRPCError } from '@trpc/server';
+import { z } from 'zod';
+import * as E from '../errors.js';
+import { router } from '../init.js';
+import { requirePermission } from '../middleware/rbac.js';
+import { tenantProcedure } from '../middleware/tenant.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -21,11 +22,11 @@ function plain<T>(data: T): T {
 // ---------------------------------------------------------------------------
 
 const connectInput = z.object({
-  authMethod: z.enum(["token", "certificate"]),
+  authMethod: z.enum(['token', 'certificate']),
   token: z.string().optional(),
   certificateBase64: z.string().optional(),
   certificatePassword: z.string().optional(),
-  environment: z.enum(["test", "prod"]).default("prod"),
+  environment: z.enum(['test', 'prod']).default('prod'),
 });
 
 const syncHistoryInput = z.object({
@@ -43,7 +44,7 @@ export const ksefRouter = router({
    * Per D-04: Verify credentials before saving.
    */
   connect: tenantProcedure
-    .use(requirePermission({ settings: ["update"] }))
+    .use(requirePermission({ settings: ['update'] }))
     .input(connectInput)
     .mutation(async ({ ctx, input }) => {
       // Step 1: Get org NIP (per D-03)
@@ -55,8 +56,8 @@ export const ksefRouter = router({
 
       if (!nip) {
         throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Organization NIP must be set in settings before connecting KSeF.",
+          code: 'BAD_REQUEST',
+          message: 'Organization NIP must be set in settings before connecting KSeF.',
         });
       }
 
@@ -66,18 +67,18 @@ export const ksefRouter = router({
       // Step 3: Verify credentials before saving (per D-04)
       const client = new KsefApiClient(input.environment);
 
-      if (input.authMethod === "token") {
+      if (input.authMethod === 'token') {
         if (!input.token) {
           throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Token is required for token-based auth.",
+            code: 'BAD_REQUEST',
+            message: 'Token is required for token-based auth.',
           });
         }
         const valid = await client.verifyCredentials(input.token, nip);
         if (!valid) {
           throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "KSeF credential verification failed",
+            code: 'BAD_REQUEST',
+            message: 'KSeF credential verification failed',
           });
         }
       }
@@ -85,30 +86,30 @@ export const ksefRouter = router({
       // Step 4: Build and encrypt credential blob
       const credentialsRef = encryptCredentials(
         {
-          accessToken: input.token ?? "",
+          accessToken: input.token ?? '',
           extra: {
             certificateBase64: input.certificateBase64,
             certificatePassword: input.certificatePassword,
             authMethod: input.authMethod,
           },
         },
-        "ksef",
+        'ksef',
       );
 
       // Step 5: Upsert IntegrationConnection (use findFirst + create/update)
       const existing = await ctx.db.integrationConnection.findFirst({
         where: {
           organizationId: ctx.organizationId,
-          provider: "KSEF",
+          provider: 'KSEF',
         },
       });
 
-      let connection;
+      let connection: IntegrationConnection;
       if (existing) {
         connection = await ctx.db.integrationConnection.update({
           where: { id: existing.id },
           data: {
-            status: "CONNECTED",
+            status: 'CONNECTED',
             configJson: {
               authMethod: input.authMethod,
               environment: input.environment,
@@ -122,8 +123,8 @@ export const ksefRouter = router({
         connection = await ctx.db.integrationConnection.create({
           data: {
             organizationId: ctx.organizationId,
-            provider: "KSEF",
-            status: "CONNECTED",
+            provider: 'KSEF',
+            status: 'CONNECTED',
             configJson: {
               authMethod: input.authMethod,
               environment: input.environment,
@@ -139,7 +140,7 @@ export const ksefRouter = router({
         const qstash = getQStashClient();
         const schedule = await qstash.schedules.create({
           destination: `${process.env.NEXT_PUBLIC_APP_URL}/api/ksef/_sync`,
-          cron: "0 * * * *",
+          cron: '0 * * * *',
           body: JSON.stringify({
             organizationId: ctx.organizationId,
             connectionId: connection.id,
@@ -159,7 +160,7 @@ export const ksefRouter = router({
           },
         });
       } catch (error) {
-        console.error("[ksef.connect] Failed to create QStash schedule:", error);
+        console.error('[ksef.connect] Failed to create QStash schedule:', error);
         // Don't fail the connection — schedule can be retried
       }
 
@@ -171,18 +172,18 @@ export const ksefRouter = router({
    * Deletes QStash schedule and sets status to DISCONNECTED.
    */
   disconnect: tenantProcedure
-    .use(requirePermission({ settings: ["update"] }))
+    .use(requirePermission({ settings: ['update'] }))
     .mutation(async ({ ctx }) => {
       const connection = await ctx.db.integrationConnection.findFirst({
         where: {
           organizationId: ctx.organizationId,
-          provider: "KSEF",
+          provider: 'KSEF',
         },
       });
 
       if (!connection) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: E.INTEGRATION_NOT_FOUND,
         });
       }
@@ -196,14 +197,14 @@ export const ksefRouter = router({
           const qstash = getQStashClient();
           await qstash.schedules.delete(scheduleId);
         } catch (error) {
-          console.error("[ksef.disconnect] Failed to delete QStash schedule:", error);
+          console.error('[ksef.disconnect] Failed to delete QStash schedule:', error);
         }
       }
 
       await ctx.db.integrationConnection.update({
         where: { id: connection.id },
         data: {
-          status: "DISCONNECTED",
+          status: 'DISCONNECTED',
           configJson: { ...configJson, qstashScheduleId: null },
         },
       });
@@ -216,19 +217,19 @@ export const ksefRouter = router({
    * Dispatches a one-off QStash job (not cron).
    */
   triggerSync: tenantProcedure
-    .use(requirePermission({ settings: ["update"] }))
+    .use(requirePermission({ settings: ['update'] }))
     .mutation(async ({ ctx }) => {
       const connection = await ctx.db.integrationConnection.findFirst({
         where: {
           organizationId: ctx.organizationId,
-          provider: "KSEF",
-          status: "CONNECTED",
+          provider: 'KSEF',
+          status: 'CONNECTED',
         },
       });
 
       if (!connection) {
         throw new TRPCError({
-          code: "NOT_FOUND",
+          code: 'NOT_FOUND',
           message: E.INTEGRATION_NOT_CONNECTED,
         });
       }
@@ -250,13 +251,13 @@ export const ksefRouter = router({
    * Returns recent IntegrationSyncLog entries for the KSeF connection.
    */
   syncHistory: tenantProcedure
-    .use(requirePermission({ settings: ["read"] }))
+    .use(requirePermission({ settings: ['read'] }))
     .input(syncHistoryInput)
     .query(async ({ ctx, input }) => {
       const connection = await ctx.db.integrationConnection.findFirst({
         where: {
           organizationId: ctx.organizationId,
-          provider: "KSEF",
+          provider: 'KSEF',
         },
         select: { id: true },
       });
@@ -269,7 +270,7 @@ export const ksefRouter = router({
         where: {
           integrationConnectionId: connection.id,
         },
-        orderBy: { startedAt: "desc" },
+        orderBy: { startedAt: 'desc' },
         take: input.limit,
         select: {
           id: true,
@@ -291,12 +292,12 @@ export const ksefRouter = router({
    * Returns the IntegrationConnection for KSEF provider, or null if not connected.
    */
   connectionStatus: tenantProcedure
-    .use(requirePermission({ settings: ["read"] }))
+    .use(requirePermission({ settings: ['read'] }))
     .query(async ({ ctx }) => {
       const connection = await ctx.db.integrationConnection.findFirst({
         where: {
           organizationId: ctx.organizationId,
-          provider: "KSEF",
+          provider: 'KSEF',
         },
         select: {
           id: true,

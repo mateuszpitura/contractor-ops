@@ -1,4 +1,4 @@
-import { getAdapter } from "../registry.js";
+import { getAdapter } from '../registry.js';
 import type {
   EmbeddedSigningUrlResult,
   ESignAdapter,
@@ -6,13 +6,13 @@ import type {
   SignedDocumentResult,
   SigningEnvelopeRequest,
   SigningEnvelopeResult,
-} from "../types/esign.js";
+} from '../types/esign.js';
 
 // ---------------------------------------------------------------------------
 // Provider-Agnostic E-Sign Orchestration Service
 // ---------------------------------------------------------------------------
 
-type ESignProvider = "DOCUSIGN" | "AUTENTI";
+type ESignProvider = 'DOCUSIGN' | 'AUTENTI';
 
 /**
  * Resolves the ESignAdapter for a given provider from the adapter registry.
@@ -34,7 +34,7 @@ export function getESignAdapter(provider: ESignProvider): ESignAdapter {
 
   // Verify the adapter implements ESignAdapter methods
   const esignAdapter = adapter as unknown as ESignAdapter;
-  if (typeof esignAdapter.createEnvelope !== "function") {
+  if (typeof esignAdapter.createEnvelope !== 'function') {
     throw new Error(`Adapter for ${provider} does not implement the ESignAdapter interface.`);
   }
 
@@ -137,4 +137,4 @@ export type {
   SignerInfo,
   SigningEnvelopeRequest,
   SigningEnvelopeResult,
-} from "../types/esign.js";
+} from '../types/esign.js';

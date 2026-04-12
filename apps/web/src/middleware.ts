@@ -1,9 +1,9 @@
-import { Ratelimit } from "@upstash/ratelimit";
-import { Redis } from "@upstash/redis";
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
-import createMiddleware from "next-intl/middleware";
-import { routing } from "@/i18n/routing";
+import { Ratelimit } from '@upstash/ratelimit';
+import { Redis } from '@upstash/redis';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import createMiddleware from 'next-intl/middleware';
+import { routing } from '@/i18n/routing';
 
 const intlMiddleware = createMiddleware(routing);
 
@@ -25,11 +25,11 @@ function createLimiter(maxRequests: number, window: Parameters<typeof Ratelimit.
 }
 
 // Per-IP limiters
-const authLimiter = createLimiter(10, "1m"); // 10 auth requests per minute per IP
-const portalLimiter = createLimiter(10, "1m"); // 10 portal requests per minute per IP
-const apiLimiter = createLimiter(60, "1m"); // 60 API requests per minute per IP
+const authLimiter = createLimiter(10, '1m'); // 10 auth requests per minute per IP
+const portalLimiter = createLimiter(10, '1m'); // 10 portal requests per minute per IP
+const apiLimiter = createLimiter(60, '1m'); // 60 API requests per minute per IP
 // Per-org limiter
-const orgLimiter = createLimiter(500, "1m"); // 500 requests per minute per org
+const orgLimiter = createLimiter(500, '1m'); // 500 requests per minute per org
 
 // In-memory fallback when Redis is unavailable (dev / single-instance)
 const fallbackMap = new Map<string, { count: number; resetAt: number }>();
@@ -50,7 +50,7 @@ function fallbackRateLimit(key: string, max: number): { allowed: boolean; remain
 }
 
 // Periodic cleanup of expired fallback entries
-if (typeof globalThis !== "undefined") {
+if (typeof globalThis !== 'undefined') {
   const cleanup = () => {
     const now = Date.now();
     for (const [key, entry] of fallbackMap) {
@@ -92,23 +92,23 @@ async function checkLimit(
 
 function rateLimitResponse(remaining: number, limit: number, reset: number) {
   const headers: Record<string, string> = {
-    "Retry-After": "60",
-    "X-RateLimit-Limit": String(limit),
-    "X-RateLimit-Remaining": String(remaining),
+    'Retry-After': '60',
+    'X-RateLimit-Limit': String(limit),
+    'X-RateLimit-Remaining': String(remaining),
   };
 
   if (reset > 0) {
     // Reset is a Unix timestamp in milliseconds from Upstash; convert to seconds for HTTP header
-    headers["X-RateLimit-Reset"] = String(Math.ceil(reset / 1000));
+    headers['X-RateLimit-Reset'] = String(Math.ceil(reset / 1000));
   }
 
   return NextResponse.json(
-    { error: "Too many requests. Please try again later." },
+    { error: 'Too many requests. Please try again later.' },
     { status: 429, headers },
   );
 }
 
-const LOAD_TEST_HEADER = "x-load-test-secret";
+const LOAD_TEST_HEADER = 'x-load-test-secret';
 
 /**
  * When LOAD_TEST_BYPASS=1 and LOAD_TEST_SECRET match the request header, skip
@@ -116,10 +116,10 @@ const LOAD_TEST_HEADER = "x-load-test-secret";
  * Blocked on Vercel production. Never enable LOAD_TEST_BYPASS on public prod.
  */
 function shouldSkipTrpcRateLimitForLoadTest(request: NextRequest): boolean {
-  if (process.env.LOAD_TEST_BYPASS !== "1") return false;
+  if (process.env.LOAD_TEST_BYPASS !== '1') return false;
   const secret = process.env.LOAD_TEST_SECRET?.trim();
   if (!secret) return false;
-  if (process.env.VERCEL_ENV === "production") return false;
+  if (process.env.VERCEL_ENV === 'production') return false;
   const header = request.headers.get(LOAD_TEST_HEADER);
   return header === secret;
 }
@@ -133,32 +133,32 @@ function shouldSkipTrpcRateLimitForLoadTest(request: NextRequest): boolean {
  * Pattern: {slug}.{PORTAL_BASE_DOMAIN} -> resolves to org's portal.
  * Example: acme.portal.localhost:3000 or acme.portal.contractorops.com
  */
-const PORTAL_BASE_DOMAIN = process.env.PORTAL_BASE_DOMAIN ?? "portal.localhost:3000";
+const PORTAL_BASE_DOMAIN = process.env.PORTAL_BASE_DOMAIN ?? 'portal.localhost:3000';
 
 /**
  * Auth route patterns (locale-prefixed).
  * These paths are only accessible to unauthenticated users.
  */
-const AUTH_ROUTES = ["/login", "/register", "/verify-email"];
+const AUTH_ROUTES = ['/login', '/register', '/verify-email'];
 
 /**
  * Check if a pathname (after locale prefix) matches an auth route.
  */
 function isAuthRoute(pathname: string): boolean {
   // Strip locale prefix: /en/login -> /login, /pl/register -> /register
-  const withoutLocale = pathname.replace(/^\/[a-z]{2}(?=\/)/, "");
+  const withoutLocale = pathname.replace(/^\/[a-z]{2}(?=\/)/, '');
   return AUTH_ROUTES.some(
-    (route) => withoutLocale === route || withoutLocale.startsWith(`${route}/`),
+    route => withoutLocale === route || withoutLocale.startsWith(`${route}/`),
   );
 }
 
 /** Public routes accessible without authentication */
-const PUBLIC_ROUTES = ["/privacy", "/terms"];
+const PUBLIC_ROUTES = ['/privacy', '/terms'];
 
 function isPublicRoute(pathname: string): boolean {
-  const withoutLocale = pathname.replace(/^\/[a-z]{2}(?=\/)/, "");
+  const withoutLocale = pathname.replace(/^\/[a-z]{2}(?=\/)/, '');
   return PUBLIC_ROUTES.some(
-    (route) => withoutLocale === route || withoutLocale.startsWith(`${route}/`),
+    route => withoutLocale === route || withoutLocale.startsWith(`${route}/`),
   );
 }
 
@@ -166,14 +166,14 @@ function isPublicRoute(pathname: string): boolean {
  * Check if a pathname is a dashboard route (not auth, not portal, not api, not public).
  */
 function isDashboardRoute(pathname: string): boolean {
-  const withoutLocale = pathname.replace(/^\/[a-z]{2}(?=\/)/, "");
+  const withoutLocale = pathname.replace(/^\/[a-z]{2}(?=\/)/, '');
   return (
     !(
       isAuthRoute(pathname) ||
       isPublicRoute(pathname) ||
-      withoutLocale.startsWith("/portal") ||
-      withoutLocale.startsWith("/invite")
-    ) && withoutLocale !== "/" // root redirect handled separately
+      withoutLocale.startsWith('/portal') ||
+      withoutLocale.startsWith('/invite')
+    ) && withoutLocale !== '/' // root redirect handled separately
   );
 }
 
@@ -191,36 +191,36 @@ function isDashboardRoute(pathname: string): boolean {
  * 5. Falls through to next-intl middleware for i18n.
  */
 export default async function middleware(request: NextRequest) {
-  const hostname = request.headers.get("host") ?? "";
+  const hostname = request.headers.get('host') ?? '';
   const ip =
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    request.headers.get("x-real-ip") ??
-    "unknown";
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+    request.headers.get('x-real-ip') ??
+    'unknown';
   const pathname = request.nextUrl.pathname;
 
   // ── Rate limiting (API routes) ────────────────────────────────────────
 
-  if (pathname.startsWith("/api/auth")) {
-    const { allowed, remaining, limit, reset } = await checkLimit(authLimiter, ip, "auth", 10);
+  if (pathname.startsWith('/api/auth')) {
+    const { allowed, remaining, limit, reset } = await checkLimit(authLimiter, ip, 'auth', 10);
     if (!allowed) return rateLimitResponse(remaining, limit, reset);
   }
 
-  if (pathname.startsWith("/api/portal")) {
-    const { allowed, remaining, limit, reset } = await checkLimit(portalLimiter, ip, "portal", 10);
+  if (pathname.startsWith('/api/portal')) {
+    const { allowed, remaining, limit, reset } = await checkLimit(portalLimiter, ip, 'portal', 10);
     if (!allowed) return rateLimitResponse(remaining, limit, reset);
   }
 
-  if (pathname.startsWith("/api/trpc")) {
+  if (pathname.startsWith('/api/trpc')) {
     if (!shouldSkipTrpcRateLimitForLoadTest(request)) {
       // Per-IP rate limit
-      const ipResult = await checkLimit(apiLimiter, ip, "api", 60);
+      const ipResult = await checkLimit(apiLimiter, ip, 'api', 60);
       if (!ipResult.allowed)
         return rateLimitResponse(ipResult.remaining, ipResult.limit, ipResult.reset);
 
       // Per-org rate limit (extract from session cookie → org cookie if available)
-      const orgId = request.cookies.get("better-auth.active_organization")?.value;
+      const orgId = request.cookies.get('better-auth.active_organization')?.value;
       if (orgId) {
-        const orgResult = await checkLimit(orgLimiter, orgId, "org", 500);
+        const orgResult = await checkLimit(orgLimiter, orgId, 'org', 500);
         if (!orgResult.allowed)
           return rateLimitResponse(orgResult.remaining, orgResult.limit, orgResult.reset);
       }
@@ -230,17 +230,17 @@ export default async function middleware(request: NextRequest) {
   // ── Portal subdomain routing ──────────────────────────────────────────
 
   if (hostname.endsWith(PORTAL_BASE_DOMAIN) && hostname !== PORTAL_BASE_DOMAIN) {
-    const subdomain = hostname.replace(`.${PORTAL_BASE_DOMAIN}`, "");
+    const subdomain = hostname.replace(`.${PORTAL_BASE_DOMAIN}`, '');
 
-    if (subdomain && !subdomain.includes(".")) {
+    if (subdomain && !subdomain.includes('.')) {
       const requestHeaders = new Headers(request.headers);
-      requestHeaders.set("x-portal-org-subdomain", subdomain);
+      requestHeaders.set('x-portal-org-subdomain', subdomain);
 
       const url = request.nextUrl.clone();
       const subPathname = url.pathname;
 
-      if (subPathname === "/" || subPathname === "") {
-        url.pathname = "/en/portal";
+      if (subPathname === '/' || subPathname === '') {
+        url.pathname = '/en/portal';
         return NextResponse.rewrite(url, {
           request: { headers: requestHeaders },
         });
@@ -253,30 +253,30 @@ export default async function middleware(request: NextRequest) {
   }
 
   // ── API routes: skip auth guards and intl (rate limiting already handled above)
-  if (pathname.startsWith("/api/")) {
+  if (pathname.startsWith('/api/')) {
     return NextResponse.next();
   }
 
   // ── Auth guards for non-portal routes ─────────────────────────────────
 
-  const hasSession = request.cookies.has("better-auth.session_token");
+  const hasSession = request.cookies.has('better-auth.session_token');
 
   const localeMatch = pathname.match(/^\/([a-z]{2})(\/.*)?$/);
-  const locale = localeMatch?.[1] ?? "en";
-  const pathWithoutLocale = localeMatch?.[2] ?? "/";
+  const locale = localeMatch?.[1] ?? 'en';
+  const pathWithoutLocale = localeMatch?.[2] ?? '/';
 
   if (!hasSession && isDashboardRoute(pathname)) {
     const url = request.nextUrl.clone();
     url.pathname = `/${locale}/login`;
-    url.searchParams.set("redirectTo", pathWithoutLocale);
+    url.searchParams.set('redirectTo', pathWithoutLocale);
     return NextResponse.redirect(url);
   }
 
   if (hasSession && isAuthRoute(pathname)) {
     const url = request.nextUrl.clone();
-    const redirectTo = url.searchParams.get("redirectTo");
+    const redirectTo = url.searchParams.get('redirectTo');
     url.pathname = redirectTo ? `/${locale}${redirectTo}` : `/${locale}`;
-    url.search = "";
+    url.search = '';
     return NextResponse.redirect(url);
   }
 
@@ -287,5 +287,5 @@ export default async function middleware(request: NextRequest) {
 export const config = {
   // Match all pathnames except static files and internal Next.js paths.
   // API routes are included for rate limiting.
-  matcher: ["/((?!monitoring|_next|_vercel|.*\\..*).*)", "/api/:path*"],
+  matcher: ['/((?!monitoring|_next|_vercel|.*\\..*).*)', '/api/:path*'],
 };

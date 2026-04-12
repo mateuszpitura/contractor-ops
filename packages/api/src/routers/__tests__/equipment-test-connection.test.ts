@@ -6,14 +6,14 @@
  * without leaking internal error details.
  */
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
-const ORG_ID = "org-test-conn-001";
-const USER_ID = "user-test-conn-001";
+const ORG_ID = 'org-test-conn-001';
+const USER_ID = 'user-test-conn-001';
 
 // ---------------------------------------------------------------------------
 // Mock Prisma via vi.hoisted
@@ -54,7 +54,7 @@ const { mockPrisma, mockCourierClient } = vi.hoisted(() => {
     workflowTaskRun: { update: vi.fn(), updateMany: vi.fn(), findUnique: vi.fn() },
     workflowRun: { update: vi.fn() },
     $transaction: vi.fn(async (fnOrArray: unknown) => {
-      if (typeof fnOrArray === "function") {
+      if (typeof fnOrArray === 'function') {
         return (fnOrArray as (tx: Rec) => Promise<unknown>)(mockPrisma);
       }
       return fnOrArray;
@@ -75,7 +75,7 @@ const { mockPrisma, mockCourierClient } = vi.hoisted(() => {
 // Module mocks
 // ---------------------------------------------------------------------------
 
-vi.mock("@contractor-ops/auth", () => ({
+vi.mock('@contractor-ops/auth', () => ({
   auth: {
     api: {
       getSession: vi.fn(),
@@ -84,7 +84,7 @@ vi.mock("@contractor-ops/auth", () => ({
   },
 }));
 
-vi.mock("@contractor-ops/db", () => ({
+vi.mock('@contractor-ops/db', () => ({
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
@@ -92,19 +92,19 @@ vi.mock("@contractor-ops/db", () => ({
   },
 }));
 
-vi.mock("../../services/notification-service.js", () => ({
-  dispatch: vi.fn(async () => {}),
+vi.mock('../../services/notification-service.js', () => ({
+  dispatch: vi.fn(async () => undefined),
 }));
 
-vi.mock("../../services/equipment-workflow.js", () => ({
+vi.mock('../../services/equipment-workflow.js', () => ({
   checkShipmentTaskCompletion: vi.fn(),
 }));
 
-vi.mock("../../services/courier/carrier-factory.js", () => ({
+vi.mock('../../services/courier/carrier-factory.js', () => ({
   getCourierClient: vi.fn(() => mockCourierClient),
 }));
 
-vi.mock("../../services/courier/inpost-client.js", () => ({
+vi.mock('../../services/courier/inpost-client.js', () => ({
   InPostClient: class MockInPostClient {
     createShipment = vi.fn();
     getLabel = vi.fn();
@@ -113,7 +113,7 @@ vi.mock("../../services/courier/inpost-client.js", () => ({
   },
 }));
 
-vi.mock("../../services/courier/dpd-client.js", () => ({
+vi.mock('../../services/courier/dpd-client.js', () => ({
   DPDClient: class MockDPDClient {
     createShipment = vi.fn();
     getLabel = vi.fn();
@@ -122,7 +122,7 @@ vi.mock("../../services/courier/dpd-client.js", () => ({
   },
 }));
 
-vi.mock("../../services/courier/ups-client.js", () => ({
+vi.mock('../../services/courier/ups-client.js', () => ({
   UPSClient: class MockUPSClient {
     createShipment = vi.fn();
     getLabel = vi.fn();
@@ -131,7 +131,7 @@ vi.mock("../../services/courier/ups-client.js", () => ({
   },
 }));
 
-vi.mock("../../services/stripe-client.js", () => ({
+vi.mock('../../services/stripe-client.js', () => ({
   stripe: {
     checkout: { sessions: { create: vi.fn() } },
     billingPortal: { sessions: { create: vi.fn() } },
@@ -142,43 +142,43 @@ vi.mock("../../services/stripe-client.js", () => ({
   },
 }));
 
-vi.mock("../../services/r2.js", () => ({
-  createPresignedUploadUrl: vi.fn(async () => ({ url: "https://r2.test/upload", key: "k" })),
-  createPresignedDownloadUrl: vi.fn(async () => "https://r2.test/download"),
-  generateStorageKey: vi.fn(() => "mock-key"),
+vi.mock('../../services/r2.js', () => ({
+  createPresignedUploadUrl: vi.fn(async () => ({ url: 'https://r2.test/upload', key: 'k' })),
+  createPresignedDownloadUrl: vi.fn(async () => 'https://r2.test/download'),
+  generateStorageKey: vi.fn(() => 'mock-key'),
 }));
 
-vi.mock("../../services/portal-session.js", () => ({
+vi.mock('../../services/portal-session.js', () => ({
   validatePortalSession: vi.fn(async () => null),
   createPortalSession: vi.fn(),
   deletePortalSession: vi.fn(),
 }));
 
-vi.mock("../../services/portal-magic-link.js", () => ({
+vi.mock('../../services/portal-magic-link.js', () => ({
   createMagicLinkToken: vi.fn(),
   verifyMagicLinkToken: vi.fn(),
   findContractorsByEmail: vi.fn(),
   sendPortalMagicLink: vi.fn(),
 }));
 
-vi.mock("../../services/portal-change-request.js", () => ({
+vi.mock('../../services/portal-change-request.js', () => ({
   createChangeRequest: vi.fn(),
 }));
 
-vi.mock("../../services/bank-account-crypto.js", () => ({
+vi.mock('../../services/bank-account-crypto.js', () => ({
   encryptBankAccount: vi.fn((v: string) => `encrypted:${v}`),
 }));
 
-vi.mock("@contractor-ops/logger", () => ({
+vi.mock('@contractor-ops/logger', () => ({
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
 
-vi.mock("@contractor-ops/logger/metrics", () => ({
+vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { increment: vi.fn(), histogram: vi.fn(), distribution: vi.fn() },
 }));
 
-vi.mock("@sentry/nextjs", () => {
+vi.mock('@sentry/nextjs', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
     startSpan: vi.fn((_o: unknown, fn: (span: typeof mockSpan) => unknown) => fn(mockSpan)),
@@ -186,18 +186,18 @@ vi.mock("@sentry/nextjs", () => {
   };
 });
 
-vi.mock("@microsoft/microsoft-graph-client", () => ({
+vi.mock('@microsoft/microsoft-graph-client', () => ({
   Client: { init: vi.fn() },
 }));
 
-vi.mock("botbuilder", () => ({
+vi.mock('botbuilder', () => ({
   TeamsActivityHandler: class {},
   TurnContext: class {},
   CloudAdapter: class {},
   ConfigurationBotFrameworkAuthentication: class {},
 }));
 
-vi.mock("botframework-connector", () => ({
+vi.mock('botframework-connector', () => ({
   MicrosoftAppCredentials: { trustServiceUrl: vi.fn() },
   ConnectorClient: class {},
 }));
@@ -206,9 +206,9 @@ vi.mock("botframework-connector", () => ({
 // Imports (after mocks)
 // ---------------------------------------------------------------------------
 
-import { createCallerFactory } from "../../init.js";
-import { appRouter } from "../../root.js";
-import { getCourierClient } from "../../services/courier/carrier-factory.js";
+import { createCallerFactory } from '../../init.js';
+import { appRouter } from '../../root.js';
+import { getCourierClient } from '../../services/courier/carrier-factory.js';
 
 // ---------------------------------------------------------------------------
 // Caller setup — admin caller
@@ -219,11 +219,11 @@ const createCaller = createCallerFactory(appRouter);
 function makeAdminCaller() {
   const session = {
     session: {
-      id: "session-1",
+      id: 'session-1',
       userId: USER_ID,
       activeOrganizationId: ORG_ID,
-      expiresAt: new Date("2099-01-01"),
-      token: "mock-token",
+      expiresAt: new Date('2099-01-01'),
+      token: 'mock-token',
       createdAt: new Date(),
       updatedAt: new Date(),
       ipAddress: null,
@@ -231,14 +231,14 @@ function makeAdminCaller() {
     },
     user: {
       id: USER_ID,
-      name: "Admin User",
-      email: "admin@test.com",
+      name: 'Admin User',
+      email: 'admin@test.com',
       emailVerified: true,
       image: null,
       banned: false,
       banReason: null,
       banExpires: null,
-      role: "admin",
+      role: 'admin',
       createdAt: new Date(),
       updatedAt: new Date(),
     },
@@ -264,84 +264,84 @@ beforeEach(() => {
 // Tests
 // ---------------------------------------------------------------------------
 
-describe("equipment.testCourierConnection", () => {
-  it("returns success:true when DPD credentials are valid", async () => {
+describe('equipment.testCourierConnection', () => {
+  it('returns success:true when DPD credentials are valid', async () => {
     mockCourierClient.getStatus.mockResolvedValueOnce({
-      externalId: "TEST_CONNECTION_PROBE",
-      status: "unknown",
+      externalId: 'TEST_CONNECTION_PROBE',
+      status: 'unknown',
     });
 
     const result = await caller.equipment.testCourierConnection({
-      carrier: "dpd",
-      username: "dpd-user",
-      password: "dpd-pass",
-      fid: "dpd-fid-123",
+      carrier: 'dpd',
+      username: 'dpd-user',
+      password: 'dpd-pass',
+      fid: 'dpd-fid-123',
       sandbox: true,
     });
 
     expect(result).toEqual({ success: true });
-    expect(getCourierClient).toHaveBeenCalledWith("dpd", {
-      username: "dpd-user",
-      password: "dpd-pass",
-      fid: "dpd-fid-123",
+    expect(getCourierClient).toHaveBeenCalledWith('dpd', {
+      username: 'dpd-user',
+      password: 'dpd-pass',
+      fid: 'dpd-fid-123',
       sandbox: true,
     });
-    expect(mockCourierClient.getStatus).toHaveBeenCalledWith("TEST_CONNECTION_PROBE");
+    expect(mockCourierClient.getStatus).toHaveBeenCalledWith('TEST_CONNECTION_PROBE');
   });
 
-  it("returns success:true when UPS credentials are valid", async () => {
+  it('returns success:true when UPS credentials are valid', async () => {
     mockCourierClient.getStatus.mockResolvedValueOnce({
-      externalId: "TEST_CONNECTION_PROBE",
-      status: "unknown",
+      externalId: 'TEST_CONNECTION_PROBE',
+      status: 'unknown',
     });
 
     const result = await caller.equipment.testCourierConnection({
-      carrier: "ups",
-      clientId: "ups-client-id",
-      clientSecret: "ups-secret",
-      accountNumber: "ups-account-123",
+      carrier: 'ups',
+      clientId: 'ups-client-id',
+      clientSecret: 'ups-secret',
+      accountNumber: 'ups-account-123',
       sandbox: true,
     });
 
     expect(result).toEqual({ success: true });
-    expect(getCourierClient).toHaveBeenCalledWith("ups", {
-      clientId: "ups-client-id",
-      clientSecret: "ups-secret",
-      accountNumber: "ups-account-123",
+    expect(getCourierClient).toHaveBeenCalledWith('ups', {
+      clientId: 'ups-client-id',
+      clientSecret: 'ups-secret',
+      accountNumber: 'ups-account-123',
       sandbox: true,
     });
   });
 
-  it("returns success:true when carrier responds with shipment-not-found (auth succeeded)", async () => {
-    mockCourierClient.getStatus.mockRejectedValueOnce(new Error("Shipment not found (404)"));
+  it('returns success:true when carrier responds with shipment-not-found (auth succeeded)', async () => {
+    mockCourierClient.getStatus.mockRejectedValueOnce(new Error('Shipment not found (404)'));
 
     const result = await caller.equipment.testCourierConnection({
-      carrier: "dpd",
-      username: "dpd-user",
-      password: "dpd-pass",
-      fid: "dpd-fid-123",
+      carrier: 'dpd',
+      username: 'dpd-user',
+      password: 'dpd-pass',
+      fid: 'dpd-fid-123',
       sandbox: true,
     });
 
     expect(result).toEqual({ success: true });
   });
 
-  it("returns success:false with generic error when auth fails", async () => {
+  it('returns success:false with generic error when auth fails', async () => {
     mockCourierClient.getStatus.mockRejectedValueOnce(
-      new Error("401 Unauthorized: Invalid credentials"),
+      new Error('401 Unauthorized: Invalid credentials'),
     );
 
     const result = await caller.equipment.testCourierConnection({
-      carrier: "dpd",
-      username: "bad-user",
-      password: "bad-pass",
-      fid: "bad-fid",
+      carrier: 'dpd',
+      username: 'bad-user',
+      password: 'bad-pass',
+      fid: 'bad-fid',
       sandbox: true,
     });
 
     expect(result).toEqual({
       success: false,
-      error: "Connection failed. Check your credentials.",
+      error: 'Connection failed. Check your credentials.',
     });
   });
 });

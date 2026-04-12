@@ -1,5 +1,5 @@
-import * as Sentry from "@sentry/nextjs";
-import { logger } from "./index.js";
+import * as Sentry from '@sentry/nextjs';
+import { logger } from './index.js';
 
 /**
  * Lightweight metrics helper that records custom metrics as:
@@ -23,7 +23,7 @@ export const metrics = {
         }
       }
     }
-    logger.debug({ metric: name, value, type: "counter", ...tags }, `metric:${name}`);
+    logger.debug({ metric: name, value, type: 'counter', ...tags }, `metric:${name}`);
   },
 
   /**
@@ -42,7 +42,7 @@ export const metrics = {
       }
     }
     logger.debug(
-      { metric: name, value, type: "distribution", unit: opts?.unit, ...opts?.tags },
+      { metric: name, value, type: 'distribution', unit: opts?.unit, ...opts?.tags },
       `metric:${name}`,
     );
   },
@@ -55,6 +55,6 @@ export const metrics = {
     if (activeSpan) {
       activeSpan.setAttribute(`metric.${name}`, value);
     }
-    logger.debug({ metric: name, value, type: "gauge", ...tags }, `metric:${name}`);
+    logger.debug({ metric: name, value, type: 'gauge', ...tags }, `metric:${name}`);
   },
 };

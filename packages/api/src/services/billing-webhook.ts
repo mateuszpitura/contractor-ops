@@ -1,19 +1,19 @@
-import { createLogger } from "@contractor-ops/logger";
-import { metrics } from "@contractor-ops/logger/metrics";
-import { Resend } from "resend";
-import type Stripe from "stripe";
+import { createLogger } from '@contractor-ops/logger';
+import { metrics } from '@contractor-ops/logger/metrics';
+import { Resend } from 'resend';
+import type Stripe from 'stripe';
 import {
   resolveTierFromPriceId,
   resolveTopUpCredits,
   TIER_CREDIT_ALLOWANCE,
   TRIAL_CREDIT_ALLOWANCE,
-} from "./billing-constants.js";
-import { CacheKeys, invalidate } from "./cache.js";
-import { dispatch } from "./notification-service.js";
-import { stripe } from "./stripe-client.js";
-import type { DbClient } from "./types.js";
+} from './billing-constants.js';
+import { CacheKeys, invalidate } from './cache.js';
+import { dispatch } from './notification-service.js';
+import { stripe } from './stripe-client.js';
+import type { DbClient } from './types.js';
 
-const log = createLogger({ service: "billing-webhook" });
+const log = createLogger({ service: 'billing-webhook' });
 
 // ---------------------------------------------------------------------------
 // Types
@@ -39,14 +39,14 @@ interface SubscriptionWithPeriod extends Stripe.Subscription {
 // ---------------------------------------------------------------------------
 
 const STRIPE_STATUS_MAP: Record<string, string> = {
-  trialing: "TRIALING",
-  active: "ACTIVE",
-  past_due: "PAST_DUE",
-  canceled: "CANCELED",
-  unpaid: "UNPAID",
-  incomplete: "INCOMPLETE",
-  incomplete_expired: "INCOMPLETE_EXPIRED",
-  paused: "PAUSED",
+  trialing: 'TRIALING',
+  active: 'ACTIVE',
+  past_due: 'PAST_DUE',
+  canceled: 'CANCELED',
+  unpaid: 'UNPAID',
+  incomplete: 'INCOMPLETE',
+  incomplete_expired: 'INCOMPLETE_EXPIRED',
+  paused: 'PAUSED',
 };
 
 // ---------------------------------------------------------------------------
@@ -63,7 +63,7 @@ function getResend(): Resend {
 }
 
 function buildBillingUrl(): string {
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
   return `${base}/settings?tab=billing`;
 }
 
@@ -79,13 +79,13 @@ async function sendBillingEmail(params: {
   try {
     const resend = getResend();
     await resend.emails.send({
-      from: "Contractor Ops <notifications@contractorhub.io>",
+      from: 'Contractor Ops <notifications@contractorhub.io>',
       to: params.to,
       subject: params.subject,
       html: `<p>${params.body}</p><p><a href="${buildBillingUrl()}">Go to billing settings</a></p>`,
     });
   } catch (error) {
-    console.error("[billing-webhook] Email send failed:", error);
+    console.error('[billing-webhook] Email send failed:', error);
   }
 }
 
@@ -97,7 +97,7 @@ function getSubscriptionIdFromInvoice(invoice: Stripe.Invoice): string | null {
   // In newer Stripe API versions, subscription is under parent.subscription_details
   const parentSub = invoice.parent?.subscription_details?.subscription;
   if (parentSub) {
-    return typeof parentSub === "string" ? parentSub : parentSub.id;
+    return typeof parentSub === 'string' ? parentSub : parentSub.id;
   }
   return null;
 }
@@ -111,70 +111,70 @@ function getSubscriptionIdFromInvoice(invoice: Stripe.Invoice): string | null {
  * Called within a Prisma transaction from the webhook route.
  */
 export async function routeStripeEvent(event: Stripe.Event, tx: TxClient): Promise<void> {
-  log.info({ eventId: event.id, eventType: event.type }, "routing stripe event");
-  metrics.increment("billing.event", 1, { eventType: event.type });
+  log.info({ eventId: event.id, eventType: event.type }, 'routing stripe event');
+  metrics.increment('billing.event', 1, { eventType: event.type });
 
   switch (event.type) {
-    case "checkout.session.completed": {
+    case 'checkout.session.completed': {
       const session = event.data.object as Stripe.Checkout.Session;
-      if (session.mode === "subscription" && session.subscription) {
+      if (session.mode === 'subscription' && session.subscription) {
         await handleCheckoutCompleted(session, tx);
-      } else if (session.mode === "payment" && session.metadata?.type === "top_up") {
+      } else if (session.mode === 'payment' && session.metadata?.type === 'top_up') {
         await handleTopUpCompleted(session, tx);
       }
       break;
     }
 
-    case "customer.subscription.created":
-    case "customer.subscription.updated": {
+    case 'customer.subscription.created':
+    case 'customer.subscription.updated': {
       const subscription = event.data.object as unknown as SubscriptionWithPeriod;
       await handleSubscriptionUpdated(subscription, tx);
       break;
     }
 
-    case "customer.subscription.deleted": {
+    case 'customer.subscription.deleted': {
       const subscription = event.data.object as Stripe.Subscription;
       await handleSubscriptionDeleted(subscription, tx);
       break;
     }
 
-    case "customer.subscription.trial_will_end": {
+    case 'customer.subscription.trial_will_end': {
       const subscription = event.data.object as Stripe.Subscription;
       await handleTrialWillEnd(subscription, tx);
       break;
     }
 
-    case "invoice.paid": {
+    case 'invoice.paid': {
       const invoice = event.data.object as Stripe.Invoice;
       await handleInvoicePaid(invoice, tx);
       break;
     }
 
-    case "invoice.payment_failed": {
+    case 'invoice.payment_failed': {
       const invoice = event.data.object as Stripe.Invoice;
       await handlePaymentFailed(invoice, tx);
       break;
     }
 
-    case "invoice.payment_action_required": {
+    case 'invoice.payment_action_required': {
       const invoice = event.data.object as Stripe.Invoice;
       await handlePaymentActionRequired(invoice, tx);
       break;
     }
 
-    case "customer.subscription.paused": {
+    case 'customer.subscription.paused': {
       const subscription = event.data.object as Stripe.Subscription;
       await handleSubscriptionPaused(subscription, tx);
       break;
     }
 
-    case "customer.subscription.resumed": {
+    case 'customer.subscription.resumed': {
       const subscription = event.data.object as unknown as SubscriptionWithPeriod;
       await handleSubscriptionUpdated(subscription, tx);
       break;
     }
 
-    case "charge.refunded": {
+    case 'charge.refunded': {
       const charge = event.data.object as Stripe.Charge;
       await handleChargeRefunded(charge, tx);
       break;
@@ -199,10 +199,10 @@ async function handleCheckoutCompleted(
   tx: TxClient,
 ): Promise<void> {
   const subscriptionId =
-    typeof session.subscription === "string" ? session.subscription : session.subscription?.id;
+    typeof session.subscription === 'string' ? session.subscription : session.subscription?.id;
 
   if (!subscriptionId) {
-    console.error("[stripe-webhook] checkout.session.completed missing subscription ID");
+    console.error('[stripe-webhook] checkout.session.completed missing subscription ID');
     return;
   }
 
@@ -212,11 +212,11 @@ async function handleCheckoutCompleted(
   await handleSubscriptionUpdated(subscription, tx);
 
   // Per D-08: Create initial trial credit ledger for trialing subscriptions
-  if (subscription.status === "trialing") {
+  if (subscription.status === 'trialing') {
     const organizationId = subscription.metadata?.organizationId;
     if (!organizationId) {
       console.error(
-        "[stripe-webhook] checkout.session.completed: missing organizationId in metadata",
+        '[stripe-webhook] checkout.session.completed: missing organizationId in metadata',
       );
       return;
     }
@@ -229,7 +229,7 @@ async function handleCheckoutCompleted(
     });
 
     if (existingTrial) {
-      log.info({ subscriptionId, organizationId }, "trial credits already allocated, skipping");
+      log.info({ subscriptionId, organizationId }, 'trial credits already allocated, skipping');
       return;
     }
 
@@ -244,14 +244,14 @@ async function handleCheckoutCompleted(
       data: {
         organizationId,
         credits: TRIAL_CREDIT_ALLOWANCE,
-        reason: "TRIAL_ALLOWANCE",
+        reason: 'TRIAL_ALLOWANCE',
         stripeEventId: trialEventId,
         periodStart,
         periodEnd,
       },
     });
 
-    log.info({ organizationId, credits: TRIAL_CREDIT_ALLOWANCE }, "trial credits allocated");
+    log.info({ organizationId, credits: TRIAL_CREDIT_ALLOWANCE }, 'trial credits allocated');
   }
 }
 
@@ -266,14 +266,14 @@ async function handleTopUpCompleted(session: Stripe.Checkout.Session, tx: TxClie
   if (!(organizationId && priceId)) {
     log.error(
       { sessionId: session.id },
-      "handleTopUpCompleted: missing organizationId or priceId in metadata",
+      'handleTopUpCompleted: missing organizationId or priceId in metadata',
     );
     return;
   }
 
   const credits = resolveTopUpCredits(priceId);
   if (!credits) {
-    log.error({ priceId, sessionId: session.id }, "handleTopUpCompleted: unknown top-up price ID");
+    log.error({ priceId, sessionId: session.id }, 'handleTopUpCompleted: unknown top-up price ID');
     return;
   }
 
@@ -286,7 +286,7 @@ async function handleTopUpCompleted(session: Stripe.Checkout.Session, tx: TxClie
   if (existing) {
     log.info(
       { sessionId: session.id },
-      "handleTopUpCompleted: credits already allocated, skipping",
+      'handleTopUpCompleted: credits already allocated, skipping',
     );
     return;
   }
@@ -296,7 +296,7 @@ async function handleTopUpCompleted(session: Stripe.Checkout.Session, tx: TxClie
   });
 
   if (!subscription) {
-    log.error({ organizationId }, "handleTopUpCompleted: no subscription found for org");
+    log.error({ organizationId }, 'handleTopUpCompleted: no subscription found for org');
     return;
   }
 
@@ -304,7 +304,7 @@ async function handleTopUpCompleted(session: Stripe.Checkout.Session, tx: TxClie
     data: {
       organizationId,
       credits,
-      reason: "TOP_UP",
+      reason: 'TOP_UP',
       periodStart: subscription.currentPeriodStart,
       periodEnd: subscription.currentPeriodEnd,
       stripeEventId: session.id,
@@ -314,7 +314,7 @@ async function handleTopUpCompleted(session: Stripe.Checkout.Session, tx: TxClie
   // Invalidate credit cache
   void invalidate(CacheKeys.creditBalance(organizationId));
 
-  log.info({ organizationId, credits, sessionId: session.id }, "top-up credits allocated");
+  log.info({ organizationId, credits, sessionId: session.id }, 'top-up credits allocated');
 }
 
 /**
@@ -326,22 +326,22 @@ async function handleSubscriptionUpdated(
 ): Promise<void> {
   const organizationId = subscription.metadata?.organizationId;
   if (!organizationId) {
-    console.error("[stripe-webhook] handleSubscriptionUpdated: missing organizationId in metadata");
+    console.error('[stripe-webhook] handleSubscriptionUpdated: missing organizationId in metadata');
     return;
   }
 
-  const status = STRIPE_STATUS_MAP[subscription.status] ?? "ACTIVE";
+  const status = STRIPE_STATUS_MAP[subscription.status] ?? 'ACTIVE';
   const priceId = subscription.items.data[0]?.price?.id;
   let tier: string;
 
   try {
-    tier = priceId ? resolveTierFromPriceId(priceId) : "STARTER";
+    tier = priceId ? resolveTierFromPriceId(priceId) : 'STARTER';
   } catch {
     log.error(
       { priceId, subscriptionId: subscription.id, organizationId },
-      "BILLING ALERT: unknown price ID in subscription, defaulting to STARTER - verify Stripe configuration",
+      'BILLING ALERT: unknown price ID in subscription, defaulting to STARTER - verify Stripe configuration',
     );
-    tier = "STARTER";
+    tier = 'STARTER';
   }
 
   // Period dates from subscription (webhook payloads include these)
@@ -359,7 +359,7 @@ async function handleSubscriptionUpdated(
   const data = {
     organizationId,
     stripeCustomerId:
-      typeof subscription.customer === "string" ? subscription.customer : subscription.customer.id,
+      typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id,
     stripeSubscriptionItemId: subscription.items.data[0]?.id ?? null,
     stripePriceId: priceId ?? null,
     tier,
@@ -396,7 +396,7 @@ async function handleSubscriptionUpdated(
     const adminMembers = await tx.member.findMany({
       where: {
         organizationId,
-        role: { in: ["owner", "admin"] },
+        role: { in: ['owner', 'admin'] },
       },
       select: { userId: true },
     });
@@ -406,14 +406,14 @@ async function handleSubscriptionUpdated(
     if (adminUserIds.length > 0) {
       void dispatch({
         organizationId,
-        type: "SUBSCRIPTION_CHANGED" as const,
+        type: 'SUBSCRIPTION_CHANGED' as const,
         recipientUserIds: adminUserIds,
-        title: "Subscription plan changed",
+        title: 'Subscription plan changed',
         body: `Your plan has been changed from ${previousTier} to ${tier}.`,
-        entityType: "ORGANIZATION",
+        entityType: 'ORGANIZATION',
         entityId: organizationId,
       }).catch((error: unknown) =>
-        console.error("[stripe-webhook] Subscription change notification failed:", error),
+        console.error('[stripe-webhook] Subscription change notification failed:', error),
       );
     }
   }
@@ -434,14 +434,14 @@ async function handleSubscriptionDeleted(
   if (!existing) {
     log.warn(
       { subscriptionId: subscription.id },
-      "handleSubscriptionDeleted: subscription not found in DB, skipping",
+      'handleSubscriptionDeleted: subscription not found in DB, skipping',
     );
     return;
   }
 
   await tx.subscription.update({
     where: { stripeSubscriptionId: subscription.id },
-    data: { status: "CANCELED" },
+    data: { status: 'CANCELED' },
   });
 
   void invalidate(
@@ -461,7 +461,7 @@ async function handleTrialWillEnd(subscription: Stripe.Subscription, tx: TxClien
   });
 
   if (!sub?.organization) {
-    console.error("[stripe-webhook] handleTrialWillEnd: subscription not found in DB");
+    console.error('[stripe-webhook] handleTrialWillEnd: subscription not found in DB');
     return;
   }
 
@@ -469,7 +469,7 @@ async function handleTrialWillEnd(subscription: Stripe.Subscription, tx: TxClien
   const adminMembers = await tx.member.findMany({
     where: {
       organizationId: sub.organization.id,
-      role: { in: ["owner", "admin"] },
+      role: { in: ['owner', 'admin'] },
     },
     select: { userId: true },
   });
@@ -480,14 +480,14 @@ async function handleTrialWillEnd(subscription: Stripe.Subscription, tx: TxClien
     // In-app notification via dispatch
     void dispatch({
       organizationId: sub.organization.id,
-      type: "TRIAL_ENDING" as const,
+      type: 'TRIAL_ENDING' as const,
       recipientUserIds: adminUserIds,
-      title: "Trial ending soon",
-      body: "Your trial ends in 3 days. Choose a plan to continue without interruption.",
-      entityType: "ORGANIZATION",
+      title: 'Trial ending soon',
+      body: 'Your trial ends in 3 days. Choose a plan to continue without interruption.',
+      entityType: 'ORGANIZATION',
       entityId: sub.organization.id,
     }).catch((error: unknown) =>
-      console.error("[stripe-webhook] Trial notification dispatch failed:", error),
+      console.error('[stripe-webhook] Trial notification dispatch failed:', error),
     );
   }
 
@@ -495,8 +495,8 @@ async function handleTrialWillEnd(subscription: Stripe.Subscription, tx: TxClien
   if (sub.organization.billingEmail) {
     await sendBillingEmail({
       to: sub.organization.billingEmail,
-      subject: "Your Contractor Ops trial ends in 3 days",
-      body: "Your trial ends in 3 days. Choose a plan to continue without interruption.",
+      subject: 'Your Contractor Ops trial ends in 3 days',
+      body: 'Your trial ends in 3 days. Choose a plan to continue without interruption.',
     });
   }
 }
@@ -510,7 +510,7 @@ async function handleInvoicePaid(invoice: Stripe.Invoice, tx: TxClient): Promise
   // Skip non-subscription invoices and first invoices (trial start)
   const subscriptionId = getSubscriptionIdFromInvoice(invoice);
 
-  if (!subscriptionId || invoice.billing_reason === "subscription_create") {
+  if (!subscriptionId || invoice.billing_reason === 'subscription_create') {
     return;
   }
 
@@ -549,7 +549,7 @@ async function handleInvoicePaid(invoice: Stripe.Invoice, tx: TxClient): Promise
     data: {
       organizationId: sub.organizationId,
       credits,
-      reason: "MONTHLY_ALLOWANCE",
+      reason: 'MONTHLY_ALLOWANCE',
       periodStart: sub.currentPeriodStart,
       periodEnd: sub.currentPeriodEnd,
       stripeEventId: invoice.id,
@@ -574,7 +574,7 @@ async function handlePaymentFailed(invoice: Stripe.Invoice, tx: TxClient): Promi
 
   await tx.subscription.update({
     where: { stripeSubscriptionId: subscriptionId },
-    data: { status: "PAST_DUE" },
+    data: { status: 'PAST_DUE' },
   });
 
   // Invalidate billing caches so soft-block kicks in
@@ -587,7 +587,7 @@ async function handlePaymentFailed(invoice: Stripe.Invoice, tx: TxClient): Promi
   const adminMembers = await tx.member.findMany({
     where: {
       organizationId: sub.organizationId,
-      role: { in: ["owner", "admin"] },
+      role: { in: ['owner', 'admin'] },
     },
     select: { userId: true },
   });
@@ -597,14 +597,14 @@ async function handlePaymentFailed(invoice: Stripe.Invoice, tx: TxClient): Promi
   if (adminUserIds.length > 0) {
     void dispatch({
       organizationId: sub.organizationId,
-      type: "PAYMENT_FAILED" as const,
+      type: 'PAYMENT_FAILED' as const,
       recipientUserIds: adminUserIds,
-      title: "Payment failed",
-      body: "Payment failed. Update your payment method to continue your subscription.",
-      entityType: "ORGANIZATION",
+      title: 'Payment failed',
+      body: 'Payment failed. Update your payment method to continue your subscription.',
+      entityType: 'ORGANIZATION',
       entityId: sub.organizationId,
     }).catch((error: unknown) =>
-      console.error("[stripe-webhook] Payment failed notification dispatch failed:", error),
+      console.error('[stripe-webhook] Payment failed notification dispatch failed:', error),
     );
   }
 
@@ -612,8 +612,8 @@ async function handlePaymentFailed(invoice: Stripe.Invoice, tx: TxClient): Promi
   if (sub.organization?.billingEmail) {
     await sendBillingEmail({
       to: sub.organization.billingEmail,
-      subject: "Payment failed - action required",
-      body: "Payment failed. Update your payment method to continue your subscription.",
+      subject: 'Payment failed - action required',
+      body: 'Payment failed. Update your payment method to continue your subscription.',
     });
   }
 }
@@ -636,7 +636,7 @@ async function handlePaymentActionRequired(invoice: Stripe.Invoice, tx: TxClient
   const adminMembers = await tx.member.findMany({
     where: {
       organizationId: sub.organizationId,
-      role: { in: ["owner", "admin"] },
+      role: { in: ['owner', 'admin'] },
     },
     select: { userId: true },
   });
@@ -646,22 +646,22 @@ async function handlePaymentActionRequired(invoice: Stripe.Invoice, tx: TxClient
   if (adminUserIds.length > 0) {
     void dispatch({
       organizationId: sub.organizationId,
-      type: "PAYMENT_ACTION_REQUIRED" as const,
+      type: 'PAYMENT_ACTION_REQUIRED' as const,
       recipientUserIds: adminUserIds,
-      title: "Payment verification required",
-      body: "Your bank requires additional verification. Please complete the payment to keep your subscription active.",
-      entityType: "ORGANIZATION",
+      title: 'Payment verification required',
+      body: 'Your bank requires additional verification. Please complete the payment to keep your subscription active.',
+      entityType: 'ORGANIZATION',
       entityId: sub.organizationId,
     }).catch((error: unknown) =>
-      console.error("[stripe-webhook] Payment action required notification failed:", error),
+      console.error('[stripe-webhook] Payment action required notification failed:', error),
     );
   }
 
   if (sub.organization?.billingEmail) {
     await sendBillingEmail({
       to: sub.organization.billingEmail,
-      subject: "Payment verification required",
-      body: "Your bank requires additional verification. Please complete the payment to keep your subscription active.",
+      subject: 'Payment verification required',
+      body: 'Your bank requires additional verification. Please complete the payment to keep your subscription active.',
     });
   }
 }
@@ -688,7 +688,7 @@ async function handleSubscriptionPaused(
 
   const sub = await tx.subscription.update({
     where: { stripeSubscriptionId: subscription.id },
-    data: { status: "PAUSED" },
+    data: { status: 'PAUSED' },
   });
 
   void invalidate(
@@ -698,7 +698,7 @@ async function handleSubscriptionPaused(
 
   log.info(
     { subscriptionId: subscription.id, organizationId: sub.organizationId },
-    "subscription paused",
+    'subscription paused',
   );
 }
 
@@ -708,15 +708,15 @@ async function handleSubscriptionPaused(
  * partial refunds and credit reversal are complex — flag for manual review.
  */
 async function handleChargeRefunded(charge: Stripe.Charge, tx: TxClient): Promise<void> {
-  const customerId = typeof charge.customer === "string" ? charge.customer : charge.customer?.id;
+  const customerId = typeof charge.customer === 'string' ? charge.customer : charge.customer?.id;
 
   log.warn(
     {
       chargeId: charge.id,
       amountRefunded: charge.amount_refunded,
-      customerId: customerId ?? "unknown",
+      customerId: customerId ?? 'unknown',
     },
-    "charge refunded - checking for associated credit allocations",
+    'charge refunded - checking for associated credit allocations',
   );
 
   if (!customerId) return;
@@ -732,7 +732,7 @@ async function handleChargeRefunded(charge: Stripe.Charge, tx: TxClient): Promis
   });
 
   if (!sub) {
-    log.warn({ customerId }, "refund: no subscription found for customer");
+    log.warn({ customerId }, 'refund: no subscription found for customer');
     return;
   }
 
@@ -744,7 +744,7 @@ async function handleChargeRefunded(charge: Stripe.Charge, tx: TxClient): Promis
   });
 
   if (existingRefund) {
-    log.info({ chargeId: charge.id }, "refund already processed, skipping");
+    log.info({ chargeId: charge.id }, 'refund already processed, skipping');
     return;
   }
 
@@ -755,7 +755,7 @@ async function handleChargeRefunded(charge: Stripe.Charge, tx: TxClient): Promis
     data: {
       organizationId: sub.organizationId,
       credits: 0,
-      reason: "REFUND_AUDIT",
+      reason: 'REFUND_AUDIT',
       stripeEventId: refundEventId,
       periodStart: sub.currentPeriodStart,
       periodEnd: sub.currentPeriodEnd,
@@ -768,10 +768,10 @@ async function handleChargeRefunded(charge: Stripe.Charge, tx: TxClient): Promis
       organizationId: sub.organizationId,
       amountRefundedMinor: charge.amount_refunded,
       paymentIntentId:
-        typeof charge.payment_intent === "string"
+        typeof charge.payment_intent === 'string'
           ? charge.payment_intent
           : (charge.payment_intent?.id ?? null),
     },
-    "REFUND AUDIT: manual credit reversal may be needed - verify against ledger",
+    'REFUND AUDIT: manual credit reversal may be needed - verify against ledger',
   );
 }

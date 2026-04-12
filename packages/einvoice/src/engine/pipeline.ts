@@ -2,9 +2,9 @@
 // E-Invoice Pipeline
 // ---------------------------------------------------------------------------
 
-import type { EInvoice } from "../types/invoice.js";
-import type { CertificateInfo, EInvoiceProfile } from "../types/profile.js";
-import type { ValidationResult } from "../types/validation.js";
+import type { EInvoice } from '../types/invoice.js';
+import type { CertificateInfo, EInvoiceProfile } from '../types/profile.js';
+import type { ValidationResult } from '../types/validation.js';
 
 /**
  * Result of running an invoice through the engine pipeline.
@@ -59,7 +59,7 @@ export async function runPipeline(
 
   // Step 1: Generate XML
   const xml = await profile.generate(invoice);
-  stepsExecuted.push("generate");
+  stepsExecuted.push('generate');
 
   // Step 2: Validate (unless skipped)
   let validation: ValidationResult;
@@ -72,7 +72,7 @@ export async function runPipeline(
     };
   } else {
     validation = await profile.validate(xml);
-    stepsExecuted.push("validate");
+    stepsExecuted.push('validate');
   }
 
   // If validation fails, stop pipeline — do not sign invalid XML
@@ -92,13 +92,13 @@ export async function runPipeline(
   if (profile.sign && !options?.skipSign) {
     if (!options?.certificate) {
       validation.warnings.push({
-        code: "SIGN_SKIPPED",
-        message: "Profile supports signing but no certificate provided",
-        severity: "warning",
+        code: 'SIGN_SKIPPED',
+        message: 'Profile supports signing but no certificate provided',
+        severity: 'warning',
       });
     } else {
       signedXml = await profile.sign.sign(xml, options.certificate);
-      stepsExecuted.push("sign");
+      stepsExecuted.push('sign');
     }
   }
 
@@ -106,7 +106,7 @@ export async function runPipeline(
   let qrData: Buffer | null = null;
   if (profile.qrCode && !options?.skipQR) {
     qrData = await profile.qrCode.generateQR(invoice);
-    stepsExecuted.push("qrCode");
+    stepsExecuted.push('qrCode');
   }
 
   return {

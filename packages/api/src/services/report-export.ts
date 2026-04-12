@@ -4,9 +4,9 @@
  * Phase 46: Added home-currency conversion for multi-currency reports.
  */
 
-import type { PrismaClient } from "@contractor-ops/db";
-import { minorToDecimalStr } from "@contractor-ops/shared";
-import { convertAmount } from "./exchange-rate.js";
+import type { PrismaClient } from '@contractor-ops/db';
+import { minorToDecimalStr } from '@contractor-ops/shared';
+import { convertAmount } from './exchange-rate.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -44,24 +44,24 @@ export async function generateReportCsv(
   columns: CsvColumn[],
   rows: Record<string, unknown>[],
 ): Promise<{ data: string; mimeType: string }> {
-  const { default: XLSX } = await import("xlsx");
+  const { default: XLSX } = await import('xlsx');
 
   // Map rows to use header names as keys
-  const mappedRows = rows.map((row) => {
+  const mappedRows = rows.map(row => {
     const mapped: Record<string, unknown> = {};
     for (const col of columns) {
-      mapped[col.header] = row[col.key] ?? "";
+      mapped[col.header] = row[col.key] ?? '';
     }
     return mapped;
   });
 
   const worksheet = XLSX.utils.json_to_sheet(mappedRows);
   const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Report");
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Report');
 
   const csvBuffer = XLSX.write(workbook, {
-    type: "buffer",
-    bookType: "csv",
+    type: 'buffer',
+    bookType: 'csv',
   }) as Buffer;
 
   // Prepend UTF-8 BOM for Excel Polish character support
@@ -69,8 +69,8 @@ export async function generateReportCsv(
   const withBom = Buffer.concat([bom, csvBuffer]);
 
   return {
-    data: withBom.toString("base64"),
-    mimeType: "text/csv",
+    data: withBom.toString('base64'),
+    mimeType: 'text/csv',
   };
 }
 
@@ -85,24 +85,24 @@ export async function generateAuditCsv(
   items: AuditLogItem[],
 ): Promise<{ data: string; mimeType: string }> {
   const columns: CsvColumn[] = [
-    { key: "timestamp", header: "Timestamp" },
-    { key: "actorName", header: "Actor Name" },
-    { key: "actorType", header: "Actor Type" },
-    { key: "action", header: "Action" },
-    { key: "resourceType", header: "Resource Type" },
-    { key: "resourceName", header: "Resource Name" },
-    { key: "resourceId", header: "Resource ID" },
-    { key: "changedFields", header: "Changed Fields" },
+    { key: 'timestamp', header: 'Timestamp' },
+    { key: 'actorName', header: 'Actor Name' },
+    { key: 'actorType', header: 'Actor Type' },
+    { key: 'action', header: 'Action' },
+    { key: 'resourceType', header: 'Resource Type' },
+    { key: 'resourceName', header: 'Resource Name' },
+    { key: 'resourceId', header: 'Resource ID' },
+    { key: 'changedFields', header: 'Changed Fields' },
   ];
 
-  const rows = items.map((item) => {
+  const rows = items.map(item => {
     // Compute changed fields from oldValuesJson/newValuesJson
     const oldVals =
-      item.oldValuesJson && typeof item.oldValuesJson === "object"
+      item.oldValuesJson && typeof item.oldValuesJson === 'object'
         ? (item.oldValuesJson as Record<string, unknown>)
         : {};
     const newVals =
-      item.newValuesJson && typeof item.newValuesJson === "object"
+      item.newValuesJson && typeof item.newValuesJson === 'object'
         ? (item.newValuesJson as Record<string, unknown>)
         : {};
     const allKeys = new Set([...Object.keys(oldVals), ...Object.keys(newVals)]);
@@ -115,13 +115,13 @@ export async function generateAuditCsv(
 
     return {
       timestamp: item.createdAt.toISOString(),
-      actorName: item.actorName ?? "",
+      actorName: item.actorName ?? '',
       actorType: item.actorType,
       action: item.action,
       resourceType: item.resourceType,
-      resourceName: item.resourceName ?? "",
+      resourceName: item.resourceName ?? '',
       resourceId: item.resourceId,
-      changedFields: changedKeys.join(", "),
+      changedFields: changedKeys.join(', '),
     };
   });
 
@@ -145,19 +145,19 @@ export async function generateSpendCsv(
   }>,
 ): Promise<{ data: string; mimeType: string }> {
   const columns: CsvColumn[] = [
-    { key: "contractorName", header: "Contractor" },
-    { key: "invoiceCount", header: "Invoice Count" },
-    { key: "totalAmount", header: "Total Amount" },
-    { key: "avgAmount", header: "Average Amount" },
-    { key: "lastPaidAt", header: "Last Paid" },
+    { key: 'contractorName', header: 'Contractor' },
+    { key: 'invoiceCount', header: 'Invoice Count' },
+    { key: 'totalAmount', header: 'Total Amount' },
+    { key: 'avgAmount', header: 'Average Amount' },
+    { key: 'lastPaidAt', header: 'Last Paid' },
   ];
 
-  const rows = items.map((item) => ({
+  const rows = items.map(item => ({
     contractorName: item.contractorName,
     invoiceCount: item.invoiceCount,
-    totalAmount: minorToDecimalStr(item.totalMinor, "PLN"),
-    avgAmount: minorToDecimalStr(item.avgMinor, "PLN"),
-    lastPaidAt: item.lastPaidAt ?? "",
+    totalAmount: minorToDecimalStr(item.totalMinor, 'PLN'),
+    avgAmount: minorToDecimalStr(item.avgMinor, 'PLN'),
+    lastPaidAt: item.lastPaidAt ?? '',
   }));
 
   return generateReportCsv(columns, rows);
@@ -176,11 +176,11 @@ export async function generateContractsCsv(
   }>,
 ): Promise<{ data: string; mimeType: string }> {
   const columns: CsvColumn[] = [
-    { key: "contractTitle", header: "Contract" },
-    { key: "contractorName", header: "Contractor" },
-    { key: "endDate", header: "End Date" },
-    { key: "daysRemaining", header: "Days Remaining" },
-    { key: "status", header: "Status" },
+    { key: 'contractTitle', header: 'Contract' },
+    { key: 'contractorName', header: 'Contractor' },
+    { key: 'endDate', header: 'End Date' },
+    { key: 'daysRemaining', header: 'Days Remaining' },
+    { key: 'status', header: 'Status' },
   ];
 
   return generateReportCsv(columns, items as unknown as Record<string, unknown>[]);
@@ -201,16 +201,16 @@ export async function generateInvoicesCsv(
   }>,
 ): Promise<{ data: string; mimeType: string }> {
   const columns: CsvColumn[] = [
-    { key: "invoiceNumber", header: "Invoice Number" },
-    { key: "contractorName", header: "Contractor" },
-    { key: "amount", header: "Amount" },
-    { key: "currency", header: "Currency" },
-    { key: "dueDate", header: "Due Date" },
-    { key: "daysOverdue", header: "Days Overdue" },
-    { key: "status", header: "Status" },
+    { key: 'invoiceNumber', header: 'Invoice Number' },
+    { key: 'contractorName', header: 'Contractor' },
+    { key: 'amount', header: 'Amount' },
+    { key: 'currency', header: 'Currency' },
+    { key: 'dueDate', header: 'Due Date' },
+    { key: 'daysOverdue', header: 'Days Overdue' },
+    { key: 'status', header: 'Status' },
   ];
 
-  const rows = items.map((item) => ({
+  const rows = items.map(item => ({
     invoiceNumber: item.invoiceNumber,
     contractorName: item.contractorName,
     amount: minorToDecimalStr(item.amountMinor, item.currency),
@@ -236,11 +236,11 @@ export async function generateComplianceCsv(
   }>,
 ): Promise<{ data: string; mimeType: string }> {
   const columns: CsvColumn[] = [
-    { key: "contractorName", header: "Contractor" },
-    { key: "missingDocuments", header: "Missing Documents" },
-    { key: "contractStatus", header: "Contract Status" },
-    { key: "overdueTasks", header: "Overdue Tasks" },
-    { key: "health", header: "Health" },
+    { key: 'contractorName', header: 'Contractor' },
+    { key: 'missingDocuments', header: 'Missing Documents' },
+    { key: 'contractStatus', header: 'Contract Status' },
+    { key: 'overdueTasks', header: 'Overdue Tasks' },
+    { key: 'health', header: 'Health' },
   ];
 
   return generateReportCsv(columns, items as unknown as Record<string, unknown>[]);

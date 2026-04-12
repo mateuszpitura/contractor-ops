@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import { MapPin } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { MapPin } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Skeleton } from "@/components/ui/skeleton";
+} from '@/components/ui/dialog';
+import { Skeleton } from '@/components/ui/skeleton';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -35,7 +35,7 @@ interface PaczkomatPickerProps {
 // Constants
 // ---------------------------------------------------------------------------
 
-const GEOWIDGET_ORIGIN = "https://geowidget.inpost.pl";
+const GEOWIDGET_ORIGIN = 'https://geowidget.inpost.pl';
 
 // ---------------------------------------------------------------------------
 // Component
@@ -51,7 +51,7 @@ export function PaczkomatPicker({
   onSelect,
   geowidgetToken,
 }: PaczkomatPickerProps) {
-  const t = useTranslations("Equipment.paczkomat");
+  const t = useTranslations('Equipment.paczkomat');
   const [selectedPoint, setSelectedPoint] = useState<PaczkomatPoint | null>(null);
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const [iframeError, setIframeError] = useState(false);
@@ -75,19 +75,19 @@ export function PaczkomatPicker({
       if (event.origin !== GEOWIDGET_ORIGIN) return;
 
       try {
-        const data = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
+        const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
 
         if (data?.name && data?.address?.line1) {
           setSelectedPoint({
             id: data.name,
             name: data.name,
-            address: [data.address.line1, data.address.line2].filter(Boolean).join(", "),
+            address: [data.address.line1, data.address.line2].filter(Boolean).join(', '),
           });
         } else if (data?.name) {
           setSelectedPoint({
             id: data.name,
             name: data.name,
-            address: data.address ?? "",
+            address: data.address ?? '',
           });
         }
       } catch {
@@ -95,8 +95,8 @@ export function PaczkomatPicker({
       }
     };
 
-    window.addEventListener("message", handler);
-    return () => window.removeEventListener("message", handler);
+    window.addEventListener('message', handler);
+    return () => window.removeEventListener('message', handler);
   }, [open]);
 
   const handleConfirm = useCallback(() => {
@@ -115,7 +115,7 @@ export function PaczkomatPicker({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl p-0">
         <DialogHeader className="px-4 pt-4">
-          <DialogTitle>{t("selectPaczkomat")}</DialogTitle>
+          <DialogTitle>{t('selectPaczkomat')}</DialogTitle>
         </DialogHeader>
 
         <div className="px-4">
@@ -140,16 +140,15 @@ export function PaczkomatPicker({
             <div className="flex h-[400px] items-center justify-center rounded-md border border-dashed text-center">
               <div className="space-y-2">
                 <MapPin className="mx-auto h-8 w-8 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">{t("loadError")}</p>
+                <p className="text-sm text-muted-foreground">{t('loadError')}</p>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => {
                     setIframeError(false);
                     setIframeLoaded(false);
-                  }}
-                >
-                  {t("retry")}
+                  }}>
+                  {t('retry')}
                 </Button>
               </div>
             </div>
@@ -171,10 +170,10 @@ export function PaczkomatPicker({
 
         <DialogFooter className="px-4 pb-4">
           <Button variant="outline" onClick={handleCancel}>
-            {t("cancel")}
+            {t('cancel')}
           </Button>
           <Button onClick={handleConfirm} disabled={!selectedPoint}>
-            {t("confirmLocker")}
+            {t('confirmLocker')}
           </Button>
         </DialogFooter>
       </DialogContent>

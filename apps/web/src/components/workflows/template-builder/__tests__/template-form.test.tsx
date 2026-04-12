@@ -1,10 +1,10 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, setup, waitFor } from "@/test/test-utils";
-import { TemplateForm } from "../template-form";
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { render, screen, setup, waitFor } from '@/test/test-utils';
+import { TemplateForm } from '../template-form';
 
-vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual("@tanstack/react-query");
+vi.mock('@tanstack/react-query', async () => {
+  const actual = await vi.importActual('@tanstack/react-query');
   return {
     ...actual,
     useQuery: vi.fn(),
@@ -13,12 +13,12 @@ vi.mock("@tanstack/react-query", async () => {
   };
 });
 
-vi.mock("@/trpc/init", () => ({
+vi.mock('@/trpc/init', () => ({
   trpc: {
     workflow: {
       getTemplate: {
         queryOptions: () => ({
-          queryKey: ["workflow", "getTemplate"],
+          queryKey: ['workflow', 'getTemplate'],
           enabled: false,
         }),
       },
@@ -30,7 +30,7 @@ vi.mock("@/trpc/init", () => ({
   },
 }));
 
-vi.mock("@/i18n/navigation", () => ({
+vi.mock('@/i18n/navigation', () => ({
   Link: ({ children, href, ...props }: any) => (
     <a href={href} {...props}>
       {children}
@@ -39,34 +39,34 @@ vi.mock("@/i18n/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
 }));
 
-vi.mock("next/navigation", () => ({
+vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn() }),
 }));
 
-vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
+vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
-vi.mock("@/components/workflows/template-builder/sortable-task-list", () => ({
+vi.mock('@/components/workflows/template-builder/sortable-task-list', () => ({
   SortableTaskList: () => <div data-testid="sortable-task-list">SortableTaskList</div>,
 }));
 
-vi.mock("@/components/workflows/template-builder/use-template-form", () => ({
+vi.mock('@/components/workflows/template-builder/use-template-form', () => ({
   useTemplateForm: () => ({
     form: {
       handleSubmit: (fn: any) => (e: any) => {
         e?.preventDefault();
-        fn({ name: "Test", type: "ONBOARDING", description: "", tasks: [] });
+        fn({ name: 'Test', type: 'ONBOARDING', description: '', tasks: [] });
       },
       register: () => ({
-        name: "test",
+        name: 'test',
         onChange: vi.fn(),
         onBlur: vi.fn(),
         ref: vi.fn(),
       }),
       watch: (key: string) => {
-        if (key === "tasks") return [];
-        if (key === "type") return "ONBOARDING";
-        if (key === "name") return "Test Template";
-        return "";
+        if (key === 'tasks') return [];
+        if (key === 'type') return 'ONBOARDING';
+        if (key === 'name') return 'Test Template';
+        return '';
       },
       setValue: vi.fn(),
       formState: { errors: {} },
@@ -84,7 +84,7 @@ vi.mock("@/components/workflows/template-builder/use-template-form", () => ({
 const mockedUseQuery = vi.mocked(useQuery);
 const mockedUseMutation = vi.mocked(useMutation);
 
-describe("TemplateForm", () => {
+describe('TemplateForm', () => {
   beforeEach(() => {
     mockedUseQuery.mockReturnValue({
       data: undefined,
@@ -97,148 +97,148 @@ describe("TemplateForm", () => {
   });
 
   // ---- Form fields ----
-  it("renders form with name input and save button for new template", () => {
+  it('renders form with name input and save button for new template', () => {
     render(<TemplateForm />);
-    expect(screen.getByText("Template name")).toBeInTheDocument();
-    expect(screen.getByText("Save template")).toBeInTheDocument();
+    expect(screen.getByText('Template name')).toBeInTheDocument();
+    expect(screen.getByText('Save template')).toBeInTheDocument();
   });
 
-  it("renders tasks heading and sortable task list", () => {
+  it('renders tasks heading and sortable task list', () => {
     render(<TemplateForm />);
-    expect(screen.getByText("Tasks")).toBeInTheDocument();
-    expect(screen.getByTestId("sortable-task-list")).toBeInTheDocument();
+    expect(screen.getByText('Tasks')).toBeInTheDocument();
+    expect(screen.getByTestId('sortable-task-list')).toBeInTheDocument();
   });
 
-  it("renders description field", () => {
+  it('renders description field', () => {
     render(<TemplateForm />);
-    expect(screen.getByText("Description (optional)")).toBeInTheDocument();
+    expect(screen.getByText('Description (optional)')).toBeInTheDocument();
   });
 
-  it("renders type selector", () => {
+  it('renders type selector', () => {
     render(<TemplateForm />);
-    expect(screen.getByText("Type")).toBeInTheDocument();
+    expect(screen.getByText('Type')).toBeInTheDocument();
   });
 
   // ---- New template mode ----
-  it("does not show status badge, activate, duplicate, or delete buttons for new template", () => {
+  it('does not show status badge, activate, duplicate, or delete buttons for new template', () => {
     render(<TemplateForm />);
-    expect(screen.queryByText("DRAFT")).not.toBeInTheDocument();
-    expect(screen.queryByText("Activate")).not.toBeInTheDocument();
-    expect(screen.queryByText("Duplicate")).not.toBeInTheDocument();
-    expect(screen.queryByText("Delete")).not.toBeInTheDocument();
+    expect(screen.queryByText('DRAFT')).not.toBeInTheDocument();
+    expect(screen.queryByText('Activate')).not.toBeInTheDocument();
+    expect(screen.queryByText('Duplicate')).not.toBeInTheDocument();
+    expect(screen.queryByText('Delete')).not.toBeInTheDocument();
   });
 
   // ---- Edit mode: DRAFT ----
-  it("shows status badge when editing an existing template", () => {
+  it('shows status badge when editing an existing template', () => {
     mockedUseQuery.mockReturnValue({
       data: {
-        id: "t-1",
-        name: "Test",
-        type: "ONBOARDING",
-        status: "DRAFT",
+        id: 't-1',
+        name: 'Test',
+        type: 'ONBOARDING',
+        status: 'DRAFT',
         tasks: [],
       },
       isLoading: false,
     } as any);
     render(<TemplateForm templateId="t-1" />);
-    expect(screen.getByText("Status")).toBeInTheDocument();
+    expect(screen.getByText('Status')).toBeInTheDocument();
   });
 
-  it("shows activate and delete buttons for DRAFT editing template", () => {
+  it('shows activate and delete buttons for DRAFT editing template', () => {
     mockedUseQuery.mockReturnValue({
       data: {
-        id: "t-1",
-        name: "Test",
-        type: "ONBOARDING",
-        status: "DRAFT",
+        id: 't-1',
+        name: 'Test',
+        type: 'ONBOARDING',
+        status: 'DRAFT',
         tasks: [],
       },
       isLoading: false,
     } as any);
     render(<TemplateForm templateId="t-1" />);
-    expect(screen.getByText("Activate")).toBeInTheDocument();
-    expect(screen.getByText("Delete")).toBeInTheDocument();
+    expect(screen.getByText('Activate')).toBeInTheDocument();
+    expect(screen.getByText('Delete')).toBeInTheDocument();
   });
 
   // ---- Edit mode: ACTIVE ----
-  it("shows archive button for ACTIVE editing template", () => {
+  it('shows archive button for ACTIVE editing template', () => {
     mockedUseQuery.mockReturnValue({
       data: {
-        id: "t-1",
-        name: "Test",
-        type: "ONBOARDING",
-        status: "ACTIVE",
+        id: 't-1',
+        name: 'Test',
+        type: 'ONBOARDING',
+        status: 'ACTIVE',
         tasks: [],
       },
       isLoading: false,
     } as any);
     render(<TemplateForm templateId="t-1" />);
-    expect(screen.getByText("Archive")).toBeInTheDocument();
-    expect(screen.queryByText("Activate")).not.toBeInTheDocument();
-    expect(screen.queryByText("Delete")).not.toBeInTheDocument();
+    expect(screen.getByText('Archive')).toBeInTheDocument();
+    expect(screen.queryByText('Activate')).not.toBeInTheDocument();
+    expect(screen.queryByText('Delete')).not.toBeInTheDocument();
   });
 
   // ---- Duplicate ----
-  it("shows duplicate button when editing", () => {
+  it('shows duplicate button when editing', () => {
     mockedUseQuery.mockReturnValue({
       data: {
-        id: "t-1",
-        name: "Test",
-        type: "ONBOARDING",
-        status: "DRAFT",
+        id: 't-1',
+        name: 'Test',
+        type: 'ONBOARDING',
+        status: 'DRAFT',
         tasks: [],
       },
       isLoading: false,
     } as any);
     render(<TemplateForm templateId="t-1" />);
-    expect(screen.getByText("Duplicate")).toBeInTheDocument();
+    expect(screen.getByText('Duplicate')).toBeInTheDocument();
   });
 
   // ---- Save button disabled state ----
-  it("disables save button when mutation is pending", () => {
+  it('disables save button when mutation is pending', () => {
     mockedUseMutation.mockReturnValue({
       mutate: vi.fn(),
       isPending: true,
     } as any);
     render(<TemplateForm />);
-    const saveBtn = screen.getByText("Save template").closest("button");
+    const saveBtn = screen.getByText('Save template').closest('button');
     expect(saveBtn).toBeDisabled();
   });
 
   // ---- ARCHIVED status ----
-  it("does not show activate, archive, or delete for ARCHIVED template", () => {
+  it('does not show activate, archive, or delete for ARCHIVED template', () => {
     mockedUseQuery.mockReturnValue({
       data: {
-        id: "t-1",
-        name: "Test",
-        type: "ONBOARDING",
-        status: "ARCHIVED",
+        id: 't-1',
+        name: 'Test',
+        type: 'ONBOARDING',
+        status: 'ARCHIVED',
         tasks: [],
       },
       isLoading: false,
     } as any);
     render(<TemplateForm templateId="t-1" />);
-    expect(screen.queryByText("Activate")).not.toBeInTheDocument();
-    expect(screen.queryByText("Archive")).not.toBeInTheDocument();
-    expect(screen.queryByText("Delete")).not.toBeInTheDocument();
+    expect(screen.queryByText('Activate')).not.toBeInTheDocument();
+    expect(screen.queryByText('Archive')).not.toBeInTheDocument();
+    expect(screen.queryByText('Delete')).not.toBeInTheDocument();
   });
 
   // ---- Form submit ----
-  it("renders form element with submit button", () => {
+  it('renders form element with submit button', () => {
     render(<TemplateForm />);
-    const saveBtn = screen.getByText("Save template").closest("button")!;
-    expect(saveBtn).toHaveAttribute("type", "submit");
+    const saveBtn = screen.getByText('Save template').closest('button')!;
+    expect(saveBtn).toHaveAttribute('type', 'submit');
   });
 
   // ---- Activate button click ----
-  it("calls mutate when activate is clicked", async () => {
+  it('calls mutate when activate is clicked', async () => {
     const mutateFn = vi.fn();
     mockedUseQuery.mockReturnValue({
       data: {
-        id: "t-1",
-        name: "Test",
-        type: "ONBOARDING",
-        status: "DRAFT",
+        id: 't-1',
+        name: 'Test',
+        type: 'ONBOARDING',
+        status: 'DRAFT',
         tasks: [],
       },
       isLoading: false,
@@ -248,19 +248,19 @@ describe("TemplateForm", () => {
       isPending: false,
     } as any);
     const { user } = setup(<TemplateForm templateId="t-1" />);
-    await user.click(screen.getByText("Activate"));
+    await user.click(screen.getByText('Activate'));
     expect(mutateFn).toHaveBeenCalled();
   });
 
   // ---- Duplicate button click ----
-  it("calls mutate when duplicate is clicked", async () => {
+  it('calls mutate when duplicate is clicked', async () => {
     const mutateFn = vi.fn();
     mockedUseQuery.mockReturnValue({
       data: {
-        id: "t-1",
-        name: "Test",
-        type: "ONBOARDING",
-        status: "DRAFT",
+        id: 't-1',
+        name: 'Test',
+        type: 'ONBOARDING',
+        status: 'DRAFT',
         tasks: [],
       },
       isLoading: false,
@@ -270,88 +270,88 @@ describe("TemplateForm", () => {
       isPending: false,
     } as any);
     const { user } = setup(<TemplateForm templateId="t-1" />);
-    await user.click(screen.getByText("Duplicate"));
+    await user.click(screen.getByText('Duplicate'));
     expect(mutateFn).toHaveBeenCalled();
   });
 
   // ---- Status badge renders correct value ----
-  it("renders DRAFT status badge", () => {
+  it('renders DRAFT status badge', () => {
     mockedUseQuery.mockReturnValue({
       data: {
-        id: "t-1",
-        name: "Test",
-        type: "ONBOARDING",
-        status: "DRAFT",
+        id: 't-1',
+        name: 'Test',
+        type: 'ONBOARDING',
+        status: 'DRAFT',
         tasks: [],
       },
       isLoading: false,
     } as any);
     render(<TemplateForm templateId="t-1" />);
-    expect(screen.getByText("DRAFT")).toBeInTheDocument();
+    expect(screen.getByText('DRAFT')).toBeInTheDocument();
   });
 
-  it("renders ACTIVE status badge", () => {
+  it('renders ACTIVE status badge', () => {
     mockedUseQuery.mockReturnValue({
       data: {
-        id: "t-1",
-        name: "Test",
-        type: "ONBOARDING",
-        status: "ACTIVE",
+        id: 't-1',
+        name: 'Test',
+        type: 'ONBOARDING',
+        status: 'ACTIVE',
         tasks: [],
       },
       isLoading: false,
     } as any);
     render(<TemplateForm templateId="t-1" />);
-    expect(screen.getByText("ACTIVE")).toBeInTheDocument();
+    expect(screen.getByText('ACTIVE')).toBeInTheDocument();
   });
 
-  it("renders ARCHIVED status badge", () => {
+  it('renders ARCHIVED status badge', () => {
     mockedUseQuery.mockReturnValue({
       data: {
-        id: "t-1",
-        name: "Test",
-        type: "ONBOARDING",
-        status: "ARCHIVED",
+        id: 't-1',
+        name: 'Test',
+        type: 'ONBOARDING',
+        status: 'ARCHIVED',
         tasks: [],
       },
       isLoading: false,
     } as any);
     render(<TemplateForm templateId="t-1" />);
-    expect(screen.getByText("ARCHIVED")).toBeInTheDocument();
+    expect(screen.getByText('ARCHIVED')).toBeInTheDocument();
   });
 
   // ---- Dirty indicator ----
-  it("does not show dirty indicator when form is not dirty", () => {
+  it('does not show dirty indicator when form is not dirty', () => {
     render(<TemplateForm />);
     // isDirty is false in mock, so no dot indicator should appear
-    const saveBtn = screen.getByText("Save template").closest("button")!;
-    const dot = saveBtn.querySelector("span.rounded-full");
+    const saveBtn = screen.getByText('Save template').closest('button')!;
+    const dot = saveBtn.querySelector('span.rounded-full');
     expect(dot).toBeNull();
   });
 
   // ---- Delete button opens confirmation ----
-  it("renders delete button for DRAFT template", () => {
+  it('renders delete button for DRAFT template', () => {
     mockedUseQuery.mockReturnValue({
       data: {
-        id: "t-1",
-        name: "Test",
-        type: "ONBOARDING",
-        status: "DRAFT",
+        id: 't-1',
+        name: 'Test',
+        type: 'ONBOARDING',
+        status: 'DRAFT',
         tasks: [],
       },
       isLoading: false,
     } as any);
     render(<TemplateForm templateId="t-1" />);
-    expect(screen.getByText("Delete")).toBeInTheDocument();
+    expect(screen.getByText('Delete')).toBeInTheDocument();
   });
 
-  it("delete button is clickable for DRAFT template", async () => {
+  it('delete button is clickable for DRAFT template', async () => {
     mockedUseQuery.mockReturnValue({
       data: {
-        id: "t-1",
-        name: "Test",
-        type: "ONBOARDING",
-        status: "DRAFT",
+        id: 't-1',
+        name: 'Test',
+        type: 'ONBOARDING',
+        status: 'DRAFT',
         tasks: [],
       },
       isLoading: false,
@@ -361,18 +361,18 @@ describe("TemplateForm", () => {
       isPending: false,
     } as any);
     const { user } = setup(<TemplateForm templateId="t-1" />);
-    await user.click(screen.getByText("Delete"));
+    await user.click(screen.getByText('Delete'));
     // Click should not throw
   });
 
   // ---- Archive button click ----
-  it("archive button is clickable for ACTIVE template", async () => {
+  it('archive button is clickable for ACTIVE template', async () => {
     mockedUseQuery.mockReturnValue({
       data: {
-        id: "t-1",
-        name: "Test",
-        type: "ONBOARDING",
-        status: "ACTIVE",
+        id: 't-1',
+        name: 'Test',
+        type: 'ONBOARDING',
+        status: 'ACTIVE',
         tasks: [],
       },
       isLoading: false,
@@ -382,102 +382,102 @@ describe("TemplateForm", () => {
       isPending: false,
     } as any);
     const { user } = setup(<TemplateForm templateId="t-1" />);
-    await user.click(screen.getByText("Archive"));
+    await user.click(screen.getByText('Archive'));
     // Click should not throw
   });
 
   // ---- Form contains all expected sections ----
-  it("renders all form sections for new template", () => {
+  it('renders all form sections for new template', () => {
     render(<TemplateForm />);
-    expect(screen.getByText("Template name")).toBeInTheDocument();
-    expect(screen.getByText("Description (optional)")).toBeInTheDocument();
-    expect(screen.getByText("Type")).toBeInTheDocument();
-    expect(screen.getByText("Tasks")).toBeInTheDocument();
-    expect(screen.getByText("Save template")).toBeInTheDocument();
+    expect(screen.getByText('Template name')).toBeInTheDocument();
+    expect(screen.getByText('Description (optional)')).toBeInTheDocument();
+    expect(screen.getByText('Type')).toBeInTheDocument();
+    expect(screen.getByText('Tasks')).toBeInTheDocument();
+    expect(screen.getByText('Save template')).toBeInTheDocument();
   });
 
   // ---- SortableTaskList is rendered ----
-  it("renders SortableTaskList component", () => {
+  it('renders SortableTaskList component', () => {
     render(<TemplateForm />);
-    expect(screen.getByTestId("sortable-task-list")).toBeInTheDocument();
+    expect(screen.getByTestId('sortable-task-list')).toBeInTheDocument();
   });
 
   // ---- Loading state ----
-  it("renders form even when query is loading", () => {
+  it('renders form even when query is loading', () => {
     mockedUseQuery.mockReturnValue({
       data: undefined,
       isLoading: true,
     } as any);
     render(<TemplateForm templateId="t-1" />);
-    expect(screen.getByText("Template name")).toBeInTheDocument();
+    expect(screen.getByText('Template name')).toBeInTheDocument();
   });
 
-  it("renders type selector with correct value", () => {
+  it('renders type selector with correct value', () => {
     render(<TemplateForm />);
-    expect(screen.getByText("Type")).toBeInTheDocument();
+    expect(screen.getByText('Type')).toBeInTheDocument();
   });
 
-  it("renders save button as submit type", () => {
+  it('renders save button as submit type', () => {
     render(<TemplateForm />);
-    const saveBtn = screen.getByText("Save template").closest("button");
-    expect(saveBtn).toHaveAttribute("type", "submit");
+    const saveBtn = screen.getByText('Save template').closest('button');
+    expect(saveBtn).toHaveAttribute('type', 'submit');
   });
 
-  it("shows duplicate button for existing template", () => {
+  it('shows duplicate button for existing template', () => {
     mockedUseQuery.mockReturnValue({
       data: {
-        id: "t-1",
-        name: "Test",
-        type: "ONBOARDING",
-        status: "ACTIVE",
+        id: 't-1',
+        name: 'Test',
+        type: 'ONBOARDING',
+        status: 'ACTIVE',
         tasks: [],
       },
       isLoading: false,
     } as any);
     render(<TemplateForm templateId="t-1" />);
-    expect(screen.getByText("Duplicate")).toBeInTheDocument();
+    expect(screen.getByText('Duplicate')).toBeInTheDocument();
   });
 
-  it("renders SortableTaskList and tasks heading together", () => {
+  it('renders SortableTaskList and tasks heading together', () => {
     render(<TemplateForm />);
-    expect(screen.getByText("Tasks")).toBeInTheDocument();
-    expect(screen.getByTestId("sortable-task-list")).toBeInTheDocument();
+    expect(screen.getByText('Tasks')).toBeInTheDocument();
+    expect(screen.getByTestId('sortable-task-list')).toBeInTheDocument();
   });
 
-  it("renders description field as optional", () => {
+  it('renders description field as optional', () => {
     render(<TemplateForm />);
-    expect(screen.getByText("Description (optional)")).toBeInTheDocument();
+    expect(screen.getByText('Description (optional)')).toBeInTheDocument();
   });
 
-  it("renders Template name field in form", () => {
+  it('renders Template name field in form', () => {
     render(<TemplateForm />);
-    expect(screen.getByText("Template name")).toBeInTheDocument();
+    expect(screen.getByText('Template name')).toBeInTheDocument();
   });
 
   // ---------------------------------------------------------------------------
   // Interaction tests - submit, activate, delete confirm, archive confirm
   // ---------------------------------------------------------------------------
 
-  it("submits form when save template button is clicked for new template", async () => {
+  it('submits form when save template button is clicked for new template', async () => {
     mockedUseMutation.mockReturnValue({
       mutate: vi.fn(),
       isPending: false,
     } as any);
     const { user } = setup(<TemplateForm />);
-    const saveBtn = screen.getByText("Save template").closest("button")!;
+    const saveBtn = screen.getByText('Save template').closest('button')!;
     // Click submit - form handleSubmit is called via mock
     await user.click(saveBtn);
     // The form should still be visible after submit
-    expect(screen.getByText("Template name")).toBeInTheDocument();
+    expect(screen.getByText('Template name')).toBeInTheDocument();
   });
 
-  it("submits form when save template button is clicked for existing template", async () => {
+  it('submits form when save template button is clicked for existing template', async () => {
     mockedUseQuery.mockReturnValue({
       data: {
-        id: "t-1",
-        name: "Test",
-        type: "ONBOARDING",
-        status: "DRAFT",
+        id: 't-1',
+        name: 'Test',
+        type: 'ONBOARDING',
+        status: 'DRAFT',
         tasks: [],
       },
       isLoading: false,
@@ -487,18 +487,18 @@ describe("TemplateForm", () => {
       isPending: false,
     } as any);
     const { user } = setup(<TemplateForm templateId="t-1" />);
-    await user.click(screen.getByText("Save template"));
+    await user.click(screen.getByText('Save template'));
     // The form should still be visible after submit
-    expect(screen.getByText("Template name")).toBeInTheDocument();
+    expect(screen.getByText('Template name')).toBeInTheDocument();
   });
 
-  it("opens archive confirmation dialog when archive is clicked", async () => {
+  it('opens archive confirmation dialog when archive is clicked', async () => {
     mockedUseQuery.mockReturnValue({
       data: {
-        id: "t-1",
-        name: "My Template",
-        type: "ONBOARDING",
-        status: "ACTIVE",
+        id: 't-1',
+        name: 'My Template',
+        type: 'ONBOARDING',
+        status: 'ACTIVE',
         tasks: [],
       },
       isLoading: false,
@@ -508,20 +508,20 @@ describe("TemplateForm", () => {
       isPending: false,
     } as any);
     const { user } = setup(<TemplateForm templateId="t-1" />);
-    await user.click(screen.getByText("Archive"));
+    await user.click(screen.getByText('Archive'));
     // Alert dialog should appear
     await waitFor(() => {
-      expect(screen.getByRole("alertdialog")).toBeInTheDocument();
+      expect(screen.getByRole('alertdialog')).toBeInTheDocument();
     });
   });
 
-  it("opens delete confirmation dialog when delete is clicked", async () => {
+  it('opens delete confirmation dialog when delete is clicked', async () => {
     mockedUseQuery.mockReturnValue({
       data: {
-        id: "t-1",
-        name: "My Template",
-        type: "ONBOARDING",
-        status: "DRAFT",
+        id: 't-1',
+        name: 'My Template',
+        type: 'ONBOARDING',
+        status: 'DRAFT',
         tasks: [],
       },
       isLoading: false,
@@ -531,21 +531,21 @@ describe("TemplateForm", () => {
       isPending: false,
     } as any);
     const { user } = setup(<TemplateForm templateId="t-1" />);
-    await user.click(screen.getByText("Delete"));
+    await user.click(screen.getByText('Delete'));
     // Alert dialog should appear
     await waitFor(() => {
-      expect(screen.getByRole("alertdialog")).toBeInTheDocument();
+      expect(screen.getByRole('alertdialog')).toBeInTheDocument();
     });
   });
 
-  it("confirms delete and calls delete mutation", async () => {
+  it('confirms delete and calls delete mutation', async () => {
     const mutateFn = vi.fn();
     mockedUseQuery.mockReturnValue({
       data: {
-        id: "t-1",
-        name: "My Template",
-        type: "ONBOARDING",
-        status: "DRAFT",
+        id: 't-1',
+        name: 'My Template',
+        type: 'ONBOARDING',
+        status: 'DRAFT',
         tasks: [],
       },
       isLoading: false,
@@ -555,12 +555,12 @@ describe("TemplateForm", () => {
       isPending: false,
     } as any);
     const { user } = setup(<TemplateForm templateId="t-1" />);
-    await user.click(screen.getByText("Delete"));
+    await user.click(screen.getByText('Delete'));
     await waitFor(() => {
-      expect(screen.getByRole("alertdialog")).toBeInTheDocument();
+      expect(screen.getByRole('alertdialog')).toBeInTheDocument();
     });
     // Click confirm in the alert dialog
-    const _confirmBtn = screen.getByRole("button", { name: /delete/i });
+    const _confirmBtn = screen.getByRole('button', { name: /delete/i });
     const alertBtns = document.querySelectorAll('[data-slot="alert-dialog-action"]');
     if (alertBtns.length > 0) {
       await user.click(alertBtns[0] as HTMLElement);
@@ -568,14 +568,14 @@ describe("TemplateForm", () => {
     }
   });
 
-  it("confirms archive and calls archive mutation", async () => {
+  it('confirms archive and calls archive mutation', async () => {
     const mutateFn = vi.fn();
     mockedUseQuery.mockReturnValue({
       data: {
-        id: "t-1",
-        name: "My Template",
-        type: "ONBOARDING",
-        status: "ACTIVE",
+        id: 't-1',
+        name: 'My Template',
+        type: 'ONBOARDING',
+        status: 'ACTIVE',
         tasks: [],
       },
       isLoading: false,
@@ -585,9 +585,9 @@ describe("TemplateForm", () => {
       isPending: false,
     } as any);
     const { user } = setup(<TemplateForm templateId="t-1" />);
-    await user.click(screen.getByText("Archive"));
+    await user.click(screen.getByText('Archive'));
     await waitFor(() => {
-      expect(screen.getByRole("alertdialog")).toBeInTheDocument();
+      expect(screen.getByRole('alertdialog')).toBeInTheDocument();
     });
     const alertBtns = document.querySelectorAll('[data-slot="alert-dialog-action"]');
     if (alertBtns.length > 0) {

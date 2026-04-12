@@ -3,37 +3,37 @@
  * Uses exceljs instead of SheetJS (`xlsx`) to avoid known prototype-pollution / ReDoS issues.
  */
 
-import { Readable } from "node:stream";
-import type { Cell } from "exceljs";
+import { Readable } from 'node:stream';
+import type { Cell } from 'exceljs';
 
 function cellToDisplayString(cell: Cell): string {
   const v = cell.value;
-  if (v === null || v === undefined) return "";
+  if (v === null || v === undefined) return '';
   if (v instanceof Date) {
     return v.toISOString().slice(0, 10);
   }
-  if (typeof v === "object" && v !== null && "richText" in v) {
+  if (typeof v === 'object' && v !== null && 'richText' in v) {
     const rt = v as { richText: Array<{ text: string }> };
-    return rt.richText.map((x) => x.text).join("");
+    return rt.richText.map(x => x.text).join('');
   }
-  if (typeof v === "object" && v !== null && "result" in v) {
+  if (typeof v === 'object' && v !== null && 'result' in v) {
     const res = (v as { result: unknown }).result;
     if (res instanceof Date) return res.toISOString().slice(0, 10);
-    if (res === null || res === undefined) return "";
+    if (res === null || res === undefined) return '';
     return String(res);
   }
   return String(v);
 }
 
 function isRowEmptyStrings(obj: Record<string, string>): boolean {
-  return Object.values(obj).every((x) => String(x).trim() === "");
+  return Object.values(obj).every(x => String(x).trim() === '');
 }
 
 /**
  * Read first worksheet as array of plain string records (aligned with prior `sheet_to_json` + defval "").
  */
 export async function parseSpreadsheetBuffer(buffer: Buffer): Promise<Record<string, string>[]> {
-  const ExcelJS = (await import("exceljs")).default;
+  const ExcelJS = (await import('exceljs')).default;
   const workbook = new ExcelJS.Workbook();
 
   const isZipXlsx = buffer.length >= 4 && buffer[0] === 0x50 && buffer[1] === 0x4b;
@@ -48,7 +48,7 @@ export async function parseSpreadsheetBuffer(buffer: Buffer): Promise<Record<str
 
   const sheet = workbook.worksheets[0];
   if (!sheet) {
-    throw new Error("File contains no sheets");
+    throw new Error('File contains no sheets');
   }
 
   const headerRow = sheet.getRow(1);

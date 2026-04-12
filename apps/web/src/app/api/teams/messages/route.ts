@@ -11,9 +11,9 @@
 // support res.status(n).send(body) chain.
 // ---------------------------------------------------------------------------
 
-import type { IncomingMessage, ServerResponse } from "node:http";
-import { TeamsBotHandler } from "@contractor-ops/api/services/teams/teams-bot-handler";
-import { CloudAdapter, ConfigurationBotFrameworkAuthentication } from "botbuilder";
+import type { IncomingMessage, ServerResponse } from 'node:http';
+import { TeamsBotHandler } from '@contractor-ops/api/services/teams/teams-bot-handler';
+import { CloudAdapter, ConfigurationBotFrameworkAuthentication } from 'botbuilder';
 
 // ---------------------------------------------------------------------------
 // CloudAdapter singleton (shared across requests)
@@ -25,9 +25,9 @@ function getAdapter(): CloudAdapter {
   if (adapter) return adapter;
 
   const auth = new ConfigurationBotFrameworkAuthentication({
-    MicrosoftAppId: process.env.AZURE_BOT_APP_ID ?? "",
-    MicrosoftAppPassword: process.env.AZURE_BOT_APP_SECRET ?? "",
-    MicrosoftAppType: "MultiTenant",
+    MicrosoftAppId: process.env.AZURE_BOT_APP_ID ?? '',
+    MicrosoftAppPassword: process.env.AZURE_BOT_APP_SECRET ?? '',
+    MicrosoftAppType: 'MultiTenant',
   });
 
   adapter = new CloudAdapter(auth);
@@ -94,7 +94,7 @@ export async function POST(request: Request): Promise<Response> {
     const req: ShimRequest = {
       body,
       headers,
-      method: "POST",
+      method: 'POST',
     };
 
     const res = createResponseShim();
@@ -103,7 +103,7 @@ export async function POST(request: Request): Promise<Response> {
     await getAdapter().process(
       req as unknown as IncomingMessage,
       res as unknown as ServerResponse,
-      async (context) => {
+      async context => {
         await bot.run(context);
       },
     );
@@ -114,13 +114,13 @@ export async function POST(request: Request): Promise<Response> {
 
     return new Response(responseBody, {
       status: res.statusCode,
-      headers: responseBody ? { "Content-Type": "application/json" } : undefined,
+      headers: responseBody ? { 'Content-Type': 'application/json' } : undefined,
     });
   } catch (error) {
-    console.error("[Teams] Bot Framework endpoint error:", error);
-    return new Response(JSON.stringify({ error: "Internal server error" }), {
+    console.error('[Teams] Bot Framework endpoint error:', error);
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
-      headers: { "Content-Type": "application/json" },
+      headers: { 'Content-Type': 'application/json' },
     });
   }
 }

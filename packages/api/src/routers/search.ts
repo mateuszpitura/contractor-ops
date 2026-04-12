@@ -4,10 +4,10 @@
  * full-text search for a global search / command palette experience.
  */
 
-import { Prisma } from "@contractor-ops/db/generated/prisma/client";
-import { z } from "zod";
-import { router } from "../init.js";
-import { tenantProcedure } from "../middleware/tenant.js";
+import { Prisma } from '@contractor-ops/db/generated/prisma/client';
+import { z } from 'zod';
+import { router } from '../init.js';
+import { tenantProcedure } from '../middleware/tenant.js';
 
 // ---------------------------------------------------------------------------
 // Result type
@@ -17,7 +17,7 @@ type SearchResult = {
   id: string;
   name: string;
   subtitle: string;
-  type: "contractor" | "contract" | "invoice";
+  type: 'contractor' | 'contract' | 'invoice';
 };
 
 // ---------------------------------------------------------------------------
@@ -42,11 +42,11 @@ export const searchRouter = router({
       const sanitizedTerms = input.query
         .trim()
         .split(/\s+/)
-        .map((t) => t.replace(/[^a-zA-Z0-9\u00C0-\u024F]/g, ""))
-        .filter((t) => t.length > 0 && t.length <= 100)
+        .map(t => t.replace(/[^a-zA-Z0-9\u00C0-\u024F]/g, ''))
+        .filter(t => t.length > 0 && t.length <= 100)
         .slice(0, 10) // Max 10 terms to prevent abuse
-        .map((t) => `${t}:*`)
-        .join(" & ");
+        .map(t => `${t}:*`)
+        .join(' & ');
 
       if (!sanitizedTerms) {
         return [] as SearchResult[];

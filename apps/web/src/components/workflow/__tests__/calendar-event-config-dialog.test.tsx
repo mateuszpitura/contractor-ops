@@ -1,7 +1,7 @@
-import { render, screen, setup } from "@/test/test-utils";
-import { CalendarEventConfigDialog } from "../calendar-event-config-dialog";
+import { render, screen, setup } from '@/test/test-utils';
+import { CalendarEventConfigDialog } from '../calendar-event-config-dialog';
 
-vi.mock("@/i18n/navigation", () => ({
+vi.mock('@/i18n/navigation', () => ({
   Link: ({ children, href, ...props }: any) => (
     <a href={href} {...props}>
       {children}
@@ -11,13 +11,13 @@ vi.mock("@/i18n/navigation", () => ({
 
 const defaultConfig = {
   calendarEnabled: true,
-  titleTemplate: "Meeting: {task}",
-  duration: "1h" as const,
-  attendees: ["user@test.com"],
+  titleTemplate: 'Meeting: {task}',
+  duration: '1h' as const,
+  attendees: ['user@test.com'],
 };
 
-describe("CalendarEventConfigDialog", () => {
-  it("renders nothing when closed", () => {
+describe('CalendarEventConfigDialog', () => {
+  it('renders nothing when closed', () => {
     const { container } = render(
       <CalendarEventConfigDialog
         taskTemplateId="t1"
@@ -30,7 +30,7 @@ describe("CalendarEventConfigDialog", () => {
     expect(container.querySelector("[role='dialog']")).not.toBeInTheDocument();
   });
 
-  it("renders dialog content when open", () => {
+  it('renders dialog content when open', () => {
     render(
       <CalendarEventConfigDialog
         taskTemplateId="t1"
@@ -40,13 +40,13 @@ describe("CalendarEventConfigDialog", () => {
         onSave={vi.fn()}
       />,
     );
-    expect(screen.getByText("Calendar Event")).toBeInTheDocument();
-    expect(screen.getByText("Event Title")).toBeInTheDocument();
-    expect(screen.getByText("Duration")).toBeInTheDocument();
-    expect(screen.getByText("Attendees")).toBeInTheDocument();
+    expect(screen.getByText('Calendar Event')).toBeInTheDocument();
+    expect(screen.getByText('Event Title')).toBeInTheDocument();
+    expect(screen.getByText('Duration')).toBeInTheDocument();
+    expect(screen.getByText('Attendees')).toBeInTheDocument();
   });
 
-  it("calls onSave with parsed config on save", async () => {
+  it('calls onSave with parsed config on save', async () => {
     const onSave = vi.fn();
     const { user } = setup(
       <CalendarEventConfigDialog
@@ -57,16 +57,16 @@ describe("CalendarEventConfigDialog", () => {
         onSave={onSave}
       />,
     );
-    await user.click(screen.getByText("Save Event Config"));
+    await user.click(screen.getByText('Save Event Config'));
     expect(onSave).toHaveBeenCalledWith(
       expect.objectContaining({
         calendarEnabled: true,
-        duration: "1h",
+        duration: '1h',
       }),
     );
   });
 
-  it("renders cancel button", () => {
+  it('renders cancel button', () => {
     render(
       <CalendarEventConfigDialog
         taskTemplateId="t1"
@@ -76,6 +76,6 @@ describe("CalendarEventConfigDialog", () => {
         onSave={vi.fn()}
       />,
     );
-    expect(screen.getByText("Cancel")).toBeInTheDocument();
+    expect(screen.getByText('Cancel')).toBeInTheDocument();
   });
 });

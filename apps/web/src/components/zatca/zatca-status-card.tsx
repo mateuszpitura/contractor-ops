@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import type { ZatcaOnboardingState } from "@contractor-ops/einvoice";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Settings, ShieldCheck, Unplug } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
+import type { ZatcaOnboardingState } from '@contractor-ops/einvoice';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Settings, ShieldCheck, Unplug } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,13 +15,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Link } from "@/i18n/navigation";
-import { OnboardingWizard } from "./onboarding-wizard";
-import { zatcaTrpc } from "./zatca-trpc";
+} from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Link } from '@/i18n/navigation';
+import { OnboardingWizard } from './onboarding-wizard';
+import { zatcaTrpc } from './zatca-trpc';
 
 // ---------------------------------------------------------------------------
 // Status badge mapping
@@ -29,12 +29,12 @@ import { zatcaTrpc } from "./zatca-trpc";
 
 const STATUS_CONFIG: Record<
   string,
-  { label: string; variant: "success" | "warning" | "info" | "destructive" | "outline" }
+  { label: string; variant: 'success' | 'warning' | 'info' | 'destructive' | 'outline' }
 > = {
-  production: { label: "Production", variant: "success" },
-  sandbox: { label: "Sandbox", variant: "warning" },
-  compliance: { label: "Onboarding", variant: "info" },
-  none: { label: "Not Connected", variant: "outline" },
+  production: { label: 'Production', variant: 'success' },
+  sandbox: { label: 'Sandbox', variant: 'warning' },
+  compliance: { label: 'Onboarding', variant: 'info' },
+  none: { label: 'Not Connected', variant: 'outline' },
 };
 
 // ---------------------------------------------------------------------------
@@ -54,12 +54,12 @@ export function ZatcaStatusCard() {
   const stateQuery = useQuery(zatcaTrpc.getOnboardingState.queryOptions());
   const state = stateQuery.data as ZatcaOnboardingState | undefined;
   const isConnected = state?.productionCertActive === true;
-  const isOnboarding = state && !state.productionCertActive && state.currentStep !== "tax_details";
+  const isOnboarding = state && !state.productionCertActive && state.currentStep !== 'tax_details';
   const certStatus = state?.productionCertActive
-    ? "production"
+    ? 'production'
     : state?.complianceCsidReceived
-      ? "compliance"
-      : "none";
+      ? 'compliance'
+      : 'none';
   const statusConfig = STATUS_CONFIG[certStatus] ?? STATUS_CONFIG.none!;
 
   function handleWizardComplete() {
@@ -70,7 +70,7 @@ export function ZatcaStatusCard() {
     queryClient.invalidateQueries({
       queryKey: zatcaTrpc.getComplianceStats.queryKey(),
     });
-    toast.success("ZATCA onboarding complete!");
+    toast.success('ZATCA onboarding complete!');
   }
 
   // Not connected state

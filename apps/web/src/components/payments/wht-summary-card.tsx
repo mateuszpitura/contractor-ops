@@ -1,12 +1,13 @@
-"use client";
+'use client';
 
-import { FileText, Loader2 } from "lucide-react";
-import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatMinorUnits } from "@/lib/format-currency";
-import { trpc } from "@/trpc/init";
+import { FileText, Loader2 } from 'lucide-react';
+import { useLocale } from 'next-intl';
+import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { formatMinorUnits } from '@/lib/format-currency';
+import { trpc } from '@/trpc/init';
 
 interface WhtSummaryCardProps {
   paymentRunId: string;
@@ -22,27 +23,28 @@ interface WhtSummaryCardProps {
 }
 
 export function WhtSummaryCard({ paymentRunId, items }: WhtSummaryCardProps) {
-  const whtItems = items.filter((i) => i.whtAmountMinor && i.whtAmountMinor > 0);
+  const locale = useLocale();
+  const whtItems = items.filter(i => i.whtAmountMinor && i.whtAmountMinor > 0);
 
   const generateMutation = trpc.tax.generateWhtCertificate.useMutation({
-    onSuccess: (data) => {
+    onSuccess: data => {
       toast.success(`Certificate ${data.certificateNumber} generated`);
     },
-    onError: (err) => {
+    onError: err => {
       toast.error(
         err.message ||
-          "Certificate generation failed. Check that all payment details are complete and try again.",
+          'Certificate generation failed. Check that all payment details are complete and try again.',
       );
     },
   });
 
   if (whtItems.length === 0) return null;
 
-  const currency = whtItems[0]?.currency ?? "SAR";
+  const currency = whtItems[0]?.currency ?? 'SAR';
   const totalGross = whtItems.reduce((sum, i) => sum + (i.grossAmountMinor ?? i.amountMinor), 0);
   const totalWht = whtItems.reduce((sum, i) => sum + (i.whtAmountMinor ?? 0), 0);
   const totalNet = totalGross - totalWht;
-  const treatyCount = whtItems.filter((i) => i.whtTreatyApplied).length;
+  const treatyCount = whtItems.filter(i => i.whtTreatyApplied).length;
 
   function handleGenerateAll() {
     for (const item of whtItems) {
@@ -60,19 +62,19 @@ export function WhtSummaryCard({ paymentRunId, items }: WhtSummaryCardProps) {
           <div>
             <p className="text-sm text-muted-foreground">Gross Total</p>
             <p className="font-mono text-xl font-semibold">
-              {currency} {formatMinorUnits(totalGross, currency)}
+              {currency} {formatMinorUnits(totalGross, currency, locale)}
             </p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">WHT Withheld</p>
             <p className="font-mono text-xl font-semibold">
-              {currency} {formatMinorUnits(totalWht, currency)}
+              {currency} {formatMinorUnits(totalWht, currency, locale)}
             </p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Net Payable</p>
             <p className="font-mono text-xl font-semibold">
-              {currency} {formatMinorUnits(totalNet, currency)}
+              {currency} {formatMinorUnits(totalNet, currency, locale)}
             </p>
           </div>
         </div>

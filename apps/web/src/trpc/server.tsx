@@ -1,8 +1,8 @@
-import "server-only";
+import 'server-only';
 
-import { appRouter, createCallerFactory, createContext } from "@contractor-ops/api";
-import { headers } from "next/headers";
-import { cache } from "react";
+import { appRouter, createCallerFactory, createContext } from '@contractor-ops/api';
+import { headers } from 'next/headers';
+import { cache } from 'react';
 
 /**
  * Server-side tRPC caller for use in Server Components.

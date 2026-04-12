@@ -1,11 +1,11 @@
-export type { CachedStoreOptions } from "./cached-store.js";
-export { CachedStore } from "./cached-store.js";
-export { MemoryStore } from "./memory-store.js";
-export type { SecretStore } from "./secret-store.js";
+export type { CachedStoreOptions } from './cached-store.js';
+export { CachedStore } from './cached-store.js';
+export { MemoryStore } from './memory-store.js';
+export type { SecretStore } from './secret-store.js';
 
-import { CachedStore } from "./cached-store.js";
-import { MemoryStore } from "./memory-store.js";
-import type { SecretStore } from "./secret-store.js";
+import { CachedStore } from './cached-store.js';
+import { MemoryStore } from './memory-store.js';
+import type { SecretStore } from './secret-store.js';
 
 // ---------------------------------------------------------------------------
 // Singleton secret store
@@ -24,8 +24,8 @@ export function getSecretStore(): SecretStore {
   if (_instance) return _instance;
 
   console.warn(
-    "[secrets] No external secret store configured — using in-memory store. " +
-      "Credentials will be lost on process restart.",
+    '[secrets] No external secret store configured — using in-memory store. ' +
+      'Credentials will be lost on process restart.',
   );
   _instance = new CachedStore(new MemoryStore());
   return _instance;

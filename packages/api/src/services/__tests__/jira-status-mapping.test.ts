@@ -1,10 +1,10 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   getStatusMapping,
   lookupJiraTransitionId,
   lookupWorkflowStatus,
   saveStatusMapping,
-} from "../jira-status-mapping.js";
+} from '../jira-status-mapping.js';
 
 const mockPrisma = {
   integrationConnection: {
@@ -13,23 +13,23 @@ const mockPrisma = {
   },
 } as any;
 
-const CONNECTION_ID = "conn-1";
-const PROJECT_ID = "10000";
+const CONNECTION_ID = 'conn-1';
+const PROJECT_ID = '10000';
 
 const sampleMappings = [
   {
-    workflowStatus: "IN_PROGRESS",
-    jiraTransitionId: "21",
-    jiraTransitionName: "Start Progress",
-    jiraTargetStatusName: "In Progress",
-    jiraTargetStatusCategory: "indeterminate" as const,
+    workflowStatus: 'IN_PROGRESS',
+    jiraTransitionId: '21',
+    jiraTransitionName: 'Start Progress',
+    jiraTargetStatusName: 'In Progress',
+    jiraTargetStatusCategory: 'indeterminate' as const,
   },
   {
-    workflowStatus: "DONE",
-    jiraTransitionId: "31",
-    jiraTransitionName: "Complete",
-    jiraTargetStatusName: "Done",
-    jiraTargetStatusCategory: "done" as const,
+    workflowStatus: 'DONE',
+    jiraTransitionId: '31',
+    jiraTransitionName: 'Complete',
+    jiraTargetStatusName: 'Done',
+    jiraTargetStatusCategory: 'done' as const,
   },
 ];
 
@@ -37,9 +37,9 @@ beforeEach(() => {
   vi.resetAllMocks();
 });
 
-describe("jira-status-mapping", () => {
-  describe("saveStatusMapping", () => {
-    it("stores mapping in IntegrationConnection.configJson.statusMappings keyed by project ID", async () => {
+describe('jira-status-mapping', () => {
+  describe('saveStatusMapping', () => {
+    it('stores mapping in IntegrationConnection.configJson.statusMappings keyed by project ID', async () => {
       mockPrisma.integrationConnection.findUnique.mockResolvedValue({
         configJson: {},
       });
@@ -59,14 +59,14 @@ describe("jira-status-mapping", () => {
       });
     });
 
-    it("overwrites existing mapping for the same project", async () => {
+    it('overwrites existing mapping for the same project', async () => {
       const oldMappings = [
         {
-          workflowStatus: "TODO",
-          jiraTransitionId: "11",
-          jiraTransitionName: "To Do",
-          jiraTargetStatusName: "To Do",
-          jiraTargetStatusCategory: "new" as const,
+          workflowStatus: 'TODO',
+          jiraTransitionId: '11',
+          jiraTransitionName: 'To Do',
+          jiraTargetStatusName: 'To Do',
+          jiraTargetStatusCategory: 'new' as const,
         },
       ];
       mockPrisma.integrationConnection.findUnique.mockResolvedValue({
@@ -80,23 +80,23 @@ describe("jira-status-mapping", () => {
       expect(updateCall.data.configJson.statusMappings[PROJECT_ID]).toEqual(sampleMappings);
     });
 
-    it("preserves other configJson fields when updating", async () => {
+    it('preserves other configJson fields when updating', async () => {
       mockPrisma.integrationConnection.findUnique.mockResolvedValue({
-        configJson: { cloudId: "cloud-123", otherField: "keep-me" },
+        configJson: { cloudId: 'cloud-123', otherField: 'keep-me' },
       });
       mockPrisma.integrationConnection.update.mockResolvedValue({});
 
       await saveStatusMapping(mockPrisma, CONNECTION_ID, PROJECT_ID, sampleMappings);
 
       const updateCall = mockPrisma.integrationConnection.update.mock.calls[0][0];
-      expect(updateCall.data.configJson.cloudId).toBe("cloud-123");
-      expect(updateCall.data.configJson.otherField).toBe("keep-me");
+      expect(updateCall.data.configJson.cloudId).toBe('cloud-123');
+      expect(updateCall.data.configJson.otherField).toBe('keep-me');
       expect(updateCall.data.configJson.statusMappings[PROJECT_ID]).toEqual(sampleMappings);
     });
   });
 
-  describe("getStatusMapping", () => {
-    it("returns mapping for a given project ID", async () => {
+  describe('getStatusMapping', () => {
+    it('returns mapping for a given project ID', async () => {
       mockPrisma.integrationConnection.findUnique.mockResolvedValue({
         configJson: { statusMappings: { [PROJECT_ID]: sampleMappings } },
       });
@@ -106,19 +106,19 @@ describe("jira-status-mapping", () => {
       expect(result).toEqual(sampleMappings);
     });
 
-    it("returns null when no mapping exists for project", async () => {
+    it('returns null when no mapping exists for project', async () => {
       mockPrisma.integrationConnection.findUnique.mockResolvedValue({
         configJson: { statusMappings: {} },
       });
 
-      const result = await getStatusMapping(mockPrisma, CONNECTION_ID, "nonexistent-project");
+      const result = await getStatusMapping(mockPrisma, CONNECTION_ID, 'nonexistent-project');
 
       expect(result).toBeNull();
     });
   });
 
-  describe("lookupJiraTransitionId", () => {
-    it("returns Jira transition ID for a given WorkflowTaskStatus and project", async () => {
+  describe('lookupJiraTransitionId', () => {
+    it('returns Jira transition ID for a given WorkflowTaskStatus and project', async () => {
       mockPrisma.integrationConnection.findUnique.mockResolvedValue({
         configJson: { statusMappings: { [PROJECT_ID]: sampleMappings } },
       });
@@ -127,29 +127,29 @@ describe("jira-status-mapping", () => {
         mockPrisma,
         CONNECTION_ID,
         PROJECT_ID,
-        "IN_PROGRESS",
+        'IN_PROGRESS',
       );
 
       expect(result).toEqual({
-        transitionId: "21",
-        targetStatusName: "In Progress",
-        targetStatusCategory: "indeterminate",
+        transitionId: '21',
+        targetStatusName: 'In Progress',
+        targetStatusCategory: 'indeterminate',
       });
     });
 
-    it("returns null for unmapped status", async () => {
+    it('returns null for unmapped status', async () => {
       mockPrisma.integrationConnection.findUnique.mockResolvedValue({
         configJson: { statusMappings: { [PROJECT_ID]: sampleMappings } },
       });
 
-      const result = await lookupJiraTransitionId(mockPrisma, CONNECTION_ID, PROJECT_ID, "BLOCKED");
+      const result = await lookupJiraTransitionId(mockPrisma, CONNECTION_ID, PROJECT_ID, 'BLOCKED');
 
       expect(result).toBeNull();
     });
   });
 
-  describe("lookupWorkflowStatus", () => {
-    it("returns WorkflowTaskStatus for a given Jira status name and project", async () => {
+  describe('lookupWorkflowStatus', () => {
+    it('returns WorkflowTaskStatus for a given Jira status name and project', async () => {
       mockPrisma.integrationConnection.findUnique.mockResolvedValue({
         configJson: { statusMappings: { [PROJECT_ID]: sampleMappings } },
       });
@@ -158,13 +158,13 @@ describe("jira-status-mapping", () => {
         mockPrisma,
         CONNECTION_ID,
         PROJECT_ID,
-        "In Progress",
+        'In Progress',
       );
 
-      expect(result).toBe("IN_PROGRESS");
+      expect(result).toBe('IN_PROGRESS');
     });
 
-    it("returns null for unmapped Jira status", async () => {
+    it('returns null for unmapped Jira status', async () => {
       mockPrisma.integrationConnection.findUnique.mockResolvedValue({
         configJson: { statusMappings: { [PROJECT_ID]: sampleMappings } },
       });
@@ -173,7 +173,7 @@ describe("jira-status-mapping", () => {
         mockPrisma,
         CONNECTION_ID,
         PROJECT_ID,
-        "Unknown Status",
+        'Unknown Status',
       );
 
       expect(result).toBeNull();

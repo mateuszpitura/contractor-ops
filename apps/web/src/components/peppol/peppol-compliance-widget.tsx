@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { Globe } from "lucide-react";
+import { Globe } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -22,19 +22,19 @@ interface PeppolComplianceWidgetProps {
 // ---------------------------------------------------------------------------
 
 const STATE_COLORS: Record<string, string> = {
-  active: "bg-success",
-  onboarding: "bg-warning",
-  suspended: "bg-destructive",
-  error: "bg-destructive",
-  not_connected: "bg-muted-foreground/30",
+  active: 'bg-success',
+  onboarding: 'bg-warning',
+  suspended: 'bg-destructive',
+  error: 'bg-destructive',
+  not_connected: 'bg-muted-foreground/30',
 };
 
 const STATE_LABELS: Record<string, string> = {
-  active: "Active",
-  onboarding: "Onboarding",
-  suspended: "Suspended",
-  error: "Error",
-  not_connected: "Not Connected",
+  active: 'Active',
+  onboarding: 'Onboarding',
+  suspended: 'Suspended',
+  error: 'Error',
+  not_connected: 'Not Connected',
 };
 
 // ---------------------------------------------------------------------------
@@ -50,7 +50,7 @@ export function PeppolComplianceWidget({
   transmissionCounts,
 }: PeppolComplianceWidgetProps) {
   const dotColor = STATE_COLORS[status.state] ?? STATE_COLORS.not_connected;
-  const label = STATE_LABELS[status.state] ?? "Unknown";
+  const label = STATE_LABELS[status.state] ?? 'Unknown';
 
   return (
     <div className="flex items-center justify-between py-2">

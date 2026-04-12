@@ -1,17 +1,17 @@
-import { render, screen } from "@/test/test-utils";
-import { ActivityTab } from "../activity-tab";
+import { render, screen } from '@/test/test-utils';
+import { ActivityTab } from '../activity-tab';
 
-describe("ActivityTab", () => {
+describe('ActivityTab', () => {
   const now = new Date();
   const oneHourAgo = new Date(now.getTime() - 3600000);
   const twoDaysAgo = new Date(now.getTime() - 2 * 86400000);
 
-  it("renders contract created event", () => {
+  it('renders contract created event', () => {
     render(
       <ActivityTab
         contract={{
-          id: "ct1",
-          status: "ACTIVE",
+          id: 'ct1',
+          status: 'ACTIVE',
           createdAt: twoDaysAgo,
           updatedAt: twoDaysAgo,
           amendments: [],
@@ -23,12 +23,12 @@ describe("ActivityTab", () => {
     expect(eventTexts.length).toBeGreaterThan(0);
   });
 
-  it("shows status changed event when updated differs from created", () => {
+  it('shows status changed event when updated differs from created', () => {
     render(
       <ActivityTab
         contract={{
-          id: "ct1",
-          status: "ACTIVE",
+          id: 'ct1',
+          status: 'ACTIVE',
           createdAt: twoDaysAgo,
           updatedAt: oneHourAgo,
           amendments: [],
@@ -40,15 +40,15 @@ describe("ActivityTab", () => {
     expect(paragraphs.length).toBeGreaterThan(1);
   });
 
-  it("includes amendment events", () => {
+  it('includes amendment events', () => {
     render(
       <ActivityTab
         contract={{
-          id: "ct1",
-          status: "ACTIVE",
+          id: 'ct1',
+          status: 'ACTIVE',
           createdAt: twoDaysAgo,
           updatedAt: twoDaysAgo,
-          amendments: [{ id: "a1", title: "Rate Increase", createdAt: oneHourAgo }],
+          amendments: [{ id: 'a1', title: 'Rate Increase', createdAt: oneHourAgo }],
         }}
       />,
     );
@@ -56,12 +56,12 @@ describe("ActivityTab", () => {
     expect(texts.length).toBeGreaterThan(1);
   });
 
-  it("includes document upload event when documentCount > 0", () => {
+  it('includes document upload event when documentCount > 0', () => {
     render(
       <ActivityTab
         contract={{
-          id: "ct1",
-          status: "ACTIVE",
+          id: 'ct1',
+          status: 'ACTIVE',
           createdAt: twoDaysAgo,
           updatedAt: twoDaysAgo,
           amendments: [],

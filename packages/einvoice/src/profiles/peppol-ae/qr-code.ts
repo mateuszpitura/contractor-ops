@@ -2,9 +2,9 @@
 // UAE FTA QR Code Generator
 // ---------------------------------------------------------------------------
 
-import QRCode from "qrcode";
-import type { EInvoice } from "../../types/invoice.js";
-import type { QRCodeable } from "../../types/profile.js";
+import QRCode from 'qrcode';
+import type { EInvoice } from '../../types/invoice.js';
+import type { QRCodeable } from '../../types/profile.js';
 
 /**
  * UAE FTA QR code implementation for Peppol PINT-AE invoices.
@@ -27,12 +27,12 @@ export class PeppolAEQRCode implements QRCodeable {
       invoice.issueDate,
       (invoice.taxInclusiveAmount / 100).toFixed(2),
       (vatAmount / 100).toFixed(2),
-    ].join("|");
+    ].join('|');
 
     const pngBuffer = await QRCode.toBuffer(qrData, {
-      type: "png",
+      type: 'png',
       width: 200,
-      errorCorrectionLevel: "M",
+      errorCorrectionLevel: 'M',
     });
 
     return Buffer.from(pngBuffer);
@@ -45,8 +45,8 @@ export class PeppolAEQRCode implements QRCodeable {
    */
   async parseQR(data: Buffer): Promise<Partial<EInvoice>> {
     // Attempt to decode the buffer as a UTF-8 string (QR data content)
-    const dataStr = data.toString("utf-8");
-    const parts = dataStr.split("|");
+    const dataStr = data.toString('utf-8');
+    const parts = dataStr.split('|');
 
     if (parts.length < 5) {
       return {};
@@ -56,16 +56,16 @@ export class PeppolAEQRCode implements QRCodeable {
 
     return {
       supplier: {
-        id: sellerTrn ?? "",
-        name: sellerName ?? "",
+        id: sellerTrn ?? '',
+        name: sellerName ?? '',
       },
-      issueDate: issueDate ?? "",
-      taxInclusiveAmount: Math.round(parseFloat(totalStr ?? "0") * 100),
+      issueDate: issueDate ?? '',
+      taxInclusiveAmount: Math.round(parseFloat(totalStr ?? '0') * 100),
       taxBreakdown: [
         {
           taxableAmountMinor: 0,
-          taxAmountMinor: Math.round(parseFloat(vatStr ?? "0") * 100),
-          taxCategory: "S",
+          taxAmountMinor: Math.round(parseFloat(vatStr ?? '0') * 100),
+          taxCategory: 'S',
         },
       ],
     };

@@ -1,5 +1,5 @@
-import { screen, setup } from "@/test/test-utils";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../collapsible";
+import { screen, setup } from '@/test/test-utils';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../collapsible';
 
 function renderCollapsible({ defaultOpen = false }: { defaultOpen?: boolean } = {}) {
   return setup(
@@ -12,44 +12,44 @@ function renderCollapsible({ defaultOpen = false }: { defaultOpen?: boolean } = 
   );
 }
 
-describe("Collapsible", () => {
-  it("renders the trigger", () => {
+describe('Collapsible', () => {
+  it('renders the trigger', () => {
     renderCollapsible();
-    expect(screen.getByText("Toggle")).toBeInTheDocument();
+    expect(screen.getByText('Toggle')).toBeInTheDocument();
   });
 
-  it("does not show content when closed", () => {
+  it('does not show content when closed', () => {
     renderCollapsible();
     // Base UI unmounts collapsed content from the DOM
-    expect(screen.queryByText("Collapsible content here")).not.toBeInTheDocument();
+    expect(screen.queryByText('Collapsible content here')).not.toBeInTheDocument();
   });
 
-  it("shows content when defaultOpen", () => {
+  it('shows content when defaultOpen', () => {
     renderCollapsible({ defaultOpen: true });
-    expect(screen.getByText("Collapsible content here")).toBeInTheDocument();
+    expect(screen.getByText('Collapsible content here')).toBeInTheDocument();
     const content = document.querySelector("[data-slot='collapsible-content']");
-    expect(content).not.toHaveAttribute("hidden");
+    expect(content).not.toHaveAttribute('hidden');
   });
 
-  it("toggles content on trigger click", async () => {
+  it('toggles content on trigger click', async () => {
     const { user } = renderCollapsible();
-    await user.click(screen.getByText("Toggle"));
-    expect(screen.getByText("Collapsible content here")).toBeVisible();
+    await user.click(screen.getByText('Toggle'));
+    expect(screen.getByText('Collapsible content here')).toBeVisible();
   });
 
-  it("sets data-slot on root", () => {
+  it('sets data-slot on root', () => {
     renderCollapsible();
     const root = document.querySelector("[data-slot='collapsible']");
     expect(root).toBeInTheDocument();
   });
 
-  it("sets data-slot on trigger", () => {
+  it('sets data-slot on trigger', () => {
     renderCollapsible();
     const trigger = document.querySelector("[data-slot='collapsible-trigger']");
     expect(trigger).toBeInTheDocument();
   });
 
-  it("sets data-slot on content when open", () => {
+  it('sets data-slot on content when open', () => {
     renderCollapsible({ defaultOpen: true });
     const content = document.querySelector("[data-slot='collapsible-content']");
     expect(content).toBeInTheDocument();

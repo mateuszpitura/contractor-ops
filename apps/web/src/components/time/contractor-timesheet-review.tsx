@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { addDays, format, startOfISOWeek } from "date-fns";
-import { ArrowLeft, CheckCircle, XCircle } from "lucide-react";
-import { useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { RejectionReasonDialog } from "./rejection-reason-dialog";
-import { TimeEntryStatusBadge } from "./time-entry-status-badge";
-import { TimeSourceBadge } from "./time-source-badge";
+import { addDays, format, startOfISOWeek } from 'date-fns';
+import { ArrowLeft, CheckCircle, XCircle } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { RejectionReasonDialog } from './rejection-reason-dialog';
+import { TimeEntryStatusBadge } from './time-entry-status-badge';
+import { TimeSourceBadge } from './time-source-badge';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -20,7 +20,7 @@ interface TimeEntry {
   entryDate: string | Date;
   minutes: number;
   description?: string | null;
-  source: "MANUAL" | "CLOCKIFY" | "JIRA";
+  source: 'MANUAL' | 'CLOCKIFY' | 'JIRA';
   createdAt?: string | Date;
   contract?: { id: string; title: string } | null;
 }
@@ -29,7 +29,7 @@ interface TimesheetData {
   id: string;
   weekStartDate: string | Date;
   totalMinutes: number;
-  status: "DRAFT" | "SUBMITTED" | "APPROVED" | "REJECTED";
+  status: 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED';
   rejectionReason?: string | null;
   entries: TimeEntry[];
   contractor: {
@@ -51,22 +51,22 @@ interface ContractorTimesheetReviewProps {
 // Helpers
 // ---------------------------------------------------------------------------
 
-const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 function getDateForDay(weekStart: Date, dayIndex: number): string {
   const date = addDays(startOfISOWeek(weekStart), dayIndex);
-  return format(date, "yyyy-MM-dd");
+  return format(date, 'yyyy-MM-dd');
 }
 
 function minutesToHours(minutes: number): string {
-  if (minutes === 0) return "";
+  if (minutes === 0) return '';
   const hours = minutes / 60;
   return hours % 1 === 0 ? hours.toFixed(0) : hours.toFixed(1);
 }
 
 function toDateStr(d: string | Date): string {
-  if (typeof d === "string") return d.split("T")[0]!;
-  return format(d, "yyyy-MM-dd");
+  if (typeof d === 'string') return d.split('T')[0]!;
+  return format(d, 'yyyy-MM-dd');
 }
 
 // ---------------------------------------------------------------------------
@@ -88,18 +88,18 @@ export function ContractorTimesheetReview({
   const [isRejecting, setIsRejecting] = useState(false);
 
   const weekStart =
-    typeof timesheet.weekStartDate === "string"
+    typeof timesheet.weekStartDate === 'string'
       ? new Date(timesheet.weekStartDate)
       : timesheet.weekStartDate;
 
-  const periodLabel = `${format(startOfISOWeek(weekStart), "MMM d")} - ${format(addDays(startOfISOWeek(weekStart), 6), "MMM d, yyyy")}`;
+  const periodLabel = `${format(startOfISOWeek(weekStart), 'MMM d')} - ${format(addDays(startOfISOWeek(weekStart), 6), 'MMM d, yyyy')}`;
 
   // Group entries by contract for the grid
   const contractMap = useMemo(() => {
     const map = new Map<string, { title: string; entries: Map<number, TimeEntry> }>();
     for (const entry of timesheet.entries) {
       const contractId = entry.contractId;
-      const title = entry.contract?.title ?? "Unknown Project";
+      const title = entry.contract?.title ?? 'Unknown Project';
       if (!map.has(contractId)) {
         map.set(contractId, { title, entries: new Map() });
       }
@@ -119,7 +119,7 @@ export function ContractorTimesheetReview({
 
   // Entries with descriptions for the detail list
   const entriesWithDescriptions = useMemo(
-    () => timesheet.entries.filter((e) => e.description && e.description.trim().length > 0),
+    () => timesheet.entries.filter(e => e.description && e.description.trim().length > 0),
     [timesheet.entries],
   );
 
@@ -143,7 +143,7 @@ export function ContractorTimesheetReview({
         </div>
         <div className="text-end">
           <p className="text-2xl font-semibold text-primary">
-            {minutesToHours(timesheet.totalMinutes) || "0"}h
+            {minutesToHours(timesheet.totalMinutes) || '0'}h
           </p>
           <p className="text-xs text-muted-foreground">total hours</p>
         </div>
@@ -162,11 +162,10 @@ export function ContractorTimesheetReview({
                   {DAY_LABELS.map((day, i) => (
                     <th
                       key={day}
-                      className="w-16 min-w-[64px] px-1 py-3 text-center text-sm font-semibold"
-                    >
+                      className="w-16 min-w-[64px] px-1 py-3 text-center text-sm font-semibold">
                       <div>{day}</div>
                       <div className="text-xs font-normal text-muted-foreground">
-                        {format(addDays(startOfISOWeek(weekStart), i), "d")}
+                        {format(addDays(startOfISOWeek(weekStart), i), 'd')}
                       </div>
                     </th>
                   ))}
@@ -192,10 +191,10 @@ export function ContractorTimesheetReview({
                         return (
                           <td key={dayIdx} className="px-1 py-2 text-center text-sm">
                             <div className="relative inline-flex items-center justify-center">
-                              <span className={mins > 0 ? "font-medium" : "text-muted-foreground"}>
-                                {mins > 0 ? minutesToHours(mins) : "-"}
+                              <span className={mins > 0 ? 'font-medium' : 'text-muted-foreground'}>
+                                {mins > 0 ? minutesToHours(mins) : '-'}
                               </span>
-                              {entry && entry.source !== "MANUAL" && (
+                              {entry && entry.source !== 'MANUAL' && (
                                 <div className="absolute -top-2 -end-3">
                                   <TimeSourceBadge
                                     source={entry.source}
@@ -208,7 +207,7 @@ export function ContractorTimesheetReview({
                         );
                       })}
                       <td className="px-2 py-2 text-center text-sm font-medium">
-                        {minutesToHours(rowTotal) || "0"}
+                        {minutesToHours(rowTotal) || '0'}
                       </td>
                     </tr>
                   );
@@ -224,12 +223,12 @@ export function ContractorTimesheetReview({
                     }
                     return (
                       <td key={dayIdx} className="px-1 py-3 text-center text-sm font-semibold">
-                        {minutesToHours(colTotal) || "0"}
+                        {minutesToHours(colTotal) || '0'}
                       </td>
                     );
                   })}
                   <td className="px-2 py-3 text-center text-sm font-semibold text-primary">
-                    {minutesToHours(timesheet.totalMinutes) || "0"}
+                    {minutesToHours(timesheet.totalMinutes) || '0'}
                   </td>
                 </tr>
               </tfoot>
@@ -243,16 +242,16 @@ export function ContractorTimesheetReview({
       {entriesWithDescriptions.length > 0 && (
         <Card>
           <CardContent className="divide-y p-0">
-            {entriesWithDescriptions.map((entry) => (
+            {entriesWithDescriptions.map(entry => (
               <div key={entry.id} className="flex items-start gap-3 px-4 py-3">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <span>
                       {format(
-                        typeof entry.entryDate === "string"
+                        typeof entry.entryDate === 'string'
                           ? new Date(entry.entryDate)
                           : entry.entryDate,
-                        "EEE, MMM d",
+                        'EEE, MMM d',
                       )}
                     </span>
                     <span>&middot;</span>
@@ -275,13 +274,12 @@ export function ContractorTimesheetReview({
             Back to Queue
           </Button>
           <div className="flex items-center gap-2">
-            {timesheet.status === "SUBMITTED" && (
+            {timesheet.status === 'SUBMITTED' && (
               <>
                 <Button
                   variant="outline"
                   className="text-destructive hover:bg-destructive/10"
-                  onClick={() => setRejectDialogOpen(true)}
-                >
+                  onClick={() => setRejectDialogOpen(true)}>
                   <XCircle className="me-2 h-4 w-4" />
                   Reject
                 </Button>

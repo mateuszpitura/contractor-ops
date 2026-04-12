@@ -1,9 +1,9 @@
-import { prisma } from "@contractor-ops/db";
-import { registerAllAdapters } from "@contractor-ops/integrations/adapters/register-all";
-import { getAdapter } from "@contractor-ops/integrations/registry";
-import { getQStashClient } from "@contractor-ops/integrations/services/qstash-client";
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import { prisma } from '@contractor-ops/db';
+import { registerAllAdapters } from '@contractor-ops/integrations/adapters/register-all';
+import { getAdapter } from '@contractor-ops/integrations/registry';
+import { getQStashClient } from '@contractor-ops/integrations/services/qstash-client';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 // ---------------------------------------------------------------------------
 // Ensure adapters are registered
@@ -34,7 +34,7 @@ export async function POST(
 
   // Unknown provider or adapter doesn't support webhooks
   if (!adapter?.supportsWebhooks) {
-    return NextResponse.json({ error: "Unknown provider" }, { status: 404 });
+    return NextResponse.json({ error: 'Unknown provider' }, { status: 404 });
   }
 
   const rawBody = await request.text();
@@ -43,17 +43,17 @@ export async function POST(
   // Step 1: Verify signature via adapter
   const verification = adapter.verifyWebhookSignature?.(rawBody, headers);
   if (!verification?.valid) {
-    return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+    return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
   }
 
   // Step 2: Parse payload (Slack sends form-encoded, others send JSON)
-  const isSlackViewSubmission = provider === "slack" && rawBody.includes("view_submission");
+  const isSlackViewSubmission = provider === 'slack' && rawBody.includes('view_submission');
 
   let payloadJson: unknown;
   try {
-    if (provider === "slack") {
+    if (provider === 'slack') {
       const formParams = new URLSearchParams(rawBody);
-      const payloadStr = formParams.get("payload");
+      const payloadStr = formParams.get('payload');
       payloadJson = payloadStr ? JSON.parse(payloadStr) : {};
     } else {
       payloadJson = JSON.parse(rawBody);
@@ -65,12 +65,12 @@ export async function POST(
   // Step 3: Log to WebhookDelivery
   const delivery = await prisma.webhookDelivery.create({
     data: {
-      organizationId: verification.organizationId ?? "PENDING",
+      organizationId: verification.organizationId ?? 'PENDING',
       provider: adapter.slug.toUpperCase() as never,
-      eventType: verification.eventType ?? "UNKNOWN",
+      eventType: verification.eventType ?? 'UNKNOWN',
       signatureValid: true,
       payloadJson: payloadJson as never,
-      deliveryStatus: "RECEIVED",
+      deliveryStatus: 'RECEIVED',
       integrationConnectionId: verification.connectionId ?? null,
     },
   });
@@ -90,7 +90,7 @@ export async function POST(
 
   // For Slack view_submission, return response_action to close the modal
   if (isSlackViewSubmission) {
-    return NextResponse.json({ response_action: "clear" });
+    return NextResponse.json({ response_action: 'clear' });
   }
 
   return NextResponse.json({ received: true });

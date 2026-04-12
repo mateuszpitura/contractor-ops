@@ -1,4 +1,4 @@
-import type { PrismaClient } from "@contractor-ops/db";
+import type { PrismaClient } from '@contractor-ops/db';
 
 // ---------------------------------------------------------------------------
 // Cross-Source Duplicate Detection
@@ -33,7 +33,7 @@ export async function checkCrossSourceDuplicate(
   const existing = await prisma.invoice.findFirst({
     where: {
       organizationId,
-      invoiceNumber: { equals: invoiceNumber, mode: "insensitive" },
+      invoiceNumber: { equals: invoiceNumber, mode: 'insensitive' },
       sellerTaxId,
       deletedAt: null,
       ...(excludeInvoiceId ? { id: { not: excludeInvoiceId } } : {}),
@@ -91,7 +91,7 @@ export async function linkDuplicateInvoices(
         flagsJson: {
           ...ksefFlags,
           duplicateOf: manualInvoiceId,
-          duplicateSource: "MANUAL",
+          duplicateSource: 'MANUAL',
         },
       },
     }),
@@ -101,7 +101,7 @@ export async function linkDuplicateInvoices(
         flagsJson: {
           ...manualFlags,
           duplicateOf: ksefInvoiceId,
-          duplicateSource: "KSEF",
+          duplicateSource: 'KSEF',
         },
       },
     }),

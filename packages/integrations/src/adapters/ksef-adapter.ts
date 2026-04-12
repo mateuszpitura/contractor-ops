@@ -1,6 +1,6 @@
-import { prisma } from "@contractor-ops/db";
-import type { ProviderHealthStatus } from "../types/health.js";
-import { BaseAdapter } from "./base-adapter.js";
+import { prisma } from '@contractor-ops/db';
+import type { ProviderHealthStatus } from '../types/health.js';
+import { BaseAdapter } from './base-adapter.js';
 
 // ---------------------------------------------------------------------------
 // KSeF Adapter
@@ -14,8 +14,8 @@ import { BaseAdapter } from "./base-adapter.js";
  * health status checks via the integration sync log.
  */
 export class KsefAdapter extends BaseAdapter {
-  readonly slug = "ksef";
-  readonly displayName = "KSeF";
+  readonly slug = 'ksef';
+  readonly displayName = 'KSeF';
   readonly supportsOAuth = false;
   readonly supportsWebhooks = false;
 
@@ -41,8 +41,8 @@ export class KsefAdapter extends BaseAdapter {
 
     if (!connection) {
       return {
-        status: "DISCONNECTED",
-        provider: "ksef",
+        status: 'DISCONNECTED',
+        provider: 'ksef',
         recentSyncs: [],
         recentWebhooks: [],
         errorCountLast24h: 0,
@@ -52,7 +52,7 @@ export class KsefAdapter extends BaseAdapter {
     // Fetch recent sync logs
     const recentSyncs = await prisma.integrationSyncLog.findMany({
       where: { integrationConnectionId: connectionId },
-      orderBy: { startedAt: "desc" },
+      orderBy: { startedAt: 'desc' },
       take: 5,
       select: {
         id: true,
@@ -68,28 +68,28 @@ export class KsefAdapter extends BaseAdapter {
     const errorCountLast24h = await prisma.integrationSyncLog.count({
       where: {
         integrationConnectionId: connectionId,
-        status: "FAILED",
+        status: 'FAILED',
         startedAt: { gte: oneDayAgo },
       },
     });
 
     // Determine status
-    let status: ProviderHealthStatus["status"];
-    if (connection.status !== "CONNECTED") {
-      status = "DISCONNECTED";
+    let status: ProviderHealthStatus['status'];
+    if (connection.status !== 'CONNECTED') {
+      status = 'DISCONNECTED';
     } else if (connection.lastErrorAt && !connection.lastSuccessAt) {
-      status = "ERROR";
+      status = 'ERROR';
     } else if (connection.tokenExpiresAt && connection.tokenExpiresAt < new Date()) {
-      status = "REAUTH_REQUIRED";
-    } else if (recentSyncs[0]?.status === "FAILED") {
-      status = "ERROR";
+      status = 'REAUTH_REQUIRED';
+    } else if (recentSyncs[0]?.status === 'FAILED') {
+      status = 'ERROR';
     } else {
-      status = "CONNECTED";
+      status = 'CONNECTED';
     }
 
     return {
       status,
-      provider: "ksef",
+      provider: 'ksef',
       displayName: connection.displayName,
       connectedAt: connection.connectedAt,
       lastSyncAt: connection.lastSyncAt,
@@ -97,7 +97,7 @@ export class KsefAdapter extends BaseAdapter {
       lastErrorAt: connection.lastErrorAt,
       lastErrorMessage: connection.lastErrorMessage,
       tokenExpiresAt: connection.tokenExpiresAt,
-      recentSyncs: recentSyncs.map((s) => ({
+      recentSyncs: recentSyncs.map(s => ({
         id: s.id,
         syncType: s.syncType,
         status: s.status,

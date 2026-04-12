@@ -1,10 +1,10 @@
-import { decryptCredentials } from "@contractor-ops/integrations/services/credential-service";
-import type { LinearIssueMetadata } from "@contractor-ops/validators";
-import { linearWebhookPayloadSchema } from "@contractor-ops/validators";
-import { TRPCError } from "@trpc/server";
-import { linearGraphQL } from "./linear-issue-sync.js";
-import { resolveInternalStatus } from "./linear-status-mapping.js";
-import type { DbClient } from "./types.js";
+import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
+import type { LinearIssueMetadata } from '@contractor-ops/validators';
+import { linearWebhookPayloadSchema } from '@contractor-ops/validators';
+import { TRPCError } from '@trpc/server';
+import { linearGraphQL } from './linear-issue-sync.js';
+import { resolveInternalStatus } from './linear-status-mapping.js';
+import type { DbClient } from './types.js';
 
 type PrismaClient = DbClient;
 
@@ -66,9 +66,9 @@ export async function processLinearWebhook(
       data: {
         organizationId,
         integrationConnectionId: connectionId,
-        direction: "INBOUND",
-        syncType: "webhook-invalid",
-        status: "FAILED",
+        direction: 'INBOUND',
+        syncType: 'webhook-invalid',
+        status: 'FAILED',
         completedAt: new Date(),
         errorMessage: `Invalid Linear webhook payload: ${parsed.error.message}`,
       },
@@ -79,23 +79,23 @@ export async function processLinearWebhook(
   const webhookPayload = parsed.data;
 
   // 2. Only process state change updates
-  if (webhookPayload.action !== "update" || !webhookPayload.updatedFrom?.stateId) {
+  if (webhookPayload.action !== 'update' || !webhookPayload.updatedFrom?.stateId) {
     // Not a state change -- log and return early
     await prisma.integrationSyncLog.create({
       data: {
         organizationId,
         integrationConnectionId: connectionId,
-        direction: "INBOUND",
-        syncType: "webhook-ignored",
-        status: "SUCCESS",
+        direction: 'INBOUND',
+        syncType: 'webhook-ignored',
+        status: 'SUCCESS',
         completedAt: new Date(),
         responsePayloadJson: {
           action: webhookPayload.action,
           identifier: webhookPayload.data.identifier,
           reason:
-            webhookPayload.action !== "update"
+            webhookPayload.action !== 'update'
               ? `Action '${webhookPayload.action}' not processed`
-              : "No state change detected (updatedFrom.stateId missing)",
+              : 'No state change detected (updatedFrom.stateId missing)',
         },
       },
     });
@@ -110,7 +110,7 @@ export async function processLinearWebhook(
   const externalLink = await prisma.externalLink.findFirst({
     where: {
       organizationId,
-      externalType: "LINEAR_ISSUE",
+      externalType: 'LINEAR_ISSUE',
       externalId: issueIdentifier,
     },
   });
@@ -121,13 +121,13 @@ export async function processLinearWebhook(
       data: {
         organizationId,
         integrationConnectionId: connectionId,
-        direction: "INBOUND",
-        syncType: "webhook-unlinked",
-        status: "SUCCESS",
+        direction: 'INBOUND',
+        syncType: 'webhook-unlinked',
+        status: 'SUCCESS',
         completedAt: new Date(),
         responsePayloadJson: {
           identifier: issueIdentifier,
-          reason: "No ExternalLink found for this Linear issue",
+          reason: 'No ExternalLink found for this Linear issue',
         },
       },
     });
@@ -139,16 +139,16 @@ export async function processLinearWebhook(
   const lastSyncOrigin = metadata.lastSyncOrigin as string | undefined;
   const lastSyncAt = metadata.lastSyncAt as string | undefined;
 
-  if (lastSyncOrigin === "APP" && lastSyncAt) {
+  if (lastSyncOrigin === 'APP' && lastSyncAt) {
     const syncAge = Date.now() - new Date(lastSyncAt).getTime();
     if (syncAge < LOOP_PREVENTION_WINDOW_MS) {
       await prisma.integrationSyncLog.create({
         data: {
           organizationId,
           integrationConnectionId: connectionId,
-          direction: "INBOUND",
-          syncType: "webhook-loop-suppressed",
-          status: "SUCCESS",
+          direction: 'INBOUND',
+          syncType: 'webhook-loop-suppressed',
+          status: 'SUCCESS',
           completedAt: new Date(),
           responsePayloadJson: {
             identifier: issueIdentifier,
@@ -166,15 +166,15 @@ export async function processLinearWebhook(
     where: {
       organizationId,
       integrationConnectionId: connectionId,
-      direction: "INBOUND",
-      syncType: "issue-status-change",
+      direction: 'INBOUND',
+      syncType: 'issue-status-change',
       startedAt: { gte: deduplicationCutoff },
       responsePayloadJson: {
-        path: ["identifier"],
+        path: ['identifier'],
         equals: issueIdentifier,
       },
     },
-    orderBy: { startedAt: "desc" },
+    orderBy: { startedAt: 'desc' },
   });
 
   if (recentDuplicate) {
@@ -199,17 +199,17 @@ export async function processLinearWebhook(
       data: {
         organizationId,
         integrationConnectionId: connectionId,
-        direction: "INBOUND",
-        syncType: "webhook-status-unmapped",
-        entityType: "WORKFLOW_TASK_RUN",
+        direction: 'INBOUND',
+        syncType: 'webhook-status-unmapped',
+        entityType: 'WORKFLOW_TASK_RUN',
         entityId: externalLink.entityId,
-        status: "SUCCESS",
+        status: 'SUCCESS',
         completedAt: new Date(),
         responsePayloadJson: {
           identifier: issueIdentifier,
           stateId: newStateId,
           teamId,
-          reason: "No workflow status mapping found for this Linear state",
+          reason: 'No workflow status mapping found for this Linear state',
         },
       },
     });
@@ -230,7 +230,7 @@ export async function processLinearWebhook(
   if (!(stateName && stateType)) {
     // Not in cache -- fetch from Linear API
     try {
-      const credentials = decryptCredentials(connection.credentialsRef, "linear");
+      const credentials = decryptCredentials(connection.credentialsRef, 'linear');
       const stateResult = await linearGraphQL<{
         workflowState: { id: string; name: string; type: string };
       }>(
@@ -259,8 +259,8 @@ export async function processLinearWebhook(
       });
     } catch {
       // Use fallback values if API call fails
-      stateName = "Unknown";
-      stateType = "unstarted";
+      stateName = 'Unknown';
+      stateType = 'unstarted';
     }
   }
 
@@ -269,11 +269,11 @@ export async function processLinearWebhook(
     data: {
       organizationId,
       integrationConnectionId: connectionId,
-      direction: "INBOUND",
-      syncType: "issue-status-change",
-      entityType: "WORKFLOW_TASK_RUN",
+      direction: 'INBOUND',
+      syncType: 'issue-status-change',
+      entityType: 'WORKFLOW_TASK_RUN',
       entityId: externalLink.entityId,
-      status: "STARTED",
+      status: 'STARTED',
       requestPayloadJson: {
         identifier: issueIdentifier,
         fromStateId: webhookPayload.updatedFrom.stateId,
@@ -298,9 +298,9 @@ export async function processLinearWebhook(
       linearIssueId: (metadata.linearIssueId as string) ?? webhookPayload.data.id,
       title: webhookPayload.data.title,
       status: stateName,
-      statusType: stateType as LinearIssueMetadata["statusType"],
+      statusType: stateType as LinearIssueMetadata['statusType'],
       url: (metadata.url as string) ?? externalLink.externalUrl ?? webhookPayload.data.url,
-      lastSyncOrigin: "LINEAR",
+      lastSyncOrigin: 'LINEAR',
       lastSyncAt: new Date().toISOString(),
     };
 
@@ -315,7 +315,7 @@ export async function processLinearWebhook(
     await prisma.integrationSyncLog.update({
       where: { id: syncLog.id },
       data: {
-        status: "SUCCESS",
+        status: 'SUCCESS',
         completedAt: new Date(),
         responsePayloadJson: {
           identifier: issueIdentifier,
@@ -329,16 +329,16 @@ export async function processLinearWebhook(
     await prisma.integrationSyncLog.update({
       where: { id: syncLog.id },
       data: {
-        status: "FAILED",
+        status: 'FAILED',
         completedAt: new Date(),
-        errorMessage: error instanceof Error ? error.message : "Unknown error",
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
       },
     });
 
     if (error instanceof TRPCError) throw error;
     throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "Failed to process Linear webhook",
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'Failed to process Linear webhook',
       cause: error,
     });
   }
@@ -368,20 +368,20 @@ export async function registerLinearWebhook(
     where: { id: connectionId },
   });
 
-  if (!(connection && ["CONNECTED", "PENDING_MAPPING"].includes(connection.status))) {
+  if (!(connection && ['CONNECTED', 'PENDING_MAPPING'].includes(connection.status))) {
     throw new TRPCError({
-      code: "PRECONDITION_FAILED",
-      message: "Linear connection is not active",
+      code: 'PRECONDITION_FAILED',
+      message: 'Linear connection is not active',
     });
   }
 
-  const credentials = decryptCredentials(connection.credentialsRef, "linear");
+  const credentials = decryptCredentials(connection.credentialsRef, 'linear');
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? process.env.APP_URL;
   if (!appUrl) {
     throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "NEXT_PUBLIC_APP_URL environment variable is required for webhook registration",
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'NEXT_PUBLIC_APP_URL environment variable is required for webhook registration',
     });
   }
 
@@ -404,7 +404,7 @@ export async function registerLinearWebhook(
       input: {
         url: webhookUrl,
         teamId,
-        resourceTypes: ["Issue"],
+        resourceTypes: ['Issue'],
         enabled: true,
       },
     },
@@ -412,8 +412,8 @@ export async function registerLinearWebhook(
 
   if (!result.webhookCreate.success) {
     throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "Linear webhookCreate returned success=false",
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'Linear webhookCreate returned success=false',
     });
   }
 
@@ -462,7 +462,7 @@ export async function deregisterLinearWebhook(
 
   // Best-effort delete
   try {
-    const credentials = decryptCredentials(connection.credentialsRef, "linear");
+    const credentials = decryptCredentials(connection.credentialsRef, 'linear');
 
     await linearGraphQL(
       credentials.accessToken,

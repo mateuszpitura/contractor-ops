@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ---------------------------------------------------------------------------
 // InPost Polling Service Tests
@@ -8,7 +8,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mockGetStatus = vi.fn();
 
 // Mock InPostClient as a class
-vi.mock("../inpost-client", () => {
+vi.mock('../inpost-client', () => {
   return {
     InPostClient: class MockInPostClient {
       getStatus = mockGetStatus;
@@ -19,18 +19,18 @@ vi.mock("../inpost-client", () => {
 const { mockCheckShipmentTaskCompletion } = vi.hoisted(() => ({
   mockCheckShipmentTaskCompletion: vi.fn().mockResolvedValue(undefined),
 }));
-vi.mock("../../equipment-workflow", () => ({
+vi.mock('../../equipment-workflow', () => ({
   checkShipmentTaskCompletion: mockCheckShipmentTaskCompletion,
 }));
 
 const { mockDispatchShipmentNotification } = vi.hoisted(() => ({
   mockDispatchShipmentNotification: vi.fn().mockResolvedValue(undefined),
 }));
-vi.mock("../shipment-notification", () => ({
+vi.mock('../shipment-notification', () => ({
   dispatchShipmentNotification: mockDispatchShipmentNotification,
 }));
 
-import { pollInPostShipmentStatuses } from "../inpost-polling-service";
+import { pollInPostShipmentStatuses } from '../inpost-polling-service';
 
 function createMockDb() {
   return {
@@ -52,7 +52,7 @@ function createMockDb() {
   };
 }
 
-describe("pollInPostShipmentStatuses", () => {
+describe('pollInPostShipmentStatuses', () => {
   let db: ReturnType<typeof createMockDb>;
 
   beforeEach(() => {
@@ -60,30 +60,30 @@ describe("pollInPostShipmentStatuses", () => {
     mockGetStatus.mockReset();
     mockCheckShipmentTaskCompletion.mockReset().mockResolvedValue(undefined);
     mockDispatchShipmentNotification.mockReset().mockResolvedValue(undefined);
-    vi.spyOn(console, "info").mockImplementation(() => {});
-    vi.spyOn(console, "warn").mockImplementation(() => {});
-    vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.spyOn(console, 'info').mockImplementation(() => undefined);
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
   });
 
-  it("fetches all active InPost shipments (not DELIVERED/FAILED/RETURNED)", async () => {
+  it('fetches all active InPost shipments (not DELIVERED/FAILED/RETURNED)', async () => {
     db.courierConfig.findUnique.mockResolvedValue({
       configJson: {
-        apiToken: "token-123",
-        shipxOrganizationId: "org-shipx",
+        apiToken: 'token-123',
+        shipxOrganizationId: 'org-shipx',
         sandbox: true,
       },
     });
     db.shipment.findMany.mockResolvedValue([]);
 
-    const result = await pollInPostShipmentStatuses(db as any, "org-1");
+    const result = await pollInPostShipmentStatuses(db as any, 'org-1');
 
     expect(db.shipment.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
-          organizationId: "org-1",
-          carrier: "InPost",
+          organizationId: 'org-1',
+          carrier: 'InPost',
           currentStatus: {
-            notIn: ["DELIVERED", "FAILED", "RETURNED"],
+            notIn: ['DELIVERED', 'FAILED', 'RETURNED'],
           },
           externalId: { not: null },
         }),
@@ -93,55 +93,55 @@ describe("pollInPostShipmentStatuses", () => {
     expect(result).toEqual({ checked: 0, updated: 0 });
   });
 
-  it("creates missing events for statuses newer than last recorded", async () => {
+  it('creates missing events for statuses newer than last recorded', async () => {
     db.courierConfig.findUnique.mockResolvedValue({
       configJson: {
-        apiToken: "token-123",
-        shipxOrganizationId: "org-shipx",
+        apiToken: 'token-123',
+        shipxOrganizationId: 'org-shipx',
         sandbox: true,
       },
     });
 
     db.shipment.findMany.mockResolvedValue([
       {
-        id: "ship-1",
-        organizationId: "org-1",
-        equipmentId: "equip-1",
-        externalId: "ext-1",
-        direction: "OUTBOUND",
-        currentStatus: "IN_TRANSIT",
+        id: 'ship-1',
+        organizationId: 'org-1',
+        equipmentId: 'equip-1',
+        externalId: 'ext-1',
+        direction: 'OUTBOUND',
+        currentStatus: 'IN_TRANSIT',
         workflowTaskRunId: null,
       },
     ]);
 
     mockGetStatus.mockResolvedValue({
-      externalId: "ext-1",
-      status: "delivered",
-      trackingNumber: "T1",
+      externalId: 'ext-1',
+      status: 'delivered',
+      trackingNumber: 'T1',
     });
 
     db.shipmentEvent.findFirst.mockResolvedValue(null); // no duplicate
     db.shipmentEvent.create.mockResolvedValue({});
     db.shipment.update.mockResolvedValue({});
     db.equipment.findUnique.mockResolvedValue({
-      id: "equip-1",
-      status: "IN_TRANSIT",
+      id: 'equip-1',
+      status: 'IN_TRANSIT',
     });
     db.equipment.update.mockResolvedValue({});
 
-    const result = await pollInPostShipmentStatuses(db as any, "org-1");
+    const result = await pollInPostShipmentStatuses(db as any, 'org-1');
 
-    expect(mockGetStatus).toHaveBeenCalledWith("ext-1");
+    expect(mockGetStatus).toHaveBeenCalledWith('ext-1');
     expect(db.shipmentEvent.create).toHaveBeenCalled();
     expect(result.checked).toBe(1);
     expect(result.updated).toBe(1);
   });
 
-  it("skips shipments without externalId", async () => {
+  it('skips shipments without externalId', async () => {
     db.courierConfig.findUnique.mockResolvedValue({
       configJson: {
-        apiToken: "token-123",
-        shipxOrganizationId: "org-shipx",
+        apiToken: 'token-123',
+        shipxOrganizationId: 'org-shipx',
         sandbox: true,
       },
     });
@@ -149,266 +149,266 @@ describe("pollInPostShipmentStatuses", () => {
     // The query itself filters out null externalIds, so findMany returns empty
     db.shipment.findMany.mockResolvedValue([]);
 
-    const result = await pollInPostShipmentStatuses(db as any, "org-1");
+    const result = await pollInPostShipmentStatuses(db as any, 'org-1');
 
     expect(result).toEqual({ checked: 0, updated: 0 });
   });
 
-  it("returns early if no courier config found", async () => {
+  it('returns early if no courier config found', async () => {
     db.courierConfig.findUnique.mockResolvedValue(null);
 
-    const result = await pollInPostShipmentStatuses(db as any, "org-1");
+    const result = await pollInPostShipmentStatuses(db as any, 'org-1');
 
     expect(result).toEqual({ checked: 0, updated: 0 });
     expect(db.shipment.findMany).not.toHaveBeenCalled();
   });
 
-  it("does not update if status has not changed", async () => {
+  it('does not update if status has not changed', async () => {
     db.courierConfig.findUnique.mockResolvedValue({
       configJson: {
-        apiToken: "token-123",
-        shipxOrganizationId: "org-shipx",
+        apiToken: 'token-123',
+        shipxOrganizationId: 'org-shipx',
         sandbox: true,
       },
     });
 
     db.shipment.findMany.mockResolvedValue([
       {
-        id: "ship-1",
-        organizationId: "org-1",
-        equipmentId: "equip-1",
-        externalId: "ext-1",
-        direction: "OUTBOUND",
-        currentStatus: "IN_TRANSIT",
+        id: 'ship-1',
+        organizationId: 'org-1',
+        equipmentId: 'equip-1',
+        externalId: 'ext-1',
+        direction: 'OUTBOUND',
+        currentStatus: 'IN_TRANSIT',
         workflowTaskRunId: null,
       },
     ]);
 
     mockGetStatus.mockResolvedValue({
-      externalId: "ext-1",
-      status: "adopted_at_source_branch", // maps to IN_TRANSIT — same as current
+      externalId: 'ext-1',
+      status: 'adopted_at_source_branch', // maps to IN_TRANSIT — same as current
     });
 
-    const result = await pollInPostShipmentStatuses(db as any, "org-1");
+    const result = await pollInPostShipmentStatuses(db as any, 'org-1');
 
     expect(result.checked).toBe(1);
     expect(result.updated).toBe(0);
     expect(db.shipmentEvent.create).not.toHaveBeenCalled();
   });
 
-  it("calls checkShipmentTaskCompletion after polling status update", async () => {
+  it('calls checkShipmentTaskCompletion after polling status update', async () => {
     db.courierConfig.findUnique.mockResolvedValue({
       configJson: {
-        apiToken: "token-123",
-        shipxOrganizationId: "org-shipx",
+        apiToken: 'token-123',
+        shipxOrganizationId: 'org-shipx',
         sandbox: true,
       },
     });
 
     db.shipment.findMany.mockResolvedValue([
       {
-        id: "ship-1",
-        organizationId: "org-1",
-        equipmentId: "equip-1",
-        externalId: "ext-1",
-        direction: "OUTBOUND",
-        currentStatus: "IN_TRANSIT",
-        workflowTaskRunId: "task-1",
+        id: 'ship-1',
+        organizationId: 'org-1',
+        equipmentId: 'equip-1',
+        externalId: 'ext-1',
+        direction: 'OUTBOUND',
+        currentStatus: 'IN_TRANSIT',
+        workflowTaskRunId: 'task-1',
       },
     ]);
 
     mockGetStatus.mockResolvedValue({
-      externalId: "ext-1",
-      status: "delivered",
-      trackingNumber: "T1",
+      externalId: 'ext-1',
+      status: 'delivered',
+      trackingNumber: 'T1',
     });
 
     db.shipmentEvent.findFirst.mockResolvedValue(null);
     db.shipmentEvent.create.mockResolvedValue({});
     db.shipment.update.mockResolvedValue({});
     db.equipment.findUnique.mockResolvedValue({
-      id: "equip-1",
-      status: "IN_TRANSIT",
+      id: 'equip-1',
+      status: 'IN_TRANSIT',
     });
     db.equipment.update.mockResolvedValue({});
 
-    await pollInPostShipmentStatuses(db as any, "org-1");
+    await pollInPostShipmentStatuses(db as any, 'org-1');
 
     expect(mockCheckShipmentTaskCompletion).toHaveBeenCalledWith(
       db,
-      "org-1",
+      'org-1',
       expect.objectContaining({
-        id: "ship-1",
-        workflowTaskRunId: "task-1",
-        direction: "OUTBOUND",
-        currentStatus: "DELIVERED",
+        id: 'ship-1',
+        workflowTaskRunId: 'task-1',
+        direction: 'OUTBOUND',
+        currentStatus: 'DELIVERED',
       }),
     );
   });
 
-  it("does not call checkShipmentTaskCompletion when status unchanged", async () => {
+  it('does not call checkShipmentTaskCompletion when status unchanged', async () => {
     db.courierConfig.findUnique.mockResolvedValue({
       configJson: {
-        apiToken: "token-123",
-        shipxOrganizationId: "org-shipx",
+        apiToken: 'token-123',
+        shipxOrganizationId: 'org-shipx',
         sandbox: true,
       },
     });
 
     db.shipment.findMany.mockResolvedValue([
       {
-        id: "ship-1",
-        organizationId: "org-1",
-        equipmentId: "equip-1",
-        externalId: "ext-1",
-        direction: "OUTBOUND",
-        currentStatus: "IN_TRANSIT",
-        workflowTaskRunId: "task-1",
+        id: 'ship-1',
+        organizationId: 'org-1',
+        equipmentId: 'equip-1',
+        externalId: 'ext-1',
+        direction: 'OUTBOUND',
+        currentStatus: 'IN_TRANSIT',
+        workflowTaskRunId: 'task-1',
       },
     ]);
 
     mockGetStatus.mockResolvedValue({
-      externalId: "ext-1",
-      status: "adopted_at_source_branch", // maps to IN_TRANSIT — same as current
+      externalId: 'ext-1',
+      status: 'adopted_at_source_branch', // maps to IN_TRANSIT — same as current
     });
 
-    await pollInPostShipmentStatuses(db as any, "org-1");
+    await pollInPostShipmentStatuses(db as any, 'org-1');
 
     expect(mockCheckShipmentTaskCompletion).not.toHaveBeenCalled();
   });
 
-  it("dispatches notification on terminal status (DELIVERED)", async () => {
+  it('dispatches notification on terminal status (DELIVERED)', async () => {
     db.courierConfig.findUnique.mockResolvedValue({
       configJson: {
-        apiToken: "token-123",
-        shipxOrganizationId: "org-shipx",
+        apiToken: 'token-123',
+        shipxOrganizationId: 'org-shipx',
         sandbox: true,
       },
     });
 
     db.shipment.findMany.mockResolvedValue([
       {
-        id: "ship-1",
-        organizationId: "org-1",
-        equipmentId: "equip-1",
-        externalId: "ext-1",
-        trackingNumber: "TRK-001",
-        direction: "OUTBOUND",
-        currentStatus: "IN_TRANSIT",
+        id: 'ship-1',
+        organizationId: 'org-1',
+        equipmentId: 'equip-1',
+        externalId: 'ext-1',
+        trackingNumber: 'TRK-001',
+        direction: 'OUTBOUND',
+        currentStatus: 'IN_TRANSIT',
         workflowTaskRunId: null,
       },
     ]);
 
     mockGetStatus.mockResolvedValue({
-      externalId: "ext-1",
-      status: "delivered",
-      trackingNumber: "T1",
+      externalId: 'ext-1',
+      status: 'delivered',
+      trackingNumber: 'T1',
     });
 
     db.shipmentEvent.findFirst.mockResolvedValue(null);
     db.shipmentEvent.create.mockResolvedValue({});
     db.shipment.update.mockResolvedValue({});
     db.equipment.findUnique.mockResolvedValue({
-      id: "equip-1",
-      status: "IN_TRANSIT",
+      id: 'equip-1',
+      status: 'IN_TRANSIT',
     });
     db.equipment.update.mockResolvedValue({});
 
-    await pollInPostShipmentStatuses(db as any, "org-1");
+    await pollInPostShipmentStatuses(db as any, 'org-1');
 
     expect(mockDispatchShipmentNotification).toHaveBeenCalledWith(
       db,
-      "org-1",
+      'org-1',
       expect.objectContaining({
-        id: "ship-1",
-        trackingNumber: "TRK-001",
-        currentStatus: "IN_TRANSIT",
+        id: 'ship-1',
+        trackingNumber: 'TRK-001',
+        currentStatus: 'IN_TRANSIT',
       }),
-      "DELIVERED",
-      "InPost",
+      'DELIVERED',
+      'InPost',
     );
   });
 
-  it("does NOT dispatch notification on non-terminal status", async () => {
+  it('does NOT dispatch notification on non-terminal status', async () => {
     db.courierConfig.findUnique.mockResolvedValue({
       configJson: {
-        apiToken: "token-123",
-        shipxOrganizationId: "org-shipx",
+        apiToken: 'token-123',
+        shipxOrganizationId: 'org-shipx',
         sandbox: true,
       },
     });
 
     db.shipment.findMany.mockResolvedValue([
       {
-        id: "ship-1",
-        organizationId: "org-1",
-        equipmentId: "equip-1",
-        externalId: "ext-1",
-        trackingNumber: "TRK-001",
-        direction: "OUTBOUND",
-        currentStatus: "SENT",
+        id: 'ship-1',
+        organizationId: 'org-1',
+        equipmentId: 'equip-1',
+        externalId: 'ext-1',
+        trackingNumber: 'TRK-001',
+        direction: 'OUTBOUND',
+        currentStatus: 'SENT',
         workflowTaskRunId: null,
       },
     ]);
 
     mockGetStatus.mockResolvedValue({
-      externalId: "ext-1",
-      status: "adopted_at_source_branch",
+      externalId: 'ext-1',
+      status: 'adopted_at_source_branch',
     });
 
     db.shipmentEvent.findFirst.mockResolvedValue(null);
     db.shipmentEvent.create.mockResolvedValue({});
     db.shipment.update.mockResolvedValue({});
 
-    await pollInPostShipmentStatuses(db as any, "org-1");
+    await pollInPostShipmentStatuses(db as any, 'org-1');
 
     expect(mockDispatchShipmentNotification).not.toHaveBeenCalled();
   });
 
-  it("continues polling when notification dispatch fails", async () => {
+  it('continues polling when notification dispatch fails', async () => {
     db.courierConfig.findUnique.mockResolvedValue({
       configJson: {
-        apiToken: "token-123",
-        shipxOrganizationId: "org-shipx",
+        apiToken: 'token-123',
+        shipxOrganizationId: 'org-shipx',
         sandbox: true,
       },
     });
 
     db.shipment.findMany.mockResolvedValue([
       {
-        id: "ship-1",
-        externalId: "ext-1",
-        trackingNumber: "TRK-001",
-        currentStatus: "IN_TRANSIT",
-        equipmentId: "equip-1",
-        direction: "OUTBOUND",
+        id: 'ship-1',
+        externalId: 'ext-1',
+        trackingNumber: 'TRK-001',
+        currentStatus: 'IN_TRANSIT',
+        equipmentId: 'equip-1',
+        direction: 'OUTBOUND',
         workflowTaskRunId: null,
       },
       {
-        id: "ship-2",
-        externalId: "ext-2",
-        trackingNumber: "TRK-002",
-        currentStatus: "IN_TRANSIT",
-        equipmentId: "equip-2",
-        direction: "OUTBOUND",
+        id: 'ship-2',
+        externalId: 'ext-2',
+        trackingNumber: 'TRK-002',
+        currentStatus: 'IN_TRANSIT',
+        equipmentId: 'equip-2',
+        direction: 'OUTBOUND',
         workflowTaskRunId: null,
       },
     ]);
 
     mockGetStatus.mockResolvedValue({
-      status: "delivered",
+      status: 'delivered',
     });
 
     db.shipmentEvent.findFirst.mockResolvedValue(null);
     db.shipmentEvent.create.mockResolvedValue({});
     db.shipment.update.mockResolvedValue({});
     db.equipment.findUnique.mockResolvedValue({
-      id: "equip-1",
-      status: "IN_TRANSIT",
+      id: 'equip-1',
+      status: 'IN_TRANSIT',
     });
     db.equipment.update.mockResolvedValue({});
 
-    await pollInPostShipmentStatuses(db as any, "org-1");
+    await pollInPostShipmentStatuses(db as any, 'org-1');
 
     expect(db.shipment.update).toHaveBeenCalledTimes(2);
   });

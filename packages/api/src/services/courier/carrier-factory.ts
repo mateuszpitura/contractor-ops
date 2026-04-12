@@ -1,10 +1,10 @@
-import type { CourierClient } from "./courier-client.js";
-import type { DPDClientConfig } from "./dpd-client.js";
-import { DPDClient } from "./dpd-client.js";
-import type { InPostClientConfig } from "./inpost-client.js";
-import { InPostClient } from "./inpost-client.js";
-import type { UPSClientConfig } from "./ups-client.js";
-import { UPSClient } from "./ups-client.js";
+import type { CourierClient } from './courier-client.js';
+import type { DPDClientConfig } from './dpd-client.js';
+import { DPDClient } from './dpd-client.js';
+import type { InPostClientConfig } from './inpost-client.js';
+import { InPostClient } from './inpost-client.js';
+import type { UPSClientConfig } from './ups-client.js';
+import { UPSClient } from './ups-client.js';
 
 // ---------------------------------------------------------------------------
 // Carrier Factory
@@ -23,11 +23,11 @@ import { UPSClient } from "./ups-client.js";
  */
 export function getCourierClient(carrier: string, config: unknown): CourierClient {
   switch (carrier.toLowerCase()) {
-    case "inpost":
+    case 'inpost':
       return new InPostClient(config as InPostClientConfig);
-    case "dpd":
+    case 'dpd':
       return new DPDClient(config as DPDClientConfig);
-    case "ups":
+    case 'ups':
       return new UPSClient(config as UPSClientConfig);
     default:
       throw new Error(`[carrier-factory] Unknown carrier: ${carrier}`);

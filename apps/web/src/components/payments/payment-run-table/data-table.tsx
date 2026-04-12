@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import type { ColumnDef } from "@tanstack/react-table";
-import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useMemo } from "react";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import type { ColumnDef } from '@tanstack/react-table';
+import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useMemo } from 'react';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -13,9 +13,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 
-import type { PaymentRunRow } from "./columns";
+import type { PaymentRunRow } from './columns';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -51,7 +51,7 @@ export function PaymentRunDataTable({
     columns,
     getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
-    getRowId: (row) => row.id,
+    getRowId: row => row.id,
   });
 
   const visibleColumns = useMemo(() => table.getVisibleLeafColumns(), [table]);
@@ -61,9 +61,9 @@ export function PaymentRunDataTable({
       <div className="rounded-xl border bg-background">
         <Table>
           <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
+            {table.getHeaderGroups().map(headerGroup => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
+                {headerGroup.headers.map(header => (
                   <TableHead key={header.id}>
                     {header.isPlaceholder
                       ? null
@@ -77,7 +77,7 @@ export function PaymentRunDataTable({
             {isLoading
               ? Array.from({ length: 8 }).map((_, i) => (
                   <TableRow key={`skeleton-${i}`}>
-                    {visibleColumns.map((col) => (
+                    {visibleColumns.map(col => (
                       <TableCell key={col.id}>
                         <Skeleton className="h-4 w-full max-w-[120px]" />
                       </TableCell>
@@ -85,13 +85,12 @@ export function PaymentRunDataTable({
                   </TableRow>
                 ))
               : table.getRowModel().rows.length > 0
-                ? table.getRowModel().rows.map((row) => (
+                ? table.getRowModel().rows.map(row => (
                     <TableRow
                       key={row.id}
                       className="cursor-pointer"
-                      onClick={() => onRowClick(row.original)}
-                    >
-                      {row.getVisibleCells().map((cell) => (
+                      onClick={() => onRowClick(row.original)}>
+                      {row.getVisibleCells().map(cell => (
                         <TableCell key={cell.id}>
                           {flexRender(cell.column.columnDef.cell, cell.getContext())}
                         </TableCell>

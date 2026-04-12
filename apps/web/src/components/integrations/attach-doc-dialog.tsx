@@ -1,28 +1,28 @@
-"use client";
+'use client';
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Search } from "lucide-react";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Search } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Skeleton } from "@/components/ui/skeleton";
-import { trpc } from "@/trpc/init";
-import { ConfluenceIcon, NotionIcon } from "./provider-icons";
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Skeleton } from '@/components/ui/skeleton';
+import { trpc } from '@/trpc/init';
+import { ConfluenceIcon, NotionIcon } from './provider-icons';
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
-type ProviderFilter = "all" | "notion" | "confluence";
+type ProviderFilter = 'all' | 'notion' | 'confluence';
 
 interface DocSearchResult {
   id: string;
@@ -30,7 +30,7 @@ interface DocSearchResult {
   icon?: string | null;
   subtitle: string;
   url: string;
-  provider: "notion" | "confluence";
+  provider: 'notion' | 'confluence';
 }
 
 // ---------------------------------------------------------------------------
@@ -48,9 +48,9 @@ interface AttachDocDialogProps {
 // ---------------------------------------------------------------------------
 
 export function AttachDocDialog({ workflowTaskRunId, open, onOpenChange }: AttachDocDialogProps) {
-  const [query, setQuery] = useState("");
-  const [debouncedQuery, setDebouncedQuery] = useState("");
-  const [providerFilter, setProviderFilter] = useState<ProviderFilter>("all");
+  const [query, setQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [providerFilter, setProviderFilter] = useState<ProviderFilter>('all');
   const queryClient = useQueryClient();
 
   // Debounce search input
@@ -64,9 +64,9 @@ export function AttachDocDialog({ workflowTaskRunId, open, onOpenChange }: Attac
   // Reset state when dialog closes
   useEffect(() => {
     if (!open) {
-      setQuery("");
-      setDebouncedQuery("");
-      setProviderFilter("all");
+      setQuery('');
+      setDebouncedQuery('');
+      setProviderFilter('all');
     }
   }, [open]);
 
@@ -86,22 +86,22 @@ export function AttachDocDialog({ workflowTaskRunId, open, onOpenChange }: Attac
     ...trpc.docs.attach.mutationOptions(),
     onSuccess: (_data, variables) => {
       const metadata = variables.metadata as { title?: string };
-      toast.success(`"${metadata.title ?? "Document"}" linked to this step`);
+      toast.success(`"${metadata.title ?? 'Document'}" linked to this step`);
       void queryClient.invalidateQueries({
         queryKey: trpc.docs.list.queryKey({ workflowTaskRunId }),
       });
       onOpenChange(false);
     },
     onError: () => {
-      toast.error("Failed to attach document");
+      toast.error('Failed to attach document');
     },
   });
 
   const handleSelect = (result: DocSearchResult) => {
-    const externalType = result.provider === "notion" ? "NOTION_PAGE" : "CONFLUENCE_PAGE";
+    const externalType = result.provider === 'notion' ? 'NOTION_PAGE' : 'CONFLUENCE_PAGE';
 
     const metadata =
-      result.provider === "notion"
+      result.provider === 'notion'
         ? {
             title: result.title,
             icon: result.icon ?? null,
@@ -109,7 +109,7 @@ export function AttachDocDialog({ workflowTaskRunId, open, onOpenChange }: Attac
           }
         : {
             title: result.title,
-            spaceKey: "",
+            spaceKey: '',
             spaceName: result.subtitle,
           };
 
@@ -117,15 +117,15 @@ export function AttachDocDialog({ workflowTaskRunId, open, onOpenChange }: Attac
       workflowTaskRunId,
       externalId: result.id,
       externalUrl: result.url,
-      externalType: externalType as "NOTION_PAGE" | "CONFLUENCE_PAGE",
+      externalType: externalType as 'NOTION_PAGE' | 'CONFLUENCE_PAGE',
       metadata,
     });
   };
 
   const filterButtons: { value: ProviderFilter; label: string; icon?: React.ReactNode }[] = [
-    { value: "all", label: "All" },
-    { value: "notion", label: "Notion", icon: <NotionIcon className="h-3.5 w-3.5" /> },
-    { value: "confluence", label: "Confluence", icon: <ConfluenceIcon className="h-3.5 w-3.5" /> },
+    { value: 'all', label: 'All' },
+    { value: 'notion', label: 'Notion', icon: <NotionIcon className="h-3.5 w-3.5" /> },
+    { value: 'confluence', label: 'Confluence', icon: <ConfluenceIcon className="h-3.5 w-3.5" /> },
   ];
 
   return (
@@ -142,21 +142,20 @@ export function AttachDocDialog({ workflowTaskRunId, open, onOpenChange }: Attac
           <Input
             placeholder="Search Notion and Confluence pages..."
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={e => setQuery(e.target.value)}
             className="ps-9"
           />
         </div>
 
         {/* Provider filter */}
         <div className="flex gap-1">
-          {filterButtons.map((btn) => (
+          {filterButtons.map(btn => (
             <Button
               key={btn.value}
-              variant={providerFilter === btn.value ? "secondary" : "ghost"}
+              variant={providerFilter === btn.value ? 'secondary' : 'ghost'}
               size="sm"
               className="h-7 px-2.5 text-xs"
-              onClick={() => setProviderFilter(btn.value)}
-            >
+              onClick={() => setProviderFilter(btn.value)}>
               {btn.icon && <span className="me-1">{btn.icon}</span>}
               {btn.label}
             </Button>
@@ -181,8 +180,8 @@ export function AttachDocDialog({ workflowTaskRunId, open, onOpenChange }: Attac
             </p>
           ) : (
             <div className="space-y-0.5 p-1">
-              {results.map((result) => {
-                const ProviderIcon = result.provider === "notion" ? NotionIcon : ConfluenceIcon;
+              {results.map(result => {
+                const ProviderIcon = result.provider === 'notion' ? NotionIcon : ConfluenceIcon;
 
                 return (
                   <button
@@ -190,8 +189,7 @@ export function AttachDocDialog({ workflowTaskRunId, open, onOpenChange }: Attac
                     type="button"
                     className="flex w-full items-center gap-2 rounded-md p-2 text-start transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:outline-none"
                     onClick={() => handleSelect(result)}
-                    disabled={attachMutation.isPending}
-                  >
+                    disabled={attachMutation.isPending}>
                     <ProviderIcon className="h-3.5 w-3.5 shrink-0" />
                     <span className="text-sm font-medium flex-1 truncate">{result.title}</span>
                     <span className="text-xs text-muted-foreground shrink-0">

@@ -1,5 +1,5 @@
-import type { JiraStatusMappingEntry } from "@contractor-ops/validators";
-import type { DbClient } from "./types.js";
+import type { JiraStatusMappingEntry } from '@contractor-ops/validators';
+import type { DbClient } from './types.js';
 
 type PrismaClient = DbClient;
 
@@ -104,7 +104,7 @@ export async function lookupJiraTransitionId(
   const mappings = await getStatusMapping(prisma, connectionId, projectId);
   if (!mappings) return null;
 
-  const entry = mappings.find((m) => m.workflowStatus === workflowStatus);
+  const entry = mappings.find(m => m.workflowStatus === workflowStatus);
   if (!entry) return null;
 
   return {
@@ -135,7 +135,7 @@ export async function lookupWorkflowStatus(
   const mappings = await getStatusMapping(prisma, connectionId, projectId);
   if (!mappings) return null;
 
-  const entry = mappings.find((m) => m.jiraTargetStatusName === jiraStatusName);
+  const entry = mappings.find(m => m.jiraTargetStatusName === jiraStatusName);
 
   return entry?.workflowStatus ?? null;
 }

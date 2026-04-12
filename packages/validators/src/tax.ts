@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // ---------------------------------------------------------------------------
 // Tax Rate schemas
@@ -7,7 +7,7 @@ import { z } from "zod";
 export const taxRateCodeSchema = z
   .string()
   .max(10)
-  .regex(/^[A-Z0-9-]+$/i, "Invalid tax rate code format");
+  .regex(/^[A-Z0-9-]+$/i, 'Invalid tax rate code format');
 
 export const taxRateResponseSchema = z.object({
   id: z.string(),
@@ -27,10 +27,10 @@ export type TaxRateResponse = z.infer<typeof taxRateResponseSchema>;
 // ---------------------------------------------------------------------------
 
 export const whtServiceTypeEnum = z.enum([
-  "technical_services",
-  "management_fees",
-  "royalties",
-  "rent_equipment",
+  'technical_services',
+  'management_fees',
+  'royalties',
+  'rent_equipment',
 ]);
 
 export type WhtServiceType = z.infer<typeof whtServiceTypeEnum>;
@@ -42,7 +42,7 @@ export const whtCalculationSchema = z.object({
   netAmountMinor: z.number().int().min(0),
   treatyApplied: z.boolean(),
   treatyReference: z.string().nullable(),
-  rateSource: z.enum(["treaty", "standard"]),
+  rateSource: z.enum(['treaty', 'standard']),
 });
 
 export type WhtCalculation = z.infer<typeof whtCalculationSchema>;

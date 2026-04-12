@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
-import { Label } from "@/components/ui/label";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { trpc } from "@/trpc/init";
-import { LinearLogo } from "./linear-logo";
+} from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { trpc } from '@/trpc/init';
+import { LinearLogo } from './linear-logo';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -42,8 +42,8 @@ interface LinearTaskConfigProps {
 // ---------------------------------------------------------------------------
 
 export function LinearTaskConfig({ taskTemplateId }: LinearTaskConfigProps) {
-  const t = useTranslations("Settings.integrations.linear.templateSettings");
-  const tI = useTranslations("Integrations.linear.taskConfig");
+  const t = useTranslations('Settings.integrations.linear.templateSettings');
+  const tI = useTranslations('Integrations.linear.taskConfig');
   const queryClient = useQueryClient();
   const [linearEnabled, setLinearEnabled] = useState(false);
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
@@ -56,7 +56,7 @@ export function LinearTaskConfig({ taskTemplateId }: LinearTaskConfigProps) {
 
   const connection = connectionQuery.data as { id: string; status: string } | null | undefined;
   const isConnected =
-    connection?.status === "CONNECTED" || connection?.status === "PENDING_MAPPING";
+    connection?.status === 'CONNECTED' || connection?.status === 'PENDING_MAPPING';
 
   // Fetch teams when connected
   const teamsQuery = useQuery({
@@ -88,13 +88,13 @@ export function LinearTaskConfig({ taskTemplateId }: LinearTaskConfigProps) {
   const saveMutation = useMutation({
     ...trpc.linear.saveTaskConfig.mutationOptions(),
     onSuccess: () => {
-      toast.success(tI("configSaved"));
+      toast.success(tI('configSaved'));
       queryClient.invalidateQueries({
         queryKey: trpc.jira.getTaskConfig.queryKey({ taskTemplateId }),
       });
     },
     onError: () => {
-      toast.error(tI("configSaveFailed"));
+      toast.error(tI('configSaveFailed'));
       setLinearEnabled(existingConfig?.linearEnabled ?? false);
       setSelectedTeamId(existingConfig?.linearTeamId ?? null);
     },
@@ -109,7 +109,7 @@ export function LinearTaskConfig({ taskTemplateId }: LinearTaskConfigProps) {
     if (!selectedTeamId && checked) return;
     setLinearEnabled(checked);
 
-    const team = teams.find((t) => t.id === selectedTeamId);
+    const team = teams.find(t => t.id === selectedTeamId);
     saveMutation.mutate({
       taskTemplateId,
       config: {
@@ -123,7 +123,7 @@ export function LinearTaskConfig({ taskTemplateId }: LinearTaskConfigProps) {
 
   function handleTeamChange(teamId: string) {
     setSelectedTeamId(teamId);
-    const team = teams.find((t) => t.id === teamId);
+    const team = teams.find(t => t.id === teamId);
     if (!team) return;
 
     saveMutation.mutate({
@@ -138,8 +138,8 @@ export function LinearTaskConfig({ taskTemplateId }: LinearTaskConfigProps) {
   }
 
   const teamSummary = selectedTeamId
-    ? (teams.find((t) => t.id === selectedTeamId)?.name ?? tI("notConfigured"))
-    : tI("notConfigured");
+    ? (teams.find(t => t.id === selectedTeamId)?.name ?? tI('notConfigured'))
+    : tI('notConfigured');
 
   return (
     <div className="space-y-2">
@@ -153,12 +153,12 @@ export function LinearTaskConfig({ taskTemplateId }: LinearTaskConfigProps) {
             disabled={!selectedTeamId || saveMutation.isPending}
           />
           <Label htmlFor={`linear-toggle-${taskTemplateId}`} className="cursor-pointer text-sm">
-            {t("enableToggle")}
+            {t('enableToggle')}
           </Label>
         </div>
 
         {/* Team summary */}
-        <span className={`flex-1 text-sm ${selectedTeamId ? "" : "text-muted-foreground"}`}>
+        <span className={`flex-1 text-sm ${selectedTeamId ? '' : 'text-muted-foreground'}`}>
           {teamSummary}
         </span>
       </div>
@@ -166,18 +166,17 @@ export function LinearTaskConfig({ taskTemplateId }: LinearTaskConfigProps) {
       {/* Team selector */}
       <div className="flex items-center gap-2">
         <LinearLogo className="size-4" />
-        <Label className="text-sm">{t("teamLabel")}</Label>
+        <Label className="text-sm">{t('teamLabel')}</Label>
         <Select
           value={selectedTeamId ?? undefined}
-          onValueChange={(v) => {
+          onValueChange={v => {
             if (v) handleTeamChange(v);
-          }}
-        >
+          }}>
           <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder={t("teamPlaceholder")} />
+            <SelectValue placeholder={t('teamPlaceholder')} />
           </SelectTrigger>
           <SelectContent>
-            {teams.map((team) => (
+            {teams.map(team => (
               <SelectItem key={team.id} value={team.id}>
                 {team.name} ({team.key})
               </SelectItem>

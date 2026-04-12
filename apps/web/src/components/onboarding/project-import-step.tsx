@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import type { FetchProjectsOutput } from "@contractor-ops/validators";
-import { useQuery } from "@tanstack/react-query";
+import type { FetchProjectsOutput } from '@contractor-ops/validators';
+import { useQuery } from '@tanstack/react-query';
 import {
   ArrowDown,
   ArrowUp,
@@ -11,22 +11,22 @@ import {
   GripVertical,
   Plus,
   X,
-} from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
-import { trpc } from "@/trpc/init";
-import type { ProjectSelection } from "./import-wizard";
+} from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useEffect, useState } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
+import { trpc } from '@/trpc/init';
+import type { ProjectSelection } from './import-wizard';
 
 // ---------------------------------------------------------------------------
 // Source icon helpers
 // ---------------------------------------------------------------------------
 
-import { JiraBrandIcon, LinearBrandIcon } from "@/components/integrations/brand-icons";
+import { JiraBrandIcon, LinearBrandIcon } from '@/components/integrations/brand-icons';
 
 const SOURCE_ICONS: Record<string, React.ReactNode> = {
   JIRA: <JiraBrandIcon className="size-4" />,
@@ -44,7 +44,7 @@ interface ProjectCardProps {
 }
 
 function ProjectCard({ project, selection, onSelectionChange }: ProjectCardProps) {
-  const t = useTranslations("OnboardingImport.step3");
+  const t = useTranslations('OnboardingImport.step3');
   const [expanded, setExpanded] = useState(false);
 
   const handleSkip = () => {
@@ -58,7 +58,7 @@ function ProjectCard({ project, selection, onSelectionChange }: ProjectCardProps
   const handleAddStep = () => {
     const steps = [...selection.steps];
     steps.push({
-      name: "",
+      name: '',
       sortOrder: steps.length,
     });
     onSelectionChange({ ...selection, steps });
@@ -77,9 +77,9 @@ function ProjectCard({ project, selection, onSelectionChange }: ProjectCardProps
     onSelectionChange({ ...selection, steps });
   };
 
-  const handleMoveStep = (index: number, direction: "up" | "down") => {
+  const handleMoveStep = (index: number, direction: 'up' | 'down') => {
     const steps = [...selection.steps];
-    const targetIndex = direction === "up" ? index - 1 : index + 1;
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
     if (targetIndex < 0 || targetIndex >= steps.length) return;
     [steps[index], steps[targetIndex]] = [steps[targetIndex], steps[index]];
     const reindexed = steps.map((s, i) => ({ ...s, sortOrder: i }));
@@ -87,14 +87,14 @@ function ProjectCard({ project, selection, onSelectionChange }: ProjectCardProps
   };
 
   return (
-    <Card className={selection.skip ? "opacity-50" : ""}>
+    <Card className={selection.skip ? 'opacity-50' : ''}>
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             {SOURCE_ICONS[project.sourceProvider]}
             <Input
               value={selection.name}
-              onChange={(e) => handleNameChange(e.target.value)}
+              onChange={e => handleNameChange(e.target.value)}
               className="h-7 max-w-xs border-none bg-transparent px-1 text-sm font-medium shadow-none focus-visible:ring-1"
               disabled={selection.skip}
             />
@@ -104,13 +104,12 @@ function ProjectCard({ project, selection, onSelectionChange }: ProjectCardProps
               variant="ghost"
               size="sm"
               onClick={() => setExpanded(!expanded)}
-              disabled={selection.skip}
-            >
+              disabled={selection.skip}>
               {expanded ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
-              {t("editSteps")}
+              {t('editSteps')}
             </Button>
             <Button variant="link" size="sm" onClick={handleSkip} className="text-muted-foreground">
-              {t("skipProject")}
+              {t('skipProject')}
             </Button>
           </div>
         </div>
@@ -136,34 +135,31 @@ function ProjectCard({ project, selection, onSelectionChange }: ProjectCardProps
                 <GripVertical className="size-4 text-muted-foreground" aria-hidden="true" />
                 <Input
                   value={step.name}
-                  onChange={(e) => handleRenameStep(i, e.target.value)}
+                  onChange={e => handleRenameStep(i, e.target.value)}
                   placeholder={`Step ${i + 1}`}
                   className="h-7 flex-1 text-sm"
                 />
                 <Button
                   variant="ghost"
                   size="icon-xs"
-                  onClick={() => handleMoveStep(i, "up")}
+                  onClick={() => handleMoveStep(i, 'up')}
                   disabled={i === 0}
-                  aria-label="Move up"
-                >
+                  aria-label="Move up">
                   <ArrowUp className="size-3" />
                 </Button>
                 <Button
                   variant="ghost"
                   size="icon-xs"
-                  onClick={() => handleMoveStep(i, "down")}
+                  onClick={() => handleMoveStep(i, 'down')}
                   disabled={i === selection.steps.length - 1}
-                  aria-label="Move down"
-                >
+                  aria-label="Move down">
                   <ArrowDown className="size-3" />
                 </Button>
                 <Button
                   variant="ghost"
                   size="icon-xs"
                   onClick={() => handleRemoveStep(i)}
-                  aria-label="Remove step"
-                >
+                  aria-label="Remove step">
                   <X className="size-3" />
                 </Button>
               </div>
@@ -171,7 +167,7 @@ function ProjectCard({ project, selection, onSelectionChange }: ProjectCardProps
 
             <Button variant="outline" size="sm" onClick={handleAddStep} className="mt-1">
               <Plus className="size-3" />
-              {t("addStep")}
+              {t('addStep')}
             </Button>
           </div>
         )}
@@ -199,14 +195,14 @@ export function ProjectImportStep({
   projectSelections,
   onProjectSelectionsChange,
 }: ProjectImportStepProps) {
-  const t = useTranslations("OnboardingImport.step3");
+  const t = useTranslations('OnboardingImport.step3');
 
   // Only fetch from PM tools
-  const pmSources = selectedSources.filter((s) => s === "JIRA" || s === "LINEAR");
+  const pmSources = selectedSources.filter(s => s === 'JIRA' || s === 'LINEAR');
 
   const projectsQuery = useQuery({
     ...trpc.onboardingImport.fetchProjects.queryOptions({
-      sources: pmSources as ["JIRA" | "LINEAR"],
+      sources: pmSources as ['JIRA' | 'LINEAR'],
     }),
     enabled: pmSources.length > 0,
   });
@@ -259,8 +255,8 @@ export function ProjectImportStep({
     return (
       <div className="flex flex-col items-center gap-4 py-16">
         <FolderKanban className="size-12 text-muted-foreground" aria-hidden="true" />
-        <h3 className="text-lg font-semibold">{t("emptyHeading")}</h3>
-        <p className="max-w-md text-center text-sm text-muted-foreground">{t("emptyBody")}</p>
+        <h3 className="text-lg font-semibold">{t('emptyHeading')}</h3>
+        <p className="max-w-md text-center text-sm text-muted-foreground">{t('emptyBody')}</p>
       </div>
     );
   }
@@ -269,13 +265,13 @@ export function ProjectImportStep({
     <div className="space-y-6">
       {/* Heading */}
       <div>
-        <h2 className="font-display text-xl font-semibold leading-[1.2]">{t("heading")}</h2>
-        <p className="mt-1 text-sm text-muted-foreground">{t("subtitle")}</p>
+        <h2 className="font-display text-xl font-semibold leading-[1.2]">{t('heading')}</h2>
+        <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
       </div>
 
       {/* Project cards */}
       <div className="space-y-4">
-        {projects.map((project) => {
+        {projects.map(project => {
           const key = `${project.sourceProvider}-${project.externalId}`;
           const sel = projectSelections.get(key) ?? {
             skip: false,
@@ -291,14 +287,14 @@ export function ProjectImportStep({
               key={key}
               project={project}
               selection={sel}
-              onSelectionChange={(s) => handleSelectionChange(key, s)}
+              onSelectionChange={s => handleSelectionChange(key, s)}
             />
           );
         })}
       </div>
 
       {/* Sync note */}
-      <p className="text-sm text-muted-foreground italic">{t("syncNote")}</p>
+      <p className="text-sm text-muted-foreground italic">{t('syncNote')}</p>
     </div>
   );
 }

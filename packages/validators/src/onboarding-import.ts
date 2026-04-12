@@ -1,10 +1,10 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // ---------------------------------------------------------------------------
 // Source provider enum
 // ---------------------------------------------------------------------------
 
-export const sourceProviderSchema = z.enum(["JIRA", "LINEAR", "GOOGLE_WORKSPACE", "SLACK"]);
+export const sourceProviderSchema = z.enum(['JIRA', 'LINEAR', 'GOOGLE_WORKSPACE', 'SLACK']);
 
 export type SourceProvider = z.infer<typeof sourceProviderSchema>;
 
@@ -54,7 +54,7 @@ export const mergedPersonSchema = z.object({
   email: z.string().email(),
   name: z.string(),
   sources: z.array(sourceEntrySchema),
-  status: z.enum(["new", "conflict", "exists"]),
+  status: z.enum(['new', 'conflict', 'exists']),
   conflicts: z.array(conflictSchema).optional(),
 });
 
@@ -142,7 +142,7 @@ export type StartImportInput = z.infer<typeof startImportInputSchema>;
 
 export const importProgressOutputSchema = z.object({
   jobId: z.string(),
-  status: z.enum(["pending", "processing", "completed", "failed"]),
+  status: z.enum(['pending', 'processing', 'completed', 'failed']),
   totalItems: z.number(),
   completedItems: z.number(),
   failedItems: z.array(

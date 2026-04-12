@@ -2,11 +2,11 @@
  * GDPR router tests — export + erasure flows with tenant-scoped Prisma mocks.
  */
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const { ORG_ID, USER_ID, mockPrisma } = vi.hoisted(() => {
-  const ORG_ID = "org-gdpr-00000000-0000-0000-0000-000000000001";
-  const USER_ID = "user-gdpr-00000000-0000-0000-0000-000000000001";
+  const ORG_ID = 'org-gdpr-00000000-0000-0000-0000-000000000001';
+  const USER_ID = 'user-gdpr-00000000-0000-0000-0000-000000000001';
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   type Rec = Record<string, any>;
@@ -49,7 +49,7 @@ const { ORG_ID, USER_ID, mockPrisma } = vi.hoisted(() => {
   return { ORG_ID, USER_ID, mockPrisma };
 });
 
-vi.mock("@contractor-ops/auth", () => ({
+vi.mock('@contractor-ops/auth', () => ({
   auth: {
     api: {
       getSession: vi.fn(),
@@ -58,7 +58,7 @@ vi.mock("@contractor-ops/auth", () => ({
   },
 }));
 
-vi.mock("@contractor-ops/db", () => ({
+vi.mock('@contractor-ops/db', () => ({
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
@@ -70,7 +70,7 @@ vi.mock("@contractor-ops/db", () => ({
   createTenantClientFrom: vi.fn(() => mockPrisma),
 }));
 
-vi.mock("@sentry/nextjs", () => {
+vi.mock('@sentry/nextjs', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
     startSpan: vi.fn((_o: unknown, fn: (span: typeof mockSpan) => unknown) => fn(mockSpan)),
@@ -78,7 +78,7 @@ vi.mock("@sentry/nextjs", () => {
   };
 });
 
-vi.mock("@contractor-ops/logger", () => ({
+vi.mock('@contractor-ops/logger', () => ({
   createTrpcLogger: vi.fn(() => ({
     info: vi.fn(),
     warn: vi.fn(),
@@ -86,11 +86,11 @@ vi.mock("@contractor-ops/logger", () => ({
   })),
 }));
 
-vi.mock("@contractor-ops/logger/metrics", () => ({
+vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { increment: vi.fn(), distribution: vi.fn(), histogram: vi.fn() },
 }));
 
-vi.mock("../../services/cache.js", () => ({
+vi.mock('../../services/cache.js', () => ({
   cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
   invalidate: vi.fn(async () => undefined),
   invalidateByPrefix: vi.fn(async () => undefined),
@@ -98,23 +98,23 @@ vi.mock("../../services/cache.js", () => ({
   CacheTTL: {},
 }));
 
-vi.mock("../../services/r2.js", () => ({
+vi.mock('../../services/r2.js', () => ({
   deleteObject: vi.fn(async () => undefined),
 }));
 
-import { createCallerFactory } from "../../init.js";
-import { gdprRouter } from "../gdpr.js";
+import { createCallerFactory } from '../../init.js';
+import { gdprRouter } from '../gdpr.js';
 
 const createCaller = createCallerFactory(gdprRouter);
 
 function makeCaller(orgId: string) {
   const session = {
     session: {
-      id: "sess-gdpr",
+      id: 'sess-gdpr',
       userId: USER_ID,
       activeOrganizationId: orgId,
-      expiresAt: new Date("2099-01-01"),
-      token: "mock-token",
+      expiresAt: new Date('2099-01-01'),
+      token: 'mock-token',
       createdAt: new Date(),
       updatedAt: new Date(),
       ipAddress: null,
@@ -122,14 +122,14 @@ function makeCaller(orgId: string) {
     },
     user: {
       id: USER_ID,
-      name: "GDPR User",
-      email: "gdpr@example.com",
+      name: 'GDPR User',
+      email: 'gdpr@example.com',
       emailVerified: true,
       image: null,
       banned: false,
       banReason: null,
       banExpires: null,
-      role: "owner",
+      role: 'owner',
       createdAt: new Date(),
       updatedAt: new Date(),
     },
@@ -141,15 +141,15 @@ function makeCaller(orgId: string) {
   });
 }
 
-describe("gdprRouter", () => {
+describe('gdprRouter', () => {
   const caller = makeCaller(ORG_ID);
 
   beforeEach(() => {
     vi.clearAllMocks();
     mockPrisma.organization.findUnique.mockResolvedValue({
       id: ORG_ID,
-      name: "Org",
-      slug: "org",
+      name: 'Org',
+      slug: 'org',
       createdAt: new Date(),
     });
     mockPrisma.contractor.findMany.mockResolvedValue([]);
@@ -167,7 +167,7 @@ describe("gdprRouter", () => {
     mockPrisma.auditLog.create.mockResolvedValue({});
   });
 
-  it("exportData queries all entity lists scoped to organizationId", async () => {
+  it('exportData queries all entity lists scoped to organizationId', async () => {
     const result = await caller.exportData();
 
     expect(mockPrisma.organization.findUnique).toHaveBeenCalledWith({
@@ -187,10 +187,10 @@ describe("gdprRouter", () => {
       auditLogs: 0,
       members: 0,
     });
-    expect(result.format).toBe("contractor-ops-export-v1");
+    expect(result.format).toBe('contractor-ops-export-v1');
   });
 
-  it("exportData select clauses include critical portability fields per table", async () => {
+  it('exportData select clauses include critical portability fields per table', async () => {
     await caller.exportData();
 
     expect(mockPrisma.organization.findUnique).toHaveBeenCalledWith(
@@ -285,9 +285,9 @@ describe("gdprRouter", () => {
     );
   });
 
-  it("requestErasure runs transaction and logs audit", async () => {
+  it('requestErasure runs transaction and logs audit', async () => {
     const out = await caller.requestErasure({
-      confirmPhrase: "DELETE ALL DATA",
+      confirmPhrase: 'DELETE ALL DATA',
       retainFinancialRecords: true,
     });
 
@@ -302,7 +302,7 @@ describe("gdprRouter", () => {
       expect.objectContaining({
         data: expect.objectContaining({
           organizationId: ORG_ID,
-          action: "organization.erasure_requested",
+          action: 'organization.erasure_requested',
         }),
       }),
     );

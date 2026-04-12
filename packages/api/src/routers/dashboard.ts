@@ -1,8 +1,8 @@
-import { z } from "zod";
-import { router } from "../init.js";
-import { requirePermission } from "../middleware/rbac.js";
-import { tenantProcedure } from "../middleware/tenant.js";
-import { CacheKeys, CacheTTL, cached } from "../services/cache.js";
+import { z } from 'zod';
+import { router } from '../init.js';
+import { requirePermission } from '../middleware/rbac.js';
+import { tenantProcedure } from '../middleware/tenant.js';
+import { CacheKeys, CacheTTL, cached } from '../services/cache.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -12,7 +12,7 @@ function plain<T>(data: T): T {
   return JSON.parse(JSON.stringify(data)) as T;
 }
 
-const reportRead = requirePermission({ report: ["read"] });
+const reportRead = requirePermission({ report: ['read'] });
 
 // ---------------------------------------------------------------------------
 // Data fetchers (extracted for caching)
@@ -35,35 +35,35 @@ async function fetchKpis(organizationId: string) {
     openTasks,
   ] = await Promise.all([
     ctx.db.contractor.count({
-      where: { organizationId, status: "ACTIVE", deletedAt: null },
+      where: { organizationId, status: 'ACTIVE', deletedAt: null },
     }),
     ctx.db.contractor.count({
       where: {
         organizationId,
-        status: "ACTIVE",
+        status: 'ACTIVE',
         deletedAt: null,
         createdAt: { lt: startOfCurrentMonth },
       },
     }),
     ctx.db.approvalStep.count({
-      where: { organizationId, status: "PENDING" },
+      where: { organizationId, status: 'PENDING' },
     }),
     ctx.db.approvalStep.count({
       where: {
         organizationId,
-        status: "PENDING",
+        status: 'PENDING',
         createdAt: { lt: startOfCurrentMonth },
       },
     }),
     ctx.db.invoice.aggregate({
       _sum: { amountToPayMinor: true },
-      where: { organizationId, paymentStatus: "READY", deletedAt: null },
+      where: { organizationId, paymentStatus: 'READY', deletedAt: null },
     }),
     ctx.db.invoice.aggregate({
       _sum: { amountToPayMinor: true },
       where: {
         organizationId,
-        paymentStatus: "READY",
+        paymentStatus: 'READY',
         deletedAt: null,
         readyForPaymentAt: {
           gte: startOfPreviousMonth,
@@ -74,7 +74,7 @@ async function fetchKpis(organizationId: string) {
     ctx.db.contract.count({
       where: {
         organizationId,
-        status: { in: ["ACTIVE", "EXPIRING"] },
+        status: { in: ['ACTIVE', 'EXPIRING'] },
         endDate: { gte: now, lte: thirtyDaysFromNow },
         deletedAt: null,
       },
@@ -82,7 +82,7 @@ async function fetchKpis(organizationId: string) {
     ctx.db.workflowTaskRun.count({
       where: {
         organizationId,
-        status: { in: ["TODO", "IN_PROGRESS"] },
+        status: { in: ['TODO', 'IN_PROGRESS'] },
       },
     }),
   ]);
@@ -113,7 +113,7 @@ async function fetchSpendTrend(organizationId: string, months: string) {
   const now = new Date();
   let startDate: Date;
 
-  if (months === "ytd") {
+  if (months === 'ytd') {
     startDate = new Date(now.getFullYear(), 0, 1);
   } else {
     const monthsBack = parseInt(months, 10);
@@ -134,7 +134,7 @@ async function fetchSpendTrend(organizationId: string, months: string) {
     ORDER BY month ASC, currency ASC
   `;
 
-  return rows.map((r) => ({
+  return rows.map(r => ({
     month: new Date(r.month).toISOString(),
     currency: r.currency,
     totalMinor: Number(r.totalMinor),
@@ -150,33 +150,33 @@ async function fetchDeadlines(organizationId: string) {
     ctx.db.contract.findMany({
       where: {
         organizationId,
-        status: { in: ["ACTIVE", "EXPIRING"] },
+        status: { in: ['ACTIVE', 'EXPIRING'] },
         endDate: { gte: now, lte: ninetyDaysFromNow },
         deletedAt: null,
       },
       select: { id: true, title: true, endDate: true },
-      orderBy: { endDate: "asc" },
+      orderBy: { endDate: 'asc' },
       take: 20,
     }),
     ctx.db.workflowTaskRun.findMany({
       where: {
         organizationId,
-        status: { in: ["TODO", "IN_PROGRESS"] },
+        status: { in: ['TODO', 'IN_PROGRESS'] },
         dueAt: { lt: now },
       },
       select: { id: true, title: true, dueAt: true },
-      orderBy: { dueAt: "asc" },
+      orderBy: { dueAt: 'asc' },
       take: 20,
     }),
     ctx.db.invoice.findMany({
       where: {
         organizationId,
         dueDate: { gte: now, lte: thirtyDaysFromNow },
-        paymentStatus: { notIn: ["PAID"] },
+        paymentStatus: { notIn: ['PAID'] },
         deletedAt: null,
       },
       select: { id: true, invoiceNumber: true, dueDate: true },
-      orderBy: { dueDate: "asc" },
+      orderBy: { dueDate: 'asc' },
       take: 20,
     }),
   ]);
@@ -199,7 +199,7 @@ async function fetchDeadlines(organizationId: string) {
     if (!c.endDate) continue;
     const daysRemaining = Math.ceil((c.endDate.getTime() - now.getTime()) / msPerDay);
     items.push({
-      type: "CONTRACT_EXPIRING",
+      type: 'CONTRACT_EXPIRING',
       entityId: c.id,
       entityName: c.title,
       dueDate: c.endDate.toISOString(),
@@ -212,7 +212,7 @@ async function fetchDeadlines(organizationId: string) {
     if (!t.dueAt) continue;
     const daysOverdue = Math.ceil((now.getTime() - t.dueAt.getTime()) / msPerDay);
     items.push({
-      type: "TASK_OVERDUE",
+      type: 'TASK_OVERDUE',
       entityId: t.id,
       entityName: t.title,
       dueDate: t.dueAt.toISOString(),
@@ -224,7 +224,7 @@ async function fetchDeadlines(organizationId: string) {
   for (const inv of dueInvoices) {
     const daysRemaining = Math.ceil((inv.dueDate.getTime() - now.getTime()) / msPerDay);
     items.push({
-      type: "INVOICE_DUE",
+      type: 'INVOICE_DUE',
       entityId: inv.id,
       entityName: inv.invoiceNumber,
       dueDate: inv.dueDate.toISOString(),
@@ -243,7 +243,7 @@ async function fetchDeadlines(organizationId: string) {
 async function fetchActivity(organizationId: string) {
   const items = await ctx.db.auditLog.findMany({
     where: { organizationId },
-    orderBy: { createdAt: "desc" },
+    orderBy: { createdAt: 'desc' },
     take: 20,
     select: {
       id: true,
@@ -283,7 +283,7 @@ export const dashboardRouter = router({
     .use(reportRead)
     .input(
       z.object({
-        months: z.enum(["6", "12", "ytd"]),
+        months: z.enum(['6', '12', 'ytd']),
       }),
     )
     .query(async ({ ctx, input }) => {

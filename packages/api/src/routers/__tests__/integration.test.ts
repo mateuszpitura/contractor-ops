@@ -6,14 +6,14 @@
  * scope joining, and extra auth params.
  */
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
-const ORG_ID = "org-integ-001";
-const USER_ID = "user-integ-001";
+const ORG_ID = 'org-integ-001';
+const USER_ID = 'user-integ-001';
 
 // ---------------------------------------------------------------------------
 // Mock via vi.hoisted
@@ -50,7 +50,7 @@ const { mockPrisma, mockGetAdapter, mockGenerateOAuthState } = vi.hoisted(() => 
   return {
     mockPrisma,
     mockGetAdapter: vi.fn(),
-    mockGenerateOAuthState: vi.fn(() => "hmac-signed-state"),
+    mockGenerateOAuthState: vi.fn(() => 'hmac-signed-state'),
   };
 });
 
@@ -58,7 +58,7 @@ const { mockPrisma, mockGetAdapter, mockGenerateOAuthState } = vi.hoisted(() => 
 // Module mocks
 // ---------------------------------------------------------------------------
 
-vi.mock("@contractor-ops/auth", () => ({
+vi.mock('@contractor-ops/auth', () => ({
   auth: {
     api: {
       getSession: vi.fn(),
@@ -67,7 +67,7 @@ vi.mock("@contractor-ops/auth", () => ({
   },
 }));
 
-vi.mock("@contractor-ops/db", () => ({
+vi.mock('@contractor-ops/db', () => ({
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
@@ -75,7 +75,7 @@ vi.mock("@contractor-ops/db", () => ({
   },
 }));
 
-vi.mock("@contractor-ops/integrations", () => ({
+vi.mock('@contractor-ops/integrations', () => ({
   getProviderHealth: vi.fn(async () => ({})),
   getAllProviderHealth: vi.fn(async () => []),
   getAdapter: mockGetAdapter,
@@ -83,8 +83,8 @@ vi.mock("@contractor-ops/integrations", () => ({
   registerAllAdapters: vi.fn(),
 }));
 
-vi.mock("@contractor-ops/validators", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@contractor-ops/validators")>();
+vi.mock('@contractor-ops/validators', async importOriginal => {
+  const actual = await importOriginal<typeof import('@contractor-ops/validators')>();
   return {
     ...actual,
     slackUserLinkSchema: { parse: vi.fn((v: unknown) => v) },
@@ -96,38 +96,38 @@ vi.mock("@contractor-ops/validators", async (importOriginal) => {
   };
 });
 
-vi.mock("../../services/slack-client.js", () => ({
+vi.mock('../../services/slack-client.js', () => ({
   syncWorkspaceUsers: vi.fn(),
 }));
 
-vi.mock("../../services/portal-session.js", () => ({
+vi.mock('../../services/portal-session.js', () => ({
   validatePortalSession: vi.fn(),
   createPortalSession: vi.fn(),
   deletePortalSession: vi.fn(),
 }));
 
-vi.mock("../../services/portal-magic-link.js", () => ({
+vi.mock('../../services/portal-magic-link.js', () => ({
   createMagicLinkToken: vi.fn(),
   verifyMagicLinkToken: vi.fn(),
   findContractorsByEmail: vi.fn(),
   sendPortalMagicLink: vi.fn(),
 }));
 
-vi.mock("../../services/r2.js", () => ({
-  createPresignedUploadUrl: vi.fn(async () => ({ url: "https://r2.test/upload", key: "k" })),
-  createPresignedDownloadUrl: vi.fn(async () => "https://r2.test/download"),
-  generateStorageKey: vi.fn(() => "mock-key"),
+vi.mock('../../services/r2.js', () => ({
+  createPresignedUploadUrl: vi.fn(async () => ({ url: 'https://r2.test/upload', key: 'k' })),
+  createPresignedDownloadUrl: vi.fn(async () => 'https://r2.test/download'),
+  generateStorageKey: vi.fn(() => 'mock-key'),
 }));
 
-vi.mock("../../services/portal-change-request.js", () => ({
+vi.mock('../../services/portal-change-request.js', () => ({
   createChangeRequest: vi.fn(),
 }));
 
-vi.mock("../../services/bank-account-crypto.js", () => ({
+vi.mock('../../services/bank-account-crypto.js', () => ({
   encryptBankAccount: vi.fn((v: string) => `encrypted:${v}`),
 }));
 
-vi.mock("../../services/stripe-client.js", () => ({
+vi.mock('../../services/stripe-client.js', () => ({
   stripe: {
     checkout: { sessions: { create: vi.fn() } },
     billingPortal: { sessions: { create: vi.fn() } },
@@ -138,16 +138,16 @@ vi.mock("../../services/stripe-client.js", () => ({
   },
 }));
 
-vi.mock("@contractor-ops/logger", () => ({
+vi.mock('@contractor-ops/logger', () => ({
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
 
-vi.mock("@contractor-ops/logger/metrics", () => ({
+vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { increment: vi.fn(), histogram: vi.fn(), distribution: vi.fn() },
 }));
 
-vi.mock("@sentry/nextjs", () => {
+vi.mock('@sentry/nextjs', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
     startSpan: vi.fn((_o: unknown, fn: (span: typeof mockSpan) => unknown) => fn(mockSpan)),
@@ -159,8 +159,8 @@ vi.mock("@sentry/nextjs", () => {
 // Imports (after mocks)
 // ---------------------------------------------------------------------------
 
-import { createCallerFactory } from "../../init.js";
-import { appRouter } from "../../root.js";
+import { createCallerFactory } from '../../init.js';
+import { appRouter } from '../../root.js';
 
 // ---------------------------------------------------------------------------
 // Caller setup
@@ -171,11 +171,11 @@ const createCaller = createCallerFactory(appRouter);
 function makeTenantCaller() {
   const session = {
     session: {
-      id: "session-integ",
+      id: 'session-integ',
       userId: USER_ID,
       activeOrganizationId: ORG_ID,
-      expiresAt: new Date("2099-01-01"),
-      token: "mock-token",
+      expiresAt: new Date('2099-01-01'),
+      token: 'mock-token',
       createdAt: new Date(),
       updatedAt: new Date(),
       ipAddress: null,
@@ -183,14 +183,14 @@ function makeTenantCaller() {
     },
     user: {
       id: USER_ID,
-      name: "Integration Admin",
-      email: "admin@test.com",
+      name: 'Integration Admin',
+      email: 'admin@test.com',
       emailVerified: true,
       image: null,
       banned: false,
       banReason: null,
       banExpires: null,
-      role: "admin",
+      role: 'admin',
       createdAt: new Date(),
       updatedAt: new Date(),
     },
@@ -211,117 +211,117 @@ const caller = makeTenantCaller();
 beforeEach(() => {
   vi.clearAllMocks();
   // Set required env vars
-  process.env.NEXT_PUBLIC_APP_URL = "https://app.test.com";
+  process.env.NEXT_PUBLIC_APP_URL = 'https://app.test.com';
 });
 
 // ===========================================================================
 // getOAuthUrlGeneric
 // ===========================================================================
 
-describe("integration.getOAuthUrlGeneric", () => {
+describe('integration.getOAuthUrlGeneric', () => {
   function setupGoogleCalendarAdapter() {
     mockGetAdapter.mockReturnValue({
       supportsOAuth: true,
       getOAuthConfig: () => ({
-        clientIdEnvVar: "GOOGLE_CLIENT_ID",
-        clientSecretEnvVar: "GOOGLE_CLIENT_SECRET",
-        authorizationUrl: "https://accounts.google.com/o/oauth2/v2/auth",
-        redirectPath: "/api/integrations/google-calendar/callback",
+        clientIdEnvVar: 'GOOGLE_CLIENT_ID',
+        clientSecretEnvVar: 'GOOGLE_CLIENT_SECRET',
+        authorizationUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
+        redirectPath: '/api/integrations/google-calendar/callback',
         scopes: [
-          "https://www.googleapis.com/auth/calendar",
-          "https://www.googleapis.com/auth/calendar.events",
+          'https://www.googleapis.com/auth/calendar',
+          'https://www.googleapis.com/auth/calendar.events',
         ],
-        extraAuthParams: { access_type: "offline", prompt: "consent" },
+        extraAuthParams: { access_type: 'offline', prompt: 'consent' },
       }),
     });
-    process.env.GOOGLE_CLIENT_ID = "google-client-id";
-    process.env.GOOGLE_CLIENT_SECRET = "google-client-secret";
+    process.env.GOOGLE_CLIENT_ID = 'google-client-id';
+    process.env.GOOGLE_CLIENT_SECRET = 'google-client-secret';
   }
 
   function setupOutlookAdapter() {
     mockGetAdapter.mockReturnValue({
       supportsOAuth: true,
       getOAuthConfig: () => ({
-        clientIdEnvVar: "OUTLOOK_CLIENT_ID",
-        clientSecretEnvVar: "OUTLOOK_CLIENT_SECRET",
-        authorizationUrl: "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
-        redirectPath: "/api/integrations/outlook/callback",
-        scopes: ["Calendars.ReadWrite", "offline_access"],
+        clientIdEnvVar: 'OUTLOOK_CLIENT_ID',
+        clientSecretEnvVar: 'OUTLOOK_CLIENT_SECRET',
+        authorizationUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
+        redirectPath: '/api/integrations/outlook/callback',
+        scopes: ['Calendars.ReadWrite', 'offline_access'],
         extraAuthParams: null,
       }),
     });
-    process.env.OUTLOOK_CLIENT_ID = "outlook-client-id";
-    process.env.OUTLOOK_CLIENT_SECRET = "outlook-client-secret";
+    process.env.OUTLOOK_CLIENT_ID = 'outlook-client-id';
+    process.env.OUTLOOK_CLIENT_SECRET = 'outlook-client-secret';
   }
 
-  it("joins scopes with space separator, not comma", async () => {
+  it('joins scopes with space separator, not comma', async () => {
     setupGoogleCalendarAdapter();
 
     const result = await caller.integration.getOAuthUrlGeneric({
-      provider: "google-calendar",
+      provider: 'google-calendar',
     });
 
     const url = new URL(result.url);
-    const scopeParam = url.searchParams.get("scope");
+    const scopeParam = url.searchParams.get('scope');
     expect(scopeParam).toBe(
-      "https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events",
+      'https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events',
     );
     // Should NOT contain commas
-    expect(scopeParam).not.toContain(",");
+    expect(scopeParam).not.toContain(',');
   });
 
-  it("includes response_type=code in authorization URL params", async () => {
+  it('includes response_type=code in authorization URL params', async () => {
     setupGoogleCalendarAdapter();
 
     const result = await caller.integration.getOAuthUrlGeneric({
-      provider: "google-calendar",
+      provider: 'google-calendar',
     });
 
     const url = new URL(result.url);
-    expect(url.searchParams.get("response_type")).toBe("code");
+    expect(url.searchParams.get('response_type')).toBe('code');
   });
 
-  it("appends extraAuthParams from adapter OAuthConfig to URL", async () => {
+  it('appends extraAuthParams from adapter OAuthConfig to URL', async () => {
     setupGoogleCalendarAdapter();
 
     const result = await caller.integration.getOAuthUrlGeneric({
-      provider: "google-calendar",
+      provider: 'google-calendar',
     });
 
     const url = new URL(result.url);
-    expect(url.searchParams.get("access_type")).toBe("offline");
-    expect(url.searchParams.get("prompt")).toBe("consent");
+    expect(url.searchParams.get('access_type')).toBe('offline');
+    expect(url.searchParams.get('prompt')).toBe('consent');
   });
 
-  it("Google Calendar URL includes access_type=offline and prompt=consent", async () => {
+  it('Google Calendar URL includes access_type=offline and prompt=consent', async () => {
     setupGoogleCalendarAdapter();
 
     const result = await caller.integration.getOAuthUrlGeneric({
-      provider: "google-calendar",
+      provider: 'google-calendar',
     });
 
     const url = new URL(result.url);
-    expect(url.origin + url.pathname).toBe("https://accounts.google.com/o/oauth2/v2/auth");
-    expect(url.searchParams.get("access_type")).toBe("offline");
-    expect(url.searchParams.get("prompt")).toBe("consent");
-    expect(url.searchParams.get("client_id")).toBe("google-client-id");
-    expect(url.searchParams.get("redirect_uri")).toBe(
-      "https://app.test.com/api/integrations/google-calendar/callback",
+    expect(url.origin + url.pathname).toBe('https://accounts.google.com/o/oauth2/v2/auth');
+    expect(url.searchParams.get('access_type')).toBe('offline');
+    expect(url.searchParams.get('prompt')).toBe('consent');
+    expect(url.searchParams.get('client_id')).toBe('google-client-id');
+    expect(url.searchParams.get('redirect_uri')).toBe(
+      'https://app.test.com/api/integrations/google-calendar/callback',
     );
   });
 
-  it("Outlook Calendar URL uses correct authorizationUrl from adapter config", async () => {
+  it('Outlook Calendar URL uses correct authorizationUrl from adapter config', async () => {
     setupOutlookAdapter();
 
     const result = await caller.integration.getOAuthUrlGeneric({
-      provider: "outlook-calendar",
+      provider: 'outlook-calendar',
     });
 
     const url = new URL(result.url);
     expect(url.origin + url.pathname).toBe(
-      "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
+      'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
     );
-    expect(url.searchParams.get("client_id")).toBe("outlook-client-id");
-    expect(url.searchParams.get("scope")).toBe("Calendars.ReadWrite offline_access");
+    expect(url.searchParams.get('client_id')).toBe('outlook-client-id');
+    expect(url.searchParams.get('scope')).toBe('Calendars.ReadWrite offline_access');
   });
 });
