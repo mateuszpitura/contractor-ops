@@ -18,12 +18,12 @@ Requirements for International Foundation & Gulf Expansion. Each maps to roadmap
 
 ### ZATCA Fatoorah (Saudi Arabia)
 
-- [ ] **ZATCA-01**: Platform generates ZATCA-compliant UBL 2.1 XML invoices with all mandatory fields
-- [ ] **ZATCA-02**: Invoices are cryptographically signed using X.509 certificates (XAdES enveloped signatures)
-- [ ] **ZATCA-03**: Each invoice includes a TLV-encoded QR code (seller name, VAT number, timestamp, total, VAT amount)
+- [x] **ZATCA-01**: Platform generates ZATCA-compliant UBL 2.1 XML invoices with all mandatory fields
+- [x] **ZATCA-02**: Invoices are cryptographically signed using X.509 certificates (XAdES enveloped signatures)
+- [x] **ZATCA-03**: Each invoice includes a TLV-encoded QR code (seller name, VAT number, timestamp, total, VAT amount)
 - [x] **ZATCA-04**: Invoice hash chain is maintained — each invoice references the hash of the previous invoice per organization
 - [x] **ZATCA-05**: Invoices are submitted to ZATCA Fatoora Portal API for clearance (B2B tax invoices)
-- [ ] **ZATCA-06**: Platform supports ZATCA device onboarding — CSR generation, CSID request, production certificate exchange
+- [x] **ZATCA-06**: Platform supports ZATCA device onboarding — CSR generation, CSID request, production certificate exchange
 - [x] **ZATCA-07**: Platform handles ZATCA reporting for simplified invoices (B2C)
 
 ### Peppol PINT-AE (UAE)
@@ -121,12 +121,12 @@ Requirements for International Foundation & Gulf Expansion. Each maps to roadmap
 | EINV-04 | Phase 45 | Pending |
 | EINV-05 | Phase 45 | Pending |
 | EINV-06 | Phase 45 | Pending |
-| ZATCA-01 | Phase 48 | Pending |
-| ZATCA-02 | Phase 48 | Pending |
-| ZATCA-03 | Phase 48 | Pending |
+| ZATCA-01 | Phase 48 | Complete |
+| ZATCA-02 | Phase 48 | Complete |
+| ZATCA-03 | Phase 48 | Complete |
 | ZATCA-04 | Phase 48 | Complete |
 | ZATCA-05 | Phase 48 | Complete |
-| ZATCA-06 | Phase 48 | Pending |
+| ZATCA-06 | Phase 48 | Complete |
 | ZATCA-07 | Phase 48 | Complete |
 | PEPPOL-01 | Phase 49 | Pending |
 | PEPPOL-02 | Phase 49 | Pending |
