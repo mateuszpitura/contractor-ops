@@ -39,7 +39,7 @@ created: 2026-04-12
 | Req ID | Behavior | Test Type | Automated Command | File Exists | Status |
 |--------|----------|-----------|-------------------|-------------|--------|
 | PAY-02 | Seed loads GB rates (20/5/0/RC) with isDefault on 20 | unit | `pnpm --filter @contractor-ops/db test --run tax-rates.seed` | ❌ W0 | ⬜ pending |
-| PAY-02 | `getTaxRatesForCountry('GB')` returns rates sorted with 20 first | unit | `pnpm --filter @contractor-ops/api test --run tax-rate.service` | ❌ W0 (extend) | ⬜ pending |
+| PAY-02 | `getTaxRatesForCountry('GB')` returns rates sorted with 20 first | unit | `pnpm --filter @contractor-ops/api test --run tax-rate.service` | ❌ W0 (Plan 57-01 T1) | ⬜ pending |
 | PAY-02 | Invoice line creation with `org.countryCode='GB'` preselects code '20' | integration | `pnpm --filter @contractor-ops/api test --run invoice.router --run preselect-gb` | ❌ W0 | ⬜ pending |
 | PAY-03 | `HmrcVatClient.checkVatNumber` issues GET with Bearer token to `/organisations/vat/check-vat-number/lookup:vrn/:requesterVrn` | unit | `pnpm --filter @contractor-ops/gov-api test --run hmrc-vat-client` | ❌ W0 | ⬜ pending |
 | PAY-03 | `HmrcVatClient` refreshes token after 401 once then retries | unit | same | ❌ W0 | ⬜ pending |
@@ -76,6 +76,7 @@ Test infrastructure to create **before** implementation waves begin:
 - [ ] `packages/db/prisma/schema/tax.prisma` — add `TaxIdValidation` model (Wave 1)
 - [ ] `packages/db/__tests__/tax-rates.seed.test.ts` — assert GB + DE seed entries + isDefault flags
 - [ ] `packages/api/src/services/__tests__/reverse-charge.service.test.ts` — **EXTEND** with post-Brexit + §13b tests
+- [ ] `packages/api/src/services/__tests__/tax-rate.service.test.ts` — **NEW** (Plan 57-01 T1) — asserts `getTaxRatesForCountry('GB')` returns 4 rates isDefault-first (code '20' first) — owns PAY-02 row 2
 - [ ] `packages/api/src/services/__tests__/tax-id-validation.service.test.ts` — NEW orchestrator (pre-flight + network + soft-fail)
 - [ ] `packages/api/src/routers/__tests__/contractor.router.test.ts` — **EXTEND** with `validateVat` / `revalidateVat` mutations
 - [ ] `packages/api/src/routers/__tests__/invoice.router.test.ts` — **EXTEND** with Kleinunternehmer + default-rate-selection + staleness-triggers-revalidate
