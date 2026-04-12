@@ -42,11 +42,11 @@ describe('Breadcrumb', () => {
     expect(screen.getByText('Products')).toBeInTheDocument();
   });
 
-  it('renders the current page', () => {
+  it('renders the current page', async () => {
     renderBreadcrumb();
     const page = screen.getByText('Current Page');
-    expect(page).toHaveAttribute('aria-current', 'page');
-    expect(page).toHaveAttribute('aria-disabled', 'true');
+    await expect(page).toHaveAttribute('aria-current', 'page');
+    await expect(page).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('sets data-slot on breadcrumb', () => {

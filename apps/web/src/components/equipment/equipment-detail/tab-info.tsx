@@ -32,7 +32,7 @@ interface TabInfoProps {
 // Component
 // ---------------------------------------------------------------------------
 
-export function TabInfo({ equipment, onEdit }: TabInfoProps) {
+export function TabInfo({ equipment, onEdit: _onEdit }: TabInfoProps) {
   const t = useTranslations('Equipment');
 
   return (

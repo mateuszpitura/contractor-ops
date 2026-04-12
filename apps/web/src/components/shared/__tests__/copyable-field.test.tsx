@@ -9,13 +9,13 @@ const writeTextSpy = vi.fn().mockResolvedValue(undefined);
 
 beforeAll(() => {
   // In jsdom, navigator.clipboard may not exist; polyfill it for the test
-  if (!navigator.clipboard) {
+  if (navigator.clipboard) {
+    vi.spyOn(navigator.clipboard, 'writeText').mockImplementation(writeTextSpy);
+  } else {
     Object.defineProperty(navigator, 'clipboard', {
       value: { writeText: writeTextSpy },
       configurable: true,
     });
-  } else {
-    vi.spyOn(navigator.clipboard, 'writeText').mockImplementation(writeTextSpy);
   }
 });
 

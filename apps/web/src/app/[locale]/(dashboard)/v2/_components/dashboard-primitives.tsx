@@ -13,71 +13,21 @@ export function AtelierBackground() {
   return (
     <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
       {/* ── Top wash — warm-to-cool gradient across the page ── */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            'linear-gradient(170deg, color-mix(in oklch, var(--color-primary) 5%, transparent) 0%, transparent 40%, color-mix(in oklch, oklch(0.6 0.15 270) 3%, transparent) 100%)',
-        }}
-      />
+      <div className="absolute inset-0" />
 
       {/* ── Gradient orbs — large, visible, drifting ── */}
-      <div
-        className="absolute -start-[10%] -top-[10%] h-[800px] w-[800px] rounded-full"
-        style={{
-          background:
-            'radial-gradient(circle, color-mix(in oklch, var(--color-primary) 22%, transparent) 0%, transparent 65%)',
-          animation: 'drift-1 28s ease-in-out infinite',
-          filter: 'blur(80px)',
-        }}
-      />
-      <div
-        className="absolute -end-[5%] top-[10%] h-[650px] w-[650px] rounded-full"
-        style={{
-          background:
-            'radial-gradient(circle, color-mix(in oklch, oklch(0.78 0.14 55) 16%, transparent) 0%, transparent 65%)',
-          animation: 'drift-2 35s ease-in-out infinite',
-          filter: 'blur(100px)',
-        }}
-      />
-      <div
-        className="absolute bottom-[-5%] start-[35%] h-[550px] w-[550px] rounded-full"
-        style={{
-          background:
-            'radial-gradient(circle, color-mix(in oklch, oklch(0.55 0.2 270) 12%, transparent) 0%, transparent 65%)',
-          animation: 'drift-3 24s ease-in-out infinite',
-          filter: 'blur(90px)',
-        }}
-      />
+      <div className="absolute -start-[10%] -top-[10%] h-[800px] w-[800px] rounded-full" />
+      <div className="absolute -end-[5%] top-[10%] h-[650px] w-[650px] rounded-full" />
+      <div className="absolute bottom-[-5%] start-[35%] h-[550px] w-[550px] rounded-full" />
 
       {/* ── Grain texture ── */}
-      <div
-        className="absolute inset-0 opacity-[0.03] dark:opacity-[0.06] mix-blend-overlay"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
-          backgroundSize: '256px',
-        }}
-      />
+      <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.06] mix-blend-overlay" />
 
       {/* ── Subtle dot grid ── */}
-      <div
-        className="absolute inset-0"
-        style={{
-          backgroundImage:
-            'radial-gradient(circle, var(--color-muted-foreground) 0.5px, transparent 0.5px)',
-          backgroundSize: '32px 32px',
-          opacity: 0.04,
-        }}
-      />
+      <div className="absolute inset-0" />
 
       {/* ── Diagonal lines (architectural accent) ── */}
-      <div
-        className="absolute inset-0 opacity-[0.015] dark:opacity-[0.025]"
-        style={{
-          backgroundImage:
-            'repeating-linear-gradient(135deg, var(--color-foreground) 0px, var(--color-foreground) 1px, transparent 1px, transparent 80px)',
-        }}
-      />
+      <div className="absolute inset-0 opacity-[0.015] dark:opacity-[0.025]" />
     </div>
   );
 }
@@ -89,11 +39,11 @@ export function AtelierBackground() {
 export function TiltCard({
   children,
   className = '',
-  delay = 0,
+  delay: _delay = 0,
   href,
   glow = false,
   shimmer = false,
-  style,
+  style: _style,
 }: {
   children: ReactNode;
   className?: string;
@@ -133,13 +83,6 @@ export function TiltCard({
     <div
       ref={ref}
       className={classes}
-      style={{
-        animationDelay: `${delay}ms`,
-        transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease',
-        transformStyle: 'preserve-3d',
-        willChange: 'transform',
-        ...style,
-      }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}>
       {children}
@@ -214,7 +157,7 @@ export function Ring({
   const pct = max === 0 ? 0 : Math.min(value / max, 1);
 
   return (
-    <div className="relative" style={{ width: size, height: size }}>
+    <div className="relative">
       <svg width={size} height={size} className="-rotate-90">
         <circle
           cx={size / 2}
@@ -234,10 +177,6 @@ export function Ring({
           strokeLinecap="round"
           strokeDasharray={c}
           strokeDashoffset={c * (1 - pct)}
-          style={{
-            transition: 'stroke-dashoffset 1.6s cubic-bezier(0.16, 1, 0.3, 1)',
-            filter: `drop-shadow(0 0 4px ${color})`,
-          }}
         />
       </svg>
       {children && (
@@ -330,22 +269,11 @@ export function LiveClock() {
 // STATUS DOT WITH PULSE
 // =============================================================================
 
-export function PulseDot({ color, pulse = false }: { color: string; pulse?: boolean }) {
+export function PulseDot({ color: _color, pulse = false }: { color: string; pulse?: boolean }) {
   return (
     <span className="relative inline-flex h-2 w-2">
-      {pulse && (
-        <span
-          className="absolute inset-0 rounded-full opacity-75"
-          style={{
-            backgroundColor: color,
-            animation: 'ring-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite',
-          }}
-        />
-      )}
-      <span
-        className="relative inline-flex h-2 w-2 rounded-full"
-        style={{ backgroundColor: color }}
-      />
+      {pulse && <span className="absolute inset-0 rounded-full opacity-75" />}
+      <span className="relative inline-flex h-2 w-2 rounded-full" />
     </span>
   );
 }
@@ -363,9 +291,7 @@ const SLA_CFG: Record<string, { color: string; label: string }> = {
 export function SlaPill({ status }: { status: string }) {
   const c = SLA_CFG[status] ?? SLA_CFG.ON_TRACK;
   return (
-    <span
-      className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.08em]"
-      style={{ color: c.color, background: `color-mix(in oklch, ${c.color} 10%, transparent)` }}>
+    <span className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.08em]">
       <PulseDot color={c.color} pulse={status === 'BREACHED'} />
       {c.label}
     </span>
@@ -405,14 +331,14 @@ export const plnFmt = new Intl.NumberFormat('pl-PL', {
 });
 
 export const fmtAmt = (g: number, cur = 'PLN') =>
-  cur !== 'PLN'
-    ? new Intl.NumberFormat('pl-PL', {
+  cur === 'PLN'
+    ? plnFmt.format(g / 100)
+    : new Intl.NumberFormat('pl-PL', {
         style: 'currency',
         currency: cur,
         minimumFractionDigits: 0,
         maximumFractionDigits: 0,
-      }).format(g / 100)
-    : plnFmt.format(g / 100);
+      }).format(g / 100);
 
 // =============================================================================
 // SECTION LABEL — editorial-style section headers

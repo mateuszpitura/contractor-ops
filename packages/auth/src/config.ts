@@ -134,7 +134,7 @@ export const auth = betterAuth({
       },
     }),
     magicLink({
-      sendMagicLink: async ({ email, url }) => {
+      sendMagicLink: async ({ email: _email, url: _url }) => {
         if (process.env.NODE_ENV === 'development') {
           return;
         }

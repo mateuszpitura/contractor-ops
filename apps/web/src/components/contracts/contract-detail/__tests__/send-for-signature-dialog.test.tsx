@@ -373,7 +373,7 @@ describe('SendForSignatureDialog', () => {
 
   // ---- Signer name editing ----
   it('allows editing signer name field', async () => {
-    const { user } = setup(<SendForSignatureDialog {...defaultProps} />);
+    setup(<SendForSignatureDialog {...defaultProps} />);
     // Should have signer input fields
     const inputs = screen.getAllByRole('textbox');
     expect(inputs.length).toBeGreaterThanOrEqual(1);

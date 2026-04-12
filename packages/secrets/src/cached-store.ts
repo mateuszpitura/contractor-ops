@@ -50,11 +50,11 @@ export class CachedStore implements SecretStore {
 
     // Cache miss or expired — fetch from backing store
     const value = await this.backing.get(path);
-    if (value !== null) {
-      this.putCache(path, value);
-    } else {
+    if (value === null) {
       // Evict stale entry if present
       this.cache.delete(path);
+    } else {
+      this.putCache(path, value);
     }
     return value;
   }

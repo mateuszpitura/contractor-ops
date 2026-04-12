@@ -15,7 +15,6 @@ import {
   useSortable,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowRight,
@@ -140,38 +139,10 @@ const ROLES = [
 function AtelierBg() {
   return (
     <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            'linear-gradient(170deg, color-mix(in oklch, var(--color-primary) 4%, transparent) 0%, transparent 50%)',
-        }}
-      />
-      <div
-        className="absolute -start-[10%] -top-[10%] h-[600px] w-[600px] rounded-full"
-        style={{
-          background:
-            'radial-gradient(circle, color-mix(in oklch, var(--color-primary) 15%, transparent) 0%, transparent 65%)',
-          animation: 'drift-1 28s ease-in-out infinite',
-          filter: 'blur(80px)',
-        }}
-      />
-      <div
-        className="absolute -end-[5%] bottom-[10%] h-[400px] w-[400px] rounded-full"
-        style={{
-          background:
-            'radial-gradient(circle, color-mix(in oklch, oklch(0.6 0.15 270) 10%, transparent) 0%, transparent 65%)',
-          animation: 'drift-3 24s ease-in-out infinite',
-          filter: 'blur(90px)',
-        }}
-      />
-      <div
-        className="absolute inset-0 opacity-[0.025] dark:opacity-[0.05] mix-blend-overlay"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
-          backgroundSize: '256px',
-        }}
-      />
+      <div className="absolute inset-0" />
+      <div className="absolute -start-[10%] -top-[10%] h-[600px] w-[600px] rounded-full" />
+      <div className="absolute -end-[5%] bottom-[10%] h-[400px] w-[400px] rounded-full" />
+      <div className="absolute inset-0 opacity-[0.025] dark:opacity-[0.05] mix-blend-overlay" />
     </div>
   );
 }
@@ -183,7 +154,7 @@ function AtelierBg() {
 function TiltCard({
   children,
   className = '',
-  delay = 0,
+  delay: _delay = 0,
 }: {
   children: ReactNode;
   className?: string;
@@ -206,7 +177,6 @@ function TiltCard({
     <div
       ref={ref}
       className={`atelier-enter atelier-glass relative rounded-2xl p-5 transition-[transform] duration-[400ms] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform ${className}`}
-      style={{ animationDelay: `${delay}ms` }}
       onMouseMove={onMove}
       onMouseLeave={onLeave}>
       {children}
@@ -221,14 +191,7 @@ function TiltCard({
 function PipelineConnector() {
   return (
     <div className="relative ms-6 flex h-6 items-center">
-      <div
-        className="absolute start-0 h-full w-[2px] rounded-full"
-        style={{
-          background:
-            'linear-gradient(to bottom, var(--color-primary), color-mix(in oklch, var(--color-primary) 30%, transparent))',
-          boxShadow: '0 0 6px color-mix(in oklch, var(--color-primary) 20%, transparent)',
-        }}
-      />
+      <div className="absolute start-0 h-full w-[2px] rounded-full" />
       <div className="ms-4 h-px flex-1 bg-gradient-to-r from-border/40 to-transparent" />
     </div>
   );
@@ -274,9 +237,7 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
         </span>
 
         {/* Step number + icon */}
-        <div
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white text-[11px] font-black shadow-sm"
-          style={{ background: cfg.color }}>
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white text-[11px] font-black shadow-sm">
           {index + 1}
         </div>
 
@@ -531,18 +492,18 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
 // =============================================================================
 
 function SortableTask(props: TaskCardV2Props & { id: string }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform: _transform,
+    transition: _transition,
+    isDragging: _isDragging,
+  } = useSortable({
     id: props.id,
   });
   return (
-    <div
-      ref={setNodeRef}
-      style={{
-        transform: CSS.Transform.toString(transform),
-        transition,
-        opacity: isDragging ? 0.5 : 1,
-        zIndex: isDragging ? 50 : undefined,
-      }}>
+    <div ref={setNodeRef}>
       <TaskCardV2
         {...props}
         dragHandleProps={{
@@ -690,7 +651,7 @@ export default function NewWorkflowTemplatePage() {
           {/* ============================================================== */}
           {/* PIPELINE — visual task list                                     */}
           {/* ============================================================== */}
-          <div className="atelier-enter" style={{ animationDelay: '150ms' }}>
+          <div className="atelier-enter">
             <div className="mb-3 flex items-center gap-2.5 ps-1">
               <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground/60">
                 Pipeline — {fields.length} {fields.length === 1 ? 'step' : 'steps'}
@@ -753,7 +714,7 @@ export default function NewWorkflowTemplatePage() {
           {/* ============================================================== */}
           {/* SAVE BAR                                                       */}
           {/* ============================================================== */}
-          <div className="atelier-enter sticky bottom-6 z-20" style={{ animationDelay: '250ms' }}>
+          <div className="atelier-enter sticky bottom-6 z-20">
             <div className="atelier-glass flex items-center justify-between rounded-2xl px-5 py-3 shadow-xl">
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2">

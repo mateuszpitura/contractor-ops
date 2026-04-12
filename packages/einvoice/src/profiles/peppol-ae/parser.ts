@@ -118,9 +118,9 @@ export function parsePintAeXml(xml: string, metadata?: Record<string, unknown>):
     taxAmountMinor: toMinorUnits(text(dig(sub, 'cbc:TaxAmount'))),
     taxCategory: text(dig(sub, 'cac:TaxCategory', 'cbc:ID')),
     percent:
-      dig(sub, 'cac:TaxCategory', 'cbc:Percent') != null
-        ? parseFloat(text(dig(sub, 'cac:TaxCategory', 'cbc:Percent')))
-        : undefined,
+      dig(sub, 'cac:TaxCategory', 'cbc:Percent') == null
+        ? undefined
+        : parseFloat(text(dig(sub, 'cac:TaxCategory', 'cbc:Percent'))),
   }));
 
   const taxExclusiveAmount = toMinorUnits(

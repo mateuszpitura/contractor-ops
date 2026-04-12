@@ -259,7 +259,7 @@ export function BankStatementDialog({ runId, open, onOpenChange }: BankStatement
                   {matches.map(match => (
                     <TableRow
                       key={match.transactionIndex}
-                      className={!match.matched ? 'bg-yellow-500/10' : ''}>
+                      className={match.matched ? '' : 'bg-yellow-500/10'}>
                       <TableCell>
                         {match.matched && (
                           <Checkbox

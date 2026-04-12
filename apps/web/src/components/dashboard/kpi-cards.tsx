@@ -131,14 +131,12 @@ function TrendIndicator({
 
 function HeroKpiCard({
   card,
-  value,
   displayValue,
   direction,
   change,
   t,
 }: {
   card: KpiCardConfig;
-  value: number;
   displayValue: string | number;
   direction: 'up' | 'down' | 'neutral';
   change: number;
@@ -226,7 +224,6 @@ export function KpiCards() {
               className="bento-span-2">
               <HeroKpiCard
                 card={card}
-                value={value}
                 displayValue={displayValue}
                 direction={direction}
                 change={change}

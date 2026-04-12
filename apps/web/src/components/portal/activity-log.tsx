@@ -54,11 +54,11 @@ function formatRelativeTime(date: Date | string): string {
   const diffMonth = Math.floor(diffDay / 30);
 
   if (diffSec < 60) return 'Just now';
-  if (diffMin < 60) return `${diffMin} minute${diffMin !== 1 ? 's' : ''} ago`;
-  if (diffHour < 24) return `${diffHour} hour${diffHour !== 1 ? 's' : ''} ago`;
-  if (diffDay < 7) return `${diffDay} day${diffDay !== 1 ? 's' : ''} ago`;
-  if (diffWeek < 5) return `${diffWeek} week${diffWeek !== 1 ? 's' : ''} ago`;
-  return `${diffMonth} month${diffMonth !== 1 ? 's' : ''} ago`;
+  if (diffMin < 60) return `${diffMin} minute${diffMin === 1 ? '' : 's'} ago`;
+  if (diffHour < 24) return `${diffHour} hour${diffHour === 1 ? '' : 's'} ago`;
+  if (diffDay < 7) return `${diffDay} day${diffDay === 1 ? '' : 's'} ago`;
+  if (diffWeek < 5) return `${diffWeek} week${diffWeek === 1 ? '' : 's'} ago`;
+  return `${diffMonth} month${diffMonth === 1 ? '' : 's'} ago`;
 }
 
 // ---------------------------------------------------------------------------

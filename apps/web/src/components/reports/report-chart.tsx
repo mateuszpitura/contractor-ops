@@ -30,7 +30,7 @@ interface ReportChartProps {
   idKey?: string;
 }
 
-const CHART_HEIGHT = 240;
+const _CHART_HEIGHT = 240;
 
 const PIE_COLORS: Record<string, string> = {
   critical: 'var(--color-destructive)',
@@ -96,7 +96,7 @@ export function ReportChart({
 
   if (type === 'bar-horizontal') {
     return (
-      <div style={{ height: CHART_HEIGHT }}>
+      <div>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={sortedData}
@@ -151,7 +151,7 @@ export function ReportChart({
 
   if (type === 'bar-grouped') {
     return (
-      <div style={{ height: CHART_HEIGHT }}>
+      <div>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={sortedData}
@@ -181,7 +181,7 @@ export function ReportChart({
 
   if (type === 'pie') {
     return (
-      <div style={{ height: CHART_HEIGHT }}>
+      <div>
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie

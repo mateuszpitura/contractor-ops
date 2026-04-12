@@ -511,7 +511,7 @@ describe('PeopleReviewStep', () => {
     mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as any);
     const people = [makePerson({ email: 'a@t.com', name: 'A', status: 'new' })];
     const onPersonSelectionsChange = vi.fn();
-    const { user } = setup(
+    setup(
       <PeopleReviewStep
         selectedSources={['JIRA']}
         mergedPeople={people}
@@ -559,7 +559,7 @@ describe('PeopleReviewStep', () => {
       makePerson({ email: 'a@t.com', name: 'New User', status: 'new' }),
       makePerson({ email: 'b@t.com', name: 'Existing User', status: 'exists' }),
     ];
-    const { user } = setup(
+    setup(
       <PeopleReviewStep
         selectedSources={['JIRA']}
         mergedPeople={people}

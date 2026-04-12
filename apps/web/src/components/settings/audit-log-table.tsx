@@ -277,7 +277,7 @@ export function AuditLogTable({
                 <TableHead
                   key={header.id}
                   style={
-                    header.column.getSize() !== 150 ? { width: header.column.getSize() } : undefined
+                    header.column.getSize() === 150 ? undefined : { width: header.column.getSize() }
                   }>
                   {header.isPlaceholder
                     ? null

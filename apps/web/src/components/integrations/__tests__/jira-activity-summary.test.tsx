@@ -15,7 +15,7 @@ vi.mock('../jira-logo', () => ({
 vi.mock('../jira-issue-chip', () => ({
   JiraIssueChip: ({
     issueKey,
-    summary,
+    summary: _summary,
     status,
   }: {
     issueKey: string;

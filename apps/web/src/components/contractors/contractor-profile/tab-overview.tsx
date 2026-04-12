@@ -138,7 +138,7 @@ export function TabOverview({ contractor }: TabOverviewProps) {
   const activeContract = contractor.contracts.find(c => c.status === 'ACTIVE');
 
   const formattedRate =
-    rateValueMinor != null ? `${(rateValueMinor / 100).toFixed(2)} ${contractor.currency}` : null;
+    rateValueMinor == null ? null : `${(rateValueMinor / 100).toFixed(2)} ${contractor.currency}`;
 
   const formattedAddress = [
     contractor.addressLine1,

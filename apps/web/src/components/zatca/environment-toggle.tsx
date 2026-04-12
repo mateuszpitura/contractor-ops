@@ -97,7 +97,7 @@ export function EnvironmentToggle({
           {/* Production */}
           <label
             className={`relative flex items-start gap-3 rounded-lg border-2 p-4 transition-all ${
-              !productionReady ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
+              productionReady ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
             } ${
               value === 'production'
                 ? 'border-primary ring-2 ring-primary/20'

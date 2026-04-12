@@ -345,7 +345,7 @@ export class ClaudeOcrAdapter implements OcrAdapter {
       if (raw) {
         fields[key] = {
           key,
-          value: raw.value != null ? Math.round(raw.value * 100) : null,
+          value: raw.value == null ? null : Math.round(raw.value * 100),
           confidence: raw.confidence ?? 0,
         };
       }
@@ -368,11 +368,11 @@ export class ClaudeOcrAdapter implements OcrAdapter {
       description: item.description,
       quantity: item.quantity ?? null,
       unit: item.unit ?? null,
-      unitPriceMinor: item.unitPrice != null ? Math.round(item.unitPrice * 100) : null,
-      netAmountMinor: item.netAmount != null ? Math.round(item.netAmount * 100) : null,
+      unitPriceMinor: item.unitPrice == null ? null : Math.round(item.unitPrice * 100),
+      netAmountMinor: item.netAmount == null ? null : Math.round(item.netAmount * 100),
       vatRate: item.vatRate ?? null,
-      vatAmountMinor: item.vatAmount != null ? Math.round(item.vatAmount * 100) : null,
-      grossAmountMinor: item.grossAmount != null ? Math.round(item.grossAmount * 100) : null,
+      vatAmountMinor: item.vatAmount == null ? null : Math.round(item.vatAmount * 100),
+      grossAmountMinor: item.grossAmount == null ? null : Math.round(item.grossAmount * 100),
       confidence: item.confidence ?? 0,
     }));
 

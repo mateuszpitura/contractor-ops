@@ -71,7 +71,7 @@ export function ShipmentTimeline({
   shipmentId,
   currentStatus,
   events,
-  direction,
+  direction: _direction,
 }: ShipmentTimelineProps) {
   const t = useTranslations('Equipment');
   const queryClient = useQueryClient();

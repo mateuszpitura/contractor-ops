@@ -120,23 +120,7 @@ export function PaczkomatPicker({
 
         <div className="px-4">
           {/* Iframe container */}
-          {!iframeError ? (
-            <div className="relative">
-              {!iframeLoaded && (
-                <Skeleton className="absolute inset-0 h-[400px] w-full rounded-md" />
-              )}
-              <iframe
-                ref={iframeRef}
-                src={iframeSrc}
-                sandbox="allow-scripts allow-same-origin allow-popups"
-                title="InPost Paczkomat locker map"
-                className="h-[400px] w-full rounded-md"
-                allow=""
-                onLoad={() => setIframeLoaded(true)}
-                onError={() => setIframeError(true)}
-              />
-            </div>
-          ) : (
+          {iframeError ? (
             <div className="flex h-[400px] items-center justify-center rounded-md border border-dashed text-center">
               <div className="space-y-2">
                 <MapPin className="mx-auto h-8 w-8 text-muted-foreground" />
@@ -151,6 +135,22 @@ export function PaczkomatPicker({
                   {t('retry')}
                 </Button>
               </div>
+            </div>
+          ) : (
+            <div className="relative">
+              {!iframeLoaded && (
+                <Skeleton className="absolute inset-0 h-[400px] w-full rounded-md" />
+              )}
+              <iframe
+                ref={iframeRef}
+                src={iframeSrc}
+                sandbox="allow-scripts allow-same-origin allow-popups"
+                title="InPost Paczkomat locker map"
+                className="h-[400px] w-full rounded-md"
+                allow=""
+                onLoad={() => setIframeLoaded(true)}
+                onError={() => setIframeError(true)}
+              />
             </div>
           )}
 

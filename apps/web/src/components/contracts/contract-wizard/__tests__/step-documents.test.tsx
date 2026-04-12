@@ -151,7 +151,7 @@ describe('StepDocuments', () => {
   });
 
   it('does not render files list when no files uploaded', () => {
-    const { container } = render(<StepDocuments onDocumentsChange={vi.fn()} />);
+    render(<StepDocuments onDocumentsChange={vi.fn()} />);
 
     // No file entries visible
     expect(screen.queryByText(/\.pdf$/)).not.toBeInTheDocument();

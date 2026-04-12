@@ -94,7 +94,7 @@ export function TimesheetGrid({
   weekStartDate,
   entries,
   contracts,
-  timesheetId,
+  timesheetId: _timesheetId,
   disabled,
   rejectionReason,
   onSave,

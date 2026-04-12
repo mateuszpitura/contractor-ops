@@ -91,8 +91,8 @@ export function ReconciliationCard({ reconciliation }: ReconciliationCardProps) 
 
   // Visual comparison bar: ratio of expected to actual
   const maxAmount = Math.max(expectedAmountMinor, invoicedAmountMinor);
-  const expectedRatio = maxAmount > 0 ? (expectedAmountMinor / maxAmount) * 100 : 0;
-  const invoicedRatio = maxAmount > 0 ? (invoicedAmountMinor / maxAmount) * 100 : 0;
+  const _expectedRatio = maxAmount > 0 ? (expectedAmountMinor / maxAmount) * 100 : 0;
+  const _invoicedRatio = maxAmount > 0 ? (invoicedAmountMinor / maxAmount) * 100 : 0;
   const hasOverflow = invoicedAmountMinor > expectedAmountMinor;
 
   return (
@@ -150,23 +150,14 @@ export function ReconciliationCard({ reconciliation }: ReconciliationCardProps) 
           </div>
           <div className="relative h-2 w-full overflow-hidden rounded-full bg-muted">
             {/* Expected portion */}
-            <div
-              className="absolute inset-y-0 start-0 rounded-full bg-primary/60 transition-all duration-300 ease-out"
-              style={{ width: `${expectedRatio}%` }}
-            />
+            <div className="absolute inset-y-0 start-0 rounded-full bg-primary/60 transition-all duration-300 ease-out" />
             {/* Invoiced overflow (only when actual > expected) */}
             {hasOverflow && (
-              <div
-                className="absolute inset-y-0 start-0 rounded-full bg-destructive/40 transition-all duration-300 ease-out"
-                style={{ width: `${invoicedRatio}%` }}
-              />
+              <div className="absolute inset-y-0 start-0 rounded-full bg-destructive/40 transition-all duration-300 ease-out" />
             )}
             {/* Expected overlay on top when there's overflow */}
             {hasOverflow && (
-              <div
-                className="absolute inset-y-0 start-0 rounded-full bg-primary/60 transition-all duration-300 ease-out"
-                style={{ width: `${expectedRatio}%` }}
-              />
+              <div className="absolute inset-y-0 start-0 rounded-full bg-primary/60 transition-all duration-300 ease-out" />
             )}
           </div>
         </div>

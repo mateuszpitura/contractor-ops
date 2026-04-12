@@ -104,7 +104,7 @@ export function ksefToEInvoice(parsed: KsefParsedInvoice): EInvoice {
     const existing = taxGroups.get(key) ?? { taxable: 0, tax: 0, rate: 0 };
     existing.taxable += line.netAmountMinor ?? 0;
     existing.tax += line.vatAmountMinor ?? 0;
-    existing.rate = key !== '0' ? parseFloat(key) || 0 : 0;
+    existing.rate = key === '0' ? 0 : parseFloat(key) || 0;
     taxGroups.set(key, existing);
   }
 

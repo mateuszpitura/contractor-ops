@@ -148,7 +148,7 @@ describe('ReportTable', () => {
   });
 
   it('hides pagination when loading', () => {
-    const { container } = render(<ReportTable<TestRow> {...defaultProps} data={[]} isLoading />);
+    render(<ReportTable<TestRow> {...defaultProps} data={[]} isLoading />);
     expect(screen.queryByText('Previous')).not.toBeInTheDocument();
   });
 

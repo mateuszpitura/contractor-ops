@@ -11,18 +11,24 @@ vi.mock('sonner', () => ({
 }));
 
 vi.mock('../step-details', () => ({
-  StepDetails: ({ form }: { form: unknown }) => <div data-testid="step-details">Step Details</div>,
+  StepDetails: ({ form: _form }: { form: unknown }) => (
+    <div data-testid="step-details">Step Details</div>
+  ),
 }));
 
 vi.mock('../step-financial', () => ({
-  StepFinancial: ({ form, preFilledFields }: { form: unknown; preFilledFields: unknown }) => (
-    <div data-testid="step-financial">Step Financial</div>
-  ),
+  StepFinancial: ({
+    form: _form,
+    preFilledFields: _preFilledFields,
+  }: {
+    form: unknown;
+    preFilledFields: unknown;
+  }) => <div data-testid="step-financial">Step Financial</div>,
 }));
 
 vi.mock('../step-documents', () => ({
   StepDocuments: ({
-    onDocumentsChange,
+    onDocumentsChange: _onDocumentsChange,
     onSkip,
   }: {
     onDocumentsChange: (ids: string[]) => void;

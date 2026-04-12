@@ -172,7 +172,7 @@ describe('CarrierCredentialForm', () => {
 
   // ---- Toggle password visibility for multiple fields ----
   it('toggles visibility back to hidden after two clicks', async () => {
-    const { user, container } = setup(<CarrierCredentialForm carrier="dpd" carrierLabel="DPD" />);
+    const { user } = setup(<CarrierCredentialForm carrier="dpd" carrierLabel="DPD" />);
     const showButtons = screen.getAllByLabelText('Show');
     await user.click(showButtons[0]);
     expect(screen.getByLabelText('Hide')).toBeInTheDocument();

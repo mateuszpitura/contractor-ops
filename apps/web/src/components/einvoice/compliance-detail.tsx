@@ -53,10 +53,7 @@ function HealthBar({ score }: { score: number }) {
   return (
     <div className="flex items-center gap-2">
       <div className="h-1.5 flex-1 rounded-full bg-muted">
-        <div
-          className={`h-1.5 rounded-full transition-all ${color}`}
-          style={{ width: `${score}%` }}
-        />
+        <div className={`h-1.5 rounded-full transition-all ${color}`} />
       </div>
       <span className="text-xs tabular-nums text-muted-foreground">{score}%</span>
     </div>

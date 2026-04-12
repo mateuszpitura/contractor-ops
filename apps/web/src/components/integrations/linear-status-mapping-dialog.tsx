@@ -320,9 +320,6 @@ export function LinearStatusMappingDialog({ open, onOpenChange }: LinearStatusMa
                                   <div className="flex items-center gap-2">
                                     <span
                                       className="size-2 shrink-0 rounded-full"
-                                      style={{
-                                        backgroundColor: state.color || undefined,
-                                      }}
                                       aria-hidden="true"
                                     />
                                     {state.name}

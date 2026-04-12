@@ -170,7 +170,7 @@ export function TaskCard({ index, onRemove, allTasks, form, dragHandleProps }: T
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       <Card className="overflow-hidden">
         {/* Collapsed header */}
-        <div className="flex items-center gap-2 px-3 py-2" style={{ minHeight: 56 }}>
+        <div className="flex items-center gap-2 px-3 py-2">
           {/* Drag handle */}
           <button
             type="button"

@@ -16,7 +16,7 @@ export function SpendChartV2() {
   const t = useTranslations('Dashboard');
   const [RC, setRC] = useState<RechartsBundle | null>(null);
   useEffect(() => {
-    import('recharts').then(setRC);
+    void import('recharts').then(setRC);
   }, []);
 
   const [range, setRange] = useState<'6' | '12' | 'ytd'>('6');

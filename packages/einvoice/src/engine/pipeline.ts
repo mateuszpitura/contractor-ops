@@ -90,15 +90,15 @@ export async function runPipeline(
   // Step 3: Sign (if profile supports it and not skipped)
   let signedXml: string | null = null;
   if (profile.sign && !options?.skipSign) {
-    if (!options?.certificate) {
+    if (options?.certificate) {
+      signedXml = await profile.sign.sign(xml, options.certificate);
+      stepsExecuted.push('sign');
+    } else {
       validation.warnings.push({
         code: 'SIGN_SKIPPED',
         message: 'Profile supports signing but no certificate provided',
         severity: 'warning',
       });
-    } else {
-      signedXml = await profile.sign.sign(xml, options.certificate);
-      stepsExecuted.push('sign');
     }
   }
 

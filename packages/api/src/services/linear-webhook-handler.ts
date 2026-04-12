@@ -93,9 +93,9 @@ export async function processLinearWebhook(
           action: webhookPayload.action,
           identifier: webhookPayload.data.identifier,
           reason:
-            webhookPayload.action !== 'update'
-              ? `Action '${webhookPayload.action}' not processed`
-              : 'No state change detected (updatedFrom.stateId missing)',
+            webhookPayload.action === 'update'
+              ? 'No state change detected (updatedFrom.stateId missing)'
+              : `Action '${webhookPayload.action}' not processed`,
         },
       },
     });

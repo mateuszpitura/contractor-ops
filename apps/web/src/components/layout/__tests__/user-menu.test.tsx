@@ -151,7 +151,7 @@ describe('UserMenu', () => {
 
   // ---- Settings navigation ----
   it('renders settings menu item with icon', async () => {
-    const { user, container } = setup(<UserMenu />);
+    const { user } = setup(<UserMenu />);
     const trigger = screen.getAllByRole('button')[0];
     await user.click(trigger);
     await screen.findByText('Settings');

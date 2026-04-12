@@ -312,7 +312,7 @@ export const settingsRouter = router({
 
       return {
         brandColor: (newSettings.brandColor as string) ?? null,
-        logo: input.logoUrl !== undefined ? input.logoUrl : (org?.logo ?? null),
+        logo: input.logoUrl === undefined ? (org?.logo ?? null) : input.logoUrl,
       };
     }),
 

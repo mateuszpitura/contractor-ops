@@ -74,11 +74,11 @@ function TimeTrackingContent() {
 
   const allQuery = useQuery({
     ...trpc.time.listAll.queryOptions({
-      ...(statusFilter !== 'all'
-        ? {
+      ...(statusFilter === 'all'
+        ? {}
+        : {
             status: statusFilter as 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED',
-          }
-        : {}),
+          }),
     }),
     enabled: tab === 'all',
     refetchInterval: 30000,

@@ -569,7 +569,7 @@ function DatePicker({
           <Button
             variant="outline"
             className={`w-full justify-start text-start font-normal ${
-              !isValid ? 'text-muted-foreground' : ''
+              isValid ? '' : 'text-muted-foreground'
             } ${disabled ? 'pointer-events-none opacity-50 bg-muted' : ''}`}
             disabled={disabled}
           />

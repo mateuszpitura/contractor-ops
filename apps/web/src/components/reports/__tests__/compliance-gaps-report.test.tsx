@@ -365,7 +365,7 @@ describe('ComplianceGapsReport', () => {
 
   // ---- drill-down filters table data by health (filterByHealth) ----
   it('filters table data by health when drillDownHealth is set via chart click', async () => {
-    const { setup: setupUtil } = await import('@/test/test-utils');
+    await import('@/test/test-utils');
     mockUseQuery.mockReturnValue({
       data: {
         items: [

@@ -435,7 +435,7 @@ export function InvoiceSubmitForm() {
   const canSubmit = isValid && upload.status === 'uploaded' && !submitInvoice.isPending;
 
   // Helper for cascade animation style
-  const fieldStyle = (key: string) =>
+  const _fieldStyle = (key: string) =>
     ocrPopulated
       ? {
           opacity: visibleFields.has(key) ? 1 : 0,
@@ -588,7 +588,7 @@ export function InvoiceSubmitForm() {
 
         <h2 className="text-sm font-semibold">{t('details')}</h2>
 
-        <div className="space-y-2" style={fieldStyle('invoiceNumber')}>
+        <div className="space-y-2">
           <div className="flex items-center gap-2">
             <Label htmlFor="invoiceNumber" className="text-[13px]">
               {t('invoiceNumber')}
@@ -612,7 +612,7 @@ export function InvoiceSubmitForm() {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2" style={fieldStyle('issueDate')}>
+          <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Label htmlFor="issueDate" className="text-[13px]">
                 {t('issueDate')}
@@ -629,7 +629,7 @@ export function InvoiceSubmitForm() {
               <p className="text-sm text-destructive">{errors.issueDate.message}</p>
             )}
           </div>
-          <div className="space-y-2" style={fieldStyle('dueDate')}>
+          <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Label htmlFor="dueDate" className="text-[13px]">
                 {t('dueDate')}
@@ -689,7 +689,7 @@ export function InvoiceSubmitForm() {
         )}
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2" style={fieldStyle('netAmount')}>
+          <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Label htmlFor="netAmount" className="text-[13px]">
                 {t('netAmount')}
@@ -714,7 +714,7 @@ export function InvoiceSubmitForm() {
               <p className="text-sm text-destructive">{errors.netAmount.message}</p>
             )}
           </div>
-          <div className="space-y-2" style={fieldStyle('grossAmount')}>
+          <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Label htmlFor="grossAmount" className="text-[13px]">
                 {t('grossAmount')}

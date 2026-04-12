@@ -17,16 +17,7 @@ export default function GlobalError({
   return (
     <html lang="en">
       <body>
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minHeight: '100vh',
-            fontFamily: 'system-ui, sans-serif',
-            gap: '1rem',
-          }}>
+        <div>
           <h2>Something went wrong</h2>
           <button type="button" onClick={() => reset()}>
             Try again

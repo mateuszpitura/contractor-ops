@@ -52,12 +52,12 @@ export function ContractorSidePanel({ contractor, open, onOpenChange }: Contract
   const rateMinor = typeof custom?.rateValueMinor === 'number' ? custom.rateValueMinor : null;
 
   const rateDisplay =
-    rateMinor !== null
-      ? new Intl.NumberFormat('pl-PL', {
+    rateMinor === null
+      ? null
+      : new Intl.NumberFormat('pl-PL', {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
-        }).format(rateMinor / 100)
-      : null;
+        }).format(rateMinor / 100);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>

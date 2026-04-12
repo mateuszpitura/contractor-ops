@@ -66,7 +66,7 @@ interface TabShipmentsProps {
 
 export function TabShipments({
   shipments,
-  equipmentId,
+  equipmentId: _equipmentId,
   onCreateShipment,
   pendingReturn,
 }: TabShipmentsProps) {

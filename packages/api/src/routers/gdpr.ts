@@ -84,17 +84,17 @@ export const gdprRouter = router({
         results.documentLinks = documentLinks.count;
 
         // 4b. Soft-delete invoices (unless retaining for tax compliance)
-        if (!input.retainFinancialRecords) {
+        if (input.retainFinancialRecords) {
+          results.invoices = 0;
+          results.invoicesRetained = await tx.invoice.count({
+            where: { organizationId: orgId, deletedAt: null },
+          });
+        } else {
           const invoices = await tx.invoice.updateMany({
             where: { organizationId: orgId, deletedAt: null },
             data: { deletedAt: now },
           });
           results.invoices = invoices.count;
-        } else {
-          results.invoices = 0;
-          results.invoicesRetained = await tx.invoice.count({
-            where: { organizationId: orgId, deletedAt: null },
-          });
         }
 
         // 5. Delete notifications
@@ -125,7 +125,14 @@ export const gdprRouter = router({
         // -----------------------------------------------------------------
         // 8. Payments (respect retainFinancialRecords flag)
         // -----------------------------------------------------------------
-        if (!input.retainFinancialRecords) {
+        if (input.retainFinancialRecords) {
+          results.paymentExports = 0;
+          results.paymentRunItems = 0;
+          results.paymentRuns = 0;
+          results.paymentRunsRetained = await tx.paymentRun.count({
+            where: { organizationId: orgId },
+          });
+        } else {
           const paymentExports = await tx.paymentExport.deleteMany({
             where: { organizationId: orgId },
           });
@@ -140,13 +147,6 @@ export const gdprRouter = router({
             where: { organizationId: orgId },
           });
           results.paymentRuns = paymentRuns.count;
-        } else {
-          results.paymentExports = 0;
-          results.paymentRunItems = 0;
-          results.paymentRuns = 0;
-          results.paymentRunsRetained = await tx.paymentRun.count({
-            where: { organizationId: orgId },
-          });
         }
 
         // -----------------------------------------------------------------

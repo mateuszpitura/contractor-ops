@@ -51,11 +51,11 @@ export function SendForSignatureButton({
   }
 
   const isDisabled = !(hasDocument && hasConnectedProvider);
-  const tooltipMessage = !hasDocument
-    ? 'Upload a document first'
-    : !hasConnectedProvider
-      ? 'Connect a signing provider in Settings'
-      : undefined;
+  const tooltipMessage = hasDocument
+    ? hasConnectedProvider
+      ? undefined
+      : 'Connect a signing provider in Settings'
+    : 'Upload a document first';
 
   if (isDisabled && tooltipMessage) {
     return (

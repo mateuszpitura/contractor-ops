@@ -23,14 +23,6 @@ const LINEAR_API_URL = 'https://api.linear.app/graphql';
 // Types
 // ---------------------------------------------------------------------------
 
-interface LinearConnectionConfig {
-  organizationId?: string;
-  statusMappings?: Record<string, unknown[]>;
-  stateCache?: Record<string, Record<string, { name: string; type: string }>>;
-  webhooks?: Record<string, string>;
-  [key: string]: unknown;
-}
-
 interface CreateLinearIssueParams {
   organizationId: string;
   connectionId: string;
@@ -130,16 +122,8 @@ export async function createLinearIssue(
   prisma: PrismaClient,
   params: CreateLinearIssueParams,
 ): Promise<{ identifier: string; linearIssueId: string }> {
-  const {
-    organizationId,
-    connectionId,
-    taskRunId,
-    title,
-    description,
-    assigneeEmail,
-    teamId,
-    teamKey,
-  } = params;
+  const { organizationId, connectionId, taskRunId, title, description, assigneeEmail, teamId } =
+    params;
 
   // 1. Get connection + decrypt credentials
   const connection = await prisma.integrationConnection.findUnique({

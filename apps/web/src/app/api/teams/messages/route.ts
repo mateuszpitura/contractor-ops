@@ -110,7 +110,7 @@ export async function POST(request: Request): Promise<Response> {
 
     // Return the response
     const responseBody =
-      res.responseBody !== undefined ? JSON.stringify(res.responseBody) : undefined;
+      res.responseBody === undefined ? undefined : JSON.stringify(res.responseBody);
 
     return new Response(responseBody, {
       status: res.statusCode,

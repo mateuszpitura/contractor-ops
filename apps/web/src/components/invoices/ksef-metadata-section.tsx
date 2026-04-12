@@ -26,7 +26,7 @@ export function KsefMetadataSection({
   ksefReference,
   upoReceipt,
   fetchedAt,
-  source,
+  source: _source,
 }: KsefMetadataSectionProps) {
   const fetchedDate = new Date(fetchedAt);
   const relativeTime = formatDistanceToNow(fetchedDate, { addSuffix: true });

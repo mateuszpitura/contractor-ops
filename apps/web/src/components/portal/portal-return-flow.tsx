@@ -154,7 +154,7 @@ export function PortalReturnFlow({
   // -------------------------------------------------------------------------
 
   const geowidgetToken =
-    typeof window !== 'undefined' ? (process.env.NEXT_PUBLIC_INPOST_GEOWIDGET_TOKEN ?? '') : '';
+    typeof window === 'undefined' ? '' : (process.env.NEXT_PUBLIC_INPOST_GEOWIDGET_TOKEN ?? '');
 
   // -------------------------------------------------------------------------
   // Render

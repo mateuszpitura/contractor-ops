@@ -11,15 +11,19 @@ vi.mock('sonner', () => ({
 }));
 
 vi.mock('../step-company', () => ({
-  StepCompany: ({ form }: { form: unknown }) => <div data-testid="step-company">Step Company</div>,
+  StepCompany: ({ form: _form }: { form: unknown }) => (
+    <div data-testid="step-company">Step Company</div>
+  ),
 }));
 
 vi.mock('../step-billing', () => ({
-  StepBilling: ({ form }: { form: unknown }) => <div data-testid="step-billing">Step Billing</div>,
+  StepBilling: ({ form: _form }: { form: unknown }) => (
+    <div data-testid="step-billing">Step Billing</div>
+  ),
 }));
 
 vi.mock('../step-assignment', () => ({
-  StepAssignment: ({ form }: { form: unknown }) => (
+  StepAssignment: ({ form: _form }: { form: unknown }) => (
     <div data-testid="step-assignment">Step Assignment</div>
   ),
 }));
@@ -290,7 +294,7 @@ describe('WizardDialog (Contractor)', () => {
   });
 
   it('prevents Enter from advancing form via onKeyDown', async () => {
-    const { user } = setup(<WizardDialog open={true} onOpenChange={onOpenChange} />);
+    setup(<WizardDialog open={true} onOpenChange={onOpenChange} />);
     // Pressing Enter should not advance, form should stay on step 1
     expect(screen.getByTestId('step-company')).toBeInTheDocument();
     expect(screen.queryByTestId('step-billing')).not.toBeInTheDocument();

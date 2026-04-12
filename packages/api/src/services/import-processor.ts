@@ -298,10 +298,10 @@ export async function processImportFile(
 
   for (const { rowNumber, data } of mappedRows) {
     const { valid, errors } = validator({ ...data });
-    if (!valid) {
-      invalidRows.push({ rowNumber, data, status: 'invalid', errors });
-    } else {
+    if (valid) {
       validRows.push({ rowNumber, data, status: 'valid', errors: [] });
+    } else {
+      invalidRows.push({ rowNumber, data, status: 'invalid', errors });
     }
   }
 

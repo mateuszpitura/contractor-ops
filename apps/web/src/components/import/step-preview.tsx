@@ -93,7 +93,7 @@ export function StepPreview({ validRows, invalidRows, totalRows }: StepPreviewPr
       {!hasNoInvalidRows && (
         <div className="flex gap-2">
           <Button
-            variant={!showErrorsOnly ? 'default' : 'outline'}
+            variant={showErrorsOnly ? 'outline' : 'default'}
             size="sm"
             onClick={() => setShowErrorsOnly(false)}
             type="button">

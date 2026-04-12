@@ -56,7 +56,7 @@ export function NotificationCenter() {
 
   // Build query input
   const queryInput = useMemo(() => {
-    const types = typeFilter !== 'all' ? TYPE_MAP[typeFilter] : undefined;
+    const types = typeFilter === 'all' ? undefined : TYPE_MAP[typeFilter];
     // The API accepts a single type enum value, not an array.
     // For multi-type filters (e.g. approvals = 2 types), we pass undefined and let
     // the API return all. For single-type filters, we pass the specific type.

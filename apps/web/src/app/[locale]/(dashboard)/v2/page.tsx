@@ -271,12 +271,7 @@ export default function DashboardV2Page() {
               <TiltCard key={kpi.label} delay={280 + i * 70} href={kpi.href} shimmer>
                 <div className="flex h-full flex-col justify-between gap-4">
                   <div className="flex items-start justify-between">
-                    <div
-                      className="flex h-9 w-9 items-center justify-center rounded-xl transition-transform group-hover:scale-110"
-                      style={{
-                        background: `color-mix(in oklch, ${kpi.color} 10%, transparent)`,
-                        color: kpi.color,
-                      }}>
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl transition-transform group-hover:scale-110">
                       <Icon className="h-4 w-4" />
                     </div>
                     {'ring' in kpi && kpi.ring && (
@@ -286,9 +281,7 @@ export default function DashboardV2Page() {
                         color={kpi.color}
                         size={38}
                         stroke={3}>
-                        <span className="text-[8px] font-bold" style={{ color: kpi.color }}>
-                          {kpi.val}
-                        </span>
+                        <span className="text-[8px] font-bold">{kpi.val}</span>
                       </Ring>
                     )}
                   </div>
@@ -340,22 +333,10 @@ export default function DashboardV2Page() {
                 </Link>
               </div>
 
-              {!deadlines?.length ? (
-                <p className="py-10 text-center text-xs text-muted-foreground">
-                  {t('deadlines.empty')}
-                </p>
-              ) : (
+              {deadlines?.length ? (
                 <div className="relative space-y-0.5">
                   {/* Glowing gradient timeline */}
-                  <div
-                    className="absolute start-[9px] top-4 bottom-4 w-[2px] rounded-full"
-                    style={{
-                      background:
-                        'linear-gradient(to bottom, var(--color-primary), var(--color-warning), var(--color-destructive), transparent)',
-                      boxShadow:
-                        '0 0 12px color-mix(in oklch, var(--color-primary) 25%, transparent)',
-                    }}
-                  />
+                  <div className="absolute start-[9px] top-4 bottom-4 w-[2px] rounded-full" />
 
                   {deadlines.slice(0, 6).map(item => {
                     const cfg = DL_CFG[item.type] ?? DL_CFG.TASK_OVERDUE;
@@ -369,15 +350,10 @@ export default function DashboardV2Page() {
                         href={dlHref(item.type, item.entityId)}
                         className="group/d relative flex items-center gap-3 rounded-xl py-2.5 ps-8 pe-2 transition-all hover:bg-muted/15">
                         {/* Node */}
-                        <div
-                          className="absolute start-[3px] h-[14px] w-[14px] rounded-full border-2 bg-card transition-shadow group-hover/d:shadow-md"
-                          style={{ borderColor: cfg.color, boxShadow: `0 0 6px ${cfg.color}` }}>
-                          <div
-                            className="absolute inset-[3px] rounded-full"
-                            style={{ backgroundColor: cfg.color }}
-                          />
+                        <div className="absolute start-[3px] h-[14px] w-[14px] rounded-full border-2 bg-card transition-shadow group-hover/d:shadow-md">
+                          <div className="absolute inset-[3px] rounded-full" />
                         </div>
-                        <span style={{ color: cfg.color }}>
+                        <span>
                           <Icon className="h-3.5 w-3.5" />
                         </span>
                         <span className="min-w-0 flex-1 truncate text-[13px] font-medium">
@@ -393,6 +369,10 @@ export default function DashboardV2Page() {
                     );
                   })}
                 </div>
+              ) : (
+                <p className="py-10 text-center text-xs text-muted-foreground">
+                  {t('deadlines.empty')}
+                </p>
               )}
             </TiltCard>
           </div>
@@ -426,12 +406,7 @@ export default function DashboardV2Page() {
                     shimmer>
                     <div className="flex items-center gap-3.5">
                       {/* Avatar */}
-                      <div
-                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-sm font-black transition-transform group-hover:scale-105"
-                        style={{
-                          background: `linear-gradient(135deg, color-mix(in oklch, var(--color-primary) 15%, transparent), color-mix(in oklch, var(--color-primary) 5%, transparent))`,
-                          color: 'var(--color-primary)',
-                        }}>
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-sm font-black transition-transform group-hover:scale-105">
                         {name.charAt(0).toUpperCase()}
                       </div>
                       <div className="min-w-0 flex-1">

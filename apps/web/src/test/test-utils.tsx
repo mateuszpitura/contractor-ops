@@ -4,8 +4,8 @@ import userEvent from '@testing-library/user-event';
 import { NextIntlClientProvider } from 'next-intl';
 import type { ReactElement, ReactNode } from 'react';
 
-import enMessages from '../../messages/en.json';
-import plMessages from '../../messages/pl.json';
+import enMessages from '../../messages/en.json' with { type: 'json' };
+import plMessages from '../../messages/pl.json' with { type: 'json' };
 
 const messages: Record<string, typeof enMessages> = {
   en: enMessages,

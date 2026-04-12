@@ -513,8 +513,8 @@ export const contractorRouter = router({
         const currentCustom = (existing.customFieldsJson as Record<string, unknown>) ?? {};
         updateData.customFieldsJson = {
           ...currentCustom,
-          ...(billingModel !== undefined ? { billingModel } : {}),
-          ...(rateValueMinor !== undefined ? { rateValueMinor } : {}),
+          ...(billingModel === undefined ? {} : { billingModel }),
+          ...(rateValueMinor === undefined ? {} : { rateValueMinor }),
         };
       }
 

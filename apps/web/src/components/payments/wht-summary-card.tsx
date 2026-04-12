@@ -22,7 +22,7 @@ interface WhtSummaryCardProps {
   }>;
 }
 
-export function WhtSummaryCard({ paymentRunId, items }: WhtSummaryCardProps) {
+export function WhtSummaryCard({ paymentRunId: _paymentRunId, items }: WhtSummaryCardProps) {
   const locale = useLocale();
   const whtItems = items.filter(i => i.whtAmountMinor && i.whtAmountMinor > 0);
 

@@ -34,16 +34,8 @@ export default async function PortalLayout({ children }: { children: ReactNode }
       });
       if (org) {
         const settings = (org.settingsJson as Record<string, unknown>) ?? {};
-        const brandColor = (settings.brandColor as string) ?? null;
-        return (
-          <div
-            className="min-h-screen bg-background"
-            style={
-              brandColor ? ({ '--brand-accent': brandColor } as React.CSSProperties) : undefined
-            }>
-            {children}
-          </div>
-        );
+        const _brandColor = (settings.brandColor as string) ?? null;
+        return <div className="min-h-screen bg-background">{children}</div>;
       }
     }
     return <div className="min-h-screen bg-background">{children}</div>;
@@ -64,12 +56,10 @@ export default async function PortalLayout({ children }: { children: ReactNode }
 
   // Extract brand color from org settings for CSS custom property injection (D-12)
   const settings = (organization?.settingsJson as Record<string, unknown>) ?? {};
-  const brandColor = (settings.brandColor as string) ?? null;
+  const _brandColor = (settings.brandColor as string) ?? null;
 
   return (
-    <div
-      className="min-h-screen bg-background"
-      style={brandColor ? ({ '--brand-accent': brandColor } as React.CSSProperties) : undefined}>
+    <div className="min-h-screen bg-background">
       <a
         href="#portal-content"
         className="fixed start-4 top-4 z-[100] -translate-y-16 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-lg transition-transform focus:translate-y-0">

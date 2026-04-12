@@ -42,7 +42,7 @@ function SortableItem({ id, index, allTasks, form, onRemove }: SortableItemProps
     id,
   });
 
-  const style = {
+  const _style = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
@@ -50,7 +50,7 @@ function SortableItem({ id, index, allTasks, form, onRemove }: SortableItemProps
   };
 
   return (
-    <div ref={setNodeRef} style={style}>
+    <div ref={setNodeRef}>
       <TaskCard
         index={index}
         allTasks={allTasks}

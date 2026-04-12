@@ -18,7 +18,7 @@ export function linearWebhookDuplicateDelivery() {
 
   return {
     handlers: [
-      http.post('https://api.linear.app/graphql', ({ request }) => {
+      http.post('https://api.linear.app/graphql', ({ request: _request }) => {
         // Always return success for any GraphQL call during webhook processing
         return HttpResponse.json({
           data: {

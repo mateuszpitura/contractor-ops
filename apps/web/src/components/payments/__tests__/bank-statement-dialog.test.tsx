@@ -711,9 +711,7 @@ describe('BankStatementDialog', () => {
         });
     });
 
-    const { user } = setup(
-      <BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />,
-    );
+    setup(<BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />);
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
     fireEvent.change(fileInput, {
       target: { files: [new File(['d'], 's.csv', { type: 'text/csv' })] },

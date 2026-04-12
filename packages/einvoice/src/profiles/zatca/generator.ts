@@ -142,7 +142,7 @@ export function generateZatcaXml(invoice: EInvoice): string {
     },
     'cac:TaxCategory': {
       'cbc:ID': tax.taxCategory,
-      ...(tax.percent != null ? { 'cbc:Percent': tax.percent.toString() } : {}),
+      ...(tax.percent == null ? {} : { 'cbc:Percent': tax.percent.toString() }),
       'cac:TaxScheme': {
         'cbc:ID': ZATCA_TAX_SCHEME_ID,
       },

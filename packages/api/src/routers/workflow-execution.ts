@@ -153,11 +153,11 @@ export const workflowExecutionRouter = router({
 
           let resultJson: Record<string, unknown> | null = null;
 
-          const status = !conditionMet
-            ? ('SKIPPED' as const)
-            : dependsOnRunId
+          const status = conditionMet
+            ? dependsOnRunId
               ? ('BLOCKED' as const)
-              : ('TODO' as const);
+              : ('TODO' as const)
+            : ('SKIPPED' as const);
 
           if (!conditionMet) {
             resultJson = { skipReason: 'condition_not_met' };

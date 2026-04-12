@@ -294,7 +294,7 @@ export function ContractWizardDialog({
   };
 
   const submitForm = () => {
-    form.handleSubmit((data: ContractWizardFormValues) => {
+    void form.handleSubmit((data: ContractWizardFormValues) => {
       createMutation.mutate({
         ...data,
         startDate: new Date(data.startDate).toISOString(),

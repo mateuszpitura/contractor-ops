@@ -86,7 +86,7 @@ export function StepUpload({
     [onFileSelected, t],
   );
 
-  const { getRootProps, getInputProps, isDragActive, fileRejections } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: ACCEPTED_TYPES,
     maxSize: MAX_FILE_SIZE,
@@ -127,7 +127,26 @@ export function StepUpload({
       </div>
 
       {/* File drop zone */}
-      {!fileName ? (
+      {fileName ? (
+        <div className="flex items-center gap-3 rounded-lg border bg-muted/30 p-4">
+          <FileSpreadsheet className="size-8 text-primary" />
+          <div className="flex-1 min-w-0">
+            <p className="truncate text-sm font-medium">{fileName}</p>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={e => {
+              e.stopPropagation();
+              onFileRemoved();
+            }}
+            type="button"
+            aria-label={t('upload.remove')}>
+            <X className="size-4" />
+            <span className="sr-only">{t('upload.remove')}</span>
+          </Button>
+        </div>
+      ) : (
         <div
           {...getRootProps()}
           role="button"
@@ -148,25 +167,6 @@ export function StepUpload({
           <p className="mt-1 text-xs text-muted-foreground">{t('upload.dropBody')}</p>
           <Button variant="secondary" size="sm" className="mt-4" type="button">
             {t('upload.browse')}
-          </Button>
-        </div>
-      ) : (
-        <div className="flex items-center gap-3 rounded-lg border bg-muted/30 p-4">
-          <FileSpreadsheet className="size-8 text-primary" />
-          <div className="flex-1 min-w-0">
-            <p className="truncate text-sm font-medium">{fileName}</p>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={e => {
-              e.stopPropagation();
-              onFileRemoved();
-            }}
-            type="button"
-            aria-label={t('upload.remove')}>
-            <X className="size-4" />
-            <span className="sr-only">{t('upload.remove')}</span>
           </Button>
         </div>
       )}

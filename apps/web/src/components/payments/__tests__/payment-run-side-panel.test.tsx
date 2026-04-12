@@ -169,9 +169,7 @@ describe('PaymentRunSidePanel', () => {
 
   it('renders skeleton loading state when run data is null', () => {
     runData = null;
-    const { container } = render(
-      <PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />);
     // When run is null, no run header is shown
     expect(screen.queryByText('PR-001')).not.toBeInTheDocument();
   });

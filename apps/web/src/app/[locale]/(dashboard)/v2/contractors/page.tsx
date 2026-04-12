@@ -42,7 +42,7 @@ function nameToHue(name: string): number {
   return Math.abs(hash) % 360;
 }
 
-function avatarGradient(name: string): string {
+function _avatarGradient(name: string): string {
   const h = nameToHue(name);
   return `linear-gradient(135deg, oklch(0.65 0.15 ${h}) 0%, oklch(0.50 0.18 ${(h + 40) % 360}) 100%)`;
 }
@@ -54,47 +54,11 @@ function avatarGradient(name: string): string {
 function AtelierBg() {
   return (
     <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            'linear-gradient(170deg, color-mix(in oklch, var(--color-primary) 4%, transparent) 0%, transparent 40%, color-mix(in oklch, oklch(0.6 0.15 270) 2%, transparent) 100%)',
-        }}
-      />
-      <div
-        className="absolute -start-[10%] -top-[10%] h-[700px] w-[700px] rounded-full"
-        style={{
-          background:
-            'radial-gradient(circle, color-mix(in oklch, var(--color-primary) 18%, transparent) 0%, transparent 65%)',
-          animation: 'drift-1 28s ease-in-out infinite',
-          filter: 'blur(80px)',
-        }}
-      />
-      <div
-        className="absolute -end-[5%] top-[20%] h-[500px] w-[500px] rounded-full"
-        style={{
-          background:
-            'radial-gradient(circle, color-mix(in oklch, oklch(0.78 0.14 55) 12%, transparent) 0%, transparent 65%)',
-          animation: 'drift-2 35s ease-in-out infinite',
-          filter: 'blur(100px)',
-        }}
-      />
-      <div
-        className="absolute inset-0 opacity-[0.03] dark:opacity-[0.06] mix-blend-overlay"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
-          backgroundSize: '256px',
-        }}
-      />
-      <div
-        className="absolute inset-0"
-        style={{
-          backgroundImage:
-            'radial-gradient(circle, var(--color-muted-foreground) 0.5px, transparent 0.5px)',
-          backgroundSize: '32px 32px',
-          opacity: 0.04,
-        }}
-      />
+      <div className="absolute inset-0" />
+      <div className="absolute -start-[10%] -top-[10%] h-[700px] w-[700px] rounded-full" />
+      <div className="absolute -end-[5%] top-[20%] h-[500px] w-[500px] rounded-full" />
+      <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.06] mix-blend-overlay" />
+      <div className="absolute inset-0" />
     </div>
   );
 }
@@ -106,7 +70,7 @@ function AtelierBg() {
 function TiltCard({
   children,
   className = '',
-  delay = 0,
+  delay: _delay = 0,
   href,
   onClick,
 }: {
@@ -137,7 +101,6 @@ function TiltCard({
     <div
       ref={ref}
       className={`atelier-enter atelier-glass group relative rounded-2xl p-5 transition-[transform,box-shadow] duration-[400ms] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_12px_40px_rgba(0,0,0,0.25)] ${className}`}
-      style={{ animationDelay: `${delay}ms` }}
       onMouseMove={onMove}
       onMouseLeave={onLeave}
       onClick={onClick}>
@@ -256,9 +219,7 @@ function StatsStrip({ total, byStage }: { total: number; byStage: Record<string,
     <div className="flex flex-wrap items-center gap-5">
       {stats.map(s => (
         <div key={s.label} className="flex items-baseline gap-1.5">
-          <span
-            className="font-display text-[22px] font-black leading-none tracking-tight"
-            style={{ color: s.color }}>
+          <span className="font-display text-[22px] font-black leading-none tracking-tight">
             {s.value}
           </span>
           <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-muted-foreground/50">
@@ -321,9 +282,7 @@ function ContractorCard({ c, index }: { c: ContractorCardData; index: number }) 
         {/* Top row: avatar + status + compliance */}
         <div className="flex items-start gap-3">
           {/* Gradient avatar */}
-          <div
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-base font-black text-white shadow-lg transition-transform group-hover:scale-105"
-            style={{ background: avatarGradient(name) }}>
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-base font-black text-white shadow-lg transition-transform group-hover:scale-105">
             {name.charAt(0).toUpperCase()}
           </div>
 
@@ -520,9 +479,7 @@ function ContractorsV2Content() {
       {/* ================================================================ */}
       {/* FILTERS + SEARCH BAR                                             */}
       {/* ================================================================ */}
-      <div
-        className="atelier-enter flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
-        style={{ animationDelay: '100ms' }}>
+      <div className="atelier-enter flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         {/* Stage filter pills */}
         <div className="flex flex-wrap gap-1.5">
           {STAGE_FILTER_VALUES.map(value => (
@@ -601,9 +558,7 @@ function ContractorsV2Content() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div
-              className="atelier-enter flex items-center justify-center gap-4 pt-2"
-              style={{ animationDelay: '200ms' }}>
+            <div className="atelier-enter flex items-center justify-center gap-4 pt-2">
               <button
                 type="button"
                 disabled={page <= 1}

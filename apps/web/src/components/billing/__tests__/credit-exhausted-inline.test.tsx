@@ -3,9 +3,7 @@ import { CreditExhaustedInline } from '../credit-exhausted-inline';
 
 describe('CreditExhaustedInline', () => {
   it('renders the alert with exhaustion message', () => {
-    const { container } = setup(
-      <CreditExhaustedInline onUpgrade={vi.fn()} onBuyCredits={vi.fn()} />,
-    );
+    setup(<CreditExhaustedInline onUpgrade={vi.fn()} onBuyCredits={vi.fn()} />);
     expect(screen.getByRole('alert')).toBeInTheDocument();
     expect(screen.getByText('OCR credits exhausted')).toBeInTheDocument();
     expect(screen.getByText(/You have used all OCR credits this month/)).toBeInTheDocument();

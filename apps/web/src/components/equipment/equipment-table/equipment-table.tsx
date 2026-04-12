@@ -209,9 +209,9 @@ export function EquipmentTable({
                           : undefined
                     }
                     style={
-                      header.column.getSize() !== 150
-                        ? { width: header.column.getSize() }
-                        : undefined
+                      header.column.getSize() === 150
+                        ? undefined
+                        : { width: header.column.getSize() }
                     }>
                     {header.isPlaceholder ? null : header.column.getCanSort() ? (
                       <button
@@ -291,7 +291,7 @@ export function EquipmentTable({
         {!isLoading && totalRows > 0 && (
           <div className="flex items-center justify-between border-t px-4 py-3">
             <p className="text-sm text-muted-foreground">
-              {totalRows} item{totalRows !== 1 ? 's' : ''}
+              {totalRows} item{totalRows === 1 ? '' : 's'}
             </p>
             <div className="flex items-center gap-2">
               <Button

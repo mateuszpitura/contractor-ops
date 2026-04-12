@@ -97,14 +97,9 @@ function ChartTooltip({
       </p>
       {payload.map(entry => (
         <div key={entry.name} className="flex items-baseline gap-2">
-          <span
-            className="inline-block h-2 w-2 shrink-0 rounded-full"
-            style={{ backgroundColor: entry.color }}
-          />
+          <span className="inline-block h-2 w-2 shrink-0 rounded-full" />
           <span className="text-xs text-muted-foreground">{entry.name}</span>
-          <span
-            className="ms-auto font-display text-sm font-bold tabular-nums"
-            style={{ color: entry.color }}>
+          <span className="ms-auto font-display text-sm font-bold tabular-nums">
             {currencyFormatter.format(entry.value / 100)}
           </span>
         </div>

@@ -274,7 +274,7 @@ export function getColumns(
       header: t('columns.sla'),
       cell: ({ row }) => {
         const step = row.original;
-        const slaHours = step.slaStatus?.hoursRemaining != null ? undefined : undefined;
+        const slaHours = step.slaStatus?.hoursRemaining == null ? undefined : undefined;
 
         return <SlaBadge slaDeadline={step.slaDeadline} status={step.status} slaHours={slaHours} />;
       },

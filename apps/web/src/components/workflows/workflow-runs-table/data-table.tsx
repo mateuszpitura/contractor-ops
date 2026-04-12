@@ -223,9 +223,9 @@ export function WorkflowRunsDataTable({ onRowClick, onStartWorkflow }: WorkflowR
                   <TableHead
                     key={header.id}
                     style={
-                      header.column.getSize() !== 150
-                        ? { width: header.column.getSize() }
-                        : undefined
+                      header.column.getSize() === 150
+                        ? undefined
+                        : { width: header.column.getSize() }
                     }
                     aria-sort={
                       header.column.getIsSorted() === 'asc'

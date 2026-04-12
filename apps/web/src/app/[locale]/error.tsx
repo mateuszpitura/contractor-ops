@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
  * Client component with reset capability.
  */
 export default function ErrorPage({
-  error,
+  error: _error,
   reset,
 }: {
   error: Error & { digest?: string };

@@ -84,15 +84,15 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
   const t = useTranslations('Workflows');
 
   const addRule = () => {
-    if (!value) {
-      onChange({
-        combinator: 'AND',
-        rules: [{ field: '', operator: 'equals', value: '' }],
-      });
-    } else {
+    if (value) {
       onChange({
         ...value,
         rules: [...value.rules, { field: '', operator: 'equals', value: '' }],
+      });
+    } else {
+      onChange({
+        combinator: 'AND',
+        rules: [{ field: '', operator: 'equals', value: '' }],
       });
     }
   };

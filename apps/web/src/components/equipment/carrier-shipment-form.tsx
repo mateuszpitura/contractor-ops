@@ -237,7 +237,7 @@ export function CarrierShipmentForm({
   ]);
 
   const geowidgetToken =
-    typeof window !== 'undefined' ? (process.env.NEXT_PUBLIC_INPOST_GEOWIDGET_TOKEN ?? '') : '';
+    typeof window === 'undefined' ? '' : (process.env.NEXT_PUBLIC_INPOST_GEOWIDGET_TOKEN ?? '');
 
   // Empty state: no carriers configured
   if (configuredCarriers.length === 0) {

@@ -132,7 +132,7 @@ export function OrgSwitcher() {
           <form
             onSubmit={e => {
               e.preventDefault();
-              handleCreateOrg();
+              void handleCreateOrg();
             }}
             className="space-y-4">
             <div className="space-y-2">

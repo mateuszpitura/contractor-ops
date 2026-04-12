@@ -53,16 +53,16 @@ describe('PdfViewer', () => {
     expect(screen.getByTestId('pdf-page')).toBeInTheDocument();
   });
 
-  it('starts on page 1', () => {
+  it('starts on page 1', async () => {
     render(<PdfViewer url="https://example.com/test.pdf" />);
     const page = screen.getByTestId('pdf-page');
-    expect(page).toHaveAttribute('data-page', '1');
+    await expect(page).toHaveAttribute('data-page', '1');
   });
 
-  it('starts with scale 1.0', () => {
+  it('starts with scale 1.0', async () => {
     render(<PdfViewer url="https://example.com/test.pdf" />);
     const page = screen.getByTestId('pdf-page');
-    expect(page).toHaveAttribute('data-scale', '1');
+    await expect(page).toHaveAttribute('data-scale', '1');
   });
 
   it('previous page button is disabled on page 1', () => {

@@ -189,9 +189,9 @@ export default function PortalContractDetailPage({ params }: { params: Promise<{
           <DetailField
             label={t('contracts.paymentTerms')}
             value={
-              contract.paymentTermsDays != null
-                ? t('contracts.paymentTermsDays', { days: contract.paymentTermsDays })
-                : t('time.na')
+              contract.paymentTermsDays == null
+                ? t('time.na')
+                : t('contracts.paymentTermsDays', { days: contract.paymentTermsDays })
             }
           />
           <DetailField
@@ -201,9 +201,9 @@ export default function PortalContractDetailPage({ params }: { params: Promise<{
           <DetailField
             label={t('contracts.noticePeriod')}
             value={
-              contract.noticePeriodDays != null
-                ? t('contracts.paymentTermsDays', { days: contract.noticePeriodDays })
-                : t('time.na')
+              contract.noticePeriodDays == null
+                ? t('time.na')
+                : t('contracts.paymentTermsDays', { days: contract.noticePeriodDays })
             }
           />
         </CardContent>

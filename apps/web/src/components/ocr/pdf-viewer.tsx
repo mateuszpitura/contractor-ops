@@ -27,8 +27,8 @@ export function PdfViewer({ url, className }: PdfViewerProps) {
 
   // Load react-pdf CSS dynamically to avoid Next.js build issues
   useEffect(() => {
-    import('react-pdf/dist/Page/AnnotationLayer.css' as never);
-    import('react-pdf/dist/Page/TextLayer.css' as never);
+    void import('react-pdf/dist/Page/AnnotationLayer.css' as never);
+    void import('react-pdf/dist/Page/TextLayer.css' as never);
   }, []);
 
   const onDocumentLoadSuccess = useCallback(({ numPages: total }: { numPages: number }) => {

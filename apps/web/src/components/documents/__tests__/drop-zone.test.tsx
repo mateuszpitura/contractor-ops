@@ -240,7 +240,7 @@ describe('DropZone', () => {
   // ---- Drag active state ----
   it('applies drag-active styling when isDragActive is true', () => {
     mockIsDragActive = true;
-    const { container } = render(<DropZone />);
+    render(<DropZone />);
     // The dropzone should still render
     expect(screen.getByTestId('dropzone')).toBeInTheDocument();
   });

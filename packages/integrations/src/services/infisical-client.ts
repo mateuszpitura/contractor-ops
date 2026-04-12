@@ -177,7 +177,7 @@ export class InfisicalSecretStore implements SecretStore {
    */
   private async ensureInitialized(): Promise<void> {
     if (this.sdk) return;
-    if (this.initPromise) {
+    if (this.initPromise !== null) {
       await this.initPromise;
       return;
     }

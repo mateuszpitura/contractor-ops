@@ -249,7 +249,7 @@ export function ApprovalQueueTable({
         <div className="fixed inset-x-0 bottom-0 z-50 border-t bg-card px-6 py-3 shadow-lg animate-in slide-in-from-bottom-4">
           <div className="mx-auto flex max-w-7xl items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              {selectedArray.length} timesheet{selectedArray.length !== 1 ? 's' : ''} selected
+              {selectedArray.length} timesheet{selectedArray.length === 1 ? '' : 's'} selected
             </p>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" onClick={() => setSelectedIds(new Set())}>
@@ -295,7 +295,7 @@ export function ApprovalQueueTable({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Approve {selectedArray.length} Timesheet{selectedArray.length !== 1 ? 's' : ''}
+              Approve {selectedArray.length} Timesheet{selectedArray.length === 1 ? '' : 's'}
             </AlertDialogTitle>
             <AlertDialogDescription>
               This will approve all selected timesheets. The contractors will be notified.

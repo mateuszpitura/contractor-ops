@@ -68,7 +68,6 @@ export function BrandColorPicker({ value, onChange }: BrandColorPickerProps) {
           <button
             type="button"
             className="h-6 w-6 rounded-md border border-input shadow-sm transition-colors hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            style={{ backgroundColor: value }}
             aria-label={tAria('selectedColor', { value })}
           />
         }
@@ -86,7 +85,6 @@ export function BrandColorPicker({ value, onChange }: BrandColorPickerProps) {
                   'relative h-8 w-8 rounded-md transition-all',
                   isSelected && 'ring-2 ring-offset-2 ring-primary',
                 )}
-                style={{ backgroundColor: swatch.hex }}
                 onClick={() => handleSwatchClick(swatch.hex)}
                 aria-label={tAria('colorSwatch', { label: swatch.label, hex: swatch.hex })}
                 aria-pressed={isSelected}>

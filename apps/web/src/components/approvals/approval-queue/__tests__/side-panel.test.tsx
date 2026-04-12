@@ -107,9 +107,7 @@ describe('ApprovalSidePanel', () => {
   });
 
   it('renders nothing when step is null', () => {
-    const { container } = render(
-      <ApprovalSidePanel step={null} open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<ApprovalSidePanel step={null} open={true} onOpenChange={onOpenChange} />);
     // Sheet component still renders but with no content
     expect(screen.queryByText('FV/2025/001')).not.toBeInTheDocument();
   });

@@ -48,7 +48,7 @@ export function EmbeddedSigningModal({
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const returnUrl =
-    typeof window !== 'undefined' ? `${window.location.origin}/signing-complete` : '';
+    typeof window === 'undefined' ? '' : `${window.location.origin}/signing-complete`;
 
   const queryInput = { envelopeId, recipientEmail, returnUrl };
   const queryEnabled = { enabled: open && !!envelopeId && !!returnUrl };

@@ -320,7 +320,7 @@ describe('ImportWizardDialog', () => {
   });
 
   it('does not call mutate when next is clicked without file', async () => {
-    const { user } = setup(<ImportWizardDialog open={true} onOpenChange={onOpenChange} />);
+    setup(<ImportWizardDialog open={true} onOpenChange={onOpenChange} />);
     // Next button is disabled, but even if somehow clicked, no mutation
     expect(mockMutate).not.toHaveBeenCalled();
   });

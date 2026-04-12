@@ -64,21 +64,21 @@ export function parseFa3Xml(
 
   const lines = linesArray.map(line => {
     const netAmount = toMinorUnits(line.P_11);
-    const vatRateStr = line.P_12 != null ? String(line.P_12) : undefined;
+    const vatRateStr = line.P_12 == null ? undefined : String(line.P_12);
     const vatAmount =
-      line.P_11A != null
-        ? toMinorUnits(line.P_11A)
-        : vatRateStr && !Number.isNaN(parseFloat(vatRateStr))
+      line.P_11A == null
+        ? vatRateStr && !Number.isNaN(parseFloat(vatRateStr))
           ? Math.round(netAmount * (parseFloat(vatRateStr) / 100))
-          : undefined;
-    const grossAmount = vatAmount !== undefined ? netAmount + vatAmount : undefined;
+          : undefined
+        : toMinorUnits(line.P_11A);
+    const grossAmount = vatAmount === undefined ? undefined : netAmount + vatAmount;
 
     return {
       lineNumber: Number(line.NrWierszaFa ?? 0),
       description: String(line.P_7 ?? ''),
-      quantity: line.P_8B != null ? Number(line.P_8B) : undefined,
-      unit: line.P_8A != null ? String(line.P_8A) : undefined,
-      unitPriceMinor: line.P_9A != null ? toMinorUnits(line.P_9A) : undefined,
+      quantity: line.P_8B == null ? undefined : Number(line.P_8B),
+      unit: line.P_8A == null ? undefined : String(line.P_8A),
+      unitPriceMinor: line.P_9A == null ? undefined : toMinorUnits(line.P_9A),
       netAmountMinor: netAmount || undefined,
       vatRate: vatRateStr,
       vatAmountMinor: vatAmount,
@@ -88,29 +88,29 @@ export function parseFa3Xml(
 
   // Totals
   const netTotal =
-    fa.P_13_1 != null
-      ? toMinorUnits(fa.P_13_1)
-      : lines.reduce((s, l) => s + (l.netAmountMinor ?? 0), 0);
+    fa.P_13_1 == null
+      ? lines.reduce((s, l) => s + (l.netAmountMinor ?? 0), 0)
+      : toMinorUnits(fa.P_13_1);
   const vatTotal =
-    fa.P_14_1 != null
-      ? toMinorUnits(fa.P_14_1)
-      : lines.reduce((s, l) => s + (l.vatAmountMinor ?? 0), 0);
-  const grossTotal = fa.P_15 != null ? toMinorUnits(fa.P_15) : netTotal + vatTotal;
+    fa.P_14_1 == null
+      ? lines.reduce((s, l) => s + (l.vatAmountMinor ?? 0), 0)
+      : toMinorUnits(fa.P_14_1);
+  const grossTotal = fa.P_15 == null ? netTotal + vatTotal : toMinorUnits(fa.P_15);
 
   // Payment info
   const platnosc = fa.Platnosc as Record<string, unknown> | undefined;
   const payment = platnosc
     ? {
-        dueDate: platnosc.TerminPlatnosci != null ? String(platnosc.TerminPlatnosci) : undefined,
+        dueDate: platnosc.TerminPlatnosci == null ? undefined : String(platnosc.TerminPlatnosci),
         bankAccount:
-          (platnosc.NrRB ?? dig(platnosc as Record<string, unknown>, 'RachunekBankowy', 'NrRB')) !=
+          (platnosc.NrRB ?? dig(platnosc as Record<string, unknown>, 'RachunekBankowy', 'NrRB')) ==
           null
-            ? String(
+            ? undefined
+            : String(
                 platnosc.NrRB ??
                   dig(platnosc as Record<string, unknown>, 'RachunekBankowy', 'NrRB'),
-              )
-            : undefined,
-        method: platnosc.FormaPlatnosci != null ? String(platnosc.FormaPlatnosci) : undefined,
+              ),
+        method: platnosc.FormaPlatnosci == null ? undefined : String(platnosc.FormaPlatnosci),
       }
     : undefined;
 

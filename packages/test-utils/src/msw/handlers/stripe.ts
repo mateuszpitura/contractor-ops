@@ -7,7 +7,7 @@ export function stripeHandlers(options?: HandlerOptions) {
 
   return [
     // --- Customers ---
-    http.post('https://api.stripe.com/v1/customers', async ({ request }) => {
+    http.post('https://api.stripe.com/v1/customers', async ({ request: _request }) => {
       const err = await applyNetworkConditions(net);
       if (err) return err;
       return HttpResponse.json({

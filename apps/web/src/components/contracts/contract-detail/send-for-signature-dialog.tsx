@@ -73,14 +73,14 @@ type SendForSignatureDialogProps = {
 // Sortable Signer Row
 // ---------------------------------------------------------------------------
 
-function SortableSignerRow({ signer, index }: { signer: Signer; index: number }) {
+function SortableSignerRow({ signer, index: _index }: { signer: Signer; index: number }) {
   const tAria = useTranslations('Common.aria');
   const t = useTranslations('ContractDetail.signing.sendDialog');
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: signer.id,
   });
 
-  const style = {
+  const _style = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
@@ -89,10 +89,7 @@ function SortableSignerRow({ signer, index }: { signer: Signer; index: number })
   const initials = getAvatarInitials(signer.name, signer.email);
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className="flex items-center gap-3 rounded-lg border bg-card p-3">
+    <div ref={setNodeRef} className="flex items-center gap-3 rounded-lg border bg-card p-3">
       <button
         type="button"
         className="shrink-0 cursor-grab touch-none text-muted-foreground hover:text-foreground"

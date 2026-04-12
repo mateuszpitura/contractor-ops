@@ -55,7 +55,18 @@
         "useConsistentArrayType": {
           "level": "warn",
           "options": { "syntax": "shorthand" }
-        }
+        },
+        "noParameterAssign": "error",
+        "useExponentiationOperator": "error",
+        "noNegationElse": "warn",
+        "useNodejsImportProtocol": "error",
+        "noNonNullAssertion": "warn"
+      },
+      "correctness": {
+        "useImportExtensions": "off",
+        "noUnresolvedImports": "off",
+        "useUniqueElementIds": "warn",
+        "noUndeclaredDependencies": "warn"
       },
       "performance": {
         "noAccumulatingSpread": "error",
@@ -84,7 +95,20 @@
       },
       "nursery": {
         "noNestedPromises": "error",
-        "noLeakedRender": "warn"
+        "noLeakedRender": "warn",
+        "noFloatingPromises": "error",
+        "noMisusedPromises": "error",
+        "noDuplicateEnumValues": "error",
+        "noImpliedEval": "error",
+        "noMultiAssign": "error",
+        "noForIn": "error",
+        "noMultiStr": "error",
+        "noInlineStyles": "warn",
+        "noJsxPropsBind": "warn",
+        "noPlaywrightMissingAwait": "error",
+        "noPlaywrightForceOption": "warn",
+        "noPlaywrightElementHandle": "warn",
+        "noPlaywrightEval": "warn"
       }
     }
   },

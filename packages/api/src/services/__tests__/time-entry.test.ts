@@ -635,22 +635,4 @@ describe('time-entry', () => {
       });
     });
   });
-
-  // -------------------------------------------------------------------------
-  // createSingleEntry -- function does not exist in time-entry.ts, skipped
-  // -------------------------------------------------------------------------
-
-  describe.skip('createSingleEntry', () => {
-    it('creates a single ad-hoc entry with minimum 15 minutes', () => {
-      // Function not exported from time-entry.ts
-    });
-
-    it('assigns entry to correct weekly timesheet based on entryDate', () => {
-      // Function not exported from time-entry.ts
-    });
-
-    it("creates timesheet if none exists for the entry's week", () => {
-      // Function not exported from time-entry.ts
-    });
-  });
 });

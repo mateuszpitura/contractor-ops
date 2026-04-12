@@ -427,7 +427,7 @@ describe('CommandPalette', () => {
   it('shows loading skeleton when search is loading', () => {
     searchLoading = true;
     searchData = [];
-    const { container } = render(<CommandPalette />);
+    render(<CommandPalette />);
     // Dialog is open, type something to trigger search
     expect(screen.getByPlaceholderText('Search or type a command...')).toBeInTheDocument();
   });

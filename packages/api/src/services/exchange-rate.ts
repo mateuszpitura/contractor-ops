@@ -163,7 +163,9 @@ export async function fetchAndStoreRates(
   const aedRate = deriveAedRate(usdRate);
   const sarRate = deriveSarRate(usdRate);
 
-  if (aedRate !== null) {
+  if (aedRate === null) {
+    errors.push('Could not derive AED rate — USD rate missing from ECB feed');
+  } else {
     upserts.push(
       prisma.exchangeRate.upsert({
         where: {
@@ -183,11 +185,11 @@ export async function fetchAndStoreRates(
         },
       }),
     );
-  } else {
-    errors.push('Could not derive AED rate — USD rate missing from ECB feed');
   }
 
-  if (sarRate !== null) {
+  if (sarRate === null) {
+    errors.push('Could not derive SAR rate — USD rate missing from ECB feed');
+  } else {
     upserts.push(
       prisma.exchangeRate.upsert({
         where: {
@@ -207,8 +209,6 @@ export async function fetchAndStoreRates(
         },
       }),
     );
-  } else {
-    errors.push('Could not derive SAR rate — USD rate missing from ECB feed');
   }
 
   await Promise.all(upserts);

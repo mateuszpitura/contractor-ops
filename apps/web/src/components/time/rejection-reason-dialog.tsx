@@ -48,7 +48,7 @@ export function RejectionReasonDialog({
   const [reason, setReason] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  const title = isBulk ? `Reject ${count} Timesheet${count !== 1 ? 's' : ''}` : 'Reject Timesheet';
+  const title = isBulk ? `Reject ${count} Timesheet${count === 1 ? '' : 's'}` : 'Reject Timesheet';
 
   const description = isBulk
     ? 'All selected timesheets will be rejected with the same reason.'

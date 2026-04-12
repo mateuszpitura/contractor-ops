@@ -301,7 +301,6 @@ export function PaymentRunSidePanel({
                     key={item.id}
                     item={item}
                     runStatus={status}
-                    runId={runId!}
                     onUpdateStatus={(itemId, itemStatus, ref, reason) =>
                       updateItemStatusMutation.mutate({
                         itemId,
@@ -316,7 +315,6 @@ export function PaymentRunSidePanel({
                         invoiceId,
                       })
                     }
-                    t={t}
                   />
                 ))}
               </div>
@@ -378,10 +376,8 @@ function CancelRunButton({
 function PaymentRunItemRow({
   item,
   runStatus,
-  runId,
   onUpdateStatus,
   onRemoveFromRun,
-  t,
 }: {
   item: {
     id: string;
@@ -394,7 +390,6 @@ function PaymentRunItemRow({
     contractor: { id: string; legalName: string };
   };
   runStatus: string;
-  runId: string;
   onUpdateStatus: (
     itemId: string,
     status: 'PAID' | 'FAILED',
@@ -402,8 +397,9 @@ function PaymentRunItemRow({
     reason?: string,
   ) => void;
   onRemoveFromRun: (invoiceId: string) => void;
-  t: ReturnType<typeof useTranslations<'Payments'>>;
 }) {
+  const t = useTranslations('Payments');
+  const locale = useLocale();
   const isTerminal = item.status === 'PAID' || item.status === 'FAILED';
   const isDraft = runStatus === 'DRAFT';
 

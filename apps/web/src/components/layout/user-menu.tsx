@@ -234,7 +234,7 @@ export function UserMenu() {
           <form
             onSubmit={e => {
               e.preventDefault();
-              handleSaveName();
+              void handleSaveName();
             }}
             className="space-y-4">
             <div className="space-y-2">

@@ -82,9 +82,7 @@ export function DeadlinesWidget() {
               <Skeleton key={`skel-${i}`} className="h-10 w-full rounded-md" />
             ))}
           </div>
-        ) : !data?.length ? (
-          <p className="py-8 text-center text-sm text-muted-foreground">{t('deadlines.empty')}</p>
-        ) : (
+        ) : data?.length ? (
           <ScrollArea className="scroll-fade-bottom max-h-[320px]">
             <div className="flex flex-col gap-2">
               {data.map(item => {
@@ -117,6 +115,8 @@ export function DeadlinesWidget() {
               })}
             </div>
           </ScrollArea>
+        ) : (
+          <p className="py-8 text-center text-sm text-muted-foreground">{t('deadlines.empty')}</p>
         )}
       </CardContent>
     </Card>

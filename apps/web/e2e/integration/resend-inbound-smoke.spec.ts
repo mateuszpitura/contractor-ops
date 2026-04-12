@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 test.describe('Resend inbound (optional E2E)', () => {
+  // biome-ignore lint/suspicious/noSkippedTests: conditional skip based on env — not a disabled test
   test.skip(
     process.env.RUN_RESEND_E2E !== '1',
     'Set RUN_RESEND_E2E=1 and start the app; optional E2E_WEB_URL overrides base URL (see .env.example).',

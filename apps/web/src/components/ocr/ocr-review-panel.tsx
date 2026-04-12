@@ -299,7 +299,7 @@ export function OcrReviewPanel({
   ]);
 
   // Field wrapper with cascade animation
-  const fieldStyle = (key: string) => ({
+  const _fieldStyle = (key: string) => ({
     opacity: visibleFields.has(key) ? 1 : 0,
     transition: 'opacity 200ms ease-in-out',
   });
@@ -332,7 +332,7 @@ export function OcrReviewPanel({
               <div>
                 <h3 className="mb-4 text-xl font-semibold">Review Extracted Data</h3>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div style={fieldStyle('invoiceNumber')}>
+                  <div>
                     <ConfidenceFieldWrapper
                       confidence={getFieldConfidence(resultJson?.fields, 'invoiceNumber')}
                       label="Invoice Number">
@@ -343,7 +343,7 @@ export function OcrReviewPanel({
                       />
                     </ConfidenceFieldWrapper>
                   </div>
-                  <div style={fieldStyle('issueDate')}>
+                  <div>
                     <ConfidenceFieldWrapper
                       confidence={getFieldConfidence(resultJson?.fields, 'issueDate')}
                       label="Issue Date">
@@ -354,7 +354,7 @@ export function OcrReviewPanel({
                       />
                     </ConfidenceFieldWrapper>
                   </div>
-                  <div style={fieldStyle('dueDate')}>
+                  <div>
                     <ConfidenceFieldWrapper
                       confidence={getFieldConfidence(resultJson?.fields, 'dueDate')}
                       label="Due Date">
@@ -365,7 +365,7 @@ export function OcrReviewPanel({
                       />
                     </ConfidenceFieldWrapper>
                   </div>
-                  <div style={fieldStyle('currency')}>
+                  <div>
                     <ConfidenceFieldWrapper
                       confidence={getFieldConfidence(resultJson?.fields, 'currency')}
                       label="Currency">
@@ -394,7 +394,7 @@ export function OcrReviewPanel({
 
               {/* Section 2: Parties */}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div style={fieldStyle('sellerTaxId')}>
+                <div>
                   <ConfidenceFieldWrapper
                     confidence={getFieldConfidence(resultJson?.fields, 'sellerNip')}
                     label="Seller NIP">
@@ -408,7 +408,7 @@ export function OcrReviewPanel({
                     </div>
                   </ConfidenceFieldWrapper>
                 </div>
-                <div style={fieldStyle('buyerTaxId')}>
+                <div>
                   <ConfidenceFieldWrapper
                     confidence={getFieldConfidence(resultJson?.fields, 'buyerNip')}
                     label="Buyer NIP">
@@ -422,7 +422,7 @@ export function OcrReviewPanel({
                     </div>
                   </ConfidenceFieldWrapper>
                 </div>
-                <div style={fieldStyle('sellerName')}>
+                <div>
                   <ConfidenceFieldWrapper
                     confidence={getFieldConfidence(resultJson?.fields, 'sellerName')}
                     label="Seller Name">
@@ -433,7 +433,7 @@ export function OcrReviewPanel({
                     />
                   </ConfidenceFieldWrapper>
                 </div>
-                <div style={fieldStyle('buyerName')}>
+                <div>
                   <ConfidenceFieldWrapper
                     confidence={getFieldConfidence(resultJson?.fields, 'buyerName')}
                     label="Buyer Name">
@@ -450,7 +450,7 @@ export function OcrReviewPanel({
 
               {/* Section 3: Amounts */}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <div style={fieldStyle('subtotalMinor')}>
+                <div>
                   <ConfidenceFieldWrapper
                     confidence={getFieldConfidence(resultJson?.fields, 'totalNet')}
                     label="Net Amount">
@@ -463,7 +463,7 @@ export function OcrReviewPanel({
                     />
                   </ConfidenceFieldWrapper>
                 </div>
-                <div style={fieldStyle('vatAmountMinor')}>
+                <div>
                   <ConfidenceFieldWrapper
                     confidence={getFieldConfidence(resultJson?.fields, 'totalTax')}
                     label="VAT Amount">
@@ -476,7 +476,7 @@ export function OcrReviewPanel({
                     />
                   </ConfidenceFieldWrapper>
                 </div>
-                <div style={fieldStyle('totalMinor')}>
+                <div>
                   <ConfidenceFieldWrapper
                     confidence={getFieldConfidence(resultJson?.fields, 'totalGross')}
                     label="Total Gross">
@@ -494,7 +494,7 @@ export function OcrReviewPanel({
               <Separator />
 
               {/* Section 4: Bank Account */}
-              <div style={fieldStyle('sellerBankAccount')}>
+              <div>
                 <ConfidenceFieldWrapper
                   confidence={getFieldConfidence(resultJson?.fields, 'bankAccount')}
                   label="Seller Bank Account">

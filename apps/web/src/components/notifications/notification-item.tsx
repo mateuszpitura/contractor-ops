@@ -139,8 +139,7 @@ export function NotificationItem({ notification, onClick, compact }: Notificatio
         'flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-start transition-colors hover:bg-accent',
         isUnread ? 'bg-muted' : 'bg-transparent',
         compact && 'px-3 py-2',
-      )}
-      style={{ minHeight: compact ? undefined : 64 }}>
+      )}>
       {/* Unread dot */}
       <div className="flex w-2 shrink-0 items-center justify-center">
         {isUnread && <span className="block h-1.5 w-1.5 rounded-full bg-primary" />}

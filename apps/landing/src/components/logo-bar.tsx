@@ -17,11 +17,9 @@ const logos = [
   { name: 'Luminos', width: 108 },
 ];
 
-function PlaceholderLogo({ name, width }: { name: string; width: number }) {
+function PlaceholderLogo({ name, width: _width }: { name: string; width: number }) {
   return (
-    <div
-      className="flex items-center gap-2 opacity-40 transition-opacity duration-300 hover:opacity-70 dark:opacity-30 dark:hover:opacity-50"
-      style={{ width }}>
+    <div className="flex items-center gap-2 opacity-40 transition-opacity duration-300 hover:opacity-70 dark:opacity-30 dark:hover:opacity-50">
       {/* Abstract mark */}
       <svg
         viewBox="0 0 24 24"

@@ -115,7 +115,6 @@ export function TemplatesTable() {
     archive: archiveTemplate,
     duplicate: duplicateTemplate,
     deleteTemplate,
-    isPending: isMutating,
   } = useTemplateMutations(t);
 
   // Seed starter templates on first visit (if org has no templates)

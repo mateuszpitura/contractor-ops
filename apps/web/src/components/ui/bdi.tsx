@@ -1,5 +1,4 @@
 import type { HTMLAttributes } from 'react';
-import { forwardRef } from 'react';
 import { cn } from '@/lib/utils';
 
 export interface BdiProps extends HTMLAttributes<HTMLElement> {
@@ -12,9 +11,14 @@ export interface BdiProps extends HTMLAttributes<HTMLElement> {
  * Use for all user-generated content displayed in RTL-capable layouts:
  * contractor names, invoice numbers, free-text fields, entity references.
  */
-export const Bdi = forwardRef<HTMLElement, BdiProps>(({ children, className, ...props }, ref) => (
+export const Bdi = ({
+  children,
+  className,
+  ref,
+  ...props
+}: BdiProps & { ref?: RefObject<HTMLElement | null> }) => (
   <bdi ref={ref} className={cn(className)} {...props}>
     {children}
   </bdi>
-));
+);
 Bdi.displayName = 'Bdi';
