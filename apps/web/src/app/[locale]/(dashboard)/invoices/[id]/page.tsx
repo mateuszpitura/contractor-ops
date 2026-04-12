@@ -23,6 +23,9 @@ import { ChainTracker } from "@/components/approvals/chain-tracker";
 import { AuditTimeline } from "@/components/approvals/audit-timeline";
 import { ReconciliationCard } from "@/components/time/reconciliation-card";
 import { ReverseChargeBanner } from "@/components/invoices/reverse-charge-banner";
+import { PeppolInboundBanner } from "@/components/peppol/peppol-inbound-banner";
+import { PeppolQRDisplay } from "@/components/peppol/peppol-qr-display";
+import { PeppolTransmissionStatus } from "@/components/peppol/peppol-transmission-status";
 
 // ---------------------------------------------------------------------------
 // Status badge config (reuse from columns.tsx pattern)
@@ -156,6 +159,17 @@ export default function InvoiceDetailPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const reconciliation = reconciliationQuery.data as any;
 
+  // Peppol transmission query (Phase 49 gap closure)
+  const peppolTransmissionQuery = useQuery({
+    ...trpc.peppol.getTransmissionByInvoiceId.queryOptions({
+      invoiceId: params.id,
+    }),
+    enabled: !!invoice,
+  });
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const peppolTransmission = peppolTransmissionQuery.data as any;
+
   // Submit for approval mutation
   const submitForApproval = useMutation(
     trpc.approval.submitForApproval.mutationOptions({
@@ -211,6 +225,11 @@ export default function InvoiceDetailPage() {
   const isKsefSource = invoice.source === "KSEF";
   const ksefReference = invoice.externalInvoiceId as string | null;
   const ksefUpoReceipt = invoice.sourceReference as string | null;
+
+  // Peppol detection
+  const isPeppolSource = invoice.source === "PEPPOL";
+  const hasPeppolOutboundTransmission =
+    peppolTransmission && peppolTransmission.direction === "OUTBOUND";
 
   // KSeF duplicate detection (manual invoice with KSeF duplicate)
   const flagsObj =
@@ -291,6 +310,29 @@ export default function InvoiceDetailPage() {
             upoReceipt={ksefUpoReceipt}
             fetchedAt={invoice.receivedAt ?? invoice.createdAt}
             source={invoice.source}
+          />
+        )}
+
+        {/* Peppol inbound banner (Phase 49) */}
+        {isPeppolSource && peppolTransmission && (
+          <PeppolInboundBanner
+            senderParticipantId={invoice.sellerTaxId ?? "Unknown sender"}
+            senderName={invoice.sellerName ?? "Unknown"}
+            documentType={peppolTransmission.documentTypeId ?? undefined}
+            receivedAt={new Date(peppolTransmission.createdAt)}
+          />
+        )}
+
+        {/* Peppol outbound transmission status (Phase 49) */}
+        {hasPeppolOutboundTransmission && (
+          <PeppolTransmissionStatus transmission={peppolTransmission} />
+        )}
+
+        {/* Peppol QR code (Phase 49) */}
+        {invoice.qrCodeBase64 && (isPeppolSource || hasPeppolOutboundTransmission) && (
+          <PeppolQRDisplay
+            qrCodeBase64={invoice.qrCodeBase64}
+            invoiceNumber={invoice.invoiceNumber}
           />
         )}
 
