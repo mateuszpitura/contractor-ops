@@ -68,7 +68,7 @@ export interface UkComplianceFieldsProps {
  * the same rules server-side (`ukCountryFieldsSchema.superRefine`), so the UI
  * markers are strictly a usability signal.
  */
-export function UkComplianceFields(props: UkComplianceFieldsProps): JSX.Element {
+export function UkComplianceFields(props: UkComplianceFieldsProps) {
   const [internal, setInternal] = useState<Partial<UkCountryFields>>({});
   const merged: Partial<UkCountryFields> = {
     ...internal,

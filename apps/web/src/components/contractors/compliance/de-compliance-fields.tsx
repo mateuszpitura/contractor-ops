@@ -94,7 +94,7 @@ export interface DeComplianceFieldsProps {
  */
 export function DeComplianceFields(
   props: DeComplianceFieldsProps,
-): JSX.Element {
+) {
   const [internal, setInternal] = useState<Partial<DeCountryFields>>({});
 
   const merged: Partial<DeCountryFields> = {

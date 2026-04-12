@@ -3,6 +3,10 @@
 import { AlertCircle, Check, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import type {
+  DeCountryFields,
+  UkCountryFields,
+} from '@contractor-ops/validators';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,6 +14,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { trpc } from '@/trpc/init';
+
+import { DeComplianceFields } from './compliance/de-compliance-fields';
+import { UkComplianceFields } from './compliance/uk-compliance-fields';
 
 interface CountryComplianceSectionProps {
   contractorId: string;
@@ -52,7 +59,15 @@ export function CountryComplianceSection({ contractorId }: CountryComplianceSect
   const merged = { ...existingFields, ...formData };
 
   const countryLabel =
-    countryCode === 'AE' ? 'UAE' : countryCode === 'SA' ? 'Saudi Arabia' : countryCode;
+    countryCode === 'AE'
+      ? 'UAE'
+      : countryCode === 'SA'
+        ? 'Saudi Arabia'
+        : countryCode === 'GB'
+          ? 'United Kingdom'
+          : countryCode === 'DE'
+            ? 'Deutschland'
+            : countryCode;
 
   function handleSave() {
     if (!countryCode) return;
@@ -91,6 +106,22 @@ export function CountryComplianceSection({ contractorId }: CountryComplianceSect
           <SaudiFields
             values={merged}
             onChange={(key, val) => setFormData(prev => ({ ...prev, [key]: val }))}
+          />
+        )}
+        {countryCode === 'GB' && (
+          <UkComplianceFields
+            values={merged as Partial<UkCountryFields>}
+            onChange={(key, val) =>
+              setFormData(prev => ({ ...prev, [key]: val }))
+            }
+          />
+        )}
+        {countryCode === 'DE' && (
+          <DeComplianceFields
+            values={merged as Partial<DeCountryFields>}
+            onChange={(key, val) =>
+              setFormData(prev => ({ ...prev, [key]: val }))
+            }
           />
         )}
         <Button onClick={handleSave} disabled={updateMutation.isPending} className="mt-4">

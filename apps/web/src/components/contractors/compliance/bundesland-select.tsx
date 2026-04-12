@@ -37,7 +37,7 @@ export function BundeslandSelect({
   id,
   required = false,
   disabled = false,
-}: BundeslandSelectProps): JSX.Element {
+}: BundeslandSelectProps) {
   const reactId = useId();
   const selectId = id ?? `bundesland-${reactId}`;
   const errorId = `${selectId}-error`;

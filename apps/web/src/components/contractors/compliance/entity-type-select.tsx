@@ -35,7 +35,7 @@ export function EntityTypeSelect<T extends string>({
   renderOption,
   id,
   required = false,
-}: EntityTypeSelectProps<T>): JSX.Element {
+}: EntityTypeSelectProps<T>) {
   const reactId = useId();
   const selectId = id ?? `entity-type-${reactId}`;
   const errorId = `${selectId}-error`;

@@ -32,7 +32,7 @@ export function VatRegisteredToggle({
   onChange,
   label,
   id,
-}: VatRegisteredToggleProps): JSX.Element {
+}: VatRegisteredToggleProps) {
   const reactId = useId();
   const switchId = id ?? `vat-toggle-${reactId}`;
   const textId = `${switchId}-text`;

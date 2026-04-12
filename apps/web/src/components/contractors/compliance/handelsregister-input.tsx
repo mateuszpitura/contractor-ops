@@ -61,7 +61,7 @@ export function HandelsregisterInput({
   error,
   legend,
   required = false,
-}: HandelsregisterInputProps): JSX.Element {
+}: HandelsregisterInputProps) {
   const reactId = useId();
   const legendId = `handelsregister-legend-${reactId}`;
   const hintId = `handelsregister-hint-${reactId}`;

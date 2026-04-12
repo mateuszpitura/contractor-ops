@@ -46,7 +46,7 @@ export function SteuernummerInput({
   label,
   id,
   required = false,
-}: SteuernummerInputProps): JSX.Element {
+}: SteuernummerInputProps) {
   const reactId = useId();
   const inputId = id ?? `steuernummer-${reactId}`;
   const hintId = `${inputId}-hint`;
