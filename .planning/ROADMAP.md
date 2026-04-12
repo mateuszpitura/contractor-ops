@@ -84,7 +84,7 @@ Full details: `.planning/milestones/v3.0-ROADMAP.md`
 - [x] **Phase 45: Pluggable E-Invoicing Engine Core** - Abstract UBL 2.1 engine with KSeF refactored as first country profile (completed 2026-04-11)
 - [x] **Phase 46: Multi-Currency Foundation & SWIFT Payment Export** - AED/SAR/GBP currencies with Money utility, exchange rates, and ISO 20022 SWIFT export (completed 2026-04-11)
 - [x] **Phase 47: VAT Engine, WHT Calculator & Country Fields** - Configuration-driven multi-tier VAT, Saudi WHT with certificate generation, and country-specific contractor profiles (7 plans, gap closure in progress) (completed 2026-04-11)
-- [x] **Phase 48: ZATCA Fatoorah Integration** - Saudi e-invoicing with XML DSig, hash chain, QR codes, and Fatoora Portal API clearance (6 plans) (completed 2026-04-12)
+- [ ] **Phase 48: ZATCA Fatoorah Integration** - Saudi e-invoicing with XML DSig, hash chain, QR codes, and Fatoora Portal API clearance (8 plans, gap closure in progress)
 - [x] **Phase 49: Peppol PINT-AE Integration** - UAE e-invoicing via certified ASP with inbound invoice parsing (5 plans, gap closure) (completed 2026-04-12)
 - [x] **Phase 50: Arabic Localization & RTL Layout** - Full Arabic translation with codebase-wide RTL migration to CSS logical properties (completed 2026-04-11)
 - [x] **Phase 51: PDPL Compliance** - UAE and Saudi privacy law compliance with consent management and cross-border transfer safeguards (completed 2026-04-11)
@@ -148,7 +148,7 @@ Plans:
   3. Each invoice contains a TLV-encoded QR code with seller name, VAT number, timestamp, total, and VAT amount
   4. The invoice hash chain is maintained -- each new invoice references the hash of the previous invoice for that organization, with sequential processing enforced
   5. B2B tax invoices are submitted to ZATCA Fatoora Portal for clearance, and simplified B2C invoices are submitted for reporting, with status tracked per invoice
-**Plans**: 6 plans
+**Plans**: 8 plans
 Plans:
 - [x] 48-01-PLAN.md — ZATCA profile, UBL 2.1 XML generator, Prisma schema, Zod validators
 - [x] 48-02-PLAN.md — XAdES-BES enveloped digital signatures with xml-crypto
@@ -156,7 +156,8 @@ Plans:
 - [x] 48-04-PLAN.md — Hash chain, Infisical secret store, submission pipeline, tRPC router
 - [x] 48-05-PLAN.md — Device onboarding: CSR generation, compliance checks, certificate exchange
 - [x] 48-06-PLAN.md — Onboarding wizard UI, status badges, compliance widget, schema push
-- [ ] 48-07-PLAN.md — [BLOCKING] Prisma schema push to database
+- [ ] 48-07-PLAN.md — [GAP] Wire submission pipeline to real ZATCA XML generation, signing, and QR
+- [ ] 48-08-PLAN.md — [GAP] Wire orphaned ZATCA UI components into invoice detail page
 **UI hint**: yes
 
 ### Phase 49: Peppol PINT-AE Integration
@@ -224,7 +225,7 @@ Phases execute in numeric order: 45 -> 46 -> 47 -> 48 -> 49 -> 50 -> 51 -> 52
 | 45. Pluggable E-Invoicing Engine Core | v4.0 | 5/5 | Complete    | 2026-04-11 |
 | 46. Multi-Currency & SWIFT Payments | v4.0 | 5/5 | Complete    | 2026-04-11 |
 | 47. VAT Engine, WHT & Country Fields | v4.0 | 7/7 | Complete    | 2026-04-11 |
-| 48. ZATCA Fatoorah Integration | v4.0 | 6/6 | Complete   | 2026-04-12 |
+| 48. ZATCA Fatoorah Integration | v4.0 | 6/8 | Gap Closure   | — |
 | 49. Peppol PINT-AE Integration | v4.0 | 5/5 | Complete    | 2026-04-12 |
 | 50. Arabic Localization & RTL Layout | v4.0 | 7/7 | Complete    | 2026-04-12 |
 | 51. PDPL Compliance | v4.0 | 4/4 | Complete    | 2026-04-11 |
