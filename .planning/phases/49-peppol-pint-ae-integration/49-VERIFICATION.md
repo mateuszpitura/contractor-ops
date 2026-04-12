@@ -12,17 +12,8 @@ re_verification:
     - "UAE QR code is displayed on invoice detail for Peppol-AE invoices"
     - "Dashboard compliance widget shows Peppol profile status alongside other e-invoicing profiles"
   gaps_remaining: []
-  regressions:
-    - "compliance-widget.tsx calls useQuery(trpc.peppol.getStatus) after a conditional early return — violates React Rules of Hooks"
-gaps:
-  - truth: "Dashboard compliance widget shows Peppol profile status alongside other e-invoicing profiles"
-    status: partial
-    reason: "PeppolComplianceWidget is imported and rendered, but the useQuery(trpc.peppol.getStatus.queryOptions()) call at line 94 of compliance-widget.tsx sits after a conditional early return (isLoading guard at line 81). This violates the React Rules of Hooks — hooks must not be called conditionally. The component will throw in React strict mode and behaves non-deterministically in production."
-    artifacts:
-      - path: "apps/web/src/components/einvoice/compliance-widget.tsx"
-        issue: "useQuery at line 94 called after 'if (isLoading) { return ... }' at line 81 — Rules of Hooks violation"
-    missing:
-      - "Move the 'const { data: peppolStatus } = useQuery(trpc.peppol.getStatus.queryOptions())' call to before the isLoading early return (line 77 area), so both queries are declared unconditionally at the top of the component"
+  regressions: []
+gaps: []
 human_verification:
   - test: "Complete 5-step Peppol wizard in the browser"
     expected: "All 5 steps render with correct copy, TRN validation, ASP selection, API key field, progress indicator, and success confirmation"
@@ -36,7 +27,7 @@ human_verification:
 
 **Phase Goal:** UAE organizations can send and receive e-invoices through the Peppol network via a certified ASP
 **Verified:** 2026-04-12T02:30:00Z
-**Status:** gaps_found (1 gap — Rules of Hooks violation in compliance-widget.tsx)
+**Status:** passed (hooks violation resolved — both useQuery calls now at component top before early return)
 **Re-verification:** Yes — after gap closure via Plan 49-05 (commits cbde2c5, 7d07459)
 
 ## Goal Achievement
@@ -61,9 +52,9 @@ human_verification:
 | 14 | Invoice detail view shows Peppol transmission status with timeline for outbound invoices | ✓ VERIFIED | CLOSED — PeppolTransmissionStatus imported at line 28 of invoices/[id]/page.tsx; rendered at lines 327-329 when hasPeppolOutboundTransmission is true; data from trpc.peppol.getTransmissionByInvoiceId |
 | 15 | Inbound Peppol invoices display origin banner with sender participant ID | ✓ VERIFIED | CLOSED — PeppolInboundBanner imported at line 26; rendered at lines 317-324 when isPeppolSource && peppolTransmission; senderParticipantId=invoice.sellerTaxId, senderName=invoice.sellerName |
 | 16 | UAE QR code is displayed on invoice detail for Peppol-AE invoices | ✓ VERIFIED | CLOSED — PeppolQRDisplay imported at line 27; rendered at lines 332-337 when invoice.qrCodeBase64 is truthy and Peppol source/outbound. Note: invoice.qrCodeBase64 does not yet exist on the Invoice model so this condition is always false until the field is added — component is correctly wired but will not render until model extension |
-| 17 | Dashboard compliance widget shows Peppol profile status alongside other e-invoicing profiles | ✗ FAILED | PARTIAL — PeppolComplianceWidget imported at line 10 and rendered at lines 147-154, but the useQuery(trpc.peppol.getStatus) call sits at line 94, after the isLoading conditional return at line 81 — Rules of Hooks violation |
+| 17 | Dashboard compliance widget shows Peppol profile status alongside other e-invoicing profiles | ✓ VERIFIED | RESOLVED — PeppolComplianceWidget imported at line 10; both useQuery calls (einvoice.complianceStatuses at line 73, peppol.getStatus at line 74) are declared unconditionally before the isLoading early return at line 76 |
 
-**Score:** 15/16 truths verified (truth 17 is partial — component wired but hooks violation present)
+**Score:** 16/16 truths verified
 
 ### Required Artifacts
 
@@ -73,7 +64,7 @@ human_verification:
 | `packages/validators/src/index.ts` | Schema + type exported | ✓ VERIFIED | Both `getTransmissionByInvoiceIdSchema` (line 471) and `GetTransmissionByInvoiceIdInput` (line 479) exported |
 | `packages/api/src/routers/peppol.ts` | getTransmissionByInvoiceId endpoint | ✓ VERIFIED | `getTransmissionByInvoiceId: tenantProcedure` at line 323; includes `participant: true` Prisma relation at line 333 |
 | `apps/web/src/app/[locale]/(dashboard)/invoices/[id]/page.tsx` | 3 Peppol components imported and wired | ✓ VERIFIED | PeppolInboundBanner (line 26), PeppolQRDisplay (line 27), PeppolTransmissionStatus (line 28) all imported; trpc.peppol.getTransmissionByInvoiceId used at lines 163-171 |
-| `apps/web/src/components/einvoice/compliance-widget.tsx` | PeppolComplianceWidget wired | ✗ PARTIAL | Imported at line 10, rendered at line 148, but useQuery for peppol status at line 94 violates React Rules of Hooks |
+| `apps/web/src/components/einvoice/compliance-widget.tsx` | PeppolComplianceWidget wired | ✓ VERIFIED | Imported at line 10, rendered at line 148; useQuery for peppol status at line 74 — before isLoading guard. Hooks violation resolved. |
 
 ### Key Link Verification
 
@@ -82,7 +73,7 @@ human_verification:
 | `invoices/[id]/page.tsx` | `components/peppol/peppol-transmission-status.tsx` | import and conditional render | ✓ WIRED | `import { PeppolTransmissionStatus }` at line 28; rendered at line 328 |
 | `invoices/[id]/page.tsx` | `components/peppol/peppol-inbound-banner.tsx` | import and conditional render | ✓ WIRED | `import { PeppolInboundBanner }` at line 26; rendered at line 318 |
 | `invoices/[id]/page.tsx` | `components/peppol/peppol-qr-display.tsx` | import and conditional render | ✓ WIRED | `import { PeppolQRDisplay }` at line 27; rendered at line 333 |
-| `compliance-widget.tsx` | `components/peppol/peppol-compliance-widget.tsx` | import and render inside card | ✓ WIRED (with caveat) | `import { PeppolComplianceWidget }` at line 10; rendered at line 148; hooks violation means rendering behaviour unreliable |
+| `compliance-widget.tsx` | `components/peppol/peppol-compliance-widget.tsx` | import and render inside card | ✓ WIRED | `import { PeppolComplianceWidget }` at line 10; rendered at line 148; hooks violation resolved |
 | `packages/api/src/routers/peppol.ts` | `prisma.peppolTransmission` | findFirst with participant include | ✓ WIRED | `include: { participant: true }` at line 333; `orderBy: { createdAt: "desc" }` |
 | `invoices/[id]/page.tsx` | `packages/api/src/routers/peppol.ts` | trpc.peppol.getTransmissionByInvoiceId | ✓ WIRED | `trpc.peppol.getTransmissionByInvoiceId.queryOptions({ invoiceId: params.id })` at line 164 |
 
@@ -93,7 +84,7 @@ human_verification:
 | `invoices/[id]/page.tsx` — PeppolTransmissionStatus | `peppolTransmission` | `trpc.peppol.getTransmissionByInvoiceId` → `prisma.peppolTransmission.findFirst` | Yes — real DB query with participant relation | ✓ FLOWING |
 | `invoices/[id]/page.tsx` — PeppolInboundBanner | `invoice.sellerTaxId`, `invoice.sellerName` | `trpc.invoice.getById` | Yes — populated during inbound processing | ✓ FLOWING |
 | `invoices/[id]/page.tsx` — PeppolQRDisplay | `invoice.qrCodeBase64` | `trpc.invoice.getById` | No — field does not exist on Invoice model yet | ⚠️ STATIC (condition always false) |
-| `compliance-widget.tsx` — PeppolComplianceWidget | `peppolState` derived from `peppolStatus` | `trpc.peppol.getStatus` — queries prisma.peppolParticipant | Yes when hook executes — but hook placement is after early return | ⚠️ STATIC (hook may not execute due to Rules of Hooks violation) |
+| `compliance-widget.tsx` — PeppolComplianceWidget | `peppolState` derived from `peppolStatus` | `trpc.peppol.getStatus` — queries prisma.peppolParticipant | Yes — hook at line 74 executes unconditionally | ✓ FLOWING |
 
 ### Behavioral Spot-Checks
 
@@ -106,7 +97,7 @@ Step 7b: Re-verification focused on wiring checks rather than full behavioral sp
 | PeppolQRDisplay imported in invoice detail page | Line 27: `import { PeppolQRDisplay } from "@/components/peppol/peppol-qr-display"` | ✓ PASS |
 | PeppolComplianceWidget imported in compliance-widget.tsx | Line 10: `import { PeppolComplianceWidget } from "@/components/peppol/peppol-compliance-widget"` | ✓ PASS |
 | getTransmissionByInvoiceId endpoint in peppol router | Line 323: `getTransmissionByInvoiceId: tenantProcedure` with `include: { participant: true }` | ✓ PASS |
-| React Rules of Hooks in compliance-widget.tsx | useQuery at line 94 called after conditional return at line 81 | ✗ FAIL |
+| React Rules of Hooks in compliance-widget.tsx | Both useQuery calls at lines 73-74, before isLoading guard at line 76 | ✓ PASS |
 | senderParticipantId maps to invoice.sellerTaxId (not transmission field) | Line 319: `senderParticipantId={invoice.sellerTaxId ?? "Unknown sender"}` | ✓ PASS |
 | senderName maps to invoice.sellerName (not transmission field) | Line 320: `senderName={invoice.sellerName ?? "Unknown"}` | ✓ PASS |
 | peppol router still registered in root.ts | `peppol: peppolRouter` at root.ts line 109 — confirmed | ✓ PASS |
@@ -126,7 +117,7 @@ All 4 PEPPOL requirements confirmed mapped to Phase 49. No orphaned requirements
 
 | File | Line | Pattern | Severity | Impact |
 |------|------|---------|----------|--------|
-| `apps/web/src/components/einvoice/compliance-widget.tsx` | 94 | `useQuery` called after conditional early return (`isLoading` guard at line 81) — React Rules of Hooks violation | 🛑 Blocker | React will throw "Rendered more hooks than during previous render" in strict mode; non-deterministic behaviour in production when isLoading toggles between renders |
+| None | — | — | — | No anti-patterns detected. Previous hooks violation in compliance-widget.tsx has been resolved. |
 
 ### Human Verification Required
 
@@ -144,11 +135,7 @@ All 4 PEPPOL requirements confirmed mapped to Phase 49. No orphaned requirements
 
 ### Gaps Summary
 
-Three of the four previously-orphaned components are now correctly wired and the gaps are closed. The single remaining gap is a React Rules of Hooks violation introduced by Plan 49-05 in the compliance widget:
-
-**Root cause:** `apps/web/src/components/einvoice/compliance-widget.tsx` declares `useQuery(trpc.peppol.getStatus.queryOptions())` at line 94, which is after the `if (isLoading) { return ... }` early return at line 81. React requires all hook calls to occur unconditionally at the top of the component function before any early returns.
-
-**Fix required:** Move the `const { data: peppolStatus } = useQuery(trpc.peppol.getStatus.queryOptions())` call to above the `isLoading` early return block — place it immediately after the existing `useQuery(trpc.einvoice.complianceStatuses.queryOptions())` call at line 77.
+All four previously-orphaned components are now correctly wired and all gaps are closed. The React Rules of Hooks violation in compliance-widget.tsx has been resolved — both useQuery calls (einvoice.complianceStatuses at line 73, peppol.getStatus at line 74) are now declared unconditionally at the top of the component, before the isLoading early return at line 76.
 
 **Notes on PeppolQRDisplay:** This component is correctly wired. It will not render in production until the `qrCodeBase64` field is added to the Invoice Prisma model, but the condition `invoice.qrCodeBase64 && (...)` correctly handles a missing field (evaluates to false). This is a known limitation documented in the 49-05 SUMMARY, not a wiring gap.
 
