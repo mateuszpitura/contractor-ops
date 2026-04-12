@@ -1,5 +1,6 @@
 import type { DestinationStream, Logger, LoggerOptions } from 'pino';
 import pino from 'pino';
+import { PII_MASK_PATHS } from './pii-mask.js';
 
 // ---------------------------------------------------------------------------
 // Environment detection
@@ -19,7 +20,14 @@ const baseOptions: LoggerOptions = {
       return { level: label };
     },
   },
+  redact: {
+    paths: [...PII_MASK_PATHS],
+    censor: '[REDACTED]',
+  },
 };
+
+export { PII_MASK_KEYWORDS, PII_MASK_PATHS } from './pii-mask.js';
+export type { PiiMaskKeyword } from './pii-mask.js';
 
 // ---------------------------------------------------------------------------
 // Root logger

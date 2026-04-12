@@ -1,4 +1,4 @@
-import { auth } from '@contractor-ops/auth';
+import { authApi } from '@contractor-ops/auth';
 import {
   createOrganizationSchema,
   updateOrganizationSettingsSchema,
@@ -14,7 +14,12 @@ export const organizationRouter = router({
    * After creation, sets the new org as active in the session.
    */
   create: publicProcedure.input(createOrganizationSchema).mutation(async ({ ctx, input }) => {
-    const org = await auth.api.createOrganization({
+    // Default language by countryCode — DE orgs get German UI by default (Phase 56 D-11).
+    // User can switch via language selector at any time.
+    const defaultLanguage =
+      input.countryCode === 'DE' ? 'de' : input.countryCode === 'GB' ? 'en' : undefined;
+
+    const org = await authApi.createOrganization({
       headers: ctx.headers,
       body: {
         name: input.name,
@@ -23,12 +28,13 @@ export const organizationRouter = router({
           countryCode: input.countryCode,
           defaultCurrency: input.defaultCurrency,
           timezone: input.timezone,
+          ...(defaultLanguage && { language: defaultLanguage }),
         },
       },
     });
 
     // Set the new organization as active
-    await auth.api.setActiveOrganization({
+    await authApi.setActiveOrganization({
       headers: ctx.headers,
       body: { organizationId: org.id },
     });
@@ -41,7 +47,7 @@ export const organizationRouter = router({
    * Requires authenticated user with an active organization.
    */
   getCurrent: tenantProcedure.query(async ({ ctx }) => {
-    const org = await auth.api.getFullOrganization({
+    const org = await authApi.getFullOrganization({
       headers: ctx.headers,
       query: { organizationId: ctx.organizationId },
     });
@@ -74,7 +80,7 @@ export const organizationRouter = router({
         updateData.metadata = metadataUpdates;
       }
 
-      const updated = await auth.api.updateOrganization({
+      const updated = await authApi.updateOrganization({
         headers: ctx.headers,
         body: {
           organizationId: ctx.organizationId,

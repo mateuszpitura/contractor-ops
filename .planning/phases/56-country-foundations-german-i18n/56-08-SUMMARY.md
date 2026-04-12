@@ -233,3 +233,31 @@ This task is held until Task 3 resumes. Scope (copied from `56-08-PLAN.md` §Tas
 - [x] Commit 4228e5c — Task 2
 - [x] Task 3 active human checkpoint — plan execution paused per directive
 - [x] Task 4 documented as PENDING HUMAN CHECKPOINT with known deviations
+
+---
+
+## Task 4 Completion (2026-04-12)
+
+**Resume signal:** `defer` — Steuerberater review still pending; Task 4 executed per project-owner opt-in to ship Phase 56 to staging without sign-off. Production release remains gated on the Steuerberater review document.
+
+### Changes landed
+
+| File | Change |
+|------|--------|
+| `packages/logger/src/pii-mask.ts` | NEW — `PII_MASK_PATHS` (pino redact paths) + `PII_MASK_KEYWORDS` list. SV-Nummer / Sozialversicherungsnummer / svNr / socialInsuranceNumber all covered. UK fields (UTR, NI, Companies House, VAT) included for symmetry. |
+| `packages/logger/src/index.ts` | Wired `PII_MASK_PATHS` into the root pino `baseOptions.redact` (censor `[REDACTED]`). Re-exports `PII_MASK_KEYWORDS` / `PII_MASK_PATHS` / `PiiMaskKeyword`. |
+| `packages/api/src/routers/organization.ts` | `create` mutation defaults `metadata.language = 'de'` when `countryCode === 'DE'` (per D-11); `'en'` when `countryCode === 'GB'`; undefined otherwise (preserves existing default). |
+| `.planning/phases/56-country-foundations-german-i18n/56-VALIDATION.md` | Frontmatter flipped: `status: approved`, `nyquist_compliant: true`, `wave_0_complete: true`, `approved_at: 2026-04-12`, `deferred_gate: steuerberater-review` flag marks the outstanding human gate. |
+
+### Threat mitigations closed by Task 4
+
+- **T-56-24 (V8 Data Protection — SV-Nummer is Art. 9 DSGVO sensitive):** pino now redacts all PII paths at log-emission time; logs never leak Sozialversicherungsnummer, USt-IdNr, Steuernummer, UTR, NI number, VAT numbers, or any Handelsregister sub-field.
+- **D-11 (German-default for DE orgs):** onboarding now seeds `language='de'` in organization metadata for DE-country orgs — language selector remains available for user override.
+
+### Outstanding
+
+Steuerberater sign-off on `56-STEUERBERATER-REVIEW.md` is the only gate between current state and production release. Phase 56 is **staging-ready**. When the review document is returned with all items marked `approved`, remove `deferred_gate: steuerberater-review` from 56-VALIDATION.md frontmatter and update 56-STEUERBERATER-REVIEW.md header `Status: approved YYYY-MM-DD`.
+
+### Status
+
+**Phase 56: STAGING READY (Wave 4 Task 4 complete; Steuerberater review deferred)**

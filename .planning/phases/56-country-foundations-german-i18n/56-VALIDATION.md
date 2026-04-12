@@ -1,9 +1,11 @@
 ---
 phase: 56
 slug: country-foundations-german-i18n
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: approved
+nyquist_compliant: true
+wave_0_complete: true
+approved_at: 2026-04-12
+deferred_gate: steuerberater-review
 created: 2026-04-12
 ---
 
