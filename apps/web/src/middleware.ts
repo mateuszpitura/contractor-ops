@@ -71,30 +71,42 @@ async function checkLimit(
   identifier: string,
   fallbackPrefix: string,
   fallbackMax: number,
-): Promise<{ allowed: boolean; remaining: number }> {
+): Promise<{ allowed: boolean; remaining: number; limit: number; reset: number }> {
   if (limiter) {
     try {
       const result = await limiter.limit(identifier);
-      return { allowed: result.success, remaining: result.remaining };
+      return {
+        allowed: result.success,
+        remaining: result.remaining,
+        limit: result.limit,
+        reset: result.reset,
+      };
     } catch {
       // Redis error: fail-open to avoid blocking all requests
-      return { allowed: true, remaining: fallbackMax };
+      return { allowed: true, remaining: fallbackMax, limit: fallbackMax, reset: 0 };
     }
   }
   // No Redis: use in-memory fallback
-  return fallbackRateLimit(`${fallbackPrefix}:${identifier}`, fallbackMax);
+  const fb = fallbackRateLimit(`${fallbackPrefix}:${identifier}`, fallbackMax);
+  const entry = fallbackMap.get(`${fallbackPrefix}:${identifier}`);
+  return { ...fb, limit: fallbackMax, reset: entry?.resetAt ?? 0 };
 }
 
-function rateLimitResponse(remaining: number) {
+function rateLimitResponse(remaining: number, limit: number, reset: number) {
+  const headers: Record<string, string> = {
+    "Retry-After": "60",
+    "X-RateLimit-Limit": String(limit),
+    "X-RateLimit-Remaining": String(remaining),
+  };
+
+  if (reset > 0) {
+    // Reset is a Unix timestamp in milliseconds from Upstash; convert to seconds for HTTP header
+    headers["X-RateLimit-Reset"] = String(Math.ceil(reset / 1000));
+  }
+
   return NextResponse.json(
     { error: "Too many requests. Please try again later." },
-    {
-      status: 429,
-      headers: {
-        "Retry-After": "60",
-        "X-RateLimit-Remaining": String(remaining),
-      },
-    },
+    { status: 429, headers },
   );
 }
 
@@ -191,26 +203,26 @@ export default async function middleware(request: NextRequest) {
   // ── Rate limiting (API routes) ────────────────────────────────────────
 
   if (pathname.startsWith("/api/auth")) {
-    const { allowed, remaining } = await checkLimit(authLimiter, ip, "auth", 10);
-    if (!allowed) return rateLimitResponse(remaining);
+    const { allowed, remaining, limit, reset } = await checkLimit(authLimiter, ip, "auth", 10);
+    if (!allowed) return rateLimitResponse(remaining, limit, reset);
   }
 
   if (pathname.startsWith("/api/portal")) {
-    const { allowed, remaining } = await checkLimit(portalLimiter, ip, "portal", 10);
-    if (!allowed) return rateLimitResponse(remaining);
+    const { allowed, remaining, limit, reset } = await checkLimit(portalLimiter, ip, "portal", 10);
+    if (!allowed) return rateLimitResponse(remaining, limit, reset);
   }
 
   if (pathname.startsWith("/api/trpc")) {
     if (!shouldSkipTrpcRateLimitForLoadTest(request)) {
       // Per-IP rate limit
       const ipResult = await checkLimit(apiLimiter, ip, "api", 60);
-      if (!ipResult.allowed) return rateLimitResponse(ipResult.remaining);
+      if (!ipResult.allowed) return rateLimitResponse(ipResult.remaining, ipResult.limit, ipResult.reset);
 
       // Per-org rate limit (extract from session cookie → org cookie if available)
       const orgId = request.cookies.get("better-auth.active_organization")?.value;
       if (orgId) {
         const orgResult = await checkLimit(orgLimiter, orgId, "org", 500);
-        if (!orgResult.allowed) return rateLimitResponse(orgResult.remaining);
+        if (!orgResult.allowed) return rateLimitResponse(orgResult.remaining, orgResult.limit, orgResult.reset);
       }
     }
   }
